@@ -31,6 +31,8 @@ export interface BottomSheetProps {
   /** Visible title and accessible dialog name. */
   title: string;
   children: React.ReactNode;
+  /** Pinned action bar below the scrollable body (e.g. an apply button). */
+  footer?: React.ReactNode;
   snapPoints?: ('full' | 'half' | 'auto')[];
   className?: string;
 }
@@ -40,6 +42,7 @@ export function BottomSheet({
   onClose,
   title,
   children,
+  footer,
   snapPoints,
   className = '',
 }: BottomSheetProps) {
@@ -82,9 +85,14 @@ export function BottomSheet({
             <X className="h-5 w-5" aria-hidden="true" />
           </Button>
         </DrawerHeader>
-        <DrawerBody className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-[calc(var(--safe-area-bottom)+1.25rem)] pt-4">
+        <DrawerBody className={`min-h-0 overflow-y-auto overscroll-contain px-5 pt-4 ${footer ? 'pb-4' : 'pb-[calc(var(--safe-area-bottom)+1.25rem)]'}`}>
           {children}
         </DrawerBody>
+        {footer && (
+          <div className="shrink-0 border-t border-theme-default bg-[var(--surface-dropdown)] px-5 pb-[calc(var(--safe-area-bottom)+0.75rem)] pt-3">
+            {footer}
+          </div>
+        )}
       </DrawerContent>
     </Drawer>
   );

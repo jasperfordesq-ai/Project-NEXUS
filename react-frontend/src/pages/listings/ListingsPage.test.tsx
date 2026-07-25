@@ -18,6 +18,34 @@ vi.mock('@/lib/api', () => ({
   tokenManager: { getTenantId: vi.fn() },
 }));
 
+// The page (and its children) import contexts via direct paths, not the barrel —
+// mock those modules too or the real providers throw in jsdom.
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    user: { id: 1, first_name: 'Test' },
+    isAuthenticated: true,
+  })),
+}));
+
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: vi.fn(() => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+  })),
+}));
+
+vi.mock('@/contexts/ToastContext', () => ({
+  // test-utils wraps renders in the real ToastProvider import — keep the name.
+  ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useToast: vi.fn(() => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  })),
+}));
+
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 1, first_name: 'Test' },
@@ -67,6 +95,12 @@ vi.mock('@/lib/map-config', () => ({
   get MAPS_ENABLED() { return mapsEnabled; },
 }));
 
+// Toggle phone layout (useMediaQuery drives the sticky bar + filter sheet).
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn(() => isPhoneViewport),
+}));
+
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,
 }));
@@ -93,6 +127,7 @@ describe('ListingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mapsEnabled = false;
+    isPhoneViewport = false;
   });
 
   it('renders without crashing', () => {
@@ -135,6 +170,60 @@ describe('ListingsPage', () => {
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith(expect.stringContaining('with_coordinates=1'));
       expect(api.get).toHaveBeenCalledWith(expect.stringContaining('per_page=100'));
+    });
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('renders the sticky bar with search pill, Filters button and view toggle', () => {
+      render(<ListingsPage />);
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search listings')).toBeInTheDocument();
+      expect(screen.getByLabelText('Grid view')).toBeInTheDocument();
+      expect(screen.getByLabelText('List view')).toBeInTheDocument();
+    });
+
+    it('opens the filter sheet with every filter section', async () => {
+      render(<ListingsPage />);
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Duration')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Service mode')).toBeInTheDocument();
+      expect(screen.getByText('Posted date')).toBeInTheDocument();
+      expect(screen.getByText('Distance')).toBeInTheDocument();
+      expect(screen.getByText('Sort')).toBeInTheDocument();
+      expect(screen.getByText('Under 1h')).toBeInTheDocument();
+      expect(screen.getByText('Show listings')).toBeInTheDocument();
+    });
+
+    it('applies draft filters only when Show listings is pressed', async () => {
+      render(<ListingsPage />);
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/listings\?/));
+      });
+      vi.mocked(api.get).mockClear();
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      await waitFor(() => {
+        expect(screen.getByText('Offers')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText('Offers'));
+      // Draft change fetches a live count (per_page=1) but must not refetch the grid.
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('per_page=1'));
+      });
+      expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+
+      fireEvent.click(screen.getByText('Show listings'));
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/type=offer.*per_page=20/));
+      });
     });
   });
 });

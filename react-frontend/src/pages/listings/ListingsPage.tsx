@@ -52,7 +52,9 @@ import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import X from 'lucide-react/icons/x';
 import Zap from 'lucide-react/icons/zap';
 import ArrowUpDown from 'lucide-react/icons/arrow-up-down';
+import ListFilter from 'lucide-react/icons/list-filter';
 import { FeaturedBadge } from '@/components/listings/FeaturedBadge';
+import { ListingFilterSheet, type ListingFilterDraft } from '@/components/listings/ListingFilterSheet';
 import { PageMeta } from '@/components/seo';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
@@ -60,6 +62,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { MAPS_ENABLED } from '@/lib/map-config';
@@ -89,9 +93,66 @@ const validHours = ['any', 'quick', 'short', 'half_day', 'full_day'];
 const validService = ['any', 'remote', 'in_person'];
 const validPosted = ['any', '1', '7', '30'];
 
+const HOURS_RANGE_MAP: Record<string, { min?: string; max?: string }> = {
+  quick: { max: '1' },
+  short: { min: '1', max: '3' },
+  half_day: { min: '3', max: '6' },
+  full_day: { min: '6' },
+};
+
+// Short chip labels for the phone active-filter row (full labels live in the selects).
+const DURATION_CHIP_KEYS: Record<string, string> = {
+  quick: 'duration_under_1h',
+  short: 'duration_1_3h',
+  half_day: 'duration_3_6h',
+  full_day: 'duration_6h_plus',
+};
+
+interface ListingFilterValues {
+  q: string;
+  type: ListingType;
+  category: string;
+  hours: string;
+  service: string;
+  posted: string;
+  sort: SortMode;
+  proximity: ProximityFilterParams | null;
+}
+
+/** Single source of truth for filter → API params (used by the grid fetch and the sheet's live count). */
+function buildListingQueryParams(f: ListingFilterValues): URLSearchParams {
+  const params = new URLSearchParams();
+  if (f.q) params.set('q', f.q);
+  if (f.type !== 'all') params.set('type', f.type);
+  if (f.category) params.set('category', f.category);
+  const range = HOURS_RANGE_MAP[f.hours];
+  if (range?.min) params.set('min_hours', range.min);
+  if (range?.max) params.set('max_hours', range.max);
+  if (f.service !== 'any') {
+    params.set('service_type', f.service === 'remote' ? 'remote_only,hybrid' : 'physical_only');
+  }
+  if (f.posted !== 'any') {
+    params.set('posted_within', f.posted);
+  }
+  if (f.sort === 'newest') {
+    params.set('sort', 'newest');
+  }
+  // AG35 — explicit personalised flag mirrors the sort toggle.
+  params.set('personalised', f.sort === 'recommended' ? 'true' : 'false');
+  if (f.proximity) {
+    params.set('near_lat', String(f.proximity.near_lat));
+    params.set('near_lng', String(f.proximity.near_lng));
+    params.set('radius_km', String(f.proximity.radius_km));
+  }
+  return params;
+}
+
 export function ListingsPage() {
-  const { t } = useTranslation('listings');
+  const { t } = useTranslation(['listings', 'common']);
   usePageTitle(t('title'));
+  // On phones the page hides its own hero card; the title lives in the app bar.
+  useSetAppBarTitle(t('title'));
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasModule, hasFeature } = useTenant();
   const toast = useToast();
@@ -157,6 +218,75 @@ export function ListingsPage() {
   // Key used to force-remount ProximityFilter when cleared externally (resets internal radiusKm state)
   const [proximityKey, setProximityKey] = useState(0);
 
+  // ── Phone filter sheet (draft state — nothing applies until "Show N listings") ──
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [filterDraft, setFilterDraft] = useState<ListingFilterDraft | null>(null);
+  const [draftCount, setDraftCount] = useState<number | null>(null);
+  const countAbortRef = useRef<AbortController | null>(null);
+
+  const openFilterSheet = useCallback(() => {
+    setFilterDraft({
+      type: selectedType,
+      category: selectedCategory,
+      sort: sortMode,
+      hours: hoursRange,
+      service: serviceMode,
+      posted: postedWithin,
+      proximity: proximityParams,
+    });
+    setDraftCount(totalItems);
+    setIsFilterSheetOpen(true);
+  }, [selectedType, selectedCategory, sortMode, hoursRange, serviceMode, postedWithin, proximityParams, totalItems]);
+
+  const applyFilterDraft = useCallback(() => {
+    if (filterDraft) {
+      setSelectedType(filterDraft.type);
+      setSelectedCategory(filterDraft.category);
+      setSortMode(filterDraft.sort);
+      setHoursRange(filterDraft.hours);
+      setServiceMode(filterDraft.service);
+      setPostedWithin(filterDraft.posted);
+      setProximityParams(filterDraft.proximity);
+      setProximityKey((k) => k + 1);
+    }
+    setIsFilterSheetOpen(false);
+  }, [filterDraft]);
+
+  const clearFilterDraft = useCallback(() => {
+    setFilterDraft((draft) => draft && {
+      ...draft,
+      type: 'all',
+      category: '',
+      hours: 'any',
+      service: 'any',
+      posted: 'any',
+      proximity: null,
+    });
+  }, []);
+
+  // Live result count for the sheet footer — cheap per_page=1 fetch of the draft filters.
+  useEffect(() => {
+    if (!isFilterSheetOpen || !filterDraft) return;
+    countAbortRef.current?.abort();
+    const controller = new AbortController();
+    countAbortRef.current = controller;
+    const timer = setTimeout(async () => {
+      try {
+        const params = buildListingQueryParams({ q: searchQuery, ...filterDraft });
+        params.set('per_page', '1');
+        const response = await api.get<Listing[]>(`/v2/listings?${params}`);
+        if (controller.signal.aborted) return;
+        setDraftCount(response.success ? (response.meta?.total_items ?? null) : null);
+      } catch {
+        if (!controller.signal.aborted) setDraftCount(null);
+      }
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [isFilterSheetOpen, filterDraft, searchQuery]);
+
   const hasActiveFilters = useMemo(
     () => !!(searchQuery || selectedType !== 'all' || selectedCategory || hoursRange !== 'any' || serviceMode !== 'any' || postedWithin !== 'any' || proximityParams),
     [searchQuery, selectedType, selectedCategory, hoursRange, serviceMode, postedWithin, proximityParams],
@@ -171,6 +301,50 @@ export function ListingsPage() {
     if (proximityParams !== null) count++;
     return count;
   }, [hoursRange, serviceMode, postedWithin, proximityParams]);
+
+  // Phone: removable chips for every applied filter (search shows in the search pill instead).
+  const phoneFilterChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    if (selectedType !== 'all') {
+      chips.push({
+        key: 'type',
+        label: t(selectedType === 'offer' ? 'filters.offers' : 'filters.requests'),
+        onRemove: () => setSelectedType('all'),
+      });
+    }
+    if (selectedCategory) {
+      const cat = categories.find((c) => c.slug === selectedCategory);
+      chips.push({ key: 'category', label: cat?.name ?? selectedCategory, onRemove: () => setSelectedCategory('') });
+    }
+    if (hoursRange !== 'any') {
+      chips.push({ key: 'hours', label: t(DURATION_CHIP_KEYS[hoursRange] ?? 'filter_any'), onRemove: () => setHoursRange('any') });
+    }
+    if (serviceMode !== 'any') {
+      chips.push({
+        key: 'service',
+        label: t(serviceMode === 'remote' ? 'service_remote_short' : 'service_in_person_short'),
+        onRemove: () => setServiceMode('any'),
+      });
+    }
+    if (postedWithin !== 'any') {
+      chips.push({
+        key: 'posted',
+        label: t(postedWithin === '1' ? 'filter_today' : postedWithin === '7' ? 'filter_this_week' : 'filter_this_month'),
+        onRemove: () => setPostedWithin('any'),
+      });
+    }
+    if (proximityParams) {
+      chips.push({
+        key: 'near',
+        label: t(`radius_${proximityParams.radius_km}`, { defaultValue: `${proximityParams.radius_km} km` }),
+        onRemove: () => {
+          setProximityParams(null);
+          setProximityKey((k) => k + 1);
+        },
+      });
+    }
+    return chips;
+  }, [selectedType, selectedCategory, hoursRange, serviceMode, postedWithin, proximityParams, categories, t]);
 
   // Use a ref for cursor to avoid infinite re-render loop (same pattern as FeedPage)
   const cursorRef = useRef<string | null>(null);
@@ -201,46 +375,21 @@ export function ListingsPage() {
         setPaginationError(false);
         cursorRef.current = null;
       }
-      const params = new URLSearchParams();
-
-      if (searchQuery) params.set('q', searchQuery);
-      if (selectedType !== 'all') params.set('type', selectedType);
-      if (selectedCategory) params.set('category', selectedCategory);
+      const params = buildListingQueryParams({
+        q: searchQuery,
+        type: selectedType,
+        category: selectedCategory,
+        hours: hoursRange,
+        service: serviceMode,
+        posted: postedWithin,
+        sort: sortMode,
+        proximity: proximityParams,
+      });
       if (!reset && cursorRef.current) params.set('cursor', cursorRef.current);
       const isMapView = canUseMapView && viewMode === 'map';
       params.set('per_page', isMapView ? '100' : '20');
       if (isMapView) {
         params.set('with_coordinates', '1');
-      }
-
-      // Faceted filters
-      if (hoursRange !== 'any') {
-        const hoursMap: Record<string, { min?: string; max?: string }> = {
-          'quick': { max: '1' },
-          'short': { min: '1', max: '3' },
-          'half_day': { min: '3', max: '6' },
-          'full_day': { min: '6' },
-        };
-        const range = hoursMap[hoursRange];
-        if (range?.min) params.set('min_hours', range.min);
-        if (range?.max) params.set('max_hours', range.max);
-      }
-      if (serviceMode !== 'any') {
-        params.set('service_type', serviceMode === 'remote' ? 'remote_only,hybrid' : 'physical_only');
-      }
-      if (postedWithin !== 'any') {
-        params.set('posted_within', postedWithin);
-      }
-      if (sortMode === 'newest') {
-        params.set('sort', 'newest');
-      }
-      // AG35 — explicit personalised flag mirrors the sort toggle.
-      params.set('personalised', sortMode === 'recommended' ? 'true' : 'false');
-
-      if (proximityParams) {
-        params.set('near_lat', String(proximityParams.near_lat));
-        params.set('near_lng', String(proximityParams.near_lng));
-        params.set('radius_km', String(proximityParams.radius_km));
       }
 
       const response = await api.get<Listing[]>(`/v2/listings?${params}`);
@@ -442,31 +591,152 @@ export function ListingsPage() {
         keywords={t('page_meta_keywords')}
       />
       <div className="space-y-5">
-      <PublicPageHero
-        eyebrow={t('hero_eyebrow')}
-        title={t('title')}
-        description={t('page_subtitle')}
-        accent="emerald"
-        icon={<ListTodo className="h-7 w-7" aria-hidden="true" />}
-        stats={totalItems != null ? [{ label: t('hero_results_label'), value: totalItems.toLocaleString(getFormattingLocale()) }] : undefined}
-        action={
-          <div className="flex flex-wrap items-center gap-3">
-            <AlgorithmLabel area="listings" />
-            {isAuthenticated && (
-              <Button as={Link} to={tenantPath('/listings/create')}
-                variant="primary"
-                className="shrink-0 font-semibold"
-                startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
-              >
-                {t('create')}
-              </Button>
-            )}
-          </div>
-        }
-      />
+      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
+      {!isPhone && (
+      <div className="hidden sm:block">
+        <PublicPageHero
+          eyebrow={t('hero_eyebrow')}
+          title={t('title')}
+          description={t('page_subtitle')}
+          accent="emerald"
+          icon={<ListTodo className="h-7 w-7" aria-hidden="true" />}
+          stats={totalItems != null ? [{ label: t('hero_results_label'), value: totalItems.toLocaleString(getFormattingLocale()) }] : undefined}
+          action={
+            <div className="flex flex-wrap items-center gap-3">
+              <AlgorithmLabel area="listings" />
+              {isAuthenticated && (
+                <Button as={Link} to={tenantPath('/listings/create')}
+                  variant="primary"
+                  className="shrink-0 font-semibold"
+                  startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+                >
+                  {t('create')}
+                </Button>
+              )}
+            </div>
+          }
+        />
+      </div>
+      )}
 
-      {/* Filters */}
-      <GlassCard className="p-4 sm:p-5">
+      {/* Phone: slim sticky control bar (feed-parity) — auto-hides on scroll down. */}
+      {isPhone && (
+        <section
+          aria-label={t('filter_form_label')}
+          className={`sticky top-[calc(var(--safe-area-top)+3.5rem)] z-20 w-full min-w-0 max-w-full overflow-hidden border-y border-theme-default bg-[var(--surface-base)]/95 px-3 py-2 shadow-sm backdrop-blur-md transition-[transform,opacity] duration-200 sm:hidden ${
+            showMobileControls ? '' : 'pointer-events-none -translate-y-3 opacity-0'
+          }`}
+        >
+          <div className="flex min-w-0 items-center gap-2">
+            <Button
+              variant="flat"
+              onPress={() => setIsSearchOverlayOpen(true)}
+              className="h-10 min-w-0 flex-1 justify-start gap-2 rounded-full border border-theme-default bg-theme-elevated px-3.5 text-sm font-normal"
+            >
+              <Search className="h-4 w-4 shrink-0 text-theme-subtle" aria-hidden="true" />
+              <span className={`truncate ${searchInput ? 'text-theme-primary' : 'text-theme-subtle'}`}>
+                {searchInput || t('search_label')}
+              </span>
+            </Button>
+            <Button
+              size="sm"
+              variant="flat"
+              onPress={openFilterSheet}
+              aria-label={t('more_filters')}
+              startContent={<ListFilter className="h-4 w-4 shrink-0" aria-hidden="true" />}
+              className={`h-10 shrink-0 rounded-full px-3.5 text-sm font-medium ${
+                phoneFilterChips.length > 0
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-emerald-500/10 hover:text-emerald-600'
+              }`}
+            >
+              {t('filters_label')}
+              {phoneFilterChips.length > 0 && (
+                <span className="ml-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-xs font-bold">
+                  {phoneFilterChips.length}
+                </span>
+              )}
+            </Button>
+            <ToggleButtonGroup
+              aria-label={t('aria.view_mode')}
+              selectionMode="single"
+              disallowEmptySelection
+              selectedKeys={new Set([viewMode])}
+              onSelectionChange={(keys) => {
+                const [key] = Array.from(keys);
+                if (key) setViewMode(key as ViewMode);
+              }}
+              className="shrink-0 gap-0 overflow-hidden rounded-full border border-theme-default bg-theme-elevated"
+            >
+              <ToggleButton
+                id="grid"
+                isIconOnly
+                variant="ghost"
+                aria-label={t('aria_grid_view')}
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+              >
+                <Grid className="h-4 w-4" aria-hidden="true" />
+              </ToggleButton>
+              <ToggleButton
+                id="list"
+                isIconOnly
+                variant="ghost"
+                aria-label={t('aria_list_view')}
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+              >
+                <List className="h-4 w-4" aria-hidden="true" />
+              </ToggleButton>
+              {canUseMapView && (
+                <ToggleButton
+                  id="map"
+                  isIconOnly
+                  variant="ghost"
+                  aria-label={t('aria_map_view')}
+                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-emerald-500/15 data-[selected=true]:text-emerald-600 dark:data-[selected=true]:text-emerald-300"
+                >
+                  <MapIcon className="h-4 w-4" aria-hidden="true" />
+                </ToggleButton>
+              )}
+            </ToggleButtonGroup>
+          </div>
+
+          {/* Applied filters as removable chips — visible without reopening the sheet. */}
+          {phoneFilterChips.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label={t('active_filters_label')}>
+              {phoneFilterChips.map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={t('remove_filter', { filter: chip.label })}
+                  className="inline-flex min-h-7 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-500/25 dark:text-emerald-300"
+                >
+                  <span className="max-w-32 truncate">{chip.label}</span>
+                  <X className="h-3 w-3 shrink-0" aria-hidden="true" />
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="min-h-7 rounded-full px-2 text-xs font-medium text-theme-muted transition-colors hover:text-theme-primary"
+              >
+                {t('clear_all')}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Phone: compact results count (the hero stat is hidden on phones). */}
+      {isPhone && totalItems != null && (
+        <p className="px-1 text-xs font-medium text-theme-muted sm:hidden">
+          {t('results_count', { count: totalItems })}
+        </p>
+      )}
+
+      {/* Filters (desktop and tablet — phones use the sticky bar + sheet) */}
+      {!isPhone && (
+      <GlassCard className="hidden p-4 sm:block sm:p-5">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-theme-primary">{t('browse')}</h2>
@@ -481,42 +751,26 @@ export function ListingsPage() {
         {/* Row 1: Search + primary filters */}
         <form onSubmit={handleSearch} aria-label={t('filter_form_label')} className="flex flex-col gap-3 xl:flex-row">
           <div className="flex min-w-0 flex-1 gap-2">
-            {isPhone ? (
-              <Button
-                variant="flat"
-                onPress={() => setIsSearchOverlayOpen(true)}
-                aria-label={t('search_label')}
-                className="min-h-12 flex-1 justify-start gap-2 rounded-xl border border-theme-default bg-theme-elevated px-4 text-left text-sm font-normal shadow-sm"
-              >
-                <Search className="h-4 w-4 shrink-0 text-theme-subtle" aria-hidden="true" />
-                <span className={`line-clamp-1 ${searchInput ? 'text-theme-primary' : 'text-theme-subtle'}`}>
-                  {searchInput || t('search_placeholder')}
-                </span>
-              </Button>
-            ) : (
-              <>
-                <SearchField
-                  size="lg"
-                  placeholder={t('search_placeholder')}
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  aria-label={t('search_label')}
-                  classNames={{
-                    input: 'bg-transparent text-theme-primary placeholder:text-theme-subtle',
-                    inputWrapper: 'bg-theme-elevated border-theme-default hover:bg-theme-hover shadow-sm',
-                  }}
-                />
-                <Button
-                  isIconOnly
-                  type="submit"
-                  variant="primary"
-                  className="min-h-[48px] min-w-[48px] shrink-0"
-                  aria-label={t('search_action')}
-                >
-                  <Search className="h-4 w-4" aria-hidden="true" />
-                </Button>
-              </>
-            )}
+            <SearchField
+              size="lg"
+              placeholder={t('search_placeholder')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              aria-label={t('search_label')}
+              classNames={{
+                input: 'bg-transparent text-theme-primary placeholder:text-theme-subtle',
+                inputWrapper: 'bg-theme-elevated border-theme-default hover:bg-theme-hover shadow-sm',
+              }}
+            />
+            <Button
+              isIconOnly
+              type="submit"
+              variant="primary"
+              className="min-h-[48px] min-w-[48px] shrink-0"
+              aria-label={t('search_action')}
+            >
+              <Search className="h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:items-center">
@@ -646,18 +900,6 @@ export function ListingsPage() {
           </div>
         </form>
 
-        {isPhone && (
-          <MobileSearchOverlay
-            isOpen={isSearchOverlayOpen}
-            onClose={() => setIsSearchOverlayOpen(false)}
-            value={searchInput}
-            onValueChange={setSearchInput}
-            onSubmit={(value) => setSearchQuery(value)}
-            placeholder={t('search_placeholder')}
-            recentKey="listings"
-          />
-        )}
-
         {/* Row 2: Advanced filters (toggled) */}
         {showAdvancedFilters && (
           <div className="mt-4 grid grid-cols-1 gap-3 border-t border-theme-default pt-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -745,9 +987,33 @@ export function ListingsPage() {
           </div>
         )}
       </GlassCard>
+      )}
 
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchInput}
+          onValueChange={setSearchInput}
+          onSubmit={(value) => setSearchQuery(value)}
+          placeholder={t('search_placeholder')}
+          recentKey="listings"
+        />
+      )}
 
-
+      {/* Phone filter sheet — every filter as chips, live count, draft-apply */}
+      {isPhone && filterDraft && (
+        <ListingFilterSheet
+          isOpen={isFilterSheetOpen}
+          onClose={() => setIsFilterSheetOpen(false)}
+          categories={categories}
+          draft={filterDraft}
+          onDraftChange={(patch) => setFilterDraft((prev) => (prev ? { ...prev, ...patch } : prev))}
+          resultCount={draftCount}
+          onApply={applyFilterDraft}
+          onClearAll={clearFilterDraft}
+        />
+      )}
 
       {/* Listings Grid/List */}
       {isLoading && listings.length === 0 ? (
