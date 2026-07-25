@@ -7,6 +7,7 @@ import { AlgorithmLabel } from '@/components/ui/AlgorithmLabel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MobileFilterBar, type MobileFilterBarChip } from '@/components/ui/MobileFilterBar';
 import { SearchField } from '@/components/ui/SearchField';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Tabs, Tab } from '@/components/ui/Tabs';
@@ -14,7 +15,7 @@ import { Tabs, Tab } from '@/components/ui/Tabs';
  * Search Page - Global search across content
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
@@ -30,7 +31,9 @@ import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { SavedSearches } from '@/components/search/SavedSearches';
+import { SearchFilterSheet } from '@/components/search/SearchFilterSheet';
 import { AdvancedSearchFilters, defaultFilters } from '@/components/search/AdvancedSearchFilters';
 import type { SearchFilters as AdvancedFilters } from '@/components/search/AdvancedSearchFilters';
 import { FeaturedBadge } from '@/components/listings/FeaturedBadge';
@@ -40,7 +43,13 @@ import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
-import type { Listing, User as UserType, Event, Group } from '@/types/api';
+// Direct hook paths — page tests partial-mock the '@/hooks' barrel, so a barrel
+// import of these would resolve to undefined and crash every render.
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useFilterDraft } from '@/hooks/useFilterDraft';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import type { Category, Listing, User as UserType, Event, Group } from '@/types/api';
 
 interface SearchResults {
   listings: Listing[];
@@ -120,6 +129,42 @@ function groupSearchItems(items: RawSearchItem[]): SearchResults {
 
 type SearchTab = 'all' | 'listings' | 'users' | 'events' | 'groups' | 'podcasts';
 
+/**
+ * Single source of truth for the `/v2/search` query string. Both the visible
+ * search and the phone sheet's draft count probe go through this, so the count
+ * in the sheet footer can never drift from what applying the draft returns.
+ */
+function buildSearchParams(searchQuery: string, filters: AdvancedFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  params.set('q', searchQuery);
+  if (filters.type && filters.type !== 'all') params.set('type', filters.type);
+  if (filters.category_id) params.set('category_id', filters.category_id);
+  if (filters.date_from) params.set('date_from', filters.date_from);
+  if (filters.date_to) params.set('date_to', filters.date_to);
+  if (filters.sort && filters.sort !== 'relevance') params.set('sort', filters.sort);
+  if (filters.skills) params.set('skills', filters.skills);
+  if (filters.location) params.set('location', filters.location);
+  return params;
+}
+
+/** Short labels for the phone applied-filter chips (full labels live in the sheet). */
+const CONTENT_TYPE_CHIP_KEYS: Record<string, string> = {
+  listings: 'filter_listings',
+  users: 'filter_members',
+  events: 'filter_events',
+  groups: 'filter_groups',
+  podcasts: 'filter_podcasts',
+};
+
+const SORT_CHIP_KEYS: Record<string, string> = {
+  newest: 'filter_newest',
+  oldest: 'filter_oldest',
+};
+
+function splitSkills(skills: string): string[] {
+  return skills ? skills.split(',').filter(Boolean) : [];
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -136,11 +181,25 @@ const itemVariants = {
 export function SearchPage() {
   const { t } = useTranslation('search_page');
   usePageTitle(t('page_title'));
+  // On phones the page hides its own hero; the title lives in the app bar.
+  useSetAppBarTitle(t('title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const toast = useToast();
   const { tenantPath, hasFeature } = useTenant();
   const podcastsEnabled = hasFeature('podcasts');
   const [searchParams, setSearchParams] = useSearchParams();
+  // `query` is the COMMITTED search — it mirrors `?q=` and is the only value the
+  // results, the phone search pill, the filter refetches and the draft count probe
+  // ever read. `searchInput` is the editable draft the desktop input and the phone
+  // overlay bind to. Keeping them separate (the ListingsPage pattern) is what stops
+  // abandoned text from being advertised by the pill or silently re-searched by a
+  // chip removal while the URL still carries the previous query.
   const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
+  // Native-app search: phones type into a full-screen overlay with recents
+  // instead of the inline form, which is hidden on phones.
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SearchTab>('all');
   const [results, setResults] = useState<SearchResults>({
     listings: [],
@@ -153,6 +212,12 @@ export function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({ ...defaultFilters });
+  // Option lists for the phone filter sheet. The desktop AdvancedSearchFilters
+  // panel still loads its own copies when it expands — these are fetched only
+  // when the sheet opens, and are also what labels the applied category chip.
+  const [sheetCategories, setSheetCategories] = useState<Category[]>([]);
+  const [sheetPopularTags, setSheetPopularTags] = useState<string[]>([]);
+  const sheetOptionsLoadedRef = useRef(false);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -180,18 +245,7 @@ export function SearchPage() {
       setHasSearched(true);
       setSearchError(null);
 
-      const params = new URLSearchParams();
-      params.set('q', searchQuery);
-
-      // Apply advanced filters
-      const f = filters || advancedFilters;
-      if (f.type && f.type !== 'all') params.set('type', f.type);
-      if (f.category_id) params.set('category_id', f.category_id);
-      if (f.date_from) params.set('date_from', f.date_from);
-      if (f.date_to) params.set('date_to', f.date_to);
-      if (f.sort && f.sort !== 'relevance') params.set('sort', f.sort);
-      if (f.skills) params.set('skills', f.skills);
-      if (f.location) params.set('location', f.location);
+      const params = buildSearchParams(searchQuery, filters || advancedFilters);
 
       const response = await api.get<RawSearchItem[]>(`/v2/search?${params}`);
       if (controller.signal.aborted) return;
@@ -215,20 +269,22 @@ export function SearchPage() {
     const urlQuery = searchParams.get('q');
     if (urlQuery) {
       setQuery(urlQuery);
+      setSearchInput(urlQuery);
       performSearch(urlQuery);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps -- sync from URL params; performSearch excluded to avoid loop
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (query.trim()) {
-      setSearchParams({ q: query.trim() });
+    if (searchInput.trim()) {
+      setSearchParams({ q: searchInput.trim() });
     }
   }
 
   function handleRunSavedSearch(queryParams: Record<string, string>) {
     const savedQuery = queryParams.q || '';
     setQuery(savedQuery);
+    setSearchInput(savedQuery);
     if (queryParams.type) {
       setActiveTab(queryParams.type as SearchTab);
     }
@@ -265,6 +321,144 @@ export function SearchPage() {
     : activeTab === 'podcasts' ? results.podcasts.length
     : null;
 
+  // ── Phone filter sheet (draft state — nothing applies until "Show N results") ──
+  // The draft machine (snapshot / patch / debounced count probe / apply) lives in
+  // useFilterDraft; only the search-specific pieces stay here.
+
+  /** Commits a whole filter set and refetches — used by apply, chip removal and clear-all. */
+  const applySearchFilters = useCallback((next: AdvancedFilters) => {
+    setAdvancedFilters(next);
+    performSearch(query, next);
+  }, [performSearch, query]);
+
+  /**
+   * Live count for the sheet footer. `/v2/search` has no cheap total — its
+   * `meta.search.total` is just the size of the returned page — so the probe
+   * runs the real search and counts what came back. That IS the number of
+   * results applying the draft would show, since the page has no pagination.
+   * Debounced well above the default to respect the endpoint's 60/min limit.
+   */
+  const countDraftResults = useCallback(async (candidate: AdvancedFilters) => {
+    const trimmed = query.trim();
+    if (!trimmed) return null;
+    const response = await api.get<RawSearchItem[]>(
+      `/v2/search?${buildSearchParams(trimmed, candidate)}`,
+    );
+    return response.success && Array.isArray(response.data) ? response.data.length : null;
+  }, [query]);
+
+  const filterSheet = useFilterDraft<AdvancedFilters>({
+    onApply: applySearchFilters,
+    emptyDraft: defaultFilters,
+    countFor: countDraftResults,
+    countKey: query,
+    debounceMs: 450,
+  });
+  const { open: openDraft } = filterSheet;
+
+  /**
+   * Categories and popular tags are what the desktop panel lazy-loads when it
+   * expands; the sheet needs the same lists, so load them on first open.
+   */
+  const loadSheetOptions = useCallback(async () => {
+    if (sheetOptionsLoadedRef.current) return;
+    sheetOptionsLoadedRef.current = true;
+    try {
+      const response = await api.get<Category[]>('/v2/categories');
+      if (response.success && Array.isArray(response.data)) setSheetCategories(response.data);
+    } catch (error) {
+      logError('Failed to load search filter categories', error);
+    }
+    try {
+      const response = await api.get<Array<{ tag: string; count: number }>>(
+        '/v2/listings/tags/popular?limit=10',
+      );
+      if (response.success && Array.isArray(response.data)) {
+        setSheetPopularTags(
+          response.data
+            .map((item) => item?.tag)
+            .filter((tag): tag is string => typeof tag === 'string'),
+        );
+      }
+    } catch (error) {
+      logError('Failed to load popular search tags', error);
+    }
+  }, []);
+
+  const openFilterSheet = useCallback(() => {
+    void loadSheetOptions();
+    openDraft(advancedFilters, hasSearched ? totalResults : null);
+  }, [loadSheetOptions, openDraft, advancedFilters, hasSearched, totalResults]);
+
+  /** Phone: removable chip per applied filter (the query shows in the search pill instead). */
+  const phoneFilterChips = useMemo<MobileFilterBarChip[]>(() => {
+    const chips: MobileFilterBarChip[] = [];
+    const f = advancedFilters;
+    const remove = (patch: Partial<AdvancedFilters>) => applySearchFilters({ ...f, ...patch });
+
+    if (f.type && f.type !== 'all') {
+      chips.push({
+        key: 'type',
+        label: t(CONTENT_TYPE_CHIP_KEYS[f.type] ?? 'filter_all_types'),
+        onRemove: () => remove({ type: 'all' }),
+      });
+    }
+    if (f.category_id) {
+      const category = sheetCategories.find((c) => String(c.id) === f.category_id);
+      chips.push({
+        key: 'category',
+        label: category?.name ?? t('filter_category'),
+        onRemove: () => remove({ category_id: '' }),
+      });
+    }
+    if (f.sort && f.sort !== 'relevance') {
+      chips.push({
+        key: 'sort',
+        label: t(SORT_CHIP_KEYS[f.sort] ?? 'filter_relevance'),
+        onRemove: () => remove({ sort: 'relevance' }),
+      });
+    }
+    for (const skill of splitSkills(f.skills)) {
+      chips.push({
+        key: `skill-${skill}`,
+        label: skill,
+        onRemove: () => remove({ skills: splitSkills(f.skills).filter((s) => s !== skill).join(',') }),
+      });
+    }
+    if (f.date_from) {
+      chips.push({
+        key: 'date_from',
+        label: `${t('filter_from_date')}: ${f.date_from}`,
+        onRemove: () => remove({ date_from: '' }),
+      });
+    }
+    if (f.date_to) {
+      chips.push({
+        key: 'date_to',
+        label: `${t('filter_to_date')}: ${f.date_to}`,
+        onRemove: () => remove({ date_to: '' }),
+      });
+    }
+    if (f.location) {
+      chips.push({ key: 'location', label: f.location, onRemove: () => remove({ location: '' }) });
+    }
+    return chips;
+  }, [advancedFilters, sheetCategories, applySearchFilters, t]);
+
+  const resetSearchFilters = useCallback(() => {
+    applySearchFilters({ ...defaultFilters });
+  }, [applySearchFilters]);
+
+  /**
+   * Phone: the overlay always starts from the COMMITTED query, so text typed and
+   * then abandoned with the back arrow (which never commits) cannot come back on
+   * the next open and cannot be mistaken for the applied search.
+   */
+  const openSearchOverlay = useCallback(() => {
+    setSearchInput(query);
+    setIsSearchOverlayOpen(true);
+  }, [query]);
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Screen-reader live region: announces result count after each search */}
@@ -274,6 +468,8 @@ export function SearchPage() {
           : null}
       </div>
       <PageMeta title={t('page_meta.title')} description={t('page_meta.description')} noIndex />
+      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
+      {!isPhone && (
       <PublicPageHero
         eyebrow={t('hero_eyebrow')}
         title={t('title')}
@@ -282,14 +478,16 @@ export function SearchPage() {
         accent="emerald"
         stats={hasSearched ? [{ label: t('results_label'), value: totalResults.toLocaleString(getFormattingLocale()) }] : undefined}
       />
+      )}
 
-      {/* Search Form */}
+      {/* Search Form (desktop and tablet — phones use the sticky bar + overlay) */}
+      {!isPhone && (
       <GlassCard className="p-4">
         <form onSubmit={handleSearch} aria-label={t('form_aria')} className="flex flex-col sm:flex-row gap-3">
           <SearchField
             placeholder={t('search_placeholder')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             aria-label={t('search_placeholder')}
             size="lg"
             classNames={{
@@ -309,14 +507,70 @@ export function SearchPage() {
           </Button>
         </form>
       </GlassCard>
+      )}
 
-      {/* Advanced Filters */}
+      {/* Phone: slim sticky control bar — auto-hides on scroll down, returns on scroll up. */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="emerald"
+          onSearchPress={openSearchOverlay}
+          searchValue={query}
+          onFiltersPress={openFilterSheet}
+          chips={phoneFilterChips}
+          onClearAll={resetSearchFilters}
+          labels={{ search: t('search_placeholder') }}
+          testId="search-mobile-controls"
+        />
+      )}
+
+      {/* Phone: compact results count (the hero stat is hidden on phones). */}
+      {isPhone && hasSearched && !isLoading && (
+        <p className="px-1 text-xs font-medium text-theme-muted sm:hidden">
+          {t('results_label')}: {totalResults.toLocaleString(getFormattingLocale())}
+        </p>
+      )}
+
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchInput}
+          onValueChange={setSearchInput}
+          onSubmit={(value) => {
+            const trimmed = value.trim();
+            if (trimmed) setSearchParams({ q: trimmed });
+          }}
+          placeholder={t('search_placeholder')}
+          recentKey="search"
+        />
+      )}
+
+      {/* Phone filter sheet — chip groups, live count, draft-apply. */}
+      {isPhone && filterSheet.draft && (
+        <SearchFilterSheet
+          isOpen={filterSheet.isOpen}
+          onClose={filterSheet.close}
+          draft={filterSheet.draft}
+          onDraftChange={filterSheet.patch}
+          categories={sheetCategories}
+          popularTags={sheetPopularTags}
+          podcastsEnabled={podcastsEnabled}
+          resultCount={filterSheet.count}
+          onApply={filterSheet.apply}
+          onClearAll={filterSheet.clear}
+        />
+      )}
+
+      {/* Advanced Filters (desktop and tablet — phones use the sheet) */}
+      {!isPhone && (
       <AdvancedSearchFilters
         filters={advancedFilters}
         onChange={setAdvancedFilters}
         onApply={() => performSearch(query, advancedFilters)}
         onReset={() => performSearch(query, { ...defaultFilters })}
       />
+      )}
 
       {/* Saved Searches */}
       <SavedSearches

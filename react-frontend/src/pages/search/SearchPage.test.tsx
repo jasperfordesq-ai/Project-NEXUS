@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -52,6 +52,20 @@ vi.mock('@/contexts', () => ({
 
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
+}));
+
+// Toggle phone layout. src/test/setup.ts stubs matchMedia with a hardcoded
+// matches:false for EVERY query, so without this mock `isPhone` can never be
+// true and the phone branch would get zero coverage. Query-aware so a
+// max-width phone viewport never also answers "yes" to a min-width desktop
+// query (which would be an impossible viewport).
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn((query: string) => {
+    if (query.includes('max-width')) return isPhoneViewport;
+    if (query.includes('min-width')) return !isPhoneViewport;
+    return false;
+  }),
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -98,6 +112,10 @@ import { api } from '@/lib/api';
 describe('SearchPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isPhoneViewport = false;
+    // The phone tests seed ?q=… to drive a search through the URL-sync effect
+    // (the inline form is not rendered on phones); reset so nothing leaks.
+    window.history.pushState({}, '', '/');
   });
 
   it('renders the page heading and description', () => {
@@ -308,5 +326,177 @@ describe('SearchPage', () => {
 
     await waitFor(() => expect(screen.getByText('All (1)')).toBeInTheDocument());
     expect(screen.queryByText('No results found')).not.toBeInTheDocument();
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('renders the sticky bar instead of the hero and the inline search form', () => {
+      render(<SearchPage />);
+
+      // Sticky bar: search pill (placeholder text, not an input) + Filters button.
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search for anything...')).toBeInTheDocument();
+
+      // Hero and inline form are gone — the title moved to the app bar.
+      expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Find listings, members, events, and groups')
+      ).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Search for anything...')).not.toBeInTheDocument();
+      expect(screen.queryByText('Advanced Filters')).not.toBeInTheDocument();
+    });
+
+    it('opens the filter sheet with every filter section', async () => {
+      render(<SearchPage />);
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('radiogroup', { name: 'Content Type' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('radiogroup', { name: 'Sort By' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'All Types' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Relevance' })).toBeInTheDocument();
+      // Free-text dimensions the desktop panel owns survive as real fields.
+      expect(screen.getByText('Skill Tags')).toBeInTheDocument();
+      expect(screen.getByLabelText('Add a skill tag...')).toBeInTheDocument();
+      expect(screen.getByLabelText('From Date')).toBeInTheDocument();
+      expect(screen.getByLabelText('To Date')).toBeInTheDocument();
+      expect(screen.getByLabelText('Location')).toBeInTheDocument();
+      // No query yet, so the endpoint cannot report a draft count.
+      expect(screen.getByRole('button', { name: 'Show results' })).toBeInTheDocument();
+    });
+
+    it('loads categories and popular tags when the sheet opens', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.includes('/v2/categories')) {
+          return Promise.resolve({
+            success: true,
+            data: [{ id: 4, name: 'Gardening', slug: 'gardening' }],
+          });
+        }
+        if (url.includes('/v2/listings/tags/popular')) {
+          return Promise.resolve({ success: true, data: [{ tag: 'weeding', count: 3 }] });
+        }
+        return Promise.resolve({ success: true, data: [], meta: {} });
+      });
+
+      render(<SearchPage />);
+      expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining('/v2/categories'));
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'Gardening' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('button', { name: 'weeding' })).toBeInTheDocument();
+    });
+
+    it('applies draft filters only when the apply button is pressed', async () => {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.includes('/v2/search?')) {
+          if (url.includes('type=events')) {
+            return Promise.resolve({
+              success: true,
+              data: [{ type: 'event', id: 9, title: 'Drafted Event', description: 'Applied only' }],
+            });
+          }
+          return Promise.resolve({
+            success: true,
+            data: [
+              { type: 'listing', id: 1, title: 'Baseline Listing', description: 'Visible now', listing_type: 'offer', hours_estimate: 2 },
+            ],
+          });
+        }
+        return Promise.resolve({ success: true, data: [], meta: {} });
+      });
+
+      window.history.pushState({}, '', '/?q=test');
+      render(<SearchPage />);
+      await waitFor(() => expect(screen.getByText('Baseline Listing')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'Events' })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('radio', { name: 'Events' }));
+
+      // The debounced count probe firing proves the draft change was processed…
+      await waitFor(
+        () => expect(api.get).toHaveBeenCalledWith(expect.stringContaining('type=events')),
+        { timeout: 3000 },
+      );
+      // …yet the results behind the sheet are untouched.
+      expect(screen.getByText('Baseline Listing')).toBeInTheDocument();
+      expect(screen.queryByText('Drafted Event')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: /^Show \d+ result/ }));
+
+      await waitFor(() => expect(screen.getByText('Drafted Event')).toBeInTheDocument());
+      expect(screen.queryByText('Baseline Listing')).not.toBeInTheDocument();
+      // The applied filter is now a removable chip in the sticky bar.
+      expect(screen.getByLabelText('Remove filter: Events')).toBeInTheDocument();
+    });
+
+    it('never lets abandoned overlay text become the applied query', async () => {
+      // Regression guard: the search pill advertises the APPLIED query, and the
+      // filter refetches must use it too. Closing the overlay with the back arrow
+      // does not commit, so text typed and abandoned there must not reach either.
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.includes('/v2/search?')) {
+          if (url.includes('type=events')) {
+            return Promise.resolve({
+              success: true,
+              data: [{ type: 'event', id: 9, title: 'Committed Event', description: 'Applied' }],
+            });
+          }
+          return Promise.resolve({
+            success: true,
+            data: [
+              { type: 'listing', id: 1, title: 'Baseline Listing', description: 'Visible now', listing_type: 'offer', hours_estimate: 2 },
+            ],
+          });
+        }
+        return Promise.resolve({ success: true, data: [], meta: {} });
+      });
+
+      window.history.pushState({}, '', '/?q=test');
+      render(<SearchPage />);
+      await waitFor(() => expect(screen.getByText('Baseline Listing')).toBeInTheDocument());
+
+      // Apply a filter so the sticky bar carries a removable chip.
+      fireEvent.click(screen.getByLabelText('More filters'));
+      await waitFor(() => expect(screen.getByRole('radio', { name: 'Events' })).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('radio', { name: 'Events' }));
+      fireEvent.click(screen.getByRole('button', { name: /^Show/ }));
+      await waitFor(() => expect(screen.getByLabelText('Remove filter: Events')).toBeInTheDocument());
+
+      // Open the overlay from the pill, type, then abandon with the back arrow.
+      fireEvent.click(screen.getByRole('button', { name: 'test' }));
+      // The overlay's <input type="search"> — queried by role because its
+      // aria-label is shared with the dialog wrapper.
+      const overlayInput = await screen.findByRole('searchbox');
+      fireEvent.change(overlayInput, { target: { value: 'abandoned' } });
+      fireEvent.click(screen.getByLabelText('Close search'));
+
+      // The pill still shows the committed query, never the abandoned text.
+      await waitFor(() =>
+        expect(screen.queryByRole('searchbox')).not.toBeInTheDocument(),
+      );
+      expect(screen.getByRole('button', { name: 'test' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'abandoned' })).not.toBeInTheDocument();
+
+      // …and removing a chip re-searches the committed query, so the URL and the
+      // visible results cannot diverge.
+      vi.mocked(api.get).mockClear();
+      fireEvent.click(screen.getByLabelText('Remove filter: Events'));
+      await waitFor(() =>
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('q=test')),
+      );
+      expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining('q=abandoned'));
+    });
   });
 });
