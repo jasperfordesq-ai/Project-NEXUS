@@ -22,7 +22,7 @@ import { useDisclosure } from '@/components/ui/useDisclosure';
  * Upload: POST /api/v2/resources (multipart form data)
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion } from '@/lib/motion';
 
 import FolderOpen from 'lucide-react/icons/folder-open';
@@ -49,11 +49,24 @@ import { useTranslation } from 'react-i18next';
 import { SocialInteractionPanel } from '@/components/social/SocialInteractionPanel';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
+import {
+  ResourceFilterSheet,
+  type ResourceCategoryOption,
+  type ResourceFilterDraft,
+} from '@/components/resources/ResourceFilterSheet';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { api, API_BASE, tokenManager } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks';
+// Direct hook paths on purpose: page tests replace the '@/hooks' barrel with a
+// partial stub, so a barrel import would resolve to undefined and crash render.
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useFilterDraft } from '@/hooks/useFilterDraft';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { PageMeta } from '@/components/seo/PageMeta';
 
 /* ───────────────────────── Types ───────────────────────── */
@@ -121,7 +134,61 @@ const inputClassNames = {
   label: 'text-theme-muted',
 };
 
+/**
+ * What "Clear all" resets inside the phone filter sheet. Category is the page's
+ * only data filter, so there is nothing to deliberately preserve here (contrast
+ * Listings, which keeps `sort`). `useFilterDraft` merges this over the open draft.
+ */
+const EMPTY_RESOURCE_FILTER_DRAFT: Partial<ResourceFilterDraft> = {
+  category: null,
+};
+
 /* ───────────────────────── Helpers ───────────────────────── */
+
+interface ResourceQueryFilters {
+  search: string;
+  category: number | null;
+  /** Only set when appending a page. */
+  cursor?: string | undefined;
+}
+
+/**
+ * Single source of truth for filter → API params.
+ *
+ * The list fetch is the only consumer: `/v2/resources` reports no total
+ * (`respondWithCollection` emits base_url/per_page/has_more/cursor only), so the
+ * phone sheet ships no live-count probe that could drift away from this.
+ */
+function buildResourceQueryParams(f: ResourceQueryFilters): URLSearchParams {
+  const params = new URLSearchParams();
+  params.set('per_page', '20');
+  if (f.cursor) params.set('cursor', f.cursor);
+  if (f.search.trim()) params.set('search', f.search.trim());
+  if (f.category) params.set('category_id', String(f.category));
+  return params;
+}
+
+interface FlatCategory {
+  id: number;
+  name: string;
+  /** Parent node's name, or null for a top-level node / the flat fallback list. */
+  parentName: string | null;
+}
+
+/** Depth-first flatten so a child chip always follows its parent in the row. */
+function flattenCategoryTree(
+  nodes: CategoryTreeNode[],
+  parentName: string | null = null,
+  out: FlatCategory[] = [],
+): FlatCategory[] {
+  for (const node of nodes) {
+    out.push({ id: node.id, name: node.name, parentName });
+    if (node.children && node.children.length > 0) {
+      flattenCategoryTree(node.children, node.name, out);
+    }
+  }
+  return out;
+}
 
 function getFileIcon(path: string) {
   const ext = path.split('.').pop()?.toLowerCase() || '';
@@ -226,6 +293,11 @@ function CategoryTreeItem({
 export function ResourcesPage() {
   const { t } = useTranslation('utility');
   usePageTitle(t('resources.page_title'));
+  // On phones the page hides its own hero; the title lives in the app bar.
+  useSetAppBarTitle(t('resources.page_title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
   useTenant(); // ensure tenant context is available
   const toast = useToast();
@@ -301,11 +373,11 @@ export function ResourcesPage() {
         setError(null);
       }
 
-      const params = new URLSearchParams();
-      params.set('per_page', '20');
-      if (append && cursor) params.set('cursor', cursor);
-      if (searchQuery.trim()) params.set('search', searchQuery.trim());
-      if (selectedCategory) params.set('category_id', String(selectedCategory));
+      const params = buildResourceQueryParams({
+        search: searchQuery,
+        category: selectedCategory,
+        cursor: append ? cursor : undefined,
+      });
 
       const response = await api.get<Resource[]>(
         `/v2/resources?${params}`
@@ -348,6 +420,68 @@ export function ResourcesPage() {
       abortRef.current?.abort();
     };
   }, [searchQuery, selectedCategory]);
+
+  // ─── Phone filter sheet (draft state — nothing applies until the footer) ───
+  // The draft machine (snapshot / patch / apply / clear) lives in useFilterDraft;
+  // only the resources-specific pieces stay here.
+
+  /**
+   * Chip options for the phone sheet. The desktop sidebar draws the real tree, but
+   * a chip row cannot, so flatten depth-first (children follow their parent) and
+   * prefix a child with its parent only when the bare name is ambiguous — two
+   * parents can each own a "Templates". Tenants whose tree endpoint returns nothing
+   * fall back to the flat list the desktop quick-filter uses, so BOTH server shapes
+   * keep a working category filter once the desktop controls are hidden.
+   */
+  const phoneCategoryOptions = useMemo<ResourceCategoryOption[]>(() => {
+    const flat: FlatCategory[] = categoryTree.length > 0
+      ? flattenCategoryTree(categoryTree)
+      : categories.map((cat) => ({ id: cat.id, name: cat.name, parentName: null }));
+
+    const nameCounts = new Map<string, number>();
+    for (const cat of flat) nameCounts.set(cat.name, (nameCounts.get(cat.name) ?? 0) + 1);
+
+    return flat.map((cat) => ({
+      id: cat.id,
+      label: cat.parentName && (nameCounts.get(cat.name) ?? 0) > 1
+        ? `${cat.parentName} › ${cat.name}`
+        : cat.name,
+    }));
+  }, [categoryTree, categories]);
+
+  const commitDraftFilters = useCallback((next: ResourceFilterDraft) => {
+    setSelectedCategory(next.category);
+  }, []);
+
+  const filterSheet = useFilterDraft<ResourceFilterDraft>({
+    onApply: commitDraftFilters,
+    emptyDraft: EMPTY_RESOURCE_FILTER_DRAFT,
+    // No `countFor`: this endpoint reports no total, so the footer stays on the
+    // honest "Show results" label rather than probing for a number that
+    // does not exist.
+  });
+  const { open: openDraft } = filterSheet;
+
+  const openFilterSheet = useCallback(() => {
+    openDraft({ category: selectedCategory });
+  }, [openDraft, selectedCategory]);
+
+  /** Phone: removable chips for every applied filter (search shows in the pill instead). */
+  const phoneFilterChips = useMemo(() => {
+    if (selectedCategory == null) return [];
+    const match = phoneCategoryOptions.find((cat) => cat.id === selectedCategory);
+    return [{
+      key: 'category',
+      label: match?.label ?? String(selectedCategory),
+      onRemove: () => setSelectedCategory(null),
+    }];
+  }, [selectedCategory, phoneCategoryOptions]);
+
+  /** "Clear all" in the sticky bar — clears the search pill too, as on Listings. */
+  const resetPhoneFilters = useCallback(() => {
+    setSelectedCategory(null);
+    setSearchQuery('');
+  }, []);
 
   // ─── Upload Handlers ────────────────────────────────────────────────
 
@@ -548,28 +682,80 @@ export function ResourcesPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('resources.page_title')} description={t('resources.page_description')} />
-      <PublicPageHero
-        eyebrow={t('resources.hero_eyebrow')}
-        title={t('resources.heading')}
-        description={t('resources.subtitle')}
-        accent="amber"
-        icon={<FolderOpen className="h-7 w-7" aria-hidden="true" />}
-        stats={resources.length > 0 && !isLoading ? [{ label: t('resources.hero_resources_label'), value: resources.length.toLocaleString(getFormattingLocale()) }] : undefined}
-        action={
-          isAuthenticated ? (
-            <Button
-              color="primary"
-              className="shrink-0"
-              startContent={<Upload className="w-4 h-4" aria-hidden="true" />}
-              onPress={uploadModal.onOpen}
-            >
-              {t('resources.upload_resource')}
-            </Button>
-          ) : undefined
-        }
-      />
+      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
+      {!isPhone && (
+      <div className="hidden sm:block">
+        <PublicPageHero
+          eyebrow={t('resources.hero_eyebrow')}
+          title={t('resources.heading')}
+          description={t('resources.subtitle')}
+          accent="amber"
+          icon={<FolderOpen className="h-7 w-7" aria-hidden="true" />}
+          stats={resources.length > 0 && !isLoading ? [{ label: t('resources.hero_resources_label'), value: resources.length.toLocaleString(getFormattingLocale()) }] : undefined}
+          action={
+            isAuthenticated ? (
+              <Button
+                color="primary"
+                className="shrink-0"
+                startContent={<Upload className="w-4 h-4" aria-hidden="true" />}
+                onPress={uploadModal.onOpen}
+              >
+                {t('resources.upload_resource')}
+              </Button>
+            ) : undefined
+          }
+        />
+      </div>
+      )}
 
-      {/* Search & Admin Controls */}
+      {/* Phone: slim sticky control bar (feed/listings parity) — auto-hides on scroll down.
+          The trailing slot carries the re-homed Upload action: the hidden hero was its
+          ONLY entry point on phones. There are no view modes on this page. */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="amber"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchQuery}
+          onFiltersPress={openFilterSheet}
+          chips={phoneFilterChips}
+          onClearAll={resetPhoneFilters}
+          labels={{ search: t('resources.search_placeholder') }}
+          trailing={
+            isAuthenticated ? (
+              <Button
+                isIconOnly
+                variant="flat"
+                onPress={uploadModal.onOpen}
+                aria-label={t('resources.upload_resource')}
+                className="size-11 min-h-11 min-w-11 shrink-0 rounded-full border border-theme-default bg-theme-elevated text-amber-600 dark:text-amber-400"
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            ) : undefined
+          }
+        />
+      )}
+
+      {/* Phone: admin reorder mode also lived only in the hidden desktop control row.
+          Rendered for admins only, so ordinary phone users pay nothing for it. */}
+      {isPhone && isAdmin && (
+        <div className="flex flex-wrap items-center gap-2 px-1 sm:hidden">
+          <ToggleButton
+            size="sm"
+            variant="ghost"
+            isSelected={isReordering}
+            onChange={setIsReordering}
+            className="bg-theme-elevated text-theme-muted data-[selected=true]:bg-warning data-[selected=true]:text-white"
+          >
+            <GripVertical className="w-3.5 h-3.5" aria-hidden="true" />
+            {isReordering ? t('resources.done_reordering') : t('resources.reorder')}
+          </ToggleButton>
+        </div>
+      )}
+
+      {/* Search & Admin Controls (desktop and tablet — phones use the sticky bar + sheet) */}
+      {!isPhone && (
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 max-w-md">
           <SearchField
@@ -633,11 +819,12 @@ export function ResourcesPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* R1 - Layout with Category Tree Sidebar */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Category Tree Sidebar */}
-        {categoryTree.length > 0 && (
+        {/* Category Tree Sidebar (desktop and tablet — phones filter from the sheet) */}
+        {!isPhone && categoryTree.length > 0 && (
           <div className="lg:w-64 flex-shrink-0">
             <GlassCard className="p-3 sticky top-4">
               <div className="flex items-center justify-between mb-2">
@@ -874,6 +1061,33 @@ export function ResourcesPage() {
 
         </div>{/* end Main Content */}
       </div>{/* end R1 Layout */}
+
+      {/* Phone: full-screen search overlay behind the sticky bar's search pill.
+          `searchQuery` is this page's single (undebounced) search state, so typing
+          filters the list live behind the overlay — the component's documented intent. */}
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          placeholder={t('resources.search_placeholder')}
+          recentKey="resources"
+        />
+      )}
+
+      {/* Phone: draft filter sheet — nothing refetches until the footer applies. */}
+      {isPhone && filterSheet.draft && (
+        <ResourceFilterSheet
+          isOpen={filterSheet.isOpen}
+          onClose={filterSheet.close}
+          categoryOptions={phoneCategoryOptions}
+          draft={filterSheet.draft}
+          onDraftChange={filterSheet.patch}
+          onApply={filterSheet.apply}
+          onClearAll={filterSheet.clear}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal
