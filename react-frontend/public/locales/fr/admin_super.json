@@ -433,7 +433,7 @@
     "feature_dashboard": "Tableau de bord",
     "feature_events": "Événements",
     "feature_exchange_workflow": "Flux de travail d'échange",
-    "feature_feed": "Alimentation",
+    "feature_feed": "Fil d'actualité",
     "feature_federation": "Fédération",
     "feature_gamification": "Gamification",
     "feature_goals": "Objectifs",
@@ -1180,5 +1180,5 @@
   "dashboard": "Tableau de bord",
   "exchange_workflow": "Flux de travail d'échange",
   "organisations": "Organisations",
-  "feed": "Alimentation"
+  "feed": "Fil d'actualité"
 }

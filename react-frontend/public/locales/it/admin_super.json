@@ -435,7 +435,7 @@
     "feature_dashboard": "Pannello di controllo",
     "feature_events": "Eventi",
     "feature_exchange_workflow": "Flusso di lavoro di scambio",
-    "feature_feed": "Foraggio",
+    "feature_feed": "Feed",
     "feature_federation": "Federazione",
     "feature_gamification": "Ludicizzazione",
     "feature_goals": "Obiettivi",
@@ -1180,5 +1180,5 @@
   "dashboard": "Pannello di controllo",
   "exchange_workflow": "Flusso di lavoro di scambio",
   "organisations": "Organizzazioni",
-  "feed": "Foraggio"
+  "feed": "Feed"
 }

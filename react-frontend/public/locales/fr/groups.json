@@ -219,7 +219,7 @@
     "delete_name_label": "Nom du groupe",
     "delete_name_instruction": "Saisissez « {{name}} » pour confirmer la suppression définitive.",
     "delete_btn": "Supprimer le groupe",
-    "tab_feed": "Fil d’actualité",
+    "tab_feed": "Fil d'actualité",
     "tab_files": "Fichiers",
     "tab_announcements": "Annonces",
     "tab_channels": "Canaux",

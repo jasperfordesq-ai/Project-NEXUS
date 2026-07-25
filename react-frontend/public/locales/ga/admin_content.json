@@ -303,7 +303,7 @@
     "podcasts": "Podchraoltaí",
     "ai": "AI",
     "kiss": "Pobal Cúramach",
-    "feed": "Soláthar",
+    "feed": "Fotha",
     "logs": "Loganna",
     "match_debug": "Debug Comhfhreagra"
   },
@@ -1013,7 +1013,7 @@
     "option_category_media": "Meáin",
     "option_marketplace_stripe_enabled_label": "Íocaíochtaí Stripe",
     "option_choice_jobs_default_currency_usd": "USD",
-    "module_name_feed": "Soláthar",
+    "module_name_feed": "Fotha",
     "module_name_partner_api": "Comhpháirtí API"
   },
   "content": {

@@ -8,7 +8,7 @@
   "error_title": "Algo deu errado",
   "nav": {
     "dashboard": "Painel",
-    "feed": "Alimentar",
+    "feed": "Feed",
     "listings": "Anúncios",
     "messages": "Mensagens",
     "community": "Comunidade",
@@ -1363,7 +1363,7 @@
     "status_paused": "Em pausa",
     "status_ended": "Terminada",
     "status_rejected": "Rejeitada",
-    "type_feed": "Alimentar",
+    "type_feed": "Feed",
     "type_discovery": "Descoberta",
     "field_name": "Nome da campanha",
     "field_name_placeholder": "p. ex. Promoção de primavera",
@@ -2789,7 +2789,7 @@
   },
   "config": {
     "module_name_dashboard": "Painel",
-    "module_name_feed": "Alimentação",
+    "module_name_feed": "Feed",
     "module_name_listings": "Listagens",
     "module_name_messages": "Mensagens",
     "module_name_wallet": "Carteira",

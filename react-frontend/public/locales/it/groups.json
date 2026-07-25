@@ -219,7 +219,7 @@
     "delete_name_label": "Nome del gruppo",
     "delete_name_instruction": "Inserisci “{{name}}” per confermare l’eliminazione definitiva.",
     "delete_btn": "Elimina gruppo",
-    "tab_feed": "Foraggio",
+    "tab_feed": "Feed",
     "tab_files": "File",
     "tab_announcements": "Annunci",
     "tab_channels": "Canali",

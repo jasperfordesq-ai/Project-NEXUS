@@ -843,7 +843,7 @@
     "option_category_media": "Meáin",
     "option_marketplace_stripe_enabled_label": "Íocaíochtaí Stripe",
     "option_choice_jobs_default_currency_usd": "USD",
-    "module_name_feed": "Soláthar",
+    "module_name_feed": "Fotha",
     "module_name_partner_api": "Comhpháirtí API"
   },
   "tenant_features": {
@@ -1009,6 +1009,6 @@
     "maptiler_api_key_hint": "Úsáidtear amháin nuair atá map_provider an tionónta seo OpenStreetMap. Aistríonn sé ó sheirbhís saor in aisce tile.openstreetmap.org (faoi réir pholasaí OSMF ar scála) go fáiltiú íoctha MapTiler le mód dorcha ceart agus seachadadh gloine ard-tréimhse. Clúdaíonn an tsraith saor in aisce thart ar ~100k glais in aghaidh na míosa. Faigh eochair ag maptiler.com → Cloud → Eochracha API.",
     "desc_identity_verification": "Fíorú aitheantais ar ais le Stripe do bhaill",
     "label_partner_api": "Comhpháirtí API",
-    "label_feed": "Soláthar"
+    "label_feed": "Fotha"
   }
 }

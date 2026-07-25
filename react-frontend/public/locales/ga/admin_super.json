@@ -849,7 +849,7 @@
     "status_inactive_label": "Neamhghníomhach",
     "breadcrumb_nav_aria": "Aránbhricfeasta",
     "level_value": "L{{level}}",
-    "feature_feed": "Soláthar",
+    "feature_feed": "Fotha",
     "jwt_setup_aws": "AWS ECS / Fargate:",
     "label_tagline": "Slogán",
     "social_twitter": "Twitter / X",
@@ -1204,5 +1204,5 @@
   "wallet": "Sparán",
   "messages": "Teachtaireachtaí",
   "dashboard": "Deais",
-  "feed": "Soláthar"
+  "feed": "Fotha"
 }

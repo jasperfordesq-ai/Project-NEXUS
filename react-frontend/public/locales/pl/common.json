@@ -1372,7 +1372,7 @@
     "status_paused": "Wstrzymana",
     "status_ended": "Zakończona",
     "status_rejected": "Odrzucona",
-    "type_feed": "Kanał",
+    "type_feed": "Aktualności",
     "type_discovery": "Odkrywanie",
     "field_name": "Nazwa kampanii",
     "field_name_placeholder": "np. Promocja wiosenna",
@@ -2819,7 +2819,7 @@
   },
   "config": {
     "module_name_dashboard": "Pulpit nawigacyjny",
-    "module_name_feed": "Karmić",
+    "module_name_feed": "Aktualności",
     "module_name_listings": "Oferty",
     "module_name_messages": "Wiadomości",
     "module_name_wallet": "Portfel",

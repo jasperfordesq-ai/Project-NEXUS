@@ -152,9 +152,9 @@ describe('MobileTabBar', () => {
   });
 
   describe('Tab icons', () => {
-    it('renders Home tab', () => {
+    it('renders Feed tab', () => {
       render(<MobileTabBar />);
-      expect(screen.getByLabelText('Home')).toBeInTheDocument();
+      expect(screen.getByLabelText('Feed')).toBeInTheDocument();
     });
 
     it('renders Listings tab when module enabled', () => {
@@ -240,14 +240,14 @@ describe('MobileTabBar', () => {
       expect(screen.queryByLabelText('Messages')).not.toBeInTheDocument();
     });
 
-    it('hides Home tab when feed module is disabled', () => {
+    it('hides Feed tab when feed module is disabled', () => {
       setupDefaultMocks({
         tenant: {
           hasModule: vi.fn((mod: string) => mod !== 'feed'),
         },
       });
       render(<MobileTabBar />);
-      expect(screen.queryByLabelText('Home')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Feed')).not.toBeInTheDocument();
     });
 
     it('always shows Create and Menu tabs regardless of modules', () => {
@@ -263,11 +263,11 @@ describe('MobileTabBar', () => {
   });
 
   describe('Active state', () => {
-    it('marks Home tab as active on feed route', () => {
+    it('marks Feed tab as active on feed route', () => {
       mockPathname = '/feed';
       render(<MobileTabBar />);
-      const homeButton = screen.getByLabelText('Home');
-      expect(homeButton).toHaveAttribute('aria-current', 'page');
+      const feedButton = screen.getByLabelText('Feed');
+      expect(feedButton).toHaveAttribute('aria-current', 'page');
     });
 
     it('marks Listings tab as active on listings route', () => {

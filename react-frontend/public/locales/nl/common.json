@@ -8,7 +8,7 @@
   "error_title": "Er is iets misgegaan",
   "nav": {
     "dashboard": "Dashboard",
-    "feed": "Voer",
+    "feed": "Feed",
     "listings": "Advertenties",
     "messages": "Berichten",
     "community": "Gemeenschap",
@@ -1354,7 +1354,7 @@
     "status_paused": "Gepauzeerd",
     "status_ended": "Beëindigd",
     "status_rejected": "Afgewezen",
-    "type_feed": "Voer",
+    "type_feed": "Feed",
     "type_discovery": "Ontdekken",
     "field_name": "Campagnenaam",
     "field_name_placeholder": "bijv. Voorjaarsactie",
@@ -2759,7 +2759,7 @@
   },
   "config": {
     "module_name_dashboard": "Dashboard",
-    "module_name_feed": "Voer",
+    "module_name_feed": "Feed",
     "module_name_listings": "Advertenties",
     "module_name_messages": "Berichten",
     "module_name_wallet": "Portemonnee",

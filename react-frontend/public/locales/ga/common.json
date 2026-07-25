@@ -8,7 +8,7 @@
   "error_title": "Chuaigh rud éigin mícheart",
   "nav": {
     "dashboard": "Painéal",
-    "feed": "Sruth",
+    "feed": "Fotha",
     "listings": "Liostaí",
     "messages": "Teachtaireachtaí",
     "community": "Pobal",
@@ -2849,7 +2849,7 @@
   },
   "config": {
     "module_name_dashboard": "Deais",
-    "module_name_feed": "Feed",
+    "module_name_feed": "Fotha",
     "module_name_listings": "Liostaí",
     "module_name_messages": "Teachtaireachtaí",
     "module_name_wallet": "Sparán",

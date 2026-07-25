@@ -70,7 +70,7 @@
     "ai_assistant_desc": "تكوين موفري الذكاء الاصطناعي",
     "smart_matching": "المطابقة الذكية",
     "smart_matching_desc": "توصيات مدعومة بالذكاء الاصطناعي",
-    "feed_algorithm": "خوارزمية التغذية",
+    "feed_algorithm": "خوارزمية الخلاصة",
     "feed_algorithm_desc": "تكوين EdgeRank",
     "algorithm_settings": "إعدادات الخوارزمية",
     "algorithm_settings_desc": "MatchRank وCommunityRank",

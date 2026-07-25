@@ -2759,7 +2759,7 @@
   },
   "config": {
     "module_name_dashboard": "ダッシュボード",
-    "module_name_feed": "飼料",
+    "module_name_feed": "フィード",
     "module_name_listings": "リスト",
     "module_name_messages": "メッセージ",
     "module_name_wallet": "ウォレット",

@@ -219,7 +219,7 @@
     "delete_name_label": "Nome do grupo",
     "delete_name_instruction": "Introduza “{{name}}” para confirmar a eliminação permanente.",
     "delete_btn": "Eliminar Grupo",
-    "tab_feed": "Alimentar",
+    "tab_feed": "Feed",
     "tab_files": "Ficheiros",
     "tab_announcements": "Comunicados",
     "tab_channels": "Canais",

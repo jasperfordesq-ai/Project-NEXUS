@@ -436,7 +436,7 @@
     "feature_dashboard": "لوحة القيادة",
     "feature_events": "الأحداث",
     "feature_exchange_workflow": "تبادل سير العمل",
-    "feature_feed": "يٌطعم",
+    "feature_feed": "الخلاصة",
     "feature_federation": "الاتحاد",
     "feature_gamification": "التلعيب",
     "feature_goals": "الأهداف",
@@ -1216,5 +1216,5 @@
   "exchange_workflow": "تبادل سير العمل",
   "organisations": "المنظمات",
   "listings": "القوائم",
-  "feed": "يٌطعم"
+  "feed": "الخلاصة"
 }

@@ -1363,7 +1363,7 @@
     "status_paused": "En pause",
     "status_ended": "Terminée",
     "status_rejected": "Rejetée",
-    "type_feed": "Fil",
+    "type_feed": "Fil d'actualité",
     "type_discovery": "Découverte",
     "field_name": "Nom de la campagne",
     "field_name_placeholder": "ex. Promotion de printemps",
@@ -2789,7 +2789,7 @@
   },
   "config": {
     "module_name_dashboard": "Tableau de bord",
-    "module_name_feed": "Nourrir",
+    "module_name_feed": "Fil d'actualité",
     "module_name_listings": "Annonces",
     "module_name_messages": "Messages",
     "module_name_wallet": "Portefeuille",

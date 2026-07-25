@@ -8,7 +8,7 @@
   "error_title": "حدث خطأ ما",
   "nav": {
     "dashboard": "لوحة التحكم",
-    "feed": "الموجز",
+    "feed": "الخلاصة",
     "listings": "الإعلانات",
     "messages": "الرسائل",
     "community": "المجتمع",
@@ -1390,7 +1390,7 @@
     "status_paused": "متوقفة مؤقتًا",
     "status_ended": "منتهية",
     "status_rejected": "مرفوضة",
-    "type_feed": "الموجز",
+    "type_feed": "الخلاصة",
     "type_discovery": "الاستكشاف",
     "field_name": "اسم الحملة",
     "field_name_placeholder": "مثال: عرض الربيع",
@@ -2879,7 +2879,7 @@
   },
   "config": {
     "module_name_dashboard": "لوحة القيادة",
-    "module_name_feed": "يٌطعم",
+    "module_name_feed": "الخلاصة",
     "module_name_listings": "القوائم",
     "module_name_messages": "رسائل",
     "module_name_wallet": "محفظة",

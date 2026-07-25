@@ -8,7 +8,7 @@
   "error_title": "algo salió mal",
   "nav": {
     "dashboard": "Panel",
-    "feed": "Muro",
+    "feed": "Feed",
     "listings": "Anuncios",
     "messages": "Mensajes",
     "community": "Comunidad",
@@ -1363,7 +1363,7 @@
     "status_paused": "Pausada",
     "status_ended": "Finalizada",
     "status_rejected": "Rechazada",
-    "type_feed": "Alimentar",
+    "type_feed": "Feed",
     "type_discovery": "Descubrimiento",
     "field_name": "Nombre de la campaña",
     "field_name_placeholder": "p. ej. Promoción de primavera",
@@ -2789,7 +2789,7 @@
   },
   "config": {
     "module_name_dashboard": "Panel de control",
-    "module_name_feed": "alimentar",
+    "module_name_feed": "Feed",
     "module_name_listings": "Listados",
     "module_name_messages": "Mensajes",
     "module_name_wallet": "Cartera",

@@ -8,7 +8,7 @@
   "error_title": "Etwas ist schief gelaufen",
   "nav": {
     "dashboard": "Armaturenbrett",
-    "feed": "Füttern",
+    "feed": "Feed",
     "listings": "Inserate",
     "messages": "Nachrichten",
     "community": "Gemeinschaft",
@@ -1354,7 +1354,7 @@
     "status_paused": "Pausiert",
     "status_ended": "Beendet",
     "status_rejected": "Abgelehnt",
-    "type_feed": "Füttern",
+    "type_feed": "Feed",
     "type_discovery": "Entdecken",
     "field_name": "Kampagnenname",
     "field_name_placeholder": "z. B. Frühjahrsaktion",
@@ -2759,7 +2759,7 @@
   },
   "config": {
     "module_name_dashboard": "Armaturenbrett",
-    "module_name_feed": "Futter",
+    "module_name_feed": "Feed",
     "module_name_listings": "Einträge",
     "module_name_messages": "Nachrichten",
     "module_name_wallet": "Geldbörse",

@@ -8,7 +8,7 @@
   "error_title": "Qualcosa è andato storto",
   "nav": {
     "dashboard": "Pannello di controllo",
-    "feed": "Foraggio",
+    "feed": "Feed",
     "listings": "Annunci",
     "messages": "Messaggi",
     "community": "Comunità",
@@ -1363,7 +1363,7 @@
     "status_paused": "In pausa",
     "status_ended": "Conclusa",
     "status_rejected": "Rifiutata",
-    "type_feed": "Foraggio",
+    "type_feed": "Feed",
     "type_discovery": "Scopri",
     "field_name": "Nome della campagna",
     "field_name_placeholder": "es. Promozione di primavera",
@@ -2789,7 +2789,7 @@
   },
   "config": {
     "module_name_dashboard": "Cruscotto",
-    "module_name_feed": "Nutrire",
+    "module_name_feed": "Feed",
     "module_name_listings": "Annunci",
     "module_name_messages": "Messaggi",
     "module_name_wallet": "Portafoglio",

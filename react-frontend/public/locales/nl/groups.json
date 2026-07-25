@@ -219,7 +219,7 @@
     "delete_name_label": "Groepsnaam",
     "delete_name_instruction": "Voer ‘{{name}}’ in om permanente verwijdering te bevestigen.",
     "delete_btn": "Groep verwijderen",
-    "tab_feed": "Voer",
+    "tab_feed": "Feed",
     "tab_files": "Bestanden",
     "tab_announcements": "Aankondigingen",
     "tab_channels": "Kanalen",

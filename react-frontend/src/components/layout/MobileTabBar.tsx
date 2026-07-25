@@ -6,7 +6,7 @@
 /**
  * Mobile Bottom Tab Bar
  * Fixed navigation bar at the bottom of the screen on mobile devices.
- * Hidden on md+ screens. Shows up to 5 tabs: Home, Listings, Create, Messages, Menu.
+ * Hidden on md+ screens. Shows up to 5 tabs: Feed, Listings, Create, Messages, Menu.
  * Only visible when the user is authenticated and not on auth pages.
  */
 
@@ -15,7 +15,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from '@/lib/motion';
 import { Badge } from '@/components/ui/Badge';
-import House from 'lucide-react/icons/house';
+import Newspaper from 'lucide-react/icons/newspaper';
 import ListTodo from 'lucide-react/icons/list-todo';
 import Plus from 'lucide-react/icons/plus';
 import MessageSquare from 'lucide-react/icons/message-square';
@@ -105,7 +105,7 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
     badgeCount?: number;
     module?: string;
   }[] = [
-    { key: 'home',     label: t('nav.home'),     icon: House,         path: tenantPath('/feed'), module: 'feed' },
+    { key: 'feed',     label: t('nav.feed'),     icon: Newspaper,     path: tenantPath('/feed'), module: 'feed' },
     { key: 'listings', label: t('nav.listings'), icon: ListTodo,      path: tenantPath('/listings'),  module: 'listings' },
     { key: 'create',   label: t('mobile_tab.create'),   icon: Plus,          action: handleCreateOpen,       isCreate: true },
     { key: 'messages', label: t('nav.messages'), icon: MessageSquare, path: tenantPath('/messages'),  badgeCount: counts.messages, module: 'messages' },
