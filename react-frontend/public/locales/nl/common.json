@@ -183,6 +183,20 @@
     "no_suggestions": "Geen snelle matches",
     "search_for": "Zoeken naar"
   },
+  "filter_bar": {
+    "filters": "Filters",
+    "more_filters": "Meer filters",
+    "clear_all": "Alles wissen",
+    "active_filters": "Actieve filters",
+    "remove_filter": "Filter verwijderen: {{filter}}",
+    "show_results": "Toon {{count}} resultaten",
+    "show_results_one": "Toon {{count}} resultaat",
+    "show_results_other": "Toon {{count}} resultaten",
+    "show_results_unknown": "Resultaten weergeven",
+    "search": "Zoeken",
+    "filter_form": "Filters",
+    "back": "Terug"
+  },
   "support": {
     "help_center": "Helpcentrum",
     "contact": "Contact"

@@ -20,8 +20,10 @@ import { Progress } from '@/components/ui/Progress';
 import { SearchField } from '@/components/ui/SearchField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { ListingSkeleton, MediaRowsSkeleton } from '@/components/ui/Skeletons';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
+import { useFilterDraft } from '@/hooks/useFilterDraft';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { motion } from '@/lib/motion';
 
@@ -52,7 +54,6 @@ import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import X from 'lucide-react/icons/x';
 import Zap from 'lucide-react/icons/zap';
 import ArrowUpDown from 'lucide-react/icons/arrow-up-down';
-import ListFilter from 'lucide-react/icons/list-filter';
 import { FeaturedBadge } from '@/components/listings/FeaturedBadge';
 import { ListingFilterSheet, type ListingFilterDraft } from '@/components/listings/ListingFilterSheet';
 import { PageMeta } from '@/components/seo';
@@ -106,6 +107,20 @@ const DURATION_CHIP_KEYS: Record<string, string> = {
   short: 'duration_1_3h',
   half_day: 'duration_3_6h',
   full_day: 'duration_6h_plus',
+};
+
+/**
+ * What "Clear all" resets inside the phone filter sheet. `sort` is deliberately
+ * absent: clearing filters must keep the chosen sort order (shipped behaviour).
+ * `useFilterDraft` merges this over the open draft.
+ */
+const EMPTY_LISTING_FILTER_DRAFT: Partial<ListingFilterDraft> = {
+  type: 'all',
+  category: '',
+  hours: 'any',
+  service: 'any',
+  posted: 'any',
+  proximity: null,
 };
 
 interface ListingFilterValues {
@@ -219,13 +234,38 @@ export function ListingsPage() {
   const [proximityKey, setProximityKey] = useState(0);
 
   // ── Phone filter sheet (draft state — nothing applies until "Show N listings") ──
-  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-  const [filterDraft, setFilterDraft] = useState<ListingFilterDraft | null>(null);
-  const [draftCount, setDraftCount] = useState<number | null>(null);
-  const countAbortRef = useRef<AbortController | null>(null);
+  // The draft machine (snapshot / patch / debounced count probe / apply) lives in
+  // useFilterDraft; only the listings-specific pieces stay here.
+
+  /** Live result count for the sheet footer — cheap per_page=1 fetch of the draft filters. */
+  const countDraftListings = useCallback(async (candidate: ListingFilterDraft) => {
+    const params = buildListingQueryParams({ q: searchQuery, ...candidate });
+    params.set('per_page', '1');
+    const response = await api.get<Listing[]>(`/v2/listings?${params}`);
+    return response.success ? (response.meta?.total_items ?? null) : null;
+  }, [searchQuery]);
+
+  const commitDraftFilters = useCallback((next: ListingFilterDraft) => {
+    setSelectedType(next.type);
+    setSelectedCategory(next.category);
+    setSortMode(next.sort);
+    setHoursRange(next.hours);
+    setServiceMode(next.service);
+    setPostedWithin(next.posted);
+    setProximityParams(next.proximity);
+    setProximityKey((k) => k + 1);
+  }, []);
+
+  const filterSheet = useFilterDraft<ListingFilterDraft>({
+    onApply: commitDraftFilters,
+    emptyDraft: EMPTY_LISTING_FILTER_DRAFT,
+    countFor: countDraftListings,
+    countKey: searchQuery,
+  });
+  const { open: openDraft } = filterSheet;
 
   const openFilterSheet = useCallback(() => {
-    setFilterDraft({
+    openDraft({
       type: selectedType,
       category: selectedCategory,
       sort: sortMode,
@@ -233,59 +273,8 @@ export function ListingsPage() {
       service: serviceMode,
       posted: postedWithin,
       proximity: proximityParams,
-    });
-    setDraftCount(totalItems);
-    setIsFilterSheetOpen(true);
-  }, [selectedType, selectedCategory, sortMode, hoursRange, serviceMode, postedWithin, proximityParams, totalItems]);
-
-  const applyFilterDraft = useCallback(() => {
-    if (filterDraft) {
-      setSelectedType(filterDraft.type);
-      setSelectedCategory(filterDraft.category);
-      setSortMode(filterDraft.sort);
-      setHoursRange(filterDraft.hours);
-      setServiceMode(filterDraft.service);
-      setPostedWithin(filterDraft.posted);
-      setProximityParams(filterDraft.proximity);
-      setProximityKey((k) => k + 1);
-    }
-    setIsFilterSheetOpen(false);
-  }, [filterDraft]);
-
-  const clearFilterDraft = useCallback(() => {
-    setFilterDraft((draft) => draft && {
-      ...draft,
-      type: 'all',
-      category: '',
-      hours: 'any',
-      service: 'any',
-      posted: 'any',
-      proximity: null,
-    });
-  }, []);
-
-  // Live result count for the sheet footer — cheap per_page=1 fetch of the draft filters.
-  useEffect(() => {
-    if (!isFilterSheetOpen || !filterDraft) return;
-    countAbortRef.current?.abort();
-    const controller = new AbortController();
-    countAbortRef.current = controller;
-    const timer = setTimeout(async () => {
-      try {
-        const params = buildListingQueryParams({ q: searchQuery, ...filterDraft });
-        params.set('per_page', '1');
-        const response = await api.get<Listing[]>(`/v2/listings?${params}`);
-        if (controller.signal.aborted) return;
-        setDraftCount(response.success ? (response.meta?.total_items ?? null) : null);
-      } catch {
-        if (!controller.signal.aborted) setDraftCount(null);
-      }
-    }, 250);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [isFilterSheetOpen, filterDraft, searchQuery]);
+    }, totalItems);
+  }, [openDraft, selectedType, selectedCategory, sortMode, hoursRange, serviceMode, postedWithin, proximityParams, totalItems]);
 
   const hasActiveFilters = useMemo(
     () => !!(searchQuery || selectedType !== 'all' || selectedCategory || hoursRange !== 'any' || serviceMode !== 'any' || postedWithin !== 'any' || proximityParams),
@@ -621,42 +610,25 @@ export function ListingsPage() {
 
       {/* Phone: slim sticky control bar (feed-parity) — auto-hides on scroll down. */}
       {isPhone && (
-        <section
-          aria-label={t('filter_form_label')}
-          className={`sticky top-[calc(var(--safe-area-top)+3.5rem)] z-20 w-full min-w-0 max-w-full overflow-hidden border-y border-theme-default bg-[var(--surface-base)]/95 px-3 py-2 shadow-sm backdrop-blur-md transition-[transform,opacity] duration-200 sm:hidden ${
-            showMobileControls ? '' : 'pointer-events-none -translate-y-3 opacity-0'
-          }`}
-        >
-          <div className="flex min-w-0 items-center gap-2">
-            <Button
-              variant="flat"
-              onPress={() => setIsSearchOverlayOpen(true)}
-              className="h-10 min-w-0 flex-1 justify-start gap-2 rounded-full border border-theme-default bg-theme-elevated px-3.5 text-sm font-normal"
-            >
-              <Search className="h-4 w-4 shrink-0 text-theme-subtle" aria-hidden="true" />
-              <span className={`truncate ${searchInput ? 'text-theme-primary' : 'text-theme-subtle'}`}>
-                {searchInput || t('search_label')}
-              </span>
-            </Button>
-            <Button
-              size="sm"
-              variant="flat"
-              onPress={openFilterSheet}
-              aria-label={t('more_filters')}
-              startContent={<ListFilter className="h-4 w-4 shrink-0" aria-hidden="true" />}
-              className={`h-10 shrink-0 rounded-full px-3.5 text-sm font-medium ${
-                phoneFilterChips.length > 0
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-emerald-500/10 hover:text-emerald-600'
-              }`}
-            >
-              {t('filters_label')}
-              {phoneFilterChips.length > 0 && (
-                <span className="ml-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-xs font-bold">
-                  {phoneFilterChips.length}
-                </span>
-              )}
-            </Button>
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="emerald"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchInput}
+          onFiltersPress={openFilterSheet}
+          filterCount={phoneFilterChips.length}
+          chips={phoneFilterChips}
+          onClearAll={resetFilters}
+          labels={{
+            region: t('filter_form_label'),
+            filters: t('filters_label'),
+            moreFilters: t('more_filters'),
+            search: t('search_label'),
+            clearAll: t('clear_all'),
+            activeFilters: t('active_filters_label'),
+            removeFilter: (filter) => t('remove_filter', { filter }),
+          }}
+          trailing={
             <ToggleButtonGroup
               aria-label={t('aria.view_mode')}
               selectionMode="single"
@@ -698,33 +670,8 @@ export function ListingsPage() {
                 </ToggleButton>
               )}
             </ToggleButtonGroup>
-          </div>
-
-          {/* Applied filters as removable chips — visible without reopening the sheet. */}
-          {phoneFilterChips.length > 0 && (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5" aria-label={t('active_filters_label')}>
-              {phoneFilterChips.map((chip) => (
-                <button
-                  key={chip.key}
-                  type="button"
-                  onClick={chip.onRemove}
-                  aria-label={t('remove_filter', { filter: chip.label })}
-                  className="inline-flex min-h-7 items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-500/25 dark:text-emerald-300"
-                >
-                  <span className="max-w-32 truncate">{chip.label}</span>
-                  <X className="h-3 w-3 shrink-0" aria-hidden="true" />
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="min-h-7 rounded-full px-2 text-xs font-medium text-theme-muted transition-colors hover:text-theme-primary"
-              >
-                {t('clear_all')}
-              </button>
-            </div>
-          )}
-        </section>
+          }
+        />
       )}
 
       {/* Phone: compact results count (the hero stat is hidden on phones). */}
@@ -1002,16 +949,16 @@ export function ListingsPage() {
       )}
 
       {/* Phone filter sheet — every filter as chips, live count, draft-apply */}
-      {isPhone && filterDraft && (
+      {isPhone && filterSheet.draft && (
         <ListingFilterSheet
-          isOpen={isFilterSheetOpen}
-          onClose={() => setIsFilterSheetOpen(false)}
+          isOpen={filterSheet.isOpen}
+          onClose={filterSheet.close}
           categories={categories}
-          draft={filterDraft}
-          onDraftChange={(patch) => setFilterDraft((prev) => (prev ? { ...prev, ...patch } : prev))}
-          resultCount={draftCount}
-          onApply={applyFilterDraft}
-          onClearAll={clearFilterDraft}
+          draft={filterSheet.draft}
+          onDraftChange={filterSheet.patch}
+          resultCount={filterSheet.count}
+          onApply={filterSheet.apply}
+          onClearAll={filterSheet.clear}
         />
       )}
 

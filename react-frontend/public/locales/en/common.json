@@ -183,6 +183,20 @@
     "no_suggestions": "No quick matches",
     "search_for": "Search for"
   },
+  "filter_bar": {
+    "filters": "Filters",
+    "more_filters": "More filters",
+    "clear_all": "Clear all",
+    "active_filters": "Active filters",
+    "remove_filter": "Remove filter: {{filter}}",
+    "show_results": "Show {{count}} results",
+    "show_results_one": "Show {{count}} result",
+    "show_results_other": "Show {{count}} results",
+    "show_results_unknown": "Show results",
+    "search": "Search",
+    "filter_form": "Filters",
+    "back": "Back"
+  },
   "support": {
     "help_center": "Help Center",
     "contact": "Contact"

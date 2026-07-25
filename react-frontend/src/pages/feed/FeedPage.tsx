@@ -34,6 +34,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { filterAccentClasses } from '@/components/ui/filterAccent';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
@@ -79,6 +80,16 @@ const FeedSidebar = lazy(() => import('@/components/feed/sidebar/FeedSidebar'));
 
 const SCROLL_THRESHOLD = 200;
 const FEED_MODE_KEY = 'nexus_feed_mode';
+/**
+ * The feed uses the tenant theme accent, shared with `FeedFilterSheet` through the
+ * one accent map every filter primitive reads.
+ *
+ * NOTE: the feed's sticky region is deliberately NOT `MobileFilterBar`. That
+ * primitive is phone-only (`sm:hidden`); `[data-testid="feed-controls"]` is one
+ * element that is sticky on phones and a static card from `sm` up (`sm:static`,
+ * asserted in FeedPage.test.tsx), so splitting it in two would change the ≥sm DOM.
+ */
+const FEED_ACCENT = filterAccentClasses('accent');
 const VALID_FEED_FILTERS: FeedFilter[] = ['all', 'following', 'saved', 'posts', 'listings', 'events', 'polls', 'goals', 'jobs', 'challenges', 'volunteering', 'blogs', 'discussions'];
 const FILTERS_WITH_SUBFILTERS = new Set<FeedFilter>(['listings']);
 
@@ -983,9 +994,7 @@ export function FeedPage() {
             onPress={onFilterSheetOpen}
             startContent={<ListFilter className="h-4 w-4 shrink-0" aria-hidden="true" />}
             className={`min-w-0 px-3 ${
-              hasActiveFeedView
-                ? 'bg-accent text-white shadow-sm'
-                : 'border border-theme-default bg-theme-elevated text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent'
+              hasActiveFeedView ? FEED_ACCENT.filtersButtonActive : FEED_ACCENT.filtersButtonIdle
             }`}
           >
             <span className="truncate">{hasActiveFeedView ? activeFilterLabel : t('filter.filters')}</span>

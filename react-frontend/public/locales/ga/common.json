@@ -186,6 +186,20 @@
     "no_suggestions": "Níor aimsíodh moltaí ar bith",
     "search_for": "Cuardaigh"
   },
+  "filter_bar": {
+    "filters": "Scagairí",
+    "more_filters": "Tuilleadh scagairí",
+    "clear_all": "Glan go léir",
+    "active_filters": "Scagairí gníomhacha",
+    "remove_filter": "Bain an scagaire: {{filter}}",
+    "show_results": "Taispeáin {{count}} torthaí",
+    "show_results_one": "Taispeáin {{count}} toradh",
+    "show_results_other": "Taispeáin {{count}} torthaí",
+    "show_results_unknown": "Taispeáin torthaí",
+    "search": "Cuardach",
+    "filter_form": "Scagairí",
+    "back": "Ar ais"
+  },
   "support": {
     "help_center": "Ionad Cabhraigh",
     "contact": "Teagmháil"

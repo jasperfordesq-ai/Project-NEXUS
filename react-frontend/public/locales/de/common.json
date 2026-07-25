@@ -183,6 +183,20 @@
     "no_suggestions": "Keine Vorschläge gefunden",
     "search_for": "Suchen nach"
   },
+  "filter_bar": {
+    "filters": "Filter",
+    "more_filters": "Weitere Filter",
+    "clear_all": "Alles löschen",
+    "active_filters": "Aktive Filter",
+    "remove_filter": "Filter entfernen: {{filter}}",
+    "show_results": "{{count}}-Ergebnisse anzeigen",
+    "show_results_one": "{{count}}-Ergebnis anzeigen",
+    "show_results_other": "{{count}}-Ergebnisse anzeigen",
+    "show_results_unknown": "Ergebnisse anzeigen",
+    "search": "Suchen",
+    "filter_form": "Filter",
+    "back": "Zurück"
+  },
   "support": {
     "help_center": "Hilfezentrum",
     "contact": "Kontakt"

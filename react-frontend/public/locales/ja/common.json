@@ -183,6 +183,20 @@
     "no_suggestions": "クイックマッチなし",
     "search_for": "検索"
   },
+  "filter_bar": {
+    "filters": "フィルター",
+    "more_filters": "その他のフィルター",
+    "clear_all": "すべてクリア",
+    "active_filters": "アクティブフィルター",
+    "remove_filter": "フィルタを削除: {{filter}}",
+    "show_results": "{{count}} の結果を表示",
+    "show_results_one": "{{count}} の結果を表示",
+    "show_results_other": "{{count}} の結果を表示",
+    "show_results_unknown": "結果を表示",
+    "search": "検索",
+    "filter_form": "フィルター",
+    "back": "戻る"
+  },
   "support": {
     "help_center": "ヘルプセンター",
     "contact": "お問い合わせ"

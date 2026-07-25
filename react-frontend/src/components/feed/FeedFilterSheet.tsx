@@ -6,16 +6,18 @@
 /**
  * FeedFilterSheet — phone-only bottom sheet holding every feed filter.
  *
- * Selecting a filter applies it immediately; the sheet closes itself unless
- * the chosen filter has contextual sub-filters (e.g. Listings → Offers /
- * Requests), in which case it stays open so the sub-filter can be picked.
+ * The SIMPLE archetype of the shared `FilterSheet`: no footer, because selecting
+ * a filter applies it immediately. The sheet closes itself unless the chosen
+ * filter has contextual sub-filters (e.g. Listings → Offers / Requests), in which
+ * case it stays open so the sub-filter can be picked.
+ *
+ * Uses the theme accent (`accent`), not a page-specific hue.
  */
 
 import { useTranslation } from 'react-i18next';
-import type { Key } from '@heroui/react/rac';
 
-import { BottomSheet } from '@/components/ui/BottomSheet';
-import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
+import { FilterChipGroup } from '@/components/ui/FilterChipGroup';
+import { FilterSheet } from '@/components/ui/FilterSheet';
 import { SubFilterChips } from '@/components/feed/SubFilterChips';
 import type { FeedFilter } from '@/components/feed/types';
 
@@ -44,35 +46,19 @@ export function FeedFilterSheet({
   const { t } = useTranslation('feed');
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} title={t('filter.filters')}>
+    <FilterSheet isOpen={isOpen} onClose={onClose} title={t('filter.filters')} accent="accent">
       <div className="flex flex-col gap-4">
-        <ToggleButtonGroup
-          aria-label={t('filter.select')}
-          selectionMode="single"
-          disallowEmptySelection
-          isDetached
-          size="sm"
-          selectedKeys={new Set<Key>([filter])}
-          onSelectionChange={(keys) => {
-            const [key] = Array.from(keys);
-            if (!key) return;
+        <FilterChipGroup
+          accent="accent"
+          ariaLabel={t('filter.select')}
+          selected={filter}
+          options={options}
+          onChange={(key) => {
             const next = key as FeedFilter;
             onFilterChange(next);
             if (!filtersWithSubFilters.has(next)) onClose();
           }}
-          className="flex w-full flex-wrap items-center justify-start gap-2 p-0"
-        >
-          {options.map((opt) => (
-            <ToggleButton
-              key={opt.key}
-              id={opt.key}
-              variant="ghost"
-              className="min-h-11 shrink-0 rounded-full border border-theme-default bg-theme-elevated px-4 text-theme-muted transition-colors hover:bg-accent/5 hover:text-accent data-[selected=true]:border-transparent data-[selected=true]:bg-accent data-[selected=true]:text-white data-[selected=true]:shadow-sm"
-            >
-              {opt.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+        />
 
         <SubFilterChips
           filter={filter}
@@ -83,7 +69,7 @@ export function FeedFilterSheet({
           }}
         />
       </div>
-    </BottomSheet>
+    </FilterSheet>
   );
 }
 

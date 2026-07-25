@@ -11,6 +11,21 @@ export { Typography, type TypographyProps } from './Typography';
 
 // UX Components
 export { BottomSheet, type BottomSheetProps } from './BottomSheet';
+// Shared phone filter primitives (sticky bar + sheet + chip groups)
+export {
+  MobileFilterBar,
+  type MobileFilterBarProps,
+  type MobileFilterBarChip,
+  type MobileFilterBarLabels,
+} from './MobileFilterBar';
+export { FilterSheet, type FilterSheetProps, type FilterSheetLabels } from './FilterSheet';
+export { FilterChipGroup, type FilterChipGroupProps, type FilterChipOption } from './FilterChipGroup';
+export {
+  FILTER_ACCENT_CLASSES,
+  filterAccentClasses,
+  type FilterAccent,
+  type FilterAccentClasses,
+} from './filterAccent';
 export { BackToTop } from './BackToTop';
 export { AlgorithmLabel, useAlgorithmInfo } from './AlgorithmLabel';
 export { ImagePlaceholder } from './ImagePlaceholder';

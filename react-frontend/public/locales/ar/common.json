@@ -187,6 +187,20 @@
     "no_suggestions": "لا توجد مطابقات سريعة",
     "search_for": "ابحث عن"
   },
+  "filter_bar": {
+    "filters": "المرشحات",
+    "more_filters": "المزيد من المرشحات",
+    "clear_all": "مسح الكل",
+    "active_filters": "مرشحات نشطة",
+    "remove_filter": "إزالة عامل التصفية: {{filter}}",
+    "show_results": "عرض نتائج {{count}}",
+    "show_results_one": "عرض نتيجة {{count}}",
+    "show_results_other": "عرض نتائج {{count}}",
+    "show_results_unknown": "عرض النتائج",
+    "search": "يبحث",
+    "filter_form": "المرشحات",
+    "back": "خلف"
+  },
   "support": {
     "help_center": "مركز المساعدة",
     "contact": "اتصل بنا"
