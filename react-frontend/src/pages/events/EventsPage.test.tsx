@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { getFormattingLocale } from '@/lib/helpers';
 import { createCanonicalEventFixture, renderEventRoute } from '@/test/events-test-harness';
 
@@ -55,6 +55,27 @@ vi.mock('./components/CalendarSubscriptionPanel', () => ({
   CalendarSubscriptionPanel: () => null,
 }));
 
+// The calendar views own their own date range and fetch; stub them so the
+// month/agenda assertions below are about EventsPage's sticky bar, not HeroUI's
+// Calendar. List view (every other test) never renders this.
+vi.mock('./components/EventCalendarViews', () => ({
+  EventCalendarViews: ({ view }: { view: string }) => <div data-testid={`calendar-${view}`} />,
+}));
+
+/**
+ * Toggle the phone layout. `src/test/setup.ts` stubs matchMedia to answer
+ * `matches: false` for EVERY query, so without this mock `isPhone` is always
+ * false and the phone branch would get zero coverage. EventsPage only asks a
+ * max-width query; min-width answers are negated so no impossible viewport can
+ * be produced if one is ever added.
+ */
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn((query: string) =>
+    query.includes('min-width') ? !isPhoneViewport : isPhoneViewport,
+  ),
+}));
+
 import { EventsPage } from './EventsPage';
 
 async function renderLoadedEventsPage() {
@@ -72,6 +93,7 @@ async function renderLoadedEventsPage() {
 describe('EventsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isPhoneViewport = false;
     mockApi.get.mockResolvedValue({
       success: true,
       data: [],
@@ -154,5 +176,116 @@ describe('EventsPage', () => {
 
     expect(screen.getByText(expectedTime)).toBeInTheDocument();
     expect(screen.getByText(expectedDay)).toBeInTheDocument();
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('replaces the hero and filter cards with one sticky bar', async () => {
+      await renderLoadedEventsPage();
+
+      // Sticky bar: search pill + Filters button + the three view switches.
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search events')).toBeInTheDocument();
+      expect(screen.getByLabelText('List')).toBeInTheDocument();
+      expect(screen.getByLabelText('Month')).toBeInTheDocument();
+      expect(screen.getByLabelText('Agenda')).toBeInTheDocument();
+
+      // Desktop chrome is gone: hero, "choose a view" card, inline search field,
+      // step-free HeroSelect trigger and the category chip wall.
+      expect(screen.queryByRole('heading', { level: 1, name: 'Events' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Choose a calendar view')).not.toBeInTheDocument();
+      expect(screen.queryByRole('searchbox', { name: 'Search events' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Step-free venue access/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('radiogroup', { name: 'Filter by category' })).not.toBeInTheDocument();
+    });
+
+    it('keeps Create Event reachable once the hero is hidden', async () => {
+      // A NON-EMPTY list is load-bearing here. PublicEmptyState renders its own
+      // `Create Event` link with the same accessible name and the same href, so
+      // against an empty list this assertion would still pass with the whole
+      // phone action row deleted — and Create Event would silently vanish for
+      // every phone user the moment one event exists. With events rendered the
+      // action row is the ONLY source of the link, so the exact count pins it.
+      mockApi.get.mockResolvedValue({
+        success: true,
+        data: [createCanonicalEventFixture()],
+        meta: { has_more: false, total_items: 1 },
+      });
+
+      renderEventRoute(<EventsPage />);
+      await screen.findByRole('heading', { name: 'Community Garden Day' });
+      expect(screen.queryByRole('heading', { name: 'No events found' })).not.toBeInTheDocument();
+
+      const createLinks = screen.getAllByRole('link', { name: 'Create Event' });
+      expect(createLinks).toHaveLength(1);
+      expect(createLinks[0]).toHaveAttribute('href', '/test/events/create');
+    });
+
+    it('opens the filter sheet with every filter section', async () => {
+      await renderLoadedEventsPage();
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('radiogroup', { name: 'When' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('radiogroup', { name: 'Category' })).toBeInTheDocument();
+      expect(screen.getByRole('radiogroup', { name: 'Step-free venue access' })).toBeInTheDocument();
+      expect(screen.getByRole('radiogroup', { name: 'Radius' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Past' })).toBeInTheDocument();
+      // /v2/events reports no total, so the footer must not claim a count.
+      expect(screen.getByText('Show results')).toBeInTheDocument();
+    });
+
+    it('applies draft filters only when the footer button is pressed', async () => {
+      await renderLoadedEventsPage();
+      mockApi.get.mockClear();
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'Past' })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('radio', { name: 'Past' }));
+      // Draft-only: no list refetch, and no count probe either.
+      expect(mockApi.get).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByText('Show results'));
+      await waitFor(() => {
+        expect(mockApi.get).toHaveBeenCalledWith(
+          expect.stringContaining('when=past'),
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        );
+      });
+    });
+
+    it('surfaces an applied filter as a removable chip in the bar', async () => {
+      renderEventRoute(<EventsPage />, { route: '/test/events?step_free=yes' });
+
+      const chip = await screen.findByLabelText('Remove filter: Step-free access confirmed');
+      fireEvent.click(chip);
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Remove filter: Step-free access confirmed')).not.toBeInTheDocument();
+      });
+    });
+
+    it('collapses the bar to the view switcher in month view', async () => {
+      await renderLoadedEventsPage();
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('Month'));
+
+      // EventCalendarViews reads only month/date/from/to, so a search pill and a
+      // Filters button there would be dead controls.
+      await waitFor(() => {
+        expect(screen.getByTestId('calendar-month')).toBeInTheDocument();
+      });
+      expect(screen.queryByLabelText('More filters')).not.toBeInTheDocument();
+      expect(screen.queryByText('Search events')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Month')).toBeInTheDocument();
+    });
   });
 });

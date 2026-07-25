@@ -6,11 +6,14 @@
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { Progress } from '@/components/ui/Progress';
 import { SearchField } from '@/components/ui/SearchField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
+import { EventFilterSheet, type EventFilterDraft } from '@/components/events/EventFilterSheet';
 import { Label } from '@heroui/react/label';
 import { ListBox } from '@heroui/react/list-box';
 import { Select as HeroSelect } from '@heroui/react/select';
@@ -49,6 +52,10 @@ import { eventsApi, type Event, type EventCategory } from '@/lib/events-api';
 import { logError } from '@/lib/logger';
 import { formatDateTime, formatDateValue, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useFilterDraft } from '@/hooks/useFilterDraft';
 import { PageMeta } from '@/components/seo/PageMeta';
 import type { ProximityFilterParams } from '@/components/proximity/ProximityFilter';
 import {
@@ -75,6 +82,47 @@ function stepFreeFilterFrom(value: string | null): StepFreeFilter {
   return STEP_FREE_FILTERS.includes(value as StepFreeFilter) ? value as StepFreeFilter : 'any';
 }
 
+/**
+ * What "Clear all" resets inside the phone filter sheet. Events has no sort
+ * control, so every dimension resets. `useFilterDraft` merges this over the open
+ * draft.
+ */
+const EMPTY_EVENT_FILTER_DRAFT: Partial<EventFilterDraft> = {
+  when: 'upcoming',
+  category: 'all',
+  stepFree: 'any',
+  proximity: null,
+};
+
+interface EventQueryInput {
+  q: string;
+  when: EventFilter;
+  category: string;
+  stepFree: StepFreeFilter;
+  proximity: ProximityFilterParams | null;
+  cursor?: string | null;
+}
+
+/**
+ * Single source of truth for filter → API params. The list fetch is the only
+ * consumer: `GET /v2/events` answers through `respondWithCollection`, whose meta
+ * carries no `total_items`, so there is deliberately no live-count probe that
+ * could drift away from this (see EventFilterSheet).
+ */
+function buildEventQueryParams(f: EventQueryInput): Record<string, string | number | undefined> {
+  return {
+    q: f.q || undefined,
+    when: f.when === 'all' ? undefined : f.when,
+    per_page: ITEMS_PER_PAGE,
+    cursor: f.cursor ?? undefined,
+    category_id: f.category === 'all' ? undefined : f.category,
+    step_free: f.stepFree === 'any' ? undefined : f.stepFree,
+    near_lat: f.proximity?.near_lat,
+    near_lng: f.proximity?.near_lng,
+    radius_km: f.proximity?.radius_km,
+  };
+}
+
 function localDateKey(date = new Date()): string {
   return [
     date.getFullYear(),
@@ -97,6 +145,14 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
+/**
+ * Phone view-mode toggle button (list / month / agenda). Icon-only and 40px tall
+ * so the segmented cluster fits the sticky bar's `trailing` slot alongside the
+ * search pill and the Filters button — same anatomy ListingsPage ships.
+ */
+const PHONE_VIEW_TOGGLE_CLASS =
+  'h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-amber-500/15 data-[selected=true]:text-amber-600 dark:data-[selected=true]:text-amber-300';
+
 /** Event category metadata — names resolved via t() inside the component */
 const CATEGORY_ICONS: Record<string, typeof Tag> = {
   social: Users,
@@ -109,6 +165,10 @@ const CATEGORY_ICONS: Record<string, typeof Tag> = {
 export function EventsPage() {
   const { t } = useTranslation(['events', 'event_accessibility']);
   usePageTitle(t('title'));
+  // On phones the page hides its own hero; the title lives in the app bar.
+  useSetAppBarTitle(t('title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
   const { tenantPath } = useTenant();
   const toast = useToast();
@@ -133,6 +193,9 @@ export function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [stepFreeFilter, setStepFreeFilter] = useState<StepFreeFilter>(() => stepFreeFilterFrom(searchParams.get('step_free')));
   const [proximityParams, setProximityParams] = useState<ProximityFilterParams | null>(null);
+  // Native-app search: phones open a full-screen overlay with recents instead of
+  // typing into the inline filter field. Desktop keeps the inline SearchField.
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -151,6 +214,65 @@ export function EventsPage() {
     setStepFreeFilter('any');
     setProximityParams(null);
   }, []);
+
+  // ── Phone filter sheet (draft state — nothing applies until the footer button) ──
+  // The draft machine (snapshot / patch / apply / clear) lives in useFilterDraft.
+  // No `countFor`: /v2/events answers through respondWithCollection, whose meta has
+  // no total_items, so there is nothing to probe and the footer reads "Show results".
+  const commitDraftFilters = useCallback((next: EventFilterDraft) => {
+    setFilter(next.when);
+    setSelectedCategory(next.category);
+    setStepFreeFilter(next.stepFree);
+    setProximityParams(next.proximity);
+  }, []);
+
+  const filterSheet = useFilterDraft<EventFilterDraft>({
+    onApply: commitDraftFilters,
+    emptyDraft: EMPTY_EVENT_FILTER_DRAFT,
+  });
+  const { open: openDraft } = filterSheet;
+
+  const openFilterSheet = useCallback(() => {
+    openDraft({
+      when: filter,
+      category: selectedCategory,
+      stepFree: stepFreeFilter,
+      proximity: proximityParams,
+    });
+  }, [openDraft, filter, selectedCategory, stepFreeFilter, proximityParams]);
+
+  // Phone: removable chips for every applied filter. Search is represented by the
+  // search pill instead, so it deliberately has no chip (and the Filters badge,
+  // which defaults to chips.length, therefore excludes it).
+  const phoneFilterChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    if (filter !== 'upcoming') {
+      chips.push({ key: 'when', label: t(`filter_${filter}`), onRemove: () => setFilter('upcoming') });
+    }
+    if (selectedCategory !== 'all') {
+      const cat = categories.find((c) => String(c.id) === selectedCategory);
+      chips.push({
+        key: 'category',
+        label: cat?.name ?? selectedCategory,
+        onRemove: () => setSelectedCategory('all'),
+      });
+    }
+    if (stepFreeFilter !== 'any') {
+      chips.push({
+        key: 'step_free',
+        label: t(`event_accessibility:filters.step_free_options.${stepFreeFilter}`),
+        onRemove: () => setStepFreeFilter('any'),
+      });
+    }
+    if (proximityParams) {
+      chips.push({
+        key: 'near',
+        label: t(`radius_${proximityParams.radius_km}`, { defaultValue: `${proximityParams.radius_km} km` }),
+        onRemove: () => setProximityParams(null),
+      });
+    }
+    return chips;
+  }, [filter, selectedCategory, stepFreeFilter, proximityParams, categories, t]);
 
   const tRef = useRef(t);
   tRef.current = t;
@@ -206,17 +328,14 @@ export function EventsPage() {
         setIsLoadingMore(true);
       }
 
-      const response = await eventsApi.list({
-        q: debouncedQuery || undefined,
-        when: filter === 'all' ? undefined : filter,
-        per_page: ITEMS_PER_PAGE,
+      const response = await eventsApi.list(buildEventQueryParams({
+        q: debouncedQuery,
+        when: filter,
+        category: selectedCategory,
+        stepFree: stepFreeFilter,
+        proximity: proximityParams,
         cursor: append ? nextCursorRef.current : undefined,
-        category_id: selectedCategory === 'all' ? undefined : selectedCategory,
-        step_free: stepFreeFilter === 'any' ? undefined : stepFreeFilter,
-        near_lat: proximityParams?.near_lat,
-        near_lng: proximityParams?.near_lng,
-        radius_km: proximityParams?.radius_km,
-      }, { signal: controller.signal });
+      }), { signal: controller.signal });
       if (controller.signal.aborted) return;
       if (response.success && response.data) {
         if (controller.signal.aborted) return;
@@ -333,9 +452,43 @@ export function EventsPage() {
     return groups;
   }, {} as Record<string, Event[]>);
 
+  /**
+   * Phone view switcher — the same three views and the same `changeView()` state
+   * plumbing as the desktop card, rendered icon-only. It lives in the sticky
+   * bar's `trailing` slot in list view, and in a compact row of its own in
+   * month/agenda view (where a search pill and a Filters button would be dead:
+   * EventCalendarViews reads only month/date/from/to and ignores q, when,
+   * category, step_free and proximity entirely).
+   */
+  const phoneViewToggle = isPhone ? (
+    <ToggleButtonGroup
+      aria-label={t('calendar.view_aria')}
+      selectionMode="single"
+      disallowEmptySelection
+      selectedKeys={new Set([activeView])}
+      onSelectionChange={(keys) => {
+        const [next] = Array.from(keys);
+        if (next === 'list' || next === 'month' || next === 'agenda') changeView(next);
+      }}
+      className="shrink-0 gap-0 overflow-hidden rounded-full border border-theme-default bg-theme-elevated"
+    >
+      <ToggleButton id="list" isIconOnly variant="ghost" aria-label={t('calendar.view_list')} className={PHONE_VIEW_TOGGLE_CLASS}>
+        <List className="h-4 w-4" aria-hidden="true" />
+      </ToggleButton>
+      <ToggleButton id="month" isIconOnly variant="ghost" aria-label={t('calendar.view_month')} className={PHONE_VIEW_TOGGLE_CLASS}>
+        <CalendarDays className="h-4 w-4" aria-hidden="true" />
+      </ToggleButton>
+      <ToggleButton id="agenda" isIconOnly variant="ghost" aria-label={t('calendar.view_agenda')} className={PHONE_VIEW_TOGGLE_CLASS}>
+        <Rows3 className="h-4 w-4" aria-hidden="true" />
+      </ToggleButton>
+    </ToggleButtonGroup>
+  ) : null;
+
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_title')} description={t('page_description')} />
+      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
+      {!isPhone && (
       <PublicPageHero
         eyebrow={t('subtitle')}
         title={t('title')}
@@ -358,7 +511,44 @@ export function EventsPage() {
           ) : undefined
         }
       />
+      )}
 
+      {/* Phone: slim sticky control bar (list view only — see phoneViewToggle). */}
+      {isPhone && activeView === 'list' && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="amber"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchQuery}
+          onFiltersPress={openFilterSheet}
+          chips={phoneFilterChips}
+          onClearAll={clearFilters}
+          labels={{ search: t('search_aria') }}
+          trailing={phoneViewToggle}
+        />
+      )}
+
+      {/* Phone, month/agenda: the calendar owns the surface, so only the view switcher. */}
+      {isPhone && activeView !== 'list' && (
+        <div className="flex justify-end px-1">{phoneViewToggle}</div>
+      )}
+
+      {/* Phone: the hidden hero was the ONLY entry point to calendar feeds and Create
+          Event, so both are re-homed here rather than lost. */}
+      {isPhone && isAuthenticated && (
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          <CalendarSubscriptionPanel />
+          <Button as={Link} to={tenantPath('/events/create')}
+            color="primary"
+            className="font-semibold"
+            startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('create_event')}
+          </Button>
+        </div>
+      )}
+
+      {!isPhone && (
       <GlassCard className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold text-theme-primary">{t('calendar.view_heading')}</h2>
@@ -390,9 +580,10 @@ export function EventsPage() {
           </ToggleButton>
         </ToggleButtonGroup>
       </GlassCard>
+      )}
 
-      {/* Search & Time Filter */}
-      {activeView === 'list' && <>
+      {/* Search & Time Filter (desktop and tablet — phones use the sticky bar + sheet) */}
+      {activeView === 'list' && !isPhone && <>
       <GlassCard className="p-4 sm:p-5">
         <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_auto_auto_auto] lg:items-center">
           <div className="flex-1">
@@ -533,6 +724,32 @@ export function EventsPage() {
         })}
       </ToggleButtonGroup>
       </>}
+
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          onSubmit={(value) => setDebouncedQuery(value)}
+          placeholder={t('search_placeholder')}
+          recentKey="events"
+        />
+      )}
+
+      {/* Phone filter sheet — every filter as chips, draft-apply (no live count:
+          /v2/events reports no total). */}
+      {isPhone && filterSheet.draft && (
+        <EventFilterSheet
+          isOpen={filterSheet.isOpen}
+          onClose={filterSheet.close}
+          categories={categories}
+          draft={filterSheet.draft}
+          onDraftChange={filterSheet.patch}
+          onApply={filterSheet.apply}
+          onClearAll={filterSheet.clear}
+        />
+      )}
 
       {activeView !== 'list' && <EventCalendarViews view={activeView} />}
 
