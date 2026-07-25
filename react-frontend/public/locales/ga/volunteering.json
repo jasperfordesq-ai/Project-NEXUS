@@ -102,6 +102,8 @@
   "applied": "Iarratas Curtha",
   "apply": "Cuir Iarratas",
   "filter_all": "Gach",
+  "filter_distance": "Fad",
+  "filter_format": "Formáid",
   "status_pending": "Ar Feitheamh",
   "status_approved": "Ceadaithe",
   "status_declined": "Diúltaithe",

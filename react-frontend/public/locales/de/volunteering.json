@@ -96,6 +96,8 @@
   "applied": "Beworben",
   "apply": "Bewerben",
   "filter_all": "Alle",
+  "filter_distance": "Distanz",
+  "filter_format": "Format",
   "status_pending": "Ausstehend",
   "status_approved": "Genehmigt",
   "status_declined": "Abgelehnt",

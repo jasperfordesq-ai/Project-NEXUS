@@ -104,6 +104,8 @@
   "applied": "مُطبَّق",
   "apply": "يتقدم",
   "filter_all": "الجميع",
+  "filter_distance": "مسافة",
+  "filter_format": "شكل",
   "status_pending": "قيد الانتظار",
   "status_approved": "موافقة",
   "status_declined": "انخفض",

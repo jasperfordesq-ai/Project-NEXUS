@@ -96,6 +96,8 @@
   "applied": "Applied",
   "apply": "Apply",
   "filter_all": "All",
+  "filter_distance": "Distance",
+  "filter_format": "Format",
   "status_pending": "Pending",
   "status_approved": "Approved",
   "status_declined": "Declined",

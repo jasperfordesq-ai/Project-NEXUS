@@ -35,10 +35,10 @@
     "tab_volunteers": "ボランティア",
     "tab_wallet": "財布",
     "tab_settings": "設定",
-    "review_applications_other": "{{count}} アプリケーションを確認する",
-    "review_hours_other": "{{count}} 時間を確認する",
     "review_applications_one": "{{count}} アプリケーションのレビュー",
-    "review_hours_one": "{{count}} 時間のレビュー"
+    "review_applications_other": "{{count}} アプリケーションを確認する",
+    "review_hours_one": "{{count}} 時間のレビュー",
+    "review_hours_other": "{{count}} 時間を確認する"
   },
   "page_title": "ボランティア活動",
   "heading": "ボランティア活動",
@@ -96,6 +96,8 @@
   "applied": "適用済み",
   "apply": "適用する",
   "filter_all": "全て",
+  "filter_distance": "距離",
+  "filter_format": "形式",
   "status_pending": "保留中",
   "status_approved": "承認された",
   "status_declined": "拒否されました",
@@ -351,12 +353,12 @@
     },
     "support_aria": "このプロジェクトを支援（支援者{{count}}人）",
     "unsupport_aria": "支援を取り消す（支援者{{count}}人）",
+    "volunteers_needed_one": "{{count}} 必要",
     "volunteers_needed_other": "{{count}} が必要です",
     "unsupport_aria_one": "サポートを削除します ({{count}} サポーター)",
     "unsupport_aria_other": "支援を取り消す（支援者{{count}}人）",
     "support_aria_one": "このプロジェクトをサポートします ({{count}} サポーター)",
-    "support_aria_other": "このプロジェクトを支援（支援者{{count}}人）",
-    "volunteers_needed_one": "{{count}} 必要"
+    "support_aria_other": "このプロジェクトを支援（支援者{{count}}人）"
   },
   "donations": {
     "heading": "寄付",
@@ -464,8 +466,8 @@
     "receipt_message": "メッセージ",
     "receipt_error": "領収書の読み込みに失敗しました。",
     "receipt_not_found": "領収書が見つかりません。",
-    "donors_count_other": "{{count}} の寄付者",
-    "donors_count_one": "{{count}} 寄付者"
+    "donors_count_one": "{{count}} 寄付者",
+    "donors_count_other": "{{count}} の寄付者"
   },
   "safeguarding": {
     "heading": "保護",
@@ -638,8 +640,8 @@
     "claim_success": "あなたはシフトに登録しました!",
     "claim_failed": "スポットを主張できませんでした",
     "claim_hint": "スポットがあなたのために開かれました。すぐに請求してください。請求されていないスポットは 48 時間後に次の人に移ります。",
-    "spots_other": "{{count}} スポット",
-    "spots_one": "{{count}} スポット"
+    "spots_one": "{{count}} スポット",
+    "spots_other": "{{count}} スポット"
   },
   "swaps": {
     "heading": "シフト交換",
@@ -779,12 +781,12 @@
     "bulk_success": "{{count}}件の申請を更新しました。",
     "bulk_failed": "{{count}}件の申請を更新できませんでした。",
     "bulk_rate_limited": "{{count}}件を更新できませんでした。操作が速すぎます。1分待って再試行してください。",
+    "pending_count_one": "{{count}} 保留中",
     "pending_count_other": "{{count}} 保留中",
+    "selected_count_one": "{{count}} 選択済み",
     "selected_count_other": "{{count}} が選択されました",
     "decline_modal_description_one": "拒否する前に、{{count}} アプリケーションに関するメモを追加してください。",
-    "decline_modal_description_other": "拒否する前に、{{count}} アプリケーションに関するメモを追加してください。",
-    "pending_count_one": "{{count}} 保留中",
-    "selected_count_one": "{{count}} 選択済み"
+    "decline_modal_description_other": "拒否する前に、{{count}} アプリケーションに関するメモを追加してください。"
   },
   "org_wallet_balance": "ウォレット残高:",
   "auto_pay_on": "自動支払いON",
@@ -879,8 +881,8 @@
     "generated_on": "生成された",
     "download": "ダウンロード",
     "verify": "確認する",
-    "verified_hours_other": "{{count}} 確認済み時間",
-    "verified_hours_one": "{{count}} 確認済み時間"
+    "verified_hours_one": "{{count}} 確認済み時間",
+    "verified_hours_other": "{{count}} 確認済み時間"
   },
   "emergency": {
     "title": "緊急アラート",
@@ -902,8 +904,8 @@
     "respond_error_generic": "アラートに応答できませんでした。もう一度お試しください。",
     "from": "から",
     "expires": "有効期限が切れます",
-    "pending_count_other": "{{count}} 保留中",
-    "pending_count_one": "{{count}} 保留中"
+    "pending_count_one": "{{count}} 保留中",
+    "pending_count_other": "{{count}} 保留中"
   },
   "wellbeing": {
     "heading": "ボランティアのウェルビーイング",
@@ -1079,6 +1081,6 @@
   "hours_invalid_range": "0.25〜24時間で入力してください。",
   "org_callout_you_manage_many_one": "あなたは {{count}} 組織を管理しています",
   "org_callout_you_manage_many_other": "あなたは {{count}} 組織を管理しています",
-  "more_sections_other": "詳細 ({{count}})",
-  "more_sections_one": "さらに ({{count}})"
+  "more_sections_one": "さらに ({{count}})",
+  "more_sections_other": "詳細 ({{count}})"
 }

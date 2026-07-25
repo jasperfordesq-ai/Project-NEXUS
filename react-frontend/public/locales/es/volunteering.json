@@ -98,6 +98,8 @@
   "applied": "Solicitado",
   "apply": "Solicitar",
   "filter_all": "Todas",
+  "filter_distance": "Distancia",
+  "filter_format": "Formato",
   "status_pending": "Pendiente",
   "status_approved": "Aprobado",
   "status_declined": "Rechazado",

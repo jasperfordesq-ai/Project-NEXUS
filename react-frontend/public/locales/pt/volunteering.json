@@ -98,6 +98,8 @@
   "applied": "Candidatura Enviada",
   "apply": "Candidatar",
   "filter_all": "Todos",
+  "filter_distance": "Distância",
+  "filter_format": "Formatar",
   "status_pending": "Pendente",
   "status_approved": "Aprovado",
   "status_declined": "Recusado",

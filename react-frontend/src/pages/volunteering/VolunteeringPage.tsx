@@ -8,15 +8,24 @@
  */
 
 import { getFormattingLocale } from '@/lib/helpers';
-import React, { useState, useEffect, useCallback, useRef, Suspense, type Key } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, Suspense, type Key } from 'react';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
+import {
+  Disclosure,
+  DisclosureBody,
+  DisclosureContent,
+  DisclosureHeading,
+  DisclosureIndicator,
+  DisclosureTrigger,
+} from '@/components/ui/Disclosure';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Input } from '@/components/ui/Input';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 import { Progress } from '@/components/ui/Progress';
 import { SearchField } from '@/components/ui/SearchField';
@@ -26,6 +35,14 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Textarea } from '@/components/ui/Textarea';
 import { ToggleButtonGroup, ToggleButton } from '@/components/ui/ToggleButtonGroup';
 import { useDisclosure } from '@/components/ui/useDisclosure';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
+import {
+  VolunteeringFilterSheet,
+  EMPTY_VOLUNTEERING_FILTER_DRAFT,
+  type VolunteeringFilterDraft,
+  type VolunteeringFormat,
+} from '@/components/volunteering/VolunteeringFilterSheet';
+import { VolunteeringSectionsSheet } from '@/components/volunteering/VolunteeringSectionsSheet';
 
 import Heart from 'lucide-react/icons/heart';
 import Plus from 'lucide-react/icons/plus';
@@ -36,6 +53,7 @@ import Calendar from 'lucide-react/icons/calendar';
 import Clock from 'lucide-react/icons/clock';
 import Building2 from 'lucide-react/icons/building-2';
 import ChevronRight from 'lucide-react/icons/chevron-right';
+import ChevronDown from 'lucide-react/icons/chevron-down';
 import Send from 'lucide-react/icons/send';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
@@ -64,6 +82,12 @@ import { PublicPageHero } from '@/components/public/PublicPageHero';
 import { EmptyState } from '@/components/feedback';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
+// DIRECT hook paths on purpose: this page's test fully mocks the '@/hooks'
+// barrel, so a barrel import of these would resolve to undefined at call time.
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useFilterDraft } from '@/hooks/useFilterDraft';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { getOpportunityCategoryName, type OpportunityCategory } from '@/lib/volunteering';
@@ -207,6 +231,11 @@ const statusIcon = (status: string) => {
 export function VolunteeringPage() {
   const { t } = useTranslation('volunteering');
   usePageTitle(t('page_title'));
+  // Phones hide the hero/banner stack, so the page title moves into the app bar.
+  // These three must stay ABOVE the feature-gate early return below.
+  useSetAppBarTitle(t('heading'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature, volunteeringConfig } = useTenant();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -238,6 +267,8 @@ export function VolunteeringPage() {
   type MyOrg = { id: number; name: string; status: string; role: string };
   const [myOrgs, setMyOrgs] = useState<MyOrg[]>([]);
   const [showMoreTabs, setShowMoreTabs] = useState(false);
+  // Phone-only: the wrapping pill wall is replaced by one control + this sheet.
+  const [isSectionsSheetOpen, setIsSectionsSheetOpen] = useState(false);
   // Orgs the user can actually manage (owner/admin) and that are live.
   const manageableOrgs = myOrgs.filter(
     (o) => ['approved', 'active'].includes(o.status) && ['owner', 'admin'].includes(o.role),
@@ -323,7 +354,11 @@ export function VolunteeringPage() {
       )}
 
       {/* Hero — the VOLUNTEER view. Uses the shared PublicPageHero so it matches
-          the Organisations landing for a consistent, professional look. */}
+          the Organisations landing for a consistent, professional look.
+          Phones hide it entirely: the title lives in the app bar
+          (useSetAppBarTitle) and its two actions are re-homed into the compact
+          phone action row below. */}
+      {!isPhone && (
       <PublicPageHero
         eyebrow={t('hero_eyebrow')}
         title={t('heading')}
@@ -355,9 +390,38 @@ export function VolunteeringPage() {
           </div>
         }
       />
+      )}
 
       {/* Plain-language "how it works" so a first-time volunteer isn't guessing
-          what to do or how they get their time credits. */}
+          what to do or how they get their time credits. On phones it collapses to
+          a one-line disclosure rather than disappearing: an anonymous phone
+          visitor would otherwise get no explanation anywhere of how volunteered
+          hours become time credits. Signed-in members also get the dismissible
+          VolunteeringWelcome card above. */}
+      {isPhone ? (
+        <GlassCard className="p-4">
+          <Disclosure>
+            <DisclosureHeading>
+              <DisclosureTrigger className="flex w-full min-h-11 items-center justify-between gap-3 text-left">
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <span className="shrink-0 rounded-lg bg-rose-500/10 p-1.5 text-rose-600 dark:text-rose-400">
+                    <Info className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="truncate text-sm font-semibold text-theme-primary">
+                    {t('how_it_works_title')}
+                  </span>
+                </span>
+                <DisclosureIndicator />
+              </DisclosureTrigger>
+            </DisclosureHeading>
+            <DisclosureContent>
+              <DisclosureBody>
+                <p className="pt-2 text-sm text-theme-muted">{t('how_it_works')}</p>
+              </DisclosureBody>
+            </DisclosureContent>
+          </Disclosure>
+        </GlassCard>
+      ) : (
       <GlassCard className="p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400 shrink-0">
@@ -369,13 +433,14 @@ export function VolunteeringPage() {
           </div>
         </div>
       </GlassCard>
+      )}
 
       {/* ───────── The ORGANISATION door — the second "hat". ─────────
           Kept visually separate from the volunteer hero above so it's obvious
           these are two different modes: "I volunteer" vs "I run an organisation".
           Previously the only entry was a button hidden behind hasApprovedOrg, so
           owners with a pending org saw nothing at all. */}
-      {isAuthenticated && hasApprovedOrg && (
+      {!isPhone && isAuthenticated && hasApprovedOrg && (
         <GlassCard className="p-4 sm:p-5 border border-rose-500/20">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3 min-w-0">
@@ -416,7 +481,9 @@ export function VolunteeringPage() {
         </GlassCard>
       )}
 
-      {/* Org awaiting approval — previously rendered NOTHING, stranding the owner. */}
+      {/* Org awaiting approval — previously rendered NOTHING, stranding the owner.
+          Deliberately NOT phone-gated: it is two short lines and it is the only
+          place an owner learns their registration is still in review. */}
       {isAuthenticated && !hasApprovedOrg && pendingOrgs.length > 0 && (
         <GlassCard className="p-4 sm:p-5 border border-amber-500/20">
           <div className="flex items-start gap-3">
@@ -431,8 +498,9 @@ export function VolunteeringPage() {
         </GlassCard>
       )}
 
-      {/* No org yet — a quiet nudge that explains the second hat exists. */}
-      {isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
+      {/* No org yet — a quiet nudge that explains the second hat exists.
+          Phone-hidden; its "Register organisation" CTA is re-homed below. */}
+      {!isPhone && isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
         <GlassCard className="p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3 min-w-0">
@@ -455,6 +523,76 @@ export function VolunteeringPage() {
             </Button>
           </div>
         </GlassCard>
+      )}
+
+      {/* ───────── Phone: compact action row ─────────
+          The hero and the two org-door cards above are hidden on phones, and
+          between them they held the ONLY phone entry points to logging hours,
+          browsing organisations, the org dashboard, posting an opportunity and
+          registering an organisation. They are re-homed here as small buttons
+          (44px touch targets) that wrap into at most two rows — roughly a tenth
+          of the height the three cards cost. */}
+      {isPhone && (
+        <div className="flex flex-wrap items-center gap-2 sm:hidden">
+          {isAuthenticated && (
+            <Button
+              as={Link}
+              to={tenantPath('/volunteering?tab=hours')}
+              size="sm"
+              variant="primary"
+              className={`min-h-11 ${VOL_GRADIENT}`}
+              startContent={<Timer className="w-4 h-4" aria-hidden="true" />}
+            >
+              {t('log_hours')}
+            </Button>
+          )}
+          <Button
+            as={Link}
+            to={tenantPath('/organisations')}
+            size="sm"
+            variant="secondary"
+            className="min-h-11"
+            startContent={<Globe className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('browse_organisations')}
+          </Button>
+          {isAuthenticated && hasApprovedOrg && (
+            <>
+              <Button
+                as={Link}
+                to={manageHref}
+                size="sm"
+                variant="secondary"
+                className="min-h-11"
+                startContent={<Building2 className="w-4 h-4" aria-hidden="true" />}
+              >
+                {t('manage_organisation')}
+              </Button>
+              <Button
+                as={Link}
+                to={tenantPath('/volunteering/create')}
+                size="sm"
+                variant="secondary"
+                className="min-h-11"
+                startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+              >
+                {t('post_opportunity')}
+              </Button>
+            </>
+          )}
+          {isAuthenticated && !hasApprovedOrg && pendingOrgs.length === 0 && (
+            <Button
+              as={Link}
+              to={tenantPath('/organisations/register')}
+              size="sm"
+              variant="secondary"
+              className="min-h-11"
+              startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+            >
+              {t('register_organisation')}
+            </Button>
+          )}
+        </div>
       )}
 
       {/* Tabs */}
@@ -492,6 +630,9 @@ export function VolunteeringPage() {
         const moreTabs = visibleTabs.filter(({ key }) => !PRIMARY_VOLUNTEER_TABS.includes(key));
         const activeIsMore = !!activeTab && moreTabs.some(({ key }) => key === activeTab);
         const moreExpanded = showMoreTabs || activeIsMore;
+        // Phone section picker: the trigger shows where you are, the sheet moves you.
+        const activeTabDef = visibleTabs.find(({ key }) => key === activeTab);
+        const ActiveTabIcon = activeTabDef?.icon;
 
         const renderToggle = (tabsToRender: TabDef[]) => (
           <ToggleButtonGroup
@@ -531,7 +672,8 @@ export function VolunteeringPage() {
                 description={t('no_tabs_available_desc')}
               />
             )}
-            {visibleTabs.length > 0 && (
+            {/* Desktop / tablet: the original pill wall, untouched. */}
+            {visibleTabs.length > 0 && !isPhone && (
               <div className="space-y-2">
                 {renderToggle(primaryTabs)}
                 {moreTabs.length > 0 && (
@@ -556,12 +698,41 @@ export function VolunteeringPage() {
               </div>
             )}
 
+            {/* Phone: one 44px control in place of up to 16 wrapping pills (plus
+                the "More (11)" disclosure that unfurled six further rows). It
+                names the section you are in and opens the picker sheet. */}
+            {visibleTabs.length > 0 && isPhone && (
+              <>
+                <Button
+                  variant="flat"
+                  onPress={() => setIsSectionsSheetOpen(true)}
+                  aria-label={t('aria.volunteering_sections')}
+                  aria-haspopup="dialog"
+                  startContent={ActiveTabIcon ? <ActiveTabIcon className="w-4 h-4 shrink-0" aria-hidden="true" /> : undefined}
+                  endContent={<ChevronDown className="w-4 h-4 shrink-0" aria-hidden="true" />}
+                  className="min-h-11 w-full justify-between rounded-xl border border-theme-default bg-theme-elevated px-3.5 text-sm font-semibold text-theme-primary sm:hidden"
+                >
+                  {activeTabDef?.label ?? t('aria.volunteering_sections')}
+                </Button>
+                <VolunteeringSectionsSheet
+                  isOpen={isSectionsSheetOpen}
+                  onClose={() => setIsSectionsSheetOpen(false)}
+                  sections={visibleTabs.map(({ key, label }) => ({ key, label }))}
+                  activeSection={activeTab ?? ''}
+                  onSelect={(key) => {
+                    const nextVolunteerTab = key as VolunteerTab;
+                    if (VOLUNTEER_TABS.includes(nextVolunteerTab)) setTab(nextVolunteerTab);
+                  }}
+                />
+              </>
+            )}
+
             {/* Tab Content — wrapped in a keyed ErrorBoundary so a render error in
                 any single tab (eager OR lazy) is contained to the tab instead of
                 blanking the whole page; the key resets the boundary when the user
                 switches tabs. */}
             {activeTab && <ErrorBoundary key={activeTab}><div>
-              {activeTab === 'opportunities' && isTabEnabled('opportunities') && <OpportunitiesTab />}
+              {activeTab === 'opportunities' && isTabEnabled('opportunities') && <OpportunitiesTab isPhone={isPhone} showMobileControls={showMobileControls} />}
               {activeTab === 'applications' && isTabEnabled('applications') && <ApplicationsTab />}
               {activeTab === 'hours' && isTabEnabled('hours') && <HoursTab />}
               <Suspense fallback={<div role="status" aria-busy="true" aria-label={t('loading')} className="flex justify-center py-12"><Spinner size="lg" /></div>}>
@@ -589,8 +760,41 @@ export function VolunteeringPage() {
 
 /* ───────────────────────── Opportunities Tab ───────────────────────── */
 
-function OpportunitiesTab() {
-  const { t } = useTranslation('volunteering');
+interface OpportunityFilterValues {
+  search: string;
+  format: VolunteeringFormat;
+  proximity: ProximityFilterParams | null;
+}
+
+/**
+ * Single source of truth for filter → API params. The list fetch (and anything
+ * else that ever needs to describe the same filters, e.g. a count probe if the
+ * endpoint gains a total) must go through here so they cannot drift apart.
+ * `per_page` and `cursor` stay with the caller — they are pagination, not filters.
+ */
+function buildOpportunityQueryParams(f: OpportunityFilterValues): URLSearchParams {
+  const params = new URLSearchParams();
+  if (f.search.trim()) params.set('search', f.search.trim());
+  if (f.format === 'remote') params.set('is_remote', '1');
+  if (f.proximity) {
+    params.set('near_lat', String(f.proximity.near_lat));
+    params.set('near_lng', String(f.proximity.near_lng));
+    params.set('radius_km', String(f.proximity.radius_km));
+  }
+  return params;
+}
+
+interface OpportunitiesTabProps {
+  /** Phone viewport — owns the sticky bar / sheet branch. Resolved by the page. */
+  isPhone: boolean;
+  /** `useHeaderScroll(64).isUtilityBarVisible`, lifted so there is one listener. */
+  showMobileControls: boolean;
+}
+
+function OpportunitiesTab({ isPhone, showMobileControls }: OpportunitiesTabProps) {
+  // 'volunteering' stays the default namespace (bare keys are unchanged); 'common'
+  // is declared so the shared radius labels resolve explicitly.
+  const { t } = useTranslation(['volunteering', 'common']);
   const { isAuthenticated } = useAuth();
   const toast = useToast();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -600,6 +804,11 @@ function OpportunitiesTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [proximityParams, setProximityParams] = useState<ProximityFilterParams | null>(null);
+  // Phone-only dimension: the desktop filter row has no format control, so this
+  // is cleared whenever the viewport leaves phone width (see the effect below)
+  // rather than being left applied with no way to see or clear it.
+  const [format, setFormat] = useState<VolunteeringFormat>('any');
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [, setCursor] = useState<string | undefined>();
   const cursorRef = useRef<string | undefined>(undefined);
@@ -640,15 +849,13 @@ function OpportunitiesTab() {
         setIsLoadingMore(true);
       }
 
-      const params = new URLSearchParams();
+      const params = buildOpportunityQueryParams({
+        search: debouncedQuery,
+        format,
+        proximity: proximityParams,
+      });
       params.set('per_page', '20');
       if (append && cursorRef.current) params.set('cursor', cursorRef.current);
-      if (debouncedQuery.trim()) params.set('search', debouncedQuery.trim());
-      if (proximityParams) {
-        params.set('near_lat', String(proximityParams.near_lat));
-        params.set('near_lng', String(proximityParams.near_lng));
-        params.set('radius_km', String(proximityParams.radius_km));
-      }
 
       const response = await api.get<Opportunity[]>(
         `/v2/volunteering/opportunities?${params}`
@@ -681,7 +888,7 @@ function OpportunitiesTab() {
         setIsLoadingMore(false);
       }
     }
-  }, [debouncedQuery, proximityParams]);
+  }, [debouncedQuery, proximityParams, format]);
 
   const loadOpportunitiesRef = useRef(loadOpportunities);
   loadOpportunitiesRef.current = loadOpportunities;
@@ -691,7 +898,58 @@ function OpportunitiesTab() {
     setCursor(undefined);
     loadOpportunitiesRef.current();
     return () => { abortOpportunitiesRef.current?.abort(); };
-  }, [debouncedQuery, proximityParams]);
+  }, [debouncedQuery, proximityParams, format]);
+
+  // Leaving phone width strands `format`: the desktop filter row has no control
+  // for it and no applied-chip row to remove it from. Clear it instead of
+  // silently filtering. A no-op on desktop mount (already 'any').
+  useEffect(() => {
+    if (!isPhone) setFormat('any');
+  }, [isPhone]);
+
+  // ── Phone filter sheet (draft — nothing applies until the footer is pressed) ──
+  const commitDraftFilters = useCallback((next: VolunteeringFilterDraft) => {
+    setProximityParams(next.proximity);
+    setFormat(next.format);
+  }, []);
+
+  // No `countFor`: this endpoint's meta has no total (respondWithCollection),
+  // so the hook never fetches and the footer reads "Show results".
+  const filterSheet = useFilterDraft<VolunteeringFilterDraft>({
+    onApply: commitDraftFilters,
+    emptyDraft: EMPTY_VOLUNTEERING_FILTER_DRAFT,
+  });
+  const { open: openDraft } = filterSheet;
+
+  const openFilterSheet = useCallback(() => {
+    openDraft({ proximity: proximityParams, format });
+  }, [openDraft, proximityParams, format]);
+
+  // "Clear all" in the sticky bar clears the search too (parity with Listings),
+  // even though the query is shown in the search pill rather than as a chip.
+  const resetPhoneFilters = useCallback(() => {
+    setSearchQuery('');
+    setDebouncedQuery('');
+    setProximityParams(null);
+    setFormat('any');
+  }, []);
+
+  // Removable chips for every applied filter. Search is deliberately absent —
+  // it belongs in the search pill / overlay, not the chip row.
+  const phoneFilterChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    if (proximityParams) {
+      chips.push({
+        key: 'near',
+        label: t(`common:radius_${proximityParams.radius_km}`, { defaultValue: `${proximityParams.radius_km} km` }),
+        onRemove: () => setProximityParams(null),
+      });
+    }
+    if (format === 'remote') {
+      chips.push({ key: 'format', label: t('remote'), onRemove: () => setFormat('any') });
+    }
+    return chips;
+  }, [proximityParams, format, t]);
 
   const handleApply = async () => {
     if (!selectedOpportunity) return;
@@ -730,7 +988,8 @@ function OpportunitiesTab() {
 
   return (
     <>
-      {/* Search + Proximity */}
+      {/* Search + Proximity (desktop and tablet — phones use the sticky bar + sheet) */}
+      {!isPhone && (
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px] max-w-md">
           <SearchField
@@ -748,6 +1007,48 @@ function OpportunitiesTab() {
           <LazyProximityFilter value={proximityParams} onFilter={setProximityParams} />
         </Suspense>
       </div>
+      )}
+
+      {/* Phone: slim sticky control bar — auto-hides on scroll down. Only the
+          `search` placeholder is overridden; every other label falls back to the
+          shared common:filter_bar.* vocabulary. */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="rose"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchQuery}
+          onFiltersPress={openFilterSheet}
+          chips={phoneFilterChips}
+          onClearAll={resetPhoneFilters}
+          labels={{ search: t('search_placeholder') }}
+          testId="volunteering-filter-bar"
+        />
+      )}
+
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          onSubmit={(value) => setDebouncedQuery(value)}
+          placeholder={t('search_placeholder')}
+          recentKey="volunteering"
+        />
+      )}
+
+      {/* Phone filter sheet — chips on a draft, applied only by the footer. */}
+      {isPhone && filterSheet.draft && (
+        <VolunteeringFilterSheet
+          isOpen={filterSheet.isOpen}
+          onClose={filterSheet.close}
+          draft={filterSheet.draft}
+          onDraftChange={filterSheet.patch}
+          onApply={filterSheet.apply}
+          onClearAll={filterSheet.clear}
+        />
+      )}
 
       {/* Error */}
       {error && !isLoading && (
@@ -778,7 +1079,7 @@ function OpportunitiesTab() {
             <EmptyState
               icon={<Briefcase className="w-12 h-12" aria-hidden="true" />}
               title={t('no_opportunities_found')}
-              description={(searchQuery || proximityParams) ? t('try_different_search') : t('no_opportunities_available')}
+              description={(searchQuery || proximityParams || format !== 'any') ? t('try_different_search') : t('no_opportunities_available')}
             />
           ) : (
             <div className="space-y-4">

@@ -96,6 +96,8 @@
   "applied": "Toegepast",
   "apply": "Toepassen",
   "filter_all": "Alle",
+  "filter_distance": "Afstand",
+  "filter_format": "Formaat",
   "status_pending": "In behandeling",
   "status_approved": "Goedgekeurd",
   "status_declined": "Afgewezen",

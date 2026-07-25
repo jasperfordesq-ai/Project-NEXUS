@@ -100,6 +100,8 @@
   "applied": "Stosowany",
   "apply": "Stosować",
   "filter_all": "Wszystko",
+  "filter_distance": "Dystans",
+  "filter_format": "Format",
   "status_pending": "Aż do",
   "status_approved": "Zatwierdzony",
   "status_declined": "Odrzucony",
