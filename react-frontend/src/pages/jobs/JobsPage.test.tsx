@@ -7,12 +7,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) =>
-      (opts?.fallbackValue as string | undefined) ?? key,
-  }),
-}));
+// Partial mock — src/test/setup.ts imports `initReactI18next` to bootstrap i18n,
+// so a total mock of this module breaks collection for the whole file.
+vi.mock('react-i18next', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...orig,
+    useTranslation: () => ({
+      t: (key: string, opts?: Record<string, unknown>) =>
+        (opts?.fallbackValue as string | undefined) ?? key,
+      i18n: { language: 'en' },
+    }),
+  };
+});
 
 vi.mock('react-router-dom', () => {
   return {
@@ -70,77 +77,17 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/components/ui', () => {
-  const passthrough = ({ children, label, title, description, ...props }: Record<string, unknown>) => (
-    <div {...props}>
-      {label as ReactNode}
-      {title as ReactNode}
-      {description as ReactNode}
-      {children as ReactNode}
-    </div>
-  );
+// JobsPage imports PageMeta by direct path. setup.ts only stubs the
+// `@/components/seo` barrel, and the real PageMeta needs both a TenantProvider
+// (direct-path useTenant) and a HelmetProvider. It renders no visible DOM.
+vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
-  const Button = ({ children, onPress, onClick, ...props }: Record<string, unknown>) => (
-    <button type="button" {...props} onClick={(onPress ?? onClick) as (() => void) | undefined}>
-      {children as ReactNode}
-    </button>
-  );
-
-  const SearchField = ({ placeholder, value, onValueChange }: Record<string, unknown>) => (
-    <input
-      placeholder={placeholder as string | undefined}
-      value={(value as string | undefined) ?? ''}
-      onChange={(event) => {
-        if (typeof onValueChange === 'function') {
-          (onValueChange as (next: string) => void)(event.target.value);
-        }
-      }}
-    />
-  );
-
-  const ToggleButtonGroup = ({
-    onSelectionChange,
-    children,
-  }: {
-    onSelectionChange?: (keys: Set<unknown>) => void;
-    children?: ReactNode;
-  }) => {
-    return (
-      <div
-        onClick={(event) => {
-          const button = (event.target as HTMLElement).closest('button[data-toggle-id]');
-          const nextId = button?.getAttribute('data-toggle-id');
-          if (nextId) onSelectionChange?.(new Set([nextId]));
-        }}
-      >
-        {children}
-      </div>
-    );
-  };
-
-  const ToggleButton = ({ id, children }: { id?: unknown; children?: ReactNode }) => {
-    return (
-      <button type="button" data-toggle-id={String(id ?? '')}>
-        {children}
-      </button>
-    );
-  };
-
-  return {
-    Select: passthrough,
-    SelectItem: passthrough,
-    GlassCard: passthrough,
-    Button,
-    SearchField,
-    Switch: ({ children }: { children?: ReactNode }) => <label><input type="checkbox" />{children}</label>,
-    Tabs: passthrough,
-    Tab: passthrough,
-    CardRowsSkeleton: () => <div role="status" />,
-    Chip: passthrough,
-    ToggleButton,
-    ToggleButtonGroup,
-  };
-});
+// NOTE: deliberately NOT mocking the `@/components/ui` barrel. JobsPage imports
+// every primitive by direct path (`@/components/ui/Button`, `/Chip`, `/GlassCard`,
+// `/SearchField`, `/Select`, `/Skeletons`, `/Switch`, `/Tabs`, `/ToggleButtonGroup`),
+// so a barrel mock covers none of them — and it breaks the real primitives that
+// consume the barrel internally (Skeletons imports `Skeleton` from it). Assertions
+// below therefore target the real HeroUI DOM.
 
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title, description }: { title: string; description?: string }) => (
@@ -246,7 +193,8 @@ describe('JobsPage', () => {
 
   it('shows search input', () => {
     render(<JobsPage />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    // The real SearchField renders <input type="search"> → role `searchbox`.
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
   });
 
   it('shows type filter chips (all, paid, volunteer, timebank)', () => {
