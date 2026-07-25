@@ -69,11 +69,15 @@ interface ChipGroupProps {
   extra?: React.ReactNode;
 }
 
-/** One labelled section of single-select filter chips. */
+/**
+ * One labelled section of single-select filter chips.
+ * Deliberately a <div>, not <section>: glass.css paints every <section>
+ * inside a [role="dialog"] with an opaque solid background.
+ */
 function ChipGroup({ label, selected, options, onChange, trailing, extra }: ChipGroupProps) {
   return (
-    <section>
-      <div className="mb-2 flex min-h-6 items-center justify-between gap-2">
+    <div>
+      <div className="mb-2.5 flex min-h-6 items-center justify-between gap-2">
         <h3 className="text-[11px] font-semibold uppercase tracking-wider text-theme-subtle">{label}</h3>
         {trailing}
       </div>
@@ -89,7 +93,7 @@ function ChipGroup({ label, selected, options, onChange, trailing, extra }: Chip
             const [key] = Array.from(keys);
             if (key != null) onChange(String(key));
           }}
-          className="flex flex-wrap items-center gap-2 p-0"
+          className="flex w-full flex-wrap items-center justify-start gap-2 p-0"
         >
           {options.map((opt) => (
             <ToggleButton key={opt.key} id={opt.key} variant="ghost" className={CHIP_CLASS}>
@@ -99,7 +103,7 @@ function ChipGroup({ label, selected, options, onChange, trailing, extra }: Chip
         </ToggleButtonGroup>
         {extra}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -242,7 +246,7 @@ export function ListingFilterSheet({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6 pb-2">
           <ChipGroup
             label={t('filter_type_label')}
             selected={draft.type}

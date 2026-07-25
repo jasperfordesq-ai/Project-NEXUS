@@ -62,7 +62,9 @@ export function BottomSheet({
       backdrop="blur"
       hideCloseButton
       classNames={{
-        base: `w-full max-w-none bg-[var(--surface-dropdown)] border border-[var(--border-default)] rounded-t-3xl ${maxHeightClass} overflow-hidden ${className}`,
+        // p-0 cancels the HeroUI drawer dialog's built-in p-6 so the header
+        // divider and footer run edge to edge; sections re-inset with px-5.
+        base: `w-full max-w-none p-0 bg-[var(--surface-dropdown)] border border-[var(--border-default)] rounded-t-3xl ${maxHeightClass} overflow-hidden ${className}`,
         backdrop: 'bg-black/60 backdrop-blur-sm',
         wrapper: 'items-end',
         header: 'p-0',
@@ -70,8 +72,9 @@ export function BottomSheet({
       }}
     >
       <DrawerContent aria-label={title} className="flex min-h-0 flex-col">
-        <DrawerHandle className="shrink-0" />
-        <DrawerHeader className="flex shrink-0 items-center justify-between border-b border-theme-default px-5 py-3">
+        <DrawerHandle className="shrink-0 pt-2.5" />
+        {/* flex-row overrides the drawer header's default column stack (title above a centered close button). */}
+        <DrawerHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-theme-default py-1 pl-5 pr-2">
           <DrawerHeading className="text-base font-semibold text-theme-primary">
             {title}
           </DrawerHeading>

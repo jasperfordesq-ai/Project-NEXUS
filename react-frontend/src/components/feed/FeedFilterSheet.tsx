@@ -60,7 +60,7 @@ export function FeedFilterSheet({
             onFilterChange(next);
             if (!filtersWithSubFilters.has(next)) onClose();
           }}
-          className="flex flex-wrap items-center gap-2 p-0"
+          className="flex w-full flex-wrap items-center justify-start gap-2 p-0"
         >
           {options.map((opt) => (
             <ToggleButton
