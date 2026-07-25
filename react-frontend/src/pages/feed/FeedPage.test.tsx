@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 
 const mockGet = vi.fn().mockResolvedValue({ success: true, data: [], meta: {} });
@@ -54,8 +54,15 @@ vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));
 
+// Toggle phone layout. The feed tree asks two opposite questions:
+// FeedPage uses '(min-width: 1024px)' for the desktop sidebar, while FeedCard /
+// ShareButton use '(max-width: 639px)' for phone behaviour. Answer both from one
+// switch so the default render is a genuine desktop layout.
+let isPhoneViewport = false;
 vi.mock('@/hooks/useMediaQuery', () => ({
-  useMediaQuery: vi.fn(() => true),
+  useMediaQuery: vi.fn((query: string) =>
+    query.includes('max-width') ? isPhoneViewport : !isPhoneViewport,
+  ),
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -76,6 +83,13 @@ vi.mock('@/components/seo', () => ({
 
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
+// FeedPage imports useConfirm by its direct path, so the barrel mock above never
+// covers it and the real hook throws without a <ConfirmDialogProvider>. Mirror the
+// uiMock's behaviour (an auto-confirming dialog) on the direct path too.
+vi.mock('@/components/ui/ConfirmDialog', () => ({
+  useConfirm: () => () => Promise.resolve(true),
+}));
+
 vi.mock('@/lib/motion', () => {  const motionProps = new Set(['variants', 'initial', 'animate', 'layout', 'transition', 'exit', 'whileHover', 'whileTap', 'whileInView', 'viewport']);  const filterMotion = (props: Record<string, unknown>) => {    const filtered: Record<string, unknown> = {};    for (const [k, v] of Object.entries(props)) {      if (!motionProps.has(k)) filtered[k] = v;    }    return filtered;  };  return {    motion: {      div: ({ children, ...props }: Record<string, unknown>) => <div {...filterMotion(props)}>{children}</div>,    },    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,  };});
 
 import { FeedPage } from './FeedPage';
@@ -83,6 +97,7 @@ import { FeedPage } from './FeedPage';
 describe('FeedPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isPhoneViewport = false;
     mockGet.mockResolvedValue({ success: true, data: [], meta: {} });
     mockPost.mockResolvedValue({ success: true });
   });
@@ -211,10 +226,14 @@ describe('FeedPage', () => {
     });
     expect(mockGet).not.toHaveBeenCalledWith(expect.stringContaining('type='));
 
-    // Verify the Events filter button exists and is interactive
-    const eventsBtn = screen.getByRole('button', { name: 'Events' });
+    // Verify the Events filter control exists and is interactive. The desktop
+    // filter set is a single-select HeroUI ToggleButtonGroup, so each option is
+    // exposed as a radio inside the 'Select feed filter' radiogroup.
+    const filterGroup = screen.getByRole('radiogroup', { name: 'Select feed filter' });
+    const eventsBtn = within(filterGroup).getByRole('radio', { name: 'Events' });
     expect(eventsBtn).toBeInTheDocument();
     expect(eventsBtn).not.toBeDisabled();
+    expect(eventsBtn).toHaveAttribute('aria-checked', 'false');
   });
 
   it('calls loadFeed without type param for "all" filter', async () => {
@@ -240,11 +259,69 @@ describe('FeedPage', () => {
     let resolveApi: (value: unknown) => void;
     mockGet.mockReturnValue(new Promise((resolve) => { resolveApi = resolve; }));
     render(<FeedPage />);
-    // Should show skeleton containers (GlassCard mocked as div[data-testid="glass-card"])
-    const skeletonCards = document.querySelectorAll('[data-testid="glass-card"]');
-    // At least 3 skeleton cards + possible quick-post box
+    // The loading state is a single live region holding the FeedSkeleton cards,
+    // each of which renders a GlassCard (class "glass-card") as its root.
+    const loadingRegion = screen.getByRole('status', { name: 'Loading community updates...' });
+    const skeletonCards = loadingRegion.querySelectorAll('.glass-card');
+    // At least 3 skeleton cards
     expect(skeletonCards.length).toBeGreaterThanOrEqual(3);
     // Clean up: resolve the promise so Vitest can exit cleanly
     resolveApi!({ success: true, data: [], meta: {} });
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('renders the slim sticky controls bar with the filter-sheet trigger and no desktop sidebar', () => {
+      render(<FeedPage />);
+
+      const feedControls = screen.getByTestId('feed-controls');
+      // Phones pin the bar below the app bar and let it scroll away.
+      expect(feedControls.className).toMatch(/\bsticky\b/);
+      expect(within(feedControls).getByRole('button', { name: 'Filters' })).toBeInTheDocument();
+      // The widget sidebar is desktop-only (min-width: 1024px).
+      expect(screen.queryByTestId('feed-sidebar-panel')).not.toBeInTheDocument();
+    });
+
+    it('reveals the feed filter chips inside the filter sheet', async () => {
+      render(<FeedPage />);
+
+      // Closed by default — the filters live behind the trigger, not in the bar.
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+
+      const sheet = await screen.findByRole('dialog');
+      const sheetFilters = within(sheet).getByRole('radiogroup', { name: 'Select feed filter' });
+      expect(within(sheetFilters).getByRole('radio', { name: 'All' })).toHaveAttribute('aria-checked', 'true');
+      expect(within(sheetFilters).getByRole('radio', { name: 'Posts' })).toBeInTheDocument();
+      expect(within(sheetFilters).getByRole('radio', { name: 'Events' })).toBeInTheDocument();
+      expect(within(sheetFilters).getByRole('radio', { name: 'Listings' })).toBeInTheDocument();
+    });
+
+    it('keeps the sheet open on a filter with sub-filters and applies it to the feed request', async () => {
+      render(<FeedPage />);
+      await waitFor(() => {
+        expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+      });
+      mockGet.mockClear();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+      const sheet = await screen.findByRole('dialog');
+      fireEvent.click(within(sheet).getByRole('radio', { name: 'Listings' }));
+
+      // Listings has sub-filters, so the sheet stays open to offer them.
+      await waitFor(() => {
+        expect(within(sheet).getByRole('gridcell', { name: 'Offers' })).toBeInTheDocument();
+      });
+      expect(within(sheet).getByRole('gridcell', { name: 'Requests' })).toBeInTheDocument();
+
+      // And the chosen filter reaches the API.
+      await waitFor(() => {
+        expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('type=listings'));
+      });
+    });
   });
 });
