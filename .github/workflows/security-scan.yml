@@ -151,12 +151,17 @@ jobs:
       # advisories are not a production attack surface and must not gate
       # releases. Dev-dependency advisories are documented in docs/SECURITY-SCANNING.md
       # and remain visible in the non-blocking OWASP/Trivy SARIF uploads.
+      # Gate script wraps `npm audit --omit=dev` and blocks on HIGH/CRITICAL
+      # advisories unless they carry a dated, scoped exception in
+      # .npm-audit-exceptions.json — the npm-audit counterpart of .trivyignore,
+      # for advisories with no in-range fix (e.g. a fix that only exists behind
+      # a breaking major of an on-hold app). Review exceptions quarterly.
       - name: NPM Audit (production deps — blocking)
         run: |
-          npm audit --omit=dev --audit-level=high
-          npm --prefix react-frontend audit --omit=dev --audit-level=high
-          npm --prefix e2e audit --omit=dev --audit-level=high
-          npm --prefix mobile audit --package-lock-only --omit=dev --audit-level=high
+          node scripts/npm-audit-gate.mjs
+          node scripts/npm-audit-gate.mjs --prefix react-frontend
+          node scripts/npm-audit-gate.mjs --prefix e2e
+          node scripts/npm-audit-gate.mjs --prefix mobile --package-lock-only
 
       - name: OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
