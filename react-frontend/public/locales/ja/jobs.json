@@ -17,6 +17,7 @@
   "search_aria": "求人情報を検索",
   "filter_aria": "カテゴリーで絞り込む",
   "filter_by_commitment": "コミットメントで絞り込む",
+  "filter_any": "どれでも",
   "type": {
     "all": "すべてのタイプ",
     "paid": "有料",
@@ -169,8 +170,8 @@
     "anonymous": "匿名",
     "meta_description_one": "この雇用主プロフィール、募集中の職種、{{count}} の現在の機会に関するコミュニティ レビューを表示します。",
     "meta_description_other": "{{count}}件の現在の機会から、雇用主のプロフィール、募集中の職務、コミュニティのレビューを表示します。",
-    "open_roles_count_other": "{{count}}件の募集中の職務",
-    "open_roles_count_one": "{{count}} 公開中の役職"
+    "open_roles_count_one": "{{count}} 公開中の役職",
+    "open_roles_count_other": "{{count}}件の募集中の職務"
   },
   "bulk": {
     "select_action": "ステージに移動...",
@@ -179,8 +180,8 @@
     "success": "応募が更新されました",
     "error": "一括更新に失敗しました",
     "selected_count": "{{count}} が選択されました",
-    "selected_count_other": "{{count}} が選択されました",
-    "selected_count_one": "{{count}} 選択済み"
+    "selected_count_one": "{{count}} 選択済み",
+    "selected_count_other": "{{count}} が選択されました"
   },
   "history": {
     "title": "ステータス履歴",
@@ -273,14 +274,14 @@
     "ai_insights": "AIインサイト",
     "days_short_value": "{{count}}日",
     "not_available": "該当なし",
+    "views_tooltip_one": "{{date}}: {{count}} 回視聴",
     "views_tooltip_other": "{{date}}: {{count}}回の閲覧",
+    "applications_tooltip_one": "{{week}}: {{count}} 個のアプリケーション",
     "applications_tooltip_other": "{{week}}: {{count}}件の応募",
     "based_on_one": "{{count}} の同様のジョブに基づく",
     "based_on_other": "{{count}}件の類似求人に基づく",
-    "days_short_value_other": "{{count}}日",
-    "views_tooltip_one": "{{date}}: {{count}} 回視聴",
-    "applications_tooltip_one": "{{week}}: {{count}} 個のアプリケーション",
-    "days_short_value_one": "{{count}}d"
+    "days_short_value_one": "{{count}}d",
+    "days_short_value_other": "{{count}}日"
   },
   "salary": {
     "label": "補償",
@@ -325,8 +326,8 @@
     "empty_all": "まだどのポジションにも応募していません。",
     "empty_filtered": "応募が見つかりませんでした: {{filter}}",
     "browse_jobs": "仕事を探す",
-    "days_left_other": "{{count}}日残っています",
-    "days_left_one": "{{count}}d 残り"
+    "days_left_one": "{{count}}d 残り",
+    "days_left_other": "{{count}}日残っています"
   },
   "withdraw": {
     "confirm_title": "応募を取り下げますか？",
@@ -437,8 +438,8 @@
     "message_employer": "雇用主にメッセージを送る",
     "cv_parse_error": "CVの解析に失敗しました。手動で申請を提出することはできます。",
     "quick_apply": "保存済みプロフィールで簡単応募",
-    "cv_size_kb_other": "({{count}} KB)",
-    "cv_size_kb_one": "({{count}} KB)"
+    "cv_size_kb_one": "({{count}} KB)",
+    "cv_size_kb_other": "({{count}} KB)"
   },
   "detail": {
     "loading": "求人情報を読み込んでいます...",
@@ -497,8 +498,8 @@
     "confirm_reopen": "再開により求人が再び表示され、応募できるようになります。",
     "owner_has_applicants_one": "{{count}} の申請者 — 下にスクロールして確認します",
     "owner_has_applicants_other": "{{count}} 応募者 — 下にスクロールして確認してください",
-    "views_other": "{{count}} 回覧",
-    "views_one": "{{count}} 回閲覧"
+    "views_one": "{{count}} 回閲覧",
+    "views_other": "{{count}} 回覧"
   },
   "interview": {
     "schedule": "面接をスケジュールする",
@@ -797,12 +798,12 @@
     "weeks_ago": "{{count}}週間前",
     "skills_description": "カンマ区切りのスキル",
     "skills_chip": "スキル: {{skills}}",
+    "days_ago_one": "{{count}} 日前",
     "days_ago_other": "{{count}}日前",
+    "weeks_ago_one": "{{count}} 週間前",
     "weeks_ago_other": "{{count}}週間前",
     "results_count_one": "{{count}} 個の候補が見つかりました",
-    "results_count_other": "{{count}} 人の候補が見つかりました",
-    "days_ago_one": "{{count}} 日前",
-    "weeks_ago_one": "{{count}} 週間前"
+    "results_count_other": "{{count}} 人の候補が見つかりました"
   },
   "resume_visibility": {
     "label": "私のプロフィールを雇用主が検索できるようにする",
@@ -1086,16 +1087,16 @@
     "category_value": "{{category}}"
   },
   "tabs_aria": "ジョブビュー",
-  "match_badge_other": "{{count}}% 一致",
-  "views_other": "{{count}} 回の閲覧",
-  "applications_other": "{{count}} 件の応募",
-  "char_count_other": "{{count}} / {{max}} 文字",
-  "hours_per_week_other": "{{count}} 時間/週",
-  "time_credits_label_other": "{{count}} タイムクレジット",
   "match_badge_one": "{{count}}% 一致",
+  "match_badge_other": "{{count}}% 一致",
   "views_one": "{{count}} 回閲覧",
+  "views_other": "{{count}} 回の閲覧",
   "applications_one": "{{count}}の応募",
+  "applications_other": "{{count}} 件の応募",
   "char_count_one": "{{count}} / {{max}} 文字",
+  "char_count_other": "{{count}} / {{max}} 文字",
   "hours_per_week_one": "{{count}} 時間/週",
-  "time_credits_label_one": "{{count}} 時間クレジット"
+  "hours_per_week_other": "{{count}} 時間/週",
+  "time_credits_label_one": "{{count}} 時間クレジット",
+  "time_credits_label_other": "{{count}} タイムクレジット"
 }

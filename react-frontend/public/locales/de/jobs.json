@@ -17,6 +17,7 @@
   "search_aria": "Stellenangebote durchsuchen",
   "filter_aria": "Nach Kategorie filtern",
   "filter_by_commitment": "Nach Arbeitsumfang filtern",
+  "filter_any": "Beliebig",
   "type": {
     "all": "Alle Typen",
     "paid": "Bezahlt",

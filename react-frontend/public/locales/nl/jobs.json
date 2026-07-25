@@ -17,6 +17,7 @@
   "search_aria": "Zoek naar vacatures",
   "filter_aria": "Filter op categorie",
   "filter_by_commitment": "Filter op inzet",
+  "filter_any": "Elk",
   "type": {
     "all": "Alle Types",
     "paid": "Betaald",

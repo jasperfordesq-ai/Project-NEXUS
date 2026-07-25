@@ -7,12 +7,15 @@ import { getFormattingLocale } from '@/lib/helpers';
 import { Button } from '@/components/ui/Button';
 import { Chip as HeroChip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { SearchField } from '@/components/ui/SearchField';
 import { Select, SelectItem } from '@/components/ui/Select';
 import { CardRowsSkeleton } from '@/components/ui/Skeletons';
 import { Switch } from '@/components/ui/Switch';
 import { Tabs, Tab } from '@/components/ui/Tabs';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
+import { JobFilterSheet, type JobFilterDraft } from '@/components/jobs/JobFilterSheet';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 /**
  * Jobs Page - Community job vacancies listing with type/commitment filtering
  *
@@ -64,6 +67,12 @@ import { useAuth, useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
+// Direct paths on purpose: page tests partial-mock the '@/hooks' barrel, so a
+// barrel import of these would resolve to undefined and crash every test.
+import { useFilterDraft } from '@/hooks/useFilterDraft';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { PageMeta } from '@/components/seo/PageMeta';
 import type { JobConfig } from '@/types';
 
@@ -124,6 +133,54 @@ const COMMITMENT_FILTERS = [
   { id: 'one_off' },
 ] as const;
 
+/** Phone filter bar / sheet accent — matches the page's blue hero + card icons. */
+const JOB_FILTER_ACCENT = 'blue' as const;
+
+/**
+ * Sort value → label key for the phone applied-filter chips. Note `salary_desc`
+ * maps to `sort.salary`: the label key does NOT mirror the API value.
+ */
+const SORT_CHIP_KEYS: Record<string, string> = {
+  deadline: 'sort.deadline',
+  salary_desc: 'sort.salary',
+};
+
+/**
+ * What "Clear all" resets. Unlike Listings (which deliberately preserves `sort`),
+ * jobs surfaces the chosen sort as a removable chip in the sticky bar, so a clear
+ * that left it behind would strand a chip the user just cleared.
+ */
+const EMPTY_JOB_FILTER_DRAFT: Partial<JobFilterDraft> = {
+  type: 'all',
+  commitment: 'all',
+  sort: 'newest',
+  remoteOnly: false,
+};
+
+interface JobFilterValues {
+  search: string;
+  type: string;
+  commitment: string;
+  sort: string;
+  remoteOnly: boolean;
+}
+
+/**
+ * Single source of truth for filter → API params, shared by the browse fetch and
+ * the filter sheet's live count probe so the two can never drift apart. Callers
+ * add their own `per_page` (and `cursor` when appending).
+ */
+function buildJobQueryParams(f: JobFilterValues): URLSearchParams {
+  const params = new URLSearchParams();
+  if (f.search) params.set('search', f.search);
+  if (f.type !== 'all') params.set('type', f.type);
+  if (f.commitment !== 'all') params.set('commitment', f.commitment);
+  if (f.sort !== 'newest') params.set('sort', f.sort);
+  if (f.remoteOnly) params.set('is_remote', '1');
+  params.set('status', 'open');
+  return params;
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -140,6 +197,12 @@ const itemVariants = {
 export function JobsPage() {
   const { t } = useTranslation('jobs');
   usePageTitle(t('title'));
+  // Phones hide the page's own hero card, so the h1 moves into the app bar.
+  // These three must stay ABOVE the hasFeature early-return below, or a tenant
+  // with job_vacancies off changes the hook order and crashes.
+  useSetAppBarTitle(t('title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature, jobConfig: tenantJobConfig } = useTenant();
   const jobConfig: Partial<JobConfig> = tenantJobConfig ?? {};
@@ -151,6 +214,9 @@ export function JobsPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  // Total matching vacancies (`meta.total`, NOT `meta.total_items`) — seeds the
+  // filter sheet's footer count before the first probe returns.
+  const [totalJobs, setTotalJobs] = useState<number | null>(null);
   const cursorRef = useRef<string | null>(null);
   // Abort the prior browse request on each new call so out-of-order responses
   // (from rapid filter/search/sort/tab changes) can't clobber newer results.
@@ -161,6 +227,10 @@ export function JobsPage() {
   const [selectedCommitment, setSelectedCommitment] = useState(searchParams.get('commitment') || 'all');
   const [selectedSort, setSelectedSort] = useState(searchParams.get('sort') || 'newest');
   const [remoteOnly, setRemoteOnly] = useState(searchParams.get('remote') === '1');
+
+  // Native-app search: phones open a full-screen overlay with recents instead of
+  // typing into the inline filter field. Desktop keeps the inline field.
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState<string>(searchParams.get('tab') || 'browse');
   const [savedJobs, setSavedJobs] = useState<JobVacancy[]>([]);
@@ -198,13 +268,13 @@ export function JobsPage() {
         setIsLoadingMore(true);
       }
 
-      const params = new URLSearchParams();
-      if (debouncedQuery) params.set('search', debouncedQuery);
-      if (selectedType !== 'all') params.set('type', selectedType);
-      if (selectedCommitment !== 'all') params.set('commitment', selectedCommitment);
-      if (selectedSort !== 'newest') params.set('sort', selectedSort);
-      if (remoteOnly) params.set('is_remote', '1');
-      params.set('status', 'open');
+      const params = buildJobQueryParams({
+        search: debouncedQuery,
+        type: selectedType,
+        commitment: selectedCommitment,
+        sort: selectedSort,
+        remoteOnly,
+      });
       params.set('per_page', String(ITEMS_PER_PAGE));
       if (append && cursorRef.current) {
         params.set('cursor', cursorRef.current);
@@ -218,6 +288,7 @@ export function JobsPage() {
           setVacancies((prev) => [...prev, ...response.data!]);
         } else {
           setVacancies(response.data);
+          setTotalJobs(response.meta?.total ?? null);
         }
         const cursor = response.meta?.cursor ?? null;
         cursorRef.current = cursor;
@@ -316,6 +387,83 @@ export function JobsPage() {
     loadVacancies(true);
   }, [isLoadingMore, hasMore, loadVacancies]);
 
+  // ── Phone filter sheet (draft state — nothing applies until "Show N results") ──
+  // The draft machine (snapshot / patch / debounced count probe / apply) lives in
+  // useFilterDraft; only the jobs-specific pieces stay here.
+
+  /** Live result count for the sheet footer — cheap per_page=1 fetch of the draft. */
+  const countDraftJobs = useCallback(async (candidate: JobFilterDraft) => {
+    const params = buildJobQueryParams({ search: debouncedQuery, ...candidate });
+    params.set('per_page', '1');
+    const response = await api.get<JobVacancy[]>(`/v2/jobs?${params}`);
+    return response.success ? (response.meta?.total ?? null) : null;
+  }, [debouncedQuery]);
+
+  // Commits into the SAME state vars the desktop controls write, so the existing
+  // cursor-reset effect fires unchanged. Never introduce a parallel applied-filter
+  // object here or page 2 of the old filters would append onto page 1 of the new.
+  const commitDraftFilters = useCallback((next: JobFilterDraft) => {
+    setSelectedType(next.type);
+    setSelectedCommitment(next.commitment);
+    setSelectedSort(next.sort);
+    setRemoteOnly(next.remoteOnly);
+  }, []);
+
+  const filterSheet = useFilterDraft<JobFilterDraft>({
+    onApply: commitDraftFilters,
+    emptyDraft: EMPTY_JOB_FILTER_DRAFT,
+    countFor: countDraftJobs,
+    countKey: debouncedQuery,
+  });
+  const { open: openDraft } = filterSheet;
+
+  const openFilterSheet = useCallback(() => {
+    openDraft({
+      type: selectedType,
+      commitment: selectedCommitment,
+      sort: selectedSort,
+      remoteOnly,
+    }, totalJobs);
+  }, [openDraft, selectedType, selectedCommitment, selectedSort, remoteOnly, totalJobs]);
+
+  // Phone: removable chips for every applied filter (the query shows in the
+  // search pill instead of becoming a chip).
+  const phoneFilterChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    if (selectedType !== 'all') {
+      chips.push({ key: 'type', label: t(`type.${selectedType}`), onRemove: () => setSelectedType('all') });
+    }
+    if (selectedCommitment !== 'all') {
+      chips.push({
+        key: 'commitment',
+        label: t(`commitment.${selectedCommitment}`),
+        onRemove: () => setSelectedCommitment('all'),
+      });
+    }
+    if (selectedSort !== 'newest') {
+      chips.push({
+        key: 'sort',
+        label: t(SORT_CHIP_KEYS[selectedSort] ?? 'sort.label'),
+        onRemove: () => setSelectedSort('newest'),
+      });
+    }
+    if (remoteOnly) {
+      chips.push({ key: 'remote', label: t('remote_only'), onRemove: () => setRemoteOnly(false) });
+    }
+    return chips;
+  }, [selectedType, selectedCommitment, selectedSort, remoteOnly, t]);
+
+  const resetPhoneFilters = useCallback(() => {
+    setSearchQuery('');
+    // Clear the committed query too so the grid refetches immediately rather
+    // than one debounce tick later.
+    setDebouncedQuery('');
+    setSelectedType('all');
+    setSelectedCommitment('all');
+    setSelectedSort('newest');
+    setRemoteOnly(false);
+  }, []);
+
   if (!hasFeature('job_vacancies')) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 py-16 text-center">
@@ -333,7 +481,9 @@ export function JobsPage() {
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_title')} description={t('page_description')} />
-      {/* Hero Banner */}
+      {/* Hero Banner — phones hide it entirely; the title lives in the app bar
+          (useSetAppBarTitle) and its three actions re-home into the row below. */}
+      {!isPhone && (
       <div className="relative overflow-hidden rounded-xl border border-theme-default bg-theme-surface p-5 shadow-sm sm:p-6">
         <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -375,6 +525,45 @@ export function JobsPage() {
           )}
         </div>
       </div>
+      )}
+
+      {/* Phone: the hero was the ONLY entry point to /jobs/my-applications,
+          /jobs/alerts and /jobs/create, so all three re-home here as one compact
+          row — Post Vacancy keeps its label, the two secondary destinations
+          become 44px icon actions. */}
+      {isPhone && isAuthenticated && (
+        <div className="flex items-center gap-2 sm:hidden">
+          <Button
+            as={Link}
+            to={tenantPath('/jobs/create')}
+            color="primary"
+            className="min-h-11 flex-1"
+            startContent={<Plus className="w-4 h-4" aria-hidden="true" />}
+          >
+            {t('create_vacancy')}
+          </Button>
+          <Button
+            as={Link}
+            to={tenantPath('/jobs/my-applications')}
+            isIconOnly
+            variant="flat"
+            aria-label={t('my_applications.title')}
+            className="min-h-11 min-w-11 shrink-0 bg-theme-elevated text-theme-muted"
+          >
+            <FileText className="w-5 h-5" aria-hidden="true" />
+          </Button>
+          <Button
+            as={Link}
+            to={tenantPath('/jobs/alerts')}
+            isIconOnly
+            variant="flat"
+            aria-label={t('alerts.title')}
+            className="min-h-11 min-w-11 shrink-0 bg-theme-elevated text-theme-muted"
+          >
+            <Bell className="w-5 h-5" aria-hidden="true" />
+          </Button>
+        </div>
+      )}
 
       {/* J1: Tabs for browse/saved */}
       {isAuthenticated && (
@@ -453,7 +642,49 @@ export function JobsPage() {
       {/* Browse tab content */}
       {activeTab === 'browse' && (
         <>
+          {/* Phone: one slim sticky control bar replaces the five filter bands
+              below. It lives inside the browse branch because 'saved' and
+              'my-postings' render unfilterable lists. */}
+          {isPhone && (
+            <MobileFilterBar
+              isVisible={showMobileControls}
+              accent={JOB_FILTER_ACCENT}
+              onSearchPress={() => setIsSearchOverlayOpen(true)}
+              searchValue={searchQuery}
+              onFiltersPress={openFilterSheet}
+              chips={phoneFilterChips}
+              onClearAll={resetPhoneFilters}
+              labels={{ search: t('search_placeholder') }}
+            />
+          )}
+
+          {isPhone && (
+            <MobileSearchOverlay
+              isOpen={isSearchOverlayOpen}
+              onClose={() => setIsSearchOverlayOpen(false)}
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+              onSubmit={(value) => setDebouncedQuery(value)}
+              placeholder={t('search_placeholder')}
+              recentKey="jobs"
+            />
+          )}
+
+          {/* Phone filter sheet — every filter as chips, live count, draft-apply */}
+          {isPhone && filterSheet.draft && (
+            <JobFilterSheet
+              isOpen={filterSheet.isOpen}
+              onClose={filterSheet.close}
+              draft={filterSheet.draft}
+              onDraftChange={filterSheet.patch}
+              resultCount={filterSheet.count}
+              onApply={filterSheet.apply}
+              onClearAll={filterSheet.clear}
+            />
+          )}
+
           {/* Search */}
+          {!isPhone && (
           <GlassCard className="p-4">
             <SearchField
               placeholder={t('search_placeholder')}
@@ -466,8 +697,10 @@ export function JobsPage() {
               }}
             />
           </GlassCard>
+          )}
 
           {/* Sort + Remote toggle */}
+          {!isPhone && (
           <div className="flex flex-wrap items-center gap-3">
             <Select
               label={t('sort.label')}
@@ -497,8 +730,10 @@ export function JobsPage() {
               <span className="text-sm text-theme-muted">{t('remote_only')}</span>
             </div>
           </div>
+          )}
 
           {/* Type Filter Chips */}
+          {!isPhone && (
           <ToggleButtonGroup
             selectionMode="single"
             disallowEmptySelection
@@ -533,8 +768,10 @@ export function JobsPage() {
               );
             })}
           </ToggleButtonGroup>
+          )}
 
           {/* Commitment Filter Chips */}
+          {!isPhone && (
           <ToggleButtonGroup
             selectionMode="single"
             disallowEmptySelection
@@ -567,6 +804,7 @@ export function JobsPage() {
               );
             })}
           </ToggleButtonGroup>
+          )}
 
           {/* Error State */}
           {error && !isLoading && (

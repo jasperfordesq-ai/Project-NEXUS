@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
 // Partial mock — src/test/setup.ts imports `initReactI18next` to bootstrap i18n,
@@ -77,6 +77,17 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
+// src/test/setup.ts stubs matchMedia to matches:false for EVERY query, so without
+// this the phone branch would get zero coverage. Query-aware on purpose: only
+// max-width questions answer the phone viewport, so a child asking a min-width
+// question can never observe an impossible viewport.
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn((query: string) =>
+    query.includes('max-width') ? isPhoneViewport : !isPhoneViewport,
+  ),
+}));
+
 // JobsPage imports PageMeta by direct path. setup.ts only stubs the
 // `@/components/seo` barrel, and the real PageMeta needs both a TenantProvider
 // (direct-path useTenant) and a HelmetProvider. It renders no visible DOM.
@@ -134,6 +145,7 @@ function makeVacancy(overrides: Record<string, unknown> = {}) {
 describe('JobsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isPhoneViewport = false;
     mockHasFeature.mockReturnValue(true);
     mockUseAuth.mockReturnValue({
       user: { id: 1, first_name: 'Test', name: 'Test User' },
@@ -297,6 +309,132 @@ describe('JobsPage', () => {
     await waitFor(() => {
       const calls = vi.mocked(api.get).mock.calls.map((c) => c[0] as string);
       expect(calls.some((url) => url.includes('type=paid'))).toBe(true);
+    });
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+      // /v2/jobs reports the total as `meta.total` (NOT `meta.total_items`); it
+      // seeds the sheet footer's count and is re-probed on every draft change.
+      vi.mocked(api.get).mockResolvedValue({
+        success: true, data: [], meta: { has_more: false, cursor: null, total: 12 },
+      });
+    });
+
+    it('renders the sticky bar with a search pill and Filters button', () => {
+      render(<JobsPage />);
+      expect(screen.getByLabelText('filter_bar.more_filters')).toBeInTheDocument();
+      expect(screen.getByText('filter_bar.filters')).toBeInTheDocument();
+      // Search pill placeholder uses the page's own copy, not common:filter_bar.search.
+      expect(screen.getByText('search_placeholder')).toBeInTheDocument();
+    });
+
+    it('does NOT render the desktop hero or the desktop filter bands', () => {
+      render(<JobsPage />);
+      // Hero: its <h1> and subtitle are the only hero-exclusive strings
+      // (t('title') is reused by the browse tab label).
+      expect(document.querySelector('h1')).toBeNull();
+      expect(screen.queryByText('subtitle')).not.toBeInTheDocument();
+      // Inline search field, sort select and both toggle groups are gone.
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+      expect(screen.queryByText('type.paid')).not.toBeInTheDocument();
+      expect(screen.queryByText('commitment.full_time')).not.toBeInTheDocument();
+      expect(screen.queryByText('sort.deadline')).not.toBeInTheDocument();
+    });
+
+    it('re-homes the hero destinations into the phone action row', () => {
+      render(<JobsPage />);
+      // Post Vacancy keeps its label; the other two become icon actions.
+      expect(screen.getByText('create_vacancy')).toBeInTheDocument();
+      expect(screen.getByLabelText('my_applications.title')).toBeInTheDocument();
+      expect(screen.getByLabelText('alerts.title')).toBeInTheDocument();
+    });
+
+    it('opens the filter sheet with every filter section', async () => {
+      render(<JobsPage />);
+      // Let the first page land so meta.total has seeded the footer count.
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+      });
+      fireEvent.click(screen.getByLabelText('filter_bar.more_filters'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { name: 'form.type_label' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('heading', { name: 'form.commitment_label' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'sort.label' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'remote_only' })).toBeInTheDocument();
+      // Chips live inside single-select ToggleButtonGroups → radiogroup/radio.
+      expect(screen.getByRole('radio', { name: 'type.paid' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'commitment.one_off' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'sort.salary' })).toBeInTheDocument();
+      // Draft archetype ⇒ footer with "Clear all" + a live-count apply button.
+      // The KNOWN-count label proves meta.total reached resultCount; an unwired
+      // count would render `filter_bar.show_results_unknown` instead.
+      expect(screen.getByText('filter_bar.show_results')).toBeInTheDocument();
+      expect(screen.queryByText('filter_bar.show_results_unknown')).not.toBeInTheDocument();
+      expect(screen.getByText('filter_bar.clear_all')).toBeInTheDocument();
+    });
+
+    it('does not refetch the list on a chip tap, only on apply', async () => {
+      render(<JobsPage />);
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+      });
+      vi.mocked(api.get).mockClear();
+
+      fireEvent.click(screen.getByLabelText('filter_bar.more_filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'type.paid' })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('radio', { name: 'type.paid' }));
+      // The draft change probes a live count (per_page=1) but must NOT refetch the list.
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/type=paid.*per_page=1$/));
+      });
+      expect(api.get).not.toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+
+      fireEvent.click(screen.getByText('filter_bar.show_results'));
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringMatching(/type=paid.*per_page=20/));
+      });
+    });
+
+    it('surfaces an applied filter as a removable chip that clears it', async () => {
+      render(<JobsPage />);
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+      });
+      fireEvent.click(screen.getByLabelText('filter_bar.more_filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'type.volunteer' })).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByRole('radio', { name: 'type.volunteer' }));
+      fireEvent.click(screen.getByText('filter_bar.show_results'));
+
+      // Applied chip + badge appear in the sticky bar.
+      await waitFor(() => {
+        expect(screen.getByLabelText('filter_bar.remove_filter')).toBeInTheDocument();
+      });
+      expect(screen.getByText('filter_bar.clear_all')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('filter_bar.remove_filter'));
+      await waitFor(() => {
+        expect(screen.queryByLabelText('filter_bar.remove_filter')).not.toBeInTheDocument();
+      });
+    });
+
+    it('does not render the sticky bar on the unfilterable saved tab', async () => {
+      render(<JobsPage />);
+      expect(screen.getByLabelText('filter_bar.more_filters')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('saved.title'));
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('filter_bar.more_filters')).not.toBeInTheDocument();
+      });
     });
   });
 });

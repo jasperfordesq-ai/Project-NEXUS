@@ -3,6 +3,7 @@
   "page_title": "Offerte di lavoro",
   "page_description": "Sfoglia le opportunità di lavoro, i ruoli di volontariato e le posizioni della banca del tempo offerte dai membri della comunità e dalle organizzazioni partner vicino a te.",
   "subtitle": "Trova opportunita nella tua comunita",
+  "loading": "Caricamento delle offerte di lavoro...",
   "create_vacancy": "Pubblica Offerta",
   "edit_vacancy": "Modifica Offerta",
   "my_postings": {
@@ -16,6 +17,7 @@
   "search_aria": "Cerca offerte di lavoro",
   "filter_aria": "Filtra per categoria",
   "filter_by_commitment": "Filtra per impegno",
+  "filter_any": "Qualunque",
   "type": {
     "all": "Tutti i Tipi",
     "paid": "Retribuito",
@@ -126,15 +128,15 @@
     "rule_summary_with_target": "Se in \"{{stage}}\" per {{count}}g -> {{action}} -> {{target}}",
     "rules_title": "Regole di automazione",
     "reviewed": "Esaminato",
-    "rule_summary_with_target_many": "Se in \"{{stage}}\" per {{count}}g -> {{action}} -> {{target}}",
     "rule_summary_with_target_one": "Se in \"{{stage}}\" per {{count}}g -> {{action}} -> {{target}}",
     "rule_summary_with_target_other": "Se in \"{{stage}}\" per {{count}}g -> {{action}} -> {{target}}",
-    "rule_summary_many": "Se in \"{{stage}}\" per {{count}}g -> {{action}}",
     "rule_summary_one": "Se in \"{{stage}}\" per {{count}}g -> {{action}}",
     "rule_summary_other": "Se in \"{{stage}}\" per {{count}}g -> {{action}}",
-    "generated_name_many": "{{stage}} a {{target}} dopo {{count}}g",
     "generated_name_one": "{{stage}} a {{target}} dopo {{count}}g",
-    "generated_name_other": "{{stage}} a {{target}} dopo {{count}}g"
+    "generated_name_other": "{{stage}} a {{target}} dopo {{count}}g",
+    "rule_summary_with_target_many": "Se in \"{{stage}}\" per {{count}}g -> {{action}} -> {{target}}",
+    "rule_summary_many": "Se in \"{{stage}}\" per {{count}}g -> {{action}}",
+    "generated_name_many": "{{stage}} a {{target}} dopo {{count}}g"
   },
   "employer": {
     "page_title": "Profilo Datore di Lavoro",
@@ -169,12 +171,12 @@
     "submit_review": "Invia recensione",
     "no_reviews": "Nessuna recensione ancora",
     "anonymous": "Anonimo",
-    "meta_description_many": "Visualizza il profilo del datore di lavoro, le posizioni aperte e le recensioni della comunità su {{count}} opportunità attuali.",
     "meta_description_one": "Visualizza il profilo del datore di lavoro, le posizioni aperte e le recensioni della comunità su {{count}} opportunità attuali.",
     "meta_description_other": "Visualizza il profilo del datore di lavoro, le posizioni aperte e le recensioni della comunità su {{count}} opportunità attuali.",
-    "open_roles_count_many": "{{count}} posizioni aperte",
     "open_roles_count_one": "{{count}} posizioni aperte",
     "open_roles_count_other": "{{count}} posizioni aperte",
+    "meta_description_many": "Visualizza il profilo del datore di lavoro, le posizioni aperte e le recensioni della comunità su {{count}} opportunità attuali.",
+    "open_roles_count_many": "{{count}} posizioni aperte",
     "reviews_count_many": "{{count}} recensioni",
     "star_distribution_many": "{{star}} stelle: {{count}} recensioni",
     "star_option_many": "{{count}} stelle"
@@ -186,9 +188,9 @@
     "success": "Candidature aggiornate",
     "error": "Aggiornamento massivo fallito",
     "selected_count": "{{count}} selezionati",
-    "selected_count_many": "{{count}} selezionati",
     "selected_count_one": "{{count}} selezionati",
-    "selected_count_other": "{{count}} selezionati"
+    "selected_count_other": "{{count}} selezionati",
+    "selected_count_many": "{{count}} selezionati"
   },
   "history": {
     "title": "Storico dello Stato",
@@ -281,18 +283,18 @@
     "ai_insights": "Approfondimenti IA",
     "days_short_value": "{{count}} g",
     "not_available": "N/D",
-    "views_tooltip_many": "{{date}}: {{count}} visualizzazioni",
     "views_tooltip_one": "{{date}}: {{count}} visualizzazioni",
     "views_tooltip_other": "{{date}}: {{count}} visualizzazioni",
-    "applications_tooltip_many": "{{week}}: {{count}} candidature",
     "applications_tooltip_one": "{{week}}: {{count}} candidature",
     "applications_tooltip_other": "{{week}}: {{count}} candidature",
-    "based_on_many": "Basato su {{count}} lavori simili",
     "based_on_one": "Basato su {{count}} lavori simili",
     "based_on_other": "Basato su {{count}} lavori simili",
-    "days_short_value_many": "{{count}} g",
     "days_short_value_one": "{{count}} g",
-    "days_short_value_other": "{{count}} g"
+    "days_short_value_other": "{{count}} g",
+    "views_tooltip_many": "{{date}}: {{count}} visualizzazioni",
+    "applications_tooltip_many": "{{week}}: {{count}} candidature",
+    "based_on_many": "Basato su {{count}} lavori simili",
+    "days_short_value_many": "{{count}} g"
   },
   "salary": {
     "label": "Compenso",
@@ -337,9 +339,9 @@
     "empty_all": "Non hai ancora candidature.",
     "empty_filtered": "Nessuna candidatura {{filter}} trovata.",
     "browse_jobs": "Cerca Lavori",
-    "days_left_many": "{{count}}g rimasti",
     "days_left_one": "{{count}}g rimasti",
-    "days_left_other": "{{count}}g rimasti"
+    "days_left_other": "{{count}}g rimasti",
+    "days_left_many": "{{count}}g rimasti"
   },
   "withdraw": {
     "confirm_title": "Ritirare la candidatura?",
@@ -450,9 +452,9 @@
     "message_employer": "Messaggio al Datore",
     "cv_parse_error": "Impossibile analizzare il CV. Puoi comunque inviare la candidatura manualmente.",
     "quick_apply": "Candidatura rapida con profilo salvato",
-    "cv_size_kb_many": "({{count}} KB)",
     "cv_size_kb_one": "({{count}} KB)",
-    "cv_size_kb_other": "({{count}} KB)"
+    "cv_size_kb_other": "({{count}} KB)",
+    "cv_size_kb_many": "({{count}} KB)"
   },
   "detail": {
     "loading": "Caricamento offerta...",
@@ -509,12 +511,12 @@
     "confirm_close": "La chiusura blocca l'arrivo di nuove candidature. Puoi riaprire l'annuncio in qualsiasi momento.",
     "confirm_reopen_title": "Riaprire questo annuncio?",
     "confirm_reopen": "La riapertura rende l'annuncio di nuovo visibile e permette alle persone di candidarsi.",
-    "owner_has_applicants_many": "{{count}} candidato/i — scorri in basso per esaminare",
     "owner_has_applicants_one": "{{count}} candidato/i — scorri in basso per esaminare",
     "owner_has_applicants_other": "{{count}} candidato/i — scorri in basso per esaminare",
-    "views_many": "{{count}} visualizzazioni",
     "views_one": "{{count}} visualizzazioni",
-    "views_other": "{{count}} visualizzazioni"
+    "views_other": "{{count}} visualizzazioni",
+    "owner_has_applicants_many": "{{count}} candidato/i — scorri in basso per esaminare",
+    "views_many": "{{count}} visualizzazioni"
   },
   "interview": {
     "schedule": "Pianifica Colloquio",
@@ -813,15 +815,15 @@
     "weeks_ago": "{{count}} settimane fa",
     "skills_description": "Competenze separate da virgola",
     "skills_chip": "Competenze: {{skills}}",
-    "days_ago_many": "{{count}} giorni fa",
     "days_ago_one": "{{count}} giorni fa",
     "days_ago_other": "{{count}} giorni fa",
-    "weeks_ago_many": "{{count}} settimane fa",
     "weeks_ago_one": "{{count}} settimane fa",
     "weeks_ago_other": "{{count}} settimane fa",
-    "results_count_many": "{{count}} candidato/i trovato/i",
     "results_count_one": "{{count}} candidato/i trovato/i",
-    "results_count_other": "{{count}} candidato/i trovato/i"
+    "results_count_other": "{{count}} candidato/i trovato/i",
+    "days_ago_many": "{{count}} giorni fa",
+    "weeks_ago_many": "{{count}} settimane fa",
+    "results_count_many": "{{count}} candidato/i trovato/i"
   },
   "resume_visibility": {
     "label": "Rendi il mio profilo ricercabile dai datori di lavoro",
@@ -886,13 +888,13 @@
     "date_to": "A",
     "filter_by_job": "Filtra per Lavoro",
     "all_jobs": "Tutti i Lavori",
+    "search_jobs": "Cerca offerte di lavoro",
     "generate": "Genera Report",
     "loading": "Generazione report...",
     "no_data": "Nessun dato di candidatura disponibile per il periodo selezionato",
     "access_denied": "Accesso negato",
     "load_error": "Impossibile caricare il report dell'audit sui pregiudizi",
-    "note_privacy": "Questo report analizza solo metriche di processo. Nessun dato demografico viene raccolto o utilizzato.",
-    "search_jobs": "Cerca offerte di lavoro"
+    "note_privacy": "Questo report analizza solo metriche di processo. Nessun dato demografico viene raccolto o utilizzato."
   },
   "self_scheduling": {
     "title": "Slot per Colloqui",
@@ -1105,24 +1107,23 @@
     "category_value": "{{category}}"
   },
   "tabs_aria": "Vista offerte di lavoro",
-  "loading": "Caricamento delle offerte di lavoro...",
-  "deadline_countdown_many": "Chiude tra {{count}} giorni",
-  "match_badge_many": "{{count}}% compatibilità",
   "match_badge_one": "{{count}}% compatibilità",
   "match_badge_other": "{{count}}% compatibilità",
-  "views_many": "{{count}} visualizzazioni",
   "views_one": "{{count}} visualizzazioni",
   "views_other": "{{count}} visualizzazioni",
-  "applications_many": "{{count}} candidature",
   "applications_one": "{{count}} candidature",
   "applications_other": "{{count}} candidature",
-  "char_count_many": "{{count}} / {{max}} caratteri",
   "char_count_one": "{{count}} / {{max}} caratteri",
   "char_count_other": "{{count}} / {{max}} caratteri",
-  "hours_per_week_many": "{{count}} ore/settimana",
   "hours_per_week_one": "{{count}} ore/settimana",
   "hours_per_week_other": "{{count}} ore/settimana",
-  "time_credits_label_many": "{{count}} crediti tempo",
   "time_credits_label_one": "{{count}} crediti tempo",
-  "time_credits_label_other": "{{count}} crediti tempo"
+  "time_credits_label_other": "{{count}} crediti tempo",
+  "deadline_countdown_many": "Chiude tra {{count}} giorni",
+  "match_badge_many": "{{count}}% compatibilità",
+  "views_many": "{{count}} visualizzazioni",
+  "applications_many": "{{count}} candidature",
+  "char_count_many": "{{count}} / {{max}} caratteri",
+  "hours_per_week_many": "{{count}} ore/settimana",
+  "time_credits_label_many": "{{count}} crediti tempo"
 }

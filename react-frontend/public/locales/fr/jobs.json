@@ -17,6 +17,7 @@
   "search_aria": "Rechercher des offres d'emploi",
   "filter_aria": "Filtrer par catégorie",
   "filter_by_commitment": "Filtrer par engagement",
+  "filter_any": "N'importe lequel",
   "type": {
     "all": "Tous les types",
     "paid": "Rémunéré",
@@ -127,15 +128,15 @@
     "rule_summary_with_target": "Si dans « {{stage}} » pendant {{count}}j -> {{action}} -> {{target}}",
     "rules_title": "Règles d'automatisation",
     "reviewed": "Examiné",
-    "rule_summary_with_target_many": "Si dans « {{stage}} » pendant {{count}}j -> {{action}} -> {{target}}",
     "rule_summary_with_target_one": "Si dans « {{stage}} » pendant {{count}}j -> {{action}} -> {{target}}",
     "rule_summary_with_target_other": "Si dans « {{stage}} » pendant {{count}}j -> {{action}} -> {{target}}",
-    "rule_summary_many": "Si dans « {{stage}} » pendant {{count}}j -> {{action}}",
     "rule_summary_one": "Si dans « {{stage}} » pendant {{count}}j -> {{action}}",
     "rule_summary_other": "Si dans « {{stage}} » pendant {{count}}j -> {{action}}",
-    "generated_name_many": "{{stage}} vers {{target}} après {{count}}j",
     "generated_name_one": "{{stage}} vers {{target}} après {{count}}j",
-    "generated_name_other": "{{stage}} vers {{target}} après {{count}}j"
+    "generated_name_other": "{{stage}} vers {{target}} après {{count}}j",
+    "rule_summary_with_target_many": "Si dans « {{stage}} » pendant {{count}}j -> {{action}} -> {{target}}",
+    "rule_summary_many": "Si dans « {{stage}} » pendant {{count}}j -> {{action}}",
+    "generated_name_many": "{{stage}} vers {{target}} après {{count}}j"
   },
   "employer": {
     "page_title": "Profil de l'employeur",
@@ -170,12 +171,12 @@
     "submit_review": "Soumettre l'avis",
     "no_reviews": "Aucun avis pour le moment",
     "anonymous": "Anonyme",
-    "meta_description_many": "Consultez le profil de l'employeur, les postes ouverts et les avis de la communauté sur {{count}} opportunités actuelles.",
     "meta_description_one": "Consultez le profil de l'employeur, les postes ouverts et les avis de la communauté sur {{count}} opportunités actuelles.",
     "meta_description_other": "Consultez le profil de l'employeur, les postes ouverts et les avis de la communauté sur {{count}} opportunités actuelles.",
-    "open_roles_count_many": "{{count}} postes ouverts",
     "open_roles_count_one": "{{count}} postes ouverts",
     "open_roles_count_other": "{{count}} postes ouverts",
+    "meta_description_many": "Consultez le profil de l'employeur, les postes ouverts et les avis de la communauté sur {{count}} opportunités actuelles.",
+    "open_roles_count_many": "{{count}} postes ouverts",
     "reviews_count_many": "{{count}} avis",
     "star_distribution_many": "{{star}} étoiles : {{count}} avis",
     "star_option_many": "{{count}} étoiles"
@@ -187,9 +188,9 @@
     "success": "Candidatures mises à jour",
     "error": "Échec de la mise à jour groupée",
     "selected_count": "{{count}} sélectionné(s)",
-    "selected_count_many": "{{count}} sélectionné(s)",
     "selected_count_one": "{{count}} sélectionné(s)",
-    "selected_count_other": "{{count}} sélectionné(s)"
+    "selected_count_other": "{{count}} sélectionné(s)",
+    "selected_count_many": "{{count}} sélectionné(s)"
   },
   "history": {
     "title": "Historique du statut",
@@ -282,18 +283,18 @@
     "ai_insights": "Analyses IA",
     "days_short_value": "{{count}} j",
     "not_available": "N/D",
-    "views_tooltip_many": "{{date}} : {{count}} vues",
     "views_tooltip_one": "{{date}} : {{count}} vues",
     "views_tooltip_other": "{{date}} : {{count}} vues",
-    "applications_tooltip_many": "{{week}} : {{count}} candidatures",
     "applications_tooltip_one": "{{week}} : {{count}} candidatures",
     "applications_tooltip_other": "{{week}} : {{count}} candidatures",
-    "based_on_many": "Basé sur {{count}} postes similaires",
     "based_on_one": "Basé sur {{count}} postes similaires",
     "based_on_other": "Basé sur {{count}} postes similaires",
-    "days_short_value_many": "{{count}} j",
     "days_short_value_one": "{{count}} j",
-    "days_short_value_other": "{{count}} j"
+    "days_short_value_other": "{{count}} j",
+    "views_tooltip_many": "{{date}} : {{count}} vues",
+    "applications_tooltip_many": "{{week}} : {{count}} candidatures",
+    "based_on_many": "Basé sur {{count}} postes similaires",
+    "days_short_value_many": "{{count}} j"
   },
   "salary": {
     "label": "Rémunération",
@@ -338,9 +339,9 @@
     "empty_all": "Vous n'avez encore postulé à aucun poste.",
     "empty_filtered": "Aucune candidature {{filter}} trouvée.",
     "browse_jobs": "Parcourir les offres",
-    "days_left_many": "{{count}}j restant(s)",
     "days_left_one": "{{count}}j restant(s)",
-    "days_left_other": "{{count}}j restant(s)"
+    "days_left_other": "{{count}}j restant(s)",
+    "days_left_many": "{{count}}j restant(s)"
   },
   "withdraw": {
     "confirm_title": "Retirer la candidature ?",
@@ -451,9 +452,9 @@
     "message_employer": "Contacter l'employeur",
     "cv_parse_error": "Échec de l'analyse du CV. Vous pouvez toujours soumettre votre candidature manuellement.",
     "quick_apply": "Postuler rapidement avec le profil enregistré",
-    "cv_size_kb_many": "({{count}} Ko)",
     "cv_size_kb_one": "({{count}} Ko)",
-    "cv_size_kb_other": "({{count}} Ko)"
+    "cv_size_kb_other": "({{count}} Ko)",
+    "cv_size_kb_many": "({{count}} Ko)"
   },
   "detail": {
     "loading": "Chargement de l'offre...",
@@ -510,12 +511,12 @@
     "confirm_close": "La fermeture empêche l'arrivée de nouvelles applications. Vous pouvez la rouvrir à tout moment.",
     "confirm_reopen_title": "Rouvrir ce poste ?",
     "confirm_reopen": "La réouverture rend le poste vacant à nouveau visible et permet aux personnes de postuler.",
-    "owner_has_applicants_many": "{{count}} candidat(s) — faites défiler vers le bas pour examiner",
     "owner_has_applicants_one": "{{count}} candidat(s) — faites défiler vers le bas pour examiner",
     "owner_has_applicants_other": "{{count}} candidat(s) — faites défiler vers le bas pour examiner",
-    "views_many": "{{count}} vues",
     "views_one": "{{count}} vues",
-    "views_other": "{{count}} vues"
+    "views_other": "{{count}} vues",
+    "owner_has_applicants_many": "{{count}} candidat(s) — faites défiler vers le bas pour examiner",
+    "views_many": "{{count}} vues"
   },
   "interview": {
     "schedule": "Planifier un entretien",
@@ -814,15 +815,15 @@
     "weeks_ago": "Il y a {{count}} semaines",
     "skills_description": "Compétences séparées par des virgules",
     "skills_chip": "Compétences : {{skills}}",
-    "days_ago_many": "Il y a {{count}} jours",
     "days_ago_one": "Il y a {{count}} jours",
     "days_ago_other": "Il y a {{count}} jours",
-    "weeks_ago_many": "Il y a {{count}} semaines",
     "weeks_ago_one": "Il y a {{count}} semaines",
     "weeks_ago_other": "Il y a {{count}} semaines",
-    "results_count_many": "{{count}} candidat(s) trouvé(s)",
     "results_count_one": "{{count}} candidat(s) trouvé(s)",
-    "results_count_other": "{{count}} candidat(s) trouvé(s)"
+    "results_count_other": "{{count}} candidat(s) trouvé(s)",
+    "days_ago_many": "Il y a {{count}} jours",
+    "weeks_ago_many": "Il y a {{count}} semaines",
+    "results_count_many": "{{count}} candidat(s) trouvé(s)"
   },
   "resume_visibility": {
     "label": "Rendre mon profil consultable par les employeurs",
@@ -1106,23 +1107,23 @@
     "category_value": "{{category}}"
   },
   "tabs_aria": "Vue des tâches",
-  "deadline_countdown_many": "Clôture dans {{count}} jours",
-  "match_badge_many": "{{count}}% de correspondance",
   "match_badge_one": "{{count}}% de correspondance",
   "match_badge_other": "{{count}}% de correspondance",
-  "views_many": "{{count}} vues",
   "views_one": "{{count}} vues",
   "views_other": "{{count}} vues",
-  "applications_many": "{{count}} candidatures",
   "applications_one": "{{count}} candidatures",
   "applications_other": "{{count}} candidatures",
-  "char_count_many": "{{count}} / {{max}} caractères",
   "char_count_one": "{{count}} / {{max}} caractères",
   "char_count_other": "{{count}} / {{max}} caractères",
-  "hours_per_week_many": "{{count}} h/semaine",
   "hours_per_week_one": "{{count}} h/semaine",
   "hours_per_week_other": "{{count}} h/semaine",
-  "time_credits_label_many": "{{count}} crédits-temps",
   "time_credits_label_one": "{{count}} crédits-temps",
-  "time_credits_label_other": "{{count}} crédits-temps"
+  "time_credits_label_other": "{{count}} crédits-temps",
+  "deadline_countdown_many": "Clôture dans {{count}} jours",
+  "match_badge_many": "{{count}}% de correspondance",
+  "views_many": "{{count}} vues",
+  "applications_many": "{{count}} candidatures",
+  "char_count_many": "{{count}} / {{max}} caractères",
+  "hours_per_week_many": "{{count}} h/semaine",
+  "time_credits_label_many": "{{count}} crédits-temps"
 }
