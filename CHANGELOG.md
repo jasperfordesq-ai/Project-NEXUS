@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Patched two newly published dependency advisories.** The `postcss` build tool (path traversal via source-map auto-loading) is bumped to a fixed release in the web frontend, and the `brace-expansion` glob helper (denial of service) is bumped to its fixed 5.0.8 release everywhere a fixed release exists. The remaining 1.x/2.x copies of `brace-expansion` — pinned by upstream developer tooling with no fixed release published for those lines yet — are documented and suppressed in the vulnerability-scan ignore file with a dated revisit note; they are build-time-only code that never ships to production or handles untrusted input.
+
 ### Fixed
 
 - **Focused form fields no longer show two misaligned focus rings.** Clicking or tabbing into any HeroUI-based field (search boxes, text inputs, selects) drew two nested purple outlines that didn't line up — the component's own ring on the field shell plus a second global outline forced onto the inner input, most visible in the new listings filter sheet's category search. The global keyboard-focus fallback (which guarantees a visible indicator on plain HTML elements) was written outside any CSS layer, so it overpowered both the component library's "the shell draws the ring" styling and custom Tailwind focus rings; it also force-changed the focused element's corner rounding. It now sits in the base layer where component and utility styles can override it, the radius override is gone, and decorated inputs (fields with icons, like the login form) — whose inner input is deliberately unstyled — now draw one correctly-shaped ring on the field shell itself, which previously had no indicator of its own. One aligned ring everywhere; keyboard-focus visibility (WCAG 2.4.7) is preserved for every element class.

@@ -136,3 +136,15 @@ CVE-2026-44431
 GHSA-v6wh-96g9-6wx3
 GHSA-fx2h-pf6j-xcff
 GHSA-96hv-2xvq-fx4p
+
+# ── brace-expansion 1.x/2.x DoS (HIGH) — no fixed release exists in-range ────
+# CVE-2026-14257 is fixed only in brace-expansion 5.0.8. All 5.x instances in
+# root, react-frontend, and mobile lockfiles are bumped to 5.0.8; the remaining
+# 1.1.16 / 2.1.2 copies are pinned ^1/^2 by upstream dev tooling (eslint,
+# rimraf, minimatch consumers) and 1.1.16 / 2.1.2 ARE the latest of those
+# lines — npm publishes no backport as of 2026-07-25. The vulnerable code path
+# is glob/brace expansion in build-time tooling; it never receives untrusted
+# input at runtime and none of it ships in production bundles. Remove this
+# entry when upstream releases a 1.x/2.x backport or the tooling moves to 5.x.
+# (added 2026-07-25)
+CVE-2026-14257
