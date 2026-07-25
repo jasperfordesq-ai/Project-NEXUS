@@ -46,16 +46,34 @@
    keyboard and switch-access users in ALL themes.
    outline-offset:2 keeps the ring outside the element
    border so it stays visible on coloured backgrounds.
+
+   MUST live in @layer base: HeroUI fields draw their
+   focus ring on the field GROUP and set outline:none on
+   the inner input in layer(components), and custom rings
+   use focus-visible:* utilities — both can only override
+   this fallback if it sits in a lower layer. Unlayered,
+   it beat every layer and double-ringed each focused
+   HeroUI field with a second, misaligned outline.
+   (No border-radius override here: outlines follow the
+   element's own radius natively; forcing inherit warped
+   focused elements' corners inside rounded parents.)
    ───────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-  border-radius: inherit;
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
-/* Remove the native outline from elements that already
-   supply a custom ring via Tailwind focus-visible:ring-*
-   utilities (those classes set outline:none themselves). */
+/* Decorated field shells (ui/Input with start/end content): the inner input
+   is chrome-stripped, so the wrapper draws the keyboard-focus ring. Unlayered
+   on purpose — it must beat HeroUI's focus-within outline resets and callers'
+   unlayered wrapper styling (.glass-card et al). The outline hugs the shell's
+   own border-radius, so the ring and the field finally share one shape. */
+.nexus-field-shell:focus-within {
+  outline: 2px solid var(--focus, var(--color-primary));
+  outline-offset: 1px;
+}
 
 /* ─────────────────────────────────────────────
    HeroUI v3 overlay scroll-inside fix (@heroui/react 3.1.0)

@@ -112,6 +112,12 @@ function decoratedWrapperClass(
 ): string | undefined {
   return combineClasses(
     'flex min-h-10 w-full items-center gap-2 px-3 py-2',
+    // The inner input is chrome-stripped (ring-0/outline-none), so this wrapper
+    // is the field shell and must draw the visible focus indicator itself
+    // (WCAG 2.4.7). Styled by the unlayered .nexus-field-shell rule in
+    // index.css — utility rings/outlines lose to unlayered caller CSS
+    // (e.g. .glass-card) and HeroUI's focus-within outline resets.
+    'nexus-field-shell',
     sizeClass(size),
     radiusClass(radius),
     className,
