@@ -8,8 +8,19 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, render, screen, userEvent, waitFor } from '@/test/test-utils';
+import { act, render, screen, userEvent, waitFor, within } from '@/test/test-utils';
 import { api } from '@/lib/api';
+
+// src/test/setup.ts stubs window.matchMedia to matches:false for EVERY query, so
+// without this mock `isPhone` is permanently false and the phone branch would ship
+// with zero coverage. Query-aware so a max-width and a min-width consumer can never
+// both answer "true" and describe an impossible viewport.
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn((query: string) =>
+    query.includes('min-width') ? !isPhoneViewport : isPhoneViewport,
+  ),
+}));
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -99,6 +110,7 @@ import { GroupsPage } from './GroupsPage';
 describe('GroupsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isPhoneViewport = false;
     window.history.replaceState({}, '', '/groups');
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [], meta: {} });
   });
@@ -325,5 +337,111 @@ describe('GroupsPage', () => {
 
     expect(await screen.findByText('Repair Circle')).toBeInTheDocument();
     expect(screen.getAllByText('Garden Crew')).toHaveLength(1);
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('renders the sticky bar and drops the desktop hero, quick filters and search card', () => {
+      render(<GroupsPage />);
+
+      // Sticky bar: search pill (text, not an input) + Filters button.
+      expect(screen.getByTestId('groups-filter-bar')).toBeInTheDocument();
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search groups...')).toBeInTheDocument();
+
+      // Desktop chrome is gone: hero <h1>, the quick-filter radios and the
+      // GlassCard SearchField (a real input with that placeholder).
+      expect(screen.queryByText('Groups')).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText(/Search groups/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: 'Public' })).not.toBeInTheDocument();
+      expect(screen.queryByText('Join groups to connect with like-minded community members'))
+        .not.toBeInTheDocument();
+    });
+
+    it('re-homes the Create Group action into the sticky bar', () => {
+      render(<GroupsPage />);
+
+      const bar = screen.getByTestId('groups-filter-bar');
+      const create = within(bar).getByRole('link', { name: 'Create Group' });
+      expect(create).toHaveAttribute('href', '/test/groups/create');
+    });
+
+    it('opens the filter sheet with the scope and visibility chips', async () => {
+      const user = userEvent.setup();
+      render(<GroupsPage />);
+
+      await user.click(screen.getByLabelText('More filters'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('radiogroup', { name: 'Group filters' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('radio', { name: 'All Groups' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'My Groups' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Public' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Private' })).toBeInTheDocument();
+      // Simple archetype: no draft, therefore no apply footer.
+      expect(screen.queryByText(/^Show results$/)).not.toBeInTheDocument();
+    });
+
+    it('applies a sheet chip immediately and closes the sheet', async () => {
+      const user = userEvent.setup();
+      render(<GroupsPage />);
+      await waitFor(() => expect(api.get).toHaveBeenCalled());
+      vi.mocked(api.get).mockClear();
+
+      await user.click(screen.getByLabelText('More filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'Public' })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('radio', { name: 'Public' }));
+
+      // Immediate-apply: the tap itself refetches the list (no Apply button exists).
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(
+          expect.stringContaining('visibility=public'),
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        );
+      });
+      await waitFor(() => {
+        expect(screen.queryByRole('radiogroup', { name: 'Group filters' })).not.toBeInTheDocument();
+      });
+    });
+
+    it('shows the applied filter as a removable chip and clears it on tap', async () => {
+      const user = userEvent.setup();
+      window.history.replaceState({}, '', '/groups?visibility=public');
+      render(<GroupsPage />);
+
+      const bar = screen.getByTestId('groups-filter-bar');
+      const remove = within(bar).getByRole('button', { name: 'Remove filter: Public' });
+      await user.click(remove);
+
+      expect(new URLSearchParams(window.location.search).has('visibility')).toBe(false);
+      await waitFor(() => {
+        expect(
+          within(screen.getByTestId('groups-filter-bar'))
+            .queryByRole('button', { name: 'Remove filter: Public' }),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('clears the query and the filter together from Clear all', async () => {
+      const user = userEvent.setup();
+      window.history.replaceState({}, '', '/groups?q=garden&visibility=private');
+      render(<GroupsPage />);
+
+      const bar = screen.getByTestId('groups-filter-bar');
+      expect(within(bar).getByText('garden')).toBeInTheDocument();
+
+      await user.click(within(bar).getByText('Clear all'));
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.has('q')).toBe(false);
+      expect(params.has('visibility')).toBe(false);
+    });
   });
 });

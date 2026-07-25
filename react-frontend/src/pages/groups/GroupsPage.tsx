@@ -7,6 +7,7 @@ import { Avatar, AvatarGroup } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MobileFilterBar, type MobileFilterBarChip } from '@/components/ui/MobileFilterBar';
 import { SearchField } from '@/components/ui/SearchField';
 import { GroupCardSkeleton } from '@/components/ui/Skeletons';
 import { ToggleButton, ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
@@ -31,15 +32,22 @@ import { useTranslation } from 'react-i18next';
 import { SafeHtml } from '@/components/ui/SafeHtml';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTenant } from '@/contexts/TenantContext';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { usePageTitle } from '@/hooks/usePageTitle';
+// Direct hook paths, never the '@/hooks' barrel: page tests partial-mock the barrel,
+// so a barrel import would resolve to undefined and crash every test.
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { PageMeta } from '@/components/seo/PageMeta';
 import type { Group } from '@/types/api';
 import { listGroupDirectory } from './api';
+import { GroupsFilterSheet } from './components/GroupsFilterSheet';
 
 type GroupFilter = 'all' | 'joined' | 'public' | 'private';
 
@@ -83,6 +91,8 @@ function dedupeGroups(groups: Group[]): Group[] {
 export function GroupsPage() {
   const { t } = useTranslation('groups');
   usePageTitle(t('title'));
+  // Phones hide the hero, so the page title moves into the fixed app bar.
+  useSetAppBarTitle(t('title'));
   const { isAuthenticated, user } = useAuth();
   const { tenantPath } = useTenant();
   const toast = useToast();
@@ -98,6 +108,12 @@ export function GroupsPage() {
   const searchQuery = searchParams.get('q') || '';
   const [debouncedQuery, setDebouncedQuery] = useState(searchQuery);
   const filter = readDirectoryFilter(searchParams, isAuthenticated);
+
+  // Phone-only chrome: sticky filter bar + full-screen search overlay + filter sheet.
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextCursorRef = useRef<string | null>(null);
@@ -259,9 +275,42 @@ export function GroupsPage() {
     }
   }
 
+  /**
+   * Clears the query AND the scope/visibility filter in ONE searchParams write.
+   * Calling updateSearch('') then updateFilter('all') would lose one of them:
+   * both build from the same `searchParams` snapshot captured this render.
+   */
+  function clearAllFilters() {
+    const params = new URLSearchParams(searchParams);
+    params.delete('q');
+    params.delete('scope');
+    params.delete('visibility');
+    setSearchParams(params);
+    setDebouncedQuery('');
+  }
+
+  // "My Groups" is meaningless for guests — readDirectoryFilter refuses scope=joined
+  // without auth, so offering it would silently resolve back to 'all'.
+  const filterOptions = [
+    { key: 'all', label: t('filter_all') },
+    ...(isAuthenticated ? [{ key: 'joined', label: t('filter_my') }] : []),
+    { key: 'public', label: t('filter_public') },
+    { key: 'private', label: t('filter_private') },
+  ];
+
+  // Phone: the applied filter as a removable chip (the query shows in the search
+  // pill instead, matching ListingsPage).
+  const phoneFilterChips: MobileFilterBarChip[] = filter === 'all'
+    ? []
+    : [{ key: 'filter', label: getFilterLabel(filter), onRemove: () => updateFilter('all') }];
+
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_title')} description={t('page_description')} />
+      {/* Tablet/desktop chrome, unchanged. Phones hide the hero, the quick-filter row
+          and the search card and get the sticky bar + filter sheet below instead. */}
+      {!isPhone && (
+      <>
       <PublicPageHero
         eyebrow={t('hero_eyebrow')}
         title={t('title')}
@@ -357,6 +406,60 @@ export function GroupsPage() {
           )}
         </div>
       </GlassCard>
+      </>
+      )}
+
+      {/* Phone: slim sticky control bar — search pill, Filters button + count badge,
+          and the re-homed Create Group action (the hero was its only entry point). */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="indigo"
+          testId="groups-filter-bar"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchQuery}
+          onFiltersPress={() => setIsFilterSheetOpen(true)}
+          chips={phoneFilterChips}
+          onClearAll={clearAllFilters}
+          labels={{ search: t('search_placeholder') }}
+          trailing={
+            isAuthenticated ? (
+              <Button
+                as={Link}
+                to={tenantPath('/groups/create')}
+                isIconOnly
+                color="primary"
+                aria-label={t('create_group')}
+                className="size-11 min-h-11 shrink-0 rounded-full font-semibold shadow-sm"
+              >
+                <Plus className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            ) : undefined
+          }
+        />
+      )}
+
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchQuery}
+          onValueChange={updateSearch}
+          placeholder={t('search_placeholder')}
+          recentKey="groups"
+        />
+      )}
+
+      {/* Phone filter sheet — one immediate-apply chip group, no draft, no footer. */}
+      {isPhone && (
+        <GroupsFilterSheet
+          isOpen={isFilterSheetOpen}
+          onClose={() => setIsFilterSheetOpen(false)}
+          filter={filter}
+          options={filterOptions}
+          onFilterChange={(key) => updateFilter(key as GroupFilter)}
+        />
+      )}
 
       {/* Smart Matching group recommendations */}
       {isAuthenticated && (
