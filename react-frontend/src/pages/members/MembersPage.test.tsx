@@ -57,6 +57,13 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   resolveAvatarUrl: vi.fn((url) => url || '/default-avatar.png'),
 }));
 vi.mock('@/lib/map-config', () => ({ MAPS_ENABLED: false }));
+// Toggle phone layout. src/test/setup.ts stubs matchMedia to matches:false for every
+// query, so without this the phone branch would get zero coverage. MembersPage and
+// Drawer both ask '(max-width: 639px)', so one boolean answers both correctly.
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn(() => isPhoneViewport),
+}));
 vi.mock('@/components/location', () => ({
   EntityMapView: () => <div data-testid="map-view">Map</div>,
 }));
@@ -77,9 +84,24 @@ vi.mock('@/lib/motion', () => ({
 
 import { MembersPage } from './MembersPage';
 
+const algorithmsResponse = {
+  success: true,
+  data: {
+    feed: { name: 'Chronological', key: 'chronological', description: 'Newest first' },
+    listings: { name: 'Newest First', key: 'newest', description: 'Newest listings first' },
+    members: { name: 'CommunityRank', key: 'communityrank', description: 'Ranked by activity, contributions, reputation, and connections' },
+    matching: { name: 'Disabled', key: 'disabled', description: 'Disabled' },
+  },
+};
+
 describe('MembersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    isPhoneViewport = false;
+    // test-utils renders a BrowserRouter over the real window.history, and the page
+    // syncs ?q=/?sort= into it — so without this reset one test's search query leaks
+    // into every test that follows.
+    window.history.replaceState({}, '', '/');
     mockApiGet.mockImplementation((url: string) => {
       if (url.includes('/v2/config/algorithms')) {
         return Promise.resolve({
@@ -202,5 +224,116 @@ describe('MembersPage', () => {
 
     expect(screen.getByRole('button', { name: 'Near me' })).toBeInTheDocument();
     expect(screen.queryByText('members.near_me')).not.toBeInTheDocument();
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('renders the sticky bar instead of the hero and desktop filter card', () => {
+      render(<MembersPage />);
+
+      // Sticky bar: search pill + Filters button + view-mode toggle in `trailing`.
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search members...')).toBeInTheDocument();
+      expect(screen.getByLabelText('Grid view')).toBeInTheDocument();
+      expect(screen.getByLabelText('List view')).toBeInTheDocument();
+
+      // Hero, quick-filter row and desktop filter card are all phone-hidden.
+      expect(screen.queryByText('Members')).not.toBeInTheDocument();
+      expect(screen.queryByText('All Members')).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText(/Search members/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Near me' })).not.toBeInTheDocument();
+    });
+
+    it('opens the filter sheet with the sort and distance chip groups', async () => {
+      render(<MembersPage />);
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('radiogroup', { name: 'Sort by' })).toBeInTheDocument();
+      });
+      expect(screen.getByRole('radiogroup', { name: 'Near me' })).toBeInTheDocument();
+
+      // One combined sort group — the desktop "Quick filters" row is a facade over
+      // sortBy, so "Newest"/"Most Active" are its re-homed equivalents.
+      expect(screen.getByRole('radio', { name: 'Community Rank' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'Name' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Newest' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Highest Rated' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Most Active' })).toBeInTheDocument();
+
+      // Distance group collapses the desktop "Near me" toggle + radius Select.
+      expect(screen.getByRole('radio', { name: 'Off' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: '25 km' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: '100 km' })).toBeInTheDocument();
+    });
+
+    it('applies draft filters only when the footer button is pressed', async () => {
+      render(<MembersPage />);
+      await waitFor(() =>
+        expect(mockApiGet).toHaveBeenCalledWith(
+          expect.stringContaining('/v2/users?sort=communityrank'),
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        ),
+      );
+      mockApiGet.mockClear();
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'Newest' })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('radio', { name: 'Newest' }));
+
+      // Tapping a chip probes a limit=1 count but must NOT refetch the grid.
+      await waitFor(
+        () =>
+          expect(mockApiGet).toHaveBeenCalledWith(
+            expect.stringMatching(/limit=1$/),
+            expect.objectContaining({ signal: expect.any(AbortSignal) }),
+          ),
+        { timeout: 3000 },
+      );
+      expect(mockApiGet).not.toHaveBeenCalledWith(
+        expect.stringContaining('limit=24'),
+        expect.anything(),
+      );
+
+      fireEvent.click(screen.getByText('Show results'));
+
+      await waitFor(() =>
+        expect(mockApiGet).toHaveBeenCalledWith(
+          expect.stringContaining('sort=joined&order=desc&limit=24'),
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        ),
+      );
+
+      // The applied, non-default sort surfaces as a removable chip in the bar.
+      expect(await screen.findByLabelText('Remove filter: Newest')).toBeInTheDocument();
+    });
+
+    it('labels the apply button with the live result count', async () => {
+      mockApiGet.mockImplementation((url: string) => {
+        if (url.includes('/v2/config/algorithms')) {
+          return Promise.resolve(algorithmsResponse);
+        }
+        return Promise.resolve({ success: true, data: [], meta: { total_items: 42 } });
+      });
+
+      render(<MembersPage />);
+      await waitFor(() =>
+        expect(mockApiGet).toHaveBeenCalledWith(
+          expect.stringContaining('/v2/users?sort=communityrank'),
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        ),
+      );
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      expect(await screen.findByText('Show 42 results', {}, { timeout: 3000 })).toBeInTheDocument();
+    });
   });
 });

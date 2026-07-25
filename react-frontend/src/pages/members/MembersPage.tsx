@@ -8,7 +8,14 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import Search from 'lucide-react/icons/search';
 import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
+import { MobileFilterBar, type MobileFilterBarChip } from '@/components/ui/MobileFilterBar';
+import { MemberFilterSheet, type MemberFilterDraft } from '@/components/members/MemberFilterSheet';
+// Direct hook paths on purpose: page tests partial-mock the '@/hooks' barrel, so a
+// barrel import of these would resolve to undefined and crash every test.
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useFilterDraft } from '@/hooks/useFilterDraft';
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
@@ -20,7 +27,7 @@ import { Tooltip } from '@/components/ui/Tooltip';
  * Members Page - Community member directory
  */
 
-import { lazy, Suspense, useState, useEffect, useCallback, useRef, memo, type ComponentType } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback, useMemo, useRef, memo, type ComponentType } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
@@ -70,6 +77,56 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 const VALID_SORTS: SortOption[] = ['communityrank', 'name', 'joined', 'rating', 'hours_given'];
 const VALID_VIEW_MODES: ViewMode[] = ['grid', 'list', 'map'];
+const DEFAULT_RADIUS_KM = 25;
+
+/** Sort key → the label the phone applied-filter chip shows. */
+const SORT_LABEL_KEYS: Record<SortOption, string> = {
+  communityrank: 'members.sort_communityrank',
+  name: 'members.sort_name',
+  joined: 'members.sort_newest',
+  rating: 'members.sort_rated',
+  hours_given: 'members.sort_active',
+};
+
+interface MembersQueryValues {
+  q: string;
+  sort: SortOption;
+  /** Nearby mode swaps the endpoint and drops sort/order entirely. */
+  nearby: boolean;
+  lat?: number | null;
+  lon?: number | null;
+  radiusKm: number;
+  limit: number;
+  offset?: number;
+}
+
+/**
+ * Single source of truth for filter → API request, used by the grid fetch AND by
+ * the phone sheet's live count probe so the two can never drift. The parameter
+ * order is deliberate: it reproduces the shipped query strings exactly, which the
+ * page's tests assert on.
+ */
+function buildMembersQuery(v: MembersQueryValues): { endpoint: string; params: URLSearchParams } {
+  const params = new URLSearchParams();
+  if (v.q) params.set('q', v.q);
+  if (!v.nearby) {
+    params.set('sort', v.sort);
+    // Quick filters imply descending order for joined and hours_given
+    if (v.sort === 'joined' || v.sort === 'hours_given') {
+      params.set('order', 'desc');
+    }
+  }
+  params.set('limit', String(v.limit));
+  if (v.offset != null && v.offset > 0) {
+    params.set('offset', String(v.offset));
+  }
+  if (v.nearby) {
+    params.set('lat', String(v.lat));
+    params.set('lon', String(v.lon));
+    params.set('radius_km', String(v.radiusKm));
+  }
+  return { endpoint: v.nearby ? '/v2/members/nearby' : '/v2/users', params };
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -87,6 +144,9 @@ const itemVariants = {
 export function MembersPage() {
   const { t } = useTranslation('common');
   usePageTitle(t('members.title'));
+  // On phones the page hides its own hero; the title lives in the app bar.
+  useSetAppBarTitle(t('members.title'));
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
 
@@ -115,7 +175,7 @@ export function MembersPage() {
     storedViewMode && (VALID_VIEW_MODES as string[]).includes(storedViewMode) ? storedViewMode as ViewMode : 'grid'
   );
   const [nearMeEnabled, setNearMeEnabled] = useState(false);
-  const [radiusKm, setRadiusKm] = useState(25);
+  const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const { user, isAuthenticated } = useAuth();
   const { tenantPath } = useTenant();
   const hasMapsFeature = useFeature('maps');
@@ -218,28 +278,16 @@ export function MembersPage() {
         setIsLoadingMore(true);
       }
 
-      const params = new URLSearchParams();
-      if (debouncedQuery) params.set('q', debouncedQuery);
-      if (!isNearbyMode) {
-        params.set('sort', activeSortBy);
-        // Quick filters imply descending order for joined and hours_given
-        if (activeSortBy === 'joined' || activeSortBy === 'hours_given') {
-          params.set('order', 'desc');
-        }
-      }
-      params.set('limit', ITEMS_PER_PAGE.toString());
-
-      if (append && membersCountRef.current > 0) {
-        params.set('offset', membersCountRef.current.toString());
-      }
-
-      let endpoint = '/v2/users';
-      if (isNearbyMode) {
-        endpoint = '/v2/members/nearby';
-        params.set('lat', String(user.latitude));
-        params.set('lon', String(user.longitude));
-        params.set('radius_km', String(radiusKm));
-      }
+      const { endpoint, params } = buildMembersQuery({
+        q: debouncedQuery,
+        sort: activeSortBy,
+        nearby: isNearbyMode,
+        lat: user?.latitude,
+        lon: user?.longitude,
+        radiusKm,
+        limit: ITEMS_PER_PAGE,
+        offset: append ? membersCountRef.current : undefined,
+      });
 
       const response = await api.get<User[]>(`${endpoint}?${params}`, { signal: controller.signal });
 
@@ -342,9 +390,119 @@ export function MembersPage() {
     setDebouncedQuery('');
   }
 
+  // ── Phone filter sheet (draft state — nothing applies until the footer button) ──
+  // The draft machine (snapshot / patch / debounced count probe / apply) lives in
+  // useFilterDraft; only the members-specific pieces stay here.
+
+  const canUseNearMe = user?.latitude != null && user?.longitude != null;
+
+  // Applied-filter snapshot for the probe's short-circuit. A ref, so the probe
+  // never re-fires merely because the grid finished loading.
+  const appliedFiltersRef = useRef({ sort: activeSortBy, nearby: isNearbyMode, radiusKm, total: totalCount });
+  appliedFiltersRef.current = { sort: activeSortBy, nearby: isNearbyMode, radiusKm, total: totalCount };
+
+  /**
+   * Live result count for the sheet footer — a cheap limit=1 fetch of the draft
+   * filters. Debounced hard (400ms) and short-circuited while the draft still
+   * matches the applied filters: /v2/users is rate-limited 60/60s and a
+   * communityrank total ranks the whole tenant, so a probe per tap is expensive.
+   */
+  const countDraftMembers = useCallback(async (candidate: MemberFilterDraft, signal: AbortSignal) => {
+    const nearby = candidate.nearMe && canUseNearMe;
+    const applied = appliedFiltersRef.current;
+    // Nearby mode ignores sort server-side, and non-nearby ignores the radius, so
+    // only the dimension that actually reaches the query has to match.
+    const sameAsApplied = nearby === applied.nearby
+      && (nearby ? candidate.radiusKm === applied.radiusKm : candidate.sort === applied.sort);
+    if (sameAsApplied && applied.total != null) {
+      return applied.total;
+    }
+    const { endpoint, params } = buildMembersQuery({
+      q: debouncedQuery,
+      sort: candidate.sort,
+      nearby,
+      lat: user?.latitude,
+      lon: user?.longitude,
+      radiusKm: candidate.radiusKm,
+      limit: 1,
+    });
+    const response = await api.get<User[]>(`${endpoint}?${params}`, { signal });
+    return response.success ? (response.meta?.total_items ?? null) : null;
+  }, [debouncedQuery, canUseNearMe, user?.latitude, user?.longitude]);
+
+  const commitDraftFilters = useCallback((next: MemberFilterDraft) => {
+    const nearby = next.nearMe && user?.latitude != null && user?.longitude != null;
+    if (next.nearMe && !nearby) {
+      // Same guard as handleNearMeToggle — nearby needs coordinates on the profile.
+      toast.error(t('members.near_me_no_location'));
+    }
+    setRadiusKm(next.radiusKm);
+    setNearMeEnabled(nearby);
+    // Nearby mode ignores sort server-side, so entering it drops the explicit sort
+    // exactly like handleNearMeToggle does.
+    setSortBy(nearby ? null : next.sort);
+  }, [user?.latitude, user?.longitude, toast, t]);
+
+  /** What "Clear all" resets to inside the sheet — sort returns to the tenant default. */
+  const emptyMemberDraft = useMemo<Partial<MemberFilterDraft>>(
+    () => ({ sort: defaultSort ?? 'name', nearMe: false, radiusKm: DEFAULT_RADIUS_KM }),
+    [defaultSort],
+  );
+
+  const filterSheet = useFilterDraft<MemberFilterDraft>({
+    onApply: commitDraftFilters,
+    emptyDraft: emptyMemberDraft,
+    countFor: countDraftMembers,
+    countKey: `${debouncedQuery}|${user?.latitude ?? ''}|${user?.longitude ?? ''}`,
+    debounceMs: 400,
+  });
+  const { open: openDraft } = filterSheet;
+
+  const openFilterSheet = useCallback(() => {
+    openDraft({
+      sort: activeSortBy ?? defaultSort ?? 'name',
+      nearMe: nearMeEnabled,
+      radiusKm,
+    }, totalCount);
+  }, [openDraft, activeSortBy, defaultSort, nearMeEnabled, radiusKm, totalCount]);
+
+  /**
+   * Phone: removable chips for the applied filters. The query itself shows in the
+   * search pill, and "removing" a sort means returning to the tenant default —
+   * there is always some sort in effect.
+   */
+  const phoneFilterChips = useMemo<MobileFilterBarChip[]>(() => {
+    const chips: MobileFilterBarChip[] = [];
+    if (activeSortBy && defaultSort && activeSortBy !== defaultSort) {
+      chips.push({
+        key: 'sort',
+        label: t(SORT_LABEL_KEYS[activeSortBy]),
+        onRemove: () => setSortBy(null),
+      });
+    }
+    if (nearMeEnabled) {
+      chips.push({
+        key: 'near',
+        label: t('members.nearby_filter', { radius: radiusKm }),
+        onRemove: () => setNearMeEnabled(false),
+      });
+    }
+    return chips;
+  }, [activeSortBy, defaultSort, nearMeEnabled, radiusKm, t]);
+
+  const resetPhoneFilters = useCallback(() => {
+    setSearchQuery('');
+    setDebouncedQuery('');
+    setSortBy(null);
+    setNearMeEnabled(false);
+    setRadiusKm(DEFAULT_RADIUS_KM);
+  }, []);
+
   return (
     <div className="space-y-5">
       <PageMeta title={t('page_meta.members.title')} description={t('page_meta.members.description')} noIndex />
+      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
+      {!isPhone && (
       <PublicPageHero
         eyebrow={t('members.hero_eyebrow')}
         title={t('members.title')}
@@ -366,13 +524,98 @@ export function MembersPage() {
           ) : undefined
         }
       />
-      {activeSortBy === 'communityrank' && !isNearbyMode && (
+      )}
+      {/* Phones read the ranking algorithm inside the filter sheet's Sort group instead. */}
+      {!isPhone && activeSortBy === 'communityrank' && !isNearbyMode && (
         <div className="-mt-2">
           <AlgorithmLabel area="members" />
         </div>
       )}
 
-      {/* Quick Filters — single-select ToggleButtonGroup (per-filter accent colour via data-[selected]). */}
+      {/* Phone: slim sticky control bar (feed/listings parity) — auto-hides on scroll down. */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="blue"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchQuery}
+          onFiltersPress={openFilterSheet}
+          chips={phoneFilterChips}
+          onClearAll={resetPhoneFilters}
+          labels={{ search: t('members.search_placeholder') }}
+          trailing={
+            <ToggleButtonGroup
+              aria-label={t('aria.view_mode')}
+              selectionMode="single"
+              disallowEmptySelection
+              selectedKeys={new Set([viewMode])}
+              onSelectionChange={(keys) => { const [k] = Array.from(keys); if (k) setViewMode(k as ViewMode); }}
+              className="shrink-0 gap-0 overflow-hidden rounded-full border border-theme-default bg-theme-elevated"
+            >
+              <ToggleButton
+                id="grid"
+                isIconOnly
+                variant="ghost"
+                aria-label={t('aria.grid_view')}
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700 dark:data-[selected=true]:text-blue-300"
+              >
+                <Grid className="h-4 w-4" aria-hidden="true" />
+              </ToggleButton>
+              <ToggleButton
+                id="list"
+                isIconOnly
+                variant="ghost"
+                aria-label={t('aria.list_view')}
+                className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700 dark:data-[selected=true]:text-blue-300"
+              >
+                <List className="h-4 w-4" aria-hidden="true" />
+              </ToggleButton>
+              {canUseMapView && (
+                <ToggleButton
+                  id="map"
+                  isIconOnly
+                  variant="ghost"
+                  aria-label={t('aria.map_view')}
+                  className="h-10 min-w-10 rounded-none text-theme-muted transition-colors data-[selected=true]:bg-blue-500/15 data-[selected=true]:text-blue-700 dark:data-[selected=true]:text-blue-300"
+                >
+                  <MapIcon className="h-4 w-4" aria-hidden="true" />
+                </ToggleButton>
+              )}
+            </ToggleButtonGroup>
+          }
+        />
+      )}
+
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchQuery}
+          onValueChange={setSearchQuery}
+          placeholder={t('members.search_placeholder')}
+          recentKey="members"
+        />
+      )}
+
+      {/* Phone filter sheet — sort + distance as chips, live count, draft-apply. */}
+      {isPhone && filterSheet.draft && (
+        <MemberFilterSheet
+          isOpen={filterSheet.isOpen}
+          onClose={filterSheet.close}
+          draft={filterSheet.draft}
+          onDraftChange={filterSheet.patch}
+          resultCount={filterSheet.count}
+          onApply={filterSheet.apply}
+          onClearAll={filterSheet.clear}
+          hasCommunityRank={membersAlgorithm?.key === 'communityrank'}
+          canUseNearMe={canUseNearMe}
+          onNearMeUnavailable={() => toast.error(t('members.near_me_no_location'))}
+        />
+      )}
+
+      {/* Quick Filters — single-select ToggleButtonGroup (per-filter accent colour via data-[selected]).
+          Phones reach the same values through the sheet's Sort group (this row is a facade over sortBy). */}
+      {!isPhone && (
       <ToggleButtonGroup
         aria-label={t('members.quick_filters')}
         selectionMode="single"
@@ -409,11 +652,15 @@ export function MembersPage() {
           {t('members.active')}
         </ToggleButton>
       </ToggleButtonGroup>
+      )}
 
-      {/* Search & Sort Filters */}
+      {/* Search & Sort Filters (desktop and tablet — phones use the sticky bar + sheet) */}
+      {!isPhone && (
       <GlassCard className="p-4">
         <div className="flex flex-col gap-4 xl:flex-row">
           <div className="min-w-0 flex-1">
+            {/* This card only mounts when !isPhone, so the pill arm below is inert —
+                kept verbatim so the tablet/desktop tree is byte-identical to before. */}
             {isPhone ? (
               <Button
                 variant="flat"
@@ -441,17 +688,6 @@ export function MembersPage() {
               />
             )}
           </div>
-
-          {isPhone && (
-            <MobileSearchOverlay
-              isOpen={isSearchOverlayOpen}
-              onClose={() => setIsSearchOverlayOpen(false)}
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              placeholder={t('members.search_placeholder')}
-              recentKey="members"
-            />
-          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:flex-nowrap">
             <Select
@@ -584,6 +820,7 @@ export function MembersPage() {
           </div>
         )}
       </GlassCard>
+      )}
 
       {/* Error State */}
       {error && !isLoading && (
