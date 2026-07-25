@@ -362,8 +362,14 @@ function checkTrackedRootArtifacts(tracked) {
       addIssue(path.join(root, relativePath), 'root text artifact is not maintained documentation; remove generated output from the public repo');
     }
 
+    // Maintained root config files whose names collide with the task-artifact
+    // pattern (e.g. "audit" in the npm-audit exception list — the .trivyignore
+    // counterpart consumed by scripts/npm-audit-gate.mjs in CI).
+    const allowedRootConfig = new Set(['.npm-audit-exceptions.json']);
+
     if (/(^|[-_.])(audit|handoff|plan|prompt|report|scratch|tmp|tracker)([-_.]|$)/i.test(basename)
-      && !allowedRootMarkdown.has(basename)) {
+      && !allowedRootMarkdown.has(basename)
+      && !allowedRootConfig.has(basename)) {
       addIssue(path.join(root, relativePath), 'tracked root task artifact should not be public documentation');
     }
   }
