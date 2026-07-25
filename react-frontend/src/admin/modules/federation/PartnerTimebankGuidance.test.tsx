@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
@@ -52,30 +52,40 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 // ─── Stub HeroUI Accordion to render children in jsdom ────────────────────────
 // HeroUI Accordion is built on React Aria and uses animations that don't render
 // collapsed panels in jsdom. Stub it to always expand content.
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Accordion: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="accordion">{children}</div>
-    ),
-    AccordionItem: ({
-      children,
-      title,
-    }: {
-      children: React.ReactNode;
-      title: React.ReactNode;
-    }) => (
-      <div data-testid="accordion-item">
-        <div data-testid="accordion-title">{title}</div>
-        <div data-testid="accordion-content">{children}</div>
-      </div>
-    ),
-    Chip: ({ children }: { children: React.ReactNode }) => (
-      <span data-testid="chip">{children}</span>
-    ),
-  };
-});
+//
+// 🔴 Do NOT reach for `importOriginal()` here. `src/components/ui/index.ts`
+// re-exports four modules that themselves `import … from '@/components/ui'`
+// (BackToTop, AlgorithmLabel, GlassInput, Skeletons), so loading the real
+// barrel from inside this factory re-enters the very specifier being mocked
+// while this factory is still pending — a self-referential await that vite-node
+// can fail to settle, which is the classic "fork worker pegs a core at 100% and
+// the run never terminates" hang. `PartnerTimebankGuidance` imports exactly the
+// three names stubbed below, so an explicit, self-contained factory is both
+// sufficient and cycle-free.
+vi.mock('@/components/ui', () => ({
+  Accordion: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="accordion">{children}</div>
+  ),
+  AccordionItem: ({
+    children,
+    title,
+  }: {
+    children: React.ReactNode;
+    title: React.ReactNode;
+  }) => (
+    <div data-testid="accordion-item">
+      {/* Real AccordionItem renders its title as the disclosure trigger button;
+          keep that role so trigger-level assertions stay meaningful. */}
+      <button type="button" data-testid="accordion-title">
+        {title}
+      </button>
+      <div data-testid="accordion-content">{children}</div>
+    </div>
+  ),
+  Chip: ({ children }: { children: React.ReactNode }) => (
+    <span data-testid="chip">{children}</span>
+  ),
+}));
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('PartnerTimebankGuidance', () => {
@@ -191,5 +201,30 @@ describe('PartnerTimebankGuidance', () => {
     render(<PartnerTimebankGuidance page="activityFeed" />);
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(2);
+  });
+
+  // Merged from the former __tests__/PartnerTimebankGuidance.test.tsx duplicate:
+  // asserts the resolved translation copy and the exact related-link targets.
+  it('explains where the protocol API guide fits and links to related setup pages', async () => {
+    const { PartnerTimebankGuidance } = await import('./PartnerTimebankGuidance');
+    render(<PartnerTimebankGuidance page="apiDocs" />);
+
+    expect(screen.getByText('Use this guide to explain the protocol stack')).toBeInTheDocument();
+    expect(screen.getByText('Where this page fits')).toBeInTheDocument();
+    expect(screen.getByText('Recommended order')).toBeInTheDocument();
+    expect(screen.getByText('Partner timebank admin')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Related pages' }));
+
+    // Related links point into the Partner Timebanks panel (2026-07-02) —
+    // the old /admin/federation/* routes were retired without redirects.
+    expect(screen.getByRole('link', { name: 'External Protocol Partners' })).toHaveAttribute(
+      'href',
+      '/test/partner-timebanks/external-partners',
+    );
+    expect(screen.getByRole('link', { name: 'Inbound API Partners' })).toHaveAttribute(
+      'href',
+      '/test/partner-timebanks/inbound-api',
+    );
   });
 });
