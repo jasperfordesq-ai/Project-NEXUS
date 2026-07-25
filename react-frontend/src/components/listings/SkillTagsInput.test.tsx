@@ -158,14 +158,14 @@ describe('SkillTagsInput', () => {
   it('renders the tag input textbox', async () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps()} />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
   it('renders existing tags as chips', async () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ tags: ['react', 'typescript'] })} />);
-    const chips = screen.getAllByTestId('tag-chip');
-    expect(chips).toHaveLength(2);
+    // One Remove button per rendered Chip (HeroUI's CloseButton, aria-label common:aria.remove).
+    expect(screen.getAllByRole('button', { name: 'Remove' })).toHaveLength(2);
     expect(screen.getByText('react')).toBeInTheDocument();
     expect(screen.getByText('typescript')).toBeInTheDocument();
   });
@@ -175,7 +175,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ onChange })} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'python' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
@@ -187,7 +187,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ onChange })} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'css' } });
     fireEvent.keyDown(input, { key: ',', code: 'Comma' });
 
@@ -199,7 +199,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ onChange })} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'ReactJS' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
@@ -211,7 +211,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ tags: ['react'], onChange })} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'react' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
@@ -224,7 +224,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ tags: ['react', 'vue'], onChange })} />);
 
-    const removeBtns = screen.getAllByTestId('remove-tag');
+    const removeBtns = screen.getAllByRole('button', { name: 'Remove' });
     await user.click(removeBtns[0]);
 
     expect(onChange).toHaveBeenCalledWith(['vue']);
@@ -235,7 +235,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ tags: ['react', 'vue'], onChange })} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     // Ensure input is empty
     fireEvent.change(input, { target: { value: '' } });
     fireEvent.keyDown(input, { key: 'Backspace', code: 'Backspace' });
@@ -249,7 +249,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps()} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'jav' } });
 
     await waitFor(() => {
@@ -259,7 +259,7 @@ describe('SkillTagsInput', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getAllByTestId('suggestion-option').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByRole('option').length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -267,7 +267,7 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps()} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'j' } });
 
     // Wait briefly to allow any debounce
@@ -281,7 +281,7 @@ describe('SkillTagsInput', () => {
     render(<SkillTagsInput {...makeProps({ tags, maxTags: 10 })} />);
 
     // Input should not be shown at max capacity
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
   it('shows current count vs max in the label', async () => {
@@ -299,12 +299,12 @@ describe('SkillTagsInput', () => {
     const { SkillTagsInput } = await import('./SkillTagsInput');
     render(<SkillTagsInput {...makeProps({ onChange })} />);
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     fireEvent.change(input, { target: { value: 'jav' } });
 
-    await waitFor(() => screen.getAllByTestId('suggestion-option'));
+    await waitFor(() => screen.getAllByRole('option'));
 
-    const suggestionBtns = screen.getAllByTestId('suggestion-option');
+    const suggestionBtns = screen.getAllByRole('option');
     await user.click(suggestionBtns[0]);
 
     expect(onChange).toHaveBeenCalledWith(['javascript']);
