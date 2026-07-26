@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.7] - 2026-07-26
+
 ### Added
 
 - **The search box and Filters button on the phone filter bar now meet the 44px touch-target minimum.** Both were 40px, four pixels under the size the platform commits to elsewhere — and because they live in the shared bar that now serves twelve pages, the one exception was spreading. They are now 44px, matching the filter chips, bottom sheets and overlay buttons alongside them; the bar grows by four pixels. The small removable filter chips under the bar deliberately stay at 28px: they wrap onto extra rows, so sizing them up would roughly double the bar's height once a few filters are applied and push results off the screen, and every filter can also be removed inside the filter sheet or cleared in one tap. At 28px they still meet the WCAG AA minimum; 44px is the stricter standard this platform holds itself to for primary controls.
@@ -1930,7 +1932,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.6...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.7...HEAD
+[1.5.7]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.5...v1.5.6
 [1.5.5]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.4...v1.5.5
 [1.5.4]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.3...v1.5.4
