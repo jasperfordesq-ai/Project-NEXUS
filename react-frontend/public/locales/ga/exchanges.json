@@ -21,7 +21,8 @@
     "completed": "Críochnaithe",
     "completed_aria": "Taispeáin malartuithe críochnaithe",
     "all": "Gach Ceann",
-    "all_aria": "Taispeáin gach malartú"
+    "all_aria": "Taispeáin gach malartú",
+    "filter_button_aria": "Scag de réir stádas malartaithe: {{status}}"
   },
   "error": {
     "load_failed": "Theip ar lódáil na malartuithe. Bain triail eile as.",
@@ -110,10 +111,10 @@
     "rate_exchange": "Rátáil an Malartú seo",
     "prep_time_value": "{{count}}h",
     "rating_value": "Rátáil: {{rating}} as 5",
-    "prep_time_value_few": "{{count}}h",
-    "prep_time_value_many": "{{count}}h",
     "prep_time_value_one": "{{count}}h",
     "prep_time_value_other": "{{count}}h",
+    "prep_time_value_few": "{{count}}h",
+    "prep_time_value_many": "{{count}}h",
     "prep_time_value_two": "{{count}}h"
   },
   "modal": {
@@ -180,8 +181,8 @@
       "title": "Sonraí Malartú"
     }
   },
+  "hours_count_one": "{{count}} uair",
   "hours_count_few": "{{count}} uair",
   "hours_count_many": "{{count}} uair",
-  "hours_count_one": "{{count}} uair",
   "hours_count_two": "{{count}} uair"
 }

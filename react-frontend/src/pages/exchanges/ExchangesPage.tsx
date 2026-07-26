@@ -7,8 +7,13 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { ExchangeCardSkeleton } from '@/components/ui/Skeletons';
 import { Tabs, Tab } from '@/components/ui/Tabs';
+import {
+  ExchangeFilterSheet,
+  EXCHANGE_STATUS_FILTERS,
+} from '@/components/exchanges/ExchangeFilterSheet';
 /**
  * Exchanges Page - View and manage exchange requests
  */
@@ -28,6 +33,11 @@ import { EmptyState } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
 import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks';
+// Direct hook paths, not the '@/hooks' barrel: page tests replace that barrel with
+// a partial stub, so a barrel import would resolve to undefined and crash them.
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
@@ -36,9 +46,29 @@ import type { Exchange, ExchangeConfig } from '@/types/api';
 
 const ITEMS_PER_PAGE = 20;
 
+/**
+ * Single source of truth for the list query string, so the fetch and any future
+ * count probe cannot drift apart. `all` means "no status filter" — the param is
+ * omitted rather than sent as `status=all`.
+ *
+ * NOTE (pre-existing, deliberately untouched here): `limit`/`offset` are ignored
+ * by `ExchangesController::index`, which reads `per_page`/`cursor`. See the
+ * "Load More" note in the JSX.
+ */
+function buildExchangesQuery(status: string, offset: number): string {
+  return status !== 'all'
+    ? `?status=${status}&limit=${ITEMS_PER_PAGE}&offset=${offset}`
+    : `?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+}
+
 export function ExchangesPage() {
   const { t } = useTranslation('exchanges');
   usePageTitle(t('page_title'));
+  // Phone layout: the page header is hidden and its title moves into the app bar.
+  // Called above the feature-gate early returns below — hooks cannot be conditional.
+  useSetAppBarTitle(t('title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { user } = useAuth();
   const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
@@ -51,6 +81,7 @@ export function ExchangesPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [selectedTab, setSelectedTab] = useState(searchParams.get('status') || 'active');
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   // Refs for race condition prevention
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -100,9 +131,7 @@ export function ExchangesPage() {
       }
 
       const offset = append ? exchanges.length : 0;
-      const queryString = selectedTab !== 'all'
-        ? `?status=${selectedTab}&limit=${ITEMS_PER_PAGE}&offset=${offset}`
-        : `?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+      const queryString = buildExchangesQuery(selectedTab, offset);
 
       const response = await api.get<Exchange[]>(`/v2/exchanges${queryString}`);
       if (controller.signal.aborted) return;
@@ -175,6 +204,15 @@ export function ExchangesPage() {
     setHasMore(true);
   }
 
+  // Phone bar: the status IS this page's primary navigation, not a refinement, so
+  // the sticky Filters button is labelled with the bucket you are looking at
+  // rather than a generic "Filters". An unrecognised `?status=` value (nothing to
+  // name) falls back to the shared `common:filter_bar.filters` default.
+  const activeStatusLabelKey = EXCHANGE_STATUS_FILTERS.find(
+    (option) => option.key === selectedTab,
+  )?.labelKey;
+  const activeStatusLabel = activeStatusLabelKey ? t(activeStatusLabelKey) : undefined;
+
   const isRequester = (exchange: Exchange) => exchange.requester_id === user?.id;
   const isProvider = (exchange: Exchange) => exchange.provider_id === user?.id;
   const otherParty = (exchange: Exchange) =>
@@ -217,7 +255,11 @@ export function ExchangesPage() {
       className="space-y-6"
     >
       <PageMeta title={t('page_meta.list.title')} noIndex />
-      {/* Header */}
+      {/* Header — phones hide it entirely; the title lives in the app bar
+          (useSetAppBarTitle) and the "Browse Listings" CTA is re-homed into the
+          sticky bar below, since the header was its only phone entry point once
+          the list is non-empty. */}
+      {!isPhone && (
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-theme-primary">
@@ -234,8 +276,43 @@ export function ExchangesPage() {
           {t('browse_listings')}
         </Button>
       </div>
+      )}
 
-      {/* Tabs */}
+      {/* Phone: slim sticky bar replacing the horizontally-scrolling tab strip.
+          No search pill (the page has no search), no view modes, and no removable
+          chip row — a single-select status with a non-empty default produces no
+          meaningful "✕" chips. */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="accent"
+          testId="exchanges-filter-bar"
+          onFiltersPress={() => setIsFilterSheetOpen(true)}
+          labels={{
+            // `region` deliberately keeps the shared common:filter_bar.filter_form
+            // default: reusing the tab strip's "Exchange status filter" name here
+            // would give two different controls the same accessible name.
+            filters: activeStatusLabel,
+            moreFilters: activeStatusLabel
+              ? t('tabs.filter_button_aria', { status: activeStatusLabel })
+              : undefined,
+          }}
+          trailing={
+            <Button
+              as={Link}
+              to={tenantPath("/listings")}
+              isIconOnly
+              aria-label={t('browse_listings')}
+              className="size-11 min-h-11 min-w-11 shrink-0 rounded-full bg-gradient-to-r from-accent to-accent-gradient-end text-white"
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+            </Button>
+          }
+        />
+      )}
+
+      {/* Tabs (desktop and tablet — phones use the sticky bar + sheet) */}
+      {!isPhone && (
       <GlassCard className="p-2">
         <Tabs
           selectedKey={selectedTab}
@@ -253,6 +330,7 @@ export function ExchangesPage() {
           <Tab key="all" title={t('tabs.all')} aria-label={t('tabs.all_aria')} />
         </Tabs>
       </GlassCard>
+      )}
 
       {/* Error State */}
       {error && !isLoading && (
@@ -402,7 +480,11 @@ export function ExchangesPage() {
                 );
               })}
 
-              {/* Load More Button */}
+              {/* Load More Button
+                  🔴 KNOWN PRE-EXISTING BUG (out of scope for the phone layout):
+                  we send limit/offset but ExchangesController::index reads
+                  per_page/cursor, so appending refetches page 1 and duplicates
+                  rows. Fix with response.meta.cursor, not infinite scroll. */}
               {hasMore && (
                 <div className="pt-4 text-center">
                   <Button
@@ -418,6 +500,17 @@ export function ExchangesPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Phone: status picker. Simple archetype — each tap applies immediately and
+          closes; there is no total in the API meta to drive a draft "Show N" footer. */}
+      {isPhone && (
+        <ExchangeFilterSheet
+          isOpen={isFilterSheetOpen}
+          onClose={() => setIsFilterSheetOpen(false)}
+          status={selectedTab}
+          onStatusChange={handleTabChange}
+        />
       )}
     </div>
   );

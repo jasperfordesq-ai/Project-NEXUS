@@ -21,7 +21,8 @@
     "completed": "مكتمل",
     "completed_aria": "عرض التبادلات المكتملة",
     "all": "الكل",
-    "all_aria": "عرض جميع التبادلات"
+    "all_aria": "عرض جميع التبادلات",
+    "filter_button_aria": "التصفية حسب حالة التبادل: {{status}}"
   },
   "error": {
     "load_failed": "فشل في تحميل التبادلات. يرجى المحاولة مرة أخرى.",
@@ -110,10 +111,10 @@
     "rate_exchange": "قيم هذا التبادل",
     "prep_time_value": "{{count}}ح",
     "rating_value": "التقييم: {{rating}} من أصل 5",
-    "prep_time_value_few": "{{count}}ح",
-    "prep_time_value_many": "{{count}}ح",
     "prep_time_value_one": "{{count}}ح",
     "prep_time_value_other": "{{count}}ح",
+    "prep_time_value_few": "{{count}}ح",
+    "prep_time_value_many": "{{count}}ح",
     "prep_time_value_two": "{{count}}ح",
     "prep_time_value_zero": "{{count}}ح"
   },
@@ -181,9 +182,9 @@
       "title": "تفاصيل التبادل"
     }
   },
+  "hours_count_one": "{{count}} ساعة",
   "hours_count_few": "{{count}} ساعة",
   "hours_count_many": "{{count}} ساعة",
-  "hours_count_one": "{{count}} ساعة",
   "hours_count_two": "{{count}} ساعة",
   "hours_count_zero": "{{count}} ساعة"
 }

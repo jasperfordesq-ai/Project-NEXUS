@@ -21,7 +21,8 @@
     "completed": "Completati",
     "completed_aria": "Mostra scambi completati",
     "all": "Tutti",
-    "all_aria": "Mostra tutti gli scambi"
+    "all_aria": "Mostra tutti gli scambi",
+    "filter_button_aria": "Filtra per stato della piattaforma: {{status}}"
   },
   "error": {
     "load_failed": "Impossibile caricare gli scambi. La preghiamo di riprovare.",
@@ -110,9 +111,9 @@
     "rate_exchange": "Valuta Questo Scambio",
     "prep_time_value": "{{count}}h",
     "rating_value": "Valutazione: {{rating}} su 5",
-    "prep_time_value_many": "{{count}}h",
     "prep_time_value_one": "{{count}}h",
-    "prep_time_value_other": "{{count}}h"
+    "prep_time_value_other": "{{count}}h",
+    "prep_time_value_many": "{{count}}h"
   },
   "modal": {
     "decline_title": "Rifiuta richiesta di scambio",
@@ -178,6 +179,6 @@
       "title": "Dettagli dello Scambio"
     }
   },
-  "hours_count_many": "{{count}} ora",
-  "hours_count_one": "{{count}} ora"
+  "hours_count_one": "{{count}} ora",
+  "hours_count_many": "{{count}} ora"
 }

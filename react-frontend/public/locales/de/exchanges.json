@@ -21,7 +21,8 @@
     "completed": "Abgeschlossen",
     "completed_aria": "Abgeschlossene Tauschgeschäfte anzeigen",
     "all": "Alle",
-    "all_aria": "Alle Tauschgeschäfte anzeigen"
+    "all_aria": "Alle Tauschgeschäfte anzeigen",
+    "filter_button_aria": "Nach Austauschstatus filtern: {{status}}"
   },
   "error": {
     "load_failed": "Tauschgeschäfte konnten nicht geladen werden. Bitte versuchen Sie es erneut.",

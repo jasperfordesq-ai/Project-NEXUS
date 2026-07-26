@@ -21,7 +21,8 @@
     "completed": "Voltooid",
     "completed_aria": "Toon voltooide uitwisselingen",
     "all": "Alles",
-    "all_aria": "Toon alle uitwisselingen"
+    "all_aria": "Toon alle uitwisselingen",
+    "filter_button_aria": "Filter op uitwisselingsstatus: {{status}}"
   },
   "error": {
     "load_failed": "Kon uitwisselingen niet laden. Probeer het opnieuw.",

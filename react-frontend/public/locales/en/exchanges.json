@@ -21,7 +21,8 @@
     "completed": "Completed",
     "completed_aria": "Show completed exchanges",
     "all": "All",
-    "all_aria": "Show all exchanges"
+    "all_aria": "Show all exchanges",
+    "filter_button_aria": "Filter by exchange status: {{status}}"
   },
   "error": {
     "load_failed": "Failed to load exchanges. Please try again.",

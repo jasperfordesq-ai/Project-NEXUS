@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 
 const tenantHasFeature = vi.fn(() => true);
 const tenantHasModule = vi.fn(() => true);
@@ -73,6 +73,20 @@ vi.mock('@/contexts/ToastContext', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+
+// Toggle the phone layout. src/test/setup.ts stubs window.matchMedia to return
+// matches:false for EVERY query, so without this mock `isPhone` is permanently
+// false and the phone branch would get zero coverage.
+// Query-aware on purpose: `Drawer` also asks '(max-width: 639px)', and answering
+// min-width queries with the negation keeps any future consumer from seeing an
+// impossible viewport.
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn((query: string) =>
+    query.includes('max-width') ? isPhoneViewport : !isPhoneViewport,
+  ),
+}));
+
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   ...(await importOriginal()),
@@ -120,12 +134,14 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 import { ExchangesPage } from './ExchangesPage';
+import { api } from '@/lib/api';
 
 describe('ExchangesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     tenantHasFeature.mockReturnValue(true);
     tenantHasModule.mockReturnValue(true);
+    isPhoneViewport = false;
   });
 
   const mockLoadedExchanges = async (exchanges: unknown[]) => {
@@ -155,6 +171,8 @@ describe('ExchangesPage', () => {
 
   it('renders status filter tabs', () => {
     render(<ExchangesPage />);
+    // Counterpart to the phone-layout assertion that this strip is gone.
+    expect(screen.getByLabelText('Exchange status filter')).toBeInTheDocument();
     expect(screen.getAllByText('Active').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Needs Confirmation')).toBeInTheDocument();
     expect(screen.getAllByText('Completed').length).toBeGreaterThanOrEqual(1);
@@ -165,8 +183,10 @@ describe('ExchangesPage', () => {
     render(<ExchangesPage />);
     // The loading region renders 4 ExchangeCardSkeleton placeholders (each a
     // role="status" element) inside the aria-busy loading container.
+    // `:scope >` is load-bearing: HeroUI v3's Skeleton primitive is itself a
+    // role="status" element, so each card contributes 1 + 6 nested ones.
     const loading = screen.getByLabelText('Loading exchanges...');
-    const skeletons = loading.querySelectorAll('[role="status"]');
+    const skeletons = loading.querySelectorAll(':scope > [role="status"]');
     expect(skeletons.length).toBe(4);
   });
 
@@ -257,6 +277,83 @@ describe('ExchangesPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('3 hours')).toBeInTheDocument();
+    });
+  });
+
+  describe('phone layout', () => {
+    beforeEach(async () => {
+      isPhoneViewport = true;
+      // Pin the API implementation: `vi.clearAllMocks()` clears calls but not
+      // implementations, so an earlier test's exchange fixture would otherwise leak.
+      await mockLoadedExchanges([]);
+    });
+
+    it('renders the sticky bar labelled with the active status, plus the re-homed CTA', () => {
+      render(<ExchangesPage />);
+      expect(screen.getByTestId('exchanges-filter-bar')).toBeInTheDocument();
+      // Filters button carries the current bucket, not a generic "Filters".
+      expect(
+        screen.getByLabelText('Filter by exchange status: Active'),
+      ).toBeInTheDocument();
+      // "Browse Listings" was only reachable from the (now hidden) page header.
+      expect(screen.getByLabelText('Browse Listings')).toBeInTheDocument();
+    });
+
+    it('does not render the desktop header or the tab strip', () => {
+      render(<ExchangesPage />);
+      expect(screen.queryByRole('heading', { name: 'My Exchanges' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Track your service exchange requests and confirmations'),
+      ).not.toBeInTheDocument();
+      // The GlassCard tab strip owns this aria-label; with the sheet closed
+      // nothing else in the tree carries it.
+      expect(screen.queryByLabelText('Exchange status filter')).not.toBeInTheDocument();
+      expect(screen.queryByText('Needs Confirmation')).not.toBeInTheDocument();
+    });
+
+    it('opens the filter sheet with every status chip and no draft footer', async () => {
+      render(<ExchangesPage />);
+      fireEvent.click(screen.getByLabelText('Filter by exchange status: Active'));
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('radiogroup', { name: 'Exchange status filter' }),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByRole('radio', { name: 'Active' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'Needs Confirmation' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'Completed' })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'All' })).toBeInTheDocument();
+      // Simple archetype: immediate-apply, so there is no footer at all — and no
+      // fabricated count, because /v2/exchanges meta has no total.
+      expect(screen.queryByText('Show results')).not.toBeInTheDocument();
+      expect(screen.queryByText('Clear all')).not.toBeInTheDocument();
+    });
+
+    it('applies a tapped status immediately and closes the sheet', async () => {
+      render(<ExchangesPage />);
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('/v2/exchanges?status=active'));
+      });
+      vi.mocked(api.get).mockClear();
+
+      fireEvent.click(screen.getByLabelText('Filter by exchange status: Active'));
+      await waitFor(() => {
+        expect(screen.getByRole('radio', { name: 'Completed' })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('radio', { name: 'Completed' }));
+
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(expect.stringContaining('status=completed'));
+      });
+      await waitFor(() => {
+        expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+      });
+      // Bar label follows the applied status.
+      expect(
+        screen.getByLabelText('Filter by exchange status: Completed'),
+      ).toBeInTheDocument();
     });
   });
 });

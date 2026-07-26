@@ -21,7 +21,8 @@
     "completed": "Ukończone",
     "completed_aria": "Pokaż zakończone wymiany",
     "all": "Wszystko",
-    "all_aria": "Pokaż wszystkie wymiany"
+    "all_aria": "Pokaż wszystkie wymiany",
+    "filter_button_aria": "Filtruj według statusu wymiany: {{status}}"
   },
   "error": {
     "load_failed": "Nie udało się załadować wymian. Proszę spróbować ponownie.",
@@ -110,10 +111,10 @@
     "rate_exchange": "Oceń tę wymianę",
     "prep_time_value": "{{count}}godz",
     "rating_value": "Ocena: {{rating}} na 5",
-    "prep_time_value_few": "{{count}}godz",
-    "prep_time_value_many": "{{count}}godz",
     "prep_time_value_one": "{{count}}godz",
-    "prep_time_value_other": "{{count}}godz"
+    "prep_time_value_other": "{{count}}godz",
+    "prep_time_value_few": "{{count}}godz",
+    "prep_time_value_many": "{{count}}godz"
   },
   "modal": {
     "decline_title": "Odrzuć prośbę o wymianę",
@@ -179,7 +180,7 @@
       "title": "Szczegóły wymiany"
     }
   },
+  "hours_count_one": "{{count}} godzina",
   "hours_count_few": "{{count}} godzina",
-  "hours_count_many": "{{count}} godzina",
-  "hours_count_one": "{{count}} godzina"
+  "hours_count_many": "{{count}} godzina"
 }
