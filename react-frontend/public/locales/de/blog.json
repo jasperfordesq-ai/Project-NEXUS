@@ -20,6 +20,9 @@
   "empty_tip_guides": "Anleitungen",
   "empty_tip_updates": "Aktualisierungen",
   "load_more": "Weitere Beiträge laden",
+  "results_count": "{{count}} Beiträge angezeigt",
+  "results_count_one": "{{count}}-Beitrag angezeigt",
+  "results_count_other": "{{count}} Beiträge angezeigt",
   "min_read": "{{count}} Min. Lesezeit",
   "min_read_short": "{{count}}Min",
   "post": {

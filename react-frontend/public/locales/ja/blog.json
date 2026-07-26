@@ -20,6 +20,9 @@
   "empty_tip_guides": "ガイド",
   "empty_tip_updates": "アップデート",
   "load_more": "さらに読み込む",
+  "results_count": "{{count}} の投稿が表示されます",
+  "results_count_one": "{{count}} の投稿が表示されました",
+  "results_count_other": "{{count}} の投稿が表示されます",
   "min_read": "{{count}}分で読めます",
   "min_read_short": "{{count}}分",
   "post": {
@@ -63,14 +66,14 @@
     "reaction_wow": "すごい",
     "reaction_sad": "悲しい",
     "reaction_celebrate": "お祝い",
-    "min_read_other": "{{count}}分で読めます",
-    "views_count_other": "{{count}}回表示",
     "min_read_one": "{{count}} 分読",
-    "views_count_one": "{{count}} 回閲覧"
+    "min_read_other": "{{count}}分で読めます",
+    "views_count_one": "{{count}} 回閲覧",
+    "views_count_other": "{{count}}回表示"
   },
   "page_description": "タイムバンクコミュニティからのストーリー、ガイド、最新情報 — 成功した交流、学んだ教訓、地域グループやパートナーからの最新ニュース。",
-  "min_read_other": "{{count}}分で読めます",
-  "min_read_short_other": "{{count}}分",
   "min_read_one": "{{count}} 分読",
-  "min_read_short_one": "{{count}}分"
+  "min_read_other": "{{count}}分で読めます",
+  "min_read_short_one": "{{count}}分",
+  "min_read_short_other": "{{count}}分"
 }

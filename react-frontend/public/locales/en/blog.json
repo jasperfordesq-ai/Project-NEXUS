@@ -20,6 +20,9 @@
   "empty_tip_guides": "Guides",
   "empty_tip_updates": "Updates",
   "load_more": "Load More Posts",
+  "results_count": "{{count}} posts shown",
+  "results_count_one": "{{count}} post shown",
+  "results_count_other": "{{count}} posts shown",
   "min_read": "{{count}} min read",
   "min_read_short": "{{count}}m",
   "post": {

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -40,6 +40,17 @@ vi.mock('@/contexts', () => ({
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
+
+// src/test/setup.ts stubs matchMedia to `matches: false` for EVERY query, so
+// without this mock `isPhone` is permanently false and the phone branch gets
+// zero coverage. Query-aware so a page/child asking a `min-width` question can
+// never land in an impossible viewport.
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: vi.fn((query: string) =>
+    query.includes('min-width') ? !isPhoneViewport : isPhoneViewport,
+  ),
+}));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
@@ -60,8 +71,34 @@ import { api } from '@/lib/api';
 
 const mockApiGet = vi.mocked(api.get);
 
+const CATEGORY = { id: 3, name: 'Community News', slug: 'community-news', color: 'blue', post_count: 4 };
+const POST = {
+  id: 9,
+  title: 'Community update',
+  slug: 'community-update',
+  excerpt: 'News from the community.',
+  featured_image: null,
+  published_at: '2026-07-11T09:00:00Z',
+  created_at: '2026-07-11T09:00:00Z',
+  views: 12,
+  reading_time: 2,
+  category: null,
+};
+
+/** `/v2/blog/categories` → one category; `/v2/blog?...` → one post. */
+function mockBlogApi() {
+  mockApiGet.mockImplementation((url: string) => Promise.resolve({
+    success: true,
+    data: url.includes('/categories') ? [CATEGORY] : [POST],
+    meta: {},
+  }));
+}
+
 describe('BlogPage', () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isPhoneViewport = false;
+  });
 
   it('renders without crashing', () => {
     render(<BlogPage />);
@@ -100,5 +137,73 @@ describe('BlogPage', () => {
     expect(screen.queryByText('Private Member Name')).not.toBeInTheDocument();
     expect(document.querySelector('a[href*="/profile/"]')).toBeNull();
     expect(document.querySelector('img[src*="member-avatar"]')).toBeNull();
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+      mockBlogApi();
+    });
+
+    it('renders the sticky bar with a search pill and Filters button', () => {
+      render(<BlogPage />);
+      expect(screen.getByTestId('blog-filter-bar')).toBeInTheDocument();
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search posts...')).toBeInTheDocument();
+    });
+
+    it('does not render the desktop hero or the inline filter row', () => {
+      render(<BlogPage />);
+      // Hero description — the hero is the only place it appears.
+      expect(screen.queryByText('Community stories, updates, and announcements')).not.toBeInTheDocument();
+      // The inline SearchField is the only element with a placeholder; the phone
+      // pill is a Button showing text.
+      expect(screen.queryByPlaceholderText(/Search posts/i)).not.toBeInTheDocument();
+      // Screen readers still get a heading.
+      expect(screen.getByRole('heading', { level: 1, name: 'Blog & News' })).toBeInTheDocument();
+    });
+
+    it('opens the filter sheet showing the category chip group', async () => {
+      render(<BlogPage />);
+      await waitFor(() => {
+        expect(screen.getByText('Community update')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      // HeroUI single-select ToggleButtonGroup ⇒ role=radiogroup / role=radio.
+      const group = await screen.findByRole('radiogroup', { name: 'Filter by category' });
+      expect(group).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name: 'All' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'Community News (4)' })).toBeInTheDocument();
+      // Simple archetype: immediate apply, so there is no footer apply button.
+      expect(screen.queryByText('Show results')).not.toBeInTheDocument();
+    });
+
+    it('applies a category immediately on tap and refetches the list', async () => {
+      render(<BlogPage />);
+      await waitFor(() => {
+        expect(mockApiGet).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/blog\?/));
+      });
+      mockApiGet.mockClear();
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      const chip = await screen.findByRole('radio', { name: 'Community News (4)' });
+
+      fireEvent.click(chip);
+
+      await waitFor(() => {
+        expect(mockApiGet).toHaveBeenCalledWith(expect.stringContaining('category_id=3'));
+      });
+      // The applied filter surfaces as a removable chip in the sticky bar.
+      expect(await screen.findByLabelText('Remove filter: Community News')).toBeInTheDocument();
+    });
+
+    it('shows the loaded-post count in place of the hero stat', async () => {
+      render(<BlogPage />);
+      await waitFor(() => {
+        expect(screen.getByText('1 post shown')).toBeInTheDocument();
+      });
+    });
   });
 });

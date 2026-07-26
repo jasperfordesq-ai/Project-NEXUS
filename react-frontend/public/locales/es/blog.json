@@ -20,6 +20,9 @@
   "empty_tip_guides": "Guías",
   "empty_tip_updates": "Actualizaciones",
   "load_more": "Cargar Más Publicaciones",
+  "results_count": "{{count}} publicaciones mostradas",
+  "results_count_one": "{{count}} publicación mostrada",
+  "results_count_other": "{{count}} publicaciones mostradas",
   "min_read": "{{count}} min de lectura",
   "min_read_short": "{{count}}m",
   "post": {
@@ -63,19 +66,19 @@
     "reaction_wow": "Guau",
     "reaction_sad": "Triste",
     "reaction_celebrate": "Celebrar",
-    "min_read_many": "{{count}} min de lectura",
     "min_read_one": "{{count}} min de lectura",
     "min_read_other": "{{count}} min de lectura",
-    "views_count_many": "{{count}} vistas",
     "views_count_one": "{{count}} vistas",
     "views_count_other": "{{count}} vistas",
+    "min_read_many": "{{count}} min de lectura",
+    "views_count_many": "{{count}} vistas",
     "comment_count_many": "{{count}} comentarios"
   },
   "page_description": "Historias, guías y actualizaciones de la comunidad de banco de tiempo — intercambios que funcionaron, lecciones aprendidas y las últimas noticias de grupos locales y socios.",
-  "min_read_many": "{{count}} min de lectura",
   "min_read_one": "{{count}} min de lectura",
   "min_read_other": "{{count}} min de lectura",
-  "min_read_short_many": "{{count}}m",
   "min_read_short_one": "{{count}}m",
-  "min_read_short_other": "{{count}}m"
+  "min_read_short_other": "{{count}}m",
+  "min_read_many": "{{count}} min de lectura",
+  "min_read_short_many": "{{count}}m"
 }

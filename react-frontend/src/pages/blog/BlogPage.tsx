@@ -9,7 +9,7 @@
  * Uses V2 API: GET /api/v2/blog, GET /api/v2/blog/categories
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from '@/lib/motion';
 
@@ -26,14 +26,22 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ToggleButtonGroup, ToggleButton } from '@/components/ui/ToggleButtonGroup';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
 import { PageMeta } from '@/components/seo/PageMeta';
 import { PublicEmptyState } from '@/components/public/PublicEmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
+import { BlogFilterSheet } from '@/components/blog/BlogFilterSheet';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { responsiveThumbnailProps, getFormattingLocale } from '@/lib/helpers';
 import { useTenant } from '@/contexts';
 import { usePageTitle } from '@/hooks';
+// Direct hook paths on purpose: BlogPage.test.tsx replaces the whole '@/hooks'
+// barrel with a partial stub, so a barrel import would resolve to `undefined`.
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { usePrerenderReady } from '@/hooks/usePrerenderReady';
 
 /* ───────────────────────── Types ───────────────────────── */
@@ -75,6 +83,28 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const POSTS_PER_PAGE = 12;
+/** Phones render fewer skeletons — six full-height cards is ~1,700px of grey. */
+const SKELETON_KEYS = [1, 2, 3, 4, 5, 6];
+const PHONE_SKELETON_KEYS = [1, 2, 3];
+
+/**
+ * Single source of truth for the `/v2/blog` query string, so the initial load,
+ * the filtered reload and the "Load More" append can never drift apart.
+ */
+function buildBlogQuery(options: {
+  cursor?: string;
+  search: string;
+  categoryId: number | null;
+}): URLSearchParams {
+  const params = new URLSearchParams();
+  params.set('per_page', String(POSTS_PER_PAGE));
+  if (options.cursor) params.set('cursor', options.cursor);
+  if (options.search.trim()) params.set('search', options.search.trim());
+  if (options.categoryId) params.set('category_id', String(options.categoryId));
+  return params;
+}
+
 const categoryColorMap: Record<string, string> = {
   blue: 'bg-blue-500/10 text-[var(--color-info)]',
   gray: 'bg-gray-500/10 text-gray-500',
@@ -88,16 +118,27 @@ const categoryColorMap: Record<string, string> = {
 export function BlogPage() {
   const { t } = useTranslation('blog');
   usePageTitle(t('page_title'));
+  // Phones hide the hero, so the page title lives in the fixed app bar instead.
+  useSetAppBarTitle(t('title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [categoriesReady, setCategoriesReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // `searchInput` is what the field/pill shows; `searchQuery` is the debounced
+  // value the fetch depends on. The split is mandatory rather than cosmetic:
+  // MobileSearchOverlay fires `onValueChange` on every keystroke by design, and
+  // before the split every keystroke fired its own GET /v2/blog.
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [isPaginated, setIsPaginated] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   // AbortController ref to cancel stale requests
   const abortRef = useRef<AbortController | null>(null);
@@ -126,9 +167,14 @@ export function BlogPage() {
   const cursorRef = useRef<string | undefined>(undefined);
 
   const loadPosts = useCallback(async (append = false) => {
+    // Capture OUR controller in a local. The previous code compared against
+    // `abortRef.current`, which is the controller this very call just installed
+    // and never aborts — so the staleness guards could never fire and an
+    // out-of-order response could clobber the list.
+    let controller: AbortController | null = null;
     if (!append) {
       abortRef.current?.abort();
-      const controller = new AbortController();
+      controller = new AbortController();
       abortRef.current = controller;
     }
 
@@ -140,17 +186,17 @@ export function BlogPage() {
         setError(null);
       }
 
-      const params = new URLSearchParams();
-      params.set('per_page', '12');
-      if (append && cursorRef.current) params.set('cursor', cursorRef.current);
-      if (searchQuery.trim()) params.set('search', searchQuery.trim());
-      if (selectedCategory) params.set('category_id', String(selectedCategory));
+      const params = buildBlogQuery({
+        cursor: append ? cursorRef.current : undefined,
+        search: searchQuery,
+        categoryId: selectedCategory,
+      });
 
       const response = await api.get<BlogPost[]>(
         `/v2/blog?${params}`
       );
 
-      if (!append && abortRef.current?.signal.aborted) return;
+      if (controller?.signal.aborted) return;
 
       if (response.success && response.data) {
         const items = Array.isArray(response.data) ? response.data : [];
@@ -168,25 +214,62 @@ export function BlogPage() {
         if (!append) setError(tRef.current('error_load_posts'));
       }
     } catch (err) {
-      if (!append && abortRef.current?.signal.aborted) return;
+      if (controller?.signal.aborted) return;
       logError('Failed to load blog posts', err);
       if (!append) setError(tRef.current('error_load_posts_retry'));
     } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
+      // A superseded request must not clear the spinner the newer one just set.
+      if (append) {
+        setIsLoadingMore(false);
+      } else if (!controller?.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   }, [searchQuery, selectedCategory]);
+
+  // Debounce the search field / overlay into the value the fetch depends on.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     cursorRef.current = undefined;
     loadPosts();
   }, [searchQuery, selectedCategory, loadPosts]);
 
+  /**
+   * ONE boolean for "the visible list is filtered". Both the featured-post
+   * branch and the grid's `slice()` must read the same value, or post #1 either
+   * duplicates (featured + grid) or vanishes.
+   */
+  const hasActiveFilters = Boolean(searchQuery || selectedCategory);
+  const showFeaturedPost = !hasActiveFilters && !isPaginated;
+
+  const resetFilters = useCallback(() => {
+    setSearchInput('');
+    setSearchQuery('');
+    setSelectedCategory(null);
+  }, []);
+
+  // Phone: the applied category as a removable chip (search shows in the pill).
+  const phoneFilterChips = useMemo(() => {
+    if (selectedCategory === null) return [];
+    const cat = categories.find((c) => c.id === selectedCategory);
+    return [{
+      key: 'category',
+      label: cat?.name ?? String(selectedCategory),
+      onRemove: () => setSelectedCategory(null),
+    }];
+  }, [selectedCategory, categories]);
+
   usePrerenderReady(!isLoading && error === null && categoriesReady);
 
   return (
     <div className="space-y-6">
       <PageMeta title={t('page_title')} description={t('page_description')} />
+      {/* Phones hide the hero entirely — the title lives in the app bar (useSetAppBarTitle). */}
+      {!isPhone && (
       <PublicPageHero
         eyebrow={t('hero_eyebrow')}
         title={t('title')}
@@ -195,14 +278,44 @@ export function BlogPage() {
         icon={<BookOpen className="h-7 w-7" aria-hidden="true" />}
         stats={posts.length > 0 && !isLoading ? [{ label: t('hero_posts_label'), value: posts.length.toLocaleString(getFormattingLocale()) }] : undefined}
       />
+      )}
 
-      {/* Search & Filters */}
+      {/* The hero holds the page's only <h1>; keep one for screen readers and
+          for a future mobile-viewport prerender variant. */}
+      {isPhone && <h1 className="sr-only">{t('title')}</h1>}
+
+      {/* Phone: slim sticky control bar — auto-hides on scroll down. No view-mode
+          toggle exists on this page, so the search pill takes the extra width. */}
+      {isPhone && (
+        <MobileFilterBar
+          isVisible={showMobileControls}
+          accent="blue"
+          onSearchPress={() => setIsSearchOverlayOpen(true)}
+          searchValue={searchInput}
+          onFiltersPress={() => setIsFilterSheetOpen(true)}
+          chips={phoneFilterChips}
+          onClearAll={resetFilters}
+          labels={{ search: t('search_placeholder') }}
+          testId="blog-filter-bar"
+        />
+      )}
+
+      {/* Phone: re-homes the hero's "Posts shown" stat (posts loaded so far — the
+          endpoint publishes no total). */}
+      {isPhone && !isLoading && posts.length > 0 && (
+        <p className="px-1 text-xs font-medium text-theme-muted sm:hidden">
+          {t('results_count', { count: posts.length })}
+        </p>
+      )}
+
+      {/* Search & Filters (tablet and desktop — phones use the sticky bar + sheet) */}
+      {!isPhone && (
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 max-w-md">
           <SearchField
             placeholder={t('search_placeholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             aria-label={t('search_placeholder')}
             classNames={{
               input: 'bg-transparent text-theme-primary',
@@ -246,6 +359,7 @@ export function BlogPage() {
           </ToggleButtonGroup>
         )}
       </div>
+      )}
 
       {/* Error */}
       {error && !isLoading && (
@@ -268,7 +382,7 @@ export function BlogPage() {
         <>
           {isLoading ? (
             <div role="status" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true" aria-label={t('loading_posts')}>
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+              {(isPhone ? PHONE_SKELETON_KEYS : SKELETON_KEYS).map((i) => (
                 <GlassCard key={i} className="overflow-hidden">
                   <Skeleton className="h-48 rounded-none" />
                   <div className="p-5">
@@ -285,18 +399,14 @@ export function BlogPage() {
             <PublicEmptyState
               icon={<BookOpen className="w-12 h-12" aria-hidden="true" />}
               title={t('empty_title')}
-              description={
-                searchQuery || selectedCategory
-                  ? t('empty_desc_filtered')
-                  : t('empty_desc')
-              }
+              description={hasActiveFilters ? t('empty_desc_filtered') : t('empty_desc')}
               accent="blue"
               tips={[t('empty_tip_stories'), t('empty_tip_guides'), t('empty_tip_updates')]}
             />
           ) : (
             <>
               {/* Featured Post (first post gets larger treatment) */}
-              {posts.length > 0 && !searchQuery && !selectedCategory && !isPaginated && (
+              {posts.length > 0 && showFeaturedPost && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -312,7 +422,7 @@ export function BlogPage() {
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
               >
-                {posts.slice(searchQuery || selectedCategory || isPaginated ? 0 : 1).map((post) => (
+                {posts.slice(showFeaturedPost ? 1 : 0).map((post) => (
                   <motion.div key={post.id} variants={itemVariants}>
                     <BlogPostCard post={post} categoryColors={categoryColorMap} />
                   </motion.div>
@@ -334,6 +444,29 @@ export function BlogPage() {
             </>
           )}
         </>
+      )}
+
+      {isPhone && (
+        <MobileSearchOverlay
+          isOpen={isSearchOverlayOpen}
+          onClose={() => setIsSearchOverlayOpen(false)}
+          value={searchInput}
+          onValueChange={setSearchInput}
+          onSubmit={(value) => setSearchQuery(value)}
+          placeholder={t('search_placeholder')}
+          recentKey="blog"
+        />
+      )}
+
+      {/* Phone filter sheet — one category chip row, applied on tap (simple archetype). */}
+      {isPhone && (
+        <BlogFilterSheet
+          isOpen={isFilterSheetOpen}
+          onClose={() => setIsFilterSheetOpen(false)}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
       )}
     </div>
   );

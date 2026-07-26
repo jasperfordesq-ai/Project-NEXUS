@@ -20,6 +20,9 @@
   "empty_tip_guides": "Gidsen",
   "empty_tip_updates": "Updates",
   "load_more": "Laad Meer Berichten",
+  "results_count": "{{count}} berichten getoond",
+  "results_count_one": "{{count}} bericht getoond",
+  "results_count_other": "{{count}} berichten getoond",
   "min_read": "{{count}} min lezen",
   "min_read_short": "{{count}}m",
   "post": {
