@@ -496,16 +496,34 @@ jobs:
 
       - name: UI Contract Console Gate (BLOCKING)
         working-directory: react-frontend
+        # Also runs src/components/ui/BarrelMock.contract.test.ts, the shrink-only
+        # ratchet on dead barrel-mock overrides. That file must stay in
+        # src/components/ui/ — src/test/ is in no CI selection.
         run: npm run test:ui-contracts -- --run
 
-      - name: Vitest Focused Smoke Tests (non-blocking — systemic hang, see note)
-        # TEMP non-blocking: this focused-smoke run hangs to its timeout under
-        # Vitest's parallel worker pool (ERR_IPC_CHANNEL_CLOSED / "Channel
-        # closed"), independent of --pool=forks or which files are included; the
-        # tests pass individually. TypeScript Check + ESLint above stay BLOCKING,
-        # and the full suite still runs these files. Re-make blocking once the
-        # smoke hang is root-caused.
-        continue-on-error: true
+      - name: Dead Barrel-Mock Scanner Unit Tests (BLOCKING)
+        working-directory: react-frontend
+        run: npm run test:dead-mocks
+
+      - name: Remediated Barrel-Mock Suites (BLOCKING)
+        # Explicit list of suites whose barrel mocks have been repaired, so they
+        # cannot silently rot back. NEXUS_FAIL_ON_UNEXPECTED_CONSOLE is 0 here
+        # (unlike test:ui-contracts): FeedPage.test.tsx passes 17/17 but still
+        # emits pre-existing React act() warnings, and a gate that is red on day
+        # one gets switched off. Raise it to 1 once those warnings are fixed.
+        working-directory: react-frontend
+        run: npm run test:mock-contract -- --run
+
+      - name: Vitest Focused Smoke Tests (BLOCKING)
+        # The parallel-worker-pool hang (ERR_IPC_CHANNEL_CLOSED / "Channel closed")
+        # that made this step non-blocking is fixed by the serial single-fork
+        # invocation below, and has not recurred: this step concluded `success` in
+        # every run where react-build executed (30153420222, 30152754902,
+        # 30151748615, 30150856918, 30099665348). The ERR_IPC strings still visible
+        # in those logs are this comment being echoed by bash, not runtime errors.
+        # It is now blocking — a green step behind continue-on-error reports nothing
+        # if it ever breaks, which is how six suites sat red unnoticed.
+        # Keep --pool=forks --singleFork: that is the fix, not a workaround.
         working-directory: react-frontend
         shell: bash
         run: |
@@ -522,7 +540,7 @@ jobs:
             src/components/social/__tests__/StatusSelector.test.tsx
             src/contexts/__tests__/TenantContext.test.tsx
             src/admin/__tests__/components.test.tsx
-            # src/pages/auth/LoginPage.test.tsx  # TEMP-REMOVED: deadlocks the parallel smoke run (ERR_IPC_CHANNEL_CLOSED / hang); passes in isolation, still runs in the full suite. Re-add after fixing the hang.
+            # src/pages/auth/LoginPage.test.tsx  # EXCLUDED: does NOT deadlock (the old note was wrong) — it FAILS, 16 tests, at render(<LoginPage />) LoginPage.test.tsx:442. Verified 2026-07-26 in this exact serial single-fork config: 14 files -> 1 failed | 13 passed. Re-add once those 16 are fixed.
             src/admin/modules/system/OnboardingSettings.test.tsx
           )
           # Run serially in a single fork — the parallel worker pool hangs/dies
@@ -548,7 +566,7 @@ jobs:
             src/components/social/__tests__/StatusSelector.test.tsx
             src/contexts/__tests__/TenantContext.test.tsx
             src/admin/__tests__/components.test.tsx
-            # src/pages/auth/LoginPage.test.tsx  # TEMP-REMOVED: deadlocks the parallel smoke run (ERR_IPC_CHANNEL_CLOSED / hang); passes in isolation, still runs in the full suite. Re-add after fixing the hang.
+            # src/pages/auth/LoginPage.test.tsx  # EXCLUDED: does NOT deadlock (the old note was wrong) — it FAILS, 16 tests, at render(<LoginPage />) LoginPage.test.tsx:442. Verified 2026-07-26 in this exact serial single-fork config: 14 files -> 1 failed | 13 passed. Re-add once those 16 are fixed.
             src/admin/modules/system/OnboardingSettings.test.tsx
           )
           set -o pipefail
