@@ -117,7 +117,12 @@ vi.mock('react-router-dom', async () => {
 });
 
 // ── Mock api + tokenManager ─────────────────────────────────────────────────
+// TOTAL factory (no importOriginal): the real module builds an ApiClient and
+// registers listeners at module scope. It must therefore enumerate every export
+// the render graph touches — `API_BASE` is read by SsoButtons and OAuthButtons,
+// which LoginPage renders once a tenant is selected.
 vi.mock('@/lib/api', () => ({
+  API_BASE: '/api',
   api: {
     get: vi.fn().mockResolvedValue({ success: true, data: [] }),
     post: vi.fn().mockResolvedValue({ success: true }),
@@ -132,6 +137,12 @@ vi.mock('@/lib/api', () => ({
 }));
 
 // ── Mock UI dependencies ────────────────────────────────────────────────────
+// NOTE: LoginPage imports every UI primitive, icon, PageMeta and usePageTitle by
+// its DIRECT path ('@/components/ui/Button', 'lucide-react/icons/mail',
+// '@/components/seo/PageMeta', '@/hooks/usePageTitle'). These four barrel mocks
+// are therefore INERT for this suite — the real modules load, which is why the
+// autocomplete-contract test below can assert real rendered input attributes.
+// Do not "fix" a selector by adding keys here; it will have no effect.
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
@@ -272,8 +283,8 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     });
 
     // Set email value via fireEvent.change to avoid per-keystroke re-render issues.
-    // The UI mock does not forward the autoComplete attribute, so locate the email
-    // field by its type instead.
+    // Located by type rather than by label: the real HeroUI Input renders the
+    // label in a sibling <label> element, and `input[type="email"]` is unique here.
     const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
     expect(emailInput).not.toBeNull();
     const { fireEvent } = await import('@testing-library/react');
