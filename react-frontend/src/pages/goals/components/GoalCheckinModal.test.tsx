@@ -36,17 +36,29 @@ vi.mock('@/contexts', () =>
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ─── Stub HeroUI Modal render-prop correctly ──────────────────────────────────
+// GoalCheckinModal imports its Modal parts from '@/components/ui/Modal', not from the barrel, so
+// these stubs only take effect when registered on that specifier — vitest resolves mocks per
+// specifier. Hoisted so the barrel factory below reuses them. ModalHeading is included here even
+// though the barrel factory never listed it: the component imports it, and vitest 3 throws when a
+// factory omits an export the code accesses.
+const modalStub = vi.hoisted(() => ({
+  Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
+    isOpen ? <div role="dialog" aria-label="Dialog" aria-modal="true">{children}</div> : null,
+  ModalContent: ({ children }: { children: React.ReactNode | ((close: () => void) => React.ReactNode) }) =>
+    <div>{typeof children === 'function' ? children(() => {}) : children}</div>,
+  ModalHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
+  ModalHeading: ({ children }: { children: React.ReactNode }) => <h2 data-testid="modal-heading">{children}</h2>,
+  ModalBody: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
+  ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
+}));
+
+vi.mock('@/components/ui/Modal', () => modalStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<Record<string, unknown>>();
   return {
     ...orig,
-    Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" aria-modal="true">{children}</div> : null,
-    ModalContent: ({ children }: { children: React.ReactNode | ((close: () => void) => React.ReactNode) }) =>
-      <div>{typeof children === 'function' ? children(() => {}) : children}</div>,
-    ModalHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
-    ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
+    ...modalStub,
     Button: ({ children, onPress, isLoading, isDisabled, startContent, variant, color, size, isIconOnly, ...rest }: {
       children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean;
       startContent?: React.ReactNode; variant?: string; color?: string; size?: string; isIconOnly?: boolean; [key: string]: unknown

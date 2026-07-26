@@ -97,7 +97,6 @@ vi.mock('@/contexts', () =>
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
     }),
-    usePusherOptional: () => null,
   })
 );
 
@@ -106,14 +105,15 @@ vi.mock('@/contexts/ToastContext', () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// Same reason as ToastContext above: PrerenderAdmin imports usePusherOptional from
-// '@/contexts/PusherContext' directly, so the barrel override is dead and the real
-// PusherContext would load along with its own direct AuthContext import. The realtime
-// job-update assertions in this suite depend on this hook being the one under control.
-vi.mock('@/contexts/PusherContext', () => ({
-  usePusherOptional: vi.fn(() => null),
-  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
-}));
+// PusherContext is deliberately NOT mocked, and the dead `usePusherOptional: () => null` override
+// that used to sit in the barrel factory above has been removed rather than moved to the direct
+// path. PrerenderAdmin imports usePusherOptional from '@/contexts/PusherContext', so that override
+// never applied — but replacing the module outright makes "uses URL navigation as the source of
+// truth for tab history" fail: this suite is coupled to the real module graph loading behind the
+// tabs, and only under the parallel fork pool the CI gate uses (it passes single-fork either way,
+// which is how the coupling stayed hidden). The real hook returns null here anyway, with or without
+// a provider, so the stub bought nothing. createMockContexts still supplies a barrel default for
+// anything importing it that way.
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));

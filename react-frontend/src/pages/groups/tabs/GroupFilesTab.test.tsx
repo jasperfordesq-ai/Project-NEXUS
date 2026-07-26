@@ -69,25 +69,35 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Stub heavy HeroUI components that misbehave in jsdom ─────────────────────
+// GroupFilesTab imports its Modal parts from '@/components/ui/Modal', not from the barrel, so
+// registering these stubs on the barrel alone left them dead and the real HeroUI Modal rendered.
+// Hoisted so both the barrel factory and the direct-path factory share one definition. The stubs
+// are prop-driven, so sharing them is safe.
+const modalStub = vi.hoisted(() => ({
+  Modal: ({ isOpen, children }: { isOpen?: boolean; children?: React.ReactNode }) =>
+    isOpen ? <div role="dialog" aria-label="Dialog">{children}</div> : null,
+  ModalContent: ({ children }: { children?: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
+    <div>{typeof children === 'function' ? children(() => {}) : children}</div>
+  ),
+  ModalHeader: ({ children }: { children?: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
+  ModalBody: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  ModalFooter: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+}));
+
+// The Dropdown family is deliberately NOT stubbed. GroupFilesTab imports it from
+// '@/components/ui/Dropdown', so the barrel override this file used to carry was dead and the real
+// HeroUI Dropdown has always been what rendered — which is what the row-action assertions below
+// were written against: they query role="menuitem", the real component's ARIA contract, a role a
+// plain <button> stub does not expose. Activating a stub here would break four passing tests to no
+// benefit, so the dead override was removed instead and the real Dropdown is used on purpose.
+vi.mock('@/components/ui/Modal', () => modalStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/ui')>();
   return {
     ...actual,
     useConfirm: () => mockConfirm,
-    Modal: ({ isOpen, children }: { isOpen?: boolean; children?: React.ReactNode }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog">{children}</div> : null,
-    ModalContent: ({ children }: { children?: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
-      <div>{typeof children === 'function' ? children(() => {}) : children}</div>
-    ),
-    ModalHeader: ({ children }: { children?: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    ModalFooter: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    Dropdown: ({ children }: { children?: React.ReactNode }) => <div data-testid="dropdown">{children}</div>,
-    DropdownTrigger: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    DropdownMenu: ({ children }: { children?: React.ReactNode }) => <div data-testid="dropdown-menu">{children}</div>,
-    DropdownItem: ({ children, onPress }: { children?: React.ReactNode; onPress?: () => void }) => (
-      <button onClick={onPress} data-testid="dropdown-item">{children}</button>
-    ),
+    ...modalStub,
     SearchField: ({ placeholder, onValueChange, ...rest }: { placeholder?: string; onValueChange?: (v: string) => void; [key: string]: unknown }) => (
       <input
         placeholder={placeholder}

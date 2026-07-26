@@ -79,7 +79,13 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/components/ui', () => {
+// MyApplicationsPage imports its Modal parts from '@/components/ui/Modal', Tabs/Tab from
+// '@/components/ui/Tabs' and useDisclosure from '@/components/ui/useDisclosure' — none through the
+// barrel, so this factory was dead for all three and the real HeroUI components plus the real
+// useDisclosure were what rendered. The factory is a full replacement, so the same one is
+// registered on every specifier the page imports; unused extra exports are harmless. Declared as a
+// hoisted function so the vi.mock calls below can reference it.
+function myApplicationsUiMock() {
   const Box = ({ children, label, title, description }: Record<string, unknown>) => (
     <div>
       {label as ReactNode}
@@ -116,7 +122,12 @@ vi.mock('@/components/ui', () => {
     Tab: ({ title }: Record<string, unknown>) => <div>{title as ReactNode}</div>,
     Skeleton: () => <div className="animate-pulse" data-slot="base" />,
   };
-});
+}
+
+vi.mock('@/components/ui', myApplicationsUiMock);
+vi.mock('@/components/ui/Modal', myApplicationsUiMock);
+vi.mock('@/components/ui/Tabs', myApplicationsUiMock);
+vi.mock('@/components/ui/useDisclosure', myApplicationsUiMock);
 
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,

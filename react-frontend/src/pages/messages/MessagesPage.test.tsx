@@ -29,7 +29,7 @@ vi.mock('@/contexts', () => ({
     hasFeature: vi.fn(() => true),
     hasModule: vi.fn(() => true),
   })),
-  usePusherOptional: vi.fn(() => null),
+  usePusherOptional: () => null,
   useToast: vi.fn(() => ({
     success: vi.fn(),
     error: vi.fn(),
@@ -52,13 +52,13 @@ vi.mock('@/contexts', () => ({
 // the real modules load, each pulling in its own direct '@/contexts/AuthContext' import, and
 // nothing here controls the realtime or presence layer.
 vi.mock('@/contexts/PusherContext', () => ({
-  usePusherOptional: vi.fn(() => null),
-  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+  usePusherOptional: () => null,
+  usePusher: () => ({ channel: null, isConnected: false }),
 }));
 
 vi.mock('@/contexts/PresenceContext', () => ({
-  usePresenceOptional: vi.fn(() => null),
-  usePresence: vi.fn(() => null),
+  usePresenceOptional: () => null,
+  usePresence: () => null,
 }));
 
 vi.mock('@/hooks', () => ({

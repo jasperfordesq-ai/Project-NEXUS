@@ -101,6 +101,43 @@ vi.mock('@/lib/api', () => ({
 // JSX inside vi.mock factories is safe: it uses react/jsx-runtime, NOT
 // the top-level React binding, so there's no initialization-order issue.
 
+// ── Popover ───────────────────────────────────────────────────────────────────
+// DesktopNavPanel imports Popover/PopoverTrigger/PopoverContent/PopoverHeading from
+// '@/components/ui/Popover', not from the barrel, so stubbing them on the barrel alone left them
+// dead and the real React Aria Popover loaded — exactly the open-handle hang the header comment
+// above warns about. Defined once here and registered on BOTH specifiers, so the closure-level
+// isOpen is shared rather than duplicated per module.
+const popoverStub = vi.hoisted(() => {
+  // The real Popover ALWAYS renders children (trigger + content); only PopoverContent is
+  // conditionally shown when isOpen=true. A closure-level object shares isOpen without
+  // React.createContext, which cannot be called inside a hoisted factory.
+  const popoverState = { isOpen: false };
+
+  function Popover({ children, isOpen }: { children?: React.ReactNode; isOpen?: boolean }) {
+    popoverState.isOpen = isOpen ?? false;
+    return <>{children}</>;
+  }
+  function PopoverTrigger({ children }: { children?: React.ReactNode }) {
+    return <>{children}</>;
+  }
+  function PopoverContent({ children, className }: { children?: React.ReactNode; className?: string }) {
+    return popoverState.isOpen
+      ? <div className={className} data-testid="popover-content">{children}</div>
+      : null;
+  }
+  function PopoverDialog({ children }: { children?: React.ReactNode }) {
+    return <>{children}</>;
+  }
+  function PopoverHeading({ children }: { children?: React.ReactNode }) {
+    return <div>{children}</div>;
+  }
+  function PopoverArrow() { return null; }
+
+  return { Popover, PopoverTrigger, PopoverContent, PopoverDialog, PopoverHeading, PopoverArrow };
+});
+
+vi.mock('@/components/ui/Popover', () => popoverStub);
+
 vi.mock('@/components/ui', () => {
   // ── Button ──────────────────────────────────────────────────────────────────
   function Button({ children, onPress, className, variant: _v, size: _s, color: _c,
@@ -125,31 +162,8 @@ vi.mock('@/components/ui', () => {
   }
 
   // ── Popover ─────────────────────────────────────────────────────────────────
-  // The real Popover ALWAYS renders children (trigger + content); only
-  // PopoverContent is conditionally shown when isOpen=true.
-  // We use a closure-level object to share isOpen state without React.createContext
-  // (which can't be called inside vi.mock factories due to the React TDZ issue).
-  const popoverState = { isOpen: false };
-
-  function Popover({ children, isOpen }: { children?: React.ReactNode; isOpen?: boolean }) {
-    popoverState.isOpen = isOpen ?? false;
-    return <>{children}</>;
-  }
-  function PopoverTrigger({ children }: { children?: React.ReactNode }) {
-    return <>{children}</>;
-  }
-  function PopoverContent({ children, className }: { children?: React.ReactNode; className?: string }) {
-    return popoverState.isOpen
-      ? <div className={className} data-testid="popover-content">{children}</div>
-      : null;
-  }
-  function PopoverDialog({ children }: { children?: React.ReactNode }) {
-    return <>{children}</>;
-  }
-  function PopoverHeading({ children }: { children?: React.ReactNode }) {
-    return <div>{children}</div>;
-  }
-  function PopoverArrow() { return null; }
+  // Defined once in the hoisted popoverStub above and spread into the return below, so the
+  // barrel and '@/components/ui/Popover' hand back the same components sharing one isOpen.
 
   // ── ScrollShadow ─────────────────────────────────────────────────────────────
   function ScrollShadow({ children, className }: { children?: React.ReactNode; className?: string }) {
@@ -171,7 +185,7 @@ vi.mock('@/components/ui', () => {
 
   return {
     Button, ButtonGroup,
-    Popover, PopoverTrigger, PopoverContent, PopoverDialog, PopoverHeading, PopoverArrow,
+    ...popoverStub,
     ScrollShadow,
     Card, CardHeader, CardBody, CardFooter,
     // Commonly-referenced stubs — add more if a test error says "X is not a function"

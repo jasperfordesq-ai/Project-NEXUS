@@ -4,6 +4,10 @@
     "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
       "@/components/ui": [
         "Button"
+      ],
+      "@/contexts": [
+        "useAuth",
+        "usePusherOptional"
       ]
     },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
@@ -31,19 +35,12 @@
     "src/components/layout/DesktopNavPanel.test.tsx": {
       "@/components/ui": [
         "Button",
-        "Popover",
-        "PopoverContent",
-        "PopoverHeading",
-        "PopoverTrigger",
         "ScrollShadow"
       ]
     },
     "src/components/layout/QuickCreateMenu.test.tsx": {
       "@/components/ui": [
-        "Button",
-        "Modal",
-        "ModalBody",
-        "ModalContent"
+        "Button"
       ]
     },
     "src/components/layout/SearchOverlay.test.tsx": {
@@ -73,13 +70,7 @@
       "@/components/ui": [
         "Avatar",
         "Button",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalHeader",
-        "Spinner",
-        "Tab",
-        "Tabs"
+        "Spinner"
       ]
     },
     "src/pages/caring-community/HourGiftPage.test.tsx": {
@@ -116,11 +107,6 @@
         "Button",
         "Chip",
         "GlassCard",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
         "Separator",
         "Slider",
         "Spinner",
@@ -139,20 +125,10 @@
       "@/components/ui": [
         "Button",
         "Chip",
-        "Dropdown",
-        "DropdownItem",
-        "DropdownMenu",
-        "DropdownTrigger",
         "GlassCard",
         "Input",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
         "Spinner",
-        "Textarea",
-        "useDisclosure"
+        "Textarea"
       ]
     },
     "src/pages/groups/tabs/GroupChallengesTab.test.tsx": {
@@ -161,17 +137,11 @@
         "Chip",
         "GlassCard",
         "Input",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
         "Progress",
         "Select",
         "SelectItem",
         "Spinner",
-        "Textarea",
-        "useDisclosure"
+        "Textarea"
       ]
     },
     "src/pages/groups/tabs/GroupDiscussionTab.test.tsx": {
@@ -202,15 +172,6 @@
     },
     "src/pages/groups/tabs/GroupFilesTab.test.tsx": {
       "@/components/ui": [
-        "Dropdown",
-        "DropdownItem",
-        "DropdownMenu",
-        "DropdownTrigger",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
         "SearchField",
         "ToggleButton",
         "ToggleButtonGroup"
@@ -250,35 +211,11 @@
         "GlassCard",
         "Input",
         "Label",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
         "NumberField",
         "Select",
         "SelectItem",
         "Spinner",
-        "Tab",
-        "Tabs",
         "Textarea"
-      ]
-    },
-    "src/pages/jobs/MyApplicationsPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Chip",
-        "GlassCard",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Skeleton",
-        "Spinner",
-        "Tab",
-        "Tabs",
-        "useDisclosure"
       ]
     },
     "src/pages/jobs/TalentSearchPage.test.tsx": {
@@ -312,70 +249,16 @@
         "Switch"
       ]
     },
-    "src/pages/marketplace/MarketplaceListingPage.test.tsx": {
-      "@/components/ui": [
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "useDisclosure"
-      ]
-    },
     "src/pages/marketplace/MerchantOnboardingPage.test.tsx": {
       "@/components/ui": [
         "Radio",
         "RadioGroup",
         "Switch"
       ]
-    },
-    "src/pages/settings/SettingsPage.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "Button",
-        "Chip",
-        "GlassCard",
-        "Input",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Select",
-        "SelectItem",
-        "Spinner",
-        "Switch",
-        "Tab",
-        "Tabs",
-        "Textarea",
-        "ToggleButton",
-        "ToggleButtonGroup",
-        "useDisclosure"
-      ]
-    },
-    "src/pages/volunteering/GroupSignUpTab.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "AvatarGroup",
-        "Button",
-        "CardRowsSkeleton",
-        "Chip",
-        "GlassCard",
-        "Input",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Select",
-        "SelectItem",
-        "Textarea",
-        "useDisclosure"
-      ]
     }
   },
   "totals": {
-    "offenderFileCount": 35,
-    "rowCount": 277
+    "offenderFileCount": 31,
+    "rowCount": 131
   }
 }

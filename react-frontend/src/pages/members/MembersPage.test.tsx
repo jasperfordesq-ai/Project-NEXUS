@@ -79,8 +79,8 @@ vi.mock('@/components/location/EntityMapView', () => ({
 // barrel override is dead and the real PresenceContext would load, pulling in its own direct
 // '@/contexts/AuthContext' import.
 vi.mock('@/contexts/PresenceContext', () => ({
-  usePresenceOptional: vi.fn(() => null),
-  usePresence: vi.fn(() => null),
+  usePresenceOptional: () => null,
+  usePresence: () => null,
 }));
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,

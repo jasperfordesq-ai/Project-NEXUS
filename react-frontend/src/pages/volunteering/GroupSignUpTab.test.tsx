@@ -52,7 +52,14 @@ vi.mock("@/contexts", () => ({
   })),
 }));
 
-vi.mock("@/components/ui", () => {
+// GroupSignUpTab imports its Modal parts from '@/components/ui/Modal' and useDisclosure from
+// '@/components/ui/useDisclosure', not through the barrel, so this factory was dead for both and
+// the real HeroUI Modal plus the real useDisclosure were what rendered. The factory is a full
+// replacement, so the same one is registered on every specifier the component imports; the extra
+// exports a direct path does not use are harmless. useDisclosureStub below keeps real open/close
+// state, so activating it preserves the flows these tests drive. Declared as a hoisted function so
+// the vi.mock calls below can reference it.
+function groupSignUpUiMock() {
   function useDisclosureStub(defaultOpen = false) {
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
     return {
@@ -116,7 +123,11 @@ vi.mock("@/components/ui", () => {
     // re-imports Skeleton from this barrel, so the mock must provide it.
     Skeleton: () => <div role="status" />,
   };
-});
+}
+
+vi.mock("@/components/ui", groupSignUpUiMock);
+vi.mock("@/components/ui/Modal", groupSignUpUiMock);
+vi.mock("@/components/ui/useDisclosure", groupSignUpUiMock);
 
 vi.mock("@/components/feedback", () => ({
   EmptyState: ({ title, description }: { title: string; description?: string }) => (

@@ -55,8 +55,8 @@ vi.mock('@/contexts', () => ({
 // the real PusherContext loads (and its own direct '@/contexts/AuthContext' import with it), so
 // no assertion here actually controls the realtime layer.
 vi.mock('@/contexts/PusherContext', () => ({
-  usePusherOptional: vi.fn(() => null),
-  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+  usePusherOptional: () => null,
+  usePusher: () => ({ channel: null, isConnected: false }),
 }));
 
 vi.mock('@/hooks', () => ({

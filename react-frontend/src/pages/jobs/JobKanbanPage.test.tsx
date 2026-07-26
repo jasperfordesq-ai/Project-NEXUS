@@ -92,6 +92,34 @@ vi.mock('@/components/ui/Popover', () => ({
   PopoverHeading: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 
+// JobKanbanPage imports its Modal parts from '@/components/ui/Modal' and Tabs/Tab from
+// '@/components/ui/Tabs', not from the barrel, so registering these stubs on the barrel alone left
+// them dead and the real HeroUI components rendered instead. Hoisted so the barrel factory below
+// and the direct-path factories share one definition. Carries its own copy of the Box passthrough
+// because the barrel factory's Box is scoped inside that factory.
+const modalTabsStub = vi.hoisted(() => {
+  const Box = ({ children, label, title, description }: Record<string, unknown>) => (
+    <div>
+      {label as ReactNode}
+      {title as ReactNode}
+      {description as ReactNode}
+      {typeof children === 'function' ? (children as (arg: unknown) => ReactNode)(vi.fn()) : children as ReactNode}
+    </div>
+  );
+  return {
+    Modal: ({ isOpen, children }: Record<string, unknown>) => isOpen === false ? null : <div>{children as ReactNode}</div>,
+    ModalContent: Box,
+    ModalHeader: Box,
+    ModalBody: Box,
+    ModalFooter: Box,
+    Tabs: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+    Tab: ({ title }: Record<string, unknown>) => <div>{title as ReactNode}</div>,
+  };
+});
+
+vi.mock('@/components/ui/Modal', () => modalTabsStub);
+vi.mock('@/components/ui/Tabs', () => modalTabsStub);
+
 vi.mock('@/components/ui', () => {
   let currentNumberField: {
     value?: number;
@@ -155,14 +183,8 @@ vi.mock('@/components/ui', () => {
     Textarea: Input,
     NumberField,
     Label: ({ children }: { children?: ReactNode }) => <label>{children}</label>,
-    Modal: ({ isOpen, children }: Record<string, unknown>) => isOpen === false ? null : <div>{children as ReactNode}</div>,
-    ModalContent: Box,
-    ModalHeader: Box,
-    ModalBody: Box,
-    ModalFooter: Box,
+    ...modalTabsStub,
     Avatar: () => <span aria-hidden="true" />,
-    Tabs: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-    Tab: ({ title }: Record<string, unknown>) => <div>{title as ReactNode}</div>,
     Tooltip: ({ children }: { children?: ReactNode }) => <>{children}</>,
     Checkbox: ({ isSelected, onValueChange, 'aria-label': ariaLabel }: Record<string, unknown>) => (
       <input

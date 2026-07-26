@@ -75,17 +75,41 @@ vi.mock('@/components/feedback', () => ({
 }));
 
 // ─── Stub HeroUI Modal (render-prop pattern) and other UI components ──────────
+// GroupAnnouncementsTab imports its Modal parts from '@/components/ui/Modal' and its Dropdown parts
+// from '@/components/ui/Dropdown', not through the barrel, so registering them here alone left them
+// dead and the real HeroUI components rendered. Hoisted so the barrel factory and the direct-path
+// factories share one definition; the stubs are prop-driven, so sharing is safe. The Dropdown stubs
+// render role="menu"/role="menuitem", matching the real component's ARIA contract, which is what
+// the row-action assertions below query — so activating them is safe here.
+const modalStub = vi.hoisted(() => ({
+  Modal: ({ isOpen, children }: { isOpen: boolean; children?: React.ReactNode }) =>
+    isOpen ? <div role="dialog" aria-label="Dialog" aria-modal="true">{children}</div> : null,
+  ModalContent: ({ children }: { children: React.ReactNode | ((close: () => void) => React.ReactNode) }) =>
+    <div>{typeof children === 'function' ? children(() => {}) : children}</div>,
+  ModalHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
+  ModalBody: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
+  ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
+}));
+
+const dropdownStub = vi.hoisted(() => ({
+  Dropdown: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown">{children}</div>,
+  DropdownTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenu: ({ children, 'aria-label': ariaLabel }: { children: React.ReactNode; 'aria-label'?: string }) => (
+    <div role="menu" aria-label={ariaLabel}>{children}</div>
+  ),
+  DropdownItem: ({ children, onPress, className }: { children: React.ReactNode; onPress?: () => void; className?: string; key?: string; id?: string; startContent?: React.ReactNode; color?: string }) => (
+    <div role="menuitem" onClick={onPress} className={className}>{children}</div>
+  ),
+}));
+
+vi.mock('@/components/ui/Modal', () => modalStub);
+vi.mock('@/components/ui/Dropdown', () => dropdownStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<Record<string, unknown>>();
   return {
     ...orig,
-    Modal: ({ isOpen, children }: { isOpen: boolean; children?: React.ReactNode }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" aria-modal="true">{children}</div> : null,
-    ModalContent: ({ children }: { children: React.ReactNode | ((close: () => void) => React.ReactNode) }) =>
-      <div>{typeof children === 'function' ? children(() => {}) : children}</div>,
-    ModalHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
-    ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
+    ...modalStub,
     Button: ({ children, onPress, isLoading, isDisabled, startContent }: {
       children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean;
       startContent?: React.ReactNode; isIconOnly?: boolean; variant?: string; color?: string; size?: string; [key: string]: unknown
@@ -113,20 +137,11 @@ vi.mock('@/components/ui', async (importOriginal) => {
     GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
       <div className={className}>{children}</div>
     ),
-    Dropdown: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown">{children}</div>,
-    DropdownTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    DropdownMenu: ({ children, 'aria-label': ariaLabel }: { children: React.ReactNode; 'aria-label'?: string }) => (
-      <div role="menu" aria-label={ariaLabel}>{children}</div>
-    ),
-    DropdownItem: ({ children, onPress, className }: { children: React.ReactNode; onPress?: () => void; className?: string; key?: string; id?: string; startContent?: React.ReactNode; color?: string }) => (
-      <div role="menuitem" onClick={onPress} className={className}>{children}</div>
-    ),
-    useDisclosure: () => ({
-      isOpen: false,
-      onOpen: vi.fn(),
-      onClose: vi.fn(),
-      onOpenChange: vi.fn(),
-    }),
+    ...dropdownStub,
+    // useDisclosure is deliberately NOT overridden. The component imports it from
+    // '@/components/ui/useDisclosure', so the always-closed stub that used to sit here was dead and
+    // the real hook has always been what ran. Re-registering it on the direct path would make
+    // onOpen a no-op and wedge the edit/delete dialogs shut — live but wrong, worse than dead.
   };
 });
 

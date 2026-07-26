@@ -68,19 +68,37 @@ vi.mock('@/contexts', () =>
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ─── Stub heavy Modal/Tabs so jsdom can handle them ──────────────────────────
+// It is ReactionDetailsModal, not ReactionSummary, that imports these from
+// '@/components/ui/Modal' and '@/components/ui/Tabs'. Registering the stubs on the barrel alone
+// left them dead, so the real HeroUI Modal and Tabs were the ones jsdom had to handle — the exact
+// thing this block exists to avoid. Hoisted so the barrel and both direct paths share one
+// definition; the stubs are prop-driven, so sharing is safe.
+const modalStub = vi.hoisted(() => ({
+  Modal: ({ isOpen, children }: { isOpen?: boolean; children?: React.ReactNode }) =>
+    isOpen ? <div role="dialog" aria-label="Dialog" data-testid="reactions-modal">{children}</div> : null,
+  ModalContent: ({ children }: { children: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
+    <div>{typeof children === 'function' ? children(() => {}) : children}</div>
+  ),
+  ModalHeader: ({ children }: { children?: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
+  // ReactionDetailsModal imports ModalHeading, which the old barrel override never listed — it
+  // could get away with that while the override was dead. Vitest throws when a factory omits an
+  // export the code accesses, so activating the mock requires it.
+  ModalHeading: ({ children }: { children?: React.ReactNode }) => <h2 data-testid="modal-heading">{children}</h2>,
+  ModalBody: ({ children }: { children?: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
+}));
+
+// Tabs is deliberately NOT stubbed. ReactionDetailsModal imports it from '@/components/ui/Tabs',
+// so the barrel override this file used to carry was dead and the real HeroUI Tabs has always been
+// what rendered — which is what the tab assertion below was written against: it queries
+// role="tablist" with an accessible name, which a plain <div> stub does not expose. The real Tabs
+// works in jsdom here, so the dead override was removed rather than activated.
+vi.mock('@/components/ui/Modal', () => modalStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
   return {
     ...orig,
-    Modal: ({ isOpen, children }: { isOpen?: boolean; children?: React.ReactNode }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" data-testid="reactions-modal">{children}</div> : null,
-    ModalContent: ({ children }: { children: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
-      <div>{typeof children === 'function' ? children(() => {}) : children}</div>
-    ),
-    ModalHeader: ({ children }: { children?: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children }: { children?: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
-    Tabs: ({ children }: { children?: React.ReactNode }) => <div data-testid="tabs">{children}</div>,
-    Tab: ({ title }: { title?: React.ReactNode }) => <button data-testid="tab">{title}</button>,
+    ...modalStub,
     Spinner: () => <div role="status" aria-busy="true" />,
     Avatar: ({ name }: { name?: string }) => <div data-testid="avatar" aria-label={name} />,
     Button: ({ children, onPress, onClick, 'aria-label': ariaLabel, isLoading, isDisabled, ...rest }: {

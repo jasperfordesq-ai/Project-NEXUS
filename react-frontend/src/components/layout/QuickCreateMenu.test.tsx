@@ -73,16 +73,26 @@ vi.mock('@/contexts', () =>
 );
 
 // ─── Stub HeroUI modal (ModalContent render-prop) ─────────────────────────────
+// QuickCreateMenu imports Modal/ModalContent/ModalBody from '@/components/ui/Modal', not from
+// the barrel, so these stubs have to be registered on that specifier to take effect — vitest
+// resolves mocks per specifier. Hoisted so the barrel factory below reuses the same definitions.
+// The stubs are prop-driven (isOpen comes in as a prop), so sharing them is safe.
+const modalStub = vi.hoisted(() => ({
+  Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
+    isOpen ? <div role="dialog" aria-label="Dialog" aria-modal="true">{children}</div> : null,
+  ModalContent: ({ children }: { children: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
+    <div>{typeof children === 'function' ? children(() => {}) : children}</div>
+  ),
+  ModalBody: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock('@/components/ui/Modal', () => modalStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<Record<string, unknown>>();
   return {
     ...orig,
-    Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" aria-modal="true">{children}</div> : null,
-    ModalContent: ({ children }: { children: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
-      <div>{typeof children === 'function' ? children(() => {}) : children}</div>
-    ),
-    ModalBody: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+    ...modalStub,
     Button: ({
       children,
       onPress,

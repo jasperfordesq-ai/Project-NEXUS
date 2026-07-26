@@ -65,8 +65,8 @@ vi.mock('@/contexts', () =>
 // override in the '@/contexts' barrel above is dead — vitest resolves mocks per specifier.
 // Without this the real PusherContext loads, along with its own direct AuthContext import.
 vi.mock('@/contexts/PusherContext', () => ({
-  usePusherOptional: vi.fn(() => null),
-  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+  usePusherOptional: () => null,
+  usePusher: () => ({ channel: null, isConnected: false }),
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));

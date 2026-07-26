@@ -35,7 +35,14 @@ vi.mock('@/hooks/useWebPush', () => ({
 }));
 
 // ── Mock @/components/ui before any imports ────────────────────────────────────
-vi.mock('@/components/ui', async () => {
+// SettingsPage imports Modal/ModalContent/… from '@/components/ui/Modal', Tabs/Tab from
+// '@/components/ui/Tabs' and useDisclosure from '@/components/ui/useDisclosure' — none of them
+// through the barrel. Vitest resolves mocks per specifier, so this factory was dead for all three
+// and the real HeroUI components plus the real useDisclosure were what rendered. The factory is a
+// full replacement (it spreads nothing from the original), so the same one is registered on every
+// specifier the page actually imports; the extra exports a direct path does not use are harmless.
+// This is declared as a hoisted function so the vi.mock calls below can reference it.
+async function settingsUiMock() {
   const R = await import('react');
   const noop = () => R.createElement(R.Fragment, null);
   const useDisclosureMock = () => {
@@ -117,7 +124,12 @@ vi.mock('@/components/ui', async () => {
     Spinner: noop,
     useDisclosure: useDisclosureMock,
   };
-});
+}
+
+vi.mock('@/components/ui', settingsUiMock);
+vi.mock('@/components/ui/Modal', settingsUiMock);
+vi.mock('@/components/ui/Tabs', settingsUiMock);
+vi.mock('@/components/ui/useDisclosure', settingsUiMock);
 
 // ── Mock lucide-react icons ───────────────────────────────────────────────────
 vi.mock('lucide-react', () => {

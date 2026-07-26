@@ -87,8 +87,8 @@ vi.mock('@/contexts', () => ({
 // so the barrel override above is dead — vitest resolves mocks per specifier. Without this the
 // real PusherContext loads, along with its own direct '@/contexts/AuthContext' import.
 vi.mock('@/contexts/PusherContext', () => ({
-  usePusherOptional: vi.fn(() => null),
-  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+  usePusherOptional: () => null,
+  usePusher: () => ({ channel: null, isConnected: false }),
 }));
 
 vi.mock('@/contexts/TenantContext', () => ({
@@ -102,6 +102,14 @@ vi.mock('@/contexts/TenantContext', () => ({
   useFeature: vi.fn(() => true),
   useModule: vi.fn(() => true),
 }));
+
+// scrollIntoView is not implemented in jsdom. FederationMessagesPage scrolls the thread to the
+// bottom from inside a setTimeout, so the call lands after the test that opened the thread has
+// finished — vitest reports it as an unhandled error and exits non-zero even with every assertion
+// passing. Same polyfill as TeamChatrooms.test.tsx.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));

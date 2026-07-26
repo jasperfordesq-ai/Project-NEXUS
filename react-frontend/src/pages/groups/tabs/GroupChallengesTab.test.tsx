@@ -57,18 +57,17 @@ vi.mock('@/components/ui/SafeHtml', () => ({
   SafeHtml: ({ content }: { content: string }) => <p>{content}</p>,
 }));
 
-// Stub Modal family to avoid jsdom focus issues
+// The Modal family and useDisclosure are deliberately NOT stubbed here. GroupChallengesTab imports
+// both from '@/components/ui/Modal' and '@/components/ui/useDisclosure', so the overrides this
+// block used to carry were dead and the real HeroUI Modal has always been what rendered — which is
+// what the create-flow tests below depend on. The real Modal marks the page behind it aria-hidden,
+// so getByRole finds only the submit button inside the dialog; an inline stub leaves the trigger
+// visible too and the "Create Challenge" queries become ambiguous. The real components work in
+// jsdom here, so the dead overrides were removed rather than activated.
 vi.mock('@/components/ui', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
-    Modal: ({ isOpen, children, onOpenChange }: { isOpen: boolean; children: React.ReactNode; onOpenChange?: (v: boolean) => void }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" data-testid="create-modal">{typeof children === 'function' ? null : children}</div> : null,
-    ModalContent: ({ children }: { children: ((fn: () => void) => React.ReactNode) | React.ReactNode }) =>
-      <div>{typeof children === 'function' ? (children as (fn: () => void) => React.ReactNode)(vi.fn()) : children}</div>,
-    ModalHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
-    ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
     GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
     Button: ({ children, onPress, isLoading, isDisabled, onClick, startContent, 'aria-expanded': ariaExpanded, ...rest }: { children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean; onClick?: React.MouseEventHandler; startContent?: React.ReactNode; 'aria-expanded'?: boolean; [key: string]: unknown }) => (
       <button
@@ -121,11 +120,11 @@ vi.mock('@/components/ui', async (importOriginal) => {
       <div role="progressbar" aria-valuenow={value} aria-label={ariaLabel} />
     ),
     Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-    useDisclosure: () => ({
-      isOpen: false,
-      onOpen: vi.fn(),
-      onClose: vi.fn(),
-    }),
+    // useDisclosure is deliberately NOT overridden. GroupChallengesTab imports it from
+    // '@/components/ui/useDisclosure', so the override that used to sit here was dead and the real
+    // hook has always been what ran. Re-registering this always-closed stub on the direct path
+    // would make onOpen a no-op and permanently wedge the dialog shut — live but wrong, which is
+    // worse than dead. The real hook works here, so the dead override was removed instead.
   };
 });
 

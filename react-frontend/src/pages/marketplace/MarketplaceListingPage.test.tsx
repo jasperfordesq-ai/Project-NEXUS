@@ -158,30 +158,38 @@ vi.mock('@/lib/motion', () => ({
 }));
 
 // Stub HeroUI Modal to avoid portal issues; stub Select to avoid loops
+// MarketplaceListingPage imports its Modal parts from '@/components/ui/Modal', so registering them
+// on the barrel alone left them dead and the real HeroUI Modal (portal included) was what rendered
+// — the thing this block exists to avoid. Hoisted so the barrel factory and the direct path share
+// one definition; the stubs are prop-driven, so sharing is safe.
+const modalStub = vi.hoisted(() => ({
+  Modal: ({ isOpen, children, onOpenChange }: {
+    isOpen?: boolean;
+    children?: React.ReactNode;
+    onOpenChange?: (open: boolean) => void;
+  }) =>
+    isOpen ? <div role="dialog" aria-label="Dialog">{typeof children === 'function' ? (children as (close: () => void) => React.ReactNode)(() => onOpenChange?.(false)) : children}</div> : null,
+  ModalContent: ({ children }: { children?: React.ReactNode | ((onClose: () => void) => React.ReactNode) }) => (
+    <div>{typeof children === 'function' ? (children as (onClose: () => void) => React.ReactNode)(() => {}) : children}</div>
+  ),
+  ModalHeader: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  ModalBody: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
+    <div className={className}>{children}</div>
+  ),
+  ModalFooter: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+}));
+
+vi.mock('@/components/ui/Modal', () => modalStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
   return {
     ...orig,
-    useDisclosure: () => ({
-      isOpen: false,
-      onOpen: vi.fn(),
-      onClose: vi.fn(),
-      onOpenChange: vi.fn(),
-    }),
-    Modal: ({ isOpen, children, onOpenChange }: {
-      isOpen?: boolean;
-      children?: React.ReactNode;
-      onOpenChange?: (open: boolean) => void;
-    }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog">{typeof children === 'function' ? (children as (close: () => void) => React.ReactNode)(() => onOpenChange?.(false)) : children}</div> : null,
-    ModalContent: ({ children }: { children?: React.ReactNode | ((onClose: () => void) => React.ReactNode) }) => (
-      <div>{typeof children === 'function' ? (children as (onClose: () => void) => React.ReactNode)(() => {}) : children}</div>
-    ),
-    ModalHeader: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    ModalBody: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-      <div className={className}>{children}</div>
-    ),
-    ModalFooter: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+    // useDisclosure is deliberately NOT overridden. The page imports it from
+    // '@/components/ui/useDisclosure', so the always-closed stub that used to sit here was dead and
+    // the real hook has always been what ran. Re-registering it on the direct path would make
+    // onOpen a no-op and wedge every dialog shut — live but wrong, which is worse than dead.
+    ...modalStub,
   };
 });
 
