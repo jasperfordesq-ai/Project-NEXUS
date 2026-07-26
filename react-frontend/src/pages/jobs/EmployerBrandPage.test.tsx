@@ -7,13 +7,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) =>
-      (opts?.fallbackValue as string | undefined) ?? key,
-    i18n: { language: 'en' },
-  }),
-}));
+// Partial mock — the real ui components pull in `@/lib/helpers`, which imports
+// `src/i18n.ts` and needs `initReactI18next`, so a total mock of this module
+// breaks collection for the whole file.
+vi.mock('react-i18next', async (importOriginal) => {
+  const orig = await importOriginal<typeof import('react-i18next')>();
+  return {
+    ...orig,
+    useTranslation: () => ({
+      t: (key: string, opts?: Record<string, unknown>) =>
+        (opts?.fallbackValue as string | undefined) ?? key,
+      i18n: { language: 'en' },
+    }),
+  };
+});
 
 vi.mock('react-router-dom', () => {
   return {
@@ -65,54 +72,10 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/components/ui', () => {
-  const Box = ({ children, label, title, description }: Record<string, unknown>) => (
-    <div>
-      {label as ReactNode}
-      {title as ReactNode}
-      {description as ReactNode}
-      {children as ReactNode}
-    </div>
-  );
-  const Button = ({ children, onPress, onClick }: Record<string, unknown>) => (
-    <button type="button" onClick={(onPress ?? onClick) as (() => void) | undefined}>
-      {children as ReactNode}
-    </button>
-  );
-  const Textarea = ({ placeholder, value, onValueChange }: Record<string, unknown>) => (
-    <textarea
-      placeholder={placeholder as string | undefined}
-      value={(value as string | undefined) ?? ''}
-      onChange={(event) => typeof onValueChange === 'function' && (onValueChange as (value: string) => void)(event.target.value)}
-    />
-  );
-  const Slider = ({ label, value, onChange }: Record<string, unknown>) => (
-    <label>
-      {label as ReactNode}
-      <input
-        type="range"
-        value={Array.isArray(value) ? value[0] : (value as number | undefined) ?? 0}
-        onChange={(event) => typeof onChange === 'function' && (onChange as (value: number[]) => void)([Number(event.target.value)])}
-      />
-    </label>
-  );
-  const Avatar = ({ name }: Record<string, unknown>) => <span>{name as ReactNode}</span>;
-  const Progress = ({ value }: Record<string, unknown>) => <progress value={value as number | undefined} max={100} />;
-
-  const Chip = Object.assign(Box, {
-    Label: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  });
-
-  return {
-    Chip,
-    Slider,
-    GlassCard: Box,
-    Progress,
-    Button,
-    Textarea,
-    Avatar,
-  };
-});
+// NOTE: no '@/components/ui' barrel mock. EmployerBrandPage imports Avatar,
+// Button, Chip, GlassCard, Progress, Slider and Textarea from their DIRECT
+// paths ('@/components/ui/Chip', ...), so a barrel mock never intercepts them —
+// the real components render. Assertions below target the real DOM.
 
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,
@@ -232,6 +195,10 @@ describe('EmployerBrandPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Garden Coordinator')).toBeInTheDocument();
     });
+    // The real GlassCard puts `glass-card` on its root (GlassCard.tsx:47). Asserting
+    // it proves the real ui components mounted — a stub could never produce it, so a
+    // future dead barrel mock cannot pass this test silently.
+    expect(document.querySelectorAll('.glass-card').length).toBeGreaterThan(0);
   });
 
   it('renders Open Roles heading when jobs exist', async () => {

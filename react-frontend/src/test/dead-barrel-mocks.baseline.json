@@ -166,35 +166,6 @@
         "usePusherOptional"
       ]
     },
-    "src/components/jobs/JobModals.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Chip",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Progress",
-        "Skeleton",
-        "Spinner",
-        "Textarea"
-      ]
-    },
-    "src/components/jobs/JobOwnerBanner.test.tsx": {
-      "@/components/ui": [
-        "useConfirm"
-      ]
-    },
-    "src/components/jobs/JobPipelineRules.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "GlassCard",
-        "Input",
-        "Select",
-        "SelectItem"
-      ]
-    },
     "src/components/landing/CtaSection.test.tsx": {
       "@/components/ui": [
         "Button"
@@ -594,23 +565,6 @@
         "useTenant"
       ]
     },
-    "src/pages/jobs/BiasAuditPage.test.tsx": {
-      "@/components/ui": [
-        "Autocomplete",
-        "AutocompleteItem",
-        "Button",
-        "CardRowsSkeleton",
-        "Chip",
-        "GlassCard",
-        "Input",
-        "Table",
-        "TableBody",
-        "TableCell",
-        "TableColumn",
-        "TableHeader",
-        "TableRow"
-      ]
-    },
     "src/pages/jobs/CreateJobPage.test.tsx": {
       "@/components/ui": [
         "Avatar",
@@ -637,17 +591,6 @@
         "Textarea",
         "Tooltip",
         "useConfirm"
-      ]
-    },
-    "src/pages/jobs/EmployerBrandPage.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "Button",
-        "Chip",
-        "GlassCard",
-        "Progress",
-        "Slider",
-        "Textarea"
       ]
     },
     "src/pages/jobs/EmployerOnboardingPage.test.tsx": {
@@ -932,7 +875,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 110,
-    "rowCount": 535
+    "offenderFileCount": 105,
+    "rowCount": 498
   }
 }

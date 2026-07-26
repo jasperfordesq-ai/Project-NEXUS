@@ -4,10 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
+import { render, screen, fireEvent } from '@/test/test-utils';
 import React from 'react';
-import userEvent from '@testing-library/user-event';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -29,11 +27,10 @@ vi.mock('@/contexts/ToastContext', () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useToast: () => mockToast,
-  })
-);
+// NOTE: no vi.mock('@/contexts', ...) here on purpose. JobModals.tsx imports
+// useToast from '@/contexts/ToastContext' by its direct path, so a keyed override
+// on the '@/contexts' barrel would never be consulted. The direct-path mock above
+// is the live one.
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
@@ -41,48 +38,15 @@ vi.mock('@/components/seo/PageMeta', () => ({
   PageMeta: () => null,
 }));
 
-// ─── Stub UI sub-components that cause jsdom focus-management issues ──────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  return {
-    ...actual,
-    Modal: ({ isOpen, children, onOpenChange }: { isOpen: boolean; children: React.ReactNode; onOpenChange?: (v: boolean) => void; size?: string }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" data-testid="modal">{typeof children === 'function' ? (children as (fn: () => void) => React.ReactNode)(() => onOpenChange?.(false)) : children}</div> : null,
-    ModalContent: ({ children }: { children: ((fn: () => void) => React.ReactNode) | React.ReactNode }) =>
-      <div>{typeof children === 'function' ? (children as (fn: () => void) => React.ReactNode)(vi.fn()) : children}</div>,
-    ModalHeader: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
-    ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
-    Button: ({ children, onPress, isLoading, isDisabled, onClick, ...rest }: { children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean; onClick?: React.MouseEventHandler; [key: string]: unknown }) => (
-      <button
-        onClick={(e) => { onClick?.(e); onPress?.(); }}
-        disabled={isLoading || isDisabled}
-        data-loading={isLoading ? 'true' : undefined}
-        data-disabled={isDisabled ? 'true' : undefined}
-        {...(Object.fromEntries(Object.entries(rest).filter(([k]) => !['variant','color','size','startContent','endContent','isIconOnly','type','className','classNames','as','href','target','rel','tabIndex','aria-label','role'].includes(k))))}
-      >
-        {isLoading ? 'Loading…' : children}
-      </button>
-    ),
-    Textarea: ({ label, value, onValueChange, placeholder, ...rest }: { label?: string; value?: string; onValueChange?: (v: string) => void; placeholder?: string; [key: string]: unknown }) => (
-      <div>
-        {label && <label>{label}</label>}
-        <textarea
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => onValueChange?.(e.target.value)}
-          aria-label={label}
-        />
-      </div>
-    ),
-    Progress: ({ value, 'aria-label': ariaLabel }: { value: number; 'aria-label': string }) => (
-      <div role="progressbar" aria-valuenow={value} aria-label={ariaLabel} />
-    ),
-    Spinner: () => <div role="status" aria-busy="true" aria-label="Loading" />,
-    Skeleton: () => <div aria-hidden="true" />,
-    Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-  };
-});
+// ─── UI components are NOT mocked ─────────────────────────────────────────────
+// JobModals.tsx imports Modal/Button/Chip/Progress/Skeleton/Spinner/Textarea from
+// their direct paths ('@/components/ui/Modal', '/Button', …), so a factory on the
+// '@/components/ui' barrel is never consulted — the real HeroUI components render
+// either way. These tests therefore assert against the real DOM contract:
+//   • isLoading → React Aria isPending → data-pending="true" + aria-disabled="true"
+//     (.heroui-docs/react/components/(buttons)/button.mdx › Interactive States)
+//   • ModalHeader → <div class="modal__header"> wrapping a real <h2> heading
+// Do NOT reintroduce a barrel mock: it can only lie about exports nobody asks it for.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Fixtures
@@ -163,9 +127,11 @@ describe('ApplyModal', () => {
   it('shows loading state on submit button when isSubmitting=true', async () => {
     const { ApplyModal } = await import('./JobModals');
     render(<ApplyModal {...baseProps} isSubmitting={true} />);
-    const buttons = screen.getAllByRole('button');
-    const loadingBtn = buttons.find(b => b.getAttribute('disabled') !== null || b.getAttribute('data-loading') === 'true');
-    expect(loadingBtn).toBeDefined();
+    // Pin the *submit* button specifically (t('apply.submit') → "Submit Application")
+    // rather than "some button is disabled".
+    const submitBtn = screen.getByRole('button', { name: /submit application/i });
+    expect(submitBtn).toHaveAttribute('data-pending', 'true');
+    expect(submitBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows saved profile banner when savedProfile is set and not using it', async () => {
@@ -385,9 +351,11 @@ describe('RenewModal', () => {
   it('shows loading state when isRenewing=true', async () => {
     const { RenewModal } = await import('./JobModals');
     render(<RenewModal {...baseProps} isRenewing={true} />);
-    const buttons = screen.getAllByRole('button');
-    const disabledBtn = buttons.find(b => b.getAttribute('disabled') !== null || b.getAttribute('data-loading') === 'true');
-    expect(disabledBtn).toBeDefined();
+    // Pin the confirm button (t('renew.button') → "Renew"); the day buttons read
+    // "7 days"/"14 days"/… so the anchored name cannot collide with them.
+    const renewBtn = screen.getByRole('button', { name: /^renew$/i });
+    expect(renewBtn).toHaveAttribute('data-pending', 'true');
+    expect(renewBtn).toHaveAttribute('aria-disabled', 'true');
   });
 });
 
@@ -425,8 +393,15 @@ describe('DeleteModal', () => {
   it('shows confirmation text', async () => {
     const { DeleteModal } = await import('./JobModals');
     render(<DeleteModal isOpen={true} onOpenChange={vi.fn()} onDelete={vi.fn()} />);
-    // detail.confirm_delete_title key appears in header
-    expect(screen.getByTestId('modal-header')).toBeInTheDocument();
+    // The stub only proved a container existed; assert the copy this test is named
+    // for. Header = t('detail.confirm_delete_title'), body = t('detail.confirm_delete').
+    const heading = screen.getByRole('heading', { name: 'Delete Vacancy' });
+    expect(heading).toBeInTheDocument();
+    // ModalHeader wires the dialog's accessible name to that heading.
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', heading.id);
+    expect(
+      screen.getByText('Are you sure you want to delete this vacancy?')
+    ).toBeInTheDocument();
   });
 });
 
@@ -473,19 +448,20 @@ describe('DeclineModal', () => {
     const onConfirm = vi.fn();
     const { DeclineModal } = await import('./JobModals');
     render(<DeclineModal {...baseProps} onConfirm={onConfirm} />);
-    const buttons = screen.getAllByRole('button');
-    // The confirm button text = t(titleKey)
-    const confirmBtn = buttons.find(b => b.textContent?.includes('pipeline.decline_title') || b.getAttribute('color') === 'danger');
-    if (confirmBtn) fireEvent.click(confirmBtn);
+    // Confirm button text = t(titleKey). 'pipeline.decline_title' has no entry in
+    // the jobs namespace, so i18next renders the key itself. (The old fallback
+    // clause looked for a `color` attribute, which HeroUI never emits.)
+    fireEvent.click(screen.getByRole('button', { name: 'pipeline.decline_title' }));
     expect(onConfirm).toHaveBeenCalled();
   });
 
   it('shows loading state when isLoading=true', async () => {
     const { DeclineModal } = await import('./JobModals');
     render(<DeclineModal {...baseProps} isLoading={true} />);
-    const buttons = screen.getAllByRole('button');
-    const loadingBtn = buttons.find(b => b.getAttribute('disabled') !== null || b.getAttribute('data-loading') === 'true');
-    expect(loadingBtn).toBeDefined();
+    // Pin the danger confirm button, not "some button is disabled".
+    const confirmBtn = screen.getByRole('button', { name: 'pipeline.decline_title' });
+    expect(confirmBtn).toHaveAttribute('data-pending', 'true');
+    expect(confirmBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('calls onClose when cancel button clicked', async () => {

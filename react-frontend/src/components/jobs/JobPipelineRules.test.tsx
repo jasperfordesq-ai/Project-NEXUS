@@ -6,54 +6,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '@/test/test-utils';
-import type { ReactNode } from 'react';
 import { JobPipelineRules } from './JobPipelineRules';
 import { api } from '@/lib/api';
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: Record<string, unknown>) => {
-      if (key === 'pipeline.rule_summary_with_target') {
-        return `${opts?.stage} ${opts?.action} ${opts?.target}`;
-      }
-      if (key === 'pipeline.rule_summary') {
-        return `${opts?.stage} ${opts?.action}`;
-      }
-      if (key === 'pipeline.generated_name') {
-        return `${opts?.stage} to ${opts?.target} after ${opts?.count}d`;
-      }
-      return key;
-    },
-  }),
-}));
-
-vi.mock('@/components/ui', () => {
-  const Box = ({ children, label, title, description }: Record<string, unknown>) => (
-    <div>
-      {label as ReactNode}
-      {title as ReactNode}
-      {description as ReactNode}
-      {children as ReactNode}
-    </div>
-  );
-  return {
-    Select: Box,
-    SelectItem: Box,
-    GlassCard: Box,
-    Button: ({ children, onPress, onClick }: Record<string, unknown>) => (
-      <button type="button" onClick={(onPress ?? onClick) as (() => void) | undefined}>{children as ReactNode}</button>
-    ),
-    Input: ({ label, value, onValueChange }: Record<string, unknown>) => (
-      <label>
-        {label as ReactNode}
-        <input
-          value={(value as string | number | undefined) ?? ''}
-          onChange={(event) => typeof onValueChange === 'function' && (onValueChange as (value: string) => void)(event.target.value)}
-        />
-      </label>
-    ),
-  };
-});
+// NOTE: JobPipelineRules imports Button/GlassCard/Input/Select from their DIRECT
+// paths ('@/components/ui/Button', ...), so a '@/components/ui' barrel mock never
+// applies and the real components load regardless. They render fine in jsdom, so
+// this suite renders the real UI and real i18n ('src/test/setup.ts' initialises
+// i18next with the committed English locale files). Do not reintroduce a barrel
+// mock or a total 'react-i18next' mock here — the latter drops initReactI18next,
+// which src/i18n.ts (reached via Select -> '@/lib/helpers') requires at import time.
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -87,13 +49,23 @@ describe('JobPipelineRules', () => {
       ],
     });
 
-    render(<JobPipelineRules jobId="42" />);
+    const { container } = render(<JobPipelineRules jobId="42" />);
 
-    await userEvent.click(screen.getByRole('button', { name: /pipeline\.rules_title/i }));
+    // Real GlassCard puts the `glass-card` class on its root (GlassCard.tsx:47).
+    expect(container.querySelector('.glass-card')).not.toBeNull();
+
+    // Real i18n: jobs.json 'pipeline.rules_title' === 'Automation Rules'.
+    await userEvent.click(screen.getByRole('button', { name: /automation rules/i }));
 
     await waitFor(() => {
       expect(api.get).toHaveBeenCalledWith('/v2/jobs/42/pipeline-rules');
       expect(screen.getByText('Move stale applications')).toBeInTheDocument();
     });
+
+    // Real 'pipeline.rule_summary_with_target' interpolation, resolved through the
+    // real i18next instance rather than a stubbed t().
+    expect(
+      screen.getByText('If in "Applied" for 5d -> Move stage -> Screening')
+    ).toBeInTheDocument();
   });
 });

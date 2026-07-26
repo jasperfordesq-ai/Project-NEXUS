@@ -64,45 +64,11 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/components/ui', () => ({
-  GlassCard: ({ children, className }: { children: ReactNode; className?: string }) => (
-    <div data-testid="glass-card" className={className}>{children}</div>
-  ),
-  GlassButton: ({ children }: Record<string, unknown>) => children as never,
-  GlassInput: () => null,
-  BackToTop: () => null,
-  AlgorithmLabel: () => null,
-  ImagePlaceholder: () => null,
-  DynamicIcon: () => null,
-  ICON_MAP: {},
-  ICON_NAMES: [],
-  ListingSkeleton: () => null,
-  MemberCardSkeleton: () => null,
-  StatCardSkeleton: () => null,
-  EventCardSkeleton: () => null,
-  GroupCardSkeleton: () => null,
-  ConversationSkeleton: () => null,
-  ExchangeCardSkeleton: () => null,
-  NotificationSkeleton: () => null,
-  ProfileHeaderSkeleton: () => null,
-  SkeletonList: () => null,
-  CardRowsSkeleton: () => <div role="status" aria-busy="true" />,
-  Chip: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  Button: ({ children, onPress }: { children?: ReactNode; onPress?: () => void }) => (
-    <button type="button" onClick={onPress}>{children}</button>
-  ),
-  Input: () => <input />,
-  Autocomplete: ({ children, label, placeholder }: { children?: ReactNode; label?: ReactNode; placeholder?: ReactNode }) => (
-    <div>{label}{placeholder}{children}</div>
-  ),
-  AutocompleteItem: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  Table: ({ children }: { children?: ReactNode }) => <table>{children}</table>,
-  TableHeader: ({ children }: { children?: ReactNode }) => <thead>{children}</thead>,
-  TableBody: ({ children }: { children?: ReactNode }) => <tbody>{children}</tbody>,
-  TableColumn: ({ children }: { children?: ReactNode }) => <th>{children}</th>,
-  TableRow: ({ children }: { children?: ReactNode }) => <tr>{children}</tr>,
-  TableCell: ({ children }: { children?: ReactNode }) => <td>{children}</td>,
-}));
+// NOTE: no '@/components/ui' barrel mock. BiasAuditPage imports every UI symbol by
+// its DIRECT path ('@/components/ui/GlassCard', '/Button', '/Table', …), so a barrel
+// mock would never be consulted for them — it would only shadow the barrel for
+// *internal* consumers (e.g. Skeletons.tsx imports Skeleton from the barrel) and
+// break them. The real components render fine in jsdom; assertions target real DOM.
 
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title, description }: { title: string; description?: string }) => (

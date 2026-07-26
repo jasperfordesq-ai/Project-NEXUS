@@ -21,33 +21,20 @@ vi.mock('@/lib/logger', () => ({
   logError: vi.fn(),
 }));
 
-// useConfirm lives inside @/components/ui — mock the whole barrel so we can
-// control its return value without touching the ConfirmDialogProvider.
+// JobOwnerBanner imports useConfirm from the DIRECT path '@/components/ui/ConfirmDialog',
+// so the override has to live on that specifier — a mock of the '@/components/ui' barrel
+// would never be consulted. The real hook needs both a <ConfirmDialogProvider> (absent from
+// test-utils) and a portal round-trip to resolve, which is infrastructure this component
+// test has no business owning, so the hook is stubbed while every other export of the
+// module stays real.
 const mockConfirm = vi.fn();
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/ui')>();
+vi.mock('@/components/ui/ConfirmDialog', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/ui/ConfirmDialog')>();
   return {
     ...actual,
     useConfirm: () => mockConfirm,
   };
 });
-
-vi.mock('@/contexts', () => ({
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useTenant: () => ({ tenant: { id: 2, name: 'Test Tenant', slug: 'test' }, tenantPath: (p: string) => `/test${p}`, hasFeature: vi.fn(() => true), hasModule: vi.fn(() => true) }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
-  useTheme: () => ({ resolvedTheme: 'light', theme: 'system', toggleTheme: vi.fn(), setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  usePresence: () => ({ status: 'offline', setStatus: vi.fn(), getPresence: vi.fn(), isOnline: vi.fn(() => false) }),
-  usePresenceOptional: () => null,
-}));
 
 import { JobOwnerBanner } from './JobOwnerBanner';
 import type { JobVacancy } from './JobDetailTypes';
@@ -110,8 +97,9 @@ describe('JobOwnerBanner', () => {
 
   it('renders the owner banner card', () => {
     render(<JobOwnerBanner vacancy={makeVacancy()} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
-    // The banner should be in the DOM — it wraps in a GlassCard
-    expect(document.body.querySelector('[class*="glass"], [class]')).toBeInTheDocument();
+    // The real GlassCard puts the `glass-card` class on its root element.
+    expect(document.body.querySelector('.glass-card')).toBeInTheDocument();
+    expect(screen.getByText('You posted this vacancy')).toBeInTheDocument();
   });
 
   it('shows applicant count when applications_count > 0', () => {
@@ -122,9 +110,19 @@ describe('JobOwnerBanner', () => {
         onVacancyUpdated={onVacancyUpdated}
       />
     );
-    // The i18n key resolves to something containing the count; the raw text
-    // may vary so we check the number appears somewhere in the component.
-    expect(screen.getByText(/5/)).toBeInTheDocument();
+    expect(screen.getByText(/^5 applicant\(s\)/)).toBeInTheDocument();
+    expect(screen.queryByText(/No applicants yet/)).not.toBeInTheDocument();
+  });
+
+  it('shows the no-applicants copy when applications_count is 0', () => {
+    render(
+      <JobOwnerBanner
+        vacancy={makeVacancy({ applications_count: 0 })}
+        tenantPath={tenantPath}
+        onVacancyUpdated={onVacancyUpdated}
+      />
+    );
+    expect(screen.getByText(/No applicants yet/)).toBeInTheDocument();
   });
 
   it('renders Edit, Analytics, and Kanban board links with correct hrefs', () => {
@@ -138,24 +136,20 @@ describe('JobOwnerBanner', () => {
 
   it('shows "Close vacancy" button when vacancy is open', () => {
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'open' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
-    // i18n key detail.close_vacancy — button exists with whatever the translation resolves to
-    const buttons = screen.getAllByRole('button');
-    // The close-vacancy button is rendered when status === 'open'
-    expect(buttons.length).toBeGreaterThan(0);
+    // detail.close_vacancy resolves to "Close Vacancy" from public/locales/en/jobs.json.
+    expect(screen.getByRole('button', { name: 'Close Vacancy' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reopen' })).not.toBeInTheDocument();
   });
 
   it('shows "Reopen vacancy" button when vacancy is closed', () => {
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'closed' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Reopen' })).toBeInTheDocument();
   });
 
   it('does NOT show "Close vacancy" button when status is closed', () => {
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'closed' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
-    // We cannot rely on translation text, so confirm open-only path not rendered
-    // by verifying the reopen button IS present (proxy: not an open vacancy)
-    // This test mainly guards the conditional branch.
-    expect(true).toBe(true); // branch guard; main assertions are above
+    expect(screen.queryByRole('button', { name: 'Close Vacancy' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reopen' })).toBeInTheDocument();
   });
 
   it('calls api.put and onVacancyUpdated when closing vacancy is confirmed', async () => {
@@ -164,11 +158,7 @@ describe('JobOwnerBanner', () => {
 
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'open' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
 
-    // All buttons — find the close one (last button in open-status render)
-    const buttons = screen.getAllByRole('button');
-    // The close-vacancy button is the last rendered button for status=open
-    const closeBtn = buttons[buttons.length - 1];
-    fireEvent.click(closeBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Close Vacancy' }));
 
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/v2/jobs/42', { status: 'closed' });
@@ -181,9 +171,7 @@ describe('JobOwnerBanner', () => {
 
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'open' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
 
-    const buttons = screen.getAllByRole('button');
-    const closeBtn = buttons[buttons.length - 1];
-    fireEvent.click(closeBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Close Vacancy' }));
 
     await waitFor(() => {
       expect(mockConfirm).toHaveBeenCalled();
@@ -198,9 +186,7 @@ describe('JobOwnerBanner', () => {
 
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'closed' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
 
-    const buttons = screen.getAllByRole('button');
-    const reopenBtn = buttons[buttons.length - 1];
-    fireEvent.click(reopenBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
 
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/v2/jobs/42', { status: 'open' });
@@ -214,11 +200,10 @@ describe('JobOwnerBanner', () => {
 
     render(<JobOwnerBanner vacancy={makeVacancy({ status: 'open' })} tenantPath={tenantPath} onVacancyUpdated={onVacancyUpdated} />);
 
-    const buttons = screen.getAllByRole('button');
-    fireEvent.click(buttons[buttons.length - 1]);
+    fireEvent.click(screen.getByRole('button', { name: 'Close Vacancy' }));
 
     await waitFor(() => {
-      expect(api.put).toHaveBeenCalled();
+      expect(api.put).toHaveBeenCalledWith('/v2/jobs/42', { status: 'closed' });
     });
     expect(onVacancyUpdated).not.toHaveBeenCalled();
   });
