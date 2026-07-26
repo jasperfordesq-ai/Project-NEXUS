@@ -83,6 +83,14 @@ vi.mock('@/contexts', () => ({
   useModule: vi.fn(() => true),
 }));
 
+// FederationMessagesPage imports usePusherOptional from '@/contexts/PusherContext' directly,
+// so the barrel override above is dead — vitest resolves mocks per specifier. Without this the
+// real PusherContext loads, along with its own direct '@/contexts/AuthContext' import.
+vi.mock('@/contexts/PusherContext', () => ({
+  usePusherOptional: vi.fn(() => null),
+  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+}));
+
 vi.mock('@/contexts/TenantContext', () => ({
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },

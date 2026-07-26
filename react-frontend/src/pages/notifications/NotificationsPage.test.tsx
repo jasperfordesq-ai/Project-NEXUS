@@ -51,6 +51,15 @@ vi.mock('@/contexts', () => ({
   useModule: vi.fn(() => true),
 }));
 
+// NotificationsPage imports usePusherOptional from '@/contexts/PusherContext' directly, so
+// the override in the '@/contexts' barrel above never applies — vitest resolves mocks per
+// specifier. Without this, the real PusherContext module loads (and with it its own direct
+// '@/contexts/AuthContext' import), so nothing here controls the realtime layer.
+vi.mock('@/contexts/PusherContext', () => ({
+  usePusherOptional: vi.fn(() => null),
+  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+}));
+
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));

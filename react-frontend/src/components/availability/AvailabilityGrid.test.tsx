@@ -37,6 +37,13 @@ vi.mock('@/components/ui', async (importOriginal) => {
   };
 });
 
+// AvailabilityGrid imports Tooltip from '@/components/ui/Tooltip' directly, so the override in
+// the barrel factory above never applies — vitest resolves mocks per specifier. Without this the
+// real HeroUI Tooltip renders and the grid's cell labels stay inside an unopened overlay.
+vi.mock('@/components/ui/Tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // ─── Context mocks ────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() };
 

@@ -46,6 +46,21 @@ vi.mock('@/contexts', () => ({
   useModule: vi.fn(() => true),
 }));
 
+// MessagesPage imports usePusherOptional from '@/contexts/PusherContext' and
+// usePresenceOptional from '@/contexts/PresenceContext' directly, so the overrides in the
+// '@/contexts' barrel above never apply — vitest resolves mocks per specifier. Without these
+// the real modules load, each pulling in its own direct '@/contexts/AuthContext' import, and
+// nothing here controls the realtime or presence layer.
+vi.mock('@/contexts/PusherContext', () => ({
+  usePusherOptional: vi.fn(() => null),
+  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+}));
+
+vi.mock('@/contexts/PresenceContext', () => ({
+  usePresenceOptional: vi.fn(() => null),
+  usePresence: vi.fn(() => null),
+}));
+
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));

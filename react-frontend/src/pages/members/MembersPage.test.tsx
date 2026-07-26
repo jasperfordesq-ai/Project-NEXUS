@@ -64,8 +64,23 @@ let isPhoneViewport = false;
 vi.mock('@/hooks/useMediaQuery', () => ({
   useMediaQuery: vi.fn(() => isPhoneViewport),
 }));
+// MembersPage lazy-imports '@/components/location/EntityMapView' by its direct path, so a stub
+// registered only on the '@/components/location' barrel never applies — the real map component
+// (and its own direct '@/contexts/TenantContext' import) would load instead. Mock both: the
+// barrel for anything importing through it, the direct path for the lazy import.
 vi.mock('@/components/location', () => ({
   EntityMapView: () => <div data-testid="map-view">Map</div>,
+}));
+vi.mock('@/components/location/EntityMapView', () => ({
+  EntityMapView: () => <div data-testid="map-view">Map</div>,
+}));
+
+// MembersPage imports usePresenceOptional from '@/contexts/PresenceContext' directly, so the
+// barrel override is dead and the real PresenceContext would load, pulling in its own direct
+// '@/contexts/AuthContext' import.
+vi.mock('@/contexts/PresenceContext', () => ({
+  usePresenceOptional: vi.fn(() => null),
+  usePresence: vi.fn(() => null),
 }));
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,

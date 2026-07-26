@@ -27,6 +27,19 @@ vi.mock('@/contexts', () => ({
   })),
 }));
 
+// The admin route tree also contains modules that import useTenant from
+// '@/contexts/TenantContext' directly (LegalDocVersionList among them), where the barrel override
+// above does not apply. Mock the direct path too so the whole graph sees one tenant.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: vi.fn(() => ({
+    tenant: { id: 2, name: 'Test Community', slug: 'test', configuration: {} },
+    tenantSlug: 'test',
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+    tenantPath: (path: string) => `/test${path}`,
+  })),
+}));
+
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));

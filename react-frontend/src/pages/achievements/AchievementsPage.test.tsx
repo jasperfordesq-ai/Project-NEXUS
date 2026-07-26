@@ -52,6 +52,20 @@ vi.mock('@/contexts', () => ({
   useModule: vi.fn(() => true),
 }));
 
+// AchievementsPage imports useToast from '@/contexts/ToastContext' directly at five call sites,
+// so the override in the '@/contexts' barrel above is dead — vitest resolves mocks per specifier.
+// It has been passing only because test-utils wraps a real ToastProvider, which means toasts were
+// being swallowed by the real provider rather than observed here.
+vi.mock('@/contexts/ToastContext', () => ({
+  useToast: vi.fn(() => ({
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  })),
+  ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock('@/hooks', () => ({
   usePageTitle: vi.fn(),
 }));

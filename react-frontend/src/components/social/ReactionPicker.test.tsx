@@ -50,6 +50,14 @@ vi.mock('@/components/ui', async (importOriginal) => {
   };
 });
 
+// ReactionPicker imports Tooltip from '@/components/ui/Tooltip' directly, so the barrel override
+// above never applies — vitest resolves mocks per specifier. The comment on that block is the
+// reason this matters: the real Tooltip needs a provider, so it must be stubbed on the specifier
+// the component actually uses.
+vi.mock('@/components/ui/Tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // ─── Context mocks ────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), showToast: vi.fn() };
 

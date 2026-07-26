@@ -15,6 +15,16 @@ vi.mock('@/contexts', () => ({
   }),
 }));
 
+// The admin route tree reached from '../routes' also contains modules that import useTenant from
+// '@/contexts/TenantContext' directly (LegalDocVersionList among them), where the barrel override
+// above does not apply. Mock the direct path too so the whole graph sees one tenant.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenantPath: (path: string) => `/hour-timebank${path}`,
+    hasFeature: () => true,
+  }),
+}));
+
 function LocationProbe() {
   const location = useLocation();
   return <output aria-label="path">{location.pathname}</output>;

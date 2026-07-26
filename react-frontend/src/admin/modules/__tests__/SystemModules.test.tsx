@@ -70,7 +70,14 @@ vi.mock('@/components/seo', () => ({
 }));
 
 // CommunityAnalytics imports LocationMap and MAPS_ENABLED
+// CommunityAnalytics lazy-imports '@/components/location/LocationMap' by its direct path, so a
+// stub registered only on the '@/components/location' barrel never applies — the real map would
+// load, pulling in its own direct '@/contexts/TenantContext' and '@/contexts/ThemeContext'
+// imports. Mock both specifiers so the stub actually takes effect.
 vi.mock('@/components/location', () => ({
+  LocationMap: () => <div data-testid="mock-location-map">Map</div>,
+}));
+vi.mock('@/components/location/LocationMap', () => ({
   LocationMap: () => <div data-testid="mock-location-map">Map</div>,
 }));
 

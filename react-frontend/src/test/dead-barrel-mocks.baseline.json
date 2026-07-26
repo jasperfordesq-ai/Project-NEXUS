@@ -1,29 +1,9 @@
 {
   "_README": "GENERATED FILE — never hand-edit. Shrink-only ratchet of dead barrel-mock overrides (a vi.mock on @/components/ui or @/contexts whose override the module under test bypasses by importing the symbol from its direct path). Regenerate with: npm run audit:dead-mocks -- --baseline. Enforced by src/components/ui/BarrelMock.contract.test.ts (runs in the blocking test:ui-contracts CI step) and npm run audit:dead-mocks.",
   "offenders": {
-    "src/admin/__tests__/caring-redirects.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/admin/__tests__/super-admin-redirects.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/admin/modules/__tests__/SystemModules.test.tsx": {
-      "@/contexts": [
-        "useTenant",
-        "useTheme"
-      ]
-    },
     "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
       "@/components/ui": [
         "Button"
-      ],
-      "@/contexts": [
-        "useAuth",
-        "usePusherOptional"
       ]
     },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
@@ -35,19 +15,12 @@
     "src/components/availability/AvailabilityGrid.test.tsx": {
       "@/components/ui": [
         "GlassCard",
-        "Spinner",
-        "Tooltip"
+        "Spinner"
       ]
     },
     "src/components/feed/FeedCard.test.tsx": {
       "@/contexts": [
         "readStoredConsent"
-      ]
-    },
-    "src/components/ideation/TeamChatrooms.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "usePusherOptional"
       ]
     },
     "src/components/landing/CtaSection.test.tsx": {
@@ -96,11 +69,6 @@
         "Input"
       ]
     },
-    "src/components/social/ReactionPicker.test.tsx": {
-      "@/components/ui": [
-        "Tooltip"
-      ]
-    },
     "src/components/social/ReactionSummary.test.tsx": {
       "@/components/ui": [
         "Avatar",
@@ -112,11 +80,6 @@
         "Spinner",
         "Tab",
         "Tabs"
-      ]
-    },
-    "src/pages/achievements/AchievementsPage.test.tsx": {
-      "@/contexts": [
-        "useToast"
       ]
     },
     "src/pages/caring-community/HourGiftPage.test.tsx": {
@@ -131,9 +94,7 @@
         "Avatar",
         "Progress",
         "SearchField",
-        "Skeleton",
-        "Tab",
-        "Tabs"
+        "Skeleton"
       ]
     },
     "src/pages/federation/FederationHubPage.test.tsx": {
@@ -145,17 +106,9 @@
         "Spinner"
       ]
     },
-    "src/pages/federation/FederationMessagesPage.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "usePusherOptional"
-      ]
-    },
     "src/pages/feed/FeedPage.test.tsx": {
       "@/contexts": [
-        "readStoredConsent",
-        "useAuth",
-        "usePusherOptional"
+        "readStoredConsent"
       ]
     },
     "src/pages/goals/components/GoalCheckinModal.test.tsx": {
@@ -285,8 +238,7 @@
         "GlassCard",
         "Progress",
         "Skeleton",
-        "Spinner",
-        "Tooltip"
+        "Spinner"
       ]
     },
     "src/pages/jobs/JobKanbanPage.test.tsx": {
@@ -377,24 +329,6 @@
         "Switch"
       ]
     },
-    "src/pages/members/MembersPage.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "useTenant"
-      ]
-    },
-    "src/pages/messages/MessagesPage.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "usePusherOptional"
-      ]
-    },
-    "src/pages/notifications/NotificationsPage.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "usePusherOptional"
-      ]
-    },
     "src/pages/settings/SettingsPage.test.tsx": {
       "@/components/ui": [
         "Avatar",
@@ -441,7 +375,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 45,
-    "rowCount": 302
+    "offenderFileCount": 35,
+    "rowCount": 277
   }
 }

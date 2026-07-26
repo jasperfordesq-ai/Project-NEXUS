@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Repaired the highest-risk group of tests whose stand-in components were silently doing nothing.** The automated check added in 1.5.7 recorded 302 of these dead replacements; this pass clears the 25 most consequential and takes the count to 277 across 35 files, with the ratchet lowered so it cannot drift back. The ones fixed here are the control-flow cases, where the dead replacement was not cosmetic but decided what the test actually exercised: eleven suites believed they were holding the realtime, presence, tenant and toast layers still, while the real ones loaded underneath them, so any assertion about live updates was checking nothing. Two of those — the members directory and the system-modules admin — also replaced a map component on the group import path while the page loads that map by its own individual path, so the real mapping library was loading in tests that appeared to have stubbed it out. All 155 tests across the fifteen repaired suites still pass, which is the point: these were silent gaps in what the tests covered, not visible failures, and nothing in the application changed. Each repair names the individual path the author should have used, alongside a note explaining why the group-level replacement could never have worked, so the pattern is not reintroduced.
+
 ## [1.5.7] - 2026-07-26
 
 ### Added

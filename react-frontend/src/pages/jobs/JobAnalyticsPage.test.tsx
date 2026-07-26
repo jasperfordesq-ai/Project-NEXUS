@@ -99,6 +99,12 @@ vi.mock('@/components/ui', () => {
   };
 });
 
+// JobAnalyticsPage imports Tooltip from '@/components/ui/Tooltip' directly, so the override in
+// the barrel factory above never applies — vitest resolves mocks per specifier.
+vi.mock('@/components/ui/Tooltip', () => ({
+  Tooltip: ({ children }: { children?: ReactNode }) => <>{children}</>,
+}));
+
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,
 }));

@@ -102,16 +102,25 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   resolveAssetUrl: (url: string | null) => url ?? '',
 }));
 
+// ExplorePage imports Tabs/Tab from '@/components/ui/Tabs' directly, so registering these stubs
+// only on the barrel leaves them dead — vitest resolves mocks per specifier. Hoisted so both the
+// barrel factory below and the direct-path factory can share one definition.
+const tabsStub = vi.hoisted(() => ({
+  Tabs: ({ children }: { children: React.ReactNode }) => (
+    <div role="tablist">{children}</div>
+  ),
+  Tab: ({ title }: { title: React.ReactNode }) => (
+    <button role="tab">{title}</button>
+  ),
+}));
+
+vi.mock('@/components/ui/Tabs', () => tabsStub);
+
 vi.mock('@/components/ui', async (importOriginal) => {
   const orig = await importOriginal<typeof import('@/components/ui')>();
   return {
     ...orig,
-    Tabs: ({ children }: { children: React.ReactNode }) => (
-      <div role="tablist">{children}</div>
-    ),
-    Tab: ({ title }: { title: React.ReactNode }) => (
-      <button role="tab">{title}</button>
-    ),
+    ...tabsStub,
     Skeleton: ({ children }: { children?: React.ReactNode }) => (
       <div data-testid="skeleton">{children}</div>
     ),

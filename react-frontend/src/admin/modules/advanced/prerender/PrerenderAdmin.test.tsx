@@ -106,6 +106,15 @@ vi.mock('@/contexts/ToastContext', () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+// Same reason as ToastContext above: PrerenderAdmin imports usePusherOptional from
+// '@/contexts/PusherContext' directly, so the barrel override is dead and the real
+// PusherContext would load along with its own direct AuthContext import. The realtime
+// job-update assertions in this suite depend on this hook being the one under control.
+vi.mock('@/contexts/PusherContext', () => ({
+  usePusherOptional: vi.fn(() => null),
+  usePusher: vi.fn(() => ({ channel: null, isConnected: false })),
+}));
+
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
