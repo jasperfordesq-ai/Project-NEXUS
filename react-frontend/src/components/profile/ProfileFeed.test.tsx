@@ -104,25 +104,10 @@ vi.mock('@/components/feedback', () => ({
   ),
 }));
 
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<Record<string, unknown>>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className: _c }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card">{children}</div>
-    ),
-    Button: ({ children, onPress, startContent: _sc, ...rest }: {
-      children?: React.ReactNode;
-      onPress?: () => void;
-      startContent?: React.ReactNode;
-      [key: string]: unknown;
-    }) => (
-      <button onClick={onPress} {...(rest as Record<string, unknown>)}>{children}</button>
-    ),
-    Skeleton: ({ className: _c }: { className?: string }) => <div data-testid="skeleton" />,
-    Separator: () => <hr />,
-  };
-});
+// NOTE: no `vi.mock('@/components/ui', ...)` here on purpose. ProfileFeed imports
+// Button/GlassCard/Separator/Skeleton from their DIRECT paths, so a barrel override
+// would never be reached — the real components render and the assertions below
+// target the real DOM they emit.
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeFeedItem = (overrides = {}) => ({
@@ -154,10 +139,22 @@ describe('ProfileFeed', () => {
   it('shows loading skeletons initially', async () => {
     mockApi.get.mockImplementation(() => new Promise(() => {}));
     const { ProfileFeed } = await import('./ProfileFeed');
-    render(<ProfileFeed userId={42} />);
+    const { container } = render(<ProfileFeed userId={42} />);
 
-    const skeletons = screen.getAllByTestId('skeleton');
-    expect(skeletons.length).toBeGreaterThan(0);
+    // The real Skeleton renders `.skeleton`, the real GlassCard `.glass-card`.
+    // ProfileFeed's loading branch is `[1,2,3,4].map(<FeedSkeleton/>)`, and each
+    // FeedSkeleton is one card holding 7 shimmer blocks (avatar, name, meta,
+    // 2 body lines, 2 action pills).
+    const skeletonCards = container.querySelectorAll('.glass-card');
+    expect(skeletonCards).toHaveLength(4);
+    skeletonCards.forEach((card) => {
+      expect(card.querySelectorAll('.skeleton')).toHaveLength(7);
+    });
+    expect(container.querySelectorAll('.skeleton')).toHaveLength(28);
+
+    // Still loading — neither the resolved empty state nor any feed card is showing.
+    expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('feed-card-1')).not.toBeInTheDocument();
   });
 
   it('shows empty state when feed is empty', async () => {
@@ -197,7 +194,8 @@ describe('ProfileFeed', () => {
     });
     // The post is NOT removed on a rejected hide; an error (not success) is shown.
     expect(screen.getByTestId('feed-card-7')).toBeInTheDocument();
-    expect(mockToast.error).toHaveBeenCalled();
+    // Name the copy: profile:hide_failed, so a wrong/blank toast key still fails.
+    expect(mockToast.error).toHaveBeenCalledWith('Failed to hide');
     expect(mockToast.success).not.toHaveBeenCalled();
   });
 
@@ -214,7 +212,8 @@ describe('ProfileFeed', () => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/feed/posts/9/delete');
     });
     expect(screen.getByTestId('feed-card-9')).toBeInTheDocument();
-    expect(mockToast.error).toHaveBeenCalled();
+    // Name the copy: profile:delete_failed.
+    expect(mockToast.error).toHaveBeenCalledWith('Delete failed');
     expect(mockToast.success).not.toHaveBeenCalled();
   });
 
@@ -254,12 +253,17 @@ describe('ProfileFeed', () => {
   it('shows error state when API fails', async () => {
     mockApi.get.mockRejectedValue(new Error('network'));
     const { ProfileFeed } = await import('./ProfileFeed');
-    render(<ProfileFeed userId={42} />);
+    const { container } = render(<ProfileFeed userId={42} />);
 
+    // Error renders the real profile:feed_error copy inside a GlassCard, with a retry button.
     await waitFor(() => {
-      // Error renders inside a GlassCard with a retry button
-      expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+      expect(screen.getByText('Failed to load activity')).toBeInTheDocument();
     });
+    expect(container.querySelector('.glass-card')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+    // The error branch replaces the empty state and the loading skeletons.
+    expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('.skeleton')).toHaveLength(0);
   });
 
   it('shows retry button on error', async () => {
@@ -268,12 +272,9 @@ describe('ProfileFeed', () => {
     render(<ProfileFeed userId={42} />);
 
     await waitFor(() => {
-      const buttons = screen.getAllByRole('button');
-      const retry = buttons.find(
-        (b) => b.textContent?.toLowerCase().includes('retry') || b.textContent?.toLowerCase().includes('try')
-      );
-      expect(retry).toBeTruthy();
+      expect(screen.getByText('Failed to load activity')).toBeInTheDocument();
     });
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
   it('retries loading when retry button clicked', async () => {
@@ -282,16 +283,17 @@ describe('ProfileFeed', () => {
     const { ProfileFeed } = await import('./ProfileFeed');
     render(<ProfileFeed userId={42} />);
 
-    await waitFor(() => screen.getByTestId('glass-card'));
-
-    const retryBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('retry') || b.textContent?.toLowerCase().includes('try')
-    );
-    if (retryBtn) fireEvent.click(retryBtn);
+    const retryBtn = await waitFor(() => screen.getByRole('button', { name: 'Retry' }));
+    fireEvent.click(retryBtn);
 
     await waitFor(() => {
       expect(mockApi.get).toHaveBeenCalledTimes(2);
     });
+    // The second attempt succeeded: the item renders and the error is cleared.
+    await waitFor(() => {
+      expect(screen.getByTestId('feed-card-1')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Failed to load activity')).not.toBeInTheDocument();
   });
 
   it('shows load more button when has_more is true', async () => {
@@ -300,11 +302,20 @@ describe('ProfileFeed', () => {
     render(<ProfileFeed userId={42} />);
 
     await waitFor(() => {
-      const btn = screen.getAllByRole('button').find(
-        (b) => b.textContent?.toLowerCase().includes('more') || b.textContent?.toLowerCase().includes('load')
-      );
-      expect(btn).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Load more' })).toBeInTheDocument();
     });
+  });
+
+  it('hides the load more button when has_more is false', async () => {
+    mockApi.get.mockResolvedValue(makeResponse([makeFeedItem()], { has_more: false, cursor: null }));
+    const { ProfileFeed } = await import('./ProfileFeed');
+    render(<ProfileFeed userId={42} />);
+
+    // Positive precondition first, so the absence below cannot pass vacuously.
+    await waitFor(() => {
+      expect(screen.getByTestId('feed-card-1')).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'Load more' })).not.toBeInTheDocument();
   });
 
   it('calls API with cursor on load more', async () => {
@@ -312,21 +323,15 @@ describe('ProfileFeed', () => {
     const { ProfileFeed } = await import('./ProfileFeed');
     render(<ProfileFeed userId={42} />);
 
-    await waitFor(() => screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('more') || b.textContent?.toLowerCase().includes('load')
-    ));
+    const loadMoreBtn = await waitFor(() => screen.getByRole('button', { name: 'Load more' }));
 
-    const loadMoreBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('more') || b.textContent?.toLowerCase().includes('load')
-    );
-    if (loadMoreBtn) {
-      mockApi.get.mockResolvedValueOnce(makeResponse([], { has_more: false }));
-      fireEvent.click(loadMoreBtn);
-      await waitFor(() => {
-        expect(mockApi.get).toHaveBeenCalledWith(
-          expect.stringContaining('cursor=cursor-xyz')
-        );
-      });
-    }
+    mockApi.get.mockResolvedValueOnce(makeResponse([], { has_more: false }));
+    fireEvent.click(loadMoreBtn);
+
+    await waitFor(() => {
+      expect(mockApi.get).toHaveBeenCalledWith(
+        expect.stringContaining('cursor=cursor-xyz')
+      );
+    });
   });
 });

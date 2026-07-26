@@ -26,38 +26,6 @@
         "usePusherOptional"
       ]
     },
-    "src/admin/modules/analytics/CommunityAnalytics.test.tsx": {
-      "@/contexts": [
-        "useTenant",
-        "useTheme"
-      ]
-    },
-    "src/admin/modules/analytics/RegionalAnalyticsPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Card",
-        "CardBody"
-      ]
-    },
-    "src/admin/modules/marketplace/MarketplaceModerationPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Chip",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Textarea"
-      ]
-    },
-    "src/admin/modules/reports/HoursReportsPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Card",
-        "CardBody"
-      ]
-    },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
       "@/components/ui": [
         "Button",
@@ -71,69 +39,9 @@
         "Tooltip"
       ]
     },
-    "src/components/endorsements/TopEndorsedWidget.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "Chip",
-        "GlassCard",
-        "Spinner"
-      ]
-    },
     "src/components/feed/FeedCard.test.tsx": {
       "@/contexts": [
         "readStoredConsent"
-      ]
-    },
-    "src/components/feed/sidebar/CommunityPulseWidget.test.tsx": {
-      "@/components/ui": [
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/FriendsWidget.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/PeopleYouMayKnowWidget.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "Button",
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/PopularGroupsWidget.test.tsx": {
-      "@/components/ui": [
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/QuickActionsWidget.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/SuggestedListingsWidget.test.tsx": {
-      "@/components/ui": [
-        "Chip",
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/TopCategoriesWidget.test.tsx": {
-      "@/components/ui": [
-        "GlassCard"
-      ]
-    },
-    "src/components/feed/sidebar/WidgetSkeleton.test.tsx": {
-      "@/components/ui": [
-        "GlassCard",
-        "Skeleton"
-      ]
-    },
-    "src/components/hashtags/TrendingHashtags.test.tsx": {
-      "@/components/ui": [
-        "GlassCard",
-        "Spinner"
       ]
     },
     "src/components/ideation/TeamChatrooms.test.tsx": {
@@ -188,24 +96,6 @@
         "Input"
       ]
     },
-    "src/components/profile/ProfileFeed.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "GlassCard",
-        "Separator",
-        "Skeleton"
-      ]
-    },
-    "src/components/search/AdvancedSearchFilters.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Chip",
-        "GlassCard",
-        "Input",
-        "Select",
-        "SelectItem"
-      ]
-    },
     "src/components/social/ReactionPicker.test.tsx": {
       "@/components/ui": [
         "Tooltip"
@@ -224,11 +114,6 @@
         "Tabs"
       ]
     },
-    "src/pages/about/RelatedPages.test.tsx": {
-      "@/components/ui": [
-        "GlassCard"
-      ]
-    },
     "src/pages/achievements/AchievementsPage.test.tsx": {
       "@/contexts": [
         "useToast"
@@ -239,23 +124,6 @@
         "Avatar",
         "ComboBox",
         "ComboBoxItem"
-      ]
-    },
-    "src/pages/caring-community/MunicipalSurveyPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Checkbox",
-        "CheckboxGroup",
-        "GlassCard",
-        "Radio",
-        "RadioGroup",
-        "Spinner",
-        "Textarea"
-      ]
-    },
-    "src/pages/clubs/ClubsPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
       ]
     },
     "src/pages/explore/ExplorePage.test.tsx": {
@@ -395,26 +263,6 @@
         "ToggleButtonGroup"
       ]
     },
-    "src/pages/help/HelpCenterPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/ideation/ChallengeDetailPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/ideation/IdeaDetailPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/ideation/IdeationPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
     "src/pages/jobs/EmployerOnboardingPage.test.tsx": {
       "@/components/ui": [
         "Button",
@@ -535,33 +383,6 @@
         "useTenant"
       ]
     },
-    "src/pages/messages/ConversationPage.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "Button",
-        "Chip",
-        "Dropdown",
-        "DropdownItem",
-        "DropdownMenu",
-        "DropdownTrigger",
-        "GlassCard",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Popover",
-        "PopoverContent",
-        "PopoverTrigger",
-        "Skeleton",
-        "Tooltip"
-      ],
-      "@/contexts": [
-        "useAuth",
-        "usePresenceOptional",
-        "usePusherOptional"
-      ]
-    },
     "src/pages/messages/MessagesPage.test.tsx": {
       "@/contexts": [
         "useAuth",
@@ -572,41 +393,6 @@
       "@/contexts": [
         "useAuth",
         "usePusherOptional"
-      ]
-    },
-    "src/pages/profile/ProfilePage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/public/AccessibilityPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/public/ContactPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/public/CookiesPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/public/FaqPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/public/PilotApplyStatusPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/public/TermsPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
       ]
     },
     "src/pages/settings/SettingsPage.test.tsx": {
@@ -633,11 +419,6 @@
         "useDisclosure"
       ]
     },
-    "src/pages/volunteering/CreateOpportunityPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
     "src/pages/volunteering/GroupSignUpTab.test.tsx": {
       "@/components/ui": [
         "Avatar",
@@ -660,7 +441,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 77,
-    "rowCount": 397
+    "offenderFileCount": 45,
+    "rowCount": 302
   }
 }

@@ -4,7 +4,6 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -52,34 +51,18 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub heavy UI children ───────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-    Button: ({
-      children,
-      to,
-      as: _as,
-      startContent,
-      ...rest
-    }: {
-      children: React.ReactNode;
-      to?: string;
-      as?: React.ElementType;
-      startContent?: React.ReactNode;
-      [key: string]: unknown;
-    }) => (
-      <a href={to as string | undefined} role="link" {...rest as object}>
-        {startContent}
-        {children}
-      </a>
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// The widget imports GlassCard and Button from their DIRECT module paths
+// ('@/components/ui/GlassCard', '@/components/ui/Button'), so overrides on the
+// '@/components/ui' barrel never apply — the real components load either way.
+// Real DOM they emit:
+//   GlassCard       -> <div class="card card--default glass-card p-4 …" data-slot="card">
+//   Button as={Link}-> <a class="button button--primary button--md w-full …"
+//                          href="/test/listings/create">…</a>
+// Note the real Button renders a PLAIN anchor: it has the implicit link role but
+// carries no explicit role="link" attribute, so query it by role/href, not
+// closest('[role="link"]').
+const CARD = '.glass-card';
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('QuickActionsWidget', () => {
@@ -94,9 +77,11 @@ describe('QuickActionsWidget', () => {
     authState.isAuthenticated = false;
     vi.resetModules();
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
-    render(<QuickActionsWidget />);
-    expect(screen.queryByTestId('glass-card')).not.toBeInTheDocument();
+    const { container } = render(<QuickActionsWidget />);
+    expect(container.querySelector(CARD)).toBeNull();
     expect(screen.queryByText('Create New Listing')).not.toBeInTheDocument();
+    // Not one action of any kind survives the unauthenticated early return.
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the "Create New Listing" primary CTA when authenticated', async () => {
@@ -108,9 +93,10 @@ describe('QuickActionsWidget', () => {
   it('Create New Listing link points to /listings/create', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
     render(<QuickActionsWidget />);
-    const cta = screen.getByText('Create New Listing').closest('[role="link"]') as HTMLElement | null;
-    expect(cta).not.toBeNull();
-    expect(cta!.getAttribute('href')).toBe('/test/listings/create');
+    // The primary CTA is a real Button rendered as a react-router Link, i.e. an
+    // anchor whose accessible name is the CTA label.
+    const cta = screen.getByRole('link', { name: 'Create New Listing' });
+    expect(cta).toHaveAttribute('href', '/test/listings/create');
   });
 
   it('renders the Host Event action when events feature is enabled', async () => {
@@ -181,7 +167,12 @@ describe('QuickActionsWidget', () => {
 
   it('wraps content in the GlassCard', async () => {
     const { QuickActionsWidget } = await import('./QuickActionsWidget');
-    render(<QuickActionsWidget />);
-    expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+    const { container } = render(<QuickActionsWidget />);
+    const card = container.querySelector(CARD);
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('glass-card', 'p-4');
+    // The primary CTA and the secondary grid are nested INSIDE the card.
+    expect(card).toContainElement(screen.getByText('Create New Listing'));
+    expect(card).toContainElement(screen.getByText('Host Event'));
   });
 });

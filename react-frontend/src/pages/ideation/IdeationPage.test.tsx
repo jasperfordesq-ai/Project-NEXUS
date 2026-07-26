@@ -47,33 +47,47 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
-vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({
+// 🔴 Mock the context modules by their DIRECT paths, NOT the '@/contexts' barrel.
+// IdeationPage itself imports the barrel, but PageMeta
+// (src/components/seo/PageMeta.tsx:26) imports `useTenant` from
+// '@/contexts/TenantContext'. Vitest's mock registry is keyed per-specifier, so a
+// `vi.mock('@/contexts', ...)` override never reached that import: the real hook
+// loaded and threw "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722), killing every test in this file. (src/test/setup.ts:70
+// tries to neutralise PageMeta globally, but it mocks the '@/components/seo'
+// barrel, which this page also bypasses.)
+// Mocking the direct path fixes BOTH importers — the real '@/contexts' barrel
+// just re-exports the mocked module — so no barrel mock belongs here.
+// The factories are TOTAL (no importOriginal spread) on purpose: TenantContext
+// imports '@/i18n', whose module scope calls i18next.init() with an HTTP backend
+// and would clobber the synchronous English resources src/test/setup.ts loads.
+// Every name '@/contexts' re-exports from these modules must be present, or the
+// barrel's re-export fails to link.
+const authState = vi.hoisted(() => ({
+  current: {
     user: { id: 1, first_name: 'Test', name: 'Test User', role: 'member' },
     isAuthenticated: true,
-  })),
-  useTenant: vi.fn(() => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
-    tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
-  })),
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
+  } as { user: { id: number; first_name: string; name: string; role: string }; isAuthenticated: boolean },
+}));
 
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
+vi.mock('@/contexts/TenantContext', () => ({
+  TenantProvider: ({ children }: { children: ReactNode }) => children,
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantSlug: 'test',
+    branding: { name: 'Test Tenant' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: () => true,
+    hasModule: () => true,
+  }),
+  useFeature: () => true,
+  useModule: () => true,
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: ReactNode }) => children,
+  useAuth: () => authState.current,
+  useAuthOptional: () => authState.current,
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
@@ -137,12 +151,23 @@ function setupMocks() {
 describe('IdeationPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    authState.current = {
+      user: { id: 1, first_name: 'Test', name: 'Test User', role: 'member' },
+      isAuthenticated: true,
+    };
   });
 
   it('shows loading state initially', () => {
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
     render(<IdeationPage />);
-    expect(document.body).toBeTruthy();
+    // The busy live region is what a screen-reader user gets while the first page
+    // of challenges is in flight (IdeationPage.tsx:462). getAllByRole because the
+    // real Spinner nests its own role="status" span inside it (Spinner.tsx:85);
+    // the page's wrapper is the outer one, and the only one marked aria-busy.
+    const [pageBusyRegion] = screen.getAllByRole('status', { name: 'loading' });
+    expect(pageBusyRegion).toHaveAttribute('aria-busy', 'true');
+    // ...and nothing from the resolved list is on screen yet.
+    expect(screen.queryByText('challenges.load_more')).not.toBeInTheDocument();
   });
 
   it('renders challenge cards on success', async () => {
@@ -161,9 +186,13 @@ describe('IdeationPage', () => {
       return Promise.resolve({ success: true, data: [] });
     });
     render(<IdeationPage />);
-    await waitFor(() => {
-      expect(screen.getAllByText('challenges.load_error').length).toBeGreaterThanOrEqual(1);
-    });
+    // The error branch renders an alert-role EmptyState carrying the load-error
+    // title plus a retry action (IdeationPage.tsx:468-486).
+    const alert = await waitFor(() => screen.getByRole('alert'));
+    expect(alert).toHaveTextContent('challenges.load_error');
+    expect(screen.getByRole('button', { name: 'actions.retry' })).toBeInTheDocument();
+    // The grid must not also be showing.
+    expect(screen.queryByText('Reduce Plastic Waste')).not.toBeInTheDocument();
   });
 
   it('shows empty state when no challenges exist', async () => {
@@ -174,9 +203,13 @@ describe('IdeationPage', () => {
       return Promise.resolve({ success: true, data: [] });
     });
     render(<IdeationPage />);
+    // Positive precondition first: the empty state actually rendered (otherwise the
+    // absence assertion below could pass while the page was still loading/crashed).
     await waitFor(() => {
-      expect(screen.queryByText('Reduce Plastic Waste')).not.toBeInTheDocument();
+      expect(screen.getByText('challenges.empty_title')).toBeInTheDocument();
     });
+    expect(screen.getByText('challenges.empty_description')).toBeInTheDocument();
+    expect(screen.queryByText('Reduce Plastic Waste')).not.toBeInTheDocument();
   });
 
   it('shows Load More button when has_more is true', async () => {
@@ -197,25 +230,32 @@ describe('IdeationPage', () => {
   });
 
   it('shows admin Create Challenge button for admin users', async () => {
-    const { useAuth } = await import('@/contexts');
-    vi.mocked(useAuth).mockReturnValueOnce({
+    // Persist the admin identity for the whole render: useAuth is re-read on every
+    // commit, so a mockReturnValueOnce would silently revert to `member` as soon as
+    // the challenges fetch resolved and re-rendered the header.
+    authState.current = {
       user: { id: 1, first_name: 'Admin', name: 'Admin User', role: 'admin' },
       isAuthenticated: true,
-    } as ReturnType<typeof useAuth>);
+    };
 
     setupMocks();
     render(<IdeationPage />);
     await waitFor(() => {
-      expect(screen.getByText('challenges.create')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'challenges.create' })).toBeInTheDocument();
     });
   });
 
   it('does not show Create Challenge button for regular members', async () => {
     setupMocks();
     render(<IdeationPage />);
+    // Positive precondition: the page finished loading and rendered its content...
     await waitFor(() => {
-      expect(screen.queryByText('challenges.create')).not.toBeInTheDocument();
+      expect(screen.getByText('Reduce Plastic Waste')).toBeInTheDocument();
     });
+    // ...and the always-visible header actions are there, so the header did render.
+    expect(screen.getByRole('button', { name: 'campaigns.title' })).toBeInTheDocument();
+    // Only then is the absence of the admin-only action meaningful.
+    expect(screen.queryByText('challenges.create')).not.toBeInTheDocument();
   });
 
   it('calls the correct API endpoint on mount', async () => {

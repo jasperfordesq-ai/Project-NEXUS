@@ -4,7 +4,6 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -49,22 +48,20 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub heavy UI children ──────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-    Avatar: ({ name, src }: { name: string; src?: string }) => (
-      <div data-testid="avatar" aria-label={name}>{src ? null : name[0]}</div>
-    ),
-    Button: ({ children, to, as: _as, ...rest }: { children: React.ReactNode; to?: string; as?: React.ElementType; [key: string]: unknown }) => (
-      <a href={to as string | undefined} role="link" {...rest as object}>{children}</a>
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// The widget imports GlassCard, Avatar and Button from their DIRECT module paths
+// ('@/components/ui/GlassCard' etc.), so overrides on the '@/components/ui' barrel
+// never apply — the real components load either way. Real DOM they emit:
+//   GlassCard      -> <div class="card card--default glass-card p-4 …" data-slot="card">
+//   Avatar         -> <span class="avatar avatar--sm">
+//                       <span class="avatar__fallback …" data-slot="avatar-fallback">D</span>
+//                     </span>
+//                     (jsdom never loads images, so the Radix-backed Avatar shows
+//                      its initials fallback rather than an <img>)
+//   Button as={Link}-> <a class="button button--tertiary button--sm …" href="…">View</a>
+//                     (a plain anchor — it carries NO explicit role="link" attribute)
+const CARD = '.glass-card';
+const AVATAR = '.avatar';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeMember = (overrides = {}) => ({
@@ -84,10 +81,11 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('renders nothing when members array is empty', async () => {
     const { PeopleYouMayKnowWidget } = await import('./PeopleYouMayKnowWidget');
-    render(<PeopleYouMayKnowWidget members={[]} />);
+    const { container } = render(<PeopleYouMayKnowWidget members={[]} />);
     // The component returns null — no GlassCard is mounted
-    expect(screen.queryByTestId('glass-card')).not.toBeInTheDocument();
+    expect(container.querySelector(CARD)).toBeNull();
     expect(screen.queryByText('People You May Know')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when members are provided', async () => {
@@ -116,10 +114,14 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('renders an avatar for each member', async () => {
     const { PeopleYouMayKnowWidget } = await import('./PeopleYouMayKnowWidget');
-    render(<PeopleYouMayKnowWidget members={[makeMember({ name: 'Dana' })]} />);
-    const avatars = screen.getAllByTestId('avatar');
-    expect(avatars.length).toBeGreaterThanOrEqual(1);
-    expect(avatars[0]).toHaveAttribute('aria-label', 'Dana');
+    const { container } = render(
+      <PeopleYouMayKnowWidget members={[makeMember({ id: 1, name: 'Dana' }), makeMember({ id: 2, name: 'Eve Ryan' })]} />
+    );
+    const avatars = Array.from(container.querySelectorAll(AVATAR));
+    // Exactly one avatar per member, each showing that member's initials.
+    expect(avatars).toHaveLength(2);
+    expect(avatars[0]).toHaveTextContent(/^D$/);
+    expect(avatars[1]).toHaveTextContent(/^ER$/);
   });
 
   it('shows the member location when provided', async () => {
@@ -176,7 +178,12 @@ describe('PeopleYouMayKnowWidget', () => {
 
   it('wraps content in the GlassCard', async () => {
     const { PeopleYouMayKnowWidget } = await import('./PeopleYouMayKnowWidget');
-    render(<PeopleYouMayKnowWidget members={[makeMember()]} />);
-    expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+    const { container } = render(<PeopleYouMayKnowWidget members={[makeMember()]} />);
+    const card = container.querySelector(CARD);
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('glass-card', 'p-4');
+    // Heading and member row are nested INSIDE the card, not siblings of it.
+    expect(card).toContainElement(screen.getByText('People You May Know'));
+    expect(card).toContainElement(screen.getByText('Bob Builder'));
   });
 });

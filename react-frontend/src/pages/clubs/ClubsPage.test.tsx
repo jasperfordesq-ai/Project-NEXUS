@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
 
 vi.mock('@/lib/api', () => ({
   default: { get: vi.fn(), post: vi.fn(), put: vi.fn(), patch: vi.fn(), delete: vi.fn() },
@@ -14,7 +13,28 @@ vi.mock('@/lib/api', () => ({
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/contexts', () => createMockContexts());
+// 🔴 Mock TenantContext by its DIRECT path, not the '@/contexts' barrel.
+// ClubsPage renders <Breadcrumbs> (src/components/navigation/Breadcrumbs.tsx:17)
+// and <PageMeta> (src/components/seo/PageMeta.tsx:26), both of which import
+// `useTenant` from '@/contexts/TenantContext'. Vitest keys its mock registry per
+// specifier, so a `vi.mock('@/contexts', ...)` override never applied here and
+// the real hook loaded and threw "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722) — killing all 13 tests before anything rendered.
+// Nothing in this module graph imports the '@/contexts' barrel, so no barrel
+// mock belongs in this file. The factory is TOTAL (no importOriginal spread) on
+// purpose: TenantContext.tsx imports '@/i18n', which calls i18n.init() with an
+// HTTP backend at module scope and would clobber the synchronous English
+// resources src/test/setup.ts loads.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: vi.fn(() => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantSlug: 'test',
+    branding: { name: 'Test Tenant' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+  })),
+}));
 
 import { ClubsPage } from './ClubsPage';
 import { api } from '@/lib/api';
@@ -92,13 +112,18 @@ describe('ClubsPage', () => {
     mockedGet.mockResolvedValue({ success: true, data: [], meta: { total_pages: 0 } });
     render(<ClubsPage />);
     await waitFor(() => expect(busyStatus()).toBeUndefined());
+    // Positive precondition: the EmptyState copy (common.json clubs.empty.*) is on screen,
+    // so the absence assertion below cannot pass just because nothing rendered.
+    expect(await screen.findByText('No Clubs Yet')).toBeInTheDocument();
+    expect(screen.getByText('No clubs or associations have been listed yet.')).toBeInTheDocument();
     expect(screen.queryByText('Knitting Circle')).not.toBeInTheDocument();
   });
 
   it('shows an error alert when the API call fails', async () => {
     mockedGet.mockResolvedValue({ success: false, error: 'Server error' });
     render(<ClubsPage />);
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    // common.json clubs.errors.load_failed
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not load clubs. Please try again.');
   });
 
   it('does not show the club grid when there is an error', async () => {

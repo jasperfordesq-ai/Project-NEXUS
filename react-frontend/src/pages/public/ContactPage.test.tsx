@@ -5,45 +5,61 @@
 
 /**
  * Tests for ContactPage
+ *
+ * Mocking notes
+ * ─────────────
+ * ContactPage imports `useTenant`/`useAuth` from the '@/contexts' barrel, but it
+ * also renders `PageMeta` from '@/components/seo/PageMeta' — and that module
+ * imports `useTenant` from '@/contexts/TenantContext', the DIRECT path. Vitest
+ * resolves mocks per specifier, so a mock of the '@/contexts' barrel never
+ * covered PageMeta: the real TenantContext loaded and threw "useTenant must be
+ * used within a TenantProvider" before anything rendered. (The
+ * '@/components/seo' barrel stub in src/test/setup.ts is bypassed for the same
+ * reason.)
+ *
+ * Mocking '@/contexts/TenantContext' and '@/contexts/AuthContext' on their
+ * DIRECT paths covers every caller, because '@/contexts/index.ts' re-exports
+ * from both — the real barrel loads and hands out the stubbed hooks.
+ *
+ * Both context mocks are total (no importOriginal): the real modules import
+ * '@/i18n', which re-runs i18next `.init()` with the HTTP backend at module scope.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 import React from 'react';
 
 vi.mock('@/lib/api', () => ({
-  api: { post: vi.fn().mockResolvedValue({ success: true }) },
-  tokenManager: { getTenantId: vi.fn() },
+  api: { get: vi.fn().mockResolvedValue({ success: true, data: null }), post: vi.fn().mockResolvedValue({ success: true }) },
+  tokenManager: { getTenantId: vi.fn(), getToken: vi.fn() },
 }));
 
-vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({ user: null, isAuthenticated: false })),
-  useTenant: vi.fn(() => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
-    branding: { name: 'Test Community', logo_url: null, contact_email: 'test@test.com' },
-    tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
-  })),
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    showToast: vi.fn(),
-  })),
-  useTheme: vi.fn(() => ({ theme: 'light', setTheme: vi.fn() })),
-  useNotifications: vi.fn(() => ({ counts: {} })),
-  usePusher: vi.fn(() => ({})),
+const mockTenant = {
+  tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+  branding: { name: 'Test Community', logo_url: null, contact_email: 'test@test.com' },
+  tenantPath: (p: string) => `/test${p}`,
+  hasFeature: () => true,
+  hasModule: () => true,
+  isLoading: false,
+  error: null,
+};
 
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
+const mockAuth = { user: null, isAuthenticated: false };
+
+vi.mock('@/contexts/TenantContext', () => ({
+  TenantProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTenant: () => mockTenant,
+  useFeature: () => true,
+  useModule: () => true,
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => mockAuth,
+  useAuthOptional: () => mockAuth,
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 vi.mock('@/lib/motion', () => {
   const proxy = new Proxy({}, {
     get: (_t: object, prop: string | symbol) => {
@@ -65,7 +81,21 @@ describe('ContactPage', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
   it('renders without crashing', () => {
-    const { container } = render(<ContactPage />);
-    expect(container.querySelector('div')).toBeTruthy();
+    render(<ContactPage />);
+    // Real English copy from public/locales/en/public.json (`contact.*`),
+    // preloaded into i18next by src/test/setup.ts. `subtitle` is interpolated
+    // with the tenant branding name.
+    expect(screen.getByRole('heading', { level: 1, name: 'Contact Us' })).toBeInTheDocument();
+    expect(
+      screen.getByText("Have a question about Test Community? We'd love to hear from you.")
+    ).toBeInTheDocument();
+    // The whole form rendered — labelled fields plus the submit button.
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Message' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send Message' })).toBeInTheDocument();
+    // Anonymous visitors get the log-in prompt, and nothing was submitted yet.
+    expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/test/login');
+    expect(screen.queryByText('Message Sent!')).not.toBeInTheDocument();
   });
 });

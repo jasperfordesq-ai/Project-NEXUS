@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── API mock ─────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -29,29 +28,24 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// ─── Stub heavy child components ─────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<Record<string, unknown>>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-    Chip: ({ children, startContent, size, variant, className }: {
-      children: React.ReactNode; startContent?: React.ReactNode; size?: string; variant?: string; className?: string;
-    }) => (
-      <span data-testid="endorsement-count" className={className}>
-        {startContent}{children}
-      </span>
-    ),
-    Spinner: ({ size }: { size?: string }) => (
-      <div data-testid="spinner" role="status" aria-busy="true" aria-label="Loading" />
-    ),
-    Avatar: ({ name, src }: { name?: string; src?: string }) => (
-      <div data-testid="member-avatar" aria-label={name} />
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// TopEndorsedWidget imports Avatar, Chip, GlassCard and Spinner from their DIRECT
+// module paths ('@/components/ui/Avatar' etc.), so overrides on the
+// '@/components/ui' barrel never apply — the real components load either way.
+// Real DOM they emit:
+//   GlassCard -> <div class="card card--default glass-card p-4 …" data-slot="card">
+//   Chip      -> <span class="chip …" data-slot="chip">
+//                  <svg …/><span class="chip__label" data-slot="chip-label">42</span>
+//                </span>
+//   Avatar    -> <span class="avatar avatar--sm">
+//                  <span class="avatar__fallback …" data-slot="avatar-fallback">AS</span>
+//                </span>
+//                (jsdom never loads images, so the Radix-backed Avatar shows its
+//                 initials fallback rather than an <img>)
+// The loading state's role="status"/aria-busy comes from the widget's own wrapper
+// div, not from Spinner, so the spinner assertion needs no stub.
+const CARD = '.glass-card';
+const AVATAR = '.avatar';
 
 vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   ...(await importOriginal()),
@@ -97,10 +91,15 @@ describe('TopEndorsedWidget', () => {
     const { TopEndorsedWidget } = await import('./TopEndorsedWidget');
     const { container } = render(<TopEndorsedWidget />);
 
+    // Positive precondition: the loading state DOES render a card, so the null
+    // assertion below only holds once the empty response has actually landed.
+    expect(container.querySelector(CARD)).not.toBeNull();
+
     await waitFor(() => {
       // GlassCard is not rendered when members.length === 0
-      expect(container.querySelector('[data-testid="glass-card"]')).toBeNull();
+      expect(container.querySelector(CARD)).toBeNull();
     });
+    expect(mockApi.get).toHaveBeenCalledWith('/v2/members/top-endorsed?limit=5');
   });
 
   it('calls GET /v2/members/top-endorsed with default limit=5', async () => {
@@ -206,18 +205,23 @@ describe('TopEndorsedWidget', () => {
     await waitFor(() => {
       // Heading text from i18n key 'most_endorsed' — rendered as real text by test-utils
       const heading = screen.getByRole('heading', { level: 3 });
-      expect(heading).toBeInTheDocument();
+      expect(heading).toHaveTextContent('Most Endorsed');
     });
   });
 
   it('renders avatar for each member', async () => {
-    mockApi.get.mockResolvedValue(makeResponse([makeMember({ name: 'Alice Smith' })]));
+    mockApi.get.mockResolvedValue(
+      makeResponse([makeMember({ id: 1, name: 'Alice Smith' }), makeMember({ id: 2, name: 'Bob' })])
+    );
     const { TopEndorsedWidget } = await import('./TopEndorsedWidget');
-    render(<TopEndorsedWidget />);
+    const { container } = render(<TopEndorsedWidget />);
 
     await waitFor(() => {
-      const avatars = screen.getAllByTestId('member-avatar');
-      expect(avatars.length).toBeGreaterThan(0);
+      const avatars = Array.from(container.querySelectorAll(AVATAR));
+      // Exactly one avatar per member, each showing that member's initials.
+      expect(avatars).toHaveLength(2);
+      expect(avatars[0]).toHaveTextContent(/^AS$/);
+      expect(avatars[1]).toHaveTextContent(/^B$/);
     });
   });
 
@@ -226,8 +230,13 @@ describe('TopEndorsedWidget', () => {
     const { TopEndorsedWidget } = await import('./TopEndorsedWidget');
     const { container } = render(<TopEndorsedWidget />);
 
+    // Positive precondition: the loading card mounted, so the null assertion
+    // below proves the rejection actually unwound the widget.
+    expect(container.querySelector(CARD)).not.toBeNull();
+
     await waitFor(() => {
-      expect(container.querySelector('[data-testid="glass-card"]')).toBeNull();
+      expect(container.querySelector(CARD)).toBeNull();
     });
+    expect(mockApi.get).toHaveBeenCalledTimes(1);
   });
 });

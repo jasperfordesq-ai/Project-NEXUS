@@ -6,18 +6,40 @@
 /**
  * Tests for PilotApplyStatusPage.
  *
- * Design notes
+ * Mocking notes
  * ─────────────
+ * The page reaches `useTenant` twice over two different specifiers: it imports
+ * the hook itself from the '@/contexts' barrel, but it also renders
+ * `PageMeta` from '@/components/seo/PageMeta', and that module imports
+ * `useTenant` from '@/contexts/TenantContext' — the DIRECT path. Vitest
+ * resolves mocks per specifier, so a mock of the '@/contexts' barrel never
+ * covered PageMeta and the real TenantContext loaded and threw
+ * "useTenant must be used within a TenantProvider" before anything rendered.
+ * (src/test/setup.ts globally stubs the '@/components/seo' barrel, which the
+ * page also bypasses by importing the module directly.)
+ *
+ * Mocking '@/contexts/TenantContext' on its DIRECT path covers both callers:
+ * '@/contexts/index.ts' re-exports from './TenantContext', so the real barrel
+ * loads and hands out the stubbed hook. '@/contexts/AuthContext' is mocked the
+ * same way because the barrel re-exports from it too, and the real AuthContext
+ * imports named events from '@/lib/api' that this file's api stub does not
+ * provide.
+ *
+ * Both context mocks are deliberately total (no importOriginal): the real
+ * TenantContext and AuthContext import '@/i18n', which re-runs i18next `.init()`
+ * with the HTTP/localStorage backends at module scope.
+ *
  * • The page reads `token` from useParams and issues a GET request.
  * • We mock react-router-dom to control useParams.
  * • We mock @/lib/api to control the API response.
  * • Loading, found (success), not-found/error, and API-error branches are covered.
- * • The page uses useTranslation('common') — real i18n is loaded in setup.ts.
- * • usePageTitle and PageMeta are stubbed globally (setup.ts + per-file).
+ * • The page uses useTranslation('common') and src/test/setup.ts preloads the
+ *   committed English locale files, so assertions use real user-facing copy.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
+import React from 'react';
 
 // ── react-router-dom: mock useParams ─────────────────────────────────────────
 // We need to keep the real BrowserRouter/Link etc. from the actual module.
@@ -38,37 +60,39 @@ vi.mock('@/lib/api', () => ({
     patch: vi.fn(),
     delete: vi.fn(),
   },
+  tokenManager: { getTenantId: vi.fn(), getToken: vi.fn() },
 }));
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// ── Contexts ──────────────────────────────────────────────────────────────────
-vi.mock('@/contexts', () => ({
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useTenant: () => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
-    branding: { name: 'Test', logo_url: null },
-    tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
-  }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
-  useTheme: () => ({ resolvedTheme: 'light', theme: 'system', toggleTheme: vi.fn(), setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  usePresence: () => ({ status: 'offline', setStatus: vi.fn(), getPresence: vi.fn(), isOnline: vi.fn(() => false) }),
-  usePresenceOptional: () => null,
+// ── Contexts (DIRECT paths — see header note) ─────────────────────────────────
+const mockTenant = {
+  tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+  branding: { name: 'Test Community', logo_url: null, tagline: 'A test community' },
+  tenantPath: (p: string) => `/test${p}`,
+  hasFeature: () => true,
+  hasModule: () => true,
+  isLoading: false,
+  error: null,
+};
+
+const mockAuth = { user: null, isAuthenticated: false };
+
+vi.mock('@/contexts/TenantContext', () => ({
+  TenantProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTenant: () => mockTenant,
+  useFeature: () => true,
+  useModule: () => true,
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => mockAuth,
+  useAuthOptional: () => mockAuth,
 }));
 
 vi.mock('@/lib/motion', () => {
-  const React = require('react');
   const motionProxy = new Proxy({}, {
     get: (_target, prop) => {
       return React.forwardRef(
@@ -104,6 +128,24 @@ const MOCK_STATUS_INFO = {
   reviewed_at: null,
 };
 
+// Real English copy from public/locales/en/common.json (`provisioning.*`),
+// preloaded into i18next by src/test/setup.ts.
+const PAGE_HEADING = 'Application status';
+const LOADING_LABEL = 'Loading...';
+const ORG_NAME_LABEL = 'Organisation / community name';
+const SLUG_LABEL = 'Community URL slug';
+const LOOKUP_FAILED = 'We could not find an application for that link.';
+const CHECK_EMAIL = 'Please check your email for updates on your application.';
+const BACK_HOME = 'Back to home';
+const STATUS_LABELS = {
+  pending: 'Received — awaiting review',
+  under_review: 'Under review',
+  approved: 'Approved — provisioning in progress',
+  provisioned: 'Provisioned — your community is live',
+  rejected: 'Not approved',
+  failed: 'A technical issue occurred — our team has been notified',
+} as const;
+
 describe('PilotApplyStatusPage — loading state', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 
@@ -111,13 +153,24 @@ describe('PilotApplyStatusPage — loading state', () => {
     // api.get never resolves so the component stays in loading state
     vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
     render(<PilotApplyStatusPage />);
-    // The outer div with role="status" aria-busy="true" wraps the Spinner
-    // (Spinner itself also carries role="status"), so use getAllByRole
-    const spinners = screen.getAllByRole('status');
-    expect(spinners.length).toBeGreaterThanOrEqual(1);
-    // Confirm aria-busy is set on the wrapper
-    const busyEl = spinners.find((el) => el.getAttribute('aria-busy') === 'true');
-    expect(busyEl).toBeInTheDocument();
+
+    // Page chrome renders immediately with the real English heading…
+    expect(
+      screen.getByRole('heading', { level: 1, name: PAGE_HEADING })
+    ).toBeInTheDocument();
+
+    // …and the busy live region is labelled with the real loading copy and
+    // wraps the Spinner (which is its own role="status" element).
+    const busyRegion = screen.getByLabelText(LOADING_LABEL, {
+      selector: '[aria-busy="true"]',
+    });
+    expect(busyRegion).toHaveAttribute('role', 'status');
+    expect(busyRegion.querySelector('[role="status"]')).toBeInTheDocument();
+
+    // The heading assertion above is the positive precondition that makes
+    // these absences meaningful rather than vacuous.
+    expect(screen.queryByText('Acme Timebank')).not.toBeInTheDocument();
+    expect(screen.queryByText(LOOKUP_FAILED)).not.toBeInTheDocument();
   });
 });
 
@@ -127,28 +180,26 @@ describe('PilotApplyStatusPage — success (status found)', () => {
   it('renders org_name after API resolves', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: MOCK_STATUS_INFO });
     render(<PilotApplyStatusPage />);
-    await waitFor(() => {
-      expect(screen.getByText('Acme Timebank')).toBeInTheDocument();
-    });
+    const orgValue = await screen.findByText('Acme Timebank');
+    // Proven to sit in the org-name field, not merely somewhere on the page.
+    expect(orgValue.parentElement).toContainElement(screen.getByText(ORG_NAME_LABEL));
   });
 
   it('renders the requested_slug', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: MOCK_STATUS_INFO });
     render(<PilotApplyStatusPage />);
-    await waitFor(() => {
-      expect(screen.getByText('acme-timebank')).toBeInTheDocument();
-    });
+    const slugValue = await screen.findByText('acme-timebank');
+    expect(slugValue.parentElement).toContainElement(screen.getByText(SLUG_LABEL));
   });
 
   it('renders a status chip for the pending state', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: MOCK_STATUS_INFO });
     render(<PilotApplyStatusPage />);
-    await waitFor(() => {
-      // Status label comes from t('provisioning.status_labels.pending')
-      // We cannot predict the exact translation so we verify org_name is visible
-      // and no error message is shown.
-      expect(screen.queryByText(/lookup failed/i)).not.toBeInTheDocument();
-    });
+    // Real translated label for provisioning.status_labels.pending.
+    const chipLabel = await screen.findByText(STATUS_LABELS.pending);
+    // …rendered inside an actual Chip, not loose text.
+    expect(chipLabel.closest('[data-slot="chip"]')).toBeInTheDocument();
+    expect(screen.queryByText(LOOKUP_FAILED)).not.toBeInTheDocument();
   });
 
   it('calls the correct API endpoint with the token from useParams', async () => {
@@ -164,18 +215,19 @@ describe('PilotApplyStatusPage — success (status found)', () => {
   it('renders a back-home button after data loads', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: MOCK_STATUS_INFO });
     render(<PilotApplyStatusPage />);
-    await waitFor(() => {
-      expect(screen.getByRole('link')).toBeInTheDocument();
-    });
+    // Wait for the data branch so the assertion is about the loaded page.
+    await screen.findByText('Acme Timebank');
+    const backLink = screen.getByRole('link', { name: BACK_HOME });
+    // tenantPath('/') from the tenant stub.
+    expect(backLink).toHaveAttribute('href', '/test/');
   });
 
   it('wraps the data shape correctly — response.data path', async () => {
     // Component also handles a raw response (no .data envelope)
     vi.mocked(api.get).mockResolvedValue(MOCK_STATUS_INFO);
     render(<PilotApplyStatusPage />);
-    await waitFor(() => {
-      expect(screen.getByText('Acme Timebank')).toBeInTheDocument();
-    });
+    const orgValue = await screen.findByText('Acme Timebank');
+    expect(orgValue.parentElement).toContainElement(screen.getByText(ORG_NAME_LABEL));
   });
 });
 
@@ -185,36 +237,33 @@ describe('PilotApplyStatusPage — error / not found', () => {
   it('shows an error message when the API resolves with invalid data', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: { something_else: true } });
     render(<PilotApplyStatusPage />);
-    // Wait for the loading state to clear (loading=false, error set)
-    await waitFor(() => {
-      // When error is set, the component renders a <p> with the error text
-      // The loading div with aria-busy is removed
-      const busyEls = document.querySelectorAll('[aria-busy="true"]');
-      expect(busyEls.length).toBe(0);
-    });
-    // An error paragraph is now in the DOM
-    const paras = document.querySelectorAll('p');
-    expect(paras.length).toBeGreaterThan(0);
+    // The real error copy replaces the busy region.
+    expect(await screen.findByText(LOOKUP_FAILED)).toBeInTheDocument();
+    expect(document.querySelector('[aria-busy="true"]')).toBeNull();
+    // Not the success branch, and not the "no info" fallback either.
+    expect(screen.queryByText('Acme Timebank')).not.toBeInTheDocument();
+    expect(screen.queryByText(CHECK_EMAIL)).not.toBeInTheDocument();
   });
 
   it('shows an error message when the API throws', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'));
     render(<PilotApplyStatusPage />);
-    // Wait for the loading state to clear
-    await waitFor(() => {
-      const busyEls = document.querySelectorAll('[aria-busy="true"]');
-      expect(busyEls.length).toBe(0);
-    });
-    // After error, the loading spinner div is gone and an error paragraph is visible
-    const paras = document.querySelectorAll('p');
-    expect(paras.length).toBeGreaterThan(0);
+    expect(await screen.findByText(LOOKUP_FAILED)).toBeInTheDocument();
+    expect(document.querySelector('[aria-busy="true"]')).toBeNull();
+    expect(screen.queryByText('Acme Timebank')).not.toBeInTheDocument();
   });
 
   it('does not call the API when there is no token', async () => {
     vi.mocked(useParams).mockReturnValue({});
     render(<PilotApplyStatusPage />);
-    // With no token the effect returns early; loading stays true indefinitely
-    // but no API call is made
+    // Positive precondition: the page really did render and is still in its
+    // loading branch — the effect returned early rather than the page failing.
+    expect(
+      screen.getByRole('heading', { level: 1, name: PAGE_HEADING })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(LOADING_LABEL, { selector: '[aria-busy="true"]' })
+    ).toBeInTheDocument();
     expect(api.get).not.toHaveBeenCalled();
     // Reset for subsequent tests
     vi.mocked(useParams).mockReturnValue({ token: 'abc-token-123' });
@@ -227,14 +276,18 @@ describe('PilotApplyStatusPage — status variations', () => {
   const STATUSES = ['pending', 'under_review', 'approved', 'provisioned', 'rejected', 'failed'] as const;
 
   for (const status of STATUSES) {
+    // Title kept verbatim from the original suite; the body now also proves the
+    // per-status chip label resolves to real translated copy.
     it(`renders org_name without crash for status="${status}"`, async () => {
       vi.mocked(api.get).mockResolvedValue({
         data: { ...MOCK_STATUS_INFO, status },
       });
       render(<PilotApplyStatusPage />);
-      await waitFor(() => {
-        expect(screen.getByText('Acme Timebank')).toBeInTheDocument();
-      });
+      const orgValue = await screen.findByText('Acme Timebank');
+      expect(orgValue.parentElement).toContainElement(screen.getByText(ORG_NAME_LABEL));
+      // Every status maps to a real translated chip label — a missing key would
+      // render the raw "provisioning.status_labels.<status>" string instead.
+      expect(screen.getByText(STATUS_LABELS[status])).toBeInTheDocument();
     });
   }
 });

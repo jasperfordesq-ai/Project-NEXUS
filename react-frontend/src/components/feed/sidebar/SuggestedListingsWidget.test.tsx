@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── API mock (required by test-utils chain; widget doesn't call API directly) ─
 const { mockApi } = vi.hoisted(() => ({
@@ -29,19 +28,17 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub GlassCard + Chip from @/components/ui (avoid HeroUI jsdom issues) ──
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-    Chip: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <span data-testid="chip" className={className}>{children}</span>
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// The widget imports GlassCard and Chip from their DIRECT module paths
+// ('@/components/ui/GlassCard', '@/components/ui/Chip'), so an override on the
+// '@/components/ui' barrel never applies — the real components load either way.
+// Real DOM those emit:
+//   GlassCard -> <div class="card card--default glass-card p-4 …" data-slot="card">
+//   Chip      -> <span class="chip chip--… " data-slot="chip">
+//                  <span class="chip__label" data-slot="chip-label">Offer</span>
+//                </span>
+const CARD = '.glass-card';
+const CHIP = '.chip';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 import type { SuggestedListing } from './SuggestedListingsWidget';
@@ -71,8 +68,10 @@ describe('SuggestedListingsWidget', () => {
   it('renders nothing when listings array is empty', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
     const { container } = render(<SuggestedListingsWidget listings={[]} />);
-    // GlassCard stub not rendered → only the ToastProvider wrapper div present
-    expect(container.querySelector('[data-testid="glass-card"]')).toBeNull();
+    // The widget returns null: no card, and none of the copy it would otherwise render.
+    expect(container.querySelector(CARD)).toBeNull();
+    expect(screen.queryByText('Suggested For You')).toBeNull();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when listings are provided', async () => {
@@ -112,16 +111,18 @@ describe('SuggestedListingsWidget', () => {
 
   it('shows an Offer chip for offer-type listings', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
-    render(<SuggestedListingsWidget listings={[makeOffer()]} />);
-    const chips = screen.getAllByTestId('chip');
-    expect(chips.some((c) => c.textContent === 'Offer')).toBe(true);
+    const { container } = render(<SuggestedListingsWidget listings={[makeOffer()]} />);
+    const chips = Array.from(container.querySelectorAll(CHIP));
+    expect(chips).toHaveLength(1);
+    expect(chips[0]).toHaveTextContent(/^Offer$/);
   });
 
   it('shows a Request chip for request-type listings', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
-    render(<SuggestedListingsWidget listings={[makeRequest()]} />);
-    const chips = screen.getAllByTestId('chip');
-    expect(chips.some((c) => c.textContent === 'Request')).toBe(true);
+    const { container } = render(<SuggestedListingsWidget listings={[makeRequest()]} />);
+    const chips = Array.from(container.querySelectorAll(CHIP));
+    expect(chips).toHaveLength(1);
+    expect(chips[0]).toHaveTextContent(/^Request$/);
   });
 
   it('renders multiple listings correctly', async () => {
@@ -135,13 +136,20 @@ describe('SuggestedListingsWidget', () => {
 
   it('renders inside a GlassCard container', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
-    render(<SuggestedListingsWidget listings={[makeOffer()]} />);
-    expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+    const { container } = render(<SuggestedListingsWidget listings={[makeOffer()]} />);
+    const card = container.querySelector(CARD);
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('glass-card', 'p-4');
+    // The heading and the listing row are nested INSIDE the card, not siblings of it.
+    expect(card).toContainElement(screen.getByText('Suggested For You'));
+    expect(card).toContainElement(screen.getByText('Guitar Lessons'));
   });
 
   it('does not render See All link when listings are empty', async () => {
     const { SuggestedListingsWidget } = await import('./SuggestedListingsWidget');
-    render(<SuggestedListingsWidget listings={[]} />);
+    const { container } = render(<SuggestedListingsWidget listings={[]} />);
+    // Positive precondition: nothing rendered at all, so the absence below is not vacuous.
+    expect(container.querySelector(CARD)).toBeNull();
     expect(screen.queryByRole('link', { name: /see all/i })).toBeNull();
   });
 });

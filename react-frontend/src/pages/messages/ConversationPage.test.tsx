@@ -60,6 +60,25 @@ vi.mock('@/contexts', () => ({
   useModule: vi.fn(() => true),
 }));
 
+// ConversationPage reads usePusherOptional / usePresenceOptional from their DIRECT
+// paths, so the `usePusherOptional` / `usePresenceOptional` keys on the '@/contexts'
+// factory above can never be reached. Mock the direct modules — both are provider
+// infrastructure (a Pusher websocket, presence polling) that a page-level test has
+// no business booting, and both pull AuthContext + the API client in at module scope.
+// Total factories, not importOriginal spreads, for exactly that reason.
+vi.mock('@/contexts/PusherContext', () => ({
+  usePusherOptional: () => null,
+  usePusher: () => ({ channel: null, isConnected: false }),
+}));
+
+vi.mock('@/contexts/PresenceContext', () => ({
+  usePresenceOptional: () => null,
+  usePresence: () => ({
+    fetchPresence: vi.fn(),
+    getPresence: vi.fn(() => null),
+  }),
+}));
+
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 vi.mock('react-i18next', () => ({
@@ -82,60 +101,11 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => children,
 }));
 
-vi.mock('@/components/ui', () => {
-  const React = require('react');
-  const cleanProps = (props: Record<string, unknown>) => {
-    const {
-      classNames: _classNames,
-      endContent: _endContent,
-      fullWidth: _fullWidth,
-      isIconOnly: _isIconOnly,
-      isLoading: _isLoading,
-      isOpen: _isOpen,
-      onOpenChange: _onOpenChange,
-      onPress,
-      startContent,
-      ...rest
-    } = props;
-    return {
-      ...rest,
-      ...(onPress ? { onClick: onPress } : {}),
-      ...(startContent ? { children: <>{startContent}{props.children as React.ReactNode}</> } : {}),
-    };
-  };
-  const passthrough = (tag = 'div') =>
-    ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
-      const cleaned = cleanProps({ ...props, children });
-      return React.createElement(tag, cleaned, cleaned.children);
-    };
-  const button = ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) =>
-    React.createElement('button', cleanProps(props), children);
-  const input = ({ value, onChange, placeholder, 'aria-label': ariaLabel }: Record<string, unknown>) =>
-    React.createElement('input', { value, onChange, placeholder, 'aria-label': ariaLabel });
-
-  return {
-    GlassCard: ({ children, className }: React.PropsWithChildren<{ className?: string }>) =>
-      React.createElement('div', { className }, children),
-    Button: button,
-    Avatar: ({ src }: Record<string, unknown>) => React.createElement('div', {}, src ? React.createElement('img', { src }) : null),
-    Modal: passthrough('div'),
-    ModalContent: passthrough('div'),
-    ModalHeader: passthrough('div'),
-    ModalBody: passthrough('div'),
-    ModalFooter: passthrough('div'),
-    Dropdown: passthrough('div'),
-    DropdownTrigger: passthrough('div'),
-    DropdownMenu: passthrough('div'),
-    DropdownItem: passthrough('button'),
-    Popover: passthrough('div'),
-    PopoverTrigger: passthrough('div'),
-    PopoverContent: passthrough('div'),
-    Input: input,
-    Tooltip: passthrough('span'),
-    Skeleton: passthrough('div'),
-    Chip: passthrough('span'),
-  };
-});
+// NOTE: no `vi.mock('@/components/ui', ...)` here on purpose. ConversationPage
+// imports Avatar/Badge/Button/Chip/Dropdown/GlassCard/Modal/Popover/SearchField/
+// Skeleton/Spinner/Tooltip from their DIRECT paths, so a barrel override would
+// never be reached. These tests already drive the real widgets (e.g. the overflow
+// Dropdown only mounts its items once its trigger is pressed).
 
 vi.mock('@/components/feedback', () => ({
   LoadingScreen: () => <div data-testid="loading-screen">Loading...</div>,
@@ -288,9 +258,11 @@ describe('ConversationPage', () => {
 
     render(<ConversationPage />);
 
-    // The notice renders twice — the phone pill's popover body and the sm:+
-    // banner — CSS decides which is visible at a given width.
-    await waitFor(() => expect(screen.getAllByText('safeguarding_notice').length).toBeGreaterThan(0));
+    // Exactly one full notice is mounted: the sm:+ banner. The phone pill carries
+    // the same body inside a Popover, and the real HeroUI Popover only mounts its
+    // content once opened — so the pill contributes the compact label below, not a
+    // second full notice.
+    await waitFor(() => expect(screen.getAllByText('safeguarding_notice')).toHaveLength(1));
     expect(screen.getByText('safeguarding_notice_compact')).toBeDefined();
   });
 
@@ -302,8 +274,9 @@ describe('ConversationPage', () => {
 
     await waitFor(() => expect(screen.getByText('Bob')).toBeDefined());
 
-    // Marker drives the body:has() CSS that hides the site header <768px
-    expect(document.querySelector('[data-immersive-thread]')).toBeTruthy();
+    // Marker drives the body:has() CSS that hides the site header <768px.
+    // Exactly one — a duplicate marker would mean the thread root rendered twice.
+    expect(document.querySelectorAll('[data-immersive-thread]')).toHaveLength(1);
 
     // Phone-only overflow rows (visibility is CSS-gated via sm:hidden) —
     // the real dropdown only mounts its items once opened
@@ -325,8 +298,12 @@ describe('ConversationPage', () => {
 
     await waitFor(() => expect(screen.getByText('safeguarding_notice_compact')).toBeDefined());
 
-    // Two dismiss controls exist (phone pill X + sm:+ banner X); either clears the shared state
-    fireEvent.click(screen.getAllByLabelText('aria_dismiss_safeguarding')[0]!);
+    // Pin how many dismiss controls are actually mounted, so this can't silently
+    // start clicking a different X than the test name claims.
+    const dismissControls = screen.getAllByLabelText('aria_dismiss_safeguarding');
+    expect(dismissControls).toHaveLength(2);
+    // Either control clears the shared state that gates both notices.
+    fireEvent.click(dismissControls[0]!);
 
     await waitFor(() => expect(screen.queryByText('safeguarding_notice_compact')).toBeNull());
     expect(screen.queryByText('safeguarding_notice')).toBeNull();

@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -49,60 +48,10 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-vi.mock('@/components/seo/PageMeta', () => ({
-  PageMeta: () => null,
-}));
-
-// ─── Stub HeroUI Modal family ─────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  return {
-    ...actual,
-    Modal: ({ isOpen, children }: { isOpen: boolean; children: React.ReactNode; onClose?: () => void; size?: string }) =>
-      isOpen ? <div role="dialog" aria-label="Dialog" data-testid="reject-modal">{children}</div> : null,
-    ModalContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    ModalHeader: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className} data-testid="modal-header">{children}</div>,
-    ModalBody: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-body">{children}</div>,
-    ModalFooter: ({ children }: { children: React.ReactNode }) => <div data-testid="modal-footer">{children}</div>,
-    Button: ({ children, onPress, isLoading, isDisabled, onClick, as: Tag, href, target, rel, ...rest }: { children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean; onClick?: React.MouseEventHandler; as?: string; href?: string; target?: string; rel?: string; [key: string]: unknown }) => {
-      if (Tag === 'a') {
-        return <a href={href} target={target} rel={rel} aria-label={rest['aria-label'] as string}>{children}</a>;
-      }
-      return (
-        <button
-          onClick={(e) => { onClick?.(e); onPress?.(); }}
-          disabled={isLoading || isDisabled}
-          data-loading={isLoading ? 'true' : undefined}
-          aria-label={rest['aria-label'] as string}
-        >
-          {isLoading ? 'Loading…' : children}
-        </button>
-      );
-    },
-    Textarea: ({ label, value, onValueChange, placeholder }: { label?: string; value?: string; onValueChange?: (v: string) => void; placeholder?: string; variant?: string }) => (
-      <div>
-        {label && <label>{label}</label>}
-        <textarea
-          value={value}
-          placeholder={placeholder}
-          aria-label={label}
-          onChange={(e) => onValueChange?.(e.target.value)}
-        />
-      </div>
-    ),
-    Chip: ({ children, color }: { children: React.ReactNode; color?: string; size?: string; variant?: string; className?: string }) => (
-      <span data-color={color}>{children}</span>
-    ),
-    Tabs: ({ children }: { children: React.ReactNode; onSelectionChange?: (key: string | number) => void; selectedKey?: string; [key: string]: unknown }) => (
-      <div role="tablist">{children}</div>
-    ),
-    Tab: ({ title }: { title: React.ReactNode }) => <button role="tab">{title}</button>,
-    Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    Avatar: ({ name }: { name?: string; src?: string; size?: string; radius?: string; className?: string }) => (
-      <div data-testid="avatar" aria-label={name}>{name?.[0]}</div>
-    ),
-  };
-});
+// NOTE: no '@/components/ui' stub. The real HeroUI v3 Modal, Tabs, Chip, Avatar,
+// Tooltip and Textarea render here, alongside the real admin DataTable /
+// ConfirmModal / EmptyState — so the assertions below describe the DOM and copy
+// an administrator actually sees.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Fixtures
@@ -158,6 +107,7 @@ describe('MarketplaceModerationPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'No listings found' })
     ).toBeInTheDocument();
+    expect(screen.getByText('No listings have been created yet')).toBeInTheDocument();
   });
 
   it('renders listing rows when data returned', async () => {
@@ -167,6 +117,7 @@ describe('MarketplaceModerationPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Handmade Candle')).toBeInTheDocument();
     });
+    expect(screen.queryByRole('heading', { name: 'No listings found' })).toBeNull();
   });
 
   it('renders seller name column', async () => {
@@ -176,6 +127,7 @@ describe('MarketplaceModerationPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Alice Seller')).toBeInTheDocument();
     });
+    expect(screen.getByRole('columnheader', { name: 'Seller' })).toBeInTheDocument();
   });
 
   it('renders moderation status chip', async () => {
@@ -183,8 +135,12 @@ describe('MarketplaceModerationPage', () => {
     const { MarketplaceModerationPage } = await import('./MarketplaceModerationPage');
     render(<MarketplaceModerationPage />);
     await waitFor(() => {
-      expect(screen.getByText('pending')).toBeInTheDocument();
+      // The chip shows the translated moderation status, not the raw enum value.
+      expect(screen.getByText('Pending review')).toBeInTheDocument();
     });
+    expect(screen.queryByText('pending')).toBeNull();
+    // The listing status column keeps its own translated chip.
+    expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
   it('shows approve and reject buttons for pending listings', async () => {
@@ -192,8 +148,8 @@ describe('MarketplaceModerationPage', () => {
     const { MarketplaceModerationPage } = await import('./MarketplaceModerationPage');
     render(<MarketplaceModerationPage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /approve listing/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /reject listing/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /approve listing/i })).toBeEnabled();
+      expect(screen.getByRole('button', { name: /reject listing/i })).toBeEnabled();
     });
   });
 
@@ -215,9 +171,16 @@ describe('MarketplaceModerationPage', () => {
     const { MarketplaceModerationPage } = await import('./MarketplaceModerationPage');
     render(<MarketplaceModerationPage />);
     await waitFor(() => screen.getByText('Handmade Candle'));
+    expect(screen.queryByRole('dialog')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /reject listing/i }));
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    const modal = await screen.findByRole('dialog');
+    // Heading and submit button share the same copy — assert both roles explicitly.
+    expect(within(modal).getByRole('heading', { name: 'Reject Listing' })).toBeInTheDocument();
+    expect(within(modal).getByRole('button', { name: 'Reject Listing' })).toBeInTheDocument();
+    expect(
+      within(modal).getByText('Please provide a reason for rejecting this listing.')
+    ).toBeInTheDocument();
   });
 
   it('shows reject modal with notes textarea when reject clicked', async () => {
@@ -229,9 +192,9 @@ describe('MarketplaceModerationPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /reject listing/i }));
     const rejectModal = await screen.findByRole('dialog');
-    expect(
-      within(rejectModal).getByRole('textbox', { name: /moderation notes/i })
-    ).toBeInTheDocument();
+    const notes = within(rejectModal).getByRole('textbox', { name: /moderation notes/i });
+    expect(notes).toBeInTheDocument();
+    expect(notes).toHaveAttribute('placeholder', 'Enter reason for rejection...');
   });
 
   it('shows delete confirm modal when delete button clicked', async () => {
@@ -256,7 +219,7 @@ describe('MarketplaceModerationPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /delete listing/i }));
     const confirmModal = await screen.findByRole('dialog');
-    fireEvent.click(within(confirmModal).getByRole('button', { name: /delete/i }));
+    fireEvent.click(within(confirmModal).getByRole('button', { name: 'Delete' }));
     await waitFor(() => {
       expect(mockApi.delete).toHaveBeenCalledWith('/v2/admin/marketplace/listings/11');
     });
@@ -271,7 +234,7 @@ describe('MarketplaceModerationPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /approve listing/i }));
     await waitFor(() => {
-      expect(mockToast.success).toHaveBeenCalled();
+      expect(mockToast.success).toHaveBeenCalledWith('Listing approved');
     });
   });
 
@@ -280,7 +243,7 @@ describe('MarketplaceModerationPage', () => {
     const { MarketplaceModerationPage } = await import('./MarketplaceModerationPage');
     render(<MarketplaceModerationPage />);
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
+      expect(mockToast.error).toHaveBeenCalledWith('Failed to load listings');
     });
   });
 
@@ -299,9 +262,15 @@ describe('MarketplaceModerationPage', () => {
     const { MarketplaceModerationPage } = await import('./MarketplaceModerationPage');
     render(<MarketplaceModerationPage />);
     await waitFor(() => {
-      const tabs = screen.getAllByRole('tab');
-      expect(tabs.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+        'All',
+        'Pending',
+        'Approved',
+        'Rejected',
+        'Flagged',
+      ]);
     });
+    expect(screen.getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('does not show approve/reject for approved listings', async () => {
@@ -309,8 +278,13 @@ describe('MarketplaceModerationPage', () => {
     const { MarketplaceModerationPage } = await import('./MarketplaceModerationPage');
     render(<MarketplaceModerationPage />);
     await waitFor(() => screen.getByText('Handmade Candle'));
-    // No approve button for already-approved items
-    expect(screen.queryByLabelText(/approve listing/i)).toBeNull();
+    // Positive precondition: the row's other actions still render, so an absent
+    // approve control cannot be an artefact of a row that never rendered.
+    expect(screen.getByRole('button', { name: /delete listing/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view listing/i })).toBeInTheDocument();
+    // No approve/reject controls for an already-approved item.
+    expect(screen.queryByRole('button', { name: /approve listing/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /reject listing/i })).toBeNull();
   });
 
   it('renders listing price with currency', async () => {

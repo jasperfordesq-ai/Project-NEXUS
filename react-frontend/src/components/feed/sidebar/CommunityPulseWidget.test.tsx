@@ -4,7 +4,6 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -38,16 +37,12 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub GlassCard ───────────────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// The widget imports GlassCard from its DIRECT module path
+// ('@/components/ui/GlassCard'), so an override on the '@/components/ui' barrel
+// never applies — the real GlassCard loads either way and renders
+//   <div class="card card--default glass-card p-4 …" data-slot="card">
+const CARD = '.glass-card';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeStats = (overrides = {}) => ({
@@ -152,7 +147,12 @@ describe('CommunityPulseWidget', () => {
 
   it('wraps content in the GlassCard', async () => {
     const { CommunityPulseWidget } = await import('./CommunityPulseWidget');
-    render(<CommunityPulseWidget stats={makeStats()} />);
-    expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+    const { container } = render(<CommunityPulseWidget stats={makeStats()} />);
+    const card = container.querySelector(CARD);
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('glass-card', 'p-4');
+    // Heading and all four stat tiles are nested INSIDE the card, not siblings of it.
+    expect(card).toContainElement(screen.getByText('Community Pulse'));
+    screen.getAllByRole('link').forEach((link) => expect(card).toContainElement(link));
   });
 });

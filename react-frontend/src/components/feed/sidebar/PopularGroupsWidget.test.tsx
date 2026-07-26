@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── API mock ─────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -38,16 +37,12 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub GlassCard ───────────────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="glass-card">{children}</div>
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// The widget imports GlassCard from its DIRECT module path
+// ('@/components/ui/GlassCard'), so an override on the '@/components/ui' barrel
+// never applies — the real GlassCard loads either way and renders
+//   <div class="card card--default glass-card p-4 …" data-slot="card">
+const CARD = '.glass-card';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 import type { PopularGroup } from './PopularGroupsWidget';
@@ -69,7 +64,10 @@ describe('PopularGroupsWidget', () => {
   it('renders nothing when groups array is empty', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     const { container } = render(<PopularGroupsWidget groups={[]} />);
-    expect(container.querySelector('[data-testid="glass-card"]')).toBeNull();
+    expect(container.querySelector(CARD)).toBeNull();
+    // …and none of the copy it would otherwise render.
+    expect(screen.queryByText('Popular Groups')).toBeNull();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when groups are provided', async () => {
@@ -119,14 +117,21 @@ describe('PopularGroupsWidget', () => {
   it('does not render an img element when image_url is absent', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
     render(<PopularGroupsWidget groups={[makeGroup({ image_url: undefined })]} />);
+    // Positive precondition: the group row rendered, so the absence below is not vacuous.
+    expect(screen.getByText('Gardening Club')).toBeInTheDocument();
     // No img element — fallback lucide icon renders instead
     expect(screen.queryByRole('img')).toBeNull();
   });
 
   it('renders inside a GlassCard container', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
-    render(<PopularGroupsWidget groups={[makeGroup()]} />);
-    expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+    const { container } = render(<PopularGroupsWidget groups={[makeGroup()]} />);
+    const card = container.querySelector(CARD);
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('glass-card', 'p-4');
+    // Heading and group row are nested INSIDE the card, not siblings of it.
+    expect(card).toContainElement(screen.getByText('Popular Groups'));
+    expect(card).toContainElement(screen.getByText('Gardening Club'));
   });
 
   it('renders multiple groups with correct links and names', async () => {
@@ -145,7 +150,9 @@ describe('PopularGroupsWidget', () => {
 
   it('does not render the "See All" link when groups is empty', async () => {
     const { PopularGroupsWidget } = await import('./PopularGroupsWidget');
-    render(<PopularGroupsWidget groups={[]} />);
+    const { container } = render(<PopularGroupsWidget groups={[]} />);
+    // Nothing rendered at all, so the absence below is not vacuous.
+    expect(container.querySelector(CARD)).toBeNull();
     expect(screen.queryByRole('link', { name: /see all/i })).toBeNull();
   });
 });

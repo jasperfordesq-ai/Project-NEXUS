@@ -4,7 +4,6 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 
@@ -46,113 +45,18 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// ── Mock PageMeta ─────────────────────────────────────────────────────────────
-vi.mock('@/components/seo/PageMeta', () => ({
-  PageMeta: () => null,
-}));
-
-// Stub GlassCard to simple div for easier DOM inspection
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<Record<string, unknown>>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children as React.ReactNode}</div>
-    ),
-    Spinner: () => <div role="status" aria-busy="true" aria-label="loading" />,
-    Button: ({ children, onPress, isDisabled, isLoading, color, variant, ...rest }: {
-      children?: React.ReactNode;
-      onPress?: () => void;
-      isDisabled?: boolean;
-      isLoading?: boolean;
-      color?: string;
-      variant?: string;
-      [key: string]: unknown;
-    }) => (
-      <button
-        onClick={onPress}
-        disabled={!!isDisabled || !!isLoading}
-        data-color={color}
-        data-variant={variant}
-        {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
-      >
-        {isLoading ? 'loading...' : (children as React.ReactNode)}
-      </button>
-    ),
-    Textarea: ({ label, value, onValueChange, isRequired, ...rest }: {
-      label?: React.ReactNode;
-      value?: string;
-      onValueChange?: (val: string) => void;
-      isRequired?: boolean;
-      [key: string]: unknown;
-    }) => (
-      <div>
-        <label>{label as React.ReactNode}</label>
-        <textarea
-          value={value ?? ''}
-          onChange={(e) => onValueChange?.(e.target.value)}
-          required={isRequired}
-          {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
-        />
-      </div>
-    ),
-    CheckboxGroup: ({ children, value, onValueChange, label }: {
-      children?: React.ReactNode;
-      value?: string[];
-      onValueChange?: (v: string[]) => void;
-      label?: React.ReactNode;
-    }) => (
-      <fieldset>
-        <legend>{label as React.ReactNode}</legend>
-        {children as React.ReactNode}
-      </fieldset>
-    ),
-    Checkbox: ({ children, value, onChange }: {
-      children?: React.ReactNode;
-      value?: string;
-      onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    }) => (
-      <label>
-        <input type="checkbox" value={value} onChange={onChange} />
-        {children as React.ReactNode}
-      </label>
-    ),
-    RadioGroup: ({ children, value, onValueChange, label, orientation }: {
-      children?: React.ReactNode;
-      value?: string;
-      onValueChange?: (v: string) => void;
-      label?: React.ReactNode;
-      orientation?: string;
-    }) => (
-      <fieldset data-orientation={orientation}>
-        <legend>{label as React.ReactNode}</legend>
-        {React.Children.map(children as React.ReactNode, (child) => {
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child as React.ReactElement<{
-              checked?: boolean;
-              onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-            }>, {
-              checked: (child.props as { value?: string }).value === value,
-              onChange: () => onValueChange?.((child.props as { value?: string }).value ?? ''),
-            });
-          }
-          return child;
-        })}
-      </fieldset>
-    ),
-    Radio: ({ children, value, checked, onChange }: {
-      children?: React.ReactNode;
-      value?: string;
-      checked?: boolean;
-      onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    }) => (
-      <label>
-        <input type="radio" value={value} checked={!!checked} onChange={onChange ?? (() => {})} />
-        {children as React.ReactNode}
-      </label>
-    ),
-  };
-});
+// No '@/components/seo/PageMeta' mock: MunicipalSurveyPage.tsx:24 imports PageMeta
+// from the '@/components/seo' BARREL, which src/test/setup.ts already stubs
+// globally — so a direct-path override here was dead weight.
+//
+// No '@/components/ui' barrel mock either. Every primitive this page uses is
+// imported by direct path (Button, Checkbox, GlassCard, Radio, Spinner, Textarea —
+// MunicipalSurveyPage.tsx:18-23), and Vitest keys mocks per specifier, so the old
+// keyed `importOriginal`-spread factory overrode nothing: the real components were
+// already rendering and its `data-testid="glass-card"` never existed in the DOM.
+// The real GlassCard puts the CLASS `glass-card` on its root (GlassCard.tsx:47),
+// which is what the retargeted assertions below look for when they need the card
+// element at all.
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const makeSurvey = (overrides = {}) => ({
@@ -220,10 +124,10 @@ describe('MunicipalSurveyPage', () => {
     const { default: MunicipalSurveyPage } = await import('./MunicipalSurveyPage');
     render(<MunicipalSurveyPage />);
 
-    await waitFor(() => {
-      // Empty card is a GlassCard with the empty message
-      expect(screen.getByTestId('glass-card')).toBeInTheDocument();
-    });
+    // The empty card is a real GlassCard (class `glass-card`) carrying the
+    // municipality_survey.json `empty` copy — assert the copy, not just a card.
+    const empty = await screen.findByText('No surveys available at this time');
+    expect(empty.closest('.glass-card')).not.toBeNull();
   });
 
   it('renders survey cards when surveys are returned', async () => {
@@ -251,12 +155,9 @@ describe('MunicipalSurveyPage', () => {
     const { default: MunicipalSurveyPage } = await import('./MunicipalSurveyPage');
     render(<MunicipalSurveyPage />);
 
-    await waitFor(() => {
-      const btn = screen.getAllByRole('button').find(
-        (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-      );
-      expect(btn).toBeDefined();
-    });
+    // municipality_survey.json take_survey = "Take survey" — one per survey card.
+    const btn = await screen.findByRole('button', { name: 'Take survey' });
+    expect(btn).toBeEnabled();
   });
 
   it('shows error alert when API fails', async () => {
@@ -291,14 +192,13 @@ describe('MunicipalSurveyPage', () => {
 
     await waitFor(() => screen.getByText('Community Feedback Survey'));
 
-    const btn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-    );
-    if (btn) fireEvent.click(btn);
+    fireEvent.click(screen.getByRole('button', { name: 'Take survey' }));
 
     await waitFor(() => {
       expect(screen.getByText('How satisfied are you?')).toBeInTheDocument();
     });
+    // The list view is replaced by the form: its Submit/Back controls are present.
+    expect(screen.getByRole('button', { name: 'Submit responses' })).toBeInTheDocument();
   });
 
   it('renders single_choice question with radio options in form', async () => {
@@ -311,15 +211,20 @@ describe('MunicipalSurveyPage', () => {
 
     await waitFor(() => screen.getByText('Community Feedback Survey'));
 
-    const btn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-    );
-    if (btn) fireEvent.click(btn);
+    fireEvent.click(screen.getByRole('button', { name: 'Take survey' }));
 
     await waitFor(() => {
       expect(screen.getByText('Very satisfied')).toBeInTheDocument();
-      expect(screen.getByText('Satisfied')).toBeInTheDocument();
     });
+    expect(screen.getByText('Satisfied')).toBeInTheDocument();
+    // The real HeroUI RadioGroup exposes role="radiogroup" with one role="radio"
+    // per parsed option (['Very satisfied', 'Satisfied', 'Neutral']).
+    expect(screen.getByRole('radiogroup')).toBeInTheDocument();
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('value'))).toEqual([
+      'Very satisfied',
+      'Satisfied',
+      'Neutral',
+    ]);
   });
 
   it('renders open_text question with textarea', async () => {
@@ -332,15 +237,12 @@ describe('MunicipalSurveyPage', () => {
 
     await waitFor(() => screen.getByText('Community Feedback Survey'));
 
-    const btn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-    );
-    if (btn) fireEvent.click(btn);
+    fireEvent.click(screen.getByRole('button', { name: 'Take survey' }));
 
-    await waitFor(() => {
-      const textareas = screen.queryAllByRole('textbox');
-      expect(textareas.length).toBeGreaterThan(0);
-    });
+    // The open_text question renders a real Textarea labelled by its question text.
+    const textarea = await screen.findByRole('textbox', { name: 'Any other comments?' });
+    expect(textarea.tagName).toBe('TEXTAREA');
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
   });
 
   it('calls POST api when submit is clicked (with optional-only questions)', async () => {
@@ -371,24 +273,20 @@ describe('MunicipalSurveyPage', () => {
 
     await waitFor(() => screen.getByText('Community Feedback Survey'));
 
-    const takeBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-    );
-    if (takeBtn) fireEvent.click(takeBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Take survey' }));
 
     await waitFor(() => screen.getByText('Any other comments?'));
 
-    const submitBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('submit') || b.textContent === 'municipality_survey:submit'
-    );
-    if (submitBtn) fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Submit responses' }));
 
     await waitFor(() => {
       expect(mockApi.post).toHaveBeenCalledWith(
         '/v2/caring-community/surveys/1/respond',
-        expect.any(Object)
+        expect.objectContaining({ answers: expect.any(Object) })
       );
     });
+    // Validation passed, so no required-question error was raised.
+    expect(screen.queryByText('Please answer all required questions.')).not.toBeInTheDocument();
   });
 
   it('does not call POST when required question is unanswered', async () => {
@@ -401,20 +299,17 @@ describe('MunicipalSurveyPage', () => {
 
     await waitFor(() => screen.getByText('Community Feedback Survey'));
 
-    const takeBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-    );
-    if (takeBtn) fireEvent.click(takeBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Take survey' }));
 
     await waitFor(() => screen.getByText('How satisfied are you?'));
 
-    // Click submit without answering required question
-    const submitBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent === 'municipality_survey:submit' || b.textContent?.toLowerCase().includes('submit')
-    );
-    if (submitBtn) fireEvent.click(submitBtn);
+    // Click submit without answering the required single_choice question. Using
+    // getByRole (not a `.find()` + `if (btn)`) matters: if the control were missing,
+    // the old form silently clicked nothing and `not.toHaveBeenCalled()` passed.
+    fireEvent.click(screen.getByRole('button', { name: 'Submit responses' }));
 
-    // Validation fires synchronously — api.post should not be called
+    // Validation fires synchronously — the error surfaces and api.post is not called.
+    expect(screen.getByRole('alert')).toHaveTextContent('Please answer all required questions.');
     expect(mockApi.post).not.toHaveBeenCalled();
   });
 
@@ -439,25 +334,18 @@ describe('MunicipalSurveyPage', () => {
 
     await waitFor(() => screen.getByText('Community Feedback Survey'));
 
-    const takeBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent?.toLowerCase().includes('survey') || b.textContent === 'municipality_survey:take_survey'
-    );
-    if (takeBtn) fireEvent.click(takeBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Take survey' }));
 
     await waitFor(() => screen.getByText('Any feedback?'));
 
-    const submitBtn = screen.getAllByRole('button').find(
-      (b) => b.textContent === 'municipality_survey:submit' || b.textContent?.toLowerCase().includes('submit')
-    );
-    if (submitBtn) fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Submit responses' }));
 
-    await waitFor(() => {
-      // Expect already_responded text key or back button to appear
-      const backBtn = screen.queryAllByRole('button').find(
-        (b) => b.textContent?.toLowerCase().includes('back') || b.textContent === 'municipality_survey:back'
-      );
-      expect(backBtn).toBeDefined();
-    });
+    // The already-responded card replaces the form: assert its own copy
+    // (municipality_survey.json already_responded). A Back button alone proves
+    // nothing — the form view has one too.
+    expect(await screen.findByText('You have already participated in this survey.')).toBeInTheDocument();
+    expect(screen.queryByText('Any feedback?')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Back to Surveys' })).toBeInTheDocument();
   });
 
   it('renders closes_on date when ends_at is set', async () => {
@@ -467,11 +355,24 @@ describe('MunicipalSurveyPage', () => {
     const { default: MunicipalSurveyPage } = await import('./MunicipalSurveyPage');
     render(<MunicipalSurveyPage />);
 
-    await waitFor(() => {
-      // closes_on text (t('closes_on', { date })) — key rendered as-is
-      const cards = screen.getAllByTestId('glass-card');
-      expect(cards.length).toBeGreaterThan(0);
-    });
+    // municipality_survey.json closes_on = "Closes: {{date}}", with the date run
+    // through Intl.DateTimeFormat(…, { year, month: 'short', day }). The day can
+    // shift by one depending on the runner's timezone, so match the shape and year
+    // rather than pinning an exact day.
+    const closes = await screen.findByText(/^Closes: [A-Z][a-z]{2} \d{1,2}, 2025$/);
+    expect(closes.closest('.glass-card')).not.toBeNull();
+    // Sanity: the surrounding card is the survey card, not some other card.
+    expect(screen.getByText('Community Feedback Survey')).toBeInTheDocument();
+  });
+
+  it('omits the closes_on line when ends_at is null', async () => {
+    mockApi.get.mockResolvedValue(listResponse([makeSurvey({ ends_at: null })]));
+    const { default: MunicipalSurveyPage } = await import('./MunicipalSurveyPage');
+    render(<MunicipalSurveyPage />);
+
+    // Positive precondition first, so the absence assertion cannot pass vacuously.
+    expect(await screen.findByText('Community Feedback Survey')).toBeInTheDocument();
+    expect(screen.queryByText(/^Closes:/)).not.toBeInTheDocument();
   });
 
   it('handles wrapped data format (data.data)', async () => {

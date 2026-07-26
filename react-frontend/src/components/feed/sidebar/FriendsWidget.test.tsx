@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── API mock ─────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -38,19 +37,24 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub GlassCard + Avatar ─────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="glass-card">{children}</div>
-    ),
-    Avatar: ({ name, src }: { name: string; src?: string }) => (
-      <div data-testid="avatar" data-name={name} data-src={src}>{name}</div>
-    ),
-  };
-});
+// ─── GlassCard: NOT stubbed ───────────────────────────────────────────────────
+// FriendsWidget imports it from the DIRECT path '@/components/ui/GlassCard', so a
+// '@/components/ui' barrel override would be dead. The real one renders
+//   <div class="card card--default glass-card p-4 …" data-slot="card">
+const CARD = '.glass-card';
+
+// ─── Avatar: narrow DIRECT-PATH mock ─────────────────────────────────────────
+// Mocked on the path the widget actually imports, and only because the real
+// HeroUI v3 Avatar is Radix-backed: <Avatar.Image> is committed to the DOM only
+// once the image has loaded, and jsdom never loads images — so the real component
+// renders nothing but its initials fallback and the resolved `src` is
+// unobservable. "passes avatar src to the Avatar component" below asserts exactly
+// that wiring, so the prop has to stay inspectable.
+vi.mock('@/components/ui/Avatar', () => ({
+  Avatar: ({ name, src }: { name?: string; src?: string }) => (
+    <div data-testid="avatar" data-name={name} data-src={src} />
+  ),
+}));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 import type { Friend } from './FriendsWidget';
@@ -74,13 +78,19 @@ describe('FriendsWidget', () => {
   it('renders nothing when friends array is empty', async () => {
     const { FriendsWidget } = await import('./FriendsWidget');
     const { container } = render(<FriendsWidget friends={[]} />);
-    expect(container.querySelector('[data-testid="glass-card"]')).toBeNull();
+    expect(container.querySelector(CARD)).toBeNull();
+    // …and none of the copy it would otherwise render.
+    expect(screen.queryByText('Friends')).toBeNull();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget heading when friends are provided', async () => {
     const { FriendsWidget } = await import('./FriendsWidget');
-    render(<FriendsWidget friends={[makeFriend()]} />);
-    expect(screen.getByText('Friends')).toBeInTheDocument();
+    const { container } = render(<FriendsWidget friends={[makeFriend()]} />);
+    const heading = screen.getByRole('heading', { level: 3 });
+    expect(heading).toHaveTextContent('Friends');
+    // The heading lives inside the real GlassCard, not beside it.
+    expect(container.querySelector(CARD)).toContainElement(heading);
   });
 
   it('renders a "See All" link pointing to the tenant connections path', async () => {
@@ -93,8 +103,8 @@ describe('FriendsWidget', () => {
   it('renders the friend name', async () => {
     const { FriendsWidget } = await import('./FriendsWidget');
     render(<FriendsWidget friends={[makeFriend({ name: 'Dave Murphy' })]} />);
-    // Name appears in both the link text (from Avatar stub) and the p tag
-    expect(screen.getAllByText('Dave Murphy').length).toBeGreaterThan(0);
+    // Exactly one rendering of the name — getByText throws on 0 or 2+.
+    expect(screen.getByText('Dave Murphy')).toBeInTheDocument();
   });
 
   it('links each friend to their profile page', async () => {
@@ -115,9 +125,12 @@ describe('FriendsWidget', () => {
   it('does not render location paragraph when location is absent', async () => {
     const { FriendsWidget } = await import('./FriendsWidget');
     render(<FriendsWidget friends={[makeFriend({ location: undefined })]} />);
-    // No location text rendered — just assert friend name is there
-    expect(screen.getAllByText('Carol Brennan').length).toBeGreaterThan(0);
+    // Positive precondition: the row DID render, so the absence below is not vacuous.
+    const name = screen.getByText('Carol Brennan');
+    expect(name).toBeInTheDocument();
     expect(screen.queryByText('Cork, Ireland')).toBeNull();
+    // The name <p> is the only child of the text column — no sibling location <p>.
+    expect(name.parentElement!.children).toHaveLength(1);
   });
 
   it('renders an online indicator with aria-label for online friends', async () => {
@@ -137,6 +150,8 @@ describe('FriendsWidget', () => {
   it('does not render any status indicator for offline, non-recent friends', async () => {
     const { FriendsWidget } = await import('./FriendsWidget');
     render(<FriendsWidget friends={[makeFriend({ is_online: false, is_recent: false })]} />);
+    // Positive precondition: the friend row rendered, so the absences below cannot pass vacuously.
+    expect(screen.getByText('Carol Brennan')).toBeInTheDocument();
     expect(screen.queryByLabelText(/online now/i)).toBeNull();
     expect(screen.queryByLabelText(/active today/i)).toBeNull();
   });
@@ -148,11 +163,12 @@ describe('FriendsWidget', () => {
       makeFriend({ id: 3, name: 'Carol' }),
     ];
     const { FriendsWidget } = await import('./FriendsWidget');
-    render(<FriendsWidget friends={friends} />);
-    // Each name appears in Avatar stub + p tag, so check at least one occurrence
-    expect(screen.getAllByText('Alice').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Bob').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Carol').length).toBeGreaterThan(0);
+    const { container } = render(<FriendsWidget friends={friends} />);
+    // Exactly one row per friend, each naming its friend once.
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText('Bob')).toBeInTheDocument();
+    expect(screen.getByText('Carol')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-testid="avatar"]')).toHaveLength(3);
   });
 
   it('passes avatar src to the Avatar component', async () => {
@@ -160,5 +176,6 @@ describe('FriendsWidget', () => {
     render(<FriendsWidget friends={[makeFriend({ avatar_url: 'https://example.com/avatar.jpg' })]} />);
     const avatar = screen.getByTestId('avatar');
     expect(avatar).toHaveAttribute('data-src', 'https://example.com/avatar.jpg');
+    expect(avatar).toHaveAttribute('data-name', 'Carol Brennan');
   });
 });

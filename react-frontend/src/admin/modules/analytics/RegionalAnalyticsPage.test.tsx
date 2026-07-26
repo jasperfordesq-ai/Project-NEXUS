@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import userEvent from '@testing-library/user-event';
 
@@ -24,135 +24,15 @@ vi.mock('../../AdminMetaContext', () => ({
 }));
 
 // ─── Contexts / hooks ─────────────────────────────────────────────────────────
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
-    }),
-  })
-);
+vi.mock('@/contexts', () => createMockContexts());
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// ─── Stub @/components/ui — prevents HeroUI Tabs/Table/Select from running in jsdom ──
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...actual,
-    // Tabs: only fires onSelectionChange when a child tab button is explicitly clicked
-    Tabs: ({
-      children,
-      onSelectionChange,
-      'aria-label': ariaLabel,
-    }: {
-      children: React.ReactNode;
-      onSelectionChange?: (key: React.Key) => void;
-      'aria-label'?: string;
-    }) => (
-      <div role="tablist" aria-label={ariaLabel ?? 'tabs'}>
-        {React.Children.map(children, (child) => {
-          if (!React.isValidElement(child)) return null;
-          const c = child as React.ReactElement<{ tabKey?: string; title?: React.ReactNode; children?: React.ReactNode }>;
-          const key = (c as unknown as { key?: string }).key ?? '';
-          return (
-            <button
-              key={key}
-              role="tab"
-              onClick={() => onSelectionChange?.(key)}
-            >
-              {c.props.title}
-            </button>
-          );
-        })}
-        {React.Children.map(children, (child) => {
-          if (!React.isValidElement(child)) return null;
-          const c = child as React.ReactElement<{ children?: React.ReactNode }>;
-          return <div key={(c as unknown as { key?: string }).key ?? ''}>{c.props.children}</div>;
-        })}
-      </div>
-    ),
-    Tab: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-    // Table: plain HTML table to avoid React-Aria "Could not determine key" errors
-    Table: ({ children, 'aria-label': ariaLabel }: { children?: React.ReactNode; 'aria-label'?: string }) => (
-      <table aria-label={ariaLabel}>{children}</table>
-    ),
-    TableHeader: ({ children }: { children?: React.ReactNode }) => <thead><tr>{children}</tr></thead>,
-    TableColumn: ({ children }: { children?: React.ReactNode }) => <th>{children}</th>,
-    TableBody: ({ children, emptyContent }: { children?: React.ReactNode; emptyContent?: React.ReactNode }) => (
-      <tbody>{React.Children.count(children) === 0 && emptyContent ? (
-        <tr><td>{emptyContent}</td></tr>
-      ) : children}</tbody>
-    ),
-    TableRow: ({ children }: { children?: React.ReactNode }) => <tr>{children}</tr>,
-    TableCell: ({ children }: { children?: React.ReactNode }) => <td>{children}</td>,
-    // Select: plain button-based stub — avoids HeroUI infinite-loop in jsdom
-    Select: ({
-      children,
-      label,
-      onSelectionChange,
-      selectedKeys,
-    }: {
-      children?: React.ReactNode;
-      label?: string;
-      onSelectionChange?: (keys: Set<string>) => void;
-      selectedKeys?: string[];
-    }) => (
-      <div>
-        {label && <label>{label}</label>}
-        <button
-          role="combobox"
-          aria-haspopup="listbox"
-          aria-expanded={false}
-          aria-controls="mock-combobox-options"
-          data-testid="select-trigger"
-          onClick={() => {
-            // Emit the first selected key on click for testing
-            const key = selectedKeys?.[0];
-            if (key && onSelectionChange) onSelectionChange(new Set([key]));
-          }}
-        >
-          {selectedKeys?.[0] ?? ''}
-        </button>
-        <div id="mock-combobox-options" style={{ display: 'none' }}>{children}</div>
-      </div>
-    ),
-    SelectItem: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-    // Card, Chip, Spinner: plain HTML
-    Card: ({ children, className }: { children?: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
-    CardHeader: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
-    CardBody: ({ children, className }: { children?: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
-    Chip: ({ children }: { children?: React.ReactNode }) => <span>{children}</span>,
-    Spinner: ({ label, size }: { label?: string; size?: string }) => (
-      <div role="status" aria-busy="true" aria-label={label ?? 'Loading'} data-size={size} />
-    ),
-    Button: ({
-      children,
-      onPress,
-      isLoading,
-      startContent,
-    }: {
-      children?: React.ReactNode;
-      onPress?: () => void;
-      isLoading?: boolean;
-      startContent?: React.ReactNode;
-    }) => (
-      <button onClick={onPress} disabled={isLoading}>
-        {startContent}{children}
-      </button>
-    ),
-  };
-});
-
-// ─── Stub heavy child components ──────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title }: { title?: string }) => <h1>{title ?? 'Regional Analytics'}</h1>,
-  StatCard: ({ label, value }: { label: string; value: string | number }) => (
-    <div data-testid="stat-card">{label}: {value}</div>
-  ),
-}));
+// NOTE: deliberately no '@/components/ui' or '../../components' stubs. The real
+// HeroUI v3 widgets and the real StatCard / PageHeader render here, so these
+// tests assert the DOM users actually get — including the fact that the real
+// Tabs auto-selects its first tab on mount and therefore loads the heatmap
+// section without any click.
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeOverview = () => ({
@@ -178,6 +58,28 @@ const makeDemandData = () => [
   },
 ];
 
+const BASE = '/v2/admin/regional-analytics';
+
+/**
+ * The real StatCard exposes no test id — locate a hero tile by the label it
+ * actually renders, and assert there is exactly one match so a duplicated or
+ * missing tile can never be silently tolerated.
+ */
+function statCard(label: string): HTMLElement {
+  const matches = Array.from(document.querySelectorAll<HTMLElement>('[data-slot="card"]')).filter(
+    (card) => card.querySelector('p')?.textContent === label
+  );
+  expect(matches).toHaveLength(1);
+  return matches[0];
+}
+
+/** The single element that carries aria-busy for a named live region. */
+function busyRegions(name: string): HTMLElement[] {
+  return screen
+    .queryAllByRole('status', { name })
+    .filter((el) => el.getAttribute('aria-busy') === 'true');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('RegionalAnalyticsPage', () => {
   beforeEach(() => {
@@ -202,14 +104,13 @@ describe('RegionalAnalyticsPage', () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    // StatCards in loading state render with aria-busy
-    const statuses = screen.queryAllByRole('status');
-    // At minimum the spinner or something with aria-busy exists
-    const busyEl = statuses.find((el) => el.getAttribute('aria-busy') === 'true');
-    // The component may show stat cards in skeleton loading mode OR spinner — verify the page mounted
-    expect(document.body.textContent?.length).toBeGreaterThan(0);
-    // suppress strict assertion when loading state differs between renders
-    void busyEl;
+    // Every hero tile swaps its value for a busy skeleton while the overview loads.
+    expect(screen.getAllByRole('status', { name: 'Loading' })).toHaveLength(4);
+    for (const label of ['Active members', 'Volunteer hours', 'Help requests', 'Most needed category']) {
+      expect(statCard(label)).toBeInTheDocument();
+    }
+    // …and the auto-selected heatmap panel shows its own busy region.
+    expect(busyRegions('Loading analytics')).toHaveLength(1);
   });
 
   it('renders stat cards with overview data after load', async () => {
@@ -217,12 +118,12 @@ describe('RegionalAnalyticsPage', () => {
     render(<RegionalAnalyticsPage />);
 
     await waitFor(() => {
-      const cards = screen.getAllByTestId('stat-card');
-      expect(cards.length).toBeGreaterThanOrEqual(4);
+      expect(statCard('Active members')).toHaveTextContent('120');
     });
-
-    // At least one card reflects the active_members value
-    expect(screen.getAllByTestId('stat-card').some((c) => c.textContent?.includes('120'))).toBe(true);
+    expect(statCard('Volunteer hours')).toHaveTextContent('340');
+    expect(statCard('Help requests')).toHaveTextContent('15');
+    // Skeletons are gone once the overview resolved.
+    expect(screen.queryAllByRole('status', { name: 'Loading' })).toHaveLength(0);
   });
 
   it('renders most_needed_category in stat cards', async () => {
@@ -230,7 +131,7 @@ describe('RegionalAnalyticsPage', () => {
     render(<RegionalAnalyticsPage />);
 
     await waitFor(() => {
-      expect(screen.getAllByTestId('stat-card').some((c) => c.textContent?.includes('Gardening'))).toBe(true);
+      expect(statCard('Most needed category')).toHaveTextContent('Gardening');
     });
   });
 
@@ -238,59 +139,64 @@ describe('RegionalAnalyticsPage', () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    await waitFor(() => expect(statCard('Active members')).toHaveTextContent('120'));
 
-    // Tabs should be present after data loads
-    const tabs = screen.getAllByRole('tab');
-    expect(tabs.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+      'Member heatmap',
+      'Demographics',
+      'Demand and supply',
+      'Engagement',
+      'Volunteer',
+      'Help requests',
+    ]);
+    expect(screen.getByRole('tab', { name: 'Member heatmap' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders period selector control', async () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    await waitFor(() => expect(statCard('Active members')).toHaveTextContent('120'));
 
-    // Period selector is a button or combobox
-    const controls = document.querySelectorAll('[role="combobox"], [aria-haspopup]');
-    expect(controls.length).toBeGreaterThan(0);
+    const periodTrigger = screen.getByRole('button', { name: /Period/ });
+    expect(periodTrigger).toHaveAttribute('aria-haspopup', 'listbox');
+    expect(periodTrigger).toHaveTextContent('Last 30 days');
   });
 
   it('fetches heatmap data when heatmap tab is selected', async () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
-
-    const tabs = screen.getAllByRole('tab');
-    const heatmapTab = tabs.find((t) => t.textContent?.toLowerCase().includes('heat') || t.textContent?.toLowerCase().includes('map'));
-    if (heatmapTab) {
-      await userEvent.click(heatmapTab);
-      await waitFor(() => {
-        const callUrls = mockApi.get.mock.calls.map((c: string[]) => c[0]);
-        expect(callUrls.some((u: string) => u.includes('heatmap') || u.includes('overview'))).toBe(true);
-      });
-    }
+    // The heatmap tab is the default selection, so its section loads for the
+    // current period without the user touching anything.
+    await waitFor(() => {
+      expect(mockApi.get).toHaveBeenCalledWith(`${BASE}/heatmap?period=last_30d`);
+    });
+    expect(screen.getByRole('tab', { name: 'Member heatmap' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('shows demand-supply table rows after selecting demand tab', async () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    await waitFor(() => expect(statCard('Active members')).toHaveTextContent('120'));
 
-    const tabs = screen.getAllByRole('tab');
-    const demandTab = tabs.find((t) =>
-      t.textContent?.toLowerCase().includes('demand') || t.textContent?.toLowerCase().includes('supply')
-    );
-    if (demandTab) {
-      await userEvent.click(demandTab);
-      await waitFor(() => {
-        // "Gardening" should appear in the demand/supply table
-        const found = screen.queryByText('Gardening');
-        expect(found).toBeInTheDocument();
-      });
-    }
+    await userEvent.click(screen.getByRole('tab', { name: 'Demand and supply' }));
+
+    await waitFor(() => {
+      expect(mockApi.get).toHaveBeenCalledWith(`${BASE}/demand-supply?period=last_30d`);
+    });
+
+    const grid = await screen.findByRole('grid', { name: 'Demand vs supply by category' });
+    const rows = within(grid).getAllByRole('row');
+    expect(rows).toHaveLength(2); // header + the single demand row
+    const row = rows[1];
+    expect(within(row).getByRole('rowheader')).toHaveTextContent('Gardening');
+    const cells = within(row).getAllByRole('gridcell');
+    expect(cells[0]).toHaveTextContent('40');
+    expect(cells[1]).toHaveTextContent('20');
+    expect(cells[2]).toHaveTextContent('2.00');
+    expect(cells[3]).toHaveTextContent('↑');
   });
 
   it('calls POST invalidate-cache when refresh/invalidate button is clicked', async () => {
@@ -298,50 +204,37 @@ describe('RegionalAnalyticsPage', () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    await waitFor(() => expect(statCard('Active members')).toHaveTextContent('120'));
 
-    const btns = screen.getAllByRole('button');
-    const invalidateBtn = btns.find((b) =>
-      b.textContent?.toLowerCase().includes('refresh') ||
-      b.textContent?.toLowerCase().includes('invalidate') ||
-      b.textContent?.toLowerCase().includes('clear')
-    );
-    if (invalidateBtn) {
-      fireEvent.click(invalidateBtn);
-      await waitFor(() => {
-        const postCalls = mockApi.post.mock.calls.map((c: string[]) => c[0]);
-        expect(postCalls.some((u: string) => u.includes('invalidate'))).toBe(true);
-      });
-    }
-    // NOTE: If no invalidate/refresh button found, test passes vacuously (button may be hidden)
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh cache' }));
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith(`${BASE}/invalidate-cache`);
+    });
+    // The overview is re-requested after a successful cache purge.
+    await waitFor(() => {
+      expect(mockApi.get.mock.calls.filter(([url]: [string]) => url === `${BASE}/overview`)).toHaveLength(2);
+    });
   });
 
   it('calls GET export endpoint when Export button is clicked', async () => {
     // jsdom does not implement URL.createObjectURL — stub it
-    Object.defineProperty(URL, 'createObjectURL', { value: vi.fn(() => 'blob:fake'), writable: true });
+    const createObjectURL = vi.fn(() => 'blob:fake');
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectURL, writable: true });
     Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), writable: true });
-    mockApi.get.mockImplementation((url: string) => {
-      if (url.includes('/overview')) return Promise.resolve({ success: true, data: makeOverview() });
-      if (url.includes('export')) return Promise.resolve({ success: true, data: { data: { rows: [] } } });
-      return Promise.resolve({ success: true, data: {} });
-    });
 
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    await waitFor(() => expect(statCard('Active members')).toHaveTextContent('120'));
 
-    const btns = screen.getAllByRole('button');
-    const exportBtn = btns.find((b) =>
-      b.textContent?.toLowerCase().includes('export') || b.textContent?.toLowerCase().includes('download')
-    );
-    if (exportBtn) {
-      fireEvent.click(exportBtn);
-      await waitFor(() => {
-        const getCalls = mockApi.get.mock.calls.map((c: string[]) => c[0]);
-        expect(getCalls.some((u: string) => u.includes('export'))).toBe(true);
-      });
-    }
+    await userEvent.click(screen.getByRole('button', { name: 'Export report' }));
+
+    await waitFor(() => {
+      expect(mockApi.get).toHaveBeenCalledWith(`${BASE}/export?period=last_30d`);
+    });
+    // The report is turned into a downloadable blob rather than silently dropped.
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalledTimes(1));
   });
 
   it('shows error alert when overview API returns an error shape', async () => {
@@ -349,20 +242,24 @@ describe('RegionalAnalyticsPage', () => {
       if (url.includes('/overview')) {
         return Promise.resolve({ success: true, data: { error: 'data_unavailable' } });
       }
+      if (url.includes('/heatmap')) {
+        return Promise.resolve({ success: true, data: [] });
+      }
       return Promise.resolve({ success: true, data: {} });
     });
 
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => {
-      const alert = screen.queryByRole('alert');
-      expect(alert).toBeInTheDocument();
-    });
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Data is unavailable for this period.'
+    );
+    // The tiles fall back to the empty-value placeholder instead of a stale number.
+    expect(statCard('Active members')).toHaveTextContent('-');
   });
 
   it('shows tab loading spinner when a tab section is loading', async () => {
-    let resolveHeatmap: (v: unknown) => void;
+    let resolveHeatmap: (v: unknown) => void = () => {};
     const heatmapPending = new Promise((res) => { resolveHeatmap = res; });
 
     mockApi.get.mockImplementation((url: string) => {
@@ -374,44 +271,39 @@ describe('RegionalAnalyticsPage', () => {
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    // The overview settles but the heatmap request never does, so the selected
+    // panel keeps exactly one busy region and shows its spinner label.
+    await waitFor(() => expect(statCard('Active members')).toHaveTextContent('120'));
+    expect(busyRegions('Loading analytics')).toHaveLength(1);
+    expect(screen.getByText('Loading analytics')).toBeInTheDocument();
+    expect(screen.queryByRole('grid', { name: 'Geographic activity density' })).toBeNull();
 
-    const tabs = screen.getAllByRole('tab');
-    const heatmapTab = tabs.find((t) => t.textContent?.toLowerCase().match(/heat|map/));
-    if (heatmapTab) {
-      await userEvent.click(heatmapTab);
-
-      // Tab is loading — spinner with aria-busy should appear
-      const statusEls = screen.queryAllByRole('status');
-      const busyEl = statusEls.find((el) => el.getAttribute('aria-busy') === 'true');
-      expect(busyEl).toBeDefined();
-
-      // Cleanup: resolve the pending call
-      resolveHeatmap!({ success: true, data: makeHeatmapData() });
-    }
+    // Cleanup: resolve the pending call
+    resolveHeatmap({ success: true, data: makeHeatmapData() });
+    await waitFor(() =>
+      expect(screen.getByRole('grid', { name: 'Geographic activity density' })).toBeInTheDocument()
+    );
+    expect(busyRegions('Loading analytics')).toHaveLength(0);
   });
 
   it('renders heatmap table rows with lat/lng values', async () => {
-    mockApi.get.mockImplementation((url: string) => {
-      if (url.includes('/overview')) return Promise.resolve({ success: true, data: makeOverview() });
-      if (url.includes('heatmap')) return Promise.resolve({ success: true, data: makeHeatmapData() });
-      return Promise.resolve({ success: true, data: {} });
-    });
-
     const { default: RegionalAnalyticsPage } = await import('./RegionalAnalyticsPage');
     render(<RegionalAnalyticsPage />);
 
-    await waitFor(() => screen.getAllByTestId('stat-card'));
+    const grid = await screen.findByRole('grid', { name: 'Geographic activity density' });
+    const rows = within(grid).getAllByRole('row');
+    expect(rows).toHaveLength(3); // header + two heatmap cells
 
-    const tabs = screen.getAllByRole('tab');
-    const heatmapTab = tabs.find((t) => t.textContent?.toLowerCase().match(/heat|map/));
-    if (heatmapTab) {
-      await userEvent.click(heatmapTab);
-      await waitFor(() => {
-        const cells = screen.getAllByRole('cell');
-        const latCell = cells.find((c) => c.textContent?.includes('53.33'));
-        expect(latCell).toBeInTheDocument();
-      });
-    }
+    const firstCells = within(rows[1]).getAllByRole('gridcell');
+    expect(within(rows[1]).getByRole('rowheader')).toHaveTextContent('1');
+    expect(firstCells[0]).toHaveTextContent('53.33');
+    expect(firstCells[1]).toHaveTextContent('-6.25');
+    expect(firstCells[2]).toHaveTextContent('50');
+
+    const secondCells = within(rows[2]).getAllByRole('gridcell');
+    expect(within(rows[2]).getByRole('rowheader')).toHaveTextContent('2');
+    expect(secondCells[0]).toHaveTextContent('53.34');
+    expect(secondCells[1]).toHaveTextContent('-6.26');
+    expect(secondCells[2]).toHaveTextContent('30');
   });
 });

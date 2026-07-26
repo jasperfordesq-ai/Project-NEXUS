@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── Mock api (not used directly by this component but required by mocked contexts) ──
 const { mockApi } = vi.hoisted(() => ({
@@ -58,16 +57,12 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// Stub GlassCard so it just passes through children
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// The widget imports GlassCard from its DIRECT module path
+// ('@/components/ui/GlassCard'), so an override on the '@/components/ui' barrel
+// never applies — the real GlassCard loads either way and renders
+//   <div class="card card--default glass-card p-4 …" data-slot="card">
+const CARD = '.glass-card';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeCategories = () => [
@@ -86,13 +81,20 @@ describe('TopCategoriesWidget', () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
     const { container } = render(<TopCategoriesWidget categories={[]} />);
     // Component returns null for empty array
-    expect(container.querySelector('[data-testid="glass-card"]')).toBeNull();
+    expect(container.querySelector(CARD)).toBeNull();
+    expect(screen.queryByText('Top Categories')).toBeNull();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders the widget card when categories are provided', async () => {
     const { TopCategoriesWidget } = await import('./TopCategoriesWidget');
-    render(<TopCategoriesWidget categories={makeCategories()} />);
-    expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+    const { container } = render(<TopCategoriesWidget categories={makeCategories()} />);
+    const card = container.querySelector(CARD);
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('glass-card', 'p-4');
+    // Heading and every category chip are nested INSIDE the card, not siblings of it.
+    expect(card).toContainElement(screen.getByText('Top Categories'));
+    screen.getAllByRole('link').forEach((link) => expect(card).toContainElement(link));
   });
 
   it('renders each category name', async () => {
@@ -131,7 +133,7 @@ describe('TopCategoriesWidget', () => {
     render(<TopCategoriesWidget categories={makeCategories()} />);
     // i18n key feed:sidebar.categories.title — English value expected
     const heading = screen.getByRole('heading', { level: 3 });
-    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveTextContent('Top Categories');
   });
 
   it('renders all category links using tenantPath', async () => {

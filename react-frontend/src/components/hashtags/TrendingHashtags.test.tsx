@@ -4,9 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -36,21 +35,15 @@ vi.mock('@/contexts', () =>
   })
 );
 
-// ─── Stub GlassCard and Spinner so rendering stays simple ────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const real = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...real,
-    GlassCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>
-        {children}
-      </div>
-    ),
-    Spinner: ({ size }: { size?: string }) => (
-      <div data-testid="spinner" data-size={size} />
-    ),
-  };
-});
+// ─── NO barrel mock of '@/components/ui' ──────────────────────────────────────
+// TrendingHashtags imports GlassCard and Spinner from their DIRECT module paths
+// ('@/components/ui/GlassCard', '@/components/ui/Spinner'), so overrides on the
+// '@/components/ui' barrel never apply — the real components load either way. The
+// real GlassCard renders
+//   <div class="card card--default glass-card p-4 …" data-slot="card">
+// and the loading state's role="status"/aria-busy comes from the widget's own
+// wrapper div, not from Spinner.
+const CARD = '.glass-card';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeHashtag = (overrides = {}) => ({
@@ -86,12 +79,17 @@ describe('TrendingHashtags', () => {
   it('renders nothing when API returns empty list', async () => {
     mockApi.get.mockResolvedValue(makeResponse([]));
     const { TrendingHashtags } = await import('./TrendingHashtags');
-    render(<TrendingHashtags />);
+    const { container } = render(<TrendingHashtags />);
+
+    // Positive precondition: the loading state DOES render a card, so the null
+    // assertion below only holds once the empty response has actually landed.
+    expect(container.querySelector(CARD)).not.toBeNull();
 
     // When hashtags are empty the component returns null — no glass-card should exist
     await waitFor(() => {
-      expect(screen.queryByTestId('glass-card')).not.toBeInTheDocument();
+      expect(container.querySelector(CARD)).toBeNull();
     });
+    expect(mockApi.get).toHaveBeenCalledWith('/v2/feed/hashtags/trending?limit=10');
   });
 
   it('renders hashtag links after data loads', async () => {
@@ -141,11 +139,12 @@ describe('TrendingHashtags', () => {
     render(<TrendingHashtags />);
 
     await waitFor(() => {
-      // The post count appears inside the component; check for "7"
-      expect(screen.getByText(/#exchange/)).toBeInTheDocument();
-      // count text may vary by translation key — just confirm 7 appears somewhere
-      expect(screen.getByTestId('glass-card').textContent).toMatch(/7/);
+      expect(screen.getByText('#exchange')).toBeInTheDocument();
     });
+    // Real English pluralised copy from feed:trending.post_count_other, inside the
+    // hashtag's own row rather than merely somewhere on the card.
+    const row = screen.getByText('#exchange').closest('a')!;
+    expect(within(row).getByText('7 posts')).toBeInTheDocument();
   });
 
   it('renders multiple hashtags in order', async () => {
@@ -191,20 +190,29 @@ describe('TrendingHashtags', () => {
     render(<TrendingHashtags />);
 
     await waitFor(() => {
-      const content = screen.getByTestId('glass-card').textContent ?? '';
-      expect(content).toContain('1');
-      expect(content).toContain('2');
+      expect(screen.getByText('#second')).toBeInTheDocument();
     });
+    // The rank belongs to its own hashtag row: scope the lookup to each row so a
+    // stray digit elsewhere on the card cannot satisfy it.
+    const firstRow = screen.getByText('#first').closest('a')!;
+    const secondRow = screen.getByText('#second').closest('a')!;
+    expect(within(firstRow).getByText('1')).toBeInTheDocument();
+    expect(within(secondRow).getByText('2')).toBeInTheDocument();
   });
 
   it('silently handles API errors and renders nothing', async () => {
     mockApi.get.mockRejectedValue(new Error('network error'));
     const { TrendingHashtags } = await import('./TrendingHashtags');
-    render(<TrendingHashtags />);
+    const { container } = render(<TrendingHashtags />);
+
+    // Positive precondition: the loading card mounted, so the null assertion
+    // below proves the rejection actually unwound the widget.
+    expect(container.querySelector(CARD)).not.toBeNull();
 
     await waitFor(() => {
       // After error, hashtags stay empty → component returns null (no glass-card)
-      expect(screen.queryByTestId('glass-card')).not.toBeInTheDocument();
+      expect(container.querySelector(CARD)).toBeNull();
     });
+    expect(mockApi.get).toHaveBeenCalledTimes(1);
   });
 });

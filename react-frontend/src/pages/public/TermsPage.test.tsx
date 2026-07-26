@@ -5,6 +5,25 @@
 
 /**
  * Tests for TermsPage
+ *
+ * Mocking notes
+ * ─────────────
+ * TermsPage imports `useTenant` from the '@/contexts' barrel, but it also
+ * renders `PageMeta` from '@/components/seo/PageMeta' — and that module imports
+ * `useTenant` from '@/contexts/TenantContext', the DIRECT path. Vitest resolves
+ * mocks per specifier, so a mock of the '@/contexts' barrel never covered
+ * PageMeta: the real TenantContext loaded and threw "useTenant must be used
+ * within a TenantProvider" before anything rendered. (The '@/components/seo'
+ * barrel stub in src/test/setup.ts is bypassed for the same reason.)
+ *
+ * Mocking '@/contexts/TenantContext' on its DIRECT path covers both callers,
+ * because '@/contexts/index.ts' re-exports from './TenantContext'.
+ * '@/contexts/AuthContext' is mocked the same way since the real barrel
+ * re-exports from it and the real AuthContext imports named session events from
+ * '@/lib/api' that this file's api stub does not provide.
+ *
+ * Both context mocks are total (no importOriginal): the real modules import
+ * '@/i18n', which re-runs i18next `.init()` with the HTTP backend at module scope.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -13,35 +32,38 @@ import React from 'react';
 
 vi.mock('@/lib/api', () => ({
   api: { get: vi.fn().mockResolvedValue({ success: true, data: null }) },
-  tokenManager: { getTenantId: vi.fn() },
+  tokenManager: { getTenantId: vi.fn(), getToken: vi.fn() },
 }));
 
-vi.mock('@/contexts', () => ({
-  useTenant: vi.fn(() => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
-    branding: { name: 'Test Community' },
-    tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-  })),
+const mockTenant = {
+  tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+  branding: { name: 'Test Community', logo_url: null, tagline: 'A test community' },
+  tenantPath: (p: string) => `/test${p}`,
+  hasFeature: () => true,
+  hasModule: () => true,
+  isLoading: false,
+  error: null,
+};
 
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
+const mockAuth = { user: null, isAuthenticated: false };
+
+vi.mock('@/contexts/TenantContext', () => ({
+  TenantProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTenant: () => mockTenant,
+  useFeature: () => true,
+  useModule: () => true,
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => mockAuth,
+  useAuthOptional: () => mockAuth,
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/hooks/useLegalDocument', () => ({
   useLegalDocument: vi.fn(() => ({ document: null, loading: false })),
 }));
-vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 vi.mock('@/components/legal/CustomLegalDocument', () => ({
   default: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
   CustomLegalDocument: () => <div data-testid="custom-legal">Custom Legal Doc</div>,
@@ -68,7 +90,23 @@ describe('TermsPage', () => {
 
   it('renders without crashing', () => {
     render(<TermsPage />);
-    const matches = screen.getAllByText(/Terms of Service/i);
-    expect(matches.length).toBeGreaterThan(0);
+    // Real English copy from public/locales/en/legal.json (`terms.*`),
+    // preloaded into i18next by src/test/setup.ts.
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Terms of Service' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('The rules and guidelines for using our platform')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Last updated: February 2026')).toBeInTheDocument();
+    // Section headings prove the whole default document rendered, not just the hero.
+    // `welcome_title` is interpolated with the tenant branding name.
+    expect(screen.getByRole('heading', { level: 2, name: 'Welcome to Test Community' })).toBeInTheDocument();
+    // Numbered sections render a Chip with the section number inside the <h2>,
+    // so the accessible name is "<n> <title>".
+    expect(screen.getByRole('heading', { level: 2, name: /^1\s*Time Credit System$/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /^8\s*Changes to These Terms$/ })).toBeInTheDocument();
+    // …and the tenant custom-document branch was NOT taken.
+    expect(screen.queryByTestId('custom-legal')).not.toBeInTheDocument();
   });
 });

@@ -111,7 +111,10 @@ vi.mock("@/hooks", () => ({
   usePageTitle: vi.fn(),
 }));
 
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+// No '@/components/ui' barrel mock: CreateOpportunityPage imports every primitive
+// by direct path (Autocomplete, Button, DatePicker, GlassCard, Input, ListBox,
+// Switch, Textarea), so the barrel override never applied and the real components
+// were already rendering. The real Input/Textarea/Button render here.
 
 vi.mock("@/components/navigation", () => ({
   Breadcrumbs: ({ items }: { items: { label: string; href?: string }[] }) => (
@@ -129,7 +132,16 @@ vi.mock("@/components/feedback", () => ({
   ),
 }));
 
-vi.mock("@/components/location", () => ({
+// 🔴 DIRECT path, not the '@/components/location' barrel: the page imports
+// PlaceAutocompleteInput from '@/components/location/PlaceAutocompleteInput'
+// (CreateOpportunityPage.tsx:34), and Vitest keys mocks per specifier — so the old
+// barrel override was dead and the real component loaded, calling `useTenant` from
+// '@/contexts/TenantContext' (PlaceAutocompleteInput.tsx:39) and throwing
+// "useTenant must be used within a TenantProvider". A stub is still the right call
+// here (rather than mocking TenantContext and rendering the real component): the
+// real input drives Google Places / Nominatim network lookups this test has no
+// business owning.
+vi.mock("@/components/location/PlaceAutocompleteInput", () => ({
   PlaceAutocompleteInput: ({
     label,
     value,
@@ -179,7 +191,18 @@ describe("CreateOpportunityPage", () => {
     await waitFor(() => {
       expect(screen.queryByTestId("loading-screen")).not.toBeInTheDocument();
     });
-    expect(screen.getByRole("button", { name: /Register.*Organisation/i })).toBeInTheDocument();
+    expect(screen.getByText("No Approved Organisation")).toBeInTheDocument();
+    expect(
+      screen.getByText("You need an approved organisation to post volunteer opportunities."),
+    ).toBeInTheDocument();
+    // The real `Button as={Link}` renders a router <a>, so the CTA is role="link"
+    // (only the dead uiMock stub produced a <button> carrying an href). Assert the
+    // destination too, not merely that the control exists.
+    expect(screen.getByRole("link", { name: /Register.*Organisation/i })).toHaveAttribute(
+      "href",
+      "/test/organisations/register",
+    );
+    expect(screen.getByRole("link", { name: "Cancel" })).toHaveAttribute("href", "/test/volunteering");
   });
 
   it("renders the form when user has an approved organisation", async () => {
@@ -212,8 +235,8 @@ describe("CreateOpportunityPage", () => {
     render(<CreateOpportunityPage />);
     await waitFor(() => expect(screen.getByDisplayValue("Helping Hands")).toBeInTheDocument());
 
-    // The generic Input/Textarea stub forwards `placeholder` (not the floating
-    // `label`), so target the fields by their placeholder text.
+    // Target the real Input/Textarea by placeholder — the labels are floating and
+    // several fields share label text shapes, so placeholder is the stable handle.
     fireEvent.change(screen.getByPlaceholderText("Opportunity title"), {
       target: { value: "Help at the food bank" },
     });
@@ -221,8 +244,8 @@ describe("CreateOpportunityPage", () => {
       target: { value: "Help sort donations and prepare food parcels for local families." },
     });
 
-    // The Button stub renders type="button" without wiring the form submit, so
-    // submit the <form> directly to exercise the real handleSubmit path.
+    // Submit the <form> directly (as Enter would) to exercise handleSubmit without
+    // depending on the submit button's own click path.
     const submitBtn = screen.getByRole("button", { name: /Publish Opportunity|Submit|Save/i });
     const form = submitBtn.closest("form") as HTMLFormElement;
     fireEvent.submit(form);

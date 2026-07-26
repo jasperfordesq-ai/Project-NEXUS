@@ -4,8 +4,9 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
@@ -29,76 +30,10 @@ vi.mock('@/lib/chartColors', () => ({
   CHART_TOKEN_COLORS: { border: '#eee', surface: '#fff', foreground: '#000' },
 }));
 
-// ─── Stub HeroUI components ──────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  return {
-    ...actual,
-    Button: ({ children, onPress, isLoading, isDisabled, startContent }: { children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean; startContent?: React.ReactNode; [key: string]: unknown }) => (
-      <button onClick={() => onPress?.()} disabled={isLoading || isDisabled} data-loading={isLoading ? 'true' : undefined}>
-        {children}
-      </button>
-    ),
-    Input: ({ label, value, onValueChange, type, 'aria-label': ariaLabel }: { label?: string; value?: string; onValueChange?: (v: string) => void; type?: string; 'aria-label'?: string; [key: string]: unknown }) => (
-      <div>
-        {label && <label>{label}</label>}
-        <input type={type || 'text'} value={value ?? ''} aria-label={ariaLabel || label} onChange={e => onValueChange?.(e.target.value)} />
-      </div>
-    ),
-    Select: ({ label, children, onSelectionChange, selectedKeys }: { label?: string; children: React.ReactNode; selectedKeys?: string[]; onSelectionChange?: (keys: Set<string>) => void; [key: string]: unknown }) => (
-      <div>
-        {label && <label>{label}</label>}
-        <select aria-label={label} value={selectedKeys?.[0] ?? ''} onChange={e => onSelectionChange?.(new Set([e.target.value]))}>
-          {children}
-        </select>
-      </div>
-    ),
-    SelectItem: ({ children, id }: { children: React.ReactNode; id?: string }) => <option value={id}>{children}</option>,
-    Spinner: () => <div role="status" aria-busy="true" aria-label="Loading" />,
-    Tabs: ({ children, onSelectionChange, selectedKey }: { children: React.ReactNode; onSelectionChange?: (key: string | number) => void; selectedKey?: string; [key: string]: unknown }) => (
-      <div role="tablist">
-        {React.Children.map(children as React.ReactElement[], (child) => {
-          if (!child || !React.isValidElement(child)) return null;
-          // child.key is React's internal key (e.g. ".$category"), strip the leading ".$"
-          const rawKey = child.key ?? '';
-          const tabKey = typeof rawKey === 'string' ? rawKey.replace(/^\.\$/, '') : String(rawKey);
-          const title = (child.props as { title?: React.ReactNode }).title;
-          return (
-            <button
-              key={tabKey}
-              role="tab"
-              data-key={tabKey}
-              aria-selected={selectedKey === tabKey}
-              onClick={() => onSelectionChange?.(tabKey)}
-            >
-              {title}
-            </button>
-          );
-        })}
-      </div>
-    ),
-    Tab: () => null,
-    Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    CardBody: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    CardHeader: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
-    Chip: ({ children, color }: { children: React.ReactNode; color?: string }) => <span data-color={color}>{children}</span>,
-    Avatar: ({ name }: { name?: string; src?: string }) => <div aria-label={name}>{name?.[0]}</div>,
-    Table: ({ children, 'aria-label': ariaLabel }: { children: React.ReactNode; 'aria-label'?: string }) => <table role="grid" aria-label={ariaLabel}>{children}</table>,
-    TableHeader: ({ children }: { children: React.ReactNode }) => <thead><tr>{children}</tr></thead>,
-    TableColumn: ({ children }: { children: React.ReactNode }) => <th>{children}</th>,
-    TableBody: ({ children, emptyContent, isLoading, loadingContent }: { children?: React.ReactNode; emptyContent?: React.ReactNode; isLoading?: boolean; loadingContent?: React.ReactNode }) => (
-      <tbody>
-        {isLoading && <tr><td>{loadingContent}</td></tr>}
-        {!isLoading && React.Children.count(children) === 0 && <tr><td>{emptyContent}</td></tr>}
-        {!isLoading && children}
-      </tbody>
-    ),
-    TableRow: ({ children }: { children: React.ReactNode }) => <tr>{children}</tr>,
-    TableCell: ({ children, className }: { children: React.ReactNode; className?: string }) => <td className={className}>{children}</td>,
-  };
-});
-
 // ─── Stub recharts completely ─────────────────────────────────────────────────
+// recharts measures real SVG geometry, which jsdom cannot provide. Everything
+// else on this page — HeroUI Tabs/Table/Select/Input and the admin StatCard /
+// PageHeader — renders for real.
 vi.mock('recharts', () => ({
   BarChart: ({ children }: { children?: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
   Bar: () => null,
@@ -113,27 +48,6 @@ vi.mock('recharts', () => ({
   Legend: () => null,
   AreaChart: ({ children }: { children?: React.ReactNode }) => <div data-testid="area-chart">{children}</div>,
   Area: () => null,
-}));
-
-// ─── Stub admin components ───────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  StatCard: ({ label, value }: { label: string; value: string | number }) => (
-    <div data-testid="stat-card">
-      <span>{label}</span>
-      <span data-testid="stat-value">{value}</span>
-    </div>
-  ),
-  PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-      {actions && <div data-testid="page-header-actions">{actions}</div>}
-    </div>
-  ),
-}));
-
-vi.mock('@/components/seo/PageMeta', () => ({
-  PageMeta: () => null,
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
@@ -189,6 +103,28 @@ const makePeriodData = () => ({
   ],
 });
 
+const SUMMARY_TILES = ['Total Hours', 'Total Transactions', 'Unique Givers', 'Avg Hours Transaction'];
+
+/**
+ * The real StatCard exposes no test id — locate a summary tile by the label it
+ * actually renders and assert exactly one match, so a missing or duplicated
+ * tile cannot slip through.
+ */
+function statCard(label: string): HTMLElement {
+  const matches = Array.from(document.querySelectorAll<HTMLElement>('[data-slot="card"]')).filter(
+    (card) => card.querySelector('p')?.textContent === label
+  );
+  expect(matches).toHaveLength(1);
+  return matches[0];
+}
+
+/** The chart Card that owns the given heading. */
+function chartCard(heading: string): HTMLElement {
+  const card = screen.getByRole('heading', { name: heading }).closest('[data-slot="card"]');
+  expect(card).not.toBeNull();
+  return card as HTMLElement;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('HoursReportsPage', () => {
@@ -204,27 +140,52 @@ describe('HoursReportsPage', () => {
     mockApi.get.mockImplementation(() => new Promise(() => {}));
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    const statusEls = screen.getAllByRole('status');
-    const busy = statusEls.find(el => el.getAttribute('aria-busy') === 'true');
-    expect(busy).toBeDefined();
+
+    // Each summary tile shows a busy skeleton in place of its value…
+    for (const label of SUMMARY_TILES) {
+      expect(within(statCard(label)).getByRole('status', { name: 'Loading' })).toHaveAttribute(
+        'aria-busy',
+        'true'
+      );
+    }
+    // …and both category charts show a busy placeholder instead of a chart.
+    for (const heading of ['Chart Hours by Category', 'Chart Category Distribution']) {
+      expect(within(chartCard(heading)).getByRole('status', { name: 'Loading' })).toHaveAttribute(
+        'aria-busy',
+        'true'
+      );
+    }
+    expect(screen.queryAllByTestId('responsive-container')).toHaveLength(0);
   });
 
   it('renders summary stat cards after load', async () => {
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    await waitFor(() => {
-      expect(screen.getAllByTestId('stat-card').length).toBeGreaterThanOrEqual(4);
-    });
+
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
+    expect(statCard('Total Transactions')).toHaveTextContent('44');
+    expect(statCard('Unique Givers')).toHaveTextContent('15');
+    expect(statCard('Avg Hours Transaction')).toHaveTextContent('2.7');
+    // No tile is still skeletonised once the summary resolved.
+    expect(screen.queryAllByRole('status', { name: 'Loading' })).toHaveLength(0);
   });
 
   it('renders category charts when category data is returned', async () => {
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
+
     await waitFor(() => {
-      // Either the chart container or empty-text; with data we expect chart containers
-      const containers = screen.queryAllByTestId('responsive-container');
-      expect(containers.length).toBeGreaterThan(0);
+      expect(screen.queryAllByTestId('responsive-container')).toHaveLength(2);
     });
+    expect(within(chartCard('Chart Hours by Category')).getByTestId('bar-chart')).toBeInTheDocument();
+    expect(within(chartCard('Chart Category Distribution')).getByTestId('pie-chart')).toBeInTheDocument();
+    // Both charts carry their screen-reader description.
+    expect(
+      screen.getByRole('img', { name: 'Bar chart showing hours exchanged by category' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Pie chart showing distribution of time exchange hours' })
+    ).toBeInTheDocument();
   });
 
   it('shows empty text when no category data', async () => {
@@ -234,18 +195,18 @@ describe('HoursReportsPage', () => {
 
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    // Wait for loading to finish (spinner gone) and then check empty state
+
+    // Both chart cards replace the chart with the real empty-state copy.
     await waitFor(() => {
-      // After data loads, spinning should stop
-      const busy = screen.queryAllByRole('status').find(el => el.getAttribute('aria-busy') === 'true');
-      expect(busy).toBeUndefined();
-    }, { timeout: 5000 });
-    // Now category charts should show empty text
-    const noData = screen.queryAllByText(/no_category_data|No data|No category/i);
-    // Either the translated text or the key — either way charts are gone
-    // The responsive container won't exist with empty data
-    const containers = screen.queryAllByTestId('responsive-container');
-    expect(containers.length).toBe(0);
+      expect(screen.getAllByText('No category data found')).toHaveLength(2);
+    });
+    expect(within(chartCard('Chart Hours by Category'))
+      .getByText('No category data found')).toBeInTheDocument();
+    expect(within(chartCard('Chart Category Distribution'))
+      .getByText('No category data found')).toBeInTheDocument();
+    // …and no chart is rendered at all.
+    expect(screen.queryAllByTestId('responsive-container')).toHaveLength(0);
+    expect(screen.queryByRole('img', { name: /chart showing/i })).toBeNull();
   });
 
   it('shows member table when member tab is selected', async () => {
@@ -255,18 +216,30 @@ describe('HoursReportsPage', () => {
 
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    await waitFor(() => screen.getAllByTestId('stat-card').length >= 1);
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
 
-    // Click the Member tab
-    const tabs = screen.getAllByRole('tab');
-    const memberTab = tabs.find(t => t.textContent?.toLowerCase().includes('member') || t.textContent?.includes('reports.tab_by_member'));
-    if (memberTab) fireEvent.click(memberTab);
+    await userEvent.click(screen.getByRole('tab', { name: 'By Member' }));
 
-    await waitFor(() => {
-      // Alice and Bob names should render
-      expect(screen.getByText('Alice')).toBeInTheDocument();
-      expect(screen.getByText('Bob')).toBeInTheDocument();
+    const grid = await screen.findByRole('grid', { name: 'Hours by Member' });
+    const rows = await waitFor(() => {
+      const found = within(grid).getAllByRole('row');
+      expect(found).toHaveLength(3); // header + Alice + Bob
+      return found;
     });
+
+    expect(within(rows[1]).getByRole('rowheader')).toHaveTextContent('Alice');
+    const aliceCells = within(rows[1]).getAllByRole('gridcell');
+    expect(aliceCells[0]).toHaveTextContent('10.0');
+    expect(aliceCells[1]).toHaveTextContent('5.0');
+    expect(aliceCells[2]).toHaveTextContent('15.0');
+    expect(aliceCells[3]).toHaveTextContent('+5.0');
+
+    expect(within(rows[2]).getByRole('rowheader')).toHaveTextContent('Bob');
+    const bobCells = within(rows[2]).getAllByRole('gridcell');
+    expect(bobCells[0]).toHaveTextContent('2.0');
+    expect(bobCells[1]).toHaveTextContent('8.0');
+    expect(bobCells[2]).toHaveTextContent('10.0');
+    expect(bobCells[3]).toHaveTextContent('-6.0');
   });
 
   it('shows period trend chart when period tab is selected', async () => {
@@ -276,24 +249,28 @@ describe('HoursReportsPage', () => {
 
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    await waitFor(() => screen.getAllByTestId('stat-card').length >= 1);
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
 
-    const tabs = screen.getAllByRole('tab');
-    const periodTab = tabs.find(t => t.textContent?.toLowerCase().includes('trend') || t.textContent?.includes('reports.tab_monthly_trend'));
-    if (periodTab) fireEvent.click(periodTab);
+    await userEvent.click(screen.getByRole('tab', { name: 'Monthly Trend' }));
 
-    await waitFor(() => {
-      const charts = screen.queryAllByTestId('responsive-container');
-      expect(charts.length).toBeGreaterThan(0);
-    });
+    expect(
+      await screen.findByRole('img', { name: 'Area chart showing hours exchanged over time' })
+    ).toBeInTheDocument();
+    expect(within(chartCard('Chart Monthly Hours Trend')).getByTestId('area-chart')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('responsive-container')).toHaveLength(1);
+    expect(screen.queryByText('No period data found')).toBeNull();
   });
 
   it('shows error toast when summary fetch fails', async () => {
+    // mockReset clears the beforeEach mockResolvedValueOnce queue — without it the
+    // summary request still succeeds and this test only ever exercised the
+    // report-data failure path.
+    mockApi.get.mockReset();
     mockApi.get.mockRejectedValue(new Error('network'));
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
+      expect(mockToast.error).toHaveBeenCalledWith('Failed to load summary data');
     });
   });
 
@@ -303,38 +280,32 @@ describe('HoursReportsPage', () => {
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
+      expect(mockToast.error).toHaveBeenCalledWith('Failed to load report data');
     }, { timeout: 5000 });
   });
 
   it('renders date filter inputs', async () => {
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    await waitFor(() => screen.getAllByTestId('stat-card').length >= 1);
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
 
-    // Date inputs rendered via our stubbed Input component
-    const inputs = document.querySelectorAll('input[type="date"]');
-    // The PageHeader actions area renders 2 date inputs via stubbed Input
-    expect(inputs.length).toBeGreaterThanOrEqual(2);
+    // The header actions expose two labelled date pickers.
+    for (const label of ['From Date', 'To Date']) {
+      const input = screen.getByLabelText(label);
+      expect(input).toHaveAttribute('type', 'date');
+      expect(input).toHaveValue('');
+    }
   });
 
   it('renders export CSV and refresh buttons', async () => {
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    await waitFor(() => screen.getAllByTestId('stat-card').length >= 1);
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
 
-    // PageHeader renders its actions slot; buttons exist in the DOM
-    const buttons = screen.getAllByRole('button');
-    // At least 2 buttons expected: Export CSV + Refresh
-    expect(buttons.length).toBeGreaterThanOrEqual(1);
-    const actionBtn = buttons.find(b =>
-      b.textContent?.toLowerCase().includes('export') ||
-      b.textContent?.toLowerCase().includes('refresh') ||
-      b.textContent?.includes('export_csv') ||
-      b.textContent?.includes('reports.export_csv') ||
-      b.textContent?.includes('reports.refresh')
-    );
-    expect(actionBtn).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeEnabled();
+    // Refresh is disabled while a report request is in flight, so it must be
+    // enabled again now that the initial load finished.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Refresh' })).toBeEnabled());
   });
 
   it('shows no_member_hours_data when member tab has no data', async () => {
@@ -344,15 +315,17 @@ describe('HoursReportsPage', () => {
 
     const { HoursReportsPage } = await import('./HoursReportsPage');
     render(<HoursReportsPage />);
-    await waitFor(() => screen.getAllByTestId('stat-card').length >= 1);
+    await waitFor(() => expect(statCard('Total Hours')).toHaveTextContent('120.5'));
 
-    const tabs = screen.getAllByRole('tab');
-    const memberTab = tabs.find(t => t.textContent?.toLowerCase().includes('member') || t.textContent?.includes('reports.tab_by_member'));
-    if (memberTab) fireEvent.click(memberTab);
+    await userEvent.click(screen.getByRole('tab', { name: 'By Member' }));
 
-    await waitFor(() => {
-      // Table is rendered with emptyContent
-      expect(screen.getByRole('grid')).toBeInTheDocument();
+    const grid = await screen.findByRole('grid', { name: 'Hours by Member' });
+    const rows = await waitFor(() => {
+      const found = within(grid).getAllByRole('row');
+      // Header row plus the single empty-state row — no member rows leak through.
+      expect(found).toHaveLength(2);
+      return found;
     });
+    expect(within(rows[1]).getByText('No member hours data found')).toBeInTheDocument();
   });
 });

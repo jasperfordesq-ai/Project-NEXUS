@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -58,73 +57,11 @@ vi.mock('@/contexts', () =>
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
-// ─── Stub HeroUI components (problematic in jsdom) ───────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    // HeroUI Button uses React Aria onPress — stub to a native button with onClick
-    Button: ({ children, onPress, onClick, 'aria-label': ariaLabel, startContent, endContent, isLoading, isDisabled, isIconOnly, size, variant, color, className, type: btnType }: {
-      children?: React.ReactNode;
-      onPress?: () => void;
-      onClick?: () => void;
-      'aria-label'?: string;
-      startContent?: React.ReactNode;
-      endContent?: React.ReactNode;
-      isLoading?: boolean;
-      isDisabled?: boolean;
-      isIconOnly?: boolean;
-      size?: string;
-      variant?: string;
-      color?: string;
-      className?: string;
-      type?: 'button' | 'submit' | 'reset';
-    }) => (
-      <button
-        aria-label={ariaLabel}
-        onClick={() => { onPress?.(); onClick?.(); }}
-        disabled={isDisabled}
-        type={btnType ?? 'button'}
-        className={className}
-      >
-        {startContent}{children}{endContent}
-      </button>
-    ),
-    Select: ({ label, children, onChange }: { label?: string; children?: React.ReactNode; onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void }) => (
-      <select aria-label={label ?? ''} onChange={onChange}>
-        {children}
-      </select>
-    ),
-    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
-      <option value={id ?? ''}>{children}</option>
-    ),
-    GlassCard: ({ children, className }: { children?: React.ReactNode; className?: string }) => (
-      <div data-testid="glass-card" className={className}>{children}</div>
-    ),
-    Chip: ({ children }: { children?: React.ReactNode }) => (
-      <span data-testid="chip">{children}</span>
-    ),
-    Input: ({ label, 'aria-label': ariaLabel, placeholder, value, onChange, onKeyDown, type, ...rest }: {
-      label?: string;
-      'aria-label'?: string;
-      placeholder?: string;
-      value?: string;
-      onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-      onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-      type?: string;
-      [k: string]: unknown;
-    }) => (
-      <input
-        type={type ?? 'text'}
-        aria-label={ariaLabel ?? label ?? placeholder ?? ''}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-      />
-    ),
-  };
-});
+// NOTE: no `vi.mock('@/components/ui', ...)` here on purpose. AdvancedSearchFilters
+// imports Button/Chip/GlassCard/Input/Select from their DIRECT paths, so a barrel
+// override would never be reached. The real HeroUI components render and the
+// assertions below target the real DOM and the real English copy that
+// src/test/setup.ts loads from public/locales/en/search_page.json.
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const defaultFilters = {
@@ -157,17 +94,13 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    // The button uses the i18n key 'advanced_filters' — look for any button
-    const btn = screen.getAllByRole('button').find((b) =>
-      b.getAttribute('aria-label')?.toLowerCase().includes('filter') ||
-      b.textContent?.toLowerCase().includes('filter')
-    );
-    expect(btn).toBeInTheDocument();
+    // aria-label={t('advanced_filters')} → the real English copy from search_page.json.
+    expect(screen.getByRole('button', { name: 'Advanced Filters' })).toBeInTheDocument();
   });
 
   it('does not show filter panel when collapsed', async () => {
     const { AdvancedSearchFilters } = await import('./AdvancedSearchFilters');
-    render(
+    const { container } = render(
       <AdvancedSearchFilters
         filters={defaultFilters}
         onChange={onChangeMock}
@@ -175,12 +108,20 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    expect(screen.queryByTestId('glass-card')).not.toBeInTheDocument();
+    // Positive precondition — without it the absences below could pass on an empty render.
+    expect(screen.getByRole('button', { name: 'Advanced Filters' })).toBeInTheDocument();
+
+    // The real GlassCard root carries the `glass-card` class (GlassCard.tsx).
+    expect(container.querySelector('.glass-card')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Apply Filters' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Add a skill tag...' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Content Type')).not.toBeInTheDocument();
   });
 
   it('expands filter panel when toggle button is clicked', async () => {
     const { AdvancedSearchFilters } = await import('./AdvancedSearchFilters');
-    render(
+    const { container } = render(
       <AdvancedSearchFilters
         filters={defaultFilters}
         onChange={onChangeMock}
@@ -188,11 +129,20 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    const toggleBtn = screen.getAllByRole('button')[0];
-    fireEvent.click(toggleBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
+
     await waitFor(() => {
-      expect(screen.getByTestId('glass-card')).toBeInTheDocument();
+      expect(container.querySelector('.glass-card')).not.toBeNull();
     });
+    // The panel's own controls, not just its container.
+    expect(screen.getByText('Content Type')).toBeInTheDocument();
+    expect(screen.getByText('Category')).toBeInTheDocument();
+    expect(screen.getByText('Sort By')).toBeInTheDocument();
+    expect(screen.getByText('Skill Tags')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Location' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Add a skill tag...' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Apply Filters' })).toBeInTheDocument();
   });
 
   it('fetches categories and tags when expanded', async () => {
@@ -215,14 +165,18 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    const toggleBtn = screen.getAllByRole('button')[0];
-    fireEvent.click(toggleBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
 
+    // Exact URLs, not substrings — these are the endpoints the panel contracts on.
     await waitFor(() => {
-      expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/v2/categories'));
+      expect(mockApi.get).toHaveBeenCalledWith('/v2/categories');
     });
     await waitFor(() => {
-      expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/v2/listings/tags'));
+      expect(mockApi.get).toHaveBeenCalledWith('/v2/listings/tags/popular?limit=10');
+    });
+    // ...and the tag response is actually consumed into the popular-tag row.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'coding' })).toBeInTheDocument();
     });
   });
 
@@ -246,12 +200,14 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    fireEvent.click(screen.getAllByRole('button')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
 
+    // "clickable buttons" — assert the role, not just the text node.
     await waitFor(() => {
-      expect(screen.getByText('gardening')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'gardening' })).toBeInTheDocument();
     });
-    expect(screen.getByText('cooking')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'cooking' })).toBeInTheDocument();
+    expect(screen.getByText('Popular:')).toBeInTheDocument();
   });
 
   it('clicking a popular tag calls onChange with that skill', async () => {
@@ -271,17 +227,39 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    fireEvent.click(screen.getAllByRole('button')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
 
-    await waitFor(() => screen.getByText('painting'));
-    fireEvent.click(screen.getByText('painting'));
+    const tagBtn = await waitFor(() => screen.getByRole('button', { name: 'painting' }));
+    fireEvent.click(tagBtn);
 
-    expect(onChangeMock).toHaveBeenCalledWith(
-      expect.objectContaining({ skills: 'painting' })
-    );
+    // Exact payload: the whole filters object with only `skills` changed.
+    expect(onChangeMock).toHaveBeenCalledWith({ ...defaultFilters, skills: 'painting' });
   });
 
   it('shows active skill chips when skills filter is set', async () => {
+    const { AdvancedSearchFilters } = await import('./AdvancedSearchFilters');
+    const { container } = render(
+      <AdvancedSearchFilters
+        filters={{ ...defaultFilters, skills: 'coding,design' }}
+        onChange={onChangeMock}
+        onApply={onApplyMock}
+        onReset={onResetMock}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
+
+    // Real Chip DOM: <span data-slot="chip"><span data-slot="chip-label">…
+    await waitFor(() => {
+      expect(container.querySelector('[data-slot="chip-label"]')).not.toBeNull();
+    });
+    const chipLabels = Array.from(container.querySelectorAll('[data-slot="chip-label"]')).map(
+      (node) => node.textContent
+    );
+    expect(chipLabels).toContain('coding');
+    expect(chipLabels).toContain('design');
+  });
+
+  it('removing a skill chip calls onChange without that skill', async () => {
     const { AdvancedSearchFilters } = await import('./AdvancedSearchFilters');
     render(
       <AdvancedSearchFilters
@@ -291,14 +269,18 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    fireEvent.click(screen.getAllByRole('button')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
 
-    await waitFor(() => {
-      const chips = screen.getAllByTestId('chip');
-      const texts = chips.map((c) => c.textContent);
-      expect(texts).toContain('coding');
-      expect(texts).toContain('design');
+    // Chip onClose renders a real HeroUI CloseButton labelled common:aria.remove.
+    const removeButtons = await waitFor(() => {
+      const found = screen.getAllByRole('button', { name: 'Remove' });
+      expect(found).toHaveLength(2);
+      return found;
     });
+    fireEvent.click(removeButtons[0]!);
+
+    // The first chip is 'coding' (skills split order), so only 'design' survives.
+    expect(onChangeMock).toHaveBeenCalledWith({ ...defaultFilters, skills: 'design' });
   });
 
   it('calls onApply when Apply Filters button is clicked', async () => {
@@ -311,19 +293,16 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    // Expand the panel first
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => screen.getByTestId('glass-card'));
-
-    // The Apply button is inside the panel — it has color="primary" and shows 'filter_apply' i18n key.
-    // After expanding there are multiple buttons. The Apply one is NOT the toggle (index 0).
-    // It's the LAST button in the panel (Reset is second-to-last, Apply is last).
-    const allButtons = screen.getAllByRole('button');
-    // Apply is the very last button inside the glass-card panel
-    const applyBtn = allButtons[allButtons.length - 1];
+    // Expand the panel first, then address Apply by its accessible name rather
+    // than by DOM position (the real Selects add trigger buttons of their own).
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
+    const applyBtn = await waitFor(() => screen.getByRole('button', { name: 'Apply Filters' }));
     fireEvent.click(applyBtn);
 
-    expect(onApplyMock).toHaveBeenCalled();
+    expect(onApplyMock).toHaveBeenCalledTimes(1);
+    // Apply submits what is already staged; it must not mutate the filters itself.
+    expect(onChangeMock).not.toHaveBeenCalled();
+    expect(onResetMock).not.toHaveBeenCalled();
   });
 
   it('calls onReset when Reset button is clicked', async () => {
@@ -336,17 +315,14 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => screen.getByTestId('glass-card'));
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
+    const resetBtn = await waitFor(() => screen.getByRole('button', { name: 'Reset' }));
+    fireEvent.click(resetBtn);
 
-    const resetBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase().includes('reset') ||
-      b.textContent?.toLowerCase().includes('clear')
-    );
-    expect(resetBtn).toBeInTheDocument();
-    if (resetBtn) fireEvent.click(resetBtn);
-
-    expect(onResetMock).toHaveBeenCalled();
+    expect(onResetMock).toHaveBeenCalledTimes(1);
+    // handleReset also pushes the defaults back up before notifying the parent,
+    // so type:'users' is cleared rather than silently kept.
+    expect(onChangeMock).toHaveBeenCalledWith(defaultFilters);
   });
 
   it('shows active filter count badge when filters are set', async () => {
@@ -359,9 +335,28 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    // 2 active filters (type + date_from) — chip shows "2"
-    const chip = screen.getByTestId('chip');
-    expect(chip).toHaveTextContent('2');
+    // 2 active filters (type + date_from). The badge is a real Chip in the
+    // toggle's endContent, so scope the lookup to the toggle button.
+    const toggle = screen.getByRole('button', { name: 'Advanced Filters' });
+    const badge = toggle.querySelector('[data-slot="chip-label"]');
+    expect(badge).not.toBeNull();
+    expect(badge).toHaveTextContent('2');
+  });
+
+  it('shows no count badge when no filters are active', async () => {
+    const { AdvancedSearchFilters } = await import('./AdvancedSearchFilters');
+    render(
+      <AdvancedSearchFilters
+        filters={defaultFilters}
+        onChange={onChangeMock}
+        onApply={onApplyMock}
+        onReset={onResetMock}
+      />
+    );
+    // Positive precondition, then the absence: endContent is null at count 0.
+    const toggle = screen.getByRole('button', { name: 'Advanced Filters' });
+    expect(toggle).toHaveTextContent('Advanced Filters');
+    expect(toggle.querySelector('[data-slot="chip"]')).toBeNull();
   });
 
   it('adding a skill via Enter key calls onChange', async () => {
@@ -374,17 +369,38 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => screen.getByTestId('glass-card'));
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
 
-    // Find the skills input by its placeholder/aria-label
-    const skillInput = screen.getByRole('textbox', { name: /skill/i });
+    // aria-label={t('filter_skills_placeholder')} on the real Input.
+    const skillInput = await waitFor(() =>
+      screen.getByRole('textbox', { name: 'Add a skill tag...' })
+    );
     fireEvent.change(skillInput, { target: { value: 'yoga' } });
     fireEvent.keyDown(skillInput, { key: 'Enter' });
 
-    expect(onChangeMock).toHaveBeenCalledWith(
-      expect.objectContaining({ skills: 'yoga' })
+    expect(onChangeMock).toHaveBeenCalledWith({ ...defaultFilters, skills: 'yoga' });
+  });
+
+  it('does not add a skill on a non-Enter keypress', async () => {
+    const { AdvancedSearchFilters } = await import('./AdvancedSearchFilters');
+    render(
+      <AdvancedSearchFilters
+        filters={defaultFilters}
+        onChange={onChangeMock}
+        onApply={onApplyMock}
+        onReset={onResetMock}
+      />
     );
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
+
+    const skillInput = await waitFor(() =>
+      screen.getByRole('textbox', { name: 'Add a skill tag...' })
+    );
+    fireEvent.change(skillInput, { target: { value: 'yoga' } });
+    fireEvent.keyDown(skillInput, { key: 'a' });
+
+    // Typing alone stages nothing upward — only Enter commits the tag.
+    expect(onChangeMock).not.toHaveBeenCalled();
   });
 
   it('location input calls onChange with updated location', async () => {
@@ -397,15 +413,12 @@ describe('AdvancedSearchFilters', () => {
         onReset={onResetMock}
       />
     );
-    fireEvent.click(screen.getAllByRole('button')[0]);
-    await waitFor(() => screen.getByTestId('glass-card'));
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Filters' }));
 
-    // Location input placeholder
-    const locInput = screen.getByRole('textbox', { name: /location/i });
-    fireEvent.change(locInput, { target: { value: 'Dublin' } });
+    // label={t('filter_location')} on the real Input → accessible name "Location".
+    const locInput = await waitFor(() => screen.getByRole('textbox', { name: 'Location' }));
+    fireEvent.change(locInput, { target: { value: 'Bristol' } });
 
-    expect(onChangeMock).toHaveBeenCalledWith(
-      expect.objectContaining({ location: 'Dublin' })
-    );
+    expect(onChangeMock).toHaveBeenCalledWith({ ...defaultFilters, location: 'Bristol' });
   });
 });

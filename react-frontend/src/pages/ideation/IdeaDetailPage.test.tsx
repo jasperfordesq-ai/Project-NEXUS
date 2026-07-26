@@ -8,10 +8,6 @@ import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
 import { api } from '@/lib/api';
 import type { ReactNode } from 'react';
 
-// Stable toast spy so a test can assert the error toast fires (the component stores
-// the toast object in a ref, so each handler call uses the same instance).
-const toastErrorSpy = vi.hoisted(() => vi.fn());
-
 vi.mock('@/lib/motion', () => ({
   motion: {
     div: ({ children, ...props }: { children?: ReactNode; [k: string]: unknown }) => {
@@ -57,33 +53,62 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
-vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({
+// 🔴 Mock the context modules by their DIRECT paths, NOT the '@/contexts' barrel.
+// IdeaDetailPage itself imports the barrel, but PageMeta
+// (src/components/seo/PageMeta.tsx:26) imports `useTenant` from
+// '@/contexts/TenantContext'. Vitest's mock registry is keyed per-specifier, so a
+// `vi.mock('@/contexts', ...)` override never reached that import: the real hook
+// loaded and threw "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722), killing every test in this file. (src/test/setup.ts:70
+// tries to neutralise PageMeta globally, but it mocks the '@/components/seo'
+// barrel, which this page also bypasses.)
+// Mocking the direct path fixes BOTH importers — the real '@/contexts' barrel just
+// re-exports the mocked module — so no barrel mock belongs here.
+// ToastContext is deliberately left REAL: src/test/test-utils.tsx already wraps
+// every render in a real <ToastProvider>, so the tests below assert the error toast
+// the user actually sees instead of a spy call.
+// The factories are TOTAL (no importOriginal spread) on purpose: TenantContext
+// imports '@/i18n', whose module scope calls i18next.init() with an HTTP backend
+// and would clobber the synchronous English resources src/test/setup.ts loads.
+// Every name '@/contexts' re-exports from these modules must be present, or the
+// barrel's re-export fails to link.
+const authState = vi.hoisted(() => ({
+  current: {
     user: { id: 10, first_name: 'Alice', name: 'Alice Member', role: 'member' },
     isAuthenticated: true,
-  })),
-  useTenant: vi.fn(() => ({
-    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
-    tenantPath: (p: string) => `/test${p}`,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
-  })),
-  useToast: vi.fn(() => ({
-    success: vi.fn(),
-    error: toastErrorSpy,
-    info: vi.fn(),
-    warning: vi.fn(),
-  })),
+  } as { user: { id: number; first_name: string; name: string; role: string }; isAuthenticated: boolean },
+}));
 
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
+vi.mock('@/contexts/TenantContext', () => ({
+  TenantProvider: ({ children }: { children: ReactNode }) => children,
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
+    tenantSlug: 'test',
+    branding: { name: 'Test Tenant' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: () => true,
+    hasModule: () => true,
+  }),
+  useFeature: () => true,
+  useModule: () => true,
+}));
+
+vi.mock('@/contexts/AuthContext', () => ({
+  AuthProvider: ({ children }: { children: ReactNode }) => children,
+  useAuth: () => authState.current,
+  useAuthOptional: () => authState.current,
+}));
+
+// IdeaDetailPage calls useConfirm() unconditionally at the top of the component
+// (IdeaDetailPage.tsx:104) and imports it from the DIRECT path
+// '@/components/ui/ConfirmDialog'. The real hook needs a <ConfirmDialogProvider>
+// (absent from test-utils) plus a lazy portal round-trip to resolve — infrastructure
+// this page test has no business owning — so only the hook is stubbed; every other
+// export of the module stays real.
+const mockConfirm = vi.hoisted(() => vi.fn(async () => true));
+vi.mock('@/components/ui/ConfirmDialog', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/components/ui/ConfirmDialog')>()),
+  useConfirm: () => mockConfirm,
 }));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
@@ -94,7 +119,10 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   formatRelativeTime: (d: string) => d,
 }));
 
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+// NOTE: there is deliberately no '@/components/ui' barrel mock here. IdeaDetailPage
+// imports every UI primitive by its direct path (IdeaDetailPage.tsx:1-12), so the
+// uiMock barrel override was dead code — the real components rendered anyway and the
+// assertions below target their real DOM.
 
 import { IdeaDetailPage } from './IdeaDetailPage';
 
@@ -141,6 +169,11 @@ function setupMocks() {
 describe('IdeaDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockConfirm.mockResolvedValue(true);
+    authState.current = {
+      user: { id: 10, first_name: 'Alice', name: 'Alice Member', role: 'member' },
+      isAuthenticated: true,
+    };
   });
 
   it('renders idea title and description on success', async () => {
@@ -190,13 +223,17 @@ describe('IdeaDetailPage', () => {
       expect(screen.getByText('Reusable Shopping Bags')).toBeInTheDocument();
     });
 
-    const voteBtn = document.querySelector('[aria-label="ideas.vote"]') as HTMLElement;
-    expect(voteBtn).toBeTruthy();
+    const voteBtn = screen.getByRole('button', { name: 'ideas.vote' });
     fireEvent.click(voteBtn);
 
+    // The real ToastProvider from test-utils renders the message, so assert the
+    // feedback the user actually gets — not merely that a spy was called.
     await waitFor(() => {
-      expect(toastErrorSpy).toHaveBeenCalled();
+      expect(screen.getByText('toast.error_generic')).toBeInTheDocument();
     });
+    // The failed vote must not have optimistically bumped the count.
+    expect(screen.getByText('14')).toBeInTheDocument();
+    expect(screen.queryByText('15')).not.toBeInTheDocument();
   });
 
   it('shows an error toast (no fake success) when posting a comment fails', async () => {
@@ -213,12 +250,16 @@ describe('IdeaDetailPage', () => {
       expect(screen.getByText('Reusable Shopping Bags')).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByPlaceholderText('comments.add_placeholder'), {
-      target: { value: 'My comment' },
-    });
+    const commentInput = screen.getByPlaceholderText('comments.add_placeholder');
+    fireEvent.change(commentInput, { target: { value: 'My comment' } });
     fireEvent.click(screen.getByRole('button', { name: /add_button/i }));
 
-    await waitFor(() => expect(toastErrorSpy).toHaveBeenCalled());
+    // The server's message is surfaced verbatim via the real ToastProvider...
+    await waitFor(() => expect(screen.getByText('nope')).toBeInTheDocument());
+    // ...no fake success toast...
+    expect(screen.queryByText('toast.comment_added')).not.toBeInTheDocument();
+    // ...and the user's text is preserved rather than discarded.
+    expect(commentInput).toHaveValue('My comment');
   });
 
   it('shows comment form for authenticated users', async () => {
@@ -236,17 +277,23 @@ describe('IdeaDetailPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Reusable Shopping Bags')).toBeInTheDocument();
     });
-    // Creator name appears in the "submitted by" translation key and the Avatar's name prop
+    // The "submitted by" byline is rendered (the mocked t() collapses it to its key)...
     expect(screen.getByText('idea_detail.submitted_by')).toBeInTheDocument();
-    expect(document.querySelector('[name="Alice Member"]')).toBeInTheDocument();
+    // ...and the creator's Avatar is fed the creator's name: with no avatar_url the
+    // real Avatar falls back to initials derived from `name` (Avatar.tsx:143 →
+    // initialsFromName), so "Alice Member" surfaces as "AM". The old
+    // `[name="Alice Member"]` selector only ever matched the dead uiMock stub, which
+    // spread the prop straight onto a DOM node.
+    expect(screen.getByText('AM')).toBeInTheDocument();
   });
 
   it('shows admin controls for admin users', async () => {
-    const { useAuth } = await import('@/contexts');
-    vi.mocked(useAuth).mockReturnValue({
+    // Persist the admin identity for the whole render: useAuth is re-read on every
+    // commit, so it must not revert to `member` when a fetch resolves.
+    authState.current = {
       user: { id: 1, first_name: 'Admin', name: 'Admin User', role: 'admin' },
       isAuthenticated: true,
-    } as ReturnType<typeof useAuth>);
+    };
 
     setupMocks();
     render(<IdeaDetailPage />);

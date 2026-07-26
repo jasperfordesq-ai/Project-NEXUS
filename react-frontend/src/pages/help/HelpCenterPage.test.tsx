@@ -20,6 +20,8 @@ vi.mock('@/lib/api', () => ({
   },
 }));
 
+// HelpCenterPage.tsx:32 imports `useTenant, useFeature, useModule` from the
+// '@/contexts' BARREL, so this barrel factory is live for the page itself.
 vi.mock('@/contexts', () => ({
   useTenant: vi.fn(() => ({
     branding: { name: 'Test Community', logo_url: null },
@@ -39,6 +41,28 @@ vi.mock('@/contexts', () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
 }));
 
+// 🔴 …but the barrel factory above does NOT reach <PageMeta>, which HelpCenterPage
+// imports by its direct path ('@/components/seo/PageMeta', HelpCenterPage.tsx:31) —
+// so setup.ts's global '@/components/seo' barrel mock misses it too. Real PageMeta
+// imports `useTenant` from '@/contexts/TenantContext', and Vitest keys mocks per
+// specifier, so the real hook loaded and threw "useTenant must be used within a
+// TenantProvider" (TenantContext.tsx:722) — killing all 9 tests before render.
+// TOTAL factory (no importOriginal spread) on purpose: TenantContext.tsx:30 imports
+// '@/i18n', whose module scope calls i18n.init() with an HTTP backend and would
+// clobber the synchronous English resources src/test/setup.ts loads.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: vi.fn(() => ({
+    tenant: { id: 2, name: 'Test Community', slug: 'test' },
+    tenantSlug: 'test',
+    branding: { name: 'Test Community', logo_url: null },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+  })),
+  useFeature: vi.fn(() => true),
+  useModule: vi.fn(() => true),
+}));
+
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 vi.mock('@/lib/motion', () => ({
@@ -53,7 +77,11 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+// No '@/components/ui' barrel mock: HelpCenterPage imports every primitive it uses
+// by direct path (Accordion, Button, GlassCard, SearchField, Spinner, SafeHtml), so
+// the barrel override never applied to the page — the real components were already
+// rendering and the stub testids/roles it produced were unreachable. The real
+// Accordion, SearchField and Chip render here.
 
 import { HelpCenterPage } from './HelpCenterPage';
 import { api } from '@/lib/api';
@@ -84,8 +112,10 @@ describe('HelpCenterPage', () => {
   it('shows a loading spinner while fetching FAQs', () => {
     mockApiGet.mockReturnValue(new Promise(() => {}));
     render(<HelpCenterPage />);
-    // Spinner is rendered during loading
-    expect(document.body).toBeInTheDocument();
+    // HelpCenterPage.tsx:169 — the loading GlassCard is role="status" labelled
+    // with utility.json help.loading, and holds the Spinner + the same copy.
+    const status = screen.getByRole('status', { name: 'Loading help articles...' });
+    expect(status).toHaveTextContent('Loading help articles...');
   });
 
   it('renders FAQ categories after successful API response', async () => {
@@ -112,10 +142,12 @@ describe('HelpCenterPage', () => {
     mockApiGet.mockResolvedValue({ success: true, data: mockFaqGroups });
     render(<HelpCenterPage />);
 
-    await waitFor(() => {
-      const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBeGreaterThan(0);
-    });
+    // The real SearchField renders an <input type="search"> → role="searchbox"
+    // (not "textbox", which only the dead uiMock stub produced), labelled with
+    // utility.json help.search_placeholder. There is exactly one on the page.
+    const searchbox = await screen.findByRole('searchbox', { name: 'Search for help...' });
+    expect(searchbox).toHaveAttribute('placeholder', 'Search for help...');
+    expect(screen.getAllByRole('searchbox')).toHaveLength(1);
   });
 
   it('filters FAQs based on search query', async () => {
@@ -126,25 +158,29 @@ describe('HelpCenterPage', () => {
       expect(screen.getByText('What is timebanking?')).toBeInTheDocument();
     });
 
-    const searchInput = screen.getAllByRole('textbox')[0];
-    fireEvent.change(searchInput, { target: { value: 'time credits' } });
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'time credits' } });
 
     await waitFor(() => {
       // 'Wallet' category FAQ with "How do I earn time credits?" should remain visible
       expect(screen.getByText('How do I earn time credits?')).toBeInTheDocument();
-      // 'Getting Started' FAQs should be filtered out (no match for "time credits")
-      expect(screen.queryByText('How do I sign up?')).not.toBeInTheDocument();
     });
+    // …and only that category survives the filter.
+    expect(screen.getByText('Wallet')).toBeInTheDocument();
+    expect(screen.queryByText('Getting Started')).not.toBeInTheDocument();
+    // 'Getting Started' FAQs should be filtered out (no match for "time credits")
+    expect(screen.queryByText('How do I sign up?')).not.toBeInTheDocument();
+    expect(screen.queryByText('What is timebanking?')).not.toBeInTheDocument();
   });
 
   it('shows error state when API fails', async () => {
     mockApiGet.mockResolvedValue({ success: false });
     render(<HelpCenterPage />);
 
-    await waitFor(() => {
-      // Error title is shown — exact i18n key resolves to something visible
-      expect(document.body).toBeInTheDocument();
-    });
+    // HelpCenterPage.tsx:177 — the error GlassCard is role="alert" and carries
+    // utility.json help.load_error_title / help.load_error_description.
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Could not load FAQs');
+    expect(alert).toHaveTextContent('Please try refreshing the page or contact support.');
   });
 
   it('shows empty state when search returns no results', async () => {
@@ -155,34 +191,55 @@ describe('HelpCenterPage', () => {
       expect(screen.getByText('What is timebanking?')).toBeInTheDocument();
     });
 
-    const searchInput = screen.getAllByRole('textbox')[0];
-    fireEvent.change(searchInput, { target: { value: 'xyzzy_nonexistent' } });
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'xyzzy_nonexistent' } });
 
-    await waitFor(() => {
-      // All FAQ categories filtered out — empty state should show
-      expect(screen.queryByText('What is timebanking?')).not.toBeInTheDocument();
-    });
+    // Positive precondition: the real empty-state copy (utility.json
+    // help.no_results_found) renders, so the absence assertions below cannot pass
+    // just because the FAQ tree failed to render at all.
+    expect(await screen.findByText('No results found')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'contact us' })).toHaveAttribute('href', '/test/contact');
+    // All FAQ categories filtered out — no question or category heading remains.
+    expect(screen.queryByText('What is timebanking?')).not.toBeInTheDocument();
+    expect(screen.queryByText('Getting Started')).not.toBeInTheDocument();
+    expect(screen.queryByText('Wallet')).not.toBeInTheDocument();
   });
 
   it('renders quick links to listings, wallet, events, and contact', async () => {
     mockApiGet.mockResolvedValue({ success: true, data: [] });
     render(<HelpCenterPage />);
 
-    await waitFor(() => {
-      const links = screen.getAllByRole('link');
-      expect(links.length).toBeGreaterThanOrEqual(4);
-    });
+    // One QuickLink per enabled module/feature (useModule/useFeature are mocked
+    // true) plus the always-present Contact Us tile — assert each by its real
+    // English label AND its tenant-scoped destination.
+    const expected: Array<[string, string]> = [
+      ['Browse Listings', '/test/listings'],
+      ['My Wallet', '/test/wallet'],
+      ['Events', '/test/events'],
+      ['Contact Us', '/test/contact'],
+    ];
+    for (const [label, href] of expected) {
+      const link = await screen.findByRole('link', { name: label });
+      expect(link).toHaveAttribute('href', href);
+    }
   });
 
   it('renders the "Still Need Help" section with a contact link', async () => {
     mockApiGet.mockResolvedValue({ success: true, data: [] });
     render(<HelpCenterPage />);
 
-    await waitFor(() => {
-      const contactLinks = screen.getAllByRole('link').filter(l =>
-        l.getAttribute('href')?.includes('/contact')
-      );
-      expect(contactLinks.length).toBeGreaterThan(0);
-    });
+    // utility.json help.still_need_help / help.still_need_help_description
+    expect(await screen.findByText('Still need help?')).toBeInTheDocument();
+    expect(
+      screen.getByText("Can't find what you're looking for? Our team is here to help.")
+    ).toBeInTheDocument();
+
+    const contactLinks = screen
+      .getAllByRole('link')
+      .filter((l) => l.getAttribute('href') === '/test/contact');
+    // The hero CTA, the Contact Us quick link and the Still-need-help CTA.
+    expect(contactLinks.length).toBeGreaterThanOrEqual(2);
+    expect(
+      contactLinks.some((l) => l.textContent?.includes('Contact Support'))
+    ).toBe(true);
   });
 });

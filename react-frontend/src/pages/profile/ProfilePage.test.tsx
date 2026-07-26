@@ -10,12 +10,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 
-const { mockApiGet, mockUseFeature, routeState } = vi.hoisted(() => ({
+const { mockApiGet, mockUseFeature, routeState, AUTH_STATE } = vi.hoisted(() => ({
   mockApiGet: vi.fn(),
   mockUseFeature: vi.fn(() => true),
   // Mutable route id so a test can simulate navigating from one profile to another
   // (the stale-data regression needs the :id param to change mid-component-life).
   routeState: { id: '42' },
+  // 🔴 Stable object identities, created ONCE — the real AuthProvider memoises its
+  // context value (AuthContext.tsx:835), so `useAuth().user` keeps the same identity
+  // across renders. A factory returning a fresh literal per call is unfaithful and
+  // breaks any consumer that compares `currentUser` by reference: rendering the
+  // profile mounts <VereinCrossInvitationButton>, which adjusts state during render
+  // when `prevEligibilityKey.currentUser !== currentUser`
+  // (VereinCrossInvitationButton.tsx:57-67) — with a new object every render that
+  // condition never settles and React aborts with "Too many re-renders".
+  AUTH_STATE: {
+    user: { id: 1, first_name: 'Test' },
+    isAuthenticated: true,
+  },
 }));
 
 function installDefaultApiMocks() {
@@ -91,10 +103,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({
-    user: { id: 1, first_name: 'Test' },
-    isAuthenticated: true,
-  })),
+  useAuth: vi.fn(() => AUTH_STATE),
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     tenantPath: (p: string) => `/test${p}`,
@@ -126,7 +135,26 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
   resolveAssetUrl: vi.fn((url) => url || ''),
   formatRelativeTime: vi.fn(() => '2 hours ago'),
 }));
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
+// No '@/components/ui' barrel mock: ProfilePage imports every primitive it renders
+// by direct path (Avatar, Button, Chip, Dropdown, GlassCard, Modal, Skeleton, Tabs,
+// Tooltip, SafeHtml — ProfilePage.tsx:6-14), and Vitest keys mocks per specifier, so
+// the barrel override never reached the page. The real components render here.
+// (The dead barrel stub was also the source of a "Too many re-renders" loop: its
+// generic proxy stub stood in for `useConfirm`, and calling a component stub as a
+// hook set state on every render.)
+
+// <StoryHighlights> — rendered inside the profile view — pulls `useConfirm` through
+// the '@/components/ui' barrel, which re-exports it from './ConfirmDialog'
+// (index.ts:228). The real hook needs a <ConfirmDialogProvider> plus a portal
+// round-trip, neither of which test-utils provides, so it threw "useConfirm must be
+// used within <ConfirmDialogProvider>" and killed the whole profile render. Stub just
+// the hook on its own module and leave every other export of that module real.
+const mockConfirm = vi.fn().mockResolvedValue(true);
+vi.mock('@/components/ui/ConfirmDialog', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/ui/ConfirmDialog')>();
+  return { ...actual, useConfirm: () => mockConfirm };
+});
+
 vi.mock('@/components/feedback', () => ({
   LoadingScreen: () => <div data-testid="loading-screen">Loading...</div>,
   EmptyState: ({ title, action }: { title: string; action?: unknown }) => (
@@ -136,7 +164,11 @@ vi.mock('@/components/feedback', () => ({
     </div>
   ),
 }));
-vi.mock('@/components/location', () => ({
+// DIRECT path: ProfilePage.tsx:46 imports LocationMapCard from
+// '@/components/location/LocationMapCard', so a '@/components/location' barrel
+// override was dead. Stubbed rather than rendered for real because the map card
+// pulls Google Maps / tenant map config this test has no business owning.
+vi.mock('@/components/location/LocationMapCard', () => ({
   LocationMapCard: () => <div data-testid="location-map">Map</div>,
 }));
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
@@ -173,7 +205,9 @@ describe('ProfilePage', () => {
 
   it('renders without crashing', () => {
     render(<ProfilePage />);
-    expect(document.body).toBeTruthy();
+    // Was `expect(document.body).toBeTruthy()`, which could not fail. isLoading
+    // starts true, so the (stubbed) LoadingScreen is what the first paint must show.
+    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
   });
 
   it('loads profile data from API', async () => {
@@ -211,9 +245,11 @@ describe('ProfilePage', () => {
       expect(screen.getByText('Back to Explore')).toBeInTheDocument();
     });
 
-    // `Button as={Link}` is stubbed by the shared uiMock as a button carrying
-    // the router destination in an href attribute.
-    expect(screen.getByRole('button', { name: /Back to Explore/i })).toHaveAttribute('href', '/test/explore');
+    // The real `Button as={Link}` renders a router <a>, so the fallback CTA is
+    // role="link" (only the dead uiMock stub produced a <button> with an href).
+    expect(screen.getByRole('link', { name: /Back to Explore/i })).toHaveAttribute('href', '/test/explore');
+    // …and the members fallback is NOT offered, since `connections` is disabled.
+    expect(screen.queryByText('Browse Members')).not.toBeInTheDocument();
   });
 
   it('clears the previously-loaded profile when a reload (id change) fails — no stale data', async () => {
