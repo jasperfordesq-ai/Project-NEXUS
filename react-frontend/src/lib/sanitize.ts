@@ -190,7 +190,27 @@ export function sanitizeCustomPageHtml(html: string | null | undefined): string 
   if (!html) return '';
   installHooksOnce();
   const scoped = scopePageBuilderHtml(html);
-  const fragment = DOMPurify.sanitize(scoped, {
+
+  // Separate the scoped CSS from the body BEFORE the body's sanitize pass, NOT after.
+  //
+  // DOMPurify removes <style> elements even when ALLOWED_TAGS explicitly lists them — verified in
+  // Chrome against dompurify 3.4.2, not merely in jsdom. This function used to hand the whole
+  // scoped document to DOMPurify and then look for <style> in the result, so the style element was
+  // always already gone: every custom builder page lost its entire stylesheet (the baseline rules,
+  // the page's own scoped rules, and the theme overrides) and rendered unstyled in production.
+  //
+  // CSS safety is not DOMPurify's job here and never was. scopePageBuilderCss is the policy: it
+  // prefixes every selector with the container class, drops global/app-shell selectors, and strips
+  // escape declarations even when they carry !important. Keeping the CSS out of the DOMPurify pass
+  // preserves that boundary while letting the body still be sanitized twice.
+  const parsed = new DOMParser().parseFromString(scoped, 'text/html');
+  const scopedCss = Array.from(parsed.querySelectorAll('style'))
+    .map((style) => style.textContent || '')
+    .filter(Boolean)
+    .join('\n');
+  parsed.querySelectorAll('style').forEach((node) => node.remove());
+
+  const fragment = DOMPurify.sanitize(parsed.body.innerHTML, {
     ALLOWED_TAGS: PAGE_BUILDER_ALLOWED_TAGS,
     ALLOWED_ATTR: PAGE_BUILDER_ALLOWED_ATTR,
     ALLOW_DATA_ATTR: false,
@@ -198,11 +218,6 @@ export function sanitizeCustomPageHtml(html: string | null | undefined): string 
     KEEP_CONTENT: true,
     RETURN_DOM_FRAGMENT: true,
   });
-  const scopedCss = Array.from(fragment.querySelectorAll('style'))
-    .map((style) => style.textContent || '')
-    .filter(Boolean)
-    .join('\n');
-  fragment.querySelectorAll('style').forEach((node) => node.remove());
   const container = document.createElement('div');
   container.append(fragment);
 
