@@ -540,7 +540,7 @@ jobs:
             src/components/social/__tests__/StatusSelector.test.tsx
             src/contexts/__tests__/TenantContext.test.tsx
             src/admin/__tests__/components.test.tsx
-            # src/pages/auth/LoginPage.test.tsx  # EXCLUDED: does NOT deadlock (the old note was wrong) — it FAILS, 16 tests, at render(<LoginPage />) LoginPage.test.tsx:442. Verified 2026-07-26 in this exact serial single-fork config: 14 files -> 1 failed | 13 passed. Re-add once those 16 are fixed.
+            src/pages/auth/LoginPage.test.tsx
             src/admin/modules/system/OnboardingSettings.test.tsx
           )
           # Run serially in a single fork — the parallel worker pool hangs/dies
@@ -566,7 +566,7 @@ jobs:
             src/components/social/__tests__/StatusSelector.test.tsx
             src/contexts/__tests__/TenantContext.test.tsx
             src/admin/__tests__/components.test.tsx
-            # src/pages/auth/LoginPage.test.tsx  # EXCLUDED: does NOT deadlock (the old note was wrong) — it FAILS, 16 tests, at render(<LoginPage />) LoginPage.test.tsx:442. Verified 2026-07-26 in this exact serial single-fork config: 14 files -> 1 failed | 13 passed. Re-add once those 16 are fixed.
+            src/pages/auth/LoginPage.test.tsx
             src/admin/modules/system/OnboardingSettings.test.tsx
           )
           set -o pipefail
