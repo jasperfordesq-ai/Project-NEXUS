@@ -21,11 +21,16 @@ import.meta.env.VITE_GOOGLE_MAPS_API_KEY = 'test-key';
 
 // ─── Common mocks ────────────────────────────────────────────────────────────
 
-vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({
-    user: { id: 1, first_name: 'Test', last_name: 'User', name: 'Test User', tenant_id: 2 },
-    isAuthenticated: true,
-  })),
+// 🔴 Mock TenantContext by its DIRECT path, not the '@/contexts' barrel.
+// Every component exercised here imports `useTenant` from
+// '@/contexts/TenantContext' (EntityMapView:18, LocationMap:45,
+// LocationMapCard:17, PlaceAutocompleteInput:20). Vitest's mock registry is
+// keyed per-specifier, so a `vi.mock('@/contexts', ...)` override would never
+// apply and the real hook would load and throw
+// "useTenant must be used within a TenantProvider" (TenantContext.tsx:722).
+// Nothing in this module graph imports the '@/contexts' barrel at all, so no
+// barrel mock belongs in this file.
+vi.mock('@/contexts/TenantContext', () => ({
   useTenant: vi.fn(() => ({
     tenant: { id: 2, name: 'Test Community', slug: 'test', configuration: {} },
     tenantSlug: 'test',
@@ -36,17 +41,6 @@ vi.mock('@/contexts', () => ({
     geocodingProvider: 'google',
     tenantPath: (p: string) => `/test${p}`,
   })),
-  useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), showToast: vi.fn() })),
-  useTheme: vi.fn(() => ({ resolvedTheme: 'light', theme: 'light', setTheme: vi.fn() })),
-
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
 }));
 
 vi.mock('@/contexts/ThemeContext', () => ({

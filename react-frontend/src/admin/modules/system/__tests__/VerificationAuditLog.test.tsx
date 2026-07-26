@@ -171,10 +171,27 @@ describe('VerificationAuditLog', () => {
     expect(screen.getAllByText('Passed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Admin Approved').length).toBeGreaterThanOrEqual(1);
 
-    // Check actor types
-    expect(screen.getByText('user')).toBeTruthy();
-    expect(screen.getByText('system')).toBeTruthy();
-    expect(screen.getByText('admin')).toBeTruthy();
+    // Check actor types. The Actor cell renders the translated
+    // `verification.actor_type_*` label, not the raw DB enum (since e47a8a097),
+    // so 'user' -> 'User', 'system' -> 'System', 'admin' -> 'Administrator'.
+    // Asserted per-row against the Actor column: 'User' is also a column header,
+    // and pinning label->row is stronger than a page-wide text search.
+    const columnLabels = screen
+      .getAllByRole('columnheader')
+      .map((header) => header.textContent?.trim() ?? '');
+    const actorColumn = columnLabels.indexOf('Actor');
+    expect(actorColumn).toBeGreaterThanOrEqual(0);
+
+    const actorCellText = (userName: string): string => {
+      const row = screen.getByText(userName).closest('tr');
+      expect(row).not.toBeNull();
+      const cell = row?.children[actorColumn] as HTMLElement | undefined;
+      return cell?.textContent?.trim() ?? '';
+    };
+
+    expect(actorCellText('Jane Doe')).toBe('User'); // actor_type: 'user'
+    expect(actorCellText('John Smith')).toBe('System'); // actor_type: 'system'
+    expect(actorCellText('User #12')).toBe('Administrator'); // actor_type: 'admin'
 
     // Check IP addresses
     expect(screen.getByText('192.168.1.1')).toBeTruthy();
@@ -183,13 +200,16 @@ describe('VerificationAuditLog', () => {
     // Check total events chip
     expect(screen.getByText('3 events')).toBeTruthy();
 
-    // Check table headers
-    expect(screen.getByText('Time')).toBeTruthy();
-    expect(screen.getByText('User')).toBeTruthy();
-    expect(screen.getByText('Event')).toBeTruthy();
-    expect(screen.getByText('Actor')).toBeTruthy();
-    expect(screen.getByText('IP')).toBeTruthy();
-    expect(screen.getByText('Details')).toBeTruthy();
+    // Check table headers. Matched by columnheader role rather than page-wide
+    // text: 'User' now legitimately appears twice (header + Actor cell), and
+    // this additionally pins each label to a real table column.
+    expect(columnLabels).toEqual(['Time', 'User', 'Event', 'Actor', 'IP', 'Details']);
+    expect(screen.getByRole('columnheader', { name: 'Time' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'User' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Event' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Actor' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'IP' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Details' })).toBeTruthy();
   });
 
   it('renders parsed JSON details', async () => {

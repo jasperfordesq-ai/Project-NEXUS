@@ -89,6 +89,18 @@ import { detectTenantFromUrl } from '@/lib/tenant-routing';
 
 const mockDetectTenantFromUrl = vi.mocked(detectTenantFromUrl);
 
+/**
+ * TenantContext exposes `error` as a STABLE MACHINE-READABLE CODE, not a display
+ * string. Since e47a8a097 ("fix(i18n): eliminate hardcoded admin translations")
+ * the raw server-supplied / thrown English text is deliberately discarded so no
+ * untranslated string can reach the UI: TenantShell only uses `error` as a
+ * control-flow signal and renders t('errors.connection_failed') itself. When the
+ * response carries a `code` it passes through verbatim; otherwise this is the
+ * fallback. Keep these assertions on codes — matching prose would re-introduce
+ * the untranslated-string regression the i18n gate exists to prevent.
+ */
+const BOOTSTRAP_FAILED_CODE = 'TENANT_BOOTSTRAP_FAILED';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Fixtures
 // ─────────────────────────────────────────────────────────────────────────────
@@ -403,7 +415,7 @@ describe('TenantContext', () => {
   // ─────────────────────────────────────────────────────────────────────────
 
   describe('error handling', () => {
-    it('sets error state when bootstrap API returns success false', async () => {
+    it('falls back to the generic bootstrap-failed code when success is false with no code', async () => {
       mockApiGet.mockResolvedValue({
         success: false,
         error: 'Tenant not found',
@@ -416,7 +428,9 @@ describe('TenantContext', () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(result.current.tenant).toBeNull();
-      expect(result.current.error).toBe('Tenant not found');
+      expect(result.current.error).toBe(BOOTSTRAP_FAILED_CODE);
+      // i18n contract: the raw server-supplied English text must never become UI state.
+      expect(result.current.error).not.toBe('Tenant not found');
     });
 
     it('sets notFoundSlug only for an explicit TENANT_NOT_FOUND response', async () => {
@@ -451,7 +465,10 @@ describe('TenantContext', () => {
         await waitFor(() => expect(result.current.isLoading).toBe(false));
 
         expect(result.current.notFoundSlug).toBeNull();
-        expect(result.current.error).toBe('Temporarily unavailable');
+        // The specific retryable code passes through verbatim — it must not be
+        // flattened into the generic fallback, nor replaced by the server's prose.
+        expect(result.current.error).toBe(code);
+        expect(result.current.error).not.toBe(BOOTSTRAP_FAILED_CODE);
       },
     );
 
@@ -477,7 +494,9 @@ describe('TenantContext', () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(result.current.tenant).toBeNull();
-      expect(result.current.error).toBe('Network failure');
+      expect(result.current.error).toBe(BOOTSTRAP_FAILED_CODE);
+      // i18n contract: a thrown Error's message must never become UI state.
+      expect(result.current.error).not.toBe('Network failure');
     });
   });
 
@@ -551,7 +570,7 @@ describe('TenantContext', () => {
       });
 
       expect(result.current.tenant?.slug).toBe('hour-timebank');
-      expect(result.current.error).toBe('Offline');
+      expect(result.current.error).toBe('NETWORK_ERROR');
       expect(result.current.notFoundSlug).toBeNull();
     });
   });
