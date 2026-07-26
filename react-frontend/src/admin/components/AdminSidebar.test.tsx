@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { render, screen, waitFor, within } from '@/test/test-utils';
 import { cleanup } from '@testing-library/react';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
@@ -67,38 +67,12 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-// ─── Stub heavy HeroUI components ───────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...actual,
-    ScrollShadow: ({ children, ...rest }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <nav {...(rest as object)}>{children}</nav>
-    ),
-    Accordion: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-    AccordionItem: ({ children, title }: { children: React.ReactNode; title: React.ReactNode }) => (
-      <div>
-        <div>{title}</div>
-        <div>{children}</div>
-      </div>
-    ),
-    Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    Input: ({ value, onValueChange, placeholder, ...rest }: {
-      value?: string;
-      onValueChange?: (v: string) => void;
-      placeholder?: string;
-      [key: string]: unknown;
-    }) => (
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onValueChange?.(e.target.value)}
-        placeholder={placeholder}
-        aria-label={(rest as Record<string, string>)['aria-label'] || placeholder}
-      />
-    ),
-  };
-});
+// NOTE: there is deliberately no vi.mock('@/components/ui') here. AdminSidebar
+// imports ScrollShadow / Accordion / AccordionItem / Button / Input / Tooltip by
+// direct path (@/components/ui/Accordion, …), so a keyed barrel mock never
+// applies — the real HeroUI components render. That means a collapsed
+// Accordion.Panel is present in the DOM but aria-hidden, so its links are
+// invisible to role queries until the section's trigger is pressed.
 
 // ─────────────────────────────────────────────────────────────────────────────
 describe('AdminSidebar', () => {
@@ -128,8 +102,10 @@ describe('AdminSidebar', () => {
   it('shows an Admin heading link when not collapsed', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
-    const adminLink = screen.getByRole('link', { name: /admin/i });
-    expect(adminLink).toBeInTheDocument();
+    // Exact name: /admin/i also matches "Super Admin Panel" on super-admin tenants,
+    // so it would not prove the sidebar's own Admin heading link rendered.
+    const adminLink = screen.getByRole('link', { name: 'Admin' });
+    expect(adminLink).toHaveAttribute('href', '/test/admin');
   });
 
   it('renders collapse/expand toggle button', async () => {
@@ -166,19 +142,30 @@ describe('AdminSidebar', () => {
   it('renders core navigation sections (users, dashboard)', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
-    // Should have links for admin dashboard — multiple may match due to aria-current, use getAllByRole
-    const dashLinks = screen.getAllByRole('link', { name: /dashboard/i });
-    expect(dashLinks.length).toBeGreaterThan(0);
+    // Dashboard is an href-only section, so it is a top-level link …
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/test/admin');
+    // … while Users is an accordion section, so it is a collapsed trigger button.
+    expect(screen.getByRole('button', { name: 'Users' })).toBeInTheDocument();
   });
 
   it('renders Users section when not collapsed', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
-    // Users section appears in sidebar
-    const usersLinks = screen.getAllByRole('link').filter((l) =>
-      l.getAttribute('href')?.includes('/users')
+
+    // The Users section is a real HeroUI Accordion: its trigger is a button and
+    // its links only enter the accessibility tree once the panel is expanded.
+    const usersTrigger = screen.getByRole('button', { name: 'Users' });
+    expect(usersTrigger).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(usersTrigger);
+    expect(usersTrigger).toHaveAttribute('aria-expanded', 'true');
+
+    // Assert the specific user-management destinations, not merely "some /users link"
+    expect(screen.getByRole('link', { name: 'All Users' })).toHaveAttribute('href', '/test/admin/users');
+    expect(screen.getByRole('link', { name: 'Pending Approvals' })).toHaveAttribute(
+      'href',
+      '/test/admin/users?filter=pending',
     );
-    expect(usersLinks.length).toBeGreaterThan(0);
   });
 
   it('hides newsletter navigation when the newsletter module is disabled', async () => {
@@ -186,24 +173,39 @@ describe('AdminSidebar', () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
 
-    const newsletterLinks = screen.getAllByRole('link').filter((link) =>
-      link.getAttribute('href')?.includes('/admin/newsletters'),
-    );
-    expect(newsletterLinks).toHaveLength(0);
+    const nav = screen.getByRole('navigation', { name: /admin navigation/i });
+    // hidden: true so links inside collapsed Accordion panels are included —
+    // without it every nested link is aria-hidden and "no newsletter links"
+    // would hold even when the newsletter nav is present.
+    const allLinks = within(nav).getAllByRole('link', { hidden: true });
+
+    expect(allLinks.filter((link) => link.getAttribute('href')?.includes('/admin/newsletters'))).toHaveLength(0);
+    // Marketing exists only to host the newsletter items, so the section goes too
+    expect(screen.queryByRole('button', { name: 'Marketing' })).not.toBeInTheDocument();
+    // Control: the same query does reach links inside collapsed panels
+    expect(allLinks.some((link) => link.getAttribute('href') === '/test/admin/settings')).toBe(true);
   });
 
   it('filters navigation results when search query is entered', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
     const searchInput = screen.getByRole('searchbox');
-    await userEvent.type(searchInput, 'user');
-    // After typing, filtered results or no-results message appears
+    await userEvent.type(searchInput, 'gdpr');
+
     await waitFor(() => {
-      const links = screen.queryAllByRole('link');
-      const noResults = screen.queryByText(/no results/i);
-      // Either filtered link results OR the "no results" fallback must be present
-      expect(links.length > 0 || noResults !== null).toBe(true);
+      // Matching item is promoted into the flat (non-accordion) result list, where
+      // each row is labelled "<item> <owning section>"
+      expect(screen.getByRole('link', { name: 'GDPR Dashboard Enterprise' })).toHaveAttribute(
+        'href',
+        '/test/admin/enterprise/gdpr',
+      );
     });
+    // Non-matching items are filtered out entirely, panels and all
+    expect(screen.queryAllByRole('link', { hidden: true }).filter((l) =>
+      l.getAttribute('href')?.includes('/admin/cron-jobs'),
+    )).toHaveLength(0);
+    // The zoned accordion tree is replaced by the result list while searching
+    expect(screen.queryByRole('button', { name: 'Platform Operations' })).not.toBeInTheDocument();
   });
 
   it('shows expand label button when collapsed', async () => {
@@ -218,43 +220,49 @@ describe('AdminSidebar', () => {
     // Federation moved out of the platform zone to /partner-timebanks (2026-07-02).
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
-    await waitFor(() => {
-      // Enterprise section is in the platform zone and always rendered (not gated)
-      const enterpriseLinks = screen.getAllByRole('link').filter((l) =>
-        l.getAttribute('href')?.includes('/enterprise')
-      );
-      expect(enterpriseLinks.length).toBeGreaterThan(0);
-    });
+
+    // The platform zone header and both of its sections are rendered ungated.
+    expect(screen.getByText('Platform')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Platform Operations' })).toBeInTheDocument();
+
+    // Enterprise is a real Accordion — expand it through its own trigger before
+    // its links exist in the accessibility tree.
+    const enterpriseTrigger = screen.getByRole('button', { name: 'Enterprise' });
+    await userEvent.click(enterpriseTrigger);
+    expect(enterpriseTrigger).toHaveAttribute('aria-expanded', 'true');
+
+    // Assert the specific enterprise destinations so a wrong-href regression fails
+    expect(screen.getByRole('link', { name: 'Enterprise Dashboard' })).toHaveAttribute(
+      'href',
+      '/test/admin/enterprise',
+    );
+    expect(screen.getByRole('link', { name: 'Roles & Permissions' })).toHaveAttribute(
+      'href',
+      '/test/admin/enterprise/roles',
+    );
+    expect(screen.getByRole('link', { name: 'GDPR Dashboard' })).toHaveAttribute(
+      'href',
+      '/test/admin/enterprise/gdpr',
+    );
   });
 
   it('hides super admin section for non-super-admin users', async () => {
-    vi.mock('@/contexts', () =>
-      createMockContexts({
-        useAuth: () => ({
-          user: { id: 5, name: 'Regular Admin', role: 'admin' },
-          isAuthenticated: true,
-          login: vi.fn(),
-          logout: vi.fn(),
-          register: vi.fn(),
-          updateUser: vi.fn(),
-          refreshUser: vi.fn(),
-          status: 'idle' as const,
-          error: null,
-        }),
-        useTenant: () => ({
-          tenant: { id: 2, name: 'Test', slug: 'test' },
-          tenantPath: (p: string) => `/test${p}`,
-          hasFeature: vi.fn(() => false),
-          hasModule: vi.fn(() => true),
-        }),
-      })
-    );
+    // The file-level @/contexts mock already supplies a plain `admin` user, which
+    // is exactly the subject of this test. A second vi.mock('@/contexts', …) used
+    // to be declared here: vi.mock is hoisted file-wide and the last registration
+    // wins, so it silently replaced the tenant/auth state for EVERY test in this
+    // file (forcing hasFeature() to false and stranding mockHasFeature). Removed.
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);
-    // Super-admin panel link should not appear for regular admins
-    const superLinks = screen.queryAllByRole('link').filter((l) =>
-      l.getAttribute('href')?.includes('/super-admin')
-    );
-    expect(superLinks.length).toBe(0);
+
+    // Control: the sidebar really did render its overview zone …
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/test/admin');
+    // … and no platform-super-admin surface is reachable, collapsed panels included.
+    const allLinks = screen.getAllByRole('link', { hidden: true });
+    expect(allLinks.filter((l) => l.getAttribute('href')?.includes('/super-admin'))).toHaveLength(0);
+    expect(screen.queryByRole('link', { name: 'Super Admin Panel', hidden: true })).not.toBeInTheDocument();
+    // Prerender Engine and Cron Settings are platform-super-admin only as well
+    expect(allLinks.filter((l) => l.getAttribute('href')?.includes('/admin/seo/prerender'))).toHaveLength(0);
+    expect(allLinks.filter((l) => l.getAttribute('href')?.includes('/admin/cron-jobs/settings'))).toHaveLength(0);
   });
 });

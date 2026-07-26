@@ -11,15 +11,6 @@
         "useTenant"
       ]
     },
-    "src/admin/components/AdminSidebar.test.tsx": {
-      "@/components/ui": [
-        "Accordion",
-        "AccordionItem",
-        "Input",
-        "ScrollShadow",
-        "Tooltip"
-      ]
-    },
     "src/admin/modules/__tests__/SystemModules.test.tsx": {
       "@/contexts": [
         "useTenant",
@@ -71,15 +62,6 @@
       "@/components/ui": [
         "Button",
         "Card"
-      ]
-    },
-    "src/components/LanguageSwitcher.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Dropdown",
-        "DropdownItem",
-        "DropdownMenu",
-        "DropdownTrigger"
       ]
     },
     "src/components/availability/AvailabilityGrid.test.tsx": {
@@ -592,12 +574,6 @@
         "usePusherOptional"
       ]
     },
-    "src/pages/profile/MyVereinInvitationsPage.test.tsx": {
-      "@/components/ui": [
-        "Tab",
-        "Tabs"
-      ]
-    },
     "src/pages/profile/ProfilePage.test.tsx": {
       "@/contexts": [
         "useTenant"
@@ -684,7 +660,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 80,
-    "rowCount": 409
+    "offenderFileCount": 77,
+    "rowCount": 397
   }
 }

@@ -129,9 +129,31 @@ describe('GoalCheckinModal', () => {
   });
 
   it('shows the progress slider on the new check-in tab', async () => {
+    // GoalCheckinModal imports Slider from '@/components/ui/Slider', so the
+    // '@/components/ui' barrel stub below never applied and its
+    // data-testid="slider" never existed. The REAL HeroUI v3 Slider (React
+    // Aria) renders role="group" (aria-label from the `aria-label` prop)
+    // wrapping a visually-hidden <input type="range"> — implicit role="slider",
+    // named via aria-labelledby -> the group, current value on aria-valuetext.
     const { GoalCheckinModal } = await import('./GoalCheckinModal');
     render(<GoalCheckinModal {...defaultProps} />);
-    expect(screen.getByTestId('slider')).toBeInTheDocument();
+
+    const slider = screen.getByRole('slider', { name: 'Progress percentage' });
+    expect(slider).toHaveAttribute('type', 'range');
+    expect(slider).toHaveAttribute('min', '0');
+    expect(slider).toHaveAttribute('max', '100');
+    expect(slider).toHaveAttribute('step', '5');
+    // Seeded from the goal's currentProgress (40) and mirrored in the readout.
+    expect(slider).toHaveAttribute('aria-valuetext', '40');
+    expect(screen.getByText('40%')).toBeInTheDocument();
+
+    // It belongs to the New Check-in tab: switching to History removes it.
+    const historyBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('history'));
+    if (!historyBtn) throw new Error('History tab button not rendered');
+    fireEvent.click(historyBtn);
+    await waitFor(() => {
+      expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+    });
   });
 
   it('shows Cancel and Submit buttons in the footer', async () => {
@@ -208,12 +230,17 @@ describe('GoalCheckinModal', () => {
     render(<GoalCheckinModal {...defaultProps} />);
 
     const historyBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('history'));
-    if (historyBtn) fireEvent.click(historyBtn);
+    if (!historyBtn) throw new Error('History tab button not rendered');
+    fireEvent.click(historyBtn);
 
     await waitFor(() => {
-      // should show no checkins state (loading resolved, empty list)
-      expect(screen.queryByRole('dialog')).toBeInTheDocument();
+      // Real empty-state copy from public/locales/en/goals.json (checkin.no_checkins),
+      // which i18next serves in tests. The old assertion only re-checked that the
+      // dialog was still mounted — it could not fail if the empty state regressed.
+      expect(screen.getByText('No check-ins yet. Record your first one!')).toBeInTheDocument();
     });
+    // ...and it is the empty state, not the load-failure state.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('shows an error + retry (not the empty state) when history load returns success:false', async () => {

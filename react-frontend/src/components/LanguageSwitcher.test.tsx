@@ -4,10 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
+import { render, screen, within } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
 
 // ─── Mock api + helpers ───────────────────────────────────────────────────────
 const { mockApi, mockTokenManager, mockSafeLocalStorageSet, mockLogError } = vi.hoisted(() => ({
@@ -40,7 +38,8 @@ vi.mock('@/lib/logger', () => ({ logError: mockLogError }));
 vi.mock('@/lib/safeStorage', () => ({ safeLocalStorageSet: mockSafeLocalStorageSet }));
 
 // ─── Mock useTenantLanguages from TenantContext ───────────────────────────────
-// LanguageSwitcher imports useTenantLanguages from '@/contexts/TenantContext' directly.
+// LanguageSwitcher imports useTenantLanguages from '@/contexts/TenantContext' directly,
+// so the override has to live on that direct path (a '@/contexts' barrel mock is dead).
 const mockSupportedLanguages = vi.fn(() => ['en', 'ga', 'fr']);
 
 vi.mock('@/contexts/TenantContext', async (importOriginal) => {
@@ -51,133 +50,66 @@ vi.mock('@/contexts/TenantContext', async (importOriginal) => {
   };
 });
 
-// ─── Contexts ────────────────────────────────────────────────────────────────
-const mockToast = {
-  success: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
-  warning: vi.fn(),
-  showToast: vi.fn(),
-};
-
+// ─── react-i18next: real English copy, observable changeLanguage ───────────────
+// src/test/setup.ts initialises the shared i18next singleton with the committed
+// public/locales/en/*.json, so `t` is delegated to the real translator and the
+// component renders production copy (e.g. common.json `aria.current_language`
+// => "Language: English"). Two members are overridden:
+//   - `changeLanguage` becomes a spy, so selection is observable without
+//     mutating the shared i18next singleton other suites also use.
+//   - `resolvedLanguage` is pinned to 'en'. That test instance leaves it
+//     undefined, which would make the component's Intl.DisplayNames labels
+//     resolve against the host machine's default locale ('Irish' on an English
+//     box, 'irlandais' on a French one). Pinning it matches what production
+//     reports for an English user and keeps the label assertions deterministic.
 const mockChangeLanguage = vi.fn();
 
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useAuth: () => ({
-      user: null,
-      isAuthenticated: false,
-      login: vi.fn(),
-      logout: vi.fn(),
-      register: vi.fn(),
-      updateUser: vi.fn(),
-      refreshUser: vi.fn(),
-      status: 'idle' as const,
-      error: null,
-    }),
-    useToast: () => mockToast,
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
-    }),
-  })
-);
-
-// ─── Mock react-i18next so we control i18n.language + changeLanguage ──────────
 vi.mock('react-i18next', async (importOriginal) => {
   const orig = await importOriginal<typeof import('react-i18next')>();
   return {
     ...orig,
-    useTranslation: (_ns?: string) => ({
-      t: (key: string, opts?: Record<string, unknown>) => {
-        // Minimal i18n stubs for keys used by LanguageSwitcher
-        if (key === 'aria.current_language') return `Current language: ${opts?.language ?? ''}`;
-        if (key === 'aria.select_language') return 'Select language';
-        return key;
-      },
-      i18n: {
-        language: 'en',
+    useTranslation: ((...args: Parameters<typeof orig.useTranslation>) => {
+      const real = orig.useTranslation(...args);
+      const overrides: Record<string | symbol, unknown> = {
         changeLanguage: mockChangeLanguage,
-      },
-    }),
-  };
-});
+        resolvedLanguage: 'en',
+      };
+      const i18n = new Proxy(real.i18n, {
+        get: (target, prop) =>
+          prop in overrides ? overrides[prop] : Reflect.get(target, prop, target),
+      });
 
-// ─── Stub @/components/ui ────────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Button: ({
-      children,
-      onPress,
-      'aria-label': ariaLabel,
-      startContent,
-    }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-      onPress?: () => void;
-      children?: React.ReactNode;
-      startContent?: React.ReactNode;
-      variant?: string;
-      size?: string;
-    }) => (
-      <button aria-label={ariaLabel} onClick={onPress}>
-        {startContent}
-        {children}
-      </button>
-    ),
-    Dropdown: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="dropdown">{children}</div>
-    ),
-    DropdownTrigger: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="dropdown-trigger">{children}</div>
-    ),
-    DropdownMenu: ({
-      children,
-      onAction,
-      'aria-label': ariaLabel,
-    }: {
-      children: React.ReactNode;
-      onAction?: (key: string) => void;
-      'aria-label'?: string;
-      selectedKeys?: Set<string>;
-      selectionMode?: string;
-      classNames?: Record<string, string>;
-    }) => (
-      <div
-        role="listbox"
-        aria-label={ariaLabel}
-        data-testid="dropdown-menu"
-        onClick={(e) => {
-          const key = (e.target as HTMLElement).getAttribute('data-key');
-          if (key && onAction) onAction(key);
-        }}
-      >
-        {children}
-      </div>
-    ),
-    DropdownItem: ({
-      children,
-      id,
-    }: {
-      children: React.ReactNode;
-      id?: string;
-      className?: string;
-    }) => (
-      <div
-        role="option"
-        data-testid={`lang-option-${id}`}
-        data-key={id}
-        aria-selected={false}
-      >
-        {children}
-      </div>
-    ),
+      return { ...real, i18n };
+    }) as typeof orig.useTranslation,
   };
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+
+type TestUser = ReturnType<typeof userEvent.setup>;
+
+/**
+ * The trigger's accessible name is real copy from common.json
+ * (`aria.current_language` => "Language: {{language}}").
+ */
+const getTrigger = () => screen.getByRole('button', { name: /^Language:/ });
+
+/**
+ * The real HeroUI v3 Dropdown is a compound component: it portals its popover
+ * and does not mount any menu item until the trigger is pressed. Items are
+ * `role="menuitemradio"` because the menu uses selectionMode="single".
+ */
+async function openLanguageMenu(user: TestUser) {
+  await user.click(getTrigger());
+
+  const menu = screen.getByRole('menu');
+  // HeroUI's Menu also sets aria-labelledby to the trigger, and per the accname
+  // spec that wins over aria-label, so the authored label (real copy from
+  // common.json `aria.select_language`) is asserted as an attribute.
+  expect(menu).toHaveAttribute('aria-label', 'Select language');
+
+  return menu;
+}
 
 describe('LanguageSwitcher', () => {
   beforeEach(() => {
@@ -191,40 +123,52 @@ describe('LanguageSwitcher', () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    // In compact mode (default), shows short code 'EN' — appears in trigger + option, use getAllByText
-    const enNodes = screen.getAllByText('EN');
-    // At least one 'EN' must exist
-    expect(enNodes.length).toBeGreaterThanOrEqual(1);
-    // The trigger button should carry the aria-label showing the current language
-    expect(screen.getByRole('button')).toHaveAttribute('aria-label', expect.stringContaining('English'));
+    // Compact mode (default) shows only the short code, and the menu is not
+    // mounted until pressed, so exactly one 'EN' exists — in the trigger.
+    expect(screen.getByText('EN')).toBeInTheDocument();
+    expect(getTrigger()).toHaveAccessibleName('Language: English');
   });
 
   it('renders language options for all tenant-supported languages', async () => {
+    const user = userEvent.setup();
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    // The 3 supported languages should appear as dropdown items
-    expect(screen.getByTestId('lang-option-en')).toBeInTheDocument();
-    expect(screen.getByTestId('lang-option-ga')).toBeInTheDocument();
-    expect(screen.getByTestId('lang-option-fr')).toBeInTheDocument();
+    const menu = await openLanguageMenu(user);
+
+    // The 3 supported languages, and only those 3, are offered as menu options.
+    expect(within(menu).getAllByRole('menuitemradio')).toHaveLength(3);
+    expect(within(menu).getByRole('menuitemradio', { name: /English/ })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitemradio', { name: /Irish/ })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitemradio', { name: /French/ })).toBeInTheDocument();
+    // The active language is the checked radio option.
+    expect(within(menu).getByRole('menuitemradio', { name: /English/ })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
   });
 
   it('does not render language options for unsupported languages', async () => {
+    const user = userEvent.setup();
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    // 'de' is not in the tenant supported list
-    expect(screen.queryByTestId('lang-option-de')).toBeNull();
-    expect(screen.queryByTestId('lang-option-es')).toBeNull();
+    const menu = await openLanguageMenu(user);
+
+    // Positive control: the real menu is open and populated with exactly the
+    // three supported languages, so the absences below cannot pass vacuously.
+    expect(within(menu).getAllByRole('menuitemradio')).toHaveLength(3);
+    // 'de' and 'es' are not in the tenant supported list.
+    expect(within(menu).queryByRole('menuitemradio', { name: /German/ })).toBeNull();
+    expect(within(menu).queryByRole('menuitemradio', { name: /Spanish/ })).toBeNull();
   });
 
   it('shows full language name in non-compact mode', async () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher compact={false} />);
 
-    // Non-compact shows 'English' in the trigger button — 'EN' short code is absent from the button
-    const triggerBtn = screen.getByRole('button');
-    // The trigger button body shows 'English' not 'EN' in non-compact mode
+    const triggerBtn = getTrigger();
+    // The trigger body shows 'English' not the 'EN' short code in non-compact mode.
     expect(triggerBtn.textContent).toContain('English');
     expect(triggerBtn.textContent).not.toContain('EN');
   });
@@ -234,8 +178,8 @@ describe('LanguageSwitcher', () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    const gaOption = screen.getByTestId('lang-option-ga');
-    await user.click(gaOption);
+    const menu = await openLanguageMenu(user);
+    await user.click(within(menu).getByRole('menuitemradio', { name: /Irish/ }));
 
     expect(mockChangeLanguage).toHaveBeenCalledWith('ga');
   });
@@ -245,7 +189,8 @@ describe('LanguageSwitcher', () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    await user.click(screen.getByTestId('lang-option-fr'));
+    const menu = await openLanguageMenu(user);
+    await user.click(within(menu).getByRole('menuitemradio', { name: /French/ }));
 
     expect(mockSafeLocalStorageSet).toHaveBeenCalledWith('nexus_language_user_chosen', 'true');
   });
@@ -257,8 +202,12 @@ describe('LanguageSwitcher', () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    await user.click(screen.getByTestId('lang-option-ga'));
+    const menu = await openLanguageMenu(user);
+    await user.click(within(menu).getByRole('menuitemradio', { name: /Irish/ }));
 
+    // Positive control: the selection genuinely fired, so the negative
+    // assertion below is about auth gating and not about a dead click.
+    expect(mockChangeLanguage).toHaveBeenCalledWith('ga');
     expect(mockApi.put).not.toHaveBeenCalled();
   });
 
@@ -269,7 +218,8 @@ describe('LanguageSwitcher', () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    await user.click(screen.getByTestId('lang-option-fr'));
+    const menu = await openLanguageMenu(user);
+    await user.click(within(menu).getByRole('menuitemradio', { name: /French/ }));
 
     expect(mockApi.put).toHaveBeenCalledWith(
       '/v2/users/me/language',
@@ -281,28 +231,53 @@ describe('LanguageSwitcher', () => {
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    // aria-label set from i18n key 'aria.current_language'
-    const triggerBtn = screen.getByRole('button');
-    expect(triggerBtn).toHaveAttribute('aria-label');
-    expect(triggerBtn.getAttribute('aria-label')).toContain('English');
+    const triggerBtn = getTrigger();
+    // Real copy from public/locales/en/common.json: "Language: {{language}}".
+    expect(triggerBtn).toHaveAccessibleName('Language: English');
+    // The globe is decorative, so the aria-label above is the button's entire
+    // accessible name. Lucide icons expose no role or text by design, so the
+    // icon class is the only handle on the glyph itself.
+    const globe = triggerBtn.querySelector('svg.lucide-globe');
+    expect(globe).not.toBeNull();
+    expect(globe).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('renders only tenant-supported languages when the list is a single language', async () => {
     mockSupportedLanguages.mockReturnValue(['de']);
+    const user = userEvent.setup();
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    expect(screen.getByTestId('lang-option-de')).toBeInTheDocument();
-    expect(screen.queryByTestId('lang-option-en')).toBeNull();
-    expect(screen.queryByTestId('lang-option-fr')).toBeNull();
+    // 'en' is not supported here, so the trigger falls back to the only option.
+    expect(getTrigger()).toHaveAccessibleName('Language: German');
+
+    const menu = await openLanguageMenu(user);
+    const options = within(menu).getAllByRole('menuitemradio');
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveAccessibleName(/German/);
+    expect(within(menu).queryByRole('menuitemradio', { name: /English/ })).toBeNull();
+    expect(within(menu).queryByRole('menuitemradio', { name: /French/ })).toBeNull();
   });
 
   it('displays language labels (full name) in dropdown items', async () => {
+    const user = userEvent.setup();
     const { LanguageSwitcher } = await import('./LanguageSwitcher');
     render(<LanguageSwitcher />);
 
-    expect(screen.getByText('English')).toBeInTheDocument();
-    expect(screen.getByText('Gaeilge')).toBeInTheDocument();
-    expect(screen.getByText('Français')).toBeInTheDocument();
+    const menu = await openLanguageMenu(user);
+
+    // Each item pairs the short code with the full display name that
+    // Intl.DisplayNames resolves in the active locale ('en').
+    const expected = [
+      ['EN', 'English'],
+      ['GA', 'Irish'],
+      ['FR', 'French'],
+    ] as const;
+
+    for (const [short, full] of expected) {
+      const option = within(menu).getByRole('menuitemradio', { name: new RegExp(full) });
+      expect(within(option).getByText(short)).toBeInTheDocument();
+      expect(within(option).getByText(full)).toBeInTheDocument();
+    }
   });
 });

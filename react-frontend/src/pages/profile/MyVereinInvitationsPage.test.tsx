@@ -4,9 +4,8 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, within, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 vi.mock('@/lib/api', () => ({
   api: {
@@ -20,36 +19,24 @@ vi.mock('@/lib/api', () => ({
 
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 
+// The auth value must be a STABLE object across renders, exactly like the real
+// AuthContext provides. MyVereinInvitationsPage's `load` is a useCallback keyed on
+// `user`; a factory that returns a fresh literal per call gives it a new identity
+// on every render, so the load effect re-fires forever and the page flip-flops
+// between the spinner and a half-built Tabs collection.
+const mockAuth = {
+  user: { id: 7, name: 'Jane Member' },
+  isAuthenticated: true,
+  login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(),
+  status: 'idle' as const, error: null,
+};
+
 vi.mock('@/contexts', () => createMockContexts({
-  useAuth: () => ({
-    user: { id: 7, name: 'Jane Member' },
-    isAuthenticated: true,
-    login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(),
-    status: 'idle' as const, error: null,
-  }),
+  useAuth: () => mockAuth,
   useToast: () => mockToast,
 }));
 
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
-
-// Mock the @/components/ui Tabs and Tab as simple passthroughs so HeroUI React
-// Aria panel-registration quirks in JSDOM don't hide content. All other ui
-// exports (Card, Button, Spinner, Chip, etc.) are kept real.
-vi.mock('@/components/ui', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...actual,
-    Tabs: ({ children, 'aria-label': ariaLabel }: { children?: React.ReactNode; 'aria-label'?: string }) => (
-      <div role="tablist" aria-label={ariaLabel ?? 'tabs'}>{children}</div>
-    ),
-    Tab: ({ children, title }: { children?: React.ReactNode; title?: React.ReactNode }) => (
-      <div role="tabpanel">
-        {title ? <div role="tab">{title}</div> : null}
-        {children}
-      </div>
-    ),
-  };
-});
 
 import MyVereinInvitationsPage from './MyVereinInvitationsPage';
 import { api } from '@/lib/api';
@@ -69,6 +56,37 @@ const MOCK_INVITATION = {
   invitee_user_id: 7,
 };
 
+/**
+ * The page imports Tab/Tabs from '@/components/ui/Tabs' by direct path, so it always
+ * rendered the REAL HeroUI v3 Tabs. Two consequences, both confirmed by dumping the
+ * live DOM (and by .heroui-docs/react/components/(navigation)/tabs.mdx — selected tab
+ * is `[aria-selected="true"]`, panel content lives in `.tabs__panel`):
+ *
+ *  1. Only the SELECTED panel is mounted — there is no `role="tabpanel"` for "Sent".
+ *  2. React Aria selects the first tab one commit AFTER the tablist paints. At the
+ *     instant `getByRole('tablist')` first succeeds, both tabs are still
+ *     `aria-selected="false"` and NO panel exists at all.
+ *
+ * So "inside the received tab" has to be resolved through the real Received tab and
+ * the panel it controls, not asserted globally the moment the tablist appears.
+ */
+function panelFor(tab: HTMLElement): HTMLElement | null {
+  const id = tab.getAttribute('aria-controls');
+  return id ? document.getElementById(id) : null;
+}
+
+async function receivedPanel(): Promise<HTMLElement> {
+  const tab = await screen.findByRole('tab', { name: 'Received' });
+  await waitFor(() => {
+    expect(tab).toHaveAttribute('aria-selected', 'true');
+    expect(panelFor(tab)).not.toBeNull();
+  });
+  const panel = panelFor(tab);
+  if (!panel) throw new Error('Received tab is selected but controls no panel');
+  expect(panel).toHaveAttribute('role', 'tabpanel');
+  return panel;
+}
+
 describe('MyVereinInvitationsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -79,47 +97,49 @@ describe('MyVereinInvitationsPage', () => {
     render(<MyVereinInvitationsPage />);
     // Spinner has aria-busy="true"
     expect(document.querySelector('[aria-busy="true"]')).toBeInTheDocument();
+    // ...and the tab strip is genuinely not rendered yet.
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
   it('renders the tabs panel after data loads', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [MOCK_INVITATION] });
     render(<MyVereinInvitationsPage />);
 
-    // After loading, Tabs renders (its tablist is in the DOM)
-    await waitFor(() => {
-      expect(screen.getByRole('tablist')).toBeInTheDocument();
-    });
+    // Both real tab triggers render with their translated labels...
+    expect(await screen.findByRole('tab', { name: 'Received' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sent' })).toBeInTheDocument();
+    // ...and the selected tab's panel is actually mounted (the thing this test names).
+    expect(await receivedPanel()).toBeInTheDocument();
   });
 
   it('renders received invitation target name inside the received tab', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [MOCK_INVITATION] });
     render(<MyVereinInvitationsPage />);
 
-    // Wait until the tablist appears (loading done)
-    await waitFor(() => expect(screen.getByRole('tablist')).toBeInTheDocument());
-
-    // The invitation target_name "Target Verein" appears as part of the label
-    // e.g. "Target: Target Verein" — use regex to match the substring
-    await waitFor(() => {
-      expect(screen.getByText(/Target Verein/)).toBeInTheDocument();
-    });
+    // Full rendered line is "<target_label>: <target_name>" — assert the whole thing
+    // inside the Received panel, so a target name leaking into the Sent panel or
+    // losing its label would fail.
+    const panel = await receivedPanel();
+    expect(within(panel).getByText('Club: Target Verein')).toBeInTheDocument();
   });
 
   it('renders the invitation message when present', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [MOCK_INVITATION] });
     render(<MyVereinInvitationsPage />);
 
-    await waitFor(() => expect(screen.getByRole('tablist')).toBeInTheDocument());
-    expect(screen.getByText('Join our Verein!')).toBeInTheDocument();
+    const panel = await receivedPanel();
+    expect(within(panel).getByText('Join our Verein!')).toBeInTheDocument();
   });
 
   it('shows accept and decline buttons for a pending (sent) invitation', async () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [MOCK_INVITATION] });
     render(<MyVereinInvitationsPage />);
 
-    await waitFor(() => expect(screen.getByRole('tablist')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /accept/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /decline/i })).toBeInTheDocument();
+    const panel = await receivedPanel();
+    // The "pending (sent)" precondition really is on screen (status_sent -> "Pending").
+    expect(within(panel).getByText('Pending')).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: 'Accept' })).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: 'Decline' })).toBeInTheDocument();
   });
 
   it('does not show accept/decline for an already-accepted invitation', async () => {
@@ -129,10 +149,13 @@ describe('MyVereinInvitationsPage', () => {
     });
     render(<MyVereinInvitationsPage />);
 
-    await waitFor(() => expect(screen.getByRole('tablist')).toBeInTheDocument());
+    const panel = await receivedPanel();
+    // Prove the accepted invitation really rendered (status_accepted -> "Accepted")
+    // before asserting the absence — otherwise this passes on an empty panel.
+    expect(within(panel).getByText('Accepted')).toBeInTheDocument();
 
-    expect(screen.queryByRole('button', { name: /accept/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /decline/i })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole('button', { name: /accept/i })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole('button', { name: /decline/i })).not.toBeInTheDocument();
   });
 
   it('calls POST respond endpoint when accept is clicked', async () => {
@@ -140,10 +163,9 @@ describe('MyVereinInvitationsPage', () => {
     vi.mocked(api.post).mockResolvedValue({ success: true, data: { ...MOCK_INVITATION, status: 'accepted' } });
 
     render(<MyVereinInvitationsPage />);
-    await waitFor(() => screen.getByRole('tablist'));
-    await waitFor(() => screen.getByRole('button', { name: /accept/i }));
+    const panel = await receivedPanel();
 
-    fireEvent.click(screen.getByRole('button', { name: /accept/i }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Accept' }));
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
@@ -158,10 +180,9 @@ describe('MyVereinInvitationsPage', () => {
     vi.mocked(api.post).mockResolvedValue({ success: true, data: { ...MOCK_INVITATION, status: 'declined' } });
 
     render(<MyVereinInvitationsPage />);
-    await waitFor(() => screen.getByRole('tablist'));
-    await waitFor(() => screen.getByRole('button', { name: /decline/i }));
+    const panel = await receivedPanel();
 
-    fireEvent.click(screen.getByRole('button', { name: /decline/i }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Decline' }));
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith(
@@ -199,13 +220,13 @@ describe('MyVereinInvitationsPage', () => {
     vi.mocked(api.post).mockResolvedValue({ success: false, error: 'Already responded' });
 
     render(<MyVereinInvitationsPage />);
-    await waitFor(() => screen.getByRole('tablist'));
-    await waitFor(() => screen.getByRole('button', { name: /accept/i }));
+    const panel = await receivedPanel();
 
-    fireEvent.click(screen.getByRole('button', { name: /accept/i }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Accept' }));
 
+    // "with a message" — the server's own error text is surfaced, not the generic fallback.
     await waitFor(() => {
-      expect(mockToast.error).toHaveBeenCalled();
+      expect(mockToast.error).toHaveBeenCalledWith('Already responded');
     });
   });
 
@@ -213,10 +234,8 @@ describe('MyVereinInvitationsPage', () => {
     vi.mocked(api.get).mockResolvedValue({ success: true, data: [] });
     render(<MyVereinInvitationsPage />);
 
-    await waitFor(() => expect(screen.getByRole('tablist')).toBeInTheDocument());
-
-    // Our Tab mock renders all tab panels; the empty-state paragraph is visible
-    const tabPanels = screen.getAllByRole('tabpanel');
-    expect(tabPanels.length).toBeGreaterThanOrEqual(1);
+    // The real empty-state copy (received_empty) inside the Received panel.
+    const panel = await receivedPanel();
+    expect(within(panel).getByText('You have no club invitations.')).toBeInTheDocument();
   });
 });
