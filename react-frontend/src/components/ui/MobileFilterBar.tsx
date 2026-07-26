@@ -94,9 +94,21 @@ export interface MobileFilterBarProps {
 const REGION_CLASS =
   'sticky top-[calc(var(--safe-area-top)+3.5rem)] z-20 w-full min-w-0 max-w-full overflow-hidden border-y border-theme-default bg-[var(--surface-base)]/95 px-3 py-2 shadow-sm backdrop-blur-md transition-[transform,opacity] duration-200 sm:hidden';
 const HIDDEN_CLASS = 'pointer-events-none -translate-y-3 opacity-0';
+// 44px (h-11) on the two primary controls, matching the rest of this family:
+// FilterChipGroup.tsx uses min-h-11, BottomSheet.tsx min-h-[44px], and
+// OverlayActionButton.tsx size-11. These two were h-10 (40px) only because they
+// were lifted verbatim from the listings phone bar before the pattern was shared.
 const SEARCH_PILL_CLASS =
-  'h-10 min-w-0 flex-1 justify-start gap-2 rounded-full border border-theme-default bg-theme-elevated px-3.5 text-sm font-normal';
-const FILTERS_BUTTON_CLASS = 'h-10 shrink-0 rounded-full px-3.5 text-sm font-medium';
+  'h-11 min-w-0 flex-1 justify-start gap-2 rounded-full border border-theme-default bg-theme-elevated px-3.5 text-sm font-normal';
+const FILTERS_BUTTON_CLASS = 'h-11 shrink-0 rounded-full px-3.5 text-sm font-medium';
+// DELIBERATE EXEMPTION from the project's 44px minimum, 2026-07-26.
+// The applied-filter chips stay at 28px. They are a shortcut, not the only route:
+// every filter is also removable inside the sheet, and "Clear all" sits beside them.
+// They flex-wrap, so 44px would roughly double the bar's height once two or three
+// filters apply, pushing results below the fold and defeating the point of the bar.
+// 28px still clears WCAG 2.5.8 Target Size (Minimum, AA, 24x24); 44px is this
+// project's own stricter bar (WCAG 2.5.5 AAA / Apple HIG). Revisit if a one-handed
+// device pass shows chips are hard to remove.
 const APPLIED_CHIP_CLASS =
   'inline-flex min-h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium';
 

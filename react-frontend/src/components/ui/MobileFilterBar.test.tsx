@@ -79,6 +79,42 @@ describe('MobileFilterBar', () => {
     expect(screen.queryByText('Search')).toBeNull();
   });
 
+  // Locks the 2026-07-26 touch-target decision so it cannot silently drift back.
+  // TouchTarget.contract.test.ts cannot see this component: it only reads JSX opening
+  // elements, so a className held in a module-level constant is opaque to it, and its
+  // tag filter matches only Button/OverlayActionButton, so the lowercase <button>
+  // chips are invisible to it entirely.
+  it('gives the two primary controls a 44px touch target, and documents the chip exemption', () => {
+    const onSearchPress = vi.fn();
+    render(
+      <MobileFilterBar
+        isVisible
+        onFiltersPress={onFiltersPress}
+        onSearchPress={onSearchPress}
+        chips={[{ key: 'a', label: 'Offers', onRemove: vi.fn() }]}
+        onClearAll={vi.fn()}
+        testId="filter-bar"
+      />,
+    );
+
+    // h-11 = 44px, matching FilterChipGroup (min-h-11), BottomSheet (min-h-[44px])
+    // and OverlayActionButton (size-11).
+    const searchPill = screen.getByText('Search').closest('button') as HTMLElement;
+    expect(searchPill.className).toMatch(/\bh-11\b/);
+    expect(searchPill.className).not.toMatch(/\bh-10\b/);
+
+    const filtersButton = screen.getByRole('button', { name: 'More filters' });
+    expect(filtersButton.className).toMatch(/\bh-11\b/);
+    expect(filtersButton.className).not.toMatch(/\bh-10\b/);
+
+    // The applied-filter chips are a DELIBERATE exemption at 28px: they wrap, so 44px
+    // would roughly double the bar's height once a few filters apply, and every filter
+    // is also removable inside the sheet. 28px still clears WCAG 2.5.8 AA (24x24).
+    // Asserted so the exemption is a recorded decision rather than an accident.
+    const chip = screen.getByRole('button', { name: 'Remove filter: Offers' });
+    expect(chip.className).toMatch(/\bmin-h-7\b/);
+  });
+
   it('shows the active count badge and switches to the solid accent style', () => {
     const { rerender } = render(
       <MobileFilterBar isVisible accent="emerald" onFiltersPress={onFiltersPress} testId="filter-bar" />,
