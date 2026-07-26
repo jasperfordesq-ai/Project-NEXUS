@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, act } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
@@ -105,15 +105,16 @@ vi.mock('@/contexts/ToastContext', () => ({
   ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-// PusherContext is deliberately NOT mocked, and the dead `usePusherOptional: () => null` override
-// that used to sit in the barrel factory above has been removed rather than moved to the direct
-// path. PrerenderAdmin imports usePusherOptional from '@/contexts/PusherContext', so that override
-// never applied — but replacing the module outright makes "uses URL navigation as the source of
-// truth for tab history" fail: this suite is coupled to the real module graph loading behind the
-// tabs, and only under the parallel fork pool the CI gate uses (it passes single-fork either way,
-// which is how the coupling stayed hidden). The real hook returns null here anyway, with or without
-// a provider, so the stub bought nothing. createMockContexts still supplies a barrel default for
-// anything importing it that way.
+// Same reason as ToastContext above: PrerenderAdmin imports usePusherOptional from
+// '@/contexts/PusherContext', so an override on the '@/contexts' barrel never applies — vitest
+// resolves mocks per specifier — and the real PusherContext would load along with its own direct
+// '@/contexts/AuthContext' import. Plain arrows rather than vi.fn(), because this suite calls
+// vi.resetAllMocks() in beforeEach, which would strip a vi.fn implementation and hand the component
+// undefined instead of null.
+vi.mock('@/contexts/PusherContext', () => ({
+  usePusherOptional: () => null,
+  usePusher: () => ({ channel: null, isConnected: false }),
+}));
 
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
@@ -355,12 +356,18 @@ describe('PrerenderAdmin', () => {
     const coverageTab = await screen.findByRole('tab', { name: /coverage/i });
     expect(coverageTab).toHaveAttribute('aria-selected', 'true');
 
-    window.history.pushState({}, '', '/admin/advanced/prerender?tab=jobs');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-
-    await waitFor(() => {
-      expect(screen.getByRole('tab', { name: /jobs/i })).toHaveAttribute('aria-selected', 'true');
+    // popstate is dispatched inside act() on purpose. The router subscribes to it outside
+    // React's own event system, so the resulting state update is scheduled rather than applied;
+    // left to a bare waitFor, the assertion races that flush against a 1s polling budget and
+    // starves whenever the machine is loaded — which is why this passed alone but failed as soon
+    // as it ran alongside ninety-odd other suites competing for the same cores. act() flushes the
+    // update before the assertion, so the test is deterministic instead of merely usually-fast.
+    await act(async () => {
+      window.history.pushState({}, '', '/admin/advanced/prerender?tab=jobs');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     });
+
+    expect(screen.getByRole('tab', { name: /jobs/i })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders the tabs navigation', async () => {

@@ -4,10 +4,6 @@
     "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
       "@/components/ui": [
         "Button"
-      ],
-      "@/contexts": [
-        "useAuth",
-        "usePusherOptional"
       ]
     },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
@@ -259,6 +255,6 @@
   },
   "totals": {
     "offenderFileCount": 31,
-    "rowCount": 131
+    "rowCount": 129
   }
 }
