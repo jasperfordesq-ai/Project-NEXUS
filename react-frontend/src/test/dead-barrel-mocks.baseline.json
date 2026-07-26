@@ -1,0 +1,938 @@
+{
+  "_README": "GENERATED FILE — never hand-edit. Shrink-only ratchet of dead barrel-mock overrides (a vi.mock on @/components/ui or @/contexts whose override the module under test bypasses by importing the symbol from its direct path). Regenerate with: npm run audit:dead-mocks -- --baseline. Enforced by src/components/ui/BarrelMock.contract.test.ts (runs in the blocking test:ui-contracts CI step) and npm run audit:dead-mocks.",
+  "offenders": {
+    "src/admin/__tests__/caring-redirects.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/admin/__tests__/super-admin-redirects.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/admin/components/AdminSidebar.test.tsx": {
+      "@/components/ui": [
+        "Accordion",
+        "AccordionItem",
+        "Input",
+        "ScrollShadow",
+        "Tooltip"
+      ]
+    },
+    "src/admin/modules/__tests__/SystemModules.test.tsx": {
+      "@/contexts": [
+        "useTenant",
+        "useTheme"
+      ]
+    },
+    "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
+      "@/components/ui": [
+        "Button"
+      ],
+      "@/contexts": [
+        "useAuth",
+        "usePusherOptional"
+      ]
+    },
+    "src/admin/modules/analytics/CommunityAnalytics.test.tsx": {
+      "@/contexts": [
+        "useTenant",
+        "useTheme"
+      ]
+    },
+    "src/admin/modules/analytics/RegionalAnalyticsPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Card",
+        "CardBody"
+      ]
+    },
+    "src/admin/modules/marketplace/MarketplaceModerationPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Textarea"
+      ]
+    },
+    "src/admin/modules/reports/HoursReportsPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Card",
+        "CardBody"
+      ]
+    },
+    "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Card"
+      ]
+    },
+    "src/components/LanguageSwitcher.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Dropdown",
+        "DropdownItem",
+        "DropdownMenu",
+        "DropdownTrigger"
+      ]
+    },
+    "src/components/availability/AvailabilityGrid.test.tsx": {
+      "@/components/ui": [
+        "GlassCard",
+        "Spinner",
+        "Tooltip"
+      ]
+    },
+    "src/components/endorsements/TopEndorsedWidget.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Chip",
+        "GlassCard",
+        "Spinner"
+      ]
+    },
+    "src/components/feed/FeedCard.test.tsx": {
+      "@/contexts": [
+        "readStoredConsent"
+      ]
+    },
+    "src/components/feed/sidebar/CommunityPulseWidget.test.tsx": {
+      "@/components/ui": [
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/FriendsWidget.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/PeopleYouMayKnowWidget.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/PopularGroupsWidget.test.tsx": {
+      "@/components/ui": [
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/QuickActionsWidget.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/SuggestedListingsWidget.test.tsx": {
+      "@/components/ui": [
+        "Chip",
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/TopCategoriesWidget.test.tsx": {
+      "@/components/ui": [
+        "GlassCard"
+      ]
+    },
+    "src/components/feed/sidebar/WidgetSkeleton.test.tsx": {
+      "@/components/ui": [
+        "GlassCard",
+        "Skeleton"
+      ]
+    },
+    "src/components/feedback/SessionExpiredModal.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "useTenant"
+      ]
+    },
+    "src/components/hashtags/TrendingHashtags.test.tsx": {
+      "@/components/ui": [
+        "GlassCard",
+        "Spinner"
+      ]
+    },
+    "src/components/ideation/TeamChatrooms.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "usePusherOptional"
+      ]
+    },
+    "src/components/jobs/JobModals.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Progress",
+        "Skeleton",
+        "Spinner",
+        "Textarea"
+      ]
+    },
+    "src/components/jobs/JobOwnerBanner.test.tsx": {
+      "@/components/ui": [
+        "useConfirm"
+      ]
+    },
+    "src/components/jobs/JobPipelineRules.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "GlassCard",
+        "Input",
+        "Select",
+        "SelectItem"
+      ]
+    },
+    "src/components/landing/CtaSection.test.tsx": {
+      "@/components/ui": [
+        "Button"
+      ]
+    },
+    "src/components/layout/DesktopNavPanel.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Popover",
+        "PopoverContent",
+        "PopoverHeading",
+        "PopoverTrigger",
+        "ScrollShadow"
+      ]
+    },
+    "src/components/layout/QuickCreateMenu.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Modal",
+        "ModalBody",
+        "ModalContent"
+      ]
+    },
+    "src/components/layout/SearchOverlay.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Kbd"
+      ]
+    },
+    "src/components/layout/ThemePicker.test.tsx": {
+      "@/contexts": [
+        "useTheme"
+      ]
+    },
+    "src/components/legal/LegalAcceptanceGate.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader"
+      ],
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/legal/__tests__/LegalAcceptanceGate.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/listings/ListingAnalyticsPanel.test.tsx": {
+      "@/components/ui": [
+        "GlassCard"
+      ]
+    },
+    "src/components/listings/SkillTagsInput.test.tsx": {
+      "@/components/ui": [
+        "Chip",
+        "Input"
+      ]
+    },
+    "src/components/location/EntityMapView.test.tsx": {
+      "@/components/ui": [
+        "Skeleton"
+      ],
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/LocationMap.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/LocationMapCard.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/NominatimAutocomplete.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Input"
+      ]
+    },
+    "src/components/location/PlaceAutocompleteInput.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/__tests__/EntityMapView.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/__tests__/LocationMap.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/__tests__/LocationMapCard.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/location/__tests__/PlaceAutocompleteInput.dispatch.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/navigation/Breadcrumbs.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/navigation/MenuNavItems.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Dropdown",
+        "DropdownItem",
+        "DropdownMenu",
+        "DropdownTrigger",
+        "DynamicIcon"
+      ],
+      "@/contexts": [
+        "useAuth",
+        "useTenant"
+      ]
+    },
+    "src/components/navigation/__tests__/MenuNavItems.test.tsx": {
+      "@/components/ui": [
+        "DynamicIcon"
+      ],
+      "@/contexts": [
+        "useAuth",
+        "useTenant"
+      ]
+    },
+    "src/components/profile/ProfileFeed.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "GlassCard",
+        "Separator",
+        "Skeleton"
+      ]
+    },
+    "src/components/proximity/ProximityFilter.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "useToast"
+      ]
+    },
+    "src/components/search/AdvancedSearchFilters.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Select",
+        "SelectItem"
+      ]
+    },
+    "src/components/seo/PageMeta.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/seo/SeoHead.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/components/social/ReactionPicker.test.tsx": {
+      "@/components/ui": [
+        "Tooltip"
+      ]
+    },
+    "src/components/social/ReactionSummary.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalHeader",
+        "Spinner",
+        "Tab",
+        "Tabs"
+      ]
+    },
+    "src/hooks/useLegalDocument.test.ts": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/about/RelatedPages.test.tsx": {
+      "@/components/ui": [
+        "GlassCard"
+      ]
+    },
+    "src/pages/achievements/AchievementsPage.test.tsx": {
+      "@/contexts": [
+        "useToast"
+      ]
+    },
+    "src/pages/caring-community/HourGiftPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "ComboBox",
+        "ComboBoxItem"
+      ]
+    },
+    "src/pages/caring-community/MunicipalSurveyPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Checkbox",
+        "CheckboxGroup",
+        "GlassCard",
+        "Radio",
+        "RadioGroup",
+        "Spinner",
+        "Textarea"
+      ]
+    },
+    "src/pages/clubs/ClubsPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/errors/ComingSoonPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/errors/NotFoundPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/explore/ExplorePage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Progress",
+        "SearchField",
+        "Skeleton",
+        "Tab",
+        "Tabs"
+      ]
+    },
+    "src/pages/federation/FederationHubPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Spinner"
+      ]
+    },
+    "src/pages/federation/FederationMessagesPage.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "usePusherOptional"
+      ]
+    },
+    "src/pages/feed/FeedPage.test.tsx": {
+      "@/contexts": [
+        "readStoredConsent",
+        "useAuth",
+        "usePusherOptional"
+      ]
+    },
+    "src/pages/goals/components/GoalCheckinModal.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Separator",
+        "Slider",
+        "Spinner",
+        "Textarea"
+      ]
+    },
+    "src/pages/goals/components/GoalInsightsPanel.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "Progress",
+        "Skeleton"
+      ]
+    },
+    "src/pages/groups/tabs/GroupAnnouncementsTab.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "Dropdown",
+        "DropdownItem",
+        "DropdownMenu",
+        "DropdownTrigger",
+        "GlassCard",
+        "Input",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Spinner",
+        "Textarea",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/groups/tabs/GroupChallengesTab.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Progress",
+        "Select",
+        "SelectItem",
+        "Spinner",
+        "Textarea",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/groups/tabs/GroupDiscussionTab.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "GlassCard",
+        "Spinner",
+        "Textarea"
+      ]
+    },
+    "src/pages/groups/tabs/GroupEventsTab.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Spinner"
+      ]
+    },
+    "src/pages/groups/tabs/GroupFeedTab.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "GlassCard",
+        "Separator",
+        "Skeleton"
+      ]
+    },
+    "src/pages/groups/tabs/GroupFilesTab.test.tsx": {
+      "@/components/ui": [
+        "Dropdown",
+        "DropdownItem",
+        "DropdownMenu",
+        "DropdownTrigger",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "SearchField",
+        "ToggleButton",
+        "ToggleButtonGroup"
+      ]
+    },
+    "src/pages/help/HelpCenterPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/ideation/ChallengeDetailPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/ideation/IdeaDetailPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/ideation/IdeationPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/jobs/BiasAuditPage.test.tsx": {
+      "@/components/ui": [
+        "Autocomplete",
+        "AutocompleteItem",
+        "Button",
+        "CardRowsSkeleton",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Table",
+        "TableBody",
+        "TableCell",
+        "TableColumn",
+        "TableHeader",
+        "TableRow"
+      ]
+    },
+    "src/pages/jobs/CreateJobPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "CardRowsSkeleton",
+        "Chip",
+        "CloseButton",
+        "Dropdown",
+        "DropdownItem",
+        "DropdownMenu",
+        "DropdownTrigger",
+        "GlassCard",
+        "Input",
+        "Label",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "NumberField",
+        "Select",
+        "SelectItem",
+        "Switch",
+        "Textarea",
+        "Tooltip",
+        "useConfirm"
+      ]
+    },
+    "src/pages/jobs/EmployerBrandPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Progress",
+        "Slider",
+        "Textarea"
+      ]
+    },
+    "src/pages/jobs/EmployerOnboardingPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "GlassCard",
+        "Input",
+        "Label",
+        "NumberField",
+        "Progress",
+        "Select",
+        "SelectItem",
+        "Switch",
+        "Textarea"
+      ]
+    },
+    "src/pages/jobs/JobAlertsPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "CardRowsSkeleton",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Select",
+        "SelectItem",
+        "Switch",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/jobs/JobAnalyticsPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "CardRowsSkeleton",
+        "Chip",
+        "GlassCard",
+        "Progress",
+        "Skeleton",
+        "Spinner",
+        "Tooltip"
+      ]
+    },
+    "src/pages/jobs/JobDetailPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "CardRowsSkeleton",
+        "GlassCard",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/jobs/JobKanbanPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Checkbox",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Label",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "NumberField",
+        "Select",
+        "SelectItem",
+        "Spinner",
+        "Tab",
+        "Tabs",
+        "Textarea"
+      ]
+    },
+    "src/pages/jobs/MyApplicationsPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Skeleton",
+        "Spinner",
+        "Tab",
+        "Tabs",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/jobs/TalentSearchPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Chip",
+        "CloseButton",
+        "GlassCard",
+        "Input",
+        "SearchField",
+        "Spinner"
+      ]
+    },
+    "src/pages/marketplace/CreateMarketplaceListingPage.test.tsx": {
+      "@/components/ui": [
+        "Autocomplete",
+        "AutocompleteItem",
+        "Radio",
+        "RadioGroup",
+        "Select",
+        "SelectItem"
+      ]
+    },
+    "src/pages/marketplace/EditMarketplaceListingPage.test.tsx": {
+      "@/components/ui": [
+        "Radio",
+        "RadioGroup",
+        "Select",
+        "SelectItem",
+        "Switch"
+      ]
+    },
+    "src/pages/marketplace/MarketplaceListingPage.test.tsx": {
+      "@/components/ui": [
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/marketplace/MerchantOnboardingPage.test.tsx": {
+      "@/components/ui": [
+        "Radio",
+        "RadioGroup",
+        "Switch"
+      ]
+    },
+    "src/pages/members/MembersPage.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "useTenant"
+      ]
+    },
+    "src/pages/messages/ConversationPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Chip",
+        "Dropdown",
+        "DropdownItem",
+        "DropdownMenu",
+        "DropdownTrigger",
+        "GlassCard",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
+        "Skeleton",
+        "Tooltip"
+      ],
+      "@/contexts": [
+        "useAuth",
+        "usePresenceOptional",
+        "usePusherOptional"
+      ]
+    },
+    "src/pages/messages/MessagesPage.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "usePusherOptional"
+      ]
+    },
+    "src/pages/notifications/NotificationsPage.test.tsx": {
+      "@/contexts": [
+        "useAuth",
+        "usePusherOptional"
+      ]
+    },
+    "src/pages/profile/MyVereinInvitationsPage.test.tsx": {
+      "@/components/ui": [
+        "Tab",
+        "Tabs"
+      ]
+    },
+    "src/pages/profile/ProfilePage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/AccessibilityPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/ContactPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/CookiesPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/FaqPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/HomePage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/PilotApplyStatusPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/public/TermsPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/settings/SettingsPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Select",
+        "SelectItem",
+        "Spinner",
+        "Switch",
+        "Tab",
+        "Tabs",
+        "Textarea",
+        "ToggleButton",
+        "ToggleButtonGroup",
+        "useDisclosure"
+      ]
+    },
+    "src/pages/volunteering/CreateOpportunityPage.test.tsx": {
+      "@/contexts": [
+        "useTenant"
+      ]
+    },
+    "src/pages/volunteering/GroupSignUpTab.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "AvatarGroup",
+        "Button",
+        "CardRowsSkeleton",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Modal",
+        "ModalBody",
+        "ModalContent",
+        "ModalFooter",
+        "ModalHeader",
+        "Select",
+        "SelectItem",
+        "Textarea",
+        "useDisclosure"
+      ]
+    }
+  },
+  "totals": {
+    "offenderFileCount": 110,
+    "rowCount": 535
+  }
+}

@@ -14,7 +14,9 @@ const SOURCE_ROOT = path.resolve(SCRIPT_DIR, '..', 'src');
 const EXCLUDED_DIRECTORIES = new Set(['__tests__', 'test']);
 const EXCLUDED_FILE_PATTERN = /\.(?:spec|stories|test)\.tsx$/;
 
-const INTRINSIC_INTERACTIVE_ELEMENTS = new Set([
+// Exported for reuse by sibling scanners (e.g. audit-dead-mocks.mjs). Adding the
+// `export` keyword is inert for this file's own CLI behaviour.
+export const INTRINSIC_INTERACTIVE_ELEMENTS = new Set([
   'button',
   'input',
   'select',
@@ -22,7 +24,7 @@ const INTRINSIC_INTERACTIVE_ELEMENTS = new Set([
   'textarea',
 ]);
 
-const INTERACTIVE_COMPONENT_EXPORTS = new Set([
+export const INTERACTIVE_COMPONENT_EXPORTS = new Set([
   'Button',
   'Checkbox',
   'Input',
@@ -38,7 +40,7 @@ const INTERACTIVE_COMPONENT_EXPORTS = new Set([
   'TextField',
 ]);
 
-const INTERACTIVE_ARIA_ROLES = new Set([
+export const INTERACTIVE_ARIA_ROLES = new Set([
   'button',
   'checkbox',
   'link',
