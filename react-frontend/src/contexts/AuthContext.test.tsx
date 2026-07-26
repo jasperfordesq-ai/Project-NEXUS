@@ -12,6 +12,11 @@ import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AuthProvider, useAuth } from './AuthContext';
 import { tokenManager, SESSION_EXPIRED_EVENT } from '@/lib/api';
+// The i18next singleton src/test/setup.ts initialises from public/locales/en. AuthContext replaces
+// raw API error strings with localized ones, so the assertions below resolve their expected text
+// through the same keys the provider uses rather than hard-coding English. Four tests here pinned
+// the old raw-API wording and broke when the provider started localizing.
+import i18next from 'i18next';
 
 // Mock the api module
 vi.mock('@/lib/api', async () => {
@@ -261,7 +266,9 @@ describe('AuthContext', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('status')).toHaveTextContent('error');
-        expect(screen.getByTestId('error')).toHaveTextContent('Invalid credentials');
+        // Not the API's raw "Invalid credentials" — the provider substitutes a generic localized
+        // message so a failed sign-in cannot be used to probe which accounts exist.
+        expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:login.failed'));
       });
     });
   });
@@ -362,7 +369,7 @@ describe('AuthContext', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('status')).toHaveTextContent('requires_2fa');
-        expect(screen.getByTestId('error')).toHaveTextContent('Invalid code');
+        expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:login.twofa_invalid_code'));
       });
     });
 
@@ -530,7 +537,7 @@ describe('AuthContext', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('status')).toHaveTextContent('error');
-        expect(screen.getByTestId('error')).toHaveTextContent('Email already registered');
+        expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:register.failed'));
       });
     });
   });
@@ -588,7 +595,7 @@ describe('AuthContext', () => {
       await user.click(screen.getByRole('button', { name: 'Login' }));
 
       await waitFor(() => {
-        expect(screen.getByTestId('error')).toHaveTextContent('Some error');
+        expect(screen.getByTestId('error')).toHaveTextContent(i18next.t('auth:login.failed'));
       });
 
       // Clear the error

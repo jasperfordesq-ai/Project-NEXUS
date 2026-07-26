@@ -6,6 +6,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useApi } from './useApi';
+// The i18next singleton src/test/setup.ts initialises from public/locales/en, so the expected text
+// below resolves from the same key useApi uses rather than being hard-coded English.
+import i18next from 'i18next';
 
 const mockGet = vi.hoisted(() => vi.fn());
 
@@ -47,7 +50,9 @@ describe('useApi', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.data).toBeNull();
-    expect(result.current.error).toBe('Unavailable');
+    // useApi replaces the API's raw error with one localized message via t('api.request_failed'),
+    // so this resolves the expected text through the same key instead of pinning English.
+    expect(result.current.error).toBe(i18next.t('errors:api.request_failed'));
   });
 
   it('supports deliberate manual execution', async () => {

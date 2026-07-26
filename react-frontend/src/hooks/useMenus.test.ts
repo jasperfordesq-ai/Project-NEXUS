@@ -6,6 +6,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMenus } from './useMenus';
+// The i18next singleton src/test/setup.ts initialises from public/locales/en. useMenus deliberately
+// discards the API's raw error text and surfaces one localized message instead, so these assertions
+// resolve the expected text through the same key rather than pinning English. Both previously
+// asserted the raw API strings and broke when the hook started localizing.
+import i18next from 'i18next';
 
 vi.mock('@/lib/api', () => ({
   menuApi: {
@@ -98,7 +103,7 @@ describe('useMenus', () => {
     const { result } = renderHook(() => useMenus(true));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.error).toBe('Not found');
+    expect(result.current.error).toBe(i18next.t('errors:api.request_failed'));
     expect(result.current.hasCustomMenus).toBe(false);
   });
 
@@ -108,7 +113,7 @@ describe('useMenus', () => {
     const { result } = renderHook(() => useMenus(true));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.error).toBe('Failed to load menus');
+    expect(result.current.error).toBe(i18next.t('errors:api.request_failed'));
   });
 
   it('re-fetches when isAuthenticated changes', async () => {

@@ -11,19 +11,35 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
+// The same i18next singleton src/test/setup.ts initialises from public/locales/en. Assertions on
+// user-facing auth errors resolve their expected text through this rather than hard-coding English,
+// so rewording a message in the locale file cannot fail these tests — only a genuine behaviour
+// change (wrong key, or no error set at all) can. Three tests here previously pinned the old copy
+// and broke when it was updated.
+import i18next from 'i18next';
 
 vi.mock('@/lib/motion');
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 
-// Mock i18n
-vi.mock('@/i18n', () => ({
-  default: {
-    changeLanguage: vi.fn(),
-    language: 'en',
-  },
-}));
+// Mock i18n — but only changeLanguage. AuthContext calls i18n.t() for every user-facing auth
+// error (login.failed, twofa_*, register.failed, errors:session_expired_message), and this factory
+// used to omit `t` entirely, so those paths died with "default.t is not a function" and took nine
+// tests with them. `t` now delegates to the i18next singleton that src/test/setup.ts initialises
+// from the committed public/locales/en files, so assertions below can keep checking the real
+// English copy a user would see. changeLanguage stays a no-op spy so tests never trigger a real
+// language switch.
+vi.mock('@/i18n', async () => {
+  const i18next = (await import('i18next')).default;
+  return {
+    default: {
+      t: (...args: Parameters<typeof i18next.t>) => i18next.t(...args),
+      changeLanguage: vi.fn(),
+      language: 'en',
+    },
+  };
+});
 
 // Mock Sentry helpers
 vi.mock('@/lib/sentry', () => ({
@@ -406,7 +422,9 @@ describe('AuthContext', () => {
 
       expect(loginResult.success).toBe(false);
       expect(result.current.status).toBe('error');
-      expect(result.current.error).toBe('Invalid credentials');
+      // Deliberately NOT the API's raw "Invalid credentials": AuthContext replaces it with a
+      // generic localized message so the response cannot be used to probe which accounts exist.
+      expect(result.current.error).toBe(i18next.t('auth:login.failed'));
       expect(result.current.isAuthenticated).toBe(false);
     });
 
@@ -631,7 +649,7 @@ describe('AuthContext', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.error).toBe('Your session has expired. Please log in again.');
+        expect(result.current.error).toBe(i18next.t('errors:session_expired_message'));
       });
       expect(result.current.status).toBe('idle');
     });
@@ -656,7 +674,7 @@ describe('AuthContext', () => {
       await act(async () => {
         await result.current.login({ email: 'x@x.com', password: 'bad' });
       });
-      expect(result.current.error).toBe('Bad credentials');
+      expect(result.current.error).toBe(i18next.t('auth:login.failed'));
 
       act(() => {
         result.current.clearError();

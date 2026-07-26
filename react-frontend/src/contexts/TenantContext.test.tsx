@@ -207,7 +207,11 @@ describe('TenantContext', () => {
       expect(screen.getByTestId('loading')).toHaveTextContent('false');
     });
 
-    expect(screen.getByTestId('error')).toHaveTextContent('Server error');
+    // TenantContext no longer surfaces the API's error prose. It exposes a stable control-flow
+    // CODE that the consuming screen localizes — see the `admin-i18n-ignore` note on the provider's
+    // TENANT_BOOTSTRAP_FAILED branch. A response with no `code` and no explicit TENANT_NOT_FOUND
+    // is treated as retryable, so this is the bootstrap-failed code rather than the soft-404 one.
+    expect(screen.getByTestId('error')).toHaveTextContent('TENANT_BOOTSTRAP_FAILED');
     expect(screen.getByTestId('tenant-name')).toHaveTextContent('none');
   });
 
@@ -224,7 +228,9 @@ describe('TenantContext', () => {
       expect(screen.getByTestId('loading')).toHaveTextContent('false');
     });
 
-    expect(screen.getByTestId('error')).toHaveTextContent('Network failed');
+    // Thrown errors take the provider's catch branch, which sets the same stable
+    // TENANT_BOOTSTRAP_FAILED code rather than echoing the exception message.
+    expect(screen.getByTestId('error')).toHaveTextContent('TENANT_BOOTSTRAP_FAILED');
   });
 
   it('uses default features when tenant has none', async () => {
