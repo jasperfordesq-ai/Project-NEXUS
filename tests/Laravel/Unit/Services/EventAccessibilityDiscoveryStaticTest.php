@@ -41,8 +41,20 @@ final class EventAccessibilityDiscoveryStaticTest extends TestCase
     {
         $web = $this->source('react-frontend/src/pages/events/EventsPage.tsx');
         self::assertStringContainsString('Select as HeroSelect', $web);
-        self::assertStringContainsString("step_free: stepFreeFilter === 'any'", $web);
+        // The URL/query wiring was an inline object literal until the page gained its
+        // phone layout, which extracted param assembly so the list fetch and the filter
+        // sheet cannot drift apart. Assert the behaviour — step_free is sent unless the
+        // filter is 'any' — rather than the old literal spelling.
+        self::assertStringContainsString("stepFreeFilter !== 'any'", $web);
+        self::assertStringContainsString("params.set('step_free', stepFreeFilter)", $web);
         self::assertStringContainsString('event_accessibility:filters.step_free_label', $web);
+
+        // Phones do not render the desktop filter card at all, so the same accessibility
+        // filter has to be reachable from the bottom sheet. Without this the phone layout
+        // could silently drop step-free discovery while every assertion above still passed.
+        $webSheet = $this->source('react-frontend/src/components/events/EventFilterSheet.tsx');
+        self::assertStringContainsString('event_accessibility:filters.step_free_label', $webSheet);
+        self::assertStringContainsString('event_accessibility:filters.step_free_options.', $webSheet);
 
         $blade = $this->source('accessible-frontend/views/events.blade.php');
         self::assertStringContainsString('name="step_free"', $blade);
