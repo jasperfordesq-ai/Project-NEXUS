@@ -4,9 +4,21 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
+
+// ─── viewport toggle ─────────────────────────────────────────────────────────
+// src/test/setup.ts stubs window.matchMedia to answer `matches: false` for every
+// query, so without this the phone branch would get zero coverage. Deliberately a
+// plain function, NOT vi.fn: the suite's beforeEach calls vi.resetAllMocks(),
+// which would strip a vi.fn implementation and make useMediaQuery return
+// undefined. Query-aware so a min-width consumer can never see an impossible
+// viewport (both a phone AND a desktop at once).
+let isPhoneViewport = false;
+vi.mock('@/hooks/useMediaQuery', () => ({
+  useMediaQuery: (query: string) => (query.includes('min-width') ? !isPhoneViewport : isPhoneViewport),
+}));
 
 // ─── hoisted mock data ────────────────────────────────────────────────────────
 const { mockHasFeature } = vi.hoisted(() => ({
@@ -150,6 +162,7 @@ const featuredOk = { success: true, data: [] };
 describe('MarketplacePage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    isPhoneViewport = false;
     mockHasFeature.mockReturnValue(true);
 
     mockApi.get.mockImplementation((url: string) => {
@@ -282,5 +295,86 @@ describe('MarketplacePage', () => {
     const sellLink = document.querySelector('[href*="sell"]');
     const hasSellerAction = sellBtn !== undefined || sellLink !== null;
     expect(hasSellerAction).toBe(true);
+  });
+
+  describe('phone layout', () => {
+    beforeEach(() => {
+      isPhoneViewport = true;
+    });
+
+    it('renders the sticky control bar instead of the desktop hero, search field and category row', async () => {
+      const { MarketplacePage } = await import('./MarketplacePage');
+      render(<MarketplacePage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('marketplace-mobile-controls')).toBeInTheDocument();
+      });
+
+      // Sticky bar: search pill + Filters button.
+      expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      expect(screen.getByText('Search marketplace...')).toBeInTheDocument();
+
+      // Desktop chrome is gone (the pill's label is a span, not a placeholder).
+      expect(screen.queryByTestId('hero')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('category-chips')).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Search marketplace...')).not.toBeInTheDocument();
+    });
+
+    it('keeps the hero-only Sell action and the lg-only quick links reachable', async () => {
+      const { MarketplacePage } = await import('./MarketplacePage');
+      render(<MarketplacePage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('marketplace-mobile-controls')).toBeInTheDocument();
+      });
+
+      // Re-homed from the hero's action slot into the sticky bar's trailing slot.
+      expect(screen.getByLabelText('Sell Something')).toHaveAttribute('href', '/test/marketplace/sell');
+
+      // Re-homed from the `hidden lg:block` sidebar.
+      const quickLinks = screen.getByRole('navigation', { name: 'Quick Links' });
+      expect(within(quickLinks).getByText('Advanced Search')).toBeInTheDocument();
+      expect(within(quickLinks).getByText('My Orders')).toBeInTheDocument();
+      expect(within(quickLinks).getByText('Saved Items')).toBeInTheDocument();
+    });
+
+    it('opens the filter sheet with the category chip group', async () => {
+      const { MarketplacePage } = await import('./MarketplacePage');
+      render(<MarketplacePage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('More filters')).toBeInTheDocument();
+      });
+      fireEvent.click(screen.getByLabelText('More filters'));
+
+      // Real HeroUI single-select ToggleButtonGroup ⇒ radiogroup / radio.
+      const group = await waitFor(() => screen.getByRole('radiogroup', { name: 'Filter by category' }));
+      expect(within(group).getByRole('radio', { name: 'All' })).toHaveAttribute('aria-checked', 'true');
+      expect(within(group).getByRole('radio', { name: 'Crafts' })).toBeInTheDocument();
+    });
+
+    it('applies a category immediately on tap and shows it as a removable chip', async () => {
+      const { MarketplacePage } = await import('./MarketplacePage');
+      render(<MarketplacePage />);
+
+      await waitFor(() => {
+        expect(mockApi.get).toHaveBeenCalledWith(expect.stringMatching(/^\/v2\/marketplace\/listings\?/));
+      });
+      mockApi.get.mockClear();
+
+      fireEvent.click(screen.getByLabelText('More filters'));
+      const crafts = await waitFor(() => screen.getByRole('radio', { name: 'Crafts' }));
+
+      // Simple archetype: no draft, no apply footer — the tap refetches at once.
+      fireEvent.click(crafts);
+      await waitFor(() => {
+        expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('category_id=3'));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Remove filter: Crafts')).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Show results')).not.toBeInTheDocument();
+    });
   });
 });

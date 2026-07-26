@@ -13,10 +13,18 @@
  * - Cursor-based "Load more" pagination
  * - Desktop sidebar: categories with counts, "Sell Something" CTA
  * - Featured listings section
+ *
+ * Phones get the shared directory-page treatment instead of the desktop chrome:
+ * the hero, the inline search field and the CategoryChips row are not rendered,
+ * the page title moves into the app bar, and one slim auto-hiding
+ * `MobileFilterBar` carries the search pill, the Filters button (opening
+ * `MarketplaceFilterSheet`) and the "Sell something" action. The desktop sidebar
+ * is `hidden lg:block`, so its quick links are re-homed into a phone-only block
+ * below the grid.
  */
 
 import { getFormattingLocale } from '@/lib/helpers';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';import Search from 'lucide-react/icons/search';
 import Plus from 'lucide-react/icons/plus';
 import ShoppingBag from 'lucide-react/icons/shopping-bag';
@@ -33,7 +41,10 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { SearchField } from '@/components/ui/SearchField';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { PublicPageHero } from '@/components/public/PublicPageHero';
+import { MobileFilterBar } from '@/components/ui/MobileFilterBar';
+import { MobileSearchOverlay } from '@/components/search/MobileSearchOverlay';
 import { CategoryChips } from '@/components/marketplace/CategoryChips';
+import { MarketplaceFilterSheet } from '@/components/marketplace/MarketplaceFilterSheet';
 import { MarketplaceListingGrid } from '@/components/marketplace/MarketplaceListingGrid';
 import { MarketplaceListingGridSkeleton } from '@/components/marketplace/MarketplaceListingGridSkeleton';
 import type { MarketplaceListingItem, MarketplaceCategory } from '@/types/marketplace';
@@ -44,6 +55,11 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { normalizeMarketplaceListing } from '@/lib/marketplaceNumbers';
 import { usePageTitle } from '@/hooks/usePageTitle';
+// Direct hook paths on purpose: the page test replaces the whole '@/hooks'
+// barrel with a partial stub, so a barrel import would resolve to undefined.
+import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
+import { useHeaderScroll } from '@/hooks/useHeaderScroll';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { PageMeta } from '@/components/seo/PageMeta';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -81,6 +97,40 @@ function toSharedCategory(cat: ApiCategory): MarketplaceCategory {
   };
 }
 
+/** Every filter this hub sends to `GET /v2/marketplace/listings`. */
+interface MarketplaceQueryFilters {
+  q: string;
+  categoryId?: number;
+  limit: number;
+  cursor?: string | null;
+}
+
+/**
+ * Single source of truth for the listings query string. Extracted from
+ * `loadListings` so any future second caller (a count probe, a prefetch) cannot
+ * drift from the query the visible grid actually ran.
+ */
+function buildMarketplaceQueryParams(
+  { q, categoryId, limit, cursor }: MarketplaceQueryFilters,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (categoryId != null) params.set('category_id', String(categoryId));
+  params.set('limit', String(limit));
+  if (cursor) params.set('cursor', cursor);
+  return params;
+}
+
+/** One entry in the phone-only quick-links block (the `lg` sidebar's stand-in). */
+interface PhoneQuickLink {
+  key: string;
+  to: string;
+  label: string;
+  icon: ReactNode;
+}
+
+const QUICK_LINK_ICON_CLASS = 'h-4 w-4 shrink-0 text-theme-subtle';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,6 +139,10 @@ export function MarketplacePage() {
   const { t } = useTranslation('marketplace');
   const { t: tc } = useTranslation('marketplace_cases');
   usePageTitle(t('page_title'));
+  // Phones hide the hero, so the app bar carries the page title instead.
+  useSetAppBarTitle(t('page_title'));
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const { isUtilityBarVisible: showMobileControls } = useHeaderScroll(64);
   const { isAuthenticated } = useAuth();
   const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
@@ -111,6 +165,10 @@ export function MarketplacePage() {
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listingRequestRef = useRef(0);
   const featureEnabled = hasFeature('marketplace');
+
+  // Phone-only overlays (never mounted above `sm`).
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   // Debounce search
   useEffect(() => {
@@ -170,13 +228,12 @@ export function MarketplacePage() {
         setIsLoadingMore(true);
       }
 
-      const params = new URLSearchParams();
-      if (debouncedQuery) params.set('q', debouncedQuery);
-      if (selectedCategoryId != null) params.set('category_id', String(selectedCategoryId));
-      params.set('limit', String(ITEMS_PER_PAGE));
-      if (append && cursorRef.current) {
-        params.set('cursor', cursorRef.current);
-      }
+      const params = buildMarketplaceQueryParams({
+        q: debouncedQuery,
+        categoryId: selectedCategoryId,
+        limit: ITEMS_PER_PAGE,
+        cursor: append ? cursorRef.current : null,
+      });
 
       const response = await api.get<MarketplaceListingItem[]>(`/v2/marketplace/listings?${params}`);
       if (requestId !== listingRequestRef.current) return;
@@ -223,6 +280,69 @@ export function MarketplacePage() {
     if (selectedCategoryId != null) params.set('category', String(selectedCategoryId));
     setSearchParams(params, { replace: true });
   }, [debouncedQuery, selectedCategoryId, setSearchParams]);
+
+  // Phone: the applied category as a removable chip under the sticky bar. The
+  // query is not a chip — it shows inside the search pill instead.
+  const phoneFilterChips = useMemo(() => {
+    if (selectedCategoryId == null) return [];
+    const category = categories.find((c) => c.id === selectedCategoryId);
+    return [{
+      key: 'category',
+      label: category?.name ?? t('filters.category'),
+      onRemove: () => setSelectedCategoryId(undefined),
+    }];
+  }, [selectedCategoryId, categories, t]);
+
+  // Phone: the `hidden lg:block` sidebar's quick links, which phones and tablets
+  // never get. Re-homed below the grid so hiding the hero costs no functionality.
+  const phoneQuickLinks = useMemo<PhoneQuickLink[]>(() => {
+    const links: PhoneQuickLink[] = [{
+      key: 'advanced-search',
+      to: tenantPath('/marketplace/search'),
+      label: t('hub.advanced_search'),
+      icon: <Search className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+    }];
+    if (!isAuthenticated) return links;
+    links.push(
+      {
+        key: 'my-listings',
+        to: tenantPath('/marketplace/my-listings'),
+        label: t('hub.my_listings'),
+        icon: <Package className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      {
+        key: 'my-offers',
+        to: tenantPath('/marketplace/my-offers'),
+        label: t('hub.my_offers'),
+        icon: <HandCoins className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      {
+        key: 'orders',
+        to: tenantPath('/marketplace/orders'),
+        label: t('hub.my_orders'),
+        icon: <ShoppingBag className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      {
+        key: 'reports',
+        to: tenantPath('/marketplace/reports'),
+        label: tc('report.index_title'),
+        icon: <FileWarning className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      {
+        key: 'shipping',
+        to: tenantPath('/marketplace/seller/shipping-options'),
+        label: t('shipping.manage_cta'),
+        icon: <Truck className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+      {
+        key: 'saved',
+        to: tenantPath('/marketplace/collections'),
+        label: t('hub.saved_items'),
+        icon: <Heart className={QUICK_LINK_ICON_CLASS} aria-hidden="true" />,
+      },
+    );
+    return links;
+  }, [isAuthenticated, t, tc, tenantPath]);
 
   // Save / Unsave handlers (separate for MarketplaceListingGrid onSave/onUnsave props)
   const handleSave = async (id: number) => {
@@ -290,6 +410,9 @@ export function MarketplacePage() {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Phones hide the hero entirely — the title lives in the app bar
+            (useSetAppBarTitle) and "Sell something" moves into the sticky bar. */}
+        {!isPhone && (
         <PublicPageHero
           eyebrow={t('hub.eyebrow')}
           title={t('page_title')}
@@ -315,8 +438,10 @@ export function MarketplacePage() {
             ) : null
           }
         />
+        )}
 
-        {/* Search bar */}
+        {/* Search bar (desktop and tablet — phones use the sticky bar's search pill) */}
+        {!isPhone && (
         <div className="max-w-3xl">
           <SearchField
             placeholder={t('hub.search_placeholder')}
@@ -330,9 +455,10 @@ export function MarketplacePage() {
             onClear={() => setSearchQuery('')}
           />
         </div>
+        )}
 
-        {/* Category pills -- shared CategoryChips component */}
-        {categories.length > 0 && (
+        {/* Category pills -- shared CategoryChips component (phones: the filter sheet) */}
+        {!isPhone && categories.length > 0 && (
           <div role="group" aria-label={t('category_filter_label')}>
             <CategoryChips
               categories={categories}
@@ -340,6 +466,55 @@ export function MarketplacePage() {
               onSelect={(id) => setSelectedCategoryId(id ?? undefined)}
             />
           </div>
+        )}
+
+        {/* Phone: slim sticky control bar — auto-hides on scroll down. */}
+        {isPhone && (
+          <MobileFilterBar
+            isVisible={showMobileControls}
+            accent="emerald"
+            testId="marketplace-mobile-controls"
+            onSearchPress={() => setIsSearchOverlayOpen(true)}
+            searchValue={searchQuery}
+            onFiltersPress={() => setIsFilterSheetOpen(true)}
+            chips={phoneFilterChips}
+            labels={{ search: t('hub.search_placeholder') }}
+            trailing={
+              isAuthenticated ? (
+                <Button
+                  as={Link}
+                  to={tenantPath('/marketplace/sell')}
+                  isIconOnly
+                  aria-label={t('hub.sell_something')}
+                  className="size-11 min-h-11 min-w-11 shrink-0 rounded-full"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              ) : undefined
+            }
+          />
+        )}
+
+        {isPhone && (
+          <MobileSearchOverlay
+            isOpen={isSearchOverlayOpen}
+            onClose={() => setIsSearchOverlayOpen(false)}
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+            placeholder={t('hub.search_placeholder')}
+            recentKey="marketplace"
+          />
+        )}
+
+        {/* Phone filter sheet — category chips, applied on tap (no draft, no footer). */}
+        {isPhone && (
+          <MarketplaceFilterSheet
+            isOpen={isFilterSheetOpen}
+            onClose={() => setIsFilterSheetOpen(false)}
+            categories={categories}
+            selectedCategoryId={selectedCategoryId}
+            onSelectCategory={setSelectedCategoryId}
+          />
         )}
 
         {/* Main content layout */}
@@ -414,6 +589,32 @@ export function MarketplacePage() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* Phone: the `hidden lg:block` sidebar's quick links, which are
+                otherwise unreachable below `lg`. Placed after the grid so it
+                costs no space above the fold. */}
+            {isPhone && (
+              <nav className="mt-8 sm:hidden" aria-labelledby="marketplace-phone-quick-links">
+                <h2
+                  id="marketplace-phone-quick-links"
+                  className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-theme-subtle"
+                >
+                  {t('hub.quick_links')}
+                </h2>
+                <div className="grid grid-cols-2 gap-2">
+                  {phoneQuickLinks.map((link) => (
+                    <Link
+                      key={link.key}
+                      to={link.to}
+                      className="flex min-h-11 items-center gap-2 rounded-xl border border-theme-default bg-theme-elevated px-3 text-sm text-theme-primary transition-colors hover:border-emerald-500/40 hover:text-emerald-600 dark:hover:text-emerald-400"
+                    >
+                      {link.icon}
+                      <span className="truncate">{link.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </nav>
             )}
           </div>
 
