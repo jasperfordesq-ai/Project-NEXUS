@@ -27,7 +27,12 @@ vi.mock('../../AdminMetaContext', () => ({
   useAdminPageMeta: vi.fn(),
 }));
 
-vi.mock('../../components', () => ({
+// MemberTags imports PageHeader, ConfirmModal and MemberSearchPicker from their INDIVIDUAL paths
+// ('../../components/PageHeader' etc.), not from the '../../components' barrel. Vitest resolves
+// mocks per specifier, so registering these stubs on the barrel alone left all three dead: the real
+// admin components rendered and none of the data-testid hooks below existed, which is why every
+// assertion in this file failed. Hoisted once and registered on the barrel AND each direct path.
+const adminComponentsStub = vi.hoisted(() => ({
   PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
     <div data-testid="page-header">
       <span>{title}</span>
@@ -83,6 +88,11 @@ vi.mock('../../components', () => ({
     </div>
   ),
 }));
+
+vi.mock('../../components', () => adminComponentsStub);
+vi.mock('../../components/PageHeader', () => adminComponentsStub);
+vi.mock('../../components/ConfirmModal', () => adminComponentsStub);
+vi.mock('../../components/MemberSearchPicker', () => adminComponentsStub);
 
 // ─── Contexts / hooks ─────────────────────────────────────────────────────────
 const mockToast = vi.hoisted(() => ({
