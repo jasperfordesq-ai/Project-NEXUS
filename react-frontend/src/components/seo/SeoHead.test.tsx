@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Tenant mock helpers ────────────────────────────────────────────────────
 
@@ -47,17 +46,21 @@ const baseBranding = {
   logo: 'https://cdn.example.com/logo.png',
 };
 
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: baseTenant,
-      branding: baseBranding,
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
-    }),
-  })
-);
+// SeoHead imports useTenant from '@/contexts/TenantContext' by its DIRECT path
+// (SeoHead.tsx:9), so the override must be registered against that specifier.
+// A '@/contexts' barrel mock is never resolved for this component and the real
+// provider-backed hook throws outside a TenantProvider. Partial mock keeps
+// TenantProvider and the sibling hooks real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: () => ({
+    tenant: baseTenant,
+    branding: baseBranding,
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+  }),
+}));
 
 import { SeoHead } from './SeoHead';
 

@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
 // ─── Stub LocationMap (heavy Leaflet/Google dependency) ──────────────────────
@@ -29,19 +28,28 @@ vi.mock('@/components/ui/GlassCard', () => ({
   ),
 }));
 
-// ─── Mock @/contexts ──────────────────────────────────────────────────────────
-const mockHasFeature = vi.fn(() => true);
+// ─── Mock TenantContext on its DIRECT path ────────────────────────────────────
+// 🔴 LocationMapCard.tsx:17 imports `useTenant` from '@/contexts/TenantContext'.
+// Vitest keys its mock registry per-specifier, so the old
+// `vi.mock('@/contexts', ...)` override never applied — the real hook loaded and
+// threw "useTenant must be used within a TenantProvider" (TenantContext.tsx:722),
+// killing every test in this file. Total factory (rather than spreading
+// importOriginal) on purpose: the real module imports '@/i18n', which re-inits
+// i18next with an HTTP backend at module scope and would clobber the English
+// resources src/test/setup.ts loads synchronously.
+const { mockHasFeature } = vi.hoisted(() => ({ mockHasFeature: vi.fn(() => true) }));
 
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: mockHasFeature,
-      hasModule: vi.fn(() => true),
-    }),
-  })
-);
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test', slug: 'test' },
+    tenantSlug: 'test',
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: mockHasFeature,
+    hasModule: () => true,
+    mapProvider: 'google',
+    geocodingProvider: 'google',
+  }),
+}));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const singleMarker = [{ lat: 53.3498, lng: -6.2603, title: 'Dublin' }];
@@ -85,7 +93,11 @@ describe('LocationMapCard', () => {
     render(
       <LocationMapCard title="Map" markers={singleMarker} />
     );
-    expect(screen.getByTestId('location-map')).toBeInTheDocument();
+    // LocationMapCard.tsx:19 wraps the map in lazy() + Suspense, so the first
+    // render commits the Skeleton fallback and the stub arrives a microtask
+    // later. findBy* is getBy* + waitFor — same assertion, just past the
+    // boundary; it still fails if the map never mounts.
+    expect(await screen.findByTestId('location-map')).toBeInTheDocument();
   });
 
   it('does NOT render map when hasFeature("maps") returns false', async () => {
@@ -111,7 +123,7 @@ describe('LocationMapCard', () => {
     render(
       <LocationMapCard title="Center" markers={[]} center={center} />
     );
-    expect(screen.getByTestId('location-map')).toBeInTheDocument();
+    expect(await screen.findByTestId('location-map')).toBeInTheDocument();
   });
 
   it('renders GlassCard wrapper', async () => {
@@ -136,7 +148,7 @@ describe('LocationMapCard', () => {
     render(
       <LocationMapCard title="Map" markers={singleMarker} mapHeight="500px" />
     );
-    const mapEl = screen.getByTestId('location-map');
+    const mapEl = await screen.findByTestId('location-map');
     expect(mapEl).toHaveStyle({ height: '500px' });
   });
 
@@ -149,7 +161,7 @@ describe('LocationMapCard', () => {
         markers={singleMarker}
       />
     );
-    expect(screen.getByTestId('location-map')).toBeInTheDocument();
+    expect(await screen.findByTestId('location-map')).toBeInTheDocument();
     expect(screen.getByText('Galway, Ireland')).toBeInTheDocument();
   });
 });

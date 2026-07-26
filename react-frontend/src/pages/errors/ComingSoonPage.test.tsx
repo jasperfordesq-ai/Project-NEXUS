@@ -5,30 +5,28 @@
 
 /**
  * Tests for ComingSoonPage
+ *
+ * ComingSoonPage imports `useTenant` from its DIRECT path
+ * ('@/contexts/TenantContext'), so the stub has to live on that path — Vitest
+ * resolves mocks per specifier, so a '@/contexts' barrel mock is never
+ * consulted for a direct-path import and the real provider-backed hook throws.
+ *
+ * The mock is deliberately total (no importOriginal): loading the real
+ * TenantContext module pulls in '@/i18n', which unconditionally re-initialises
+ * i18next with the HTTP/localStorage backends and would wipe the English locale
+ * resources that src/test/setup.ts preloads — so assertions could no longer be
+ * made against real English copy. Nothing in this render graph needs any other
+ * TenantContext export.
+ *
+ * Everything else (Button, GlassCard, PageMeta, usePageTitle) renders for real.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test/test-utils';
 
-vi.mock('@/contexts', () => ({
-  useTenant: vi.fn(() => ({
-    tenantPath: (p: string) => `/test${p}`,
-  })),
-
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({ tenantPath: (p: string) => `/test${p}` }),
 }));
-
-vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 vi.mock('@/lib/motion', () => ({
   motion: {
@@ -42,8 +40,6 @@ vi.mock('@/lib/motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
-
 import { ComingSoonPage } from './ComingSoonPage';
 
 describe('ComingSoonPage', () => {
@@ -53,43 +49,48 @@ describe('ComingSoonPage', () => {
 
   it('renders the heading', () => {
     render(<ComingSoonPage />);
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    // utility.coming_soon.heading — real English copy from public/locales/en
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Coming Soon' })
+    ).toBeInTheDocument();
   });
 
   it('renders a link to the dashboard', () => {
     render(<ComingSoonPage />);
-    const dashboardLink = screen.getAllByRole('link').find(link =>
-      link.getAttribute('href')?.includes('/dashboard')
+    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute(
+      'href',
+      '/test/dashboard'
     );
-    expect(dashboardLink).toBeTruthy();
   });
 
   it('renders a go back button', () => {
-    const historyBackSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
     render(<ComingSoonPage />);
-    const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThan(0);
-    historyBackSpy.mockRestore();
+    // utility.coming_soon.go_back — the only <button> on the page (the dashboard
+    // action is a router link), asserted by accessible name rather than index.
+    expect(screen.getByRole('button', { name: /go back/i })).toBeInTheDocument();
   });
 
   it('calls window.history.back when go-back button is clicked', () => {
     const historyBackSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
     render(<ComingSoonPage />);
-    const backButtons = screen.getAllByRole('button');
-    fireEvent.click(backButtons[backButtons.length - 1]);
+    fireEvent.click(screen.getByRole('button', { name: /go back/i }));
     expect(historyBackSpy).toHaveBeenCalled();
     historyBackSpy.mockRestore();
   });
 
   it('renders with a custom feature prop', () => {
     render(<ComingSoonPage feature="Advanced Analytics" />);
-    // The page renders — we just confirm it does not crash with a custom prop
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    // utility.coming_soon.description interpolates {{feature}} — assert the prop
+    // actually reaches the rendered copy, not merely that the page mounted.
+    expect(
+      screen.getByText('Advanced Analytics is currently under development. Check back soon!')
+    ).toBeInTheDocument();
   });
 
   it('renders with the default "This feature" text when no feature prop given', () => {
     render(<ComingSoonPage />);
-    // Page still renders correctly
-    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getByText('This feature is currently under development. Check back soon!')
+    ).toBeInTheDocument();
   });
 });

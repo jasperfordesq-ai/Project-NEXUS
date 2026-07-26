@@ -76,118 +76,21 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/components/ui', () => {
-  let currentNumberField: {
-    value?: number;
-    onChange?: (n: number | undefined) => void;
-    isDisabled?: boolean;
-  } = {};
-
-  const resolveChildren = (children: unknown) =>
-    typeof children === 'function' ? (children as (arg: unknown) => ReactNode)(vi.fn()) : children as ReactNode;
-
-  const Container = ({ children, label, title, description }: Record<string, unknown>) => (
-    <div>
-      {label as ReactNode}
-      {title as ReactNode}
-      {description as ReactNode}
-      {resolveChildren(children)}
-    </div>
-  );
-
-  const Button = ({ children, onPress, onClick, isDisabled }: Record<string, unknown>) => (
-    <button
-      type="button"
-      disabled={isDisabled === true}
-      onClick={(onPress ?? onClick) as (() => void) | undefined}
-    >
-      {children as ReactNode}
-    </button>
-  );
-
-  const Input = ({ label, placeholder, value, onValueChange, onChange }: Record<string, unknown>) => {
-    const input = (
-      <input
-        placeholder={placeholder as string | undefined}
-        value={(value as string | undefined) ?? ''}
-        onChange={(event) => {
-          if (typeof onValueChange === 'function') (onValueChange as (next: string) => void)(event.target.value);
-          if (typeof onChange === 'function') (onChange as (event: unknown) => void)(event);
-        }}
-      />
-    );
-    return label ? <label>{label as ReactNode}{input}</label> : input;
-  };
-
-  const Textarea = Input;
-
-  const Switch = ({ children, onValueChange }: Record<string, unknown>) => (
-    <label>
-      <input
-        type="checkbox"
-        onChange={(event) => typeof onValueChange === 'function' && (onValueChange as (next: boolean) => void)(event.target.checked)}
-      />
-      {children as ReactNode}
-    </label>
-  );
-
-  const NumberFieldRoot = ({ value, onChange, isDisabled, children }: Record<string, unknown>) => {
-    currentNumberField = {
-      value: value as number | undefined,
-      onChange: onChange as ((n: number | undefined) => void) | undefined,
-      isDisabled: isDisabled as boolean | undefined,
-    };
-    return <div>{children as ReactNode}</div>;
-  };
-  const NumberFieldStub = Object.assign(NumberFieldRoot, {
-    Group: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-    Input: ({ 'aria-label': ariaLabel }: Record<string, unknown>) => (
-      <input
-        type="number"
-        aria-label={ariaLabel as string | undefined}
-        value={currentNumberField.value ?? ''}
-        disabled={currentNumberField.isDisabled || undefined}
-        onChange={(event) => {
-          const raw = event.target.value;
-          currentNumberField.onChange?.(raw === '' ? undefined : Number(raw));
-        }}
-      />
-    ),
-    DecrementButton: () => null,
-    IncrementButton: () => null,
-  });
-
-  const Chip = Object.assign(Container, {
-    Label: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  });
-
-  return {
-    Chip,
-    CloseButton: Button,
-    Select: Container,
-    SelectItem: Container,
-    GlassCard: Container,
-    Dropdown: Container,
-    DropdownTrigger: Container,
-    DropdownMenu: Container,
-    DropdownItem: Container,
-    Button,
-    Input,
-    Textarea,
-    Modal: Container,
-    ModalContent: Container,
-    ModalHeader: Container,
-    ModalBody: Container,
-    ModalFooter: Container,
-    Avatar: Container,
-    Switch,
-    Tooltip: Container,
-    CardRowsSkeleton: () => <div role="status" />,
-    NumberField: NumberFieldStub,
-    Label: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-    useConfirm: () => () => Promise.resolve(true),
-  };
-});
+// NOTE: deliberately NOT mocking the `@/components/ui` barrel. CreateJobPage
+// imports every primitive by direct path (`@/components/ui/Button`, `/Chip`,
+// `/Input`, `/NumberField`, `/Select`, `/Switch`, `/Textarea`, …), so a barrel
+// mock overrides none of them — and it breaks the real primitives that consume
+// the barrel internally (Skeletons imports `Skeleton` from it). Assertions below
+// target the real HeroUI DOM.
+//
+// The one real primitive the test has no business owning is `useConfirm`: it needs
+// a <ConfirmDialogProvider> the render tree does not have. Mock it on its DIRECT
+// path (same as src/admin/modules/events/EventSettings.test.tsx:51) so every
+// sibling primitive stays real. Resolving `true` keeps the previous stub's
+// behaviour: the unsaved-changes guard never blocks navigation in these tests.
+vi.mock('@/components/ui/ConfirmDialog', () => ({
+  useConfirm: () => () => Promise.resolve(true),
+}));
 
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title, description }: { title: string; description?: string }) => (
@@ -284,15 +187,24 @@ describe('CreateJobPage', () => {
       const descInput = screen.getByPlaceholderText('form.description_placeholder');
       // The default job type is 'paid' which requires salary range unless negotiable.
       // Fill salary fields to pass validation (labels include required asterisk '*').
-      const salaryMinInput = screen.getByLabelText(/form.salary_min_label/i);
-      const salaryMaxInput = screen.getByLabelText(/form.salary_max_label/i);
+      // The real NumberField also points its increment/decrement buttons'
+      // aria-labelledby at the field <Label>, so the label text alone matches three
+      // elements. Scoping to role `textbox` resolves to exactly the one number input.
+      const salaryMinInput = screen.getByRole('textbox', { name: /form\.salary_min_label/ });
+      const salaryMaxInput = screen.getByRole('textbox', { name: /form\.salary_max_label/ });
 
       // Use fireEvent.change to update form state without triggering pointer events
       // that would interfere with the subsequent fireEvent.click on the HeroUI button
       fireEvent.change(titleInput, { target: { value: 'New Vacancy' } });
       fireEvent.change(descInput, { target: { value: 'Full job description here' } });
+      // The real NumberField keeps typed text in local state and only publishes the
+      // numeric value on commit (blur / Enter) — exactly what happens when a user
+      // leaves the field to click Submit. Without the blur, salary_min/max stay empty
+      // and the EU pay-transparency rule blocks the submit.
       fireEvent.change(salaryMinInput, { target: { value: '30000' } });
+      fireEvent.blur(salaryMinInput);
       fireEvent.change(salaryMaxInput, { target: { value: '50000' } });
+      fireEvent.blur(salaryMaxInput);
 
       // Find the submit button element (the button that contains the submit text)
       // and click it directly to trigger HeroUI onPress via the virtual click path

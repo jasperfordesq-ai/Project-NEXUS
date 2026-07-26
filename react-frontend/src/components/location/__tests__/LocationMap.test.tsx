@@ -34,9 +34,16 @@ const mockUseTenant = vi.fn(() => ({
   geocodingProvider: 'google' as const,
 }));
 
-vi.mock('@/contexts', () => ({
-  useTenant: () => mockUseTenant(),
-}));
+// 🔴 Mock TenantContext by its DIRECT path, not the '@/contexts' barrel.
+// LocationMap.tsx:45 imports `useTenant` from '@/contexts/TenantContext'.
+// Vitest's mock registry is keyed per-specifier, so a `vi.mock('@/contexts')`
+// override never applies here — the real hook loads and throws
+// "useTenant must be used within a TenantProvider" (TenantContext.tsx:722).
+// Partial mock so sibling exports (TenantProvider, useTenantLanguages, …) stay real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/contexts/TenantContext')>();
+  return { ...actual, useTenant: () => mockUseTenant() };
+});
 
 const mockUseApiLoadingStatus = vi.fn(() => 'LOADED');
 
@@ -183,11 +190,12 @@ describe('LocationMap', () => {
       });
       const markers = [{ id: 1, lat: 53.35, lng: -6.26, title: 'Test' }];
       const { container } = render(<W><LocationMap markers={markers} /></W>);
-      // Suspense fallback while leaflet bundle loads in the test env;
-      // either way, the Google branch must NOT render.
+      // The lazy leaflet branch resolves in the test env, so assert the real
+      // OSM root actually mounts — and that the Google branch never does.
       await waitFor(() => {
-        expect(container.querySelector('[data-testid="google-map"]')).toBeNull();
+        expect(container.querySelector('.nexus-osm-map-wrapper')).toBeTruthy();
       });
+      expect(container.querySelector('[data-testid="google-map"]')).toBeNull();
     });
 
     it('renders the Google branch when map_provider=google (default)', async () => {

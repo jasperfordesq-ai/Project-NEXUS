@@ -26,9 +26,17 @@ const mockUseTenant = vi.fn(() => ({
   geocodingProvider: 'google' as const,
 }));
 
-vi.mock('@/contexts', () => ({
-  useTenant: () => mockUseTenant(),
-}));
+// 🔴 Mock TenantContext by its DIRECT path, not the '@/contexts' barrel.
+// PlaceAutocompleteInput.tsx:20 imports `useTenant` from
+// '@/contexts/TenantContext'. Vitest's mock registry is keyed per-specifier, so
+// a `vi.mock('@/contexts')` override never applies here — the real hook loads
+// and throws "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722).
+// Partial mock so sibling exports (TenantProvider, useTenantLanguages, …) stay real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/contexts/TenantContext')>();
+  return { ...actual, useTenant: () => mockUseTenant() };
+});
 
 const fetchSpy = vi.fn(async () =>
   new Response(JSON.stringify({ data: { enabled: false, apiKey: '', mapId: null } }), {

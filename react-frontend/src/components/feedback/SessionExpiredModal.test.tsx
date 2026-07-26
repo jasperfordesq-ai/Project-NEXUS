@@ -3,24 +3,28 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, act } from '@/test/test-utils';
-import { SessionExpiredModal } from './SessionExpiredModal';
+/**
+ * Tests for SessionExpiredModal
+ *
+ * SessionExpiredModal imports `useAuth` from '@/contexts/AuthContext' and
+ * `useTenant` from '@/contexts/TenantContext' — both DIRECT paths. Vitest
+ * resolves mocks per specifier, so the old '@/contexts' barrel mock was never
+ * consulted and both real provider-backed hooks threw, killing every test in
+ * the file before the modal could render.
+ *
+ * The mocks are deliberately total (no importOriginal): the real AuthContext
+ * and TenantContext modules both import '@/i18n', which unconditionally
+ * re-initialises i18next with the HTTP/localStorage backends and would wipe the
+ * English locale resources src/test/setup.ts preloads — the assertions below
+ * are on real English copy. No production module in this render graph imports
+ * the '@/contexts' barrel, so nothing needs the other exports.
+ *
+ * The Modal itself is the real @/components/ui one, rendering into a portal.
+ */
 
-vi.mock('@/lib/motion', () => {
-  const handler = {
-    get: (_: unknown, tag: string) => {
-      return ({ children, _initial, _animate, _exit, _transition, _variants, _whileHover, _whileTap, ...rest }: Record<string, unknown>) => {
-        const Tag = typeof tag === 'string' ? tag : 'div';
-        return <Tag {...rest}>{children}</Tag>;
-      };
-    },
-  };
-  return {
-    motion: new Proxy({}, handler),
-    AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
-  };
-});
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, act, within } from '@/test/test-utils';
+import { SessionExpiredModal } from './SessionExpiredModal';
 
 vi.mock('@/lib/api', () => ({
   SESSION_EXPIRED_EVENT: 'nexus:session_expired',
@@ -28,28 +32,27 @@ vi.mock('@/lib/api', () => ({
   tokenManager: { getTenantId: vi.fn(), getAccessToken: vi.fn() },
 }));
 
-vi.mock('@/contexts', () => ({
-  useTenant: vi.fn(() => ({
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
     tenant: { id: 2, name: 'Test', slug: 'test' },
-    tenantPath: vi.fn((p: string) => `/test${p}`),
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: () => true,
+    hasModule: () => true,
     isLoading: false,
     branding: { name: 'Test', primary_color: '#4F46E5' },
     tenantSlug: 'test',
-  })),
+  }),
+}));
 
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  useAuth: () => ({ user: { id: 1, name: 'Test User' }, isAuthenticated: true, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'authenticated', error: null }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
+// status: 'authenticated' matters — the modal only opens for a session that was
+// live, so a stale token on a first visit stays silent (see wasAuthenticated).
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    user: { id: 1, name: 'Test User' },
+    isAuthenticated: true,
+    status: 'authenticated',
+    error: null,
+  }),
 }));
 
 describe('SessionExpiredModal', () => {
@@ -68,7 +71,11 @@ describe('SessionExpiredModal', () => {
     act(() => {
       window.dispatchEvent(new CustomEvent('nexus:session_expired'));
     });
-    expect(screen.getByText('Session expired')).toBeInTheDocument();
+    // errors.session_expired / errors.session_expired_message — real English copy.
+    // Asserted through the dialog + heading roles now that the real HeroUI Modal
+    // renders, so the copy has to land in an actual labelled dialog.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Session expired' })).toBeInTheDocument();
     expect(screen.getByText(/session has expired/i)).toBeInTheDocument();
   });
 
@@ -77,7 +84,13 @@ describe('SessionExpiredModal', () => {
     act(() => {
       window.dispatchEvent(new CustomEvent('nexus:session_expired'));
     });
-    expect(screen.getByText('Dismiss')).toBeInTheDocument();
-    expect(screen.getByText('Log In')).toBeInTheDocument();
+    // errors.dismiss / common.auth.log_in — asserted as real buttons in the
+    // modal footer rather than as bare text nodes. Scoped to the footer because
+    // React Aria's overlay also renders a hidden 1x1 sentinel button labelled
+    // "Dismiss" for screen-reader dismissal.
+    const footer = screen.getByText('Dismiss').closest('[data-slot="modal-footer"]');
+    expect(footer).not.toBeNull();
+    expect(within(footer as HTMLElement).getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
+    expect(within(footer as HTMLElement).getByRole('button', { name: 'Log In' })).toBeInTheDocument();
   });
 });

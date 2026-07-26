@@ -5,72 +5,29 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 import type { PendingDocument } from '@/hooks/useLegalGate';
 
 // ─── No API calls — LegalAcceptanceGate receives props; no internal fetching ──
 
 // ─── Contexts ─────────────────────────────────────────────────────────────────
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
-    }),
-  })
-);
+// LegalAcceptanceGate imports useTenant by its DIRECT path
+// (`@/contexts/TenantContext`), so the mock must live on that specifier — a
+// '@/contexts' barrel mock is never consulted and the real provider-backed hook
+// throws outside TenantProvider. Partial mock so TenantProvider and the other
+// exports stay real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test', slug: 'test' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: () => true,
+    hasModule: () => true,
+  }),
+}));
 
-vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-
-// ─── Stub HeroUI Modal family ─────────────────────────────────────────────────
-// ModalContent children is a render prop: (onClose) => ReactNode
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<Record<string, unknown>>();
-  return {
-    ...orig,
-    Modal: ({ children, isOpen }: { children: React.ReactNode; isOpen?: boolean; isDismissable?: boolean; hideCloseButton?: boolean; size?: string; classNames?: object; 'aria-labelledby'?: string }) => (
-      isOpen ? <div role="dialog" aria-label="Dialog" data-testid="legal-gate-modal">{children}</div> : null
-    ),
-    ModalContent: ({ children }: { children: ((onClose: () => void) => React.ReactNode) | React.ReactNode }) => (
-      <div data-testid="modal-content">
-        {typeof children === 'function' ? children(() => {}) : children}
-      </div>
-    ),
-    ModalHeader: ({ children, id, className }: { children: React.ReactNode; id?: string; className?: string }) => (
-      <div data-testid="modal-header" id={id} className={className}>{children}</div>
-    ),
-    ModalBody: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-      <div data-testid="modal-body" className={className}>{children}</div>
-    ),
-    ModalFooter: ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="modal-footer">{children}</div>
-    ),
-    Button: ({
-      children, onPress, isLoading, isDisabled, color, 'aria-label': ariaLabel,
-    }: {
-      children?: React.ReactNode; onPress?: () => void; isLoading?: boolean; isDisabled?: boolean;
-      color?: string; 'aria-label'?: string;
-    }) => (
-      <button
-        onClick={() => onPress?.()}
-        disabled={isDisabled || isLoading}
-        aria-label={ariaLabel}
-        aria-busy={isLoading ? 'true' : undefined}
-        data-color={color}
-      >
-        {children}
-      </button>
-    ),
-    Chip: ({ children, color, variant, size, className }: {
-      children: React.ReactNode; color?: string; variant?: string; size?: string; className?: string;
-    }) => (
-      <span data-testid="doc-chip" data-color={color} className={className}>{children}</span>
-    ),
-  };
-});
+// The real HeroUI Modal/Button/Chip render fine in jsdom, so there is no stub
+// layer here: assertions below target the real DOM and the real English copy
+// that src/test/setup.ts loads from public/locales/en/legal.json.
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeDoc = (overrides: Partial<PendingDocument> = {}): PendingDocument => ({
@@ -90,6 +47,8 @@ const defaultProps = {
   isAccepting: false,
 };
 
+const ACCEPT_ARIA = 'Accept all updated legal documents and continue';
+
 // ─────────────────────────────────────────────────────────────────────────────
 describe('LegalAcceptanceGate', () => {
   beforeEach(() => {
@@ -108,7 +67,11 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} />);
 
-    expect(screen.getByTestId('modal-header')).toBeInTheDocument();
+    // The heading carries the id the Modal is aria-labelledby'd to, so this
+    // asserts both the header copy and the dialog's accessible-name wiring.
+    const heading = screen.getByRole('heading', { name: 'Updated legal documents' });
+    expect(heading).toHaveAttribute('id', 'legal-gate-title');
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', 'legal-gate-title');
   });
 
   it('renders a document row for each pending document', async () => {
@@ -119,10 +82,9 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} pendingDocs={docs} />);
 
-    // Each document type has a translated label; for unknown fallback it shows title
-    // Both docs are present in the DOM
-    expect(screen.getByTestId('modal-body')).toBeInTheDocument();
-    // There are 2 "Read" links
+    // Each document row shows its translated type label plus its own Read link.
+    expect(screen.getByText('Terms of Service')).toBeInTheDocument();
+    expect(screen.getByText('Privacy Policy')).toBeInTheDocument();
     const links = screen.getAllByRole('link');
     expect(links.length).toBe(2);
   });
@@ -131,8 +93,7 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} pendingDocs={[makeDoc({ document_type: 'privacy' })]} />);
 
-    const links = screen.getAllByRole('link');
-    expect(links.length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /Read/ })).toHaveLength(1);
   });
 
   it('document Read link points to the correct tenant path', async () => {
@@ -149,8 +110,7 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} pendingDocs={[outdatedDoc]} />);
 
-    const chips = screen.getAllByTestId('doc-chip');
-    expect(chips.length).toBeGreaterThan(0);
+    expect(screen.getByText('Updated')).toBeInTheDocument();
   });
 
   it('does not render an "Updated" chip for not_accepted documents', async () => {
@@ -158,17 +118,16 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} pendingDocs={[freshDoc]} />);
 
-    const chips = screen.queryAllByTestId('doc-chip');
-    expect(chips.length).toBe(0);
+    // Exact-text query, so the "Updated legal documents" title is not a match.
+    expect(screen.queryByText('Updated')).not.toBeInTheDocument();
   });
 
   it('renders the accept button in the footer', async () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} />);
 
-    const footer = screen.getByTestId('modal-footer');
-    const btn = footer.querySelector('button');
-    expect(btn).toBeTruthy();
+    const btn = screen.getByRole('button', { name: ACCEPT_ARIA });
+    expect(btn).toHaveTextContent('Accept & Continue');
   });
 
   it('calls onAcceptAll when the accept button is clicked', async () => {
@@ -176,9 +135,7 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} onAcceptAll={onAcceptAll} />);
 
-    const footer = screen.getByTestId('modal-footer');
-    const btn = footer.querySelector('button') as HTMLButtonElement;
-    fireEvent.click(btn);
+    fireEvent.click(screen.getByRole('button', { name: ACCEPT_ARIA }));
 
     await waitFor(() => {
       expect(onAcceptAll).toHaveBeenCalledTimes(1);
@@ -189,30 +146,29 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} isAccepting={true} />);
 
-    const footer = screen.getByTestId('modal-footer');
-    const btn = footer.querySelector('button') as HTMLButtonElement;
-    expect(btn.disabled).toBe(true);
+    expect(screen.getByRole('button', { name: ACCEPT_ARIA })).toBeDisabled();
   });
 
   it('accept button shows loading text when isAccepting=true', async () => {
+    const onAcceptAll = vi.fn().mockResolvedValue(undefined);
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
-    render(<LegalAcceptanceGate {...defaultProps} isAccepting={true} />);
+    render(<LegalAcceptanceGate {...defaultProps} onAcceptAll={onAcceptAll} isAccepting={true} />);
 
-    // When isAccepting, button renders t('gate.accepting') text
-    const footer = screen.getByTestId('modal-footer');
-    expect(footer.querySelector('button')).toBeTruthy();
-    // The button content changes — verify the element is aria-busy
-    const btn = footer.querySelector('button') as HTMLButtonElement;
-    expect(btn.getAttribute('aria-busy')).toBe('true');
+    // Real button swaps its label to gate.accepting and refuses further presses.
+    const btn = screen.getByRole('button', { name: ACCEPT_ARIA });
+    expect(btn).toHaveTextContent('Accepting');
+    expect(btn).not.toHaveTextContent('Accept & Continue');
+    fireEvent.click(btn);
+    expect(onAcceptAll).not.toHaveBeenCalled();
   });
 
   it('shows subtitle for a single pending document', async () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} pendingDocs={[makeDoc()]} />);
 
-    const header = screen.getByTestId('modal-header');
-    // Subtitle is rendered as a paragraph; just verify header is not empty
-    expect(header.textContent?.length).toBeGreaterThan(0);
+    expect(
+      screen.getByText('A document has been updated. Please review and accept it to continue.')
+    ).toBeInTheDocument();
   });
 
   it('shows subtitle for multiple pending documents', async () => {
@@ -220,17 +176,20 @@ describe('LegalAcceptanceGate', () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} pendingDocs={docs} />);
 
-    const header = screen.getByTestId('modal-header');
-    expect(header.textContent?.length).toBeGreaterThan(0);
+    expect(
+      screen.getByText('2 documents have been updated. Please review and accept them to continue.')
+    ).toBeInTheDocument();
   });
 
   it('renders consent text in the footer', async () => {
     const { LegalAcceptanceGate } = await import('./LegalAcceptanceGate');
     render(<LegalAcceptanceGate {...defaultProps} />);
 
-    const footer = screen.getByTestId('modal-footer');
-    // Consent text paragraph is present beside the button
-    expect(footer.textContent?.length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(
+        'By clicking Accept, you confirm you have read and agree to the documents listed above.'
+      )
+    ).toBeInTheDocument();
   });
 
   it('document read links open in a new tab', async () => {
@@ -238,8 +197,10 @@ describe('LegalAcceptanceGate', () => {
     render(<LegalAcceptanceGate {...defaultProps} />);
 
     const links = screen.getAllByRole('link');
+    expect(links.length).toBeGreaterThan(0);
     links.forEach((link) => {
       expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     });
   });
 

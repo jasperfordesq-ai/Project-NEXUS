@@ -10,37 +10,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
 
-vi.mock('@/contexts', () => ({
-  useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() })),
-  useAuth: vi.fn(() => ({
-    isAuthenticated: true,
-    user: { id: 1, name: 'Test User', role: 'user' },
-    login: vi.fn(),
-    logout: vi.fn(),
-    register: vi.fn(),
-    updateUser: vi.fn(),
-    refreshUser: vi.fn(),
-    status: 'idle',
-    error: null,
-  })),
-  useTenant: vi.fn(() => ({
+// LegalAcceptanceGate imports useTenant by its DIRECT path
+// (`@/contexts/TenantContext`), so the mock must live on that specifier — a
+// '@/contexts' barrel mock is never consulted and the real provider-backed hook
+// throws outside TenantProvider. Partial mock so TenantProvider and the other
+// exports stay real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: () => ({
     tenant: { id: 2, name: 'Test Tenant', slug: 'test' },
     branding: { name: 'Test', logo_url: null },
     tenantSlug: 'test',
     tenantPath: (p: string) => '/test' + p,
     isLoading: false,
-    hasFeature: vi.fn(() => true),
-    hasModule: vi.fn(() => true),
-  })),
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
+    hasFeature: () => true,
+    hasModule: () => true,
+  }),
 }));
 
 import { LegalAcceptanceGate } from '../LegalAcceptanceGate';

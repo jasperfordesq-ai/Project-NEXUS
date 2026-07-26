@@ -12,34 +12,43 @@
  *   - 'google'     → renders <GoogleMapsProvider> wrapping <PlaceAutocompleteWithGoogle>
  *
  * Strategy: use a single mutable `providerRef` so all tests share one hoisted
- * @/contexts mock — individual tests set providerRef.value before rendering.
+ * '@/contexts/TenantContext' mock — tests set providerRef.value before rendering.
  *
- * GoogleMapsProvider is stubbed to render its `fallback` prop so we can test
- * the PlaceAutocompleteFallback path without hitting any external API.
+ * The 'google' branch renders DeferredGooglePlaceAutocomplete, which shows the
+ * real PlaceAutocompleteFallback (HeroUI Input + clear Button) until focus/edit
+ * activates the lazy Google module. GoogleMapsProvider is stubbed to render its
+ * `fallback` prop so that activation path never hits an external API.
  * NominatimAutocomplete and OsPlacesAutocomplete are mocked as simple stubs.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
 
 // ── Hoist the mutable geocoding-provider ref ─────────────────────────────────
 const { providerRef } = vi.hoisted(() => ({
   providerRef: { value: 'google' as string },
 }));
 
-// ── Single @/contexts mock that reads from providerRef at call time ────────────
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
-      geocodingProvider: providerRef.value,
-    }),
-  })
-);
+// ── TenantContext mock on its DIRECT path, read at call time ──────────────────
+// 🔴 PlaceAutocompleteInput.tsx:20 imports `useTenant` from
+// '@/contexts/TenantContext'. Vitest keys its mock registry per-specifier, so the
+// old `vi.mock('@/contexts', ...)` override never applied — the real hook loaded
+// and threw "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722), killing every test in this file. Total factory
+// (rather than spreading importOriginal) on purpose: the real module imports
+// '@/i18n', which re-inits i18next with an HTTP backend at module scope and
+// would clobber the English resources src/test/setup.ts loads synchronously.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test', slug: 'test' },
+    tenantSlug: 'test',
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: () => true,
+    hasModule: () => true,
+    mapProvider: 'google',
+    geocodingProvider: providerRef.value,
+  }),
+}));
 
 // ── Mock child providers ──────────────────────────────────────────────────────
 // Stub NominatimAutocomplete — minimal combobox so dispatch tests pass

@@ -148,12 +148,6 @@
         "Skeleton"
       ]
     },
-    "src/components/feedback/SessionExpiredModal.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "useTenant"
-      ]
-    },
     "src/components/hashtags/TrendingHashtags.test.tsx": {
       "@/components/ui": [
         "GlassCard",
@@ -195,30 +189,6 @@
         "Kbd"
       ]
     },
-    "src/components/layout/ThemePicker.test.tsx": {
-      "@/contexts": [
-        "useTheme"
-      ]
-    },
-    "src/components/legal/LegalAcceptanceGate.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Chip",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader"
-      ],
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/legal/__tests__/LegalAcceptanceGate.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
     "src/components/listings/ListingAnalyticsPanel.test.tsx": {
       "@/components/ui": [
         "GlassCard"
@@ -230,81 +200,10 @@
         "Input"
       ]
     },
-    "src/components/location/EntityMapView.test.tsx": {
-      "@/components/ui": [
-        "Skeleton"
-      ],
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/location/LocationMap.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/location/LocationMapCard.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
     "src/components/location/NominatimAutocomplete.test.tsx": {
       "@/components/ui": [
         "Button",
         "Input"
-      ]
-    },
-    "src/components/location/PlaceAutocompleteInput.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/location/__tests__/EntityMapView.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/location/__tests__/LocationMap.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/location/__tests__/LocationMapCard.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/location/__tests__/PlaceAutocompleteInput.dispatch.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/navigation/Breadcrumbs.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/navigation/MenuNavItems.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "Dropdown",
-        "DropdownItem",
-        "DropdownMenu",
-        "DropdownTrigger",
-        "DynamicIcon"
-      ],
-      "@/contexts": [
-        "useAuth",
-        "useTenant"
-      ]
-    },
-    "src/components/navigation/__tests__/MenuNavItems.test.tsx": {
-      "@/components/ui": [
-        "DynamicIcon"
-      ],
-      "@/contexts": [
-        "useAuth",
-        "useTenant"
       ]
     },
     "src/components/profile/ProfileFeed.test.tsx": {
@@ -315,12 +214,6 @@
         "Skeleton"
       ]
     },
-    "src/components/proximity/ProximityFilter.test.tsx": {
-      "@/contexts": [
-        "useAuth",
-        "useToast"
-      ]
-    },
     "src/components/search/AdvancedSearchFilters.test.tsx": {
       "@/components/ui": [
         "Button",
@@ -329,16 +222,6 @@
         "Input",
         "Select",
         "SelectItem"
-      ]
-    },
-    "src/components/seo/PageMeta.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/components/seo/SeoHead.test.tsx": {
-      "@/contexts": [
-        "useTenant"
       ]
     },
     "src/components/social/ReactionPicker.test.tsx": {
@@ -357,11 +240,6 @@
         "Spinner",
         "Tab",
         "Tabs"
-      ]
-    },
-    "src/hooks/useLegalDocument.test.ts": {
-      "@/contexts": [
-        "useTenant"
       ]
     },
     "src/pages/about/RelatedPages.test.tsx": {
@@ -394,16 +272,6 @@
       ]
     },
     "src/pages/clubs/ClubsPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/errors/ComingSoonPage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
-    "src/pages/errors/NotFoundPage.test.tsx": {
       "@/contexts": [
         "useTenant"
       ]
@@ -565,34 +433,6 @@
         "useTenant"
       ]
     },
-    "src/pages/jobs/CreateJobPage.test.tsx": {
-      "@/components/ui": [
-        "Avatar",
-        "Button",
-        "CardRowsSkeleton",
-        "Chip",
-        "CloseButton",
-        "Dropdown",
-        "DropdownItem",
-        "DropdownMenu",
-        "DropdownTrigger",
-        "GlassCard",
-        "Input",
-        "Label",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "NumberField",
-        "Select",
-        "SelectItem",
-        "Switch",
-        "Textarea",
-        "Tooltip",
-        "useConfirm"
-      ]
-    },
     "src/pages/jobs/EmployerOnboardingPage.test.tsx": {
       "@/components/ui": [
         "Button",
@@ -607,24 +447,6 @@
         "Textarea"
       ]
     },
-    "src/pages/jobs/JobAlertsPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "CardRowsSkeleton",
-        "Chip",
-        "GlassCard",
-        "Input",
-        "Modal",
-        "ModalBody",
-        "ModalContent",
-        "ModalFooter",
-        "ModalHeader",
-        "Select",
-        "SelectItem",
-        "Switch",
-        "useDisclosure"
-      ]
-    },
     "src/pages/jobs/JobAnalyticsPage.test.tsx": {
       "@/components/ui": [
         "Button",
@@ -635,14 +457,6 @@
         "Skeleton",
         "Spinner",
         "Tooltip"
-      ]
-    },
-    "src/pages/jobs/JobDetailPage.test.tsx": {
-      "@/components/ui": [
-        "Button",
-        "CardRowsSkeleton",
-        "GlassCard",
-        "useDisclosure"
       ]
     },
     "src/pages/jobs/JobKanbanPage.test.tsx": {
@@ -809,11 +623,6 @@
         "useTenant"
       ]
     },
-    "src/pages/public/HomePage.test.tsx": {
-      "@/contexts": [
-        "useTenant"
-      ]
-    },
     "src/pages/public/PilotApplyStatusPage.test.tsx": {
       "@/contexts": [
         "useTenant"
@@ -875,7 +684,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 105,
-    "rowCount": 498
+    "offenderFileCount": 80,
+    "rowCount": 409
   }
 }

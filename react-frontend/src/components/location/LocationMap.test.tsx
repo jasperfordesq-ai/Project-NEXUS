@@ -5,7 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
 // ─── Mock api ────────────────────────────────────────────────────────────────
@@ -60,32 +59,39 @@ vi.mock('@/lib/map-config', () => ({ MAPS_ENABLED: true }));
 vi.mock('@/lib/map-styles', () => ({ DARK_MAP_STYLES: [] }));
 
 // ─── Context mocks ────────────────────────────────────────────────────────────
-const mockHasFeature = vi.fn(() => true);
+// 🔴 Both context hooks are mocked on their DIRECT paths, not via the
+// '@/contexts' barrel: LocationMap.tsx:612 imports `useTenant` from
+// '@/contexts/TenantContext' and LocationMap.tsx:42 imports `useTheme` from
+// '@/contexts/ThemeContext'. Vitest keys its mock registry per-specifier, so the
+// old `vi.mock('@/contexts', ...)` override never applied — the real useTenant
+// loaded and threw "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722), killing every test in this file.
+//
+// `mapProviderRef` is mutable so a test can exercise the OSM branch: the mock
+// reads it on every useTenant() call, so no re-import/module reset is needed.
+// Total factory (rather than spreading importOriginal) on purpose: the real
+// TenantContext imports '@/i18n', which re-inits i18next with an HTTP backend at
+// module scope and would clobber the English resources src/test/setup.ts loads.
+const { mockHasFeature, mapProviderRef } = vi.hoisted(() => ({
+  mockHasFeature: vi.fn(() => true),
+  mapProviderRef: { value: 'google' as string },
+}));
 
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: mockHasFeature,
-      hasModule: vi.fn(() => true),
-      mapProvider: 'google',
-    }),
-    useTheme: () => ({
-      resolvedTheme: 'light' as const,
-      theme: 'system' as const,
-      toggleTheme: vi.fn(),
-      setTheme: vi.fn(),
-    }),
-  })
-);
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test', slug: 'test' },
+    tenantSlug: 'test',
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: mockHasFeature,
+    hasModule: () => true,
+    mapProvider: mapProviderRef.value,
+    geocodingProvider: 'google',
+  }),
+}));
 
 vi.mock('@/contexts/ThemeContext', () => ({
   useTheme: () => ({ resolvedTheme: 'light', theme: 'system', toggleTheme: vi.fn(), setTheme: vi.fn() }),
 }));
-
-vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
-vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeMarker = (id = 1) => ({
@@ -101,6 +107,7 @@ describe('LocationMap', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockHasFeature.mockReturnValue(true);
+    mapProviderRef.value = 'google';
   });
 
   it('returns null when maps feature is disabled', async () => {
@@ -125,27 +132,24 @@ describe('LocationMap', () => {
   });
 
   it('renders OpenStreetMapView when mapProvider is openstreetmap', async () => {
-    // Re-mock useTenant to return openstreetmap provider
-    vi.doMock('@/contexts', () =>
-      createMockContexts({
-        useTenant: () => ({
-          tenant: { id: 2, name: 'Test', slug: 'test' },
-          tenantPath: (p: string) => `/test${p}`,
-          hasFeature: vi.fn(() => true),
-          hasModule: vi.fn(() => true),
-          mapProvider: 'openstreetmap',
-        }),
-      })
-    );
-
-    // Use the OSM test via spy on the module's useTenant
-    // Instead, verify through the Suspense boundary path
+    // The tenant mock reads mapProviderRef on every useTenant() call, so
+    // flipping it here genuinely drives LocationMap down the OSM branch — no
+    // module reset needed. (Previously this test did a `vi.doMock('@/contexts')`
+    // that could never take effect and asserted nothing about the OSM view.)
+    mapProviderRef.value = 'openstreetmap';
     const { LocationMap } = await import('./LocationMap');
-    // The module is already cached – this test verifies the null-guard only
-    // by checking the Google provider is still the cached render
-    render(<LocationMap markers={[]} />);
-    // At minimum the maps feature is on and something renders
-    expect(screen.queryByText(/null/i)).not.toBeInTheDocument();
+    render(<LocationMap markers={[makeMarker()]} />);
+    // OpenStreetMapView is lazy() behind a Suspense boundary — await the resolve.
+    expect(await screen.findByTestId('osm-view')).toBeInTheDocument();
+    expect(screen.queryByTestId('google-maps-provider')).not.toBeInTheDocument();
+  });
+
+  it('renders OpenStreetMapView for the ordnance_survey provider too', async () => {
+    mapProviderRef.value = 'ordnance_survey';
+    const { LocationMap } = await import('./LocationMap');
+    render(<LocationMap markers={[makeMarker()]} />);
+    expect(await screen.findByTestId('osm-view')).toBeInTheDocument();
+    expect(screen.queryByTestId('google-maps-provider')).not.toBeInTheDocument();
   });
 
   it('renders Suspense fallback skeleton while OSM view loads', async () => {

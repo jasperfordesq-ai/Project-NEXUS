@@ -16,30 +16,31 @@ import.meta.env.VITE_GOOGLE_MAPS_API_KEY = 'test-key';
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
+// 🔴 Mock TenantContext by its DIRECT path, not the '@/contexts' barrel.
+// LocationMapCard.tsx:17 (and LocationMap.tsx:45, reached via the lazy import)
+// import `useTenant` from '@/contexts/TenantContext'. Vitest's mock registry is
+// keyed per-specifier, so a `vi.mock('@/contexts')` override never applies here
+// — the real hook loads and throws "useTenant must be used within a
+// TenantProvider" (TenantContext.tsx:722). Nothing in this module graph imports
+// the '@/contexts' barrel, so no barrel mock belongs in this file.
+// Partial mock so sibling exports (TenantProvider, useTenantLanguages, …) stay real.
 let tenantMapsFeature = true;
-vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({ user: { id: 1 }, isAuthenticated: true })),
-  useTenant: vi.fn(() => ({
-    tenant: { id: 2, name: 'Test', slug: 'test' },
-    tenantSlug: 'test',
-    branding: { name: 'Test' },
-    hasFeature: vi.fn((feature: string) => feature === 'maps' ? tenantMapsFeature : true),
-    hasModule: vi.fn(() => true),
-    mapProvider: 'google',
-    geocodingProvider: 'google',
-    tenantPath: (p: string) => `/test${p}`,
-  })),
-  useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() })),
-  useTheme: vi.fn(() => ({ resolvedTheme: 'light', theme: 'light', setTheme: vi.fn() })),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-}));
+vi.mock('@/contexts/TenantContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/contexts/TenantContext')>();
+  return {
+    ...actual,
+    useTenant: vi.fn(() => ({
+      tenant: { id: 2, name: 'Test', slug: 'test' },
+      tenantSlug: 'test',
+      branding: { name: 'Test' },
+      hasFeature: vi.fn((feature: string) => feature === 'maps' ? tenantMapsFeature : true),
+      hasModule: vi.fn(() => true),
+      mapProvider: 'google',
+      geocodingProvider: 'google',
+      tenantPath: (p: string) => `/test${p}`,
+    })),
+  };
+});
 
 vi.mock('@/contexts/ThemeContext', () => ({
   useTheme: vi.fn(() => ({ resolvedTheme: 'light', theme: 'light', setTheme: vi.fn() })),

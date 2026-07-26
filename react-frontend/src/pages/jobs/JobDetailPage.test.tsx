@@ -78,27 +78,15 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
-vi.mock('@/components/social', () => ({ SocialInteractionPanel: () => null }));
+// NOTE: no `@/components/social` mock either — JobDetailPage imports
+// `SocialInteractionPanel` from its direct path, so a barrel mock never applied.
+// The real panel renders fine here (api + contexts are already stubbed).
 
-vi.mock('@/components/ui', () => ({
-  GlassCard: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  Button: ({ children, onPress, onClick, 'aria-label': ariaLabel }: Record<string, unknown>) => (
-    <button
-      type="button"
-      aria-label={ariaLabel as string | undefined}
-      onClick={(onPress ?? onClick) as (() => void) | undefined}
-    >
-      {children as ReactNode}
-    </button>
-  ),
-  CardRowsSkeleton: () => <div role="status" />,
-  useDisclosure: () => ({
-    isOpen: false,
-    onOpen: vi.fn(),
-    onClose: vi.fn(),
-    onOpenChange: vi.fn(),
-  }),
-}));
+// NOTE: deliberately NOT mocking the `@/components/ui` barrel. JobDetailPage
+// imports every primitive by direct path (`@/components/ui/Button`, `/GlassCard`,
+// `/Skeletons`, `/useDisclosure`), so a barrel mock overrides none of them — and it
+// breaks the real primitives that consume the barrel internally (Skeletons imports
+// `Skeleton` from it). Assertions below target the real HeroUI DOM.
 
 vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title, description }: { title: string; description?: string }) => (

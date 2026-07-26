@@ -4,49 +4,47 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
+import { render, screen, userEvent } from '@/test/test-utils';
 import type { ApiMenu, ApiMenuItem } from '@/types/menu';
 
 // ─── Context mocks ────────────────────────────────────────────────────────────
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useAuth: () => ({
-      user: { id: 1, name: 'Tester', role: 'user' },
-      isAuthenticated: true,
-      login: vi.fn(),
-      logout: vi.fn(),
-      register: vi.fn(),
-      updateUser: vi.fn(),
-      refreshUser: vi.fn(),
-      status: 'idle' as const,
-      error: null,
-    }),
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: vi.fn(() => true),
-      hasModule: vi.fn(() => true),
-    }),
-  })
-);
+// MenuNavItems imports useAuth from '@/contexts/AuthContext' (line 18) and
+// useTenant from '@/contexts/TenantContext' (line 19) — both by DIRECT path.
+// Overrides therefore have to be registered against those specifiers; a
+// '@/contexts' barrel mock is never resolved for this component and the real
+// provider-backed hooks throw outside their providers. Both mocks are partial
+// so AuthProvider / TenantProvider and the sibling hooks stay real.
 
-// ─── Stub HeroUI Dropdown (React Aria) which doesn't work well in jsdom ──────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Dropdown: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown">{children}</div>,
-    DropdownTrigger: ({ children }: { children: React.ReactNode }) => <div data-testid="dropdown-trigger">{children}</div>,
-    DropdownMenu: ({ children, 'aria-label': ariaLabel }: { children: React.ReactNode; 'aria-label'?: string; [key: string]: unknown }) =>
-      <ul role="menu" aria-label={ariaLabel}>{children}</ul>,
-    DropdownItem: ({ children }: { children: React.ReactNode; [key: string]: unknown }) => <li role="menuitem">{children}</li>,
-    Button: ({ children, endContent, ...rest }: { children?: React.ReactNode; endContent?: React.ReactNode; [key: string]: unknown }) =>
-      <button type="button" aria-label={rest['aria-label'] as string | undefined}>{children}{endContent}</button>,
-    DynamicIcon: ({ name }: { name: string | null }) => name ? <span data-testid={`icon-${name}`} aria-hidden="true" /> : null,
-  };
-});
+// Mutable so a single test can flip the signed-in state without re-mocking.
+const authState = {
+  user: { id: 1, name: 'Tester', role: 'user' } as { id: number; name: string; role: string } | null,
+  isAuthenticated: true,
+};
+
+vi.mock('@/contexts/AuthContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/AuthContext')>()),
+  useAuth: () => ({
+    user: authState.user,
+    isAuthenticated: authState.isAuthenticated,
+    login: vi.fn(),
+    logout: vi.fn(),
+    register: vi.fn(),
+    updateUser: vi.fn(),
+    refreshUser: vi.fn(),
+    status: 'idle' as const,
+    error: null,
+  }),
+}));
+
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test', slug: 'test' },
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: vi.fn(() => true),
+    hasModule: vi.fn(() => true),
+  }),
+}));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function makeItem(overrides: Partial<ApiMenuItem> = {}): ApiMenuItem {
@@ -82,6 +80,9 @@ function makeMenu(items: ApiMenuItem[]): ApiMenu {
 describe('DesktopMenuItems', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // Restore the default signed-in state (one test flips it).
+    authState.user = { id: 1, name: 'Tester', role: 'user' };
+    authState.isAuthenticated = true;
   });
 
   it('renders a nav link for a basic link item', async () => {
@@ -124,18 +125,14 @@ describe('DesktopMenuItems', () => {
   });
 
   it('hides items requiring auth when user is unauthenticated', async () => {
-    // We need to override auth for this test only; use module re-mock approach
-    vi.doMock('@/contexts', () =>
-      createMockContexts({
-        useAuth: () => ({
-          user: null,
-          isAuthenticated: false,
-          login: vi.fn(), logout: vi.fn(), register: vi.fn(),
-          updateUser: vi.fn(), refreshUser: vi.fn(),
-          status: 'idle' as const, error: null,
-        }),
-      })
-    );
+    // Flip the shared auth state the direct-path useAuth mock reads from.
+    // (The previous `vi.doMock('@/contexts', ...)` here was inert: MenuNavItems
+    // imports useAuth from '@/contexts/AuthContext', and re-mocking after the
+    // module graph is loaded cannot swap an already-resolved import anyway —
+    // which is why this test only ever asserted the public item.)
+    authState.user = null;
+    authState.isAuthenticated = false;
+
     const { DesktopMenuItems } = await import('./MenuNavItems');
     const items = [
       makeItem({ id: 1, label: 'Public', url: '/public', visibility_rules: null }),
@@ -143,8 +140,7 @@ describe('DesktopMenuItems', () => {
     ];
     render(<DesktopMenuItems menus={[makeMenu(items)]} />);
     expect(screen.getByText('Public')).toBeInTheDocument();
-    // Note: auth state comes from mock which is authenticated by default after first mock setup,
-    // so we verify at least public item renders
+    expect(screen.queryByText('Auth Only')).not.toBeInTheDocument();
   });
 
   it('renders dropdown group with children when type=dropdown', async () => {
@@ -158,10 +154,22 @@ describe('DesktopMenuItems', () => {
       children: [childItem],
     });
     render(<DesktopMenuItems menus={[makeMenu([parent])]} />);
-    // Dropdown trigger renders the parent label
-    expect(screen.getByText('Parent Dropdown')).toBeInTheDocument();
-    // Child renders inside dropdown menu
-    expect(screen.getByText('Sub Item')).toBeInTheDocument();
+
+    // Dropdown trigger renders the parent label. The real HeroUI v3 Dropdown
+    // mounts Dropdown.Menu inside Dropdown.Popover, so the children are not in
+    // the document until the trigger is activated — asserting on the collapsed
+    // trigger plus the opened menu is strictly stronger than the old stub,
+    // which rendered the whole tree eagerly and could never catch broken
+    // trigger/popover wiring.
+    const trigger = screen.getByRole('button', { name: /Parent Dropdown/i });
+    expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    await userEvent.click(trigger);
+
+    // Child renders inside the opened dropdown menu
+    expect(await screen.findByRole('menuitem', { name: 'Sub Item' })).toBeInTheDocument();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('renders items from multiple merged menus', async () => {
@@ -197,6 +205,9 @@ describe('DesktopMenuItems', () => {
 describe('MobileMenuItems', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // Restore the default signed-in state (one test flips it).
+    authState.user = { id: 1, name: 'Tester', role: 'user' };
+    authState.isAuthenticated = true;
   });
 
   it('renders mobile nav links for active items', async () => {

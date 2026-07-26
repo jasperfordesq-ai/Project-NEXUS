@@ -5,8 +5,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
-import React from 'react';
 
 // ─── API mock ─────────────────────────────────────────────────────────────────
 const { mockApi } = vi.hoisted(() => ({
@@ -52,41 +50,33 @@ vi.mock('./LocationMap', () => ({
   },
 }));
 
-// ─── Stub heavy UI (Skeleton) ─────────────────────────────────────────────────
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Skeleton: (props: {
-      role?: string;
-      'aria-busy'?: string;
-      'aria-label'?: string;
-      style?: React.CSSProperties;
-      className?: string;
-    }) => (
-      <div
-        role={props.role || 'status'}
-        aria-busy={props['aria-busy'] ?? 'true'}
-        aria-label={props['aria-label']}
-        style={props.style}
-        className={props.className}
-        data-testid="skeleton"
-      />
-    ),
-  };
-});
+// ─── NO '@/components/ui' barrel mock ─────────────────────────────────────────
+// EntityMapView.tsx:16 imports `Skeleton` from '@/components/ui/Skeleton', not
+// from the barrel, so a `vi.mock('@/components/ui', ...)` override never applied
+// (vitest's mock registry is keyed per-specifier). The real Skeleton spreads its
+// extra props straight onto the HeroUI skeleton div, so `role`/`aria-busy`/
+// `aria-label`/`style` land in the DOM exactly as the old stub faked them —
+// the loading assertions below target the real element.
 
 // ─── Contexts — hasFeature MUST return true for 'maps' ────────────────────────
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTenant: () => ({
-      tenant: { id: 2, name: 'Test', slug: 'test' },
-      tenantPath: (p: string) => `/test${p}`,
-      hasFeature: (_feature: string) => true, // always true, including 'maps'
-      hasModule: (_feature: string) => true,
-    }),
+// 🔴 DIRECT path, not the '@/contexts' barrel: EntityMapView.tsx:18 imports
+// `useTenant` from '@/contexts/TenantContext'. A barrel override is dead here
+// and the real hook throws "useTenant must be used within a TenantProvider"
+// (TenantContext.tsx:722) because test-utils wraps no TenantProvider.
+// Total factory (not a spread of importOriginal) on purpose: the real module
+// imports '@/i18n', which re-inits i18next with an HTTP backend at module scope
+// and would clobber the English resources src/test/setup.ts loads synchronously.
+vi.mock('@/contexts/TenantContext', () => ({
+  useTenant: () => ({
+    tenant: { id: 2, name: 'Test', slug: 'test' },
+    tenantSlug: 'test',
+    tenantPath: (p: string) => `/test${p}`,
+    hasFeature: (_feature: string) => true, // always true, including 'maps'
+    hasModule: (_feature: string) => true,
+    mapProvider: 'google',
+    geocodingProvider: 'google',
   }),
-);
+}));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 interface SimpleItem {

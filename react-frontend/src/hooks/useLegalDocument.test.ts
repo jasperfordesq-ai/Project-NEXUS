@@ -22,23 +22,17 @@ vi.mock('@/lib/api', () => ({
 let mockTenantLoading = false;
 let mockTenant: { id: number; slug: string } | null = { id: 2, slug: 'hour-timebank' };
 
-vi.mock('@/contexts', () => ({
+// useLegalDocument imports useTenant by its DIRECT path
+// (`@/contexts/TenantContext`), so the mock must live on that specifier — a
+// '@/contexts' barrel mock is never consulted and the real provider-backed hook
+// throws, because renderHook mounts the hook with no TenantProvider. Partial
+// mock so TenantProvider and the other exports stay real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
   useTenant: () => ({
     isLoading: mockTenantLoading,
     tenant: mockTenant,
   }),
-
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
 }));
 
 describe('useLegalDocument', () => {

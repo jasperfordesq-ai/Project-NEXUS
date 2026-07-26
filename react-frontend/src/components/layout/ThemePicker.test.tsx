@@ -15,8 +15,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
-import { createMockContexts } from '@/test/mock-contexts';
+import { render, screen, fireEvent } from '@/test/test-utils';
 import { ThemePicker } from './ThemePicker';
 
 // ─── Stable mock objects (MUST be module-scope, not per-call) ────────────────
@@ -48,11 +47,15 @@ const mockThemeValue = {
   isInitialized: true,
 };
 
-vi.mock('@/contexts', () =>
-  createMockContexts({
-    useTheme: () => mockThemeValue,
-  }),
-);
+// ThemePicker imports useTheme from its DIRECT path ('@/contexts/ThemeContext'),
+// so the stub has to live on that path. A '@/contexts' barrel mock is never
+// consulted for a direct-path import, which is why every test in this file used
+// to die on "useTheme must be used within a ThemeProvider". Partial mock so the
+// module's other exports (ThemeProvider, types) stay real.
+vi.mock('@/contexts/ThemeContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/ThemeContext')>()),
+  useTheme: () => mockThemeValue,
+}));
 
 // ─── Popover sub-components come from @/components/ui — let them render real ─
 
@@ -65,143 +68,67 @@ beforeEach(() => {
 describe('ThemePicker — trigger button', () => {
   it('renders a trigger button with aria-label', () => {
     render(<ThemePicker />);
-    const trigger = screen.getByRole('button');
-    expect(trigger).toBeInTheDocument();
-    // aria-label comes from the i18n key theme_picker.open_label; we just
-    // verify the button has some accessible label (non-empty)
-    expect(trigger).toHaveAttribute('aria-label');
-    expect(trigger.getAttribute('aria-label')).not.toBe('');
+    // common.theme_picker.open_label — real English copy from public/locales/en,
+    // so a missing/blank/untranslated label now fails instead of passing on a
+    // "some non-empty string" check.
+    const trigger = screen.getByRole('button', { name: 'Open theme picker' });
+    expect(trigger).toHaveAttribute('aria-label', 'Open theme picker');
   });
 });
 
 // ─── Popover opens and shows scheme buttons ───────────────────────────────────
 
 describe('ThemePicker — popover content', () => {
+  // src/test/setup.ts preloads public/locales/en, so every control below can be
+  // addressed by the real accessible name a user would hear. That replaces the
+  // previous filter-by-attribute + if/else fallbacks, which could pass without
+  // ever locating the specific control under test.
+  const TRIGGER = 'Open theme picker';
+
   async function openPicker() {
     render(<ThemePicker />);
-    // Click the trigger to open the popover
-    fireEvent.click(screen.getByRole('button'));
-    // Wait for the scheme buttons to appear in the portal
-    await waitFor(() => {
-      // "Light", "Dark", and "System" buttons should be visible
-      expect(screen.getAllByRole('button').length).toBeGreaterThan(1);
-    });
+    fireEvent.click(screen.getByRole('button', { name: TRIGGER }));
+    // Panel contents render in a portal — wait for the first control in it.
+    await screen.findByRole('button', { name: 'Light' });
   }
 
   it('shows light / dark / system scheme buttons after opening', async () => {
     await openPicker();
-    // The buttons have aria-pressed and text labels from i18n keys
-    const pressed = screen.getAllByRole('button').filter((b) =>
-      b.hasAttribute('aria-pressed'),
-    );
-    // At least 3 scheme buttons (light/dark/system)
-    expect(pressed.length).toBeGreaterThanOrEqual(3);
+    // All three schemes present, with pressed state reflecting theme: 'system'.
+    expect(screen.getByRole('button', { name: 'Light' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'System' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('calls setTheme("light") when the light scheme button is pressed', async () => {
-    render(<ThemePicker />);
-    fireEvent.click(screen.getByRole('button')); // open
-    await waitFor(() => {
-      // Wait until scheme buttons render
-      expect(screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed')).length).toBeGreaterThanOrEqual(3);
-    });
-
-    // Find the light scheme button by aria-label containing "light" (case-insensitive)
-    const allPressable = screen.getAllByRole('button').filter((b) =>
-      b.hasAttribute('aria-pressed'),
-    );
-    // The first ARIA-pressed button is the "light" scheme button (SCHEMES order)
-    // But we prefer to match by aria-label for robustness
-    const lightBtn = allPressable.find(
-      (b) => b.getAttribute('aria-label')?.toLowerCase().includes('light'),
-    );
-    if (lightBtn) {
-      fireEvent.click(lightBtn);
-      expect(setThemeSpy).toHaveBeenCalledWith('light');
-    } else {
-      // Fallback: click the first aria-pressed button in scheme group
-      fireEvent.click(allPressable[0]);
-      expect(setThemeSpy).toHaveBeenCalled();
-    }
+    await openPicker();
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    expect(setThemeSpy).toHaveBeenCalledTimes(1);
+    expect(setThemeSpy).toHaveBeenCalledWith('light');
   });
 
   it('calls setTheme("dark") when the dark scheme button is pressed', async () => {
-    render(<ThemePicker />);
-    fireEvent.click(screen.getByRole('button')); // open
-    await waitFor(() => {
-      expect(screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed')).length).toBeGreaterThanOrEqual(3);
-    });
-
-    const allPressable = screen.getAllByRole('button').filter((b) =>
-      b.hasAttribute('aria-pressed'),
-    );
-    const darkBtn = allPressable.find(
-      (b) => b.getAttribute('aria-label')?.toLowerCase().includes('dark'),
-    );
-    if (darkBtn) {
-      fireEvent.click(darkBtn);
-      expect(setThemeSpy).toHaveBeenCalledWith('dark');
-    } else {
-      fireEvent.click(allPressable[1]);
-      expect(setThemeSpy).toHaveBeenCalled();
-    }
+    await openPicker();
+    fireEvent.click(screen.getByRole('button', { name: 'Dark' }));
+    expect(setThemeSpy).toHaveBeenCalledTimes(1);
+    expect(setThemeSpy).toHaveBeenCalledWith('dark');
   });
 
   it('calls setAccentColor when an accent swatch is clicked', async () => {
-    render(<ThemePicker />);
-    fireEvent.click(screen.getByRole('button')); // open
-
-    await waitFor(() => {
-      // Accent swatch buttons have aria-label matching "select_color" pattern
-      const swatches = screen.getAllByRole('button').filter((b) =>
-        b.getAttribute('aria-label')?.toLowerCase().includes('indigo') ||
-        b.getAttribute('aria-label')?.toLowerCase().includes('color'),
-      );
-      expect(swatches.length).toBeGreaterThan(0);
-    });
-
-    // Find any color swatch button
-    const swatch = screen.getAllByRole('button').find(
-      (b) =>
-        b.getAttribute('aria-label')?.toLowerCase().includes('indigo') ||
-        b.getAttribute('aria-label')?.toLowerCase().includes('color'),
-    );
-    if (swatch) {
-      fireEvent.click(swatch);
-      expect(setAccentColorSpy).toHaveBeenCalledTimes(1);
-    }
+    await openPicker();
+    // settings.appearance_prefs.select_color interpolates the preset name.
+    // Purple is deliberately not the currently selected accent (#6366f1 indigo).
+    fireEvent.click(screen.getByRole('button', { name: 'Select purple as accent color' }));
+    expect(setAccentColorSpy).toHaveBeenCalledTimes(1);
+    expect(setAccentColorSpy).toHaveBeenCalledWith('#a855f7');
   });
 
   it('calls setDensity when a density button is pressed', async () => {
-    render(<ThemePicker />);
-    fireEvent.click(screen.getByRole('button')); // open
-
-    await waitFor(() => {
-      expect(screen.getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed')).length).toBeGreaterThanOrEqual(3);
-    });
-
-    // Density options have translated text; DENSITIES = ['compact','comfortable','spacious']
-    // They render inside a ButtonGroup with aria-pressed.  Find one by text substring.
-    const DENSITY_TEXTS = ['compact', 'comfortable', 'spacious'];
-    const allButtons = screen.getAllByRole('button');
-    const densityBtn = allButtons.find((b) => {
-      const text = b.textContent?.toLowerCase() ?? '';
-      return DENSITY_TEXTS.some((d) => text.includes(d));
-    });
-
-    if (densityBtn) {
-      fireEvent.click(densityBtn);
-      expect(setDensitySpy).toHaveBeenCalledTimes(1);
-    } else {
-      // If the i18n key renders something other than the English density names,
-      // fall back to verifying the aria-pressed group has more than 3 buttons
-      // (meaning density buttons DID render).
-      const pressable = screen.getAllByRole('button').filter((b) =>
-        b.hasAttribute('aria-pressed'),
-      );
-      // We can't determine which are density vs scheme — skip the spy assertion
-      // and just verify the popover rendered all expected controls (>=6 buttons).
-      expect(pressable.length).toBeGreaterThanOrEqual(3);
-    }
+    await openPicker();
+    // settings.appearance_prefs.density_compact — 'comfortable' is the current
+    // value, so pressing 'Compact' proves a real change is dispatched.
+    fireEvent.click(screen.getByRole('button', { name: 'Compact' }));
+    expect(setDensitySpy).toHaveBeenCalledTimes(1);
+    expect(setDensitySpy).toHaveBeenCalledWith('compact');
   });
 });

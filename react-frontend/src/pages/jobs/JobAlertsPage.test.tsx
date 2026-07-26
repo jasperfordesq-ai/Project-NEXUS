@@ -70,64 +70,12 @@ vi.mock('@/contexts', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
-vi.mock('@/components/ui', () => {
-  const Box = ({ children, label, title, description }: Record<string, unknown>) => (
-    <div>
-      {label as ReactNode}
-      {title as ReactNode}
-      {description as ReactNode}
-      {typeof children === 'function' ? (children as (arg: unknown) => ReactNode)(vi.fn()) : children as ReactNode}
-    </div>
-  );
-  const Chip = Object.assign(Box, {
-    Label: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
-  });
-  const Button = ({ children, onPress, onClick, 'aria-label': ariaLabel }: Record<string, unknown>) => (
-    <button
-      type="button"
-      aria-label={ariaLabel as string | undefined}
-      onClick={(onPress ?? onClick) as (() => void) | undefined}
-    >
-      {children as ReactNode}
-    </button>
-  );
-  const Input = ({ label, placeholder, value, onValueChange }: Record<string, unknown>) => {
-    const input = (
-      <input
-        placeholder={placeholder as string | undefined}
-        value={(value as string | undefined) ?? ''}
-        onChange={(event) => typeof onValueChange === 'function' && (onValueChange as (value: string) => void)(event.target.value)}
-      />
-    );
-    return label ? <label>{label as ReactNode}{input}</label> : input;
-  };
-  const Switch = ({ children, onValueChange }: Record<string, unknown>) => (
-    <label>
-      <input
-        type="checkbox"
-        onChange={(event) => typeof onValueChange === 'function' && (onValueChange as (value: boolean) => void)(event.target.checked)}
-      />
-      {children as ReactNode}
-    </label>
-  );
-
-  return {
-    Chip,
-    Select: Box,
-    SelectItem: Box,
-    useDisclosure: () => ({ isOpen: false, onOpen: vi.fn(), onOpenChange: vi.fn(), onClose: vi.fn() }),
-    GlassCard: Box,
-    Button,
-    Input,
-    Modal: ({ isOpen, children }: Record<string, unknown>) => isOpen === false ? null : <div>{children as ReactNode}</div>,
-    ModalContent: Box,
-    ModalHeader: Box,
-    ModalBody: Box,
-    ModalFooter: Box,
-    Switch,
-    CardRowsSkeleton: () => <div role="status" aria-busy="true" />,
-  };
-});
+// NOTE: deliberately NOT mocking the `@/components/ui` barrel. JobAlertsPage
+// imports every primitive by direct path (`@/components/ui/Button`, `/Chip`,
+// `/GlassCard`, `/Input`, `/Modal`, `/Select`, `/Skeletons`, `/Switch`,
+// `/useDisclosure`), so a barrel mock overrides none of them — and it breaks the
+// real primitives that consume the barrel internally (Skeletons imports
+// `Skeleton` from it). Assertions below target the real HeroUI DOM.
 
 vi.mock('@/components/seo', () => ({
   PageMeta: () => null,

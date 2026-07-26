@@ -14,36 +14,36 @@ import type { ApiMenu } from '@/types/menu';
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-vi.mock('@/contexts', () => ({
-  useAuth: vi.fn(() => ({
+// MenuNavItems imports useAuth from '@/contexts/AuthContext' (line 18) and
+// useTenant from '@/contexts/TenantContext' (line 19) by their DIRECT paths, so
+// the overrides must be registered against those specifiers — a '@/contexts'
+// barrel mock is never resolved for this component and the real provider-backed
+// hooks throw outside their providers. Partial mocks so AuthProvider /
+// TenantProvider and the sibling hooks stay real.
+vi.mock('@/contexts/AuthContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/AuthContext')>()),
+  useAuth: () => ({
     user: { id: 1, name: 'Test User', role: 'user' },
     isAuthenticated: true,
-  })),
-  useTenant: vi.fn(() => ({
+  }),
+}));
+
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
+  useTenant: () => ({
     tenant: { id: 2, name: 'Test', slug: 'test' },
     tenantSlug: 'test',
     branding: { name: 'Test' },
     hasFeature: vi.fn(() => true),
     hasModule: vi.fn(() => true),
     tenantPath: (p: string) => `/test${p}`,
-  })),
-  useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() })),
-  useTheme: vi.fn(() => ({ resolvedTheme: 'light', theme: 'light', setTheme: vi.fn() })),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
+  }),
 }));
 
-vi.mock('@/components/ui', () => ({
-  DynamicIcon: ({ name, className }: { name?: string; className?: string }) => (
-    <span data-testid={`icon-${name || 'default'}`} className={className} />
-  ),
-}));
+// No '@/components/ui' mock: MenuNavItems imports Button, Dropdown and
+// DynamicIcon from '@/components/ui/Button', '@/components/ui/Dropdown' and
+// '@/components/ui/DynamicIcon', so a barrel mock never applied. The real
+// components render fine here — none of these cases open a dropdown popover.
 
 import { DesktopMenuItems, MobileMenuItems } from '../MenuNavItems';
 

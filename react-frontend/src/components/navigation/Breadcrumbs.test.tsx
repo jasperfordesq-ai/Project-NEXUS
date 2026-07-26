@@ -7,22 +7,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { Breadcrumbs } from './Breadcrumbs';
 
-vi.mock('@/contexts', () => ({
+// Breadcrumbs imports useTenant from '@/contexts/TenantContext' by its DIRECT
+// path, so the override has to live on that specifier — a '@/contexts' barrel
+// mock is never consulted and the real provider-backed hook would throw.
+// Partial mock so TenantProvider and the sibling hooks stay real.
+vi.mock('@/contexts/TenantContext', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/contexts/TenantContext')>()),
   useTenant: vi.fn(() => ({
     tenantPath: vi.fn((p: string) => `/test${p}`),
   })),
-
-  useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
-  useNotifications: () => ({ unreadCount: 0, counts: {}, notifications: [], markAsRead: vi.fn(), markAllAsRead: vi.fn(), hasMore: false, loadMore: vi.fn(), isLoading: false, refresh: vi.fn() }),
-  usePusher: () => ({ channel: null, isConnected: false }),
-  usePusherOptional: () => null,
-  useCookieConsent: () => ({ consent: null, showBanner: false, openPreferences: vi.fn(), resetConsent: vi.fn(), saveConsent: vi.fn(), hasConsent: vi.fn(() => true), updateConsent: vi.fn() }),
-  readStoredConsent: () => null,
-  useMenuContext: () => ({ headerMenus: [], mobileMenus: [], hasCustomMenus: false }),
-  useFeature: vi.fn(() => true),
-  useModule: vi.fn(() => true),
-  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn(), updateUser: vi.fn(), refreshUser: vi.fn(), status: 'idle', error: null }),
-  useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
 }));
 
 describe('Breadcrumbs', () => {
