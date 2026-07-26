@@ -79,7 +79,13 @@ foreach ($iter as $file) {
     if ($file->isFile() && str_ends_with($file->getFilename(), 'Test.php')) {
         // Store the repo-relative path; the partition key must not depend on the
         // absolute checkout location, only on the path within the repo.
-        $files[] = substr($file->getPathname(), strlen($root) + 1);
+        //
+        // Normalise to forward slashes: getPathname() yields backslashes on
+        // Windows, which hash differently from the POSIX paths CI keys on. Without
+        // this, running the script locally on Windows prints a DIFFERENT partition
+        // than the one CI executes — a file can look unassigned to its real shard,
+        // which is easy to misread as "CI never runs this test".
+        $files[] = str_replace('\\', '/', substr($file->getPathname(), strlen($root) + 1));
     }
 }
 

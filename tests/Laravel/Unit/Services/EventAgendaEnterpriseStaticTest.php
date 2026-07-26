@@ -211,12 +211,23 @@ final class EventAgendaEnterpriseStaticTest extends TestCase
         }
     }
 
+    /**
+     * Read a repo source file with line endings normalised to LF.
+     *
+     * The needles below are written with "\n" (e.g. the two-line
+     * ->whereColumn( ... 'event_registration.registration_version' join), so
+     * they only ever match an LF haystack. CI checks out LF, but a Windows
+     * working tree with core.autocrlf=true + .gitattributes text=auto has these
+     * files as CRLF on disk (`git ls-files --eol` reports i/lf w/crlf), which
+     * made this test pass in CI and fail locally. Normalising here keeps every
+     * needle in this class platform-neutral without relaxing what it asserts.
+     */
     private function source(string $path): string
     {
         $source = file_get_contents($this->root . '/' . $path);
         self::assertIsString($source, $path);
 
-        return $source;
+        return str_replace(["\r\n", "\r"], "\n", $source);
     }
 
     /** @param array<string,mixed> $value @return array<string,mixed> */
