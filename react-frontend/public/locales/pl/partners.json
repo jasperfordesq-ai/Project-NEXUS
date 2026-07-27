@@ -198,5 +198,13 @@
       "title": "Ustawienia sieciowe",
       "description": "Główne przełączniki partnerstwa — włącz je lub wyłącz i wybierz, co Twoja społeczność udostępnia partnerom."
     }
+  },
+  "external_federation": {
+    "banner_title": "Federacja partnerów zewnętrznych jest wyłączona",
+    "banner_title_lockdown": "Awaryjna blokada Federacji jest aktywna",
+    "banner_body": "Żądania z innych instalacji są odrzucane za pomocą protokołu HTTP 503 i nic na tych stronach nie jest wysyłane do partnerów zewnętrznych. Poniższą konfigurację można nadal przeglądać i edytować — po prostu nie zacznie obowiązywać, dopóki federacja zewnętrzna nie zostanie ponownie włączona.",
+    "banner_internal_unaffected": "Federacja między społecznościami w tej instalacji pozostaje nienaruszona i nadal działa normalnie.",
+    "banner_manage_link": "Zarządzaj federacją zewnętrzną",
+    "sidebar_disabled_chip": "Wyłączony"
   }
 }

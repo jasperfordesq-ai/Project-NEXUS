@@ -196,5 +196,13 @@
       "title": "Impostazioni di rete",
       "description": "Il master passa alla partnership: attivalo o disattivalo e scegli ciò che la tua community condivide con i partner."
     }
+  },
+  "external_federation": {
+    "banner_title": "La federazione dei partner esterni è disattivata",
+    "banner_title_lockdown": "È attivo il lockdown d’emergenza della Federazione",
+    "banner_body": "Le richieste provenienti da altre installazioni vengono rifiutate con HTTP 503 e nulla su queste pagine viene inviato a partner esterni. La configurazione seguente può ancora essere visualizzata e modificata: semplicemente non avrà effetto finché non verrà riattivata la federazione esterna.",
+    "banner_internal_unaffected": "La federazione tra le comunità all'interno di questa installazione non viene influenzata e continua a funzionare normalmente.",
+    "banner_manage_link": "Gestire la federazione esterna",
+    "sidebar_disabled_chip": "Spento"
   }
 }

@@ -194,5 +194,13 @@
       "title": "Network settings",
       "description": "The master switches for partnering — turn it on or off, and choose what your community shares with partners."
     }
+  },
+  "external_federation": {
+    "banner_title": "External partner federation is switched off",
+    "banner_title_lockdown": "Federation emergency lockdown is active",
+    "banner_body": "Requests from other installations are being refused with HTTP 503, and nothing on these pages is being sent to external partners. Configuration below can still be viewed and edited — it simply will not take effect until external federation is switched back on.",
+    "banner_internal_unaffected": "Federation between communities inside this installation is unaffected and continues to work normally.",
+    "banner_manage_link": "Manage external federation",
+    "sidebar_disabled_chip": "Off"
   }
 }

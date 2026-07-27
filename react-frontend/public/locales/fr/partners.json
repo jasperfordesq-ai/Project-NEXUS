@@ -196,5 +196,13 @@
       "title": "Paramètres réseau",
       "description": "Le commutateur principal pour le partenariat : activez-le ou désactivez-le et choisissez ce que votre communauté partage avec ses partenaires."
     }
+  },
+  "external_federation": {
+    "banner_title": "La fédération partenaire externe est désactivée",
+    "banner_title_lockdown": "Le confinement d'urgence de la Fédération est actif",
+    "banner_body": "Les requêtes provenant d'autres installations sont refusées avec HTTP 503, et rien sur ces pages n'est envoyé à des partenaires externes. La configuration ci-dessous peut toujours être consultée et modifiée : elle ne prendra tout simplement effet que lorsque la fédération externe sera réactivée.",
+    "banner_internal_unaffected": "La fédération entre les communautés au sein de cette installation n'est pas affectée et continue de fonctionner normalement.",
+    "banner_manage_link": "Gérer la fédération externe",
+    "sidebar_disabled_chip": "Désactivé"
   }
 }

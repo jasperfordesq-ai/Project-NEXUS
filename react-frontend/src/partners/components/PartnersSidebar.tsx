@@ -42,6 +42,7 @@ import Settings from 'lucide-react/icons/settings';
 import PanelLeftClose from 'lucide-react/icons/panel-left-close';
 import PanelLeft from 'lucide-react/icons/panel-left';
 import { Button, Tooltip } from '@/components/ui';
+import { useExternalFederationStatus } from './useExternalFederationStatus';
 
 interface PartnersSidebarProps {
   collapsed: boolean;
@@ -59,6 +60,13 @@ interface NavSection {
   key: string;
   title: string;
   items: NavItem[];
+  /**
+   * Section carries traffic to/from OTHER installations, so it is inert while
+   * the external partner federation kill switch is off. The links stay
+   * reachable — an operator still needs them to inspect and reconfigure — but
+   * the heading is marked so the state is visible without opening a page.
+   */
+  externalGated?: boolean;
 }
 
 export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
@@ -66,6 +74,8 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
   const location = useLocation();
   const { tenantPath, hasFeature } = useTenant();
   const { user } = useAuth();
+  const externalStatus = useExternalFederationStatus();
+  const externalFederationOff = externalStatus !== null && !externalStatus.effective;
 
   // Setup/plumbing surfaces are super-admin-only; ordinary admins get the
   // read-mostly panel. Must mirror the SuperRoute gates in routes.tsx.
@@ -101,6 +111,7 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
           {
             key: 'external',
             title: t('sidebar.section_external'),
+            externalGated: true,
             items: [
               ...(showFederation && isSuper
                 ? ([
@@ -131,6 +142,9 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
           {
             key: 'access',
             title: t('sidebar.section_access'),
+            // Inbound partner credentials and outbound webhooks — both inert
+            // while the external kill switch is off.
+            externalGated: true,
             items: [
               { key: 'api-keys', label: t('nav.api_keys'), icon: KeyRound, path: '/partner-timebanks/api-keys' },
               { key: 'webhooks', label: t('nav.webhooks'), icon: Webhook, path: '/partner-timebanks/webhooks' },
@@ -257,8 +271,13 @@ export function PartnersSidebar({ collapsed, onToggle }: PartnersSidebarProps) {
         {sections.map((section, idx) => (
           <div key={section.key} className={idx > 0 ? 'mt-4' : ''}>
             {!collapsed && section.key !== 'overview' && (
-              <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
-                {section.title}
+              <p className="flex items-center gap-2 px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-muted">
+                <span>{section.title}</span>
+                {section.externalGated && externalFederationOff && (
+                  <span className="rounded bg-danger/10 px-1.5 py-0.5 text-[10px] font-semibold normal-case text-danger">
+                    {t('external_federation.sidebar_disabled_chip')}
+                  </span>
+                )}
               </p>
             )}
             <ul className="flex flex-col gap-1">

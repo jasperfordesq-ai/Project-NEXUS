@@ -193,6 +193,11 @@ class AdminFederationController extends BaseApiController
         $data = [
             'federation_enabled' => (bool) ($tenantFeatures[FederationFeatureService::TENANT_FEDERATION_ENABLED]['enabled'] ?? false),
             'system_federation_enabled' => $featureService->isGloballyEnabled(),
+            // External partner federation kill switch. Surfaced here (rather
+            // than only on the platform-super-admin endpoint) so the Partner
+            // Timebanks panel can tell its operators — who may be tenant super
+            // admins — that external protocol traffic is currently blocked.
+            'external_federation' => $featureService->externalProtocolStatus(),
             'tenant_features' => $tenantFeatures,
             'tenant_id' => $tenantId,
             'settings' => ['allow_inbound_partnerships' => true, 'auto_approve_partners' => false, 'shared_categories' => [], 'max_partnerships' => 10],

@@ -194,5 +194,13 @@
       "title": "Netzwerkeinstellungen",
       "description": "Die Hauptschalter für die Partnerschaft – schalten Sie sie ein oder aus und wählen Sie aus, was Ihre Community mit Partnern teilt."
     }
+  },
+  "external_federation": {
+    "banner_title": "Externe Partnerföderation ist ausgeschaltet",
+    "banner_title_lockdown": "Die Notsperre der Föderation ist aktiv",
+    "banner_body": "Anfragen von anderen Installationen werden mit HTTP 503 abgelehnt und auf diesen Seiten wird nichts an externe Partner gesendet. Die folgende Konfiguration kann weiterhin angezeigt und bearbeitet werden – sie wird jedoch erst wirksam, wenn die externe Föderation wieder aktiviert wird.",
+    "banner_internal_unaffected": "Die Föderation zwischen Communities innerhalb dieser Installation ist davon nicht betroffen und funktioniert weiterhin normal.",
+    "banner_manage_link": "Externe Föderation verwalten",
+    "sidebar_disabled_chip": "Aus"
   }
 }

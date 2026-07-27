@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { PartnersSidebar } from './components/PartnersSidebar';
 import { PartnersHeader } from './components/PartnersHeader';
 import { PartnersBreadcrumbs } from './components/PartnersBreadcrumbs';
+import { ExternalFederationBanner } from './components/ExternalFederationBanner';
 
 export function PartnersLayout() {
   const { t } = useTranslation('partners');
@@ -135,6 +136,9 @@ export function PartnersLayout() {
       >
         <div className="p-3 sm:p-4 md:p-6">
           <PartnersBreadcrumbs />
+          {/* Shown on every page in this panel while external partner
+              federation is switched off — see ExternalFederationBanner. */}
+          <ExternalFederationBanner />
           <Outlet />
         </div>
       </main>

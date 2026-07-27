@@ -196,5 +196,13 @@
       "title": "Configurações de rede",
       "description": "Os interruptores principais para parceria — ative-os ou desative-os e escolha o que sua comunidade compartilha com os parceiros."
     }
+  },
+  "external_federation": {
+    "banner_title": "A federação de parceiros externos está desativada",
+    "banner_title_lockdown": "O bloqueio de emergência da Federação está ativo",
+    "banner_body": "Solicitações de outras instalações estão sendo recusadas com HTTP 503 e nada nessas páginas está sendo enviado a parceiros externos. A configuração abaixo ainda pode ser visualizada e editada — ela simplesmente não terá efeito até que a federação externa seja reativada.",
+    "banner_internal_unaffected": "A federação entre as comunidades dentro desta instalação não é afetada e continua funcionando normalmente.",
+    "banner_manage_link": "Gerenciar federação externa",
+    "sidebar_disabled_chip": "Desligado"
   }
 }

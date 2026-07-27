@@ -200,5 +200,13 @@
       "title": "Socruithe líonra",
       "description": "Aistríonn an máistir do chomhpháirtíocht - cas air nó as é, agus roghnaigh cad a roinneann do phobal le comhpháirtithe."
     }
+  },
+  "external_federation": {
+    "banner_title": "Tá cónaidhm na gcomhpháirtithe seachtracha múchta",
+    "banner_title_lockdown": "Tá glasáil éigeandála na Cónaidhme gníomhach",
+    "banner_body": "Tá iarratais ó shuiteálacha eile á ndiúltú le HTTP 503, agus níl aon rud ar na leathanaigh seo á sheoladh chuig comhpháirtithe seachtracha. Is féidir an chumraíocht thíos a fheiceáil agus a chur in eagar go fóill — ní bheidh éifeacht leis go dtí go gcuirfear an Cónaidhm Seachtrach ar siúl arís.",
+    "banner_internal_unaffected": "Níl aon tionchar ar an gcónaidhm idir pobail laistigh den suiteáil seo agus leanann sé ar aghaidh ag obair de ghnáth.",
+    "banner_manage_link": "Cónaidhm sheachtrach a bhainistiú",
+    "sidebar_disabled_chip": "as"
   }
 }

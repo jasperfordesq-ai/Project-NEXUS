@@ -194,5 +194,13 @@
       "title": "Netwerkinstellingen",
       "description": "De hoofdschakelaars voor partnering: schakel deze in of uit en kies wat uw community deelt met partners."
     }
+  },
+  "external_federation": {
+    "banner_title": "Externe partnerfederatie is uitgeschakeld",
+    "banner_title_lockdown": "Noodvergrendeling van de federatie is actief",
+    "banner_body": "Verzoeken van andere installaties worden geweigerd met HTTP 503 en niets op deze pagina's wordt naar externe partners gestuurd. De onderstaande configuratie kan nog steeds worden bekeken en bewerkt; deze wordt eenvoudigweg pas van kracht nadat de externe federatie weer is ingeschakeld.",
+    "banner_internal_unaffected": "De federatie tussen gemeenschappen binnen deze installatie blijft onaangetast en blijft normaal werken.",
+    "banner_manage_link": "Beheer externe federatie",
+    "sidebar_disabled_chip": "Uit"
   }
 }

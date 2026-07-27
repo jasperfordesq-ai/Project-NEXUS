@@ -196,5 +196,13 @@
       "title": "Configuración de red",
       "description": "El interruptor principal para asociarse: actívelo o desactívelo y elija lo que su comunidad comparte con los socios."
     }
+  },
+  "external_federation": {
+    "banner_title": "La federación de socios externos está desactivada",
+    "banner_title_lockdown": "El bloqueo de emergencia de la Federación está activo",
+    "banner_body": "Las solicitudes de otras instalaciones se rechazan con HTTP 503 y no se envía nada de estas páginas a socios externos. La configuración siguiente aún se puede ver y editar; simplemente no tendrá efecto hasta que se vuelva a activar la federación externa.",
+    "banner_internal_unaffected": "La federación entre comunidades dentro de esta instalación no se ve afectada y continúa funcionando con normalidad.",
+    "banner_manage_link": "Administrar federación externa",
+    "sidebar_disabled_chip": "Apagado"
   }
 }
