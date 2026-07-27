@@ -11,7 +11,6 @@ use App\Services\FederationFeatureService;
 use App\Services\PartnerApi\PartnerApiKillSwitch;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * Base test case for all Laravel tests in the migration.
@@ -110,17 +109,33 @@ abstract class TestCase extends BaseTestCase
     protected function setUpExternalAccessControls(): void
     {
         try {
-            if (! Schema::hasColumn('federation_system_control', 'external_federation_enabled')) {
-                return;
-            }
-
-            // federation_enabled and the lockdown are seeded too: the external
-            // switch is nested under both, so seeding only the external columns
-            // leaves the posture dependent on whatever an earlier test in the
-            // same process last committed to this singleton row.
+            // Mirror FederationFeatureService::initializeSystemDefaults() in
+            // full, not just the external columns. This row is a singleton, so
+            // whichever test first creates it wins — and the SQL defaults for
+            // cross_tenant_* are 0. Seeding a partial row here would silently
+            // pre-empt the per-test insertOrIgnore calls that expect those to
+            // be 1, breaking suites depending on which test ran first.
+            //
+            // No Schema::hasColumn() probes: they run information_schema
+            // introspection on every single test in the suite, and the catch
+            // below already covers a database without these columns.
             $row = [
                 'federation_enabled' => 1,
+                // whitelist_mode_enabled MUST be listed: its SQL default is 1,
+                // so an insert that omits it switches whitelist mode ON, and
+                // isTenantFederationEnabled() then returns false for every
+                // non-whitelisted tenant — listeners return early and send
+                // nothing, which surfaces as "an expected request was not
+                // recorded" rather than anything mentioning a whitelist.
+                'whitelist_mode_enabled' => 0,
                 'emergency_lockdown_active' => 0,
+                'max_federation_level' => 4,
+                'cross_tenant_profiles_enabled' => 1,
+                'cross_tenant_messaging_enabled' => 1,
+                'cross_tenant_transactions_enabled' => 1,
+                'cross_tenant_listings_enabled' => 1,
+                'cross_tenant_events_enabled' => 1,
+                'cross_tenant_groups_enabled' => 1,
                 'external_federation_enabled' => 1,
                 'updated_at' => now(),
             ];
@@ -130,11 +145,15 @@ abstract class TestCase extends BaseTestCase
                     $row[$column] = 1;
                 }
             }
-            if (Schema::hasColumn('federation_system_control', 'partner_api_enabled')) {
-                $row['partner_api_enabled'] = 1;
-            }
+            $row['partner_api_enabled'] = 1;
 
-            DB::table('federation_system_control')->where('id', 1)->update($row);
+            // updateOrInsert, NOT update: the schema dump CI builds nexus_test
+            // from carries no row for this singleton table, so an update()
+            // matches nothing and getExternalControls() — which fails closed by
+            // design rather than self-healing like getSystemControls() — then
+            // blocks every external surface. That passed locally only because a
+            // row already existed in the long-lived dev database.
+            DB::table('federation_system_control')->updateOrInsert(['id' => 1], $row);
 
             app(FederationFeatureService::class)->clearCache();
             app(PartnerApiKillSwitch::class)->clearCache();
