@@ -19,10 +19,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 class HourTransferTest extends TestCase
 {
     use DatabaseTransactions;
+
+    use EnablesExternalFederation;
 
     private const SOURCE_TENANT_ID = 2; // hour-timebank
     private int $destinationTenantId;
@@ -31,6 +34,7 @@ class HourTransferTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
 
         Event::fake([TransactionCompleted::class]);
 

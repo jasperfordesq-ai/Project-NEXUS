@@ -33,7 +33,7 @@ import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { StatCard } from '../../components/StatCard';
-import type { FederationSystemControls as FederationSystemControlsType, FederationWhitelistEntry, FederationPartnership } from '../../api/types';
+import type { FederationSystemControls as FederationSystemControlsType, FederationWhitelistEntry, FederationPartnership, FederationExternalStatus } from '../../api/types';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -67,20 +67,25 @@ export function FederationControls() {
   const [lockdownReason, setLockdownReason] = useState('');
   const [addTenantId, setAddTenantId] = useState('');
   const [partnerAction, setPartnerAction] = useState<{ type: 'suspend' | 'terminate' | 'reactivate'; id: number } | null>(null);
+  const [externalStatus, setExternalStatus] = useState<FederationExternalStatus | null>(null);
+  const [externalConfirm, setExternalConfirm] = useState(false);
+  const [externalReason, setExternalReason] = useState('');
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [ctrlRes, wlRes, pRes, jwtRes] = await Promise.all([
+      const [ctrlRes, wlRes, pRes, jwtRes, extRes] = await Promise.all([
         adminSuper.getSystemControls(),
         adminSuper.getWhitelist(),
         adminSuper.getFederationPartnerships(),
         adminSuper.getFederationJwtStatus(),
+        adminSuper.getFederationExternalStatus(),
       ]);
       if (ctrlRes.success && ctrlRes.data) setControls(ctrlRes.data);
       if (wlRes.success && wlRes.data) setWhitelist(Array.isArray(wlRes.data) ? wlRes.data : []);
       if (pRes.success && pRes.data) setPartnerships(Array.isArray(pRes.data) ? pRes.data : []);
       if (jwtRes.success && jwtRes.data) setJwtStatus(jwtRes.data);
+      if (extRes.success && extRes.data) setExternalStatus(extRes.data);
     } catch {
       toastRef.current.error(t('super.federation_error'));
     }
@@ -103,6 +108,40 @@ export function FederationControls() {
     } finally {
       setSaving(null);
     }
+  };
+
+  /**
+   * The external master switch is the safety gate, so turning it OFF is
+   * confirm-gated and requires a reason. Turning it back ON needs no
+   * confirmation — restoring service is not the dangerous direction.
+   */
+  const applyExternalMaster = async (enabled: boolean, reason?: string) => {
+    setSaving('external_federation_enabled');
+    try {
+      const res = await adminSuper.updateSystemControls({
+        external_federation_enabled: enabled,
+        ...(enabled ? {} : { reason }),
+      });
+      if (res?.success) {
+        setControls(prev => (prev ? { ...prev, external_federation_enabled: enabled } : prev));
+        loadData();
+      } else {
+        toastRef.current.error(t('super.failed_to_update_setting'));
+      }
+    } catch {
+      toastRef.current.error(t('super.failed_to_update_setting_detail'));
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleExternalMasterToggle = (enabled: boolean) => {
+    if (enabled) {
+      applyExternalMaster(true);
+      return;
+    }
+    setExternalReason('');
+    setExternalConfirm(true);
   };
 
   const handleLockdown = async () => {
@@ -196,6 +235,19 @@ export function FederationControls() {
     { key: 'cross_tenant_groups_enabled', label: t('super.toggle_group_federation'), description: t('super.toggle_group_federation_desc') },
   ];
 
+  // External partner protocols — traffic to/from OTHER installations. Each has
+  // its own switch so a protocol can be restored as soon as its audit passes,
+  // without re-opening the rest.
+  const externalProtocolToggles: Array<{ key: BooleanControlKey; protocol: string; label: string; description: string }> = [
+    { key: 'external_protocol_nexus_enabled', protocol: 'nexus', label: t('super.external_protocol_nexus'), description: t('super.external_protocol_nexus_desc') },
+    { key: 'external_protocol_komunitin_enabled', protocol: 'komunitin', label: t('super.external_protocol_komunitin'), description: t('super.external_protocol_komunitin_desc') },
+    { key: 'external_protocol_credit_commons_enabled', protocol: 'credit_commons', label: t('super.external_protocol_credit_commons'), description: t('super.external_protocol_credit_commons_desc') },
+    { key: 'external_protocol_legacy_v1_enabled', protocol: 'legacy_v1', label: t('super.external_protocol_legacy_v1'), description: t('super.external_protocol_legacy_v1_desc') },
+    { key: 'external_protocol_webhooks_enabled', protocol: 'webhooks', label: t('super.external_protocol_webhooks'), description: t('super.external_protocol_webhooks_desc') },
+    { key: 'external_protocol_hour_transfer_enabled', protocol: 'hour_transfer', label: t('super.external_protocol_hour_transfer'), description: t('super.external_protocol_hour_transfer_desc') },
+    { key: 'external_protocol_aggregates_enabled', protocol: 'aggregates', label: t('super.external_protocol_aggregates'), description: t('super.external_protocol_aggregates_desc') },
+  ];
+
   const activePartnerships = partnerships.filter(p => p.status === 'active').length;
 
   const partnershipStatusLabel = (status: string) => {
@@ -252,6 +304,12 @@ export function FederationControls() {
           value={activePartnerships}
           icon={Handshake}
           color="default"
+        />
+        <StatCard
+          label={t('super.label_external_federation')}
+          value={controls.external_federation_enabled ? t('super.status_active') : t('super.status_disabled')}
+          icon={Network}
+          color={controls.external_federation_enabled ? 'success' : 'danger'}
         />
         <StatCard
           label={t('super.label_system_status')}
@@ -511,6 +569,90 @@ export function FederationControls() {
         </Card>
       )}
 
+      {/* External Partner Federation — the safety gate for traffic to/from
+          OTHER installations. Placed above the internal cross-tenant controls
+          so the severity order reads lockdown → external → internal. */}
+      <Card className={!controls.external_federation_enabled ? 'border-2 border-danger' : ''}>
+        <CardHeader className="flex gap-2 items-center pb-0">
+          <Network aria-hidden="true" size={20} className={controls.external_federation_enabled ? 'text-accent' : 'text-danger'} />
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg">{t('super.external_federation_title')}</h3>
+            <p className="text-xs text-muted">{t('super.external_federation_desc')}</p>
+          </div>
+          <Chip
+            color={controls.external_federation_enabled ? 'success' : 'danger'}
+            variant="soft"
+            size="sm"
+          >
+            {controls.external_federation_enabled ? t('super.status_active') : t('super.status_disabled')}
+          </Chip>
+        </CardHeader>
+        <CardBody className="flex flex-col gap-4">
+          {/* This note is load-bearing: without it a future operator may
+              "fix" the disabled switch fearing it broke internal federation. */}
+          <div className="rounded-lg bg-surface-tertiary p-3">
+            <p className="text-xs text-muted">{t('super.external_federation_internal_unaffected_note')}</p>
+          </div>
+
+          {!controls.external_federation_enabled && (
+            <div className="flex items-start gap-3 rounded-lg border border-danger bg-danger-50 p-3 dark:bg-danger-950">
+              <AlertTriangle aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-danger" />
+              <div>
+                <p className="text-sm font-medium text-danger">{t('super.external_federation_blocked_notice')}</p>
+                {controls.external_federation_disabled_reason ? (
+                  <p className="mt-1 text-xs text-danger-600 dark:text-danger-400">
+                    {controls.external_federation_disabled_reason}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">{t('super.external_federation_master_label')}</p>
+              <p className="text-xs text-muted">{t('super.external_federation_master_desc')}</p>
+            </div>
+            <Switch
+              isSelected={controls.external_federation_enabled}
+              isDisabled={!!saving}
+              onValueChange={handleExternalMasterToggle}
+            />
+          </div>
+
+          <Separator />
+
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">
+            {t('super.external_protocols_heading')}
+          </p>
+
+          {externalProtocolToggles.map(toggle => {
+            const blocked = externalStatus?.blocked_last_24h?.[toggle.protocol] ?? 0;
+            return (
+              <div key={toggle.key} className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{toggle.label}</p>
+                    {blocked > 0 && (
+                      <Chip color="warning" variant="soft" size="sm">
+                        {t('super.external_protocol_blocked_count', { count: blocked })}
+                      </Chip>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted">{toggle.description}</p>
+                </div>
+                <Switch
+                  size="sm"
+                  isSelected={!!controls[toggle.key]}
+                  isDisabled={!!saving || !controls.external_federation_enabled}
+                  onValueChange={(v) => updateControl(toggle.key, v)}
+                />
+              </div>
+            );
+          })}
+        </CardBody>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Status */}
         <Card>
@@ -730,6 +872,31 @@ export function FederationControls() {
             variant="secondary"
           />
         )}
+      </ConfirmModal>
+
+      {/* External federation withdrawal — confirm + reason, since this is the
+          switch that stops all partner traffic. */}
+      <ConfirmModal
+        isOpen={externalConfirm}
+        onClose={() => { setExternalConfirm(false); setExternalReason(''); }}
+        onConfirm={async () => {
+          await applyExternalMaster(false, externalReason.trim() || undefined);
+          setExternalConfirm(false);
+          setExternalReason('');
+        }}
+        title={t('super.external_federation_disable_title')}
+        message={t('super.external_federation_disable_confirm')}
+        confirmLabel={t('super.external_federation_disable_action')}
+        confirmColor="danger"
+      >
+        <Input
+          label={t('super.external_federation_reason_label')}
+          placeholder={t('super.external_federation_reason_placeholder')}
+          value={externalReason}
+          onValueChange={setExternalReason}
+          className="mt-3"
+          variant="secondary"
+        />
       </ConfirmModal>
 
       {/* Partnership Action Modal */}

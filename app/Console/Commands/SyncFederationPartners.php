@@ -9,6 +9,7 @@ namespace App\Console\Commands;
 
 use App\Services\FederationExternalApiClient;
 use App\Services\FederationExternalPartnerService;
+use App\Services\FederationFeatureService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,6 +32,15 @@ class SyncFederationPartners extends Command
 
     public function handle(): int
     {
+        // Every outbound call below would be blocked by the kill switch anyway;
+        // returning early keeps the hourly run from logging a blocked call per
+        // partner. Previously this command health-checked partners even during
+        // an emergency lockdown.
+        if (! app(FederationFeatureService::class)->isExternalFederationEnabled()) {
+            $this->info('External federation is disabled — skipping partner sync.');
+            return self::SUCCESS;
+        }
+
         $tenantFilter = $this->option('tenant') ? (int) $this->option('tenant') : null;
 
         // Get all tenants that have external partners

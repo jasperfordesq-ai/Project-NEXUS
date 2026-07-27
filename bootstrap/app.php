@@ -579,6 +579,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'broker-or-admin' => \App\Http\Middleware\EnsureIsBrokerOrAdmin::class,
             'super-admin' => \App\Http\Middleware\EnsureIsSuperAdmin::class,
             'federation.api' => \App\Http\Middleware\FederationApiAuth::class,
+            'federation.external' => \App\Http\Middleware\EnsureExternalFederationEnabled::class,
             'partner.api' => \App\Http\Middleware\PartnerApiAuth::class,
             'onboarding-required' => \App\Http\Middleware\EnsureOnboardingComplete::class,
             'feature' => \App\Middleware\TenantFeatureMiddleware::class,

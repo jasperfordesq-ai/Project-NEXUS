@@ -6,6 +6,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\FederationFeatureService;
 use App\Support\OutboundUrlGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -276,6 +277,18 @@ class AdminFederationWebhooksController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api.webhook_private_ip'), 'url', 422);
         }
 
+        // External federation kill switch — tell the admin why the button did
+        // nothing rather than silently reporting a delivery failure.
+        if (!app(FederationFeatureService::class)
+            ->isExternalProtocolEnabled(FederationFeatureService::EXTERNAL_PROTOCOL_WEBHOOKS)) {
+            return $this->respondWithError(
+                'FEDERATION_EXTERNAL_DISABLED',
+                __('api.federation.external_outbound_disabled'),
+                null,
+                503,
+            );
+        }
+
         $payload = [
             'event' => 'test',
             'timestamp' => now()->toIso8601String(),
@@ -449,6 +462,18 @@ class AdminFederationWebhooksController extends BaseApiController
         // SSRF protection: re-check at dispatch time (DNS rebinding defense)
         if (!OutboundUrlGuard::isSafeHttpUrl($webhook->url, requireHttps: true)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.webhook_private_ip'), 'url', 422);
+        }
+
+        // External federation kill switch — tell the admin why the button did
+        // nothing rather than silently reporting a delivery failure.
+        if (!app(FederationFeatureService::class)
+            ->isExternalProtocolEnabled(FederationFeatureService::EXTERNAL_PROTOCOL_WEBHOOKS)) {
+            return $this->respondWithError(
+                'FEDERATION_EXTERNAL_DISABLED',
+                __('api.federation.external_outbound_disabled'),
+                null,
+                503,
+            );
         }
 
         // Re-send the original payload

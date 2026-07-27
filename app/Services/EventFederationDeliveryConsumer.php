@@ -38,6 +38,24 @@ final class EventFederationDeliveryConsumer
         ?int $externalPartnerId = null,
     ): array {
         $released = $this->deliveries->releaseStaleClaims($tenantId);
+
+        // External federation kill switch. Claim nothing while Nexus-native
+        // partner traffic is switched off: this consumer runs every minute, and
+        // each blocked delivery would otherwise burn one of MAX_ATTEMPTS and
+        // dead-letter the row within minutes — so the backlog would NOT resume
+        // when the switch is turned back on. Leaving rows unclaimed keeps them
+        // queued and lets them drain intact on re-enable.
+        if (! $this->features->isExternalProtocolEnabled(FederationFeatureService::EXTERNAL_PROTOCOL_NEXUS)) {
+            return [
+                'claimed' => 0,
+                'delivered' => 0,
+                'retrying' => 0,
+                'dead_lettered' => 0,
+                'claim_conflicts' => 0,
+                'stale_claims_released' => $released,
+            ];
+        }
+
         $rows = $this->claimEligible($limit, $tenantId, $externalPartnerId);
         $summary = [
             'claimed' => count($rows),

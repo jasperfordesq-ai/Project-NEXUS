@@ -1442,10 +1442,17 @@ class AdminSuperController extends BaseApiController
             'cross_tenant_listings_enabled',
             'cross_tenant_events_enabled',
             'cross_tenant_groups_enabled',
+            // External partner federation kill switch: master + per protocol.
+            'external_federation_enabled',
+            ...array_values(array_map(
+                static fn (string $protocol): string => (string) FederationFeatureService::externalProtocolColumn($protocol),
+                FederationFeatureService::externalProtocolNames(),
+            )),
         ];
 
         $updates = [];
         $params = [];
+        $touchesExternal = false;
 
         foreach ($allowedFields as $field) {
             if (isset($input[$field])) {
@@ -1455,11 +1462,29 @@ class AdminSuperController extends BaseApiController
                 } else {
                     $params[] = $input[$field] ? 1 : 0;
                 }
+                if (str_starts_with($field, 'external_')) {
+                    $touchesExternal = true;
+                }
             }
         }
 
         if (empty($updates)) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.no_valid_fields'), null, 422);
+        }
+
+        // Record who withdrew external federation and why, so the reason shown
+        // in the UI stays attributable.
+        if ($touchesExternal) {
+            $updates[] = "external_federation_updated_at = NOW()";
+            $updates[] = "external_federation_updated_by = ?";
+            $params[] = $userId;
+
+            if (array_key_exists('external_federation_enabled', $input)) {
+                $updates[] = "external_federation_disabled_reason = ?";
+                $params[] = $input['external_federation_enabled']
+                    ? null
+                    : (isset($input['reason']) ? mb_substr(trim((string) $input['reason']), 0, 255) : null);
+            }
         }
 
         $updates[] = "updated_at = NOW()";
@@ -1479,10 +1504,56 @@ class AdminSuperController extends BaseApiController
             null,
             $userId,
             ['changes' => $input],
-            FederationAuditService::LEVEL_WARNING
+            // Withdrawing or restoring external federation is a security-posture
+            // change, not routine configuration.
+            $touchesExternal
+                ? FederationAuditService::LEVEL_CRITICAL
+                : FederationAuditService::LEVEL_WARNING
         );
 
         return $this->respondWithData(['updated' => true]);
+    }
+
+    /**
+     * GET /api/v2/admin/super/federation/external-status
+     *
+     * Effective external federation posture plus a 24h blocked-attempt count
+     * per protocol, so the operator can see whether partners are still trying.
+     */
+    public function federationGetExternalStatus(): JsonResponse
+    {
+        $this->requirePlatformSuperAdmin();
+
+        $status = $this->federationFeatureService->externalProtocolStatus();
+
+        // Advisory only: blocked outbound attempts are recorded against the
+        // partner, so the protocol comes from the partner row.
+        $blocked = [];
+        try {
+            $rows = DB::table('federation_external_partner_logs as l')
+                ->join('federation_external_partners as p', 'p.id', '=', 'l.partner_id')
+                ->select('p.protocol_type', DB::raw('COUNT(*) as total'))
+                ->where('l.created_at', '>=', now()->subDay())
+                ->where('l.success', 0)
+                ->where('l.error_message', 'like', '%external federation disabled%')
+                ->groupBy('p.protocol_type')
+                ->get();
+
+            foreach ($rows as $row) {
+                $protocol = FederationFeatureService::protocolForPartnerType(
+                    $row->protocol_type !== null ? (string) $row->protocol_type : null,
+                );
+                if ($protocol === null) {
+                    continue;
+                }
+                $blocked[$protocol] = ($blocked[$protocol] ?? 0) + (int) $row->total;
+            }
+        } catch (\Throwable) {
+            // Counters must never fail the status read.
+            $blocked = [];
+        }
+
+        return $this->respondWithData($status + ['blocked_last_24h' => $blocked]);
     }
 
     /** POST /api/v2/super-admin/federation/emergency-lockdown */

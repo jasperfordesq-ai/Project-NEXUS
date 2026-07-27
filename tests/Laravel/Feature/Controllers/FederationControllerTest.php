@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Mockery;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Feature tests for FederationController — V1 federation API.
@@ -28,9 +29,12 @@ class FederationControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    use EnablesExternalFederation;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
         FederationApiMiddleware::reset();
     }
 

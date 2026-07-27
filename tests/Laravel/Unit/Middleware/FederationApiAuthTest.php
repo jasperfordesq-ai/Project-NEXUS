@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Tests for FederationApiAuth Laravel middleware wrapper.
@@ -25,6 +26,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 class FederationApiAuthTest extends TestCase
 {
     use DatabaseTransactions;
+    use EnablesExternalFederation;
 
     private FederationApiAuth $middleware;
 
@@ -34,6 +36,7 @@ class FederationApiAuthTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
         $this->middleware = new FederationApiAuth();
 
         // Reset static state from any prior test

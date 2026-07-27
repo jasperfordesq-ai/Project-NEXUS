@@ -1080,6 +1080,8 @@ return [
     'link_preview_failed' => 'Could not fetch preview for this URL',
     'total_hours_gt_zero' => 'Total hours must be greater than 0',
     'federation' => [
+        'external_protocol_disabled' => 'Externe partnerfederatie is tijdelijk uitgeschakeld op deze installatie.',
+        'external_outbound_disabled' => 'Externe partnerfederatie is tijdelijk uitgeschakeld op deze installatie, dus er zijn geen gegevens verzonden.',
         'partner_not_found' => 'Partner not found',
         'feature_disabled' => 'Federation feature disabled for this tenant',
         'webhook_rate_limited' => 'Too many requests',

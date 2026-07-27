@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Tests\Laravel\Concerns;
 
 use App\Services\FederationExternalApiClient;
+use App\Services\FederationFeatureService;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -160,6 +161,12 @@ trait FederationIntegrationHarness
             ]
         );
 
+        // 1b. External partner protocols. Ships disabled in production and must
+        // be opted into explicitly per test, so a NEW external route added
+        // without a kill-switch gate fails its test loudly instead of being
+        // silently permitted by a globally permissive fixture.
+        $this->enableExternalFederationProtocols();
+
         // 2. Whitelist the tenant
         DB::table('federation_tenant_whitelist')->updateOrInsert(
             ['tenant_id' => $tenantId],
@@ -198,6 +205,32 @@ trait FederationIntegrationHarness
         } catch (\Throwable $e) {
             // Non-fatal: some test schemas may not have this column.
         }
+    }
+
+    /**
+     * Turn on the external partner federation kill switch for a test.
+     *
+     * External federation ships OFF, so any test that exercises an external
+     * protocol surface (Komunitin, Credit Commons, legacy v1, partner webhooks,
+     * cross-platform hour transfers, aggregates, Nexus ingest) must call this.
+     *
+     * @param array<int, string>|null $protocols Defaults to every protocol.
+     */
+    protected function enableExternalFederationProtocols(?array $protocols = null): void
+    {
+        $protocols ??= FederationFeatureService::externalProtocolNames();
+
+        $update = ['external_federation_enabled' => 1, 'updated_at' => now()];
+        foreach ($protocols as $protocol) {
+            $column = FederationFeatureService::externalProtocolColumn($protocol);
+            if ($column !== null) {
+                $update[$column] = 1;
+            }
+        }
+
+        DB::table('federation_system_control')->updateOrInsert(['id' => 1], $update);
+
+        app(FederationFeatureService::class)->clearCache();
     }
 
     /**

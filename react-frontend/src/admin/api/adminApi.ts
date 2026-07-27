@@ -119,6 +119,7 @@ import type {
   SuperAuditEntry,
   SuperAuditParams,
   FederationSystemControls,
+  FederationExternalStatus,
   FederationWhitelistEntry,
   FederationPartnership,
   FederationStatusOverview,
@@ -2497,7 +2498,10 @@ export const adminSuper = {
       '/v2/admin/super/federation/jwt-status',
     ),
 
-  updateSystemControls: (data: Partial<FederationSystemControls>) =>
+  getFederationExternalStatus: () =>
+    api.get<FederationExternalStatus>('/v2/admin/super/federation/external-status'),
+
+  updateSystemControls: (data: Partial<FederationSystemControls> & { reason?: string }) =>
     api.put<{ success: boolean }>('/v2/admin/super/federation/system-controls', data),
 
   emergencyLockdown: (reason: string) =>

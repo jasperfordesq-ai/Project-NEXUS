@@ -1290,6 +1290,8 @@ return [
     'fed_external_partner_rejected' => 'External partner rejected the transaction.',
     'connection_not_pending' => 'This connection request is not pending or you are not the receiver',
     'federation' => [
+        'external_protocol_disabled' => 'La federazione con partner esterni è temporaneamente disattivata su questa installazione.',
+        'external_outbound_disabled' => 'La federazione con partner esterni è temporaneamente disattivata su questa installazione, quindi non è stato inviato alcun dato.',
         'partner_not_found' => 'Partner not found',
         'feature_disabled' => 'Federation feature disabled for this tenant',
         'webhook_rate_limited' => 'Too many requests',

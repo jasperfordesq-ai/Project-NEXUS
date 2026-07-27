@@ -10,6 +10,7 @@ namespace Tests\Laravel\Feature\Federation;
 
 use App\Core\TenantContext;
 use App\Services\CaringCommunity\FederationAggregateService;
+use App\Services\FederationFeatureService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
@@ -35,6 +36,25 @@ final class FederationAggregateTest extends TestCase
     {
         parent::setUp();
         $this->service = new FederationAggregateService();
+        $this->enableAggregateFederation();
+    }
+
+    /**
+     * The public aggregates endpoint is gated by the external partner
+     * federation kill switch, which ships disabled. Opt in explicitly so these
+     * tests exercise the consent contract rather than the kill switch.
+     */
+    private function enableAggregateFederation(): void
+    {
+        DB::table('federation_system_control')->updateOrInsert(['id' => 1], [
+            'federation_enabled' => 1,
+            'emergency_lockdown_active' => 0,
+            'external_federation_enabled' => 1,
+            'external_protocol_aggregates_enabled' => 1,
+            'updated_at' => now(),
+        ]);
+
+        app(FederationFeatureService::class)->clearCache();
     }
 
     private function disableConsent(int $tenantId): void

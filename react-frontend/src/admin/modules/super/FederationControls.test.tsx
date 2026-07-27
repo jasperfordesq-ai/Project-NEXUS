@@ -15,6 +15,7 @@ const { mockAdminSuper } = vi.hoisted(() => ({
     getWhitelist: vi.fn(),
     getFederationPartnerships: vi.fn(),
     getFederationJwtStatus: vi.fn(),
+    getFederationExternalStatus: vi.fn(),
     updateSystemControls: vi.fn(),
     emergencyLockdown: vi.fn(),
     liftLockdown: vi.fn(),
@@ -96,6 +97,44 @@ vi.mock('../../components', () => ({
   ),
 }));
 
+// FederationControls imports these three by their DIRECT paths, so the barrel
+// mock above never replaced them — `getAllByTestId('stat-card')` could not match
+// and two tests here were failing silently against the real components. Mock the
+// paths that actually load.
+vi.mock('../../components/PageHeader', () => ({
+  PageHeader: ({ title }: { title?: string }) => <div data-testid="page-header"><h1>{title}</h1></div>,
+}));
+
+vi.mock('../../components/StatCard', () => ({
+  StatCard: ({ label, value }: { label?: string; value?: string | number }) => (
+    <div data-testid="stat-card">{label}: {value}</div>
+  ),
+}));
+
+vi.mock('../../components/ConfirmModal', () => ({
+  ConfirmModal: ({
+    isOpen,
+    onClose,
+    onConfirm,
+    title,
+    children,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title?: string;
+    children?: React.ReactNode;
+  }) =>
+    isOpen ? (
+      <div role="dialog" aria-label={title}>
+        <span>{title}</span>
+        {children}
+        <button onClick={onClose}>cancel</button>
+        <button data-testid="confirm-btn" onClick={onConfirm}>confirm</button>
+      </div>
+    ) : null,
+}));
+
 vi.mock('react-router-dom', async (importOriginal) => {
   const orig = await importOriginal<typeof import('react-router-dom')>();
   return {
@@ -137,6 +176,27 @@ const makeControls = (overrides = {}) => ({
   cross_tenant_listings_enabled: true,
   cross_tenant_events_enabled: true,
   cross_tenant_groups_enabled: true,
+  // External partner federation ships OFF.
+  external_federation_enabled: false,
+  external_protocol_nexus_enabled: false,
+  external_protocol_komunitin_enabled: false,
+  external_protocol_credit_commons_enabled: false,
+  external_protocol_legacy_v1_enabled: false,
+  external_protocol_webhooks_enabled: false,
+  external_protocol_hour_transfer_enabled: false,
+  external_protocol_aggregates_enabled: false,
+  external_federation_disabled_reason: null,
+  ...overrides,
+});
+
+const makeExternalStatus = (overrides = {}) => ({
+  platform_enabled: true,
+  master_enabled: false,
+  effective: false,
+  emergency_lockdown_active: false,
+  reason: null,
+  protocols: {},
+  blocked_last_24h: {},
   ...overrides,
 });
 
@@ -161,6 +221,7 @@ describe('FederationControls', () => {
       success: true,
       data: { configured: true, issuer: 'https://api.example.com', key_bits: 256, recommended_bits: 256 },
     });
+    mockAdminSuper.getFederationExternalStatus.mockResolvedValue({ success: true, data: makeExternalStatus() });
     mockAdminSuper.updateSystemControls.mockResolvedValue({ success: true });
     mockAdminSuper.addToWhitelist.mockResolvedValue({ success: true });
     mockAdminSuper.removeFromWhitelist.mockResolvedValue({ success: true });
@@ -356,6 +417,122 @@ describe('FederationControls', () => {
 
     await waitFor(() => {
       expect(mockToast.error).toHaveBeenCalled();
+    });
+  });
+
+  // ─── External partner federation kill switch ────────────────────────────────
+  describe('external partner federation kill switch', () => {
+    // NOTE: PageHeader / StatCard / ConfirmModal are imported by FederationControls
+    // via their direct paths ('../../components/PageHeader' etc), so the
+    // barrel-level vi.mock('../../components') above does NOT replace them and
+    // the real components render. Wait on the (genuinely mocked) Switch stubs
+    // instead of a stub testid that never appears.
+    const renderPage = async () => {
+      const { FederationControls } = await import('./FederationControls');
+      const utils = render(<FederationControls />);
+      await waitFor(() => {
+        expect(screen.getAllByRole('switch').length).toBeGreaterThan(0);
+      });
+      return utils;
+    };
+
+    it('disables every per-protocol switch while the master switch is off', async () => {
+      await renderPage();
+
+      // 7 protocol switches + the master, all reflecting the OFF fixture.
+      const switches = screen.getAllByRole('switch');
+      const disabled = switches.filter((el) => (el as HTMLInputElement).disabled);
+      expect(disabled.length).toBeGreaterThanOrEqual(7);
+    });
+
+    it('enables the per-protocol switches once the master switch is on', async () => {
+      mockAdminSuper.getSystemControls.mockResolvedValue({
+        success: true,
+        data: makeControls({ external_federation_enabled: true }),
+      });
+      await renderPage();
+
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      // With external federation on, no switch should be disabled by the gate.
+      expect(switches.filter((el) => el.disabled)).toHaveLength(0);
+    });
+
+    it('sends a single-key PUT when a protocol is toggled on', async () => {
+      mockAdminSuper.getSystemControls.mockResolvedValue({
+        success: true,
+        data: makeControls({ external_federation_enabled: true }),
+      });
+      await renderPage();
+
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      const unchecked = switches.filter((el) => !el.checked);
+      expect(unchecked.length).toBeGreaterThan(0);
+
+      fireEvent.click(unchecked[0]);
+
+      await waitFor(() => {
+        expect(mockAdminSuper.updateSystemControls).toHaveBeenCalled();
+      });
+      const payload = mockAdminSuper.updateSystemControls.mock.calls[0][0];
+      expect(Object.keys(payload)).toHaveLength(1);
+      expect(Object.keys(payload)[0]).toMatch(/^external_protocol_/);
+    });
+
+    it('requires confirmation before disabling external federation', async () => {
+      mockAdminSuper.getSystemControls.mockResolvedValue({
+        success: true,
+        data: makeControls({ external_federation_enabled: true }),
+      });
+      await renderPage();
+
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      const master = switches.find((el) => el.checked);
+      expect(master).toBeDefined();
+
+      fireEvent.click(master!);
+
+      // Opens the confirm dialog and does NOT write straight away.
+      await waitFor(() => {
+        expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+      });
+      expect(mockAdminSuper.updateSystemControls).not.toHaveBeenCalled();
+    });
+
+    it('turns external federation back on without a confirmation step', async () => {
+      await renderPage();
+
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      const master = switches.find((el) => !el.disabled);
+      expect(master).toBeDefined();
+
+      fireEvent.click(master!);
+
+      await waitFor(() => {
+        expect(mockAdminSuper.updateSystemControls).toHaveBeenCalledWith(
+          expect.objectContaining({ external_federation_enabled: true }),
+        );
+      });
+    });
+
+    it('renders the blocked-attempt count for a protocol', async () => {
+      mockAdminSuper.getFederationExternalStatus.mockResolvedValue({
+        success: true,
+        data: makeExternalStatus({ blocked_last_24h: { komunitin: 14 } }),
+      });
+      await renderPage();
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/14/).length).toBeGreaterThan(0);
+      });
+    });
+
+    it('leaves the internal cross-tenant switches usable while external is off', async () => {
+      await renderPage();
+
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      // The internal cross-tenant toggles must remain interactive — the
+      // external switch must never appear to have disabled internal federation.
+      expect(switches.filter((el) => !el.disabled).length).toBeGreaterThan(0);
     });
   });
 });

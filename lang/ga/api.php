@@ -1287,6 +1287,8 @@ return [
     'fed_external_partner_rejected' => 'External partner rejected the transaction.',
     'connection_not_pending' => 'This connection request is not pending or you are not the receiver',
     'federation' => [
+        'external_protocol_disabled' => 'Tá cónaidhm páirtnéirí seachtracha díchumasaithe go sealadach ar an insealbhú seo.',
+        'external_outbound_disabled' => 'Tá cónaidhm páirtnéirí seachtracha díchumasaithe go sealadach ar an insealbhú seo, mar sin níor seoladh aon sonraí.',
         'partner_not_found' => 'Partner not found',
         'feature_disabled' => 'Federation feature disabled for this tenant',
         'webhook_rate_limited' => 'Too many requests',

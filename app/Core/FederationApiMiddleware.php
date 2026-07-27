@@ -10,7 +10,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use App\Services\FederationFeatureService;
 use App\Services\FederationJwtService;
+use App\Support\Federation\ExternalFederationResponse;
 
 /**
  * Federation API authentication and authorization middleware.
@@ -35,6 +37,10 @@ class FederationApiMiddleware
      */
     public static function authenticate(?string $rawBody = null): bool|JsonResponse
     {
+        if ($blocked = self::externalFederationGate()) {
+            return $blocked;
+        }
+
         if (self::hasHmacSignature()) {
             return self::authenticateWithHmac($rawBody);
         }
@@ -44,6 +50,50 @@ class FederationApiMiddleware
         }
 
         return self::authenticateWithApiKey();
+    }
+
+    /**
+     * Backstop for the external federation kill switch.
+     *
+     * Routes declare their protocol explicitly via the `federation.external`
+     * middleware. This second check derives the protocol from the request path
+     * so that a future route added under an existing external prefix — but
+     * wired to this authenticator without that middleware — is still blocked.
+     *
+     * Returns null (allow) when the path is not an external surface, so
+     * internal cross-tenant federation is untouched.
+     */
+    private static function externalFederationGate(): ?JsonResponse
+    {
+        try {
+            $path = (string) (request()?->path() ?? '');
+            if ($path === '') {
+                return null;
+            }
+
+            $protocol = FederationFeatureService::protocolForInboundPath($path);
+            if ($protocol === null) {
+                return null;
+            }
+
+            if (app(FederationFeatureService::class)->isExternalProtocolEnabled($protocol)) {
+                return null;
+            }
+
+            Log::warning('[ExternalFederation] Blocked inbound request for disabled protocol (authenticator backstop)', [
+                'protocol' => $protocol,
+                'path' => '/' . ltrim($path, '/'),
+            ]);
+
+            // Always the legacy envelope here: FederationApiAuth translates
+            // this into the ingest errors[] contract by reading `code`.
+            return ExternalFederationResponse::blockedLegacy();
+        } catch (\Throwable $e) {
+            // Never let the backstop itself break authentication; the route
+            // middleware remains the primary enforcement point.
+            Log::error('FederationApiMiddleware: external federation gate failed - ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**

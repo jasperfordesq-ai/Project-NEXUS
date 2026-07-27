@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Smoke tests for FederationCreditCommonsController.
@@ -19,6 +20,14 @@ use Tests\Laravel\TestCase;
 class FederationCreditCommonsControllerTest extends TestCase
 {
     use DatabaseTransactions;
+
+    use EnablesExternalFederation;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->enableExternalFederation();
+    }
 
     public function test_controller_exists(): void
     {

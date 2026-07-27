@@ -1582,7 +1582,7 @@ Route::get('/v2/marketplace/listings/{id}/pickup-slots', [\App\Http\Controllers\
 // has not opted in. Each query is signed and logged for 12 months.
 // ============================================
 Route::get('/v2/federation/aggregates', [\App\Http\Controllers\Api\FederationAggregateController::class, 'show'])
-    ->middleware('throttle:nexus-route-60-per-1m');
+    ->middleware(['throttle:nexus-route-60-per-1m', 'federation.external:aggregates']);
 
 // ============================================
 // Admin routes — Sanctum auth + admin middleware
@@ -2871,7 +2871,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // AG23 follow-up — Public inbound federation endpoint (HMAC signature auth, no session)
 Route::post('/v2/federation/hour-transfer/inbound', [\App\Http\Controllers\Api\FederationHourTransferController::class, 'inbound'])
-    ->middleware('throttle:nexus-route-30-per-1m');
+    ->middleware(['throttle:nexus-route-30-per-1m', 'federation.external:hour_transfer']);
 
 // AG54 — Verein membership dues (member-facing + verein-admin scoped)
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -2924,6 +2924,7 @@ Route::get('/v2/admin/super/audit', [\App\Http\Controllers\Api\AdminSuperControl
 Route::get('/v2/admin/super/federation', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationOverview']);
 Route::get('/v2/admin/super/federation/system-controls', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetSystemControls']);
 Route::get('/v2/admin/super/federation/jwt-status', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetJwtStatus']);
+Route::get('/v2/admin/super/federation/external-status', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetExternalStatus']);
 Route::put('/v2/admin/super/federation/system-controls', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationUpdateSystemControls']);
 Route::post('/v2/admin/super/federation/emergency-lockdown', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationEmergencyLockdown']);
 Route::post('/v2/admin/super/federation/lift-lockdown', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationLiftLockdown']);
@@ -3535,29 +3536,35 @@ Route::post('/listings/delete', [\App\Http\Controllers\Api\ListingsController::c
 // Source: httpdocs/routes/federation-api-v1.php
 // These routes use their own fedAuth() method (FederationApiMiddleware)
 // for authentication — they must NOT be inside auth:sanctum.
+//
+// The whole block is wrapped in 'federation.external:legacy_v1' because
+// index/health/oauthToken/testWebhook never call fedAuth() at all — a gate
+// placed only inside the authenticator would leave the OAuth token mint open.
 // ============================================
-Route::get('/v1/federation', [\App\Http\Controllers\Api\FederationController::class, 'index']);
-Route::get('/v1/federation/health', [\App\Http\Controllers\Api\FederationController::class, 'health']);
-Route::get('/v1/federation/timebanks', [\App\Http\Controllers\Api\FederationController::class, 'timebanks']);
-Route::get('/v1/federation/members', [\App\Http\Controllers\Api\FederationController::class, 'members']);
-Route::get('/v1/federation/members/{id}', [\App\Http\Controllers\Api\FederationController::class, 'member']);
-Route::get('/v1/federation/listings', [\App\Http\Controllers\Api\FederationController::class, 'listings']);
-Route::get('/v1/federation/listings/{id}', [\App\Http\Controllers\Api\FederationController::class, 'listing']);
-Route::get('/v1/federation/messages', [\App\Http\Controllers\Api\FederationController::class, 'getMessages']);
-Route::get('/v1/federation/reviews', [\App\Http\Controllers\Api\FederationController::class, 'getReviews']);
-Route::get('/v1/federation/transactions/{id}', [\App\Http\Controllers\Api\FederationController::class, 'getTransaction']);
-// Write operations rate-limited to prevent abuse (20 req/min per IP)
-Route::middleware('throttle:nexus-route-20-per-1m')->group(function () {
-    Route::post('/v1/federation/messages', [\App\Http\Controllers\Api\FederationController::class, 'sendMessage']);
-    Route::post('/v1/federation/transactions', [\App\Http\Controllers\Api\FederationController::class, 'createTransaction']);
-    Route::post('/v1/federation/reviews', [\App\Http\Controllers\Api\FederationController::class, 'createReview']);
+Route::middleware('federation.external:legacy_v1')->group(function () {
+    Route::get('/v1/federation', [\App\Http\Controllers\Api\FederationController::class, 'index']);
+    Route::get('/v1/federation/health', [\App\Http\Controllers\Api\FederationController::class, 'health']);
+    Route::get('/v1/federation/timebanks', [\App\Http\Controllers\Api\FederationController::class, 'timebanks']);
+    Route::get('/v1/federation/members', [\App\Http\Controllers\Api\FederationController::class, 'members']);
+    Route::get('/v1/federation/members/{id}', [\App\Http\Controllers\Api\FederationController::class, 'member']);
+    Route::get('/v1/federation/listings', [\App\Http\Controllers\Api\FederationController::class, 'listings']);
+    Route::get('/v1/federation/listings/{id}', [\App\Http\Controllers\Api\FederationController::class, 'listing']);
+    Route::get('/v1/federation/messages', [\App\Http\Controllers\Api\FederationController::class, 'getMessages']);
+    Route::get('/v1/federation/reviews', [\App\Http\Controllers\Api\FederationController::class, 'getReviews']);
+    Route::get('/v1/federation/transactions/{id}', [\App\Http\Controllers\Api\FederationController::class, 'getTransaction']);
+    // Write operations rate-limited to prevent abuse (20 req/min per IP)
+    Route::middleware('throttle:nexus-route-20-per-1m')->group(function () {
+        Route::post('/v1/federation/messages', [\App\Http\Controllers\Api\FederationController::class, 'sendMessage']);
+        Route::post('/v1/federation/transactions', [\App\Http\Controllers\Api\FederationController::class, 'createTransaction']);
+        Route::post('/v1/federation/reviews', [\App\Http\Controllers\Api\FederationController::class, 'createReview']);
+    });
+    Route::post('/v1/federation/oauth/token', [\App\Http\Controllers\Api\FederationController::class, 'oauthToken'])->middleware('throttle:nexus-route-10-per-1m');
+    Route::post('/v1/federation/webhooks/test', [\App\Http\Controllers\Api\FederationController::class, 'testWebhook']);
 });
-Route::post('/v1/federation/oauth/token', [\App\Http\Controllers\Api\FederationController::class, 'oauthToken'])->middleware('throttle:nexus-route-10-per-1m');
-Route::post('/v1/federation/webhooks/test', [\App\Http\Controllers\Api\FederationController::class, 'testWebhook']);
 
 // External federation partner webhook receiver — HMAC-authenticated, no Sanctum.
 // TimeOverflow and other external partners POST events here.
-Route::post('/v2/federation/external/webhooks/receive', [\App\Http\Controllers\Api\FederationExternalWebhookController::class, 'receive'])->middleware('throttle:nexus-route-200-per-1m');
+Route::post('/v2/federation/external/webhooks/receive', [\App\Http\Controllers\Api\FederationExternalWebhookController::class, 'receive'])->middleware(['throttle:nexus-route-200-per-1m', 'federation.external:webhooks']);
 
 // ============================================
 // FEDERATION PROTOCOL ENDPOINTS — Komunitin (JSON:API) & Credit Commons
@@ -3566,6 +3573,12 @@ Route::post('/v2/federation/external/webhooks/receive', [\App\Http\Controllers\A
 // external platforms can query us as a compatible federation partner.
 // ============================================
 Route::middleware(['federation.api', 'throttle:nexus-route-200-per-1m'])->group(function () {
+    // Each protocol family carries its own external kill switch so protocols
+    // can be re-enabled one at a time as their security audit passes. Nested
+    // inside federation.api so the outer middleware order stays untouched; in
+    // practice the equivalent backstop inside FederationApiMiddleware
+    // ::authenticate() blocks these first, before any partner key lookup.
+    Route::middleware('federation.external:komunitin')->group(function () {
     // --- Komunitin (JSON:API accounting protocol) ---
     // Full spec: https://github.com/community-exchange-network/komunitin
     Route::get('/v2/federation/komunitin/currencies', [\App\Http\Controllers\Api\FederationKomunitinController::class, 'currencies']);
@@ -3585,7 +3598,9 @@ Route::middleware(['federation.api', 'throttle:nexus-route-200-per-1m'])->group(
     Route::post('/v2/federation/komunitin/{code}/transfers', [\App\Http\Controllers\Api\FederationKomunitinController::class, 'createTransfer']);
     Route::patch('/v2/federation/komunitin/{code}/transfers/{id}', [\App\Http\Controllers\Api\FederationKomunitinController::class, 'updateTransfer']);
     Route::delete('/v2/federation/komunitin/{code}/transfers/{id}', [\App\Http\Controllers\Api\FederationKomunitinController::class, 'deleteTransfer']);
+    });
 
+    Route::middleware('federation.external:credit_commons')->group(function () {
     // --- Credit Commons protocol ---
     Route::get('/v2/federation/cc/about', [\App\Http\Controllers\Api\FederationCreditCommonsController::class, 'about']);
     Route::get('/v2/federation/cc/accounts', [\App\Http\Controllers\Api\FederationCreditCommonsController::class, 'accounts']);
@@ -3606,7 +3621,9 @@ Route::middleware(['federation.api', 'throttle:nexus-route-200-per-1m'])->group(
     Route::post('/v2/federation/cc/transactions/propose', [\App\Http\Controllers\Api\FederationCreditCommonsController::class, 'proposeTransaction']);
     Route::post('/v2/federation/cc/transactions/{uuid}/validate', [\App\Http\Controllers\Api\FederationCreditCommonsController::class, 'validateTransaction']);
     Route::post('/v2/federation/cc/transactions/{uuid}/commit', [\App\Http\Controllers\Api\FederationCreditCommonsController::class, 'commitTransaction']);
+    });
 
+    Route::middleware('federation.external:nexus')->group(function () {
     // --- Nexus Native V2 inbound entity push (REST) ---
     // Partners using the Nexus protocol POST entities here. Event facts use a
     // strict versioned projection with signature, replay, stale, and conflict handling.
@@ -3618,6 +3635,7 @@ Route::middleware(['federation.api', 'throttle:nexus-route-200-per-1m'])->group(
     Route::post('/v2/federation/ingest/connections', [\App\Http\Controllers\Api\FederationNativeIngestController::class, 'connections']);
     Route::post('/v2/federation/ingest/volunteering', [\App\Http\Controllers\Api\FederationNativeIngestController::class, 'volunteering']);
     Route::post('/v2/federation/ingest/members/sync', [\App\Http\Controllers\Api\FederationNativeIngestController::class, 'membersSync']);
+    });
 });
 
 // ============================================

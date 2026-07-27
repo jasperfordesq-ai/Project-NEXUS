@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Smoke tests for FederationKomunitinController.
@@ -22,6 +23,14 @@ use Tests\Laravel\TestCase;
 class FederationKomunitinControllerTest extends TestCase
 {
     use DatabaseTransactions;
+
+    use EnablesExternalFederation;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->enableExternalFederation();
+    }
 
     public function test_controller_exists(): void
     {

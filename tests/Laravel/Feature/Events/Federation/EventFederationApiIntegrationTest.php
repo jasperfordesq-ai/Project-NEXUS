@@ -18,10 +18,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 final class EventFederationApiIntegrationTest extends TestCase
 {
     use DatabaseTransactions;
+
+    use EnablesExternalFederation;
 
     /** @var list<string> */
     private array $serverKeys = [];
@@ -29,6 +32,7 @@ final class EventFederationApiIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
         FederationApiMiddleware::reset();
         Cache::flush();
         $this->enableEventFederation($this->testTenantId);

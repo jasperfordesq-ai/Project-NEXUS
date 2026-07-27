@@ -1839,6 +1839,30 @@ export interface FederationSystemControls {
   emergency_lockdown_active: boolean;
   emergency_lockdown_reason?: string;
   updated_at?: string;
+  // External partner federation kill switch — traffic to/from OTHER
+  // installations. Independent of the cross_tenant_* flags above, which gate
+  // federation between tenants inside this install.
+  external_federation_enabled: boolean;
+  external_protocol_nexus_enabled: boolean;
+  external_protocol_komunitin_enabled: boolean;
+  external_protocol_credit_commons_enabled: boolean;
+  external_protocol_legacy_v1_enabled: boolean;
+  external_protocol_webhooks_enabled: boolean;
+  external_protocol_hour_transfer_enabled: boolean;
+  external_protocol_aggregates_enabled: boolean;
+  external_federation_disabled_reason?: string | null;
+  external_federation_updated_at?: string | null;
+}
+
+/** Effective external federation posture, from the external-status endpoint. */
+export interface FederationExternalStatus {
+  platform_enabled: boolean;
+  master_enabled: boolean;
+  effective: boolean;
+  emergency_lockdown_active: boolean;
+  reason: string | null;
+  protocols: Record<string, boolean>;
+  blocked_last_24h: Record<string, number>;
 }
 
 export interface FederationWhitelistEntry {

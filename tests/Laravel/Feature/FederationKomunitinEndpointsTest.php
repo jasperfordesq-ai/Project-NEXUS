@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Feature tests for the 15 Komunitin JSON:API endpoints.
@@ -38,6 +39,8 @@ class FederationKomunitinEndpointsTest extends TestCase
 {
     use DatabaseTransactions;
 
+    use EnablesExternalFederation;
+
     private string $apiKey = '';
     private int $apiKeyId = 0;
     private string $currencyCode = 'HOURS';
@@ -45,6 +48,7 @@ class FederationKomunitinEndpointsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
         FederationApiMiddleware::reset();
         Cache::flush();
 

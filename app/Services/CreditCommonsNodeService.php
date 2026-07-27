@@ -136,9 +136,27 @@ class CreditCommonsNodeService
     /**
      * Resolve parent node path by querying the parent node's /about endpoint.
      */
+    /**
+     * True when the external federation kill switch blocks Credit Commons
+     * outbound traffic.
+     *
+     * These calls talk directly to remote CC nodes with raw Http:: and so do
+     * not pass through FederationExternalApiClient::request(), which is where
+     * every other outbound partner call is gated.
+     */
+    private static function outboundBlocked(): bool
+    {
+        return !app(FederationFeatureService::class)
+            ->isExternalProtocolEnabled(FederationFeatureService::EXTERNAL_PROTOCOL_CREDIT_COMMONS);
+    }
+
     private static function resolveParentPath(object $config): array
     {
         if (!$config->parent_node_url) {
+            return $config->parent_node_slug ? [$config->parent_node_slug] : [];
+        }
+
+        if (self::outboundBlocked()) {
             return $config->parent_node_slug ? [$config->parent_node_slug] : [];
         }
 
@@ -283,6 +301,10 @@ class CreditCommonsNodeService
         // SSRF protection on relay target
         if (!self::isUrlSafe($partner->base_url)) {
             return ['success' => false, 'error' => __('federation.relay_url_blocked')];
+        }
+
+        if (self::outboundBlocked()) {
+            return ['success' => false, 'error' => __('api.federation.external_outbound_disabled')];
         }
 
         // Forward to the remote node's /transaction/relay endpoint
@@ -495,6 +517,15 @@ class CreditCommonsNodeService
 
         $localHash = self::getLastHash($tenantId);
 
+        if (self::outboundBlocked()) {
+            return [
+                'in_sync' => false,
+                'local_hash' => $localHash,
+                'remote_hash' => null,
+                'action' => 'external_federation_disabled',
+            ];
+        }
+
         try {
             $aboutUrl = rtrim($remoteNodeUrl, '/') . '/about';
             $response = Http::timeout(10)
@@ -626,6 +657,10 @@ class CreditCommonsNodeService
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return (float) $cached;
+        }
+
+        if (self::outboundBlocked()) {
+            return 1.0;
         }
 
         try {

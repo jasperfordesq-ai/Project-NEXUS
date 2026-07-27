@@ -2122,6 +2122,8 @@ return [
 
     // Federation API errors (hardcoded-string audit — 2026-04-13)
     'federation' => [
+        'external_protocol_disabled' => 'External partner federation is temporarily disabled on this installation.',
+        'external_outbound_disabled' => 'External partner federation is temporarily disabled on this installation, so no data was sent.',
         'partner_not_found'          => 'Partner not found',
         'feature_disabled'           => 'Federation feature disabled for this tenant',
         'webhook_rate_limited'       => 'Too many requests',

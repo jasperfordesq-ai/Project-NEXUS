@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A kill switch for external partner federation, so protocol traffic with other platforms can be switched off for safety review — one protocol at a time.** Super Admin → Federation gains an "External Partner Federation" panel with a master switch plus an individual switch for each of the seven external protocols (Nexus native, Komunitin, Credit Commons, the legacy v1 API, partner webhooks, cross-platform hour transfers and aggregate reporting). It ships with external federation **off**, so each protocol is re-enabled deliberately as its audit passes.
+
+  This was not simply a new toggle. The existing "Federation" switch did not do what it appeared to do: turning it off left all 17 Credit Commons endpoints (including relayed and three-phase transactions), 16 of the 17 Komunitin endpoints, the whole legacy v1 API — including the endpoint that mints access tokens — the inbound hour-transfer endpoint and the public aggregates endpoint all answering external callers exactly as before. Outbound pushes to partners were similarly ungated. Fifty-nine external routes are now gated, verified by a test that enumerates each one individually.
+
+  The switch is deliberately a **separate axis** from the existing controls: it governs traffic with *other installations* only, and federation between communities inside this installation — including sub-communities and the Partner Timebanks panel — keeps working when it is off. The panel says so on screen, and a regression test asserts it, because the failure mode to guard against is a future operator "fixing" the disabled switch out of fear it had broken something internal.
+
+  Blocked callers receive HTTP 503 with `Retry-After`, not 403 — their credentials are fine and the capability is temporarily withdrawn, and many federation clients treat a sustained 403 as permanent revocation. The response deliberately does not name the protocol, so an unauthenticated caller cannot enumerate which protocols this installation supports. Where the internal controls fail *open* on a database fault, so a brief outage cannot sever working same-install federation, the external switch fails *closed*: a missing configuration row, a missing column, an unrecognised protocol or any database error all resolve to "blocked".
+
+  The panel also shows, per protocol, how many outbound pushes were blocked in the last 24 hours, so it is visible whether anything is still trying to reach partners. Blocked *inbound* attempts are recorded to the application log only — deliberately, since three of these endpoints are unauthenticated and writing an audit row per rejected request would turn the kill switch into a way to make the platform write unbounded rows.
+
+  Two further subtleties worth recording. Blocked outbound calls are not counted as partner failures, because doing so would trip the circuit breaker and leave partners unreachable for five minutes *after* the switch was turned back on — re-enabling takes effect immediately, and a test proves it. And `FEDERATION_ENABLED`, `FEDERATION_API_VERSION` and `FEATURE_FEDERATION` have been removed from the example environment file: they were documented as if they were switches but no code has ever read them, which is a plausible way to believe federation was off while it was on.
+
 ### Fixed
 
 - **Custom pages built in the page builder were rendering with no styling at all, and now render correctly.** Every custom page lost its entire stylesheet before reaching the browser — the baseline rules that give the page its background, text colour and image sizing, the page's own styling from the builder, and the light/dark theme overrides. Pages fell back to whatever the surrounding app happened to apply, so anything laid out or coloured in the builder appeared plain.

@@ -580,6 +580,38 @@ class FederationExternalApiClient
             return ['success' => false, 'error' => "Partner #{$partnerId} not found or inactive", 'status_code' => 0];
         }
 
+        // ---- External federation kill switch ----
+        // Placed BEFORE the circuit breaker and deliberately WITHOUT a
+        // recordFailure() call: counting operator-blocked calls as partner
+        // failures would trip the breaker after MAX_FAILURES and keep every
+        // partner unreachable for CIRCUIT_BREAKER_COOLDOWN seconds *after* the
+        // switch is turned back on. Re-enabling must take effect immediately.
+        //
+        // Returns the standard failure shape rather than throwing: all callers
+        // (the 12 Push* listeners, NexusEventFederationTransport,
+        // FederationV2Controller, FederationSearchService) already branch on
+        // success=false, and throwing from a queued listener would produce
+        // retry storms across the federation queue.
+        $protocol = FederationFeatureService::protocolForPartnerType($partner['protocol_type'] ?? null);
+        if ($protocol === null || !app(FederationFeatureService::class)->isExternalProtocolEnabled($protocol)) {
+            self::logApiCall(
+                $partnerId,
+                $endpoint,
+                $method,
+                0,
+                false,
+                0,
+                'Blocked: external federation disabled for protocol ' . ($protocol ?? 'unknown'),
+            );
+
+            return [
+                'success' => false,
+                'error' => __('api.federation.external_outbound_disabled'),
+                'status_code' => 0,
+                'blocked' => true,
+            ];
+        }
+
         // ---- Circuit breaker check ----
         if (self::isCircuitOpen($partnerId)) {
             self::logApiCall($partnerId, $endpoint, $method, 0, false, 0, 'Circuit breaker open — partner temporarily unavailable');

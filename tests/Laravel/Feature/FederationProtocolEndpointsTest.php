@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Feature tests for the new protocol-specific REST endpoints:
@@ -29,12 +30,15 @@ class FederationProtocolEndpointsTest extends TestCase
 {
     use DatabaseTransactions;
 
+    use EnablesExternalFederation;
+
     private string $apiKey = '';
     private int $apiKeyId = 0;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
         FederationApiMiddleware::reset();
         Cache::flush();
 

@@ -40,10 +40,41 @@ class FederationFeatureService
     public const TENANT_EVENTS_ENABLED = 'tenant_events_enabled';
     public const TENANT_GROUPS_ENABLED = 'tenant_groups_enabled';
 
+    /**
+     * External protocol constants.
+     *
+     * These name traffic exchanged with OTHER installations, as opposed to the
+     * SYSTEM_/TENANT_ constants above which gate cross-tenant federation
+     * between tenants inside this install.
+     */
+    public const EXTERNAL_PROTOCOL_NEXUS = 'nexus';
+    public const EXTERNAL_PROTOCOL_KOMUNITIN = 'komunitin';
+    public const EXTERNAL_PROTOCOL_CREDIT_COMMONS = 'credit_commons';
+    public const EXTERNAL_PROTOCOL_LEGACY_V1 = 'legacy_v1';
+    public const EXTERNAL_PROTOCOL_WEBHOOKS = 'webhooks';
+    public const EXTERNAL_PROTOCOL_HOUR_TRANSFER = 'hour_transfer';
+    public const EXTERNAL_PROTOCOL_AGGREGATES = 'aggregates';
+
+    /**
+     * Protocol name => `federation_system_control` column.
+     *
+     * @var array<string, string>
+     */
+    private const EXTERNAL_PROTOCOL_COLUMNS = [
+        self::EXTERNAL_PROTOCOL_NEXUS => 'external_protocol_nexus_enabled',
+        self::EXTERNAL_PROTOCOL_KOMUNITIN => 'external_protocol_komunitin_enabled',
+        self::EXTERNAL_PROTOCOL_CREDIT_COMMONS => 'external_protocol_credit_commons_enabled',
+        self::EXTERNAL_PROTOCOL_LEGACY_V1 => 'external_protocol_legacy_v1_enabled',
+        self::EXTERNAL_PROTOCOL_WEBHOOKS => 'external_protocol_webhooks_enabled',
+        self::EXTERNAL_PROTOCOL_HOUR_TRANSFER => 'external_protocol_hour_transfer_enabled',
+        self::EXTERNAL_PROTOCOL_AGGREGATES => 'external_protocol_aggregates_enabled',
+    ];
+
     /** In-process caches */
     private ?array $systemControlCache = null;
     private array $tenantFeatureCache = [];
     private array $whitelistCache = [];
+    private ?array $externalControlCache = null;
 
     public function __construct(
         private readonly FederationAuditService $auditService,
@@ -158,6 +189,236 @@ class FederationFeatureService
     {
         $controls = $this->getSystemControls();
         return (int) ($controls['max_federation_level'] ?? 0);
+    }
+
+    // =========================================================================
+    // EXTERNAL PARTNER PROTOCOL CONTROLS
+    // =========================================================================
+
+    /**
+     * Read the external-protocol columns, failing CLOSED.
+     *
+     * Deliberately does NOT route through getSystemControls()/getSystemDefaults():
+     * those fail OPEN (a missing row or DB error yields federation_enabled = 1)
+     * so that a transient fault cannot silently sever working internal
+     * cross-tenant federation. External protocol traffic has the opposite
+     * risk profile — an unaudited protocol answering partners during a fault
+     * is worse than downtime — so a missing row, a missing column, or any
+     * exception here resolves to "blocked".
+     *
+     * @return array<string, int>
+     */
+    private function getExternalControls(): array
+    {
+        if ($this->externalControlCache !== null) {
+            return $this->externalControlCache;
+        }
+
+        $closed = ['external_federation_enabled' => 0];
+        foreach (self::EXTERNAL_PROTOCOL_COLUMNS as $column) {
+            $closed[$column] = 0;
+        }
+        $closed['external_federation_disabled_reason'] = null;
+
+        try {
+            $row = DB::table('federation_system_control')->where('id', 1)->first();
+            if (! $row) {
+                return $this->externalControlCache = $closed;
+            }
+
+            $row = (array) $row;
+            $resolved = $closed;
+            foreach (array_keys($closed) as $key) {
+                if (! array_key_exists($key, $row)) {
+                    // Column absent (migration not yet run) — stay closed.
+                    continue;
+                }
+                $resolved[$key] = $key === 'external_federation_disabled_reason'
+                    ? ($row[$key] !== null ? (string) $row[$key] : null)
+                    : (int) (bool) $row[$key];
+            }
+
+            return $this->externalControlCache = $resolved;
+        } catch (\Throwable $e) {
+            // \Throwable, not \Exception: a TypeError or Error here must also
+            // resolve to "blocked". Not cached, so a transient fault does not
+            // pin the gate closed for the rest of the request.
+            Log::error('FederationFeatureService: Failed to read external federation controls, failing closed - ' . $e->getMessage());
+            return $closed;
+        }
+    }
+
+    /**
+     * Master switch for all traffic to/from OTHER installations.
+     *
+     * Nested under the platform master switch, so `federation_enabled = 0` or
+     * an active emergency lockdown also blocks every external protocol.
+     */
+    public function isExternalFederationEnabled(): bool
+    {
+        if (! $this->isGloballyEnabled()) {
+            return false;
+        }
+
+        return (bool) ($this->getExternalControls()['external_federation_enabled'] ?? 0);
+    }
+
+    /**
+     * Check whether one external protocol may exchange traffic.
+     *
+     * Unknown protocol names resolve to false so a typo cannot open a hole.
+     */
+    public function isExternalProtocolEnabled(string $protocol): bool
+    {
+        $column = self::EXTERNAL_PROTOCOL_COLUMNS[$protocol] ?? null;
+        if ($column === null) {
+            Log::warning('FederationFeatureService: Unknown external federation protocol, failing closed', [
+                'protocol' => $protocol,
+            ]);
+            return false;
+        }
+
+        if (! $this->isExternalFederationEnabled()) {
+            return false;
+        }
+
+        return (bool) ($this->getExternalControls()[$column] ?? 0);
+    }
+
+    /**
+     * Snapshot of the external switch state, for the super-admin UI and diagnostics.
+     *
+     * @return array{
+     *     platform_enabled: bool,
+     *     master_enabled: bool,
+     *     effective: bool,
+     *     emergency_lockdown_active: bool,
+     *     reason: ?string,
+     *     protocols: array<string, bool>
+     * }
+     */
+    public function externalProtocolStatus(): array
+    {
+        $controls = $this->getExternalControls();
+        $systemControls = $this->getSystemControls();
+
+        $protocols = [];
+        foreach (array_keys(self::EXTERNAL_PROTOCOL_COLUMNS) as $protocol) {
+            $protocols[$protocol] = $this->isExternalProtocolEnabled($protocol);
+        }
+
+        return [
+            'platform_enabled' => $this->isGloballyEnabled(),
+            'master_enabled' => (bool) ($controls['external_federation_enabled'] ?? 0),
+            'effective' => $this->isExternalFederationEnabled(),
+            'emergency_lockdown_active' => (bool) ($systemControls['emergency_lockdown_active'] ?? 0),
+            'reason' => $controls['external_federation_disabled_reason'] ?? null,
+            'protocols' => $protocols,
+        ];
+    }
+
+    /**
+     * All supported external protocol names.
+     *
+     * @return array<int, string>
+     */
+    public static function externalProtocolNames(): array
+    {
+        return array_keys(self::EXTERNAL_PROTOCOL_COLUMNS);
+    }
+
+    /**
+     * Map an external protocol name to its control column.
+     */
+    public static function externalProtocolColumn(string $protocol): ?string
+    {
+        return self::EXTERNAL_PROTOCOL_COLUMNS[$protocol] ?? null;
+    }
+
+    /**
+     * Resolve a request path to its external protocol, or null when the path is
+     * not an external federation surface.
+     *
+     * Routes carry their protocol explicitly via the `federation.external:<p>`
+     * middleware parameter; this prefix map exists only as a backstop so a
+     * future route added under an existing external prefix is still gated if
+     * someone forgets that middleware. Callers must treat null as "not an
+     * external surface" and NOT as "allowed".
+     */
+    public static function protocolForInboundPath(string $path): ?string
+    {
+        // Request::path() omits the leading slash and includes the api/ prefix.
+        $normalised = '/' . ltrim($path, '/');
+        if (str_starts_with($normalised, '/api/')) {
+            $normalised = substr($normalised, 4);
+        }
+
+        $prefixes = [
+            '/v2/federation/komunitin/' => self::EXTERNAL_PROTOCOL_KOMUNITIN,
+            '/v2/federation/cc/' => self::EXTERNAL_PROTOCOL_CREDIT_COMMONS,
+            '/v2/federation/ingest/' => self::EXTERNAL_PROTOCOL_NEXUS,
+            '/v2/federation/external/webhooks/' => self::EXTERNAL_PROTOCOL_WEBHOOKS,
+            '/v2/federation/hour-transfer/' => self::EXTERNAL_PROTOCOL_HOUR_TRANSFER,
+            '/v2/federation/aggregates' => self::EXTERNAL_PROTOCOL_AGGREGATES,
+            '/v1/federation' => self::EXTERNAL_PROTOCOL_LEGACY_V1,
+        ];
+
+        foreach ($prefixes as $prefix => $protocol) {
+            if (str_starts_with($normalised, $prefix)) {
+                return $protocol;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Map `federation_external_partners.protocol_type` to a switch protocol.
+     *
+     * Returns null for an unknown or missing type so outbound callers fail
+     * closed rather than guessing. TimeOverflow partners exchange traffic over
+     * the webhook surface, so they share that protocol's switch.
+     */
+    public static function protocolForPartnerType(?string $protocolType): ?string
+    {
+        return match ($protocolType) {
+            'nexus' => self::EXTERNAL_PROTOCOL_NEXUS,
+            'komunitin' => self::EXTERNAL_PROTOCOL_KOMUNITIN,
+            'credit_commons' => self::EXTERNAL_PROTOCOL_CREDIT_COMMONS,
+            'timeoverflow' => self::EXTERNAL_PROTOCOL_WEBHOOKS,
+            default => null,
+        };
+    }
+
+    /**
+     * Toggle the external federation master switch.
+     */
+    public function setExternalFederation(bool $enabled, int $adminId, ?string $reason = null): bool
+    {
+        try {
+            DB::table('federation_system_control')->where('id', 1)->update([
+                'external_federation_enabled' => $enabled ? 1 : 0,
+                'external_federation_disabled_reason' => $enabled ? null : $reason,
+                'external_federation_updated_at' => now(),
+                'external_federation_updated_by' => $adminId,
+                'updated_at' => now(),
+                'updated_by' => $adminId,
+            ]);
+
+            $this->clearCache();
+
+            $this->auditService->log(
+                $enabled ? 'external_federation_enabled' : 'external_federation_disabled',
+                null, null, $adminId,
+                ['reason' => $reason],
+                'critical'
+            );
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('FederationFeatureService: Failed to set external federation switch - ' . $e->getMessage());
+            return false;
+        }
     }
 
     // =========================================================================
@@ -506,6 +767,7 @@ class FederationFeatureService
         $this->systemControlCache = null;
         $this->tenantFeatureCache = [];
         $this->whitelistCache = [];
+        $this->externalControlCache = null;
     }
 
     // =========================================================================
@@ -615,7 +877,10 @@ class FederationFeatureService
 
     private function getSystemDefaults(): array
     {
-        return [
+        // Internal cross-tenant federation defaults ON so a transient DB fault
+        // cannot silently sever working same-install federation. Every
+        // external_* key defaults OFF — see getExternalControls().
+        $defaults = [
             'federation_enabled' => 1,
             'whitelist_mode_enabled' => 0,
             'emergency_lockdown_active' => 0,
@@ -626,7 +891,14 @@ class FederationFeatureService
             'cross_tenant_listings_enabled' => 1,
             'cross_tenant_events_enabled' => 1,
             'cross_tenant_groups_enabled' => 1,
+            'external_federation_enabled' => 0,
         ];
+
+        foreach (self::EXTERNAL_PROTOCOL_COLUMNS as $column) {
+            $defaults[$column] = 0;
+        }
+
+        return $defaults;
     }
 
     private function getTenantFeatureDefault(string $feature): bool
@@ -637,6 +909,9 @@ class FederationFeatureService
 
     private function initializeSystemDefaults(): void
     {
+        // The external_* columns are intentionally omitted: their column
+        // defaults are 0, so a self-healed control row starts with external
+        // partner federation blocked and must be enabled explicitly.
         try {
             DB::statement(
                 "INSERT INTO federation_system_control (

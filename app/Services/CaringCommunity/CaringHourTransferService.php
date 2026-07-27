@@ -12,6 +12,7 @@ use App\Core\TenantContext;
 use App\Events\TransactionCompleted;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Services\FederationFeatureService;
 use App\Support\OutboundUrlGuard;
 use App\Support\SecurityBounds;
 use Illuminate\Support\Facades\DB;
@@ -695,6 +696,21 @@ class CaringHourTransferService
                 'delivered' => false,
                 'status'    => 0,
                 'error'     => 'unsafe peer base_url',
+                'response'  => null,
+            ];
+        }
+
+        // External federation kill switch. This path posts directly to the peer
+        // with raw Http:: and so bypasses FederationExternalApiClient's gate.
+        // Undelivered rows stay in `sent`, the documented retry state, so
+        // nothing is lost while the protocol is switched off.
+        $externalDisabled = ! app(FederationFeatureService::class)
+            ->isExternalProtocolEnabled(FederationFeatureService::EXTERNAL_PROTOCOL_HOUR_TRANSFER);
+        if ($externalDisabled) {
+            return [
+                'delivered' => false,
+                'status'    => 0,
+                'error'     => 'external_federation_disabled',
                 'response'  => null,
             ];
         }

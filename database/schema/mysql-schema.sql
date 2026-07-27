@@ -1,4 +1,4 @@
-/*M!999999\- enable the sandbox mode */
+/*M!999999\- enable the sandbox mode */ 
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -36,7 +36,7 @@ CREATE TABLE `abuse_alerts` (
   KEY `idx_abuse_type` (`alert_type`),
   KEY `idx_abuse_date` (`created_at`),
   KEY `idx_abuse_alerts_tenant_status` (`tenant_id`,`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=1084 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1104 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `account_relationships`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -144,7 +144,7 @@ CREATE TABLE `activity_log` (
   KEY `idx_activity_log_created_at` (`created_at`),
   KEY `idx_activity_log_user_created` (`user_id`,`created_at`),
   KEY `idx_activity_log_tenant` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2685 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1980 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ad_campaigns`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -403,7 +403,7 @@ CREATE TABLE `ai_conversations` (
   PRIMARY KEY (`id`),
   KEY `idx_ai_conv_user` (`tenant_id`,`user_id`),
   KEY `idx_ai_conv_created` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ai_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -419,7 +419,7 @@ CREATE TABLE `ai_messages` (
   PRIMARY KEY (`id`),
   KEY `idx_ai_msg_conv` (`conversation_id`),
   CONSTRAINT `ai_messages_ibfk_1` FOREIGN KEY (`conversation_id`) REFERENCES `ai_conversations` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=107 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ai_module_docs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -484,7 +484,7 @@ CREATE TABLE `ai_turn_traces` (
   KEY `idx_tenant_feedback` (`tenant_id`,`feedback`),
   KEY `idx_message` (`message_id`),
   KEY `idx_conversation` (`conversation_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `ai_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -912,7 +912,7 @@ CREATE TABLE `bookmarks` (
   KEY `bookmarks_tenant_id_index` (`tenant_id`),
   KEY `bookmarks_user_id_index` (`user_id`),
   CONSTRAINT `bookmarks_collection_id_foreign` FOREIGN KEY (`collection_id`) REFERENCES `bookmark_collections` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `broker_control_config`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -977,7 +977,7 @@ CREATE TABLE `broker_message_copies` (
   CONSTRAINT `broker_message_copies_ibfk_4` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `broker_message_copies_ibfk_5` FOREIGN KEY (`related_listing_id`) REFERENCES `listings` (`id`) ON DELETE SET NULL,
   CONSTRAINT `broker_message_copies_ibfk_6` FOREIGN KEY (`related_exchange_id`) REFERENCES `exchange_requests` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `broker_review_archives`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -1429,19 +1429,19 @@ CREATE TABLE `caring_loyalty_redemptions` (
   `order_total_chf` decimal(10,2) NOT NULL,
   `status` enum('pending','applied','reversed') NOT NULL DEFAULT 'applied',
   `redeemed_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `expires_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
   `reversed_at` timestamp NULL DEFAULT NULL,
   `reversed_by` bigint(20) unsigned DEFAULT NULL,
   `reversal_reason` varchar(500) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `clr_order_once_unique` (`marketplace_order_id`),
+  UNIQUE KEY `clr_order_once_unique` (`marketplace_order_id`) COMMENT 'nexus-migration:2026_07_12_000072',
   KEY `clr_tenant_member_idx` (`tenant_id`,`member_user_id`),
   KEY `clr_tenant_merchant_idx` (`tenant_id`,`merchant_user_id`),
   KEY `clr_tenant_redeemed_idx` (`tenant_id`,`redeemed_at`),
   KEY `clr_tenant_listing_idx` (`tenant_id`,`marketplace_listing_id`),
-  KEY `clr_pending_expiry_idx` (`tenant_id`,`status`,`expires_at`)
+  KEY `clr_pending_expiry_idx` (`tenant_id`,`status`,`expires_at`) COMMENT 'nexus-migration:2026_07_12_000072'
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `caring_municipality_feedback`;
@@ -1829,7 +1829,7 @@ CREATE TABLE `categories` (
   KEY `idx_cat_parent` (`parent_id`),
   KEY `idx_categories_tenant_type_slug` (`tenant_id`,`type`,`slug`),
   CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=613 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=597 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `challenge_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2038,7 +2038,7 @@ CREATE TABLE `civic_digest_delivery_claims` (
   UNIQUE KEY `uk_civic_digest_delivery_claim` (`tenant_id`,`user_id`,`cadence`,`window_key`),
   KEY `idx_civic_digest_claim_status` (`tenant_id`,`status`,`claimed_at`),
   KEY `idx_civic_digest_user_sent` (`tenant_id`,`user_id`,`sent_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=84 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `close_friends`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2109,7 +2109,7 @@ CREATE TABLE `community_fund_accounts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant` (`tenant_id`),
   CONSTRAINT `community_fund_accounts_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `community_fund_transactions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2158,7 +2158,7 @@ CREATE TABLE `community_ranks` (
   KEY `idx_tenant` (`tenant_id`),
   KEY `idx_rank_score` (`rank_score`),
   KEY `idx_position` (`tenant_id`,`rank_position`)
-) ENGINE=InnoDB AUTO_INCREMENT=12305 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Community rank scores for users';
+) ENGINE=InnoDB AUTO_INCREMENT=12436 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Community rank scores for users';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `communityrank_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2281,7 +2281,7 @@ CREATE TABLE `content_embeddings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_content` (`tenant_id`,`content_type`,`content_id`),
   KEY `idx_tenant_type` (`tenant_id`,`content_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `content_moderation_queue`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2418,7 +2418,7 @@ CREATE TABLE `cookie_consents` (
   KEY `idx_consent_version` (`consent_version`),
   KEY `idx_valid_consent` (`user_id`,`tenant_id`,`expires_at`,`withdrawal_date`),
   KEY `idx_session_tenant` (`session_id`,`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=154 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cookie_inventory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2880,7 +2880,7 @@ CREATE TABLE `cron_logs` (
   KEY `idx_executed_at` (`executed_at`),
   KEY `idx_status` (`status`),
   KEY `cron_logs_tenant_id_index` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=684815 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=745192 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cron_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -2935,7 +2935,7 @@ CREATE TABLE `daily_rewards` (
   UNIQUE KEY `unique_daily_reward` (`tenant_id`,`user_id`,`reward_date`),
   KEY `idx_user_date` (`user_id`,`reward_date`),
   KEY `idx_tenant_date` (`tenant_id`,`reward_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `data_breach_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3261,7 +3261,7 @@ CREATE TABLE `email_log` (
   KEY `email_log_source_index` (`source`),
   KEY `email_log_idempotency_key_index` (`idempotency_key`),
   KEY `email_log_dispatch_id_index` (`dispatch_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31179 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31468 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `email_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3293,7 +3293,7 @@ CREATE TABLE `email_suppression` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_suppression_email_reason_unique` (`email`,`reason`),
   KEY `email_suppression_reason_index` (`reason`)
-) ENGINE=InnoDB AUTO_INCREMENT=379 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=389 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `email_verification_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3310,7 +3310,7 @@ CREATE TABLE `email_verification_tokens` (
   KEY `idx_expires_at` (`expires_at`),
   KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_tenant_user` (`tenant_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=212 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=224 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `error404_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -3382,8 +3382,7 @@ CREATE TABLE `event_analytics_access_audits` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_access_no_update` BEFORE UPDATE ON `event_analytics_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_access_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_access_no_update` BEFORE UPDATE ON `event_analytics_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_access_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3398,8 +3397,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_access_no_delete` BEFORE DELETE ON `event_analytics_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_access_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_access_no_delete` BEFORE DELETE ON `event_analytics_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_access_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3454,8 +3452,7 @@ CREATE TABLE `event_analytics_optional_facts` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_fact_update` BEFORE UPDATE ON `event_analytics_optional_facts` FOR EACH ROW BEGIN IF OLD.`status` <> 'active' OR NEW.`status` <> 'withdrawn' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_immutable'; END IF; IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`metric` <=> NEW.`metric`) OR NOT (OLD.`deduplication_hash` <=> NEW.`deduplication_hash`) OR NOT (OLD.`request_hash` <=> NEW.`request_hash`) OR NOT (OLD.`source_surface` <=> NEW.`source_surface`) OR NOT (OLD.`client_platform` <=> NEW.`client_platform`) OR NOT (OLD.`is_late` <=> NEW.`is_late`) OR NOT (OLD.`occurred_at` <=> NEW.`occurred_at`) OR NOT (OLD.`received_at` <=> NEW.`received_at`) OR NOT (OLD.`retention_due_at` <=> NEW.`retention_due_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_evidence_immutable'; END IF; IF NEW.`subject_hash` IS NOT NULL OR NEW.`pseudonym_key_version` IS NOT NULL OR NEW.`consent_record_id` IS NOT NULL OR NEW.`consent_version` IS NOT NULL OR NEW.`withdrawn_at` IS NULL OR JSON_LENGTH(NEW.`dimensions`) <> 0 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_withdrawal_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_fact_update` BEFORE UPDATE ON `event_analytics_optional_facts` FOR EACH ROW BEGIN IF OLD.`status` <> 'active' OR NEW.`status` <> 'withdrawn' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_immutable'; END IF; IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`metric` <=> NEW.`metric`) OR NOT (OLD.`deduplication_hash` <=> NEW.`deduplication_hash`) OR NOT (OLD.`request_hash` <=> NEW.`request_hash`) OR NOT (OLD.`source_surface` <=> NEW.`source_surface`) OR NOT (OLD.`client_platform` <=> NEW.`client_platform`) OR NOT (OLD.`is_late` <=> NEW.`is_late`) OR NOT (OLD.`occurred_at` <=> NEW.`occurred_at`) OR NOT (OLD.`received_at` <=> NEW.`received_at`) OR NOT (OLD.`retention_due_at` <=> NEW.`retention_due_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_evidence_immutable'; END IF; IF NEW.`subject_hash` IS NOT NULL OR NEW.`pseudonym_key_version` IS NOT NULL OR NEW.`consent_record_id` IS NOT NULL OR NEW.`consent_version` IS NOT NULL OR NEW.`withdrawn_at` IS NULL OR JSON_LENGTH(NEW.`dimensions`) <> 0 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_withdrawal_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3470,8 +3467,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_fact_no_delete` BEFORE DELETE ON `event_analytics_optional_facts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_fact_no_delete` BEFORE DELETE ON `event_analytics_optional_facts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_fact_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3507,8 +3503,7 @@ CREATE TABLE `event_analytics_withdrawal_runs` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_withdraw_no_update` BEFORE UPDATE ON `event_analytics_withdrawal_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_withdrawal_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_withdraw_no_update` BEFORE UPDATE ON `event_analytics_withdrawal_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_withdrawal_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3523,8 +3518,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_withdraw_no_delete` BEFORE DELETE ON `event_analytics_withdrawal_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_withdrawal_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_analytics_withdraw_no_delete` BEFORE DELETE ON `event_analytics_withdrawal_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_analytics_withdrawal_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3595,8 +3589,7 @@ CREATE TABLE `event_attendance_activity` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_attendance_activity_no_update` BEFORE UPDATE ON `event_attendance_activity` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_attendance_activity_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_attendance_activity_no_update` BEFORE UPDATE ON `event_attendance_activity` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_attendance_activity_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3611,8 +3604,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_attendance_activity_no_delete` BEFORE DELETE ON `event_attendance_activity` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_attendance_activity_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_attendance_activity_no_delete` BEFORE DELETE ON `event_attendance_activity` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_attendance_activity_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3664,8 +3656,7 @@ CREATE TABLE `event_attendance_credit_claims` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_attendance_claim_no_delete` BEFORE DELETE ON `event_attendance_credit_claims` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_attendance_credit_claim_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_attendance_claim_no_delete` BEFORE DELETE ON `event_attendance_credit_claims` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_attendance_credit_claim_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3722,8 +3713,7 @@ CREATE TABLE `event_broadcast_deliveries` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_delivery_lifecycle_guard` BEFORE UPDATE ON `event_broadcast_deliveries` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`broadcast_id` <=> NEW.`broadcast_id`) OR NOT (OLD.`frozen_broadcast_version` <=> NEW.`frozen_broadcast_version`) OR NOT (OLD.`recipient_user_id` <=> NEW.`recipient_user_id`) OR NOT (OLD.`channel` <=> NEW.`channel`) OR NOT (OLD.`delivery_key` <=> NEW.`delivery_key`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_delivery_identity_immutable'; END IF; IF OLD.`status` IN ('delivered','suppressed','cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_delivery_terminal_immutable'; END IF; IF NOT ((OLD.`status` = NEW.`status`) OR (OLD.`status` IN ('pending','retry') AND NEW.`status` IN ('processing','cancelled')) OR (OLD.`status` = 'processing' AND NEW.`status` IN ('delivered','suppressed','retry','dead_letter')) OR (OLD.`status` = 'dead_letter' AND NEW.`status` = 'retry')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_delivery_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_delivery_lifecycle_guard` BEFORE UPDATE ON `event_broadcast_deliveries` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`broadcast_id` <=> NEW.`broadcast_id`) OR NOT (OLD.`frozen_broadcast_version` <=> NEW.`frozen_broadcast_version`) OR NOT (OLD.`recipient_user_id` <=> NEW.`recipient_user_id`) OR NOT (OLD.`channel` <=> NEW.`channel`) OR NOT (OLD.`delivery_key` <=> NEW.`delivery_key`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_delivery_identity_immutable'; END IF; IF OLD.`status` IN ('delivered','suppressed','cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_delivery_terminal_immutable'; END IF; IF NOT ((OLD.`status` = NEW.`status`) OR (OLD.`status` IN ('pending','retry') AND NEW.`status` IN ('processing','cancelled')) OR (OLD.`status` = 'processing' AND NEW.`status` IN ('delivered','suppressed','retry','dead_letter')) OR (OLD.`status` = 'dead_letter' AND NEW.`status` = 'retry')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_delivery_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3738,8 +3728,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_delivery_no_delete` BEFORE DELETE ON `event_broadcast_deliveries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_delivery_no_delete` BEFORE DELETE ON `event_broadcast_deliveries` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3778,8 +3767,7 @@ CREATE TABLE `event_broadcast_delivery_attempts` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_attempt_no_update` BEFORE UPDATE ON `event_broadcast_delivery_attempts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_attempt_no_update` BEFORE UPDATE ON `event_broadcast_delivery_attempts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3794,8 +3782,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_attempt_no_delete` BEFORE DELETE ON `event_broadcast_delivery_attempts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_attempt_no_delete` BEFORE DELETE ON `event_broadcast_delivery_attempts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3838,8 +3825,7 @@ CREATE TABLE `event_broadcast_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_history_no_update` BEFORE UPDATE ON `event_broadcast_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_history_no_update` BEFORE UPDATE ON `event_broadcast_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3854,8 +3840,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_history_no_delete` BEFORE DELETE ON `event_broadcast_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_history_no_delete` BEFORE DELETE ON `event_broadcast_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3920,8 +3905,7 @@ CREATE TABLE `event_broadcasts` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_lifecycle_guard` BEFORE UPDATE ON `event_broadcasts` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`created_by_user_id` <=> NEW.`created_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_identity_immutable'; END IF; IF OLD.`status` IN ('sent','cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_terminal_immutable'; END IF; IF OLD.`status` <> 'draft' AND (NOT (OLD.`variant` <=> NEW.`variant`) OR NOT (OLD.`audience_segments` <=> NEW.`audience_segments`) OR NOT (OLD.`channels` <=> NEW.`channels`) OR NOT (OLD.`body` <=> NEW.`body`) OR NOT (OLD.`content_hash` <=> NEW.`content_hash`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_content_frozen'; END IF; IF NOT ((OLD.`status` = NEW.`status`) OR (OLD.`status` = 'draft' AND NEW.`status` IN ('scheduled','cancelled')) OR (OLD.`status` = 'scheduled' AND NEW.`status` IN ('sending','cancelled')) OR (OLD.`status` = 'sending' AND NEW.`status` IN ('sent','failed')) OR (OLD.`status` = 'failed' AND NEW.`status` = 'scheduled')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_transition_invalid'; END IF; IF NEW.`broadcast_version` < OLD.`broadcast_version` OR NEW.`broadcast_version` > OLD.`broadcast_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_version_invalid'; END IF; IF (NOT (OLD.`status` <=> NEW.`status`) OR NOT (OLD.`variant` <=> NEW.`variant`) OR NOT (OLD.`audience_segments` <=> NEW.`audience_segments`) OR NOT (OLD.`channels` <=> NEW.`channels`) OR NOT (OLD.`body` <=> NEW.`body`) OR NOT (OLD.`content_hash` <=> NEW.`content_hash`)) AND NEW.`broadcast_version` <> OLD.`broadcast_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_version_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_lifecycle_guard` BEFORE UPDATE ON `event_broadcasts` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`created_by_user_id` <=> NEW.`created_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_identity_immutable'; END IF; IF OLD.`status` IN ('sent','cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_terminal_immutable'; END IF; IF OLD.`status` <> 'draft' AND (NOT (OLD.`variant` <=> NEW.`variant`) OR NOT (OLD.`audience_segments` <=> NEW.`audience_segments`) OR NOT (OLD.`channels` <=> NEW.`channels`) OR NOT (OLD.`body` <=> NEW.`body`) OR NOT (OLD.`content_hash` <=> NEW.`content_hash`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_content_frozen'; END IF; IF NOT ((OLD.`status` = NEW.`status`) OR (OLD.`status` = 'draft' AND NEW.`status` IN ('scheduled','cancelled')) OR (OLD.`status` = 'scheduled' AND NEW.`status` IN ('sending','cancelled')) OR (OLD.`status` = 'sending' AND NEW.`status` IN ('sent','failed')) OR (OLD.`status` = 'failed' AND NEW.`status` = 'scheduled')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_transition_invalid'; END IF; IF NEW.`broadcast_version` < OLD.`broadcast_version` OR NEW.`broadcast_version` > OLD.`broadcast_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_version_invalid'; END IF; IF (NOT (OLD.`status` <=> NEW.`status`) OR NOT (OLD.`variant` <=> NEW.`variant`) OR NOT (OLD.`audience_segments` <=> NEW.`audience_segments`) OR NOT (OLD.`channels` <=> NEW.`channels`) OR NOT (OLD.`body` <=> NEW.`body`) OR NOT (OLD.`content_hash` <=> NEW.`content_hash`)) AND NEW.`broadcast_version` <> OLD.`broadcast_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_version_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -3936,8 +3920,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_no_delete` BEFORE DELETE ON `event_broadcasts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_broadcast_no_delete` BEFORE DELETE ON `event_broadcasts` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_broadcast_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4024,8 +4007,7 @@ CREATE TABLE `event_checkin_credentials` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_qr_credential_validate` BEFORE INSERT ON `event_checkin_credentials` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_concrete_occurrence_required'; END IF; IF (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_confirmed_registration_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_qr_credential_validate` BEFORE INSERT ON `event_checkin_credentials` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_concrete_occurrence_required'; END IF; IF (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_confirmed_registration_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4040,8 +4022,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_qr_credential_update` BEFORE UPDATE ON `event_checkin_credentials` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`credential_version` <=> NEW.`credential_version`) OR NOT (OLD.`token_hash` <=> NEW.`token_hash`) OR NOT (OLD.`token_fingerprint` <=> NEW.`token_fingerprint`) OR NOT (OLD.`issue_idempotency_hash` <=> NEW.`issue_idempotency_hash`) OR NOT (OLD.`issued_by_user_id` <=> NEW.`issued_by_user_id`) OR NOT (OLD.`issued_at` <=> NEW.`issued_at`) OR NOT (OLD.`expires_at` <=> NEW.`expires_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_identity_immutable'; END IF; IF OLD.`status` = 'active' AND NEW.`status` = 'active' AND NOT (OLD.`superseded_by_id` <=> NEW.`superseded_by_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_successor_invalid'; END IF; IF OLD.`status` = 'active' AND NEW.`status` = 'rotated' AND NEW.`superseded_by_id` IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_successor_invalid'; END IF; IF OLD.`status` <> 'active' AND NOT (OLD.`status` = 'rotated' AND NEW.`status` = 'rotated' AND OLD.`superseded_by_id` IS NULL AND NEW.`superseded_by_id` IS NOT NULL AND OLD.`active_slot` <=> NEW.`active_slot` AND OLD.`rotated_at` <=> NEW.`rotated_at` AND OLD.`revoked_by_user_id` <=> NEW.`revoked_by_user_id` AND OLD.`revoked_at` <=> NEW.`revoked_at` AND OLD.`revocation_reason` <=> NEW.`revocation_reason` AND OLD.`expired_at` <=> NEW.`expired_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_terminal_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_qr_credential_update` BEFORE UPDATE ON `event_checkin_credentials` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`credential_version` <=> NEW.`credential_version`) OR NOT (OLD.`token_hash` <=> NEW.`token_hash`) OR NOT (OLD.`token_fingerprint` <=> NEW.`token_fingerprint`) OR NOT (OLD.`issue_idempotency_hash` <=> NEW.`issue_idempotency_hash`) OR NOT (OLD.`issued_by_user_id` <=> NEW.`issued_by_user_id`) OR NOT (OLD.`issued_at` <=> NEW.`issued_at`) OR NOT (OLD.`expires_at` <=> NEW.`expires_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_identity_immutable'; END IF; IF OLD.`status` = 'active' AND NEW.`status` = 'active' AND NOT (OLD.`superseded_by_id` <=> NEW.`superseded_by_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_successor_invalid'; END IF; IF OLD.`status` = 'active' AND NEW.`status` = 'rotated' AND NEW.`superseded_by_id` IS NOT NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_successor_invalid'; END IF; IF OLD.`status` <> 'active' AND NOT (OLD.`status` = 'rotated' AND NEW.`status` = 'rotated' AND OLD.`superseded_by_id` IS NULL AND NEW.`superseded_by_id` IS NOT NULL AND OLD.`active_slot` <=> NEW.`active_slot` AND OLD.`rotated_at` <=> NEW.`rotated_at` AND OLD.`revoked_by_user_id` <=> NEW.`revoked_by_user_id` AND OLD.`revoked_at` <=> NEW.`revoked_at` AND OLD.`revocation_reason` <=> NEW.`revocation_reason` AND OLD.`expired_at` <=> NEW.`expired_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_terminal_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4056,8 +4037,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_qr_credential_no_delete` BEFORE DELETE ON `event_checkin_credentials` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_qr_credential_no_delete` BEFORE DELETE ON `event_checkin_credentials` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_qr_credential_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4119,8 +4099,7 @@ CREATE TABLE `event_checkin_devices` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_checkin_device_validate` BEFORE INSERT ON `event_checkin_devices` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_device_concrete_occurrence_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_checkin_device_validate` BEFORE INSERT ON `event_checkin_devices` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_device_concrete_occurrence_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4135,8 +4114,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_checkin_device_update` BEFORE UPDATE ON `event_checkin_devices` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`public_id` <=> NEW.`public_id`) OR NOT (OLD.`label` <=> NEW.`label`) OR NOT (OLD.`registered_by_user_id` <=> NEW.`registered_by_user_id`) OR NOT (OLD.`registration_idempotency_hash` <=> NEW.`registration_idempotency_hash`) OR NOT (OLD.`registered_at` <=> NEW.`registered_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_identity_immutable'; END IF; IF OLD.`status` <> 'active' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_terminal_immutable'; END IF; IF NEW.`device_version` < OLD.`device_version` OR NEW.`device_version` > OLD.`device_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_version_invalid'; END IF; IF (NOT (OLD.`secret_hash` <=> NEW.`secret_hash`) OR NOT (OLD.`secret_fingerprint` <=> NEW.`secret_fingerprint`)) AND (NEW.`status` <> 'active' OR NEW.`device_version` <> OLD.`device_version` + 1 OR NEW.`last_rotation_idempotency_hash` IS NULL OR NEW.`last_rotation_idempotency_hash` <=> OLD.`last_rotation_idempotency_hash` OR NEW.`rotated_at` IS NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_rotation_invalid'; END IF; IF OLD.`secret_hash` <=> NEW.`secret_hash` AND OLD.`secret_fingerprint` <=> NEW.`secret_fingerprint` AND NEW.`status` = 'active' AND (NEW.`device_version` <> OLD.`device_version` OR NOT (OLD.`last_rotation_idempotency_hash` <=> NEW.`last_rotation_idempotency_hash`) OR NOT (OLD.`expires_at` <=> NEW.`expires_at`) OR NOT (OLD.`rotated_at` <=> NEW.`rotated_at`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_rotation_invalid'; END IF; IF NEW.`status` <> OLD.`status` AND NEW.`device_version` <> OLD.`device_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_version_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_checkin_device_update` BEFORE UPDATE ON `event_checkin_devices` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`public_id` <=> NEW.`public_id`) OR NOT (OLD.`label` <=> NEW.`label`) OR NOT (OLD.`registered_by_user_id` <=> NEW.`registered_by_user_id`) OR NOT (OLD.`registration_idempotency_hash` <=> NEW.`registration_idempotency_hash`) OR NOT (OLD.`registered_at` <=> NEW.`registered_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_identity_immutable'; END IF; IF OLD.`status` <> 'active' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_terminal_immutable'; END IF; IF NEW.`device_version` < OLD.`device_version` OR NEW.`device_version` > OLD.`device_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_version_invalid'; END IF; IF (NOT (OLD.`secret_hash` <=> NEW.`secret_hash`) OR NOT (OLD.`secret_fingerprint` <=> NEW.`secret_fingerprint`)) AND (NEW.`status` <> 'active' OR NEW.`device_version` <> OLD.`device_version` + 1 OR NEW.`last_rotation_idempotency_hash` IS NULL OR NEW.`last_rotation_idempotency_hash` <=> OLD.`last_rotation_idempotency_hash` OR NEW.`rotated_at` IS NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_rotation_invalid'; END IF; IF OLD.`secret_hash` <=> NEW.`secret_hash` AND OLD.`secret_fingerprint` <=> NEW.`secret_fingerprint` AND NEW.`status` = 'active' AND (NEW.`device_version` <> OLD.`device_version` OR NOT (OLD.`last_rotation_idempotency_hash` <=> NEW.`last_rotation_idempotency_hash`) OR NOT (OLD.`expires_at` <=> NEW.`expires_at`) OR NOT (OLD.`rotated_at` <=> NEW.`rotated_at`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_rotation_invalid'; END IF; IF NEW.`status` <> OLD.`status` AND NEW.`device_version` <> OLD.`device_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_version_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4151,8 +4129,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_checkin_device_no_delete` BEFORE DELETE ON `event_checkin_devices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_checkin_device_no_delete` BEFORE DELETE ON `event_checkin_devices` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_checkin_device_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4188,7 +4165,7 @@ CREATE TABLE `event_domain_outbox` (
   KEY `idx_event_outbox_claim` (`status`,`available_at`,`next_attempt_at`,`id`),
   KEY `idx_event_outbox_aggregate` (`tenant_id`,`event_id`,`aggregate_version`),
   KEY `idx_event_outbox_stream` (`tenant_id`,`event_id`,`aggregate_stream`,`aggregate_version`,`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `event_federation_deliveries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -4271,8 +4248,7 @@ CREATE TABLE `event_guardian_consent_delivery_access` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_delivery_access_no_update` BEFORE UPDATE ON `event_guardian_consent_delivery_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_delivery_access_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_delivery_access_no_update` BEFORE UPDATE ON `event_guardian_consent_delivery_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_delivery_access_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4287,8 +4263,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_delivery_access_no_delete` BEFORE DELETE ON `event_guardian_consent_delivery_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_delivery_access_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_delivery_access_no_delete` BEFORE DELETE ON `event_guardian_consent_delivery_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_delivery_access_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4374,8 +4349,7 @@ CREATE TABLE `event_guardian_consent_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_history_no_update` BEFORE UPDATE ON `event_guardian_consent_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_history_no_update` BEFORE UPDATE ON `event_guardian_consent_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4390,8 +4364,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_history_no_delete` BEFORE DELETE ON `event_guardian_consent_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_history_no_delete` BEFORE DELETE ON `event_guardian_consent_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4471,8 +4444,7 @@ CREATE TABLE `event_guardian_consents` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_consent_update` BEFORE UPDATE ON `event_guardian_consents` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`requirements_id` <=> NEW.`requirements_id`) OR NOT (OLD.`requirements_version_id` <=> NEW.`requirements_version_id`) OR NOT (OLD.`requirements_version_number` <=> NEW.`requirements_version_number`) OR NOT (OLD.`minor_user_id` <=> NEW.`minor_user_id`) OR NOT (OLD.`guardian_email_ciphertext` <=> NEW.`guardian_email_ciphertext`) OR NOT (OLD.`guardian_identity_ciphertext` <=> NEW.`guardian_identity_ciphertext`) OR NOT (OLD.`guardian_email_blind_hash` <=> NEW.`guardian_email_blind_hash`) OR NOT (OLD.`relationship_code` <=> NEW.`relationship_code`) OR NOT (OLD.`consent_text` <=> NEW.`consent_text`) OR NOT (OLD.`consent_text_version` <=> NEW.`consent_text_version`) OR NOT (OLD.`consent_text_hash` <=> NEW.`consent_text_hash`) OR NOT (OLD.`policy_binding_hash` <=> NEW.`policy_binding_hash`) OR NOT (OLD.`token_hash` <=> NEW.`token_hash`) OR NOT (OLD.`requested_by_user_id` <=> NEW.`requested_by_user_id`) OR NOT (OLD.`request_idempotency_hash` <=> NEW.`request_idempotency_hash`) OR NOT (OLD.`request_hash` <=> NEW.`request_hash`) OR NOT (OLD.`requested_at` <=> NEW.`requested_at`) OR NOT (OLD.`expires_at` <=> NEW.`expires_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_identity_immutable'; END IF; IF OLD.`status` IN ('withdrawn','expired') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_terminal_immutable'; END IF; IF NEW.`consent_version` <> OLD.`consent_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_version_invalid'; END IF; IF (OLD.`status` = 'pending' AND NEW.`status` NOT IN ('active','withdrawn','expired')) OR (OLD.`status` = 'active' AND NEW.`status` NOT IN ('withdrawn','expired')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_consent_update` BEFORE UPDATE ON `event_guardian_consents` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`requirements_id` <=> NEW.`requirements_id`) OR NOT (OLD.`requirements_version_id` <=> NEW.`requirements_version_id`) OR NOT (OLD.`requirements_version_number` <=> NEW.`requirements_version_number`) OR NOT (OLD.`minor_user_id` <=> NEW.`minor_user_id`) OR NOT (OLD.`guardian_email_ciphertext` <=> NEW.`guardian_email_ciphertext`) OR NOT (OLD.`guardian_identity_ciphertext` <=> NEW.`guardian_identity_ciphertext`) OR NOT (OLD.`guardian_email_blind_hash` <=> NEW.`guardian_email_blind_hash`) OR NOT (OLD.`relationship_code` <=> NEW.`relationship_code`) OR NOT (OLD.`consent_text` <=> NEW.`consent_text`) OR NOT (OLD.`consent_text_version` <=> NEW.`consent_text_version`) OR NOT (OLD.`consent_text_hash` <=> NEW.`consent_text_hash`) OR NOT (OLD.`policy_binding_hash` <=> NEW.`policy_binding_hash`) OR NOT (OLD.`token_hash` <=> NEW.`token_hash`) OR NOT (OLD.`requested_by_user_id` <=> NEW.`requested_by_user_id`) OR NOT (OLD.`request_idempotency_hash` <=> NEW.`request_idempotency_hash`) OR NOT (OLD.`request_hash` <=> NEW.`request_hash`) OR NOT (OLD.`requested_at` <=> NEW.`requested_at`) OR NOT (OLD.`expires_at` <=> NEW.`expires_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_identity_immutable'; END IF; IF OLD.`status` IN ('withdrawn','expired') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_terminal_immutable'; END IF; IF NEW.`consent_version` <> OLD.`consent_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_version_invalid'; END IF; IF (OLD.`status` = 'pending' AND NEW.`status` NOT IN ('active','withdrawn','expired')) OR (OLD.`status` = 'active' AND NEW.`status` NOT IN ('withdrawn','expired')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4487,8 +4459,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_consent_no_delete` BEFORE DELETE ON `event_guardian_consents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_guardian_consent_no_delete` BEFORE DELETE ON `event_guardian_consents` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_guardian_consent_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4530,8 +4501,7 @@ CREATE TABLE `event_invitation_campaign_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_hist_no_update` BEFORE UPDATE ON `event_invitation_campaign_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_hist_no_update` BEFORE UPDATE ON `event_invitation_campaign_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4546,8 +4516,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_hist_no_delete` BEFORE DELETE ON `event_invitation_campaign_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_hist_no_delete` BEFORE DELETE ON `event_invitation_campaign_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4613,8 +4582,7 @@ CREATE TABLE `event_invitation_campaigns` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_concrete_insert` BEFORE INSERT ON `event_invitation_campaigns` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_concrete_occurrence_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_concrete_insert` BEFORE INSERT ON `event_invitation_campaigns` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_concrete_occurrence_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4629,8 +4597,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_concrete_update` BEFORE UPDATE ON `event_invitation_campaigns` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_concrete_occurrence_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_concrete_update` BEFORE UPDATE ON `event_invitation_campaigns` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_concrete_occurrence_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4645,8 +4612,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_evidence_update` BEFORE UPDATE ON `event_invitation_campaigns` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`campaign_type` <=> NEW.`campaign_type`) OR NOT (OLD.`source_hash` <=> NEW.`source_hash`) OR NOT (OLD.`source_schema_version` <=> NEW.`source_schema_version`) OR NOT (OLD.`source_snapshot_ciphertext` <=> NEW.`source_snapshot_ciphertext`) OR NOT (OLD.`segment_criteria_summary` <=> NEW.`segment_criteria_summary`) OR NOT (OLD.`source_reference` <=> NEW.`source_reference`) OR NOT (OLD.`preview_count` <=> NEW.`preview_count`) OR NOT (OLD.`valid_count` <=> NEW.`valid_count`) OR NOT (OLD.`error_count` <=> NEW.`error_count`) OR NOT (OLD.`preview_errors` <=> NEW.`preview_errors`) OR NOT (OLD.`default_locale` <=> NEW.`default_locale`) OR NOT (OLD.`idempotency_hash` <=> NEW.`idempotency_hash`) OR NOT (OLD.`request_hash` <=> NEW.`request_hash`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_evidence_immutable'; END IF; IF OLD.`status` IN ('issued','cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_terminal_state_immutable'; END IF; IF NEW.`revision` <> OLD.`revision` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_revision_invalid'; END IF; IF NOT ((OLD.`status` = 'previewed' AND NEW.`status` IN ('scheduled','issuing','issued','cancelled')) OR (OLD.`status` = 'scheduled' AND NEW.`status` IN ('issuing','cancelled')) OR (OLD.`status` = 'issuing' AND NEW.`status` = 'issued') OR (OLD.`status` = NEW.`status`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_campaign_evidence_update` BEFORE UPDATE ON `event_invitation_campaigns` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`campaign_type` <=> NEW.`campaign_type`) OR NOT (OLD.`source_hash` <=> NEW.`source_hash`) OR NOT (OLD.`source_schema_version` <=> NEW.`source_schema_version`) OR NOT (OLD.`source_snapshot_ciphertext` <=> NEW.`source_snapshot_ciphertext`) OR NOT (OLD.`segment_criteria_summary` <=> NEW.`segment_criteria_summary`) OR NOT (OLD.`source_reference` <=> NEW.`source_reference`) OR NOT (OLD.`preview_count` <=> NEW.`preview_count`) OR NOT (OLD.`valid_count` <=> NEW.`valid_count`) OR NOT (OLD.`error_count` <=> NEW.`error_count`) OR NOT (OLD.`preview_errors` <=> NEW.`preview_errors`) OR NOT (OLD.`default_locale` <=> NEW.`default_locale`) OR NOT (OLD.`idempotency_hash` <=> NEW.`idempotency_hash`) OR NOT (OLD.`request_hash` <=> NEW.`request_hash`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_evidence_immutable'; END IF; IF OLD.`status` IN ('issued','cancelled') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_terminal_state_immutable'; END IF; IF NEW.`revision` <> OLD.`revision` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_revision_invalid'; END IF; IF NOT ((OLD.`status` = 'previewed' AND NEW.`status` IN ('scheduled','issuing','issued','cancelled')) OR (OLD.`status` = 'scheduled' AND NEW.`status` IN ('issuing','cancelled')) OR (OLD.`status` = 'issuing' AND NEW.`status` = 'issued') OR (OLD.`status` = NEW.`status`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_campaign_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4697,8 +4663,7 @@ CREATE TABLE `event_invitation_delivery_evidence` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_delivery_no_update` BEFORE UPDATE ON `event_invitation_delivery_evidence` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_delivery_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_delivery_no_update` BEFORE UPDATE ON `event_invitation_delivery_evidence` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_delivery_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4713,8 +4678,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_delivery_no_delete` BEFORE DELETE ON `event_invitation_delivery_evidence` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_delivery_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_inv_delivery_no_delete` BEFORE DELETE ON `event_invitation_delivery_evidence` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_delivery_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4755,8 +4719,7 @@ CREATE TABLE `event_invitation_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_history_no_update` BEFORE UPDATE ON `event_invitation_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_history_no_update` BEFORE UPDATE ON `event_invitation_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4771,8 +4734,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_history_no_delete` BEFORE DELETE ON `event_invitation_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_history_no_delete` BEFORE DELETE ON `event_invitation_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4836,8 +4798,7 @@ CREATE TABLE `event_invitations` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_identity_update` BEFORE UPDATE ON `event_invitations` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`campaign_id` <=> NEW.`campaign_id`) OR NOT (OLD.`target_type` <=> NEW.`target_type`) OR NOT (OLD.`member_user_id` <=> NEW.`member_user_id`) OR NOT (OLD.`email_ciphertext` <=> NEW.`email_ciphertext`) OR NOT (OLD.`email_blind_hash` <=> NEW.`email_blind_hash`) OR NOT (OLD.`token_hash` <=> NEW.`token_hash`) OR NOT (OLD.`token_fingerprint` <=> NEW.`token_fingerprint`) OR NOT (OLD.`token_expires_at` <=> NEW.`token_expires_at`) OR NOT (OLD.`issue_idempotency_hash` <=> NEW.`issue_idempotency_hash`) OR NOT (OLD.`issue_request_hash` <=> NEW.`issue_request_hash`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_identity_immutable'; END IF; IF OLD.`status` <> 'issued' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_terminal_state_immutable'; END IF; IF (NEW.`status` = 'issued' AND NEW.`invitation_version` <> OLD.`invitation_version`) OR (NEW.`status` <> 'issued' AND NEW.`invitation_version` <> OLD.`invitation_version` + 1) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_version_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_identity_update` BEFORE UPDATE ON `event_invitations` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`campaign_id` <=> NEW.`campaign_id`) OR NOT (OLD.`target_type` <=> NEW.`target_type`) OR NOT (OLD.`member_user_id` <=> NEW.`member_user_id`) OR NOT (OLD.`email_ciphertext` <=> NEW.`email_ciphertext`) OR NOT (OLD.`email_blind_hash` <=> NEW.`email_blind_hash`) OR NOT (OLD.`token_hash` <=> NEW.`token_hash`) OR NOT (OLD.`token_fingerprint` <=> NEW.`token_fingerprint`) OR NOT (OLD.`token_expires_at` <=> NEW.`token_expires_at`) OR NOT (OLD.`issue_idempotency_hash` <=> NEW.`issue_idempotency_hash`) OR NOT (OLD.`issue_request_hash` <=> NEW.`issue_request_hash`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_identity_immutable'; END IF; IF OLD.`status` <> 'issued' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_terminal_state_immutable'; END IF; IF (NEW.`status` = 'issued' AND NEW.`invitation_version` <> OLD.`invitation_version`) OR (NEW.`status` <> 'issued' AND NEW.`invitation_version` <> OLD.`invitation_version` + 1) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_version_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4852,8 +4813,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_no_delete` BEFORE DELETE ON `event_invitations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_evidence_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_invitation_no_delete` BEFORE DELETE ON `event_invitations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_invitation_evidence_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4923,8 +4883,7 @@ CREATE TABLE `event_notification_outbox_replays` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_outbox_replay_no_update` BEFORE UPDATE ON `event_notification_outbox_replays` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_notification_outbox_replay_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_outbox_replay_no_update` BEFORE UPDATE ON `event_notification_outbox_replays` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_notification_outbox_replay_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -4939,8 +4898,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_outbox_replay_no_delete` BEFORE DELETE ON `event_notification_outbox_replays` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_notification_outbox_replay_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_outbox_replay_no_delete` BEFORE DELETE ON `event_notification_outbox_replays` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_notification_outbox_replay_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5043,8 +5001,7 @@ CREATE TABLE `event_offline_sync_batches` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_batch_update` BEFORE UPDATE ON `event_offline_sync_batches` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`device_id` <=> NEW.`device_id`) OR NOT (OLD.`submitted_by_user_id` <=> NEW.`submitted_by_user_id`) OR NOT (OLD.`client_batch_id` <=> NEW.`client_batch_id`) OR NOT (OLD.`payload_hash` <=> NEW.`payload_hash`) OR NOT (OLD.`manifest_version` <=> NEW.`manifest_version`) OR NOT (OLD.`item_count` <=> NEW.`item_count`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_evidence_immutable'; END IF; IF OLD.`status` IN ('completed','dead_letter') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_terminal_immutable'; END IF; IF NEW.`claim_attempts` < OLD.`claim_attempts` OR NEW.`claim_attempts` > OLD.`claim_attempts` + 1 OR NEW.`accepted_count` < OLD.`accepted_count` OR NEW.`conflict_count` < OLD.`conflict_count` OR NEW.`rejected_count` < OLD.`rejected_count` THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_progress_invalid'; END IF; IF NEW.`status` = 'processing' AND ((OLD.`status` = 'pending' AND NEW.`claim_attempts` <> OLD.`claim_attempts` + 1) OR (OLD.`status` = 'processing' AND NOT ((NEW.`claim_attempts` = OLD.`claim_attempts` AND NEW.`claim_token_hash` <=> OLD.`claim_token_hash`) OR (NEW.`claim_attempts` = OLD.`claim_attempts` + 1 AND NOT (NEW.`claim_token_hash` <=> OLD.`claim_token_hash`))))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_claim_invalid'; END IF; IF (OLD.`status` = 'pending' AND NEW.`status` NOT IN ('processing','dead_letter')) OR (OLD.`status` = 'processing' AND NEW.`status` NOT IN ('processing','pending','completed','dead_letter')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_batch_update` BEFORE UPDATE ON `event_offline_sync_batches` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`device_id` <=> NEW.`device_id`) OR NOT (OLD.`submitted_by_user_id` <=> NEW.`submitted_by_user_id`) OR NOT (OLD.`client_batch_id` <=> NEW.`client_batch_id`) OR NOT (OLD.`payload_hash` <=> NEW.`payload_hash`) OR NOT (OLD.`manifest_version` <=> NEW.`manifest_version`) OR NOT (OLD.`item_count` <=> NEW.`item_count`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_evidence_immutable'; END IF; IF OLD.`status` IN ('completed','dead_letter') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_terminal_immutable'; END IF; IF NEW.`claim_attempts` < OLD.`claim_attempts` OR NEW.`claim_attempts` > OLD.`claim_attempts` + 1 OR NEW.`accepted_count` < OLD.`accepted_count` OR NEW.`conflict_count` < OLD.`conflict_count` OR NEW.`rejected_count` < OLD.`rejected_count` THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_progress_invalid'; END IF; IF NEW.`status` = 'processing' AND ((OLD.`status` = 'pending' AND NEW.`claim_attempts` <> OLD.`claim_attempts` + 1) OR (OLD.`status` = 'processing' AND NOT ((NEW.`claim_attempts` = OLD.`claim_attempts` AND NEW.`claim_token_hash` <=> OLD.`claim_token_hash`) OR (NEW.`claim_attempts` = OLD.`claim_attempts` + 1 AND NOT (NEW.`claim_token_hash` <=> OLD.`claim_token_hash`))))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_claim_invalid'; END IF; IF (OLD.`status` = 'pending' AND NEW.`status` NOT IN ('processing','dead_letter')) OR (OLD.`status` = 'processing' AND NEW.`status` NOT IN ('processing','pending','completed','dead_letter')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5059,8 +5016,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_batch_no_delete` BEFORE DELETE ON `event_offline_sync_batches` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_batch_no_delete` BEFORE DELETE ON `event_offline_sync_batches` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_batch_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5111,8 +5067,7 @@ CREATE TABLE `event_offline_sync_decisions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_decision_validate` BEFORE INSERT ON `event_offline_sync_decisions` FOR EACH ROW BEGIN IF NEW.`outcome` = 'accepted' AND (SELECT COUNT(*) FROM `event_offline_sync_items` AS i INNER JOIN `event_attendance_activity` AS a ON a.`tenant_id` = i.`tenant_id` AND a.`event_id` = i.`event_id` AND a.`user_id` = i.`user_id` WHERE i.`tenant_id` = NEW.`tenant_id` AND i.`event_id` = NEW.`event_id` AND i.`batch_id` = NEW.`batch_id` AND i.`id` = NEW.`item_id` AND a.`id` = NEW.`attendance_activity_id` AND a.`attendance_version` = NEW.`attendance_version_after`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_decision_attendance_mismatch'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_decision_validate` BEFORE INSERT ON `event_offline_sync_decisions` FOR EACH ROW BEGIN IF NEW.`outcome` = 'accepted' AND (SELECT COUNT(*) FROM `event_offline_sync_items` AS i INNER JOIN `event_attendance_activity` AS a ON a.`tenant_id` = i.`tenant_id` AND a.`event_id` = i.`event_id` AND a.`user_id` = i.`user_id` WHERE i.`tenant_id` = NEW.`tenant_id` AND i.`event_id` = NEW.`event_id` AND i.`batch_id` = NEW.`batch_id` AND i.`id` = NEW.`item_id` AND a.`id` = NEW.`attendance_activity_id` AND a.`attendance_version` = NEW.`attendance_version_after`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_decision_attendance_mismatch'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5127,8 +5082,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_decision_no_update` BEFORE UPDATE ON `event_offline_sync_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_decision_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_decision_no_update` BEFORE UPDATE ON `event_offline_sync_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_decision_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5143,8 +5097,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_decision_no_delete` BEFORE DELETE ON `event_offline_sync_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_decision_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_decision_no_delete` BEFORE DELETE ON `event_offline_sync_decisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_decision_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5201,8 +5154,7 @@ CREATE TABLE `event_offline_sync_items` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_item_no_update` BEFORE UPDATE ON `event_offline_sync_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_item_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_item_no_update` BEFORE UPDATE ON `event_offline_sync_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_item_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5217,8 +5169,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_item_no_delete` BEFORE DELETE ON `event_offline_sync_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_item_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_offline_item_no_delete` BEFORE DELETE ON `event_offline_sync_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_offline_item_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5271,8 +5222,7 @@ CREATE TABLE `event_participation_denial_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_denial_history_no_update` BEFORE UPDATE ON `event_participation_denial_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_denial_history_no_update` BEFORE UPDATE ON `event_participation_denial_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5287,8 +5237,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_denial_history_no_delete` BEFORE DELETE ON `event_participation_denial_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_denial_history_no_delete` BEFORE DELETE ON `event_participation_denial_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5352,8 +5301,7 @@ CREATE TABLE `event_participation_denials` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_participation_denial_insert` BEFORE INSERT ON `event_participation_denials` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_concrete_event_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_participation_denial_insert` BEFORE INSERT ON `event_participation_denials` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_concrete_event_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5368,8 +5316,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_participation_denial_update` BEFORE UPDATE ON `event_participation_denials` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`create_idempotency_hash` <=> NEW.`create_idempotency_hash`) OR NOT (OLD.`create_request_hash` <=> NEW.`create_request_hash`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_identity_immutable'; END IF; IF OLD.`status` IN ('withdrawn','expired') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_terminal_immutable'; END IF; IF NEW.`decision_version` <> OLD.`decision_version` + 1 OR (OLD.`status` = 'active' AND NEW.`status` NOT IN ('active','withdrawn','expired')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_participation_denial_update` BEFORE UPDATE ON `event_participation_denials` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`create_idempotency_hash` <=> NEW.`create_idempotency_hash`) OR NOT (OLD.`create_request_hash` <=> NEW.`create_request_hash`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_identity_immutable'; END IF; IF OLD.`status` IN ('withdrawn','expired') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_terminal_immutable'; END IF; IF NEW.`decision_version` <> OLD.`decision_version` + 1 OR (OLD.`status` = 'active' AND NEW.`status` NOT IN ('active','withdrawn','expired')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5384,8 +5331,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_participation_denial_no_delete` BEFORE DELETE ON `event_participation_denials` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_participation_denial_no_delete` BEFORE DELETE ON `event_participation_denials` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_participation_denial_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5432,8 +5378,7 @@ CREATE TABLE `event_recurrence_definition_applications` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_app_no_update` BEFORE UPDATE ON `event_recurrence_definition_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_application_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_app_no_update` BEFORE UPDATE ON `event_recurrence_definition_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_application_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5448,8 +5393,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_app_no_delete` BEFORE DELETE ON `event_recurrence_definition_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_application_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_app_no_delete` BEFORE DELETE ON `event_recurrence_definition_applications` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_application_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5499,8 +5443,7 @@ CREATE TABLE `event_recurrence_definition_blueprints` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_bp_no_update` BEFORE UPDATE ON `event_recurrence_definition_blueprints` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_blueprint_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_bp_no_update` BEFORE UPDATE ON `event_recurrence_definition_blueprints` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_blueprint_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5515,8 +5458,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_bp_no_delete` BEFORE DELETE ON `event_recurrence_definition_blueprints` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_blueprint_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_rec_def_bp_no_delete` BEFORE DELETE ON `event_recurrence_definition_blueprints` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_definition_blueprint_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5560,8 +5502,7 @@ CREATE TABLE `event_recurrence_occurrence_ledger` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recur_occ_ledger_no_update` BEFORE UPDATE ON `event_recurrence_occurrence_ledger` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_occurrence_ledger_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recur_occ_ledger_no_update` BEFORE UPDATE ON `event_recurrence_occurrence_ledger` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_occurrence_ledger_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5576,8 +5517,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recur_occ_ledger_no_delete` BEFORE DELETE ON `event_recurrence_occurrence_ledger` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_occurrence_ledger_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recur_occ_ledger_no_delete` BEFORE DELETE ON `event_recurrence_occurrence_ledger` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_occurrence_ledger_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5630,8 +5570,7 @@ CREATE TABLE `event_recurrence_revisions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recurrence_revision_no_update` BEFORE UPDATE ON `event_recurrence_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_revision_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recurrence_revision_no_update` BEFORE UPDATE ON `event_recurrence_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_revision_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5646,8 +5585,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recurrence_revision_no_delete` BEFORE DELETE ON `event_recurrence_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_revision_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_recurrence_revision_no_delete` BEFORE DELETE ON `event_recurrence_revisions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_revision_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5730,8 +5668,7 @@ CREATE TABLE `event_registration_answer_access_audits` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_access_audit_no_update` BEFORE UPDATE ON `event_registration_answer_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_answer_access_audit_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_access_audit_no_update` BEFORE UPDATE ON `event_registration_answer_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_answer_access_audit_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5746,8 +5683,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_access_audit_no_delete` BEFORE DELETE ON `event_registration_answer_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_answer_access_audit_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_access_audit_no_delete` BEFORE DELETE ON `event_registration_answer_access_audits` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_answer_access_audit_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5797,8 +5733,7 @@ CREATE TABLE `event_registration_form_answers` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_insert_guard` BEFORE INSERT ON `event_registration_form_answers` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_submissions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`submission_id`) <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submitted_answer_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_insert_guard` BEFORE INSERT ON `event_registration_form_answers` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_submissions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`submission_id`) <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submitted_answer_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5813,8 +5748,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_update_guard` BEFORE UPDATE ON `event_registration_form_answers` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`submission_id` <=> NEW.`submission_id`) OR NOT (OLD.`form_version_id` <=> NEW.`form_version_id`) OR NOT (OLD.`question_id` <=> NEW.`question_id`) OR NOT (OLD.`data_classification` <=> NEW.`data_classification`) OR NOT (OLD.`retention_due_at` <=> NEW.`retention_due_at`) OR NOT (OLD.`consented_at` <=> NEW.`consented_at`) OR NOT (OLD.`displayed_text_hash` <=> NEW.`displayed_text_hash`) OR NOT (OLD.`displayed_text_version` <=> NEW.`displayed_text_version`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_answer_evidence_immutable'; END IF; IF (SELECT `status` FROM `event_registration_form_submissions` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `id` = OLD.`submission_id`) <> 'draft' AND NOT (OLD.`answer_ciphertext` IS NOT NULL AND OLD.`purged_at` IS NULL AND NEW.`answer_ciphertext` IS NULL AND NEW.`purged_at` IS NOT NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submitted_answer_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_update_guard` BEFORE UPDATE ON `event_registration_form_answers` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`submission_id` <=> NEW.`submission_id`) OR NOT (OLD.`form_version_id` <=> NEW.`form_version_id`) OR NOT (OLD.`question_id` <=> NEW.`question_id`) OR NOT (OLD.`data_classification` <=> NEW.`data_classification`) OR NOT (OLD.`retention_due_at` <=> NEW.`retention_due_at`) OR NOT (OLD.`consented_at` <=> NEW.`consented_at`) OR NOT (OLD.`displayed_text_hash` <=> NEW.`displayed_text_hash`) OR NOT (OLD.`displayed_text_version` <=> NEW.`displayed_text_version`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_answer_evidence_immutable'; END IF; IF (SELECT `status` FROM `event_registration_form_submissions` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `id` = OLD.`submission_id`) <> 'draft' AND NOT (OLD.`answer_ciphertext` IS NOT NULL AND OLD.`purged_at` IS NULL AND NEW.`answer_ciphertext` IS NULL AND NEW.`purged_at` IS NOT NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submitted_answer_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5829,8 +5763,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_delete_guard` BEFORE DELETE ON `event_registration_form_answers` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_submissions` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `id` = OLD.`submission_id`) <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submitted_answer_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_answer_delete_guard` BEFORE DELETE ON `event_registration_form_answers` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_submissions` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `id` = OLD.`submission_id`) <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submitted_answer_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5885,8 +5818,7 @@ CREATE TABLE `event_registration_form_questions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_question_insert` BEFORE INSERT ON `event_registration_form_questions` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`form_version_id`) = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_question_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_question_insert` BEFORE INSERT ON `event_registration_form_questions` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`form_version_id`) = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_question_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5901,8 +5833,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_question_update` BEFORE UPDATE ON `event_registration_form_questions` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`form_version_id`) = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_question_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_question_update` BEFORE UPDATE ON `event_registration_form_questions` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`form_version_id`) = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_question_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5917,8 +5848,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_question_delete` BEFORE DELETE ON `event_registration_form_questions` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_versions` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `id` = OLD.`form_version_id`) = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_question_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_question_delete` BEFORE DELETE ON `event_registration_form_questions` FOR EACH ROW BEGIN IF (SELECT `status` FROM `event_registration_form_versions` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `id` = OLD.`form_version_id`) = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_question_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5977,8 +5907,7 @@ CREATE TABLE `event_registration_form_submissions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_insert_guard` BEFORE INSERT ON `event_registration_form_submissions` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_registration_form_versions` AS form INNER JOIN `event_registration_settings` AS settings ON settings.`tenant_id` = form.`tenant_id` AND settings.`event_id` = form.`event_id` AND settings.`published_form_version` = form.`version_number` WHERE form.`tenant_id` = NEW.`tenant_id` AND form.`event_id` = NEW.`event_id` AND form.`id` = NEW.`form_version_id` AND form.`status` = 'published' AND settings.`form_state` = 'published') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_active_published_form_required'; END IF; IF (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_identity_mismatch'; END IF; IF NEW.`attempt_number` = 1 AND (NEW.`supersedes_submission_id` IS NOT NULL OR NEW.`lineage_root_submission_id` IS NOT NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_lineage_invalid'; END IF; IF NEW.`attempt_number` > 1 AND (SELECT COUNT(*) FROM `event_registration_form_submissions` AS predecessor WHERE predecessor.`tenant_id` = NEW.`tenant_id` AND predecessor.`event_id` = NEW.`event_id` AND predecessor.`id` = NEW.`supersedes_submission_id` AND predecessor.`registration_id` = NEW.`registration_id` AND predecessor.`user_id` = NEW.`user_id` AND predecessor.`form_version_id` = NEW.`form_version_id` AND predecessor.`attempt_number` + 1 = NEW.`attempt_number` AND predecessor.`effective_slot` IS NULL AND predecessor.`superseded_at` IS NOT NULL AND COALESCE(predecessor.`lineage_root_submission_id`, predecessor.`id`) = NEW.`lineage_root_submission_id`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_lineage_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_insert_guard` BEFORE INSERT ON `event_registration_form_submissions` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_registration_form_versions` AS form INNER JOIN `event_registration_settings` AS settings ON settings.`tenant_id` = form.`tenant_id` AND settings.`event_id` = form.`event_id` AND settings.`published_form_version` = form.`version_number` WHERE form.`tenant_id` = NEW.`tenant_id` AND form.`event_id` = NEW.`event_id` AND form.`id` = NEW.`form_version_id` AND form.`status` = 'published' AND settings.`form_state` = 'published') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_active_published_form_required'; END IF; IF (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_identity_mismatch'; END IF; IF NEW.`attempt_number` = 1 AND (NEW.`supersedes_submission_id` IS NOT NULL OR NEW.`lineage_root_submission_id` IS NOT NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_lineage_invalid'; END IF; IF NEW.`attempt_number` > 1 AND (SELECT COUNT(*) FROM `event_registration_form_submissions` AS predecessor WHERE predecessor.`tenant_id` = NEW.`tenant_id` AND predecessor.`event_id` = NEW.`event_id` AND predecessor.`id` = NEW.`supersedes_submission_id` AND predecessor.`registration_id` = NEW.`registration_id` AND predecessor.`user_id` = NEW.`user_id` AND predecessor.`form_version_id` = NEW.`form_version_id` AND predecessor.`attempt_number` + 1 = NEW.`attempt_number` AND predecessor.`effective_slot` IS NULL AND predecessor.`superseded_at` IS NOT NULL AND COALESCE(predecessor.`lineage_root_submission_id`, predecessor.`id`) = NEW.`lineage_root_submission_id`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_lineage_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -5993,8 +5922,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_update_guard` BEFORE UPDATE ON `event_registration_form_submissions` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`form_version_id` <=> NEW.`form_version_id`) OR NOT (OLD.`supersedes_submission_id` <=> NEW.`supersedes_submission_id`) OR NOT (OLD.`lineage_root_submission_id` <=> NEW.`lineage_root_submission_id`) OR NOT (OLD.`attempt_number` <=> NEW.`attempt_number`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_identity_immutable'; END IF; IF NOT (OLD.`effective_slot` <=> NEW.`effective_slot`) OR NOT (OLD.`superseded_at` <=> NEW.`superseded_at`) THEN IF NOT (OLD.`effective_slot` = 1 AND NEW.`effective_slot` IS NULL AND OLD.`superseded_at` IS NULL AND NEW.`superseded_at` IS NOT NULL AND OLD.`status` = 'submitted' AND NEW.`status` = OLD.`status` AND NEW.`revision` = OLD.`revision` + 1 AND OLD.`submitted_at` <=> NEW.`submitted_at` AND OLD.`withdrawn_at` <=> NEW.`withdrawn_at` AND OLD.`anonymised_at` <=> NEW.`anonymised_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_supersession_invalid'; END IF; END IF; IF OLD.`status` IN ('submitted','withdrawn','anonymised') AND NOT ((OLD.`status` = 'submitted' AND NEW.`status` = 'submitted' AND OLD.`effective_slot` = 1 AND NEW.`effective_slot` IS NULL AND NEW.`revision` = OLD.`revision` + 1 AND NEW.`superseded_at` IS NOT NULL) OR (OLD.`status` IN ('submitted','withdrawn') AND NEW.`status` = 'anonymised' AND NEW.`anonymised_at` IS NOT NULL AND OLD.`revision` <=> NEW.`revision` AND OLD.`submitted_at` <=> NEW.`submitted_at` AND OLD.`withdrawn_at` <=> NEW.`withdrawn_at` AND OLD.`effective_slot` <=> NEW.`effective_slot` AND OLD.`superseded_at` <=> NEW.`superseded_at`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_evidence_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_update_guard` BEFORE UPDATE ON `event_registration_form_submissions` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`form_version_id` <=> NEW.`form_version_id`) OR NOT (OLD.`supersedes_submission_id` <=> NEW.`supersedes_submission_id`) OR NOT (OLD.`lineage_root_submission_id` <=> NEW.`lineage_root_submission_id`) OR NOT (OLD.`attempt_number` <=> NEW.`attempt_number`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_identity_immutable'; END IF; IF NOT (OLD.`effective_slot` <=> NEW.`effective_slot`) OR NOT (OLD.`superseded_at` <=> NEW.`superseded_at`) THEN IF NOT (OLD.`effective_slot` = 1 AND NEW.`effective_slot` IS NULL AND OLD.`superseded_at` IS NULL AND NEW.`superseded_at` IS NOT NULL AND OLD.`status` = 'submitted' AND NEW.`status` = OLD.`status` AND NEW.`revision` = OLD.`revision` + 1 AND OLD.`submitted_at` <=> NEW.`submitted_at` AND OLD.`withdrawn_at` <=> NEW.`withdrawn_at` AND OLD.`anonymised_at` <=> NEW.`anonymised_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_supersession_invalid'; END IF; END IF; IF OLD.`status` IN ('submitted','withdrawn','anonymised') AND NOT ((OLD.`status` = 'submitted' AND NEW.`status` = 'submitted' AND OLD.`effective_slot` = 1 AND NEW.`effective_slot` IS NULL AND NEW.`revision` = OLD.`revision` + 1 AND NEW.`superseded_at` IS NOT NULL) OR (OLD.`status` IN ('submitted','withdrawn') AND NEW.`status` = 'anonymised' AND NEW.`anonymised_at` IS NOT NULL AND OLD.`revision` <=> NEW.`revision` AND OLD.`submitted_at` <=> NEW.`submitted_at` AND OLD.`withdrawn_at` <=> NEW.`withdrawn_at` AND OLD.`effective_slot` <=> NEW.`effective_slot` AND OLD.`superseded_at` <=> NEW.`superseded_at`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_evidence_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6009,8 +5937,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_delete_guard` BEFORE DELETE ON `event_registration_form_submissions` FOR EACH ROW BEGIN IF OLD.`status` <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_evidence_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_delete_guard` BEFORE DELETE ON `event_registration_form_submissions` FOR EACH ROW BEGIN IF OLD.`status` <> 'draft' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_submission_evidence_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6061,8 +5988,7 @@ CREATE TABLE `event_registration_form_versions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_form_version_update` BEFORE UPDATE ON `event_registration_form_versions` FOR EACH ROW BEGIN IF OLD.`status` = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_form_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_form_version_update` BEFORE UPDATE ON `event_registration_form_versions` FOR EACH ROW BEGIN IF OLD.`status` = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_form_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6077,8 +6003,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_form_version_delete` BEFORE DELETE ON `event_registration_form_versions` FOR EACH ROW BEGIN IF OLD.`status` = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_form_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_form_version_delete` BEFORE DELETE ON `event_registration_form_versions` FOR EACH ROW BEGIN IF OLD.`status` = 'published' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_published_form_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6124,8 +6049,7 @@ CREATE TABLE `event_registration_guest_attendance` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_attendance_insert` BEFORE INSERT ON `event_registration_guest_attendance` FOR EACH ROW BEGIN IF NEW.`attendance_version` <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_version_invalid'; END IF; IF NEW.`attendance_status` NOT IN ('checked_in','no_show') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_transition_invalid'; END IF; IF (SELECT COUNT(*) FROM `event_registration_guests` AS guest INNER JOIN `event_registrations` AS registration ON registration.`tenant_id` = guest.`tenant_id` AND registration.`event_id` = guest.`event_id` AND registration.`id` = guest.`registration_id` WHERE guest.`tenant_id` = NEW.`tenant_id` AND guest.`event_id` = NEW.`event_id` AND guest.`registration_id` = NEW.`registration_id` AND guest.`id` = NEW.`guest_id` AND guest.`status` = 'captured' AND registration.`registration_state` = 'confirmed') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_identity_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_attendance_insert` BEFORE INSERT ON `event_registration_guest_attendance` FOR EACH ROW BEGIN IF NEW.`attendance_version` <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_version_invalid'; END IF; IF NEW.`attendance_status` NOT IN ('checked_in','no_show') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_transition_invalid'; END IF; IF (SELECT COUNT(*) FROM `event_registration_guests` AS guest INNER JOIN `event_registrations` AS registration ON registration.`tenant_id` = guest.`tenant_id` AND registration.`event_id` = guest.`event_id` AND registration.`id` = guest.`registration_id` WHERE guest.`tenant_id` = NEW.`tenant_id` AND guest.`event_id` = NEW.`event_id` AND guest.`registration_id` = NEW.`registration_id` AND guest.`id` = NEW.`guest_id` AND guest.`status` = 'captured' AND registration.`registration_state` = 'confirmed') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_identity_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6140,8 +6064,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_attendance_update` BEFORE UPDATE ON `event_registration_guest_attendance` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`guest_id` <=> NEW.`guest_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_identity_immutable'; END IF; IF NEW.`attendance_version` <> OLD.`attendance_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_version_invalid'; END IF; IF NOT ((OLD.`attendance_status` = 'not_checked_in' AND NEW.`attendance_status` IN ('checked_in','no_show')) OR (OLD.`attendance_status` = 'checked_in' AND NEW.`attendance_status` IN ('checked_out','not_checked_in')) OR (OLD.`attendance_status` = 'checked_out' AND NEW.`attendance_status` = 'checked_in') OR (OLD.`attendance_status` = 'no_show' AND NEW.`attendance_status` = 'not_checked_in')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_attendance_update` BEFORE UPDATE ON `event_registration_guest_attendance` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`guest_id` <=> NEW.`guest_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_identity_immutable'; END IF; IF NEW.`attendance_version` <> OLD.`attendance_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_version_invalid'; END IF; IF NOT ((OLD.`attendance_status` = 'not_checked_in' AND NEW.`attendance_status` IN ('checked_in','no_show')) OR (OLD.`attendance_status` = 'checked_in' AND NEW.`attendance_status` IN ('checked_out','not_checked_in')) OR (OLD.`attendance_status` = 'checked_out' AND NEW.`attendance_status` = 'checked_in') OR (OLD.`attendance_status` = 'no_show' AND NEW.`attendance_status` = 'not_checked_in')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6156,8 +6079,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_attendance_no_delete` BEFORE DELETE ON `event_registration_guest_attendance` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_attendance_no_delete` BEFORE DELETE ON `event_registration_guest_attendance` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6206,8 +6128,7 @@ CREATE TABLE `event_registration_guest_attendance_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_att_hist_no_update` BEFORE UPDATE ON `event_registration_guest_attendance_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_att_hist_no_update` BEFORE UPDATE ON `event_registration_guest_attendance_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6222,8 +6143,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_att_hist_no_delete` BEFORE DELETE ON `event_registration_guest_attendance_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_att_hist_no_delete` BEFORE DELETE ON `event_registration_guest_attendance_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_attendance_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6287,8 +6207,7 @@ CREATE TABLE `event_registration_guests` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_insert_guard` BEFORE INSERT ON `event_registration_guests` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `status` = 'published' AND `guests_enabled` = 1 AND NEW.`guest_number` <= `max_guests_per_registration`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guests_disabled_or_unbounded'; END IF; IF (SELECT COUNT(*) FROM `event_registration_guests` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `registration_id` = NEW.`registration_id` AND `status` <> 'anonymised') >= (SELECT `max_guests_per_registration` FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_limit_reached'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_insert_guard` BEFORE INSERT ON `event_registration_guests` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `status` = 'published' AND `guests_enabled` = 1 AND NEW.`guest_number` <= `max_guests_per_registration`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guests_disabled_or_unbounded'; END IF; IF (SELECT COUNT(*) FROM `event_registration_guests` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `registration_id` = NEW.`registration_id` AND `status` <> 'anonymised') >= (SELECT `max_guests_per_registration` FROM `event_registration_settings` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_limit_reached'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6303,8 +6222,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_privacy_update` BEFORE UPDATE ON `event_registration_guests` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`guest_number` <=> NEW.`guest_number`) OR NOT (OLD.`consent_text_version` <=> NEW.`consent_text_version`) OR NOT (OLD.`consent_text_hash` <=> NEW.`consent_text_hash`) OR NOT (OLD.`consented_at` <=> NEW.`consented_at`) OR NOT (OLD.`retention_due_at` <=> NEW.`retention_due_at`) OR NOT (OLD.`captured_by_user_id` <=> NEW.`captured_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_evidence_immutable'; END IF; IF OLD.`status` = 'anonymised' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_anonymisation_terminal'; END IF; IF NEW.`status` = 'anonymised' AND NOT (OLD.`status` IN ('captured','withdrawn') AND NEW.`display_name_ciphertext` IS NULL AND NEW.`email_ciphertext` IS NULL AND NEW.`phone_ciphertext` IS NULL AND NEW.`identity_fingerprint` IS NULL AND NEW.`anonymised_at` IS NOT NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_anonymisation_invalid'; END IF; IF NEW.`status` <> 'anonymised' AND (NOT (OLD.`display_name_ciphertext` <=> NEW.`display_name_ciphertext`) OR NOT (OLD.`email_ciphertext` <=> NEW.`email_ciphertext`) OR NOT (OLD.`phone_ciphertext` <=> NEW.`phone_ciphertext`) OR NOT (OLD.`identity_fingerprint` <=> NEW.`identity_fingerprint`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_identity_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_privacy_update` BEFORE UPDATE ON `event_registration_guests` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`guest_number` <=> NEW.`guest_number`) OR NOT (OLD.`consent_text_version` <=> NEW.`consent_text_version`) OR NOT (OLD.`consent_text_hash` <=> NEW.`consent_text_hash`) OR NOT (OLD.`consented_at` <=> NEW.`consented_at`) OR NOT (OLD.`retention_due_at` <=> NEW.`retention_due_at`) OR NOT (OLD.`captured_by_user_id` <=> NEW.`captured_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_evidence_immutable'; END IF; IF OLD.`status` = 'anonymised' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_anonymisation_terminal'; END IF; IF NEW.`status` = 'anonymised' AND NOT (OLD.`status` IN ('captured','withdrawn') AND NEW.`display_name_ciphertext` IS NULL AND NEW.`email_ciphertext` IS NULL AND NEW.`phone_ciphertext` IS NULL AND NEW.`identity_fingerprint` IS NULL AND NEW.`anonymised_at` IS NOT NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_anonymisation_invalid'; END IF; IF NEW.`status` <> 'anonymised' AND (NOT (OLD.`display_name_ciphertext` <=> NEW.`display_name_ciphertext`) OR NOT (OLD.`email_ciphertext` <=> NEW.`email_ciphertext`) OR NOT (OLD.`phone_ciphertext` <=> NEW.`phone_ciphertext`) OR NOT (OLD.`identity_fingerprint` <=> NEW.`identity_fingerprint`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_identity_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6319,8 +6237,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_phase_b_update` BEFORE UPDATE ON `event_registration_guests` FOR EACH ROW BEGIN IF NOT (OLD.`preferred_locale` <=> NEW.`preferred_locale`) OR NOT (OLD.`notification_consent` <=> NEW.`notification_consent`) OR NOT (OLD.`notification_consent_version` <=> NEW.`notification_consent_version`) OR NOT (OLD.`notification_consent_text_hash` <=> NEW.`notification_consent_text_hash`) OR NOT (OLD.`notification_consented_at` <=> NEW.`notification_consented_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_notification_evidence_immutable'; END IF; IF OLD.`ticket_entitlement_id` IS NOT NULL AND NOT (OLD.`ticket_entitlement_id` <=> NEW.`ticket_entitlement_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_ticket_link_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_guest_phase_b_update` BEFORE UPDATE ON `event_registration_guests` FOR EACH ROW BEGIN IF NOT (OLD.`preferred_locale` <=> NEW.`preferred_locale`) OR NOT (OLD.`notification_consent` <=> NEW.`notification_consent`) OR NOT (OLD.`notification_consent_version` <=> NEW.`notification_consent_version`) OR NOT (OLD.`notification_consent_text_hash` <=> NEW.`notification_consent_text_hash`) OR NOT (OLD.`notification_consented_at` <=> NEW.`notification_consented_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_notification_evidence_immutable'; END IF; IF OLD.`ticket_entitlement_id` IS NOT NULL AND NOT (OLD.`ticket_entitlement_id` <=> NEW.`ticket_entitlement_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_guest_ticket_link_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6351,7 +6268,7 @@ CREATE TABLE `event_registration_history` (
   UNIQUE KEY `uq_event_registration_history_key` (`tenant_id`,`idempotency_key`),
   KEY `idx_event_registration_history_event` (`tenant_id`,`event_id`,`capacity_pool_key`,`created_at`,`id`),
   KEY `idx_event_registration_history_user` (`tenant_id`,`user_id`,`created_at`,`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -6362,8 +6279,7 @@ CREATE TABLE `event_registration_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_registration_history_no_update` BEFORE UPDATE ON `event_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_registration_history_no_update` BEFORE UPDATE ON `event_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6378,8 +6294,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_registration_history_no_delete` BEFORE DELETE ON `event_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_registration_history_no_delete` BEFORE DELETE ON `event_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6421,8 +6336,7 @@ CREATE TABLE `event_registration_retention_items` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_item_no_update` BEFORE UPDATE ON `event_registration_retention_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_item_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_item_no_update` BEFORE UPDATE ON `event_registration_retention_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_item_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6437,8 +6351,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_item_no_delete` BEFORE DELETE ON `event_registration_retention_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_item_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_item_no_delete` BEFORE DELETE ON `event_registration_retention_items` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_item_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6484,8 +6397,7 @@ CREATE TABLE `event_registration_retention_runs` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_run_no_update` BEFORE UPDATE ON `event_registration_retention_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_run_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_run_no_update` BEFORE UPDATE ON `event_registration_retention_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_run_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6500,8 +6412,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_run_no_delete` BEFORE DELETE ON `event_registration_retention_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_run_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_retention_run_no_delete` BEFORE DELETE ON `event_registration_retention_runs` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_retention_run_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6571,8 +6482,7 @@ CREATE TABLE `event_registration_settings` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_concrete_insert` BEFORE INSERT ON `event_registration_settings` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_concrete_occurrence_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_concrete_insert` BEFORE INSERT ON `event_registration_settings` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_concrete_occurrence_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6587,8 +6497,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_concrete_update` BEFORE UPDATE ON `event_registration_settings` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_concrete_occurrence_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_concrete_update` BEFORE UPDATE ON `event_registration_settings` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_registration_concrete_occurrence_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6629,8 +6538,7 @@ CREATE TABLE `event_registration_settings_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_history_no_update` BEFORE UPDATE ON `event_registration_settings_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_settings_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_history_no_update` BEFORE UPDATE ON `event_registration_settings_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_settings_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6645,8 +6553,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_history_no_delete` BEFORE DELETE ON `event_registration_settings_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_settings_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_settings_history_no_delete` BEFORE DELETE ON `event_registration_settings_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_settings_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6687,8 +6594,7 @@ CREATE TABLE `event_registration_submission_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_history_no_update` BEFORE UPDATE ON `event_registration_submission_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_submission_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_history_no_update` BEFORE UPDATE ON `event_registration_submission_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_submission_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6703,8 +6609,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_history_no_delete` BEFORE DELETE ON `event_registration_submission_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_submission_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_reg_submission_history_no_delete` BEFORE DELETE ON `event_registration_submission_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'ev_reg_submission_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6738,7 +6643,7 @@ CREATE TABLE `event_registrations` (
   KEY `idx_event_registration_capacity` (`tenant_id`,`event_id`,`capacity_pool_key`,`registration_state`,`id`),
   KEY `idx_event_registration_user` (`tenant_id`,`user_id`,`registration_state`,`event_id`),
   CONSTRAINT `chk_event_reg_party_size` CHECK (`party_size` between 1 and 11)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `event_reminder_delivery_claims`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6834,7 +6739,7 @@ CREATE TABLE `event_reminder_schedules` (
   CONSTRAINT `chk_event_reminder_schedule_offset` CHECK (`offset_minutes` > 0),
   CONSTRAINT `chk_event_reminder_schedule_status` CHECK (`status` in ('pending','queued','delivered','cancelled','superseded','suppressed','failed_terminal')),
   CONSTRAINT `chk_event_reminder_schedule_terminal_timestamps` CHECK ((`status` <> 'delivered' or `delivered_at` is not null) and (`status` <> 'cancelled' or `cancelled_at` is not null) and (`status` <> 'superseded' or `superseded_at` is not null))
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `event_reminder_sent`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6904,7 +6809,7 @@ CREATE TABLE `event_rsvps` (
   KEY `idx_rsvps_tenant_event_status` (`tenant_id`,`event_id`,`status`),
   CONSTRAINT `event_rsvps_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
   CONSTRAINT `event_rsvps_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=948 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=925 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `event_safety_code_acknowledgements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -6955,8 +6860,7 @@ CREATE TABLE `event_safety_code_acknowledgements` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_coc_insert` BEFORE INSERT ON `event_safety_code_acknowledgements` FOR EACH ROW BEGIN IF NEW.`action` = 'acknowledged' AND (SELECT COUNT(*) FROM `event_safety_requirement_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `requirements_id` = NEW.`requirements_id` AND `id` = NEW.`requirements_version_id` AND `version_number` = NEW.`requirements_version_number` AND `code_of_conduct_required` = 1 AND `code_of_conduct_text_version` = NEW.`text_version` AND `code_of_conduct_text_hash` = NEW.`text_hash`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_coc_policy_binding_invalid'; END IF; IF NEW.`action` IN ('withdrawn','replaced') AND (SELECT COUNT(*) FROM `event_safety_code_acknowledgements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `user_id` = NEW.`user_id` AND `id` = NEW.`referenced_acknowledgement_id` AND `action` = 'acknowledged' AND `requirements_id` = NEW.`requirements_id` AND `requirements_version_id` = NEW.`requirements_version_id` AND `requirements_version_number` = NEW.`requirements_version_number` AND `text_version` = NEW.`text_version` AND `text_hash` = NEW.`text_hash` AND `acknowledged_at` = NEW.`acknowledged_at`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_coc_reference_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_coc_insert` BEFORE INSERT ON `event_safety_code_acknowledgements` FOR EACH ROW BEGIN IF NEW.`action` = 'acknowledged' AND (SELECT COUNT(*) FROM `event_safety_requirement_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `requirements_id` = NEW.`requirements_id` AND `id` = NEW.`requirements_version_id` AND `version_number` = NEW.`requirements_version_number` AND `code_of_conduct_required` = 1 AND `code_of_conduct_text_version` = NEW.`text_version` AND `code_of_conduct_text_hash` = NEW.`text_hash`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_coc_policy_binding_invalid'; END IF; IF NEW.`action` IN ('withdrawn','replaced') AND (SELECT COUNT(*) FROM `event_safety_code_acknowledgements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `user_id` = NEW.`user_id` AND `id` = NEW.`referenced_acknowledgement_id` AND `action` = 'acknowledged' AND `requirements_id` = NEW.`requirements_id` AND `requirements_version_id` = NEW.`requirements_version_id` AND `requirements_version_number` = NEW.`requirements_version_number` AND `text_version` = NEW.`text_version` AND `text_hash` = NEW.`text_hash` AND `acknowledged_at` = NEW.`acknowledged_at`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_coc_reference_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6971,8 +6875,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_coc_no_update` BEFORE UPDATE ON `event_safety_code_acknowledgements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_code_acknowledgement_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_coc_no_update` BEFORE UPDATE ON `event_safety_code_acknowledgements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_code_acknowledgement_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -6987,8 +6890,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_coc_no_delete` BEFORE DELETE ON `event_safety_code_acknowledgements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_code_acknowledgement_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_coc_no_delete` BEFORE DELETE ON `event_safety_code_acknowledgements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_code_acknowledgement_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7035,8 +6937,7 @@ CREATE TABLE `event_safety_requirement_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_history_no_update` BEFORE UPDATE ON `event_safety_requirement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_history_no_update` BEFORE UPDATE ON `event_safety_requirement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7051,8 +6952,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_history_no_delete` BEFORE DELETE ON `event_safety_requirement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_history_no_delete` BEFORE DELETE ON `event_safety_requirement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7103,8 +7003,7 @@ CREATE TABLE `event_safety_requirement_versions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_version_insert` BEFORE INSERT ON `event_safety_requirement_versions` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_safety_requirements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`requirements_id` AND `status` = 'draft' AND `current_version` = NEW.`version_number`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_version_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_version_insert` BEFORE INSERT ON `event_safety_requirement_versions` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_safety_requirements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`requirements_id` AND `status` = 'draft' AND `current_version` = NEW.`version_number`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_version_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7119,8 +7018,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_version_no_update` BEFORE UPDATE ON `event_safety_requirement_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_version_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_version_no_update` BEFORE UPDATE ON `event_safety_requirement_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_version_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7135,8 +7033,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_version_no_delete` BEFORE DELETE ON `event_safety_requirement_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_version_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_version_no_delete` BEFORE DELETE ON `event_safety_requirement_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirement_version_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7190,8 +7087,7 @@ CREATE TABLE `event_safety_requirements` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_requirements_insert` BEFORE INSERT ON `event_safety_requirements` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_concrete_event_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_requirements_insert` BEFORE INSERT ON `event_safety_requirements` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_concrete_event_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7206,8 +7102,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_requirements_update` BEFORE UPDATE ON `event_safety_requirements` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`created_by_user_id` <=> NEW.`created_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_identity_immutable'; END IF; IF OLD.`status` = 'archived' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_archived_immutable'; END IF; IF NEW.`revision` <> OLD.`revision` + 1 OR NEW.`current_version` < OLD.`current_version` OR NEW.`current_version` > OLD.`current_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_version_invalid'; END IF; IF NEW.`current_version` = OLD.`current_version` + 1 AND NOT (NEW.`status` = 'draft' AND NEW.`published_version` IS NULL AND NEW.`published_by_user_id` IS NULL AND NEW.`published_at` IS NULL AND NEW.`archived_by_user_id` IS NULL AND NEW.`archived_at` IS NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_draft_transition_invalid'; END IF; IF NEW.`current_version` = OLD.`current_version` AND NOT ((OLD.`status` = 'draft' AND NEW.`status` = 'published' AND NEW.`published_version` = NEW.`current_version`) OR (OLD.`status` IN ('draft','published') AND NEW.`status` = 'archived')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_state_transition_invalid'; END IF; IF NEW.`status` = 'published' AND (SELECT COUNT(*) FROM `event_safety_requirement_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `requirements_id` = NEW.`id` AND `version_number` = NEW.`published_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_publish_version_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_requirements_update` BEFORE UPDATE ON `event_safety_requirements` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`created_by_user_id` <=> NEW.`created_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_identity_immutable'; END IF; IF OLD.`status` = 'archived' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_archived_immutable'; END IF; IF NEW.`revision` <> OLD.`revision` + 1 OR NEW.`current_version` < OLD.`current_version` OR NEW.`current_version` > OLD.`current_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_version_invalid'; END IF; IF NEW.`current_version` = OLD.`current_version` + 1 AND NOT (NEW.`status` = 'draft' AND NEW.`published_version` IS NULL AND NEW.`published_by_user_id` IS NULL AND NEW.`published_at` IS NULL AND NEW.`archived_by_user_id` IS NULL AND NEW.`archived_at` IS NULL) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_draft_transition_invalid'; END IF; IF NEW.`current_version` = OLD.`current_version` AND NOT ((OLD.`status` = 'draft' AND NEW.`status` = 'published' AND NEW.`published_version` = NEW.`current_version`) OR (OLD.`status` IN ('draft','published') AND NEW.`status` = 'archived')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_state_transition_invalid'; END IF; IF NEW.`status` = 'published' AND (SELECT COUNT(*) FROM `event_safety_requirement_versions` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `requirements_id` = NEW.`id` AND `version_number` = NEW.`published_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_publish_version_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7222,8 +7117,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_requirements_no_delete` BEFORE DELETE ON `event_safety_requirements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_safety_requirements_no_delete` BEFORE DELETE ON `event_safety_requirements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_safety_requirements_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7285,8 +7179,7 @@ CREATE TABLE `event_session_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_session_history_no_update` BEFORE UPDATE ON `event_session_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_session_history_no_update` BEFORE UPDATE ON `event_session_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7301,8 +7194,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_session_history_no_delete` BEFORE DELETE ON `event_session_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_session_history_no_delete` BEFORE DELETE ON `event_session_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7355,8 +7247,7 @@ CREATE TABLE `event_session_registration_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_hist_pin_insert` BEFORE INSERT ON `event_session_registration_history` FOR EACH ROW BEGIN IF NEW.`event_registration_version` IS NULL THEN SET NEW.`event_registration_version` = (SELECT `event_registration_version` FROM `event_session_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `session_id` = NEW.`session_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `event_registration_id` = NEW.`event_registration_id` LIMIT 1); END IF; IF NEW.`event_registration_version` IS NULL OR (SELECT COUNT(*) FROM `event_session_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `session_id` = NEW.`session_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `event_registration_id` = NEW.`event_registration_id` AND `event_registration_version` = NEW.`event_registration_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_history_version_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_hist_pin_insert` BEFORE INSERT ON `event_session_registration_history` FOR EACH ROW BEGIN IF NEW.`event_registration_version` IS NULL THEN SET NEW.`event_registration_version` = (SELECT `event_registration_version` FROM `event_session_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `session_id` = NEW.`session_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `event_registration_id` = NEW.`event_registration_id` LIMIT 1); END IF; IF NEW.`event_registration_version` IS NULL OR (SELECT COUNT(*) FROM `event_session_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `session_id` = NEW.`session_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `event_registration_id` = NEW.`event_registration_id` AND `event_registration_version` = NEW.`event_registration_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_history_version_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7371,8 +7262,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_hist_no_update` BEFORE UPDATE ON `event_session_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_hist_no_update` BEFORE UPDATE ON `event_session_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7387,8 +7277,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_hist_no_delete` BEFORE DELETE ON `event_session_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_hist_no_delete` BEFORE DELETE ON `event_session_registration_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7438,8 +7327,7 @@ CREATE TABLE `event_session_registrations` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_validate_insert` BEFORE INSERT ON `event_session_registrations` FOR EACH ROW BEGIN IF NEW.`event_registration_version` IS NULL THEN SET NEW.`event_registration_version` = (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1); END IF; IF NEW.`event_registration_version` IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_required'; END IF; IF NEW.`status` = 'registered' AND (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed' AND `registration_version` = NEW.`event_registration_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_confirmed_registration_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_validate_insert` BEFORE INSERT ON `event_session_registrations` FOR EACH ROW BEGIN IF NEW.`event_registration_version` IS NULL THEN SET NEW.`event_registration_version` = (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1); END IF; IF NEW.`event_registration_version` IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_required'; END IF; IF NEW.`status` = 'registered' AND (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed' AND `registration_version` = NEW.`event_registration_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_confirmed_registration_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7454,8 +7342,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_validate_update` BEFORE UPDATE ON `event_session_registrations` FOR EACH ROW BEGIN IF OLD.`status` = 'withdrawn' AND NEW.`status` = 'registered' AND (NEW.`event_registration_version` <=> OLD.`event_registration_version`) THEN SET NEW.`event_registration_version` = (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1); ELSEIF NEW.`event_registration_version` IS NULL THEN SET NEW.`event_registration_version` = (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1); END IF; IF NEW.`event_registration_version` IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_required'; END IF; IF NEW.`status` <> 'registered' AND OLD.`event_registration_version` IS NOT NULL AND NOT (NEW.`event_registration_version` <=> OLD.`event_registration_version`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_immutable'; END IF; IF NEW.`status` <> 'registered' AND OLD.`event_registration_version` IS NULL AND NEW.`event_registration_version` <> (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_invalid'; END IF; IF NEW.`status` = 'registered' AND (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed' AND `registration_version` = NEW.`event_registration_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_confirmed_registration_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ev_session_reg_validate_update` BEFORE UPDATE ON `event_session_registrations` FOR EACH ROW BEGIN IF OLD.`status` = 'withdrawn' AND NEW.`status` = 'registered' AND (NEW.`event_registration_version` <=> OLD.`event_registration_version`) THEN SET NEW.`event_registration_version` = (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1); ELSEIF NEW.`event_registration_version` IS NULL THEN SET NEW.`event_registration_version` = (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1); END IF; IF NEW.`event_registration_version` IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_required'; END IF; IF NEW.`status` <> 'registered' AND OLD.`event_registration_version` IS NOT NULL AND NOT (NEW.`event_registration_version` <=> OLD.`event_registration_version`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_immutable'; END IF; IF NEW.`status` <> 'registered' AND OLD.`event_registration_version` IS NULL AND NEW.`event_registration_version` <> (SELECT `registration_version` FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` LIMIT 1) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_registration_version_invalid'; END IF; IF NEW.`status` = 'registered' AND (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`event_registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed' AND `registration_version` = NEW.`event_registration_version`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_session_confirmed_registration_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7611,8 +7498,7 @@ CREATE TABLE `event_staff_assignment_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_staff_history_no_update` BEFORE UPDATE ON `event_staff_assignment_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_staff_assignment_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_staff_history_no_update` BEFORE UPDATE ON `event_staff_assignment_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_staff_assignment_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7627,8 +7513,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_staff_history_no_delete` BEFORE DELETE ON `event_staff_assignment_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_staff_assignment_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_staff_history_no_delete` BEFORE DELETE ON `event_staff_assignment_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_staff_assignment_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7688,7 +7573,7 @@ CREATE TABLE `event_status_history` (
   UNIQUE KEY `uq_event_status_history_version` (`tenant_id`,`event_id`,`lifecycle_version`),
   KEY `idx_event_status_history_event` (`tenant_id`,`event_id`,`created_at`,`id`),
   KEY `idx_event_status_history_actor` (`tenant_id`,`actor_user_id`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -7699,8 +7584,7 @@ CREATE TABLE `event_status_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_status_history_no_update` BEFORE UPDATE ON `event_status_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_status_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_status_history_no_update` BEFORE UPDATE ON `event_status_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_status_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7715,8 +7599,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_status_history_no_delete` BEFORE DELETE ON `event_status_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_status_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_status_history_no_delete` BEFORE DELETE ON `event_status_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_status_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7766,8 +7649,7 @@ CREATE TABLE `event_template_audit` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_audit_no_update` BEFORE UPDATE ON `event_template_audit` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_audit_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_audit_no_update` BEFORE UPDATE ON `event_template_audit` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_audit_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7782,8 +7664,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_audit_no_delete` BEFORE DELETE ON `event_template_audit` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_audit_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_audit_no_delete` BEFORE DELETE ON `event_template_audit` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_audit_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7840,8 +7721,7 @@ CREATE TABLE `event_template_materializations` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_materialize_validate` BEFORE INSERT ON `event_template_materializations` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`created_event_id` AND `user_id` = NEW.`materialized_by_user_id` AND `status` = 'draft' AND `publication_status` = 'draft' AND `operational_status` = 'scheduled' AND `is_recurring_template` = 0 AND `parent_event_id` IS NULL AND `series_id` IS NULL AND `federated_visibility` = 'none') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_materialized_event_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_materialize_validate` BEFORE INSERT ON `event_template_materializations` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`created_event_id` AND `user_id` = NEW.`materialized_by_user_id` AND `status` = 'draft' AND `publication_status` = 'draft' AND `operational_status` = 'scheduled' AND `is_recurring_template` = 0 AND `parent_event_id` IS NULL AND `series_id` IS NULL AND `federated_visibility` = 'none') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_materialized_event_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7856,8 +7736,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_materialize_no_update` BEFORE UPDATE ON `event_template_materializations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_materialization_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_materialize_no_update` BEFORE UPDATE ON `event_template_materializations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_materialization_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7872,8 +7751,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_materialize_no_delete` BEFORE DELETE ON `event_template_materializations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_materialization_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_materialize_no_delete` BEFORE DELETE ON `event_template_materializations` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_materialization_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7924,8 +7802,7 @@ CREATE TABLE `event_template_versions` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_version_no_update` BEFORE UPDATE ON `event_template_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_version_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_version_no_update` BEFORE UPDATE ON `event_template_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_version_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7940,8 +7817,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_version_no_delete` BEFORE DELETE ON `event_template_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_version_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_version_no_delete` BEFORE DELETE ON `event_template_versions` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_version_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -7988,8 +7864,7 @@ CREATE TABLE `event_templates` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_update` BEFORE UPDATE ON `event_templates` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`public_id` <=> NEW.`public_id`) OR NOT (OLD.`source_event_id` <=> NEW.`source_event_id`) OR NOT (OLD.`created_by_user_id` <=> NEW.`created_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_identity_immutable'; END IF; IF OLD.`status` = 'archived' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_archived_immutable'; END IF; IF NEW.`current_version` < OLD.`current_version` OR NEW.`current_version` > OLD.`current_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_version_transition_invalid'; END IF; IF NEW.`status` = 'active' AND (NEW.`current_version` <> OLD.`current_version` + 1 OR NOT (OLD.`archived_by_user_id` <=> NEW.`archived_by_user_id`) OR NOT (OLD.`archived_at` <=> NEW.`archived_at`) OR NOT (OLD.`archive_reason` <=> NEW.`archive_reason`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_revision_transition_invalid'; END IF; IF NEW.`status` = 'archived' AND (NEW.`current_version` <> OLD.`current_version` OR OLD.`status` <> 'active') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_archive_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_update` BEFORE UPDATE ON `event_templates` FOR EACH ROW BEGIN IF NOT (OLD.`id` <=> NEW.`id`) OR NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`public_id` <=> NEW.`public_id`) OR NOT (OLD.`source_event_id` <=> NEW.`source_event_id`) OR NOT (OLD.`created_by_user_id` <=> NEW.`created_by_user_id`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_identity_immutable'; END IF; IF OLD.`status` = 'archived' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_archived_immutable'; END IF; IF NEW.`current_version` < OLD.`current_version` OR NEW.`current_version` > OLD.`current_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_version_transition_invalid'; END IF; IF NEW.`status` = 'active' AND (NEW.`current_version` <> OLD.`current_version` + 1 OR NOT (OLD.`archived_by_user_id` <=> NEW.`archived_by_user_id`) OR NOT (OLD.`archived_at` <=> NEW.`archived_at`) OR NOT (OLD.`archive_reason` <=> NEW.`archive_reason`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_revision_transition_invalid'; END IF; IF NEW.`status` = 'archived' AND (NEW.`current_version` <> OLD.`current_version` OR OLD.`status` <> 'active') THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_archive_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8004,8 +7879,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_no_delete` BEFORE DELETE ON `event_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_template_no_delete` BEFORE DELETE ON `event_templates` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_template_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8060,8 +7934,7 @@ CREATE TABLE `event_ticket_entitlement_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_ent_hist_no_update` BEFORE UPDATE ON `event_ticket_entitlement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_ent_hist_no_update` BEFORE UPDATE ON `event_ticket_entitlement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8076,8 +7949,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_ent_hist_no_delete` BEFORE DELETE ON `event_ticket_entitlement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_ent_hist_no_delete` BEFORE DELETE ON `event_ticket_entitlement_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8139,8 +8011,7 @@ CREATE TABLE `event_ticket_entitlements` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_entitlement_validate_insert` BEFORE INSERT ON `event_ticket_entitlements` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_ticket_types` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`ticket_type_id` AND `status` = 'active' AND `kind` = 'free' AND `unit_price_credits` = 0.00 AND UTC_TIMESTAMP(6) >= `sales_opens_at_utc` AND UTC_TIMESTAMP(6) < `sales_closes_at_utc`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_free_type_not_allocatable'; END IF; IF (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_confirmed_registration_required'; END IF; IF NEW.`status` <> 'confirmed' OR NEW.`entitlement_version` <> 1 OR NEW.`ticket_kind_snapshot` <> 'free' OR NEW.`unit_price_credits_snapshot` <> 0.00 OR NEW.`total_price_credits_snapshot` <> 0.00 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_free_snapshot_required'; END IF; IF (SELECT COALESCE(SUM(`units`), 0) FROM `event_ticket_entitlements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `ticket_type_id` = NEW.`ticket_type_id` AND `status` = 'confirmed') + NEW.`units` > (SELECT `allocation_limit` FROM `event_ticket_types` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`ticket_type_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_allocation_exhausted'; END IF; IF (SELECT COALESCE(SUM(`units`), 0) FROM `event_ticket_entitlements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `ticket_type_id` = NEW.`ticket_type_id` AND `user_id` = NEW.`user_id` AND `status` = 'confirmed') + NEW.`units` > (SELECT `per_member_limit` FROM `event_ticket_types` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`ticket_type_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_per_member_limit_exceeded'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_entitlement_validate_insert` BEFORE INSERT ON `event_ticket_entitlements` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `event_ticket_types` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`ticket_type_id` AND `status` = 'active' AND `kind` = 'free' AND `unit_price_credits` = 0.00 AND UTC_TIMESTAMP(6) >= `sales_opens_at_utc` AND UTC_TIMESTAMP(6) < `sales_closes_at_utc`) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_free_type_not_allocatable'; END IF; IF (SELECT COUNT(*) FROM `event_registrations` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`registration_id` AND `user_id` = NEW.`user_id` AND `registration_state` = 'confirmed') <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_confirmed_registration_required'; END IF; IF NEW.`status` <> 'confirmed' OR NEW.`entitlement_version` <> 1 OR NEW.`ticket_kind_snapshot` <> 'free' OR NEW.`unit_price_credits_snapshot` <> 0.00 OR NEW.`total_price_credits_snapshot` <> 0.00 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_free_snapshot_required'; END IF; IF (SELECT COALESCE(SUM(`units`), 0) FROM `event_ticket_entitlements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `ticket_type_id` = NEW.`ticket_type_id` AND `status` = 'confirmed') + NEW.`units` > (SELECT `allocation_limit` FROM `event_ticket_types` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`ticket_type_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_allocation_exhausted'; END IF; IF (SELECT COALESCE(SUM(`units`), 0) FROM `event_ticket_entitlements` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `ticket_type_id` = NEW.`ticket_type_id` AND `user_id` = NEW.`user_id` AND `status` = 'confirmed') + NEW.`units` > (SELECT `per_member_limit` FROM `event_ticket_types` WHERE `tenant_id` = NEW.`tenant_id` AND `event_id` = NEW.`event_id` AND `id` = NEW.`ticket_type_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_per_member_limit_exceeded'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8155,8 +8026,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_entitlement_validate_update` BEFORE UPDATE ON `event_ticket_entitlements` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`ticket_type_id` <=> NEW.`ticket_type_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`units` <=> NEW.`units`) OR NOT (OLD.`ticket_kind_snapshot` <=> NEW.`ticket_kind_snapshot`) OR NOT (OLD.`unit_price_credits_snapshot` <=> NEW.`unit_price_credits_snapshot`) OR NOT (OLD.`total_price_credits_snapshot` <=> NEW.`total_price_credits_snapshot`) OR NOT (OLD.`allocation_idempotency_hash` <=> NEW.`allocation_idempotency_hash`) OR NOT (OLD.`allocation_request_hash` <=> NEW.`allocation_request_hash`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`confirmed_at` <=> NEW.`confirmed_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_identity_immutable'; END IF; IF OLD.`status` <> 'confirmed' OR NEW.`status` <> 'cancelled' OR NEW.`entitlement_version` <> OLD.`entitlement_version` + 1 OR NEW.`cancelled_by` IS NULL OR NEW.`cancellation_reason` IS NULL OR CHAR_LENGTH(TRIM(NEW.`cancellation_reason`)) = 0 OR NEW.`cancelled_at` IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_transition_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_entitlement_validate_update` BEFORE UPDATE ON `event_ticket_entitlements` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`ticket_type_id` <=> NEW.`ticket_type_id`) OR NOT (OLD.`registration_id` <=> NEW.`registration_id`) OR NOT (OLD.`user_id` <=> NEW.`user_id`) OR NOT (OLD.`units` <=> NEW.`units`) OR NOT (OLD.`ticket_kind_snapshot` <=> NEW.`ticket_kind_snapshot`) OR NOT (OLD.`unit_price_credits_snapshot` <=> NEW.`unit_price_credits_snapshot`) OR NOT (OLD.`total_price_credits_snapshot` <=> NEW.`total_price_credits_snapshot`) OR NOT (OLD.`allocation_idempotency_hash` <=> NEW.`allocation_idempotency_hash`) OR NOT (OLD.`allocation_request_hash` <=> NEW.`allocation_request_hash`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`confirmed_at` <=> NEW.`confirmed_at`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_identity_immutable'; END IF; IF OLD.`status` <> 'confirmed' OR NEW.`status` <> 'cancelled' OR NEW.`entitlement_version` <> OLD.`entitlement_version` + 1 OR NEW.`cancelled_by` IS NULL OR NEW.`cancellation_reason` IS NULL OR CHAR_LENGTH(TRIM(NEW.`cancellation_reason`)) = 0 OR NEW.`cancelled_at` IS NULL THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_transition_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8171,8 +8041,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_entitlement_no_delete` BEFORE DELETE ON `event_ticket_entitlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_entitlement_no_delete` BEFORE DELETE ON `event_ticket_entitlements` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_entitlement_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8217,8 +8086,7 @@ CREATE TABLE `event_ticket_inventory_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_inv_hist_no_update` BEFORE UPDATE ON `event_ticket_inventory_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_inventory_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_inv_hist_no_update` BEFORE UPDATE ON `event_ticket_inventory_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_inventory_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8233,8 +8101,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_inv_hist_no_delete` BEFORE DELETE ON `event_ticket_inventory_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_inventory_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_inv_hist_no_delete` BEFORE DELETE ON `event_ticket_inventory_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_inventory_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8279,8 +8146,7 @@ CREATE TABLE `event_ticket_type_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_hist_no_update` BEFORE UPDATE ON `event_ticket_type_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_hist_no_update` BEFORE UPDATE ON `event_ticket_type_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8295,8 +8161,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_hist_no_delete` BEFORE DELETE ON `event_ticket_type_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_hist_no_delete` BEFORE DELETE ON `event_ticket_type_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8373,8 +8238,7 @@ CREATE TABLE `event_ticket_types` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_validate_insert` BEFORE INSERT ON `event_ticket_types` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_concrete_occurrence_required'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_validate_insert` BEFORE INSERT ON `event_ticket_types` FOR EACH ROW BEGIN IF (SELECT COUNT(*) FROM `events` WHERE `tenant_id` = NEW.`tenant_id` AND `id` = NEW.`event_id` AND `occurrence_key` = NEW.`occurrence_key` AND `is_recurring_template` = 0) <> 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_concrete_occurrence_required'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8389,8 +8253,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_validate_update` BEFORE UPDATE ON `event_ticket_types` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_identity_immutable'; END IF; IF OLD.`status` = 'archived' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_archived_immutable'; END IF; IF NEW.`ticket_version` <> OLD.`ticket_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_version_invalid'; END IF; IF NOT ((OLD.`status` = 'draft' AND NEW.`status` IN ('draft','active','archived')) OR (OLD.`status` = 'active' AND NEW.`status` IN ('paused','archived')) OR (OLD.`status` = 'paused' AND NEW.`status` IN ('paused','active','archived'))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_transition_invalid'; END IF; IF (SELECT COUNT(*) FROM `event_ticket_entitlements` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `ticket_type_id` = OLD.`id`) > 0 AND (NOT (OLD.`kind` <=> NEW.`kind`) OR NOT (OLD.`unit_price_credits` <=> NEW.`unit_price_credits`) OR NOT (OLD.`allocation_limit` <=> NEW.`allocation_limit`) OR NOT (OLD.`per_member_limit` <=> NEW.`per_member_limit`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_inventory_fields_immutable'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_validate_update` BEFORE UPDATE ON `event_ticket_types` FOR EACH ROW BEGIN IF NOT (OLD.`tenant_id` <=> NEW.`tenant_id`) OR NOT (OLD.`event_id` <=> NEW.`event_id`) OR NOT (OLD.`occurrence_key` <=> NEW.`occurrence_key`) OR NOT (OLD.`created_by` <=> NEW.`created_by`) OR NOT (OLD.`created_at` <=> NEW.`created_at`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_identity_immutable'; END IF; IF OLD.`status` = 'archived' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_archived_immutable'; END IF; IF NEW.`ticket_version` <> OLD.`ticket_version` + 1 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_version_invalid'; END IF; IF NOT ((OLD.`status` = 'draft' AND NEW.`status` IN ('draft','active','archived')) OR (OLD.`status` = 'active' AND NEW.`status` IN ('paused','archived')) OR (OLD.`status` = 'paused' AND NEW.`status` IN ('paused','active','archived'))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_transition_invalid'; END IF; IF (SELECT COUNT(*) FROM `event_ticket_entitlements` WHERE `tenant_id` = OLD.`tenant_id` AND `event_id` = OLD.`event_id` AND `ticket_type_id` = OLD.`id`) > 0 AND (NOT (OLD.`kind` <=> NEW.`kind`) OR NOT (OLD.`unit_price_credits` <=> NEW.`unit_price_credits`) OR NOT (OLD.`allocation_limit` <=> NEW.`allocation_limit`) OR NOT (OLD.`per_member_limit` <=> NEW.`per_member_limit`)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_inventory_fields_immutable'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8405,8 +8268,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_no_delete` BEFORE DELETE ON `event_ticket_types` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_delete_forbidden'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_ticket_type_no_delete` BEFORE DELETE ON `event_ticket_types` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_ticket_type_delete_forbidden' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8436,7 +8298,7 @@ CREATE TABLE `event_waitlist` (
   CONSTRAINT `fk_waitlist_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_waitlist_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_waitlist_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `event_waitlist_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8470,7 +8332,7 @@ CREATE TABLE `event_waitlist_entries` (
   KEY `idx_event_waitlist_queue` (`tenant_id`,`event_id`,`capacity_pool_key`,`queue_state`,`queue_sequence`,`id`),
   KEY `idx_event_waitlist_expiry` (`queue_state`,`offer_expires_at`,`id`),
   KEY `idx_event_waitlist_user` (`tenant_id`,`user_id`,`queue_state`,`event_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `event_waitlist_entry_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8498,7 +8360,7 @@ CREATE TABLE `event_waitlist_entry_history` (
   UNIQUE KEY `uq_event_waitlist_history_key` (`tenant_id`,`idempotency_key`),
   KEY `idx_event_waitlist_history_event` (`tenant_id`,`event_id`,`capacity_pool_key`,`created_at`,`id`),
   KEY `idx_event_waitlist_history_user` (`tenant_id`,`user_id`,`created_at`,`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -8509,8 +8371,7 @@ CREATE TABLE `event_waitlist_entry_history` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_history_no_update` BEFORE UPDATE ON `event_waitlist_entry_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_entry_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_history_no_update` BEFORE UPDATE ON `event_waitlist_entry_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_entry_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8525,8 +8386,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_history_no_delete` BEFORE DELETE ON `event_waitlist_entry_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_entry_history_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_history_no_delete` BEFORE DELETE ON `event_waitlist_entry_history` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_entry_history_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8566,8 +8426,7 @@ CREATE TABLE `event_waitlist_offer_envelope_access` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_envelope_access_no_update` BEFORE UPDATE ON `event_waitlist_offer_envelope_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_offer_envelope_access_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_envelope_access_no_update` BEFORE UPDATE ON `event_waitlist_offer_envelope_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_offer_envelope_access_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8582,8 +8441,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_envelope_access_no_delete` BEFORE DELETE ON `event_waitlist_offer_envelope_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_offer_envelope_access_immutable'
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_event_waitlist_envelope_access_no_delete` BEFORE DELETE ON `event_waitlist_offer_envelope_access` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_waitlist_offer_envelope_access_immutable' */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8726,7 +8584,7 @@ CREATE TABLE `events` (
   CONSTRAINT `fk_event_group` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_event_opportunity` FOREIGN KEY (`volunteer_opportunity_id`) REFERENCES `vol_opportunities` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_events_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=163 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=133 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -8737,8 +8595,7 @@ CREATE TABLE `events` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_events_recurrence_id_validate_insert` BEFORE INSERT ON `events` FOR EACH ROW BEGIN IF NEW.`recurrence_id` IS NOT NULL AND NEW.`recurrence_id` NOT REGEXP '^[0-9]{8}T[0-9]{6}Z$' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_invalid'; ELSEIF NEW.`recurrence_id` IS NOT NULL AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_scope_invalid'; ELSEIF ((NEW.`is_recurrence_exception` = 1 AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NEW.`recurrence_id` IS NULL OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2') OR NEW.`recurrence_override_fields` IS NULL OR JSON_TYPE(NEW.`recurrence_override_fields`) <> 'ARRAY' OR JSON_LENGTH(NEW.`recurrence_override_fields`) = 0 OR JSON_LENGTH(NEW.`recurrence_override_fields`) <> (JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('title')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('description')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('location')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('latitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('longitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('start_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('end_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone_source')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('all_day')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('category_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('group_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('series_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('max_attendees')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('is_online')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('allow_remote_attendance')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('online_link')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('video_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('image_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('cover_image')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('federated_visibility')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_step_free')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_toilet')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_hearing_loop')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_quiet_space')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_seating')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_transit_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_assistance_contact')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_notes'))) OR NEW.`recurrence_override_version` < 1 OR NEW.`recurrence_override_updated_at` IS NULL OR NEW.`recurrence_override_updated_by` IS NULL OR NOT EXISTS (SELECT 1 FROM `users` AS `override_actor` WHERE `override_actor`.`id` = NEW.`recurrence_override_updated_by` AND `override_actor`.`tenant_id` = NEW.`tenant_id`))) OR (NEW.`is_recurrence_exception` = 0 AND (NEW.`recurrence_override_fields` IS NOT NULL OR NEW.`recurrence_override_version` <> 0 OR NEW.`recurrence_override_updated_at` IS NOT NULL OR NEW.`recurrence_override_updated_by` IS NOT NULL))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_override_evidence_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_events_recurrence_id_validate_insert` BEFORE INSERT ON `events` FOR EACH ROW BEGIN IF NEW.`recurrence_id` IS NOT NULL AND NEW.`recurrence_id` NOT REGEXP '^[0-9]{8}T[0-9]{6}Z$' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_invalid'; ELSEIF NEW.`recurrence_id` IS NOT NULL AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_scope_invalid'; ELSEIF ((NEW.`is_recurrence_exception` = 1 AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NEW.`recurrence_id` IS NULL OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2') OR NEW.`recurrence_override_fields` IS NULL OR JSON_TYPE(NEW.`recurrence_override_fields`) <> 'ARRAY' OR JSON_LENGTH(NEW.`recurrence_override_fields`) = 0 OR JSON_LENGTH(NEW.`recurrence_override_fields`) <> (JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('title')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('description')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('location')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('latitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('longitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('start_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('end_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone_source')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('all_day')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('category_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('group_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('series_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('max_attendees')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('is_online')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('allow_remote_attendance')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('online_link')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('video_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('image_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('cover_image')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('federated_visibility')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_step_free')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_toilet')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_hearing_loop')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_quiet_space')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_seating')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_transit_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_assistance_contact')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_notes'))) OR NEW.`recurrence_override_version` < 1 OR NEW.`recurrence_override_updated_at` IS NULL OR NEW.`recurrence_override_updated_by` IS NULL OR NOT EXISTS (SELECT 1 FROM `users` AS `override_actor` WHERE `override_actor`.`id` = NEW.`recurrence_override_updated_by` AND `override_actor`.`tenant_id` = NEW.`tenant_id`))) OR (NEW.`is_recurrence_exception` = 0 AND (NEW.`recurrence_override_fields` IS NOT NULL OR NEW.`recurrence_override_version` <> 0 OR NEW.`recurrence_override_updated_at` IS NOT NULL OR NEW.`recurrence_override_updated_by` IS NOT NULL))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_override_evidence_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8753,8 +8610,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50003 TRIGGER `trg_events_recurrence_id_immutable` BEFORE UPDATE ON `events` FOR EACH ROW BEGIN IF NEW.`recurrence_id` IS NOT NULL AND NEW.`recurrence_id` NOT REGEXP '^[0-9]{8}T[0-9]{6}Z$' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_invalid'; ELSEIF OLD.`recurrence_id` IS NOT NULL AND NOT (OLD.`recurrence_id` <=> NEW.`recurrence_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_immutable'; ELSEIF NEW.`recurrence_id` IS NOT NULL AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_scope_invalid'; ELSEIF ((NEW.`is_recurrence_exception` = 1 AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NEW.`recurrence_id` IS NULL OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2') OR NEW.`recurrence_override_fields` IS NULL OR JSON_TYPE(NEW.`recurrence_override_fields`) <> 'ARRAY' OR JSON_LENGTH(NEW.`recurrence_override_fields`) = 0 OR JSON_LENGTH(NEW.`recurrence_override_fields`) <> (JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('title')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('description')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('location')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('latitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('longitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('start_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('end_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone_source')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('all_day')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('category_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('group_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('series_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('max_attendees')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('is_online')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('allow_remote_attendance')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('online_link')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('video_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('image_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('cover_image')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('federated_visibility')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_step_free')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_toilet')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_hearing_loop')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_quiet_space')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_seating')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_transit_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_assistance_contact')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_notes'))) OR NEW.`recurrence_override_version` < 1 OR NEW.`recurrence_override_updated_at` IS NULL OR NEW.`recurrence_override_updated_by` IS NULL OR NOT EXISTS (SELECT 1 FROM `users` AS `override_actor` WHERE `override_actor`.`id` = NEW.`recurrence_override_updated_by` AND `override_actor`.`tenant_id` = NEW.`tenant_id`))) OR (NEW.`is_recurrence_exception` = 0 AND (NEW.`recurrence_override_fields` IS NOT NULL OR NEW.`recurrence_override_version` <> 0 OR NEW.`recurrence_override_updated_at` IS NOT NULL OR NEW.`recurrence_override_updated_by` IS NOT NULL))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_override_evidence_invalid'; END IF; END
-*/;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_events_recurrence_id_immutable` BEFORE UPDATE ON `events` FOR EACH ROW BEGIN IF NEW.`recurrence_id` IS NOT NULL AND NEW.`recurrence_id` NOT REGEXP '^[0-9]{8}T[0-9]{6}Z$' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_invalid'; ELSEIF OLD.`recurrence_id` IS NOT NULL AND NOT (OLD.`recurrence_id` <=> NEW.`recurrence_id`) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_immutable'; ELSEIF NEW.`recurrence_id` IS NOT NULL AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2')) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_id_scope_invalid'; ELSEIF ((NEW.`is_recurrence_exception` = 1 AND (NEW.`parent_event_id` IS NULL OR NEW.`is_recurring_template` <> 0 OR NEW.`recurrence_id` IS NULL OR NOT (NEW.`recurrence_engine` <=> 'sabre-vobject') OR NOT (NEW.`recurrence_engine_version` <=> '2') OR NEW.`recurrence_override_fields` IS NULL OR JSON_TYPE(NEW.`recurrence_override_fields`) <> 'ARRAY' OR JSON_LENGTH(NEW.`recurrence_override_fields`) = 0 OR JSON_LENGTH(NEW.`recurrence_override_fields`) <> (JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('title')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('description')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('location')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('latitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('longitude')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('start_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('end_time')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('timezone_source')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('all_day')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('category_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('group_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('series_id')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('max_attendees')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('is_online')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('allow_remote_attendance')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('online_link')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('video_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('image_url')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('cover_image')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('federated_visibility')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_step_free')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_toilet')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_hearing_loop')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_quiet_space')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_seating')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_parking_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_transit_details')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_assistance_contact')) + JSON_CONTAINS(NEW.`recurrence_override_fields`, JSON_QUOTE('accessibility_notes'))) OR NEW.`recurrence_override_version` < 1 OR NEW.`recurrence_override_updated_at` IS NULL OR NEW.`recurrence_override_updated_by` IS NULL OR NOT EXISTS (SELECT 1 FROM `users` AS `override_actor` WHERE `override_actor`.`id` = NEW.`recurrence_override_updated_by` AND `override_actor`.`tenant_id` = NEW.`tenant_id`))) OR (NEW.`is_recurrence_exception` = 0 AND (NEW.`recurrence_override_fields` IS NOT NULL OR NEW.`recurrence_override_version` <> 0 OR NEW.`recurrence_override_updated_at` IS NOT NULL OR NEW.`recurrence_override_updated_by` IS NOT NULL))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'event_recurrence_override_evidence_invalid'; END IF; END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -8782,7 +8638,7 @@ CREATE TABLE `exchange_history` (
   KEY `idx_tenant_exchange` (`tenant_id`,`exchange_id`),
   CONSTRAINT `exchange_history_ibfk_1` FOREIGN KEY (`exchange_id`) REFERENCES `exchange_requests` (`id`) ON DELETE CASCADE,
   CONSTRAINT `exchange_history_ibfk_2` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `exchange_ratings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -8869,7 +8725,7 @@ CREATE TABLE `exchange_requests` (
   CONSTRAINT `exchange_requests_ibfk_5` FOREIGN KEY (`broker_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `exchange_requests_ibfk_6` FOREIGN KEY (`cancelled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `exchange_requests_ibfk_7` FOREIGN KEY (`risk_tag_id`) REFERENCES `listing_risk_tags` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fadp_consent_records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9347,7 +9203,7 @@ CREATE TABLE `federation_external_partner_logs` (
   KEY `idx_partner` (`partner_id`),
   KEY `idx_created` (`created_at`),
   KEY `idx_success` (`success`)
-) ENGINE=InnoDB AUTO_INCREMENT=5216 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5710 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `federation_external_partners`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -9664,6 +9520,17 @@ DROP TABLE IF EXISTS `federation_system_control`;
 CREATE TABLE `federation_system_control` (
   `id` int(10) unsigned NOT NULL DEFAULT 1,
   `federation_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_federation_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_nexus_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_komunitin_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_credit_commons_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_legacy_v1_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_webhooks_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_hour_transfer_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_protocol_aggregates_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `external_federation_disabled_reason` varchar(255) DEFAULT NULL,
+  `external_federation_updated_at` timestamp NULL DEFAULT NULL,
+  `external_federation_updated_by` int(10) unsigned DEFAULT NULL,
   `whitelist_mode_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `max_federation_level` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `cross_tenant_profiles_enabled` tinyint(1) NOT NULL DEFAULT 0,
@@ -9930,7 +9797,7 @@ CREATE TABLE `feed_activity` (
   KEY `idx_source_lookup` (`source_type`,`source_id`),
   KEY `idx_feed_activity_cursor` (`tenant_id`,`created_at`,`id`),
   FULLTEXT KEY `ft_feed_search` (`title`,`content`)
-) ENGINE=InnoDB AUTO_INCREMENT=1942 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2038 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `feed_clicks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10074,7 +9941,7 @@ CREATE TABLE `feed_posts` (
   CONSTRAINT `feed_posts_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `feed_posts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_feed_posts_quoted` FOREIGN KEY (`quoted_post_id`) REFERENCES `feed_posts` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=162 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `fraud_alerts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10211,7 +10078,7 @@ CREATE TABLE `gdpr_audit_log` (
   KEY `idx_created_at` (`created_at`),
   KEY `idx_tenant_id` (`tenant_id`),
   KEY `idx_entity` (`entity_type`,`entity_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=295 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=293 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `gdpr_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10483,7 +10350,7 @@ CREATE TABLE `group_announcements` (
   KEY `idx_group_announcements_tenant` (`tenant_id`),
   KEY `idx_group_announcements_pinned` (`is_pinned`,`priority` DESC),
   KEY `idx_group_announcements_expires` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_answers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10502,7 +10369,7 @@ CREATE TABLE `group_answers` (
   KEY `idx_ga_question` (`question_id`),
   KEY `idx_ga_votes` (`question_id`,`vote_count` DESC),
   KEY `group_answers_tenant_id_index` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_approval_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10541,7 +10408,7 @@ CREATE TABLE `group_audit_log` (
   PRIMARY KEY (`id`),
   KEY `idx_tenant_group_date` (`tenant_id`,`group_id`,`created_at`),
   KEY `idx_tenant_action_date` (`tenant_id`,`action`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=861 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=443 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_auto_assign_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10557,7 +10424,7 @@ CREATE TABLE `group_auto_assign_rules` (
   PRIMARY KEY (`id`),
   KEY `idx_gaar_tenant` (`tenant_id`,`is_active`),
   KEY `idx_gaar_group` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_challenge_rewards`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10603,7 +10470,7 @@ CREATE TABLE `group_challenges` (
   KEY `idx_gc_group` (`group_id`,`status`),
   KEY `idx_gc_tenant` (`tenant_id`),
   KEY `idx_gc_active` (`status`,`ends_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_chatroom_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10658,7 +10525,7 @@ CREATE TABLE `group_chatrooms` (
   PRIMARY KEY (`id`),
   KEY `idx_group` (`group_id`,`tenant_id`),
   KEY `idx_tenant` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_collection_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10822,7 +10689,7 @@ CREATE TABLE `group_discussions` (
   KEY `idx_tenant_id` (`tenant_id`),
   CONSTRAINT `group_discussions_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
   CONSTRAINT `group_discussions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_exchange_participants`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10842,7 +10709,7 @@ CREATE TABLE `group_exchange_participants` (
   UNIQUE KEY `uk_exchange_user_role` (`group_exchange_id`,`user_id`,`role`),
   KEY `idx_exchange` (`group_exchange_id`),
   KEY `idx_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_exchanges`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10944,7 +10811,7 @@ CREATE TABLE `group_invites` (
   KEY `idx_group_invites_group` (`group_id`,`status`),
   KEY `idx_group_invites_email` (`email`,`status`),
   KEY `idx_group_invites_tenant` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_match_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -10965,7 +10832,7 @@ CREATE TABLE `group_match_cache` (
   UNIQUE KEY `uk_user_group_tenant` (`user_id`,`group_id`,`tenant_id`),
   KEY `idx_tenant_expires` (`tenant_id`,`expires_at`),
   KEY `idx_user_score` (`user_id`,`match_score`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6569 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_media`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11033,7 +10900,7 @@ CREATE TABLE `group_members` (
   KEY `idx_group_members_role` (`role`),
   CONSTRAINT `group_members_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
   CONSTRAINT `group_members_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4975 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4725 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_notification_preferences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11051,7 +10918,7 @@ CREATE TABLE `group_notification_preferences` (
   UNIQUE KEY `uk_gnp` (`user_id`,`group_id`),
   KEY `idx_gnp_group` (`group_id`),
   KEY `group_notification_preferences_tenant_id_index` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_policies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11071,7 +10938,7 @@ CREATE TABLE `group_policies` (
   KEY `idx_tenant_category` (`tenant_id`,`category`),
   KEY `idx_tenant` (`tenant_id`),
   CONSTRAINT `group_policies_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Flexible tenant-specific policies for groups module';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Flexible tenant-specific policies for groups module';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11091,7 +10958,7 @@ CREATE TABLE `group_posts` (
   KEY `idx_tenant_id` (`tenant_id`),
   CONSTRAINT `group_posts_ibfk_1` FOREIGN KEY (`discussion_id`) REFERENCES `group_discussions` (`id`) ON DELETE CASCADE,
   CONSTRAINT `group_posts_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_private_storage_migrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11157,7 +11024,7 @@ CREATE TABLE `group_questions` (
   KEY `idx_gq_group` (`group_id`,`tenant_id`),
   KEY `idx_gq_user` (`user_id`),
   KEY `idx_gq_votes` (`group_id`,`vote_count` DESC)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_ranking_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11288,7 +11155,7 @@ CREATE TABLE `group_tags` (
   UNIQUE KEY `uk_group_tags_slug` (`tenant_id`,`slug`),
   KEY `idx_group_tags_tenant` (`tenant_id`),
   KEY `idx_group_tags_usage` (`tenant_id`,`usage_count` DESC)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_templates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11340,7 +11207,7 @@ CREATE TABLE `group_types` (
   KEY `idx_sort` (`sort_order`),
   KEY `idx_is_hub` (`is_hub`),
   CONSTRAINT `group_types_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_user_bans`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11456,7 +11323,7 @@ CREATE TABLE `group_wiki_pages` (
   UNIQUE KEY `uk_gwp_slug` (`group_id`,`slug`),
   KEY `idx_gwp_group` (`group_id`,`tenant_id`),
   KEY `idx_gwp_parent` (`parent_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_wiki_revisions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11470,7 +11337,7 @@ CREATE TABLE `group_wiki_revisions` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `idx_gwr_page` (`page_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11542,7 +11409,7 @@ CREATE TABLE `groups` (
   CONSTRAINT `groups_ibfk_2` FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `groups_ibfk_3` FOREIGN KEY (`type_id`) REFERENCES `group_types` (`id`) ON DELETE SET NULL,
   CONSTRAINT `chk_groups_status_canonical` CHECK (`status` in ('pending_review','active','dormant','archived','rejected'))
-) ENGINE=InnoDB AUTO_INCREMENT=1180 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=968 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `hashtags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11758,7 +11625,7 @@ CREATE TABLE `identity_verification_events` (
   KEY `idx_ive_type` (`event_type`),
   KEY `idx_ive_created` (`created_at`),
   CONSTRAINT `fk_ive_session` FOREIGN KEY (`session_id`) REFERENCES `identity_verification_sessions` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `identity_verification_sessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11792,7 +11659,7 @@ CREATE TABLE `identity_verification_sessions` (
   KEY `fk_ivs_user` (`user_id`),
   CONSTRAINT `fk_ivs_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ivs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `insurance_certificates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -11931,7 +11798,7 @@ CREATE TABLE `job_expiry_notifications` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_job_expiry_notification_type` (`tenant_id`,`vacancy_id`,`notification_type`),
   KEY `job_expiry_notifications_tenant_id_vacancy_id_index` (`tenant_id`,`vacancy_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `job_feeds`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12451,7 +12318,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=390 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=392 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12489,7 +12356,7 @@ CREATE TABLE `leaderboard_seasons` (
   KEY `idx_tenant_active` (`tenant_id`,`is_active`),
   KEY `idx_dates` (`start_date`,`end_date`),
   KEY `idx_tenant_status` (`tenant_id`,`status`,`start_date`,`end_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `legal_document_versions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12518,7 +12385,7 @@ CREATE TABLE `legal_document_versions` (
   KEY `idx_is_current` (`is_current`),
   KEY `idx_is_draft` (`is_draft`),
   CONSTRAINT `fk_legal_version_document` FOREIGN KEY (`document_id`) REFERENCES `legal_documents` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `legal_documents`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12543,7 +12410,7 @@ CREATE TABLE `legal_documents` (
   KEY `idx_document_type` (`document_type`),
   KEY `idx_slug` (`slug`),
   KEY `idx_is_active` (`is_active`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `likes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12565,7 +12432,7 @@ CREATE TABLE `likes` (
   KEY `idx_likes_tenant_target` (`tenant_id`,`target_type`,`target_id`),
   CONSTRAINT `likes_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `likes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=527 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=528 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `link_previews`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12588,7 +12455,7 @@ CREATE TABLE `link_previews` (
   UNIQUE KEY `uk_url_hash` (`url_hash`),
   KEY `idx_domain` (`domain`),
   KEY `idx_expires` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `listing_attributes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12700,7 +12567,7 @@ CREATE TABLE `listing_reports` (
   CONSTRAINT `listing_reports_reporter_id_foreign` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`),
   CONSTRAINT `listing_reports_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`),
   CONSTRAINT `listing_reports_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `listing_risk_tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12762,7 +12629,7 @@ CREATE TABLE `listing_views` (
   KEY `idx_listing_views_date` (`viewed_at`),
   KEY `idx_listing_views_lookup` (`tenant_id`,`listing_id`,`user_id`),
   CONSTRAINT `fk_listing_views_listing_id` FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2498 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2752 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `listings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12830,7 +12697,7 @@ CREATE TABLE `listings` (
   CONSTRAINT `listings_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `listings_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `listings_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=514 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=494 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `login_attempts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12845,7 +12712,7 @@ CREATE TABLE `login_attempts` (
   PRIMARY KEY (`id`),
   KEY `idx_identifier_type` (`identifier`,`type`),
   KEY `idx_attempted_at` (`attempted_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=151813 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=191185 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `marketplace_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12937,11 +12804,11 @@ CREATE TABLE `marketplace_delivery_offers` (
   `status` enum('pending','accepted','declined','completed','cancelled') NOT NULL DEFAULT 'pending',
   `accepted_at` timestamp NULL DEFAULT NULL,
   `completed_at` timestamp NULL DEFAULT NULL,
-  `wallet_transaction_id` int(10) unsigned DEFAULT NULL,
+  `wallet_transaction_id` int(10) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `mdo_wallet_tx_once_unique` (`wallet_transaction_id`),
+  UNIQUE KEY `mdo_wallet_tx_once_unique` (`wallet_transaction_id`) COMMENT 'nexus-migration:2026_07_12_000072',
   KEY `idx_mdo_order_status` (`order_id`,`status`),
   KEY `idx_mdo_deliverer_status` (`deliverer_id`,`status`),
   KEY `idx_mdo_tenant` (`tenant_id`)
@@ -12959,7 +12826,7 @@ CREATE TABLE `marketplace_disputes` (
   `description` text NOT NULL,
   `evidence_urls` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`evidence_urls`)),
   `status` enum('open','under_review','resolved_buyer','resolved_seller','escalated','closed') NOT NULL DEFAULT 'open',
-  `prior_order_status` varchar(32) DEFAULT NULL,
+  `prior_order_status` varchar(32) DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
   `resolution_notes` text DEFAULT NULL,
   `resolved_by` bigint(20) unsigned DEFAULT NULL,
   `resolved_at` timestamp NULL DEFAULT NULL,
@@ -13068,7 +12935,7 @@ CREATE TABLE `marketplace_listings` (
   `video_url` varchar(500) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `marketplace_enforcement_report_id` bigint(20) unsigned DEFAULT NULL,
+  `marketplace_enforcement_report_id` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
   PRIMARY KEY (`id`),
   KEY `mpl_tenant_status_idx` (`tenant_id`,`status`),
   KEY `mpl_tenant_category_idx` (`tenant_id`,`category_id`),
@@ -13085,10 +12952,10 @@ CREATE TABLE `marketplace_listings` (
   KEY `idx_mpl_public_promoted` (`tenant_id`,`status`,`moderation_status`,`promoted_until`,`id`),
   KEY `mpl_browse_price_idx` (`tenant_id`,`status`,`moderation_status`,`price`,`id`),
   KEY `mpl_browse_promotion_idx` (`tenant_id`,`status`,`moderation_status`,`promoted_until`,`id`),
-  KEY `marketplace_listings_marketplace_enforcement_report_id_index` (`marketplace_enforcement_report_id`),
+  KEY `marketplace_listings_marketplace_enforcement_report_id_index` (`marketplace_enforcement_report_id`) COMMENT 'nexus-migration:2026_07_12_000074',
   FULLTEXT KEY `mpl_title_description_ft` (`title`,`description`),
   CONSTRAINT `marketplace_listings_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `marketplace_categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `marketplace_offers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -13155,24 +13022,24 @@ CREATE TABLE `marketplace_orders` (
   `seller_id` bigint(20) unsigned NOT NULL,
   `marketplace_listing_id` bigint(20) unsigned DEFAULT NULL,
   `marketplace_offer_id` bigint(20) unsigned DEFAULT NULL,
-  `checkout_key` varchar(64) DEFAULT NULL,
-  `checkout_fingerprint` varchar(64) DEFAULT NULL,
+  `checkout_key` varchar(64) DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
+  `checkout_fingerprint` varchar(64) DEFAULT NULL COMMENT 'nexus-migration:2026_07_13_000076',
   `quantity` int(11) NOT NULL DEFAULT 1,
   `unit_price` decimal(10,2) NOT NULL,
   `total_price` decimal(10,2) NOT NULL,
   `currency` varchar(3) NOT NULL DEFAULT 'EUR',
   `time_credits_used` decimal(8,2) DEFAULT NULL,
-  `wallet_transaction_id` bigint(20) unsigned DEFAULT NULL,
-  `wallet_refund_transaction_id` bigint(20) unsigned DEFAULT NULL,
-  `loyalty_redemption_id` bigint(20) unsigned DEFAULT NULL,
+  `wallet_transaction_id` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
+  `wallet_refund_transaction_id` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
+  `loyalty_redemption_id` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
   `status` enum('pending_payment','paid','shipped','delivered','completed','disputed','refunded','cancelled') NOT NULL DEFAULT 'pending_payment',
-  `stripe_checkout_mode` varchar(24) DEFAULT NULL,
+  `stripe_checkout_mode` varchar(24) DEFAULT NULL COMMENT 'nexus-migration:2026_07_13_000077',
   `payment_intent_id` varchar(255) DEFAULT NULL,
-  `checkout_session_id` varchar(255) DEFAULT NULL,
-  `payment_expires_at` timestamp NULL DEFAULT NULL,
+  `checkout_session_id` varchar(255) DEFAULT NULL COMMENT 'nexus-migration:2026_07_13_000076',
+  `payment_expires_at` timestamp NULL DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
   `escrow_released_at` timestamp NULL DEFAULT NULL,
   `shipping_method` varchar(100) DEFAULT NULL,
-  `shipping_option_id` bigint(20) unsigned DEFAULT NULL,
+  `shipping_option_id` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
   `shipping_cost` decimal(8,2) DEFAULT NULL,
   `tracking_number` varchar(255) DEFAULT NULL,
   `tracking_url` varchar(500) DEFAULT NULL,
@@ -13187,21 +13054,20 @@ CREATE TABLE `marketplace_orders` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `mo_tenant_order_number_unique` (`tenant_id`,`order_number`),
-  UNIQUE KEY `mo_offer_once_unique` (`marketplace_offer_id`),
-  UNIQUE KEY `mo_tenant_buyer_checkout_unique` (`tenant_id`,`buyer_id`,`checkout_key`),
-  UNIQUE KEY `mo_loyalty_redemption_unique` (`loyalty_redemption_id`),
-  UNIQUE KEY `mo_wallet_refund_once_unique` (`wallet_refund_transaction_id`),
-  UNIQUE KEY `mo_checkout_session_unique` (`checkout_session_id`),
+  UNIQUE KEY `mo_offer_once_unique` (`marketplace_offer_id`) COMMENT 'nexus-migration:2026_07_12_000072',
+  UNIQUE KEY `mo_tenant_buyer_checkout_unique` (`tenant_id`,`buyer_id`,`checkout_key`) COMMENT 'nexus-migration:2026_07_12_000072',
+  UNIQUE KEY `mo_loyalty_redemption_unique` (`loyalty_redemption_id`) COMMENT 'nexus-migration:2026_07_12_000072',
+  UNIQUE KEY `mo_wallet_refund_once_unique` (`wallet_refund_transaction_id`) COMMENT 'nexus-migration:2026_07_12_000074',
+  UNIQUE KEY `mo_checkout_session_unique` (`checkout_session_id`) COMMENT 'nexus-migration:2026_07_13_000076',
   KEY `mo_tenant_buyer_idx` (`tenant_id`,`buyer_id`),
   KEY `mo_tenant_seller_idx` (`tenant_id`,`seller_id`),
   KEY `mo_tenant_status_idx` (`tenant_id`,`status`),
-  KEY `marketplace_orders_marketplace_offer_id_foreign` (`marketplace_offer_id`),
   KEY `mo_buyer_id_idx` (`buyer_id`),
   KEY `mo_seller_id_idx` (`seller_id`),
   KEY `marketplace_orders_tenant_id_index` (`tenant_id`),
   KEY `marketplace_orders_marketplace_listing_id_foreign` (`marketplace_listing_id`),
-  KEY `mo_pending_expiry_idx` (`tenant_id`,`status`,`payment_expires_at`),
-  KEY `mo_shipping_option_idx` (`shipping_option_id`),
+  KEY `mo_pending_expiry_idx` (`tenant_id`,`status`,`payment_expires_at`) COMMENT 'nexus-migration:2026_07_12_000072',
+  KEY `mo_shipping_option_idx` (`shipping_option_id`) COMMENT 'nexus-migration:2026_07_12_000072',
   CONSTRAINT `marketplace_orders_marketplace_listing_id_foreign` FOREIGN KEY (`marketplace_listing_id`) REFERENCES `marketplace_listings` (`id`) ON DELETE SET NULL,
   CONSTRAINT `marketplace_orders_marketplace_offer_id_foreign` FOREIGN KEY (`marketplace_offer_id`) REFERENCES `marketplace_offers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -13222,11 +13088,11 @@ CREATE TABLE `marketplace_payment_refunds` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `marketplace_payment_refunds_stripe_refund_id_unique` (`stripe_refund_id`),
-  KEY `marketplace_payment_refunds_tenant_id_index` (`tenant_id`),
   KEY `marketplace_payment_refunds_payment_id_foreign` (`payment_id`),
   KEY `mpr_tenant_payment_idx` (`tenant_id`,`payment_id`),
+  KEY `marketplace_payment_refunds_tenant_id_index` (`tenant_id`),
   CONSTRAINT `marketplace_payment_refunds_payment_id_foreign` FOREIGN KEY (`payment_id`) REFERENCES `marketplace_payments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='nexus-migration:2026_07_12_000072';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `marketplace_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -13237,7 +13103,7 @@ CREATE TABLE `marketplace_payments` (
   `order_id` bigint(20) unsigned NOT NULL,
   `stripe_payment_intent_id` varchar(255) DEFAULT NULL,
   `stripe_charge_id` varchar(255) DEFAULT NULL,
-  `funds_flow` varchar(32) NOT NULL DEFAULT 'destination_charge',
+  `funds_flow` varchar(32) NOT NULL DEFAULT 'destination_charge' COMMENT 'nexus-migration:2026_07_12_000072',
   `amount` decimal(10,2) NOT NULL,
   `currency` varchar(3) NOT NULL DEFAULT 'EUR',
   `platform_fee` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -13252,9 +13118,9 @@ CREATE TABLE `marketplace_payments` (
   `paid_out_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `stripe_dispute_id` varchar(255) DEFAULT NULL,
-  `stripe_dispute_status` varchar(50) DEFAULT NULL,
-  `dispute_previous_order_status` varchar(32) DEFAULT NULL,
+  `stripe_dispute_id` varchar(255) DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
+  `stripe_dispute_status` varchar(50) DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
+  `dispute_previous_order_status` varchar(32) DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
   PRIMARY KEY (`id`),
   UNIQUE KEY `marketplace_payments_pi_unique` (`stripe_payment_intent_id`),
   KEY `marketplace_payments_order_id_foreign` (`order_id`),
@@ -13262,7 +13128,7 @@ CREATE TABLE `marketplace_payments` (
   KEY `marketplace_payments_tenant_id_status_index` (`tenant_id`,`status`),
   KEY `marketplace_payments_tenant_id_index` (`tenant_id`),
   KEY `marketplace_payments_stripe_payment_intent_id_index` (`stripe_payment_intent_id`),
-  KEY `marketplace_payments_stripe_dispute_id_index` (`stripe_dispute_id`),
+  KEY `marketplace_payments_stripe_dispute_id_index` (`stripe_dispute_id`) COMMENT 'nexus-migration:2026_07_12_000074',
   CONSTRAINT `marketplace_payments_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `marketplace_orders` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -13389,9 +13255,9 @@ CREATE TABLE `marketplace_reports` (
   `resolved_at` timestamp NULL DEFAULT NULL,
   `resolution_reason` text DEFAULT NULL,
   `action_taken` enum('none','warning','listing_removed','seller_suspended') DEFAULT NULL,
-  `enforcement_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`enforcement_snapshot`)),
+  `enforcement_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074' CHECK (json_valid(`enforcement_snapshot`)),
   `appeal_text` text DEFAULT NULL,
-  `appealed_by` bigint(20) unsigned DEFAULT NULL,
+  `appealed_by` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
   `appeal_resolved_at` timestamp NULL DEFAULT NULL,
   `handled_by` bigint(20) unsigned DEFAULT NULL,
   `transparency_report_included` tinyint(1) NOT NULL DEFAULT 0,
@@ -13401,10 +13267,10 @@ CREATE TABLE `marketplace_reports` (
   KEY `marketplace_reports_marketplace_listing_id_foreign` (`marketplace_listing_id`),
   KEY `mr_reporter_id_idx` (`reporter_id`),
   KEY `mr_handled_by_idx` (`handled_by`),
-  KEY `mr_appealed_by_idx` (`appealed_by`),
   KEY `marketplace_reports_tenant_id_status_index` (`tenant_id`,`status`),
   KEY `marketplace_reports_tenant_id_marketplace_listing_id_index` (`tenant_id`,`marketplace_listing_id`),
   KEY `marketplace_reports_tenant_id_index` (`tenant_id`),
+  KEY `mr_appealed_by_idx` (`appealed_by`) COMMENT 'nexus-migration:2026_07_12_000074',
   CONSTRAINT `marketplace_reports_marketplace_listing_id_foreign` FOREIGN KEY (`marketplace_listing_id`) REFERENCES `marketplace_listings` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -13497,11 +13363,11 @@ CREATE TABLE `marketplace_seller_profiles` (
   `marketplace_partner_badge_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `marketplace_suspension_report_id` bigint(20) unsigned DEFAULT NULL,
+  `marketplace_suspension_report_id` bigint(20) unsigned DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000074',
   PRIMARY KEY (`id`),
   UNIQUE KEY `mpsp_tenant_user_unique` (`tenant_id`,`user_id`),
   KEY `marketplace_seller_profiles_tenant_id_index` (`tenant_id`),
-  KEY `msp_enforcement_report_idx` (`marketplace_suspension_report_id`)
+  KEY `msp_enforcement_report_idx` (`marketplace_suspension_report_id`) COMMENT 'nexus-migration:2026_07_12_000074'
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `marketplace_seller_ratings`;
@@ -13643,7 +13509,7 @@ CREATE TABLE `match_cache` (
   CONSTRAINT `match_cache_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `match_cache_ibfk_2` FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`) ON DELETE CASCADE,
   CONSTRAINT `match_cache_ibfk_3` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=440 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=640 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `match_digest_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -13791,7 +13657,7 @@ CREATE TABLE `member_activity_flags` (
   KEY `idx_tenant_flag` (`tenant_id`,`flag_type`),
   KEY `idx_tenant_last_activity` (`tenant_id`,`last_activity_at`),
   KEY `idx_flagged_at` (`tenant_id`,`flagged_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=12858 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15335 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `member_availability`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -13812,7 +13678,7 @@ CREATE TABLE `member_availability` (
   KEY `idx_user_tenant` (`user_id`,`tenant_id`),
   KEY `idx_day` (`tenant_id`,`day_of_week`),
   KEY `idx_specific_date` (`tenant_id`,`specific_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `member_data_exports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -13986,7 +13852,7 @@ CREATE TABLE `member_verification_badges` (
   KEY `idx_user_tenant` (`user_id`,`tenant_id`),
   KEY `idx_badge_type` (`tenant_id`,`badge_type`),
   KEY `idx_verified_by` (`verified_by`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `member_vetting_attestation_events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14029,9 +13895,19 @@ CREATE TABLE `member_vetting_attestations` (
   `user_id` int(11) NOT NULL,
   `scheme_code` varchar(64) NOT NULL,
   `attestation_code` varchar(64) NOT NULL,
+  `certification_codes` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`certification_codes`)),
   `purpose_code` varchar(64) NOT NULL,
   `scope_type` varchar(32) NOT NULL DEFAULT 'tenant',
   `scope_identifier` varchar(191) NOT NULL DEFAULT '',
+  `scope_summary_encrypted` text DEFAULT NULL,
+  `private_notes_encrypted` text DEFAULT NULL,
+  `review_due_at` date DEFAULT NULL,
+  `authority_expires_at` date DEFAULT NULL,
+  `renewal_reminder_90_sent_at` datetime DEFAULT NULL,
+  `renewal_reminder_30_sent_at` datetime DEFAULT NULL,
+  `renewal_reminder_7_sent_at` datetime DEFAULT NULL,
+  `renewal_due_notified_at` datetime DEFAULT NULL,
+  `expiry_notified_at` datetime DEFAULT NULL,
   `decision` varchar(20) NOT NULL,
   `confirmed_by` int(11) DEFAULT NULL,
   `confirmed_at` datetime DEFAULT NULL,
@@ -14047,6 +13923,8 @@ CREATE TABLE `member_vetting_attestations` (
   KEY `member_vetting_attestations_user_id_foreign` (`user_id`),
   KEY `member_vetting_attestations_confirmed_by_foreign` (`confirmed_by`),
   KEY `member_vetting_attestations_revoked_by_foreign` (`revoked_by`),
+  KEY `idx_vetting_review_due` (`tenant_id`,`decision`,`review_due_at`),
+  KEY `idx_vetting_authority_expiry` (`tenant_id`,`decision`,`authority_expires_at`),
   CONSTRAINT `member_vetting_attestations_confirmed_by_foreign` FOREIGN KEY (`confirmed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `member_vetting_attestations_revoked_by_foreign` FOREIGN KEY (`revoked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `member_vetting_attestations_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
@@ -14165,8 +14043,8 @@ CREATE TABLE `merchant_coupon_redemptions` (
   `order_id` bigint(20) unsigned DEFAULT NULL,
   `discount_applied_cents` int(10) unsigned NOT NULL DEFAULT 0,
   `redeemed_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `reversed_at` timestamp NULL DEFAULT NULL,
-  `reversal_reason` varchar(100) DEFAULT NULL,
+  `reversed_at` timestamp NULL DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
+  `reversal_reason` varchar(100) DEFAULT NULL COMMENT 'nexus-migration:2026_07_12_000072',
   `redemption_method` enum('online','qr_scan') NOT NULL DEFAULT 'online',
   `qr_token` varchar(64) DEFAULT NULL,
   `qr_expires_at` timestamp NULL DEFAULT NULL,
@@ -14174,7 +14052,7 @@ CREATE TABLE `merchant_coupon_redemptions` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `merchant_coupon_redemptions_qr_token_unique` (`qr_token`),
-  UNIQUE KEY `mcr_order_once_unique` (`order_id`),
+  UNIQUE KEY `mcr_order_once_unique` (`order_id`) COMMENT 'nexus-migration:2026_07_12_000072',
   KEY `merchant_coupon_redemptions_tenant_id_coupon_id_index` (`tenant_id`,`coupon_id`),
   KEY `merchant_coupon_redemptions_tenant_id_user_id_index` (`tenant_id`,`user_id`),
   KEY `merchant_coupon_redemptions_tenant_id_order_id_index` (`tenant_id`,`order_id`),
@@ -14257,7 +14135,7 @@ CREATE TABLE `message_reactions` (
   KEY `idx_mr_tenant_id` (`tenant_id`),
   CONSTRAINT `message_reactions_ibfk_1` FOREIGN KEY (`message_id`) REFERENCES `messages` (`id`) ON DELETE CASCADE,
   CONSTRAINT `message_reactions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14314,7 +14192,7 @@ CREATE TABLE `messages` (
   KEY `idx_msg_unread_sender_counts` (`tenant_id`,`is_federated`,`receiver_id`,`is_read`,`sender_id`),
   CONSTRAINT `fk_messages_listing` FOREIGN KEY (`listing_id`) REFERENCES `listings` (`id`) ON DELETE SET NULL,
   CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=513 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=524 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `metrics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14538,7 +14416,7 @@ CREATE TABLE `newsletter_bounces` (
   KEY `idx_bounce_type` (`bounce_type`),
   CONSTRAINT `newsletter_bounces_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletter_bounces_ibfk_2` FOREIGN KEY (`newsletter_id`) REFERENCES `newsletters` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=586 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=588 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `newsletter_clicks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14564,7 +14442,7 @@ CREATE TABLE `newsletter_clicks` (
   KEY `idx_newsletter_clicks_email_newsletter` (`email`,`newsletter_id`),
   CONSTRAINT `newsletter_clicks_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletter_clicks_ibfk_2` FOREIGN KEY (`newsletter_id`) REFERENCES `newsletters` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `newsletter_engagement_patterns`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14629,7 +14507,7 @@ CREATE TABLE `newsletter_opens` (
   KEY `idx_newsletter_opens_email_newsletter` (`email`,`newsletter_id`),
   CONSTRAINT `newsletter_opens_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletter_opens_ibfk_2` FOREIGN KEY (`newsletter_id`) REFERENCES `newsletters` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=584 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=615 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `newsletter_queue`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14672,7 +14550,7 @@ CREATE TABLE `newsletter_queue` (
   KEY `idx_newsletter_queue_processing_batch` (`newsletter_id`,`tenant_id`,`status`,`processing_batch_id`),
   CONSTRAINT `newsletter_queue_ibfk_1` FOREIGN KEY (`newsletter_id`) REFERENCES `newsletters` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletter_queue_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=1828 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2079 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `newsletter_segments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14744,7 +14622,7 @@ CREATE TABLE `newsletter_suppression_list` (
   UNIQUE KEY `unique_tenant_email` (`tenant_id`,`email`),
   KEY `idx_email` (`email`),
   CONSTRAINT `newsletter_suppression_list_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `newsletter_templates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14772,7 +14650,7 @@ CREATE TABLE `newsletter_templates` (
   KEY `idx_category` (`category`),
   CONSTRAINT `newsletter_templates_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletter_templates_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `newsletters`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14833,7 +14711,7 @@ CREATE TABLE `newsletters` (
   CONSTRAINT `newsletters_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletters_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `newsletters_ibfk_3` FOREIGN KEY (`segment_id`) REFERENCES `newsletter_segments` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `nexus_score_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14860,7 +14738,7 @@ CREATE TABLE `nexus_score_cache` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `nexus_score_cache_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `nexus_score_cache_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cached Nexus Score calculations for performance';
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cached Nexus Score calculations for performance';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `nexus_score_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -14956,7 +14834,7 @@ CREATE TABLE `notification_queue` (
   KEY `idx_notification_queue_event_delivery` (`event_delivery_id`),
   KEY `idx_notification_queue_event_context` (`tenant_id`,`event_id`,`status`,`frequency`),
   CONSTRAINT `notification_queue_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=362 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=342 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notification_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15003,7 +14881,7 @@ CREATE TABLE `notifications` (
   KEY `idx_notif_tenant_user_read_id` (`tenant_id`,`user_id`,`is_read`,`id`),
   KEY `idx_notif_tenant_user_type_id` (`tenant_id`,`user_id`,`type`,`id`),
   CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5877 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5914 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `oauth_identities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15067,7 +14945,7 @@ CREATE TABLE `org_audit_log` (
   KEY `idx_org_audit` (`tenant_id`,`organization_id`,`created_at`),
   KEY `idx_user_audit` (`tenant_id`,`user_id`,`created_at`),
   KEY `idx_action` (`tenant_id`,`action`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=283 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=304 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `org_balance_alerts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15493,7 +15371,7 @@ CREATE TABLE `personal_access_tokens` (
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
   KEY `pat_tenant_tokenable_idx` (`tenant_id`,`tokenable_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1057 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=780 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `pilot_inquiries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15940,7 +15818,7 @@ CREATE TABLE `post_views` (
   UNIQUE KEY `post_views_ip_unique` (`tenant_id`,`post_id`,`ip_hash`),
   KEY `post_views_tenant_id_index` (`tenant_id`),
   KEY `post_views_post_id_index` (`post_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1488 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1548 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15968,7 +15846,7 @@ CREATE TABLE `posts` (
   CONSTRAINT `fk_posts_author` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_posts_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_posts_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `prerender_audit_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15989,7 +15867,7 @@ CREATE TABLE `prerender_audit_log` (
   KEY `idx_paudit_actor_created` (`actor_user_id`,`created_at`),
   KEY `idx_paudit_tenant_created` (`tenant_id`,`created_at`),
   KEY `idx_paudit_outcome` (`outcome`,`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `prerender_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16026,7 +15904,7 @@ CREATE TABLE `prerender_jobs` (
   KEY `idx_prerender_jobs_claim` (`status`,`priority`,`queued_at`),
   KEY `idx_prerender_jobs_running_lease` (`status`,`heartbeat_at`,`started_at`),
   KEY `idx_prerender_jobs_fence_claim` (`status`,`fence_state`,`fence_ready_at`,`priority`,`queued_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1151 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `progress_notifications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16100,7 +15978,7 @@ CREATE TABLE `push_log` (
   KEY `push_log_tenant_status_idx` (`tenant_id`,`status`),
   KEY `push_log_activity_type_idx` (`activity_type`),
   KEY `push_log_user_id_idx` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `push_subscriptions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16151,7 +16029,7 @@ CREATE TABLE `reactions` (
   KEY `idx_emoji` (`emoji`),
   CONSTRAINT `reactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `reactions_ibfk_2` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `recurring_shift_patterns`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16234,7 +16112,7 @@ CREATE TABLE `refresh_token_sessions` (
   KEY `idx_refresh_sessions_family_expiry` (`family_expires_at`),
   CONSTRAINT `fk_refresh_sessions_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_refresh_sessions_user_tenant` FOREIGN KEY (`user_id`, `tenant_id`) REFERENCES `users` (`id`, `tenant_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `regional_analytics_access_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16341,7 +16219,7 @@ CREATE TABLE `reports` (
   PRIMARY KEY (`id`),
   KEY `tenant_status` (`tenant_id`,`status`),
   KEY `idx_reports_status` (`status`,`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `resource_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16489,7 +16367,7 @@ CREATE TABLE `revoked_tokens` (
   KEY `idx_user_id` (`user_id`),
   KEY `idx_expires_at` (`expires_at`),
   CONSTRAINT `revoked_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=225 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=254 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -16968,7 +16846,7 @@ CREATE TABLE `skill_categories` (
   KEY `idx_tenant_slug` (`tenant_id`,`slug`),
   KEY `idx_tenant_parent` (`tenant_id`,`parent_id`),
   CONSTRAINT `fk_skill_cat_parent` FOREIGN KEY (`parent_id`) REFERENCES `skill_categories` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `skill_endorsements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17112,7 +16990,7 @@ CREATE TABLE `stories` (
   KEY `idx_active_expires` (`tenant_id`,`is_active`,`expires_at`),
   KEY `idx_user_active` (`user_id`,`is_active`,`expires_at`),
   KEY `idx_audience` (`tenant_id`,`audience`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `story_analytics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17157,7 +17035,7 @@ CREATE TABLE `story_archive` (
   KEY `idx_archive_tenant_user` (`tenant_id`,`user_id`),
   KEY `idx_archive_original` (`original_story_id`),
   CONSTRAINT `story_archive_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `story_highlight_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17265,7 +17143,7 @@ CREATE TABLE `stripe_webhook_events` (
   UNIQUE KEY `uk_event_id` (`event_id`),
   KEY `idx_event_type` (`event_type`),
   KEY `stripe_webhook_events_status_index` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `super_admin_audit_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17292,7 +17170,7 @@ CREATE TABLE `super_admin_audit_log` (
   KEY `idx_target` (`target_type`,`target_id`),
   KEY `idx_created` (`created_at`),
   KEY `idx_actor_tenant` (`actor_tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2123 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Audit trail for Super Admin Panel hierarchy changes';
+) ENGINE=InnoDB AUTO_INCREMENT=2130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Audit trail for Super Admin Panel hierarchy changes';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `support_reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17374,7 +17252,7 @@ CREATE TABLE `team_tasks` (
   KEY `idx_assigned` (`assigned_to`),
   KEY `idx_status` (`group_id`,`status`),
   KEY `idx_due` (`group_id`,`due_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tenant_badge_overrides`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17701,7 +17579,7 @@ CREATE TABLE `tenant_settings` (
   KEY `idx_setting_key` (`setting_key`),
   KEY `idx_setting_type` (`setting_type`),
   KEY `idx_created_at` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=953 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tenant-specific configuration settings and feature flags';
+) ENGINE=InnoDB AUTO_INCREMENT=938 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tenant-specific configuration settings and feature flags';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tenant_sso_providers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -17818,7 +17696,7 @@ CREATE TABLE `tenants` (
   KEY `idx_tenants_is_active` (`is_active`),
   KEY `idx_tenants_category` (`tenant_category`),
   CONSTRAINT `fk_tenant_parent` FOREIGN KEY (`parent_id`) REFERENCES `tenants` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `test_runs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18068,7 +17946,7 @@ CREATE TABLE `user_badges` (
   KEY `idx_user_badges_tenant_user` (`tenant_id`,`user_id`),
   CONSTRAINT `user_badges_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_badges_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2768 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2809 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_blocks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18200,7 +18078,7 @@ CREATE TABLE `user_consents` (
   KEY `idx_consent_type` (`consent_type`),
   KEY `idx_given_at` (`given_at`),
   KEY `idx_user_consents_version_check` (`tenant_id`,`consent_type`,`consent_given`,`consent_version`)
-) ENGINE=InnoDB AUTO_INCREMENT=1046 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1044 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_distance_preference`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18230,12 +18108,12 @@ DROP TABLE IF EXISTS `user_effective_permissions`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `user_effective_permissions` AS SELECT
- NULL AS `user_id`,
- NULL AS `permission_id`,
- NULL AS `permission_name`,
- NULL AS `category`,
- NULL AS `has_permission`,
- NULL AS `grant_source` */;
+ 1 AS `user_id`,
+  1 AS `permission_id`,
+  1 AS `permission_name`,
+  1 AS `category`,
+  1 AS `has_permission`,
+  1 AS `grant_source` */;
 SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `user_email_preferences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18271,7 +18149,7 @@ CREATE TABLE `user_first_contacts` (
   CONSTRAINT `user_first_contacts_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_first_contacts_ibfk_2` FOREIGN KEY (`user1_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_first_contacts_ibfk_3` FOREIGN KEY (`user2_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_follows`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18292,14 +18170,14 @@ DROP TABLE IF EXISTS `user_gamification_summary`;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `user_gamification_summary` AS SELECT
- NULL AS `user_id`,
- NULL AS `tenant_id`,
- NULL AS `xp`,
- NULL AS `level`,
- NULL AS `login_streak`,
- NULL AS `badge_count`,
- NULL AS `challenges_completed`,
- NULL AS `friend_challenges_won` */;
+ 1 AS `user_id`,
+  1 AS `tenant_id`,
+  1 AS `xp`,
+  1 AS `level`,
+  1 AS `login_streak`,
+  1 AS `badge_count`,
+  1 AS `challenges_completed`,
+  1 AS `friend_challenges_won` */;
 SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `user_hidden_posts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18358,7 +18236,7 @@ CREATE TABLE `user_legal_acceptances` (
   KEY `idx_accepted_at` (`accepted_at`),
   CONSTRAINT `fk_acceptance_document` FOREIGN KEY (`document_id`) REFERENCES `legal_documents` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_acceptance_version` FOREIGN KEY (`version_id`) REFERENCES `legal_document_versions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=168 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_messaging_restrictions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18387,7 +18265,7 @@ CREATE TABLE `user_messaging_restrictions` (
   CONSTRAINT `user_messaging_restrictions_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_messaging_restrictions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_messaging_restrictions_ibfk_3` FOREIGN KEY (`restricted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_muted_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18439,7 +18317,7 @@ CREATE TABLE `user_password_history` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `upw_hist_tenant_user_created` (`tenant_id`,`user_id`,`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18548,7 +18426,7 @@ CREATE TABLE `user_safeguarding_preferences` (
   CONSTRAINT `fk_usp_option` FOREIGN KEY (`option_id`) REFERENCES `tenant_safeguarding_options` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_usp_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_usp_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Member safeguarding preference selections (access-controlled, never in public API)';
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Member safeguarding preference selections (access-controlled, never in public API)';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_saved_listings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18638,7 +18516,7 @@ CREATE TABLE `user_totp_settings` (
   UNIQUE KEY `unique_user_totp` (`user_id`),
   KEY `idx_tenant` (`tenant_id`),
   KEY `idx_enabled` (`tenant_id`,`is_enabled`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='TOTP 2FA settings and encrypted secrets per user';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='TOTP 2FA settings and encrypted secrets per user';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_trusted_devices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18683,7 +18561,7 @@ CREATE TABLE `user_xp_log` (
   UNIQUE KEY `uniq_user_xp_log_ref` (`tenant_id`,`user_id`,`action`,`source_reference`),
   KEY `idx_user` (`tenant_id`,`user_id`),
   KEY `idx_user_xp_log_action` (`tenant_id`,`action`)
-) ENGINE=InnoDB AUTO_INCREMENT=17833 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17601 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_xp_purchases`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -18868,48 +18746,48 @@ CREATE TABLE `users` (
   KEY `idx_users_tenant_privacy_status_id` (`tenant_id`,`privacy_search`,`status`,`id`),
   FULLTEXT KEY `ft_users_search` (`first_name`,`last_name`,`bio`,`skills`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=990006 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=642 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `v_active_listings_with_coords`;
 /*!50001 DROP VIEW IF EXISTS `v_active_listings_with_coords`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `v_active_listings_with_coords` AS SELECT
- NULL AS `id`,
- NULL AS `user_id`,
- NULL AS `tenant_id`,
- NULL AS `title`,
- NULL AS `description`,
- NULL AS `type`,
- NULL AS `category_id`,
- NULL AS `image_url`,
- NULL AS `status`,
- NULL AS `created_at`,
- NULL AS `latitude`,
- NULL AS `longitude`,
- NULL AS `first_name`,
- NULL AS `last_name`,
- NULL AS `avatar_url`,
- NULL AS `author_location`,
- NULL AS `category_name`,
- NULL AS `category_color` */;
+ 1 AS `id`,
+  1 AS `user_id`,
+  1 AS `tenant_id`,
+  1 AS `title`,
+  1 AS `description`,
+  1 AS `type`,
+  1 AS `category_id`,
+  1 AS `image_url`,
+  1 AS `status`,
+  1 AS `created_at`,
+  1 AS `latitude`,
+  1 AS `longitude`,
+  1 AS `first_name`,
+  1 AS `last_name`,
+  1 AS `avatar_url`,
+  1 AS `author_location`,
+  1 AS `category_name`,
+  1 AS `category_color` */;
 SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `v_legal_acceptance_stats`;
 /*!50001 DROP VIEW IF EXISTS `v_legal_acceptance_stats`*/;
 SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = utf8mb4;
 /*!50001 CREATE VIEW `v_legal_acceptance_stats` AS SELECT
- NULL AS `document_id`,
- NULL AS `tenant_id`,
- NULL AS `document_type`,
- NULL AS `title`,
- NULL AS `version_id`,
- NULL AS `version_number`,
- NULL AS `effective_date`,
- NULL AS `is_current`,
- NULL AS `total_acceptances`,
- NULL AS `first_acceptance`,
- NULL AS `last_acceptance` */;
+ 1 AS `document_id`,
+  1 AS `tenant_id`,
+  1 AS `document_type`,
+  1 AS `title`,
+  1 AS `version_id`,
+  1 AS `version_number`,
+  1 AS `effective_date`,
+  1 AS `is_current`,
+  1 AS `total_acceptances`,
+  1 AS `first_acceptance`,
+  1 AS `last_acceptance` */;
 SET character_set_client = @saved_cs_client;
 DROP TABLE IF EXISTS `verein_cross_invitations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -19628,7 +19506,7 @@ CREATE TABLE `vol_reminder_delivery_claims` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_vol_reminder_delivery_claim` (`tenant_id`,`user_id`,`reminder_type`,`reference_id`,`channel`),
   KEY `idx_vol_reminder_claim_status` (`tenant_id`,`status`,`claimed_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=22342 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22348 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_reminder_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -19667,7 +19545,7 @@ CREATE TABLE `vol_reminders_sent` (
   UNIQUE KEY `uk_vol_reminder_sent_delivery` (`tenant_id`,`user_id`,`reminder_type`,`reference_id`,`channel`),
   KEY `idx_vol_reminders_tenant_user` (`tenant_id`,`user_id`,`reminder_type`),
   KEY `idx_vol_reminders_ref` (`tenant_id`,`reminder_type`,`reference_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=128 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=134 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `vol_reviews`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -19926,7 +19804,7 @@ CREATE TABLE `vol_wellbeing_alerts` (
   KEY `idx_tenant_user` (`tenant_id`,`user_id`),
   KEY `idx_tenant_status` (`tenant_id`,`status`),
   KEY `idx_risk_level` (`risk_level`,`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Burnout risk detection alerts for volunteers';
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Burnout risk detection alerts for volunteers';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `volunteering_organizations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -20006,7 +19884,7 @@ CREATE TABLE `weekly_rank_snapshots` (
   UNIQUE KEY `unique_snapshot` (`tenant_id`,`user_id`,`snapshot_date`),
   KEY `idx_tenant_date` (`tenant_id`,`snapshot_date`),
   KEY `idx_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44405 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=52149 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `xp_history`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -20128,7 +20006,7 @@ CREATE TABLE `xp_shop_items` (
 
 
 -- Laravel migrations data (so fresh migrate knows what is already applied)
-/*M!999999\- enable the sandbox mode */
+/*M!999999\- enable the sandbox mode */ 
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
@@ -20451,76 +20329,81 @@ INSERT INTO `laravel_migrations` VALUES
 (314,'2026_07_02_000003_add_matching_paused_to_match_preferences',84),
 (315,'2026_07_02_000010_drop_stray_distance_km_columns',85),
 (316,'2026_07_02_000020_delete_collapsed_gamification_feed_activity_rows',85),
-(317,'2026_07_03_000001_harden_podcast_media_pipeline',85),
-(318,'2026_07_03_100000_add_content_format_to_newsletters',85),
-(319,'2026_07_03_110000_seed_email_safe_starter_templates',85),
-(320,'2026_07_04_120000_seed_newsletter_builder_starter_templates',85),
-(321,'2026_07_06_090000_add_builder_format_to_pages',86),
-(324,'2026_07_07_000001_add_hot_path_performance_indexes',87),
-(325,'2026_07_07_000000_add_federation_external_transfer_idempotency_to_transactions',88),
-(326,'2026_07_07_000002_add_search_hot_path_indexes',89),
-(327,'2026_07_08_000000_add_volunteering_performance_indexes',90),
-(328,'2026_07_08_010000_add_db_audit_hot_path_indexes',91),
-(329,'2026_07_09_000001_normalize_retired_user_roles',92),
-(330,'2026_07_09_000002_merge_tenant_admin_into_admin',92),
-(331,'2026_07_10_000001_add_amount_refunded_to_vol_donations',92),
-(332,'2026_07_10_000002_add_external_partner_id_to_federation_api_keys',93),
-(333,'2026_07_10_000003_add_heartbeat_at_to_prerender_jobs',94),
-(334,'2026_07_10_000004_add_fence_ready_at_to_prerender_jobs',95),
-(336,'2026_07_11_000001_create_safeguarding_attestations',96),
-(337,'2026_07_11_000002_add_safeguarding_policy_lifecycle',97),
-(338,'2026_07_11_000010_create_event_domain_outbox',98),
-(339,'2026_07_11_000011_create_event_notification_deliveries',99),
-(340,'2026_07_11_000012_add_event_delivery_identity_to_notification_queue',100),
-(341,'2026_07_11_000004_canonicalize_group_lifecycle',101),
-(342,'2026_07_11_000020_harden_group_challenge_rewards',102),
-(343,'2026_07_11_000030_create_group_data_exports',103),
-(344,'2026_07_11_000040_harden_group_forms_and_files',104),
-(345,'2026_07_11_000041_harden_group_media_metadata',105),
-(346,'2026_07_11_000042_record_group_template_payload',106),
-(347,'2026_07_11_000043_harden_group_scheduled_posts_and_webhooks',107),
-(348,'2026_07_11_000044_track_legacy_team_document_migration',108),
-(349,'2026_07_11_000003_add_legacy_vetting_redaction_marker',109),
-(350,'2026_07_11_000013_add_event_time_identity_foundation',109),
-(351,'2026_07_11_000014_add_event_lifecycle_foundation',109),
-(352,'2026_07_11_000015_add_event_attendance_ledger_foundation',109),
-(353,'2026_07_11_000016_add_event_staff_role_foundation',109),
-(354,'2026_07_11_000017_add_event_registration_waitlist_foundation',109),
-(355,'2026_07_11_000018_add_event_outbox_aggregate_stream',109),
-(356,'2026_07_11_000019_add_event_recurrence_v2_foundation',109),
-(357,'2026_07_11_000021_add_event_waitlist_offer_delivery_envelopes',109),
-(358,'2026_07_11_000022_add_event_calendar_integration',109),
-(359,'2026_07_11_000023_add_event_notification_outbox_replay_audit',109),
-(360,'2026_07_11_000045_harden_webauthn_credentials',109),
-(361,'2026_07_11_000050_create_event_notification_preferences_and_reminder_rules',109),
-(362,'2026_07_11_000051_create_versioned_event_reminder_schedules',109),
-(363,'2026_07_11_000052_backfill_event_reminder_rules_and_schedules',109),
-(364,'2026_07_11_000053_create_event_agenda_sessions',109),
-(365,'2026_07_11_000054_create_event_federation_reliability_foundation',109),
-(366,'2026_07_11_000055_create_event_offline_checkin_foundation',109),
-(367,'2026_07_11_000056_create_event_registration_forms_and_invitations',109),
-(368,'2026_07_11_000057_create_event_ticketing_foundation',109),
-(369,'2026_07_11_000058_create_event_templates_foundation',109),
-(370,'2026_07_11_000059_create_event_analytics_foundation',109),
-(371,'2026_07_11_000060_create_event_safety_foundation',109),
-(372,'2026_07_11_000061_add_event_guardian_delivery_boundary',109),
-(373,'2026_07_11_000062_create_event_broadcast_foundation',109),
-(374,'2026_07_11_000063_expand_event_registration_forms_and_invitations_phase_b',109),
-(375,'2026_07_11_000064_add_event_venue_accessibility',109),
-(376,'2026_07_11_000065_expand_event_agenda_enterprise',109),
-(377,'2026_07_11_000066_add_event_context_to_notification_queue',109),
-(378,'2026_07_11_000067_pin_event_agenda_registration_versions',109),
-(380,'2026_07_12_000068_add_event_recurrence_override_fields',110),
-(381,'2026_07_12_000069_add_event_recurrence_materialization_state',111),
-(382,'2026_07_12_000070_add_event_recurrence_revision_ledger',111),
-(383,'2026_07_12_000071_add_event_recurrence_definition_blueprints',111),
-(384,'2026_07_12_000075_create_podcast_media_cleanup_tasks',112),
-(385,'2026_07_12_000072_harden_marketplace_checkout_state',113),
-(386,'2026_07_12_000073_optimize_marketplace_browse_queries',114),
-(387,'2026_07_12_000074_complete_marketplace_dispute_appeal_workflows',115),
-(388,'2026_07_13_000076_bind_marketplace_checkout_sessions',116),
-(389,'2026_07_13_000077_bind_marketplace_stripe_checkout_mode',117),
-(390,'2026_07_13_000078_create_refresh_token_sessions',118);
+(317,'2026_07_03_000001_harden_podcast_media_pipeline',86),
+(318,'2026_07_03_100000_add_content_format_to_newsletters',86),
+(319,'2026_07_03_110000_seed_email_safe_starter_templates',87),
+(320,'2026_07_04_120000_seed_newsletter_builder_starter_templates',88),
+(321,'2026_07_06_090000_add_builder_format_to_pages',89),
+(322,'2026_07_07_000000_add_federation_external_transfer_idempotency_to_transactions',90),
+(323,'2026_07_07_000001_add_hot_path_performance_indexes',90),
+(324,'2026_07_07_000002_add_search_hot_path_indexes',90),
+(325,'2026_07_08_000000_add_volunteering_performance_indexes',91),
+(326,'2026_07_08_010000_add_db_audit_hot_path_indexes',92),
+(327,'2026_07_09_000001_normalize_retired_user_roles',93),
+(328,'2026_07_09_000002_merge_tenant_admin_into_admin',93),
+(329,'2026_07_10_000001_add_amount_refunded_to_vol_donations',93),
+(330,'2026_07_10_000002_add_external_partner_id_to_federation_api_keys',93),
+(331,'2026_07_10_000003_add_heartbeat_at_to_prerender_jobs',94),
+(332,'2026_07_10_000004_add_fence_ready_at_to_prerender_jobs',94),
+(333,'2026_07_11_000001_create_safeguarding_attestations',95),
+(334,'2026_07_11_000002_add_safeguarding_policy_lifecycle',95),
+(335,'2026_07_11_000003_add_legacy_vetting_redaction_marker',95),
+(336,'2026_07_11_000004_canonicalize_group_lifecycle',95),
+(337,'2026_07_11_000010_create_event_domain_outbox',95),
+(338,'2026_07_11_000011_create_event_notification_deliveries',95),
+(339,'2026_07_11_000012_add_event_delivery_identity_to_notification_queue',95),
+(340,'2026_07_11_000013_add_event_time_identity_foundation',95),
+(341,'2026_07_11_000014_add_event_lifecycle_foundation',96),
+(342,'2026_07_11_000015_add_event_attendance_ledger_foundation',96),
+(343,'2026_07_11_000016_add_event_staff_role_foundation',96),
+(344,'2026_07_11_000017_add_event_registration_waitlist_foundation',96),
+(345,'2026_07_11_000018_add_event_outbox_aggregate_stream',96),
+(346,'2026_07_11_000019_add_event_recurrence_v2_foundation',96),
+(347,'2026_07_11_000020_harden_group_challenge_rewards',96),
+(348,'2026_07_11_000021_add_event_waitlist_offer_delivery_envelopes',96),
+(349,'2026_07_11_000022_add_event_calendar_integration',96),
+(350,'2026_07_11_000023_add_event_notification_outbox_replay_audit',96),
+(351,'2026_07_11_000030_create_group_data_exports',96),
+(352,'2026_07_11_000040_harden_group_forms_and_files',96),
+(353,'2026_07_11_000041_harden_group_media_metadata',96),
+(354,'2026_07_11_000042_record_group_template_payload',96),
+(355,'2026_07_11_000043_harden_group_scheduled_posts_and_webhooks',96),
+(356,'2026_07_11_000044_track_legacy_team_document_migration',96),
+(357,'2026_07_11_000045_harden_webauthn_credentials',96),
+(358,'2026_07_11_000050_create_event_notification_preferences_and_reminder_rules',96),
+(359,'2026_07_11_000051_create_versioned_event_reminder_schedules',96),
+(360,'2026_07_11_000052_backfill_event_reminder_rules_and_schedules',96),
+(361,'2026_07_11_000053_create_event_agenda_sessions',96),
+(362,'2026_07_11_000054_create_event_federation_reliability_foundation',96),
+(363,'2026_07_11_000055_create_event_offline_checkin_foundation',96),
+(364,'2026_07_11_000056_create_event_registration_forms_and_invitations',96),
+(365,'2026_07_11_000057_create_event_ticketing_foundation',96),
+(366,'2026_07_11_000058_create_event_templates_foundation',96),
+(367,'2026_07_11_000059_create_event_analytics_foundation',96),
+(368,'2026_07_11_000060_create_event_safety_foundation',96),
+(369,'2026_07_11_000061_add_event_guardian_delivery_boundary',96),
+(370,'2026_07_11_000062_create_event_broadcast_foundation',96),
+(371,'2026_07_11_000063_expand_event_registration_forms_and_invitations_phase_b',96),
+(372,'2026_07_11_000064_add_event_venue_accessibility',96),
+(373,'2026_07_11_000065_expand_event_agenda_enterprise',96),
+(374,'2026_07_11_000066_add_event_context_to_notification_queue',96),
+(375,'2026_07_11_000067_pin_event_agenda_registration_versions',96),
+(376,'2026_07_12_000068_add_event_recurrence_override_fields',96),
+(377,'2026_07_12_000069_add_event_recurrence_materialization_state',96),
+(378,'2026_07_12_000070_add_event_recurrence_revision_ledger',96),
+(379,'2026_07_12_000071_add_event_recurrence_definition_blueprints',96),
+(380,'2026_07_12_000072_harden_marketplace_checkout_state',97),
+(381,'2026_07_12_000073_optimize_marketplace_browse_queries',97),
+(382,'2026_07_12_000074_complete_marketplace_dispute_appeal_workflows',97),
+(383,'2026_07_12_000075_create_podcast_media_cleanup_tasks',97),
+(384,'2026_07_13_000076_bind_marketplace_checkout_sessions',97),
+(385,'2026_07_13_000077_bind_marketplace_stripe_checkout_mode',97),
+(386,'2026_07_13_000078_create_refresh_token_sessions',98),
+(387,'2026_07_13_000079_clear_legacy_safeguarding_preference_monitoring',99),
+(388,'2026_07_14_000001_add_uk_vetting_certification_details',100),
+(389,'2026_07_14_000100_remove_insurance_document_data',100),
+(390,'2026_07_14_000200_move_message_media_to_private_storage',100),
+(391,'2026_07_26_000001_add_external_federation_kill_switch',100);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -20530,7 +20413,7 @@ INSERT INTO `laravel_migrations` VALUES
 
 
 -- Legacy SQL migrations data (prevents replay after schema bootstrap)
-/*M!999999\- enable the sandbox mode */
+/*M!999999\- enable the sandbox mode */ 
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
@@ -20831,3 +20714,4 @@ INSERT INTO `migrations` VALUES
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+

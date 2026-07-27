@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
 use Tests\Laravel\TestCase;
+use Tests\Laravel\Concerns\EnablesExternalFederation;
 
 /**
  * Feature tests for the expanded inbound federation webhook handlers.
@@ -40,6 +41,8 @@ class FederationInboundHandlersTest extends TestCase
 {
     use DatabaseTransactions;
 
+    use EnablesExternalFederation;
+
     private const WEBHOOK_URL = '/api/v2/federation/external/webhooks/receive';
 
     private int $partnerId;
@@ -48,6 +51,7 @@ class FederationInboundHandlersTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->enableExternalFederation();
 
         // Ensure shadow tables exist for the test run (fallback for envs where
         // migrations aren't run before each test)
