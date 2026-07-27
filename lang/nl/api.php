@@ -1079,6 +1079,10 @@ return [
     'url_http_https_only' => 'Only http and https URLs are supported',
     'link_preview_failed' => 'Could not fetch preview for this URL',
     'total_hours_gt_zero' => 'Total hours must be greater than 0',
+    'partner_api' => [
+        'disabled' => 'De partner-API is tijdelijk uitgeschakeld op deze installatie.',
+    ],
+
     'federation' => [
         'external_protocol_disabled' => 'Externe partnerfederatie is tijdelijk uitgeschakeld op deze installatie.',
         'external_outbound_disabled' => 'Externe partnerfederatie is tijdelijk uitgeschakeld op deze installatie, dus er zijn geen gegevens verzonden.',

@@ -9531,6 +9531,10 @@ CREATE TABLE `federation_system_control` (
   `external_federation_disabled_reason` varchar(255) DEFAULT NULL,
   `external_federation_updated_at` timestamp NULL DEFAULT NULL,
   `external_federation_updated_by` int(10) unsigned DEFAULT NULL,
+  `partner_api_enabled` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'AG60 Partner API kill switch — not federation; see migration notes',
+  `partner_api_disabled_reason` varchar(255) DEFAULT NULL,
+  `partner_api_updated_at` timestamp NULL DEFAULT NULL,
+  `partner_api_updated_by` int(10) unsigned DEFAULT NULL,
   `whitelist_mode_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `max_federation_level` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `cross_tenant_profiles_enabled` tinyint(1) NOT NULL DEFAULT 0,
@@ -12318,7 +12322,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=392 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=393 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -20403,7 +20407,8 @@ INSERT INTO `laravel_migrations` VALUES
 (388,'2026_07_14_000001_add_uk_vetting_certification_details',100),
 (389,'2026_07_14_000100_remove_insurance_document_data',100),
 (390,'2026_07_14_000200_move_message_media_to_private_storage',100),
-(391,'2026_07_26_000001_add_external_federation_kill_switch',100);
+(391,'2026_07_26_000001_add_external_federation_kill_switch',100),
+(392,'2026_07_27_000001_add_partner_api_kill_switch',101);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

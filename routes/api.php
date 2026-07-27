@@ -3849,6 +3849,14 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // AG60 — Partner API (banking / payment / admin integrations)
+//
+// The whole block — including the OAuth endpoints below, which deliberately run
+// without partner.api — sits behind the Partner API kill switch. This is a
+// SEPARATE switch from external partner federation: different system, different
+// credentials, so each label stays honest. Gating only the scoped routes would
+// leave the token mint open.
+Route::middleware('partner.api.enabled')->group(function () {
+
 // OAuth2 client_credentials grant — public; no auth middleware.
 Route::post('/partner/v1/oauth/token', [\App\Http\Controllers\Api\PartnerApi\PartnerOAuthController::class, 'token'])
     ->withoutMiddleware('auth:sanctum');
@@ -3884,6 +3892,8 @@ Route::middleware('partner.api:webhooks.manage')->group(function () {
     Route::post('/partner/v1/webhooks/subscriptions', [\App\Http\Controllers\Api\PartnerApi\PartnerV1Controller::class, 'createWebhookSubscription'])
         ->withoutMiddleware('auth:sanctum');
 });
+
+}); // End Route::middleware('partner.api.enabled') — AG60 Partner API
 
 // ============================================
 // AG59 — Paid Regional Analytics product

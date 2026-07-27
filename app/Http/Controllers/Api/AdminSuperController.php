@@ -1444,6 +1444,9 @@ class AdminSuperController extends BaseApiController
             'cross_tenant_groups_enabled',
             // External partner federation kill switch: master + per protocol.
             'external_federation_enabled',
+            // AG60 Partner API kill switch — a sibling switch, deliberately
+            // separate from federation so each label stays accurate.
+            'partner_api_enabled',
             ...array_values(array_map(
                 static fn (string $protocol): string => (string) FederationFeatureService::externalProtocolColumn($protocol),
                 FederationFeatureService::externalProtocolNames(),
@@ -1452,7 +1455,8 @@ class AdminSuperController extends BaseApiController
 
         $updates = [];
         $params = [];
-        $touchesExternal = false;
+        $touchesExternalFederation = false;
+        $touchesPartnerApi = false;
 
         foreach ($allowedFields as $field) {
             if (isset($input[$field])) {
@@ -1463,7 +1467,9 @@ class AdminSuperController extends BaseApiController
                     $params[] = $input[$field] ? 1 : 0;
                 }
                 if (str_starts_with($field, 'external_')) {
-                    $touchesExternal = true;
+                    $touchesExternalFederation = true;
+                } elseif ($field === 'partner_api_enabled') {
+                    $touchesPartnerApi = true;
                 }
             }
         }
@@ -1472,19 +1478,28 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.no_valid_fields'), null, 422);
         }
 
-        // Record who withdrew external federation and why, so the reason shown
-        // in the UI stays attributable.
-        if ($touchesExternal) {
+        $reason = isset($input['reason']) ? mb_substr(trim((string) $input['reason']), 0, 255) : null;
+
+        // Each switch keeps its own attribution trail, so "who turned this off
+        // and why" stays answerable per system rather than being overwritten by
+        // an unrelated toggle.
+        if ($touchesExternalFederation) {
             $updates[] = "external_federation_updated_at = NOW()";
             $updates[] = "external_federation_updated_by = ?";
             $params[] = $userId;
 
             if (array_key_exists('external_federation_enabled', $input)) {
                 $updates[] = "external_federation_disabled_reason = ?";
-                $params[] = $input['external_federation_enabled']
-                    ? null
-                    : (isset($input['reason']) ? mb_substr(trim((string) $input['reason']), 0, 255) : null);
+                $params[] = $input['external_federation_enabled'] ? null : $reason;
             }
+        }
+
+        if ($touchesPartnerApi) {
+            $updates[] = "partner_api_updated_at = NOW()";
+            $updates[] = "partner_api_updated_by = ?";
+            $params[] = $userId;
+            $updates[] = "partner_api_disabled_reason = ?";
+            $params[] = $input['partner_api_enabled'] ? null : $reason;
         }
 
         $updates[] = "updated_at = NOW()";
@@ -1497,6 +1512,7 @@ class AdminSuperController extends BaseApiController
         );
 
         $this->federationFeatureService->clearCache();
+        app(\App\Services\PartnerApi\PartnerApiKillSwitch::class)->clearCache();
 
         $this->federationAuditService->log(
             'system_controls_updated',
@@ -1504,9 +1520,9 @@ class AdminSuperController extends BaseApiController
             null,
             $userId,
             ['changes' => $input],
-            // Withdrawing or restoring external federation is a security-posture
-            // change, not routine configuration.
-            $touchesExternal
+            // Withdrawing or restoring external access — federation or the
+            // Partner API — is a security-posture change, not routine config.
+            $touchesExternalFederation || $touchesPartnerApi
                 ? FederationAuditService::LEVEL_CRITICAL
                 : FederationAuditService::LEVEL_WARNING
         );
@@ -1553,7 +1569,12 @@ class AdminSuperController extends BaseApiController
             $blocked = [];
         }
 
-        return $this->respondWithData($status + ['blocked_last_24h' => $blocked]);
+        return $this->respondWithData($status + [
+            'blocked_last_24h' => $blocked,
+            // Sibling switch, reported alongside so one call answers "what
+            // external access is currently open?".
+            'partner_api' => app(\App\Services\PartnerApi\PartnerApiKillSwitch::class)->status(),
+        ]);
     }
 
     /** POST /api/v2/super-admin/federation/emergency-lockdown */

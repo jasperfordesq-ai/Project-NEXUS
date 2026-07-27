@@ -186,6 +186,9 @@ const makeControls = (overrides = {}) => ({
   external_protocol_hour_transfer_enabled: false,
   external_protocol_aggregates_enabled: false,
   external_federation_disabled_reason: null,
+  // Sibling switch — the AG60 Partner API, also shipping off.
+  partner_api_enabled: false,
+  partner_api_disabled_reason: null,
   ...overrides,
 });
 
@@ -197,6 +200,7 @@ const makeExternalStatus = (overrides = {}) => ({
   reason: null,
   protocols: {},
   blocked_last_24h: {},
+  partner_api: { enabled: false, reason: null, emergency_lockdown_active: false },
   ...overrides,
 });
 
@@ -524,6 +528,50 @@ describe('FederationControls', () => {
       await waitFor(() => {
         expect(screen.getAllByText(/14/).length).toBeGreaterThan(0);
       });
+    });
+
+    it('keeps the Partner API switch independent of the federation master', async () => {
+      // Federation fully ON, Partner API OFF — the two must not track each
+      // other, or the labels stop meaning what they say.
+      mockAdminSuper.getSystemControls.mockResolvedValue({
+        success: true,
+        data: makeControls({ external_federation_enabled: true, partner_api_enabled: false }),
+      });
+      await renderPage();
+
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      expect(switches.some((el) => el.checked)).toBe(true);
+      expect(switches.some((el) => !el.checked)).toBe(true);
+    });
+
+    it('confirms before disabling the Partner API and sends only that key', async () => {
+      mockAdminSuper.getSystemControls.mockResolvedValue({
+        success: true,
+        data: makeControls({ external_federation_enabled: false, partner_api_enabled: true }),
+      });
+      await renderPage();
+
+      // With federation off, the only checked switch is the Partner API one.
+      const switches = screen.getAllByRole('switch') as HTMLInputElement[];
+      const partnerApi = switches.find((el) => el.checked);
+      expect(partnerApi).toBeDefined();
+
+      fireEvent.click(partnerApi!);
+
+      await waitFor(() => {
+        expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+      });
+      expect(mockAdminSuper.updateSystemControls).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByTestId('confirm-btn'));
+
+      await waitFor(() => {
+        expect(mockAdminSuper.updateSystemControls).toHaveBeenCalledWith(
+          expect.objectContaining({ partner_api_enabled: false }),
+        );
+      });
+      const payload = mockAdminSuper.updateSystemControls.mock.calls[0][0];
+      expect(payload).not.toHaveProperty('external_federation_enabled');
     });
 
     it('leaves the internal cross-tenant switches usable while external is off', async () => {

@@ -1289,6 +1289,10 @@ return [
     'fed_partner_no_transactions' => 'This partner does not allow transactions.',
     'fed_external_partner_rejected' => 'External partner rejected the transaction.',
     'connection_not_pending' => 'This connection request is not pending or you are not the receiver',
+    'partner_api' => [
+        'disabled' => 'Die Partner-API ist auf dieser Installation vorübergehend deaktiviert.',
+    ],
+
     'federation' => [
         'external_protocol_disabled' => 'Die externe Partner-Föderation ist auf dieser Installation vorübergehend deaktiviert.',
         'external_outbound_disabled' => 'Die externe Partner-Föderation ist auf dieser Installation vorübergehend deaktiviert, daher wurden keine Daten gesendet.',

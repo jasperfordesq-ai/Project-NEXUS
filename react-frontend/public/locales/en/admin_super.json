@@ -881,7 +881,17 @@
     "external_federation_disable_action": "Disable external federation",
     "external_federation_reason_label": "Reason",
     "external_federation_reason_placeholder": "e.g. Pending security audit of partner protocols",
-    "label_external_federation": "External Federation"
+    "label_external_federation": "External Federation",
+    "partner_api_title": "Partner API",
+    "partner_api_desc": "Third-party integration API (AG60) — a separate system from federation, with its own access tokens.",
+    "partner_api_scope_note": "This is not federation. The Partner API lets approved third-party integrations read members, listings and wallet balances, credit wallets, and subscribe to webhooks, using their own bearer tokens. Turning external partner federation off does not affect it, which is why it has its own switch.",
+    "partner_api_blocked_notice": "The Partner API is disabled. All partner requests, including token issuing, are answered with HTTP 503, and no partner webhooks are being delivered.",
+    "partner_api_master_label": "Allow Partner API access",
+    "partner_api_master_desc": "Master switch for every /partner/v1 endpoint and for outbound partner webhook delivery.",
+    "partner_api_disable_title": "Disable the Partner API",
+    "partner_api_disable_confirm": "All third-party partner integrations will stop immediately, including wallet operations and webhook delivery. Existing tokens and subscriptions are kept and resume when you switch it back on.",
+    "partner_api_disable_action": "Disable Partner API",
+    "partner_api_reason_placeholder": "e.g. Pending external partner access audit"
   },
   "tenant_form": {
     "active": "Active",

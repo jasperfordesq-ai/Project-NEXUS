@@ -1852,6 +1852,12 @@ export interface FederationSystemControls {
   external_protocol_aggregates_enabled: boolean;
   external_federation_disabled_reason?: string | null;
   external_federation_updated_at?: string | null;
+  // AG60 Partner API kill switch — a sibling of the federation switch, kept
+  // separate because it is a different external system (third-party bearer
+  // tokens over members, listings and the wallet).
+  partner_api_enabled: boolean;
+  partner_api_disabled_reason?: string | null;
+  partner_api_updated_at?: string | null;
 }
 
 /** Effective external federation posture, from the external-status endpoint. */
@@ -1863,6 +1869,7 @@ export interface FederationExternalStatus {
   reason: string | null;
   protocols: Record<string, boolean>;
   blocked_last_24h: Record<string, number>;
+  partner_api: { enabled: boolean; reason: string | null; emergency_lockdown_active: boolean };
 }
 
 export interface FederationWhitelistEntry {

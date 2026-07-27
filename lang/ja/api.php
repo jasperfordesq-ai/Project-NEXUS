@@ -1079,6 +1079,10 @@ return [
     'url_http_https_only' => 'Only http and https URLs are supported',
     'link_preview_failed' => 'Could not fetch preview for this URL',
     'total_hours_gt_zero' => 'Total hours must be greater than 0',
+    'partner_api' => [
+        'disabled' => 'このインストールではパートナー API が一時的に無効になっています。',
+    ],
+
     'federation' => [
         'external_protocol_disabled' => 'このインストールでは外部パートナー連携が一時的に無効になっています。',
         'external_outbound_disabled' => 'このインストールでは外部パートナー連携が一時的に無効になっているため、データは送信されませんでした。',

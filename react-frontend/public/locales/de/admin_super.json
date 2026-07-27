@@ -881,7 +881,17 @@
     "external_federation_disable_action": "Deaktivieren Sie die externe Föderation",
     "external_federation_reason_label": "Grund",
     "external_federation_reason_placeholder": "z.B. Ausstehende Sicherheitsüberprüfung der Partnerprotokolle",
-    "label_external_federation": "Externe Föderation"
+    "label_external_federation": "Externe Föderation",
+    "partner_api_title": "Partner-API",
+    "partner_api_desc": "Drittanbieter-Integrations-API (AG60) – ein vom Verbund getrenntes System mit eigenen Zugriffstokens.",
+    "partner_api_scope_note": "Das ist keine Föderation. Mit der Partner-API können genehmigte Drittanbieter-Integrationen mithilfe ihrer eigenen Inhabertokens Mitglieder, Einträge und Wallet-Guthaben sowie Guthaben-Wallets lesen und Webhooks abonnieren. Das Ausschalten der externen Partnerföderation hat keine Auswirkungen darauf, weshalb es über einen eigenen Schalter verfügt.",
+    "partner_api_blocked_notice": "Die Partner-API ist deaktiviert. Alle Partneranfragen, einschließlich der Token-Ausgabe, werden mit HTTP 503 beantwortet und es werden keine Partner-Webhooks übermittelt.",
+    "partner_api_master_label": "Erlauben Sie den Zugriff auf die Partner-API",
+    "partner_api_master_desc": "Hauptschalter für jeden /partner/v1-Endpunkt und für die ausgehende Partner-Webhook-Bereitstellung.",
+    "partner_api_disable_title": "Deaktivieren Sie die Partner-API",
+    "partner_api_disable_confirm": "Alle Integrationen von Drittanbieter-Partnern werden sofort eingestellt, einschließlich Wallet-Vorgängen und Webhook-Bereitstellung. Vorhandene Token und Abonnements bleiben erhalten und werden fortgesetzt, wenn Sie es wieder einschalten.",
+    "partner_api_disable_action": "Deaktivieren Sie die Partner-API",
+    "partner_api_reason_placeholder": "z.B. Ausstehende Zugriffsprüfung für externe Partner"
   },
   "tenant_form": {
     "active": "Aktiv",

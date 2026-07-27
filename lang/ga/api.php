@@ -1286,6 +1286,10 @@ return [
     'fed_partner_no_transactions' => 'This partner does not allow transactions.',
     'fed_external_partner_rejected' => 'External partner rejected the transaction.',
     'connection_not_pending' => 'This connection request is not pending or you are not the receiver',
+    'partner_api' => [
+        'disabled' => 'Tá an Partner API díchumasaithe go sealadach ar an insealbhú seo.',
+    ],
+
     'federation' => [
         'external_protocol_disabled' => 'Tá cónaidhm páirtnéirí seachtracha díchumasaithe go sealadach ar an insealbhú seo.',
         'external_outbound_disabled' => 'Tá cónaidhm páirtnéirí seachtracha díchumasaithe go sealadach ar an insealbhú seo, mar sin níor seoladh aon sonraí.',

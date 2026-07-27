@@ -70,6 +70,8 @@ export function FederationControls() {
   const [externalStatus, setExternalStatus] = useState<FederationExternalStatus | null>(null);
   const [externalConfirm, setExternalConfirm] = useState(false);
   const [externalReason, setExternalReason] = useState('');
+  const [partnerApiConfirm, setPartnerApiConfirm] = useState(false);
+  const [partnerApiReason, setPartnerApiReason] = useState('');
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -133,6 +135,36 @@ export function FederationControls() {
     } finally {
       setSaving(null);
     }
+  };
+
+  /** Sibling switch for the AG60 Partner API — same confirm-on-disable shape. */
+  const applyPartnerApi = async (enabled: boolean, reason?: string) => {
+    setSaving('partner_api_enabled');
+    try {
+      const res = await adminSuper.updateSystemControls({
+        partner_api_enabled: enabled,
+        ...(enabled ? {} : { reason }),
+      });
+      if (res?.success) {
+        setControls(prev => (prev ? { ...prev, partner_api_enabled: enabled } : prev));
+        loadData();
+      } else {
+        toastRef.current.error(t('super.failed_to_update_setting'));
+      }
+    } catch {
+      toastRef.current.error(t('super.failed_to_update_setting_detail'));
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handlePartnerApiToggle = (enabled: boolean) => {
+    if (enabled) {
+      applyPartnerApi(true);
+      return;
+    }
+    setPartnerApiReason('');
+    setPartnerApiConfirm(true);
   };
 
   const handleExternalMasterToggle = (enabled: boolean) => {
@@ -653,6 +685,54 @@ export function FederationControls() {
         </CardBody>
       </Card>
 
+      {/* Partner API — a SIBLING switch, not part of federation. Different
+          system (third-party bearer tokens over members, listings and the
+          wallet), so it gets its own control rather than being folded into the
+          federation master, which would make that label untrue. */}
+      <Card className={!controls.partner_api_enabled ? 'border-2 border-danger' : ''}>
+        <CardHeader className="flex gap-2 items-center pb-0">
+          <KeyRound aria-hidden="true" size={20} className={controls.partner_api_enabled ? 'text-accent' : 'text-danger'} />
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg">{t('super.partner_api_title')}</h3>
+            <p className="text-xs text-muted">{t('super.partner_api_desc')}</p>
+          </div>
+          <Chip color={controls.partner_api_enabled ? 'success' : 'danger'} variant="soft" size="sm">
+            {controls.partner_api_enabled ? t('super.status_active') : t('super.status_disabled')}
+          </Chip>
+        </CardHeader>
+        <CardBody className="flex flex-col gap-4">
+          <div className="rounded-lg bg-surface-tertiary p-3">
+            <p className="text-xs text-muted">{t('super.partner_api_scope_note')}</p>
+          </div>
+
+          {!controls.partner_api_enabled && (
+            <div className="flex items-start gap-3 rounded-lg border border-danger bg-danger-50 p-3 dark:bg-danger-950">
+              <AlertTriangle aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-danger" />
+              <div>
+                <p className="text-sm font-medium text-danger">{t('super.partner_api_blocked_notice')}</p>
+                {controls.partner_api_disabled_reason ? (
+                  <p className="mt-1 text-xs text-danger-600 dark:text-danger-400">
+                    {controls.partner_api_disabled_reason}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">{t('super.partner_api_master_label')}</p>
+              <p className="text-xs text-muted">{t('super.partner_api_master_desc')}</p>
+            </div>
+            <Switch
+              isSelected={controls.partner_api_enabled}
+              isDisabled={!!saving}
+              onValueChange={handlePartnerApiToggle}
+            />
+          </div>
+        </CardBody>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Status */}
         <Card>
@@ -894,6 +974,30 @@ export function FederationControls() {
           placeholder={t('super.external_federation_reason_placeholder')}
           value={externalReason}
           onValueChange={setExternalReason}
+          className="mt-3"
+          variant="secondary"
+        />
+      </ConfirmModal>
+
+      {/* Partner API withdrawal — confirm + reason. */}
+      <ConfirmModal
+        isOpen={partnerApiConfirm}
+        onClose={() => { setPartnerApiConfirm(false); setPartnerApiReason(''); }}
+        onConfirm={async () => {
+          await applyPartnerApi(false, partnerApiReason.trim() || undefined);
+          setPartnerApiConfirm(false);
+          setPartnerApiReason('');
+        }}
+        title={t('super.partner_api_disable_title')}
+        message={t('super.partner_api_disable_confirm')}
+        confirmLabel={t('super.partner_api_disable_action')}
+        confirmColor="danger"
+      >
+        <Input
+          label={t('super.external_federation_reason_label')}
+          placeholder={t('super.partner_api_reason_placeholder')}
+          value={partnerApiReason}
+          onValueChange={setPartnerApiReason}
           className="mt-3"
           variant="secondary"
         />

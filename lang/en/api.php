@@ -2121,6 +2121,10 @@ return [
     'too_many_login_attempts_minutes'      => '{1} Too many login attempts. Please try again in 1 minute.|[2,*] Too many login attempts. Please try again in :count minutes.',
 
     // Federation API errors (hardcoded-string audit — 2026-04-13)
+    'partner_api' => [
+        'disabled' => 'The Partner API is temporarily disabled on this installation.',
+    ],
+
     'federation' => [
         'external_protocol_disabled' => 'External partner federation is temporarily disabled on this installation.',
         'external_outbound_disabled' => 'External partner federation is temporarily disabled on this installation, so no data was sent.',

@@ -81,6 +81,14 @@ class PartnerWebhookDispatcher
      */
     public static function dispatch(string $eventType, array $payload, ?int $partnerId = null): void
     {
+        // Partner API kill switch — this is the outbound half of the AG60
+        // surface and posts directly with raw Http::, so it is not covered by
+        // any inbound gate. Returning early sends nothing; subscriptions and
+        // their delivery config are untouched and resume on re-enable.
+        if (! app(PartnerApiKillSwitch::class)->isEnabled()) {
+            return;
+        }
+
         $tenantId = TenantContext::getId();
         $query = DB::table('api_webhook_subscriptions')
             ->where('tenant_id', $tenantId)

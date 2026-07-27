@@ -881,7 +881,17 @@
     "external_federation_disable_action": "外部フェデレーションを無効にする",
     "external_federation_reason_label": "理由",
     "external_federation_reason_placeholder": "例えばパートナープロトコルのセキュリティ監査が保留中です",
-    "label_external_federation": "外部フェデレーション"
+    "label_external_federation": "外部フェデレーション",
+    "partner_api_title": "パートナーAPI",
+    "partner_api_desc": "サードパーティ統合 API (AG60) — 独自のアクセス トークンを備えたフェデレーションとは別のシステム。",
+    "partner_api_scope_note": "ここは連邦ではありません。 Partner API を使用すると、承認されたサードパーティ統合は、独自のベアラー トークンを使用して、メンバー、リスト、ウォレット残高、クレジット ウォレットを読み取り、Webhook をサブスクライブできます。外部パートナー フェデレーションをオフにしても影響はありません。そのため、独自のスイッチがあります。",
+    "partner_api_blocked_notice": "パートナー API が無効になっています。トークン発行を含むすべてのパートナー要求は HTTP 503 で応答され、パートナー Webhook は配信されません。",
+    "partner_api_master_label": "パートナー API アクセスを許可する",
+    "partner_api_master_desc": "すべての /partner/v1 エンドポイントおよび送信パートナー Webhook 配信のマスター スイッチ。",
+    "partner_api_disable_title": "パートナー API を無効にする",
+    "partner_api_disable_confirm": "ウォレットの操作や Webhook 配信を含む、すべてのサードパーティ パートナーの統合が直ちに停止されます。既存のトークンとサブスクリプションは保持され、再度オンにすると再開されます。",
+    "partner_api_disable_action": "パートナー API を無効にする",
+    "partner_api_reason_placeholder": "例えば外部パートナーのアクセス監査が保留中です"
   },
   "tenant_form": {
     "active": "アクティブ",

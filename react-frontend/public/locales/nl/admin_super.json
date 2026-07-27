@@ -881,7 +881,17 @@
     "external_federation_disable_action": "Schakel externe federatie uit",
     "external_federation_reason_label": "Reden",
     "external_federation_reason_placeholder": "bijv. In afwachting van een beveiligingsaudit van partnerprotocollen",
-    "label_external_federation": "Externe Federatie"
+    "label_external_federation": "Externe Federatie",
+    "partner_api_title": "Partner-API",
+    "partner_api_desc": "Integratie-API van derden (AG60) — een systeem dat losstaat van de federatie, met zijn eigen toegangstokens.",
+    "partner_api_scope_note": "Dit is geen federatie. Met de Partner API kunnen goedgekeurde integraties van derden leden, vermeldingen en portefeuillesaldi, kredietportefeuilles lezen en zich abonneren op webhooks, met behulp van hun eigen tokens aan toonder. Het uitschakelen van de externe partnerfederatie heeft hier geen invloed op en heeft daarom een ​​eigen schakelaar.",
+    "partner_api_blocked_notice": "De Partner-API is uitgeschakeld. Alle partnerverzoeken, inclusief de uitgifte van tokens, worden beantwoord met HTTP 503 en er worden geen partnerwebhooks geleverd.",
+    "partner_api_master_label": "Sta Partner API-toegang toe",
+    "partner_api_master_desc": "Hoofdschakelaar voor elk /partner/v1-eindpunt en voor uitgaande webhooklevering door partners.",
+    "partner_api_disable_title": "Schakel de Partner-API uit",
+    "partner_api_disable_confirm": "Alle integraties van externe partners worden onmiddellijk stopgezet, inclusief portemonnee-activiteiten en webhook-levering. Bestaande tokens en abonnementen blijven behouden en worden hervat wanneer u deze weer inschakelt.",
+    "partner_api_disable_action": "Partner-API uitschakelen",
+    "partner_api_reason_placeholder": "bijv. In afwachting van audit van externe partnertoegang"
   },
   "tenant_form": {
     "active": "Actief",
