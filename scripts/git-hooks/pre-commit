@@ -19,7 +19,14 @@
 # it. Do NOT --no-verify past it (see AGENTS.md).
 #
 
-STAGED_TESTS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^tests/.*\.php$' || true)
+# Match phpunit.xml's own definition of a test file (suffix="Test.php"). The
+# tests/ tree also holds ~28 base classes, traits and fixture helpers
+# (tests/Laravel/TestCase.php, tests/Laravel/Concerns/*, tests/Laravel/Traits/*).
+# Passing one of those to phpunit always fails with "Class X cannot be found",
+# so the old '^tests/.*\.php$' pattern made it impossible to ever commit a test
+# helper. Narrowing to *Test.php does not weaken the gate — every real test file
+# staged in the commit still runs.
+STAGED_TESTS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^tests/.*Test\.php$' || true)
 [ -z "$STAGED_TESTS" ] && exit 0
 
 # (1) Schema-skip budget — static, needs only node.
