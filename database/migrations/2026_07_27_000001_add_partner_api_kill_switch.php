@@ -41,8 +41,11 @@ return new class extends Migration
 
         if (! Schema::hasColumn('federation_system_control', 'partner_api_enabled')) {
             Schema::table('federation_system_control', function (Blueprint $table): void {
-                $table->boolean('partner_api_enabled')
-                    ->default(false)
+                // Keep ->default() on the SAME LINE as the declaration: the
+                // deploy Migration Safety Gate greps per line for a
+                // non-nullable add without a default, so a wrapped fluent
+                // chain fails the deploy on a column that is in fact safe.
+                $table->boolean('partner_api_enabled')->default(false)
                     ->comment('AG60 Partner API kill switch — not federation; see migration notes')
                     ->after('external_federation_updated_by');
                 $table->string('partner_api_disabled_reason', 255)->nullable()->after('partner_api_enabled');

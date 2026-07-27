@@ -45,9 +45,12 @@ return new class extends Migration
         }
 
         Schema::table('federation_system_control', function (Blueprint $table): void {
+            // NOTE: keep ->default()/->nullable() on the SAME LINE as the column
+            // declaration. The deploy Migration Safety Gate greps per line for
+            // "non-nullable add without default", so wrapping the fluent chain
+            // hides the default from it and fails the deploy on a safe column.
             if (! Schema::hasColumn('federation_system_control', 'external_federation_enabled')) {
-                $table->boolean('external_federation_enabled')
-                    ->default(false)
+                $table->boolean('external_federation_enabled')->default(false)
                     ->after('federation_enabled');
             }
 
@@ -63,13 +66,11 @@ return new class extends Migration
                 $table->string('external_federation_disabled_reason', 255)->nullable()->after($after);
             }
             if (! Schema::hasColumn('federation_system_control', 'external_federation_updated_at')) {
-                $table->timestamp('external_federation_updated_at')
-                    ->nullable()
+                $table->timestamp('external_federation_updated_at')->nullable()
                     ->after('external_federation_disabled_reason');
             }
             if (! Schema::hasColumn('federation_system_control', 'external_federation_updated_by')) {
-                $table->unsignedInteger('external_federation_updated_by')
-                    ->nullable()
+                $table->unsignedInteger('external_federation_updated_by')->nullable()
                     ->after('external_federation_updated_at');
             }
         });
