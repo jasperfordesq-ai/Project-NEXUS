@@ -176,6 +176,15 @@ class PushReviewToFederatedPartner implements ShouldQueue
      */
     private function isRetryablePartnerFailure(array $result): bool
     {
+        // A push refused by the external federation kill switch is a deliberate
+        // operator state, not a transient partner fault. Retrying cannot help:
+        // it would burn the job's attempts and raise alerts on every queued
+        // push until the switch is turned back on. The client reports these
+        // with status_code 0, which would otherwise classify as retryable.
+        if (! empty($result['blocked'])) {
+            return false;
+        }
+
         $statusCode = (int) ($result['status_code'] ?? $result['code'] ?? 0);
 
         return $statusCode === 0 || $statusCode >= 500;

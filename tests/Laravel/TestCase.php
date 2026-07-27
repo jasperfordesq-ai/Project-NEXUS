@@ -7,8 +7,11 @@
 namespace Tests\Laravel;
 
 use App\Core\TenantContext;
+use App\Services\FederationFeatureService;
+use App\Services\PartnerApi\PartnerApiKillSwitch;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Base test case for all Laravel tests in the migration.
@@ -85,6 +88,59 @@ abstract class TestCase extends BaseTestCase
         unset($_SESSION['user_id']);
 
         $this->setUpTenantContext();
+        $this->setUpExternalAccessControls();
+    }
+
+    /**
+     * Seed the platform external-access kill switches as ENABLED for tests.
+     *
+     * Both switches ship disabled in production (external partner federation
+     * and the AG60 Partner API), which is the deliberate safety posture. The
+     * test suite, however, is full of pre-existing tests that assert what those
+     * surfaces DO when they are reachable — protocol endpoints, push listeners,
+     * partner auth, rate limiting. Leaving the production default in place makes
+     * every one of them assert against a 503 instead of the behaviour under
+     * test, which says nothing useful.
+     *
+     * So the default here mirrors pre-switch behaviour, and the tests that
+     * exercise the switches themselves turn them off explicitly. Kept in the
+     * base setUp rather than a trait so a newly added test cannot silently
+     * inherit the wrong posture.
+     */
+    protected function setUpExternalAccessControls(): void
+    {
+        try {
+            if (! Schema::hasColumn('federation_system_control', 'external_federation_enabled')) {
+                return;
+            }
+
+            // federation_enabled and the lockdown are seeded too: the external
+            // switch is nested under both, so seeding only the external columns
+            // leaves the posture dependent on whatever an earlier test in the
+            // same process last committed to this singleton row.
+            $row = [
+                'federation_enabled' => 1,
+                'emergency_lockdown_active' => 0,
+                'external_federation_enabled' => 1,
+                'updated_at' => now(),
+            ];
+            foreach (FederationFeatureService::externalProtocolNames() as $protocol) {
+                $column = FederationFeatureService::externalProtocolColumn($protocol);
+                if ($column !== null) {
+                    $row[$column] = 1;
+                }
+            }
+            if (Schema::hasColumn('federation_system_control', 'partner_api_enabled')) {
+                $row['partner_api_enabled'] = 1;
+            }
+
+            DB::table('federation_system_control')->where('id', 1)->update($row);
+
+            app(FederationFeatureService::class)->clearCache();
+            app(PartnerApiKillSwitch::class)->clearCache();
+        } catch (\Throwable) {
+            // Unit tests without a database still need to boot.
+        }
     }
 
     /**
