@@ -129,48 +129,60 @@ const formatMissingKey = (key: string, fallbackText?: string) => {
   return isInteractiveDev ? `${DEV_MISSING_KEY_PREFIX} ${key}` : key;
 };
 
-i18n
-  .use(ChainedBackend)
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    fallbackLng: 'en',
-    supportedLngs: SUPPORTED_LOCALE_CODES as unknown as string[],
-    nonExplicitSupportedLngs: false,
-    load: 'currentOnly',
-    cleanCode: true,
-    saveMissing: isInteractiveDev,
-    appendNamespaceToMissingKey: isInteractiveDev,
-    parseMissingKeyHandler: formatMissingKey,
-    missingKeyHandler: (lng, ns, key) => {
-      const localeList = Array.isArray(lng) ? lng.join(',') : lng || 'unknown';
-      reportMissingKey(`${ns}:${key} [${localeList}]`);
-    },
-    // Tenant-aware filtering still happens in LanguageSwitcher. supportedLngs keeps
-    // detection and fallback behavior constrained to the locales we actually ship.
-    defaultNS: 'common',
-    // Keep startup lean. Passing every known namespace here makes i18next fetch
-    // all locale JSON files before login can settle. Component-level
-    // useTranslation('namespace') calls still lazy-load their own namespaces.
-    ns: [...STARTUP_NAMESPACES],
-    debug: isInteractiveDev,
+// Guarded. In the browser nothing initialises i18next before this module, so the
+// guard is a no-op in production. In tests it is load-bearing: src/test/setup.ts
+// initialises i18next up front with the committed English JSON so components
+// render the real strings users see, and this module is pulled in transitively by
+// @/lib/api, AuthContext, TenantContext and useMenus — i.e. by most page tests.
+// Re-initialising there replaced those resources with a ChainedBackend that
+// cannot fetch under jsdom, so every key went missing and fell through
+// parseMissingKeyHandler. That handler's output depends on isInteractiveDev,
+// which is why the same assertion could pass locally and fail in CI, or vice
+// versa. Leaving an initialised instance alone keeps the two environments honest.
+if (!i18n.isInitialized) {
+  i18n
+    .use(ChainedBackend)
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      fallbackLng: 'en',
+      supportedLngs: SUPPORTED_LOCALE_CODES as unknown as string[],
+      nonExplicitSupportedLngs: false,
+      load: 'currentOnly',
+      cleanCode: true,
+      saveMissing: isInteractiveDev,
+      appendNamespaceToMissingKey: isInteractiveDev,
+      parseMissingKeyHandler: formatMissingKey,
+      missingKeyHandler: (lng, ns, key) => {
+        const localeList = Array.isArray(lng) ? lng.join(',') : lng || 'unknown';
+        reportMissingKey(`${ns}:${key} [${localeList}]`);
+      },
+      // Tenant-aware filtering still happens in LanguageSwitcher. supportedLngs keeps
+      // detection and fallback behavior constrained to the locales we actually ship.
+      defaultNS: 'common',
+      // Keep startup lean. Passing every known namespace here makes i18next fetch
+      // all locale JSON files before login can settle. Component-level
+      // useTranslation('namespace') calls still lazy-load their own namespaces.
+      ns: [...STARTUP_NAMESPACES],
+      debug: isInteractiveDev,
 
-    interpolation: {
-      escapeValue: false, // React already escapes values
-    },
+      interpolation: {
+        escapeValue: false, // React already escapes values
+      },
 
-    backend: {
-      backends: localeBackends,
-      backendOptions: localeBackendOptions,
-    },
+      backend: {
+        backends: localeBackends,
+        backendOptions: localeBackendOptions,
+      },
 
-    detection: {
-      // Check localStorage first, then browser language, then <html lang>
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'nexus_language',
-    },
-  });
+      detection: {
+        // Check localStorage first, then browser language, then <html lang>
+        order: ['localStorage', 'navigator', 'htmlTag'],
+        caches: ['localStorage'],
+        lookupLocalStorage: 'nexus_language',
+      },
+    });
+}
 
 /** Languages that use right-to-left script direction. */
 const RTL_LANGUAGES = new Set(['ar']);
