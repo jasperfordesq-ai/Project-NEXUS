@@ -39,95 +39,111 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Stub admin sub-components ────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-      {actions}
-    </div>
-  ),
-  DataTable: ({
-    data,
-    isLoading,
-    emptyContent,
-    columns,
-    onSearch,
-    onRefresh,
-  }: {
-    data: Array<{ id: number; title: string; creator_name: string; ideas_count: number; status: string; start_date: string; end_date: string; created_at: string }>;
-    isLoading: boolean;
-    emptyContent: string;
-    columns: Array<{ key: string; label: string; render?: (item: object) => React.ReactNode }>;
-    onSearch?: (q: string) => void;
-    onRefresh?: () => void;
-    totalItems?: number;
-    page?: number;
-    pageSize?: number;
-    onPageChange?: (p: number) => void;
-    searchPlaceholder?: string;
-  }) => {
-    if (isLoading) return <div role="status" aria-busy="true" aria-label="Loading" />;
-    if (!data || data.length === 0) return <div data-testid="empty-content">{emptyContent}</div>;
-    return (
-      <div data-testid="data-table">
-        {data.map((item) => (
-          <div key={item.id} data-testid={`row-${item.id}`}>
-            <span data-testid="item-title">{item.title}</span>
-            <span data-testid="item-status">{item.status}</span>
-            {columns.map((col) => (
-              col.render ? (
-                <span key={col.key} data-testid={`col-${col.key}-${item.id}`}>
-                  {col.render(item)}
-                </span>
-              ) : null
-            ))}
-          </div>
-        ))}
-        {onSearch && (
-          <input
-            data-testid="search-input"
-            placeholder="search"
-            onChange={(e) => onSearch(e.target.value)}
-          />
-        )}
-        {onRefresh && (
-          <button data-testid="refresh-btn" onClick={onRefresh}>Refresh</button>
-        )}
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable', '../../components/PageHeader', '../../components/ConfirmModal'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+        {actions}
       </div>
-    );
-  },
-  ConfirmModal: ({
-    isOpen,
-    onClose,
-    onConfirm,
-    title,
-    message,
-    confirmLabel,
-    children,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
-    title: string;
-    message: string;
-    confirmLabel?: string;
-    confirmColor?: string;
-    isLoading?: boolean;
-    children?: React.ReactNode;
-  }) => {
-    if (!isOpen) return null;
-    return (
-      <div role="dialog" aria-label={title}>
-        <h2>{title}</h2>
-        <p>{message}</p>
-        {children}
-        <button onClick={onClose}>Cancel</button>
-        <button onClick={onConfirm} data-testid="confirm-btn">{confirmLabel || 'Confirm'}</button>
-      </div>
-    );
-  },
-}));
+    ),
+    DataTable: ({
+      data,
+      isLoading,
+      emptyContent,
+      columns,
+      onSearch,
+      onRefresh,
+    }: {
+      data: Array<{ id: number; title: string; creator_name: string; ideas_count: number; status: string; start_date: string; end_date: string; created_at: string }>;
+      isLoading: boolean;
+      emptyContent: string;
+      columns: Array<{ key: string; label: string; render?: (item: object) => React.ReactNode }>;
+      onSearch?: (q: string) => void;
+      onRefresh?: () => void;
+      totalItems?: number;
+      page?: number;
+      pageSize?: number;
+      onPageChange?: (p: number) => void;
+      searchPlaceholder?: string;
+    }) => {
+      if (isLoading) return <div role="status" aria-busy="true" aria-label="Loading" />;
+      if (!data || data.length === 0) return <div data-testid="empty-content">{emptyContent}</div>;
+      return (
+        <div data-testid="data-table">
+          {data.map((item) => (
+            <div key={item.id} data-testid={`row-${item.id}`}>
+              <span data-testid="item-title">{item.title}</span>
+              <span data-testid="item-status">{item.status}</span>
+              {columns.map((col) => (
+                col.render ? (
+                  <span key={col.key} data-testid={`col-${col.key}-${item.id}`}>
+                    {col.render(item)}
+                  </span>
+                ) : null
+              ))}
+            </div>
+          ))}
+          {onSearch && (
+            <input
+              data-testid="search-input"
+              placeholder="search"
+              onChange={(e) => onSearch(e.target.value)}
+            />
+          )}
+          {onRefresh && (
+            <button data-testid="refresh-btn" onClick={onRefresh}>Refresh</button>
+          )}
+        </div>
+      );
+    },
+    ConfirmModal: ({
+      isOpen,
+      onClose,
+      onConfirm,
+      title,
+      message,
+      confirmLabel,
+      children,
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      onConfirm: () => void;
+      title: string;
+      message: string;
+      confirmLabel?: string;
+      confirmColor?: string;
+      isLoading?: boolean;
+      children?: React.ReactNode;
+    }) => {
+      if (!isOpen) return null;
+      return (
+        <div role="dialog" aria-label={title}>
+          <h2>{title}</h2>
+          <p>{message}</p>
+          {children}
+          <button onClick={onClose}>Cancel</button>
+          <button onClick={onConfirm} data-testid="confirm-btn">{confirmLabel || 'Confirm'}</button>
+        </div>
+      );
+    },
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/ConfirmModal', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeChallenge = (overrides = {}) => ({

@@ -37,26 +37,39 @@ vi.mock('../../AdminMetaContext', () => ({
 }));
 
 // ─── Mock heavy admin components ──────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  DataTable: ({ data, isLoading, emptyContent }: { data: unknown[]; isLoading: boolean; emptyContent?: React.ReactNode }) => (
-    isLoading
-      ? <div role="status" aria-busy="true" aria-label="loading" />
-      : data.length === 0
-        ? <div data-testid="data-table-empty">{emptyContent}</div>
-        : <div data-testid="data-table">{data.length} rows</div>
-  ),
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  StatCard: ({ label, value, loading }: { label: string; value: string; loading?: boolean }) => (
-    loading
-      ? <div role="status" aria-busy="true" aria-label={label} />
-      : <div data-testid="stat-card"><span>{label}</span><span>{value}</span></div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable' (and friends) directly, and vitest keys
+// mocks per resolved module, so a barrel-only mock never installs for those
+// imports — the real components rendered and the stub testids were never in the
+// DOM. A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    DataTable: ({ data, isLoading, emptyContent }: { data: unknown[]; isLoading: boolean; emptyContent?: React.ReactNode }) => (
+      isLoading
+        ? <div role="status" aria-busy="true" aria-label="loading" />
+        : data.length === 0
+          ? <div data-testid="data-table-empty">{emptyContent}</div>
+          : <div data-testid="data-table">{data.length} rows</div>
+    ),
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div>
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    StatCard: ({ label, value, loading }: { label: string; value: string; loading?: boolean }) => (
+      loading
+        ? <div role="status" aria-busy="true" aria-label={label} />
+        : <div data-testid="stat-card"><span>{label}</span><span>{value}</span></div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
 
 // ─── Contexts ─────────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };

@@ -99,55 +99,73 @@ vi.mock('react-router-dom', async () => {
 });
 
 // Comprehensive DataTable mock rendering all column cells
-vi.mock('../../components', () => ({
-  PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
-  StatCard: ({ label, value, description }: {
-    label: string;
-    value: React.ReactNode;
-    description?: React.ReactNode;
-  }) => (
-    <div data-testid='stat-card'>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {description ? <small>{description}</small> : null}
-    </div>
-  ),
-  DataTable: ({ columns, data, isLoading, emptyContent }: {
-    columns: { key: string; label: string; render?: (row: Record<string, unknown>) => React.ReactNode }[];
-    data: Record<string, unknown>[];
-    isLoading?: boolean;
-    emptyContent?: React.ReactNode;
-  }) => (
-    <div data-testid='data-table'>
-      {isLoading && <div data-testid='table-loading'>Loading...</div>}
-      {!isLoading && data.length === 0 && (
-        <div data-testid='table-empty'>{emptyContent}</div>
-      )}
-      {!isLoading && data.map((row, ri) => (
-        <div key={ri} data-testid='table-row'>
-          {columns.map((col, ci) => (
-            <div key={ci} data-testid={`cell-${col.key}`}>
-              {col.render ? col.render(row) : String(row[col.key] ?? '')}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  ),
-  ConfirmModal: ({ isOpen, onConfirm, onClose, children }: {
-    isOpen: boolean;
-    onConfirm: () => void;
-    onClose: () => void;
-    children?: React.ReactNode;
-  }) => isOpen ? (
-    <div data-testid='confirm-modal'>
-      {children}
-      <button data-testid='confirm-btn' onClick={onConfirm}>Confirm</button>
-      <button data-testid='close-btn' onClick={onClose}>Cancel</button>
-    </div>
-  ) : null,
-  EmptyState: ({ title }: { title: string }) => <div data-testid='empty-state'>{title}</div>,
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader', '../../components/DataTable', '../../components/ConfirmModal', '../../components/EmptyState', '../../components/StatCard'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
+    StatCard: ({ label, value, description }: {
+      label: string;
+      value: React.ReactNode;
+      description?: React.ReactNode;
+    }) => (
+      <div data-testid='stat-card'>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        {description ? <small>{description}</small> : null}
+      </div>
+    ),
+    DataTable: ({ columns, data, isLoading, emptyContent }: {
+      columns: { key: string; label: string; render?: (row: Record<string, unknown>) => React.ReactNode }[];
+      data: Record<string, unknown>[];
+      isLoading?: boolean;
+      emptyContent?: React.ReactNode;
+    }) => (
+      <div data-testid='data-table'>
+        {isLoading && <div data-testid='table-loading'>Loading...</div>}
+        {!isLoading && data.length === 0 && (
+          <div data-testid='table-empty'>{emptyContent}</div>
+        )}
+        {!isLoading && data.map((row, ri) => (
+          <div key={ri} data-testid='table-row'>
+            {columns.map((col, ci) => (
+              <div key={ci} data-testid={`cell-${col.key}`}>
+                {col.render ? col.render(row) : String(row[col.key] ?? '')}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    ),
+    ConfirmModal: ({ isOpen, onConfirm, onClose, children }: {
+      isOpen: boolean;
+      onConfirm: () => void;
+      onClose: () => void;
+      children?: React.ReactNode;
+    }) => isOpen ? (
+      <div data-testid='confirm-modal'>
+        {children}
+        <button data-testid='confirm-btn' onClick={onConfirm}>Confirm</button>
+        <button data-testid='close-btn' onClick={onClose}>Cancel</button>
+      </div>
+    ) : null,
+    EmptyState: ({ title }: { title: string }) => <div data-testid='empty-state'>{title}</div>,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/ConfirmModal', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
 
 // Admin job fixture
 const makeAdminJob = (overrides: Record<string, unknown> = {}) => ({

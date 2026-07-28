@@ -61,10 +61,27 @@ vi.mock('@/admin/AdminMetaContext', () => ({
 }));
 
 // Stub shared admin components
-vi.mock('@/admin/components', () => ({
-  PageHeader: ({ title }: { title: string }) => <h1 data-testid="page-header">{title}</h1>,
-  StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '@/admin/components/PageHeader' and '@/admin/components/DataTable'
+// (as relative '../../components/...', which resolves to the same modules)
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the stub
+// data-testids were never in the DOM. Note StatusBadge ships from DataTable,
+// not from its own file.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title }: { title: string }) => <h1 data-testid="page-header">{title}</h1>,
+    StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
+  };
+}
+
+vi.mock('@/admin/components', adminComponentsMock);
+vi.mock('@/admin/components/PageHeader', adminComponentsMock);
+vi.mock('@/admin/components/DataTable', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeRequest = (overrides = {}) => ({

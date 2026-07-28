@@ -101,37 +101,53 @@ vi.mock('@/components/ui', async (importOriginal) => {
 });
 
 // Stub admin sub-components
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, description }: { title: string; description?: string }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-    </div>
-  ),
-  EmptyState: ({ title }: { title: string }) => (
-    <div data-testid="empty-state">{title}</div>
-  ),
-  DataTable: ({ data, columns }: { data: unknown[]; columns: Array<{ key: string; label: string; render?: (item: Record<string, unknown>) => React.ReactNode }> }) => (
-    <table data-testid="data-table">
-      <thead>
-        <tr>
-          {columns.map((col) => <th key={col.key}>{col.label}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {(data as Record<string, unknown>[]).map((row) => (
-          <tr key={String(row['id'])}>
-            {columns.map((col) => (
-              <td key={col.key}>
-                {col.render ? col.render(row) : String(row[col.key] ?? '')}
-              </td>
-            ))}
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader', '../../components/EmptyState', '../../components/DataTable'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, description }: { title: string; description?: string }) => (
+      <div data-testid="page-header">
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+      </div>
+    ),
+    EmptyState: ({ title }: { title: string }) => (
+      <div data-testid="empty-state">{title}</div>
+    ),
+    DataTable: ({ data, columns }: { data: unknown[]; columns: Array<{ key: string; label: string; render?: (item: Record<string, unknown>) => React.ReactNode }> }) => (
+      <table data-testid="data-table">
+        <thead>
+          <tr>
+            {columns.map((col) => <th key={col.key}>{col.label}</th>)}
           </tr>
-        ))}
-      </tbody>
-    </table>
-  ),
-}));
+        </thead>
+        <tbody>
+          {(data as Record<string, unknown>[]).map((row) => (
+            <tr key={String(row['id'])}>
+              {columns.map((col) => (
+                <td key={col.key}>
+                  {col.render ? col.render(row) : String(row[col.key] ?? '')}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const makeInterview = (overrides = {}) => ({

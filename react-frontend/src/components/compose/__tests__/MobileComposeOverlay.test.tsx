@@ -61,7 +61,6 @@ const defaultProps = {
   onTabChange: vi.fn(),
   tabs: sampleTabs,
   headerTitle: 'Create Post',
-  templatePicker: <span data-testid="template-picker" />,
   children: <div data-testid="compose-body">Body content</div>,
 };
 
@@ -80,10 +79,11 @@ describe('MobileComposeOverlay', () => {
     expect(screen.getByText('Create Post')).toBeInTheDocument();
   });
 
-  it('renders the template picker slot', () => {
-    render(<MobileComposeOverlay {...defaultProps} />);
-    expect(screen.getByTestId('template-picker')).toBeInTheDocument();
-  });
+  // A 'renders the template picker slot' test was removed here, along with the
+  // templatePicker prop it passed. The Template button was deliberately removed
+  // from the composer in c363aefb3, and MobileComposeOverlayProps no longer
+  // declares that slot — the test was asserting a feature that had been dropped
+  // on purpose, so it is deleted rather than restored.
 
   it('renders close button with aria-label', () => {
     render(<MobileComposeOverlay {...defaultProps} />);

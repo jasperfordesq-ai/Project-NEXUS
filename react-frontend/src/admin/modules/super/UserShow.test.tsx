@@ -33,38 +33,51 @@ vi.mock('../../api/adminApi', () => ({
 }));
 
 // ─── Mock admin components ────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-      {actions}
-    </div>
-  ),
-  ConfirmModal: ({
-    isOpen,
-    onClose,
-    onConfirm,
-    title,
-    confirmLabel,
-  }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
-    title: string;
-    confirmLabel: string;
-    message?: string;
-    confirmColor?: string;
-    isLoading?: boolean;
-  }) =>
-    isOpen ? (
-      <div role="dialog" aria-label={title} data-testid="confirm-modal">
-        <p>{title}</p>
-        <button data-testid="confirm-btn" onClick={onConfirm}>{confirmLabel}</button>
-        <button data-testid="cancel-btn" onClick={onClose}>Cancel</button>
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader' and '../../components/ConfirmModal'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the stub
+// testids were never in the DOM. A function DECLARATION, not a const: vi.mock
+// calls are hoisted above the module body, so a const factory is still
+// uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+        {actions}
       </div>
-    ) : null,
-}));
+    ),
+    ConfirmModal: ({
+      isOpen,
+      onClose,
+      onConfirm,
+      title,
+      confirmLabel,
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      onConfirm: () => void;
+      title: string;
+      confirmLabel: string;
+      message?: string;
+      confirmColor?: string;
+      isLoading?: boolean;
+    }) =>
+      isOpen ? (
+        <div role="dialog" aria-label={title} data-testid="confirm-modal">
+          <p>{title}</p>
+          <button data-testid="confirm-btn" onClick={onConfirm}>{confirmLabel}</button>
+          <button data-testid="cancel-btn" onClick={onClose}>Cancel</button>
+        </div>
+      ) : null,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/ConfirmModal', adminComponentsMock);
 
 // ─── Mock contexts ────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };

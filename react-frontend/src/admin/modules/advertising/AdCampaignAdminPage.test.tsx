@@ -51,8 +51,18 @@ vi.mock('@/contexts', () =>
 );
 
 // Stub heavy admin components
-vi.mock('@/admin/components', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/admin/components')>();
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader', '../../components/DataTable' and
+// '../../components/StatCard' directly (same resolved modules as the aliases
+// below), and vitest keys mocks per resolved module, so a barrel-only mock never
+// installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+// importOriginal() returns whichever module is currently being mocked, so the
+// spread yields that leaf's real exports plus the stubs below — hence the widened
+// Record type rather than one naming the barrel.
+async function adminComponentsMock(importOriginal: <T>() => Promise<T>) {
+  const orig = await importOriginal<Record<string, unknown>>();
   return {
     ...orig,
     DataTable: ({
@@ -97,7 +107,12 @@ vi.mock('@/admin/components', async (importOriginal) => {
       </div>
     ),
   };
-});
+}
+
+vi.mock('@/admin/components', adminComponentsMock);
+vi.mock('@/admin/components/PageHeader', adminComponentsMock);
+vi.mock('@/admin/components/DataTable', adminComponentsMock);
+vi.mock('@/admin/components/StatCard', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 function makeCampaign(overrides: Record<string, unknown> = {}) {

@@ -34,10 +34,23 @@ vi.mock('@/contexts/ToastContext', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ─── Stub admin sub-components ────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
-  StatCard: ({ label }: { label: string }) => <div>{label}</div>,
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader' directly, and vitest keys mocks per
+// resolved module, so a barrel-only mock never installs for that import — the
+// real PageHeader rendered and data-testid="page-header" was never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
+    StatCard: ({ label }: { label: string }) => <div>{label}</div>,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const AI_CONFIG = {

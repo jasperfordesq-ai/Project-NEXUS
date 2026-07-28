@@ -6,25 +6,119 @@
         "PageHeader"
       ]
     },
+    "src/admin/modules/__tests__/NewsletterModules.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal",
+        "DataTable",
+        "EmptyState",
+        "PageHeader",
+        "StatCard",
+        "StatusBadge"
+      ]
+    },
+    "src/admin/modules/__tests__/ReportModules.test.tsx": {
+      "@/admin/components": [
+        "EmptyState",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/__tests__/SimpleModules.test.tsx": {
+      "@/admin/components": [
+        "EmptyState",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/advanced/EmailSettings.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/advanced/FeedAlgorithm.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/advanced/SeoOverview.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
     "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal",
+        "PageHeader"
+      ],
       "@/components/ui": [
         "Button"
       ]
     },
-    "src/admin/modules/advertising/AdCampaignAdminPage.test.tsx": {
+    "src/admin/modules/billing/BillingControl.test.tsx": {
       "@/admin/components": [
-        "DataTable",
-        "PageHeader",
-        "StatCard"
-      ]
-    },
-    "src/admin/modules/caring-community/CaringCommunityAdmin.test.tsx": {
-      "@/admin/components": [
-        "PageHeader",
-        "StatCard"
+        "PageHeader"
       ]
     },
     "src/admin/modules/caring-community/CaringCommunityWorkflowPage.test.tsx": {
+      "@/admin/components": [
+        "MemberSearchPicker",
+        "PageHeader",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/caring-community/DisclosurePackAdminPage.test.tsx": {
+      "@/admin/components": [
+        "Abbr",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/ExternalIntegrationsAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/FederationPeersAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/KpiBaselineAdminPage.test.tsx": {
+      "@/admin/components": [
+        "Abbr",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/MunicipalCopilotAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/MunicipalVerificationAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/PilotLaunchReadinessAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/PilotScoreboardAdminPage.test.tsx": {
+      "@/admin/components": [
+        "Abbr",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/ResearchPartnershipsAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/SafeguardingReportsAdminPage.test.tsx": {
+      "@/admin/components": [
+        "Abbr",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/caring-community/SuccessStoryAdminPage.test.tsx": {
       "@/admin/components": [
         "PageHeader"
       ]
@@ -34,10 +128,38 @@
         "PageHeader"
       ]
     },
+    "src/admin/modules/courses/CoursesAdmin.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/crm/ActivityTimeline.test.tsx": {
+      "@/admin/components": [
+        "MemberSearchPicker"
+      ]
+    },
+    "src/admin/modules/crm/CoordinatorTasks.test.tsx": {
+      "@/admin/components": [
+        "MemberSearchPicker",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/crm/MemberNotes.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal",
+        "MemberSearchPicker",
+        "PageHeader"
+      ]
+    },
     "src/admin/modules/dashboard/AdminDashboard.test.tsx": {
       "@/admin/components": [
         "PageHeader",
         "StatCard"
+      ]
+    },
+    "src/admin/modules/deliverability/EditDeliverable.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
       ]
     },
     "src/admin/modules/enterprise/GdprAuditLog.test.tsx": {
@@ -46,10 +168,36 @@
         "PageHeader"
       ]
     },
-    "src/admin/modules/enterprise/GdprRequestDetail.test.tsx": {
+    "src/admin/modules/enterprise/GdprConsentTypes.test.tsx": {
       "@/admin/components": [
-        "PageHeader",
-        "StatusBadge"
+        "ConfirmModal",
+        "DataTable",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/enterprise/PermissionBrowser.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/federation/ApiDocumentation.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/federation/CreditCommonsConfig.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/federation/DataManagement.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/federation/FederationAggregatesPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
       ]
     },
     "src/admin/modules/federation/MyProfile.test.tsx": {
@@ -57,7 +205,18 @@
         "PageHeader"
       ]
     },
+    "src/admin/modules/federation/Webhooks.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal",
+        "PageHeader"
+      ]
+    },
     "src/admin/modules/groups/GroupOrganization.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal"
+      ]
+    },
+    "src/admin/modules/help/HelpFaqsAdmin.test.tsx": {
       "@/admin/components": [
         "ConfirmModal"
       ]
@@ -67,19 +226,56 @@
         "ConfirmModal"
       ]
     },
-    "src/admin/modules/national/NationalKissDashboardPage.test.tsx": {
+    "src/admin/modules/marketplace/MarketplaceAdmin.test.tsx": {
       "@/admin/components": [
         "PageHeader",
         "StatCard"
       ]
     },
-    "src/admin/modules/newsletters/NewsletterAnalytics.test.tsx": {
+    "src/admin/modules/newsletters/NewsletterActivity.test.tsx": {
       "@/admin/components": [
-        "PageHeader",
-        "StatCard"
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/newsletters/NewsletterForm.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/newsletters/NewsletterStats.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/newsletters/SegmentForm.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/podcasts/PodcastsAdmin.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/premium/MemberPremiumSubscribersPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/provisioning/ProvisioningRequestsPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/regional-analytics/RegionalAnalyticsAdminPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
       ]
     },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ],
       "@/components/ui": [
         "Button",
         "Card"
@@ -88,6 +284,52 @@
     "src/admin/modules/super/BulkOperations.test.tsx": {
       "@/admin/components": [
         "ConfirmModal"
+      ]
+    },
+    "src/admin/modules/super/TenantShow.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/AdminSettings.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/CronJobLogs.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/CronJobSettings.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/CronJobs.test.tsx": {
+      "@/admin/components": [
+        "PageHeader",
+        "StatusBadge"
+      ]
+    },
+    "src/admin/modules/system/NativeApp.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/OnboardingSettings.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/RegistrationPolicySettings.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/system/SsoProviders.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
       ]
     },
     "src/components/availability/AvailabilityGrid.test.tsx": {
@@ -292,6 +534,15 @@
         "Textarea"
       ]
     },
+    "src/pages/jobs/MyApplicationsPage.test.tsx": {
+      "@/components/ui": [
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Skeleton",
+        "Spinner"
+      ]
+    },
     "src/pages/jobs/TalentSearchPage.test.tsx": {
       "@/components/ui": [
         "Avatar",
@@ -303,10 +554,40 @@
         "SearchField",
         "Spinner"
       ]
+    },
+    "src/pages/settings/SettingsPage.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "Button",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Select",
+        "SelectItem",
+        "Spinner",
+        "Switch",
+        "Textarea",
+        "ToggleButton",
+        "ToggleButtonGroup"
+      ]
+    },
+    "src/pages/volunteering/GroupSignUpTab.test.tsx": {
+      "@/components/ui": [
+        "Avatar",
+        "AvatarGroup",
+        "Button",
+        "CardRowsSkeleton",
+        "Chip",
+        "GlassCard",
+        "Input",
+        "Select",
+        "SelectItem",
+        "Textarea"
+      ]
     }
   },
   "totals": {
-    "offenderFileCount": 42,
-    "rowCount": 137
+    "offenderFileCount": 89,
+    "rowCount": 280
   }
 }

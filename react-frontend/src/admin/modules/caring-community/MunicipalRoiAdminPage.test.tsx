@@ -35,23 +35,36 @@ vi.mock('@/contexts', () =>
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ─── admin sub-components ─────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: string }) => (
-    <div data-testid="stat-card">
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  ),
-  Abbr: ({ term, children }: { term: string; children?: React.ReactNode }) => (
-    <abbr title={term}>{children ?? term}</abbr>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/Abbr', '../../components/PageHeader', etc. directly,
+// and vitest keys mocks per resolved module, so a barrel-only mock never
+// installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div>
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: string }) => (
+      <div data-testid="stat-card">
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+    ),
+    Abbr: ({ term, children }: { term: string; children?: React.ReactNode }) => (
+      <abbr title={term}>{children ?? term}</abbr>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/Abbr', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
 
 // ─── fixtures ─────────────────────────────────────────────────────────────────
 const makeRoi = (overrides = {}) => ({

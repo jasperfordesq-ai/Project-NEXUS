@@ -50,7 +50,13 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/hooks/usePageTitle', () => ({ usePageTitle: vi.fn() }));
 
 // ── admin components stubs ───────────────────────────────────────────────────
-vi.mock('../../components', async (importOriginal) => {
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable', '../../components/PageHeader', etc.
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+async function adminComponentsMock(importOriginal: <T>() => Promise<T>) {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
@@ -104,7 +110,13 @@ vi.mock('../../components', async (importOriginal) => {
       ) : null,
     BulkActionToolbar: () => null,
   };
-});
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/ConfirmModal', adminComponentsMock);
+vi.mock('../../components/BulkActionToolbar', adminComponentsMock);
 
 import React from 'react';
 import { BlogAdmin } from './BlogAdmin';

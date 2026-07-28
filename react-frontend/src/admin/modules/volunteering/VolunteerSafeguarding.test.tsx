@@ -25,28 +25,42 @@ vi.mock('../../api/adminApi', () => ({
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
-// Stub DataTable — render a simple list of row keys so we can detect rows
-vi.mock('../../components', () => ({
-  DataTable: ({ data, isLoading }: { data: { id: number; reporter_name: string }[]; isLoading?: boolean }) =>
-    isLoading ? (
-      <div role="status" aria-busy="true" aria-label="loading" />
-    ) : (
-      <table>
-        <tbody>
-          {data.map((row) => (
-            <tr key={row.id} data-testid={`incident-row-${row.id}`}>
-              <td>{row.reporter_name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+// Stub DataTable — render a simple list of row keys so we can detect rows.
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable' (and friends) directly, and vitest keys
+// mocks per resolved module, so a barrel-only mock never installs for those
+// imports — the real components rendered and the stub testids were never in the
+// DOM. A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    DataTable: ({ data, isLoading }: { data: { id: number; reporter_name: string }[]; isLoading?: boolean }) =>
+      isLoading ? (
+        <div role="status" aria-busy="true" aria-label="loading" />
+      ) : (
+        <table>
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.id} data-testid={`incident-row-${row.id}`}>
+                <td>{row.reporter_name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ),
+    PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
+    StatCard: ({ label, value }: { label: string; value: unknown }) => (
+      <div data-testid="stat-card">{label}: {String(value)}</div>
     ),
-  PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
-  StatCard: ({ label, value }: { label: string; value: unknown }) => (
-    <div data-testid="stat-card">{label}: {String(value)}</div>
-  ),
-  EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
-}));
+    EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
 
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 

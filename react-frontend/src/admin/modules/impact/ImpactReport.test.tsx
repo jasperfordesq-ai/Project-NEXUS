@@ -41,8 +41,17 @@ vi.mock('recharts', () => {
 });
 
 // Stub StatCard and PageHeader (../../components)
-vi.mock('../../components', async (importOriginal) => {
-  const orig = await importOriginal<Record<string, unknown>>();
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/StatCard', '../../components/PageHeader'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+async function adminComponentsMock(importOriginal: () => Promise<Record<string, unknown>>) {
+  const orig = await importOriginal();
   return {
     ...orig,
     StatCard: ({ label, value }: { label?: string; value?: unknown }) => (
@@ -50,7 +59,11 @@ vi.mock('../../components', async (importOriginal) => {
     ),
     PageHeader: ({ title }: { title?: string }) => <h1>{title}</h1>,
   };
-});
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 vi.mock('@/i18n', () => ({
   default: { language: 'en' },

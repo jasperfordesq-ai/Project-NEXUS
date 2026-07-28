@@ -43,14 +43,26 @@ vi.mock('@/admin/api/adminApi', () => ({
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // Stub sub-components to keep tests focused
-vi.mock('@/admin/components', () => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">{title}{actions}</div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: string }) => (
-    <div data-testid="stat-card">{label}: {value}</div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader' and '../../components/StatCard' directly
+// (same resolved modules as the aliases below), and vitest keys mocks per
+// resolved module, so a barrel-only mock never installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">{title}{actions}</div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: string }) => (
+      <div data-testid="stat-card">{label}: {value}</div>
+    ),
+  };
+}
+
+vi.mock('@/admin/components', adminComponentsMock);
+vi.mock('@/admin/components/PageHeader', adminComponentsMock);
+vi.mock('@/admin/components/StatCard', adminComponentsMock);
 
 import { adminConfig } from '@/admin/api/adminApi';
 import CaringCommunityAdmin from './CaringCommunityAdmin';

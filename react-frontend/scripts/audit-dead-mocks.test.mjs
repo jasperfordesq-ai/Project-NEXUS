@@ -132,6 +132,34 @@ test('flags an override the component bypasses via the direct path', () => {
   );
 });
 
+test('flags the barrel named by a RELATIVE specifier, not just the @/ alias', () => {
+  // Regression guard. Barrel matching used to compare specifier STRINGS, so a
+  // test spelling the barrel relatively was skipped outright even though vitest
+  // resolves it to the identical module. That hid 28 of the 42 admin suites in
+  // the missing-data-testid cluster, all of which mock '../../components'.
+  const root = writeFixture({
+    'admin/modules/x/Page.tsx': `
+      import { PageHeader } from '../../components/PageHeader';
+      export function Page() { return PageHeader(); }
+    `,
+    'admin/modules/x/Page.test.tsx': `
+      import { vi } from 'vitest';
+      vi.mock('../../components', () => ({
+        PageHeader: () => null,
+      }));
+      import { Page } from './Page';
+    `,
+  });
+
+  const rows = rowsFor(root);
+  assert.equal(rows.length, 1);
+  // Reported under the audited barrel's canonical specifier, whatever the test wrote.
+  assert.equal(rows[0].barrel, '@/admin/components');
+  assert.equal(rows[0].deadKey, 'PageHeader');
+  assert.equal(rows[0].directPath, '@/admin/components/PageHeader');
+  assert.equal(rows[0].testFile, 'src/admin/modules/x/Page.test.tsx');
+});
+
 test('does NOT flag a test that also mocks the direct path', () => {
   const root = writeFixture({
     'components/jobs/OwnerBanner.tsx': `

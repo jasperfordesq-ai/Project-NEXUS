@@ -56,22 +56,38 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Stub heavy admin children ────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  DataTable: ({ data, isLoading }: { data: object[]; isLoading: boolean }) => (
-    <div data-testid="data-table" data-loading={String(isLoading)}>
-      {data.map((row: Record<string, unknown>) => (
-        <div key={String(row['id'])} data-testid="table-row">{String(row['name'])}</div>
-      ))}
-    </div>
-  ),
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">{title}{actions}</div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: unknown }) => (
-    <div data-testid="stat-card">{label}: {String(value)}</div>
-  ),
-  EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable' (and friends) directly, and vitest keys
+// mocks per resolved module, so a barrel-only mock never installs for those
+// imports — the real components rendered and the stub testids were never in the
+// DOM. A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+// NOTE: '../../components/ConfirmModal' is deliberately NOT bound here — this
+// factory returns no ConfirmModal stub, and vitest throws on a missing export.
+function adminComponentsMock() {
+  return {
+    DataTable: ({ data, isLoading }: { data: object[]; isLoading: boolean }) => (
+      <div data-testid="data-table" data-loading={String(isLoading)}>
+        {data.map((row: Record<string, unknown>) => (
+          <div key={String(row['id'])} data-testid="table-row">{String(row['name'])}</div>
+        ))}
+      </div>
+    ),
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">{title}{actions}</div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: unknown }) => (
+      <div data-testid="stat-card">{label}: {String(value)}</div>
+    ),
+    EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeGivingDay = (overrides = {}) => ({

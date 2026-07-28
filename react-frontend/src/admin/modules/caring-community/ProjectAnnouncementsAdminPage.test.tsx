@@ -26,22 +26,34 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Stub admin components ────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  EmptyState: ({ title, actionLabel, onAction }: { title: string; actionLabel?: string; onAction?: () => void }) => (
-    <div data-testid="empty-state">
-      <span>{title}</span>
-      {actionLabel && onAction && (
-        <button onClick={onAction}>{actionLabel}</button>
-      )}
-    </div>
-  ),
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <span>{title}</span>
-      {actions}
-    </div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/EmptyState' and '../../components/PageHeader'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    EmptyState: ({ title, actionLabel, onAction }: { title: string; actionLabel?: string; onAction?: () => void }) => (
+      <div data-testid="empty-state">
+        <span>{title}</span>
+        {actionLabel && onAction && (
+          <button onClick={onAction}>{actionLabel}</button>
+        )}
+      </div>
+    ),
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">
+        <span>{title}</span>
+        {actions}
+      </div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeProject = (overrides = {}) => ({

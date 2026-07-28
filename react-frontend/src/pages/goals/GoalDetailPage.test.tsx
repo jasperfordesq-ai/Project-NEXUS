@@ -57,9 +57,17 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 // ── SEO / social stubs ────────────────────────────────────────────────────────
 vi.mock('@/components/seo', () => ({ PageMeta: () => null }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
-vi.mock('@/components/social', () => ({
-  SocialInteractionPanel: () => <div data-testid="social-panel" />,
-}));
+// Bound to the barrel AND to the component's own path: GoalDetailPage imports
+// '@/components/social/SocialInteractionPanel' directly, and vitest keys mocks
+// per resolved module, so the barrel-only form never installed — the real panel
+// rendered and data-testid="social-panel" was never in the DOM. Declared as a
+// function, not a const: vi.mock is hoisted above the module body.
+function socialMock() {
+  return { SocialInteractionPanel: () => <div data-testid="social-panel" /> };
+}
+
+vi.mock('@/components/social', socialMock);
+vi.mock('@/components/social/SocialInteractionPanel', socialMock);
 
 // ── Goal child components ─────────────────────────────────────────────────────
 vi.mock('./components/GoalProgressHistory', () => ({

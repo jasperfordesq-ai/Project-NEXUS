@@ -60,7 +60,12 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // The single legitimate reason to raise this is a genuinely flaky suite that
 // cannot be stabilised, and even then prefer the runner's --retry=1 first: retry
 // keeps the coverage, quarantine throws it away. If you raise it, say why here.
-const BASELINE = 104;
+// Then 104 -> 64: the 42-suite missing-data-testid cluster was one root cause --
+// tests stubbing the admin components barrel while the pages import each
+// component by its own path, so the stub never installed. Retargeting the mocks
+// at the real paths cleared 40 of them in one pass. The other two are fixed for
+// that defect but held back by a second, i18n-dependent text assertion.
+const BASELINE = 64;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

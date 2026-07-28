@@ -497,9 +497,49 @@ export function extractFactoryOverrides(factory, sourceFile, options = {}) {
   const factoryText = factory.getText(sourceFile);
   result.usesUiMockForm = factoryText.includes('@/test/uiMock');
 
-  // e.g. `vi.mock('@/contexts', someFactoryVariable)` — the shape is off in
-  // another binding. Not decoded, so say so.
-  if (!ts.isArrowFunction(factory) && !ts.isFunctionExpression(factory)) return finish('unknown');
+  // `vi.mock('@/admin/components', adminComponentsMock)` — a NAMED factory shared
+  // between the barrel and each component's own path. That is the sanctioned way
+  // to fix this defect (one factory, several bindings), and it must be declared
+  // as a `function` rather than a const because vi.mock calls hoist above the
+  // module body. Decode it by resolving the name to its local declaration:
+  // treating it as undecodable made every correctly-repaired file an invisible
+  // blind spot, which is exactly backwards — 42 files went dark that way.
+  if (ts.isIdentifier(factory)) {
+    const name = factory.text;
+    let resolvedFactory;
+    for (const statement of sourceFile.statements) {
+      if (ts.isFunctionDeclaration(statement) && statement.name?.text === name) {
+        resolvedFactory = statement;
+        break;
+      }
+      if (ts.isVariableStatement(statement)) {
+        for (const declaration of statement.declarationList.declarations) {
+          if (
+            ts.isIdentifier(declaration.name) &&
+            declaration.name.text === name &&
+            declaration.initializer &&
+            (ts.isArrowFunction(declaration.initializer) || ts.isFunctionExpression(declaration.initializer))
+          ) {
+            resolvedFactory = declaration.initializer;
+          }
+        }
+      }
+    }
+    // Only a factory declared in this same file can be resolved; an imported one
+    // stays honestly undecodable rather than being guessed at.
+    if (!resolvedFactory) return finish('unknown');
+    factory = resolvedFactory;
+  }
+
+  // e.g. `vi.mock('@/contexts', someImportedFactory)` — the shape is off in
+  // another module. Not decoded, so say so.
+  if (
+    !ts.isArrowFunction(factory) &&
+    !ts.isFunctionExpression(factory) &&
+    !ts.isFunctionDeclaration(factory)
+  ) {
+    return finish('unknown');
+  }
 
   /**
    * Decode the expression a factory hands back. `block` is the enclosing block
@@ -891,7 +931,19 @@ export function scan(options = {}) {
     const relevantMocks = [];
     for (const barrel of barrels) {
       for (const mock of testAnalysis.mocks) {
-        if (mock.specifier !== barrel.specifier) continue;
+        // Match on the RESOLVED module, not the specifier string. A test can name
+        // the same barrel any number of ways — `vi.mock('../../components')` from
+        // src/admin/modules/x/ is the identical module as '@/admin/components' —
+        // and vitest keys its registry by resolved module, so the defect is
+        // present regardless of spelling. String comparison hid 28 of the 42
+        // admin suites in the missing-data-testid cluster: they mock the barrel
+        // relatively, so the audit skipped them entirely.
+        // Falls back to the specifier when resolution fails, so an unresolvable
+        // mock is never silently dropped from the audit.
+        const sameBarrel = mock.resolved
+          ? mock.resolved === barrel.indexPath
+          : mock.specifier === barrel.specifier;
+        if (!sameBarrel) continue;
         const overrides = extractFactoryOverrides(mock.factory, testAnalysis.sourceFile, {
           resolveHelperKeys,
         });

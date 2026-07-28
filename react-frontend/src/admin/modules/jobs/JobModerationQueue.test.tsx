@@ -52,26 +52,42 @@ vi.mock(import('@/lib/helpers'), async (importOriginal) => ({
 }));
 
 // Stub heavy admin components
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: number }) => (
-    <div data-testid="stat-card">
-      <span>{label}</span>
-      <span>{String(value)}</span>
-    </div>
-  ),
-  EmptyState: ({ title, description }: { title: string; description?: string }) => (
-    <div data-testid="empty-state">
-      <p>{title}</p>
-      {description && <p>{description}</p>}
-    </div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader', '../../components/StatCard', '../../components/EmptyState'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div>
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: number }) => (
+      <div data-testid="stat-card">
+        <span>{label}</span>
+        <span>{String(value)}</span>
+      </div>
+    ),
+    EmptyState: ({ title, description }: { title: string; description?: string }) => (
+      <div data-testid="empty-state">
+        <p>{title}</p>
+        {description && <p>{description}</p>}
+      </div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const makeJob = (overrides = {}) => ({

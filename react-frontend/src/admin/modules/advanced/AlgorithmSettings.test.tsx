@@ -35,13 +35,23 @@ vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ─── Stub admin components ────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title }: { title: string }) => (
-    <div data-testid="page-header">
-      <span>{title}</span>
-    </div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader' directly, and vitest keys mocks per
+// resolved module, so a barrel-only mock never installs for that import.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title }: { title: string }) => (
+      <div data-testid="page-header">
+        <span>{title}</span>
+      </div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeAlgorithmConfig = (overrides = {}) => ({

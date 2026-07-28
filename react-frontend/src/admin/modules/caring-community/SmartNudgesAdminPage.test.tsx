@@ -51,21 +51,33 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Stub admin sub-components ────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-      {actions}
-    </div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: string; icon?: unknown; color?: string }) => (
-    <div data-testid="stat-card">
-      <span data-testid="stat-label">{label}</span>
-      <span data-testid="stat-value">{value}</span>
-    </div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/PageHeader' and '../../components/StatCard'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+        {actions}
+      </div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: string; icon?: unknown; color?: string }) => (
+      <div data-testid="stat-card">
+        <span data-testid="stat-label">{label}</span>
+        <span data-testid="stat-value">{value}</span>
+      </div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeAnalytics = (overrides = {}) => ({

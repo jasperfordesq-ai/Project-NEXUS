@@ -79,50 +79,65 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 
 // ── admin components ──────────────────────────────────────────────────────────
 
-vi.mock('../../components', () => ({
-  DataTable: ({
-    data,
-    columns,
-    isLoading,
-    topContent,
-  }: {
-    data: Array<Record<string, unknown>>;
-    columns: Array<{ key: string; label: string; render?: (item: Record<string, unknown>) => React.ReactNode }>;
-    isLoading?: boolean;
-    topContent?: React.ReactNode;
-  }) => (
-    <div data-testid="data-table">
-      {topContent}
-      {isLoading ? (
-        <div role="status" aria-busy="true">Loading...</div>
-      ) : (
-        <ul>
-          {data.map((item) => (
-            <li key={item.id as number} data-testid={`row-${item.id}`}>
-              {columns.map((col) => (
-                <span key={col.key} data-testid={`cell-${item.id}-${col.key}`}>
-                  {col.render ? col.render(item) : String(item[col.key] ?? '')}
-                </span>
-              ))}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  ),
-  PageHeader: ({ title, description }: { title: string; description?: string }) => (
-    <div>
-      <h1>{title}</h1>
-      {description && <p>{description}</p>}
-    </div>
-  ),
-  EmptyState: ({ title }: { title: string }) => (
-    <div data-testid="empty-state">{title}</div>
-  ),
-  StatusBadge: ({ status }: { status: string }) => (
-    <span data-testid="status-badge">{status}</span>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable' (and friends) directly, and vitest keys
+// mocks per resolved module, so a barrel-only mock never installs for those
+// imports — the real components rendered and the stub testids were never in the
+// DOM. A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+// NOTE: '../../components/ConfirmModal' is deliberately NOT bound here — this
+// factory returns no ConfirmModal stub, and vitest throws on a missing export.
+function adminComponentsMock() {
+  return {
+    DataTable: ({
+      data,
+      columns,
+      isLoading,
+      topContent,
+    }: {
+      data: Array<Record<string, unknown>>;
+      columns: Array<{ key: string; label: string; render?: (item: Record<string, unknown>) => React.ReactNode }>;
+      isLoading?: boolean;
+      topContent?: React.ReactNode;
+    }) => (
+      <div data-testid="data-table">
+        {topContent}
+        {isLoading ? (
+          <div role="status" aria-busy="true">Loading...</div>
+        ) : (
+          <ul>
+            {data.map((item) => (
+              <li key={item.id as number} data-testid={`row-${item.id}`}>
+                {columns.map((col) => (
+                  <span key={col.key} data-testid={`cell-${item.id}-${col.key}`}>
+                    {col.render ? col.render(item) : String(item[col.key] ?? '')}
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    ),
+    PageHeader: ({ title, description }: { title: string; description?: string }) => (
+      <div>
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+      </div>
+    ),
+    EmptyState: ({ title }: { title: string }) => (
+      <div data-testid="empty-state">{title}</div>
+    ),
+    StatusBadge: ({ status }: { status: string }) => (
+      <span data-testid="status-badge">{status}</span>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
 
 // ── import after mocks ────────────────────────────────────────────────────────
 

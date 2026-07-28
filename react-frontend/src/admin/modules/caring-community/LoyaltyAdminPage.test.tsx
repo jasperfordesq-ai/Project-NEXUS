@@ -23,50 +23,63 @@ const { mockCanManage } = vi.hoisted(() => ({ mockCanManage: vi.fn(() => true) }
 vi.mock('@/caring/access', () => ({ canManageCaring: mockCanManage }));
 
 // ─── Mock admin components ────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  MemberSearchPicker: ({
-    onSelectedMemberChange,
-    selectedMember,
-  }: {
-    label: string;
-    placeholder: string;
-    value: string;
-    onValueChange: (v: string) => void;
-    selectedMember: unknown;
-    onSelectedMemberChange: (m: unknown) => void;
-    noResultsText: string;
-    clearText: string;
-  }) => (
-    <div data-testid="member-search-picker">
-      {!selectedMember && (
-        <button
-          data-testid="select-member-btn"
-          onClick={() => onSelectedMemberChange({ id: 42, name: 'Seller Sam', email: 'sam@example.com' })}
-        >
-          Select Sam
-        </button>
-      )}
-      {selectedMember && (
-        <div data-testid="selected-member">
-          Seller Sam
-          <button onClick={() => onSelectedMemberChange(null)}>Clear</button>
-        </div>
-      )}
-    </div>
-  ),
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: string }) => (
-    <div data-testid="stat-card">
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/MemberSearchPicker', '../../components/PageHeader',
+// etc. directly, and vitest keys mocks per resolved module, so a barrel-only
+// mock never installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    MemberSearchPicker: ({
+      onSelectedMemberChange,
+      selectedMember,
+    }: {
+      label: string;
+      placeholder: string;
+      value: string;
+      onValueChange: (v: string) => void;
+      selectedMember: unknown;
+      onSelectedMemberChange: (m: unknown) => void;
+      noResultsText: string;
+      clearText: string;
+    }) => (
+      <div data-testid="member-search-picker">
+        {!selectedMember && (
+          <button
+            data-testid="select-member-btn"
+            onClick={() => onSelectedMemberChange({ id: 42, name: 'Seller Sam', email: 'sam@example.com' })}
+          >
+            Select Sam
+          </button>
+        )}
+        {selectedMember && (
+          <div data-testid="selected-member">
+            Seller Sam
+            <button onClick={() => onSelectedMemberChange(null)}>Clear</button>
+          </div>
+        )}
+      </div>
+    ),
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div>
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: string }) => (
+      <div data-testid="stat-card">
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/MemberSearchPicker', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
 
 // ─── Contexts ─────────────────────────────────────────────────────────────────
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };

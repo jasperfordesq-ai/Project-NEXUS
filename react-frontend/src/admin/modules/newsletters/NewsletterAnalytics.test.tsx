@@ -52,30 +52,46 @@ vi.mock('recharts', () => ({
 }));
 
 // Stub admin shared components
-vi.mock('@/admin/components', () => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  StatCard: ({
-    label,
-    value,
-    loading,
-  }: {
-    label: string;
-    value: string | number;
-    loading?: boolean;
-    [key: string]: unknown;
-  }) => (
-    <div data-testid="stat-card">
-      <span data-testid="stat-label">{label}</span>
-      {!loading && <span data-testid="stat-value">{value}</span>}
-      {loading && <span data-testid="stat-loading">…</span>}
-    </div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '@/admin/components/PageHeader' and '@/admin/components/StatCard'
+// (as relative '../../components/...', which resolves to the same modules)
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the stub
+// data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    StatCard: ({
+      label,
+      value,
+      loading,
+    }: {
+      label: string;
+      value: string | number;
+      loading?: boolean;
+      [key: string]: unknown;
+    }) => (
+      <div data-testid="stat-card">
+        <span data-testid="stat-label">{label}</span>
+        {!loading && <span data-testid="stat-value">{value}</span>}
+        {loading && <span data-testid="stat-loading">…</span>}
+      </div>
+    ),
+  };
+}
+
+vi.mock('@/admin/components', adminComponentsMock);
+vi.mock('@/admin/components/PageHeader', adminComponentsMock);
+vi.mock('@/admin/components/StatCard', adminComponentsMock);
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const makeAnalytics = (overrides: Record<string, unknown> = {}) => ({

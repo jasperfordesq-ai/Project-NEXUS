@@ -52,7 +52,13 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // Stub EmptyState
-vi.mock('../../components', async (importOriginal) => {
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/EmptyState' and '../../components/PageHeader'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+async function adminComponentsMock(importOriginal: <T>() => Promise<T>) {
   const orig = await importOriginal<Record<string, unknown>>();
   return {
     ...orig,
@@ -65,7 +71,11 @@ vi.mock('../../components', async (importOriginal) => {
       </div>
     ),
   };
-});
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 // Stub Select/Switch to prevent HeroUI jsdom issues
 vi.mock('@/components/ui', async (importOriginal) => {

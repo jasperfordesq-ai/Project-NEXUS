@@ -22,13 +22,26 @@ vi.mock('@/components/feedback', () => ({
   EmptyState: ({ title }: { title: string }) => <div data-testid="empty-state">{title}</div>,
 }));
 
-// Stub admin-specific sub-components that pull in lots of deps
-vi.mock('../../components', () => ({
-  StatCard: ({ title, value }: { title: string; value: unknown }) => (
-    <div data-testid="stat-card">{title}: {String(value)}</div>
-  ),
-  PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
-}));
+// Stub admin-specific sub-components that pull in lots of deps.
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/StatCard' and '../../components/PageHeader'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the stub
+// testids were never in the DOM. A function DECLARATION, not a const: vi.mock
+// calls are hoisted above the module body, so a const factory is still
+// uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    StatCard: ({ title, value }: { title: string; value: unknown }) => (
+      <div data-testid="stat-card">{title}: {String(value)}</div>
+    ),
+    PageHeader: ({ title }: { title: string }) => <div data-testid="page-header">{title}</div>,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 const mockToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() };
 

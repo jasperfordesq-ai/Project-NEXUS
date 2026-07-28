@@ -47,46 +47,62 @@ vi.mock('../../AdminMetaContext', () => ({
 }));
 
 // Stub heavy admin sub-components
-vi.mock('../../components', () => ({
-  DataTable: ({ data, isLoading, columns, emptyContent }: {
-    data: Record<string, unknown>[];
-    isLoading: boolean;
-    columns?: Array<{ key: string; label: string; render?: (item: Record<string, unknown>) => React.ReactNode }>;
-    emptyContent?: string;
-  }) => {
-    if (isLoading) return React.createElement('div', { role: 'status', 'aria-busy': 'true' }, 'Loading...');
-    if (!data || data.length === 0) return React.createElement('div', { 'data-testid': 'data-table-empty' }, emptyContent ?? 'No data');
-    return React.createElement('div', { 'data-testid': 'data-table' },
-      data.map((item, i) =>
-        React.createElement('div', { key: i, 'data-testid': `row-${item.id}` },
-          // Invoke column render functions to surface action buttons
-          columns
-            ? columns.map((col) =>
-                col.render
-                  ? React.createElement('span', { key: col.key }, col.render(item))
-                  : React.createElement('span', { key: col.key }, String(item[col.key] ?? ''))
-              )
-            : [
-                React.createElement('span', { key: 'title' }, String(item.title ?? '')),
-                React.createElement('span', { key: 'status' }, String(item.status ?? '')),
-              ]
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable', '../../components/PageHeader', '../../components/ConfirmModal'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    DataTable: ({ data, isLoading, columns, emptyContent }: {
+      data: Record<string, unknown>[];
+      isLoading: boolean;
+      columns?: Array<{ key: string; label: string; render?: (item: Record<string, unknown>) => React.ReactNode }>;
+      emptyContent?: string;
+    }) => {
+      if (isLoading) return React.createElement('div', { role: 'status', 'aria-busy': 'true' }, 'Loading...');
+      if (!data || data.length === 0) return React.createElement('div', { 'data-testid': 'data-table-empty' }, emptyContent ?? 'No data');
+      return React.createElement('div', { 'data-testid': 'data-table' },
+        data.map((item, i) =>
+          React.createElement('div', { key: i, 'data-testid': `row-${item.id}` },
+            // Invoke column render functions to surface action buttons
+            columns
+              ? columns.map((col) =>
+                  col.render
+                    ? React.createElement('span', { key: col.key }, col.render(item))
+                    : React.createElement('span', { key: col.key }, String(item[col.key] ?? ''))
+                )
+              : [
+                  React.createElement('span', { key: 'title' }, String(item.title ?? '')),
+                  React.createElement('span', { key: 'status' }, String(item.status ?? '')),
+                ]
+          )
         )
-      )
-    );
-  },
-  PageHeader: ({ title }: { title?: string }) =>
-    React.createElement('div', { 'data-testid': 'page-header' }, title),
-  StatusBadge: ({ status }: { status: string }) =>
-    React.createElement('span', { 'data-testid': 'status-badge' }, status),
-  ConfirmModal: ({ isOpen, onClose, onConfirm, title }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string }) =>
-    isOpen
-      ? React.createElement('div', { role: 'dialog', 'data-testid': 'confirm-modal' },
-          React.createElement('p', null, title),
-          React.createElement('button', { onClick: onConfirm, 'data-testid': 'confirm-btn' }, 'Confirm'),
-          React.createElement('button', { onClick: onClose, 'data-testid': 'cancel-btn' }, 'Cancel'),
-        )
-      : null,
-}));
+      );
+    },
+    PageHeader: ({ title }: { title?: string }) =>
+      React.createElement('div', { 'data-testid': 'page-header' }, title),
+    StatusBadge: ({ status }: { status: string }) =>
+      React.createElement('span', { 'data-testid': 'status-badge' }, status),
+    ConfirmModal: ({ isOpen, onClose, onConfirm, title }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; title: string }) =>
+      isOpen
+        ? React.createElement('div', { role: 'dialog', 'data-testid': 'confirm-modal' },
+            React.createElement('p', null, title),
+            React.createElement('button', { onClick: onConfirm, 'data-testid': 'confirm-btn' }, 'Confirm'),
+            React.createElement('button', { onClick: onClose, 'data-testid': 'cancel-btn' }, 'Cancel'),
+          )
+        : null,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/ConfirmModal', adminComponentsMock);
 
 vi.mock('@/components/ui', async () => (await import('@/test/uiMock')).uiMock);
 

@@ -41,7 +41,13 @@ vi.mock('../../AdminMetaContext', () => ({
 }));
 
 // Stub admin components — forward actions so buttons remain queryable
-vi.mock('../../components', async (importOriginal) => {
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/Abbr' and '../../components/PageHeader' directly,
+// and vitest keys mocks per resolved module, so a barrel-only mock never
+// installs for those imports.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+async function adminComponentsMock(importOriginal: <T>() => Promise<T>) {
   const original = await importOriginal<Record<string, unknown>>();
   return {
     ...original,
@@ -50,7 +56,11 @@ vi.mock('../../components', async (importOriginal) => {
     ),
     Abbr: ({ term }: { term: string }) => <abbr>{term}</abbr>,
   };
-});
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/Abbr', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 import { api } from '@/lib/api';
 import OperatingPolicyAdminPage from './OperatingPolicyAdminPage';

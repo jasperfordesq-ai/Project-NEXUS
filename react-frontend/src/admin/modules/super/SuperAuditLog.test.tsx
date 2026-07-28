@@ -31,44 +31,57 @@ vi.mock('@/contexts', () =>
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 
 // ── mock admin components ─────────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  DataTable: ({
-    data,
-    isLoading,
-    columns,
-  }: {
-    data: any[];
-    isLoading: boolean;
-    columns: any[];
-    [key: string]: any;
-  }) => (
-    <div data-testid="data-table">
-      {isLoading && (
-        <div role="status" aria-busy="true" aria-label="loading">
-          Loading
-        </div>
-      )}
-      {!isLoading && (
-        <ul>
-          {data.map((row) => (
-            <li key={String(row.id)}>
-              {columns.map((col: any) => (
-                <span key={col.key}>{col.render ? col.render(row) : row[col.key]}</span>
-              ))}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  ),
-  StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable' and '../../components/PageHeader'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the stub
+// testids were never in the DOM. A function DECLARATION, not a const: vi.mock
+// calls are hoisted above the module body, so a const factory is still
+// uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div>
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    DataTable: ({
+      data,
+      isLoading,
+      columns,
+    }: {
+      data: any[];
+      isLoading: boolean;
+      columns: any[];
+      [key: string]: any;
+    }) => (
+      <div data-testid="data-table">
+        {isLoading && (
+          <div role="status" aria-busy="true" aria-label="loading">
+            Loading
+          </div>
+        )}
+        {!isLoading && (
+          <ul>
+            {data.map((row) => (
+              <li key={String(row.id)}>
+                {columns.map((col: any) => (
+                  <span key={col.key}>{col.render ? col.render(row) : row[col.key]}</span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    ),
+    StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 import SuperAuditLog from './SuperAuditLog';
 

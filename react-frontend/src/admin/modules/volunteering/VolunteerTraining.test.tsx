@@ -40,54 +40,68 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/lib/logger', () => ({ logError: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
-// Stub heavy admin components
-vi.mock('../../components', () => ({
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div>
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  StatCard: ({ label, value }: { label: string; value: number }) => (
-    <div data-testid="stat-card">
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  ),
-  EmptyState: ({ title, description }: { title: string; description?: string }) => (
-    <div data-testid="empty-state">
-      <p>{title}</p>
-      {description && <p>{description}</p>}
-    </div>
-  ),
-  DataTable: ({
-    data,
-    isLoading,
-    columns,
-  }: {
-    data: Array<Record<string, unknown>>;
-    isLoading?: boolean;
-    columns: Array<{ key: string; render?: (item: Record<string, unknown>) => React.ReactNode }>;
-  }) => (
-    <div data-testid="data-table">
-      {isLoading && <div role="status" aria-busy="true" />}
-      {data.map((item) => (
-        <div key={String(item.id)} data-testid={`row-${String(item.id)}`}>
-          <span>{String(item.volunteer_name ?? '')}</span>
-          <span>{String(item.training_type ?? '')}</span>
-          <span>{String(item.status ?? '')}</span>
-          {columns.map((col) =>
-            col.render ? (
-              <div key={col.key} data-testid={`col-${col.key}-${String(item.id)}`}>
-                {col.render(item)}
-              </div>
-            ) : null
-          )}
-        </div>
-      ))}
-    </div>
-  ),
-}));
+// Stub heavy admin components.
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/DataTable' (and friends) directly, and vitest keys
+// mocks per resolved module, so a barrel-only mock never installs for those
+// imports — the real components rendered and the stub testids were never in the
+// DOM. A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run.
+function adminComponentsMock() {
+  return {
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div>
+        <h1>{title}</h1>
+        {actions}
+      </div>
+    ),
+    StatCard: ({ label, value }: { label: string; value: number }) => (
+      <div data-testid="stat-card">
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+    ),
+    EmptyState: ({ title, description }: { title: string; description?: string }) => (
+      <div data-testid="empty-state">
+        <p>{title}</p>
+        {description && <p>{description}</p>}
+      </div>
+    ),
+    DataTable: ({
+      data,
+      isLoading,
+      columns,
+    }: {
+      data: Array<Record<string, unknown>>;
+      isLoading?: boolean;
+      columns: Array<{ key: string; render?: (item: Record<string, unknown>) => React.ReactNode }>;
+    }) => (
+      <div data-testid="data-table">
+        {isLoading && <div role="status" aria-busy="true" />}
+        {data.map((item) => (
+          <div key={String(item.id)} data-testid={`row-${String(item.id)}`}>
+            <span>{String(item.volunteer_name ?? '')}</span>
+            <span>{String(item.training_type ?? '')}</span>
+            <span>{String(item.status ?? '')}</span>
+            {columns.map((col) =>
+              col.render ? (
+                <div key={col.key} data-testid={`col-${col.key}-${String(item.id)}`}>
+                  {col.render(item)}
+                </div>
+              ) : null
+            )}
+          </div>
+        ))}
+      </div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/DataTable', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/EmptyState', adminComponentsMock);
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const makeRecord = (overrides = {}) => ({

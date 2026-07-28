@@ -35,14 +35,29 @@ vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
 // ─── Stub heavy admin children ────────────────────────────────────────────────
-vi.mock('../../components', () => ({
-  StatCard: ({ label, value }: { label: string; value: unknown }) => (
-    <div data-testid="stat-card">{label}: {String(value)}</div>
-  ),
-  PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
-    <div data-testid="page-header">{title}{actions}</div>
-  ),
-}));
+// Bound to the barrel AND to each component's own path: the page under test
+// imports '../../components/StatCard', '../../components/PageHeader'
+// directly, and vitest keys mocks per resolved module, so a barrel-only mock
+// never installs for those imports — the real components rendered and the
+// stub data-testids were never in the DOM.
+// A function DECLARATION, not a const: vi.mock calls are hoisted above the
+// module body, so a const factory is still uninitialised when they run
+// ("Cannot access 'adminComponentsMock' before initialization"). Declarations
+// hoist with it.
+function adminComponentsMock() {
+  return {
+    StatCard: ({ label, value }: { label: string; value: unknown }) => (
+      <div data-testid="stat-card">{label}: {String(value)}</div>
+    ),
+    PageHeader: ({ title, actions }: { title: string; actions?: React.ReactNode }) => (
+      <div data-testid="page-header">{title}{actions}</div>
+    ),
+  };
+}
+
+vi.mock('../../components', adminComponentsMock);
+vi.mock('../../components/StatCard', adminComponentsMock);
+vi.mock('../../components/PageHeader', adminComponentsMock);
 
 // Stub HeroUI Select / Switch (can infinite-loop in jsdom)
 vi.mock('@/components/ui', async (importOriginal) => {
