@@ -168,7 +168,27 @@ function runVitest(files, root, extraArgs) {
   // isolate true, fileParallelism false); isolate gives each file a clean
   // environment, which is what keeps a 150-file shard from accumulating. Let the
   // config decide rather than overriding it with a 14-file step's workaround.
-  const args = [vitestEntry, 'run', ...files, ...extraArgs];
+  // --retry=1 is what lets this job GATE rather than merely measure. Across the
+  // first three shakedown runs two suites failed once and passed on a re-run
+  // (ConversationPage in the separate 102-file gate, and shard 2), so zero runs
+  // had all eight shards green on first pass. Turned blocking at that flake rate
+  // the job would red main semi-randomly and teach everyone to ignore CI — the
+  // exact habit this work exists to reverse.
+  //
+  // Retry, not quarantine, because quarantining a flake buys green by DELETING
+  // coverage. One retry distinguishes the two failure modes honestly: a flake
+  // passes on its second attempt, a genuinely broken test fails both and still
+  // reds the shard.
+  //
+  // 🔴 The cost, stated plainly: retries make flakiness quieter, not fixed.
+  // Vitest prints a "retry" marker for every test that needed one, so a suite
+  // that retries persistently is a bug to fix, not a permanent arrangement. If
+  // you find yourself relying on this, fix the test.
+  //
+  // An explicit --retry in extraArgs wins, so a caller can pass --retry=0 to see
+  // the raw first-pass result when hunting flakes deliberately.
+  const retryArgs = extraArgs.some((a) => a.startsWith('--retry')) ? [] : ['--retry=1'];
+  const args = [vitestEntry, 'run', ...files, ...retryArgs, ...extraArgs];
 
   // The package.json test scripts all raise the heap; the inline ci.yml vitest
   // calls did not and inherited 8192. Set it here so every path agrees.

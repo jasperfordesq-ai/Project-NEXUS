@@ -495,6 +495,16 @@ jobs:
         timeout-minutes: 10
         run: npm run check:test-types
 
+      # Ceiling on the full-suite job's quarantine list. It lives HERE, in a
+      # blocking job, and not in react-tests-full: that job carries
+      # continue-on-error at the JOB level, which swallows every step inside it,
+      # so a gate placed there would read as enforced while being unable to fail
+      # the build. The quarantine list is the obvious way to fake a green shard,
+      # so its ceiling is enforced from the start rather than at flip time.
+      - name: Quarantine Budget Ceiling (BLOCKING)
+        working-directory: react-frontend
+        run: npm run check:quarantine-budget
+
       # ESLint ratchet (BLOCKING). Cap tracks the current warning count (25) with
       # a small buffer; it must only ever be LOWERED, never raised. Previously the
       # cap was 1000 and eslint ran in no CI step at all, so warnings were ungated.
