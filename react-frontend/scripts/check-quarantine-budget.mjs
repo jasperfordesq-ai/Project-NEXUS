@@ -44,15 +44,19 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 
 // Committed ceiling. LOWER ONLY — never raise it to make a red shard green.
 //
-// 2026-07-28: set to 123. Seeded at 39 from a partial local census, then
-// extended to 117 with failures the first CI shakedown found (most of which fail
-// only on a Linux runner, so a local sweep could not have seen them), then to 123
-// with the six real failures that surfaced once shard 3 stopped hanging.
+// 2026-07-28: 123 -> 106. It got to 123 by growing: seeded at 39 from a partial
+// local census, extended to 117 with failures the first CI shakedown found (most
+// of which fail only on a Linux runner, so a local sweep could not have seen
+// them), then 123 with the six real failures that surfaced once shard 3 stopped
+// hanging. Lowered to 106 the same day: the quarantine visibility step showed 17
+// of the 123 passing, and each was re-verified locally with --retry=0 before
+// removal so that none was merely retry-rescued. Those 17 suites are back under
+// the full-suite job, which is the direction this number is supposed to move.
 //
 // The single legitimate reason to raise this is a genuinely flaky suite that
 // cannot be stabilised, and even then prefer the runner's --retry=1 first: retry
 // keeps the coverage, quarantine throws it away. If you raise it, say why here.
-const BASELINE = 123;
+const BASELINE = 106;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 
