@@ -19,7 +19,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { classifyRisk, compareToBaseline, scan, toBaseline } from './audit-dead-mocks.mjs';
+import { AUDITED_BARRELS, classifyRisk, compareToBaseline, scan, toBaseline } from './audit-dead-mocks.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const scriptPath = path.join(__dirname, 'audit-dead-mocks.mjs');
@@ -37,6 +37,14 @@ const CONTEXTS_BARREL = `
 export { TenantProvider, useTenant } from './TenantContext';
 export { AuthProvider, useAuth } from './AuthContext';
 export { ToastProvider, useToast } from './ToastContext';
+`;
+
+// The fixture must provide a directory for EVERY entry in AUDITED_BARRELS, or the
+// scanner reports the missing ones as unresolved and the blind-scan assertions
+// below stop measuring what they claim to. Added with '@/admin/components'.
+const ADMIN_BARREL = `
+export { PageHeader } from './PageHeader';
+export { StatCard } from './StatCard';
 `;
 
 /**
@@ -65,6 +73,9 @@ function writeFixture(files) {
       'export function TenantProvider() { return null; }\n',
     'contexts/ToastContext.tsx': 'export function useToast() { return null; }\nexport function ToastProvider() { return null; }\n',
     'contexts/index.ts': CONTEXTS_BARREL,
+    'admin/components/PageHeader.tsx': 'export function PageHeader() { return null; }\n',
+    'admin/components/StatCard.tsx': 'export function StatCard() { return null; }\n',
+    'admin/components/index.ts': ADMIN_BARREL,
     'test/uiMock.tsx': 'export const uiMock = {} as Record<string, unknown>;\n',
   };
 
@@ -610,7 +621,9 @@ test('decodes a total-shape helper: a DEFAULTS key the test never named is still
   assert.equal(result.rows[0].directPath, '@/contexts/TenantContext');
   assert.equal(result.unresolvedFactoryCount, 0);
   assert.deepEqual(result.unresolvedBarrels, []);
-  assert.equal(result.auditedBarrelCount, 2);
+  // Derived, not hardcoded: the fixture provides every audited barrel, so adding
+  // one to AUDITED_BARRELS must not require editing this number.
+  assert.equal(result.auditedBarrelCount, AUDITED_BARRELS.length);
 });
 
 test('decodes a total-shape helper pulled in by require() inside the factory', () => {
@@ -749,7 +762,8 @@ test('surfaces an audited barrel whose index cannot be resolved', () => {
   const blind = scan({ root });
   assert.deepEqual(blind.rows, [], 'rows evaporate — that is the failure mode');
   assert.deepEqual(blind.unresolvedBarrels, ['@/components/ui']);
-  assert.equal(blind.auditedBarrelCount, 1);
+  // Every other audited barrel still resolves; only the one hidden above is lost.
+  assert.equal(blind.auditedBarrelCount, AUDITED_BARRELS.length - 1);
   // testFileCount alone cannot see this vector: the tests are all still there.
   assert.equal(blind.testFileCount, 1);
 });

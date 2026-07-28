@@ -95,6 +95,16 @@ const BASELINE_RELATIVE_PATH = 'src/test/dead-barrel-mocks.baseline.json';
 export const AUDITED_BARRELS = [
   { dir: 'components/ui', specifier: '@/components/ui' },
   { dir: 'contexts', specifier: '@/contexts' },
+  // Added 2026-07-28. This barrel was the scanner's largest blind spot, and it
+  // was costing real coverage rather than merely being untidy: the dominant
+  // cause of quarantined admin suites is a stub on '@/admin/components'
+  // rendering data-testid="page-header" / "stat-card" / "data-table" while the
+  // page imports the same component by its own path (often relative, e.g.
+  // `from '../components/PageHeader'`), so the stub never installs, the real
+  // component renders without those testids, and the query fails. None of those
+  // testids exists in any non-test file. f022b3721 already proved the defect
+  // reaches admin components; this makes it measured instead of anecdotal.
+  { dir: 'admin/components', specifier: '@/admin/components' },
 ];
 
 const RESOLVE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '.jsx'];

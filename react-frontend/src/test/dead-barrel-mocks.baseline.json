@@ -1,15 +1,93 @@
 {
   "_README": "GENERATED FILE — never hand-edit. Shrink-only ratchet of dead barrel-mock overrides (a vi.mock on @/components/ui or @/contexts whose override the module under test bypasses by importing the symbol from its direct path). Regenerate with: npm run audit:dead-mocks -- --baseline. Enforced by src/components/ui/BarrelMock.contract.test.ts (runs in the blocking test:ui-contracts CI step) and npm run audit:dead-mocks.",
   "offenders": {
+    "src/admin/modules/AdminNotFound.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
     "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
       "@/components/ui": [
         "Button"
+      ]
+    },
+    "src/admin/modules/advertising/AdCampaignAdminPage.test.tsx": {
+      "@/admin/components": [
+        "DataTable",
+        "PageHeader",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/caring-community/CaringCommunityAdmin.test.tsx": {
+      "@/admin/components": [
+        "PageHeader",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/caring-community/CaringCommunityWorkflowPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/config/TranslationConfig.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/dashboard/AdminDashboard.test.tsx": {
+      "@/admin/components": [
+        "PageHeader",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/enterprise/GdprAuditLog.test.tsx": {
+      "@/admin/components": [
+        "DataTable",
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/enterprise/GdprRequestDetail.test.tsx": {
+      "@/admin/components": [
+        "PageHeader",
+        "StatusBadge"
+      ]
+    },
+    "src/admin/modules/federation/MyProfile.test.tsx": {
+      "@/admin/components": [
+        "PageHeader"
+      ]
+    },
+    "src/admin/modules/groups/GroupOrganization.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal"
+      ]
+    },
+    "src/admin/modules/legal/FadpAdminPage.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal"
+      ]
+    },
+    "src/admin/modules/national/NationalKissDashboardPage.test.tsx": {
+      "@/admin/components": [
+        "PageHeader",
+        "StatCard"
+      ]
+    },
+    "src/admin/modules/newsletters/NewsletterAnalytics.test.tsx": {
+      "@/admin/components": [
+        "PageHeader",
+        "StatCard"
       ]
     },
     "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
       "@/components/ui": [
         "Button",
         "Card"
+      ]
+    },
+    "src/admin/modules/super/BulkOperations.test.tsx": {
+      "@/admin/components": [
+        "ConfirmModal"
       ]
     },
     "src/components/availability/AvailabilityGrid.test.tsx": {
@@ -228,7 +306,7 @@
     }
   },
   "totals": {
-    "offenderFileCount": 28,
-    "rowCount": 115
+    "offenderFileCount": 42,
+    "rowCount": 137
   }
 }
