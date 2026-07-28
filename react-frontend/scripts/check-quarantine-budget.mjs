@@ -53,11 +53,14 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // removal so that none was merely retry-rescued. Those 17 suites are back under
 // the full-suite job, which is the direction this number is supposed to move.
 // Then 106 -> 105: CreateCoursePage.test.tsx fixed and removed (13/13).
+// Then 105 -> 104: Abbr.test.tsx fixed and removed (8/8). EnterpriseModules was
+// never on the list -- its apparent failure was a transient local resolve error,
+// not a quarantine entry; see the note in the project memory before re-adding it.
 //
 // The single legitimate reason to raise this is a genuinely flaky suite that
 // cannot be stabilised, and even then prefer the runner's --retry=1 first: retry
 // keeps the coverage, quarantine throws it away. If you raise it, say why here.
-const BASELINE = 105;
+const BASELINE = 104;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

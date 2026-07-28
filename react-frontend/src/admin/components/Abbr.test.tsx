@@ -9,6 +9,20 @@ import { createMockContexts } from '@/test/mock-contexts';
 
 vi.mock('@/contexts', () => createMockContexts());
 
+// The test environment loads no i18n resources, so the real t() returned an EMPTY
+// string for admin_glossary keys here while CI fell back to returning the key —
+// this suite's result therefore depended on which machine ran it. Pinning t() to
+// the identity function makes the title assertion below mean the same thing
+// everywhere. It asserts the component looks the definition up under the right
+// key, which is the part that is this component's job; whether the German
+// translation of terms.sla is correct is not this test's business.
+// Partial, per this repo's convention: something in the tree imports
+// initReactI18next, and a wholesale replacement drops it.
+vi.mock('react-i18next', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-i18next')>()),
+  useTranslation: () => ({ t: (key: string) => key }),
+}));
+
 import { Abbr, ABBR_TERMS } from './Abbr';
 
 /** <abbr> has no implicit ARIA role — query by tag name. */

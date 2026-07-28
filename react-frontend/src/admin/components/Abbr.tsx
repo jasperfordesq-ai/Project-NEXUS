@@ -46,7 +46,18 @@ interface AbbrProps {
  */
 export function Abbr({ term, children, className }: AbbrProps) {
   const { t } = useTranslation('admin_glossary');
-  const definition = t(ABBR_TERMS[term]);
+  const termKey = ABBR_TERMS[term];
+
+  // An <abbr> with an empty title is worse than no <abbr>: assistive tech
+  // announces an abbreviation and then offers no expansion for it. Unknown terms
+  // therefore render their content plainly. Callers are type-constrained to known
+  // terms, so this only bites if a key is dropped from ABBR_TERMS while a call
+  // site still passes it.
+  if (!termKey) {
+    return <>{children ?? term}</>;
+  }
+
+  const definition = t(termKey);
 
   return (
     <Tooltip
