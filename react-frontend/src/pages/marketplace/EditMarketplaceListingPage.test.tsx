@@ -114,50 +114,15 @@ vi.mock('@/components/location/PlaceAutocompleteInput', () => ({
   ),
 }));
 
-// Stub HeroUI components that can infinite-loop
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Select: ({ children, label, onSelectionChange, selectedKeys }: {
-      children?: React.ReactNode;
-      label?: string;
-      onSelectionChange?: (keys: Set<string>) => void;
-      selectedKeys?: string[];
-    }) => (
-      <select
-        aria-label={label ?? 'select'}
-        value={selectedKeys?.[0] ?? ''}
-        onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}
-      >
-        {children}
-      </select>
-    ),
-    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
-      <option value={id ?? ''}>{children}</option>
-    ),
-    Switch: ({ children, isSelected, onValueChange }: {
-      children?: React.ReactNode;
-      isSelected?: boolean;
-      onValueChange?: (v: boolean) => void;
-    }) => (
-      <label>
-        <input
-          type="checkbox"
-          checked={isSelected ?? false}
-          onChange={(e) => onValueChange?.(e.target.checked)}
-        />
-        {children}
-      </label>
-    ),
-    RadioGroup: ({ children, label }: { children?: React.ReactNode; label?: string }) => (
-      <fieldset aria-label={label ?? 'radio group'}>{children}</fieldset>
-    ),
-    Radio: ({ children, value }: { children?: React.ReactNode; value?: string }) => (
-      <label><input type="radio" value={value ?? ''} readOnly />{children}</label>
-    ),
-  };
-});
+// A vi.mock('@/components/ui', …) override of Select/SelectItem/Switch/
+// RadioGroup/Radio was removed here (dead-mock treatment: DELETE, not retarget).
+// It was commented "stub HeroUI components that can infinite-loop", but the page
+// imports every one of those from its own direct path, so the override never
+// applied and the real components have always rendered in this suite — which
+// passes, so the loop it guarded against does not occur. Retargeting the stubs
+// at the direct paths would switch five stand-ins ON for the first time and
+// change what these tests exercise; deleting the fiction keeps behaviour
+// identical and stops the file claiming a safety it never had.
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const { makeListing, makeCategories } = vi.hoisted(() => ({

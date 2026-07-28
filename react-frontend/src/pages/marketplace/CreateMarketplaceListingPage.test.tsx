@@ -80,65 +80,14 @@ vi.mock('@/components/location/PlaceAutocompleteInput', () => ({
   ),
 }));
 
-// Stub Select/RadioGroup to avoid HeroUI loops
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Select: ({ children, label, selectedKeys, onSelectionChange }: {
-      children?: React.ReactNode; label?: string;
-      selectedKeys?: Iterable<string>; onSelectionChange?: (keys: Set<string>) => void;
-    }) => {
-      const keys = selectedKeys ? Array.from(selectedKeys) : [];
-      return (
-        <select
-          aria-label={label}
-          value={keys[0] ?? ''}
-          onChange={(e) => onSelectionChange?.(new Set([e.target.value]))}
-        >
-          {children}
-        </select>
-      );
-    },
-    SelectItem: ({ children, id }: { children?: React.ReactNode; id?: string }) => (
-      <option value={id}>{children}</option>
-    ),
-    RadioGroup: ({ children, label, value, onValueChange, onChange }: {
-      children?: React.ReactNode; label?: string; value?: string;
-      onValueChange?: (v: string) => void; onChange?: (v: string) => void;
-    }) => (
-      <fieldset
-        aria-label={label}
-        onChange={(e) => {
-          const target = e.target as HTMLInputElement;
-          if (target.type === 'radio' && target.value) {
-            onValueChange?.(target.value);
-            onChange?.(target.value);
-          }
-        }}
-      >
-        {children}
-      </fieldset>
-    ),
-    Radio: ({ children, value }: { children?: React.ReactNode; value?: string }) => (
-      <label><input type="radio" name="price_type" value={value} />{children}</label>
-    ),
-    Autocomplete: ({ children, label, onInputChange, onSelectionChange }: {
-      children?: React.ReactNode; label?: string;
-      onInputChange?: (v: string) => void;
-      onSelectionChange?: (key: string | null) => void;
-    }) => (
-      <input
-        aria-label={label}
-        onChange={(e) => {
-          onInputChange?.(e.target.value);
-          onSelectionChange?.(e.target.value);
-        }}
-      />
-    ),
-    AutocompleteItem: ({ children }: { children?: React.ReactNode }) => <option>{children}</option>,
-  };
-});
+// A vi.mock('@/components/ui', …) override of Select/SelectItem/RadioGroup/
+// Radio/Autocomplete/AutocompleteItem was removed here (dead-mock treatment:
+// DELETE, not retarget). It was commented "stub Select/RadioGroup to avoid
+// HeroUI loops", but the page imports each of those from its own direct path, so
+// the override never applied and the real components have always rendered in
+// this suite — which passes, so the loops it guarded against do not occur.
+// Retargeting would switch six stand-ins ON for the first time and change what
+// these tests exercise; deleting keeps behaviour identical.
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeCategories = () => [

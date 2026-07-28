@@ -57,28 +57,14 @@ vi.mock('@/contexts', () =>
 vi.mock('@/hooks', () => ({ usePageTitle: vi.fn() }));
 vi.mock('@/components/seo/PageMeta', () => ({ PageMeta: () => null }));
 
-// Stub Switch to avoid infinite loops in jsdom
-vi.mock('@/components/ui', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@/components/ui')>();
-  return {
-    ...orig,
-    Switch: ({ isSelected, onValueChange, children }: {
-      isSelected?: boolean; onValueChange?: (v: boolean) => void; children?: React.ReactNode;
-    }) => (
-      <label>
-        <input type="checkbox" checked={!!isSelected} onChange={(e) => onValueChange?.(e.target.checked)} />
-        {children}
-      </label>
-    ),
-    RadioGroup: ({ children, label, value, onChange }: {
-      children?: React.ReactNode; label?: string; value?: string;
-      onChange?: (v: string) => void;
-    }) => <fieldset aria-label={label}>{children}</fieldset>,
-    Radio: ({ children, value }: { children?: React.ReactNode; value?: string }) => (
-      <label><input type="radio" value={value} />{children}</label>
-    ),
-  };
-});
+// A vi.mock('@/components/ui', …) override of Switch/RadioGroup/Radio was
+// removed here (dead-mock treatment: DELETE, not retarget). It was commented
+// "stub Switch to avoid infinite loops in jsdom", but the page imports all three
+// from their own direct paths, so the override never applied and the real
+// components have always rendered in this suite — which passes, so the loops it
+// guarded against do not occur. Retargeting would switch three stand-ins ON for
+// the first time and change what these tests exercise; deleting keeps behaviour
+// identical.
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 const makeStatus = (overrides = {}) => ({

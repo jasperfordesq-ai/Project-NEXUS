@@ -225,36 +225,10 @@
         "SearchField",
         "Spinner"
       ]
-    },
-    "src/pages/marketplace/CreateMarketplaceListingPage.test.tsx": {
-      "@/components/ui": [
-        "Autocomplete",
-        "AutocompleteItem",
-        "Radio",
-        "RadioGroup",
-        "Select",
-        "SelectItem"
-      ]
-    },
-    "src/pages/marketplace/EditMarketplaceListingPage.test.tsx": {
-      "@/components/ui": [
-        "Radio",
-        "RadioGroup",
-        "Select",
-        "SelectItem",
-        "Switch"
-      ]
-    },
-    "src/pages/marketplace/MerchantOnboardingPage.test.tsx": {
-      "@/components/ui": [
-        "Radio",
-        "RadioGroup",
-        "Switch"
-      ]
     }
   },
   "totals": {
-    "offenderFileCount": 31,
-    "rowCount": 129
+    "offenderFileCount": 28,
+    "rowCount": 115
   }
 }

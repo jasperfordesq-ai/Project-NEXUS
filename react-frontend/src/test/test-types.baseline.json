@@ -1878,8 +1878,7 @@
     },
     "src/pages/marketplace/CreateMarketplaceListingPage.test.tsx": {
       "TS2322": 1,
-      "TS2345": 1,
-      "TS2352": 1
+      "TS2345": 1
     },
     "src/pages/marketplace/EditMarketplaceListingPage.test.tsx": {
       "TS2322": 1,
@@ -2227,6 +2226,6 @@
   },
   "totals": {
     "fileCount": 650,
-    "errorCount": 1951
+    "errorCount": 1950
   }
 }
