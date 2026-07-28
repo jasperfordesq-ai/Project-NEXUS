@@ -649,32 +649,34 @@ jobs:
   # green build — which is why breakage here is only ever found in large batches
   # (302 dead mocks, ~90 dead suites in July 2026).
   #
-  # NON-BLOCKING FOR NOW, DELIBERATELY. This job's first duty is to measure: the
-  # quarantine baseline was seeded from a partial local census (335 of 1,283
-  # suites), and the remaining failures — plus any that fail only on a Linux
-  # runner — must be catalogued before it can gate anything. Flip
-  # continue-on-error off once several consecutive runs are clean; that flip is
-  # the whole point and should not be left undone.
-  #
-  # 🔴 WHEN FLIPPING TO BLOCKING, three things must happen together, or the job
-  # will look enforced while enforcing nothing:
-  #   1. remove `continue-on-error: true` below
-  #   2. add `react-tests-full` to the `needs:` list of the release-gate job —
-  #      it aggregates needs.*.result, so a job absent from that list cannot
-  #      fail the gate no matter what it concludes
-  #   3. add the scripts/check-quarantine-budget.mjs ceiling so the list cannot
-  #      simply be grown to make a red shard green
+  # BLOCKING as of 2026-07-28. It spent its shakedown non-blocking while the
+  # quarantine list was catalogued, and was flipped once two consecutive runs had
+  # all eight shards green with zero real failures and zero retries needed
+  # (30360722853 and 30363569366). All three parts of the flip are in place:
+  #   1. no continue-on-error on this job
+  #   2. `react-tests-full` IS in the release-gate `needs:` list — that job
+  #      aggregates needs.*.result, so a job absent from the list cannot fail the
+  #      gate no matter what it concludes. Adding a job here without adding it
+  #      there produces something that reads as enforced and enforces nothing.
+  #   3. the quarantine ceiling (scripts/check-quarantine-budget.mjs) runs in
+  #      react-build, so the list cannot be grown to make a red shard green.
+  #      It lives there and not here because a step inside THIS job would have
+  #      been swallowed by the job-level continue-on-error during shakedown.
   #
   # fail-fast is off so one shard's failure does not cancel the other seven and
   # hide their results. --reporter=verbose names each file as it starts, so a
   # shard that hits the timeout identifies the suite that hung.
+  #
+  # The runner passes --retry=1: an intermittent test passes on its second
+  # attempt while a genuinely broken one fails twice and still reds the shard.
+  # That is what makes this job safe to gate on. It does not make flakiness
+  # acceptable — a suite that keeps needing the retry is a bug to fix.
   react-tests-full:
     name: React Full Suite (shard ${{ matrix.shard }}/8)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -1742,6 +1744,7 @@ jobs:
       - changes
       - php-checks
       - react-build
+      - react-tests-full
       - api-contract
       - docker-verify
       - dockerfile-drift
