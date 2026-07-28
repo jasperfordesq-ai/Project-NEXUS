@@ -159,14 +159,16 @@ function runVitest(files, root, extraArgs) {
     return 2;
   }
 
-  const args = [
-    vitestEntry,
-    'run',
-    ...files,
-    '--pool=forks',
-    '--poolOptions.forks.singleFork=true',
-    ...extraArgs,
-  ];
+  // Deliberately NOT --poolOptions.forks.singleFork=true. That flag belongs to
+  // the 14-file smoke step, where it fixed an IPC channel hang. At ~150 files it
+  // causes a different hang: one process runs every file, and jsdom/React Aria
+  // state plus heap accumulate until the run stalls — src/test/setup.ts already
+  // forces a GC and wipes document.body after each file to fight exactly this.
+  // vitest.config.ts is tuned for the whole suite (pool forks, maxForks 2,
+  // isolate true, fileParallelism false); isolate gives each file a clean
+  // environment, which is what keeps a 150-file shard from accumulating. Let the
+  // config decide rather than overriding it with a 14-file step's workaround.
+  const args = [vitestEntry, 'run', ...files, ...extraArgs];
 
   // The package.json test scripts all raise the heap; the inline ci.yml vitest
   // calls did not and inherited 8192. Set it here so every path agrees.
