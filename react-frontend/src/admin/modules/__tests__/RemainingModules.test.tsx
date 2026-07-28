@@ -6,7 +6,7 @@
 /**
  * Batch render tests for remaining untested admin modules:
  * - BlogPostForm, SmartMatchMonitoring, SmartMatchUsers,
- *   MatchingDiagnostic, NexusScoreAnalytics, LegalDocVersionForm,
+ *   MatchingDiagnostic, NexusScoreAnalytics,
  *   LegalDocVersionList, CampaignForm, CreateBadge, GamificationHub,
  *   VolunteerApprovals, VolunteeringOverview, VolunteerOrganizations
  *
@@ -388,30 +388,12 @@ describe('NexusScoreAnalytics', () => {
   });
 });
 
-// ─── LegalDocVersionForm ────────────────────────────────────────────────────
-
-
-import LegalDocVersionForm from '../enterprise/LegalDocVersionForm';
-
-describe('LegalDocVersionForm', () => {
-  it('renders without crashing with required props inside Modal', () => {
-    render(
-      <W>
-        <Modal isOpen={true} onClose={vi.fn()}>
-          <ModalContent>
-            <LegalDocVersionForm
-              documentId={1}
-              onSuccess={vi.fn()}
-              onCancel={vi.fn()}
-            />
-          </ModalContent>
-        </Modal>
-      </W>
-    );
-    // Modal content renders into a portal on document.body, not into `container`.
-    expect(document.body.querySelector('div')).toBeTruthy();
-  });
-});
+// LegalDocVersionForm's block was removed here: the component was deleted in
+// 3a7cc6463, which replaced the modal form with the full-page LegalDocEditor
+// (covered by src/admin/components/LegalDocEditor.test.tsx). The import was left
+// behind and could not resolve, which failed this ENTIRE file at transform time
+// — so every other suite in it was silently absent rather than reported failing.
+// No coverage is lost by deleting it; there is nothing left to cover.
 
 // ─── LegalDocVersionList ────────────────────────────────────────────────────
 

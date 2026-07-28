@@ -52,11 +52,12 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // of the 123 passing, and each was re-verified locally with --retry=0 before
 // removal so that none was merely retry-rescued. Those 17 suites are back under
 // the full-suite job, which is the direction this number is supposed to move.
+// Then 106 -> 105: CreateCoursePage.test.tsx fixed and removed (13/13).
 //
 // The single legitimate reason to raise this is a genuinely flaky suite that
 // cannot be stabilised, and even then prefer the runner's --retry=1 first: retry
 // keeps the coverage, quarantine throws it away. If you raise it, say why here.
-const BASELINE = 106;
+const BASELINE = 105;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

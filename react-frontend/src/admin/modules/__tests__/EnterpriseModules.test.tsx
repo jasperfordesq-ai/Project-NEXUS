@@ -174,12 +174,10 @@ vi.mock('../../api/adminApi', () => ({
   },
 }));
 
-// Mock the LegalDocVersionForm and LegalDocVersionComparison sub-components
-// since LegalDocVersionList imports them
-vi.mock('../enterprise/LegalDocVersionForm', () => ({
-  default: () => <div data-testid="mock-legal-version-form">LegalDocVersionForm</div>,
-}));
-
+// Mock the LegalDocVersionComparison sub-component since LegalDocVersionList
+// imports it. The sibling mock for LegalDocVersionForm was removed: that
+// component was deleted in 3a7cc6463 (replaced by the full-page LegalDocEditor)
+// and LegalDocVersionList no longer imports it, so the path no longer resolves.
 vi.mock('../enterprise/LegalDocVersionComparison', () => ({ default: ({ onClose: _onClose }: Record<string, unknown>) => <div data-testid="mock-legal-version-comparison">LegalDocVersionComparison</div>,
 }));
 

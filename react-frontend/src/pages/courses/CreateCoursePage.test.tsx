@@ -12,13 +12,20 @@ const mockNavigate = vi.fn();
 const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();
 
+// Route params the router mock reports. Held in a mutable box so a describe can
+// switch between create mode ({}) and edit mode ({ id }) in beforeEach. The edit
+// block previously did `vi.mocked(await import('react-router-dom')).useParams = …`
+// inside a NON-async beforeEach, which is a syntax error — the whole file failed
+// to transform, so every test in it was silently absent rather than failing.
+const mockRouteParams: { current: Record<string, string | undefined> } = { current: {} };
+
 vi.mock('react-router-dom', async (importOriginal) => {
   const real = await importOriginal<typeof import('react-router-dom')>();
   return {
     ...real,
     useNavigate: () => mockNavigate,
-    // Default: create mode (no :id param)
-    useParams: () => ({}),
+    // Create mode by default; the edit-mode describe sets mockRouteParams.
+    useParams: () => mockRouteParams.current,
   };
 });
 
@@ -114,6 +121,10 @@ const CREATED_COURSE = {
 describe('CreateCoursePage — create mode (no :id param)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set explicitly rather than relying on the initial value: the edit-mode
+    // describe below mutates it, so leaving this implicit would make these
+    // tests depend on declaration order.
+    mockRouteParams.current = {};
     mockCategoriesFn.mockResolvedValue({ success: true, data: CATEGORIES });
     mockCreateFn.mockResolvedValue({ success: true, data: CREATED_COURSE });
   });
@@ -154,20 +165,12 @@ describe('CreateCoursePage — create mode (no :id param)', () => {
     const titleInput = screen.getAllByRole('textbox')[0];
     fireEvent.change(titleInput, { target: { value: 'My New Course' } });
 
-    // Click the Save button — it's the primary button
-    const buttons = screen.getAllByRole('button');
-    const saveBtn = buttons.find(
-      (b) => !b.hasAttribute('disabled') && !b.getAttribute('aria-disabled'),
-    );
-    expect(saveBtn).toBeTruthy();
-    if (saveBtn) {
-      fireEvent.click(saveBtn);
-      await waitFor(() => {
-        expect(mockCreateFn).toHaveBeenCalledWith(
-          expect.objectContaining({ title: 'My New Course' }),
-        );
-      });
-    }
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => {
+      expect(mockCreateFn).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'My New Course' }),
+      );
+    });
   });
 
   it('navigates to edit page after successful create', async () => {
@@ -177,14 +180,10 @@ describe('CreateCoursePage — create mode (no :id param)', () => {
     const titleInput = screen.getAllByRole('textbox')[0];
     fireEvent.change(titleInput, { target: { value: 'My New Course' } });
 
-    const buttons = screen.getAllByRole('button');
-    const saveBtn = buttons.find((b) => !b.hasAttribute('disabled'));
-    if (saveBtn) {
-      fireEvent.click(saveBtn);
-      await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/test/courses/instructor/99/edit');
-      });
-    }
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/test/courses/instructor/99/edit');
+    });
   });
 
   it('shows toast error when create call fails', async () => {
@@ -195,14 +194,10 @@ describe('CreateCoursePage — create mode (no :id param)', () => {
     const titleInput = screen.getAllByRole('textbox')[0];
     fireEvent.change(titleInput, { target: { value: 'New Course' } });
 
-    const buttons = screen.getAllByRole('button');
-    const saveBtn = buttons.find((b) => !b.hasAttribute('disabled'));
-    if (saveBtn) {
-      fireEvent.click(saveBtn);
-      await waitFor(() => {
-        expect(mockToastError).toHaveBeenCalled();
-      });
-    }
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => {
+      expect(mockToastError).toHaveBeenCalled();
+    });
   });
 
   it('shows toast error when title is empty and user tries to save', async () => {
@@ -243,9 +238,7 @@ describe('CreateCoursePage — create mode (no :id param)', () => {
 describe('CreateCoursePage — edit mode (:id param present)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Simulate useParams returning an id
-    const routerMock = vi.mocked(await import('react-router-dom'));
-    routerMock.useParams = () => ({ id: '42' });
+    mockRouteParams.current = { id: '42' };
 
     mockCategoriesFn.mockResolvedValue({ success: true, data: CATEGORIES });
     mockShowFn.mockResolvedValue({
@@ -277,7 +270,12 @@ describe('CreateCoursePage — edit mode (:id param present)', () => {
     // Never resolve
     mockShowFn.mockReturnValue(new Promise(() => {}));
     render(<CreateCoursePage />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    // getAllByRole, not getByRole: the page wraps the Spinner in its own
+    // aria-busy div that also carries role="status", so the singular getter
+    // throws on ambiguity even though the indicator is present. (The redundant
+    // nesting is the component's, not the test's — a screen reader gets two
+    // status regions here.)
+    expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
   });
 
   it('renders existing course title in the form after loading', async () => {
@@ -305,15 +303,11 @@ describe('CreateCoursePage — edit mode (:id param present)', () => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
-    const buttons = screen.getAllByRole('button');
-    const saveBtn = buttons.find((b) => !b.hasAttribute('disabled') && !b.getAttribute('aria-disabled'));
-    if (saveBtn) {
-      fireEvent.click(saveBtn);
-      await waitFor(() => {
-        // In edit mode, update should be called, not create
-        expect(mockUpdateFn).toHaveBeenCalled();
-        expect(mockCreateFn).not.toHaveBeenCalled();
-      });
-    }
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => {
+      // In edit mode, update should be called, not create
+      expect(mockUpdateFn).toHaveBeenCalled();
+      expect(mockCreateFn).not.toHaveBeenCalled();
+    });
   });
 });

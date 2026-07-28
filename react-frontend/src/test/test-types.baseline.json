@@ -143,7 +143,6 @@
       "TS2769": 1
     },
     "src/admin/modules/__tests__/RemainingModules.test.tsx": {
-      "TS2307": 1,
       "TS2559": 1,
       "TS2769": 1
     },
@@ -1567,8 +1566,6 @@
       "TS2322": 1
     },
     "src/pages/courses/CreateCoursePage.test.tsx": {
-      "TS1308": 1,
-      "TS2322": 1,
       "TS2345": 3
     },
     "src/pages/courses/InstructorDashboardPage.test.tsx": {
@@ -2226,6 +2223,6 @@
   },
   "totals": {
     "fileCount": 650,
-    "errorCount": 1950
+    "errorCount": 1947
   }
 }
