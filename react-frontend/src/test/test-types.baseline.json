@@ -1,0 +1,2232 @@
+{
+  "_README": "GENERATED FILE — never hand-edit. Shrink-only ratchet over type errors in test files and the src/test harness, which tsconfig.json deliberately excludes from the app type-check. Granularity is file x error code x count. Regenerate with: npm run check:test-types -- --baseline (do this whenever you FIX errors, to lock the win in). Raising a count or adding a file/code is a REGRESSION and fails CI — fix the test instead. Enforced by the blocking \"Test-File TypeScript Ratchet\" step in .github/workflows/ci.yml.",
+  "offenders": {
+    "src/admin/AdminLayout.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3,
+      "TS2769": 1
+    },
+    "src/admin/AdminRoute.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/SuperAdminRoute.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/__tests__/AdminLayout.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/__tests__/adminApi.test.ts": {
+      "TS2353": 1
+    },
+    "src/admin/api/__tests__/adminApi.test.ts": {
+      "TS2345": 1,
+      "TS2353": 1
+    },
+    "src/admin/api/adminApi.test.ts": {
+      "TS2345": 4,
+      "TS2353": 3,
+      "TS2488": 2,
+      "TS2532": 1
+    },
+    "src/admin/api/billingApi.test.ts": {
+      "TS2339": 8,
+      "TS2345": 13,
+      "TS2353": 1,
+      "TS7053": 4
+    },
+    "src/admin/api/memberPremiumApi.test.ts": {
+      "TS2339": 7,
+      "TS2345": 8,
+      "TS2353": 16
+    },
+    "src/admin/components/AdminHeader.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/admin/components/AdminSidebar.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/admin/components/BuilderToolbar.test.tsx": {
+      "TS2739": 1
+    },
+    "src/admin/components/BulkActionToolbar.test.tsx": {
+      "TS2550": 4
+    },
+    "src/admin/components/ConfirmModal.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/components/DataTable.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/components/IconPicker.test.tsx": {
+      "TS2345": 6
+    },
+    "src/admin/components/LegalNoticeNode.test.ts": {
+      "TS18048": 1,
+      "TS2339": 2,
+      "TS2352": 1,
+      "TS2493": 1,
+      "TS2554": 1,
+      "TS2722": 3
+    },
+    "src/admin/components/MemberSearchPicker.test.tsx": {
+      "TS2322": 1,
+      "TS2739": 3
+    },
+    "src/admin/components/NewsletterBuilder.test.tsx": {
+      "TS2352": 1,
+      "TS2493": 1,
+      "TS2532": 1
+    },
+    "src/admin/components/PageDesignBuilder.test.tsx": {
+      "TS2550": 1
+    },
+    "src/admin/components/TemplateGalleryModal.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/components/VisibilityRulesEditor.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/components/__tests__/AdminBreadcrumbs.test.tsx": {
+      "TS2556": 2
+    },
+    "src/admin/components/__tests__/AdminComponents.test.tsx": {
+      "TS2322": 2,
+      "TS2741": 1
+    },
+    "src/admin/components/__tests__/AdminHeader.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/components/__tests__/AdminSidebar.test.tsx": {
+      "TS2532": 2
+    },
+    "src/admin/components/__tests__/DataTable.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/components/__tests__/insertImageComponent.test.ts": {
+      "TS18048": 1,
+      "TS2493": 1,
+      "TS2532": 2
+    },
+    "src/admin/data/helpContent.test.ts": {
+      "TS18048": 5,
+      "TS2532": 2
+    },
+    "src/admin/modules/__tests__/AdvancedModules.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/ContentModules.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/DeliverabilityModules.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/EnterpriseModules.test.tsx": {
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/FederationModules.test.tsx": {
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/GroupModules.test.tsx": {
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/ModerationModules.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/NewsletterModules.test.tsx": {
+      "TS2322": 6,
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/RemainingModules.test.tsx": {
+      "TS2307": 1,
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/ReportModules.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/SimpleModules.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/SuperModules.test.tsx": {
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/SystemModules.test.tsx": {
+      "TS2559": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/SystemModulesExtra.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/__tests__/TimebankingUserModules.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/advanced/AlgorithmSettings.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/advanced/EmailSettings.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/advanced/Error404Tracking.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/advanced/MatchDebugPanel.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/advanced/prerender/PrerenderAdmin.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/advertising/AdCampaignAdminPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/ai/AiModuleDocsAdminPage.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/ai/KiAgentAdminPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 4
+    },
+    "src/admin/modules/analytics/CommunityAnalytics.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 5,
+      "TS2769": 2
+    },
+    "src/admin/modules/analytics/RegionalAnalyticsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 6,
+      "TS2769": 1
+    },
+    "src/admin/modules/api-partners/ApiPartnersAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/billing/BillingControl.test.tsx": {
+      "TS2322": 1,
+      "TS2538": 1
+    },
+    "src/admin/modules/billing/BillingPage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/billing/InvoiceHistory.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/billing/PlanSelector.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/billing/RevenueDashboard.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1
+    },
+    "src/admin/modules/blog/BlogAdmin.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/admin/modules/blog/BlogPostForm.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/caring-community/CareProviderAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/CaringCommunityAdmin.test.tsx": {
+      "TS2345": 1,
+      "TS2741": 5
+    },
+    "src/admin/modules/caring-community/CaringCommunityWorkflowPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/CategoryCoefficientsAdminPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/admin/modules/caring-community/CivicDigestAdminPage.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/caring-community/CommercialBoundaryAdminPage.test.tsx": {
+      "TS2345": 1,
+      "TS2488": 1
+    },
+    "src/admin/modules/caring-community/EmergencyAlertAdminPage.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/caring-community/FederationPeersAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/HelpRequestSlaAdminPage.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/modules/caring-community/HourTransferAdminPage.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/caring-community/IntegrationShowcaseAdminPage.test.tsx": {
+      "TS2345": 6
+    },
+    "src/admin/modules/caring-community/KpiBaselineAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/LeadNurtureAdminPage.test.tsx": {
+      "TS2345": 11
+    },
+    "src/admin/modules/caring-community/LoyaltyAdminPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/caring-community/MunicipalVerificationAdminPage.test.tsx": {
+      "TS2322": 6
+    },
+    "src/admin/modules/caring-community/MunicipalityFeedbackAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/OperatingPolicyAdminPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/caring-community/PilotLaunchReadinessAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/PilotScoreboardAdminPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/caring-community/ProjectAnnouncementsAdminPage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/caring-community/ResearchPartnershipsAdminPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/admin/modules/caring-community/SafeguardingReportsAdminPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/admin/modules/caring-community/SuccessStoryAdminPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/caring-community/TrustTierAdminPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/admin/modules/categories/CategoriesAdmin.test.tsx": {
+      "TS2345": 3,
+      "TS2532": 1
+    },
+    "src/admin/modules/config/ModuleCard.test.tsx": {
+      "TS2353": 3
+    },
+    "src/admin/modules/config/ModuleConfigModal.test.tsx": {
+      "TS2353": 6
+    },
+    "src/admin/modules/config/ModuleConfiguration.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/config/TranslationConfig.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/config/moduleRegistry.test.ts": {
+      "TS2339": 2
+    },
+    "src/admin/modules/content/AttributesAdmin.test.tsx": {
+      "TS2345": 2,
+      "TS2532": 1
+    },
+    "src/admin/modules/content/MenuBuilder.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/content/MenusAdmin.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/content/PageBuilder.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/content/PagesAdmin.test.tsx": {
+      "TS2322": 8,
+      "TS2345": 4,
+      "TS2353": 1,
+      "TS2532": 3
+    },
+    "src/admin/modules/content/PlansAdmin.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/admin/modules/courses/CoursesAdmin.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/crm/ActivityTimeline.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/crm/CoordinatorTasks.test.tsx": {
+      "TS2345": 7
+    },
+    "src/admin/modules/crm/MemberNotes.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/crm/MemberTags.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/dashboard/AdminDashboard.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/deliverability/DeliverablesList.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 4,
+      "TS2532": 2,
+      "TS2739": 8
+    },
+    "src/admin/modules/diagnostics/MatchingDiagnostic.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/enterprise/GdprAuditLog.test.tsx": {
+      "TS2556": 1
+    },
+    "src/admin/modules/enterprise/GdprBreachDetail.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/enterprise/GdprRequestDetail.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/enterprise/GdprRequests.test.tsx": {
+      "TS2345": 4,
+      "TS2532": 3,
+      "TS2739": 9
+    },
+    "src/admin/modules/enterprise/LegalDocForm.test.tsx": {
+      "TS2322": 2,
+      "TS2532": 2,
+      "TS2740": 1
+    },
+    "src/admin/modules/enterprise/LegalDocList.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/enterprise/RoleForm.test.tsx": {
+      "TS2345": 1,
+      "TS2532": 1
+    },
+    "src/admin/modules/enterprise/RoleList.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/events/EventSettings.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/events/EventsAdmin.test.tsx": {
+      "TS2322": 3,
+      "TS2345": 1,
+      "TS2353": 1,
+      "TS2532": 1
+    },
+    "src/admin/modules/federation/ApiKeys.test.tsx": {
+      "TS2550": 2
+    },
+    "src/admin/modules/federation/CreateApiKey.test.tsx": {
+      "TS18048": 2,
+      "TS2345": 1
+    },
+    "src/admin/modules/federation/CreditAgreements.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/federation/ExternalPartners.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/federation/FederationAggregatesPage.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/federation/FederationSettings.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/federation/PartnerTimebankGuidance.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/federation/Partnerships.test.tsx": {
+      "TS2345": 4,
+      "TS2769": 1
+    },
+    "src/admin/modules/gamification/CampaignForm.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/admin/modules/gamification/CampaignList.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 4
+    },
+    "src/admin/modules/gamification/CustomBadges.test.tsx": {
+      "TS2345": 5
+    },
+    "src/admin/modules/goals/GoalsAdmin.test.tsx": {
+      "TS2345": 2,
+      "TS2741": 1
+    },
+    "src/admin/modules/groups/GroupApprovals.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/groups/GroupDetail.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/groups/GroupOrganization.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/groups/GroupRanking.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/groups/GroupTypes.test.tsx": {
+      "TS2345": 6
+    },
+    "src/admin/modules/help/HelpFaqsAdmin.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/jobs/JobBiasAudit.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/jobs/JobTemplatesAdmin.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/jobs/JobsAdmin.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/legal/FadpAdminPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/marketplace/AdminCouponsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/marketplace/MarketplaceCasesPage.test.tsx": {
+      "TS2353": 3,
+      "TS2550": 2
+    },
+    "src/admin/modules/marketplace/MarketplaceSellerAdmin.test.tsx": {
+      "TS2322": 5,
+      "TS2345": 1
+    },
+    "src/admin/modules/matching/MatchDetail.test.tsx": {
+      "TS2307": 12
+    },
+    "src/admin/modules/moderation/CommentsModeration.test.tsx": {
+      "TS2345": 5,
+      "TS2739": 1
+    },
+    "src/admin/modules/moderation/FeedModeration.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/moderation/ReportsManagement.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 9
+    },
+    "src/admin/modules/moderation/ReviewsModeration.test.tsx": {
+      "TS2345": 5,
+      "TS2739": 1
+    },
+    "src/admin/modules/newsletters/NewsletterActivity.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/newsletters/NewsletterList.test.tsx": {
+      "TS2345": 6
+    },
+    "src/admin/modules/newsletters/Subscribers.test.tsx": {
+      "TS2339": 1
+    },
+    "src/admin/modules/newsletters/TemplateForm.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/newsletters/Templates.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/podcasts/PodcastsAdmin.test.tsx": {
+      "TS2345": 1,
+      "TS2532": 1
+    },
+    "src/admin/modules/polls/PollsAdmin.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/modules/premium/MemberPremiumAdminPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/provisioning/ProvisioningRequestsPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/reports/HoursReportsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 5
+    },
+    "src/admin/modules/reports/InactiveMembersPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/admin/modules/reports/MunicipalImpactReportsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/resources/ResourceCategoriesAdmin.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 4
+    },
+    "src/admin/modules/resources/ResourcesAdmin.test.tsx": {
+      "TS18048": 1
+    },
+    "src/admin/modules/safeguarding/SafeguardingDashboard.test.tsx": {
+      "TS18046": 1
+    },
+    "src/admin/modules/safeguarding/SafeguardingOptionsAdmin.test.tsx": {
+      "TS2339": 1
+    },
+    "src/admin/modules/super/BulkOperations.test.tsx": {
+      "TS2532": 3
+    },
+    "src/admin/modules/super/FederationAuditLog.test.tsx": {
+      "TS2353": 3
+    },
+    "src/admin/modules/super/FederationControls.test.tsx": {
+      "TS2345": 2,
+      "TS2532": 2
+    },
+    "src/admin/modules/super/FederationTenantFeatures.test.tsx": {
+      "TS2345": 3
+    },
+    "src/admin/modules/super/FederationWhitelist.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/super/SuperAuditLog.test.tsx": {
+      "TS2532": 1
+    },
+    "src/admin/modules/super/SuperPartnerships.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/super/TenantHierarchy.test.tsx": {
+      "TS2345": 5
+    },
+    "src/admin/modules/super/UserShow.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/system/ActivityLog.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/system/AdminSettings.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/admin/modules/system/BlogRestore.test.tsx": {
+      "TS2345": 2
+    },
+    "src/admin/modules/system/CronJobLogs.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/system/CronJobSettings.test.tsx": {
+      "TS2322": 2,
+      "TS2345": 2
+    },
+    "src/admin/modules/system/CronJobSetup.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/system/OnboardingSettings.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/admin/modules/system/RegistrationBreakerCard.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/system/RegistrationPolicySettings.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/system/RetentionPolicies.test.tsx": {
+      "TS2345": 5
+    },
+    "src/admin/modules/system/SeedGenerator.test.tsx": {
+      "TS2345": 7
+    },
+    "src/admin/modules/system/VerificationAuditLog.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1
+    },
+    "src/admin/modules/timebanking/FraudAlerts.test.tsx": {
+      "TS2345": 2,
+      "TS2739": 4
+    },
+    "src/admin/modules/timebanking/StartingBalances.test.tsx": {
+      "TS2345": 1,
+      "TS2532": 1
+    },
+    "src/admin/modules/timebanking/TimebankingDashboard.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/timebanking/UserReport.test.tsx": {
+      "TS2345": 8
+    },
+    "src/admin/modules/users/ResidencyVerifications.test.tsx": {
+      "TS2739": 10
+    },
+    "src/admin/modules/users/UserEdit.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/admin/modules/users/UserList.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/volunteering/VolunteerApprovals.test.tsx": {
+      "TS2345": 4
+    },
+    "src/admin/modules/volunteering/VolunteerConfig.test.tsx": {
+      "TS2322": 1
+    },
+    "src/admin/modules/volunteering/VolunteerGivingDays.test.tsx": {
+      "TS2345": 1
+    },
+    "src/admin/modules/volunteering/VolunteerOrganizations.test.tsx": {
+      "TS2322": 2
+    },
+    "src/admin/modules/volunteering/VolunteerProjects.test.tsx": {
+      "TS18048": 1,
+      "TS2345": 2
+    },
+    "src/broker/BrokerLayout.test.tsx": {
+      "TS2322": 1
+    },
+    "src/broker/BrokerRoute.test.tsx": {
+      "TS2322": 1
+    },
+    "src/broker/components/BrokerCommandPalette.test.tsx": {
+      "TS2345": 1
+    },
+    "src/broker/components/BrokerHeader.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/broker/components/BrokerSidebar.test.tsx": {
+      "TS2322": 1,
+      "TS2741": 14
+    },
+    "src/broker/pages/BrokerConfigurationPage.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1
+    },
+    "src/broker/pages/ContentQueuePage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/broker/pages/ExchangeDetailPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/broker/pages/MatchApprovalsPage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/broker/pages/MembersPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/broker/pages/MessageReviewPage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/broker/pages/OnboardingPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2,
+      "TS2739": 2,
+      "TS2741": 2
+    },
+    "src/broker/pages/RiskTagsPage.test.tsx": {
+      "TS2532": 1
+    },
+    "src/broker/pages/UserMonitoringPage.test.tsx": {
+      "TS18048": 3,
+      "TS2532": 1
+    },
+    "src/broker/pages/VettingPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/caring/CaringLayout.test.tsx": {
+      "TS2322": 1
+    },
+    "src/caring/components/CaringPanelHeader.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/caring/components/CaringPanelSidebar.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/components/auth/OAuthButtons.test.tsx": {
+      "TS18048": 2
+    },
+    "src/components/auth/SsoButtons.test.tsx": {
+      "TS2322": 6,
+      "TS2352": 1
+    },
+    "src/components/availability/AvailabilityGrid.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/components/branding/__tests__/TenantLogo.test.tsx": {
+      "TS2556": 1
+    },
+    "src/components/caring-community/EmergencyAlertBanner.test.tsx": {
+      "TS2322": 2,
+      "TS2352": 1
+    },
+    "src/components/caring-community/OnboardingChoiceModal.test.tsx": {
+      "TS2345": 4
+    },
+    "src/components/caring-community/ProximityFilter.test.tsx": {
+      "TS2345": 2
+    },
+    "src/components/caring-community/ReciprocalBalanceWidget.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/caring-community/SubRegionFilter.test.tsx": {
+      "TS2345": 4
+    },
+    "src/components/compose/ComposeHub.test.tsx": {
+      "TS2345": 7,
+      "TS2556": 2
+    },
+    "src/components/compose/GifPicker.test.tsx": {
+      "TS2345": 2
+    },
+    "src/components/compose/MediaUploader.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/compose/MobileComposeOverlay.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/compose/shared/AiAssistButton.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/compose/shared/EmojiPicker.test.tsx": {
+      "TS2532": 2
+    },
+    "src/components/compose/shared/GroupSelector.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/compose/shared/TemplatePicker.test.tsx": {
+      "TS2532": 2
+    },
+    "src/components/compose/shared/__tests__/AiAssistButton.test.tsx": {
+      "TS7006": 1
+    },
+    "src/components/compose/shared/__tests__/GroupSelector.test.tsx": {
+      "TS7006": 1
+    },
+    "src/components/compose/shared/__tests__/TemplatePicker.test.tsx": {
+      "TS2345": 2
+    },
+    "src/components/compose/tabs/EventTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/compose/tabs/GoalTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/compose/tabs/ListingTab.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/components/compose/tabs/PollTab.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/components/compose/tabs/PostTab.test.tsx": {
+      "TS2322": 15,
+      "TS2769": 1
+    },
+    "src/components/compose/tabs/__tests__/GoalTab.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/compose/tabs/__tests__/PollTab.test.tsx": {
+      "TS2322": 10,
+      "TS7006": 1
+    },
+    "src/components/compose/tabs/__tests__/PostTab.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/content/MarkdownRenderer.test.tsx": {
+      "TS2532": 2
+    },
+    "src/components/courses/CourseBuilder.test.tsx": {
+      "TS2532": 2
+    },
+    "src/components/courses/CourseCard.test.tsx": {
+      "TS2741": 1
+    },
+    "src/components/courses/LessonDiscussion.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/donations/DonationCheckout.test.tsx": {
+      "TS2532": 1
+    },
+    "src/components/donations/DonationReceipt.test.tsx": {
+      "TS2532": 1
+    },
+    "src/components/endorsements/TopEndorsedWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/endorsements/__tests__/EndorseButton.test.tsx": {
+      "TS7006": 1
+    },
+    "src/components/endorsements/__tests__/TopEndorsedWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/explore/ExploreStatCard.test.tsx": {
+      "TS2741": 1
+    },
+    "src/components/feed/ConnectionSuggestionsWidget.test.tsx": {
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/components/feed/FeedAdCard.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/feed/FeedCard.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/feed/ImageCarousel.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/feed/ImageLightbox.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/MediaGrid.test.tsx": {
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/components/feed/QuotePostModal.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/feed/ShareViaDMModal.test.tsx": {
+      "TS2345": 5
+    },
+    "src/components/feed/StoriesBar.test.tsx": {
+      "TS2352": 2,
+      "TS2769": 1
+    },
+    "src/components/feed/VideoPlayer.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/feed/__tests__/ImageCarousel.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/__tests__/ImageLightbox.test.tsx": {
+      "TS2550": 1,
+      "TS2769": 1
+    },
+    "src/components/feed/__tests__/MediaGrid.test.tsx": {
+      "TS2345": 4,
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/FeedSidebar.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/feed/sidebar/PeopleYouMayKnowWidget.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/feed/sidebar/ProfileCardWidget.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/QuickActionsWidget.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/feed/sidebar/TopCategoriesWidget.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/feed/sidebar/WidgetSkeleton.test.tsx": {
+      "TS18048": 2,
+      "TS2532": 2
+    },
+    "src/components/feed/sidebar/__tests__/CommunityPulseWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/FeedSidebar.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/FriendsWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/PeopleYouMayKnowWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/PopularGroupsWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/ProfileCardWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/QuickActionsWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/SidebarWidgets.test.tsx": {
+      "TS2322": 5,
+      "TS2352": 1,
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/SuggestedListingsWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/TopCategoriesWidget.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/UpcomingEventsWidget.test.tsx": {
+      "TS2322": 4,
+      "TS2561": 1,
+      "TS2769": 1
+    },
+    "src/components/feed/sidebar/__tests__/WidgetSkeleton.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/feed/types.test.ts": {
+      "TS2322": 1
+    },
+    "src/components/feedback/AppUpdateModal.test.tsx": {
+      "TS2559": 1,
+      "TS2741": 6
+    },
+    "src/components/feedback/ErrorBoundary.test.tsx": {
+      "TS2532": 1,
+      "TS2559": 1,
+      "TS2786": 6
+    },
+    "src/components/feedback/FeatureErrorBoundary.test.tsx": {
+      "TS2488": 1,
+      "TS2559": 1,
+      "TS2786": 4
+    },
+    "src/components/feedback/FloatingReportProblemButton.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 5
+    },
+    "src/components/feedback/LoadingScreen.test.tsx": {
+      "TS2559": 1
+    },
+    "src/components/feedback/OfflineIndicator.test.tsx": {
+      "TS2559": 1
+    },
+    "src/components/feedback/SessionTimeoutWarning.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 2
+    },
+    "src/components/hashtags/HashtagRenderer.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/hashtags/TrendingHashtags.test.tsx": {
+      "TS2532": 3
+    },
+    "src/components/ideation/TeamChatrooms.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/ideation/TeamTasks.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 4
+    },
+    "src/components/jobs/AiChatDrawer.test.tsx": {
+      "TS2345": 2
+    },
+    "src/components/jobs/ApplicationCard.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/jobs/InlineInterviewCard.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/jobs/JobDescriptionCard.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/jobs/JobDetailTypes.test.ts": {
+      "TS2532": 1
+    },
+    "src/components/jobs/JobModals.test.tsx": {
+      "TS2345": 1,
+      "TS2739": 6
+    },
+    "src/components/landing/CtaSection.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/landing/HeroSection.test.tsx": {
+      "TS2353": 1
+    },
+    "src/components/layout/DesktopNavPanel.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/layout/MobileDrawer.test.tsx": {
+      "TS18048": 1,
+      "TS2345": 3
+    },
+    "src/components/layout/MobileTabBar.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/layout/Navbar.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/layout/NotificationFlyout.test.tsx": {
+      "TS2322": 2,
+      "TS2769": 1
+    },
+    "src/components/layout/SearchOverlay.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/layout/__tests__/NotificationFlyout.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/layout/__tests__/QuickCreateMenu.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/layout/__tests__/SearchOverlay.a11y.test.tsx": {
+      "TS2339": 1
+    },
+    "src/components/layout/__tests__/SearchOverlay.test.tsx": {
+      "TS2345": 1,
+      "TS2550": 2
+    },
+    "src/components/legal/CustomLegalDocument.test.tsx": {
+      "TS2559": 1
+    },
+    "src/components/legal/__tests__/LegalAcceptanceGate.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/listings/ListingAnalyticsPanel.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/listings/SkillTagsInput.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/components/location/EntityMapView.test.tsx": {
+      "TS2532": 5
+    },
+    "src/components/location/GoogleMapsProvider.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/location/LocationMapCard.test.tsx": {
+      "TS2322": 5
+    },
+    "src/components/location/NominatimAutocomplete.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/location/OsPlacesAutocomplete.test.tsx": {
+      "TS2345": 4,
+      "TS2532": 1
+    },
+    "src/components/location/__tests__/EntityMapView.test.tsx": {
+      "TS2540": 2
+    },
+    "src/components/location/__tests__/LocationComponents.test.tsx": {
+      "TS2322": 5,
+      "TS2540": 4
+    },
+    "src/components/location/__tests__/LocationMap.test.tsx": {
+      "TS2322": 4
+    },
+    "src/components/location/__tests__/LocationMapCard.test.tsx": {
+      "TS2540": 2
+    },
+    "src/components/location/__tests__/PlaceAutocompleteInput.dispatch.test.tsx": {
+      "TS2322": 2,
+      "TS2493": 2
+    },
+    "src/components/marketplace/AiReplySuggestion.test.tsx": {
+      "TS2345": 8
+    },
+    "src/components/marketplace/BusinessSellerBadge.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/marketplace/BuyNowButton.test.tsx": {
+      "TS2532": 2,
+      "TS2578": 1
+    },
+    "src/components/marketplace/CommunityDeliveryCard.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 3
+    },
+    "src/components/marketplace/LoyaltyRedemptionCard.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/marketplace/MakeOfferForm.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/marketplace/MapSearchView.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/components/marketplace/MarketplaceFacetedSearch.test.tsx": {
+      "TS2345": 4
+    },
+    "src/components/marketplace/MarketplaceImageGallery.test.tsx": {
+      "TS2322": 3,
+      "TS2345": 4
+    },
+    "src/components/marketplace/MarketplaceListingGridSkeleton.test.tsx": {
+      "TS2532": 1
+    },
+    "src/components/marketplace/OfferCard.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/marketplace/RatingModal.test.tsx": {
+      "TS2488": 1
+    },
+    "src/components/marketplace/ShippingOptionsManager.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 5
+    },
+    "src/components/marketplace/StripeCheckoutModal.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/messages/MessageContextCard.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/components/messages/__tests__/MessageContextCard.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/navigation/__tests__/MenuNavItems.test.tsx": {
+      "TS2322": 12
+    },
+    "src/components/navigation/navigationRegistry.test.ts": {
+      "TS7006": 1,
+      "TS7053": 1
+    },
+    "src/components/profile/ProfileFeed.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/profile/__tests__/ProfileFeed.test.tsx": {
+      "TS2741": 6,
+      "TS2769": 1
+    },
+    "src/components/pwa/InstallAppButton.test.tsx": {
+      "TS2322": 3
+    },
+    "src/components/pwa/InstallBanner.test.tsx": {
+      "TS2322": 2,
+      "TS2367": 1
+    },
+    "src/components/reviews/ReviewModal.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/routing/FeatureGate.test.tsx": {
+      "TS2352": 4
+    },
+    "src/components/routing/TenantShell.test.tsx": {
+      "TS2322": 22,
+      "TS2556": 1,
+      "TS2769": 1
+    },
+    "src/components/search/AdvancedSearchFilters.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/search/SavedSearches.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/security/BiometricSettings.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/social/BookmarkButton.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/social/CommentsSection.test.tsx": {
+      "TS2322": 11,
+      "TS2769": 1
+    },
+    "src/components/social/LikersModal.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/social/MentionAutocomplete.test.tsx": {
+      "TS2532": 2
+    },
+    "src/components/social/PresenceIndicator.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/social/ReactionPicker.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/components/social/ReactionSummary.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/components/social/SaveButton.test.tsx": {
+      "TS2352": 1
+    },
+    "src/components/social/SocialInteractionPanel.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/social/StatusSelector.test.tsx": {
+      "TS2322": 2
+    },
+    "src/components/social/UserHoverCard.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/social/__tests__/CommentsSection.test.tsx": {
+      "TS2345": 1
+    },
+    "src/components/social/__tests__/MentionAutocomplete.test.tsx": {
+      "TS18048": 1,
+      "TS2345": 2,
+      "TS2532": 8
+    },
+    "src/components/social/__tests__/StatusSelector.test.tsx": {
+      "TS2352": 1
+    },
+    "src/components/stories/StoryCreator.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/stories/StoryHighlights.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/stories/StoryViewer.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/components/stories/__tests__/StoryHighlights.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/stories/__tests__/StoryViewer.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/subaccounts/SubAccountsManager.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/components/subaccounts/__tests__/SubAccountsManager.test.tsx": {
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/components/ui/Accordion.test.tsx": {
+      "TS2345": 2
+    },
+    "src/components/ui/BackToTop.test.tsx": {
+      "TS2322": 2,
+      "TS2559": 1
+    },
+    "src/components/ui/BarrelMock.contract.test.ts": {
+      "TS2532": 1
+    },
+    "src/components/ui/Dropdown.test.tsx": {
+      "TS2769": 1
+    },
+    "src/components/ui/GlassCard.test.tsx": {
+      "TS2559": 1
+    },
+    "src/components/ui/Pagination.test.tsx": {
+      "TS18048": 6,
+      "TS2345": 3
+    },
+    "src/components/ui/SafeHtml.test.tsx": {
+      "TS2532": 1
+    },
+    "src/components/ui/Skeleton.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/ui/Textarea.test.tsx": {
+      "TS2532": 1
+    },
+    "src/components/ui/useDisclosure.test.ts": {
+      "TS7053": 1
+    },
+    "src/components/volunteering/GuardianConsentModal.test.tsx": {
+      "TS2345": 10
+    },
+    "src/components/wallet/DonateModal.test.tsx": {
+      "TS2322": 1
+    },
+    "src/components/wallet/TransferModal.test.tsx": {
+      "TS2345": 1,
+      "TS2532": 1,
+      "TS2769": 1
+    },
+    "src/components/wallet/__tests__/DonateModal.test.tsx": {
+      "TS2345": 3,
+      "TS7006": 1
+    },
+    "src/components/wallet/__tests__/RatingModal.test.tsx": {
+      "TS7006": 1
+    },
+    "src/components/wallet/__tests__/TransferModal.test.tsx": {
+      "TS2769": 1
+    },
+    "src/config/releaseStatus.test.ts": {
+      "TS2578": 1
+    },
+    "src/contexts/AuthContext.test.tsx": {
+      "TS2345": 1
+    },
+    "src/contexts/PodcastPlayerContext.test.tsx": {
+      "TS2532": 3
+    },
+    "src/contexts/PusherContext.test.tsx": {
+      "TS2571": 1
+    },
+    "src/contexts/__tests__/AuthContext.test.tsx": {
+      "TS2353": 1
+    },
+    "src/contexts/__tests__/NotificationsContext.test.tsx": {
+      "TS2578": 1,
+      "TS2722": 2
+    },
+    "src/hooks/useApiErrorHandler.test.ts": {
+      "TS7006": 1
+    },
+    "src/hooks/useFilterDraft.test.ts": {
+      "TS2493": 1,
+      "TS2532": 3
+    },
+    "src/hooks/useInfiniteScroll.test.ts": {
+      "TS2532": 1
+    },
+    "src/hooks/useLegalGate.test.ts": {
+      "TS2532": 1,
+      "TS7006": 1
+    },
+    "src/hooks/useMenus.test.ts": {
+      "TS2339": 2
+    },
+    "src/hooks/usePullToRefresh.test.ts": {
+      "TS2352": 2,
+      "TS2367": 2
+    },
+    "src/hooks/useSocialInteractions.test.ts": {
+      "TS2322": 1,
+      "TS2532": 4
+    },
+    "src/hooks/useWebPush.test.ts": {
+      "TS2345": 15,
+      "TS2352": 2
+    },
+    "src/lib/api.test.ts": {
+      "TS18048": 3,
+      "TS2683": 1
+    },
+    "src/lib/api/podcasts.test.ts": {
+      "TS2532": 2,
+      "TS2739": 3
+    },
+    "src/lib/compress-image.test.ts": {
+      "TS2345": 5
+    },
+    "src/lib/event-offline-checkin-store.test.ts": {
+      "TS2339": 2
+    },
+    "src/lib/event-tickets-api.test.ts": {
+      "TS2532": 1
+    },
+    "src/lib/feedSync.test.ts": {
+      "TS2532": 1
+    },
+    "src/lib/impersonate.test.ts": {
+      "TS18048": 1,
+      "TS2532": 4
+    },
+    "src/lib/installPrompt.test.ts": {
+      "TS2532": 3
+    },
+    "src/lib/nav-helpers.test.ts": {
+      "TS2322": 1,
+      "TS2551": 1,
+      "TS2783": 1
+    },
+    "src/lib/performance.test.ts": {
+      "TS2532": 5
+    },
+    "src/lib/supportDiagnostics.test.ts": {
+      "TS2550": 1
+    },
+    "src/lib/tenant-routing.test.ts": {
+      "TS2532": 1
+    },
+    "src/lib/tenor.test.ts": {
+      "TS2532": 3
+    },
+    "src/lib/webauthn.test.ts": {
+      "TS2532": 10
+    },
+    "src/pages/about/ImpactReportPage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/about/ImpactSummaryPage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/about/PartnerPage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/about/SocialPrescribingPage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/about/StrategicPlanPage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/about/TimebankingGuidePage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/achievements/AchievementsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/pages/activity/ActivityDashboardPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/advertise/MyAdCampaignsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/advertise/MyPushCampaignsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/auth/ForgotPasswordPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/auth/LoginPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/auth/OauthCallbackPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/pages/auth/RegisterPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/auth/ResetPasswordPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/auth/VerifyEmailPage.test.tsx": {
+      "TS2322": 1,
+      "TS2352": 1
+    },
+    "src/pages/auth/VerifyIdentityPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/auth/__tests__/VerifyIdentityPage.test.tsx": {
+      "TS2352": 1
+    },
+    "src/pages/blog/BlogPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/pages/blog/BlogPostPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/bookmarks/BookmarksPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/pages/caring-community/CaregiverDashboardPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/pages/caring-community/CivicDigestPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/pages/caring-community/CoverCarePage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/pages/caring-community/FutureCareFundPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/caring-community/HourGiftPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/caring-community/InviteRedemptionPage.test.tsx": {
+      "TS2345": 5
+    },
+    "src/pages/caring-community/LinkCareReceiverPage.test.tsx": {
+      "TS2345": 6,
+      "TS2352": 1
+    },
+    "src/pages/caring-community/MarktPage.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/pages/caring-community/MunicipalSurveyPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/caring-community/MunicipalityFeedbackPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/pages/caring-community/MyDataExportPage.test.tsx": {
+      "TS2322": 1,
+      "TS2352": 1
+    },
+    "src/pages/caring-community/MyTrustTierPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/caring-community/ProjectAnnouncementsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2339": 1
+    },
+    "src/pages/caring-community/RequestHelpPage.test.tsx": {
+      "TS2833": 1
+    },
+    "src/pages/caring-community/SafeguardingReportPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/caring-community/SuccessStoriesPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/pages/chat/AiChatPage.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/clubs/ClubsPage.test.tsx": {
+      "TS2532": 1
+    },
+    "src/pages/clubs/VereinMembersImportPage.test.tsx": {
+      "TS2345": 8
+    },
+    "src/pages/connections/ConnectionsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2,
+      "TS2741": 1
+    },
+    "src/pages/courses/CourseAnalyticsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/courses/CourseDetailPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/courses/CreateCoursePage.test.tsx": {
+      "TS1308": 1,
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/pages/courses/InstructorDashboardPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/dashboard/DashboardPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/errors/ComingSoonPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/errors/NotFoundPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/events/components/CalendarSubscriptionPanel.test.tsx": {
+      "TS2345": 1,
+      "TS2532": 1
+    },
+    "src/pages/events/components/EventAgendaWorkspace.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/events/components/EventCalendarViews.test.tsx": {
+      "TS2532": 1
+    },
+    "src/pages/events/components/EventCommunicationsWorkspace.test.tsx": {
+      "TS2739": 1
+    },
+    "src/pages/events/components/EventRecurrenceDefinitionBlueprintManager.test.tsx": {
+      "TS2339": 1
+    },
+    "src/pages/events/components/EventRegistrationWorkspace.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/events/components/EventTemplatesWorkspace.test.tsx": {
+      "TS2353": 1
+    },
+    "src/pages/events/components/EventTicketsPanel.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1
+    },
+    "src/pages/exchanges/ExchangeDetailPage.test.tsx": {
+      "TS2339": 5
+    },
+    "src/pages/exchanges/ExchangesPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/pages/exchanges/RequestExchangePage.test.tsx": {
+      "TS2339": 7,
+      "TS2345": 1
+    },
+    "src/pages/explore/ExplorePage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/pages/explore/__tests__/ExplorePage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/federation/FederationConnectionsPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/federation/FederationEventsPage.test.tsx": {
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/pages/federation/FederationGroupsPage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/pages/federation/FederationListingsPage.test.tsx": {
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/pages/federation/FederationMemberProfilePage.test.tsx": {
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/pages/federation/FederationMembersPage.test.tsx": {
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/pages/federation/FederationMessagesPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/feed/FeedPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/feed/HashtagPage.test.tsx": {
+      "TS2322": 1,
+      "TS2741": 9
+    },
+    "src/pages/feed/HashtagsDiscoveryPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/pages/feed/PostDetailPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/goals/GoalDetailPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/goals/GoalsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2739": 2,
+      "TS2741": 3
+    },
+    "src/pages/goals/components/GoalCheckinModal.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/pages/goals/components/GoalInsightsPanel.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/goals/components/GoalProgressHistory.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/goals/components/GoalReminderToggle.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/goals/components/GoalTemplatePickerModal.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/goals/components/__tests__/GoalCheckinModal.test.tsx": {
+      "TS2769": 1,
+      "TS7006": 1
+    },
+    "src/pages/goals/components/__tests__/GoalProgressHistory.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/goals/components/__tests__/GoalReminderToggle.test.tsx": {
+      "TS7006": 1
+    },
+    "src/pages/goals/components/__tests__/GoalTemplatePickerModal.test.tsx": {
+      "TS7006": 1
+    },
+    "src/pages/group-exchanges/CreateGroupExchangePage.test.tsx": {
+      "TS2339": 2
+    },
+    "src/pages/group-exchanges/GroupExchangeDetailPage.test.tsx": {
+      "TS2339": 8,
+      "TS2532": 1
+    },
+    "src/pages/group-exchanges/GroupExchangesPage.test.tsx": {
+      "TS2322": 1,
+      "TS2739": 1,
+      "TS2741": 3
+    },
+    "src/pages/groups/CreateGroupPage.test.tsx": {
+      "TS2339": 10,
+      "TS7031": 1
+    },
+    "src/pages/groups/GroupDetailPage.test.tsx": {
+      "TS2550": 5
+    },
+    "src/pages/groups/GroupInviteAcceptPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/groups/GroupsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1,
+      "TS2550": 3,
+      "TS2739": 1,
+      "TS2741": 2
+    },
+    "src/pages/groups/api/directClientBoundary.test.ts": {
+      "TS2345": 2,
+      "TS2550": 1
+    },
+    "src/pages/groups/api/discussions.test.ts": {
+      "TS2353": 1,
+      "TS2741": 4
+    },
+    "src/pages/groups/api/feed.test.ts": {
+      "TS2741": 1
+    },
+    "src/pages/groups/components/GroupBrandingPicker.test.tsx": {
+      "TS2532": 5
+    },
+    "src/pages/groups/components/GroupModals.test.tsx": {
+      "TS2345": 1
+    },
+    "src/pages/groups/components/PinnedAnnouncementsBanner.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/groups/components/ScheduledPostPanel.test.tsx": {
+      "TS2345": 3
+    },
+    "src/pages/groups/tabs/GroupAnnouncementsTab.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/pages/groups/tabs/GroupChallengesTab.test.tsx": {
+      "TS2345": 6
+    },
+    "src/pages/groups/tabs/GroupChatroomsTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/groups/tabs/GroupDiscussionTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/groups/tabs/GroupEventsTab.test.tsx": {
+      "TS2322": 2
+    },
+    "src/pages/groups/tabs/GroupFeedTab.test.tsx": {
+      "TS2322": 3,
+      "TS2741": 5
+    },
+    "src/pages/groups/tabs/GroupFilesTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/groups/tabs/GroupMediaTab.test.tsx": {
+      "TS2345": 1,
+      "TS2550": 1,
+      "TS2769": 2
+    },
+    "src/pages/groups/tabs/GroupSubgroupsTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/groups/tabs/GroupTasksTab.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/help/HelpCenterPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/ideation/CampaignDetailPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/ideation/CampaignsPage.test.tsx": {
+      "TS2352": 1,
+      "TS2769": 1
+    },
+    "src/pages/ideation/ChallengeDetailPage.test.tsx": {
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/pages/ideation/IdeaDetailPage.test.tsx": {
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/pages/ideation/IdeationPage.test.tsx": {
+      "TS2345": 2,
+      "TS2769": 1
+    },
+    "src/pages/jobs/BiasAuditPage.test.tsx": {
+      "TS2345": 2,
+      "TS2739": 1
+    },
+    "src/pages/jobs/CreateJobPage.test.tsx": {
+      "TS2345": 2,
+      "TS2556": 1
+    },
+    "src/pages/jobs/EmployerBrandPage.test.tsx": {
+      "TS2322": 1,
+      "TS2739": 6
+    },
+    "src/pages/jobs/JobAlertsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2556": 1,
+      "TS2739": 7
+    },
+    "src/pages/jobs/JobAnalyticsPage.test.tsx": {
+      "TS2556": 1,
+      "TS2739": 4
+    },
+    "src/pages/jobs/JobDetailPage.test.tsx": {
+      "TS2322": 5,
+      "TS2345": 14,
+      "TS2556": 1,
+      "TS2739": 1
+    },
+    "src/pages/jobs/JobKanbanPage.test.tsx": {
+      "TS2345": 2,
+      "TS2739": 1
+    },
+    "src/pages/jobs/JobsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1,
+      "TS2556": 1,
+      "TS2741": 10
+    },
+    "src/pages/jobs/TalentSearchPage.test.tsx": {
+      "TS2739": 7
+    },
+    "src/pages/leaderboard/LeaderboardPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 4
+    },
+    "src/pages/leaderboard/MemberSpotlightTab.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/listings/CreateListingPage.test.tsx": {
+      "TS2339": 10,
+      "TS2345": 1,
+      "TS2739": 2,
+      "TS2740": 2
+    },
+    "src/pages/listings/ListingDetailPage.test.tsx": {
+      "TS2339": 13,
+      "TS2345": 3,
+      "TS7006": 1
+    },
+    "src/pages/listings/ListingsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/BuyerOrdersPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/CreateMarketplaceListingPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1,
+      "TS2352": 1
+    },
+    "src/pages/marketplace/EditMarketplaceListingPage.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1
+    },
+    "src/pages/marketplace/FreeItemsPage.test.tsx": {
+      "TS2322": 2,
+      "TS2741": 7
+    },
+    "src/pages/marketplace/MarketplaceCategoryPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MarketplaceCollectionsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MarketplaceListingPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MarketplaceMapSearchPage.test.tsx": {
+      "TS2322": 1,
+      "TS2532": 1
+    },
+    "src/pages/marketplace/MarketplacePage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MarketplaceSearchPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MerchantOnboardingPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MyListingsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/MyOffersPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2,
+      "TS2741": 6
+    },
+    "src/pages/marketplace/MyPickupsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/SellerOrdersPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/SellerProfilePage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/StripeOnboardingPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 2
+    },
+    "src/pages/marketplace/seller/SellerCouponEditPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/marketplace/seller/SellerCouponsPage.test.tsx": {
+      "TS2345": 4
+    },
+    "src/pages/marketplace/seller/SellerPickupScanPage.test.tsx": {
+      "TS2345": 7
+    },
+    "src/pages/matches/MatchPreferencesPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/matches/MatchesPage.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/pages/members/MembersPage.test.tsx": {
+      "TS2322": 3
+    },
+    "src/pages/messages/ConversationPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/messages/MessagesPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/messages/components/CreateGroupModal.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/pages/messages/components/MessageBubble.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/messages/components/MessageInputArea.test.tsx": {
+      "TS2532": 1
+    },
+    "src/pages/messages/components/VoiceMessagePlayer.test.tsx": {
+      "TS2345": 1,
+      "TS2769": 1
+    },
+    "src/pages/nexus-score/NexusScorePage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/notifications/NotificationsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/onboarding/OnboardingPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 1
+    },
+    "src/pages/onboarding/SafeguardingStep.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/organisations/OrganisationsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2741": 4
+    },
+    "src/pages/organisations/RegisterOrganisationPage.test.tsx": {
+      "TS2345": 4
+    },
+    "src/pages/platform/PlatformDisclaimerPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/platform/PlatformPrivacyPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/platform/PlatformTermsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/podcasts/PodcastShowPage.test.tsx": {
+      "TS2322": 2,
+      "TS2740": 11
+    },
+    "src/pages/podcasts/PodcastStudioPage.test.tsx": {
+      "TS2345": 3,
+      "TS2532": 6
+    },
+    "src/pages/polls/PollsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/pages/premium/MySubscriptionPage.test.tsx": {
+      "TS2345": 1
+    },
+    "src/pages/premium/SubscriptionReturnPage.test.tsx": {
+      "TS2345": 3
+    },
+    "src/pages/profile/AppreciationWallPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3
+    },
+    "src/pages/profile/CollectionDetailPage.test.tsx": {
+      "TS2345": 2
+    },
+    "src/pages/profile/MyCollectionsPage.test.tsx": {
+      "TS2345": 9
+    },
+    "src/pages/profile/MyVereinDuesPage.test.tsx": {
+      "TS2322": 3,
+      "TS2345": 4
+    },
+    "src/pages/profile/MyVereinInvitationsPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/profile/ProfilePage.test.tsx": {
+      "TS2322": 3,
+      "TS2345": 1
+    },
+    "src/pages/public/AboutPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/public/AcceptableUsePage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/AccessibilityPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/public/CommunityGuidelinesPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/ContactPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/public/CookiesPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/CustomPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/FaqPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/HomePage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/public/LegalHubPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/public/LegalVersionHistoryPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/PilotApplyStatusPage.test.tsx": {
+      "TS2345": 8,
+      "TS2769": 3
+    },
+    "src/pages/public/PilotInquiryPage.test.tsx": {
+      "TS2345": 8
+    },
+    "src/pages/public/PrivacyPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/public/TermsPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/resources/ResourcesPage.test.tsx": {
+      "TS2322": 1,
+      "TS2345": 3,
+      "TS2739": 1,
+      "TS7006": 1
+    },
+    "src/pages/reviews/ReviewsPage.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/pages/search/SearchPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/settings/BlockedUsersPage.test.tsx": {
+      "TS2345": 9
+    },
+    "src/pages/settings/SettingsPage.test.tsx": {
+      "TS2503": 3
+    },
+    "src/pages/settings/VerifyIdentityOptionalPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/settings/tabs/ConnectedAccountsTab.test.tsx": {
+      "TS2345": 4
+    },
+    "src/pages/settings/tabs/NotificationsTab.test.tsx": {
+      "TS2532": 1
+    },
+    "src/pages/settings/tabs/ProfileTab.test.tsx": {
+      "TS2741": 1,
+      "TS2769": 1,
+      "TS7006": 1
+    },
+    "src/pages/skills/SkillsBrowsePage.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/pages/vereine/VereinCrossInvitationButton.test.tsx": {
+      "TS2322": 1,
+      "TS2740": 1
+    },
+    "src/pages/volunteering/CertificatesTab.test.tsx": {
+      "TS2345": 1
+    },
+    "src/pages/volunteering/CreateOpportunityPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/volunteering/DonationReceiptPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/volunteering/EmergencyAlertsTab.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/volunteering/GroupSignUpTab.test.tsx": {
+      "TS2345": 3,
+      "TS2769": 1
+    },
+    "src/pages/volunteering/GuardianConsentVerifyPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/volunteering/HoursReviewTab.test.tsx": {
+      "TS2769": 1,
+      "TS7006": 1
+    },
+    "src/pages/volunteering/MyOrganisationsPage.test.tsx": {
+      "TS2741": 2
+    },
+    "src/pages/volunteering/OpportunityDetailPage.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/volunteering/OrgApplicationsTab.test.tsx": {
+      "TS2345": 9
+    },
+    "src/pages/volunteering/OrgHoursReviewTab.test.tsx": {
+      "TS2741": 6,
+      "TS2769": 1
+    },
+    "src/pages/volunteering/OrgOverviewTab.test.tsx": {
+      "TS2345": 1,
+      "TS2532": 1
+    },
+    "src/pages/volunteering/OrgVolunteersTab.test.tsx": {
+      "TS2322": 2,
+      "TS2345": 9
+    },
+    "src/pages/volunteering/OrgWalletTab.test.tsx": {
+      "TS2741": 1
+    },
+    "src/pages/volunteering/RecommendedShiftsTab.test.tsx": {
+      "TS2769": 1
+    },
+    "src/pages/volunteering/ShiftSwapsTab.test.tsx": {
+      "TS2769": 1,
+      "TS7006": 1
+    },
+    "src/pages/volunteering/VolOrgDashboardPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/pages/volunteering/VolunteeringPage.test.tsx": {
+      "TS2322": 1,
+      "TS2741": 3
+    },
+    "src/pages/volunteering/VolunteeringWelcome.test.tsx": {
+      "TS2345": 3
+    },
+    "src/pages/volunteering/WaitlistTab.test.tsx": {
+      "TS2345": 1,
+      "TS2769": 1,
+      "TS7006": 1
+    },
+    "src/pages/volunteering/WellbeingTab.test.tsx": {
+      "TS2769": 1,
+      "TS7006": 1
+    },
+    "src/pages/wallet/WalletPage.test.tsx": {
+      "TS2322": 1
+    },
+    "src/partners/PartnersRoute.test.tsx": {
+      "TS2322": 3
+    },
+    "src/partners/components/PartnersSidebar.test.tsx": {
+      "TS2322": 2
+    },
+    "src/routes/sharedPublicFeatureRoutes.test.tsx": {
+      "TS18046": 2
+    },
+    "src/super-admin/SuperAdminLayout.test.tsx": {
+      "TS2322": 1,
+      "TS2769": 1
+    },
+    "src/super-admin/components/SuperAdminBreadcrumbs.test.tsx": {
+      "TS18048": 2
+    },
+    "src/super-admin/components/SuperAdminHeader.test.tsx": {
+      "TS2322": 1
+    },
+    "src/test/accessibility.test.tsx": {
+      "TS2339": 15
+    }
+  },
+  "totals": {
+    "fileCount": 650,
+    "errorCount": 1951
+  }
+}

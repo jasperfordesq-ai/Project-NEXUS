@@ -148,8 +148,9 @@ afterAll(() => {
   }
   // Force GC after each test file to prevent heap accumulation across files.
   // Workers are long-lived (handle many files); --expose-gc in vitest.config enables this.
-  if (typeof (globalThis as Record<string, unknown>).gc === 'function') {
-    (globalThis as Record<string, unknown>).gc();
+  const forceGc = (globalThis as { gc?: () => void }).gc;
+  if (typeof forceGc === 'function') {
+    forceGc();
   }
 });
 

@@ -16,6 +16,7 @@
     "certification:worksheets": "node scripts/generate-certification-worksheets.mjs",
     "smoke:laravel-manifest": "node scripts/generate-laravel-smoke-manifest.mjs",
     "audit:dead-mocks": "node scripts/audit-dead-mocks.mjs",
+    "check:test-types": "cross-env NODE_OPTIONS=\"--max-old-space-size=20480\" node scripts/check-test-types.mjs",
     "check:backend-guardrails": "node scripts/check-backend-guardrails.mjs",
     "check:bundle-budget": "node scripts/check-bundle-budget.mjs",
     "check:nested-interactive": "node scripts/check-nested-interactive.mjs",

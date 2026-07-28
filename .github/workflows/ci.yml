@@ -483,6 +483,18 @@ jobs:
         working-directory: react-frontend
         run: npx tsc --noEmit
 
+      # Test-file type ratchet (BLOCKING). tsconfig.json excludes every test file
+      # and the src/test harness, and eslint ignores them too, so until now test
+      # files were type-checked by NOTHING and ~1,950 errors accumulated unseen.
+      # tsconfig.tests.json lifts that exclusion; the gate holds the count to a
+      # shrink-only baseline so existing debt is recorded, not fixed in one pass,
+      # while NEW breakage fails on the commit that introduces it.
+      # Fixed errors also fail, demanding a baseline regenerate to lock the win in.
+      - name: Test-File TypeScript Ratchet (BLOCKING)
+        working-directory: react-frontend
+        timeout-minutes: 10
+        run: npm run check:test-types
+
       # ESLint ratchet (BLOCKING). Cap tracks the current warning count (25) with
       # a small buffer; it must only ever be LOWERED, never raised. Previously the
       # cap was 1000 and eslint ran in no CI step at all, so warnings were ungated.

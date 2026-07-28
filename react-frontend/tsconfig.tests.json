@@ -1,0 +1,7 @@
+{
+  "//": "Type-checks the test files and shared harness that tsconfig.json deliberately excludes. Enforced by scripts/check-test-types.mjs against a shrink-only baseline (src/test/test-types.baseline.json) — see that script's header. Do NOT enable allowJs: it would pull scripts/*.mjs into the program and invalidate the @ts-expect-error in src/components/ui/BarrelMock.contract.test.ts.",
+  "//types": "Deliberately NO \"types\" array: setting it REPLACES automatic @types inclusion, which dropped @types/google.maps and produced 29 phantom errors in application files the app type-check passes cleanly. Test globals come from src/test/vitest-globals.d.ts instead.",
+  "extends": "./tsconfig.json",
+  "include": ["src"],
+  "exclude": ["src/resources.d.ts"]
+}
