@@ -539,22 +539,10 @@ jobs:
         working-directory: react-frontend
         shell: bash
         run: |
-          TESTS=(
-            src/components/feed/sidebar/__tests__/SidebarWidgets.test.tsx
-            src/components/feed/sidebar/__tests__/UpcomingEventsWidget.test.tsx
-            src/pages/dashboard/DashboardPage.test.tsx
-            src/pages/events/EventDetailPage.test.tsx
-            src/components/layout/__tests__/MegaMenu.test.tsx
-            src/admin/components/__tests__/AdminComponents.test.tsx
-            src/admin/modules/system/__tests__/VerificationAuditLog.test.tsx
-            src/components/location/__tests__/LocationComponents.test.tsx
-            src/components/stories/__tests__/StoryCreator.test.tsx
-            src/components/social/__tests__/StatusSelector.test.tsx
-            src/contexts/__tests__/TenantContext.test.tsx
-            src/admin/__tests__/components.test.tsx
-            src/pages/auth/LoginPage.test.tsx
-            src/admin/modules/system/OnboardingSettings.test.tsx
-          )
+          # Single source of truth — this list used to be duplicated inline here
+          # and in the coverage step below, free to drift apart unnoticed.
+          mapfile -t TESTS < <(grep -vE '^\s*(#|$)' scripts/ci-smoke-suites.txt)
+          echo "Smoke suites: ${#TESTS[@]}"
           # Run serially in a single fork — the parallel worker pool hangs/dies
           # (ERR_IPC_CHANNEL_CLOSED) on this set; serial is what passes locally.
           npx vitest run "${TESTS[@]}" --pool=forks --poolOptions.forks.singleFork=true
@@ -565,22 +553,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          TESTS=(
-            src/components/feed/sidebar/__tests__/SidebarWidgets.test.tsx
-            src/components/feed/sidebar/__tests__/UpcomingEventsWidget.test.tsx
-            src/pages/dashboard/DashboardPage.test.tsx
-            src/pages/events/EventDetailPage.test.tsx
-            src/components/layout/__tests__/MegaMenu.test.tsx
-            src/admin/components/__tests__/AdminComponents.test.tsx
-            src/admin/modules/system/__tests__/VerificationAuditLog.test.tsx
-            src/components/location/__tests__/LocationComponents.test.tsx
-            src/components/stories/__tests__/StoryCreator.test.tsx
-            src/components/social/__tests__/StatusSelector.test.tsx
-            src/contexts/__tests__/TenantContext.test.tsx
-            src/admin/__tests__/components.test.tsx
-            src/pages/auth/LoginPage.test.tsx
-            src/admin/modules/system/OnboardingSettings.test.tsx
-          )
+          mapfile -t TESTS < <(grep -vE '^\s*(#|$)' scripts/ci-smoke-suites.txt)
           set -o pipefail
           npx vitest run "${TESTS[@]}" --coverage --coverage.reporter=text --coverage.reporter=json-summary 2>&1 | tee /tmp/vitest-coverage.txt
           EXIT_CODE=${PIPESTATUS[0]}
@@ -660,6 +633,69 @@ jobs:
           # response shapes. Failure means PHP/TypeScript schema drift detected.
           npx vitest run src/lib/api-schemas.test.ts --reporter=verbose
         timeout-minutes: 3
+
+  # Full frontend suite, sharded. The blocking vitest steps in react-build cover
+  # roughly 150 of ~1,283 test files, so ~88% of the suite could break with a
+  # green build — which is why breakage here is only ever found in large batches
+  # (302 dead mocks, ~90 dead suites in July 2026).
+  #
+  # NON-BLOCKING FOR NOW, DELIBERATELY. This job's first duty is to measure: the
+  # quarantine baseline was seeded from a partial local census (335 of 1,283
+  # suites), and the remaining failures — plus any that fail only on a Linux
+  # runner — must be catalogued before it can gate anything. Flip
+  # continue-on-error off once several consecutive runs are clean; that flip is
+  # the whole point and should not be left undone.
+  #
+  # 🔴 WHEN FLIPPING TO BLOCKING, three things must happen together, or the job
+  # will look enforced while enforcing nothing:
+  #   1. remove `continue-on-error: true` below
+  #   2. add `react-tests-full` to the `needs:` list of the release-gate job —
+  #      it aggregates needs.*.result, so a job absent from that list cannot
+  #      fail the gate no matter what it concludes
+  #   3. add the scripts/check-quarantine-budget.mjs ceiling so the list cannot
+  #      simply be grown to make a red shard green
+  #
+  # fail-fast is off so one shard's failure does not cancel the other seven and
+  # hide their results. --reporter=verbose names each file as it starts, so a
+  # shard that hits the timeout identifies the suite that hung.
+  react-tests-full:
+    name: React Full Suite (shard ${{ matrix.shard }}/8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: react-frontend/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: react-frontend
+        run: npm ci
+
+      - name: Run shard ${{ matrix.shard }} of 8
+        working-directory: react-frontend
+        run: node scripts/run-vitest-shard.mjs --shard ${{ matrix.shard }}/8 --extra-arg=--reporter=verbose
+
+      # Visibility only: prints how the quarantined suites are doing so a fixed
+      # one gets noticed and removed from the list, instead of sitting there
+      # forever because nothing ever runs it.
+      - name: Quarantined suites (VISIBILITY, shard 1 only)
+        if: matrix.shard == 1
+        continue-on-error: true
+        working-directory: react-frontend
+        run: node scripts/run-vitest-shard.mjs --quarantined --extra-arg=--reporter=basic
 
   # ─────────────────────────────────────────────────────────────────
   # Stage 3: Docker Build Verification

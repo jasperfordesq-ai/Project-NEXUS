@@ -1,0 +1,18 @@
+# Focused smoke suites, one path per line. Read by the "Vitest Focused Smoke
+# Tests" and "Vitest Coverage Report" steps in .github/workflows/ci.yml, which
+# previously each carried their own inline copy of this list and could drift
+# apart silently. Blank lines and # comments are ignored.
+src/components/feed/sidebar/__tests__/SidebarWidgets.test.tsx
+src/components/feed/sidebar/__tests__/UpcomingEventsWidget.test.tsx
+src/pages/dashboard/DashboardPage.test.tsx
+src/pages/events/EventDetailPage.test.tsx
+src/components/layout/__tests__/MegaMenu.test.tsx
+src/admin/components/__tests__/AdminComponents.test.tsx
+src/admin/modules/system/__tests__/VerificationAuditLog.test.tsx
+src/components/location/__tests__/LocationComponents.test.tsx
+src/components/stories/__tests__/StoryCreator.test.tsx
+src/components/social/__tests__/StatusSelector.test.tsx
+src/contexts/__tests__/TenantContext.test.tsx
+src/admin/__tests__/components.test.tsx
+src/pages/auth/LoginPage.test.tsx
+src/admin/modules/system/OnboardingSettings.test.tsx
