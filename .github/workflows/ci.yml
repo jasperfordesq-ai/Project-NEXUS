@@ -533,6 +533,19 @@ jobs:
         # (unlike test:ui-contracts): FeedPage.test.tsx passes 17/17 but still
         # emits pre-existing React act() warnings, and a gate that is red on day
         # one gets switched off. Raise it to 1 once those warnings are fixed.
+        #
+        # The script carries --retry=1 (package.json — JSON cannot hold comments,
+        # so the reason lives here). This was the last blocking vitest path with
+        # no retry, and it reded main twice on 2026-07-28 from load-timing flakes:
+        # ConversationPage ("message-input-area" absent) and TeamChatrooms (queried
+        # a button while loading spinners were still rendered). Both pass locally
+        # on first attempt and both pass in the full-suite shard job, which does
+        # retry. A genuinely broken test still fails both attempts and still reds
+        # this step; only the timing lottery is removed.
+        #
+        # 🔴 This step is now fully subsumed by react-tests-full (its files are a
+        # subset of the 1,177 that job runs). Retire it once that job has a longer
+        # green record — keeping both costs CI time for no extra coverage.
         working-directory: react-frontend
         run: npm run test:mock-contract -- --run
 
