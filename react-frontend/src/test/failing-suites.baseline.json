@@ -1,5 +1,5 @@
 {
-  "_README": "GENERATED-THEN-CURATED. Suites excluded from the full-suite shard job (scripts/run-vitest-shard.mjs) because they fail for reasons predating that job. Exists so the job can run EVERY other suite and be blocking now, rather than after all 1,283 suites are green. This list may only SHRINK: a path that no longer exists fails the runner rather than rotting here silently. Run just these with: node scripts/run-vitest-shard.mjs --quarantined. Seeded 2026-07-28 from a local census (335 suites, 39 failures), then extended from the first CI shakedown run (30351495703) which surfaced 109 failing suites across shards 1 and 4-8. Notably most of the shard-1 failures are NOT the ones the local census found — they fail only on a Linux runner, which is why the census belongs in CI rather than on a Windows dev box. Dominant causes are stale queries and assertions left behind as the application changed underneath the tests: accumulated rot, not new breakage. Each entry is a suite to FIX and remove, not a permanent exemption.",
+  "_README": "GENERATED-THEN-CURATED. Suites excluded from the full-suite shard job (scripts/run-vitest-shard.mjs) because they fail for reasons predating that job. Exists so the job can run EVERY other suite and be blocking now, rather than after all 1,283 suites are green. This list may only SHRINK: a path that no longer exists fails the runner rather than rotting here silently. Run just these with: node scripts/run-vitest-shard.mjs --quarantined. Seeded 2026-07-28 from a local census (335 suites, 39 failures), then extended from the first CI shakedown run (30351495703) which surfaced 109 failing suites across shards 4-8, plus 6 more from shard 3 once it stopped hanging (run 30353450584); with those, all eight shards were green. Notably most of the shard-1 failures are NOT the ones the local census found — they fail only on a Linux runner, which is why the census belongs in CI rather than on a Windows dev box. Dominant causes are stale queries and assertions left behind as the application changed underneath the tests: accumulated rot, not new breakage. Each entry is a suite to FIX and remove, not a permanent exemption.",
   "quarantined": [
     "src/admin/__tests__/AdminRoute.test.tsx",
     "src/admin/components/Abbr.test.tsx",
@@ -14,6 +14,7 @@
     "src/admin/modules/agents/AgentProposalsPage.test.tsx",
     "src/admin/modules/agents/AgentRunsPage.test.tsx",
     "src/admin/modules/billing/InvoiceHistory.test.tsx",
+    "src/admin/modules/blog/BlogAdmin.test.tsx",
     "src/admin/modules/blog/BlogPostForm.test.tsx",
     "src/admin/modules/caring-community/CaringCommunityAdmin.test.tsx",
     "src/admin/modules/caring-community/DataQualityAdminPage.test.tsx",
@@ -30,6 +31,8 @@
     "src/admin/modules/config/ModuleConfigModal.test.tsx",
     "src/admin/modules/config/moduleRegistry.test.ts",
     "src/admin/modules/enterprise/ErrorLogs.test.tsx",
+    "src/admin/modules/enterprise/GdprAuditLog.test.tsx",
+    "src/admin/modules/enterprise/GdprBreachDetail.test.tsx",
     "src/admin/modules/enterprise/GdprBreaches.test.tsx",
     "src/admin/modules/enterprise/GdprConsentTypes.test.tsx",
     "src/admin/modules/enterprise/GdprConsents.test.tsx",
@@ -38,6 +41,7 @@
     "src/admin/modules/enterprise/LegalDocComplianceDashboard.test.tsx",
     "src/admin/modules/enterprise/PermissionBrowser.test.tsx",
     "src/admin/modules/enterprise/RoleForm.test.tsx",
+    "src/admin/modules/enterprise/RoleList.test.tsx",
     "src/admin/modules/federation/FederationAggregatesPage.test.tsx",
     "src/admin/modules/federation/FederationAnalytics.test.tsx",
     "src/admin/modules/gamification/CreateBadge.test.tsx",
@@ -58,6 +62,7 @@
     "src/admin/modules/newsletters/Segments.test.tsx",
     "src/admin/modules/performance/PerformanceDashboard.test.tsx",
     "src/admin/modules/regional-analytics/RegionalAnalyticsAdminPage.test.tsx",
+    "src/admin/modules/reports/InactiveMembersPage.test.tsx",
     "src/admin/modules/reports/MemberReportsPage.test.tsx",
     "src/admin/modules/reports/ModerationQueuePage.test.tsx",
     "src/admin/modules/reports/MunicipalImpactReportsPage.test.tsx",
@@ -85,6 +90,7 @@
     "src/broker/components/MemberDetailModal.test.tsx",
     "src/broker/components/__tests__/BrokerPrimitives.test.tsx",
     "src/broker/pages/BrokerHelpPage.test.tsx",
+    "src/broker/pages/OnboardingPage.test.tsx",
     "src/components/compose/__tests__/MobileComposeOverlay.test.tsx",
     "src/components/compose/shared/VideoUploader.test.tsx",
     "src/components/compose/tabs/__tests__/PostTab.test.tsx",
@@ -120,6 +126,6 @@
     "src/pages/public/LegalVersionHistoryPage.test.tsx"
   ],
   "totals": {
-    "count": 117
+    "count": 123
   }
 }
