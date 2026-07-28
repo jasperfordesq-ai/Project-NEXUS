@@ -29,6 +29,18 @@ vi.mock('@/lib/api', () => ({
   tokenManager: { getTenantId: vi.fn(), getAccessToken: vi.fn() },
 }));
 
+// 🔴 The toast object MUST be created once, outside the useToast implementation.
+// Returning a fresh `{ success: vi.fn(), … }` per call hands components a new
+// object identity on every render. Anything doing
+// `useCallback(..., [toast])` + `useEffect(..., [thatCallback])` — which
+// VolunteeringOverview does — then re-runs its effect, sets state, re-renders,
+// gets another new toast, and loops until React aborts with "Maximum update
+// depth exceeded". That presented as a react-aria CollectionBuilder crash,
+// because the Select's collection re-registered on each pass, which sent the
+// first diagnosis chasing a component bug that does not exist: the component's
+// own suite passes 15/15.
+const stableToast = { success: vi.fn(), error: vi.fn(), info: vi.fn(), showToast: vi.fn() };
+
 vi.mock('@/contexts', () => ({
   useAuth: vi.fn(() => ({
     user: { id: 1, first_name: 'Admin', last_name: 'User', name: 'Admin User', role: 'admin', is_super_admin: true, tenant_id: 2 },
@@ -43,7 +55,7 @@ vi.mock('@/contexts', () => ({
     hasModule: vi.fn(() => true),
     tenantPath: (p: string) => `/test${p}`,
   })),
-  useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), showToast: vi.fn() })),
+  useToast: vi.fn(() => stableToast),
   useNotifications: vi.fn(() => ({ counts: { messages: 0, notifications: 0 } })),
 
   useTheme: () => ({ resolvedTheme: 'light', toggleTheme: vi.fn(), theme: 'system', setTheme: vi.fn() }),
@@ -70,7 +82,7 @@ vi.mock('@/hooks/useApi', () => ({
 }));
 
 vi.mock('@/contexts/ToastContext', () => ({
-  useToast: vi.fn(() => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), showToast: vi.fn() })),
+  useToast: vi.fn(() => stableToast),
 }));
 
 vi.mock('@/contexts/TenantContext', () => ({
