@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(si apre in una nuova scheda)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Progetto NEXUS accessibile',
     'phase' => 'Versione beta',
     'feedback' => 'Dai un feedback',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
     'cookie_banner' => [
         'aria_label' => 'Cookie su :service',
         'heading' => 'Cookie su :service',
@@ -151,7 +150,7 @@ return [
         'apply_filters' => 'Applica filtri',
         'clear_filters' => 'Cancella filtri',
         'load_more' => 'Carica di più',
-        'post' => 'Post',
+        'post' => 'Inviare',
         'search' => 'Cerca',
         'view_details' => 'Visualizza i dettagli',
         'view_profile' => 'Visualizza profilo',
@@ -540,7 +539,7 @@ return [
             'request' => 'Richieste',
         ],
         'item_types' => [
-            'post' => 'Post',
+            'post' => 'Inviare',
             'listing' => 'Elenco',
             'event' => 'Evento',
             'goal' => 'Obiettivo',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Pubblicato',
         'posted_filters' => [
-            'any' => 'In qualsiasi momento',
             '1' => 'Ultimo giorno',
             '7' => 'Ultimi 7 giorni',
             '30' => 'Ultimi 30 giorni',
+            'any' => 'In qualsiasi momento',
         ],
         'exchange_title' => 'Scambia questa inserzione',
         'exchange_detail' => 'Utilizza il flusso di lavoro di scambio accessibile per concordare la richiesta, monitorare i progressi e confermare gli orari.',
@@ -972,7 +971,7 @@ return [
                 'workshop' => 'Laboratorio',
                 'panel' => 'Tavola rotonda',
                 'break' => 'Pausa',
-                'networking' => 'Networking',
+                'networking' => 'Rete',
                 'other' => 'Altro',
             ],
             'visibilities' => [
@@ -2183,7 +2182,7 @@ return [
         'events_members_only' => 'Iscriviti al gruppo per vedere i suoi eventi.',
         'event_starts' => 'Inizio',
         'event_location' => 'Luogo',
-        'event_online' => 'Online',
+        'event_online' => 'In linea',
         'feed_title' => 'Feed del gruppo',
         'feed_description' => 'Post condivisi con i membri di questo gruppo.',
         'feed_empty' => 'Non ci sono ancora post in questo gruppo. Sii il primo a condividere qualcosa.',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'Offerta',
         'col_requesting' => 'Richieste',
         'browse_by_category' => 'Sfoglia per categoria',
-            'title' => 'Elenco competenze',
+        'title' => 'Elenco competenze',
         'caption' => ':community',
         'description' => 'Esplora le competenze offerte dai membri di questa comunità.',
         'search_label' => 'Trova membri per competenza',
@@ -2375,7 +2374,7 @@ return [
         'description' => 'Annunci, post e altri elementi che hai salvato.',
         'empty' => 'Non hai ancora salvato nulla.',
         'types' => [
-            'post' => 'Post',
+            'post' => 'Inviare',
             'listing' => 'Annuncio',
             'event' => 'Evento',
             'job' => 'Opportunità',
@@ -3147,7 +3146,7 @@ return [
             'empty' => 'Nessun evento federato trovato.',
             'not_available' => 'La navigazione degli eventi federati non è disponibile per questa comunità al momento.',
             'community_label' => 'Comunità',
-            'online_label' => 'Online',
+            'online_label' => 'In linea',
             'attendees_label' => 'Partecipanti',
             'attendees_count' => 'Partecipanti: :count',
             'load_more' => 'Carica altri eventi',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Distanza',
         'no_location' => 'Aggiungi la tua posizione nel profilo per filtrare per distanza.',
         'options' => [
-            'any' => 'Qualsiasi distanza',
             '5' => 'Entro 5 km',
             '10' => 'Entro 10 km',
             '25' => 'Entro 25 km',
             '50' => 'Entro 50 km',
             '100' => 'Entro 100 km',
+            'any' => 'Qualsiasi distanza',
         ],
     ],
     'polish_discovery' => [
@@ -3787,14 +3786,14 @@ return [
         'language_label' => 'Lingua',
         'language_submit' => 'Salva lingua',
         'languages' => [
-            'en' => 'English',
-            'ga' => 'Gaeilge',
-            'de' => 'Deutsch',
-            'fr' => 'Français',
+            'en' => 'Inglese',
+            'ga' => 'Gaelico',
+            'de' => 'Tedesco',
+            'fr' => 'Francese',
             'it' => 'Italiano',
             'pt' => 'Português',
             'es' => 'Español',
-            'nl' => 'Nederlands',
+            'nl' => 'Paesi Bassi',
             'pl' => 'Polski',
             'ja' => '日本語',
             'ar' => 'العربية',
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Conferme di verifica per la protezione della comunità',
                 'intro' => 'Alcune politiche di contatto con la comunità richiedono una conferma di verifica.',
                 'items' => [
-                    'La comunità effettua qualsiasi controllo legittimo al di fuori di Project NEXUS.',
-                    'Un broker autorizzato registra solo una decisione privata, basata solo sui metadati, per la specifica politica di contatto.',
-                    'Project NEXUS non richiede né conserva DBS, Garda Vetting, AccessNI, PVG o certificati equivalenti, referenze, date, risultati, dettagli del casellario giudiziale, documenti di identità o prove in testo libero.',
-                    'Una conferma della politica dei contatti non significa che una persona sia universalmente sicura o autorizzata per ogni ruolo.',
-                    'Non chiedere a un altro membro di inviare un certificato di verifica tramite messaggi. Contatta il coordinatore della comunità se hai bisogno di aiuto.',
+                    '0' => 'La comunità effettua qualsiasi controllo legittimo al di fuori di Project NEXUS.',
+                    '1' => 'Un broker autorizzato registra solo una decisione privata, basata solo sui metadati, per la specifica politica di contatto.',
+                    '2' => 'Project NEXUS non richiede né conserva DBS, Garda Vetting, AccessNI, PVG o certificati equivalenti, referenze, date, risultati, dettagli del casellario giudiziale, documenti di identità o prove in testo libero.',
+                    '3' => 'Una conferma della politica dei contatti non significa che una persona sia universalmente sicura o autorizzata per ogni ruolo.',
+                    '4' => 'Non chiedere a un altro membro di inviare un certificato di verifica tramite messaggi. Contatta il coordinatore della comunità se hai bisogno di aiuto.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Stato di conformità',
         'conformance_body' => 'Questo servizio mira a conformarsi alle Linee guida per l\'accessibilità dei contenuti Web (WCAG) versione 2.2 Livello AA. Valutiamo rispetto a questo standard e risolviamo i problemi riscontrati. Laddove qualche parte non sia ancora completamente conforme, lo diremo di seguito e lavoreremo per sistemarla.',
         'standard_label' => 'Norma di destinazione',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 Livello AA',
         'features_title' => 'Come questo servizio ti supporta',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'Non è stato possibile annullare questa richiesta di scambio.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Per le organizzazioni',
         'door_heading_one' => 'Gestisci :name',
         'door_heading_many' => 'Gestisci :count organizzazioni',
@@ -4447,9 +4445,9 @@ return [
         'donate_credits_not_money' => 'Questo dona i tuoi crediti di tempo — non denaro — a un fondo comunitario condiviso da cui i membri e la comunità possono attingere. Non è un pagamento in contanti o con carta.',
     ],
     'feed_t1' => [
-        'permalink_title' => 'Post',
+        'permalink_title' => 'Inviare',
         'permalink_back' => 'Torna al feed',
-        'permalink_heading' => 'Post',
+        'permalink_heading' => 'Inviare',
         'permalink_not_available' => 'Questo post non è più disponibile.',
         'reactions_legend' => 'Reagisci a questo post',
         'reactions_comment_legend' => 'Reagisci a questo commento',

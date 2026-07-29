@@ -150,15 +150,32 @@ function maskPlaceholders(text) {
   const tokens = [];
   const masked = text.replace(PLACEHOLDER_PATTERN, (match) => {
     tokens.push(match);
-    // An XML-ish self-closing tag survives Google Translate far better than a
-    // bare sentinel word, which gets translated, cased, or spaced apart.
-    return `<nexus${tokens.length - 1}/>`;
+    // An XML-ish self-closing tag survives translation far better than a bare
+    // sentinel word. The tag NAME is a single meaningless letter on purpose:
+    // the first attempt used `<nexus0/>` and Google translated the name itself —
+    // `<nexo0/>` in Spanish and Portuguese, `<lien0/>` in French — which failed
+    // to restore and cost 207 values across three locales. They were kept as
+    // English rather than shipped, which is what the multiset check below is
+    // for, but a mask that gets translated is a mask that does not work.
+    return `<x${tokens.length - 1}/>`;
   });
   return { masked, tokens };
 }
 
+/**
+ * Restore by INDEX, tolerating a translated or re-cased tag name.
+ *
+ * Even a one-letter name is not safe from every engine and language, so the
+ * digits are treated as the identity of the token and the name as decoration. A
+ * lang value containing something that genuinely looks like `<p0/>` would be
+ * mis-restored — but then the multiset check rejects the value and the English
+ * is kept, so the failure mode stays safe either way.
+ */
 function restorePlaceholders(text, tokens) {
-  return text.replace(/<\s*nexus(\d+)\s*\/?\s*>/gi, (_, index) => tokens[Number(index)] ?? '');
+  return text.replace(
+    /<\s*[A-Za-zÀ-ɏ]{1,10}\s*(\d+)\s*\/?\s*>/g,
+    (whole, index) => (tokens[Number(index)] ?? whole),
+  );
 }
 
 function placeholderMultiset(text) {

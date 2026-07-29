@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(abre num novo separador)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Projeto NEXUS acessível',
     'phase' => 'Versão beta',
     'feedback' => 'Dê feedback',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
     'cookie_banner' => [
         'aria_label' => 'Cookies em :service',
         'heading' => 'Cookies em :service',
@@ -26,7 +25,7 @@ return [
         'hide' => 'Ocultar mensagem de cookies',
     ],
     'cookie_settings' => [
-        'title' => 'Cookies',
+        'title' => 'Biscoitos',
         'caption' => 'Cookies em :service',
         'intro' => 'Os cookies são pequenos ficheiros guardados no seu dispositivo quando visita um site. Utilizamos cookies para que este serviço funcione e para o melhorar.',
         'essential_heading' => 'Cookies essenciais',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Postado',
         'posted_filters' => [
-            'any' => 'A qualquer hora',
             '1' => 'Último dia',
             '7' => 'Últimos 7 dias',
             '30' => 'Últimos 30 dias',
+            'any' => 'A qualquer hora',
         ],
         'exchange_title' => 'Trocar esta listagem',
         'exchange_detail' => 'Use o fluxo de trabalho de troca acessível para concordar com a solicitação, acompanhar o progresso e confirmar horários.',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'A Oferecer',
         'col_requesting' => 'Pedidos',
         'browse_by_category' => 'Navegar por categoria',
-            'title' => 'Diretório de competências',
+        'title' => 'Diretório de competências',
         'caption' => ':community',
         'description' => 'Explore as competências que os membros oferecem nesta comunidade.',
         'search_label' => 'Encontrar membros por competência',
@@ -3003,7 +3002,7 @@ return [
             'location_hint' => 'Sua localização é um dado pessoal. Ela permanece oculta a menos que você ative isto.',
             'travel_radius_label' => 'Raio de viagem',
             'travel_radius_hint' => 'A distância máxima que você está disposto a percorrer, em quilômetros.',
-            'travel_radius_suffix' => 'km',
+            'travel_radius_suffix' => 'quilômetros',
             'do_this_later' => 'Faça isso mais tarde',
             'partners_heading' => 'Comunidades com as quais você poderia se conectar',
             'partners_empty' => 'Ainda não existem comunidades parceiras.',
@@ -3056,7 +3055,7 @@ return [
             'communications_legend' => 'Comunicação',
             'travel_radius_label' => 'Raio de viagem',
             'travel_radius_hint' => 'A maior distância que você está disposto a percorrer, em quilômetros (0 a 500).',
-            'travel_radius_suffix' => 'km',
+            'travel_radius_suffix' => 'quilômetros',
         ],
         'members_browse' => [
             'title' => 'Membros federados',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Distância',
         'no_location' => 'Adicione a sua localização no perfil para filtrar por distância.',
         'options' => [
-            'any' => 'Qualquer distância',
             '5' => 'Num raio de 5 km',
             '10' => 'Num raio de 10 km',
             '25' => 'Num raio de 25 km',
             '50' => 'Num raio de 50 km',
             '100' => 'Num raio de 100 km',
+            'any' => 'Qualquer distância',
         ],
     ],
     'polish_discovery' => [
@@ -3577,7 +3576,7 @@ return [
         'active_listings_label' => 'Listagens ativas',
         'rating_label' => 'Avaliação',
         'level_label' => 'Nível',
-        'xp_label' => 'XP',
+        'xp_label' => 'EXP',
         'offers_label' => 'Ofertas',
         'requests_label' => 'Solicitações',
         'skill_offering' => 'Oferta',
@@ -3787,15 +3786,15 @@ return [
         'language_label' => 'Idioma',
         'language_submit' => 'Salvar idioma',
         'languages' => [
-            'en' => 'English',
-            'ga' => 'Gaeilge',
-            'de' => 'Deutsch',
-            'fr' => 'Français',
+            'en' => 'Inglês',
+            'ga' => 'gaélico',
+            'de' => 'Alemão',
+            'fr' => 'Francês',
             'it' => 'Italiano',
             'pt' => 'Português',
-            'es' => 'Español',
-            'nl' => 'Nederlands',
-            'pl' => 'Polski',
+            'es' => 'Espanhol',
+            'nl' => 'Holanda',
+            'pl' => 'Polaco',
             'ja' => '日本語',
             'ar' => 'العربية',
         ],
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Confirmações de verificação de proteção comunitária',
                 'intro' => 'Algumas políticas de contato comunitário exigem uma confirmação de verificação.',
                 'items' => [
-                    'A comunidade realiza qualquer verificação legal fora de Project NEXUS.',
-                    'Um intermediário autorizado registra apenas uma decisão privada, apenas com metadados, para a política de contato específica.',
-                    'Project NEXUS não solicita nem retém DBS, Verificação da Garda, AccessNI, PVG ou certificados equivalentes, referências, datas, resultados, detalhes de antecedentes criminais, documentos de identidade ou evidências em texto livre.',
-                    'A confirmação da política de contato não significa que uma pessoa é universalmente segura ou liberada para todos os cargos.',
-                    'Não peça a outro membro para enviar um certificado de verificação por mensagens. Entre em contato com o coordenador da comunidade se precisar de ajuda.',
+                    '0' => 'A comunidade realiza qualquer verificação legal fora de Project NEXUS.',
+                    '1' => 'Um intermediário autorizado registra apenas uma decisão privada, apenas com metadados, para a política de contato específica.',
+                    '2' => 'Project NEXUS não solicita nem retém DBS, Verificação da Garda, AccessNI, PVG ou certificados equivalentes, referências, datas, resultados, detalhes de antecedentes criminais, documentos de identidade ou evidências em texto livre.',
+                    '3' => 'A confirmação da política de contato não significa que uma pessoa é universalmente segura ou liberada para todos os cargos.',
+                    '4' => 'Não peça a outro membro para enviar um certificado de verificação por mensagens. Entre em contato com o coordenador da comunidade se precisar de ajuda.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Status de conformidade',
         'conformance_body' => 'Este serviço visa estar em conformidade com as Diretrizes de Acessibilidade de Conteúdo da Web (WCAG) versão 2.2 Nível AA. Avaliamos de acordo com esse padrão e corrigimos os problemas que encontramos. Quando alguma parte ainda não estiver totalmente em conformidade, afirmaremos isso abaixo e trabalharemos para corrigi-la.',
         'standard_label' => 'Padrão alvo',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 Nível AA',
         'features_title' => 'Como este serviço oferece suporte a você',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'Não foi possível cancelar este pedido de troca.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Para organizações',
         'door_heading_one' => 'Você gere :name',
         'door_heading_many' => 'Você gere :count organizações',

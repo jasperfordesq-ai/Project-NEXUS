@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(otwiera się w nowej karcie)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Projekt NEXUS Dostępny',
     'phase' => 'Wersja beta',
     'feedback' => 'Przekaż opinię',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
     'cookie_banner' => [
         'aria_label' => 'Pliki cookie w :service',
         'heading' => 'Pliki cookie w :service',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Wysłano',
         'posted_filters' => [
-            'any' => 'W dowolnym momencie',
             '1' => 'Ostatni dzień',
             '7' => 'Ostatnie 7 dni',
             '30' => 'Ostatnie 30 dni',
+            'any' => 'W dowolnym momencie',
         ],
         'exchange_title' => 'Wymień tę aukcję',
         'exchange_detail' => 'Skorzystaj z dostępnego przepływu pracy wymiany, aby uzgodnić prośbę, śledzić postęp i potwierdzać godziny.',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'Oferta',
         'col_requesting' => 'Prośba',
         'browse_by_category' => 'Przeglądaj według kategorii',
-            'title' => 'Katalog umiejętności',
+        'title' => 'Katalog umiejętności',
         'caption' => ':community',
         'description' => 'Przeglądaj umiejętności oferowane przez członków tej społeczności.',
         'search_label' => 'Znajdź członków według umiejętności',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Odległość',
         'no_location' => 'Dodaj swoją lokalizację w profilu, aby filtrować według odległości.',
         'options' => [
-            'any' => 'Dowolna odległość',
             '5' => 'W promieniu 5 km',
             '10' => 'W promieniu 10 km',
             '25' => 'W promieniu 25 km',
             '50' => 'W promieniu 50 km',
             '100' => 'W promieniu 100 km',
+            'any' => 'Dowolna odległość',
         ],
     ],
     'polish_discovery' => [
@@ -3787,14 +3786,14 @@ return [
         'language_label' => 'Język',
         'language_submit' => 'Zapisz język',
         'languages' => [
-            'en' => 'English',
+            'en' => 'angielski',
             'ga' => 'Gaeilge',
-            'de' => 'Deutsch',
-            'fr' => 'Français',
-            'it' => 'Italiano',
-            'pt' => 'Português',
-            'es' => 'Español',
-            'nl' => 'Nederlands',
+            'de' => 'niemiecki',
+            'fr' => 'francuski',
+            'it' => 'włoski',
+            'pt' => 'portugalski',
+            'es' => 'hiszpański',
+            'nl' => 'Holandia',
             'pl' => 'Polski',
             'ja' => '日本語',
             'ar' => 'العربية',
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Potwierdzenia weryfikacji ochrony społeczności',
                 'intro' => 'Niektóre zasady kontaktów społeczności wymagają potwierdzenia weryfikacji.',
                 'items' => [
-                    'Społeczność prowadzi wszelkie legalne kontrole poza Project NEXUS.',
-                    'Autoryzowany broker rejestruje tylko prywatną decyzję zawierającą jedynie metadane dla konkretnej polityki kontaktu.',
-                    'Project NEXUS nie prosi o ani nie przechowuje DBS, weryfikacji Garda, AccessNI, PVG ani równoważnych certyfikatów, referencji, dat, wyników, danych o karalności, dokumentów tożsamości ani dowodów w formie tekstu swobodnego.',
-                    'Potwierdzenie polityki kontaktowej nie oznacza, że dana osoba jest bezpieczna we wszystkich sytuacjach lub dopuszczona do każdej roli.',
-                    'Nie proś innego członka o przesłanie zaświadczenia weryfikacyjnego przez wiadomości. Skontaktuj się z koordynatorem społeczności, jeśli potrzebujesz pomocy.',
+                    '0' => 'Społeczność prowadzi wszelkie legalne kontrole poza Project NEXUS.',
+                    '1' => 'Autoryzowany broker rejestruje tylko prywatną decyzję zawierającą jedynie metadane dla konkretnej polityki kontaktu.',
+                    '2' => 'Project NEXUS nie prosi o ani nie przechowuje DBS, weryfikacji Garda, AccessNI, PVG ani równoważnych certyfikatów, referencji, dat, wyników, danych o karalności, dokumentów tożsamości ani dowodów w formie tekstu swobodnego.',
+                    '3' => 'Potwierdzenie polityki kontaktowej nie oznacza, że dana osoba jest bezpieczna we wszystkich sytuacjach lub dopuszczona do każdej roli.',
+                    '4' => 'Nie proś innego członka o przesłanie zaświadczenia weryfikacyjnego przez wiadomości. Skontaktuj się z koordynatorem społeczności, jeśli potrzebujesz pomocy.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Stan zgodności',
         'conformance_body' => 'Celem tej usługi jest zgodność z Wytycznymi dotyczącymi dostępności treści internetowych (WCAG) wersja 2.2, poziom AA. Oceniamy zgodnie z tym standardem i naprawiamy znalezione problemy. Jeżeli jakakolwiek część nie jest jeszcze w pełni zgodna, informujemy o tym poniżej i pracujemy nad naprawieniem tego problemu.',
         'standard_label' => 'Standard docelowy',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2, poziom AA',
         'features_title' => 'Jak ta usługa Cię wspiera',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'Nie udało się anulować tej prośby o zamianę.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Dla organizacji',
         'door_heading_one' => 'Zarządzasz :name',
         'door_heading_many' => 'Zarządzasz :count organizacjami',

@@ -2468,14 +2468,14 @@ Duração: :duration minutos',
     'job_ai_salary_not_disclosed' => 'Não divulgado',
     'job_ai_yes' => 'Sim',
     'job_ai_no' => 'Não',
-    'job_ai_chat_context' => 'Job Title: :title
-Type: :type
-Commitment: :commitment
-Location: :location
-Remote: :remote
-Skills Required: :skills
-Salary: :salary
-Description:
+    'job_ai_chat_context' => 'Cargo: :title
+Tipo: :type
+Compromisso: :commitment
+Localização: :location
+Remoto: :remote
+Habilidades necessárias: :skills
+Salário: :salary
+Descrição:
 :description',
     'job_ai_chat_user_context' => 'Sobre o usuário perguntando:
 Habilidades: :skills
@@ -2536,10 +2536,10 @@ Retorne um array JSON (e NADA mais) com objetos contendo:
 - motivo (string, 1-2 frases explicando a classificação)
 
 Classifique por classificação crescente (melhor primeiro).',
-    'job_ai_ranking_user_prompt' => 'JOB:
+    'job_ai_ranking_user_prompt' => 'TRABALHO:
 :job
 
-CANDIDATES::candidates',
+CANDIDATOS::candidates',
     'vol_activity_hours_logged' => ':name registou :hours horas',
     'vol_activity_application_pending' => ':name candidatou-se a ":title"',
     'vol_activity_application_approved' => ':name foi aprovado/a para ":title"',

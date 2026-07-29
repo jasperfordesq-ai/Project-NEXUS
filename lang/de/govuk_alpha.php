@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(wird in neuem Tab geöffnet)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Projekt NEXUS Barrierefrei',
     'phase' => 'Beta-Version',
     'feedback' => 'Geben Sie Feedback',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
     'cookie_banner' => [
         'aria_label' => 'Cookies auf :service',
         'heading' => 'Cookies auf :service',
@@ -26,7 +25,7 @@ return [
         'hide' => 'Cookie-Hinweis ausblenden',
     ],
     'cookie_settings' => [
-        'title' => 'Cookies',
+        'title' => 'Kekse',
         'caption' => 'Cookies auf :service',
         'intro' => 'Cookies sind kleine Dateien, die beim Besuch einer Website auf Ihrem Gerät gespeichert werden. Wir verwenden Cookies, damit dieser Dienst funktioniert und um ihn zu verbessern.',
         'essential_heading' => 'Notwendige Cookies',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Gepostet',
         'posted_filters' => [
-            'any' => 'Jederzeit',
             '1' => 'Letzter Tag',
             '7' => 'Letzte 7 Tage',
             '30' => 'Letzte 30 Tage',
+            'any' => 'Jederzeit',
         ],
         'exchange_title' => 'Tauschen Sie dieses Angebot aus',
         'exchange_detail' => 'Nutzen Sie den barrierefreien Austausch-Workflow, um der Anfrage zuzustimmen, den Fortschritt zu verfolgen und Stunden zu bestätigen.',
@@ -969,7 +968,7 @@ return [
             'types' => [
                 'session' => 'Sitzung',
                 'keynote' => 'Grundsatzrede',
-                'workshop' => 'Workshop',
+                'workshop' => 'Werkstatt',
                 'panel' => 'Podiumsdiskussion',
                 'break' => 'Pause',
                 'networking' => 'Netzwerken',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'Angebot',
         'col_requesting' => 'Gesuche',
         'browse_by_category' => 'Nach Kategorie durchsuchen',
-            'title' => 'Fähigkeitsverzeichnis',
+        'title' => 'Fähigkeitsverzeichnis',
         'caption' => ':community',
         'description' => 'Durchsuchen Sie die Fähigkeiten, die Mitglieder in dieser Gemeinschaft anbieten.',
         'search_label' => 'Mitglieder nach Fähigkeit finden',
@@ -2356,7 +2355,7 @@ return [
         'opportunities_summary' => 'Aktuelle Möglichkeiten bei :name.',
         'opportunities_empty' => 'Bei dieser Organisation gibt es derzeit keine Ehrenamtsmöglichkeiten.',
         'opportunity_view' => 'Ansehen und bewerben',
-        'opportunity_remote' => 'Remote',
+        'opportunity_remote' => 'Fernbedienung',
         'reviews_heading' => 'Bewertungen von Ehrenamtlichen',
         'reviews_empty' => 'Diese Organisation hat noch keine Bewertungen.',
         'review_rating_label' => 'Bewertet mit :rating von 5',
@@ -2448,7 +2447,7 @@ return [
         'type_paid' => 'Bezahlt',
         'type_timebank' => 'Zeitguthaben',
         'back' => 'Zurück zu den Stellen',
-        'remote' => 'Remote',
+        'remote' => 'Fernbedienung',
         'location_label' => 'Ort',
         'salary_label' => 'Vergütung',
         'deadline_label' => 'Bewerbungsschluss',
@@ -2489,7 +2488,7 @@ return [
         'apply_filters' => 'Filter anwenden',
         'clear_filters' => 'Filter zurücksetzen',
         'results_count' => '{0} Keine Stellen gefunden|{1} 1 Stelle|[2,*] :count Stellen',
-        'remote_tag' => 'Remote',
+        'remote_tag' => 'Fernbedienung',
         'featured_tag' => 'Empfohlen',
         'applied_tag' => 'Beworben',
         'saved_tag' => 'Gespeichert',
@@ -2854,7 +2853,7 @@ return [
         ],
     ],
     'clubs' => [
-        'title' => 'Clubs',
+        'title' => 'Vereine',
         'caption' => ':community',
         'description' => 'Clubs und Vereine, die innerhalb Ihrer Gemeinschaft organisiert sind.',
         'empty' => 'Es gibt noch keine Clubs.',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Entfernung',
         'no_location' => 'Fügen Sie Ihren Standort in Ihrem Profil hinzu, um nach Entfernung zu filtern.',
         'options' => [
-            'any' => 'Beliebige Entfernung',
             '5' => 'Innerhalb von 5 km',
             '10' => 'Innerhalb von 10 km',
             '25' => 'Innerhalb von 25 km',
             '50' => 'Innerhalb von 50 km',
             '100' => 'Innerhalb von 100 km',
+            'any' => 'Beliebige Entfernung',
         ],
     ],
     'polish_discovery' => [
@@ -3749,7 +3748,7 @@ return [
             ],
         ],
         'passkeys' => [
-            'title' => 'Passkeys',
+            'title' => 'Passschlüssel',
             'description' => 'Mit Passkeys können Sie sich sicher mit Ihrem Gerät anmelden — per Fingerabdruck, Gesichtserkennung, Bildschirmsperre oder einem Sicherheitsschlüssel.',
             'none' => 'Sie haben noch keine Passkeys für diese Gemeinschaft registriert.',
             'type' => 'Typ',
@@ -3787,15 +3786,15 @@ return [
         'language_label' => 'Sprache',
         'language_submit' => 'Sprache speichern',
         'languages' => [
-            'en' => 'English',
+            'en' => 'Englisch',
             'ga' => 'Gaeilge',
             'de' => 'Deutsch',
-            'fr' => 'Français',
-            'it' => 'Italiano',
-            'pt' => 'Português',
-            'es' => 'Español',
-            'nl' => 'Nederlands',
-            'pl' => 'Polski',
+            'fr' => 'Französisch',
+            'it' => 'Italienisch',
+            'pt' => 'Portugiesisch',
+            'es' => 'Spanisch',
+            'nl' => 'Niederlande',
+            'pl' => 'Polnisch',
             'ja' => '日本語',
             'ar' => 'العربية',
         ],
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Bestätigungen zur Sicherheitsüberprüfung der Gemeinschaft',
                 'intro' => 'Einige Richtlinien für den Kontakt in der Gemeinschaft erfordern die Bestätigung einer Sicherheitsüberprüfung.',
                 'items' => [
-                    'Die Gemeinschaft führt jegliche rechtmäßige Überprüfung außerhalb von Project NEXUS durch.',
-                    'Ein autorisierter Vermittler erfasst für die jeweilige Kontaktrichtlinie ausschließlich eine vertrauliche Entscheidung, die nur Metadaten enthält.',
-                    'Project NEXUS verlangt nicht nach und bewahrt keine DBS, Garda Vetting, AccessNI, PVG oder gleichwertige Zertifikate, Referenzen, Daten, Ergebnisse, Angaben zum Strafregister, Ausweisdokumente oder Freitextnachweise auf.',
-                    'Eine Bestätigung der Kontaktpolitik bedeutet nicht, dass eine Person universell sicher ist oder für jede Rolle zugelassen ist.',
-                    'Bitte bitten Sie kein anderes Mitglied, ein Überprüfungszertifikat über Nachrichten zu senden. Kontaktieren Sie den Community-Koordinator, wenn Sie Hilfe benötigen.',
+                    '0' => 'Die Gemeinschaft führt jegliche rechtmäßige Überprüfung außerhalb von Project NEXUS durch.',
+                    '1' => 'Ein autorisierter Vermittler erfasst für die jeweilige Kontaktrichtlinie ausschließlich eine vertrauliche Entscheidung, die nur Metadaten enthält.',
+                    '2' => 'Project NEXUS verlangt nicht nach und bewahrt keine DBS, Garda Vetting, AccessNI, PVG oder gleichwertige Zertifikate, Referenzen, Daten, Ergebnisse, Angaben zum Strafregister, Ausweisdokumente oder Freitextnachweise auf.',
+                    '3' => 'Eine Bestätigung der Kontaktpolitik bedeutet nicht, dass eine Person universell sicher ist oder für jede Rolle zugelassen ist.',
+                    '4' => 'Bitte bitten Sie kein anderes Mitglied, ein Überprüfungszertifikat über Nachrichten zu senden. Kontaktieren Sie den Community-Koordinator, wenn Sie Hilfe benötigen.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Compliance-Status',
         'conformance_body' => 'Ziel dieses Dienstes ist es, den Web Content Accessibility Guidelines (WCAG) Version 2.2 Level AA zu entsprechen. Wir bewerten anhand dieses Standards und beheben die festgestellten Probleme. Wenn ein Teil noch nicht vollständig konform ist, geben wir dies unten an und arbeiten daran, das Problem zu beheben.',
         'standard_label' => 'Zielstandard',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 Stufe AA',
         'features_title' => 'Wie dieser Service Sie unterstützt',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'Diese Tauschbitte konnte nicht storniert werden.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Für Organisationen',
         'door_heading_one' => 'Sie verwalten :name',
         'door_heading_many' => 'Sie verwalten :count Organisationen',

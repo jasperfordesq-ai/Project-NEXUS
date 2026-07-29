@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(se abre en una pestaña nueva)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Proyecto NEXUS Accesible',
     'phase' => 'Versión beta',
     'feedback' => 'dar retroalimentación',
-    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
+    'feedback_url' => 'enviar correo a:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
     'cookie_banner' => [
         'aria_label' => 'Cookies en :service',
         'heading' => 'Cookies en :service',
@@ -26,7 +25,7 @@ return [
         'hide' => 'Ocultar mensaje de cookies',
     ],
     'cookie_settings' => [
-        'title' => 'Cookies',
+        'title' => 'Galletas',
         'caption' => 'Cookies en :service',
         'intro' => 'Las cookies son pequeños archivos que se guardan en su dispositivo cuando visita un sitio web. Usamos cookies para que este servicio funcione y para mejorarlo.',
         'essential_heading' => 'Cookies esenciales',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Publicado',
         'posted_filters' => [
-            'any' => 'En cualquier momento',
             '1' => 'último día',
             '7' => 'últimos 7 días',
             '30' => 'últimos 30 días',
+            'any' => 'En cualquier momento',
         ],
         'exchange_title' => 'Intercambiar este listado',
         'exchange_detail' => 'Utilice el flujo de trabajo de intercambio accesible para aceptar la solicitud, realizar un seguimiento del progreso y confirmar las horas.',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'Ofreciendo',
         'col_requesting' => 'Solicitando',
         'browse_by_category' => 'Explorar por categoría',
-            'title' => 'Directorio de habilidades',
+        'title' => 'Directorio de habilidades',
         'caption' => ':community',
         'description' => 'Explore las habilidades que los miembros ofrecen en esta comunidad.',
         'search_label' => 'Encontrar miembros por habilidad',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Distancia',
         'no_location' => 'Añade tu ubicación en tu perfil para filtrar por distancia.',
         'options' => [
-            'any' => 'Cualquier distancia',
             '5' => 'En un radio de 5 km',
             '10' => 'En un radio de 10 km',
             '25' => 'En un radio de 25 km',
             '50' => 'En un radio de 50 km',
             '100' => 'En un radio de 100 km',
+            'any' => 'Cualquier distancia',
         ],
     ],
     'polish_discovery' => [
@@ -3577,7 +3576,7 @@ return [
         'active_listings_label' => 'Listados activos',
         'rating_label' => 'Calificación',
         'level_label' => 'Nivel',
-        'xp_label' => 'XP',
+        'xp_label' => 'experiencia',
         'offers_label' => 'Ofertas',
         'requests_label' => 'Solicitudes',
         'skill_offering' => 'ofrenda',
@@ -3787,15 +3786,15 @@ return [
         'language_label' => 'Idioma',
         'language_submit' => 'Guardar idioma',
         'languages' => [
-            'en' => 'English',
+            'en' => 'Inglés',
             'ga' => 'Gaeilge',
-            'de' => 'Deutsch',
-            'fr' => 'Français',
-            'it' => 'Italiano',
-            'pt' => 'Português',
+            'de' => 'alemán',
+            'fr' => 'francés',
+            'it' => 'italiano',
+            'pt' => 'portugués',
             'es' => 'Español',
-            'nl' => 'Nederlands',
-            'pl' => 'Polski',
+            'nl' => 'Países Bajos',
+            'pl' => 'Polonia',
             'ja' => '日本語',
             'ar' => 'العربية',
         ],
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Confirmaciones de verificación de protección comunitaria',
                 'intro' => 'Algunas políticas de contacto comunitario requieren una confirmación de verificación.',
                 'items' => [
-                    'La comunidad realiza cualquier verificación legal fuera de Project NEXUS.',
-                    'Un corredor autorizado registra únicamente una decisión privada, solo de metadatos, para la política de contacto específica.',
-                    'Project NEXUS no solicita ni conserva DBS, la verificación de Garda, AccessNI, PVG o certificados equivalentes, referencias, fechas, resultados, detalles de antecedentes penales, documentos de identidad o evidencia en texto libre.',
-                    'Una confirmación de la política de contacto no significa que una persona sea universalmente segura o esté autorizada para cualquier rol.',
-                    'No pidas a otro miembro que envíe un certificado de verificación por mensajes. Contacta al coordinador de la comunidad si necesitas ayuda.',
+                    '0' => 'La comunidad realiza cualquier verificación legal fuera de Project NEXUS.',
+                    '1' => 'Un corredor autorizado registra únicamente una decisión privada, solo de metadatos, para la política de contacto específica.',
+                    '2' => 'Project NEXUS no solicita ni conserva DBS, la verificación de Garda, AccessNI, PVG o certificados equivalentes, referencias, fechas, resultados, detalles de antecedentes penales, documentos de identidad o evidencia en texto libre.',
+                    '3' => 'Una confirmación de la política de contacto no significa que una persona sea universalmente segura o esté autorizada para cualquier rol.',
+                    '4' => 'No pidas a otro miembro que envíe un certificado de verificación por mensajes. Contacta al coordinador de la comunidad si necesitas ayuda.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Estado de cumplimiento',
         'conformance_body' => 'Este servicio tiene como objetivo cumplir con las Pautas de accesibilidad al contenido web (WCAG) versión 2.2 Nivel AA. Evaluamos según este estándar y solucionamos los problemas que encontramos. Cuando alguna pieza aún no cumple completamente, lo indicamos a continuación y trabajamos para corregirla.',
         'standard_label' => 'Estándar objetivo',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 Nivel AA',
         'features_title' => 'Cómo te apoya este servicio',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'No hemos podido cancelar esta solicitud de cambio de turno.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Para organizaciones',
         'door_heading_one' => 'Gestionas :name',
         'door_heading_many' => 'Gestionas :count organizaciones',

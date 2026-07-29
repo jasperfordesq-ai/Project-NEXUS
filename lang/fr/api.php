@@ -2468,14 +2468,14 @@ Durée : :duration minutes',
     'job_ai_salary_not_disclosed' => 'Non divulgué',
     'job_ai_yes' => 'Oui',
     'job_ai_no' => 'Non',
-    'job_ai_chat_context' => 'Job Title: :title
-Type: :type
-Commitment: :commitment
-Location: :location
-Remote: :remote
-Skills Required: :skills
-Salary: :salary
-Description:
+    'job_ai_chat_context' => 'Titre du poste : :title
+Tapez : :type
+Engagement : :commitment
+Localisation : :location
+Télécommande : :remote
+Compétences requises : :skills
+Salaire : :salary
+Descriptif :
 :description',
     'job_ai_chat_user_context' => 'À propos de l\'utilisateur demandant :
 Compétences : :skills
@@ -2536,10 +2536,10 @@ Renvoie un tableau JSON (et RIEN d\'autre) avec des objets contenant :
 - raison (chaîne, 1-2 phrases expliquant le classement)
 
 Trier par rang croissant (le meilleur en premier).',
-    'job_ai_ranking_user_prompt' => 'JOB:
+    'job_ai_ranking_user_prompt' => 'EMPLOI :
 :job
 
-CANDIDATES::candidates',
+CANDIDATS ::candidates',
     'vol_activity_hours_logged' => ':name a enregistré :hours heures',
     'vol_activity_application_pending' => ':name a postulé pour « :title »',
     'vol_activity_application_approved' => ':name a été accepté(e) pour « :title »',

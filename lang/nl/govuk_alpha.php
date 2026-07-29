@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(opent in een nieuw tabblad)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Project NEXUS toegankelijk',
     'phase' => 'Bèta',
     'feedback' => 'Geef feedback',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
     'cookie_banner' => [
         'aria_label' => 'Cookies op :service',
         'heading' => 'Cookies op :service',
@@ -26,7 +25,7 @@ return [
         'hide' => 'Cookiemelding verbergen',
     ],
     'cookie_settings' => [
-        'title' => 'Cookies',
+        'title' => 'Koekjes',
         'caption' => 'Cookies op :service',
         'intro' => 'Cookies zijn kleine bestanden die op uw apparaat worden opgeslagen wanneer u een website bezoekt. We gebruiken cookies om deze dienst te laten werken en om deze te verbeteren.',
         'essential_heading' => 'Essentiële cookies',
@@ -87,7 +86,7 @@ return [
         'wallet' => 'Portemonnee',
         'account' => 'Mijn account',
         'explore' => 'Verkennen',
-        'matches' => 'Matches',
+        'matches' => 'Wedstrijden',
         'polls' => 'Peilingen',
         'group_exchanges' => 'Groepsuitwisselingen',
         'menu' => 'Menukaart',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Geplaatst',
         'posted_filters' => [
-            'any' => 'Elk moment',
             '1' => 'Laatste dag',
             '7' => 'Laatste 7 dagen',
             '30' => 'Laatste 30 dagen',
+            'any' => 'Elk moment',
         ],
         'exchange_title' => 'Ruil deze aanbieding',
         'exchange_detail' => 'Gebruik de toegankelijke uitwisselingsworkflow om akkoord te gaan met het verzoek, de voortgang bij te houden en uren te bevestigen.',
@@ -969,7 +968,7 @@ return [
             'types' => [
                 'session' => 'Sessie',
                 'keynote' => 'Hoofdtoespraak',
-                'workshop' => 'Workshop',
+                'workshop' => 'Werkplaats',
                 'panel' => 'Panelgesprek',
                 'break' => 'Pauze',
                 'networking' => 'Netwerken',
@@ -1872,7 +1871,7 @@ return [
         'apply' => 'Bijwerken',
         'rank_column' => 'Rang',
         'member_column' => 'Lid',
-        'score_column' => 'Score',
+        'score_column' => 'Scoren',
         'you' => 'U',
         'empty' => 'Er is hier nog niets te zien.',
         'metrics' => [
@@ -1901,7 +1900,7 @@ return [
         'tier_label' => 'Niveau',
         'breakdown_title' => 'Hoe uw score is opgebouwd',
         'category_column' => 'Categorie',
-        'score_column' => 'Score',
+        'score_column' => 'Scoren',
         'insights_title' => 'Hoe u kunt verbeteren',
         'unavailable' => 'Uw score is nog niet beschikbaar. Neem deel aan de gemeenschap en kom binnenkort terug.',
         'categories' => [
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'Aanbieden',
         'col_requesting' => 'Verzoeken',
         'browse_by_category' => 'Bladeren op categorie',
-            'title' => 'Vaardigheidsgids',
+        'title' => 'Vaardigheidsgids',
         'caption' => ':community',
         'description' => 'Blader door de vaardigheden die leden in deze gemeenschap aanbieden.',
         'search_label' => 'Leden zoeken op vaardigheid',
@@ -2646,7 +2645,7 @@ return [
         'paused_tag' => 'Onderbroken',
         'criteria_keywords' => 'Trefwoorden: :value',
         'criteria_categories' => 'Categorieën: :value',
-        'criteria_type' => 'Type: :value',
+        'criteria_type' => 'Typ: :value',
         'criteria_commitment' => 'Toewijding: :value',
         'criteria_location' => 'Locatie: :value',
         'criteria_remote' => 'Alleen kansen op afstand',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Afstand',
         'no_location' => 'Voeg uw locatie toe aan uw profiel om te filteren op afstand.',
         'options' => [
-            'any' => 'Elke afstand',
             '5' => 'Binnen 5 km',
             '10' => 'Binnen 10 km',
             '25' => 'Binnen 25 km',
             '50' => 'Binnen 50 km',
             '100' => 'Binnen 100 km',
+            'any' => 'Elke afstand',
         ],
     ],
     'polish_discovery' => [
@@ -3787,13 +3786,13 @@ return [
         'language_label' => 'Taal',
         'language_submit' => 'Taal opslaan',
         'languages' => [
-            'en' => 'English',
+            'en' => 'Engels',
             'ga' => 'Gaeilge',
-            'de' => 'Deutsch',
-            'fr' => 'Français',
-            'it' => 'Italiano',
-            'pt' => 'Português',
-            'es' => 'Español',
+            'de' => 'Duits',
+            'fr' => 'Frans',
+            'it' => 'Italiaans',
+            'pt' => 'Portugees',
+            'es' => 'Spaans',
             'nl' => 'Nederlands',
             'pl' => 'Polski',
             'ja' => '日本語',
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Verificaties voor gemeenschapsbescherming',
                 'intro' => 'Sommige contactregels van de gemeenschap vereisen een bevestiging van de screening.',
                 'items' => [
-                    'De gemeenschap voert elke wettige controle buiten Project NEXUS uit.',
-                    'Een bevoegde bemiddelaar registreert alleen een privébeslissing met alleen metadata voor het specifieke contactbeleid.',
-                    'Project NEXUS vraagt niet om en bewaart geen DBS, Garda Vetting, AccessNI, PVG of gelijkwaardige certificaten, referenties, data, resultaten, gegevens over strafregister, identiteitsdocumenten of vrije-tekstbewijzen.',
-                    'Een bevestiging van het contactbeleid betekent niet dat een persoon universeel veilig is of voor elke rol is goedgekeurd.',
-                    'Vraag een ander lid niet om een verificatiecertificaat via berichten te sturen. Neem contact op met de communitycoördinator als je hulp nodig hebt.',
+                    '0' => 'De gemeenschap voert elke wettige controle buiten Project NEXUS uit.',
+                    '1' => 'Een bevoegde bemiddelaar registreert alleen een privébeslissing met alleen metadata voor het specifieke contactbeleid.',
+                    '2' => 'Project NEXUS vraagt niet om en bewaart geen DBS, Garda Vetting, AccessNI, PVG of gelijkwaardige certificaten, referenties, data, resultaten, gegevens over strafregister, identiteitsdocumenten of vrije-tekstbewijzen.',
+                    '3' => 'Een bevestiging van het contactbeleid betekent niet dat een persoon universeel veilig is of voor elke rol is goedgekeurd.',
+                    '4' => 'Vraag een ander lid niet om een verificatiecertificaat via berichten te sturen. Neem contact op met de communitycoördinator als je hulp nodig hebt.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Nalevingsstatus',
         'conformance_body' => 'Deze service is bedoeld om te voldoen aan de Web Content Accessibility Guidelines (WCAG) versie 2.2 Niveau AA. We beoordelen aan de hand van deze norm en lossen de problemen op die we tegenkomen. Als een onderdeel nog niet volledig conform is, zeggen we dat hieronder en proberen we het recht te zetten.',
         'standard_label' => 'Doel standaard',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 Niveau AA',
         'features_title' => 'Hoe deze service u ondersteunt',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'We konden dit ruilverzoek niet annuleren.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Voor organisaties',
         'door_heading_one' => 'U beheert :name',
         'door_heading_many' => 'U beheert :count organisaties',

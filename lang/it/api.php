@@ -1443,7 +1443,7 @@ return [
     'newsletter_segment_active_name' => 'Membri attivi (30 giorni)',
     'newsletter_segment_active_description' => 'Membri che hanno effettuato l\'accesso negli ultimi 30 giorni (:count membri)',
     'newsletter_segment_inactive_name' => 'Membri inattivi (oltre 60 giorni)',
-    'newsletter_segment_inactive_description' => 'Members who haven\'t logged in for 60+ days (:count members)',
+    'newsletter_segment_inactive_description' => 'Membri che non hanno effettuato l\'accesso per più di 60 giorni (:count membri)',
     'newsletter_segment_listings_name' => 'Membri con elenchi',
     'newsletter_segment_listings_description' => 'Membri che hanno creato almeno una scheda (:count membri)',
     'newsletter_segment_new_name' => 'Nuovi membri (ultimi 30 giorni)',

@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(新しいタブで開きます)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'プロジェクト NEXUS にアクセス可能',
     'phase' => 'ベータ版',
     'feedback' => 'フィードバックを送信する',
-    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
+    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20フィードバック',
     'cookie_banner' => [
         'aria_label' => ':service のクッキー',
         'heading' => ':service のクッキー',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => '投稿しました',
         'posted_filters' => [
-            'any' => 'いつでも',
             '1' => '最終日',
             '7' => '過去 7 日間',
             '30' => '過去 30 日間',
+            'any' => 'いつでも',
         ],
         'exchange_title' => 'このリストを交換する',
         'exchange_detail' => 'アクセス可能な交換ワークフローを使用して、リクエストに同意し、進捗状況を追跡し、時間を確認します。',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => '提供',
         'col_requesting' => 'リクエスト中',
         'browse_by_category' => 'カテゴリ別に閲覧',
-            'title' => 'スキルディレクトリ',
+        'title' => 'スキルディレクトリ',
         'caption' => ':community',
         'description' => 'このコミュニティのメンバーが提供しているスキルを閲覧します。',
         'search_label' => 'スキルでメンバーを探す',
@@ -3430,12 +3429,12 @@ return [
         'label' => '距離',
         'no_location' => '距離で絞り込むには、プロフィールに現在地を追加してください。',
         'options' => [
-            'any' => '距離を問わない',
             '5' => '5 km 以内',
             '10' => '10 km 以内',
             '25' => '25 km 以内',
             '50' => '50 km 以内',
             '100' => '100 km 以内',
+            'any' => '距離を問わない',
         ],
     ],
     'polish_discovery' => [
@@ -3787,17 +3786,17 @@ return [
         'language_label' => '言語',
         'language_submit' => '言語を保存する',
         'languages' => [
-            'en' => 'English',
-            'ga' => 'Gaeilge',
-            'de' => 'Deutsch',
-            'fr' => 'Français',
-            'it' => 'Italiano',
-            'pt' => 'Português',
-            'es' => 'Español',
-            'nl' => 'Nederlands',
-            'pl' => 'Polski',
+            'en' => '英語',
+            'ga' => 'ゲイルゲ',
+            'de' => 'ドイツ語',
+            'fr' => 'フランセ',
+            'it' => 'イタリアーノ',
+            'pt' => 'ポルトガル語',
+            'es' => 'スペイン語',
+            'nl' => 'オランダ',
+            'pl' => 'ポルスキー',
             'ja' => '日本語',
-            'ar' => 'العربية',
+            'ar' => 'ああ',
         ],
         'email_changed' => 'あなたのメールアドレスが更新されました。',
         'email_unchanged' => 'それはすでにあなたのメールアドレスです。',
@@ -4073,11 +4072,11 @@ return [
                 'heading' => '地域保護の審査確認',
                 'intro' => '一部のコミュニティ連絡ポリシーでは、審査確認が必要です。',
                 'items' => [
-                    'コミュニティは、Project NEXUSの外で法的に認められたあらゆる確認を行います。',
-                    '認可されたブローカーは、特定の連絡方針について、プライベートでメタデータのみの決定を記録します。',
-                    'Project NEXUSは、DBS、ガルダ審査、AccessNI、PVG、または同等の証明書、推薦状、日付、結果、犯罪記録の詳細、身分証明書や自由形式の証拠を要求したり保持したりしません。',
-                    '連絡方針の確認は、その人がすべての役割において普遍的に安全である、または承認されていることを意味するわけではありません。',
-                    '他のメンバーにメッセージで審査証明書を送るよう依頼しないでください。助けが必要な場合はコミュニティコーディネーターに連絡してください。',
+                    '0' => 'コミュニティは、Project NEXUSの外で法的に認められたあらゆる確認を行います。',
+                    '1' => '認可されたブローカーは、特定の連絡方針について、プライベートでメタデータのみの決定を記録します。',
+                    '2' => 'Project NEXUSは、DBS、ガルダ審査、AccessNI、PVG、または同等の証明書、推薦状、日付、結果、犯罪記録の詳細、身分証明書や自由形式の証拠を要求したり保持したりしません。',
+                    '3' => '連絡方針の確認は、その人がすべての役割において普遍的に安全である、または承認されていることを意味するわけではありません。',
+                    '4' => '他のメンバーにメッセージで審査証明書を送るよう依頼しないでください。助けが必要な場合はコミュニティコーディネーターに連絡してください。',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => '遵守状況',
         'conformance_body' => 'このサービスは、Web コンテンツ アクセシビリティ ガイドライン (WCAG) バージョン 2.2 レベル AA に準拠することを目的としています。この基準に照らして評価し、見つかった問題を修正します。一部の部分がまだ完全に準拠していない場合は、以下にその旨を記載し、修正するよう努めます。',
         'standard_label' => '目標基準',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 レベル AA',
         'features_title' => 'このサービスがどのようにあなたをサポートするか',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'このシフト交換リクエストをキャンセルできませんでした。',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => '団体向け',
         'door_heading_one' => ':name を管理しています',
         'door_heading_many' => ':count 件の団体を管理しています',

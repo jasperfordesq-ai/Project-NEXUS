@@ -1447,7 +1447,7 @@ return [
     'newsletter_segment_listings_name' => 'Miembros con listados',
     'newsletter_segment_listings_description' => 'Miembros que han creado al menos un listado (:count miembros)',
     'newsletter_segment_new_name' => 'Nuevos miembros (últimos 30 días)',
-    'newsletter_segment_new_description' => 'Members who joined in the last 30 days (:count members)',
+    'newsletter_segment_new_description' => 'Miembros que se unieron en los últimos 30 días (:count miembros)',
     'newsletter_segment_admins_name' => 'Administradores y corredores',
     'newsletter_segment_admins_description' => 'Usuarios administradores y corredores (miembros :count)',
     'newsletter_send_time_no_data' => 'Aún no hay suficientes datos disponibles.',
@@ -2215,7 +2215,7 @@ return [
         'safeguarding_member_activity_viewed' => 'actividad de protección vista (evento :count)|actividad de protección vista (eventos :count)',
         'safeguarding_member_activity_exported' => 'actividad de salvaguardia exportada (evento :count)|actividad de salvaguardia exportada (eventos :count)',
         'structured_details' => 'detalles de actividad estructurada registrados',
-        'option_id' => 'option #:id',
+        'option_id' => 'opción #:id',
         'unknown_option' => 'opción desconocida',
         'trigger_needs_monitoring' => 'Se requiere monitoreo',
         'trigger_needs_broker_approval' => 'Se requiere aprobación del corredor',
@@ -2450,8 +2450,8 @@ return [
     'job_interview_not_found' => 'Entrevista no encontrada',
     'job_interview_fallback_title' => 'Entrevista de trabajo',
     'job_interview_calendar_title' => 'Entrevista: :title',
-    'job_interview_calendar_description' => 'Type: :type
-Duration: :duration minutes',
+    'job_interview_calendar_description' => 'Tipo: :type
+Duración: :duration minutos',
     'job_interview_calendar_notes' => 'Notas: :notes',
     'job_interview_calendar_reminder_1h' => 'Recordatorio de entrevista',
     'job_interview_calendar_reminder_15m' => 'Entrevista en 15 minutos',
@@ -2468,31 +2468,31 @@ Duration: :duration minutes',
     'job_ai_salary_not_disclosed' => 'No revelado',
     'job_ai_yes' => 'Sí',
     'job_ai_no' => 'No',
-    'job_ai_chat_context' => 'Job Title: :title
-Type: :type
-Commitment: :commitment
-Location: :location
-Remote: :remote
-Skills Required: :skills
-Salary: :salary
-Description:
+    'job_ai_chat_context' => 'Título del puesto: :title
+Tipo: :type
+Compromiso: :commitment
+Ubicación: :location
+Remoto: :remote
+Habilidades requeridas: :skills
+Salario: :salary
+Descripción:
 :description',
-    'job_ai_chat_user_context' => 'About the user asking:
-Skills: :skills
-Bio: :bio',
-    'job_ai_chat_system_prompt' => 'You are a friendly, expert career advisor for a community timebanking platform called Project NEXUS. You are helping a community member learn about a specific job opportunity and prepare their application.
+    'job_ai_chat_user_context' => 'Acerca del usuario que pregunta:
+Habilidades: :skills
+Biografía: :bio',
+    'job_ai_chat_system_prompt' => 'Eres un asesor profesional amigable y experto para una plataforma comunitaria de banco de tiempo llamada Proyecto NEXUS. Estás ayudando a un miembro de la comunidad a conocer una oportunidad laboral específica y a preparar su solicitud.
 
-JOB DETAILS:
-:job_context:user_context
+DETALLES DEL TRABAJO:
+:job_context>:user_context
 
-Guidelines:
-- Be encouraging and supportive
-- Give specific, actionable advice based on the actual job details
-- If the user asks about qualifications, compare their skills to the requirements
-- Help them craft application messages if asked
-- Keep responses concise (under 300 words)
-- If asked about salary, discuss what is listed; if undisclosed, suggest researching market rates
-- Mention relevant community aspects (timebanking, volunteering) when appropriate',
+Directrices:
+- Ser alentador y solidario.
+- Brindar consejos específicos y prácticos basados en los detalles reales del trabajo.
+- Si el usuario pregunta sobre calificaciones, compare sus habilidades con los requisitos.
+- Ayúdelos a elaborar mensajes de aplicación si se lo solicitan.
+- Mantenga las respuestas concisas (menos de 300 palabras)
+- Si se le pregunta sobre el salario, analice lo que figura en la lista; si no se divulga, sugiera investigar las tasas de mercado
+- Mencionar aspectos comunitarios relevantes (bancos de tiempo, voluntariado) cuando corresponda.',
     'job_prediction_above_average' => 'Por encima del promedio',
     'job_prediction_below_average' => 'Por debajo del promedio',
     'job_prediction_above_average_lower' => 'por encima del promedio',
@@ -2514,19 +2514,19 @@ Devuelve SÓLO una matriz JSON de 3 cadenas. Sin rebajas.',
     'job_time_credits_earned_description' => 'Créditos de tiempo obtenidos: :title',
     'job_ai_no_reviews' => 'Sin reseñas',
     'job_ai_not_applicable' => 'N / A',
-    'job_ai_ranking_job_description' => 'Title: :title
-Type: :type
-Commitment: :commitment
-Skills Required: :skills
-Description: :description',
-    'job_ai_ranking_candidate' => 'Candidate :number (Application ID: :application_id):
-Name: :name
-Skills: :skills
-XP: :xp | Level: :level | Completed Exchanges: :completed_exchanges
-Avg Review Rating: :avg_review_rating | Badges: :badges
-Skills Match: :match
-Cover Message: :cover_message
-Bio: :bio',
+    'job_ai_ranking_job_description' => 'Título: :title
+Tipo: :type
+Compromiso: :commitment
+Habilidades requeridas: :skills
+Descripción: :description',
+    'job_ai_ranking_candidate' => 'Candidato :number (ID de la aplicación: :application_id):
+Nombre: :name
+Habilidades: :skills
+XP: :xp | Nivel: :level | Intercambios completados: :completed_exchanges
+Calificación promedio de reseñas: :avg_review_rating | Insignias: :badges
+Coincidencia de habilidades: :match
+Mensaje de portada: :cover_message
+Biografía: :bio',
     'job_ai_ranking_system_prompt' => 'Eres asistente de contratación para una plataforma comunitaria de banco de tiempo. Clasifique a los candidatos para un puesto vacante según la coincidencia de habilidades, la experiencia y las señales de confianza de la comunidad. Las señales de confianza de la comunidad (XP, intercambios completados, calificaciones de reseñas, insignias) son IMPORTANTES: indican cuán activo y confiable es un miembro en la comunidad. Un candidato con una alta participación de la comunidad y buenas críticas es más confiable.
 
 Devuelve una matriz JSON (y NADA más) con objetos que contengan:
@@ -2536,10 +2536,10 @@ Devuelve una matriz JSON (y NADA más) con objetos que contengan:
 - motivo (cadena, 1-2 oraciones que explican la clasificación)
 
 Ordenar por rango ascendente (mejor primero).',
-    'job_ai_ranking_user_prompt' => 'JOB:
+    'job_ai_ranking_user_prompt' => 'TRABAJO:
 :job
 
-CANDIDATES::candidates',
+CANDIDATOS::candidates',
     'vol_activity_hours_logged' => ':name registró :hours horas',
     'vol_activity_application_pending' => ':name se postuló para ":title"',
     'vol_activity_application_approved' => ':name fue aprobado/a para ":title"',
