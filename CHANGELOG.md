@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Federation partnership errors now appear in the admin's own language.** Every refusal from the partnership lifecycle — requesting, approving, counter-proposing, rejecting, suspending, reactivating, ending, and changing permissions — was hardcoded English in the service layer. Forty-four of them. A French, German or Irish administrator got English text such as "Target tenant is not accepting federation requests" no matter what language they had chosen.
+
+  What made this hard to spot is that the admin screens *looked* correct. Each one already had a translated string sitting beside the server message as a fallback, so the code read as though it were covered. It was not: the server always supplies a message, so the fallback never ran. Every one of those translated strings was unreachable for real rejections. The path in between has no translation step anywhere — the service returns the text, the controller passes it through, and the API client copies it into the field the toast displays — so whatever the service writes is what the admin reads.
+
+  All forty-four now use translation keys, translated into all ten other languages. Refusals coming from the federation availability gate are handled slightly differently: that gate returns both an English diagnostic and a machine-readable level code, and the message is now chosen from the level. The English diagnostic deliberately stays English, because it is what operators read in logs and error reports, where a message that changes language with whoever triggered it is worse than useless. Admins get their own language; operators keep stable text.
+
+  A regression test guards all of it, and refuses any future hardcoded error string in that service, any translation key that does not exist, and any interpolated message whose placeholder does not match the key it is passed.
+
 ### Documentation
 
 - **Renamed the federation protocol switches so they say who is on the other end and which way data flows.** The old names actively misled — including the platform's own author, who reasonably read them as "one of these is for partners on another server, the other is for communities sharing this one". Both were for other servers. The real difference between them is **direction**, and no label mentioned it.

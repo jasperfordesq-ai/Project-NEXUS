@@ -2155,6 +2155,58 @@ return [
         'partnership_cannot_be_suspended' => 'Partnership can no longer be suspended',
         'partnership_cannot_be_reactivated' => 'Partnership can no longer be reactivated',
         'partnership_cannot_be_terminated' => 'Partnership can no longer be terminated',
+
+        // Partnership lifecycle refusals surfaced to tenant admins in the React
+        // admin UI (hardcoded-string audit — 2026-07-29). These reach the admin
+        // verbatim: FederationPartnershipService returns them as 'error', the
+        // controller passes them straight through, and the API client copies the
+        // message into res.error, so an untranslated string here is an
+        // untranslated toast for every non-English admin.
+        'partnership_target_not_accepting'        => 'That community is not accepting federation requests.',
+        'partnership_request_already_exists'      => 'A partnership request already exists between these two communities.',
+        'partnership_already_exists'              => 'A partnership already exists.',
+        'partnership_request_already_pending'     => 'A partnership request is already pending.',
+        'partnership_terminated_cannot_rerequest' => 'Terminated partnerships cannot be requested again.',
+        'partnership_recently_rejected'           => 'This partnership was recently rejected. Please wait before requesting again.',
+        'partnership_create_failed'               => 'Could not create the partnership request. Please try again.',
+        'partnership_not_found'                   => 'Partnership not found.',
+        'partnership_not_pending_approval'        => 'This partnership is not pending approval.',
+        'partnership_not_pending'                 => 'This partnership is not pending.',
+        'partnership_only_receiver_can_approve'   => 'Only the receiving community can approve a partnership request.',
+        'partnership_approve_failed'              => 'Could not approve the partnership. Please try again.',
+        'partnership_counter_not_authorized'      => 'You are not authorised to counter-propose on this partnership.',
+        'partnership_requester_cannot_counter'    => 'The community that made the request cannot counter-propose its own request.',
+        'partnership_counter_send_failed'         => 'Could not send the counter-proposal. Please try again.',
+        'partnership_only_requester_can_accept_counter' => 'Only the community that made the original request can accept a counter-proposal.',
+        'partnership_no_counter_to_accept'        => 'There is no counter-proposal to accept.',
+        'partnership_counter_accept_failed'       => 'Could not accept the counter-proposal. Please try again.',
+        'partnership_only_receiver_can_reject'    => 'Only the receiving community can reject a partnership request.',
+        'partnership_reject_failed'               => 'Could not reject the partnership. Please try again.',
+        'partnership_only_active_can_suspend'     => 'Only active partnerships can be suspended.',
+        'partnership_only_partner_can_suspend'    => 'Only a partner community can suspend this partnership.',
+        'partnership_suspend_failed'              => 'Could not suspend the partnership. Please try again.',
+        'partnership_only_suspended_can_reactivate' => 'Only suspended partnerships can be reactivated.',
+        'partnership_only_partner_can_reactivate' => 'Only a partner community can reactivate this partnership.',
+        'partnership_only_suspender_can_reactivate' => 'Only the community that suspended this partnership can reactivate it.',
+        'partnership_reactivate_failed'           => 'Could not reactivate the partnership. Please try again.',
+        'partnership_only_partner_can_terminate'  => 'Only a partner community can end this partnership.',
+        'partnership_terminate_failed'            => 'Could not end the partnership. Please try again.',
+        'partnership_only_partner_can_update_permissions' => 'Only a partner community can change permissions on this partnership.',
+        'partnership_permissions_require_active'  => 'Permissions can only be changed on an active partnership.',
+        'partnership_permissions_update_failed'   => 'Could not update the permissions. Please try again.',
+        'partnership_unknown_permission_keys'     => 'Unknown permission keys: :keys',
+        'partnership_permission_not_at_level'     => 'The permission ":permission" is not available at this partnership\'s federation level.',
+
+        // Refusals from the FederationFeatureService gate, selected by its
+        // machine-readable 'level' rather than its English diagnostic 'reason'
+        // so operator-facing logs stay English while the admin sees their own
+        // language. See FederationPartnershipService::blockedReasonMessage().
+        'blocked_lockdown'            => 'Federation is temporarily unavailable while the network is in lockdown.',
+        'blocked_system'              => 'Federation is currently switched off for this whole installation.',
+        'blocked_not_approved'        => 'Your community is not yet approved for federation.',
+        'blocked_tenant'              => 'Federation is switched off for your community.',
+        'blocked_operation_disabled'  => 'This federation operation is currently switched off.',
+        'blocked_unavailable'         => 'Federation is unavailable right now. Please try again.',
     ],
 
     // Legal acceptance (hardcoded-string audit — 2026-04-14)

@@ -43,7 +43,7 @@ class FederationPartnershipService
     ): array {
         $check = app(FederationFeatureService::class)->isOperationAllowed('profiles', $requestingTenantId);
         if (!$check['allowed']) {
-            return ['success' => false, 'error' => $check['reason']];
+            return ['success' => false, 'error' => self::blockedReasonMessage($check['level'] ?? null)];
         }
 
         $targetCheck = app(FederationFeatureService::class)->isTenantFeatureEnabled(
@@ -51,7 +51,7 @@ class FederationPartnershipService
             $targetTenantId
         );
         if (!$targetCheck) {
-            return ['success' => false, 'error' => 'Target tenant is not accepting federation requests'];
+            return ['success' => false, 'error' => __('api.federation.partnership_target_not_accepting')];
         }
 
         // Application-level guard: check canonical_pair to prevent concurrent A→B / B→A duplicates
@@ -62,19 +62,19 @@ class FederationPartnershipService
             ->whereIn('status', ['active', 'pending'])
             ->exists();
         if ($canonicalConflict) {
-            return ['success' => false, 'error' => 'A partnership request already exists between these two communities'];
+            return ['success' => false, 'error' => __('api.federation.partnership_request_already_exists')];
         }
 
         $existing = self::getPartnership($requestingTenantId, $targetTenantId);
         if ($existing) {
             if ($existing['status'] === 'active') {
-                return ['success' => false, 'error' => 'Partnership already exists'];
+                return ['success' => false, 'error' => __('api.federation.partnership_already_exists')];
             }
             if ($existing['status'] === 'pending') {
-                return ['success' => false, 'error' => 'Partnership request already pending'];
+                return ['success' => false, 'error' => __('api.federation.partnership_request_already_pending')];
             }
             if ($existing['status'] === 'terminated') {
-                return ['success' => false, 'error' => 'Terminated partnerships cannot be re-requested'];
+                return ['success' => false, 'error' => __('api.federation.partnership_terminated_cannot_rerequest')];
             }
             // Allow re-requesting after a previous rejection, but enforce a 7-day cooldown
             if ($existing['status'] === 'rejected') {
@@ -82,7 +82,7 @@ class FederationPartnershipService
                     ? \Carbon\Carbon::parse($existing['updated_at'])
                     : null;
                 if ($rejectedAt && $rejectedAt->diffInDays(now()) < 7) {
-                    return ['success' => false, 'error' => 'Partnership was recently rejected. Please wait before re-requesting.'];
+                    return ['success' => false, 'error' => __('api.federation.partnership_recently_rejected')];
                 }
                 DB::table('federation_partnerships')->where('id', $existing['id'])->delete();
             }
@@ -144,7 +144,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.partnership_request_sent')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::requestPartnership error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to create partnership request'];
+            return ['success' => false, 'error' => __('api.federation.partnership_create_failed')];
         }
     }
 
@@ -155,16 +155,16 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
         if ($partnership['status'] !== 'pending') {
-            return ['success' => false, 'error' => 'Partnership is not pending approval'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_pending_approval')];
         }
 
         // Only the receiving tenant can approve
         $tenantId = TenantContext::getId();
         if ((int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only the receiving tenant can approve a partnership request'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_receiver_can_approve')];
         }
 
         $defaultPermissions = self::getDefaultPermissions($partnership['federation_level']);
@@ -209,7 +209,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.partnership_approved')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::approvePartnership error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to approve partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_approve_failed')];
         }
     }
 
@@ -225,22 +225,22 @@ class FederationPartnershipService
     ): array {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
 
         $tenantId = TenantContext::getId();
         if ((int) $partnership['tenant_id'] !== $tenantId && (int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Not authorized to counter-propose on this partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_counter_not_authorized')];
         }
 
         // Only the receiving party (partner_tenant_id) can counter-propose.
         // The original requester (tenant_id) should reject/approve instead.
         if ((int) $partnership['tenant_id'] === $tenantId) {
-            return ['success' => false, 'error' => 'The original requester cannot counter-propose their own request'];
+            return ['success' => false, 'error' => __('api.federation.partnership_requester_cannot_counter')];
         }
 
         if ($partnership['status'] !== 'pending') {
-            return ['success' => false, 'error' => 'Partnership is not pending'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_pending')];
         }
 
         try {
@@ -277,7 +277,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.counter_proposal_sent')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::counterPropose error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to send counter-proposal'];
+            return ['success' => false, 'error' => __('api.federation.partnership_counter_send_failed')];
         }
     }
 
@@ -288,19 +288,19 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
 
         $tenantId = TenantContext::getId();
         if ((int) $partnership['tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only the original requester can accept a counter-proposal'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_requester_can_accept_counter')];
         }
 
         if ($partnership['status'] !== 'pending') {
-            return ['success' => false, 'error' => 'Partnership is not pending'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_pending')];
         }
         if (empty($partnership['counter_proposed_at'])) {
-            return ['success' => false, 'error' => 'No counter-proposal to accept'];
+            return ['success' => false, 'error' => __('api.federation.partnership_no_counter_to_accept')];
         }
 
         $proposedPermissions = [];
@@ -351,7 +351,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.counter_proposal_accepted')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::acceptCounterProposal error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to accept counter-proposal'];
+            return ['success' => false, 'error' => __('api.federation.partnership_counter_accept_failed')];
         }
     }
 
@@ -362,16 +362,16 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
         if ($partnership['status'] !== 'pending') {
-            return ['success' => false, 'error' => 'Partnership is not pending approval'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_pending_approval')];
         }
 
         // Only the receiving tenant can reject
         $tenantId = TenantContext::getId();
         if ((int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only the receiving tenant can reject a partnership request'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_receiver_can_reject')];
         }
 
         try {
@@ -399,7 +399,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.partnership_request_rejected')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::rejectPartnership error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to reject partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_reject_failed')];
         }
     }
 
@@ -410,16 +410,16 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
         if ($partnership['status'] !== 'active') {
-            return ['success' => false, 'error' => 'Can only suspend active partnerships'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_active_can_suspend')];
         }
 
         // Either party can suspend
         $tenantId = TenantContext::getId();
         if ((int) $partnership['tenant_id'] !== $tenantId && (int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only a partner tenant can suspend this partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_partner_can_suspend')];
         }
 
         try {
@@ -451,7 +451,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.partnership_suspended')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::suspendPartnership error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to suspend partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_suspend_failed')];
         }
     }
 
@@ -462,15 +462,15 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
         if ($partnership['status'] !== 'suspended') {
-            return ['success' => false, 'error' => 'Can only reactivate suspended partnerships'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_suspended_can_reactivate')];
         }
 
         $tenantId = TenantContext::getId();
         if ((int) $partnership['tenant_id'] !== $tenantId && (int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only a partner tenant can reactivate this partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_partner_can_reactivate')];
         }
 
         // Reactivation consent guard: only the tenant that suspended the partnership may
@@ -482,7 +482,7 @@ class FederationPartnershipService
             : null;
 
         if ($suspendedByTenantId !== null && $suspendedByTenantId !== $tenantId) {
-            return ['success' => false, 'error' => 'Only the tenant that suspended this partnership can reactivate it'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_suspender_can_reactivate')];
         }
 
         try {
@@ -517,7 +517,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.partnership_reactivated')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::reactivatePartnership error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to reactivate partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_reactivate_failed')];
         }
     }
 
@@ -528,12 +528,12 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
 
         $tenantId = TenantContext::getId();
         if ((int) $partnership['tenant_id'] !== $tenantId && (int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only a partner tenant can terminate this partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_partner_can_terminate')];
         }
 
         $partnershipTenantId = (int) $partnership['tenant_id'];
@@ -616,7 +616,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.partnership_terminated')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::terminatePartnership error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to terminate partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_terminate_failed')];
         }
     }
 
@@ -627,18 +627,18 @@ class FederationPartnershipService
     {
         $partnership = self::getPartnershipById($partnershipId);
         if (!$partnership) {
-            return ['success' => false, 'error' => 'Partnership not found'];
+            return ['success' => false, 'error' => __('api.federation.partnership_not_found')];
         }
 
         $tenantId = TenantContext::getId();
         if ((int) $partnership['tenant_id'] !== $tenantId && (int) $partnership['partner_tenant_id'] !== $tenantId) {
-            return ['success' => false, 'error' => 'Only a partner tenant can update permissions on this partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_only_partner_can_update_permissions')];
         }
 
         // Only a live, mutually-consented partnership can have its permissions
         // edited — pending/rejected/suspended/terminated rows must stay frozen.
         if (($partnership['status'] ?? null) !== 'active') {
-            return ['success' => false, 'error' => 'Permissions can only be updated on an active partnership'];
+            return ['success' => false, 'error' => __('api.federation.partnership_permissions_require_active')];
         }
 
         // Whitelist the permission keys: unknown keys are a caller bug and must
@@ -646,7 +646,7 @@ class FederationPartnershipService
         $validKeys = ['profiles', 'messaging', 'transactions', 'listings', 'events', 'groups'];
         $unknownKeys = array_diff(array_keys($permissions), $validKeys);
         if (!empty($unknownKeys)) {
-            return ['success' => false, 'error' => 'Unknown permission keys: ' . implode(', ', $unknownKeys)];
+            return ['success' => false, 'error' => __('api.federation.partnership_unknown_permission_keys', ['keys' => implode(', ', $unknownKeys)])];
         }
 
         // Level cap: a flag may never be switched on beyond what the
@@ -655,7 +655,7 @@ class FederationPartnershipService
         $levelCap = self::getDefaultPermissions((int) ($partnership['federation_level'] ?? self::LEVEL_DISCOVERY));
         foreach ($permissions as $key => $value) {
             if ($value && empty($levelCap[$key])) {
-                return ['success' => false, 'error' => "Permission '{$key}' is not available at this partnership's federation level"];
+                return ['success' => false, 'error' => __('api.federation.partnership_permission_not_at_level', ['permission' => $key])];
             }
         }
 
@@ -679,7 +679,7 @@ class FederationPartnershipService
             return ['success' => true, 'message' => __('svc_notifications_2.federation.permissions_updated')];
         } catch (\Exception $e) {
             Log::error('FederationPartnershipService::updatePermissions error: ' . $e->getMessage());
-            return ['success' => false, 'error' => 'Failed to update permissions'];
+            return ['success' => false, 'error' => __('api.federation.partnership_permissions_update_failed')];
         }
     }
 
@@ -966,6 +966,26 @@ class FederationPartnershipService
             self::LEVEL_ECONOMIC => 'Full trading - can exchange time credits',
             self::LEVEL_INTEGRATED => 'Full integration - all features including groups',
             default => '',
+        };
+    }
+
+    /**
+     * Translate a FederationFeatureService gate refusal for display.
+     *
+     * isOperationAllowed() returns both a 'reason' (an English diagnostic, kept
+     * English so operators reading logs and Sentry see stable text) and a
+     * machine-readable 'level'. Only the level is safe to branch on, so the
+     * user-facing message is derived from it rather than from the reason text.
+     */
+    private static function blockedReasonMessage(?string $level): string
+    {
+        return match ($level) {
+            'emergency'      => __('api.federation.blocked_lockdown'),
+            'system'         => __('api.federation.blocked_system'),
+            'whitelist'      => __('api.federation.blocked_not_approved'),
+            'tenant', 'tenant_feature' => __('api.federation.blocked_tenant'),
+            'system_feature' => __('api.federation.blocked_operation_disabled'),
+            default          => __('api.federation.blocked_unavailable'),
         };
     }
 }
