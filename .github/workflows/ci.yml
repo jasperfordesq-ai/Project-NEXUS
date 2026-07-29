@@ -870,6 +870,8 @@ jobs:
               - 'src/**/*.php'
               - 'scripts/check-i18n*.mjs'
               - 'scripts/check-i18n.sh'
+              # Not matched by check-i18n*.mjs above — different prefix.
+              - 'scripts/check-admin-i18n*.mjs'
               - 'scripts/check-php-i18n-coverage.mjs'
               - 'scripts/check-php-lang-parity.mjs'
               - '.github/i18n-gap-baseline.json'
@@ -905,6 +907,15 @@ jobs:
       # untranslated for weeks (added 2026-06-11). Uses the runner's PHP CLI.
       - name: "BLOCKING: PHP lang/ translation parity"
         run: node scripts/check-php-lang-parity.mjs
+
+      # Added 2026-07-29. Translators (human or machine) translate things that
+      # must stay literal — routes, placeholders, config keys. This caught the
+      # Irish admin copy rendering the route /partner/v1 as /comhpháirtí/v1,
+      # i.e. sending Irish-speaking admins to an address that does not exist.
+      # A translated URL is a broken instruction, and the drift gate above
+      # cannot see it: the key is present, only its value is wrong.
+      - name: "BLOCKING: Admin i18n functional token integrity"
+        run: node scripts/check-admin-i18n-token-integrity.mjs
 
       # Re-added 2026-06-06: admin panel is multilingual again (policy reversed
       # 2026-05-22). Validates admin t() keys resolve against the English locale.

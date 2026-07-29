@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Translated URLs and other must-stay-literal text are now caught automatically.** A check already existed for this and had found a real defect — the Irish admin copy had translated the route `/partner/v1` into `/comhpháirtí/v1`, sending Irish-speaking administrators to an address that does not exist — but it only ran if someone remembered to type the command locally. It is now a blocking check on every relevant change.
+
+  The existing translation check compares which keys exist in each language, so it cannot see this class of problem: the key is present and looks translated, and only its value is wrong. Since translations are often filled in by machine, and machines translate anything that resembles a word, this will recur. The check now also runs when the checking scripts themselves are edited, which the previous file-matching rule missed.
+
 ### Fixed
 
 - **API responses now follow the language the member chose, instead of their browser's language.** Anything the server writes during a request — validation messages, refusals, service errors — was rendered in whatever language the browser asked for, ignoring the language the member had actually selected in the app. Someone who set the platform to French but browses with an English browser received English.
