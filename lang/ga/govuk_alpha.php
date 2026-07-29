@@ -6,11 +6,10 @@
 
 return [
     'opens_new_tab' => '(osclaítear i gcluaisín nua)',
-    'service_name' => 'Project NEXUS Accessible',
+    'service_name' => 'Tionscadal NEXUS Inrochtana',
     'phase' => 'Béite',
     'feedback' => 'Tabhair aiseolas',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
-
     'cookie_banner' => [
         'aria_label' => 'Fianáin ar :service',
         'heading' => 'Fianáin ar :service',
@@ -741,10 +740,10 @@ return [
         ],
         'posted_filter_label' => 'Arna chur suas',
         'posted_filters' => [
-            'any' => 'Am ar bith',
             '1' => 'Lá deiridh',
             '7' => '7 lá seo caite',
             '30' => '30 lá anuas',
+            'any' => 'Am ar bith',
         ],
         'exchange_title' => 'Malartaigh an liostú seo',
         'exchange_detail' => 'Bain úsáid as an sreabhadh oibre malairte inrochtana chun an t-iarratas a aontú, dul chun cinn a rianú agus uaireanta a dhearbhú.',
@@ -2308,7 +2307,7 @@ return [
         'col_offering' => 'Ag tairiscint',
         'col_requesting' => 'Ag iarraidh',
         'browse_by_category' => 'Brabhsáil de réir catagóire',
-            'title' => 'Eolaire scileanna',
+        'title' => 'Eolaire scileanna',
         'caption' => ':community',
         'description' => 'Brabhsáil na scileanna atá á dtairiscint ag comhaltaí sa phobal seo.',
         'search_label' => 'Faigh comhaltaí de réir scile',
@@ -3430,12 +3429,12 @@ return [
         'label' => 'Fad',
         'no_location' => 'Cuir do shuíomh le do phróifíl chun scagadh de réir faid.',
         'options' => [
-            'any' => 'Aon fhad',
             '5' => 'Laistigh de 5 km',
             '10' => 'Laistigh de 10 km',
             '25' => 'Laistigh de 25 km',
             '50' => 'Laistigh de 50 km',
             '100' => 'Laistigh de 100 km',
+            'any' => 'Aon fhad',
         ],
     ],
     'polish_discovery' => [
@@ -3787,17 +3786,17 @@ return [
         'language_label' => 'Teanga',
         'language_submit' => 'Sábháil teanga',
         'languages' => [
-            'en' => 'English',
+            'en' => 'Béarla',
             'ga' => 'Gaeilge',
             'de' => 'Deutsch',
             'fr' => 'Français',
-            'it' => 'Italiano',
+            'it' => 'Iodálach',
             'pt' => 'Português',
             'es' => 'Español',
-            'nl' => 'Nederlands',
-            'pl' => 'Polski',
+            'nl' => 'An Ísiltír',
+            'pl' => 'Polainnis',
             'ja' => '日本語',
-            'ar' => 'العربية',
+            'ar' => 'abair',
         ],
         'email_changed' => 'Nuashonraíodh do sheoladh ríomhphoist.',
         'email_unchanged' => 'Sin é do sheoladh ríomhphoist cheana féin.',
@@ -4073,11 +4072,11 @@ return [
                 'heading' => 'Deimhniúcháin fíordheimhnithe sábháilteachta pobail',
                 'intro' => 'Éilíonn roinnt polasaithe teagmhála pobail dearbhú scagtha.',
                 'items' => [
-                    'Déanann an pobal aon sheiceáil dleathach lasmuigh de Project NEXUS.',
-                    'Ní thaifeadann bróicéir údaraithe ach cinneadh príobháideach bunaithe ar mheiteashonraí amháin don bheartas teagmhála sonrach.',
-                    'Ní iarrann ná coinníonn Project NEXUS DBS, Fíorú Gárd, AccessNI, PVG nó teastais chomhionanna, tagairtí, dátaí, torthaí, sonraí taifead coireachta, doiciméid aitheantais nó fianaise téacs-saor.',
-                    'Ní chiallaíonn dearbhú beartais teagmhála go bhfuil duine sábháilte go forleathan nó scagtha do gach ról.',
-                    'Ná iarr ar bhall eile teastas grinnfhiosrúcháin a sheoladh trí theachtaireachtaí. Déan teagmháil leis an gcomhordaitheoir pobail má tá cabhair uait.',
+                    '0' => 'Déanann an pobal aon sheiceáil dleathach lasmuigh de Project NEXUS.',
+                    '1' => 'Ní thaifeadann bróicéir údaraithe ach cinneadh príobháideach bunaithe ar mheiteashonraí amháin don bheartas teagmhála sonrach.',
+                    '2' => 'Ní iarrann ná coinníonn Project NEXUS DBS, Fíorú Gárd, AccessNI, PVG nó teastais chomhionanna, tagairtí, dátaí, torthaí, sonraí taifead coireachta, doiciméid aitheantais nó fianaise téacs-saor.',
+                    '3' => 'Ní chiallaíonn dearbhú beartais teagmhála go bhfuil duine sábháilte go forleathan nó scagtha do gach ról.',
+                    '4' => 'Ná iarr ar bhall eile teastas grinnfhiosrúcháin a sheoladh trí theachtaireachtaí. Déan teagmháil leis an gcomhordaitheoir pobail má tá cabhair uait.',
                 ],
             ],
             'how_exchanges' => [
@@ -4189,7 +4188,7 @@ return [
         'conformance_title' => 'Stádas comhlíonta',
         'conformance_body' => 'Tá sé mar aidhm ag an tseirbhís seo cloí leis na Treoirlínte um Inrochtaineacht Ábhar Gréasáin (WCAG) leagan 2.2 Leibhéal AA. Déanaimid measúnú in aghaidh an chaighdeáin seo agus socraímid saincheisteanna a aimsímid. Nuair nach bhfuil cuid ar bith comhlíonta go hiomlán fós, tugaimid thíos é agus oibrímid lena chur ina cheart.',
         'standard_label' => 'Spriocchaighdeán',
-        'standard_value' => 'WCAG 2.2 Level AA',
+        'standard_value' => 'WCAG 2.2 Leibhéal AA',
         'features_title' => 'Conas a thacaíonn an tseirbhís seo leat',
         'features' => [
             'keyboard' => [
@@ -4375,7 +4374,6 @@ return [
         'swap_cancel_failed' => 'Níorbh fhéidir an t-iarratas malartaithe seo a chealú.',
     ],
     'vol_org' => [
-        // Volunteering "organisation door" (two-hats gateway) — added 2026-06-19
         'door_eyebrow' => 'Do eagraíochtaí',
         'door_heading_one' => 'Bainistíonn tú :name',
         'door_heading_many' => 'Bainistíonn tú :count eagraíocht',

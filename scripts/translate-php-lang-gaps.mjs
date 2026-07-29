@@ -59,11 +59,11 @@ const ALLOWLIST_PATH = path.join(ROOT, 'scripts', 'php-lang-invariant-allowlist.
 const CHECKPOINT_PATH = path.join(ROOT, '.local-docs-archive', 'php-lang-translate-checkpoint.json');
 const SOURCE_LOCALE = 'en';
 
+// Every locale goes through the same path, Irish included. The `ga` special-case
+// in translate-i18n-gaps.mjs is often misread as "Google's Irish is unusable";
+// read the code and it sits AFTER the --google early return, and says what it
+// means: DeepL has no Irish. Google does, so on this path ga is ordinary.
 const TARGET_LOCALES = ['ar', 'de', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt'];
-
-// Google's Irish is not good enough to ship. Everything else goes through the
-// same path as the React locales, which have been filled this way for months.
-const OPENAI_ONLY_LOCALES = new Set(['ga']);
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
 
@@ -82,7 +82,6 @@ const LOCALE = argValue('--locale');
 const LIMIT = argValue('--limit') ? Number(argValue('--limit')) : null;
 const CONCURRENCY = Math.min(10, Math.max(1, Number(argValue('--concurrency') ?? 5)));
 const SAMPLES = Number(argValue('--samples') ?? 30);
-const OPENAI_KEY = process.env.OPENAI_API_KEY || '';
 
 // ── Reading (PHP only, never regex) ──────────────────────────────────────────
 
@@ -443,13 +442,7 @@ if (!englishNested) {
 
 const nestedTree = dumpLangTree({ nested: true });
 const englishLeaves = collectLeafPaths(englishNested);
-const locales = (LOCALE ? [LOCALE] : TARGET_LOCALES).filter((locale) => {
-  if (OPENAI_ONLY_LOCALES.has(locale) && !OPENAI_KEY) {
-    console.log(`Skipping ${locale}: needs OPENAI_API_KEY (Google's ${locale} is not shippable).`);
-    return false;
-  }
-  return true;
-});
+const locales = LOCALE ? [LOCALE] : TARGET_LOCALES;
 
 const checkpoint = loadCheckpoint();
 const report = { namespace: NAMESPACE, locales: {} };
