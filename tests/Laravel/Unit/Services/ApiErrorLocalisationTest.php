@@ -22,12 +22,23 @@ use PHPUnit\Framework\TestCase;
  * site, so the UI looks localised while never being localised.
  *
  * SCOPE IS DELIBERATELY AN ENUMERATED ALLOW-LIST, NOT A DIRECTORY SCAN.
- * 233 `respondWithError(..., $e->getMessage())` sites still exist across
- * app/Http/Controllers/Api/ fed by services with literal throws
- * (CaringHourGiftService, CaringHourTransferService, FederationPeerService, …).
- * That tail is a separate, larger piece of work. Scanning every service would
- * make this test fail on day one and it would be disabled instead of fixed.
- * When a service is cleaned, add it to CLEANED_SERVICES so it cannot regress.
+ * 226 `respondWithError(..., $e->getMessage())` sites still exist across 41
+ * controllers in app/Http/Controllers/Api/, fed by services with literal throws
+ * (StoryService, MunicipalSurveyService, MemberPremiumService, …). That tail is a
+ * separate, larger piece of work. Scanning every service would make this test
+ * fail on day one and it would be disabled instead of fixed. When a service is
+ * cleaned, add it to CLEANED_SERVICES so it cannot regress.
+ *
+ * TWO SHAPES ARE NOT IN SCOPE AND MUST NOT BE "CLEANED".
+ * A throw whose message is a machine code rather than prose
+ * ('event_agenda_version_conflict') is ALREADY the localised path: the
+ * controller maps the code to a key, so converting it to English text or to a
+ * key would break the mapping. The same is true of a machine-readable `error`
+ * value in a federation protocol response — see CaringHourTransferService's
+ * REJECT_* constants, which a peer *server* reads and which the inbound
+ * controller branches on to pick 401 over 422. Those are named constants
+ * precisely so that this test's literal-`'error' =>` rule stays meaningful
+ * without needing an exemption list that would grow to hide real defects.
  *
  * Regression origin: 44 hardcoded-English call sites in
  * FederationPartnershipService (2026-07-29, fixed in 5abb9bf03) and 2 literal
@@ -43,11 +54,14 @@ class ApiErrorLocalisationTest extends TestCase
      * @var list<string>
      */
     private const CLEANED_SERVICES = [
+        'app/Services/CaringCommunity/CaringHourGiftService.php',
+        'app/Services/CaringCommunity/CaringHourTransferService.php',
         'app/Services/CaringCommunity/CaringSubRegionService.php',
         'app/Services/CaringCommunity/CivicDigestService.php',
         'app/Services/CaringCommunity/EmergencyAlertService.php',
         'app/Services/CaringCommunity/IsolatedNodeReadinessService.php',
         'app/Services/CaringCommunity/MunicipalityFeedbackService.php',
+        'app/Services/CaringCommunity/FederationPeerService.php',
         'app/Services/FederationPartnershipService.php',
         'app/Services/RetentionPolicyService.php',
         'app/Services/VolunteerService.php',

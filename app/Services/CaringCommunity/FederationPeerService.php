@@ -91,15 +91,15 @@ class FederationPeerService
         $baseUrl = trim((string) ($input['base_url'] ?? ''));
 
         if ($peerSlug === '' || $displayName === '' || $baseUrl === '') {
-            throw new InvalidArgumentException('peer_slug, display_name, and base_url are required.');
+            throw new InvalidArgumentException(__('api.federation_peer_fields_required'));
         }
 
         if (! preg_match('/^[a-z0-9][a-z0-9\-]{1,99}$/', $peerSlug)) {
-            throw new InvalidArgumentException('peer_slug must be lowercase alphanumeric with hyphens.');
+            throw new InvalidArgumentException(__('api.federation_peer_slug_invalid'));
         }
 
         if (! OutboundUrlGuard::isSafeHttpUrl($baseUrl, requireHttps: true)) {
-            throw new InvalidArgumentException('base_url must be a valid HTTPS URL.');
+            throw new InvalidArgumentException(__('api.federation_peer_base_url_invalid'));
         }
 
         // Pre-existing slug? Reject with a clear error rather than overwriting silently.
@@ -108,7 +108,7 @@ class FederationPeerService
             ->where('peer_slug', $peerSlug)
             ->exists();
         if ($existing) {
-            throw new InvalidArgumentException('A peer with that slug is already registered.');
+            throw new InvalidArgumentException(__('api.federation_peer_slug_taken'));
         }
 
         // Generate a 64-char hex shared secret unless the caller supplied one.
@@ -116,7 +116,7 @@ class FederationPeerService
         if ($sharedSecret === '') {
             $sharedSecret = bin2hex(random_bytes(32));
         } elseif (strlen($sharedSecret) < 32) {
-            throw new InvalidArgumentException('shared_secret must be at least 32 characters when provided.');
+            throw new InvalidArgumentException(__('api.federation_peer_secret_too_short'));
         }
 
         $now = now();
@@ -146,7 +146,7 @@ class FederationPeerService
     {
         $this->assertAvailable();
         if (! in_array($status, ['pending', 'active', 'suspended'], true)) {
-            throw new InvalidArgumentException('Invalid status.');
+            throw new InvalidArgumentException(__('api.federation_peer_status_invalid'));
         }
 
         DB::table(self::TABLE)
@@ -156,7 +156,7 @@ class FederationPeerService
 
         $row = DB::table(self::TABLE)->where('id', $id)->where('tenant_id', $tenantId)->first();
         if (! $row) {
-            throw new RuntimeException('Peer not found.');
+            throw new RuntimeException(__('api.federation_peer_not_found'));
         }
         return $this->castRow($row, redactSecret: true);
     }
@@ -173,7 +173,7 @@ class FederationPeerService
 
         $row = DB::table(self::TABLE)->where('id', $id)->where('tenant_id', $tenantId)->first();
         if (! $row) {
-            throw new RuntimeException('Peer not found.');
+            throw new RuntimeException(__('api.federation_peer_not_found'));
         }
         // Return with the secret revealed once so the admin can copy it.
         return $this->castRow($row, redactSecret: false);
@@ -269,7 +269,7 @@ class FederationPeerService
     private function assertAvailable(): void
     {
         if (! $this->isAvailable()) {
-            throw new RuntimeException('Federation peers table is not available.');
+            throw new RuntimeException(__('api.federation_peers_unavailable'));
         }
     }
 

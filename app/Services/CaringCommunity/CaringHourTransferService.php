@@ -56,6 +56,32 @@ class CaringHourTransferService
     private const STATUS_COMPLETED = 'completed';
     private const STATUS_REJECTED = 'rejected';
 
+    /**
+     * Machine-readable rejection codes for the inbound federation endpoint.
+     *
+     * These are protocol vocabulary, NOT user-facing text: they become the
+     * `error` field of the JSON response that `FederationHourTransferController`
+     * returns to the *peer server* that POSTed the transfer, and that controller
+     * branches on REJECT_SIGNATURE_INVALID to choose 401 over 422. Translating
+     * them, or changing a spelling, would break a remote install's handling of
+     * our response. They are named rather than inlined so that the string a peer
+     * depends on exists in exactly one place, and so a translation sweep over
+     * hardcoded literals cannot mistake them for prose.
+     */
+    public const REJECT_PEER_NO_SECRET = 'peer_no_secret';
+    public const REJECT_SIGNATURE_INVALID = 'signature_invalid';
+    public const REJECT_PAYLOAD_INVALID = 'payload_invalid';
+    public const REJECT_AMOUNT_EXCEEDS_LIMIT = 'amount_exceeds_limit';
+    public const REJECT_DESTINATION_MEMBER_NOT_FOUND = 'destination_member_not_found';
+
+    /**
+     * Outbound delivery diagnostics. These reach Log::warning context only —
+     * never a response body — and exist as constants for the same reason.
+     */
+    private const DELIVERY_ERROR_MISSING_BASE_URL = 'missing base_url';
+    private const DELIVERY_ERROR_UNSAFE_BASE_URL = 'unsafe peer base_url';
+    private const DELIVERY_ERROR_EXTERNAL_DISABLED = 'external_federation_disabled';
+
     public function __construct(
         private readonly ?FederationPeerService $peers = null,
     ) {
@@ -72,17 +98,17 @@ class CaringHourTransferService
         $destinationTenantSlug = trim($destinationTenantSlug);
 
         if ($hours <= 0) {
-            throw new InvalidArgumentException('Hours must be greater than zero.');
+            throw new InvalidArgumentException(__('api.caring_hour_transfer_hours_gt_zero'));
         }
         if (round($hours, 2) != $hours) {
-            throw new InvalidArgumentException('Hours must have at most 2 decimal places.');
+            throw new InvalidArgumentException(__('api.caring_hour_transfer_hours_precision'));
         }
         if (!SecurityBounds::isAcceptableHourAmount($hours)) {
-            throw new InvalidArgumentException('Hours exceed the permitted single-transfer limit.');
+            throw new InvalidArgumentException(__('api.caring_hour_transfer_hours_over_limit'));
         }
 
         if ($destinationTenantSlug === '') {
-            throw new InvalidArgumentException('Destination cooperative is required.');
+            throw new InvalidArgumentException(__('api.caring_hour_transfer_destination_required'));
         }
 
         // Resolve source member + their balance & email
@@ -92,10 +118,10 @@ class CaringHourTransferService
             ->first(['id', 'email', 'balance']);
 
         if (!$sourceUser) {
-            throw new RuntimeException('Source member not found.');
+            throw new RuntimeException(__('api.caring_hour_transfer_source_member_not_found'));
         }
         if ((float) $sourceUser->balance < $hours) {
-            throw new RuntimeException('Insufficient banked hours.');
+            throw new RuntimeException(__('api.caring_hour_transfer_insufficient_hours'));
         }
 
         // Cross-platform federation: when no local tenant matches the slug but
@@ -110,10 +136,10 @@ class CaringHourTransferService
             ->first(['id', 'slug', 'name']);
 
         if (! $destinationTenant && ! $remotePeer) {
-            throw new RuntimeException('Destination cooperative not found.');
+            throw new RuntimeException(__('api.caring_hour_transfer_destination_not_found'));
         }
         if ($destinationTenant && (int) $destinationTenant->id === $sourceTenantId) {
-            throw new InvalidArgumentException('Destination cooperative must be different from source.');
+            throw new InvalidArgumentException(__('api.caring_hour_transfer_destination_same_as_source'));
         }
         $counterpartTenantSlug = $destinationTenant
             ? (string) $destinationTenant->slug
@@ -128,7 +154,7 @@ class CaringHourTransferService
                 ->first(['id']);
 
             if (!$destinationUser) {
-                throw new RuntimeException('No matching member at destination cooperative — register there first.');
+                throw new RuntimeException(__('api.caring_hour_transfer_no_destination_member'));
             }
         }
         // For remote peers we accept the email at face value; the remote
@@ -178,10 +204,10 @@ class CaringHourTransferService
             ->first();
 
         if (!$transfer) {
-            throw new RuntimeException('Transfer not found.');
+            throw new RuntimeException(__('api.caring_hour_transfer_not_found'));
         }
         if ($transfer->status !== self::STATUS_PENDING) {
-            throw new RuntimeException('Transfer is not pending and cannot be approved.');
+            throw new RuntimeException(__('api.caring_hour_transfer_not_pending_approve'));
         }
 
         // Resolve destination — either a local tenant (same-platform) or a
@@ -193,10 +219,10 @@ class CaringHourTransferService
             ->first(['id', 'slug', 'name']);
 
         if (! $destinationTenant && ! $remotePeer) {
-            throw new RuntimeException('Destination cooperative no longer exists.');
+            throw new RuntimeException(__('api.caring_hour_transfer_destination_gone'));
         }
         if ($remotePeer && (string) ($remotePeer['status'] ?? '') !== 'active') {
-            throw new RuntimeException('Destination cooperative federation peer is not active.');
+            throw new RuntimeException(__('api.caring_hour_transfer_peer_inactive'));
         }
 
         $destinationUser = null;
@@ -209,7 +235,7 @@ class CaringHourTransferService
             // If a local tenant exists with that slug but no matching member,
             // fall back to a remote peer with the same slug if one exists.
             if (! $destinationUser && ! $remotePeer) {
-                throw new RuntimeException('No matching destination member — they may have removed their account.');
+                throw new RuntimeException(__('api.caring_hour_transfer_destination_member_gone'));
             }
         }
 
@@ -235,7 +261,7 @@ class CaringHourTransferService
             ? (string) ($remotePeer['shared_secret'] ?? '')
             : $this->sharedPlatformSecret();
         if ($isRemote && $secret === '') {
-            throw new RuntimeException('Federation peer is missing a shared secret.');
+            throw new RuntimeException(__('api.caring_hour_transfer_peer_no_secret'));
         }
 
         $signature = $this->signPayload($payload, $secret);
@@ -260,7 +286,7 @@ class CaringHourTransferService
                 ->lockForUpdate()
                 ->first();
             if (!$locked || $locked->status !== self::STATUS_PENDING) {
-                throw new RuntimeException('Transfer is no longer pending.');
+                throw new RuntimeException(__('api.caring_hour_transfer_no_longer_pending'));
             }
 
             // Lock the source user row
@@ -271,10 +297,10 @@ class CaringHourTransferService
                 ->first(['id', 'balance']);
 
             if (!$sourceUser) {
-                throw new RuntimeException('Source member not found.');
+                throw new RuntimeException(__('api.caring_hour_transfer_source_member_not_found'));
             }
             if ((float) $sourceUser->balance < $hours) {
-                throw new RuntimeException('Source member no longer has enough banked hours.');
+                throw new RuntimeException(__('api.caring_hour_transfer_source_hours_changed'));
             }
 
             // ── 1. Debit source wallet via transactions row ─────────────────
@@ -487,10 +513,10 @@ class CaringHourTransferService
             ->first();
 
         if (!$row) {
-            throw new RuntimeException('Transfer not found.');
+            throw new RuntimeException(__('api.caring_hour_transfer_not_found'));
         }
         if ($row->status !== self::STATUS_PENDING) {
-            throw new RuntimeException('Only pending transfers can be rejected.');
+            throw new RuntimeException(__('api.caring_hour_transfer_not_pending_reject'));
         }
 
         $reason = trim($reason);
@@ -687,7 +713,7 @@ class CaringHourTransferService
     ): array {
         $baseUrl = (string) ($peer['base_url'] ?? '');
         if ($baseUrl === '') {
-            return ['delivered' => false, 'status' => 0, 'error' => 'missing base_url', 'response' => null];
+            return ['delivered' => false, 'status' => 0, 'error' => self::DELIVERY_ERROR_MISSING_BASE_URL, 'response' => null];
         }
 
         $endpoint = $this->remoteInboundEndpoint($baseUrl);
@@ -695,7 +721,7 @@ class CaringHourTransferService
             return [
                 'delivered' => false,
                 'status'    => 0,
-                'error'     => 'unsafe peer base_url',
+                'error'     => self::DELIVERY_ERROR_UNSAFE_BASE_URL,
                 'response'  => null,
             ];
         }
@@ -710,7 +736,7 @@ class CaringHourTransferService
             return [
                 'delivered' => false,
                 'status'    => 0,
-                'error'     => 'external_federation_disabled',
+                'error'     => self::DELIVERY_ERROR_EXTERNAL_DISABLED,
                 'response'  => null,
             ];
         }
@@ -914,10 +940,10 @@ class CaringHourTransferService
     {
         $secret = (string) ($peer['shared_secret'] ?? '');
         if ($secret === '') {
-            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => 'peer_no_secret', 'duplicated' => false];
+            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => self::REJECT_PEER_NO_SECRET, 'duplicated' => false];
         }
         if (! $this->verifySignature($payload, $signature, $secret)) {
-            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => 'signature_invalid', 'duplicated' => false];
+            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => self::REJECT_SIGNATURE_INVALID, 'duplicated' => false];
         }
 
         $sourceSlug = (string) ($payload['source_tenant_slug'] ?? '');
@@ -926,10 +952,10 @@ class CaringHourTransferService
         $hours = round((float) ($payload['hours'] ?? 0), 2);
 
         if ($sourceSlug === '' || $sourceTransferId <= 0 || $sourceEmail === '' || $hours <= 0) {
-            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => 'payload_invalid', 'duplicated' => false];
+            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => self::REJECT_PAYLOAD_INVALID, 'duplicated' => false];
         }
         if (!SecurityBounds::isAcceptableHourAmount($hours)) {
-            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => 'amount_exceeds_limit', 'duplicated' => false];
+            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => self::REJECT_AMOUNT_EXCEEDS_LIMIT, 'duplicated' => false];
         }
 
         $idempotencyKey = $sourceSlug . ':' . $sourceTransferId;
@@ -940,7 +966,7 @@ class CaringHourTransferService
             ->where('email', $sourceEmail)
             ->first(['id']);
         if (! $destinationUser) {
-            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => 'destination_member_not_found', 'duplicated' => false];
+            return ['accepted' => false, 'destination_transfer_id' => null, 'error' => self::REJECT_DESTINATION_MEMBER_NOT_FOUND, 'duplicated' => false];
         }
 
         try {
@@ -1062,12 +1088,12 @@ class CaringHourTransferService
         // payload at delivery time.  This is the contract a remote receiver
         // would also check.
         if (!$this->verifySignature($payload, $signature, $this->sharedPlatformSecret())) {
-            throw new RuntimeException('Transfer signature verification failed.');
+            throw new RuntimeException(__('api.caring_hour_transfer_signature_failed'));
         }
 
         $hours = round((float) $payload['hours'], 2);
         if (!SecurityBounds::isAcceptableHourAmount($hours)) {
-            throw new RuntimeException('Transfer amount exceeds the permitted single-transfer limit.');
+            throw new RuntimeException(__('api.caring_hour_transfer_amount_over_limit'));
         }
 
         $now = now();

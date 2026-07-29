@@ -92,7 +92,7 @@ class FederationHourTransferController extends BaseApiController
 
         if (! $result['accepted']) {
             $reason = $result['error'] ?? 'rejected';
-            $status = $reason === 'signature_invalid' ? 401 : 422;
+            $status = $reason === CaringHourTransferService::REJECT_SIGNATURE_INVALID ? 401 : 422;
             return response()->json([
                 'success'  => false,
                 'accepted' => false,

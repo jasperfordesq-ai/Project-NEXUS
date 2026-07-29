@@ -23,6 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   The check now runs inside the gate and fails the build, so a future entry that contradicts the lang files cannot be added — and because a bad entry *lowers* the count, it is checked before the baseline can be written, or the suppression would be permanent the moment it was introduced. What remains is 249 values that are all real translation work: the Irish plural forms, and about sixty single words that the language in question demonstrably does translate.
 
+### Fixed
+
+- **Cross-cooperative hour transfers, hour gifts and federation peer registration no longer refuse members in English.** Forty-eight refusal messages across three services were hardcoded English strings thrown as exception messages. The controllers on both the member and admin sides pass `$e->getMessage()` straight into the error response, so every one of them reached the user verbatim — and each sat next to a translated fallback in the UI, which meant the interface looked localised while never being localised. "Insufficient banked hours", "You cannot gift hours to yourself", "Destination cooperative must be different from source" and forty-five others now come from `lang/en/api.php` and are translated into all ten other languages.
+
+  All three services are now held by the localisation regression test, so the English cannot come back. The test was run against the pre-change code first to confirm it actually fails there: four failures across the three services, none afterwards.
+
+  **The plan for this work described eight of those strings wrongly, and translating them would have broken federation.** They looked identical to the rest — string literals assigned to an `error` key in a service — but five of them are the `error` field of the JSON response the inbound transfer endpoint returns to a *peer install*, not to a person, and three others only ever reach a log line. One of the five, `signature_invalid`, is what the controller compares against to answer 401 instead of 422. A remote deployment we do not control reads these. They are now named constants with a comment explaining why they are not text, the controller compares against the constant rather than a repeated literal (a typo there would have silently downgraded an invalid signature to 422), and a test pins each published value. That keeps the sweep's "no literal assigned to `error`" rule strictly enforceable without an exemption list — which is the kind of list that grows until it hides a real defect.
+
+  Two translation repairs worth noting, both in the same class of error: Google capitalised a sentence-initial `peer_slug` / `base_url` / `shared_secret` in five places, but those are literal request field names an integrator has to type, not words; and Irish rendered "hyphens" as *Ceachtanna* ("lessons"). Machine translation of technical strings needs the field names checked afterwards.
+
+  The remaining tail is 414 prose exception throws across `app/Services/`, unchanged in character: the largest are in the login and SSO flows, which reach the user through a different surface and need their own analysis before being touched.
+
 ## [1.5.8] - 2026-07-29
 
 ### Added

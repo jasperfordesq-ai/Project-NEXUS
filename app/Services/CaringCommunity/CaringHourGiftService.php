@@ -45,21 +45,21 @@ class CaringHourGiftService
         $tenantId = (int) TenantContext::getId();
 
         if ($senderId <= 0 || $recipientId <= 0) {
-            throw new InvalidArgumentException('Sender and recipient are required.');
+            throw new InvalidArgumentException(__('api.caring_hour_gift_participants_required'));
         }
         if ($senderId === $recipientId) {
-            throw new InvalidArgumentException('You cannot gift hours to yourself.');
+            throw new InvalidArgumentException(__('api.caring_hour_gift_self'));
         }
         if ($hours <= 0) {
-            throw new InvalidArgumentException('Hours must be greater than zero.');
+            throw new InvalidArgumentException(__('api.caring_hour_gift_hours_gt_zero'));
         }
         if (round($hours, 2) != $hours) {
-            throw new InvalidArgumentException('Hours must have at most 2 decimal places.');
+            throw new InvalidArgumentException(__('api.caring_hour_gift_hours_precision'));
         }
 
         $message = $message !== null ? trim($message) : null;
         if ($message !== null && $message !== '' && mb_strlen($message) > self::MAX_MESSAGE_LEN) {
-            throw new InvalidArgumentException('Message is too long.');
+            throw new InvalidArgumentException(__('api.caring_hour_gift_message_too_long'));
         }
         if ($message === '') {
             $message = null;
@@ -72,10 +72,10 @@ class CaringHourGiftService
                 ->lockForUpdate()
                 ->first(['id', 'balance']);
             if (!$sender) {
-                throw new RuntimeException('Sender not found.');
+                throw new RuntimeException(__('api.caring_hour_gift_sender_not_found'));
             }
             if ((float) $sender->balance < $hours) {
-                throw new RuntimeException('Insufficient banked hours.');
+                throw new RuntimeException(__('api.caring_hour_gift_insufficient_hours'));
             }
 
             $recipient = DB::table('users')
@@ -84,7 +84,7 @@ class CaringHourGiftService
                 ->whereNull('deleted_at')
                 ->first(['id']);
             if (!$recipient) {
-                throw new RuntimeException('Recipient not found.');
+                throw new RuntimeException(__('api.caring_hour_gift_recipient_not_found'));
             }
 
             app(SafeguardingInteractionPolicy::class)->assertLocalContactAllowed(
@@ -127,13 +127,13 @@ class CaringHourGiftService
                 ->lockForUpdate()
                 ->first();
             if (!$gift) {
-                throw new RuntimeException('Gift not found.');
+                throw new RuntimeException(__('api.caring_hour_gift_not_found'));
             }
             if ((int) $gift->recipient_user_id !== $recipientId) {
-                throw new RuntimeException('Only the recipient can accept this gift.');
+                throw new RuntimeException(__('api.caring_hour_gift_recipient_only_accept'));
             }
             if ($gift->status !== self::STATUS_PENDING) {
-                throw new RuntimeException('Gift is no longer pending.');
+                throw new RuntimeException(__('api.caring_hour_gift_no_longer_pending'));
             }
 
             DB::table('users')
@@ -170,13 +170,13 @@ class CaringHourGiftService
                 ->lockForUpdate()
                 ->first();
             if (!$gift) {
-                throw new RuntimeException('Gift not found.');
+                throw new RuntimeException(__('api.caring_hour_gift_not_found'));
             }
             if ((int) $gift->recipient_user_id !== $recipientId) {
-                throw new RuntimeException('Only the recipient can decline this gift.');
+                throw new RuntimeException(__('api.caring_hour_gift_recipient_only_decline'));
             }
             if ($gift->status !== self::STATUS_PENDING) {
-                throw new RuntimeException('Gift is no longer pending.');
+                throw new RuntimeException(__('api.caring_hour_gift_no_longer_pending'));
             }
 
             // Refund sender
@@ -207,13 +207,13 @@ class CaringHourGiftService
                 ->lockForUpdate()
                 ->first();
             if (!$gift) {
-                throw new RuntimeException('Gift not found.');
+                throw new RuntimeException(__('api.caring_hour_gift_not_found'));
             }
             if ((int) $gift->sender_user_id !== $senderId) {
-                throw new RuntimeException('Only the sender can withdraw this gift.');
+                throw new RuntimeException(__('api.caring_hour_gift_sender_only_withdraw'));
             }
             if ($gift->status !== self::STATUS_PENDING) {
-                throw new RuntimeException('Only pending gifts can be withdrawn.');
+                throw new RuntimeException(__('api.caring_hour_gift_not_pending_withdraw'));
             }
 
             // Refund sender
