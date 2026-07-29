@@ -1,0 +1,46 @@
+{
+  "_README": "Values that are correct in a non-English lang/ file BECAUSE they are identical to English. Read by scripts/check-php-lang-untranslated.mjs. Keyed by VALUE, never by key path: the same invariant string appears under many keys, and a per-key list would become a suppression list nobody reads. `global` applies to every locale; `byLocale` is for cognates and borrowings that are right in one language and wrong in the others. Seeded from IDENTICAL_VALUE_ALLOWLIST / LANGUAGE_IDENTICAL_VALUE_ALLOWLIST in scripts/translate-i18n-gaps.mjs, which had already been curated for the React JSON locales. Adding an entry is a claim that a translator would leave it alone — not a way to make the gate quiet.",
+  "global": [
+    "% MRR",
+    "65+",
+    "A/B",
+    "AWS ECS / Fargate:",
+    "Ad hoc",
+    "Cloudflare (CDN / WAF)",
+    "EU (EEA)",
+    "EUR (€)",
+    "EUR - Euro",
+    "GBP (£)",
+    "Heroku / Render / Fly.io:",
+    "Komunitin (JSON:API)",
+    "Linux / VPS",
+    "Microsoft Azure (hosting, EU)",
+    "Ordnance Survey Places (UK, UPRN)",
+    "OS Places (PSGA)",
+    "Plesk / cPanel / IIS:",
+    "Stiftung für das Alter",
+    "Tandems <->",
+    "Twitter / X",
+    "USD ($)",
+    "User-agent: *\nDisallow: /admin/",
+    "application.created, shift.completed, hours.logged",
+    "⌘K"
+  ],
+  "byLocale": {
+    "de": [
+      "Status:"
+    ],
+    "fr": [
+      "Article 9.",
+      "page."
+    ],
+    "nl": [
+      "Ortsteil (district)",
+      "Payload (JSON)",
+      "Score (%)",
+      "Status:",
+      "Tip:",
+      "platform super-admin"
+    ]
+  }
+}

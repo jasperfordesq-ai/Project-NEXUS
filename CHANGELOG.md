@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Untranslated text in the backend's translation files is now measured and can no longer get worse.** The existing check on those files compares which keys exist in each language, so a file passed it while every line in it was a word-for-word copy of the English. That was not a corner case: **62.3% of all non-English values — 99,139 of them — were byte-identical English**, and the check was green. Copied English is invisible to a key-based check by design; the key is there, and only its value is wrong.
+
+  A new check counts values instead, and holds the count as a ceiling per file. Adding English fails it. Removing English passes and says how much was removed. It is deliberately a ceiling rather than a pass/fail line: a debt of ninety-nine thousand lines cannot be repaid in the same change that starts measuring it, and a check that fails the day it is written gets switched off instead of fixed. Backfilling those values follows in this release.
+
+  Reading the files is done by asking the language they are written in — one process for all 462 of them, about a second — rather than by pattern-matching their text, which is how a value slips through unexamined. Where a value is genuinely the same in another language (a currency code, a product name, a borrowed technical term) it is listed by its text, so one entry covers everywhere that text appears rather than becoming a per-line list of exceptions nobody reads.
+
 - **The app now tells the server which language it is being read in.** Every API request carries the language selected in the app, so anything the server writes during that request comes back in it. Previously the app sent nothing of its own and the server had to fall back to the browser's language, which is often not the language the visitor chose — this was the one gap left open when API response language was fixed earlier in this release.
 
   It changes most for people who are not signed in: registration, password reset, email verification, and the public pages have no saved preference for the server to read, so the browser's language was the only signal available. A signed-in member's saved preference still wins; this only replaces the guess underneath it, and an explicit language in the address still overrides both.

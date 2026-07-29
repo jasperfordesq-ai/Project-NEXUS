@@ -876,7 +876,11 @@ jobs:
               - 'scripts/check-admin-ui-literals.mjs'
               - 'scripts/check-php-i18n-coverage.mjs'
               - 'scripts/check-php-lang-parity.mjs'
+              - 'scripts/check-php-lang-untranslated.mjs'
+              - 'scripts/php-lang-invariant-allowlist.json'
+              - 'scripts/php/dump-lang.php'
               - '.github/i18n-gap-baseline.json'
+              - '.github/php-lang-untranslated-baseline.json'
 
   i18n-drift:
     name: Translation Drift Detection
@@ -909,6 +913,16 @@ jobs:
       # untranslated for weeks (added 2026-06-11). Uses the runner's PHP CLI.
       - name: "BLOCKING: PHP lang/ translation parity"
         run: node scripts/check-php-lang-parity.mjs
+
+      # Added 2026-07-29. The parity gate above compares KEY SETS, so a locale
+      # file passes it while every value in it is a verbatim copy of the English
+      # one — which is what 62.3% of non-English lang/ values were (99,140 of
+      # 159,140) on the day this was added, with parity green. Pasted English is
+      # invisible to a key-set check by construction. This counts values, and is
+      # a shrink-only ceiling rather than a pass/fail line: a 99k debt cannot be
+      # paid off in the commit that starts measuring it.
+      - name: "BLOCKING: PHP lang/ untranslated value ratchet"
+        run: node scripts/check-php-lang-untranslated.mjs
 
       # Added 2026-07-29. Translators (human or machine) translate things that
       # must stay literal — routes, placeholders, config keys. This caught the

@@ -111,6 +111,10 @@ CLAUDE.md
 !/scripts/check-i18n-vars.mjs
 !/scripts/check-php-i18n-coverage.mjs
 !/scripts/check-php-lang-parity.mjs
+!/scripts/check-php-lang-untranslated.mjs
+!/scripts/php-lang-invariant-allowlist.json
+!/scripts/php/
+!/scripts/php/dump-lang.php
 !/scripts/check-admin-breadcrumbs.mjs
 !/scripts/check-test-skip-budget.mjs
 !/scripts/predeploy-check.sh
