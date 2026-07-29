@@ -2199,7 +2199,7 @@
     "webhooks_sample_payload": "Voorbeeld Payload",
     "recent_errors_count": "Recente fouten: {{count}}",
     "created_date": "Aangemaakt {{date}}",
-    "api_docs_desc": "Ontwikkelaarsreferentie die federatieauthenticatie, protocol-eindpunten, voorbeelden, fouten en webhooks uitlegt",
+    "api_docs_desc": "Ontwikkelaarsreferentie voor partners die vanaf een andere installatie koppelen: authenticatie, endpoints, voorbeelden, fouten en webhooks. Deze endpoints staan uit totdat een platform-superbeheerder elk protocol aanzet.",
     "api_docs_errors": "Foutcodes",
     "api_docs_title": "Federatie API-documentatie",
     "api_doc_api_key_desc": "Bearer-token toegang voor partner API-aanroepen.",

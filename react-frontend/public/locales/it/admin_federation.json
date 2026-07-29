@@ -1016,7 +1016,7 @@
     "webhooks_sample_payload": "Esempio di payload",
     "recent_errors_count": "Errori recenti: {{count}}",
     "created_date": "Creato {{date}}",
-    "api_docs_desc": "Riferimento per sviluppatori che spiega l'autenticazione federata, gli endpoint del protocollo, esempi, errori e webhooks",
+    "api_docs_desc": "Riferimento per sviluppatori di partner che si collegano da un’altra installazione: autenticazione, endpoint, esempi, errori e webhook. Questi endpoint sono disattivati finché un super amministratore della piattaforma non abilita ciascun protocollo.",
     "api_docs_errors": "Codici di errore",
     "api_docs_title": "Documentazione API della Federazione",
     "api_doc_api_key_desc": "Accesso tramite token Bearer per chiamate API dei partner.",

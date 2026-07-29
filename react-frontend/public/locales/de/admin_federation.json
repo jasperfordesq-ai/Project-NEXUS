@@ -1003,7 +1003,7 @@
     "webhooks_sample_payload": "Beispiel-Nutzlast",
     "recent_errors_count": "Aktuelle Fehler: {{count}}",
     "created_date": "Erstellt {{date}}",
-    "api_docs_desc": "Entwicklerreferenz, die Föderationsauthentifizierung, Protokollendpunkte, Beispiele, Fehler und Webhooks erklärt",
+    "api_docs_desc": "Entwicklerreferenz für Partner, die von einer anderen Installation aus verbinden: Authentifizierung, Endpunkte, Beispiele, Fehler und Webhooks. Diese Endpunkte sind abgeschaltet, bis ein Plattform-Superadmin das jeweilige Protokoll aktiviert.",
     "api_docs_errors": "Fehlercodes",
     "api_docs_title": "Federation API-Dokumentation",
     "api_doc_api_key_desc": "Bearer-Token-Zugriff für Partner-API-Aufrufe.",

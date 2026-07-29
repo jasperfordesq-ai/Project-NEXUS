@@ -112,13 +112,55 @@ verify that retries cannot resume unauthorized delivery.
 NEXUS exposes several distinct surfaces. Do not mix their authentication or
 response contracts.
 
+### Read this first: inside versus outside, and which way data flows
+
+The route names are easy to misread, so start here.
+
+**There are only two questions that matter about any federation surface:**
+
+1. **Is it for people already inside this installation, or for another
+   installation?** One surface is internal; every other one is external.
+2. **Which way does the data move — do they read from us, or push to us?**
+
+That second question is the real difference between the two NEXUS-native
+surfaces, and no route name mentions it:
+
+| Surface | Inside or outside? | Direction |
+| --- | --- | --- |
+| `/api/v2/federation/*` (member routes) | **Inside.** Your own logged-in members. | n/a — your own users |
+| `/api/v1/federation/*` | Outside | **They read from us** |
+| `/api/v2/federation/ingest/*` | Outside | **They push to us** |
+| `/api/v2/federation/komunitin/*` | Outside | Both |
+| `/api/v2/federation/cc/*` | Outside | Both |
+| `POST /api/v2/federation/external/webhooks/receive` | Outside | They notify us |
+| `POST /api/v2/federation/hour-transfer/inbound` | Outside | Hours arrive |
+| `GET /api/v2/federation/aggregates` | Outside | They read totals |
+| `/api/partner/v1/*` | Outside | They read from us |
+
+Three naming traps, all of which have caused real confusion:
+
+- **`/api/v2/federation/*` holds both.** The member routes and several external
+  protocols share that prefix, so the path alone never tells you which side of
+  the wall a route is on. Only `ingest/`, `komunitin/`, `cc/`, `external/`,
+  `hour-transfer/` and `aggregates` under it are external.
+- **`v1` did not become `v2`.** They are different audiences, not successive
+  versions. `/api/v1/federation/*` is current and has no replacement; it is the
+  only surface offering partner reads in NEXUS's own format.
+- **"NEXUS native" does not mean internal.** It means *talking to a different
+  NEXUS installation* — the most external thing here. The product name inside a
+  protocol name reads as "ours, internal", and it is the opposite.
+
+Communities that share **one** installation — including sub-communities and
+anything in the Partner Timebanks panel — federate through the internal member
+routes. They are never affected by the external kill switch.
+
 | Surface | Route family | Audience and contract |
 | --- | --- | --- |
 | Member federation UI/API | `/api/v2/federation/*` | Authenticated NEXUS users: status, consent, partners, federated resources, settings, connections, messages, and transactions. |
 | Native V1 partner API | `/api/v1/federation/*` | The only partner-facing **read** API in NEXUS's own native format, plus a few writes. Not superseded: the v2 families below serve different jobs. The index, health, OAuth token and webhook-test endpoints sit outside the federation authenticator — the token endpoint necessarily so, since it exchanges client credentials for a token — and the data methods call the controller's federation authentication. |
-| Komunitin | `/api/v2/federation/komunitin/*` | Protocol-native JSON:API accounting resources. |
-| Credit Commons | `/api/v2/federation/cc/*` | Credit Commons accounts, entries, and transaction lifecycle. |
-| Native V2 ingest | `/api/v2/federation/ingest/*` | Versioned partner pushes for reviews, listings, events, groups, connections, volunteering, and member sync. |
+| Komunitin | `/api/v2/federation/komunitin/*` | Protocol-native JSON:API accounting resources. Reads and writes. |
+| Credit Commons | `/api/v2/federation/cc/*` | Credit Commons accounts, entries, and transaction lifecycle. Reads and writes. |
+| Native V2 ingest | `/api/v2/federation/ingest/*` | Versioned partner **pushes** for reviews, listings, events, groups, connections, volunteering, and member sync. Inbound only — this surface never serves partner reads, which is what the V1 partner API above is for. Referred to as "NEXUS native" in Super Admin; it means traffic with *another NEXUS installation*, not anything internal. |
 | External webhook receiver | `POST /api/v2/federation/external/webhooks/receive` | HMAC-authenticated events from configured external partners. |
 
 The Komunitin, Credit Commons, and native V2 ingest routes use the

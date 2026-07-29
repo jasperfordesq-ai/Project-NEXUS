@@ -1029,7 +1029,7 @@
     "webhooks_sample_payload": "Przykładowe dane",
     "recent_errors_count": "Ostatnie błędy: {{count}}",
     "created_date": "Utworzono {{date}}",
-    "api_docs_desc": "Dokumentacja dla deweloperów wyjaśniająca uwierzytelnianie federacyjne, punkty końcowe protokołu, przykłady, błędy i webhooki",
+    "api_docs_desc": "Dokumentacja dla programistów partnerów łączących się z innej instalacji: uwierzytelnianie, punkty końcowe, przykłady, błędy i webhooki. Te punkty końcowe są wyłączone, dopóki superadministrator platformy nie włączy poszczególnych protokołów.",
     "api_docs_errors": "Kody błędów",
     "api_docs_title": "Dokumentacja API Federacji",
     "api_doc_api_key_desc": "Dostęp za pomocą tokena Bearer dla wywołań API partnera.",

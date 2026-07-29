@@ -2205,7 +2205,7 @@
     "webhooks_sample_payload": "Exemplo de Payload",
     "recent_errors_count": "Erros recentes: {{count}}",
     "created_date": "Criado {{date}}",
-    "api_docs_desc": "Referência para desenvolvedores explicando autenticação de federação, endpoints de protocolo, exemplos, erros e webhooks",
+    "api_docs_desc": "Referência para desenvolvedores de parceiros que ligam a partir de outra instalação: autenticação, endpoints, exemplos, erros e webhooks. Estes endpoints estão desativados até que um super-administrador da plataforma ative cada protocolo.",
     "api_docs_errors": "Códigos de Erro",
     "api_docs_title": "Documentação da API da Federação",
     "api_doc_col_description": "Descrição",

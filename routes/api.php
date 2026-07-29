@@ -798,7 +798,17 @@ Route::get('/v2/users/{id}/activity/dashboard', [\App\Http\Controllers\Api\Membe
 // Verification Badges
 Route::get('/v2/users/{id}/verification-badges', [\App\Http\Controllers\Api\MemberVerificationBadgeController::class, 'getUserBadges']);
 // NOTE: Admin badge management routes moved to admin middleware group below
-// Federation (user-facing — NOT admin-only)
+// ─── Federation: INTERNAL surface ───────────────────────────────────────────
+// For this installation's OWN logged-in members (auth:sanctum), not partners.
+// This is how communities sharing one installation — sub-communities and the
+// Partner Timebanks panel — federate with each other. It is deliberately NOT
+// behind the external kill switch: a switch meant for other installations must
+// never cut off our own members. See feedback in docs/FEDERATION_API_MANUAL.md
+// ("inside versus outside").
+//
+// 🔴 The /v2/federation/ prefix holds BOTH internal and external routes. Only
+// the ingest/, komunitin/, cc/, external/, hour-transfer/ and aggregates paths
+// under it face other installations. The prefix alone tells you nothing.
 Route::get('/v2/federation/status', [\App\Http\Controllers\Api\FederationV2Controller::class, 'status']);
 Route::post('/v2/federation/opt-in', [\App\Http\Controllers\Api\FederationV2Controller::class, 'optIn'])->middleware('throttle:nexus-route-10-per-1m');
 Route::post('/v2/federation/setup', [\App\Http\Controllers\Api\FederationV2Controller::class, 'setup'])->middleware('throttle:nexus-route-10-per-1m');
@@ -3532,7 +3542,15 @@ Route::post('/listings/delete', [\App\Http\Controllers\Api\ListingsController::c
 }); // End Route::middleware('auth:sanctum') — Misc/legacy routes
 
 // ============================================
-// MIGRATED ROUTES — Federation API V1
+// MIGRATED ROUTES — Federation API V1  (partner READS, current, not retired)
+//
+// 🔴 The "V1" is an audience, not a version to be upgraded away from. Nothing
+// replaced this: it is the ONLY surface where an external partner reads our
+// members, listings, messages, reviews and transaction status in NEXUS's own
+// format. /v2/federation/ingest/* is inbound push, Komunitin and Credit Commons
+// speak other platforms' formats, and /v2/federation/* (bare) is our own
+// members. Do not delete this on the assumption v2 supersedes it.
+//
 // Source: httpdocs/routes/federation-api-v1.php
 // These routes use their own fedAuth() method (FederationApiMiddleware)
 // for authentication — they must NOT be inside auth:sanctum.
@@ -3625,6 +3643,13 @@ Route::middleware(['federation.api', 'throttle:nexus-route-200-per-1m'])->group(
 
     Route::middleware('federation.external:nexus')->group(function () {
     // --- Nexus Native V2 inbound entity push (REST) ---
+    // 🔴 "Nexus native" means traffic with ANOTHER Project NEXUS installation.
+    // It is not internal, despite carrying the product's own name — that name is
+    // the single biggest source of confusion in this file. Inbound ONLY: a
+    // partner PUSHES entities to us here and can read nothing. Partner READS
+    // live on the v1 partner API (/v1/federation/*), which is a different
+    // audience, not an older version of this.
+    //
     // Partners using the Nexus protocol POST entities here. Event facts use a
     // strict versioned projection with signature, replay, stale, and conflict handling.
     // Namespaced under /ingest/ to avoid colliding with user-facing FederationV2Controller routes

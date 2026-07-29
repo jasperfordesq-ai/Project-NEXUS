@@ -51,7 +51,7 @@ Time banking is a community-based system where members exchange services using t
 - **Gamification** — Badges, achievements, XP, leaderboards, and challenges
 - **Volunteering** — Volunteer opportunities and hour logging
 - **Blog & Resources** — Community news and shared resource library
-- **Federation API** — Multi-community network with cross-community exchanges and federated identity
+- **Federation** — Two separate things under one name. **Inside one installation:** communities you host can share members, listings and exchanges with each other, and this is on by default. **Between installations:** eight protocols let other platforms connect to yours, and these all ship **switched off** behind a per-protocol kill switch until you deliberately enable them. If you are self-hosting and expecting external federation to work out of the box, it will not — that is intentional. See [docs/FEDERATION_API_MANUAL.md](docs/FEDERATION_API_MANUAL.md), which opens with the status of each protocol.
 - **Smart Matching** — AI-powered matching of members and listings
 - **Exchange Workflow** — Broker-approved service exchange lifecycle
 - **Multi-Tenant** — Run multiple communities from one platform, each with its own branding and configuration

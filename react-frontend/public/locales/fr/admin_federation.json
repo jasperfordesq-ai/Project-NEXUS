@@ -1015,7 +1015,7 @@
     "webhooks_sample_payload": "Exemple de charge utile",
     "recent_errors_count": "Erreurs récentes : {{count}}",
     "created_date": "Créé {{date}}",
-    "api_docs_desc": "Référence pour développeur expliquant l'authentification fédérée, les points de terminaison du protocole, les exemples, les erreurs et les webhooks",
+    "api_docs_desc": "Référence développeur pour les partenaires se connectant depuis une autre installation : authentification, points d’accès, exemples, erreurs et webhooks. Ces points d’accès sont désactivés jusqu’à ce qu’un super administrateur de la plateforme active chaque protocole.",
     "api_docs_errors": "Codes d'erreur",
     "api_docs_title": "Documentation de l'API de la Fédération",
     "api_doc_api_key_desc": "Accès par jeton Bearer pour les appels API des partenaires.",

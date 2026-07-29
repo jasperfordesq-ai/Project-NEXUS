@@ -1374,7 +1374,7 @@
     "allow_inbound_partnerships_desc": "When this is on, other timebanks can ask to partner with your community. You still review and approve each request yourself — unless automatic approval is switched on below.",
     "analytics_placeholder": "Federation analytics coming soon",
     "api_docs_auth": "Authentication",
-    "api_docs_desc": "Developer reference explaining federation authentication, protocol endpoints, examples, errors, and webhooks",
+    "api_docs_desc": "Developer reference for partners connecting from another installation: authentication, endpoints, examples, errors and webhooks. These endpoints are switched off until a platform super admin enables each protocol.",
     "api_docs_endpoints": "Endpoints",
     "api_docs_errors": "Error Codes",
     "api_docs_examples": "Examples",

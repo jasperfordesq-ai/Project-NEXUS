@@ -2206,7 +2206,7 @@
     "webhooks_sample_payload": "Sampla Seolta",
     "recent_errors_count": "Earráidí le déanaí: {{count}}",
     "created_date": "Cruthaithe {{date}}",
-    "api_docs_desc": "Tagairt do forbróir ag míniú fíordheimhniú comhdhlúite, codanna de phrótacal, samplaí, earráidí, agus webhooks",
+    "api_docs_desc": "Tagairt forbróra do pháirtithe atá ag ceangal ó fheistiú eile: fíordheimhniú, críochphointí, samplaí, earráidí agus crúcaí gréasáin. Tá na críochphointí seo múchta go dtí go gcumasóidh sár-riarthóir ardáin gach prótacal.",
     "api_docs_errors": "Cóid Earráide",
     "api_docs_title": "Doiciméadú API na Comhphoblaíochta",
     "api_doc_col_description": "Cur síos",

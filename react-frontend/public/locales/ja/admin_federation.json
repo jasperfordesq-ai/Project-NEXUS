@@ -1008,7 +1008,7 @@
     "webhooks_sample_payload": "サンプルペイロード",
     "recent_errors_count": "最近のエラー: {{count}}",
     "created_date": "作成 {{date}}",
-    "api_docs_desc": "フェデレーション認証、プロトコルエンドポイント、例、エラー、およびウェブフックについて説明する開発者向けリファレンス",
+    "api_docs_desc": "別のインストールから接続するパートナー向けの開発者リファレンスです。認証、エンドポイント、例、エラー、Webhook を扱います。これらのエンドポイントは、プラットフォームのスーパー管理者が各プロトコルを有効にするまで無効です。",
     "api_docs_errors": "エラーコード",
     "api_docs_title": "連邦APIドキュメント",
     "api_doc_col_description": "説明",
