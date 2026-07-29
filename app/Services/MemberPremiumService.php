@@ -26,6 +26,22 @@ use RuntimeException;
 class MemberPremiumService
 {
     /**
+     * Diagnostics for the Stripe webhook path, deliberately not translated.
+     *
+     * `recordEvent()` is reached only from the Stripe webhook handlers, so the
+     * audience for these two messages is Stripe's own delivery log and ours —
+     * never a member. Adding lang keys for them would put two more values in
+     * eleven locale files that nobody will ever read, which is the shape of debt
+     * the admin-namespace shrink just removed 38,743 of. They are named
+     * constants rather than inline literals for the same reason as
+     * CaringHourTransferService's REJECT_* codes: it puts the intent in the code
+     * instead of in an exemption list, so the "no hardcoded English refusal"
+     * sweep stays strictly enforceable.
+     */
+    private const WEBHOOK_EVENT_NOT_RECORDED = 'Member premium billing event was not recorded';
+    private const WEBHOOK_EVENT_RECORD_FAILED = 'Member premium billing event record failed';
+
+    /**
      * List active tiers for a tenant, sorted by sort_order.
      */
     public static function listTiers(int $tenantId, bool $includeInactive = false): array
@@ -118,7 +134,7 @@ class MemberPremiumService
             ->exists();
 
         if ($hasSubs) {
-            throw new RuntimeException('Cannot delete a tier with active subscribers. Deactivate it instead.');
+            throw new RuntimeException(__('api.member_premium_tier_has_subscribers'));
         }
 
         return DB::table('member_premium_tiers')
@@ -281,7 +297,7 @@ class MemberPremiumService
             [$tierId, $tenantId]
         );
         if (! $tier) {
-            throw new RuntimeException("Tier {$tierId} not found");
+            throw new RuntimeException(__('api.member_premium_tier_not_found'));
         }
 
         $client = StripeService::client();
@@ -369,7 +385,7 @@ class MemberPremiumService
 
         $syncedTier = self::getTier($tenantId, $tierId);
         if (! $syncedTier || self::tierRequiresStripeSync($syncedTier, $priceAccountId)) {
-            throw new RuntimeException('Stripe sync did not create all required recurring donation prices.');
+            throw new RuntimeException(__('api.member_premium_stripe_sync_incomplete'));
         }
 
         Log::info('MemberPremiumService::syncTierToStripe ok', [
@@ -418,7 +434,7 @@ class MemberPremiumService
     ): array {
         $tenantId = TenantContext::getId();
         if (! in_array($interval, ['monthly', 'yearly'], true)) {
-            throw new RuntimeException('Invalid billing interval');
+            throw new RuntimeException(__('api.member_premium_invalid_interval'));
         }
 
         $tier = DB::selectOne(
@@ -426,7 +442,7 @@ class MemberPremiumService
             [$tierId, $tenantId]
         );
         if (! $tier) {
-            throw new RuntimeException("Tier {$tierId} not found or inactive");
+            throw new RuntimeException(__('api.member_premium_tier_not_found_or_inactive'));
         }
 
         $tenantStripeAccountId = DonationStripeAccountService::accountIdForTenantReadyForCharges($tenantId);
@@ -442,7 +458,10 @@ class MemberPremiumService
         $priceId = $interval === 'yearly' ? $tier->stripe_price_id_yearly : $tier->stripe_price_id_monthly;
         if (empty($priceId)) {
             throw new RuntimeException(
-                "Tier '{$tier->name}' has no Stripe Price for {$interval} — admin must run Sync to Stripe first"
+                __('api.member_premium_tier_missing_price', [
+                    'tier' => $tier->name,
+                    'interval' => $interval,
+                ])
             );
         }
 
@@ -455,7 +474,7 @@ class MemberPremiumService
             [$userId]
         );
         if (! $user) {
-            throw new RuntimeException("User {$userId} not found");
+            throw new RuntimeException(__('api.member_premium_user_not_found'));
         }
 
         $client = StripeService::client();
@@ -595,7 +614,7 @@ class MemberPremiumService
             [$userId, $tenantId]
         );
         if (! $sub || empty($sub->stripe_customer_id)) {
-            throw new RuntimeException('No Stripe customer found — subscribe to a tier first');
+            throw new RuntimeException(__('api.member_premium_no_stripe_customer'));
         }
 
         $client = StripeService::client();
@@ -1040,7 +1059,7 @@ class MemberPremiumService
 
             $row = $query->orderByDesc('id')->first(['id', 'notification_sent_at']);
             if (!$row) {
-                throw new \RuntimeException('Member premium billing event was not recorded');
+                throw new \RuntimeException(self::WEBHOOK_EVENT_NOT_RECORDED);
             }
 
             if (!empty($row->notification_sent_at)) {
@@ -1050,7 +1069,7 @@ class MemberPremiumService
             return (int) $row->id;
         } catch (\Throwable $e) {
             Log::warning('MemberPremiumService::recordEvent failed: ' . $e->getMessage());
-            throw new \RuntimeException('Member premium billing event record failed', 0, $e);
+            throw new \RuntimeException(self::WEBHOOK_EVENT_RECORD_FAILED, 0, $e);
         }
     }
 

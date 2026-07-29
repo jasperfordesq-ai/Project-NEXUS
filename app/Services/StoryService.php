@@ -53,11 +53,11 @@ class StoryService
         $pollOptions = null;
         if ($mediaType === 'poll') {
             if (empty($data['poll_question'])) {
-                throw new \RuntimeException('Poll question is required for poll stories');
+                throw new \RuntimeException(__('api.story_poll_question_required'));
             }
             $options = $data['poll_options'] ?? [];
             if (!is_array($options) || count($options) < 2 || count($options) > 4) {
-                throw new \RuntimeException('Poll stories require 2 to 4 options');
+                throw new \RuntimeException(__('api.story_poll_option_count'));
             }
             $pollOptions = json_encode(array_values($options));
         }
@@ -88,7 +88,7 @@ class StoryService
             );
 
             if (($activeCount->cnt ?? 0) >= self::MAX_ACTIVE_STORIES) {
-                throw new \RuntimeException('Maximum active stories limit reached (' . self::MAX_ACTIVE_STORIES . ')');
+                throw new \RuntimeException(__('api.story_max_active_reached', ['max' => self::MAX_ACTIVE_STORIES]));
             }
 
             DB::insert(
@@ -334,11 +334,11 @@ class StoryService
         );
 
         if (!$story) {
-            throw new \RuntimeException('Story not found');
+            throw new \RuntimeException(__('api.story_not_found'));
         }
 
         if ((int) $story->user_id !== $ownerId) {
-            throw new \RuntimeException('Only the story owner can view the viewers list');
+            throw new \RuntimeException(__('api.story_viewers_owner_only'));
         }
 
         // Fix 12: scope the users JOIN to the current tenant to prevent cross-tenant user leakage
@@ -377,16 +377,16 @@ class StoryService
         );
 
         if (!$story) {
-            throw new \RuntimeException('Story not found');
+            throw new \RuntimeException(__('api.story_not_found'));
         }
 
         if (!$this->canViewStory((object) $story, $userId, $tenantId)) {
-            throw new \RuntimeException('Story not found');
+            throw new \RuntimeException(__('api.story_not_found'));
         }
 
         $allowedReactions = ['heart', 'laugh', 'wow', 'fire', 'clap', 'sad'];
         if (!in_array($reactionType, $allowedReactions)) {
-            throw new \RuntimeException('Invalid reaction type');
+            throw new \RuntimeException(__('api.story_invalid_reaction_type'));
         }
 
         // Toggle reaction: remove if same type exists, otherwise upsert
@@ -490,7 +490,7 @@ class StoryService
         );
 
         if ($affected === 0) {
-            throw new \RuntimeException('Story not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_not_found_or_not_owner'));
         }
     }
 
@@ -514,16 +514,16 @@ class StoryService
         );
 
         if (!$story) {
-            throw new \RuntimeException('Story not found');
+            throw new \RuntimeException(__('api.story_not_found'));
         }
 
         if ($story->media_type !== 'poll') {
-            throw new \RuntimeException('This story is not a poll');
+            throw new \RuntimeException(__('api.story_not_a_poll'));
         }
 
         $options = json_decode($story->poll_options, true);
         if (!is_array($options) || $optionIndex < 0 || $optionIndex >= count($options)) {
-            throw new \RuntimeException('Invalid option index');
+            throw new \RuntimeException(__('api.story_invalid_option_index'));
         }
 
         // Fix 13: wrap the check-then-insert in a transaction and use insertOrIgnore
@@ -560,7 +560,7 @@ class StoryService
         });
 
         if ($alreadyVoted) {
-            throw new \RuntimeException('You have already voted on this poll');
+            throw new \RuntimeException(__('api.story_already_voted'));
         }
 
         return $this->getPollResults($storyId);
@@ -695,7 +695,7 @@ class StoryService
         );
 
         if (!$highlight) {
-            throw new \RuntimeException('Highlight not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
         }
 
         // Get next order
@@ -728,7 +728,7 @@ class StoryService
         );
 
         if ($affected === 0) {
-            throw new \RuntimeException('Highlight not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
         }
     }
 
@@ -830,7 +830,7 @@ class StoryService
         ];
         $detectedMime = $file->getMimeType();
         if (!in_array($detectedMime, $allowedMimes, true)) {
-            throw new \RuntimeException('Invalid media type: ' . ($detectedMime ?? 'unknown'));
+            throw new \RuntimeException(__('api.story_invalid_media_type', ['type' => $detectedMime ?? 'unknown']));
         }
 
         $dir = "uploads/stories/{$tenantId}/{$userId}";
@@ -875,18 +875,18 @@ class StoryService
         );
 
         if (!$story) {
-            throw new \RuntimeException('Story not found or has expired');
+            throw new \RuntimeException(__('api.story_not_found_or_expired'));
         }
 
         $storyOwnerId = (int) $story->user_id;
 
         // Prevent self-reply
         if ($senderId === $storyOwnerId) {
-            throw new \RuntimeException('You cannot reply to your own story');
+            throw new \RuntimeException(__('api.story_reply_to_own'));
         }
 
         if (!$this->canViewStory((object) $story, $senderId, $tenantId)) {
-            throw new \RuntimeException('Story not found or has expired');
+            throw new \RuntimeException(__('api.story_not_found_or_expired'));
         }
 
         // Send message with story context
@@ -1046,7 +1046,7 @@ class StoryService
         );
 
         if (!$story || (int) $story->user_id !== $ownerId) {
-            throw new \RuntimeException('Story not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_not_found_or_not_owner'));
         }
 
         // Event counts
@@ -1096,7 +1096,7 @@ class StoryService
         );
 
         if ($affected === 0) {
-            throw new \RuntimeException('Highlight not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
         }
 
         return $this->getHighlightById($highlightId);
@@ -1116,7 +1116,7 @@ class StoryService
         );
 
         if (!$highlight) {
-            throw new \RuntimeException('Highlight not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_highlight_not_found_or_not_owner'));
         }
 
         DB::delete(
@@ -1158,7 +1158,7 @@ class StoryService
         );
 
         if (!$story) {
-            throw new \RuntimeException('Story not found or you are not the owner');
+            throw new \RuntimeException(__('api.story_not_found_or_not_owner'));
         }
 
         // Clear existing stickers

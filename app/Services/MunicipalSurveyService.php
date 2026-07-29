@@ -133,7 +133,7 @@ class MunicipalSurveyService
     public static function createSurvey(int $tenantId, int $userId, array $data): array
     {
         if (empty($data['title'])) {
-            throw new InvalidArgumentException('title is required');
+            throw new InvalidArgumentException(__('api.municipal_survey_title_required'));
         }
 
         $surveyId = DB::table(self::TABLE_SURVEYS)->insertGetId([
@@ -173,7 +173,7 @@ class MunicipalSurveyService
             ->first();
 
         if ($survey === null) {
-            throw new RuntimeException('Survey not found');
+            throw new RuntimeException(__('api.municipal_survey_not_found'));
         }
 
         $update = ['updated_at' => Carbon::now()];
@@ -226,11 +226,11 @@ class MunicipalSurveyService
             ->first();
 
         if ($survey === null) {
-            throw new RuntimeException('Survey not found');
+            throw new RuntimeException(__('api.municipal_survey_not_found'));
         }
 
         if ($survey->status !== 'draft') {
-            throw new RuntimeException('Only draft surveys can be published');
+            throw new RuntimeException(__('api.municipal_survey_publish_draft_only'));
         }
 
         $questionCount = DB::table(self::TABLE_QUESTIONS)
@@ -239,7 +239,7 @@ class MunicipalSurveyService
             ->count();
 
         if ($questionCount === 0) {
-            throw new RuntimeException('Survey must have at least one question before publishing');
+            throw new RuntimeException(__('api.municipal_survey_needs_question'));
         }
 
         DB::table(self::TABLE_SURVEYS)
@@ -259,11 +259,11 @@ class MunicipalSurveyService
             ->first();
 
         if ($survey === null) {
-            throw new RuntimeException('Survey not found');
+            throw new RuntimeException(__('api.municipal_survey_not_found'));
         }
 
         if ($survey->status !== 'active') {
-            throw new RuntimeException('Only active surveys can be closed');
+            throw new RuntimeException(__('api.municipal_survey_close_active_only'));
         }
 
         DB::table(self::TABLE_SURVEYS)
@@ -397,7 +397,7 @@ class MunicipalSurveyService
     {
         $survey = self::getSurveyById($id, $tenantId);
         if ($survey === null) {
-            throw new RuntimeException('Survey not found');
+            throw new RuntimeException(__('api.municipal_survey_not_found'));
         }
 
         $responses = DB::table(self::TABLE_RESPONSES)
@@ -535,7 +535,7 @@ class MunicipalSurveyService
     {
         $survey = self::getSurveyById($id, $tenantId);
         if ($survey === null) {
-            throw new RuntimeException('Survey not found');
+            throw new RuntimeException(__('api.municipal_survey_not_found'));
         }
 
         $responses = DB::table(self::TABLE_RESPONSES)

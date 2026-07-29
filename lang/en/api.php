@@ -3238,4 +3238,41 @@ return [
     'federation_peer_slug_taken' => 'A peer with that slug is already registered.',
     'federation_peer_secret_too_short' => 'shared_secret must be at least 32 characters when provided.',
     'federation_peer_status_invalid' => 'Invalid status.',
+
+    // Stories. story_not_found / story_expired already existed and are reused.
+    'story_poll_question_required' => 'Poll question is required for poll stories',
+    'story_poll_option_count' => 'Poll stories require 2 to 4 options',
+    'story_max_active_reached' => 'Maximum active stories limit reached (:max)',
+    'story_viewers_owner_only' => 'Only the story owner can view the viewers list',
+    'story_invalid_reaction_type' => 'Invalid reaction type',
+    'story_not_found_or_not_owner' => 'Story not found or you are not the owner',
+    'story_not_a_poll' => 'This story is not a poll',
+    'story_invalid_option_index' => 'Invalid option index',
+    'story_already_voted' => 'You have already voted on this poll',
+    'story_highlight_not_found_or_not_owner' => 'Highlight not found or you are not the owner',
+    'story_invalid_media_type' => 'Invalid media type: :type',
+    'story_not_found_or_expired' => 'Story not found or has expired',
+    'story_reply_to_own' => 'You cannot reply to your own story',
+
+    // Municipal surveys (admin-facing).
+    'municipal_survey_title_required' => 'title is required',
+    'municipal_survey_not_found' => 'Survey not found',
+    'municipal_survey_publish_draft_only' => 'Only draft surveys can be published',
+    'municipal_survey_needs_question' => 'Survey must have at least one question before publishing',
+    'municipal_survey_close_active_only' => 'Only active surveys can be closed',
+
+    // Member premium / recurring donations. member_premium_invalid_interval and
+    // member_premium_tier_not_found already existed and are reused.
+    'member_premium_tier_has_subscribers' => 'Cannot delete a tier with active subscribers. Deactivate it instead.',
+    'member_premium_tier_not_found_or_inactive' => 'Tier not found or inactive',
+    'member_premium_stripe_sync_incomplete' => 'Stripe sync did not create all required recurring donation prices.',
+    'member_premium_user_not_found' => 'User not found',
+    'member_premium_no_stripe_customer' => 'No Stripe customer found — subscribe to a tier first',
+    'member_premium_tier_missing_price' => "Tier ':tier' has no Stripe Price for :interval — admin must run Sync to Stripe first",
+
+    // Paid push campaigns. paid_push_campaign_not_found already existed.
+    'paid_push_campaign_not_editable' => 'Campaign cannot be edited in status: :status',
+    'paid_push_campaign_approve_pending_only' => 'Only pending_review campaigns can be approved.',
+    'paid_push_campaign_not_rejectable' => 'Campaign cannot be rejected in status: :status',
+    'paid_push_campaign_not_dispatchable' => 'Campaign is not ready to dispatch (status: :status).',
 ];

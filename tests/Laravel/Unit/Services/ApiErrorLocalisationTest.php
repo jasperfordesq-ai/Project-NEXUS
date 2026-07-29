@@ -63,7 +63,11 @@ class ApiErrorLocalisationTest extends TestCase
         'app/Services/CaringCommunity/MunicipalityFeedbackService.php',
         'app/Services/CaringCommunity/FederationPeerService.php',
         'app/Services/FederationPartnershipService.php',
+        'app/Services/MemberPremiumService.php',
+        'app/Services/MunicipalSurveyService.php',
+        'app/Services/PaidPushCampaignService.php',
         'app/Services/RetentionPolicyService.php',
+        'app/Services/StoryService.php',
         'app/Services/VolunteerService.php',
         'app/Services/VolunteeringConfigurationService.php',
     ];

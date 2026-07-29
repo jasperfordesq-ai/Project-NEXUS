@@ -152,11 +152,11 @@ class PaidPushCampaignService
         $campaign = self::getCampaignById($id, $tenantId);
 
         if ($campaign === null) {
-            throw new \RuntimeException('Campaign not found.');
+            throw new \RuntimeException(__('api.paid_push_campaign_not_found'));
         }
 
         if (! in_array($campaign['status'], self::EDITABLE_STATUSES, true)) {
-            throw new \RuntimeException('Campaign cannot be edited in status: ' . $campaign['status']);
+            throw new \RuntimeException(__('api.paid_push_campaign_not_editable', ['status' => $campaign['status']]));
         }
 
         $updatePayload = ['updated_at' => Carbon::now()];
@@ -262,11 +262,11 @@ class PaidPushCampaignService
         $campaign = self::getCampaignById($id, $tenantId);
 
         if ($campaign === null) {
-            throw new \RuntimeException('Campaign not found.');
+            throw new \RuntimeException(__('api.paid_push_campaign_not_found'));
         }
 
         if ($campaign['status'] !== 'pending_review') {
-            throw new \RuntimeException('Only pending_review campaigns can be approved.');
+            throw new \RuntimeException(__('api.paid_push_campaign_approve_pending_only'));
         }
 
         // Resolve audience now so we can store target_count
@@ -305,11 +305,11 @@ class PaidPushCampaignService
         $campaign = self::getCampaignById($id, $tenantId);
 
         if ($campaign === null) {
-            throw new \RuntimeException('Campaign not found.');
+            throw new \RuntimeException(__('api.paid_push_campaign_not_found'));
         }
 
         if (! in_array($campaign['status'], ['pending_review', 'scheduled', 'paused'], true)) {
-            throw new \RuntimeException('Campaign cannot be rejected in status: ' . $campaign['status']);
+            throw new \RuntimeException(__('api.paid_push_campaign_not_rejectable', ['status' => $campaign['status']]));
         }
 
         DB::table(self::TABLE)
@@ -333,11 +333,11 @@ class PaidPushCampaignService
         $campaign = self::getCampaignById($id, $tenantId);
 
         if ($campaign === null) {
-            throw new \RuntimeException('Campaign not found.');
+            throw new \RuntimeException(__('api.paid_push_campaign_not_found'));
         }
 
         if (! in_array($campaign['status'], ['sending', 'scheduled'], true)) {
-            throw new \RuntimeException('Campaign is not ready to dispatch (status: ' . $campaign['status'] . ').');
+            throw new \RuntimeException(__('api.paid_push_campaign_not_dispatchable', ['status' => $campaign['status']]));
         }
 
         // Mark as sending immediately to prevent double-dispatch
@@ -471,7 +471,7 @@ class PaidPushCampaignService
         $campaign = self::getCampaignById($id, $tenantId);
 
         if ($campaign === null) {
-            throw new \RuntimeException('Campaign not found.');
+            throw new \RuntimeException(__('api.paid_push_campaign_not_found'));
         }
 
         $sendCount  = (int) ($campaign['actual_send_count'] ?? 0);
