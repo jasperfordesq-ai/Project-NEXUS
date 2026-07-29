@@ -2371,7 +2371,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Level {{level}} progress: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "Generally Available (v1.5.7)",
+  "release_stage": "Generally Available (v1.5.8)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "Tune color scheme, accent, and density.",

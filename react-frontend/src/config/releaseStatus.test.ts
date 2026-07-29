@@ -28,8 +28,8 @@ describe('RELEASE_STATUS', () => {
     expect(RELEASE_STATUS.stageLabel.length).toBeGreaterThan(0);
   });
 
-  it('stageLabel contains the version string "v1.5.7"', () => {
-    expect(RELEASE_STATUS.stageLabel).toContain('v1.5.7');
+  it('stageLabel contains the version string "v1.5.8"', () => {
+    expect(RELEASE_STATUS.stageLabel).toContain('v1.5.8');
   });
 
   it('stageLabel contains "Generally Available"', () => {

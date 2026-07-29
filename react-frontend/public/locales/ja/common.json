@@ -2371,7 +2371,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "レベル{{level}}の進捗：{{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "一般提供 (v1.5.7)",
+  "release_stage": "一般提供 (v1.5.8)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "配色、アクセント、密度を調整します。",

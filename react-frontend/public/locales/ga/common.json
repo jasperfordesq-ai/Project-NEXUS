@@ -2416,7 +2416,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Dul chun cinn leibhéal {{level}}: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "Ar Fáil go Ginearálta (v1.5.7)",
+  "release_stage": "Ar Fáil go Ginearálta (v1.5.8)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "Fonn scéim dathanna, blas, agus dlús.",
