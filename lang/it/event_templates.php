@@ -121,7 +121,7 @@ return [
     'audit_integrity' => 'Impronta di integrità',
     'audit_archive_reason_recorded' => 'Motivo di archiviazione registrato',
     'audit_yes' => 'Sì',
-    'audit_no' => 'No',
+    'audit_no' => 'NO',
     'audit_override_fields' => 'Campi modificati per questa bozza',
     'audit_pagination_label' => 'Paginazione della cronologia di audit del modello',
     'audit_load_more' => 'Carica altra cronologia',

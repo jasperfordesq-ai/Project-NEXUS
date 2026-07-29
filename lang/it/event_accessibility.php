@@ -26,11 +26,20 @@ return [
         'seating_available' => 'Posti a sedere disponibili',
         'accessible_parking' => 'Parcheggio accessibile',
     ],
-    'status' => ['yes' => 'Sì', 'no' => 'No', 'unknown' => 'Non noto'],
+    'status' => [
+        'yes' => 'Sì',
+        'no' => 'NO',
+        'unknown' => 'Non noto',
+    ],
     'filters' => [
         'step_free_label' => 'Accesso senza gradini della sede',
         'step_free_hint' => 'Filtra in base alle informazioni sull’accesso confermate dall’organizzatore.',
-        'step_free_options' => ['any' => 'Qualsiasi sede', 'yes' => 'Accesso senza gradini confermato', 'no' => 'Accesso con gradini', 'unknown' => 'Informazioni sull’accesso non disponibili'],
+        'step_free_options' => [
+            'any' => 'Qualsiasi sede',
+            'yes' => 'Accesso senza gradini confermato',
+            'no' => 'Accesso con gradini',
+            'unknown' => 'Informazioni sull’accesso non disponibili',
+        ],
         'step_free_active' => 'Accesso senza gradini: :value',
     ],
     'detail' => [

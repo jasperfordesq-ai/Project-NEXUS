@@ -67,7 +67,7 @@ return [
         'guardian_email' => 'Adresse e-mail du tuteur',
         'guardian_relationship' => 'Relation avec le participant',
         'relationships' => [
-            'parent' => 'Parent',
+            'parent' => 'Mère',
             'guardian' => 'Tuteur',
             'legal_guardian' => 'Tuteur légal',
             'carer' => 'Aidant',

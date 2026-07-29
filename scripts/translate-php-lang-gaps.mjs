@@ -287,15 +287,29 @@ function serializePhpScalar(value) {
 }
 
 /**
- * Everything before the top-level `return [` — the `<?php` line and the SPDX
- * header, which is mandatory on every source file in this repository and must
- * survive a regeneration byte for byte.
+ * Everything before the top-level return — the `<?php` line and the SPDX header,
+ * which is mandatory on every source file here and must survive a regeneration
+ * byte for byte.
+ *
+ * Both array syntaxes are accepted: eleven lang files still open with
+ * `return array (`, and refusing those would silently skip whole namespaces.
+ *
+ * The header is normalised to LF, and the body is written as LF, because the
+ * alternative is worse. Converting the whole file to CRLF would also convert the
+ * newlines INSIDE multi-line translation values, changing the strings themselves
+ * — the round-trip check would catch it, but only by refusing every such file.
+ * LF matches the other 451 lang files, and git normalises on commit anyway.
+ *
+ * No match is a hard error rather than a guess. A writer that cannot find where
+ * the data starts must not decide for itself where to put it.
  */
 function readFileHeader(file) {
   const source = fs.readFileSync(file, 'utf8');
-  const match = source.match(/^([\s\S]*?)^return\s*\[/m);
-  if (!match) throw new Error(`${file}: no top-level 'return [' found — refusing to rewrite it`);
-  return match[1];
+  const match = source.match(/^([\s\S]*?)^return\s*(?:\[|array\s*\()/m);
+  if (!match) {
+    throw new Error(`${file}: no top-level 'return [' or 'return array (' — refusing to rewrite it`);
+  }
+  return match[1].replaceAll('\r\n', '\n');
 }
 
 function deepClone(value) {
