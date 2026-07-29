@@ -184,7 +184,7 @@ class CaringSubRegionService
         $slug = Str::slug((string) $value);
 
         if ($slug === '') {
-            throw new RuntimeException('Invalid sub-region slug.');
+            throw new RuntimeException(__('api.caring_sub_region_slug_invalid'));
         }
 
         return $slug;
@@ -201,7 +201,7 @@ class CaringSubRegionService
         }
 
         if ($query->exists()) {
-            throw new RuntimeException('Sub-region slug already exists for this tenant.');
+            throw new RuntimeException(__('api.caring_sub_region_slug_exists'));
         }
     }
 

@@ -1999,6 +1999,8 @@ return [
     'caring_cover_not_found' => 'Cover-care request not found.',
     'caring_cover_candidate_invalid' => 'This substitute is not available for the selected cover request.',
     'caring_sub_region_not_found' => 'Sub-region not found in this tenant.',
+    'caring_sub_region_slug_invalid' => 'Inserisci un nome di sottoregione che contenga almeno una lettera o un numero.',
+    'caring_sub_region_slug_exists' => 'Un’altra sottoregione di questa comunità usa già questo slug URL.',
     'caring_category_coefficient_invalid_source_table' => 'Invalid source table.',
     'caring_category_coefficient_migration_pending' => 'The substitution coefficient column has not been migrated yet.',
     'caring_category_coefficient_required' => 'Substitution coefficient is required.',
