@@ -63,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   **Nothing was enabled.** Turning an external federation protocol on is a security-relevant production change and belongs to the owner, on the same footing as a deploy.
 
+  One follow-up: five of the token tests initially passed locally and failed in the pipeline, because the JWT signing secret comes from an environment variable that a developer's `.env` usually sets and the test environment does not — so the mint answered "failed to generate token". The test now pins a fixed, non-secret signing key of its own, which is what it should have done from the start: these tests are about scope, tenant binding and signature verification, not about deployment configuration. **Root Cause:** a test depended on ambient environment configuration rather than establishing its own. **Prevention:** the secret is a constant in the test, verified by running the suite with the environment variable cleared — five failures before the change, none after.
+
 ## [1.5.8] - 2026-07-29
 
 ### Added

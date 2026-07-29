@@ -52,9 +52,21 @@ final class LegacyV1PartnerApiAuditTest extends TestCase
         'api/v1/federation/webhooks/test',
     ];
 
+    /**
+     * Fixed, non-secret signing key so the token tests do not depend on the
+     * environment. `config('federation.jwt_secret')` comes from
+     * FEDERATION_JWT_SECRET, which a developer's .env usually sets and CI's test
+     * environment does not — so without this the mint returns `server_error`
+     * ("Failed to generate token") and five of these tests pass locally while
+     * failing in the pipeline. That is the environment-dependence this project
+     * has been bitten by before; the value is pinned here instead.
+     */
+    private const TEST_JWT_SECRET = 'legacy-v1-audit-fixed-test-signing-secret-not-a-credential';
+
     protected function setUp(): void
     {
         parent::setUp();
+        config(['federation.jwt_secret' => self::TEST_JWT_SECRET]);
         $this->setExternalProtocols([]);
     }
 
