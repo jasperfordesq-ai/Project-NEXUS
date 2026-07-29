@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Audited the three externally-reachable federation endpoints that require no login, and closed two gaps in what was proven about them.** These are the first of the seven protocols switched off pending review, chosen first because they are the only ones an anonymous caller can reach at all. A correction worth recording: only **one** of the three is genuinely anonymous. The other two authenticate inside the request handler rather than at the boundary — one by a shared-secret signature, one by an API key or signature — which is why they looked unauthenticated from the routing table alone.
+
+  The genuinely public one, which returns an aggregate activity report for a community, holds up well. A community must opt in explicitly or the endpoint returns "not found" — and it returns exactly the same response whether the community does not exist or has opted out, so a name cannot be probed. Member and partner-organisation totals come back as ranges rather than exact numbers, and any activity category with fewer than five contributors is dropped entirely rather than reported, so a small group cannot be picked out of it. Responses are signed so a consumer can detect tampering, every query is recorded with its origin and pruned later, and requests are limited both per caller and across a whole network address, so hopping between communities cannot multiply the allowance.
+
+  Two things were true but **untested**, which is what the audit was for. First, the date range accepted from an anonymous caller: non-dates now provably fall back to a default window, a twenty-six-year request is provably clamped to a year, and a backwards range is provably corrected instead of quietly returning nothing — which would have read as "this community has no activity". Second, and more important: the endpoint that credits hours into a member's wallet is protected by a signature and nothing else, and while that rejection was tested deep in the service layer, nothing pinned the response the outside world actually sees. A forged signature must now return 401, name the reason, and leave the balance untouched.
+
+  No blocking findings; all three are candidates for switching back on. **Nothing was switched on as part of this work** — that is a deliberate production decision, and the recommended order is recorded with the audit.
+
 ### Added
 
 - **Every test suite now runs in the pipeline, across eight parallel shards.** The blocking test steps covered roughly 150 of the project's 1,283 suites, so about 88% of the suite could break and still produce a green build — the second of the two structural reasons breakage here is only ever discovered in large batches. A new job splits the whole suite across eight shards, each assigned by a hash of the file path so that adding one test file reshuffles only itself rather than moving every other file to a different shard and invalidating the timings.

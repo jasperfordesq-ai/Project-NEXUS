@@ -340,4 +340,60 @@ class HourTransferTest extends TestCase
 
         $this->assertEqualsWithDelta(5.0, (float) DB::table('users')->where('id', $destinationUser)->value('balance'), 0.001);
     }
+
+    /**
+     * Added by the 2026-07-29 external-federation audit (phase 1).
+     *
+     * /v2/federation/hour-transfer/inbound carries no session or key auth — an
+     * HMAC signature is the ONLY thing standing between an anonymous caller and
+     * a credit of hours into a member's wallet. The rejection was covered at the
+     * service level (CaringHourTransferServiceTest::
+     * test_acceptRemoteTransfer_rejects_invalid_signature) but NOT at the HTTP
+     * boundary, so the controller's `signature_invalid => 401` mapping could be
+     * changed to a 200-with-error-body, or to 422, and every existing test would
+     * still pass. This pins the wire contract and asserts no funds move.
+     */
+    public function test_inbound_rejects_a_forged_signature_with_401_and_moves_no_funds(): void
+    {
+        $sourceSlug = (string) DB::table('tenants')->where('id', self::SOURCE_TENANT_ID)->value('slug');
+
+        // The peer row belongs to the DESTINATION tenant and names the source.
+        DB::table('caring_federation_peers')->insert([
+            'tenant_id'     => $this->destinationTenantId,
+            'peer_slug'     => $sourceSlug,
+            'display_name'  => 'Forged Signature Source',
+            'base_url'      => 'https://93.184.216.34',
+            'shared_secret' => str_repeat('c', 64),
+            'status'        => 'active',
+            'created_at'    => now(),
+            'updated_at'    => now(),
+        ]);
+
+        $email = 'forged.' . uniqid() . '@example.com';
+        $destinationUser = $this->makeUser($this->destinationTenantId, $email, 4.0);
+
+        $response = $this->postJson('/api/v2/federation/hour-transfer/inbound', [
+            'payload' => [
+                'source_tenant_slug'      => $sourceSlug,
+                'destination_tenant_slug' => $this->destinationSlug,
+                'source_member_email'     => $email,
+                'hours'                   => 3.5,
+                'reason'                  => 'forged',
+                'transfer_id'             => 4242,
+                'generated_at'            => '2026-07-29T00:00:00+00:00',
+            ],
+            // Correctly shaped but signed with nothing that matches the secret.
+            'signature' => str_repeat('f', 64),
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJson(['success' => false, 'accepted' => false, 'error' => 'signature_invalid']);
+
+        $this->assertEqualsWithDelta(
+            4.0,
+            (float) DB::table('users')->where('id', $destinationUser)->value('balance'),
+            0.001,
+            'A forged signature must not credit the destination wallet.'
+        );
+    }
 }

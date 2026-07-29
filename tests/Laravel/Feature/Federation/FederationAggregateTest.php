@@ -343,4 +343,75 @@ final class FederationAggregateTest extends TestCase
             ->count();
         $this->assertSame(1, $stillThere);
     }
+
+    // ── Period guard rails ───────────────────────────────────────────────────
+    // Added by the 2026-07-29 external-federation audit (phase 1). This is the
+    // only endpoint in the gated set an ANONYMOUS caller can reach, so the
+    // period parameters are the one untrusted input that reaches a SQL BETWEEN.
+    // The controller's guard rails were correct but untested, which is the gap
+    // the audit was looking for: a later "simplification" of resolvePeriod
+    // could widen the window or allow an inverted range with nothing to object.
+
+    public function test_non_date_period_parameters_fall_back_to_the_default_window(): void
+    {
+        $this->service->setEnabled($this->testTenantId, true);
+
+        // Anything not matching YYYY-MM-DD must be discarded, not passed through.
+        $resp = $this->getJson(
+            "/api/v2/federation/aggregates?tenant_slug={$this->testTenantSlug}"
+            . '&period_from=' . urlencode("2020-01-01' OR 1=1 --")
+            . '&period_to=not-a-date'
+        );
+
+        $resp->assertStatus(200);
+        $period = $resp->json('data.payload.period');
+
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $period['from']);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $period['to']);
+        // Default window is "to" = today, "from" = 30 days earlier.
+        $this->assertSame(date('Y-m-d'), $period['to']);
+        $this->assertSame(date('Y-m-d', strtotime('-30 days')), $period['from']);
+    }
+
+    public function test_period_window_is_capped_at_twelve_months(): void
+    {
+        $this->service->setEnabled($this->testTenantId, true);
+
+        $to = date('Y-m-d');
+        $resp = $this->getJson(
+            "/api/v2/federation/aggregates?tenant_slug={$this->testTenantSlug}"
+            . '&period_from=2000-01-01&period_to=' . $to
+        );
+
+        $resp->assertStatus(200);
+        $period = $resp->json('data.payload.period');
+
+        $span = strtotime($period['to']) - strtotime($period['from']);
+        $this->assertLessThanOrEqual(
+            366 * 86400,
+            $span,
+            'A 26-year request must be clamped: an unauthenticated caller must not be able to '
+            . 'ask for an unbounded scan of vol_logs.'
+        );
+    }
+
+    public function test_inverted_period_range_is_normalised_rather_than_queried(): void
+    {
+        $this->service->setEnabled($this->testTenantId, true);
+
+        $resp = $this->getJson(
+            "/api/v2/federation/aggregates?tenant_slug={$this->testTenantSlug}"
+            . '&period_from=2026-06-30&period_to=2026-01-01'
+        );
+
+        $resp->assertStatus(200);
+        $period = $resp->json('data.payload.period');
+
+        $this->assertLessThanOrEqual(
+            strtotime($period['to']),
+            strtotime($period['from']),
+            'from must never exceed to — an inverted BETWEEN silently returns nothing, '
+            . 'which would read as "this tenant has no activity" rather than as a bad request.'
+        );
+    }
 }
