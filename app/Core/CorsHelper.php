@@ -104,6 +104,30 @@ class CorsHelper
     }
 
     /**
+     * The request method, from Laravel's request when there is one.
+     *
+     * `$_SERVER['REQUEST_METHOD']` is always populated by PHP-FPM in production,
+     * but Laravel's test HTTP kernel dispatches a Request object without writing
+     * it, so reading the superglobal directly raised "Undefined array key
+     * REQUEST_METHOD" and turned every controller calling handlePreflight() into
+     * a 500 *under test only*. That is why the v1 OAuth token mint — the sharpest
+     * authenticated surface on the platform — had no feature test until the
+     * legacy_v1 audit: any attempt to write one failed inside CORS handling
+     * before reaching the endpoint. Production behaviour is unchanged.
+     */
+    private static function requestMethod(): string
+    {
+        if (function_exists('request')) {
+            $request = request();
+            if ($request !== null) {
+                return strtoupper($request->getMethod());
+            }
+        }
+
+        return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    }
+
+    /**
      * Handle preflight OPTIONS request.
      */
     public static function handlePreflight(
@@ -112,7 +136,7 @@ class CorsHelper
         array $headers = ['Content-Type', 'Authorization'],
         int $maxAge = 86400
     ): void {
-        if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
+        if (self::requestMethod() !== 'OPTIONS') {
             return;
         }
 

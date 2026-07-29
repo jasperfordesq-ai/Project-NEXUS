@@ -35,6 +35,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   The remaining tail is 414 prose exception throws across `app/Services/`, unchanged in character: the largest are in the login and SSO flows, which reach the user through a different surface and need their own analysis before being touched.
 
+- **Stories, municipal surveys, member support levels and paid push campaigns stop refusing in English too.** Another 51 hardcoded refusal messages, on the same path: thrown by the service, passed through `$e->getMessage()`, rendered to the user verbatim. 28 new keys, and four messages wired to `story_not_found` / `story_expired` / `paid_push_campaign_not_found` / `member_premium_tier_not_found` keys that already existed unused rather than duplicating them. All four services are now under the regression test — which brings it to nine services — and were proven failing before the change, one failure per service.
+
+  **Two messages put a raw database id in front of a user** — `Tier 7 not found`, `User 42 not found`. Those are the only places the English wording changed; the id is a log detail, not something a member can act on, and the translated messages name the thing rather than its primary key.
+
+  Everywhere else the original wording is preserved exactly, including phrasings a copy editor would want to fix (`title is required`). That was a deliberate reversal: the improved wording had been written first, and it broke ten assertions in the services' own test suites, which match on the literal English text. Rewording user-facing strings is a separate decision from making them translatable, and mixing the two turns a localisation change into a behaviour change that has to be argued route by route. The messages now come from `lang/en/api.php`, so the wording can be improved later in one place, in every language at once.
+
+  Two throws are **deliberately left in English**: the Stripe webhook path's `recordEvent` invariants. Only Stripe's delivery log and ours ever see them. Adding lang keys would have put two more values into eleven locale files that nobody will read — the exact shape of debt the admin-namespace shrink removed 38,743 of. They are private named constants, so the "no hardcoded English refusal" rule stays enforceable without an exemption list.
+
+- **The OAuth token mint returned 500 in every test, which is why the platform's sharpest authenticated surface had no test at all.** `CorsHelper::handlePreflight()` read `$_SERVER['REQUEST_METHOD']` directly. PHP-FPM always sets it, so production was never affected — but Laravel's test HTTP kernel dispatches a Request object without writing the superglobal, so the read raised "Undefined array key REQUEST_METHOD" and every controller calling that helper answered 500 *under test only*. The one controller that does is the v1 federation OAuth token mint, which is deliberately outside the federation authenticator because it has to be reachable to exchange credentials for a token. Any attempt to write a feature test for it died inside CORS handling before reaching the endpoint, so nobody had.
+
+  It now reads the method from the Request when there is one and falls back to the superglobal otherwise. Production behaviour is unchanged; the audit below is what the fix bought.
+
+  **Root Cause:** a static helper reached for a superglobal instead of the framework request, so its behaviour depended on how PHP was invoked rather than on the request. **Prevention:** the regression test asserts preflight is still detected with the superglobal absent, and the twelve federation audit tests now exercise the endpoint end to end — the same assertions returned 500 before this change and the correct status after. A second, unused copy of the class carries the same line and is tracked separately rather than folded into this change.
+
+### Security
+
+- **`legacy_v1`, the platform's partner API, is now audited route by route — and is still switched off, waiting on a deliberate decision to enable it.** All fifteen `/api/v1/federation/*` routes are classified by caller, credential, required scope, and what they read or mutate; three of them move value or create content. Twelve tests cover it.
+
+  **The route list is now derived from the router rather than written out by hand.** The existing kill-switch test lists twelve of the fifteen routes literally, which means it proves nothing about a sixteenth route added tomorrow — the exact failure the kill switch was built to prevent. The audit reads the route collection instead and fails if the surface changes size, if any route is missing its protocol gate, or if any route answers anything but 503 while the switch is off. Switching `legacy_v1` on is also proven to open `legacy_v1` and nothing else.
+
+  **The central question was what a minted token can actually do**, since the mint is the one route deliberately outside the federation authenticator. Answers, all proven rather than read: a token cannot widen its own scope (the mint intersects the request with the key's stored permissions, and a request matching nothing is refused); a token is bound to its key's tenant; a tampered payload does not validate — which is what makes the first two load-bearing, because the middleware reads tenant and scopes *from the token* in preference to the live database row; a wrong secret and an unknown client id are indistinguishable, so the mint is not an oracle for which client ids exist; and a revoked or expired key cannot mint.
+
+  One property is worth stating rather than discovering later: **narrowing a key's permissions does not affect tokens already issued.** Scopes travel in the token, and the per-request database check confirms only that the key is still active. The exposure window is therefore the token lifetime — one hour by default, twenty-four at most — and revoking the key, rather than narrowing it, is the immediate control. That is ordinary bearer-token behaviour; it is now a known number instead of an assumption.
+
+  No security findings in the fifteen routes themselves. One recorded non-finding: the `grant_type` check is an exact string comparison sitting behind Laravel's global input trimming, so surrounding whitespace is accepted. That is normalisation, and it is now asserted, so removing the trimming middleware cannot silently change this endpoint.
+
+  **Nothing was enabled.** Turning an external federation protocol on is a security-relevant production change and belongs to the owner, on the same footing as a deploy.
+
 ## [1.5.8] - 2026-07-29
 
 ### Added
