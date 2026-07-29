@@ -282,13 +282,21 @@ export function UserShow() {
                     <p className="text-muted">{user.email}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <Chip size="sm" variant="soft" color={user.role === 'admin' || user.role === 'tenant_admin' ? 'accent' : 'default'}>
+                    <Chip
+                      size="sm"
+                      variant="soft"
+                      color={user.role === 'admin' || user.role === 'tenant_admin' ? 'accent' : 'default'}
+                      data-testid="user-role-chip"
+                      data-role={user.role}
+                    >
                       {t(`super.role_${user.role}`, { defaultValue: t('super.role_unknown') })}
                     </Chip>
                     <Chip
                       size="sm"
                       variant="soft"
                       color={user.status === 'active' ? 'success' : user.status === 'pending' ? 'warning' : 'danger'}
+                      data-testid="user-status-chip"
+                      data-status={user.status}
                     >
                       {t(`super.status_${user.status}`, { defaultValue: t('super.status_unknown') })}
                     </Chip>

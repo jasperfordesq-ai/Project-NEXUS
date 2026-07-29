@@ -247,7 +247,13 @@ export function GdprBreachDetail() {
                   <p className="text-sm text-muted mb-2">{t('enterprise.gdpr_data_categories_affected')}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {breach.data_categories_affected.map((cat) => (
-                      <Chip key={cat} size="sm" variant="soft">
+                      <Chip
+                        key={cat}
+                        size="sm"
+                        variant="soft"
+                        data-testid="data-category-chip"
+                        data-category={cat}
+                      >
                         {t(`enterprise.gdpr_data_category_${cat}`, { defaultValue: t('enterprise.gdpr_data_category_unknown') })}
                       </Chip>
                     ))}

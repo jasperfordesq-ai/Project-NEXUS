@@ -113,7 +113,14 @@ export function GdprBreaches() {
       label: t('enterprise.gdpr_severity_label'),
       sortable: true,
       render: (b) => (
-        <Chip size="sm" variant="soft" color={severityColorMap[b.severity] || 'default'} className="capitalize">
+        <Chip
+          size="sm"
+          variant="soft"
+          color={severityColorMap[b.severity] || 'default'}
+          className="capitalize"
+          data-testid="breach-severity-chip"
+          data-severity={b.severity}
+        >
           {t(`enterprise.gdpr_severity_${b.severity}`, { defaultValue: t('enterprise.gdpr_severity_unknown') })}
         </Chip>
       ),

@@ -58,9 +58,15 @@ describe('PermissionBrowser', () => {
       data: SAMPLE_PERMISSIONS,
     });
     render(<PermissionBrowser />);
+    // By data attribute rather than the heading text: the heading is
+    // t(`enterprise.permission_categories.${category}`) and no i18n resources
+    // load under test, so every category renders the same missing-key output.
     await waitFor(() => {
-      expect(screen.getByText('users')).toBeInTheDocument();
-      expect(screen.getByText('listings')).toBeInTheDocument();
+      const categories = screen
+        .getAllByTestId('permission-category-heading')
+        .map((heading) => heading.getAttribute('data-category'));
+      expect(categories).toContain('users');
+      expect(categories).toContain('listings');
     });
   });
 

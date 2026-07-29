@@ -75,14 +75,20 @@ describe('ErrorLogs', () => {
   });
 
   // ── Populated state ───────────────────────────────────────────────────────
+  // By data attribute rather than the chip's text: the label is
+  // t(`enterprise.error_log_action_${...}`) and no i18n resources load under
+  // test, so every action renders the same missing-key output.
+  const renderedActions = () =>
+    screen.getAllByTestId('error-log-action-chip').map((chip) => chip.getAttribute('data-action'));
+
   it('renders log rows after successful fetch (array format)', async () => {
     mockGetLogs.mockResolvedValue({ success: true, data: SAMPLE_LOGS });
     render(<ErrorLogs />);
 
     await waitFor(() => {
-      expect(screen.getByText('auth.failed')).toBeInTheDocument();
+      expect(renderedActions()).toContain('auth.failed');
     });
-    expect(screen.getByText('permission.denied')).toBeInTheDocument();
+    expect(renderedActions()).toContain('permission.denied');
   });
 
   it('renders log rows from paginated response (data.data format)', async () => {
@@ -90,7 +96,7 @@ describe('ErrorLogs', () => {
     render(<ErrorLogs />);
 
     await waitFor(() => {
-      expect(screen.getByText('auth.failed')).toBeInTheDocument();
+      expect(renderedActions()).toContain('auth.failed');
     });
   });
 
@@ -125,7 +131,7 @@ describe('ErrorLogs', () => {
       expect(busyEl).toBeUndefined();
     });
 
-    expect(screen.queryByText('auth.failed')).not.toBeInTheDocument();
+    expect(screen.queryAllByTestId('error-log-action-chip')).toHaveLength(0);
   });
 
   // ── Error state ───────────────────────────────────────────────────────────

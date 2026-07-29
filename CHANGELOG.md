@@ -65,6 +65,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   One follow-up: five of the token tests initially passed locally and failed in the pipeline, because the JWT signing secret comes from an environment variable that a developer's `.env` usually sets and the test environment does not — so the mint answered "failed to generate token". The test now pins a fixed, non-secret signing key of its own, which is what it should have done from the start: these tests are about scope, tenant binding and signature verification, not about deployment configuration. **Root Cause:** a test depended on ambient environment configuration rather than establishing its own. **Prevention:** the secret is a constant in the test, verified by running the suite with the environment variable cleared — five failures before the change, none after.
 
+### Fixed
+
+- **Eight more admin test suites are back under the gate, and the assertions they used could never have worked.** These were the group the previous pass named as next: tests asserting the literal English that a `t()` call produces, in an environment where no translation resources load. The subtler half of the problem is that i18next's missing-key output is *the same string for every key*, so an assertion matching on it could not have distinguished `view_profile` from `delete_data` even in principle — it was not a translation that had drifted, it was an assertion with no discriminating power.
+
+  Each is rewritten to assert a `data-*` attribute carrying the raw value the component was actually given: user status and role, breach severity and data categories, audit action, consent type, GDPR request type, error-log action, permission category. That is stable whether or not translations load, and it says what the test means.
+
+  One was doubly stale. `GdprConsents` renders the API's human-readable `consent_type_name` and falls back to a translated "unknown" — and the fixture never set a name, so the raw consent type the test looked for was never on screen under any conditions.
+
+  All eight were verified together with retries disabled — 82 of 82 — so none is passing by retry rescue. **Known-broken suites drop from 64 to 55 of 1,283.**
+
+  Four suites in the same directory stay quarantined, and deliberately so: they are not this cluster. One is a delete-confirmation dialog race, one asserts a computed percentage, one an error-message spy, and one looks up checkboxes by a derived label. Recording which failure belongs to which cause is the point of the list; lumping them together is how a quarantine file stops being a work queue.
+
 ## [1.5.8] - 2026-07-29
 
 ### Added

@@ -163,14 +163,22 @@ describe('GdprBreachDetail', () => {
     });
   });
 
+  // Asserted by testid and data attribute, not by the chip's visible text: each
+  // label comes from t(`enterprise.gdpr_data_category_${cat}`) and no i18n
+  // resources load under test, so the rendered text is i18next's missing-key
+  // output — which is not the same in an interactive dev session as in CI. The
+  // data attribute carries the category the component was actually given.
   it('renders data categories as chips', async () => {
     const { GdprBreachDetail } = await import('./GdprBreachDetail');
     render(<GdprBreachDetail />);
 
-    await waitFor(() => {
-      expect(screen.getByText('email')).toBeInTheDocument();
-      expect(screen.getByText('name')).toBeInTheDocument();
+    const chips = await waitFor(() => {
+      const found = screen.getAllByTestId('data-category-chip');
+      expect(found.length).toBeGreaterThan(0);
+      return found;
     });
+
+    expect(chips.map((chip) => chip.getAttribute('data-category'))).toEqual(['email', 'name']);
   });
 
   it('renders records affected and users affected', async () => {

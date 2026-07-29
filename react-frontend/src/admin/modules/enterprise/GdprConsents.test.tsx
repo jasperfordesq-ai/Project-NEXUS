@@ -83,14 +83,24 @@ describe('GdprConsents', () => {
     expect(screen.getByText('Bob')).toBeInTheDocument();
   });
 
+  // This one was doubly stale: the chip renders `consent_type_name` (the API's
+  // human-readable label) and falls back to a translated "unknown", so the raw
+  // consent_type was never on screen — the fixture does not set a name. Asserting
+  // the data attribute checks what the test actually means: one chip per consent,
+  // carrying the right type.
   it('renders consent_type chips', async () => {
     mockGetGdprConsents.mockResolvedValue({ success: true, data: SAMPLE_CONSENTS });
     render(<GdprConsents />);
 
     await waitFor(() => {
-      expect(screen.getByText('marketing')).toBeInTheDocument();
+      expect(screen.getAllByTestId('consent-type-chip').length).toBeGreaterThan(0);
     });
-    expect(screen.getByText('analytics')).toBeInTheDocument();
+
+    const types = screen
+      .getAllByTestId('consent-type-chip')
+      .map((chip) => chip.getAttribute('data-consent-type'));
+    expect(types).toContain('marketing');
+    expect(types).toContain('analytics');
   });
 
   // ── Empty state ───────────────────────────────────────────────────────────

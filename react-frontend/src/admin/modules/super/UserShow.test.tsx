@@ -195,14 +195,21 @@ describe('UserShow', () => {
     });
   });
 
+  // Asserted by testid and data attribute, never by the chip's visible text: the
+  // labels come from t('super.status_active') / t('super.role_member') and NO i18n
+  // resources load in the test environment, so the rendered text is whatever
+  // i18next's missing-key path produces — which differs between an interactive
+  // dev session and CI. The data attributes carry the raw values the component
+  // actually received, which is what this test is about.
   it('renders status and role chips', async () => {
     const { UserShow } = await import('./UserShow');
     render(<UserShow />);
 
-    await waitFor(() => {
-      expect(screen.getByText('active')).toBeInTheDocument();
-      expect(screen.getByText('member')).toBeInTheDocument();
-    });
+    const statusChip = await waitFor(() => screen.getByTestId('user-status-chip'));
+    const roleChip = screen.getByTestId('user-role-chip');
+
+    expect(statusChip).toHaveAttribute('data-status', 'active');
+    expect(roleChip).toHaveAttribute('data-role', 'member');
   });
 
   it('shows "Grant Tenant SA" button when user is not a tenant super admin', async () => {

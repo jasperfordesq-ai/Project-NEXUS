@@ -145,14 +145,20 @@ describe('GdprAuditLog', () => {
     });
   });
 
+  // By data attribute rather than the chip's text. The label is
+  // t(`enterprise.gdpr_audit_action_${...}`) and no i18n resources load under
+  // test, so the visible text is i18next's missing-key output — and it is the
+  // same output for every action, which is why matching on it could never
+  // distinguish view_profile from delete_data in the first place.
   it('renders audit entries in the table', async () => {
     mockGetGdprAudit.mockResolvedValue(POPULATED_RESPONSE);
     render(<GdprAuditLog />);
     await waitFor(() => {
-      // Use getAllByText because the action value appears in both the filter
-      // <option> element and the table <td>
-      expect(screen.getAllByText('view_profile').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('delete_data').length).toBeGreaterThan(0);
+      const actions = screen
+        .getAllByTestId('audit-action-chip')
+        .map((chip) => chip.getAttribute('data-action'));
+      expect(actions).toContain('view_profile');
+      expect(actions).toContain('delete_data');
     });
   });
 

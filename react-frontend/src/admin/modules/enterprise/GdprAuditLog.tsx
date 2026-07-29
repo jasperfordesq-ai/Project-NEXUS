@@ -175,7 +175,13 @@ export function GdprAuditLog() {
         label: t('enterprise.gdpr_action'),
         sortable: true,
         render: (e) => (
-          <Chip size="sm" variant="soft" color={getActionColor(e.action)}>
+          <Chip
+            size="sm"
+            variant="soft"
+            color={getActionColor(e.action)}
+            data-testid="audit-action-chip"
+            data-action={e.action}
+          >
             {t(`enterprise.gdpr_audit_action_${translationToken(e.action)}`, { defaultValue: t('enterprise.gdpr_audit_action_unknown') })}
           </Chip>
         ),

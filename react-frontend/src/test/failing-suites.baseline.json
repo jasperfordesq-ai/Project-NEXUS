@@ -1,5 +1,5 @@
 {
-  "_README": "GENERATED-THEN-CURATED. Suites excluded from the full-suite shard job (scripts/run-vitest-shard.mjs) because they fail for reasons predating that job. Exists so the job can run EVERY other suite and be blocking now, rather than after all 1,283 suites are green. This list may only SHRINK: a path that no longer exists fails the runner rather than rotting here silently. Run just these with: node scripts/run-vitest-shard.mjs --quarantined. Seeded 2026-07-28 from a local census (335 suites, 39 failures), then extended from the first CI shakedown run (30351495703) which surfaced 109 failing suites across shards 4-8, plus 6 more from shard 3 once it stopped hanging (run 30353450584); with those, all eight shards were green. Notably most of the shard-1 failures are NOT the ones the local census found — they fail only on a Linux runner, which is why the census belongs in CI rather than on a Windows dev box. Dominant causes are stale queries and assertions left behind as the application changed underneath the tests: accumulated rot, not new breakage. Each entry is a suite to FIX and remove, not a permanent exemption. 2026-07-28 (second pass): 17 entries REMOVED after the quarantine visibility step showed them passing; each was then re-verified locally with --retry=0 so none was merely retry-rescued. 2026-07-28 (third pass): CreateCoursePage.test.tsx removed - fixed, 13/13. 2026-07-28 (fourth pass): Abbr.test.tsx and EnterpriseModules.test.tsx removed - both green (8/8 and 18/18). 2026-07-28 (fifth pass): 40 admin data-testid-cluster suites removed after retargeting their barrel mocks at the paths the pages actually import. GdprBreachDetail and UserShow stay: their testid failure is fixed but each has a second, i18n-dependent text assertion (no i18n resources load in tests), which belongs with the missing-text cluster. 2026-07-28 (sixth pass): RemainingModules.test.tsx removed - 12/12 after fixing an unstable useToast mock that caused an infinite render loop.",
+  "_README": "GENERATED-THEN-CURATED. Suites excluded from the full-suite shard job (scripts/run-vitest-shard.mjs) because they fail for reasons predating that job. Exists so the job can run EVERY other suite and be blocking now, rather than after all 1,283 suites are green. This list may only SHRINK: a path that no longer exists fails the runner rather than rotting here silently. Run just these with: node scripts/run-vitest-shard.mjs --quarantined. Seeded 2026-07-28 from a local census (335 suites, 39 failures), then extended from the first CI shakedown run (30351495703) which surfaced 109 failing suites across shards 4-8, plus 6 more from shard 3 once it stopped hanging (run 30353450584); with those, all eight shards were green. Notably most of the shard-1 failures are NOT the ones the local census found — they fail only on a Linux runner, which is why the census belongs in CI rather than on a Windows dev box. Dominant causes are stale queries and assertions left behind as the application changed underneath the tests: accumulated rot, not new breakage. Each entry is a suite to FIX and remove, not a permanent exemption. 2026-07-28 (second pass): 17 entries REMOVED after the quarantine visibility step showed them passing; each was then re-verified locally with --retry=0 so none was merely retry-rescued. 2026-07-28 (third pass): CreateCoursePage.test.tsx removed - fixed, 13/13. 2026-07-28 (fourth pass): Abbr.test.tsx and EnterpriseModules.test.tsx removed - both green (8/8 and 18/18). 2026-07-28 (fifth pass): 40 admin data-testid-cluster suites removed after retargeting their barrel mocks at the paths the pages actually import. GdprBreachDetail and UserShow stay: their testid failure is fixed but each has a second, i18n-dependent text assertion (no i18n resources load in tests), which belongs with the missing-text cluster. 2026-07-28 (sixth pass): RemainingModules.test.tsx removed - 12/12 after fixing an unstable useToast mock that caused an infinite render loop. 2026-07-29 (seventh pass): 8 entries REMOVED — the i18n-dependent-assertion cluster the sixth pass named as next. Each asserted the literal English a t() call produces, which no test can see because no i18n resources load in this environment; worse, the missing-key output is IDENTICAL for every value, so those assertions could not have distinguished view_profile from delete_data even in principle. Rewritten to assert a data-* attribute carrying the raw value the component received (UserShow status/role, GdprBreachDetail data categories, GdprBreaches severity, GdprAuditLog action, GdprConsents consent type, GdprRequests request type, ErrorLogs action, PermissionBrowser category). GdprConsents was doubly stale: its chip renders the API's human-readable consent_type_name and the fixture never set one, so the raw type was never on screen. All 8 verified together with --retry=0 (82/82), so none is retry-rescued. STILL QUARANTINED and NOT this cluster: GdprConsentTypes (delete-confirm dialog race — see reference on AlertDialog slot=\"close\"), RoleForm (3, checkbox lookup by derived label), RoleList (1, error-message spy), LegalDocComplianceDashboard (1, a computed percentage, not a translation).",
   "quarantined": [
     "src/admin/__tests__/AdminRoute.test.tsx",
     "src/admin/modules/AdminNotFound.test.tsx",
@@ -12,15 +12,8 @@
     "src/admin/modules/caring-community/WarmthPassAdminPage.test.tsx",
     "src/admin/modules/config/ModuleConfigModal.test.tsx",
     "src/admin/modules/config/moduleRegistry.test.ts",
-    "src/admin/modules/enterprise/ErrorLogs.test.tsx",
-    "src/admin/modules/enterprise/GdprAuditLog.test.tsx",
-    "src/admin/modules/enterprise/GdprBreachDetail.test.tsx",
-    "src/admin/modules/enterprise/GdprBreaches.test.tsx",
     "src/admin/modules/enterprise/GdprConsentTypes.test.tsx",
-    "src/admin/modules/enterprise/GdprConsents.test.tsx",
-    "src/admin/modules/enterprise/GdprRequests.test.tsx",
     "src/admin/modules/enterprise/LegalDocComplianceDashboard.test.tsx",
-    "src/admin/modules/enterprise/PermissionBrowser.test.tsx",
     "src/admin/modules/enterprise/RoleForm.test.tsx",
     "src/admin/modules/enterprise/RoleList.test.tsx",
     "src/admin/modules/federation/FederationAggregatesPage.test.tsx",
@@ -37,7 +30,6 @@
     "src/admin/modules/resources/ResourcesAdmin.test.tsx",
     "src/admin/modules/super/BulkOperations.test.tsx",
     "src/admin/modules/super/SuperUserList.test.tsx",
-    "src/admin/modules/super/UserShow.test.tsx",
     "src/admin/modules/system/ProviderHealthDashboard.test.tsx",
     "src/admin/modules/system/VerificationReviewQueue.test.tsx",
     "src/admin/modules/users/UserCreate.test.tsx",
@@ -66,6 +58,6 @@
     "src/pages/public/LegalVersionHistoryPage.test.tsx"
   ],
   "totals": {
-    "count": 63
+    "count": 55
   }
 }

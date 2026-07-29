@@ -90,11 +90,17 @@ describe('GdprBreaches', () => {
     expect(screen.getByText('Minor config leak')).toBeInTheDocument();
   });
 
+  // By data attribute, not the chip's text: the label is t('enterprise.gdpr_severity_high')
+  // and no i18n resources load under test, so the visible text is i18next's
+  // missing-key output rather than the severity.
   it('renders severity chips', async () => {
     render(<GdprBreaches />);
     await waitFor(() => screen.getByText('Email exposure incident'));
-    expect(screen.getByText('high')).toBeInTheDocument();
-    expect(screen.getByText('low')).toBeInTheDocument();
+    const severities = screen
+      .getAllByTestId('breach-severity-chip')
+      .map((chip) => chip.getAttribute('data-severity'));
+    expect(severities).toContain('high');
+    expect(severities).toContain('low');
   });
 
   // ── empty state ────────────────────────────────────────────────────────────

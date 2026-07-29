@@ -122,7 +122,11 @@ export function GdprRequests() {
       key: 'type',
       label: t('enterprise.gdpr_type'),
       sortable: true,
-      render: (r) => <span>{t(`enterprise.gdpr_type_${r.type}`, { defaultValue: t('enterprise.gdpr_type_unknown') })}</span>,
+      render: (r) => (
+        <span data-testid="request-type" data-type={r.type}>
+          {t(`enterprise.gdpr_type_${r.type}`, { defaultValue: t('enterprise.gdpr_type_unknown') })}
+        </span>
+      ),
     },
     {
       key: 'status',

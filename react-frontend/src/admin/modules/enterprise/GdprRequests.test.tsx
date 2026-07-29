@@ -119,10 +119,15 @@ describe('GdprRequests', () => {
 
     render(<GdprRequests />);
 
+    // By data attribute, not the cell's text: the label comes from
+    // t(`enterprise.gdpr_type_${r.type}`) and no i18n resources load under test.
     await waitFor(() => {
-      expect(screen.getByText('access')).toBeInTheDocument();
+      expect(screen.getAllByTestId('request-type').length).toBeGreaterThan(0);
     });
-    expect(screen.getByText('erasure')).toBeInTheDocument();
+
+    const types = screen.getAllByTestId('request-type').map((cell) => cell.getAttribute('data-type'));
+    expect(types).toContain('access');
+    expect(types).toContain('erasure');
   });
 
   // ── loading state ─────────────────────────────────────────────────────────
