@@ -158,14 +158,40 @@ describe('EmergencyAlertAdminPage — populated state', () => {
 describe('EmergencyAlertAdminPage — error state', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockApi.get.mockRejectedValue(new Error('Network failure'));
   });
 
-  it('shows error message on load failure', async () => {
+  // This — not a rejected promise — is what a real load failure looks like: the
+  // API client returns a failed response instead of throwing. The page used to
+  // check nothing, so a refused load rendered as a silent empty list and the
+  // server's own (translated) message was discarded.
+  it('shows the server message when the load is refused', async () => {
+    mockApi.get.mockResolvedValue({
+      success: false,
+      error: 'Dieser Bereich ist nicht verfügbar.',
+    });
     render(<EmergencyAlertAdminPage />);
     await waitFor(() => {
-      expect(screen.getByText('Network failure')).toBeInTheDocument();
+      expect(screen.getByText('Dieser Bereich ist nicht verfügbar.')).toBeInTheDocument();
     });
+  });
+
+  // A thrown error is a client-side fault, and its text is untranslated
+  // technical English written for a developer — never for the admin reading the
+  // screen. The translated fallback is shown instead of the raw message.
+  it('shows the translated fallback when the request throws', async () => {
+    mockApi.get.mockRejectedValue(new Error('Network failure'));
+    render(<EmergencyAlertAdminPage />);
+    // Matched by element rather than by text: these tests run without i18n
+    // resources loaded, so the exact string t() returns for the fallback key is
+    // an artefact of the harness. What matters is that a message is shown and
+    // that it is not the thrown Error's raw text.
+    const message = await waitFor(() => {
+      const node = document.querySelector('p.text-danger');
+      expect(node).not.toBeNull();
+      return node as HTMLElement;
+    });
+    expect(message.textContent?.trim()).not.toBe('');
+    expect(message.textContent).not.toContain('Network failure');
   });
 });
 

@@ -229,7 +229,9 @@ export function VolunteerHoursAudit() {
         // Refresh all data to update stats
         loadData();
       } else {
-        toast.error((res as { message?: string }).message || t('volunteering.verify_failed'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.verify_failed'));
       }
     } catch {
       toast.error(t('volunteering.verify_failed'));

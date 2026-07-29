@@ -76,14 +76,22 @@ export default function CivicDigestAdminPage() {
       const res = await api.put<CadenceResponse>('/v2/admin/caring-community/digest/cadence', {
         cadence: draft,
       });
+      if (!res.success) {
+        // The API client returns a failed response instead of throwing, so the
+        // catch block below never saw a rejected save: the success toast fired
+        // regardless of the outcome, and the server's own refusal was dropped.
+        // admin-i18n-ignore: localized server message — CivicDigestService
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        showToast(res.error || t('admin.civic_digest.errors.save'), 'error');
+        return;
+      }
       const raw = res.data?.cadence ?? draft;
       const next: Cadence = raw === 'weekly' ? 'monthly' : raw;
       setCadence(next);
       setDraft(next);
       showToast(t('admin.civic_digest.messages.saved'), 'success');
-    } catch (err) {
-      const msg = (err as { message?: string })?.message ?? t('admin.civic_digest.errors.save');
-      showToast(msg, 'error');
+    } catch {
+      showToast(t('admin.civic_digest.errors.save'), 'error');
     } finally {
       setSaving(false);
     }

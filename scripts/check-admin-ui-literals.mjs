@@ -12,8 +12,11 @@
  * property such as `field.label`. This AST pass covers those indirect paths.
  *
  * A genuinely invariant technical literal may be suppressed at its exact
- * declaration with `admin-i18n-ignore` and a short reason. Suppressions are
- * intentionally line-scoped so they cannot mask a whole file.
+ * declaration with `admin-i18n-ignore` and a short reason. Suppressions stay
+ * scoped to the statement they sit on — either on its own line, or anywhere in
+ * the unbroken `//` comment block directly above it — so they cannot mask a
+ * whole file. The comment block is allowed because the reason is the point of a
+ * suppression, and a reason worth reading rarely fits in the tail of a line.
  */
 
 import { createRequire } from 'node:module';
@@ -199,13 +202,30 @@ function auditFile(filePath) {
   );
   const lines = source.split(/\r?\n/);
 
+  /**
+   * A suppression applies to the statement it annotates: the marker may sit on
+   * that line, or anywhere in the unbroken `//` comment block immediately above
+   * it. The block has to touch the statement, so widening it cannot reach past
+   * the next line of code.
+   */
+  function isSuppressed(lineIndex) {
+    if ((lines[lineIndex] ?? '').includes(SUPPRESSION_MARKER)) return true;
+    // The original single-line-above rule, kept verbatim so a marker in a
+    // trailing comment on the preceding line still counts.
+    if ((lines[lineIndex - 1] ?? '').includes(SUPPRESSION_MARKER)) return true;
+    for (let index = lineIndex - 1; index >= 0; index--) {
+      const text = (lines[index] ?? '').trim();
+      if (!isCommentOnlyLine(text)) return false;
+      if (text.includes(SUPPRESSION_MARKER)) return true;
+    }
+    return false;
+  }
+
   function report(node, value, context) {
     const normalized = normalizeDisplayText(value);
     if (!looksUserFacing(normalized)) return;
     const location = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
-    const sourceLine = lines[location.line] ?? '';
-    const previousLine = lines[location.line - 1] ?? '';
-    if (sourceLine.includes(SUPPRESSION_MARKER) || previousLine.includes(SUPPRESSION_MARKER)) return;
+    if (isSuppressed(location.line)) return;
     results.push({
       file: normalizePath(path.relative(ROOT, filePath)),
       line: location.line + 1,
@@ -232,9 +252,7 @@ function auditFile(filePath) {
       }
     } else if (isHumanizerExpression(node)) {
       const location = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
-      const sourceLine = lines[location.line] ?? '';
-      const previousLine = lines[location.line - 1] ?? '';
-      if (!sourceLine.includes(SUPPRESSION_MARKER) && !previousLine.includes(SUPPRESSION_MARKER)) {
+      if (!isSuppressed(location.line)) {
         results.push({
           file: normalizePath(path.relative(ROOT, filePath)),
           line: location.line + 1,
@@ -282,15 +300,39 @@ function auditFile(filePath) {
   function isApiMessageAccess(node) {
     if (!ts.isPropertyAccessExpression(node)) return false;
     if (!['error', 'message'].includes(node.name.text)) return false;
-    const receiver = node.expression.getText(sourceFile);
+    const receiver = receiverText(node.expression);
     return /(?:^|\.)(?:res|response|result)$/i.test(receiver)
       || /(?:Res|Response|Result)$/i.test(receiver);
   }
 
   function isExceptionMessageAccess(node) {
     if (!ts.isPropertyAccessExpression(node) || node.name.text !== 'message') return false;
-    const receiver = node.expression.getText(sourceFile);
+    const receiver = receiverText(node.expression);
     return /^(?:err|error|exception|caughtError|requestError)$/i.test(receiver);
+  }
+
+  /**
+   * Read the receiver's name through any wrapping that does not change what is
+   * being read: a cast, parentheses, or a non-null assertion.
+   *
+   * This is what let `(res as { message?: string }).message` past the gate. The
+   * raw node text of that receiver is `(res as { message?: string })`, which
+   * matches no receiver pattern, so the whole family of casted server-message
+   * reads was invisible — and casts are exactly what a caller writes when the
+   * property is not on the declared type, which is the case worth catching.
+   */
+  function receiverText(node) {
+    let current = node;
+    while (
+      ts.isParenthesizedExpression(current)
+      || ts.isAsExpression(current)
+      || ts.isNonNullExpression(current)
+      || ts.isSatisfiesExpression?.(current)
+      || ts.isTypeAssertionExpression?.(current)
+    ) {
+      current = current.expression;
+    }
+    return current.getText(sourceFile);
   }
 
   function isMessageDisplaySink(node) {
@@ -345,9 +387,7 @@ function auditFile(filePath) {
   function reportUnfiltered(node, value, context) {
     const normalized = normalizeDisplayText(value);
     const location = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
-    const sourceLine = lines[location.line] ?? '';
-    const previousLine = lines[location.line - 1] ?? '';
-    if (sourceLine.includes(SUPPRESSION_MARKER) || previousLine.includes(SUPPRESSION_MARKER)) return;
+    if (isSuppressed(location.line)) return;
     results.push({
       file: normalizePath(path.relative(ROOT, filePath)),
       line: location.line + 1,
@@ -659,6 +699,18 @@ function nearestAncestorBefore(node, stopNode, predicate) {
 
 function containsNode(container, target) {
   return target.pos >= container.pos && target.end <= container.end;
+}
+
+/**
+ * Whether a trimmed line carries nothing but a comment. Covers `//`, JSX
+ * `{/* ... *\/}`, and both the opening and continuation lines of a block
+ * comment, so a multi-line reason works in JSX and in plain TypeScript alike.
+ */
+function isCommentOnlyLine(text) {
+  return text.startsWith('//')
+    || text.startsWith('{/*')
+    || text.startsWith('/*')
+    || text.startsWith('*');
 }
 
 function normalizeDisplayText(value) {

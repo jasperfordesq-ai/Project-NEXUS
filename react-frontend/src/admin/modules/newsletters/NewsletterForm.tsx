@@ -370,7 +370,9 @@ export function NewsletterForm() {
       const newId = isEdit ? Number(id) : (res.data as { id: number }).id;
       return newId;
     } else {
-      toast.error((res as { error?: string }).error || t('newsletter_form.failed_to_save'));
+      // admin-i18n-ignore: localized server message — AdminNewsletterController
+      // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+      toast.error(res.error || t('newsletter_form.failed_to_save'));
       return null;
     }
   };
@@ -402,11 +404,15 @@ export function NewsletterForm() {
 
       const res = await adminNewsletters.sendNewsletter(savedId);
       if (res.success) {
+        // admin-i18n-ignore: localized server message — the queued count comes
+        // from api_controllers_1.admin_newsletter.newsletter_queued.
         toast.success(res.data?.message || t('newsletter_form.newsletter_queued'));
         setConfirmSendOpen(false);
         navigate(tenantPath(`/admin/newsletters/${id}/stats`));
       } else {
-        toast.error((res as { error?: string }).error || t('newsletters.failed_to_send_newsletter'));
+        // admin-i18n-ignore: localized server message — AdminNewsletterController
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        toast.error(res.error || t('newsletters.failed_to_send_newsletter'));
       }
     } catch {
       toast.error(t('newsletters.failed_to_send_newsletter'));
@@ -430,9 +436,13 @@ export function NewsletterForm() {
 
       const res = await adminNewsletters.sendTest(savedId);
       if (res.success) {
+        // admin-i18n-ignore: localized server message — the test-send
+        // confirmation is a translated key in the controller.
         toast.success(res.data?.message || t('newsletter_form.test_email_sent'));
       } else {
-        toast.error((res as { error?: string }).error || t('newsletter_form.failed_to_send_test'));
+        // admin-i18n-ignore: localized server message — AdminNewsletterController
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        toast.error(res.error || t('newsletter_form.failed_to_send_test'));
       }
     } catch {
       toast.error(t('newsletter_form.failed_to_send_test'));

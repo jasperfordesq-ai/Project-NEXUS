@@ -172,6 +172,8 @@ export function PartnerDirectory() {
         setRequestNotes('');
         loadData({ search, region: regionFilter, category: categoryFilter, topic: topicFilter, exclude_partnered: hidePartnered });
       } else {
+        // admin-i18n-ignore: localized server message — FederationPartnershipService
+        // refusals are __() keys, guarded by FederationPartnershipErrorLocalisationTest.
         toast.error(res.error || t('federation.failed_to_send_partnership_request'));
       }
     } catch {

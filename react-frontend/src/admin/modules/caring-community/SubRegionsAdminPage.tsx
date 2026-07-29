@@ -225,7 +225,27 @@ export default function SubRegionsAdminPage() {
         : await api.post('/v2/admin/caring-community/sub-regions', payload);
 
       if (!res.success) {
-        showToast(t('sub_regions.errors.save_failed'), 'error');
+        // Field-level validation arrives in the ApiResponse's own `errors`
+        // array. The previous code looked for an axios-shaped
+        // err.response.data.errors inside the catch block below, which can
+        // never run: the API client returns a failed response instead of
+        // throwing. Both the per-field messages and the overall refusal were
+        // therefore unreachable, and every failure showed the same generic
+        // toast.
+        const fieldErrors: Partial<Record<keyof FormData, string>> = {};
+        for (const detail of res.errors ?? []) {
+          // Validation text comes from the controller as a __() key.
+          if (detail.field && detail.message) {
+            fieldErrors[detail.field as keyof FormData] = detail.message;
+          }
+        }
+        if (Object.keys(fieldErrors).length > 0) {
+          setFormErrors(fieldErrors);
+        } else {
+          // admin-i18n-ignore: localized server message — CaringSubRegionService
+          // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+          showToast(res.error || t('sub_regions.errors.save_failed'), 'error');
+        }
         return;
       }
 
@@ -234,19 +254,7 @@ export default function SubRegionsAdminPage() {
       void fetchRegions();
     } catch (err) {
       logError('SubRegionsAdminPage.save', err);
-      const e = err as { response?: { data?: { errors?: Array<{ field?: string; message?: string }>; error?: { message?: string } } } };
-      const apiErrors = e?.response?.data?.errors;
-      if (Array.isArray(apiErrors) && apiErrors.length > 0) {
-        const fieldErrors: Partial<Record<keyof FormData, string>> = {};
-        for (const ae of apiErrors) {
-          if (ae.field && ae.message) {
-            fieldErrors[ae.field as keyof FormData] = ae.message;
-          }
-        }
-        setFormErrors(fieldErrors);
-      } else {
-        showToast(e?.response?.data?.error?.message ?? t('sub_regions.errors.save_failed'), 'error');
-      }
+      showToast(t('sub_regions.errors.save_failed'), 'error');
     } finally {
       setSaving(false);
     }

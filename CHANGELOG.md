@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Admin screens now show the server's own words when an action is refused, in the reader's language.** Twenty-six places across the admin panel read the server's message from a field the server never fills — or from a `catch` block that can never run — so the message was silently dropped and replaced with a generic local one. On six of those, nothing checked whether the request had succeeded at all: saving the civic-digest cadence, editing an isolated-node item, sending an emergency alert, and loading the emergency-alert and survey lists all reported success, or showed an empty list, when the server had actually refused. Those are now reported.
+
+  Two mistakes were repeated across the file: reading `message` on a failed response, which only ever carries `error`; and expecting the API client to throw on a rejected request, which it does not — it returns a failed result. Both read as correct code, and both meant the same thing in practice: the reason the server gave was thrown away.
+
+  A related dead end was cleaned up on the sub-regions form. Per-field validation was being pulled out of an `err.response.data.errors` shape belonging to a different HTTP library — inside a `catch` that never fires — so field-level messages never appeared and every rejection produced one flat toast. It now reads the errors the response actually carries.
+
+- **The check for untranslated admin text is now blocking, and can see through a type cast.** Admin screens keep a lot of their wording in TypeScript objects and in server messages, where a JSX-based linter cannot see it, so a separate check covers those paths. It only ran when somebody remembered to type the command.
+
+  It also had a blind spot that hid this entire class of defect: it identified a server message by the *text* of what it was read from, so `(res as { message?: string }).message` did not look like a server message to it. A cast is exactly what a developer writes when the property is not on the declared type — which is the case most worth flagging — so the check was blind precisely where it mattered. It now reads through casts, parentheses, and non-null assertions.
+
+  Suppressing a line now also accepts the reason in the comment block directly above it, rather than only on the line itself. A one-line reason has to be terse, and the reason is the entire value of a suppression.
+
 - **Translated URLs and other must-stay-literal text are now caught automatically.** A check already existed for this and had found a real defect — the Irish admin copy had translated the route `/partner/v1` into `/comhpháirtí/v1`, sending Irish-speaking administrators to an address that does not exist — but it only ran if someone remembered to type the command locally. It is now a blocking check on every relevant change.
 
   The existing translation check compares which keys exist in each language, so it cannot see this class of problem: the key is present and looks translated, and only its value is wrong. Since translations are often filled in by machine, and machines translate anything that resembles a word, this will recur. The check now also runs when the checking scripts themselves are edited, which the previous file-matching rule missed.

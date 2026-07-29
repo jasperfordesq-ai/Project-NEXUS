@@ -145,12 +145,15 @@ export default function VolunteerProjects() {
         status: reviewStatus,
         review_notes: reviewNotes.trim() || undefined,
       });
-      if (!res.success) {
-        throw new Error((res as { message?: string; error?: string }).message || 'community_project_review_failed');
+      if (res.success) {
+        toast.success(t('volunteering.project_reviewed'));
+        onClose();
+        loadData();
+      } else {
+        // admin-i18n-ignore: localized server message — the volunteering
+        // controller's refusals are __() keys.
+        toast.error(res.error || t('volunteering.review_failed'));
       }
-      toast.success(t('volunteering.project_reviewed'));
-      onClose();
-      loadData();
     } catch {
       toast.error(t('volunteering.review_failed'));
     }

@@ -242,7 +242,9 @@ export function AdminSettings() {
         const res = await adminSettings.update(changes);
         if (!res.success) {
           ok = false;
-          toast.error((res as { error?: string }).error || t('system.save_failed'));
+          // admin-i18n-ignore: localized server message — AdminSettingsController
+          // refusals are __() keys.
+          toast.error(res.error || t('system.save_failed'));
         }
       }
 

@@ -171,6 +171,15 @@ export default function IsolatedNodeAdminPage() {
         `/v2/admin/caring-community/isolated-node/items/${encodeURIComponent(editingKey)}`,
         payload,
       );
+      if (!res.success) {
+        // The API client returns a failed response instead of throwing, so the
+        // catch block below never saw a rejected save: the success toast fired
+        // regardless of the outcome, and the server's own refusal was dropped.
+        // admin-i18n-ignore: localized server message — IsolatedNodeReadinessService
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        showToast(res.error || t('isolated_node.toasts.save_failed'), 'error');
+        return;
+      }
       const updatedItem = res.data?.item;
       const updatedGate = res.data?.gate;
       if (updatedItem && updatedGate && data) {
@@ -183,9 +192,8 @@ export default function IsolatedNodeAdminPage() {
       }
       showToast(t('isolated_node.toasts.item_updated'), 'success');
       closeModal();
-    } catch (err) {
-      const msg = (err as { message?: string })?.message ?? t('isolated_node.toasts.save_failed');
-      showToast(msg, 'error');
+    } catch {
+      showToast(t('isolated_node.toasts.save_failed'), 'error');
     } finally {
       setSaving(false);
     }

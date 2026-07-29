@@ -116,6 +116,15 @@ export default function EmergencyAlertAdminPage() {
       const res = await api.get<{ data: EmergencyAlert[] }>(
         '/v2/admin/caring-community/emergency-alerts',
       );
+      if (!res.success) {
+        // The API client returns a failed response instead of throwing, so the
+        // catch block below never saw a failed load: the page silently showed
+        // an empty list and the server's own message was dropped.
+        // admin-i18n-ignore: localized server message — EmergencyAlertService
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        setError(res.error || t('caring_emergency.errors.load_failed'));
+        return;
+      }
       const raw = res.data;
       const list: EmergencyAlert[] = Array.isArray(raw)
         ? raw
@@ -123,8 +132,8 @@ export default function EmergencyAlertAdminPage() {
             ? (raw as { data: EmergencyAlert[] }).data
             : []);
       setAlerts(list);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t('caring_emergency.errors.load_failed'));
+    } catch {
+      setError(t('caring_emergency.errors.load_failed'));
     } finally {
       setLoading(false);
     }
@@ -156,12 +165,17 @@ export default function EmergencyAlertAdminPage() {
         expires_at: expiresAt || null,
       });
       if (!res.success) {
-        throw new Error(t('caring_emergency.errors.send_failed'));
+        // admin-i18n-ignore: localized server message — EmergencyAlertService
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest. The
+        // previous throw/catch round trip discarded the server's message and
+        // replaced it with the generic fallback every time.
+        setSubmitError(res.error || t('caring_emergency.errors.send_failed'));
+        return;
       }
       onClose();
       await fetchAlerts();
-    } catch (e: unknown) {
-      setSubmitError(e instanceof Error ? e.message : t('caring_emergency.errors.send_failed'));
+    } catch {
+      setSubmitError(t('caring_emergency.errors.send_failed'));
     } finally {
       setSubmitting(false);
     }

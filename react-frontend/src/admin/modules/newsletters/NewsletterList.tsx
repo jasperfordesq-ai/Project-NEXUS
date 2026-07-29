@@ -124,11 +124,15 @@ export function NewsletterList() {
     try {
       const res = await adminNewsletters.sendNewsletter(sendTarget.id);
       if (res.success) {
+        // admin-i18n-ignore: localized server message — the queued count comes
+        // from api_controllers_1.admin_newsletter.newsletter_queued.
         toast.success(res.data?.message || t('newsletters.newsletter_queued_for_sending'));
         setSendTarget(null);
         loadData();
       } else {
-        toast.error((res as { error?: string }).error || t('newsletters.failed_to_send_newsletter'));
+        // admin-i18n-ignore: localized server message — AdminNewsletterController
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        toast.error(res.error || t('newsletters.failed_to_send_newsletter'));
       }
     } catch {
       toast.error(t('newsletters.failed_to_send_newsletter'));

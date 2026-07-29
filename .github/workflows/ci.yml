@@ -872,6 +872,8 @@ jobs:
               - 'scripts/check-i18n.sh'
               # Not matched by check-i18n*.mjs above — different prefix.
               - 'scripts/check-admin-i18n*.mjs'
+              # Nor by check-admin-i18n*.mjs — the name is check-admin-ui-*.
+              - 'scripts/check-admin-ui-literals.mjs'
               - 'scripts/check-php-i18n-coverage.mjs'
               - 'scripts/check-php-lang-parity.mjs'
               - '.github/i18n-gap-baseline.json'
@@ -916,6 +918,16 @@ jobs:
       # cannot see it: the key is present, only its value is wrong.
       - name: "BLOCKING: Admin i18n functional token integrity"
         run: node scripts/check-admin-i18n-token-integrity.mjs
+
+      # Added 2026-07-29. Admin screens hold a lot of render text in TypeScript
+      # objects and in server messages, where a JSX-only linter cannot see it.
+      # This pass covers those indirect paths, including the case that hid a
+      # whole family of untranslated toasts: a server message read through a
+      # cast, `(res as { message?: string }).message`, which the old receiver
+      # match could not recognise. It was already run by hand and is now
+      # blocking, because a check nobody remembers to type is not a check.
+      - name: "BLOCKING: Admin indirect UI literals"
+        run: node scripts/check-admin-ui-literals.mjs
 
       # Re-added 2026-06-06: admin panel is multilingual again (policy reversed
       # 2026-05-22). Validates admin t() keys resolve against the English locale.

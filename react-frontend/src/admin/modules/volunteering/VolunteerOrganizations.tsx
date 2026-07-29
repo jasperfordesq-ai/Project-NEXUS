@@ -203,7 +203,9 @@ export function VolunteerOrganizations() {
         adjustModal.onClose();
         loadData();
       } else {
-        toast.error((res as { message?: string }).message || t('volunteering.adjust_failed'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.adjust_failed'));
       }
     } catch {
       toast.error(t('volunteering.adjust_failed'));
@@ -235,7 +237,9 @@ export function VolunteerOrganizations() {
         }
       }
       if (!res.success) {
-        toast.error((res as { message?: string; error?: string }).message || t('volunteering.failed_load_transactions'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.failed_load_transactions'));
       }
     } catch {
       toast.error(t('volunteering.failed_load_transactions'));
@@ -263,7 +267,9 @@ export function VolunteerOrganizations() {
         }
       }
       if (!res.success) {
-        toast.error((res as { message?: string; error?: string }).message || t('volunteering.failed_load_transactions'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.failed_load_transactions'));
       }
     } catch {
       toast.error(t('volunteering.failed_load_transactions'));
@@ -284,7 +290,9 @@ export function VolunteerOrganizations() {
         setSuspendTarget(null);
         loadData();
       } else {
-        toast.error((res as { message?: string }).message || t('volunteering.status_update_failed'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.status_update_failed'));
       }
     } catch {
       toast.error(t('volunteering.status_update_failed'));
@@ -336,7 +344,9 @@ export function VolunteerOrganizations() {
         editModal.onClose();
         loadData();
       } else {
-        toast.error((res as { message?: string }).message || t('volunteering.org_update_failed'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.org_update_failed'));
       }
     } catch {
       toast.error(t('volunteering.org_update_failed'));
@@ -401,7 +411,9 @@ export function VolunteerOrganizations() {
         createModal.onClose();
         loadData();
       } else {
-        toast.error((res as { message?: string }).message || t('volunteering.org_create_failed'));
+        // admin-i18n-ignore: localized server message — a failed ApiResponse
+        // carries `error`, never `message`; the old `.message` read was dead.
+        toast.error(res.error || t('volunteering.org_create_failed'));
       }
     } catch {
       toast.error(t('volunteering.org_create_failed'));

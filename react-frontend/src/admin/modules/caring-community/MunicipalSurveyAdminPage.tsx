@@ -237,6 +237,15 @@ export default function MunicipalSurveyAdminPage() {
         ? `/v2/admin/caring-community/surveys?status=${statusFilter}`
         : '/v2/admin/caring-community/surveys';
       const res = await api.get<{ data: SurveyRow[] } | SurveyRow[]>(url);
+      if (!res.success) {
+        // The API client returns a failed response instead of throwing, so the
+        // catch block below never saw a failed load: the page silently showed
+        // an empty list and the server's own message was dropped.
+        // admin-i18n-ignore: localized server message — MunicipalityFeedbackService
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        setError(res.error || t('admin.surveys.errors.load'));
+        return;
+      }
       const raw = res.data;
       const list: SurveyRow[] = Array.isArray(raw)
         ? raw
@@ -244,8 +253,8 @@ export default function MunicipalSurveyAdminPage() {
             ? (raw as { data: SurveyRow[] }).data
             : []);
       setSurveys(list);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t('admin.surveys.errors.load'));
+    } catch {
+      setError(t('admin.surveys.errors.load'));
     } finally {
       setLoading(false);
     }
@@ -295,10 +304,12 @@ export default function MunicipalSurveyAdminPage() {
         createModal.onClose();
         await fetchSurveys();
       } else {
-        setCreateError(t('admin.surveys.errors.create'));
+        // admin-i18n-ignore: localized server message — MunicipalityFeedbackService
+        // refusals are __() keys, guarded by ApiErrorLocalisationTest.
+        setCreateError(res.error || t('admin.surveys.errors.create'));
       }
-    } catch (e: unknown) {
-      setCreateError(e instanceof Error ? e.message : t('admin.surveys.errors.create'));
+    } catch {
+      setCreateError(t('admin.surveys.errors.create'));
     } finally {
       setCreating(false);
     }

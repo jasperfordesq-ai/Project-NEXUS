@@ -172,10 +172,9 @@ export function UserShow() {
         setImpersonateModalOpen(false);
         navigate(tenantPath('/dashboard'));
       } else {
-        toast.error(
-          (res as { error?: string })?.error ||
-          t('super.impersonation_failed'),
-        );
+        // admin-i18n-ignore: localized server message — the impersonation
+        // controller's refusals are __() keys.
+        toast.error(res.error || t('super.impersonation_failed'));
       }
     } catch {
       toast.error(t('super.impersonation_failed'));

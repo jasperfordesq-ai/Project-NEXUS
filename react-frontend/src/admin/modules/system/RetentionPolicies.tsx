@@ -125,7 +125,9 @@ export function RetentionPolicies() {
           setDayInputs((prev) => ({ ...prev, [updated.data_type]: String(updated.retention_days) }));
           toast.success(t('retention.policy_saved'));
         } else {
-          toast.error((res as { error?: string }).error || t('retention.save_failed'));
+          // admin-i18n-ignore: localized server message — the retention
+          // controller's refusals are __() keys.
+          toast.error(res.error || t('retention.save_failed'));
         }
       } catch {
         toast.error(t('retention.save_failed'));
