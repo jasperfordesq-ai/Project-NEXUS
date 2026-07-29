@@ -19,17 +19,26 @@ declare(strict_types=1);
  * regex-parsing array syntax is exactly the sort of near-miss that lets a real
  * value through unexamined. So this is the reader, and Node only ever sees JSON.
  *
- * Usage:  php scripts/php/dump-lang.php [lang-dir]
+ * Usage:  php scripts/php/dump-lang.php [lang-dir] [--nested]
  * Output: {"<locale>/<file>.php": {"<dotted.key>": "<value>", ...}, ...}
  *
- * Nested arrays are flattened with dots, matching how Laravel addresses them
- * (`__('api.federation.partnership_self')`). List values are flattened by index,
- * so each string leaf is dumped separately and can be compared on its own.
- * Non-string leaves (int, bool, null) are emitted as-is; callers decide whether
- * they are interesting.
+ * Nested arrays are flattened with dots by default, matching how Laravel
+ * addresses them (`__('api.federation.partnership_self')`). List values are
+ * flattened by index, so each string leaf is dumped separately and can be
+ * compared on its own. Non-string leaves (int, bool, null) are emitted as-is;
+ * callers decide whether they are interesting.
+ *
+ * `--nested` keeps the original array shape instead. A writer that regenerates a
+ * whole lang file needs the real structure back: rebuilding it from dotted keys
+ * would guess wrong about any key that itself contains a dot, and a writer that
+ * guesses is a writer that silently reshapes translation files.
  */
 
-$langDir = $argv[1] ?? (dirname(__DIR__, 2) . '/lang');
+$args = array_slice($argv, 1);
+$nested = in_array('--nested', $args, true);
+$positional = array_values(array_filter($args, static fn (string $arg): bool => ! str_starts_with($arg, '--')));
+
+$langDir = $positional[0] ?? (dirname(__DIR__, 2) . '/lang');
 
 if (! is_dir($langDir)) {
     fwrite(STDERR, "dump-lang: not a directory: $langDir\n");
@@ -97,7 +106,7 @@ foreach ($locales as $locale) {
             exit(1);
         }
 
-        $dump[$locale . '/' . $file] = flattenLangValues($values);
+        $dump[$locale . '/' . $file] = $nested ? $values : flattenLangValues($values);
     }
 }
 

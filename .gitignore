@@ -120,6 +120,7 @@ CLAUDE.md
 !/scripts/predeploy-check.sh
 !/scripts/deploy.sh
 !/scripts/translate-i18n-gaps.mjs
+!/scripts/translate-php-lang-gaps.mjs
 !/scripts/check-licenses.mjs
 !/scripts/prerender-tenants.sh
 !/scripts/prerender-worker.mjs
