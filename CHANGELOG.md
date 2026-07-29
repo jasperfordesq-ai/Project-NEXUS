@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **The nine admin strings PHP actually reads are now translated, and the 38,743-value dump around them is gone.** The `admin` translation namespace existed twice: once as the React admin locales, and once as a 3,981-key PHP copy of them per language. The PHP copy accounted for **93% of the entire untranslated-value debt** — 38,743 of 40,191 values — and almost none of it was reachable. Nine keys are: four Gmail-API status messages in the mailer, and five member-statistics labels in the CRM export. `admin_nav` and `admin_dashboard` had **zero** call sites in the whole codebase.
+
+  So the PHP copy shrinks to exactly those nine keys in all eleven languages, hand-translated rather than machine-filled, and the two dead namespaces are deleted outright (22 files). The untranslated ratchet falls from **40,191 to 1,448** — a 96% reduction — and what remains is small enough that every value in it is real work rather than noise.
+
+  **One thing the debt ledger had wrong, and it mattered:** those nine keys were never being served by the PHP files at all. The `__()` helper asks the JSON translator first and only falls back to Laravel's `.php` loader, so the live values come from `lang/<locale>/admin.json` — where all nine were still verbatim English in every one of the ten non-English languages. Hand-translating only the PHP side, as planned, would have translated a path nobody reads and left the visible strings in English. Both sides are now translated and both are held by tests, including one asserting that no non-English locale's live value is byte-identical to English — a regression the untranslated ratchet structurally cannot see, because it only scans `.php` files.
+
 ## [1.5.8] - 2026-07-29
 
 ### Added

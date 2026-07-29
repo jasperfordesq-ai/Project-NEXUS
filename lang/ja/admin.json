@@ -4106,14 +4106,14 @@
     "volunteering_overview_title": "Volunteering Overview"
   },
   "mailer": {
-    "gmail_not_enabled": "Gmail API is not enabled",
-    "gmail_token_failed": "Failed to obtain access token. Check credentials.",
-    "gmail_connected": "Connected to Gmail API successfully. Email: :email",
-    "gmail_verify_failed": "Failed to verify Gmail API connection"
+    "gmail_not_enabled": "Gmail API は有効になっていません",
+    "gmail_token_failed": "アクセストークンを取得できませんでした。認証情報を確認してください。",
+    "gmail_connected": "Gmail API に正常に接続しました。メール: :email",
+    "gmail_verify_failed": "Gmail API 接続を検証できませんでした"
   },
-  "label_active_members": "Active Members",
-  "label_new_this_month": "New This Month",
-  "label_pending_approvals": "Pending Approvals",
-  "label_retention_rate": "Retention Rate",
-  "label_total_members": "Total Members"
+  "label_active_members": "アクティブメンバー",
+  "label_new_this_month": "今月の新規",
+  "label_pending_approvals": "承認待ち",
+  "label_retention_rate": "継続率",
+  "label_total_members": "総メンバー数"
 }

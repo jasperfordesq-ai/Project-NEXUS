@@ -59,7 +59,7 @@ if (!function_exists('__')) {
     /**
      * Translate a string using the active locale.
      *
-     * Key format: "namespace.key" (e.g. "admin_dashboard.title")
+     * Key format: "namespace.key" (e.g. "admin.label_total_members")
      * Substitution params use {{name}} placeholders in JSON values.
      *
      * @param string $key    Dot-separated namespace.key

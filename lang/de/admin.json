@@ -4106,14 +4106,14 @@
     "volunteering_overview_title": "Volunteering Overview"
   },
   "mailer": {
-    "gmail_not_enabled": "Gmail API is not enabled",
-    "gmail_token_failed": "Failed to obtain access token. Check credentials.",
-    "gmail_connected": "Connected to Gmail API successfully. Email: :email",
-    "gmail_verify_failed": "Failed to verify Gmail API connection"
+    "gmail_not_enabled": "Die Gmail-API ist nicht aktiviert",
+    "gmail_token_failed": "Zugriffstoken konnte nicht abgerufen werden. Zugangsdaten prüfen.",
+    "gmail_connected": "Erfolgreich mit der Gmail-API verbunden. E-Mail: :email",
+    "gmail_verify_failed": "Die Gmail-API-Verbindung konnte nicht überprüft werden"
   },
-  "label_active_members": "Active Members",
-  "label_new_this_month": "New This Month",
-  "label_pending_approvals": "Pending Approvals",
-  "label_retention_rate": "Retention Rate",
-  "label_total_members": "Total Members"
+  "label_active_members": "Aktive Mitglieder",
+  "label_new_this_month": "Neu in diesem Monat",
+  "label_pending_approvals": "Ausstehende Genehmigungen",
+  "label_retention_rate": "Bindungsrate",
+  "label_total_members": "Mitglieder insgesamt"
 }

@@ -4106,14 +4106,14 @@
     "volunteering_overview_title": "Volunteering Overview"
   },
   "mailer": {
-    "gmail_not_enabled": "Gmail API is not enabled",
-    "gmail_token_failed": "Failed to obtain access token. Check credentials.",
-    "gmail_connected": "Connected to Gmail API successfully. Email: :email",
-    "gmail_verify_failed": "Failed to verify Gmail API connection"
+    "gmail_not_enabled": "واجهة برمجة تطبيقات Gmail غير مُمكَّنة",
+    "gmail_token_failed": "فشل الحصول على رمز الوصول. تحقق من بيانات الاعتماد.",
+    "gmail_connected": "تم الاتصال بواجهة برمجة تطبيقات Gmail بنجاح. البريد الإلكتروني: :email",
+    "gmail_verify_failed": "فشل التحقق من الاتصال بواجهة برمجة تطبيقات Gmail"
   },
-  "label_active_members": "Active Members",
-  "label_new_this_month": "New This Month",
-  "label_pending_approvals": "Pending Approvals",
-  "label_retention_rate": "Retention Rate",
-  "label_total_members": "Total Members"
+  "label_active_members": "الأعضاء النشطون",
+  "label_new_this_month": "الجديد هذا الشهر",
+  "label_pending_approvals": "الموافقات المعلقة",
+  "label_retention_rate": "معدل الاستبقاء",
+  "label_total_members": "إجمالي الأعضاء"
 }

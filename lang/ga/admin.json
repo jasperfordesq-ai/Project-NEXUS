@@ -4106,14 +4106,14 @@
     "volunteering_overview_title": "Volunteering Overview"
   },
   "mailer": {
-    "gmail_not_enabled": "Gmail API is not enabled",
-    "gmail_token_failed": "Failed to obtain access token. Check credentials.",
-    "gmail_connected": "Connected to Gmail API successfully. Email: :email",
-    "gmail_verify_failed": "Failed to verify Gmail API connection"
+    "gmail_not_enabled": "Níl API Gmail cumasaithe",
+    "gmail_token_failed": "Níorbh fhéidir ceadchomhartha rochtana a fháil. Seiceáil na dintiúir.",
+    "gmail_connected": "Ceanglaíodh le API Gmail go rathúil. Ríomhphost: :email",
+    "gmail_verify_failed": "Níorbh fhéidir an ceangal le API Gmail a fhíorú"
   },
-  "label_active_members": "Active Members",
-  "label_new_this_month": "New This Month",
-  "label_pending_approvals": "Pending Approvals",
-  "label_retention_rate": "Retention Rate",
-  "label_total_members": "Total Members"
+  "label_active_members": "Baill Ghníomhacha",
+  "label_new_this_month": "Nua an Mhí Seo",
+  "label_pending_approvals": "Ceadanna ar Feitheamh",
+  "label_retention_rate": "Ráta Coinneála",
+  "label_total_members": "Baill Iomlána"
 }

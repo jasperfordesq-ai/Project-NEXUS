@@ -12,8 +12,8 @@ namespace App\I18n;
  * Usage:
  *   Translator::init('/path/to/lang');
  *   Translator::setLocale('ga');
- *   echo Translator::get('admin_dashboard.title');
- *   // Or via global helper: __('admin_dashboard.title')
+ *   echo Translator::get('admin.label_total_members');
+ *   // Or via global helper: __('admin.label_total_members')
  *
  * Translation files live at: {langDir}/{locale}/{namespace}.json
  * Falls back to 'en' if a key is missing in the current locale.
@@ -52,7 +52,7 @@ class Translator
     /**
      * Translate a key.
      *
-     * Key format: "namespace.key" (e.g. "admin_dashboard.title")
+     * Key format: "namespace.key" (e.g. "admin.label_total_members")
      * or just "key" which uses namespace "common".
      *
      * @param string $key       Dot-separated namespace.key
