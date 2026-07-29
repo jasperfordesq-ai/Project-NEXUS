@@ -115,6 +115,58 @@ function isAllowlisted(allowlist, locale, value) {
 }
 
 /**
+ * Enforce the one mechanical part of the allowlist's curation rule.
+ *
+ * A `byLocale` entry claims a translator would leave that value alone in that
+ * language. There is a cheap, decisive counter-example available: if the same
+ * English value appears under some other key and that locale DID render it
+ * differently, then a translator did not leave it alone, and the entry is
+ * suppressing real work rather than describing an invariant.
+ *
+ * This is what separates the entries that are here from the ones that are not:
+ * "Status" is invariant in Dutch (30 of 30 occurrences identical) but German,
+ * Polish and Portuguese also produce Stand / Stan / Estado, so they stay
+ * counted. Without this check the distinction is a comment nobody re-derives,
+ * and the allowlist becomes the suppression list its own README warns about.
+ *
+ * `global` entries are deliberately NOT checked this way. They are proper nouns,
+ * units, placeholder-only strings and language endonyms, where one locale having
+ * translated an occurrence is a bug in that locale rather than evidence against
+ * the invariant.
+ */
+function findAllowlistContradictions(tree, allowlist) {
+  const contradictions = [];
+
+  for (const [locale, values] of Object.entries(allowlist.byLocale)) {
+    for (const value of values) {
+      const rendered = new Set();
+
+      for (const localeFile of Object.keys(tree)) {
+        const separator = localeFile.indexOf('/');
+        if (localeFile.slice(0, separator) !== SOURCE_LOCALE) continue;
+        const namespace = localeFile.slice(separator + 1);
+        const translated = tree[`${locale}/${namespace}`];
+        if (!translated) continue;
+
+        for (const [key, englishValue] of Object.entries(tree[localeFile])) {
+          if (englishValue !== value) continue;
+          const localeValue = translated[key];
+          if (typeof localeValue === 'string' && localeValue !== value) {
+            rendered.add(localeValue);
+          }
+        }
+      }
+
+      if (rendered.size > 0) {
+        contradictions.push({ locale, value, rendered: [...rendered].slice(0, 3) });
+      }
+    }
+  }
+
+  return contradictions;
+}
+
+/**
  * A value with no letter in it cannot be translated in any meaningful sense —
  * "1", "—", "%s", "12:00". Counting those would inflate the debt with work that
  * does not exist and would make the number stop meaning anything.
@@ -212,6 +264,28 @@ if (SHOW_DETAILS && !SUMMARY_ONLY) {
     }
   }
   console.log('');
+}
+
+// Checked before the baseline comparison, and before --write-baseline: a bad
+// allowlist entry lowers the count, so letting it through would bake the
+// suppression into the ceiling and make it permanent.
+const contradictions = findAllowlistContradictions(tree, allowlist);
+
+if (contradictions.length > 0) {
+  console.error('FAIL: byLocale allowlist entries contradicted by the lang files themselves.');
+  console.error('');
+  console.error('  Each of these claims a translator leaves the value alone in that language,');
+  console.error('  but that same locale renders the same English value differently elsewhere:');
+  for (const { locale, value, rendered } of contradictions.slice(0, 25)) {
+    console.error(`    ${locale}: ${JSON.stringify(value)} — also rendered as ${rendered.map((v) => JSON.stringify(v)).join(', ')}`);
+  }
+  if (contradictions.length > 25) {
+    console.error(`    …and ${contradictions.length - 25} more.`);
+  }
+  console.error('');
+  console.error('  Remove the entry from scripts/php-lang-invariant-allowlist.json and translate');
+  console.error('  the value: it is real work, not an invariant.');
+  process.exit(1);
 }
 
 if (WRITE_BASELINE) {
