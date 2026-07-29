@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The app now tells the server which language it is being read in.** Every API request carries the language selected in the app, so anything the server writes during that request comes back in it. Previously the app sent nothing of its own and the server had to fall back to the browser's language, which is often not the language the visitor chose — this was the one gap left open when API response language was fixed earlier in this release.
+
+  It changes most for people who are not signed in: registration, password reset, email verification, and the public pages have no saved preference for the server to read, so the browser's language was the only signal available. A signed-in member's saved preference still wins; this only replaces the guess underneath it, and an explicit language in the address still overrides both.
+
+  Only the eleven languages the platform actually has are sent, and regional variants are reduced to the language (`pt-BR` becomes `pt`) rather than sent for the server to discard. File uploads assemble their request separately and are covered too, because an upload can be refused and its refusal is read like any other.
+
 - **Admin screens now show the server's own words when an action is refused, in the reader's language.** Twenty-six places across the admin panel read the server's message from a field the server never fills — or from a `catch` block that can never run — so the message was silently dropped and replaced with a generic local one. On six of those, nothing checked whether the request had succeeded at all: saving the civic-digest cadence, editing an isolated-node item, sending an emergency alert, and loading the emergency-alert and survey lists all reported success, or showed an empty list, when the server had actually refused. Those are now reported.
 
   Two mistakes were repeated across the file: reading `message` on a failed response, which only ever carries `error`; and expecting the API client to throw on a rejected request, which it does not — it returns a failed result. Both read as correct code, and both meant the same thing in practice: the reason the server gave was thrown away.

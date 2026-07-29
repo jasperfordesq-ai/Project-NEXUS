@@ -61,7 +61,11 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Accept', 'Content-Type', 'Authorization', 'Idempotency-Key', 'X-Requested-With', 'X-XSRF-TOKEN', 'X-CSRF-TOKEN', 'X-Socket-Id', 'X-Timezone', 'X-Locale', 'X-Tenant-ID', 'X-Tenant-Slug', 'X-Trusted-Device', 'X-Request-Id', 'X-Events-Contract', 'Cache-Control', 'Pragma'],
+    // Accept-Language is a CORS-safelisted request header, so a browser would
+    // send it regardless. It is listed anyway: the allow-list is where someone
+    // looks to find out what the frontend sends, and a header that works only
+    // because of a safelist rule is a header that looks accidental.
+    'allowed_headers' => ['Accept', 'Accept-Language', 'Content-Type', 'Authorization', 'Idempotency-Key', 'X-Requested-With', 'X-XSRF-TOKEN', 'X-CSRF-TOKEN', 'X-Socket-Id', 'X-Timezone', 'X-Locale', 'X-Tenant-ID', 'X-Tenant-Slug', 'X-Trusted-Device', 'X-Request-Id', 'X-Events-Contract', 'Cache-Control', 'Pragma'],
 
     'exposed_headers' => ['X-Request-Id', 'X-Build', 'X-Events-Contract'],
 

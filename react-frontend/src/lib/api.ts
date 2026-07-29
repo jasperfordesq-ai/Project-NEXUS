@@ -23,7 +23,7 @@ import { apiResponseSchema } from '@/lib/api-schemas';
 import { recordApiDiagnostic } from '@/lib/supportDiagnostics';
 import { safeLocalStorageSet } from '@/lib/safeStorage';
 import { queueSentryApiCall, queueSentryBreadcrumb, queueSentryMessage } from '@/lib/telemetryQueue';
-import i18n from '@/i18n';
+import i18n, { SUPPORTED_LOCALE_CODES } from '@/i18n';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -640,6 +640,8 @@ export class ApiClient {
       headers.set('Accept', 'application/json');
     }
 
+    this.applyLanguageHeader(headers);
+
     // Add auth token unless explicitly skipped
     if (!options.skipAuth) {
       const token = tokenManager.getAccessToken();
@@ -667,6 +669,35 @@ export class ApiClient {
     }
 
     return headers;
+  }
+
+  /**
+   * Tell the server which language the app is actually being read in.
+   *
+   * The backend resolves a request's locale from, in order: an explicit
+   * `?locale=`, the signed-in member's saved preference, this header, then the
+   * platform default. Sending it therefore cannot override anybody's saved
+   * choice — it only replaces the *browser's* Accept-Language, which is what the
+   * server had to guess from before, and which is frequently not the language
+   * the member picked in the app.
+   *
+   * It matters most where there is no saved preference to read: registration,
+   * password reset, email verification, and every other request made before
+   * signing in. Those were served in the browser's language no matter what the
+   * visitor had selected.
+   *
+   * The region subtag is dropped (`pt-BR` → `pt`) because the backend's locale
+   * directories are language-only, and an unrecognised code is not sent at all
+   * rather than being sent for the server to discard.
+   */
+  private applyLanguageHeader(headers: Headers): void {
+    // A caller that set the header deliberately outranks this.
+    if (headers.has('Accept-Language')) return;
+
+    const language = (i18n.language || '').split('-')[0] ?? '';
+    if (!(SUPPORTED_LOCALE_CODES as readonly string[]).includes(language)) return;
+
+    headers.set('Accept-Language', language);
   }
 
   /**
@@ -1478,6 +1509,11 @@ export class ApiClient {
     const headers = new Headers(options?.headers);
     headers.delete('Content-Type'); // L10: force-remove in case it was inherited
     headers.set('Accept', 'application/json');
+
+    // Uploads build their own headers rather than going through buildHeaders(),
+    // so the language has to be attached here too — an upload can be refused,
+    // and its refusal is read by the member like any other.
+    this.applyLanguageHeader(headers);
 
     if (!options?.skipAuth) {
       const token = tokenManager.getAccessToken();

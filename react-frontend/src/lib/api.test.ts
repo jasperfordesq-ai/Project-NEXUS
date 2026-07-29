@@ -1232,6 +1232,85 @@ describe('API Client', () => {
       expect(headers.get('X-Tenant-ID')).toBeNull();
     });
   });
+
+  /**
+   * The server resolves a request's locale from `?locale=`, then the signed-in
+   * member's saved preference, then this header, then the platform default.
+   * Sending the app's language therefore cannot override anybody's saved choice
+   * — it replaces the *browser's* Accept-Language, which is all the server had
+   * for requests made before sign-in.
+   */
+  describe('Accept-Language header', () => {
+    let i18n: typeof import('@/i18n').default;
+
+    async function sendGet(): Promise<Headers> {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ data: {} }),
+      } as Response);
+
+      await api.get('/v2/test');
+
+      return vi.mocked(fetch).mock.calls[0]?.[1]?.headers as Headers;
+    }
+
+    beforeEach(async () => {
+      // The suite re-imports ./api per test, so its i18n instance is a fresh
+      // module too — reach it the same way, or the language set here belongs to
+      // a different copy than the client reads.
+      i18n = (await import('@/i18n')).default;
+    });
+
+    it('sends the language the app is being read in', async () => {
+      i18n.language = 'fr';
+      expect((await sendGet()).get('Accept-Language')).toBe('fr');
+    });
+
+    it('drops the region subtag, which the server has no locale for', async () => {
+      i18n.language = 'pt-BR';
+      expect((await sendGet()).get('Accept-Language')).toBe('pt');
+    });
+
+    it('sends nothing rather than a language the platform does not have', async () => {
+      i18n.language = 'sv';
+      expect((await sendGet()).get('Accept-Language')).toBeNull();
+    });
+
+    it('leaves a header the caller set alone', async () => {
+      i18n.language = 'fr';
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ data: {} }),
+      } as Response);
+
+      await api.get('/v2/test', { headers: { 'Accept-Language': 'ja' } });
+
+      const headers = vi.mocked(fetch).mock.calls[0]?.[1]?.headers as Headers;
+      expect(headers.get('Accept-Language')).toBe('ja');
+    });
+
+    // Uploads assemble their own headers instead of going through
+    // buildHeaders(), so they are a separate path that has to be covered
+    // explicitly — an upload can be refused, and its refusal is read too.
+    it('sends it on uploads, which build their headers separately', async () => {
+      i18n.language = 'de';
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ data: {} }),
+      } as Response);
+
+      await api.upload('/v2/files', new File(['x'], 'x.txt'));
+
+      const headers = vi.mocked(fetch).mock.calls[0]?.[1]?.headers as Headers;
+      expect(headers.get('Accept-Language')).toBe('de');
+    });
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
