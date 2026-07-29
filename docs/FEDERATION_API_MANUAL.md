@@ -1,11 +1,45 @@
 # Federation API — Instruction Manual
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-29
 
 This guide explains how Project NEXUS connects a tenant to another timebank. It
 is for tenant administrators, platform operators, and integration developers.
 The registered routes in `routes/api.php` and the authorization code named
 below remain the source of truth.
+
+## Current status — every external protocol is switched OFF
+
+**Read this before following any endpoint example in this manual.**
+
+All external partner federation protocols are **built and complete, but disabled
+platform-wide**. They were built ahead of demand deliberately: no external
+partner is connected in production yet. While they are disabled, every external
+endpoint described below answers **HTTP 503 with a `Retry-After` header**, whatever
+credentials you present. That is the kill switch, not a fault, and not a sign your
+credentials are wrong.
+
+| Protocol | Route family | Status |
+| --- | --- | --- |
+| Native V1 partner API | `/api/v1/federation/*` | Built — **disabled** |
+| Native V2 ingest | `/api/v2/federation/ingest/*` | Built — **disabled** |
+| Komunitin | `/api/v2/federation/komunitin/*` | Built — **disabled** |
+| Credit Commons | `/api/v2/federation/cc/*` | Built — **disabled** |
+| External webhook receiver | `POST /api/v2/federation/external/webhooks/receive` | Built — **disabled** |
+| Cross-node aggregates | `GET /api/v2/federation/aggregates` | Built — **disabled** |
+| Inbound hour transfer | `POST /api/v2/federation/hour-transfer/inbound` | Built — **disabled** |
+| Partner API (AG60) | `/api/partner/v1/*` | Built — **disabled** (separate switch) |
+
+Two things this table does *not* cover, deliberately:
+
+- **Federation between communities inside one installation is unaffected** and
+  keeps working. The switch governs traffic with *other installations* only. The
+  member-facing `/api/v2/federation/*` routes are internal and stay available.
+- The Partner API has its **own** switch, independent of the federation one.
+  Turning external federation on does not turn the Partner API on, or vice versa.
+
+Each protocol is re-enabled individually in **Super Admin → Federation**, as its
+security review passes. Expect to request that a protocol be enabled as part of
+onboarding rather than assuming it is live.
 
 ## Plain-English model
 
@@ -81,7 +115,7 @@ response contracts.
 | Surface | Route family | Audience and contract |
 | --- | --- | --- |
 | Member federation UI/API | `/api/v2/federation/*` | Authenticated NEXUS users: status, consent, partners, federated resources, settings, connections, messages, and transactions. |
-| Native V1 partner API | `/api/v1/federation/*` | Legacy/native partner reads and writes. The index and health endpoints are public; data methods call the controller's federation authentication. |
+| Native V1 partner API | `/api/v1/federation/*` | The only partner-facing **read** API in NEXUS's own native format, plus a few writes. Not superseded: the v2 families below serve different jobs. The index, health, OAuth token and webhook-test endpoints sit outside the federation authenticator — the token endpoint necessarily so, since it exchanges client credentials for a token — and the data methods call the controller's federation authentication. |
 | Komunitin | `/api/v2/federation/komunitin/*` | Protocol-native JSON:API accounting resources. |
 | Credit Commons | `/api/v2/federation/cc/*` | Credit Commons accounts, entries, and transaction lifecycle. |
 | Native V2 ingest | `/api/v2/federation/ingest/*` | Versioned partner pushes for reviews, listings, events, groups, connections, volunteering, and member sync. |

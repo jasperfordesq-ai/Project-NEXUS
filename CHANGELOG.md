@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- **The federation manual now says, up front, that every external protocol is switched off.** All of the partner federation protocols are built and complete but deliberately disabled, because none is connected to a live partner yet. The manual described how to call them without mentioning that, so anyone following its examples received a bare "service unavailable" and no explanation — with nothing to distinguish a deliberate platform setting from wrong credentials or a broken integration. It now opens with a per-protocol status table, states that a disabled endpoint answers 503 whatever credentials are presented, and notes the two things people get wrong about the switch: federation *between communities inside one installation* is unaffected and keeps working, and the Partner API has its own separate switch that is not turned on or off with the others.
+
+  The entry describing the version 1 partner API was also misleading. It read as though that surface were superseded, when nothing has replaced it: it remains the only partner-facing **read** API in the platform's own native format. The newer families do different jobs — one accepts inbound pushes, two speak other platforms' formats, and the member-facing routes are for the platform's own logged-in users. The entry now says so, and records which of its endpoints sit outside the federation authenticator and why the token endpoint necessarily does.
+
+  The admin-facing API documentation page needed no change: it already inherits a banner announcing the disabled state.
+
 ### Security
 
 - **Audited the three externally-reachable federation endpoints that require no login, and closed two gaps in what was proven about them.** These are the first of the seven protocols switched off pending review, chosen first because they are the only ones an anonymous caller can reach at all. A correction worth recording: only **one** of the three is genuinely anonymous. The other two authenticate inside the request handler rather than at the boundary — one by a shared-secret signature, one by an API key or signature — which is why they looked unauthenticated from the routing table alone.
