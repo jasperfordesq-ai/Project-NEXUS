@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **API responses now follow the language the member chose, instead of their browser's language.** Anything the server writes during a request — validation messages, refusals, service errors — was rendered in whatever language the browser asked for, ignoring the language the member had actually selected in the app. Someone who set the platform to French but browses with an English browser received English.
+
+  The locale is resolved from four things in order: an explicit override, the member's saved language, the browser's `Accept-Language` header, then the platform default. The second of those never applied. Locale resolution runs early enough to cover every API route, which also means it runs before the request's login token has been checked — so at that moment there is no known member to read a preference from, and resolution quietly fell through to the browser. Three of the four tiers worked, which is why this held up under casual inspection.
+
+  It also survived testing. The standard way to write an authenticated test happens to make the current member available earlier than a real request does, so the saved preference appeared to be honoured in tests and only failed in production. The new test deliberately signs in the way the app itself does, and additionally asserts that its own request was authenticated at all — an unauthenticated request would have passed the language check for the wrong reason and proved nothing.
+
+  The language is now applied again the moment the member is identified, which is the earliest point it can be known. An explicit override still wins. The `Content-Language` header on the response is now read back from what was actually used, rather than from the earlier guess, so it no longer reports a language the body was not rendered in.
+
+  One related gap is recorded but deliberately not addressed here: the frontend sends no language of its own with API calls, so requests made before signing in still depend entirely on the browser's header.
+
 - **Federation partnership errors now appear in the admin's own language.** Every refusal from the partnership lifecycle — requesting, approving, counter-proposing, rejecting, suspending, reactivating, ending, and changing permissions — was hardcoded English in the service layer. Forty-four of them. A French, German or Irish administrator got English text such as "Target tenant is not accepting federation requests" no matter what language they had chosen.
 
   What made this hard to spot is that the admin screens *looked* correct. Each one already had a translated string sitting beside the server message as a fallback, so the code read as though it were covered. It was not: the server always supplies a message, so the fallback never ran. Every one of those translated strings was unreachable for real rejections. The path in between has no translation step anywhere — the service returns the text, the controller passes it through, and the API client copies it into the field the toast displays — so whatever the service writes is what the admin reads.

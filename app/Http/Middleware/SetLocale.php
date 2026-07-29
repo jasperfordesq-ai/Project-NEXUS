@@ -35,9 +35,46 @@ class SetLocale
 
         /** @var Response $response */
         $response = $next($request);
-        $response->headers->set('Content-Language', $locale);
+        // Read the locale back rather than reusing the value resolved above: the
+        // request may have refined it once the JWT holder became known (see
+        // applyUserPreference), and the header must describe what was actually
+        // rendered.
+        $response->headers->set('Content-Language', App::getLocale());
 
         return $response;
+    }
+
+    /**
+     * Re-resolve the locale once the authenticated user is known.
+     *
+     * This middleware is registered on the api middleware GROUP, which wraps and
+     * therefore runs before route middleware. At that point the bearer JWT has
+     * not been validated and no guard holds a user, so tier 2 below cannot fire
+     * and resolution silently falls through to Accept-Language — following the
+     * browser's language instead of the one the member chose in the app.
+     *
+     * App\Http\Middleware\Authenticate calls this as soon as it resolves the
+     * token holder, which is the earliest point the saved preference is known.
+     * Reordering middleware instead would change behaviour for every
+     * unauthenticated route as well, so the refinement happens here.
+     *
+     * An explicit, supported ?locale= still wins: that is tier 1, used for
+     * deliberate overrides such as previewing another language.
+     */
+    public static function applyUserPreference(Request $request, mixed $user): void
+    {
+        $queryLocale = $request->query('locale');
+        if (is_string($queryLocale) && in_array($queryLocale, self::SUPPORTED_LOCALES, true)) {
+            return;
+        }
+
+        $language = is_object($user) ? ($user->preferred_language ?? null) : null;
+        if (!is_string($language) || $language === '' || !in_array($language, self::SUPPORTED_LOCALES, true)) {
+            return;
+        }
+
+        App::setLocale($language);
+        Translator::setLocale($language);
     }
 
     private function resolveLocale(Request $request): string

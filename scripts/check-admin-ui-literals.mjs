@@ -168,7 +168,10 @@ if (process.argv.includes('--json')) {
   console.log('============================================================');
   console.log(`  Source files: ${auditedFileCount}`);
   console.log(`  Violations:   ${results.length}`);
-  if (listMode && results.length > 0) {
+  // Always list on failure: the FAIL message below says "above", and a bare
+  // count leaves whoever hits this in CI with no file to open. --list only
+  // controls listing when the check PASSES.
+  if ((listMode || results.length > 0) && results.length > 0) {
     console.log('');
     for (const result of results) {
       console.log(`${result.file}:${result.line}:${result.column} [${result.context}] ${JSON.stringify(result.value)}`);

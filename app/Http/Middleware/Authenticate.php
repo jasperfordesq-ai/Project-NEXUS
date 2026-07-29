@@ -121,6 +121,9 @@ class Authenticate
                 if ($user) {
                     Log::shareContext(['user_id' => (int) $user->id]);
                 }
+                // SetLocale ran in the api group, before this middleware, so it
+                // could not see the member's saved language. Apply it now.
+                SetLocale::applyUserPreference($request, $user);
                 return $this->preventSharedCaching($next($request));
             }
         }
@@ -136,6 +139,9 @@ class Authenticate
                 if ($user) {
                     Log::shareContext(['user_id' => (int) $user->id]);
                 }
+                // SetLocale ran in the api group, before the JWT was validated,
+                // so it could not see the member's saved language. Apply it now.
+                SetLocale::applyUserPreference($request, $user);
                 return $this->preventSharedCaching($next($request));
             }
         }
