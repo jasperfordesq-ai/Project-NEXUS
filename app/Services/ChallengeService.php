@@ -29,20 +29,51 @@ class ChallengeService
     ) {}
 
     /**
+     * The `challenges.challenge_type` column is an enum; anything outside this
+     * set truncates to '' under the non-strict session sql_mode this app runs
+     * (`config/database.php` sets `strict => false`), so a typo would persist
+     * as a challenge that no `action_type` lookup can ever match.
+     *
+     * @var list<string>
+     */
+    public const CHALLENGE_TYPES = ['daily', 'weekly', 'monthly', 'special'];
+
+    /**
      * Get all challenges for a tenant.
+     *
+     * 🔴 `challenges` has NO `status` column and NO `category` column. The real
+     * ones are `is_active` (tinyint) and `challenge_type`
+     * (daily|weekly|monthly|special). Filtering on the phantom pair threw
+     * `SQLSTATE[42S22] Unknown column` on the `count()` before a single row was
+     * read, and — unlike most of this codebase — nothing here catches it, so
+     * the first caller to pass either filter took a hard 500. This method has
+     * no callers yet, which is the only reason it never surfaced.
+     *
+     * `status` is kept as an explicit alias onto `is_active` rather than
+     * dropped: a caller written against the old (imagined) contract then gets a
+     * correct query instead of a filter that silently matches everything.
+     *
+     * @param  array{limit?:int|string, offset?:int|string, status?:string, is_active?:bool|int|string, challenge_type?:string}  $filters
+     * @return array{items:list<array<string,mixed>>, total:int}
      */
     public static function getAll(int $tenantId, array $filters = []): array
     {
         $limit = min((int) ($filters['limit'] ?? 20), 100);
         $offset = max(0, (int) ($filters['offset'] ?? 0));
 
-        $query = Challenge::query();
+        // Explicit tenant predicate as well as the HasTenantScope global scope,
+        // matching getById()/claim(). Without it the $tenantId argument was
+        // decorative and the result depended entirely on ambient TenantContext.
+        $query = Challenge::query()->where('tenant_id', $tenantId);
 
         if (! empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+            $query->where('is_active', $filters['status'] === 'active');
         }
-        if (! empty($filters['category'])) {
-            $query->where('category', $filters['category']);
+        if (isset($filters['is_active'])) {
+            $query->where('is_active', (bool) $filters['is_active']);
+        }
+        if (! empty($filters['challenge_type'])) {
+            $query->where('challenge_type', $filters['challenge_type']);
         }
 
         $total = $query->count();
@@ -73,28 +104,90 @@ class ChallengeService
 
     /**
      * Create a new challenge.
+     *
+     * 🔴 `challenges` has NO `status`, `category`, `starts_at` or `ends_at`
+     * column. All four were in this payload, and because none of them appear in
+     * Challenge::$fillable, Eloquent DISCARDED them silently instead of
+     * failing — so a caller setting a category would have watched the write
+     * succeed and the value evaporate. The real columns are `is_active`,
+     * `challenge_type`, `start_date` and `end_date`.
+     *
+     * The insert was independently broken regardless of those: `action_type`
+     * and `end_date` are both NOT NULL and both defaulted to null here, so
+     * every call threw `1048 Column 'action_type' cannot be null`. Both are
+     * required payload keys now and are checked up front, so a bad payload
+     * fails with a message naming the field instead of an integrity-constraint
+     * stack trace from three layers down.
+     *
+     * `starts_at` / `ends_at` survive as INPUT aliases only — they are payload
+     * keys, never columns — so any caller written against the old shape keeps
+     * working and its dates actually land.
+     *
+     * @param  array{title:string, action_type:string, end_date?:string, ends_at?:string, description?:?string, challenge_type?:string, target_count?:int|string, xp_reward?:int|string, badge_reward?:?string, start_date?:string, starts_at?:string, is_active?:bool|int|string}  $data
+     *
+     * @throws \InvalidArgumentException when a NOT NULL column has no value, or
+     *                                   challenge_type is outside the enum.
      */
     public static function create(int $tenantId, array $data): ?int
     {
+        $title = trim((string) ($data['title'] ?? ''));
+        if ($title === '') {
+            throw new \InvalidArgumentException('challenges.title is NOT NULL: a non-empty title is required.');
+        }
+
+        // NOT NULL with no DB default. Previously null-by-default, which is why
+        // every call to this method threw before reaching the database's own
+        // error for end_date.
+        $actionType = trim((string) ($data['action_type'] ?? ''));
+        if ($actionType === '') {
+            throw new \InvalidArgumentException('challenges.action_type is NOT NULL: an action_type is required.');
+        }
+
+        $challengeType = (string) ($data['challenge_type'] ?? 'weekly');
+        if (! in_array($challengeType, self::CHALLENGE_TYPES, true)) {
+            throw new \InvalidArgumentException(sprintf(
+                'challenges.challenge_type must be one of %s, got "%s".',
+                implode('|', self::CHALLENGE_TYPES),
+                $challengeType
+            ));
+        }
+
+        // Both columns are DATE, not DATETIME — normalise so a datetime string
+        // is not silently truncated on the way in.
+        $startDate = $data['start_date'] ?? $data['starts_at'] ?? now();
+        $endDate = $data['end_date'] ?? $data['ends_at'] ?? null;
+        if (empty($endDate)) {
+            throw new \InvalidArgumentException('challenges.end_date is NOT NULL: an end_date is required.');
+        }
+
         $challenge = new Challenge([
-            'title'          => $data['title'],
+            'tenant_id'      => $tenantId,
+            'title'          => $title,
             'description'    => $data['description'] ?? null,
-            'challenge_type' => $data['challenge_type'] ?? 'weekly',
-            'action_type'    => $data['action_type'] ?? null,
-            'target_count'   => $data['target_count'] ?? 1,
-            'category'       => $data['category'] ?? 'general',
+            'challenge_type' => $challengeType,
+            'action_type'    => $actionType,
+            'target_count'   => max(1, (int) ($data['target_count'] ?? 1)),
             'xp_reward'      => max(0, (int) ($data['xp_reward'] ?? 10)),
             'badge_reward'   => $data['badge_reward'] ?? null,
-            'status'         => 'active',
-            'is_active'      => true,
-            'start_date'     => $data['start_date'] ?? $data['starts_at'] ?? now(),
-            'end_date'       => $data['end_date'] ?? $data['ends_at'] ?? null,
-            'starts_at'      => $data['starts_at'] ?? $data['start_date'] ?? now(),
-            'ends_at'        => $data['ends_at'] ?? $data['end_date'] ?? null,
+            'is_active'      => isset($data['is_active']) ? (bool) $data['is_active'] : true,
+            'start_date'     => self::toDateString($startDate),
+            'end_date'       => self::toDateString($endDate),
         ]);
         $challenge->save();
 
         return $challenge->id;
+    }
+
+    /**
+     * Normalise a date-ish value to Y-m-d for the DATE columns above.
+     */
+    private static function toDateString(mixed $value): string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        return \Illuminate\Support\Carbon::parse((string) $value)->toDateString();
     }
 
     /**

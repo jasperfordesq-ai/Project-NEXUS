@@ -549,4 +549,196 @@ class SchemaWriteRegressionTest extends TestCase
         );
         $this->assertSame([], MatchingService::getPreferences($userId)['categories']);
     }
+
+    // =====================================================================
+    // FIX 10 — ChallengeService::create / getAll vs phantom
+    //          status / category / starts_at / ends_at
+    // =====================================================================
+    //
+    // Same class of defect as FIX 8, in the two methods of the same service
+    // that had no callers, so nothing ever raised it:
+    //
+    //  - getAll() filtered on `status` and `category`. Neither column exists,
+    //    so either filter threw 42S22 on the count() — and getAll has no
+    //    catch-all, so the first caller to pass one took a hard 500.
+    //  - create() wrote `status`, `category`, `starts_at` and `ends_at`. None
+    //    are in Challenge::$fillable, so Eloquent discarded all four SILENTLY
+    //    rather than throwing — the caller's category simply vanished. Under
+    //    the non-strict session sql_mode this app runs (config/database.php
+    //    sets strict => false) that failure mode is invisible.
+    //  - Independently, create() defaulted `action_type` and `end_date` to
+    //    null when both columns are NOT NULL, so every call threw 1048.
+    //
+    // These tests hit the real `challenges` table, so reintroducing any of the
+    // four phantom keys fails loudly here.
+
+    /** @return array<string,mixed> Payload with every phantom key present. */
+    private function phantomChallengePayload(array $overrides = []): array
+    {
+        return array_merge([
+            'title'          => 'Schema Regression Create',
+            'description'    => 'Created through the repaired service method.',
+            'challenge_type' => 'weekly',
+            'action_type'    => 'listing_created',
+            'target_count'   => 3,
+            'xp_reward'      => 40,
+            // The four keys that are NOT columns. They must be tolerated as
+            // input (starts_at/ends_at are aliases) or ignored, never written.
+            'status'         => 'active',
+            'category'       => 'general',
+            'starts_at'      => now()->subDay()->toDateString(),
+            'ends_at'        => now()->addDays(3)->toDateString(),
+        ], $overrides);
+    }
+
+    public function test_create_challenge_writes_only_real_columns(): void
+    {
+        $id = ChallengeService::create($this->testTenantId, $this->phantomChallengePayload());
+
+        $this->assertNotNull($id, 'create() returned null — the insert did not happen');
+
+        $row = DB::table('challenges')->where('id', $id)->first();
+        $this->assertNotNull($row);
+
+        // The real columns carry the values; starts_at/ends_at landed on
+        // start_date/end_date instead of being dropped on the floor.
+        $this->assertSame($this->testTenantId, (int) $row->tenant_id);
+        $this->assertSame('listing_created', $row->action_type);
+        $this->assertSame('weekly', $row->challenge_type);
+        $this->assertSame(1, (int) $row->is_active);
+        $this->assertSame(now()->subDay()->toDateString(), (string) $row->start_date);
+        $this->assertSame(now()->addDays(3)->toDateString(), (string) $row->end_date);
+        $this->assertSame(3, (int) $row->target_count);
+        $this->assertSame(40, (int) $row->xp_reward);
+
+        // And none of the four phantom keys became a column.
+        foreach (['status', 'category', 'starts_at', 'ends_at'] as $phantom) {
+            $this->assertObjectNotHasProperty(
+                $phantom,
+                $row,
+                "challenges.$phantom does not exist in the schema — it must not be written"
+            );
+        }
+    }
+
+    public function test_created_challenge_is_visible_to_the_live_read_path(): void
+    {
+        // The strongest check available: a row created by create() must satisfy
+        // the is_active + start_date/end_date predicates that the only real
+        // callers of this service (getChallengesWithProgress / updateProgress)
+        // use. A row written with end_date = NULL/'0000-00-00' — the shape the
+        // old defaults produced — would insert and then be permanently
+        // unreachable.
+        $userId = $this->makeUser('challengecreate');
+        $id = ChallengeService::create($this->testTenantId, $this->phantomChallengePayload());
+
+        $visible = collect(ChallengeService::getChallengesWithProgress($userId))
+            ->firstWhere('id', $id);
+
+        $this->assertNotNull($visible, 'created challenge is invisible to getChallengesWithProgress()');
+        $this->assertSame(0, $visible['user_progress']);
+        $this->assertFalse($visible['is_completed']);
+
+        $this->assertContains(
+            $id,
+            collect(ChallengeService::getActiveChallenges())->pluck('id')->all()
+        );
+    }
+
+    public function test_create_challenge_rejects_missing_not_null_columns(): void
+    {
+        // `action_type` is NOT NULL with no default. It used to default to null
+        // here, so every single call threw 1048 from inside the driver.
+        $payload = $this->phantomChallengePayload();
+        unset($payload['action_type']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/action_type/');
+        ChallengeService::create($this->testTenantId, $payload);
+    }
+
+    public function test_create_challenge_rejects_missing_end_date(): void
+    {
+        // `end_date` is NOT NULL too, and getChallengesWithProgress() filters
+        // on it, so an absent end date must be refused rather than persisted.
+        $payload = $this->phantomChallengePayload();
+        unset($payload['ends_at'], $payload['end_date']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/end_date/');
+        ChallengeService::create($this->testTenantId, $payload);
+    }
+
+    public function test_create_challenge_rejects_out_of_enum_challenge_type(): void
+    {
+        // challenge_type is enum('daily','weekly','monthly','special'). Under
+        // the non-strict sql_mode this app runs, 'general' would have been
+        // truncated to '' and persisted — the same silent-corruption mode the
+        // FIX 3/4 enum bugs at the top of this file had.
+        $this->expectException(\InvalidArgumentException::class);
+        ChallengeService::create(
+            $this->testTenantId,
+            $this->phantomChallengePayload(['challenge_type' => 'general'])
+        );
+
+        $this->assertSame(
+            0,
+            DB::table('challenges')->where('challenge_type', '')->count(),
+            'an out-of-enum challenge_type was truncated to empty string and persisted'
+        );
+    }
+
+    public function test_get_all_status_filter_maps_onto_is_active(): void
+    {
+        $activeId = ChallengeService::create($this->testTenantId, $this->phantomChallengePayload());
+        $inactiveId = ChallengeService::create(
+            $this->testTenantId,
+            $this->phantomChallengePayload(['title' => 'Retired', 'is_active' => false])
+        );
+
+        // Before the fix this threw 42S22 Unknown column 'status' on the
+        // count() — getAll() has no catch, so this was an uncaught 500.
+        $active = ChallengeService::getAll($this->testTenantId, ['status' => 'active', 'limit' => 100]);
+        $activeIds = array_column($active['items'], 'id');
+
+        $this->assertContains($activeId, $activeIds);
+        $this->assertNotContains($inactiveId, $activeIds, 'the status alias did not actually filter');
+
+        $inactive = ChallengeService::getAll($this->testTenantId, ['status' => 'inactive', 'limit' => 100]);
+        $inactiveIds = array_column($inactive['items'], 'id');
+
+        $this->assertContains($inactiveId, $inactiveIds);
+        $this->assertNotContains($activeId, $inactiveIds);
+    }
+
+    public function test_get_all_filters_on_challenge_type_not_phantom_category(): void
+    {
+        $weeklyId = ChallengeService::create($this->testTenantId, $this->phantomChallengePayload());
+        $dailyId = ChallengeService::create(
+            $this->testTenantId,
+            $this->phantomChallengePayload(['title' => 'Daily one', 'challenge_type' => 'daily'])
+        );
+
+        // `category` never existed; challenge_type is the real taxonomy.
+        $result = ChallengeService::getAll(
+            $this->testTenantId,
+            ['challenge_type' => 'daily', 'limit' => 100]
+        );
+        $ids = array_column($result['items'], 'id');
+
+        $this->assertContains($dailyId, $ids);
+        $this->assertNotContains($weeklyId, $ids);
+    }
+
+    public function test_get_all_is_scoped_to_the_requested_tenant(): void
+    {
+        $id = ChallengeService::create($this->testTenantId, $this->phantomChallengePayload());
+
+        // The $tenantId argument used to be decorative — the result depended
+        // entirely on ambient TenantContext.
+        $result = ChallengeService::getAll($this->testTenantId + 9999, ['limit' => 100]);
+
+        $this->assertNotContains($id, array_column($result['items'], 'id'));
+        $this->assertSame(0, $result['total']);
+    }
 }
