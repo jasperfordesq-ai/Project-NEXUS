@@ -291,19 +291,59 @@ function isTemplateFragment(val) {
   ].includes(word));
 }
 
-// DeepL supports interpolation variables like {{name}} — preserve them.
-// We replace {{var}} with XML-like tags that DeepL ignores, then restore.
+const PLACEHOLDER_PATTERN = /\{\{[^}]+\}\}/g;
+
+// Interpolation variables like {{name}} must survive translation untouched.
+// We replace {{var}} with an XML-ish self-closing tag, then restore.
 function escapeVars(str) {
   const vars = [];
-  const escaped = str.replace(/\{\{[^}]+\}\}/g, match => {
+  const escaped = str.replace(PLACEHOLDER_PATTERN, match => {
     vars.push(match);
-    return `<nexus${vars.length - 1}/>`;
+    // The tag NAME is a single meaningless letter on purpose. This used to be
+    // `<nexus0/>` and Google translated the name itself — `<nexo0/>` in Spanish
+    // and Portuguese, `<lien0/>` in French — so restore missed and the
+    // placeholder was lost. The same bug cost 207 values in lang/govuk_alpha.php
+    // before it was fixed in scripts/translate-php-lang-gaps.mjs (69cf79b77).
+    return `<x${vars.length - 1}/>`;
   });
   return { escaped, vars };
 }
 
+/**
+ * Restore by INDEX, tolerating a translated or re-cased tag name.
+ *
+ * Even a one-letter name is not safe from every engine and language, so the
+ * digits are the identity of the token and the name is decoration. A value that
+ * genuinely contains something shaped like `<p0/>` would be mis-restored — but
+ * then placeholdersMatch() rejects the result and the English is kept, so the
+ * failure mode stays safe either way.
+ */
 function restoreVars(str, vars) {
-  return str.replace(/<nexus(\d+)\/>/g, (_, i) => vars[parseInt(i)] || '');
+  return str.replace(
+    /<\s*[A-Za-zÀ-ɏ]{1,10}\s*(\d+)\s*\/?\s*>/g,
+    (whole, index) => vars[Number(index)] ?? whole,
+  );
+}
+
+function placeholderMultiset(text) {
+  const counts = new Map();
+  for (const match of text.match(PLACEHOLDER_PATTERN) ?? []) {
+    counts.set(match, (counts.get(match) ?? 0) + 1);
+  }
+  return counts;
+}
+
+// A dropped or duplicated {{token}} renders as literal text in a member's face.
+// A missing translation is recoverable; a broken placeholder is a visible defect,
+// so callers keep the English when this returns false.
+function placeholdersMatch(english, translated) {
+  const left = placeholderMultiset(english);
+  const right = placeholderMultiset(translated);
+  if (left.size !== right.size) return false;
+  for (const [token, count] of left) {
+    if (right.get(token) !== count) return false;
+  }
+  return true;
 }
 
 // ── DeepL API ────────────────────────────────────────────────────────────────
@@ -321,7 +361,7 @@ async function translateBatchDeepL(texts, targetLang) {
     body.append('source_lang', 'EN');
     body.append('target_lang', targetLang);
     body.append('tag_handling', 'xml');
-    body.append('ignore_tags', 'nexus0,nexus1,nexus2,nexus3,nexus4,nexus5,nexus6,nexus7,nexus8,nexus9');
+    body.append('ignore_tags', 'x0,x1,x2,x3,x4,x5,x6,x7,x8,x9');
     escapedBatch.forEach(({ escaped }) => body.append('text', escaped));
 
     const res = await fetch(DEEPL_URL, { method: 'POST', body });
@@ -516,6 +556,7 @@ async function main() {
   let totalGaps = 0;
   let totalTranslated = 0;
   let totalSkipped = 0;
+  let totalRejected = 0;
 
   const langs = langFilter ? [langFilter] : languages;
 
@@ -611,10 +652,22 @@ async function main() {
           deeplCode
         ) : [];
 
-        // Merge translations back into langData
+        // Merge translations back into langData. Every value is checked here
+        // rather than inside a backend, so Google, DeepL and OpenAI are all
+        // covered by the same gate.
         const updated = JSON.parse(JSON.stringify(langData)); // deep clone
-        keysToTranslate.forEach(({ key }, idx) => {
-          setNestedKey(updated, key, translated[idx]);
+        const rejected = [];
+        keysToTranslate.forEach(({ key, enVal }, idx) => {
+          const candidate = translated[idx];
+          if (typeof candidate === 'string' && placeholdersMatch(enVal, candidate)) {
+            setNestedKey(updated, key, candidate);
+            return;
+          }
+          // Keep the English: the key still exists so parity holds and the
+          // untranslated-value gates can still see it, whereas a mangled
+          // placeholder would ship as literal text.
+          setNestedKey(updated, key, enVal);
+          rejected.push({ key, english: enVal, got: candidate });
         });
         keysToCopy.forEach(({ key, enVal }) => {
           setNestedKey(updated, key, enVal);
@@ -644,8 +697,18 @@ async function main() {
           fs.writeFileSync(langPath, JSON.stringify(ordered, null, 2) + '\n', 'utf8');
         }
 
-        totalTranslated += keysToTranslate.length;
-        console.log(`   ✅ ${keysToTranslate.length} strings translated`);
+        totalTranslated += keysToTranslate.length - rejected.length;
+        totalRejected += rejected.length;
+        console.log(`   ✅ ${keysToTranslate.length - rejected.length} strings translated`);
+        if (rejected.length > 0) {
+          console.log(`   ⚠️  ${rejected.length} kept as English — placeholder mismatch:`);
+          rejected.slice(0, 5).forEach(({ key, english, got }) => {
+            console.log(`      ${key}`);
+            console.log(`        en:  ${JSON.stringify(english)}`);
+            console.log(`        got: ${JSON.stringify(got)}`);
+          });
+          if (rejected.length > 5) console.log(`      ... and ${rejected.length - 5} more`);
+        }
       } catch (err) {
         console.error(`   ❌ Failed: ${err.message}`);
         totalSkipped += keysToTranslate.length;
@@ -662,6 +725,9 @@ async function main() {
     console.log(`📊 Dry run complete: ${totalGaps} strings would be translated`);
   } else {
     console.log(`📊 Done: ${totalTranslated} strings translated, ${totalSkipped} skipped`);
+    if (totalRejected > 0) {
+      console.log(`⚠️  ${totalRejected} kept as English because the {{placeholder}} set did not survive translation`);
+    }
     if (totalTranslated > 0) {
       console.log('\nNext steps:');
       console.log('  1. Review a sample of translations: git diff react-frontend/public/locales/');

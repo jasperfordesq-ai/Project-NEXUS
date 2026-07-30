@@ -25,8 +25,8 @@
   "general_category": "Geral",
   "related_articles": "Artigos Relacionados",
   "feedback.question": "Este artigo foi útil?",
-  "feedback.yes": "Sim ({{count}})",
-  "feedback.no": "Não ({{count}})",
+  "feedback.yes": "Sim",
+  "feedback.no": "Não",
   "feedback_thanks": "Obrigado pelo seu feedback!",
   "feedback_failed": "Falha ao enviar o feedback.",
   "error": {
