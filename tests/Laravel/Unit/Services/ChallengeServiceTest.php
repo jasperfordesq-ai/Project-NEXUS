@@ -347,11 +347,21 @@ class ChallengeServiceTest extends TestCase
         $this->assertSame('gamificationService', $params[2]->getName());
     }
 
-    public function test_awardChallengeReward_is_private(): void
+    /**
+     * awardChallengeReward() is deliberately PUBLIC: it is the one award
+     * routine shared by both claim paths (this service for the accessible
+     * frontend, GamificationV2Controller::claimChallenge for React). It was
+     * private, which is why the React path grew its own XP-only reward logic
+     * and silently ignored challenges.badge_reward.
+     *
+     * @see \Tests\Laravel\Feature\ChallengeRewardParityTest
+     */
+    public function test_awardChallengeReward_is_shared_and_public(): void
     {
         $ref = new \ReflectionMethod(ChallengeService::class, 'awardChallengeReward');
-        $this->assertTrue($ref->isPrivate());
+        $this->assertTrue($ref->isPublic(), 'Both claim paths call this; making it private forces a call site to reimplement rewards.');
         $this->assertTrue($ref->isStatic());
+        $this->assertSame('array', $ref->getReturnType()?->getName(), 'Must report what it awarded so the API can echo the badge.');
     }
 
     public function test_create_has_correct_signature(): void

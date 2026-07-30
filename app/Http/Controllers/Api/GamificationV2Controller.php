@@ -376,7 +376,10 @@ class GamificationV2Controller extends BaseApiController
         $this->rateLimit('gamification_claim_challenge', 10, 60);
 
         try {
-            $challenge = $this->challengeService->getById($id, $this->getTenantId());
+            // Resolve the model, not an array: the reward is awarded by the
+            // shared ChallengeService::awardChallengeReward(), which needs the
+            // whole challenge (including badge_reward).
+            $challenge = $this->challengeService->getModelById($id, $this->getTenantId());
 
             if (!$challenge) {
                 return $this->respondWithError('RESOURCE_NOT_FOUND', __('api.challenge_not_found'), null, 404);
@@ -401,9 +404,12 @@ class GamificationV2Controller extends BaseApiController
             }
 
             // Atomic claim: UPDATE only if reward_claimed is still 0 to prevent
-            // double-award under concurrent requests (TOCTOU race condition)
+            // double-award under concurrent requests (TOCTOU race condition).
+            // `claimed_at` is stamped here too so this path leaves the same
+            // ledger row as ChallengeService::claim() — it was omitted, so every
+            // React claim left claimed_at NULL while accessible claims set it.
             $affected = DB::update(
-                "UPDATE user_challenge_progress SET reward_claimed = 1 WHERE challenge_id = ? AND user_id = ? AND tenant_id = ? AND reward_claimed = 0",
+                "UPDATE user_challenge_progress SET reward_claimed = 1, claimed_at = NOW() WHERE challenge_id = ? AND user_id = ? AND tenant_id = ? AND reward_claimed = 0",
                 [$id, $userId, $this->getTenantId()]
             );
 
@@ -411,16 +417,19 @@ class GamificationV2Controller extends BaseApiController
                 return $this->respondWithError('CHALLENGE_ALREADY_CLAIMED', __('api.gamification_challenge_already_claimed'), null, 400);
             }
 
-            $xpReward = (int) ($challenge['xp_reward'] ?? 0);
-            if ($xpReward > 0) {
-                $this->gamificationServiceLegacy->awardXP($userId, $xpReward, 'challenge_complete', "Completed challenge: {$challenge['title']}");
-            }
+            // 🔴 Award via the ONE shared routine — do not award anything here.
+            // This path used to award XP inline and ignored challenges.badge_reward
+            // entirely, so the same challenge granted a badge and a notification on
+            // the accessible frontend and neither here. Any new reward belongs in
+            // ChallengeService::awardChallengeReward() so both frontends get it.
+            $reward = $this->challengeService->awardChallengeReward($userId, $challenge);
 
             return $this->respondWithData([
                 'claimed' => true,
                 'challenge_id' => $id,
                 'reward' => [
-                    'xp' => $xpReward,
+                    'xp' => $reward['xp'],
+                    'badge' => $reward['badge'],
                 ],
             ]);
         } catch (\Throwable $e) {

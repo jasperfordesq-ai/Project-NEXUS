@@ -89,6 +89,19 @@ class ChallengeService
      */
     public static function getById(int $id, int $tenantId): ?array
     {
+        return self::getModelById($id, $tenantId)?->toArray();
+    }
+
+    /**
+     * Resolve a tenant-owned challenge as a model.
+     *
+     * Callers that need to award a reward must use this rather than getById(),
+     * because awardChallengeReward() takes the model — an array loses the
+     * `badge_reward` column silently if a caller only copies the fields it
+     * happens to know about, which is exactly how the two claim paths drifted.
+     */
+    public static function getModelById(int $id, int $tenantId): ?Challenge
+    {
         $challenge = Challenge::query()
             ->where('id', $id)
             ->first();
@@ -99,7 +112,7 @@ class ChallengeService
         if ((int) $challenge->tenant_id !== $tenantId) {
             return null;
         }
-        return $challenge->toArray();
+        return $challenge;
     }
 
     /**
@@ -216,14 +229,14 @@ class ChallengeService
             return false;
         }
 
-        // Validate by id + tenant only, exactly as the React path does via
-        // getById(). `challenges` has no `status` column — filtering on one
-        // (as this method used to) throws before the claim can even be
-        // attempted. `is_active` and the date range are the real predicates,
-        // and they gate whether the challenge was listed in the first place.
-        $challenge = Challenge::query()->where('id', $challengeId)->first();
+        // Validate by id + tenant only, exactly as the React path does — both
+        // now share getModelById(). `challenges` has no `status` column —
+        // filtering on one (as this method used to) throws before the claim can
+        // even be attempted. `is_active` and the date range are the real
+        // predicates, and they gate whether the challenge was listed at all.
+        $challenge = self::getModelById($challengeId, $tenantId);
 
-        if (! $challenge || (int) $challenge->tenant_id !== $tenantId) {
+        if (! $challenge) {
             return false;
         }
 
@@ -412,21 +425,48 @@ class ChallengeService
     }
 
     /**
-     * Award challenge completion rewards.
+     * Award the rewards for a claimed challenge: XP, the optional
+     * `challenges.badge_reward` badge, and the "you earned it" bell.
+     *
+     * 🔴 This is the ONE award routine. BOTH claim paths must call it:
+     * ChallengeService::claim() (accessible frontend, via
+     * AlphaController::claimChallengeReward) and
+     * GamificationV2Controller::claimChallenge() (React,
+     * POST /api/v2/gamification/challenges/{id}/claim). Do not reimplement any
+     * part of it at a call site.
+     *
+     * They previously each had their own reward logic and diverged: the React
+     * path awarded XP only, so the same challenge granted a badge and a bell on
+     * the accessible frontend and neither on React. Commit eea002e72 aligned
+     * the claim SEMANTICS of the two paths but deliberately left the REWARDS
+     * for a separate decision; this is that decision. Adding a reward here
+     * reaches both frontends — adding one at a call site recreates the bug.
+     *
+     * Callers are responsible for winning the conditional `reward_claimed`
+     * 0 -> 1 UPDATE *before* calling this, so a double submit cannot pay twice.
+     *
+     * @return array{xp: int, badge: string|null} What the challenge is
+     *         configured to award: its XP, and its `badge_reward` key (null
+     *         when unset). The badge key is reported as configured — the actual
+     *         grant is a no-op when the member already holds that badge or the
+     *         key matches no definition, which GamificationService decides.
      */
-    private static function awardChallengeReward(int $userId, Challenge $challenge): void
+    public static function awardChallengeReward(int $userId, Challenge $challenge): array
     {
-        if ($challenge->xp_reward > 0) {
+        $xp = max(0, (int) $challenge->xp_reward);
+        $badgeKey = ! empty($challenge->badge_reward) ? (string) $challenge->badge_reward : null;
+
+        if ($xp > 0) {
             GamificationService::awardXP(
                 $userId,
-                $challenge->xp_reward,
+                $xp,
                 'challenge_complete',
                 "Challenge: {$challenge->title}"
             );
         }
 
-        if (! empty($challenge->badge_reward)) {
-            GamificationService::awardBadgeByKey($userId, $challenge->badge_reward);
+        if ($badgeKey !== null) {
+            GamificationService::awardBadgeByKey($userId, $badgeKey);
         }
 
         // Render the bell in the RECIPIENT's preferred language.
@@ -444,5 +484,7 @@ class ChallengeService
             );
             \App\Services\NotificationDispatcher::fanOutPush((int) ($userId), 'achievement', __('svc_notifications.challenge.complete_earned', ['title' => $challenge->title, 'xp' => $challenge->xp_reward]), '/achievements');
         });
+
+        return ['xp' => $xp, 'badge' => $badgeKey];
     }
 }
