@@ -168,6 +168,40 @@ function topLevelArrayKeys(source, openParenIndex) {
   return keys;
 }
 
+/**
+ * A write can legitimately name a column that is not in the schema when it is
+ * guarded by a runtime existence check — an optional column a deployment may or
+ * may not have. PasswordResetController does exactly this:
+ *
+ *   $columns = DB::select("SHOW COLUMNS FROM users LIKE 'password_changed_at'");
+ *   if (!empty($columns)) { DB::update("UPDATE users SET password_changed_at ..."); }
+ *
+ * The write never executes without the column, so it is not a defect. Reporting
+ * it anyway would either train people to ignore this gate or push them to delete
+ * a deliberate compatibility shim. Scoped to the enclosing function so a guard
+ * elsewhere in the file cannot excuse an unguarded write.
+ */
+const GUARD_PATTERN = /SHOW\s+COLUMNS|SHOW\s+TABLES\s+LIKE|Schema::hasColumn|Schema::hasTable|information_schema/i;
+
+/**
+ * The guard must NAME the thing being guarded.
+ *
+ * A first version treated any guard anywhere in the enclosing function as
+ * excusing every write in it, and skipped 505 of 8,442 pairs — a `hasTable()`
+ * check would have silently exempted twenty unrelated column writes. Requiring
+ * the guard to mention the specific identifier brings it back to the one real
+ * case and keeps the gate honest.
+ *
+ * @param {string} identifier column or table name the write depends on
+ */
+function isGuarded(source, writeIndex, identifier) {
+  const functionStart = source.lastIndexOf('function ', writeIndex);
+  if (functionStart === -1) return false;
+  const scope = source.slice(functionStart, writeIndex);
+  if (!GUARD_PATTERN.test(scope)) return false;
+  return scope.includes(identifier);
+}
+
 function extractPairs(file) {
   const source = fs.readFileSync(file, 'utf8');
   const pairs = [];
@@ -187,6 +221,7 @@ function extractPairs(file) {
 
     const openParen = afterIndex + writeCall.index + writeCall[0].length - 1;
     for (const column of topLevelArrayKeys(source, openParen)) {
+      if (isGuarded(source, match.index, column)) continue;
       pairs.push({ table, column, line: lineOf(source, match.index), how: `->${writeCall[1]}()` });
     }
   }
@@ -194,7 +229,7 @@ function extractPairs(file) {
   for (const insert of source.matchAll(/INSERT\s+(?:IGNORE\s+)?INTO\s+`?([a-z0-9_]+)`?\s*\(([^)]*)\)/gi)) {
     for (const raw of insert[2].split(',')) {
       const column = raw.trim().replace(/`/g, '');
-      if (/^[a-z0-9_]+$/.test(column)) {
+      if (/^[a-z0-9_]+$/.test(column) && !isGuarded(source, insert.index, column)) {
         pairs.push({ table: insert[1], column, line: lineOf(source, insert.index), how: 'INSERT INTO' });
       }
     }
@@ -203,7 +238,7 @@ function extractPairs(file) {
   for (const update of source.matchAll(/UPDATE\s+`?([a-z0-9_]+)`?\s+SET\s+([\s\S]{0,500}?)(?:\bWHERE\b|["'])/gi)) {
     for (const assignment of update[2].split(',')) {
       const column = (assignment.match(/`?([a-z0-9_]+)`?\s*=/) || [])[1];
-      if (column) {
+      if (column && !isGuarded(source, update.index, column)) {
         pairs.push({ table: update[1], column, line: lineOf(source, update.index), how: 'UPDATE SET' });
       }
     }

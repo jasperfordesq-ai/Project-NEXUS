@@ -2,8 +2,9 @@
   "_README": "Pre-existing DB column/table references that do not resolve against database/schema/mysql-schema.sql. Read by scripts/check-db-column-references.mjs. SHRINK-ONLY: removing an entry is what a fix looks like; the gate FAILS if a listed entry no longer occurs, so a fix cannot land without updating this file. Adding an entry needs a reason in the commit message. Seeded 2026-07-30 when the gate was written.",
   "_WHY": "A documentation audit found docs citing a `group_bans` table that never existed. Chasing it down found the same defect three more times in the same service as a COLUMN mismatch on a table that does exist (writes to updated_at / moderated_at / action_taken on group_content_flags, whose real columns are resolved_at and moderation_action). Every write threw, and it went unnoticed for four months because each method wrapped its body in catch (\\Throwable) and returned a plausible value. Provenance: commit de2e48396 (2026-03-20, 'add missing service methods') wrote 15 services against an imagined schema.",
   "_STATUS_MEANINGS": {
-    "verified": "Checked by hand on 2026-07-30: the mismatch is real, and the caller situation stated in the note was confirmed by grep.",
-    "untriaged": "Surfaced when the gate was widened from the 15 de2e48396 services to all of app/. The pattern match is sound but nobody has yet confirmed whether the code is wrong or the committed dump has drifted from the live database. Do NOT quote these as defects until triaged."
+    "live-defect": "Reachable in production and the write throws. Fix these.",
+    "verified": "Real mismatch, but the code path has no callers — dead. Delete or repair as a cleanup, not an incident.",
+    "unreachable": "Real mismatch; triaged 2026-07-30 and confirmed to have no callers or no route, so nothing hits it today. Still wrong, still worth removing."
   },
   "columns": {
     "post_hashtags.tag": {
@@ -25,87 +26,103 @@
       "note": "Same site and same history as match_history.score."
     },
     "consent_types.tenant_id": {
-      "status": "untriaged",
-      "where": "app/Http/Controllers/Api/AdminEnterpriseController.php:1231"
+      "status": "live-defect",
+      "where": "app/Http/Controllers/Api/AdminEnterpriseController.php:1231 (createConsentType)",
+      "real": "the table has NO tenant_id — consent types are global, so the per-tenant assumption is wrong, not just the name",
+      "note": "LIVE AND USER-VISIBLE. Routed at POST /v2/admin/enterprise/gdpr/consent-types (routes/api.php:2403). The raw INSERT names tenant_id, throws, is caught as \\Exception, logged at error and returned as HTTP 500 CREATE_FAILED — so creating a GDPR consent type fails for every tenant admin, every time. Unguarded."
     },
     "deliverable_comments.content": {
-      "status": "untriaged",
-      "where": "app/Http/Controllers/Api/DeliverableController.php:139"
-    },
-    "users.password_changed_at": {
-      "status": "untriaged",
-      "where": "app/Http/Controllers/Api/PasswordResetController.php:639"
+      "status": "unreachable",
+      "where": "app/Http/Controllers/Api/DeliverableController.php:139 (addComment)",
+      "note": "Not routed and no internal caller. The whole deliverables feature appears unwired."
     },
     "listings.approved_by": {
-      "status": "untriaged",
-      "where": "app/Services/AdminListingsService.php:61 and :146"
+      "status": "unreachable",
+      "where": "app/Services/AdminListingsService.php:61 (approve), :146 (reject)",
+      "note": "AdminListingsService is referenced only by AppServiceProvider (DI registration, not a call). AdminListingsController injects ListingModerationService — a different class."
     },
     "listings.approved_at": {
-      "status": "untriaged",
-      "where": "app/Services/AdminListingsService.php:61"
+      "status": "unreachable",
+      "where": "app/Services/AdminListingsService.php:61 (approve)",
+      "note": "Same as listings.approved_by."
     },
     "comments.is_hidden": {
-      "status": "untriaged",
-      "where": "app/Services/ContentModerationService.php:410 and :417"
+      "status": "unreachable",
+      "where": "app/Services/ContentModerationService.php:410 and :417 (applyDecision)",
+      "note": "No ->applyDecision( call site anywhere in app/ outside the declaring file."
     },
     "deliverables.project_id": {
-      "status": "untriaged",
-      "where": "app/Services/DeliverableService.php:56"
+      "status": "unreachable",
+      "where": "app/Services/DeliverableService.php:56 (create)",
+      "note": "Class referenced only by AppServiceProvider. Every ->create( hit in app/ resolves to a different service."
     },
     "deliverable_comments.body": {
-      "status": "untriaged",
-      "where": "app/Services/DeliverableService.php:89"
+      "status": "unreachable",
+      "where": "app/Services/DeliverableService.php:89 (addComment)",
+      "note": "Same as deliverables.project_id. Note this file writes `body` while DeliverableController writes `content` — neither column exists."
     },
     "exchange_requests.provider_notes": {
-      "status": "untriaged",
-      "where": "app/Services/ExchangeService.php:304"
+      "status": "unreachable",
+      "where": "app/Services/ExchangeService.php:304 (decline)",
+      "note": "The only ->decline( call site is $this->hourGiftService->decline(...) — CaringHourGiftService, a different class."
     },
     "users.auth_provider": {
-      "status": "untriaged",
-      "where": "app/Services/GroupSSOService.php:188"
+      "status": "unreachable",
+      "where": "app/Services/GroupSSOService.php:188 (findOrCreateSSOUser)",
+      "note": "No callers."
     },
     "season_rankings.season_xp": {
-      "status": "untriaged",
-      "where": "app/Services/LeaderboardSeasonService.php:126"
+      "status": "unreachable",
+      "where": "app/Services/LeaderboardSeasonService.php:126 (endSeason)",
+      "note": "No callers."
     },
     "season_rankings.final_rank": {
-      "status": "untriaged",
-      "where": "app/Services/LeaderboardSeasonService.php:126"
+      "status": "unreachable",
+      "where": "app/Services/LeaderboardSeasonService.php:126 (endSeason)",
+      "note": "No callers."
     },
     "user_skills.skill_id": {
-      "status": "untriaged",
-      "where": "app/Services/SkillTaxonomyService.php:342"
+      "status": "unreachable",
+      "where": "app/Services/SkillTaxonomyService.php:342 (addSkill)",
+      "note": "No callers. The real column is skill_name; user_skills has no skill_id and no updated_at."
     },
     "user_skills.updated_at": {
-      "status": "untriaged",
-      "where": "app/Services/SkillTaxonomyService.php:342"
+      "status": "unreachable",
+      "where": "app/Services/SkillTaxonomyService.php:342 (addSkill)",
+      "note": "Same as user_skills.skill_id."
     }
   },
   "absentTables": {
     "match_preference_categories": {
-      "status": "verified",
+      "status": "live-defect",
       "where": "app/Services/MatchingService.php:189 (savePreferences)",
       "note": "LIVE — savePreferences is reached from AlphaController:11315. The category-preference sync sits in its own try/catch logging at debug level, so the surrounding save succeeds and the user's category choices are silently never persisted. No migration and no dump entry under any spelling."
     },
     "content_reports": {
-      "status": "untriaged",
-      "where": "app/Http/Controllers/Api/AdminContentController.php:65"
+      "status": "unreachable",
+      "where": "app/Http/Controllers/Api/AdminContentController.php:65 (approveContent)",
+      "note": "Not routed, no internal caller."
     },
     "tenant_features": {
-      "status": "untriaged",
-      "where": "app/Http/Controllers/Api/AdminSettingsController.php:203"
+      "status": "unreachable",
+      "where": "app/Http/Controllers/Api/AdminSettingsController.php:203 (toggleFeature)",
+      "note": "Not routed, no internal caller. Real feature toggling goes through TenantFeatureConfig and tenants.features."
     },
     "api_tokens": {
-      "status": "untriaged",
-      "where": "app/Services/AuthService.php:142"
+      "status": "unreachable",
+      "where": "app/Services/AuthService.php:142 (refreshToken)",
+      "note": "No callers — the only ->refreshToken( site is AuthController::refreshToken(). Real tokens are TokenService JWTs."
     },
     "challenge_claims": {
-      "status": "untriaged",
-      "where": "app/Services/ChallengeService.php:132"
+      "status": "live-defect",
+      "where": "app/Services/ChallengeService.php:132 (claim)",
+      "note": "LIVE. Called from app/Http/Controllers/GovukAlpha/AlphaController.php:15594 on the accessible frontend. Both the exists() read and the insert() hit a table that is in neither the dump nor the live database, so claim() always throws; the caller reports to Sentry and redirects with status=challenge-claim-failed. A member can never claim a challenge there. Unguarded."
     },
     "cron_job_runs": {
-      "status": "untriaged",
-      "where": "app/Services/CronJobService.php:56"
+      "status": "unreachable",
+      "where": "app/Services/CronJobService.php:56 (run)",
+      "note": "Class referenced only by AppServiceProvider. Cron monitoring in use is CronJobRunner."
     }
-  }
+  },
+  "_TRIAGE": "All entries triaged 2026-07-30 against the LIVE dev database via information_schema, not just the committed dump: every one is ABSENT live as well, so there is ZERO dump drift here and every entry is a code defect. Positive controls (users.email, group_content_flags.resolved_at, match_history.match_score, post_hashtags.hashtag_id, user_skills.skill_name) all returned present, so the query discriminates. The live DB has 727 tables against the dump's 723, so minor drift exists — just not in any of these. Reachability was then established per entry; a first pass using bare method names was discarded because generic names like create() and run() matched hundreds of unrelated call sites."
 }

@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **All 22 flagged database references triaged: none is schema drift, three are live, and one was the checker's own fault.** Each was tested against the live database through `information_schema` rather than only the committed dump, because "the code is wrong" and "the dump has gone stale" need opposite responses. **Every one is absent from the live database too — there is zero dump drift here.** The query was proved to discriminate first, with positive controls (`users.email`, `group_content_flags.resolved_at`, `match_history.match_score`, `post_hashtags.hashtag_id`, `user_skills.skill_name`) all returning present; a check that answers "absent" to everything is indistinguishable from a broken one. The live database does carry 727 tables against the dump's 723, so drift exists — just not in any of these.
+
+  **Three are reachable in production:**
+
+  Creating a GDPR consent type has never worked. `POST /v2/admin/enterprise/gdpr/consent-types` inserts a `tenant_id` column into `consent_types`, which does not have one — consent types are global, so the per-tenant assumption is wrong rather than the column name being a typo. The insert throws, is caught, and returns HTTP 500 to every tenant admin, every time.
+
+  Claiming a challenge on the accessible frontend has never worked. `ChallengeService::claim()` both reads and writes `challenge_claims`, a table in neither the dump nor the live database, so it always throws; the caller reports to Sentry and redirects with `status=challenge-claim-failed`.
+
+  And the previously-found `match_preference_categories`, where a member's category preferences are silently discarded.
+
+  **Sixteen are unreachable** — real mismatches on code paths with no callers and no route, several of them mutually confused (`DeliverableService` writes `deliverable_comments.body` while `DeliverableController` writes `content`, and neither column exists). They are still wrong and still recorded, but nothing hits them. Establishing that needed care: a first pass matching bare method names credited `DeliverableService::create()` with 267 callers, because every `->create(` in the codebase matched. Qualifying by class collapsed most to zero — `AdminListingsService::approve` looked live until the controller turned out to inject `ListingModerationService`, a different class.
+
+  **One was my checker being wrong.** `PasswordResetController` writes `users.password_changed_at` — but guards it with `SHOW COLUMNS FROM users LIKE 'password_changed_at'` first, so the write never runs without the column. That is a deliberate optional-column shim, and flagging it would have pushed someone to delete a compatibility guard. The gate now recognises runtime existence checks and drops it.
+
+  Getting that exemption right took two attempts, and the first was worse than the bug. Treating any guard anywhere in a function as excusing every write in it silenced 505 of 8,442 checks at a stroke. Requiring the guard to name the specific identifier recovered most, and a second flaw remained: a `Schema::hasTable()` guard proves the *table* exists, not the column, so allowing it to excuse a column mismatch lost 335 more checks. Column mismatches now require a guard naming the column. Coverage settled at 8,283 checks with 159 genuinely guarded writes skipped — and all three mutation tests were re-run afterwards, because an exemption is exactly the kind of change that can quietly turn a gate into decoration.
+
 ### Added
 
 - **A blocking check that PHP cannot write a column which does not exist.** Following a service found writing three non-existent columns for four months, every place in `app/` where both the table and the column are written as literals — **8,442 of them across 1,733 files** — is now verified against the committed schema dump on every push. It runs in the Migration Safety Gate, which is in the release gate's dependency list, so a failure genuinely reds the build.
