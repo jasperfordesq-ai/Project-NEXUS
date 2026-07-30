@@ -21,6 +21,7 @@
     "check:docs": "node scripts/check-docs-hygiene.mjs",
     "check:version": "node scripts/check-version-consistency.mjs",
     "check:changelog": "node scripts/check-changelog-updated.mjs",
+    "check:db-columns": "node scripts/check-db-column-references.mjs",
     "check:licenses": "node scripts/check-licenses.mjs",
     "licenses:write": "node scripts/check-licenses.mjs --write",
     "translate:i18n:gaps": "node scripts/translate-i18n-gaps.mjs",

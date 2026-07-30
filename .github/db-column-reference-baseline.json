@@ -1,0 +1,111 @@
+{
+  "_README": "Pre-existing DB column/table references that do not resolve against database/schema/mysql-schema.sql. Read by scripts/check-db-column-references.mjs. SHRINK-ONLY: removing an entry is what a fix looks like; the gate FAILS if a listed entry no longer occurs, so a fix cannot land without updating this file. Adding an entry needs a reason in the commit message. Seeded 2026-07-30 when the gate was written.",
+  "_WHY": "A documentation audit found docs citing a `group_bans` table that never existed. Chasing it down found the same defect three more times in the same service as a COLUMN mismatch on a table that does exist (writes to updated_at / moderated_at / action_taken on group_content_flags, whose real columns are resolved_at and moderation_action). Every write threw, and it went unnoticed for four months because each method wrapped its body in catch (\\Throwable) and returned a plausible value. Provenance: commit de2e48396 (2026-03-20, 'add missing service methods') wrote 15 services against an imagined schema.",
+  "_STATUS_MEANINGS": {
+    "verified": "Checked by hand on 2026-07-30: the mismatch is real, and the caller situation stated in the note was confirmed by grep.",
+    "untriaged": "Surfaced when the gate was widened from the 15 de2e48396 services to all of app/. The pattern match is sound but nobody has yet confirmed whether the code is wrong or the committed dump has drifted from the live database. Do NOT quote these as defects until triaged."
+  },
+  "columns": {
+    "post_hashtags.tag": {
+      "status": "verified",
+      "where": "app/Services/HashtagService.php:40 (syncTags)",
+      "real": "hashtag_id",
+      "note": "Dead code — syncTags has no callers. The ->delete() above the insert DOES succeed and is not tenant-scoped, so a future caller would clear a post's hashtag links and then fail to write the replacements."
+    },
+    "match_history.score": {
+      "status": "verified",
+      "where": "app/Services/MatchingService.php:277 (recordInteraction)",
+      "real": "match_score",
+      "note": "Dead code — no static callers. The live path is MatchLearningService::recordInteraction, which uses the correct columns AND tenant_id. migrations/2026_03_06_fix_match_history_columns.sql was written specifically to add the columns 'MatchingService writes to' — it added match_score/distance_km and the code was never updated."
+    },
+    "match_history.distance": {
+      "status": "verified",
+      "where": "app/Services/MatchingService.php:277 (recordInteraction)",
+      "real": "distance_km",
+      "note": "Same site and same history as match_history.score."
+    },
+    "consent_types.tenant_id": {
+      "status": "untriaged",
+      "where": "app/Http/Controllers/Api/AdminEnterpriseController.php:1231"
+    },
+    "deliverable_comments.content": {
+      "status": "untriaged",
+      "where": "app/Http/Controllers/Api/DeliverableController.php:139"
+    },
+    "users.password_changed_at": {
+      "status": "untriaged",
+      "where": "app/Http/Controllers/Api/PasswordResetController.php:639"
+    },
+    "listings.approved_by": {
+      "status": "untriaged",
+      "where": "app/Services/AdminListingsService.php:61 and :146"
+    },
+    "listings.approved_at": {
+      "status": "untriaged",
+      "where": "app/Services/AdminListingsService.php:61"
+    },
+    "comments.is_hidden": {
+      "status": "untriaged",
+      "where": "app/Services/ContentModerationService.php:410 and :417"
+    },
+    "deliverables.project_id": {
+      "status": "untriaged",
+      "where": "app/Services/DeliverableService.php:56"
+    },
+    "deliverable_comments.body": {
+      "status": "untriaged",
+      "where": "app/Services/DeliverableService.php:89"
+    },
+    "exchange_requests.provider_notes": {
+      "status": "untriaged",
+      "where": "app/Services/ExchangeService.php:304"
+    },
+    "users.auth_provider": {
+      "status": "untriaged",
+      "where": "app/Services/GroupSSOService.php:188"
+    },
+    "season_rankings.season_xp": {
+      "status": "untriaged",
+      "where": "app/Services/LeaderboardSeasonService.php:126"
+    },
+    "season_rankings.final_rank": {
+      "status": "untriaged",
+      "where": "app/Services/LeaderboardSeasonService.php:126"
+    },
+    "user_skills.skill_id": {
+      "status": "untriaged",
+      "where": "app/Services/SkillTaxonomyService.php:342"
+    },
+    "user_skills.updated_at": {
+      "status": "untriaged",
+      "where": "app/Services/SkillTaxonomyService.php:342"
+    }
+  },
+  "absentTables": {
+    "match_preference_categories": {
+      "status": "verified",
+      "where": "app/Services/MatchingService.php:189 (savePreferences)",
+      "note": "LIVE — savePreferences is reached from AlphaController:11315. The category-preference sync sits in its own try/catch logging at debug level, so the surrounding save succeeds and the user's category choices are silently never persisted. No migration and no dump entry under any spelling."
+    },
+    "content_reports": {
+      "status": "untriaged",
+      "where": "app/Http/Controllers/Api/AdminContentController.php:65"
+    },
+    "tenant_features": {
+      "status": "untriaged",
+      "where": "app/Http/Controllers/Api/AdminSettingsController.php:203"
+    },
+    "api_tokens": {
+      "status": "untriaged",
+      "where": "app/Services/AuthService.php:142"
+    },
+    "challenge_claims": {
+      "status": "untriaged",
+      "where": "app/Services/ChallengeService.php:132"
+    },
+    "cron_job_runs": {
+      "status": "untriaged",
+      "where": "app/Services/CronJobService.php:56"
+    }
+  }
+}

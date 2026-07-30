@@ -841,6 +841,27 @@ jobs:
       - name: "BLOCKING: Prerender cron installer runtime test"
         run: bash tests/scripts/install-prerender-cron-test.sh
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Catches PHP writing a column or table that does not exist. Added
+      # 2026-07-30 after GroupModerationService was found writing three
+      # non-existent columns to group_content_flags for four months: every write
+      # threw, but each method wrapped its body in catch (\Throwable) and returned
+      # a plausible value, so it read as "nothing to do" rather than "broken".
+      # PHPStan cannot see this — it does not know the schema — and the tests that
+      # cover those paths assert the swallowed return value.
+      #
+      # It parses the committed schema dump rather than connecting to a database,
+      # so a green result means something on every runner. Pre-existing problems
+      # are tracked in .github/db-column-reference-baseline.json, shrink-only and
+      # enforced in both directions: an entry that no longer occurs also fails, so
+      # a fix cannot land without removing its entry.
+      - name: "BLOCKING: DB column references resolve against the schema dump"
+        run: node scripts/check-db-column-references.mjs
+
       - name: "WARNING: Schema dump drift detection"
         run: bash scripts/check-schema-drift.sh || true
 

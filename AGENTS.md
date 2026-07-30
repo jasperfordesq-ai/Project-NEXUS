@@ -671,6 +671,48 @@ sudo bash scripts/maintenance.sh status
 - When generating migrations, check for FK column type consistency (signed vs unsigned int) against referenced tables.
 - Use current Laravel 12 migration APIs; avoid deprecated patterns.
 
+### 🔴 `catch (\Throwable)` hides schema mismatches — the gate is the compensating control
+
+This codebase wraps method bodies in `catch (\Throwable)` as a matter of course:
+**2,882 occurrences across 540 files in `app/`, 350 of which return a falsy
+default** (`null`, `false`, `[]`, `0`) from the catch. That is an established
+idiom here, not a smell to be stamped out — but it has one specific, expensive
+consequence you must account for.
+
+**A query against a column that does not exist becomes a plausible return value.**
+`GroupModerationService` wrote `updated_at`, `moderated_at` and `action_taken` to
+`group_content_flags`, whose real columns are `resolved_at` and
+`moderation_action`. Every write threw. `flagContent()` returned `null`,
+`moderateContent()` returned `false`, `getModerationHistory()` returned `[]` — all
+of which read as "nothing to do" rather than "broken". It went unnoticed from
+2026-03-20 to 2026-07-30, and the tests covering those paths asserted the
+swallowed value. PHPStan cannot see it; it does not know the schema.
+
+Two consequences for how you work:
+
+- **When auditing a service whose methods each swallow `Throwable`, assume nothing
+  works until you have proven otherwise.** A green test and a plausible return
+  value are not evidence.
+- **Do not add a `catch (\Throwable)` whose only effect is to convert a schema or
+  contract error into a success-shaped value.** If the caller cannot distinguish
+  "no rows" from "the query is invalid", log at `error` and re-throw, or return a
+  result type that says which happened.
+
+The compensating control is `npm run check:db-columns`
+(`scripts/check-db-column-references.mjs`), **BLOCKING** in the Migration Safety
+Gate. It parses the committed schema dump — no database, so it cannot pass
+vacuously on a runner with different env config — and fails when PHP writes a
+column or table that does not exist. Pre-existing problems are tracked in
+`.github/db-column-reference-baseline.json`, shrink-only and enforced in both
+directions: an entry that no longer occurs also fails, so a fix cannot land
+without removing its entry. It checks the ~8,400 places where both the table and
+the column are literal; `where()`/`orderBy()`/`select()` are deliberately out of
+scope because they can name a joined table's column.
+
+🔴 The provenance is worth knowing: commit `de2e48396` (2026-03-20, "add missing
+service methods") wrote **15 services against an imagined schema**. Anything that
+commit touched deserves a column-level check before you trust it.
+
 ### Schema Dump (for fresh database setup)
 
 `database/schema/mysql-schema.sql` contains the **full database schema** plus `laravel_migrations` table data. This is committed to git so new contributors can set up a working database with:
