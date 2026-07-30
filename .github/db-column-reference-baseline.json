@@ -1,6 +1,7 @@
 {
   "_README": "Pre-existing DB column/table references that do not resolve against database/schema/mysql-schema.sql. Read by scripts/check-db-column-references.mjs. SHRINK-ONLY: removing an entry is what a fix looks like; the gate FAILS if a listed entry no longer occurs, so a fix cannot land without updating this file. Adding an entry needs a reason in the commit message. Seeded 2026-07-30 when the gate was written.",
   "_WHY": "A documentation audit found docs citing a `group_bans` table that never existed. Chasing it down found the same defect three more times in the same service as a COLUMN mismatch on a table that does exist (writes to updated_at / moderated_at / action_taken on group_content_flags, whose real columns are resolved_at and moderation_action). Every write threw, and it went unnoticed for four months because each method wrapped its body in catch (\\Throwable) and returned a plausible value. Provenance: commit de2e48396 (2026-03-20, 'add missing service methods') wrote 15 services against an imagined schema.",
+  "_FIXED_2026_07_30": "All three `live-defect` entries are gone, fixed rather than re-baselined, and every one resolved as 'the code is wrong, the schema is right'. consent_types.tenant_id: the table is a PLATFORM-GLOBAL catalogue keyed by slug and FK'd from tenant_consent_overrides + consent_version_history, with per-tenant customisation done through the override table — so the admin CRUD dropped tenant_id and its three mutations now require a PLATFORM super admin, because a shared catalogue means every write is cross-tenant. challenge_claims: never created; the real claim ledger is user_challenge_progress.reward_claimed, so ChallengeService::claim was reimplemented on it to match GamificationV2Controller (the old version also never awarded anything, so creating the table would have made a visible failure silent). match_preference_categories: never created, and the canonical match_preferences.categories JSON column already persists the choices, so the vestigial side-table blocks were deleted. Two `verified` entries went with them (match_history.score / .distance) when the dead MatchingService::recordInteraction duplicate was removed. Regression cover: tests/Laravel/Feature/SchemaWriteRegressionTest.php FIX 7-9.",
   "_STATUS_MEANINGS": {
     "live-defect": "Reachable in production and the write throws. Fix these.",
     "verified": "Real mismatch, but the code path has no callers — dead. Delete or repair as a cleanup, not an incident.",
@@ -12,24 +13,6 @@
       "where": "app/Services/HashtagService.php:40 (syncTags)",
       "real": "hashtag_id",
       "note": "Dead code — syncTags has no callers. The ->delete() above the insert DOES succeed and is not tenant-scoped, so a future caller would clear a post's hashtag links and then fail to write the replacements."
-    },
-    "match_history.score": {
-      "status": "verified",
-      "where": "app/Services/MatchingService.php:277 (recordInteraction)",
-      "real": "match_score",
-      "note": "Dead code — no static callers. The live path is MatchLearningService::recordInteraction, which uses the correct columns AND tenant_id. migrations/2026_03_06_fix_match_history_columns.sql was written specifically to add the columns 'MatchingService writes to' — it added match_score/distance_km and the code was never updated."
-    },
-    "match_history.distance": {
-      "status": "verified",
-      "where": "app/Services/MatchingService.php:277 (recordInteraction)",
-      "real": "distance_km",
-      "note": "Same site and same history as match_history.score."
-    },
-    "consent_types.tenant_id": {
-      "status": "live-defect",
-      "where": "app/Http/Controllers/Api/AdminEnterpriseController.php:1231 (createConsentType)",
-      "real": "the table has NO tenant_id — consent types are global, so the per-tenant assumption is wrong, not just the name",
-      "note": "LIVE AND USER-VISIBLE. Routed at POST /v2/admin/enterprise/gdpr/consent-types (routes/api.php:2403). The raw INSERT names tenant_id, throws, is caught as \\Exception, logged at error and returned as HTTP 500 CREATE_FAILED — so creating a GDPR consent type fails for every tenant admin, every time. Unguarded."
     },
     "deliverable_comments.content": {
       "status": "unreachable",
@@ -93,11 +76,6 @@
     }
   },
   "absentTables": {
-    "match_preference_categories": {
-      "status": "live-defect",
-      "where": "app/Services/MatchingService.php:189 (savePreferences)",
-      "note": "LIVE — savePreferences is reached from AlphaController:11315. The category-preference sync sits in its own try/catch logging at debug level, so the surrounding save succeeds and the user's category choices are silently never persisted. No migration and no dump entry under any spelling."
-    },
     "content_reports": {
       "status": "unreachable",
       "where": "app/Http/Controllers/Api/AdminContentController.php:65 (approveContent)",
@@ -112,11 +90,6 @@
       "status": "unreachable",
       "where": "app/Services/AuthService.php:142 (refreshToken)",
       "note": "No callers — the only ->refreshToken( site is AuthController::refreshToken(). Real tokens are TokenService JWTs."
-    },
-    "challenge_claims": {
-      "status": "live-defect",
-      "where": "app/Services/ChallengeService.php:132 (claim)",
-      "note": "LIVE. Called from app/Http/Controllers/GovukAlpha/AlphaController.php:15594 on the accessible frontend. Both the exists() read and the insert() hit a table that is in neither the dump nor the live database, so claim() always throws; the caller reports to Sentry and redirects with status=challenge-claim-failed. A member can never claim a challenge there. Unguarded."
     },
     "cron_job_runs": {
       "status": "unreachable",

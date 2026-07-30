@@ -27,8 +27,19 @@ const { mockGetConsentTypes, mockCreateConsentType, mockUpdateConsentType, mockD
 }));
 
 // ── Module mocks ─────────────────────────────────────────────────────────────
+// consent_types is a platform-global catalogue: create/edit/delete are gated on
+// requirePlatformSuperAdmin() server-side, and the page mirrors that. Most tests
+// here exercise the CRUD, so the default identity is a platform super admin;
+// the gating test below overrides it with a plain tenant admin.
+const mockAuthUser = vi.hoisted(() => ({
+  current: { id: 1, role: 'super_admin', is_super_admin: true } as Record<string, unknown> | null,
+}));
+
 vi.mock('@/contexts', () =>
-  createMockContexts({ useToast: () => mockToast })
+  createMockContexts({
+    useToast: () => mockToast,
+    useAuth: () => ({ user: mockAuthUser.current, isAuthenticated: true }),
+  })
 );
 
 vi.mock('../../api/adminApi', () => ({
@@ -99,6 +110,7 @@ const makeConsentType = (overrides = {}) => ({
 describe('GdprConsentTypes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuthUser.current = { id: 1, role: 'super_admin', is_super_admin: true };
     mockGetConsentTypes.mockResolvedValue({ success: true, data: [] });
     mockExportConsentTypeUsers.mockReturnValue('/api/v2/admin/consent-types/marketing/users.csv');
   });
@@ -277,6 +289,45 @@ describe('GdprConsentTypes', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/80\.0%/)).toBeInTheDocument();
+    });
+  });
+
+  it('hides catalogue mutation controls from a tenant admin', async () => {
+    // consent_types is shared across every community, so the server refuses
+    // create/update/delete for anyone below platform super admin. The page must
+    // not offer buttons that would 403 — but reading the catalogue is fine.
+    mockAuthUser.current = { id: 2, role: 'admin', is_super_admin: false };
+    mockGetConsentTypes.mockResolvedValue({
+      success: true,
+      data: [makeConsentType({ name: 'Marketing Emails' })],
+    });
+    const { GdprConsentTypes } = await import('./GdprConsentTypes');
+    render(<GdprConsentTypes />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Marketing Emails')).toBeInTheDocument();
+    });
+
+    const labels = screen.getAllByRole('button').map((b) =>
+      `${b.textContent ?? ''} ${b.getAttribute('aria-label') ?? ''}`.toLowerCase()
+    );
+    expect(labels.some((l) => l.includes('create'))).toBe(false);
+    expect(labels.some((l) => l.includes('edit'))).toBe(false);
+    expect(labels.some((l) => l.includes('delete'))).toBe(false);
+    // Read-only affordances survive.
+    expect(labels.some((l) => l.includes('users'))).toBe(true);
+  });
+
+  it('surfaces an error instead of an empty list when the load fails', async () => {
+    // The API client resolves rather than throws, so without an explicit
+    // res.success check a 500 renders as "no consent types" — which is exactly
+    // how the phantom tenant_id filter stayed invisible.
+    mockGetConsentTypes.mockResolvedValue({ success: false, error: 'boom' });
+    const { GdprConsentTypes } = await import('./GdprConsentTypes');
+    render(<GdprConsentTypes />);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalled();
     });
   });
 

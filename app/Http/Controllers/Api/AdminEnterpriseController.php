@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Core\TenantContext;
 use App\Services\LegalDocumentService;
 
@@ -341,9 +342,7 @@ class AdminEnterpriseController extends BaseApiController
             $total = (int) (DB::selectOne("SELECT COUNT(*) as cnt FROM user_consents WHERE tenant_id = ?", [$tenantId])->cnt ?? 0);
             $consents = array_map(fn($r) => (array)$r, DB::select("SELECT uc.*, uc.consent_given as consented, uc.given_at as consented_at, u.name as user_name,
                         (SELECT ct.name FROM consent_types ct
-                         WHERE ct.slug = uc.consent_type
-                           AND (ct.tenant_id = uc.tenant_id OR ct.tenant_id IS NULL)
-                         ORDER BY ct.tenant_id IS NULL ASC LIMIT 1) as consent_type_name
+                         WHERE ct.slug = uc.consent_type LIMIT 1) as consent_type_name
                  FROM user_consents uc
                  LEFT JOIN users u ON u.id = uc.user_id
                  WHERE uc.tenant_id = ?
@@ -1188,6 +1187,19 @@ class AdminEnterpriseController extends BaseApiController
     }
 
     // ─── GDPR Consent Type Management ────────────────────────────────
+    //
+    // 🔴 `consent_types` is a PLATFORM-GLOBAL catalogue, not a tenant-scoped
+    // table. It has no `tenant_id` column: `slug` is its unique key, and both
+    // `tenant_consent_overrides.consent_type_slug` and
+    // `consent_version_history.consent_type_slug` are foreign keys onto it.
+    // Per-tenant customisation is the OVERRIDE table (version + text), which
+    // GdprService::getEffectiveConsentVersion() COALESCEs over the global row.
+    //
+    // Because the catalogue is shared, every MUTATION here is a cross-tenant
+    // write and is gated on requirePlatformSuperAdmin(). A tenant admin
+    // deleting a row would cascade away every other tenant's overrides and
+    // version history for that consent type. Reads stay open to tenant admins;
+    // the consent counts are scoped to the caller's own tenant.
 
     /** GET /api/v2/admin/enterprise/gdpr/consent-types */
     public function consentTypes(): JsonResponse
@@ -1198,26 +1210,26 @@ class AdminEnterpriseController extends BaseApiController
         try {
             $types = array_map(fn($r) => (array) $r, DB::select(
                 "SELECT ct.*,
-                        COALESCE((SELECT COUNT(*) FROM user_consents uc WHERE uc.consent_type = ct.slug AND uc.tenant_id = ct.tenant_id AND uc.consent_given = 1), 0) as granted_count,
-                        COALESCE((SELECT COUNT(*) FROM user_consents uc WHERE uc.consent_type = ct.slug AND uc.tenant_id = ct.tenant_id AND uc.consent_given = 0), 0) as denied_count
+                        COALESCE((SELECT COUNT(*) FROM user_consents uc WHERE uc.consent_type = ct.slug AND uc.tenant_id = ? AND uc.consent_given = 1), 0) as granted_count,
+                        COALESCE((SELECT COUNT(*) FROM user_consents uc WHERE uc.consent_type = ct.slug AND uc.tenant_id = ? AND uc.consent_given = 0), 0) as denied_count
                  FROM consent_types ct
-                 WHERE ct.tenant_id = ?
                  ORDER BY ct.display_order ASC, ct.name ASC",
-                [$tenantId]
+                [$tenantId, $tenantId]
             ));
             return $this->respondWithData($types);
         } catch (\Exception $e) {
-            // Table may not exist
-            \Illuminate\Support\Facades\Log::warning('AdminEnterpriseController: consent_types query failed: ' . $e->getMessage());
-            return $this->respondWithData([]);
+            // Do NOT return [] here: an empty list is indistinguishable from
+            // "no consent types configured", which is exactly how the phantom
+            // ct.tenant_id filter kept this page blank without anyone noticing.
+            Log::error('List consent types failed', ['error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_INTERNAL_ERROR', __('api.server_error'), null, 500);
         }
     }
 
     /** POST /api/v2/admin/enterprise/gdpr/consent-types */
     public function createConsentType(): JsonResponse
     {
-        $this->requireAdmin();
-        $tenantId = $this->getTenantId();
+        $this->requirePlatformSuperAdmin();
         $input = $this->getAllInput();
 
         $slug = trim($input['slug'] ?? '');
@@ -1226,12 +1238,16 @@ class AdminEnterpriseController extends BaseApiController
             return $this->respondWithError('VALIDATION_ERROR', __('api_controllers_1.admin_enterprise.slug_and_name_required'), null, 422);
         }
 
+        // current_text is NOT NULL with no default — omitting it fails the
+        // insert just as surely as the phantom tenant_id column did.
+        $currentText = trim((string) ($input['current_text'] ?? $input['description'] ?? $name));
+
         try {
             DB::insert(
-                "INSERT INTO consent_types (tenant_id, slug, name, description, category, is_required, legal_basis, retention_days, display_order, is_active, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
+                "INSERT INTO consent_types (slug, name, description, category, is_required, legal_basis, retention_days, display_order, is_active, current_version, current_text, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
                 [
-                    $tenantId, $slug, $name,
+                    $slug, $name,
                     $input['description'] ?? null,
                     $input['category'] ?? 'general',
                     (int) ($input['is_required'] ?? 0),
@@ -1239,6 +1255,8 @@ class AdminEnterpriseController extends BaseApiController
                     isset($input['retention_days']) ? (int) $input['retention_days'] : null,
                     (int) ($input['display_order'] ?? 0),
                     (int) ($input['is_active'] ?? 1),
+                    trim((string) ($input['current_version'] ?? '1.0')) ?: '1.0',
+                    $currentText,
                 ]
             );
             $newId = (int) DB::getPdo()->lastInsertId();
@@ -1254,8 +1272,7 @@ class AdminEnterpriseController extends BaseApiController
     /** PUT /api/v2/admin/enterprise/gdpr/consent-types/{id} */
     public function updateConsentType(int $id): JsonResponse
     {
-        $this->requireAdmin();
-        $tenantId = $this->getTenantId();
+        $this->requirePlatformSuperAdmin();
         $input = $this->getAllInput();
 
         $allowedFields = ['slug', 'name', 'description', 'category', 'is_required', 'legal_basis', 'retention_days', 'display_order', 'is_active'];
@@ -1277,16 +1294,16 @@ class AdminEnterpriseController extends BaseApiController
 
         $setParts[] = 'updated_at = NOW()';
         $params[] = $id;
-        $params[] = $tenantId;
 
         try {
-            $affected = DB::update("UPDATE consent_types SET " . implode(', ', $setParts) . " WHERE id = ? AND tenant_id = ?", $params);
+            $affected = DB::update("UPDATE consent_types SET " . implode(', ', $setParts) . " WHERE id = ?", $params);
             if ($affected === 0) {
                 return $this->respondWithError('NOT_FOUND', __('api_controllers_1.admin_enterprise.consent_type_not_found'), null, 404);
             }
-            $updated = DB::selectOne("SELECT * FROM consent_types WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            $updated = DB::selectOne("SELECT * FROM consent_types WHERE id = ?", [$id]);
             return $this->respondWithData($updated ? (array) $updated : ['id' => $id, 'updated' => true]);
         } catch (\Exception $e) {
+            Log::error('Update consent type failed', ['id' => $id, 'error' => $e->getMessage()]);
             return $this->respondWithError('UPDATE_FAILED', __('api_controllers_1.admin_enterprise.consent_type_update_failed'), null, 500);
         }
     }
@@ -1294,13 +1311,13 @@ class AdminEnterpriseController extends BaseApiController
     /** DELETE /api/v2/admin/enterprise/gdpr/consent-types/{id} */
     public function deleteConsentType(int $id): JsonResponse
     {
-        $this->requireAdmin();
-        $tenantId = $this->getTenantId();
+        $this->requirePlatformSuperAdmin();
 
         try {
-            DB::delete("DELETE FROM consent_types WHERE id = ? AND tenant_id = ?", [$id, $tenantId]);
+            DB::delete("DELETE FROM consent_types WHERE id = ?", [$id]);
             return $this->respondWithData(['deleted' => true]);
         } catch (\Exception $e) {
+            Log::error('Delete consent type failed', ['id' => $id, 'error' => $e->getMessage()]);
             return $this->respondWithError('DELETE_FAILED', __('api_controllers_1.admin_enterprise.consent_type_delete_failed'), null, 500);
         }
     }

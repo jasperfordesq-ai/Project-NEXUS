@@ -189,6 +189,24 @@ class ChallengeServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * The claim ledger is `user_challenge_progress.reward_claimed`. These
+     * tests used to mock a `challenge_claims` table instead — a table that has
+     * never existed in any schema — which is how the broken path stayed green
+     * for four months. Real-database cover lives in
+     * tests/Laravel/Feature/SchemaWriteRegressionTest.php (FIX 8).
+     */
+    private function mockProgressRow(?object $progress, int $updated = 0): Mockery\MockInterface
+    {
+        $progressQuery = Mockery::mock();
+        $progressQuery->shouldReceive('where')->andReturnSelf();
+        $progressQuery->shouldReceive('first')->andReturn($progress);
+        $progressQuery->shouldReceive('update')->andReturn($updated);
+        DB::shouldReceive('table')->with('user_challenge_progress')->andReturn($progressQuery);
+
+        return $progressQuery;
+    }
+
     public function test_claim_returns_false_when_already_claimed(): void
     {
         $row = $this->challengeRow(['id' => 5]);
@@ -200,39 +218,59 @@ class ChallengeServiceTest extends TestCase
         $usersQuery->shouldReceive('exists')->andReturn(true);
         DB::shouldReceive('table')->with('users')->andReturn($usersQuery);
 
-        // Override DB facade for the claims table check
-        $claimsQuery = Mockery::mock();
-        $claimsQuery->shouldReceive('where')->with('challenge_id', 5)->andReturnSelf();
-        $claimsQuery->shouldReceive('where')->with('user_id', 1)->andReturnSelf();
-        $claimsQuery->shouldReceive('exists')->andReturn(true);
-        DB::shouldReceive('table')->with('challenge_claims')->andReturn($claimsQuery);
+        $this->mockProgressRow((object) [
+            'completed_at'   => '2026-01-02 00:00:00',
+            'reward_claimed' => 1,
+        ]);
 
-        $result = ChallengeService::claim(5, 1, 2);
-
-        $this->assertFalse($result);
+        $this->assertFalse(ChallengeService::claim(5, 1, 2));
     }
 
-    public function test_claim_returns_true_on_success(): void
+    public function test_claim_returns_false_when_not_yet_completed(): void
     {
         $row = $this->challengeRow(['id' => 5]);
         $this->mockEloquentConnection([[$row]]);
 
-        // claim() first verifies the user belongs to the tenant via DB::table('users')
         $usersQuery = Mockery::mock();
         $usersQuery->shouldReceive('where')->andReturnSelf();
         $usersQuery->shouldReceive('exists')->andReturn(true);
         DB::shouldReceive('table')->with('users')->andReturn($usersQuery);
 
-        $claimsQuery = Mockery::mock();
-        $claimsQuery->shouldReceive('where')->with('challenge_id', 5)->andReturnSelf();
-        $claimsQuery->shouldReceive('where')->with('user_id', 1)->andReturnSelf();
-        $claimsQuery->shouldReceive('exists')->andReturn(false);
-        $claimsQuery->shouldReceive('insert')->once()->andReturn(true);
-        DB::shouldReceive('table')->with('challenge_claims')->andReturn($claimsQuery);
+        $this->mockProgressRow((object) [
+            'completed_at'   => null,
+            'reward_claimed' => 0,
+        ]);
 
-        $result = ChallengeService::claim(5, 1, 2);
+        $this->assertFalse(ChallengeService::claim(5, 1, 2));
+    }
 
-        $this->assertTrue($result);
+    public function test_claim_returns_false_when_progress_row_missing(): void
+    {
+        $row = $this->challengeRow(['id' => 5]);
+        $this->mockEloquentConnection([[$row]]);
+
+        $usersQuery = Mockery::mock();
+        $usersQuery->shouldReceive('where')->andReturnSelf();
+        $usersQuery->shouldReceive('exists')->andReturn(true);
+        DB::shouldReceive('table')->with('users')->andReturn($usersQuery);
+
+        // Never started the challenge — nothing to claim.
+        $this->mockProgressRow(null);
+
+        $this->assertFalse(ChallengeService::claim(5, 1, 2));
+    }
+
+    public function test_claim_returns_false_when_challenge_belongs_to_another_tenant(): void
+    {
+        $row = $this->challengeRow(['id' => 5, 'tenant_id' => 99]);
+        $this->mockEloquentConnection([[$row]]);
+
+        $usersQuery = Mockery::mock();
+        $usersQuery->shouldReceive('where')->andReturnSelf();
+        $usersQuery->shouldReceive('exists')->andReturn(true);
+        DB::shouldReceive('table')->with('users')->andReturn($usersQuery);
+
+        $this->assertFalse(ChallengeService::claim(5, 1, 2));
     }
 
     // ── getActiveChallenges ────────────────────────────────────────────

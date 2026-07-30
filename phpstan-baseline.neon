@@ -25,12 +25,6 @@ parameters:
 			path: app/Http/Controllers/Api/AdminConfigController.php
 
 		-
-			message: '#^Call to static method error\(\) on an unknown class App\\Http\\Controllers\\Api\\Log\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AdminEnterpriseController.php
-
-		-
 			message: '#^Class App\\Services\\RedisCacheService not found\.$#'
 			identifier: class.notFound
 			count: 1

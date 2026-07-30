@@ -98,7 +98,19 @@ class ChallengeService
     }
 
     /**
-     * Claim (complete) a challenge for a user.
+     * Claim the reward for a completed challenge.
+     *
+     * 🔴 The claim ledger is `user_challenge_progress.reward_claimed`, NOT a
+     * separate claims table. This method used to read and insert into a
+     * `challenge_claims` table that has never existed in any schema, so every
+     * call threw and the accessible frontend could never claim a reward. It
+     * also never awarded anything, so simply creating that table would have
+     * turned a visible failure into a silent one.
+     *
+     * Semantics deliberately mirror GamificationV2Controller::claimChallenge()
+     * (the React path) so both frontends behave identically: the member must
+     * have a progress row, it must be completed, and the flip to claimed is a
+     * conditional UPDATE so concurrent requests cannot double-award.
      */
     public static function claim(int $challengeId, int $userId, int $tenantId): bool
     {
@@ -111,30 +123,45 @@ class ChallengeService
             return false;
         }
 
-        $challenge = Challenge::query()
-            ->where('id', $challengeId)
-            ->where('status', 'active')
-            ->first();
+        // Validate by id + tenant only, exactly as the React path does via
+        // getById(). `challenges` has no `status` column — filtering on one
+        // (as this method used to) throws before the claim can even be
+        // attempted. `is_active` and the date range are the real predicates,
+        // and they gate whether the challenge was listed in the first place.
+        $challenge = Challenge::query()->where('id', $challengeId)->first();
 
-        if (! $challenge) {
+        if (! $challenge || (int) $challenge->tenant_id !== $tenantId) {
             return false;
         }
 
-        $alreadyClaimed = DB::table('challenge_claims')
+        $progress = DB::table('user_challenge_progress')
             ->where('challenge_id', $challengeId)
             ->where('user_id', $userId)
-            ->exists();
+            ->where('tenant_id', $tenantId)
+            ->first();
 
-        if ($alreadyClaimed) {
+        // Not started, not finished, or already claimed — nothing to award.
+        if (! $progress || empty($progress->completed_at) || ! empty($progress->reward_claimed)) {
             return false;
         }
 
-        DB::table('challenge_claims')->insert([
-            'challenge_id' => $challengeId,
-            'user_id'      => $userId,
-            'claimed_at'   => now(),
-            'created_at'   => now(),
-        ]);
+        // Atomic claim: only the request that flips reward_claimed 0 -> 1 gets
+        // to award the reward, so a double submit cannot pay out twice.
+        $affected = DB::table('user_challenge_progress')
+            ->where('challenge_id', $challengeId)
+            ->where('user_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->where('reward_claimed', 0)
+            ->update([
+                'reward_claimed' => 1,
+                'claimed_at'     => now(),
+            ]);
+
+        if ($affected === 0) {
+            return false;
+        }
+
+        self::awardChallengeReward($userId, $challenge);
 
         return true;
     }

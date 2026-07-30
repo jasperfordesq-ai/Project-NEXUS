@@ -9,6 +9,14 @@ import { CardBody, Card, Select, SelectItem, Progress, Button, Chip, Spinner, In
  * GDPR Consent Types
  * Management page for consent types with CRUD, user viewing, and CSV export.
  * Route: /admin/enterprise/gdpr/consent-types
+ *
+ * `consent_types` is a PLATFORM-GLOBAL catalogue (no tenant_id column) that
+ * every community's consent records and per-tenant overrides key off by slug.
+ * Reading it — and the consent rates, which ARE scoped to the caller's tenant —
+ * is open to any tenant admin. Creating, editing or deleting a row changes the
+ * catalogue for every community, so the server gates those three on
+ * requirePlatformSuperAdmin(); this page mirrors that rule rather than
+ * offering buttons that would 403.
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -21,7 +29,8 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
 import XCircle from 'lucide-react/icons/circle-x';
 import ExternalLink from 'lucide-react/icons/external-link';
-import { useToast } from '@/contexts';
+import { useToast, useAuth } from '@/contexts';
+import { isPlatformSuperAdminUser } from '@/lib/access';
 import { adminEnterprise } from '../../api/adminApi';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { PageHeader } from '../../components/PageHeader';
@@ -54,6 +63,9 @@ export function GdprConsentTypes() {
   const { t } = useTranslation('admin_enterprise');
   useAdminPageMeta({ title: t('enterprise.gdpr_consent_types_title') });
   const toast = useToast();
+  const { user } = useAuth();
+  // Mirrors requirePlatformSuperAdmin() on the create/update/delete routes.
+  const canManage = isPlatformSuperAdminUser(user);
 
   const [consentTypes, setConsentTypes] = useState<ConsentType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,6 +95,11 @@ export function GdprConsentTypes() {
       if (res.success && res.data) {
         const data = res.data as unknown;
         setConsentTypes(Array.isArray(data) ? data : []);
+      } else {
+        // The API client resolves rather than throws, so without this branch a
+        // failed load renders the "no consent types" empty state instead.
+        setConsentTypes([]);
+        toast.error(t('enterprise.gdpr_failed_load_consent_types'));
       }
     } catch {
       toast.error(t('enterprise.gdpr_failed_load_consent_types'));
@@ -257,13 +274,15 @@ export function GdprConsentTypes() {
             >
               {t('enterprise.refresh')}
             </Button>
-            <Button
-              startContent={<Plus size={16} />}
-              onPress={openCreateModal}
-              size="sm"
-            >
-              {t('enterprise.gdpr_create_consent_type')}
-            </Button>
+            {canManage && (
+              <Button
+                startContent={<Plus size={16} />}
+                onPress={openCreateModal}
+                size="sm"
+              >
+                {t('enterprise.gdpr_create_consent_type')}
+              </Button>
+            )}
           </div>
         }
       />
@@ -324,14 +343,16 @@ export function GdprConsentTypes() {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-1">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    startContent={<Edit size={12} />}
-                    onPress={() => openEditModal(ct)}
-                  >
-                    {t('enterprise.gdpr_edit')}
-                  </Button>
+                  {canManage && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      startContent={<Edit size={12} />}
+                      onPress={() => openEditModal(ct)}
+                    >
+                      {t('enterprise.gdpr_edit')}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="secondary"
@@ -340,15 +361,17 @@ export function GdprConsentTypes() {
                   >
                     {t('enterprise.gdpr_users')}
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    isIconOnly
-                    aria-label={t('enterprise.gdpr_delete')}
-                    onPress={() => { setDeleteId(ct.id); setDeleteOpen(true); }}
-                  >
-                    <Trash2 size={12} />
-                  </Button>
+                  {canManage && (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      isIconOnly
+                      aria-label={t('enterprise.gdpr_delete')}
+                      onPress={() => { setDeleteId(ct.id); setDeleteOpen(true); }}
+                    >
+                      <Trash2 size={12} />
+                    </Button>
+                  )}
                 </div>
               </CardBody>
             </Card>

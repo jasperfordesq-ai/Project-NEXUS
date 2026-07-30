@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature;
 
 use App\Models\User;
 use App\Services\Agent\AgentExecutor;
+use App\Services\ChallengeService;
 use App\Services\ContentModerationService;
 use App\Services\JobVacancyService;
 use App\Services\KiAgentService;
@@ -36,6 +37,17 @@ use Tests\Laravel\TestCase;
  *  - transactions.status enum is ('pending','completed','cancelled') —
  *    the federation compensating-refund literal must stay valid.
  *  - AdminBlogController::bulkPublish: posts has no published_at column.
+ *
+ * 2026-07-30 additions — the three `live-defect` entries from the
+ * check-db-column-references gate baseline, all resolved as "the code was
+ * wrong, the schema was right":
+ *  - consent_types is a PLATFORM-GLOBAL catalogue with no tenant_id column;
+ *    the admin CRUD invented one, so creating a consent type 500'd for every
+ *    admin and the list page was permanently empty.
+ *  - ChallengeService::claim used a challenge_claims table that has never
+ *    existed; the real claim ledger is user_challenge_progress.reward_claimed.
+ *  - MatchingService category preferences live in the match_preferences.categories
+ *    JSON column; the match_preference_categories side table never existed.
  */
 class SchemaWriteRegressionTest extends TestCase
 {
@@ -317,5 +329,224 @@ class SchemaWriteRegressionTest extends TestCase
             'published',
             DB::table('posts')->where('id', $postId)->value('status')
         );
+    }
+
+    // =====================================================================
+    // FIX 7 — consent_types has no tenant_id column (global catalogue)
+    // =====================================================================
+
+    public function test_create_consent_type_inserts_global_row(): void
+    {
+        $superAdmin = User::factory()->forTenant($this->testTenantId)->create([
+            'role'            => 'super_admin',
+            'is_super_admin'  => 1,
+        ]);
+        Sanctum::actingAs($superAdmin);
+
+        $slug = 'regression-consent-' . uniqid();
+
+        $response = $this->apiPost('/v2/admin/enterprise/gdpr/consent-types', [
+            'slug'          => $slug,
+            'name'          => 'Schema Regression Consent',
+            'description'   => 'Created by the schema-write regression suite.',
+            'category'      => 'functional',
+            'is_required'   => 0,
+            'display_order' => 3,
+        ]);
+
+        // Before the fix the INSERT named a tenant_id column that does not
+        // exist, threw, and every admin got HTTP 500 CREATE_FAILED.
+        $response->assertStatus(201);
+
+        $row = DB::table('consent_types')->where('slug', $slug)->first();
+        $this->assertNotNull($row, 'consent type row was not inserted');
+        $this->assertSame('Schema Regression Consent', $row->name);
+        // current_text is NOT NULL with no default — omitting it fails the
+        // insert just as surely as the phantom column did.
+        $this->assertNotSame('', (string) $row->current_text);
+    }
+
+    public function test_list_consent_types_returns_catalogue_with_tenant_scoped_counts(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+
+        $slug = 'regression-listed-' . uniqid();
+        DB::table('consent_types')->insert([
+            'slug'            => $slug,
+            'name'            => 'Listed Regression Consent',
+            'current_version' => '1.0',
+            'current_text'    => 'Consent body.',
+            'is_active'       => 1,
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ]);
+
+        DB::table('user_consents')->insert([
+            'user_id'         => $member->id,
+            'tenant_id'       => $this->testTenantId,
+            'consent_type'    => $slug,
+            'consent_given'   => 1,
+            'consent_text'    => 'Consent body.',
+            'consent_version' => '1.0',
+            'given_at'        => now(),
+            'created_at'      => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+        $response = $this->apiGet('/v2/admin/enterprise/gdpr/consent-types');
+
+        $response->assertStatus(200);
+
+        // The phantom `WHERE ct.tenant_id = ?` filter threw and the catch
+        // returned an empty array, so this page was blank for four months.
+        $rows = collect($response->json('data'))->where('slug', $slug);
+        $this->assertCount(1, $rows, 'global consent type missing from the admin list');
+        // Counts stay scoped to the caller's own tenant even though the
+        // catalogue row itself is shared.
+        $this->assertSame(1, (int) $rows->first()['granted_count']);
+        $this->assertSame(0, (int) $rows->first()['denied_count']);
+    }
+
+    public function test_tenant_admin_cannot_mutate_global_consent_catalogue(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost('/v2/admin/enterprise/gdpr/consent-types', [
+            'slug' => 'should-not-exist-' . uniqid(),
+            'name' => 'Unauthorised',
+        ]);
+
+        // consent_types is shared across every community, so a tenant admin
+        // must be refused outright — not fail with a 500, and not succeed and
+        // silently change GDPR definitions for other tenants.
+        $response->assertStatus(403);
+    }
+
+    // =====================================================================
+    // FIX 8 — challenge claims live in user_challenge_progress
+    // =====================================================================
+
+    /** @return array{0:int,1:int} [challengeId, userId] */
+    private function makeCompletedChallenge(int $xpReward = 25): array
+    {
+        $userId = $this->makeUser('challengeclaim');
+
+        $challengeId = (int) DB::table('challenges')->insertGetId([
+            'tenant_id'      => $this->testTenantId,
+            'title'          => 'Schema Regression Challenge',
+            'description'    => 'Completed and awaiting claim.',
+            'challenge_type' => 'weekly',
+            'action_type'    => 'listing_created',
+            'target_count'   => 1,
+            'xp_reward'      => $xpReward,
+            'is_active'      => 1,
+            'start_date'     => now()->subDay()->toDateString(),
+            'end_date'       => now()->addDay()->toDateString(),
+            'created_at'     => now(),
+        ]);
+
+        DB::table('user_challenge_progress')->insert([
+            'tenant_id'      => $this->testTenantId,
+            'user_id'        => $userId,
+            'challenge_id'   => $challengeId,
+            'current_count'  => 1,
+            'completed_at'   => now(),
+            'reward_claimed' => 0,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        return [$challengeId, $userId];
+    }
+
+    public function test_claim_challenge_marks_reward_claimed(): void
+    {
+        [$challengeId, $userId] = $this->makeCompletedChallenge();
+
+        // Before the fix both the exists() read and the insert() hit a
+        // challenge_claims table that has never existed, so claim() always
+        // threw and the accessible frontend redirected with
+        // status=challenge-claim-failed every single time.
+        $this->assertTrue(ChallengeService::claim($challengeId, $userId, $this->testTenantId));
+
+        $row = DB::table('user_challenge_progress')
+            ->where('challenge_id', $challengeId)
+            ->where('user_id', $userId)
+            ->where('tenant_id', $this->testTenantId)
+            ->first();
+
+        $this->assertSame(1, (int) $row->reward_claimed);
+        $this->assertNotNull($row->claimed_at);
+    }
+
+    public function test_claim_challenge_twice_awards_once(): void
+    {
+        [$challengeId, $userId] = $this->makeCompletedChallenge();
+
+        $this->assertTrue(ChallengeService::claim($challengeId, $userId, $this->testTenantId));
+        // The flip is a conditional UPDATE on reward_claimed = 0, so a double
+        // submit cannot pay the reward out twice.
+        $this->assertFalse(ChallengeService::claim($challengeId, $userId, $this->testTenantId));
+    }
+
+    public function test_claim_challenge_refused_before_completion(): void
+    {
+        [$challengeId, $userId] = $this->makeCompletedChallenge();
+
+        DB::table('user_challenge_progress')
+            ->where('challenge_id', $challengeId)
+            ->where('user_id', $userId)
+            ->update(['completed_at' => null]);
+
+        $this->assertFalse(ChallengeService::claim($challengeId, $userId, $this->testTenantId));
+        $this->assertSame(
+            0,
+            (int) DB::table('user_challenge_progress')
+                ->where('challenge_id', $challengeId)
+                ->where('user_id', $userId)
+                ->value('reward_claimed')
+        );
+    }
+
+    // =====================================================================
+    // FIX 9 — category preferences persist in match_preferences.categories
+    // =====================================================================
+
+    public function test_save_preferences_persists_categories_to_json_column(): void
+    {
+        $userId = $this->makeUser('matchcats');
+
+        $this->assertTrue(MatchingService::savePreferences($userId, [
+            'notification_frequency' => 'weekly',
+            'categories'             => [7, 11],
+        ]));
+
+        // The engine reads this column; the removed match_preference_categories
+        // side table never existed in any schema.
+        $stored = DB::table('match_preferences')
+            ->where('user_id', $userId)
+            ->where('tenant_id', $this->testTenantId)
+            ->value('categories');
+
+        $this->assertSame([7, 11], json_decode((string) $stored, true));
+        $this->assertSame([7, 11], MatchingService::getPreferences($userId)['categories']);
+    }
+
+    public function test_save_preferences_with_empty_categories_clears_the_column(): void
+    {
+        $userId = $this->makeUser('matchcatsclear');
+
+        MatchingService::savePreferences($userId, ['categories' => [4]]);
+        MatchingService::savePreferences($userId, ['categories' => []]);
+
+        $this->assertNull(
+            DB::table('match_preferences')
+                ->where('user_id', $userId)
+                ->where('tenant_id', $this->testTenantId)
+                ->value('categories')
+        );
+        $this->assertSame([], MatchingService::getPreferences($userId)['categories']);
     }
 }

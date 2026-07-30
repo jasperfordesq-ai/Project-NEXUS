@@ -159,10 +159,11 @@ class MatchingService
 
             $categories = $preferences['categories'] ?? null;
 
-            // The engine reads the canonical `categories` JSON column — the
-            // side table below is legacy-only. (Previously the JSON column was
-            // never written, so saved category preferences never reached the
-            // matching engine.)
+            // `match_preferences.categories` is the ONLY store for category
+            // choices and the column the matching engine reads. There is no
+            // side table: a `match_preference_categories` sync used to sit
+            // below this write against a table that has never existed in any
+            // schema, silently swallowing its own failure at debug level.
             if (is_array($categories)) {
                 $data['categories'] = count($categories) > 0
                     ? json_encode(array_values(array_map('intval', $categories)))
@@ -173,28 +174,6 @@ class MatchingService
                 ['user_id' => $userId, 'tenant_id' => $tenantId],
                 $data
             );
-
-            // Sync category preferences only when an explicit, non-empty list is
-            // provided. An empty array (the default) means "no categories to sync"
-            // and must not touch the optional match_preference_categories table.
-            // Isolated try/catch: the table may not exist — a failed category
-            // sync must never fail the main preferences save above.
-            if (is_array($categories) && count($categories) > 0) {
-                try {
-                    DB::table('match_preference_categories')
-                        ->where('user_id', $userId)
-                        ->delete();
-
-                    foreach ($categories as $catId) {
-                        DB::table('match_preference_categories')->insert([
-                            'user_id'     => $userId,
-                            'category_id' => (int) $catId,
-                        ]);
-                    }
-                } catch (\Throwable $e) {
-                    Log::debug('[MatchingService] category preference sync skipped: ' . $e->getMessage());
-                }
-            }
 
             return true;
         } catch (\Throwable $e) {
@@ -218,24 +197,14 @@ class MatchingService
                 return self::DEFAULT_PREFERENCES;
             }
 
-            // Canonical source is the `categories` JSON column (what the
-            // engine reads); the legacy side table is the fallback.
+            // The `categories` JSON column is the only source — see the note in
+            // savePreferences() about the phantom side table that used to be
+            // consulted here as a "fallback".
             $categories = [];
             if (!empty($row->categories)) {
                 $decoded = json_decode((string) $row->categories, true);
                 if (is_array($decoded)) {
                     $categories = array_values(array_map('intval', $decoded));
-                }
-            }
-            if (empty($categories)) {
-                try {
-                    $categories = DB::table('match_preference_categories')
-                        ->where('user_id', $userId)
-                        ->pluck('category_id')
-                        ->map(fn ($id) => (int) $id)
-                        ->all();
-                } catch (\Throwable $e) {
-                    $categories = [];
                 }
             }
 
@@ -262,36 +231,12 @@ class MatchingService
         }
     }
 
-    /**
-     * Record a user interaction with a match/listing.
-     *
-     * @param int         $userId    User who interacted
-     * @param int         $listingId Listing/match they interacted with
-     * @param string      $action    Action type: viewed, contacted, saved, dismissed
-     * @param float|null  $score     Match score at time of interaction
-     * @param float|null  $distance  Distance in km at time of interaction
-     */
-    public static function recordInteraction($userId, $listingId, string $action, $score = null, $distance = null): bool
-    {
-        try {
-            DB::table('match_history')->insert([
-                'user_id'    => $userId,
-                'listing_id' => $listingId,
-                'action'     => $action,
-                'score'      => $score,
-                'distance'   => $distance,
-                'created_at' => now(),
-            ]);
-            return true;
-        } catch (\Throwable $e) {
-            Log::warning('Failed to record match interaction', [
-                'user_id' => $userId,
-                'listing_id' => $listingId,
-                'error' => $e->getMessage(),
-            ]);
-            return false;
-        }
-    }
+    // NOTE: there is deliberately no recordInteraction() here. One used to
+    // exist, writing match_history.score / .distance — columns that do not
+    // exist (the real ones are match_score / distance_km) — and omitting
+    // tenant_id entirely. It had no callers: every live interaction goes
+    // through MatchLearningService::recordInteraction(), which uses the
+    // correct columns and scopes by tenant. Use that.
 
     /**
      * Get matching statistics for a user.
