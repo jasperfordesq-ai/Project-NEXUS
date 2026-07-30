@@ -11,6 +11,38 @@ namespace App\Helpers;
  *
  * Provides secure Cross-Origin Resource Sharing (CORS) header management.
  * Validates origins against an allowlist instead of using wildcard (*).
+ *
+ * 🔴 THIS CLASS IS ONE OF TWO COPIES, AND THEY HAVE DRIFTED IN BOTH DIRECTIONS.
+ * The other is {@see \App\Core\CorsHelper}. Both were the same file until the
+ * 2026-03-20 src/ inlining refactor (5842daef8) duplicated it. Neither is dead:
+ *
+ *  - THIS copy is on the hot path. EnsureCorsHeaders — prepended as the
+ *    outermost middleware in bootstrap/app.php — calls isOriginAllowed() on
+ *    every API response that HandleCors did not already stamp, and
+ *    AppServiceProvider calls getAllowedOrigins() at boot to merge tenant
+ *    custom domains into config('cors.allowed_origins').
+ *  - The App\Core copy has exactly one call site: FederationController's
+ *    legacy_v1 preflight/headers pair.
+ *
+ * Known divergences, both caused by a fix landing on one copy only:
+ *
+ *  1. isOriginAllowed() here still accepts ANY subdomain of an allowed host,
+ *     including nested labels (a.b.project-nexus.ie). The App\Core copy was
+ *     hardened on 2026-04-12 (9f2b2a00f) to match only single leading labels
+ *     present in CORS_ALLOWED_SUBDOMAINS. That hardening never reached this
+ *     copy — so it does not currently apply to the request path that actually
+ *     serves production. Deliberately NOT changed here: it is a behaviour
+ *     change to the outermost middleware on every API response and needs its
+ *     own review, not a drive-by edit inside a duplication cleanup.
+ *  2. handlePreflight() read $_SERVER['REQUEST_METHOD'] directly until
+ *     2026-07-30, mirroring a bug fixed in the App\Core copy the day before.
+ *     See requestMethod() below.
+ *
+ * getAllowedOrigins() also differs on purpose-by-accident: this copy merges
+ * tenant custom domains from the database, the App\Core copy returns only the
+ * configured list. AppServiceProvider depends on the merging behaviour, so the
+ * two are NOT interchangeable — consolidating them requires reconciling that
+ * first or tenant custom domains silently stop passing CORS.
  */
 class CorsHelper
 {
@@ -110,6 +142,37 @@ class CorsHelper
     }
 
     /**
+     * The request method, from Laravel's request when there is one.
+     *
+     * Identical to {@see \App\Core\CorsHelper::requestMethod()}, which carries the
+     * full reasoning: `$_SERVER['REQUEST_METHOD']` is always populated by PHP-FPM
+     * in production, but Laravel's test HTTP kernel dispatches a Request object
+     * without writing it, so reading the superglobal directly raised "Undefined
+     * array key REQUEST_METHOD" and turned every controller calling
+     * handlePreflight() into a 500 *under test only*.
+     *
+     * That defect was fixed in App\Core\CorsHelper on 2026-07-29 during the
+     * legacy_v1 federation audit. This class is a second copy of it, created by
+     * the 2026-03-20 src/ inlining refactor, and it kept the superglobal read.
+     * Nothing calls handlePreflight() on *this* copy today — the sole call site,
+     * FederationController, uses the App\Core one — so the bug was latent here
+     * rather than live. It is fixed anyway because the two copies have already
+     * drifted once in the other direction (see the class docblock), and a latent
+     * copy of a known 500-under-test trap is exactly what the next caller steps in.
+     */
+    private static function requestMethod(): string
+    {
+        if (function_exists('request')) {
+            $request = request();
+            if ($request !== null) {
+                return strtoupper($request->getMethod());
+            }
+        }
+
+        return strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    }
+
+    /**
      * Handle preflight OPTIONS request.
      * Sets CORS headers and exits with 204 No Content.
      *
@@ -124,7 +187,7 @@ class CorsHelper
         array $headers = ['Content-Type', 'Authorization'],
         int $maxAge = 86400
     ): void {
-        if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
+        if (self::requestMethod() !== 'OPTIONS') {
             return;
         }
 
