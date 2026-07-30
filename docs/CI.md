@@ -1,6 +1,6 @@
 # Continuous Integration & Quality Gates
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 > **Diátaxis:** explanation. What runs on every push and pull request, which checks are blocking, and how to run the same checks locally before you push.
 
@@ -11,7 +11,8 @@ Project NEXUS uses GitHub Actions. The pipeline is designed so that **`main` sta
 | Job | Blocking steps | What it proves |
 |-----|----------------|----------------|
 | **PHP Tests / PHP Static Analysis / PHP Checks** | Sharded PHPUnit suites; schema-driven test-skip budget; PHPStan/Larastan with the checked-in baseline; Laravel boot/cache checks; PHP syntax checks | Backend behaviour, static analysis, and bootability. `PHP Checks` is the stable aggregate status. |
-| **React Build & Tests** | TypeScript; ESLint (`--max-warnings 30`); component accessibility tests; UI-contract tests; production build | Frontend type safety, lint, accessibility contracts, UI contracts, and buildability. The focused Vitest smoke and coverage steps are currently warnings because of the documented worker-pool hang. |
+| **React Build & Tests** | TypeScript; ESLint (`--max-warnings 30`); component accessibility tests; UI-contract tests; dead-mock and mock-contract checks; quarantine-budget ceiling; production build | Frontend type safety, lint, accessibility contracts, UI contracts, and buildability. The *focused* Vitest smoke and coverage steps are warnings because of the documented worker-pool hang — the whole suite is gated by the job below instead. |
+| **React Full Suite (shard N/8)** | The entire Vitest suite, split across eight shards by `scripts/run-vitest-shard.mjs` | Frontend behaviour across **1,228 of 1,283 suites**. **Blocking since 2026-07-28** and present in the release gate's `needs:` list. The other 55 suites are quarantined in `react-frontend/src/test/failing-suites.baseline.json`; see [TESTING.md](TESTING.md). |
 | **API Contract Validation** | Focused Zod response-shape tests | Representative Laravel responses still match the TypeScript contract consumed by React. |
 | **Docker Build Verify / Dockerfile Drift Detection** | Development and production PHP images; React image; PHP configuration parity | Deployment images build and paired Dockerfiles have not silently diverged. Image builds run after merge or by manual dispatch rather than on every pull request. |
 | **Migration Safety Gate** | Schema changes require Laravel migrations; new legacy SQL migrations are rejected | Schema evolution remains deployable and uses the supported migration system. |
@@ -23,7 +24,14 @@ Project NEXUS uses GitHub Actions. The pipeline is designed so that **`main` sta
 | **Accessible Frontend Release Gate** | Production build; Laravel contract tests; browser accessibility suite | The maintained HTML-first frontend builds and preserves its Laravel/accessibility contract. |
 | **Release Gate** | Aggregates every authoritative job above | A failure or cancellation in any required release gate keeps the overall pipeline red; legitimate path-filter skips are allowed. |
 
-Steps labelled **BLOCKING** fail their job. Steps labelled **WARNING**, and steps with `continue-on-error: true`, report evidence without blocking. At present the focused Vitest smoke/coverage run is explicitly non-blocking; TypeScript, ESLint, accessibility/UI contracts, and the production React build remain blocking.
+Steps labelled **BLOCKING** fail their job. Steps labelled **WARNING**, and steps with `continue-on-error: true`, report evidence without blocking. The focused Vitest smoke/coverage run remains explicitly non-blocking; TypeScript, ESLint, accessibility/UI contracts, the production React build, and the eight-shard full Vitest suite are all blocking.
+
+> Two structural traps this pipeline has been bitten by, recorded so they are not
+> reintroduced. A job-level `continue-on-error: true` silently swallows **every**
+> step inside that job, including ones labelled BLOCKING. And `Release Gate`
+> aggregates `needs.*.result`, so a job that is not in its `needs:` list cannot
+> fail the pipeline no matter what it concludes — adding a gate without adding it
+> there produces something that reads as enforced and enforces nothing.
 
 ## Other workflows
 
@@ -47,7 +55,7 @@ Some PRs are gated by **description checks** that fail instantly unless the PR b
 - **Root Cause Analysis** — `fix`/`bug`/`hotfix` PRs must include `**Root Cause:**` and `**Prevention:**`.
 - **Translation Review** — PRs touching non-English locale files must declare `**Translation Status:**` and `**Translation Reviewer:**`.
 - **Contributor Terms** — the `## Contributor Terms` section with all checkboxes checked (owner/bot PRs exempt).
-- **Translation drift** — `node scripts/check-php-lang-parity.mjs` must pass.
+- **Translation drift** — `node scripts/check-php-lang-parity.mjs` and `node scripts/check-php-lang-untranslated.mjs` must both pass. Parity checks key sets; the ratchet checks that the values are not still English. See [I18N.md](I18N.md).
 
 Build the PR body from [.github/pull_request_template.md](../.github/pull_request_template.md).
 

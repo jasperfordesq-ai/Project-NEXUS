@@ -1,6 +1,6 @@
 # Your First Contribution to Project NEXUS
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This tutorial walks you through making a real, merged-quality change to Project NEXUS from scratch. By the end you will have cloned the repository, run the app locally, made a visible change, verified it, and prepared it for a pull request.
 
@@ -192,7 +192,18 @@ npm run test:ui-contracts -- --run
 npm run build
 ```
 
-The lint command runs ESLint plus `tsc --noEmit`; the next commands exercise the blocking accessibility/UI contracts and production build. The broad Vitest worker pool currently has a documented systemic hang, so do not use a full `npm test -- --run` as the success criterion. CI reports its focused smoke and coverage runs as non-blocking evidence until that runner issue is resolved.
+The lint command runs ESLint plus `tsc --noEmit`; the next commands exercise the blocking accessibility/UI contracts and production build.
+
+Locally, a single `npm test -- --run` across the whole suite can still hit the documented worker-pool hang, so it is not a reliable local success criterion — run the suites your change touches instead, in the foreground.
+
+That is a *local* limitation only. **In CI the whole suite does run and does block**, split across eight shards by `scripts/run-vitest-shard.mjs` (blocking since 2026-07-28, covering 1,228 of 1,283 suites). To reproduce a shard locally:
+
+```bash
+cd react-frontend
+node scripts/run-vitest-shard.mjs --shard 1/8
+```
+
+Use `--retry=0` when verifying a suite you have just fixed: the shard runner passes `--retry=1`, so a flaky suite can otherwise look repaired. See [TESTING.md](TESTING.md) for the quarantine list and its rules.
 
 **Documentation hygiene** (required when editing any file in `docs/`):
 

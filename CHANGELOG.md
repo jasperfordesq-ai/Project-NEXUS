@@ -77,6 +77,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Four suites in the same directory stay quarantined, and deliberately so: they are not this cluster. One is a delete-confirmation dialog race, one asserts a computed percentage, one an error-message spy, and one looks up checkboxes by a derived label. Recording which failure belongs to which cause is the point of the list; lumping them together is how a quarantine file stops being a work queue.
 
+### Documentation
+
+- **The contributor documentation was telling people to do the exact thing that created the 99,139-value translation debt.** A review of every maintained document against the last month's work found five that had fallen behind, and one of them was actively harmful: both `docs/I18N.md` and the agent guide instructed contributors to add a new English key "to every other locale file". That satisfies the structural parity gate — which compares key sets and cannot see a wrong value — and is precisely how 62.3% of non-English PHP values ended up as byte-identical English while CI stayed green. Both now say to translate the key, name the two translation helpers, and explain why parity alone proves nothing.
+
+  Also missing from the i18n page: the blocking untranslated-value ratchet, the invariant allowlist and the rule an allowlist entry has to survive, and the fact that `__()` reads a namespace's `.json` file before its `.php` one — so a `.php` namespace can be entirely dead while the live JSON beside it is entirely English. And a name-collision hazard worth stating outright, because it nearly caused a wrong deletion during this review: `admin_nav` exists as a live React namespace used by 39 components *and* existed as a dead PHP file of the same name in a different tree.
+
+- **The testing and CI pages described a pipeline that no longer exists.** Neither mentioned the eight-shard full Vitest suite, which has been blocking since 2026-07-28 and is what actually gates a release. `CI.md` still asserted that the only blocking frontend checks were type-checking, lint, contracts and the build; `TUTORIAL.md` told readers CI reported frontend tests as non-blocking evidence "until that runner issue is resolved". A green pipeline now proves **1,228 of 1,283 suites**, and the 55 that are skipped, along with the shrink-only rules governing that list, are documented rather than implicit.
+
+  `TESTING.md` asks, in its own closing section, to be updated "when a green check no longer proves what this page says it proves". That is the obligation this closes. Both pages also now record the two structural traps that made an earlier gate enforce nothing — a job-level `continue-on-error` swallowing its own blocking steps, and a job missing from the release gate's dependency list — and the two environment differences that let a test pass locally and fail on a CI shard.
+
+  The federation manual needed no changes: it was brought up to date on 2026-07-29 and already states that every external protocol is switched off and that the v1 partner API has no replacement.
+
 ## [1.5.8] - 2026-07-29
 
 ### Added

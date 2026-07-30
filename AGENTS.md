@@ -386,7 +386,7 @@ When opening a PR, always build the body from `.github/pull_request_template.md`
 1. **Root Cause Analysis Check** — any PR whose title starts with `fix` or contains `bug`/`hotfix` MUST include literal `**Root Cause:**` and `**Prevention:**` fields (the colon is required; a `### Root Cause` heading does NOT satisfy it).
 2. **Translation Review Check** — any PR touching `react-frontend/public/locales/<non-en>/*.json` MUST include `**Translation Status:** reviewed` (or `approved`) and `**Translation Reviewer:** @handle`. Owner-authored PRs are exempt; call out machine-filled translations in a `**Translation Notes:**` field regardless.
 3. **Contributor Terms Acceptance** — the `## Contributor Terms` section with all three checkboxes checked (`- [x]`) plus `**Third-Party Material Disclosure:**` and `**AI Contribution Disclosure:**` fields (use `None` when not applicable). Owner-authored and bot PRs are exempt.
-4. **Translation Drift Detection** — `node scripts/check-php-lang-parity.mjs` must pass. If you add keys to `lang/en/*.php`, add translated counterparts to ALL other `lang/<locale>/*.php` files in the same commit.
+4. **Translation Drift Detection** — `node scripts/check-php-lang-parity.mjs` AND `node scripts/check-php-lang-untranslated.mjs` must pass. Adding keys to `lang/en/*.php` means adding **translated** counterparts to all ten other locales in the same commit. 🔴 Do NOT copy the English value across to satisfy parity: parity compares **key sets only**, which is exactly how 99,139 values ended up as byte-identical English while it stayed green. Use `node scripts/translate-php-lang-gaps.mjs --google --namespace <file>` — see the i18n section below for the full sequence.
 
 ### 🔴 Keep `main` green
 
@@ -443,7 +443,41 @@ cd react-frontend && npm test
 ```bash
 npm run check:i18n:baseline
 npm run check:i18n:gaps
+node scripts/check-php-lang-parity.mjs
+node scripts/check-php-lang-untranslated.mjs
 ```
+
+**Adding a new PHP lang key — the sequence that does not recreate the debt.**
+`check-php-lang-parity.mjs` compares **key sets only**, so copying the English
+value into the other ten locales makes it pass while leaving the string
+untranslated. `check-php-lang-untranslated.mjs` is the gate that catches that: a
+shrink-only ratchet (ceiling in `.github/php-lang-untranslated-baseline.json`,
+currently **249**) counting values byte-identical to English. It is BLOCKING.
+
+1. Add the key to `lang/en/<ns>.php`.
+2. Insert the same key with the **English** value into each of the ten locale
+   files (the translator only fills keys that already exist).
+3. Clear that namespace from `.local-docs-archive/php-lang-translate-checkpoint.json`,
+   or the script prints `already done … skipping` and does nothing.
+4. `node scripts/translate-php-lang-gaps.mjs --google --namespace <ns>.php`
+   (a separate script — the React one hard-excludes PHP).
+5. Check the result: the placeholder guard protects `:name`, but it cannot see
+   that Google capitalised a literal field name (`peer_slug` → `Peer_slug`) or
+   mistranslated a technical word.
+6. Re-run both gates. Re-baseline (`--write-baseline`) only on genuine improvement.
+
+🔴 **`__()` reads `lang/<locale>/<ns>.json` FIRST** (`App\I18n\Translator`) and
+falls back to Laravel's `.php` loader only when that misses. So a `.php`
+namespace can be entirely dead while the live JSON is entirely English — and the
+ratchet scans `.php` only, so it cannot see it. Check which of the two files
+actually serves a namespace before translating either.
+
+A value that is correct *because* it is identical to English (a brand name, an
+SI unit, a language endonym, a placeholder-only string) belongs in
+`scripts/php-lang-invariant-allowlist.json`. A `byLocale` entry must survive the
+gate's own check: that locale must never render the same English value
+differently anywhere else in `lang/`. If it does, a translator did translate it,
+and it is real work.
 
 ### E2E / Browser tests
 
@@ -481,6 +515,40 @@ npm run build                               # Production build
 ```
 
 Test environment: `APP_ENV=testing`, `DB_DATABASE=nexus_test`, `CACHE_DRIVER=array`.
+
+### 🔴 What a green pipeline actually proves (frontend)
+
+`npm test` is not the gate. The gate is **`React Full Suite (shard N/8)`**, which
+runs the whole Vitest suite across eight shards via
+`react-frontend/scripts/run-vitest-shard.mjs`. It is **BLOCKING** as of
+2026-07-28 and is in the release gate's `needs:` list.
+
+It skips the suites listed in `react-frontend/src/test/failing-suites.baseline.json`
+— currently **55 of 1,283**, so a green pipeline proves **1,228** suites, not all
+of them. That list is a fix-and-remove queue, not a set of exemptions:
+
+- It may only **shrink**. `react-frontend/scripts/check-quarantine-budget.mjs`
+  holds a `BASELINE` constant that must be lowered in the **same commit** as any
+  removal, and it runs in `react-build`, not in the shard job, so growing the
+  list cannot make a red shard green.
+- A quarantined path that no longer exists fails the runner rather than rotting
+  there silently.
+- A visibility step runs the quarantined suites on shard 1 without gating, so a
+  suite that gets fixed is noticed.
+- Verify a fix with `--retry=0`. The shard runner passes `--retry=1`, so a suite
+  can be retry-rescued; removing one on that basis puts a flaky suite in the gate.
+
+🔴 **Two ways a test greens locally and reds a CI shard.** Laravel's test HTTP
+kernel does not populate `$_SERVER['REQUEST_METHOD']`, so any code reading it
+directly 500s under test only. And config sourced from a dev `.env` — e.g.
+`FEDERATION_JWT_SECRET` — is simply absent in CI; a test must establish its own
+preconditions rather than inherit them. Reproduce by clearing the variable on the
+command line before assuming the test is fine.
+
+🔴 The `pre-commit` hook runs **only the PHP test files staged in this commit**.
+A failure there is in a file you are committing right now, so it is never
+"pre-existing" — fix it or drop the file. This is the one gate the `--no-verify`
+allowance never covers.
 
 > **🔴 NOTE — running PHP tests via `docker exec` that use `Crypt`/encryption:** You MUST pass the test `APP_KEY` explicitly on the `docker exec` line. The container's `.env` ships a dev placeholder (`APP_KEY=nexus-dev-app-key-change-in-production`) that is **not** a valid base64 32-byte key. Laravel loads that value into config during app bootstrap, and phpunit.xml's `<env name="APP_KEY" force="true">` does **not** reliably override it for the `Encrypter` singleton inside the container — so any test that touches `Crypt` (e.g. the federation listener tests in `tests/Laravel/Unit/Listeners/`: `PushGroupToFederatedPartnersTest`, `PushGroupMembershipToFederatedPartnersTest`, `PushGroupRetractionToFederatedPartnersTest`, `PushMemberProfileUpdateToFederatedPartnersTest`) fails with `RuntimeException: Unsupported cipher or incorrect key length` from `Encrypter.php`.
 >

@@ -1,6 +1,6 @@
 # Testing
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This page explains what each test layer proves and where the remaining test-documentation risk sits.
 
@@ -12,12 +12,53 @@ This page explains what each test layer proves and where the remaining test-docu
 | PHPStan / Larastan | `vendor/bin/phpstan analyse --no-progress --memory-limit=512M --error-format=github` | Static-analysis regressions beyond the configured baseline. |
 | React type check | `cd react-frontend && npx tsc --noEmit` | TypeScript correctness for the primary frontend. |
 | React build | `cd react-frontend && npm run build` | Production build viability. |
-| Vitest | `cd react-frontend && npm test` | Component, hook, and frontend behavior tests. |
+| Vitest (local) | `cd react-frontend && npm test` | Component, hook, and frontend behavior tests. |
+| Vitest (the CI gate) | `cd react-frontend && node scripts/run-vitest-shard.mjs --shard 1/8` | The whole suite minus the quarantine list, split across eight shards. This — not `npm test` — is what gates a release. See "Frontend quarantine" below. |
 | Playwright E2E | `npm run test:e2e` | Browser behavior against the React frontend and Laravel API. |
 | Events enterprise E2E | `npm run test:events:e2e:enterprise` | The destructive five-step create, publication, registration, waitlist, check-in, cancellation, notification, and cleanup lifecycle against an isolated fixture environment. |
 | Accessible frontend | `npm run build:accessible-frontend`, `npm run test:accessible-frontend:php`, `npm run test:accessible-frontend:a11y` | HTML-first frontend build, PHP route behavior, and accessibility smoke coverage. |
 | Android native release | `cd mobile && npm run verify:release && npm run type-check && npm test -- --runInBand` | OTA/release policy, native configuration contracts, TypeScript, and mobile behavior before Expo prebuild. |
 | Documentation | `npm run check:docs`, `npm run check:version`, `npx markdownlint-cli2`, Redocly, strict MkDocs build | Public-doc hygiene, version/changelog integrity, Markdown structure, OpenAPI validity, and publishable site navigation. |
+
+## Frontend quarantine — what a green pipeline proves
+
+The eight-shard `React Full Suite` job has been **blocking since 2026-07-28**. It
+skips the suites listed in `react-frontend/src/test/failing-suites.baseline.json`,
+so a green pipeline currently proves **1,228 of 1,283 suites**. Before that job
+existed the blocking Vitest steps covered roughly 150 files — about 88% of the
+suite could break with a green build, which is why frontend breakage was only ever
+discovered in large batches.
+
+The list is a fix-and-remove queue, not a set of exemptions:
+
+- It may only **shrink**. `react-frontend/scripts/check-quarantine-budget.mjs`
+  carries a `BASELINE` constant that must be lowered in the **same commit** as any
+  removal. It runs in the `React Build & Tests` job rather than in the shard job,
+  so the list cannot be grown to turn a red shard green.
+- A listed path that no longer exists fails the runner, rather than rotting there
+  because a rename quietly excluded it forever.
+- A non-gating visibility step runs the quarantined suites on shard 1, so a suite
+  that gets fixed elsewhere is noticed instead of sitting there unrun.
+- Verify a fix with `--retry=0`. The shard runner passes `--retry=1`, so a suite
+  can pass by retry rescue; removing one on that evidence puts a flaky suite into
+  the gate.
+- Record *why* each entry fails. Entries sharing a root cause get fixed as a group;
+  lumping unrelated failures together is how the queue becomes an exemption list.
+
+## Two ways a test passes locally and fails in CI
+
+Both have cost real debugging time, and both are properties of the environment
+rather than of the test:
+
+- **`$_SERVER` is not populated by Laravel's test HTTP kernel.** PHP-FPM always
+  sets `REQUEST_METHOD`; the test kernel dispatches a `Request` object without
+  writing the superglobal, so code reading it directly returns 500 under test
+  only. Read from the request object instead.
+- **Config sourced from a developer `.env` is absent in CI.** A test that needs a
+  signing key, an API credential, or a feature flag must set it in `setUp()`
+  rather than inherit it. Reproduce a suspected case by clearing the variable on
+  the command line (`FOO= vendor/bin/phpunit <path>`) before concluding the test
+  is sound.
 
 ## E2E Status
 
