@@ -101,7 +101,9 @@ Vite will print a message like:
 
 ## Step 5: Confirm the app loads
 
-Open http://127.0.0.1:5173/hour-timebank in your browser. You should see the Project NEXUS React frontend. If it shows a loading spinner or a login page, the app is running correctly.
+Open http://127.0.0.1:5173/ in your browser. You should see the Project NEXUS React frontend. If it shows a loading spinner or a login page, the app is running correctly.
+
+> **Do not add a tenant slug to the URL.** The seed step above creates only the slug-less **Master Tenant**, so there is no `/hour-timebank` (or any other slug) to visit. On the Vite dev server the SPA takes the first path segment as a tenant slug (`extractSlugFromPath` in `react-frontend/src/lib/tenant-routing.ts`) and sends it on to the API, where it fails to resolve: `app/Http/Middleware/ResolveTenant.php` answers `400` with `tenant_resolution_failed` (or `tenant_required`), so the app renders an error rather than a dashboard. On the PHP host at `http://127.0.0.1:8090` the same bad first segment is instead hard-404'd by `app/Core/TenantContext.php` ("STRICT ISOLATION"). Reserved segments such as `/features` and `/about` are React routes, not slugs, so they resolve against the default tenant and work fine. CI inserts a `hour-timebank` tenant by hand for its E2E runs (`.github/workflows/ci.yml`); the default seeder does not create it.
 
 Open http://127.0.0.1:8090/up in a separate tab — if Laravel is healthy, it returns a small successful response.
 
@@ -141,22 +143,24 @@ Find this section near the top of the file:
 "features_page": {
     "chips": {
         "beta": "Beta",
-        "preview": "Preview"
+        "preview": "Preview",
+        "dormant": "Built, not enabled"
     },
 ```
 
-Change the `"beta"` value — for example, to `"Beta (active)"` — so you have a concrete, browser-visible change to verify:
+Change the `"beta"` value — for example, to `"Beta (active)"` — so you have a concrete, browser-visible change to verify. Leave `"preview"` and `"dormant"` exactly as they are; deleting a key would fail the i18n gates you run in Step 8:
 
 ```json
 "chips": {
     "beta": "Beta (active)",
-    "preview": "Preview"
+    "preview": "Preview",
+    "dormant": "Built, not enabled"
 },
 ```
 
 Save the file.
 
-Now go to your browser and navigate to http://127.0.0.1:5173/hour-timebank/features. Because Vite watches the file system, the page reloads automatically. You should see the chip label updated.
+Now go to your browser and navigate to http://127.0.0.1:5173/features. Because Vite watches the file system, the page reloads automatically. You should see the chip label updated.
 
 You have just made a real, traceable change through the translation system — the same system used for every user-facing string across all 11 supported languages.
 
@@ -286,13 +290,15 @@ docs(features): clarify Beta chip label in public features page
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-Husky pre-commit and pre-push hooks will run automatically. If they flag a pre-existing lint or build error in a file you did not touch, you may bypass that unrelated hook failure and explain the reason in your pull request:
+No hooks run automatically on a fresh clone — Husky is intentionally disabled at repository root, so there is nothing to install and nothing to bypass. The checks in Step 8 are the ones that matter, and CI re-runs them on your pull request.
+
+There is one optional local hook, and it is worth installing:
 
 ```bash
-git commit --no-verify -m "docs(features): clarify Beta chip label in public features page"
+bash scripts/git-hooks/install-hooks.sh
 ```
 
-Do not use `--no-verify` to hide failures in code you wrote. In particular, never bypass a failed staged-PHP-test verify gate: fix the staged test or remove it from the commit.
+That installs `pre-commit`, which runs **only the PHP test files staged in the current commit**. A failure there is by definition in a file you are committing right now. 🔴 Never bypass it with `--no-verify` — fix the staged test or remove it from the commit.
 
 ---
 

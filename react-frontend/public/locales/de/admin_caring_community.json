@@ -2154,7 +2154,7 @@
     },
     "about": {
       "title": "Über diese Seite",
-      "body": "Verwenden Sie diese Seite, wenn Sie eine Integration mit einem Drittanbieterdienst, dem Datensystem einer Gemeinde oder einem föderierten NEXUS-Netzwerk einrichten. Jeder hier aufgeführte Endpunkt ist aktiv und auf diese Bereitstellung beschränkt. Beispielnutzlasten dienen der Veranschaulichung – die tatsächlichen Werte hängen von den Anmeldeinformationen Ihres Mandanten und Partners ab. Teilen Sie diese URL mit Integrationspartnern, anstatt sie auf die Roh-API-Dokumente zu verweisen.",
+      "body": "Verwenden Sie diese Seite, wenn Sie eine Integration mit einem Drittanbieterdienst, dem Datensystem einer Gemeinde oder einem föderierten NEXUS-Netzwerk einrichten. Jeder hier aufgeführte Endpunkt ist auf diese Bereitstellung beschränkt, die meisten sind jedoch nicht aktiviert: Die Partner-API und der externe Verbund werden deaktiviert und antworten mit einer vorübergehend nicht verfügbaren Antwort, bis ein Operator sie aktiviert, und die Partner-API ist ebenfalls eine gemeinschaftsspezifische Einstellung, die beginnt. Fragen Sie Ihren Plattformadministrator, bevor Sie dies mit einem Partner teilen. Beispielnutzlasten dienen der Veranschaulichung – die tatsächlichen Werte hängen von Ihren Community-Slug- und Partner-Anmeldeinformationen ab.",
       "last_refreshed": "Zuletzt aktualisiertes{{date}}."
     },
     "sections": {

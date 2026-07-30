@@ -2170,7 +2170,7 @@
     },
     "about": {
       "title": "A proposito di questa pagina",
-      "body": "Utilizza questa pagina quando imposti un'integrazione con un servizio di terze parti, il sistema dati di un comune o una rete NEXUS federata. Ogni endpoint elencato qui è attivo e ha come ambito questa distribuzione. I payload di esempio sono illustrativi: i valori reali dipendono dallo slug del tenant e dalle credenziali del partner. Condividi questo URL con i partner di integrazione anziché indirizzarli ai documenti API non elaborati.",
+      "body": "Utilizza questa pagina quando imposti un'integrazione con un servizio di terze parti, il sistema dati di un comune o una rete NEXUS federata. Ogni endpoint elencato qui rientra nell'ambito di questa distribuzione, ma la maggior parte non è attivata: l'API Partner e la federazione esterna vengono disabilitate e rispondono con una risposta temporaneamente non disponibile finché un operatore non le abilita, e anche l'API Partner è un'impostazione per comunità che inizia. Rivolgiti all'amministratore della tua piattaforma prima di condividerlo con un partner. I payload di esempio sono illustrativi: i valori reali dipendono dallo slug della tua community e dalle credenziali del partner.",
       "last_refreshed": "Ultimo aggiornamento{{date}}."
     },
     "sections": {

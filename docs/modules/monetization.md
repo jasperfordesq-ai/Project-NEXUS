@@ -1,6 +1,6 @@
 # Monetization Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide is a how-to/reference for maintainers of the three optional **monetization** sub-features in Project NEXUS: **Member Premium** subscriptions, **Merchant Coupons**, and **Local Advertising**. All three are opt-in, default-OFF, and tenant-scoped. They are independent surfaces with separate feature flags, services, tables, and routes — there is no shared "monetization" service.
 
@@ -28,7 +28,7 @@ All three features default OFF. The defaults live in `app/Services/TenantFeature
 
 Gate enforcement:
 
-- **Member Premium** — `MemberPremiumController::guardFeature()` returns `FEATURE_DISABLED` (HTTP 403) when `member_premium` is off. The public tier-list endpoint (`GET /v2/member-premium/tiers`) is unauthenticated (`withoutMiddleware('auth:sanctum')`) but still gated. The React `PremiumGate` component renders its children unchanged when the tenant does not have `member_premium`, so premium-gated UI degrades to "always visible" rather than breaking.
+- **Member Premium** — `MemberPremiumController::guardFeature()` returns `FEATURE_DISABLED` (HTTP 403) when `member_premium` is off. The public tier-list endpoint (`GET /v2/member-premium/tiers`) is unauthenticated (`withoutMiddleware('auth:sanctum')`) but still gated. On the React side there is no premium-specific gate component: the `/premium*` routes use the generic `<FeatureGate feature="member_premium" redirect="/">`, so a tenant without the feature is redirected to `/` rather than seeing a degraded page.
 - **Merchant Coupons** — both `MerchantCouponController` and `MerchantCouponSellerController` call `ensureFeature()`, which requires **both** `marketplace` AND `merchant_coupons` and `abort(403)`s otherwise. Note `MerchantOnboardingController` (the seller-profile wizard) gates only on `marketplace`, not `merchant_coupons`.
 - **Local Advertising** — `LocalAdvertisingController::featureEnabled()` checks `local_advertising`, but **admins bypass the gate** (roles `admin`/`tenant_admin`/`super_admin`/`god`, or the super-admin flags) so they can configure advertising before enabling it for members. The public `GET /v2/ads/active` returns an empty array (not a 403) when the feature is off, so the feed never errors.
 
@@ -45,7 +45,7 @@ Every service additionally guards against its tables not yet existing. `LocalAdv
 - **Currency is per-tenant.** `TenantContext::getCurrency()` resolves the tenant's `default_currency` setting, falling back to `services.stripe.default_currency` / `STRIPE_DEFAULT_CURRENCY` / `eur`.
 - **Metadata routing.** Every member-premium Stripe object is stamped with `metadata.nexus_kind = 'member_premium'` (plus `nexus_user_id` / `nexus_tenant_id` / `nexus_tier_id` / `nexus_interval`). The shared `StripeWebhookController` inspects this via `MemberPremiumService::eventBelongsHere()` and routes member-premium events to `MemberPremiumService::applyWebhookEvent()`; events **without** that marker fall through to `StripeSubscriptionService` (tenant-plan billing) or the marketplace/donation handlers.
 - **Webhook security & idempotency** are handled centrally in `StripeWebhookController::handleWebhook()`: signature verification via `StripeService::constructWebhookEvent()`, and an atomic `INSERT IGNORE` claim on `stripe_webhook_events.event_id` (globally unique Stripe IDs — no tenant in the dedup key). A handler crash marks the row `failed`, calls `report($e)` so it reaches Sentry, and returns 500 so Stripe retries; `app/Console/Commands/StuckStripeWebhookCheck.php` alarms on stuck rows.
-- **Entitlement.** `statusIsEntitled()` treats `active`/`trialing` as entitled, and `past_due`/`grace` as entitled only while `grace_period_ends_at` is in the future (a 7-day grace window is set on `invoice.payment_failed`). `hasUnlocked($userId, $featureKey)` is the server-side gate; `unlocked_features` drives the React `PremiumGate`.
+- **Entitlement.** `statusIsEntitled()` treats `active`/`trialing` as entitled, and `past_due`/`grace` as entitled only while `grace_period_ends_at` is in the future (a 7-day grace window is set on `invoice.payment_failed`). `hasUnlocked($userId, $featureKey)` is the server-side gate; the `unlocked_features` array it returns is consumed directly by the premium pages (e.g. `pages/premium/MySubscriptionPage.tsx`).
 - **Email never fails the webhook.** Billing notification emails (`payment_failed` / `paid` / `cancelled`) are sent inside `LocaleContext::withLocale($recipient, ...)` so they render in the member's `preferred_language`; a send failure is logged but does not fail the webhook (Stripe would otherwise retry for days). Send state is tracked per event in `member_subscription_events` (`notification_sent_at` / `notification_failed_at` / `notification_last_error`).
 
 > `StripeSubscriptionService` (tenant **plan** billing — `pay_plans` / `tenant_plan_assignments`) shares the same Stripe account, webhook endpoint, and patterns, but it bills the *community* for its platform plan, not individual members. It is adjacent to, not part of, this module. Free plans (price 0/0) are activated directly without a Stripe round-trip.
@@ -88,7 +88,7 @@ Models / tables:
 
 Frontend entry points (React, all under `react-frontend/src/`):
 
-- Premium: `pages/premium/PricingPage.tsx` (`/premium`), `MySubscriptionPage.tsx` (`/premium/manage`), `SubscriptionReturnPage.tsx` (`/premium/return`); the reusable gate `components/routing/PremiumGate.tsx`. All `/premium*` routes are `FeatureGate feature="member_premium"`.
+- Premium: `pages/premium/PricingPage.tsx` (`/premium`), `MySubscriptionPage.tsx` (`/premium/manage`), `SubscriptionReturnPage.tsx` (`/premium/return`). All `/premium*` routes are wrapped in the generic `<FeatureGate feature="member_premium" redirect="/">` in `react-frontend/src/routes/AppRoutes.tsx`; there is no dedicated premium gate component.
 - Coupons: `pages/coupons/CouponsPage.tsx` (`/coupons`), `CouponDetailPage.tsx`; seller `pages/marketplace/seller/SellerCouponsPage.tsx` + `SellerCouponEditPage.tsx`; `pages/marketplace/MerchantOnboardingPage.tsx`. Coupon routes are `FeatureGate feature="merchant_coupons"`.
 - Advertising: `pages/advertise/MyAdCampaignsPage.tsx` (`/advertise/campaigns`), `MyPushCampaignsPage.tsx`. Gated by `ProtectedRoute` + `FeatureGate feature="local_advertising"`.
 - Admin: `admin/modules/premium/*`, `admin/modules/marketplace/AdminCouponsPage.tsx`, `admin/modules/advertising/*`.
@@ -170,7 +170,8 @@ Important regression tests:
 React tests (run from `react-frontend/`):
 
 ```bash
-npm test -- PremiumGate
+npm test -- MySubscriptionPage
+npm test -- PricingPage
 npm test -- CouponsPage
 ```
 

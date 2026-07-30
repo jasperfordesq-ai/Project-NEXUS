@@ -1,6 +1,6 @@
 # Project NEXUS Deployment
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This is the maintained production deployment guide for Project NEXUS.
 
@@ -67,9 +67,11 @@ From a development machine, load the private deployment environment first:
 ```bash
 source .secrets.local/deploy.env
 
-ssh -i "$PROD_SSH_KEY" -o RequestTTY=force "$PROD_SSH_USER@$PROD_SSH_HOST" \
+ssh -i "$PROD_SSH_KEY" -o RequestTTY=force "$PROD_SSH_HOST" \
   "cd /opt/nexus-php && sudo bash scripts/deploy/bluegreen-deploy.sh status"
 ```
+
+`.secrets.local/deploy.env` defines only `PROD_SSH_HOST` and `PROD_SSH_KEY`. `PROD_SSH_HOST` is already a full `user@host` string, so do not prefix it with a separate user variable — there is no `PROD_SSH_USER`. `-o RequestTTY=force` is required because the remote sudoers uses `use_pty`.
 
 The `.secrets.local/` directory is intentionally not committed.
 

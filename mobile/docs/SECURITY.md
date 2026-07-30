@@ -1,6 +1,6 @@
 # Project NEXUS Mobile — Security Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This document describes the mobile app's security posture, identifies known gaps, and provides implementation guidance for hardening.
 
@@ -215,12 +215,14 @@ async function attestDevice(challenge: string): Promise<string> {
 | Access token | `expo-secure-store` | Encrypted at rest, hardware-backed on supported devices |
 | Refresh token | `expo-secure-store` | Same as above |
 | Tenant slug | `expo-secure-store` | Avoids leaking tenant identity via logs |
-| User preferences (theme, language) | `AsyncStorage` | Non-sensitive, can be cleared without security impact |
-| Cached API responses | `AsyncStorage` (non-PII only) | Strip PII before caching |
+| User preferences (theme, language) | `expo-secure-store` | Same single storage layer — non-sensitive, but there is no second store to put them in |
+| Cached data (e.g. offline event check-ins) | `expo-secure-store` (non-PII only) | Strip PII before caching |
 
-### What NOT to store in AsyncStorage
+**This app has no AsyncStorage.** Everything persisted — tokens, tenant slug, theme mode, language, offline queues — goes through `lib/storage.ts`, which wraps `expo-secure-store` on native (Keychain / Keystore) and falls back to `window.localStorage`, then an in-memory `Map`, on web only. `@react-native-async-storage/async-storage` is not a dependency. See also [WRAPPER_POLICY.md](WRAPPER_POLICY.md).
 
-AsyncStorage is **unencrypted** and accessible on rooted/jailbroken devices. Never store:
+### What NOT to store in unencrypted storage
+
+If an unencrypted store (AsyncStorage, `window.localStorage` on the web build, plain files) is ever introduced, it is accessible on rooted/jailbroken devices. Never put there:
 
 - Authentication tokens of any kind
 - Passwords or PINs

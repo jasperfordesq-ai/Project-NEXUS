@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Beta",
-      "preview": "Vista previa"
+      "preview": "Vista previa",
+      "dormant": "Construido, no habilitado"
     },
     "title": "Funcionalidades",
     "meta_title": "Funcionalidades - Project NEXUS v1.5",
     "meta_description": "Todos los módulos incluidos en Project NEXUS v1.5, con etiquetas honestas de madurez para federación, banco de tiempo, marketplace, herramientas comunitarias, seguridad, analítica e infraestructura open source.",
     "heading": "Qué hace Project NEXUS",
-    "subheading": "Project NEXUS es una plataforma comunitaria multi-tenant de nivel empresarial. Todos los módulos siguientes están disponibles en la v1.5 actual. Etiquetamos la madurez con honestidad: los elementos sin marca están en disponibilidad general; las superficies más recientes o aún en proceso de endurecimiento llevan una etiqueta Beta o Vista previa.",
+    "subheading": "Project NEXUS es una plataforma comunitaria multiinquilino de nivel empresarial. Todos los módulos siguientes se envían hoy en la versión 1.5. Etiquetamos los módulos con honestidad: los artículos sin marcar están disponibles con carácter general; las superficies más nuevas o que se endurecen activamente llevan un chip Beta o Preview; y un chip integrado, no habilitado significa que el trabajo está terminado y apagado, a la espera de la demanda.",
     "maturity_key_title": "Cómo etiquetamos la madurez",
     "maturity_ga": "Disponibilidad general - estable, con soporte, usada en producción en los tenants piloto.",
     "maturity_beta": "Hoy en producción, pero la superficie pública o el protocolo de cable aún se está endureciendo.",
@@ -32,7 +33,7 @@
       "database_label": "Base de datos",
       "database_value": "MaríaDB 10.11",
       "frontend_label": "Interfaz",
-      "frontend_value": "Reaccionar 18 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Infraestructura",
       "infrastructure_value": "Docker, Redis, PWA completa",
       "mobile_label": "Móvil",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Federación",
-        "intro": "Una capa de federación con cuatro protocolos para el intercambio entre comunidades — Nexus (nativo), Komunitin (15 endpoints), Credit Commons Protocol (11 endpoints, compatible con CEN) y TimeOverflow.",
+        "intro": "Federación significa aquí dos cosas diferentes, y se encuentran en diferentes etapas. Conectar comunidades que viven en una instalación es un uso cotidiano. La conexión a otras instalaciones y otras plataformas está construida y probada, pero está desactivada de forma predeterminada y no está en uso actualmente.",
         "items": {
           "federation_network": {
-            "title": "Red de federación",
-            "description": "Conecta varias comunidades NEXUS en una red para el descubrimiento, anuncios, eventos y mensajería entre comunidades."
+            "title": "Red comunitaria (misma instalación)",
+            "description": "Vincule varias comunidades alojadas en una instalación para descubrimiento, listados, eventos y mensajería entre comunidades."
           },
           "external_partner_federation": {
             "title": "Federación con socios externos",
-            "description": "En producción con plataformas externas de banco de tiempo — alianzas establecidas, mensajes fluyendo, intercambio de créditos en pruebas activas.",
-            "note": "Hay alianzas reales que intercambian datos a diario. Los protocolos de cable aún se están endureciendo frente a casos límite — trata las transferencias externas de créditos como supervisadas, no automatizadas."
+            "description": "Conéctese a otras instalaciones de NEXUS y a otras plataformas de bancos de tiempo a través de cuatro protocolos documentados: Nexus nativo, Komunitin, Credit Commons (compatible con CEN) y TimeOverflow.",
+            "note": "Completo, probado y desactivado de forma predeterminada: cada punto final externo responde con una respuesta de no disponible temporalmente hasta que un operador lo habilite. Hoy en día no hay ningún socio externo conectado. Otros operadores de plataformas han expresado interés, por lo que el trabajo preliminar ya está establecido y auditado, pero no lo desarrollaremos más hasta que una integración concreta esté sobre la mesa. Si quieres federarte con nosotros, ponte en contacto."
           },
           "multi_protocol_adapters": {
             "title": "Adaptadores multi-protocolo",
-            "description": "Sincronización bidireccional para 9 tipos de entidad: miembros, anuncios, eventos, grupos, conexiones, voluntariado, valoraciones, transferencias y mensajes."
+            "description": "Adaptadores para sincronización bidireccional de 9 tipos de entidades (miembros, listados, eventos, grupos, conexiones, voluntariado, reseñas, transferencias, mensajes) en los cuatro protocolos.",
+            "note": "Creado y cubierto por pruebas junto con la Federación de socios externos, y inactivo por la misma razón: no hay nada encendido, por lo que nada se sincroniza."
           },
           "federation_neighborhoods": {
             "title": "Vecindarios de federación",
-            "description": "Grupos geográficos de comunidades federadas para la coordinación regional."
+            "description": "Clústeres agrupados geográficamente de comunidades vinculadas para la coordinación regional."
           },
           "credit_agreements": {
             "title": "Acuerdos de crédito",
-            "description": "Condiciones de tipo de cambio negociadas entre comunidades federadas."
+            "description": "Condiciones de tipo de cambio negociadas entre comunidades vinculadas."
           },
           "federation_analytics": {
             "title": "Analítica de federación",
-            "description": "Paneles de admin en vivo para la actividad de socios, el estado de la sincronización y el volumen de transacciones federadas."
+            "description": "Paneles de administración para actividad entre comunidades, estado de sincronización y volumen de transacciones federadas."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "Procesamiento de webhooks de email",
-            "description": "Gestión de eventos de SendGrid: rebotes, quejas y entregas."
+            "description": "Manejo de eventos de rebote, queja, apertura y entrega de matasellos."
           },
           "500plus_phpunit_tests": {
             "title": "500+ pruebas PHPUnit",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Construido, probado y apagado por defecto. El trabajo está hecho y auditado, pero todavía no se utiliza nada; lo desarrollaremos más cuando haya una demanda real."
   },
   "changelog_page": {
     "title": "Registro de cambios",

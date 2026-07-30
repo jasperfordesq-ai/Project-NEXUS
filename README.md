@@ -150,12 +150,21 @@ docker exec nexus-php-app php artisan migrate --seed
 # Access the application
 # React Frontend: http://localhost:5173
 # PHP API:        http://localhost:8090
-# Sales Site:     http://localhost:3001
-# Accessible UI:  http://localhost:8090/hour-timebank/accessible
 #
 # First login, unless you changed NEXUS_BOOTSTRAP_ADMIN_* in your env file:
 # Email:    admin@project-nexus.local
 # Password: ChangeMe123!
+#
+# Two surfaces need an extra step and are NOT up after the commands above:
+#
+#   Sales site      opt-in Compose profile:
+#                   docker compose --profile docker-sales up -d sales
+#                   then http://localhost:3001
+#
+#   Accessible UI   served at /{communitySlug}/accessible, and the seeder creates
+#                   only the Master Tenant, which has no slug. Create a community
+#                   in the admin panel first, then use its slug:
+#                   http://localhost:8090/<your-slug>/accessible
 
 # Native app packaging is separate from the default Docker workflow
 ```

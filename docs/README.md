@@ -1,6 +1,6 @@
 # Project NEXUS Documentation
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This directory contains the public, maintained documentation for Project NEXUS.
 
@@ -39,11 +39,11 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |
-| [MODULES.md](MODULES.md) | The module map: every module → its code paths and guide. |
+| [MODULES.md](MODULES.md) | The module map: each module → its code paths and guide, including the modules that have no guide yet. |
 
 ## Module Guides
 
-Curated, code-verified reference guides for every live module (`docs/modules/`):
+24 curated, code-verified reference guides (`docs/modules/`). Coverage is not yet complete — **Caring Community** is a live tenant-gated module with no guide; see [MODULES.md](MODULES.md) for its code paths.
 
 | Guide | Module |
 | --- | --- |
@@ -117,6 +117,6 @@ Before adding a document here:
 - list every public document in this index;
 - move local-only material to `.local-docs-archive/` instead of committing it;
 - run `npm run check:docs` before committing documentation changes.
-- run `npm run check:version` after changing release/version labels or public collateral.
+- run `npm run check:version` after changing release/version labels or public collateral. It asserts the `Platform version:` line in [ARCHITECTURE.md](ARCHITECTURE.md) and rejects stale platform-version tokens in the root `README.md` and public collateral (`scripts/check-version-consistency.mjs`).
 
-The docs hygiene check fails on task-output filenames, oversized docs, non-Markdown files, missing index links, broken local links, stale retired-doc references, old namespace/path references, stale platform-version phrases, generated artifacts in public doc paths, and obvious secret patterns.
+The docs hygiene check (`scripts/check-docs-hygiene.mjs`) fails on task-output filenames, oversized docs, non-Markdown files, missing index links, broken local links, stale retired-doc references, old namespace/path references, superseded stack claims (the previous major React version, the previous major HeroUI version, the removed animation dependency, and the wrong web server — production is Apache), generated artifacts in public doc paths, and obvious secret patterns. It does **not** check the platform version; that is `npm run check:version` above.

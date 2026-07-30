@@ -1,6 +1,6 @@
 # Blog & Resources Modules
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 Audience: maintainers and contributors working on content publishing, the resource library, SEO, or the accessible (GOV.UK) frontend.
 
@@ -13,15 +13,17 @@ Both modules ship in every tenant installation. Each is independently toggled by
 | Flag | Default | Effect when OFF |
 |------|---------|-----------------|
 | `blog` | ON | Blog routes redirect to `/`; sitemap skips `/blog`; prerender drops `/blog` and all post URLs |
-| `resources` | ON | Resources routes show "coming soon"; sitemap skips `/resources` and `/kb`; prerender drops both |
+| `resources` | ON | `/resources` and `/kb` show "coming soon"; `/kb/:id` redirects to `/`; prerender drops `/kb/{id}` URLs (the sitemap never emits `/resources` or a `/kb` index — see Prerender below) |
 
-React gating in `react-frontend/src/App.tsx`:
+React gating lives in the route files, not `App.tsx` (which is a provider shell whose only route is the `/*` catch-all rendering `TenantShell`). The blog gate is in `react-frontend/src/routes/PublicAppRoutes.tsx`; the resources and knowledge-base gates are in `react-frontend/src/routes/AppRoutes.tsx`:
 
 ```tsx
+// react-frontend/src/routes/PublicAppRoutes.tsx
 <FeatureGate feature="blog" redirect="/">
   <BlogPage />
 </FeatureGate>
 
+// react-frontend/src/routes/AppRoutes.tsx
 <FeatureGate feature="resources" fallback={<ComingSoonPage ... />}>
   <ResourcesPage />
 </FeatureGate>
@@ -107,7 +109,7 @@ All three blog public endpoints are exempt from `auth:sanctum` middleware via `-
 | GET | `/api/v2/blog/categories` | Blog category list with `post_count` |
 | GET | `/api/v2/blog/{slug}` | Single published post by slug (includes full content, SEO fields, reading time) |
 
-See `routes/api.php` lines ~824–826 and `app/Http/Controllers/Api/BlogPublicController.php`.
+See `routes/api.php` lines 1211–1213 and `app/Http/Controllers/Api/BlogPublicController.php`.
 
 ### Admin API endpoints (admin auth required)
 
@@ -124,11 +126,11 @@ See `routes/api.php` lines ~824–826 and `app/Http/Controllers/Api/BlogPublicCo
 | GET | `/api/v2/admin/tools/blog-backups` | List blog content backups |
 | POST | `/api/v2/admin/tools/blog-backups/{id}/restore` | Restore a blog backup |
 
-See `routes/api.php` lines ~1368–1375 and ~2295–2296, and `app/Http/Controllers/Api/AdminBlogController.php`.
+See `routes/api.php` lines 1824–1831 (`AdminBlogController`) and 2803–2804 (blog backups, served by `AdminToolsController`), plus `app/Http/Controllers/Api/AdminBlogController.php`.
 
 ### AI blog generation
 
-`POST /api/ai/generate/blog` — available to authenticated users. Delegates to `AiChatController::generateBlog()`.
+`POST /api/ai/generate/blog` — **admin only**. `AiChatController::generateBlog()` calls `requireAdmin()` as its first statement, which returns 403 `AUTH_INSUFFICIENT_PERMISSIONS` to any non-admin-tier user. The route at `routes/api.php:3223` inherits `auth:sanctum` from the group opened at `routes/api.php:3122` but carries no `admin` route middleware — contrast `/ai/test-provider` at `routes/api.php:3217`, which is registered with `middleware(['admin', 'throttle:nexus-route-10-per-1m'])` — so `requireAdmin()` in the controller is the only admin gate.
 
 ### Social interactions on blog posts
 
@@ -239,13 +241,15 @@ Delete and update operations check ownership or admin role (`admin`, `super_admi
 
 The knowledge base at `/kb` shares the `resources` feature flag. It is entirely admin-authored via `AdminResourcesController` (backed by `knowledge_base_articles`). The admin list supports status filter (`published`, `draft`, `all`), search, and offset pagination. Deleting an article cascades to `knowledge_base_attachments` (files removed from `Storage::disk('public')`) and `knowledge_base_feedback`.
 
-### Public API endpoints
+### Member API endpoints
+
+Unlike the blog public routes, **no resources route opts out of `auth:sanctum`** — every path below sits inside the `Route::middleware('auth:sanctum')` group and returns 401 to an unauthenticated caller.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/v2/resources` | none | Cursor-paginated list. Params: `per_page` (1–50, default 20), `cursor`, `search`, `category_id` |
-| GET | `/api/v2/resources/categories` | optional | Flat category list with counts |
-| GET | `/api/v2/resources/categories/tree` | optional | Hierarchical category tree (`?flat=1` for flat list) |
+| GET | `/api/v2/resources` | required | Cursor-paginated list. Params: `per_page` (1–50, default 20), `cursor`, `search`, `category_id` |
+| GET | `/api/v2/resources/categories` | required | Flat category list with counts |
+| GET | `/api/v2/resources/categories/tree` | required | Hierarchical category tree (`?flat=1` for flat list) |
 | POST | `/api/v2/resources` | required | Upload a resource (multipart/form-data). Fields: `file` (required), `title` (required), `description`, `category_id` |
 | GET | `/api/v2/resources/{id}/download` | required | Stream file download, increment counter |
 | PUT | `/api/v2/resources/{id}` | required | Update `title`, `description`, `category_id`, or `content_body` (owner or admin) |
@@ -263,7 +267,7 @@ The knowledge base at `/kb` shares the `resources` feature flag. It is entirely 
 | GET | `/api/v2/admin/resources/{id}` | KB article detail with attachments |
 | DELETE | `/api/v2/admin/resources/{id}` | Delete KB article, attachments, and feedback |
 
-See `routes/api.php` lines ~829–839 and ~2118–2120.
+See `routes/api.php` lines 1224–1234 and 2622–2624.
 
 ### Social interactions on resources
 
@@ -295,7 +299,9 @@ Routes defined in `routes/govuk-alpha.php` (simple browse) and `routes/govuk-alp
 
 ### Prerender
 
-`PrerenderService::FEATURE_GATED_ROUTES` maps `'resources'` → `['/resources', '/kb']`. The Sitemap service emits the `/kb` URL at priority `0.5`, changefreq `weekly` when `resources` is ON.
+`PrerenderService::FEATURE_GATED_ROUTES` contains only `blog` and `merchant_coupons` — there is no `resources` key. The `resources` feature instead gates dynamic `/kb/` URLs through the separate prefix map in `PrerenderService::dynamicRouteGateAllows()`.
+
+The Sitemap service never emits `/resources` or a `/kb` index. Its only KB generator, `getKbArticleUrls()`, produces `/kb/{id}` at changefreq `monthly`, priority `0.6` — and it currently has no callers (`getContentMethods()` registers only `blog_posts` and `cms_pages`), so no KB URLs reach the sitemap today.
 
 ---
 
@@ -330,7 +336,7 @@ Routes defined in `routes/govuk-alpha.php` (simple browse) and `routes/govuk-alp
 | Resource file missing on disk at download time | Returns 404 `file_not_found` | Re-upload the resource; the DB row can be deleted via admin |
 | Resource category deleted with children | Returns HTTP 409 | Delete or re-parent child categories first |
 | KB article deleted, attachments still on disk | `AdminResourcesController::destroy()` calls `Storage::disk('public')->delete()` for each attachment; individual `unlink` failures are silent | Check `storage/app/public` for orphaned files manually |
-| `resources` feature toggled OFF | Prerender drops `/resources` and `/kb`; sitemap removes those URLs; React shows "coming soon" fallback | Toggle feature back ON via admin panel |
+| `resources` feature toggled OFF | Prerender stops queuing `/kb/{id}` URLs; React shows the "coming soon" fallback for `/resources` and `/kb`, and redirects `/kb/:id` to `/` | Toggle feature back ON via admin panel |
 
 ---
 
@@ -384,7 +390,7 @@ Key test files:
 
 - **Comments** — `app/Services/CommentService.php` (handles `blog_post`, `blog`, `resource` target types)
 - **Reactions** — `app/Services/ReactionService.php` (handles `blog`, `resource` types)
-- **Sitemap** — `app/Services/SitemapService.php` (blog posts + `/blog` index, `/resources` + `/kb`)
+- **Sitemap** — `app/Services/SitemapService.php` (blog posts + the `/blog` index; no `/resources` or `/kb` URLs are emitted)
 - **Prerender** — `app/Services/PrerenderService.php`, `app/Observers/PostPrerenderObserver.php`
 - **Feed** — `app/Services/FeedService.php` (surfaces blog posts in the activity feed)
 - **AI context** — `app/Services/AI/AiModuleDocsService.php` (provides blog and resources module context to the AI chat assistant)

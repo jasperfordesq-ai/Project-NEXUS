@@ -1,8 +1,8 @@
 # Prerender engine — operator runbook
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
-Self-service playbook for the alerts in `prerender-alerts.yml`. Each section maps 1:1 to an alert name; follow the steps in order.
+Self-service playbook for the 8 alerts in `prerender-alerts.yml`. Sections are named after the alert that pages you; follow the steps in order. The mapping is close to but not exactly 1:1 — `PrerenderHealthRed` and `PrerenderHealthYellow` share one section, and the last two sections are general operator guidance rather than alert responses.
 
 The engine's own health endpoint at `GET /api/v2/admin/prerender/health` is the source of truth — most alerts here are reading its individual checks. When unsure, hit it first.
 
@@ -66,6 +66,21 @@ curl -s https://api.project-nexus.ie/api/v2/admin/prerender/health \
 ```
 
 Each failing check carries an actionable suggestion.
+
+## PrerenderRecentFailures
+
+Warning-severity, fires on `nexus_prerender_failures_recent > 0` for 10 minutes: one or more cache paths failed inside the backoff window. This is per-path, not engine-wide — the queue is still working.
+
+List the failing paths and read why each one failed:
+
+```bash
+curl -s https://api.project-nexus.ie/api/v2/admin/prerender/failures \
+  -H "Authorization: Bearer <admin-token>" | jq .
+```
+
+The **Failures** tab in `/admin/prerender` shows the same set. For a specific job, the Jobs tab row drawer carries the `log_excerpt`. Retry one job with `POST /api/v2/admin/prerender/jobs/{id}/retry`.
+
+If every failure is on the same route pattern, the route itself is probably broken (a soft-error page or a render timeout) rather than the engine. If failures keep accumulating they will trip the circuit breaker — see `PrerenderCircuitBreakerTripped` above.
 
 ## PrerenderCoverageLow
 

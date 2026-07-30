@@ -1,6 +1,6 @@
 # Social Feed Module
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide covers the Social Feed module in Project NEXUS — the unified activity stream, standalone posts, polls, stories, comments, reactions, sharing, and the EdgeRank-style ranking algorithm. It is for maintainers adding features, fixing bugs, or changing ranking behaviour.
 
@@ -27,11 +27,11 @@ Use this guide when touching:
 | Polls standalone page | Feature flag | `polls` | ON |
 | Individual event/goal/job/challenge/blog filter pills on the feed | Feature flags | `events`, `goals`, `job_vacancies`, `ideation_challenges`, `volunteering`, `blog`, `groups` | per-feature default |
 
-- **Module gate `feed`** — all feed routes in `App.tsx` are wrapped with `<FeatureGate module="feed" redirect="/dashboard">`. When the module is disabled, the feed nav link and all `/feed/*` routes redirect to `/dashboard`.
+- **Module gate `feed`** — all feed routes in `react-frontend/src/routes/AppRoutes.tsx` are wrapped with `<FeatureGate module="feed" redirect="/dashboard">`. When the module is disabled, the feed nav link and all `/feed/*` routes redirect to `/dashboard`.
 - **Feature gate `polls`** — the standalone `/polls` page uses `<FeatureGate feature="polls">`. The polls filter pill on the feed also gates on `hasFeature('polls')`. The `/v2/feed/polls/*` inline poll endpoints follow the same gate via the `SocialController`.
 - **Stories** share the feed module gate; there is no separate `stories` feature flag in `TenantFeatureConfig::FEATURE_DEFAULTS`.
 - **All queries are tenant-scoped.** `FeedService` joins `users` with `WHERE u.tenant_id = ?`. All sub-queries (bookmarks, post_shares, likes, comments, connections, group_members) include explicit `tenant_id` guards. The `FeedActivity` model carries a `HasTenantScope` global scope.
-- **Admin endpoints** (`/v2/admin/feed/*`, `/v2/admin/comments/*`, `/v2/admin/polls/*`) require the `admin` middleware and are additional to user-facing gates.
+- **Admin endpoints** are additional to user-facing gates, but they do **not** all use the same middleware. Only `/v2/admin/polls/*` uses `admin`. The moderation routes — all of `/v2/admin/comments/*`, plus `/v2/admin/feed/posts*` and `/v2/admin/feed/stats` — are registered with `withoutMiddleware('admin')->middleware('broker-or-admin')`, which deliberately also admits the `broker` and `coordinator` roles (they own these surfaces in the broker panel). That is a wider authorization surface than `admin`; the controllers add self-dealing guards. Announcer grant/revoke (`/v2/admin/feed/{grant,revoke}-announcer`) is privilege management and stays admin-only.
 
 ## Key code and data locations
 
@@ -59,7 +59,7 @@ Services:
 - `app/Services/StoryService.php` — story create/view/react/reply/highlight/archive, 24h expiry, story-inline polls.
 - `app/Services/CommentService.php` — threaded comments on any entity, emoji reactions on comments.
 - `app/Services/ReactionService.php` — polymorphic emoji reactions (8 named types) with toggle/replace semantics and a DB-level unique index.
-- `app/Services/FeedSocialController.php` / `app/Services/FeedSocialService.php` — share/unshare, `shared_by` hydration, trending/search hashtags.
+- `app/Http/Controllers/Api/FeedSocialController.php` / `app/Services/FeedSocialService.php` — share/unshare, `shared_by` hydration, trending/search hashtags.
 - `app/Services/FeedActivityService.php` — low-level `feed_activity` row insertion and deletion (called by other services when content is published/deleted).
 - `app/Services/MentionService.php` — `@mention` extraction and notification fanout on post create/publish.
 - `app/Services/LinkPreviewService.php` — batch-loads URL preview cards for post items.
@@ -174,7 +174,7 @@ Creating a post (`POST /v2/feed/posts` → `SocialController::createPostV2` → 
 
 Updating a post (`PUT /v2/feed/posts/{id}`): only the original author can edit. Content is re-sanitised and `feed_activity.content` / `image_url` are updated in sync.
 
-Deleting a post (`DELETE /v2/feed/posts/{id}`): soft-delete via `deleted_at`; `feed_activity` row is removed by `FeedActivityService::deleteActivity`.
+Deleting a post (`DELETE /v2/feed/posts/{id}`): soft-delete via `deleted_at`; `feed_activity` row is removed by `FeedActivityService::removeActivity`.
 
 ## Polls
 
@@ -200,7 +200,7 @@ This prevents bandwagon/strategic voting where early-result knowledge changes la
 
 `POST /v2/polls/{id}/rank` stores a preference ordering.  
 `GET /v2/polls/{id}/ranked-results` returns the Condorcet-style tally.  
-`GET /v2/polls/{id}/export` streams a CSV of anonymised vote data (admin only via `AdminPollsController`).
+`GET /v2/polls/{id}/export` streams a CSV of anonymised vote data. It is served by `PollsController@export` behind plain `auth:sanctum` and is restricted to **the poll's own creator** — `PollExportService::exportToCsv()` returns `null` unless `poll.user_id` matches the caller, and the controller maps that to a 404 `RESOURCE_NOT_FOUND`. An admin who did not create the poll is refused. `AdminPollsController` has no `export` method (only `index`, `show`, `destroy`). Note the service comment says "creator or admin"; the code checks creator only.
 
 ### Story-inline polls
 
@@ -260,7 +260,7 @@ A DB-level unique index on `(user_id, target_type, target_id)` in the `reactions
 
 ## Sharing / quote reposting
 
-`POST /v2/feed/posts/{id}/share` (and the polymorphic `POST /v2/feed/share`) inserts a row into `post_shares`. One share per `(user_id, original_type, original_post_id, tenant_id)`.
+`POST /v2/feed/posts/{id}/share` (and the polymorphic `POST /v2/shares`, with `DELETE /v2/shares` to unshare) inserts a row into `post_shares`. One share per `(user_id, original_type, original_post_id, tenant_id)`.
 
 `share_count` on feed items comes from two sources:
 
@@ -333,7 +333,7 @@ Pass `includeReasons=true` to `rankFeedItems` to attach `ranking_reasons` (top 3
 
 | Failure | Effect | Recovery |
 |---------|--------|----------|
-| `feed_activity` row missing for a published post | Post invisible in feed but still accessible via `/feed/posts/{id}` | `FeedActivityService::ensureActivity` re-inserts the row |
+| `feed_activity` row missing for a published post | Post invisible in feed but still accessible via `/feed/posts/{id}` | `FeedActivityService::recordActivity` re-inserts the row (idempotent upsert; preserves an existing visibility bit) |
 | EdgeRank ranking throws | `FeedService::getFeed` catches `\Throwable`, logs a warning, and returns items in chronological order | Restart is not needed; ranking is stateless |
 | Link preview batch load fails | Feed is returned without `link_previews` (exception caught silently) | No action; previews are cosmetic |
 | Quoted post batch load fails | Feed is returned without `quoted_post` embeds (exception caught, warning logged) | No action |

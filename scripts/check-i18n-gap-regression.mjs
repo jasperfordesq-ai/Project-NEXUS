@@ -47,6 +47,28 @@ const NO_TRANSLATE_VALUES = new Set([
   'Spitex',
   'member@example.com',
   'vs',
+  // Tech-stack values on the public Features page: product names and version
+  // numbers joined by '+'. There is nothing in them to translate, and a
+  // translator who "translates" one has introduced an error. Added 2026-07-30
+  // when correcting "React 18" to "React 19" made five locales identical to
+  // English and the gap counter read that as a regression — the value had only
+  // ever differed because a translator had altered a product name.
+  'React 19 + TypeScript + HeroUI + Tailwind CSS 4',
+  'Laravel 12 + PHP 8.2+',
+  'MariaDB 10.11',
+  'Meilisearch v1.7',
+  'Capacitor (iOS + Android)',
+  'OpenAI text-embedding-3-small',
+  'Pusher WebSockets, Firebase Cloud Messaging',
+  // Social network names. Brand names are not translated, and the single-word
+  // ones only escaped this list because /^[a-zA-Z0-9_]+$/ already covers them —
+  // the two-word and punctuated forms did not.
+  'Twitter / X',
+  'Google Play',
+  'App Store',
+  // Robots meta directives: literal values a crawler parses, not prose.
+  'Noindex Nofollow',
+  'Index Follow',
 ]);
 
 const LOCALE_IDENTITY_VALUES = new Map([

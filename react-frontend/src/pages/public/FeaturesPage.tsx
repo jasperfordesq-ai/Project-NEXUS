@@ -28,6 +28,25 @@ import { useTenant } from '@/contexts';
  *   - (unmarked)  General Availability — stable, supported, used in production
  *   - Beta        Working in production, surface still hardening
  *   - Preview     Recently shipped, available to opt in, may change
+ *   - Dormant     Built and tested, switched off by default, not in use
+ *
+ * `dormant` was added on 2026-07-30 because the first three labels all assert
+ * production USE — GA says "used in production", Beta says "working in
+ * production today". External partner federation is complete and tested but has
+ * been switched off platform-wide since the 2026-07-27 deploy, with no partner
+ * connected and zero external callers in twelve weeks of access logs. Labelled
+ * `beta`, it had acquired a description claiming real partnerships exchanging
+ * data daily, on a page whose own subheading promises honest labelling. The
+ * vocabulary had no way to say "we built this, it works, nobody needs it yet",
+ * so the copy drifted into claiming the opposite. Use `dormant` for any
+ * capability that is finished but deliberately not switched on.
+ *
+ * 🔴 Federation is TWO different things and the labels must keep them apart.
+ * Internal cross-tenant federation (communities on one installation) is live and
+ * ungated by design — its admin surfaces under /v2/admin/federation/* carry no
+ * kill switch. External partner federation (other installations and other
+ * platforms) is the dormant one. Commit b9beb929d exists because that
+ * distinction had already been lost once.
  *
  * The page replaces the previous "Development Status" page; the old route
  * still redirects here so existing bookmarks survive.
@@ -38,14 +57,17 @@ import { useTenant } from '@/contexts';
 // Maturity chip
 // ---------------------------------------------------------------------------
 
-type Maturity = 'ga' | 'beta' | 'preview';
+type Maturity = 'ga' | 'beta' | 'preview' | 'dormant';
 
 function MaturityChip({ level }: { level: Maturity }) {
   const { t } = useTranslation('public');
   if (level === 'ga') return null;
-  const config: Record<Exclude<Maturity, 'ga'>, { color: 'warning' | 'accent'; label: string }> = {
+  const config: Record<Exclude<Maturity, 'ga'>, { color: 'warning' | 'accent' | 'default'; label: string }> = {
     beta: { color: 'warning', label: t('features_page.chips.beta') },
     preview: { color: 'accent', label: t('features_page.chips.preview') },
+    // Neutral, not a warning: nothing is wrong with a finished capability that
+    // is switched off. It is a statement of availability, not of quality.
+    dormant: { color: 'default', label: t('features_page.chips.dormant') },
   };
   const { color, label } = config[level];
   return (
@@ -159,16 +181,9 @@ const GROUPS: FeatureGroup[] = [
   {
     key: 'federation',
     items: [
+      // Internal cross-tenant federation: live, ungated by design.
       {
         key: 'federation_network'
-      },
-      {
-        key: 'external_partner_federation',
-        maturity: 'beta'
-      },
-      {
-        key: 'multi_protocol_adapters',
-        maturity: 'beta'
       },
       {
         key: 'federation_neighborhoods',
@@ -180,6 +195,17 @@ const GROUPS: FeatureGroup[] = [
       },
       {
         key: 'federation_analytics'
+      },
+      // External partner federation: complete, tested, switched off by default.
+      // Not 'beta' — beta asserts "working in production today", and nothing is
+      // connected. See the header note on the dormant label.
+      {
+        key: 'external_partner_federation',
+        maturity: 'dormant'
+      },
+      {
+        key: 'multi_protocol_adapters',
+        maturity: 'dormant'
       }
     ]
   },
@@ -490,6 +516,14 @@ export function FeaturesPage() {
               </Chip>
               <span className="text-theme-muted">
                 {t('features_page.maturity_preview')}
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <Chip color="default" variant="tertiary" size="sm" className="shrink-0">
+                {t('features_page.chips.dormant')}
+              </Chip>
+              <span className="text-theme-muted">
+                {t('features_page.maturity_dormant')}
               </span>
             </li>
           </ul>

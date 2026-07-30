@@ -2170,7 +2170,7 @@
     },
     "about": {
       "title": "À propos de cette page",
-      "body": "Utilisez cette page lors de la configuration d'une intégration avec un service tiers, le système de données d'une municipalité ou un réseau NEXUS fédéré. Chaque point de terminaison répertorié ici est actif et limité à ce déploiement. Les exemples de charges utiles sont donnés à titre indicatif: les valeurs réelles dépendent de votre slug de locataire et des informations d'identification de votre partenaire. Partagez cette URL avec les partenaires d'intégration plutôt que de les diriger vers la documentation brute de l'API.",
+      "body": "Utilisez cette page lors de la configuration d'une intégration avec un service tiers, le système de données d'une municipalité ou un réseau NEXUS fédéré. Chaque point de terminaison répertorié ici est limité à ce déploiement, mais la plupart ne sont pas activés : l'API partenaire et la fédération externe sont désactivées et répondent avec une réponse temporairement indisponible jusqu'à ce qu'un opérateur les active, et l'API partenaire est également un paramètre par communauté qui démarre. Vérifiez auprès de votre administrateur de plateforme avant de partager ceci avec un partenaire. Les exemples de charges utiles sont donnés à titre indicatif : les valeurs réelles dépendent de votre communauté et des informations d'identification de votre partenaire.",
       "last_refreshed": "Dernière actualisation{{date}}."
     },
     "sections": {

@@ -1,6 +1,6 @@
 # Messaging Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide is a how-to/reference for maintainers of the direct-messaging surface in Project NEXUS. It covers conversations and threads, sending/editing/deleting messages, file and voice attachments, real-time delivery via Pusher, broker safeguarding visibility, federation cross-community messaging, tenant scoping, privacy invariants, failure modes, and regression tests.
 
@@ -212,7 +212,7 @@ Both listeners (`CopyMessageForBrokerReview`, `NotifyMessageReceived`) use a Red
 
 ## Broker safeguarding visibility
 
-The broker safeguarding feature allows an admin team to review a copy of qualifying messages. This is tenant-controlled and off by default unless configured.
+The broker safeguarding feature allows an admin team to review a copy of qualifying messages. It is tenant-controlled but **on by default**: with no tenant configuration, `broker_visibility.enabled` resolves to `true` (`BrokerControlConfigService::DEFAULTS`, and `isBrokerVisibilityEnabled()` falls back to `true`), and first-contact, new-member and high-risk-listing copying all fire. A tenant must explicitly write `enabled = false` to switch it off. Contrast `exchange_workflow.enabled`, which genuinely defaults to `false`.
 
 ### How copies are triggered
 
@@ -266,7 +266,11 @@ The service populates the `listing_id` column as well as `context_type`/`context
 
 ## Federation cross-community messaging
 
-Federation messaging uses a separate table (`federation_messages`) and service (`FederatedMessageService`). It is only available when:
+Federation messaging uses a separate table (`federation_messages`) and service (`FederatedMessageService`).
+
+> **This inbound path is built and dormant, not live.** The only ingress to `FederatedMessageService::storeExternalMessage()` is `FederationExternalWebhookController::receive`, whose route carries the `federation.external:webhooks` middleware (`routes/api.php:3585`). External federation is off by default and has been off in production since 2026-07-27, so `EnsureExternalFederationEnabled` answers every request with HTTP 503 + `Retry-After` and code `FEDERATION_EXTERNAL_DISABLED` *before* the controller runs. No inbound federated message can arrive regardless of user opt-in or partnership state. If you are debugging "federated messaging isn't working", check the protocol switch first. This is separate from internal cross-tenant federation, which is live and ungated.
+
+Assuming the `webhooks` protocol switch is on, delivery additionally requires:
 
 1. Both the sender and receiver have opted into federated messaging (`federation_user_settings.federation_optin = true` and `messaging_enabled_federated = true`).
 2. An active federation partnership exists between the two tenants with `messaging_enabled = 1` in `federation_partnerships`.

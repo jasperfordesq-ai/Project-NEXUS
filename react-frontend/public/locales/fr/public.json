@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Bêta",
-      "preview": "Aperçu"
+      "preview": "Aperçu",
+      "dormant": "Construit, non activé"
     },
     "title": "Fonctionnalités",
     "meta_title": "Fonctionnalités - Project NEXUS v1.5",
     "meta_description": "Tous les modules livrés dans Project NEXUS v1.5, avec des indications honnêtes sur leur maturité pour la fédération, la banque de temps, la place de marché, les outils communautaires, la sécurité, l'analyse et l'infrastructure open source.",
     "heading": "Ce que Project NEXUS fait",
-    "subheading": "Project NEXUS est une plateforme communautaire multi-locataire de classe entreprise. Tous les modules ci-dessous sont livrés dans la v1.5 actuelle. Nous indiquons la maturité honnêtement : les éléments sans étiquette sont en disponibilité générale ; les surfaces plus récentes ou activement renforcées portent une étiquette Bêta ou Aperçu.",
+    "subheading": "Le projet NEXUS est une plateforme communautaire multi-tenant de niveau entreprise. Chaque module ci-dessous est livré aujourd'hui en v1.5. Nous étiquetons les modules honnêtement : les éléments non marqués sont généralement disponibles ; Les surfaces plus récentes ou à durcissement actif portent une puce Beta ou Preview ; et une puce construite et non activée signifie que le travail est terminé et éteint, en attente de la demande.",
     "maturity_key_title": "Comment nous indiquons la maturité",
     "maturity_ga": "Disponibilité générale - stable, prise en charge, utilisée en production chez les locataires pilotes.",
     "maturity_beta": "Déjà en production, mais la surface publique ou le protocole filaire est encore en cours de renforcement.",
@@ -32,7 +33,7 @@
       "database_label": "Base de données",
       "database_value": "MariaDB 10.11",
       "frontend_label": "L'extrémité avant",
-      "frontend_value": "React 18 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Infrastructure",
       "infrastructure_value": "Docker, Redis, PWA complète",
       "mobile_label": "Mobile",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Fédération",
-        "intro": "Une couche de fédération à quatre protocoles pour les échanges entre communautés — Nexus (natif), Komunitin (15 endpoints), Credit Commons Protocol (11 endpoints, compatible CEN) et TimeOverflow.",
+        "intro": "La fédération signifie ici deux choses différentes, et elles se situent à des stades différents. Connecter les communautés qui vivent sur une seule installation est une pratique quotidienne. La connexion à d'autres installations et à d'autres plates-formes est construite et testée, mais désactivée par défaut et n'est pas utilisée actuellement.",
         "items": {
           "federation_network": {
-            "title": "Réseau de fédération",
-            "description": "Connectez plusieurs communautés NEXUS en un réseau pour la découverte, les annonces, les événements et la messagerie inter-communautés."
+            "title": "Réseau communautaire (même installation)",
+            "description": "Reliez plusieurs communautés hébergées sur une seule installation pour la découverte, les listes, les événements et la messagerie intercommunautaires."
           },
           "external_partner_federation": {
             "title": "Fédération avec partenaires externes",
-            "description": "En production avec des plateformes externes de banque de temps — partenariats établis, messages qui circulent, échange de crédits en test actif.",
-            "note": "Des partenariats réels existent et échangent des données quotidiennement. Les protocoles filaires sont encore renforcés contre les cas limites — considérez les transferts de crédits externes comme supervisés, non automatisés."
+            "description": "Connectez-vous à d'autres installations NEXUS et à d'autres plateformes de banque de temps via quatre protocoles documentés : Nexus natif, Komunitin, Credit Commons (compatible CEN) et TimeOverflow.",
+            "note": "Complet et testé, et désactivé par défaut : chaque point de terminaison externe répond avec une réponse temporairement indisponible jusqu'à ce qu'un opérateur l'active. Aucun partenaire externe n'est connecté aujourd'hui. D'autres opérateurs de plateforme ont manifesté leur intérêt, le travail de base est donc en place et audité, mais nous ne le développerons pas davantage tant qu'une intégration concrète ne sera pas sur la table. Si vous souhaitez vous fédérer avec nous, contactez-nous."
           },
           "multi_protocol_adapters": {
             "title": "Adaptateurs multi-protocoles",
-            "description": "Synchronisation bidirectionnelle pour 9 types d'entités : membres, annonces, événements, groupes, connexions, bénévolat, avis, transferts, messages."
+            "description": "Adaptateurs pour la synchronisation bidirectionnelle de 9 types d'entités (membres, listes, événements, groupes, connexions, volontariat, avis, transferts, messages) sur les quatre protocoles.",
+            "note": "Construit et couvert par des tests aux côtés de la Fédération de partenaires externes, et inactif pour la même raison : rien n'est allumé, donc rien ne se synchronise."
           },
           "federation_neighborhoods": {
             "title": "Voisinages de fédération",
-            "description": "Grappes géographiques de communautés fédérées pour la coordination régionale."
+            "description": "Groupes géographiquement regroupés de communautés liées pour la coordination régionale."
           },
           "credit_agreements": {
             "title": "Accords de crédit",
-            "description": "Conditions de change négociées entre communautés fédérées."
+            "description": "Conditions de change négociées entre les communautés liées."
           },
           "federation_analytics": {
             "title": "Analyse de la fédération",
-            "description": "Tableaux de bord admin en direct pour l'activité des partenaires, l'état de la synchronisation et le volume des transactions fédérées."
+            "description": "Tableaux de bord d'administration pour l'activité intercommunautaire, l'état de synchronisation et le volume de transactions fédérées."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "Traitement des webhooks e-mail",
-            "description": "Gestion des événements SendGrid de rebond, plainte et livraison."
+            "description": "Gestion des rebonds de cachet de la poste, des réclamations, des ouvertures et des livraisons."
           },
           "500plus_phpunit_tests": {
             "title": "500+ tests PHPUnit",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Construit, testé et désactivé par défaut. Le travail est effectué et audité, mais rien ne l'utilise encore - nous le développerons davantage lorsqu'il y aura une réelle demande."
   },
   "changelog_page": {
     "title": "Journal des modifications",

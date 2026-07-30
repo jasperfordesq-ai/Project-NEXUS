@@ -1,6 +1,6 @@
 # API Reference
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 Project NEXUS exposes a large Laravel JSON API for the React frontend, mobile clients, integrations, federation, and admin surfaces. The hand-written docs do not duplicate every endpoint. **The OpenAPI contract is the source of truth.**
 
@@ -21,7 +21,19 @@ When the docs and the running code disagree, `routes/api.php` and the controller
 
 ### Base URLs
 
-All routes are registered under an `/api` prefix (see `app/Providers/RouteServiceProvider.php`), and the current API surface lives under the `/api/v2/...` namespace.
+All routes are registered under an `/api` prefix (see `app/Providers/RouteServiceProvider.php`). The main member/admin API surface lives under the `/api/v2/...` namespace, but the `v2` segment is written per route rather than applied by a group prefix, so a handful of routes sit directly under `/api/...` — most notably login (`POST /api/auth/login`, `routes/api.php:3040`).
+
+Two further non-`v2` route families are current registrations, not history:
+
+- `/api/v1/federation/...` — 15 routes, the native legacy v1 federation read/write API (`routes/api.php:3562`, gated by `federation.external:legacy_v1`).
+- `/api/partner/v1/...` — 10 routes, the Partner API including `POST /api/partner/v1/wallet/credit` (`routes/api.php:3907`), all inside the kill-switched group opened at `routes/api.php:3883` and gated by `App\Http\Middleware\EnsurePartnerApiEnabled` (registered as `partner.api.enabled` in `bootstrap/app.php`).
+
+Both families are built and tested but switched **off by default** and off in production, and each sits behind its own deliberately independent kill switch with its own error code:
+
+- Legacy v1 federation answers `503` + `Retry-After: 3600` with a **top-level** `code` of `FEDERATION_EXTERNAL_DISABLED` (`App\Support\Federation\ExternalFederationResponse::ERROR_CODE`), in the body `{"error": true, "code": ..., "message": ..., "timestamp": ...}`. This is the shape for every non-ingest external federation path; only `/api/v2/federation/ingest/*` wraps the same code in the canonical `errors[0].code` envelope (`ExternalFederationResponse::blocked()` branches on the path, and everything else falls through to `blockedLegacy()`). Both are governed by the `external_protocol_legacy_v1_enabled` and `external_federation_enabled` (master) columns of `federation_system_control`.
+- The Partner API answers `503` + `Retry-After: 3600` with `errors[0].code = partner_api_disabled` (`EnsurePartnerApiEnabled`, backed by `App\Services\PartnerApi\PartnerApiKillSwitch`). It never returns `FEDERATION_EXTERNAL_DISABLED`.
+
+Do not treat either family as retired, and do not treat them as live traffic. Internal cross-tenant federation is a separate mechanism and is live and ungated by design.
 
 | Environment | Base URL |
 | --- | --- |
@@ -47,7 +59,7 @@ The API uses **short-lived JWT bearer authentication** (`Authorization: Bearer <
 **Obtain a token** by calling the login endpoint with a tenant header:
 
 ```bash
-curl -X POST "https://api.project-nexus.ie/api/v2/auth/login" \
+curl -X POST "https://api.project-nexus.ie/api/auth/login" \
   -H "Content-Type: application/json" \
   -H "X-Tenant-ID: 1" \
   -d '{"email": "you@example.com", "password": "your-password"}'
@@ -95,9 +107,9 @@ curl "https://api.project-nexus.ie/api/v2/health" \
 
 There is also a framework-level probe at `GET /api/laravel/health` that deliberately returns only `{ "status": "ok" }` and never exposes the framework version or tenant id.
 
-`GET /api/v2/listings` is an example of a public, tenant-scoped collection. Events are different: maintained member, organiser and admin Events endpoints, including `GET /api/v2/events`, require authentication and the tenant `events` feature. The narrow exceptions are explicit capability-token operations such as a secret personal calendar feed and one-use guardian-consent grant; neither exposes an event catalogue or roster, and invalid guardian inputs are deliberately non-enumerable. A future public event catalogue would need a separate, identity-free contract. Confirm the exact query parameters, middleware and response shapes in `routes/api.php` and `openapi.json` rather than assuming them here.
+`GET /api/v2/listings` is **not** public: it sits inside the `auth:sanctum` group (`routes/api.php:184`) behind the tenant `listings` module gate, so an anonymous request receives `401` with `auth_required` (see `app/Http/Middleware/Authenticate.php`). The only genuinely unauthenticated listings endpoints are `GET /api/v2/listings/tags/popular` and `GET /api/v2/listings/tags/autocomplete`, which opt out explicitly with `->withoutMiddleware('auth:sanctum')` (`routes/api.php:530-531`). Events follow the same model: maintained member, organiser and admin Events endpoints, including `GET /api/v2/events`, require authentication and the tenant `events` feature. The narrow exceptions are explicit capability-token operations such as a secret personal calendar feed and one-use guardian-consent grant; neither exposes an event catalogue or roster, and invalid guardian inputs are deliberately non-enumerable. A future public event catalogue would need a separate, identity-free contract. Confirm the exact query parameters, middleware and response shapes in `routes/api.php` and `openapi.json` rather than assuming them here.
 
-Effective-dated recurring-series edits use the explicit preview/commit pair under `/api/v2/events/{occurrenceId}/recurrence-revisions`. Preview is non-mutating and returns a short-lived confidential token plus participant-redacted impact/conflict counts. Commit requires the exact patch, that token and an `Idempotency-Key` of at most 191 characters; it returns `201` for a new immutable revision or `200` for a matching replay. Stale/expired/conflicting previews return `409`, and a boundary above the configured occurrence cap returns `413`. These endpoints remain unavailable while the V2 recurrence rollout flag is off.
+Effective-dated recurring-series edits use the explicit preview/commit pair under `/api/v2/events/{id}/recurrence-revisions` (`routes/api.php:294,296`; the contract declares `{id}`). The `{id}` must resolve to a concrete occurrence — otherwise the controller refuses with the reason code `event_recurrence_revision_concrete_occurrence_required`. Preview is non-mutating and returns a short-lived confidential token plus participant-redacted impact/conflict counts. Commit requires the exact patch, that token and an `Idempotency-Key` of at most 191 characters; it returns `201` for a new immutable revision or `200` for a matching replay. Stale/expired/conflicting previews return `409`, and a boundary above the configured occurrence cap returns `413`. These endpoints remain unavailable while the V2 recurrence rollout flag is off.
 
 Maintained clients must fetch `GET /api/v2/events/recurrence-capabilities` before presenting recurrence controls. The authenticated, Events-feature-gated response is an allowlisted runtime contract covering the active `legacy` or `v2` engine, structured input, supported frequencies and end types, the bounded occurrence cap, and explicit rolling-never, effective-revision and definition-blueprint support. `schema_ready` and `rollout_state` let clients degrade safely; advanced flags remain false and `never` is omitted whenever required flags, configuration or schema are unavailable. The endpoint never exposes tenant identifiers, raw configuration, schema names or probe errors and must not be cached across authenticated users or tenants.
 

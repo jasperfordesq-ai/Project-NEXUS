@@ -1,6 +1,6 @@
 # Sentry Error Tracking
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 Project NEXUS uses Sentry for backend exceptions, frontend exceptions, performance traces, and selected operational alerts.
 
@@ -41,7 +41,9 @@ When `BUILD_COMMIT` is present, backend events can be tied to the deployed commi
 
 ## Frontend
 
-React Sentry integration lives in `react-frontend/src/lib/sentry.ts` and is initialized from `react-frontend/src/main.tsx`.
+React Sentry integration lives in `react-frontend/src/lib/sentry.ts`. It is **not** initialized from `main.tsx`. The only production call site is `react-frontend/src/contexts/CookieConsentContext.tsx:296`, which lazily imports the module and calls `initSentryAfterIdle()` from a delayed-idle callback. That effect is gated on analytics consent **and** `!isAuthEntryPath(location.pathname)`, so Sentry also never initializes while the user is on a login/register entry path — it must not compete with auth startup.
+
+`main.tsx` only queues breadcrumbs through `@/lib/telemetryQueue` (line 71) and lazily imports `captureSentryException` inside its error boundary (line 133).
 
 Frontend variables are Vite variables:
 
@@ -89,7 +91,7 @@ php artisan gdpr:check-overdue-requests
 | Symptom | Check |
 | --- | --- |
 | No backend events | DSN value, `config:cache`, outbound network access, environment name. |
-| No frontend events | `VITE_SENTRY_DSN` at build time, analytics consent, browser console errors. |
+| No frontend events | `VITE_SENTRY_DSN` at build time, analytics consent, whether the session stayed on a login/register entry path (init is suppressed there), browser console errors. |
 | Too much noise | Ignore known non-bugs in code, lower trace sampling, avoid reporting validation errors. |
 | PII in events | Update backend `before_send` or frontend `beforeSend` scrubbers immediately. |
 

@@ -39,8 +39,11 @@ class IntegrationShowcaseService
             'id' => 'openapi',
             'icon' => 'FileJson',
             'items' => [
-                ['code' => 'openapi_json', 'path' => '/api/v2/docs/openapi.json', 'method' => 'GET'],
-                ['code' => 'openapi_yaml', 'path' => '/api/v2/docs/openapi.yaml', 'method' => 'GET'],
+                // No v2 segment — routes/api.php:3115-3116 register these as
+                // api/docs/openapi.{json,yaml}. Confirmed against artisan
+                // route:list on 2026-07-30; the v2 form returned 404.
+                ['code' => 'openapi_json', 'path' => '/api/docs/openapi.json', 'method' => 'GET'],
+                ['code' => 'openapi_yaml', 'path' => '/api/docs/openapi.yaml', 'method' => 'GET'],
             ],
             'docs_link' => 'https://github.com/jasperfordesq-ai/nexus-v1/tree/main/docs',
         ];
@@ -88,10 +91,13 @@ class IntegrationShowcaseService
             'id' => 'webhooks',
             'icon' => 'Webhook',
             'items' => [
+                // Only GET and POST exist — see routes/api.php:3915-3917. The
+                // PUT and DELETE /webhooks/subscriptions/{id} entries listed here
+                // until 2026-07-30 had no route at all, so a partner building
+                // against this page got a 404 on both. Do not add an endpoint to
+                // this showcase without a registered route behind it.
                 ['code' => 'list_subscriptions', 'path' => '/api/partner/v1/webhooks/subscriptions', 'method' => 'GET'],
                 ['code' => 'create_subscription', 'path' => '/api/partner/v1/webhooks/subscriptions', 'method' => 'POST'],
-                ['code' => 'update_subscription', 'path' => '/api/partner/v1/webhooks/subscriptions/{id}', 'method' => 'PUT'],
-                ['code' => 'delete_subscription', 'path' => '/api/partner/v1/webhooks/subscriptions/{id}', 'method' => 'DELETE'],
             ],
             'verification_note_code' => 'webhook_signature',
         ];

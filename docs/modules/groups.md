@@ -88,7 +88,7 @@ Frontend entry points (`react-frontend/src/`):
 | `pages/groups/tabs/GroupAnalyticsTab.tsx` | Admin analytics dashboard |
 | `pages/groups/tabs/GroupSubgroupsTab.tsx` | Child group list |
 
-Tabs are controlled by `GroupTabConfig` (in `react-frontend/src/types/api.ts`). Each tab is individually togglable per tenant via `tenants.group_tabs`. The `useTenant().hasGroupTab(tab)` hook controls rendering.
+Tabs are controlled by `GroupTabConfig` (in `react-frontend/src/types/api.ts`). Each tab is individually togglable per tenant. There is no `tenants.group_tabs` column: the toggles are `tab_*` keys in the `group_policies` table behind `App\Services\GroupConfigurationService`, and `TenantBootstrapController` copies only the `tab_*` subset onto the bootstrap payload as `group_tabs` (`app/Http/Controllers/Api/TenantBootstrapController.php:417-424`). The `useTenant().hasGroupTab(tab)` hook controls rendering.
 
 ## Roles and permissions
 
@@ -191,7 +191,7 @@ Events are linked to groups via `events.group_id`. When a group is deleted, `eve
 
 Content types that can be flagged: `group`, `discussion`, `post`.
 
-Platform-wide bans are stored in `group_bans`. `GroupModerationService::isUserBanned()` checks the tenant-scoped ban table. Bans support an optional `expires_at` for temporary suspensions.
+`GroupModerationService::isUserBanned()` queries a tenant-scoped `group_bans` table (`user_id` + `tenant_id`, with an optional `expires_at` for temporary suspensions). **That table does not exist in the repository** — `group_bans` appears at `app/Services/GroupModerationService.php:108` and nowhere else: no Laravel migration, no legacy SQL migration, and no entry in `database/schema/mysql-schema.sql`. Because the query is wrapped in a `try`/`catch (\Throwable)` that logs a warning and returns `false`, the ban check currently reports "not banned" for everyone. Treat platform-wide group bans as unimplemented rather than as an enforced control.
 
 ## Security and privacy invariants
 

@@ -2202,7 +2202,7 @@
     },
     "about": {
       "title": "Maidir leis an leathanach seo",
-      "body": "Bain úsáid as an leathanach seo agus tú ag bunú comhtháthú le seirbhís tríú páirtí, le córas sonraí bardais, nó le líonra NEXUS cónasctha. Tá gach críochphointe atá liostaithe anseo beo agus scóipe don imscaradh seo. Léiriúcháin atá sna hualaí pá samplacha - braitheann luachanna réadúla ar do dhúthracht tionónta agus ar dhintiúir do pháirtí. Roinn an URL seo le comhpháirtithe comhtháthú seachas iad a dhíriú ar na doiciméid amh API.",
+      "body": "Bain úsáid as an leathanach seo agus tú ag bunú comhtháthú le seirbhís tríú páirtí, le córas sonraí bardais, nó le líonra NEXUS cónasctha. Déantar gach críochphointe a liostaítear anseo a scóipeáil don imscaradh seo, ach ní chuirtear a bhformhór ar siúl: díchumasaítear an API Comhpháirtí agus an long cónaidhme seachtrach agus freagraíonn siad le freagra nach bhfuil ar fáil go sealadach go dtí go gcumasóidh oibreoir iad, agus is socrú in aghaidh an phobail é an Comhpháirtí API freisin a thosaíonn. Seiceáil le riarthóir do ardáin roimh é seo a roinnt le páirtí. Léiriúcháin is ea ualaí pá samplacha - braitheann luachanna réadúla ar do dhúthracht pobail agus ar dhintiúir do pháirtí.",
       "last_refreshed": "{{date}}athnuaite go deireanach."
     },
     "sections": {

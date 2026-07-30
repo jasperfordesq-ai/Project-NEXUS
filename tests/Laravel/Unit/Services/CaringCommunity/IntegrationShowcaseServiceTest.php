@@ -169,17 +169,82 @@ class IntegrationShowcaseServiceTest extends TestCase
     // webhooks section
     // -------------------------------------------------------------------------
 
-    public function test_webhooks_section_has_all_four_crud_operations(): void
+    /**
+     * The webhooks section publishes only the two operations that exist.
+     *
+     * This test previously asserted "all four CRUD operations" and required PUT
+     * and DELETE — so it actively held a defect in place. The Partner API has
+     * never registered a /webhooks/subscriptions/{id} route or either verb (see
+     * routes/api.php:3915-3917: GET and POST on the collection, nothing else), so
+     * an admin following this page handed a partner two operations that answer
+     * 404. A test that asserts a hand-written list of verbs cannot notice that;
+     * the route-existence test below can, which is why it replaces this one's
+     * intent rather than just flipping its expectations.
+     */
+    public function test_webhooks_section_publishes_only_the_operations_that_exist(): void
     {
         $sections = $this->service()->showcase()['sections'];
         $webhooks = $this->findSection($sections, 'webhooks');
 
         $this->assertNotNull($webhooks, 'webhooks section not found');
-        $methods = array_column($webhooks['items'], 'method');
-        $this->assertContains('GET', $methods);
-        $this->assertContains('POST', $methods);
-        $this->assertContains('PUT', $methods);
-        $this->assertContains('DELETE', $methods);
+
+        $operations = array_map(
+            static fn (array $item): string => $item['method'] . ' ' . $item['path'],
+            $webhooks['items'],
+        );
+
+        $this->assertSame(
+            [
+                'GET /api/partner/v1/webhooks/subscriptions',
+                'POST /api/partner/v1/webhooks/subscriptions',
+            ],
+            $operations,
+        );
+    }
+
+    /**
+     * Every endpoint this page advertises must have a route behind it.
+     *
+     * The showcase is documentation an admin is invited to share with an
+     * integration partner, so an entry with no route is a published lie. This
+     * checks the whole showcase against the router rather than one section
+     * against a remembered list.
+     */
+    public function test_every_advertised_endpoint_has_a_registered_route(): void
+    {
+        $registered = [];
+        foreach (\Illuminate\Support\Facades\Route::getRoutes() as $route) {
+            foreach ($route->methods() as $method) {
+                $registered[$method . ' /' . ltrim($route->uri(), '/')] = true;
+            }
+        }
+
+        $missing = [];
+
+        foreach ($this->service()->showcase()['sections'] as $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                if (! isset($item['method'], $item['path'])) {
+                    continue;
+                }
+
+                // Showcase paths are absolute ('/api/partner/v1/...'); Laravel
+                // route URIs carry the same 'api/' prefix without a leading slash.
+                $needle = strtoupper($item['method']) . ' ' . rtrim($item['path'], '/');
+
+                if (! isset($registered[$needle])) {
+                    $missing[] = $needle . '  (section: ' . ($section['id'] ?? '?') . ')';
+                }
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $missing,
+            "The integration showcase advertises endpoints with no registered route. A partner "
+            . "following this page receives 404, not the 503 they would get from a switched-off "
+            . "surface, so it reads as our documentation being wrong rather than the feature being "
+            . "off. Remove the entry or add the route.\n  " . implode("\n  ", $missing)
+        );
     }
 
     public function test_webhooks_section_has_semantic_verification_note_code(): void

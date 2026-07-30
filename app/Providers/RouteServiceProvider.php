@@ -17,9 +17,20 @@ use Illuminate\Support\Facades\View;
 /**
  * RouteServiceProvider
  *
- * Project NEXUS API routes live at the root (e.g. /v2/...) — there is NO
- * /api prefix.  The legacy PHP router handles anything that Laravel doesn't
- * match, so we register routes without a global prefix.
+ * API routes ARE registered under a global `/api` prefix — see the
+ * `->prefix('api')` on the routes/api.php group below. Apache rewrites
+ * `/api/*` to index.php while keeping the prefix in REQUEST_URI, so Laravel has
+ * to match it.
+ *
+ * The paths written inside routes/api.php therefore omit `/api` and, in most
+ * cases, spell `/v2/...` out per route rather than inheriting it from a group
+ * prefix — which is why a handful of live routes sit directly under `/api/...`
+ * with no version segment (`POST /api/auth/login`, routes/api.php:3040, is the
+ * one most often mis-documented). Read the route line before writing a URL down.
+ *
+ * This docblock previously claimed "there is NO /api prefix", left over from the
+ * pre-Laravel router. It was corrected on 2026-07-30 after the same wrong URL
+ * had propagated into docs/API.md and docs/SLO.md.
  */
 class RouteServiceProvider extends ServiceProvider
 {

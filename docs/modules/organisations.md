@@ -1,10 +1,10 @@
 # Organisations Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
-Reference guide for the Organisations module: public directory, registration and approval workflow, opportunities on an org page, reviews, impact stats, and the owner/admin dashboard. Verified against `app/Services/VolunteerService.php`, `app/Http/Controllers/Api/VolunteerController.php`, `app/Http/Controllers/Api/AdminVolunteerController.php`, `app/Models/VolOrganization.php`, and `routes/api.php`.
+Reference guide for the Organisations module: member-facing directory, registration and approval workflow, opportunities on an org page, reviews, impact stats, and the owner/admin dashboard. Verified against `app/Services/VolunteerService.php`, `app/Http/Controllers/Api/VolunteerController.php`, `app/Http/Controllers/Api/AdminVolunteerController.php`, `app/Models/VolOrganization.php`, and `routes/api.php`.
 
-> **Scope of this guide.** The Organisations module is built on top of the Volunteering module. Organisation wallet balance, the auto-mint-on-hours-approval flow, shift management, and the `VolOrgWalletService` are documented in the [Volunteering module guide](volunteering.md). Read that guide first if you are working on time-credit or hour-logging logic. This guide focuses on the organisation lifecycle (directory, registration, approval, public profile, opportunities, reviews, stats) and its own tenant/gate rules.
+> **Scope of this guide.** The Organisations module is built on top of the Volunteering module. Organisation wallet balance, the auto-mint-on-hours-approval flow, shift management, and the `VolOrgWalletService` are documented in the [Volunteering module guide](volunteering.md). Read that guide first if you are working on time-credit or hour-logging logic. This guide focuses on the organisation lifecycle (directory, registration, approval, org profile, opportunities, reviews, stats) and its own tenant/gate rules.
 
 ---
 
@@ -12,7 +12,7 @@ Reference guide for the Organisations module: public directory, registration and
 
 | Persona | Supported workflows |
 |---------|---------------------|
-| **Visitor / member (browsing)** | Browse the public organisation directory, view an organisation profile, see its open opportunities and reviews. |
+| **Member (browsing)** | Browse the organisation directory, view an organisation profile, see its open opportunities and reviews. Requires a signed-in session — the directory is member-facing, not anonymous. |
 | **Member (registering)** | Submit a registration form; org is created at `status = 'pending'` and enters the approval queue. |
 | **Org owner / admin** | Edit the organisation profile, view the dashboard (stats, volunteers, applications, pending hours), manage the org wallet (see Volunteering guide). |
 | **Tenant admin** | Review pending registrations, approve (`active`) or suspend (`suspended`) organisations, adjust the org wallet. |
@@ -29,10 +29,10 @@ Both the Organisations module and the underlying Volunteering module are on by d
 | `volunteering` | `true` | `app/Services/TenantFeatureConfig.php` — `FEATURE_DEFAULTS` |
 | `organisations` | `true` | `app/Services/TenantFeatureConfig.php` — `FEATURE_DEFAULTS` |
 
-In the React frontend, the public directory (`/organisations`) and the detail page (`/organisations/:id`) are gated on the `volunteering` feature flag (not a separate `organisations` flag):
+In the React frontend, the directory (`/organisations`) and the detail page (`/organisations/:id`) are gated on the `volunteering` feature flag (not a separate `organisations` flag):
 
 ```tsx
-// react-frontend/src/App.tsx
+// react-frontend/src/routes/AppRoutes.tsx
 <FeatureGate feature="volunteering" fallback={<ComingSoonPage />}>
   <OrganisationsPage />
 </FeatureGate>
@@ -50,7 +50,7 @@ Every query is scoped by `TenantContext::getId()`:
 
 - `VolOrganization` uses the `HasTenantScope` Eloquent trait, which automatically appends `AND tenant_id = ?` to all queries on that model.
 - Raw SQL paths (dashboard stats, org member checks) pass `$tenantId` explicitly as a bind parameter.
-- The public directory and detail endpoints are `withoutMiddleware('auth:sanctum')` but still scope by tenant. They never expose wallet balance or `auto_pay_enabled` to unauthenticated callers — those fields are stripped in `organisations()` and `showOrganisation()` before the response is returned.
+- The directory and detail endpoints scope by tenant and additionally strip wallet balance and `auto_pay_enabled` in `organisations()` and `showOrganisation()` before responding. Note that both endpoints sit behind `auth:sanctum` — the field-stripping is defence in depth, not an anonymous-access contract.
 
 ---
 
@@ -58,7 +58,7 @@ Every query is scoped by `TenantContext::getId()`:
 
 | Concern | Code |
 |---------|------|
-| Public directory and detail API | `app/Http/Controllers/Api/VolunteerController.php` — `organisations()`, `showOrganisation()` |
+| Directory and detail API (member-facing) | `app/Http/Controllers/Api/VolunteerController.php` — `organisations()`, `showOrganisation()` |
 | Registration API | `VolunteerController::createOrganisation()`, `VolunteerService::createOrganization()` |
 | Org owner dashboard API | `VolunteerController::orgStats()`, `orgVolunteers()`, `orgApplications()`, `orgHoursPending()` |
 | Profile update API | `VolunteerController::updateOrganisation()` |
@@ -104,12 +104,12 @@ VolunteerService::createOrganization()
   → Inserts row: status = 'pending'
   → Inserts org_members row: role = 'owner', status = 'active'
   ↓
-Org is invisible in the public directory (directory filters on approved/active only)
+Org is invisible in the directory (directory filters on approved/active only)
   ↓
 Tenant admin reviews via admin panel → PUT /v2/admin/volunteering/organizations/{id}/status
   → Accepts: status = 'active' or 'suspended'
   ↓
-status = 'active' → org appears in public directory, owner can post opportunities
+status = 'active' → org appears in the directory, owner can post opportunities
 ```
 
 ### Admin approval endpoints
@@ -128,14 +128,14 @@ All admin endpoints require the `auth:sanctum` middleware and a passing `require
 
 ---
 
-## Public API endpoints
+## Directory API endpoints
 
-The public directory endpoints are declared `withoutMiddleware('auth:sanctum')` and are safe to call without a session token. See `routes/api.php` for full definitions.
+**Every endpoint below requires `auth:sanctum`.** None of the organisations routes declares `withoutMiddleware('auth:sanctum')`, so an unauthenticated caller receives 401 — the directory is member-facing, not anonymous. See `routes/api.php` for full definitions.
 
 | Method | Path | Auth required | Description |
 |--------|------|--------------|-------------|
-| `GET` | `/v2/volunteering/organisations` | No | Paginated directory (cursor). Strips `balance` and `auto_pay_enabled`. |
-| `GET` | `/v2/volunteering/organisations/{id}` | No | Single org with stats. Strips `balance` and `auto_pay_enabled`. |
+| `GET` | `/v2/volunteering/organisations` | Yes | Paginated directory (cursor). Strips `balance` and `auto_pay_enabled`. |
+| `GET` | `/v2/volunteering/organisations/{id}` | Yes | Single org with stats. Strips `balance` and `auto_pay_enabled`. |
 | `GET` | `/v2/volunteering/my-organisations` | Yes | Orgs where the caller is owner/admin. |
 | `POST` | `/v2/volunteering/organisations` | Yes | Register a new org (`status = 'pending'`). Rate-limited: 5/min. |
 | `PUT` | `/v2/volunteering/organisations/{id}` | Yes (owner/admin) | Update org profile fields. |
@@ -150,7 +150,7 @@ Directory query parameters (`GET /v2/volunteering/organisations`):
 
 Each item in the directory response includes: `id`, `name`, `description`, `logo_url`, `website`, `contact_email`, `location`, `opportunity_count`, `volunteer_count`, `total_hours`, `average_rating`, `created_at`, and the `owner` sub-object (first/last name, avatar).
 
-Full route definitions: `routes/api.php` lines ~793–814.
+Full route definitions: `routes/api.php` lines 1180–1200 (`my-organisations` at 1180, the directory/register/show trio at 1181–1183, and the `PUT` at 1200).
 
 ---
 
@@ -171,9 +171,8 @@ The following endpoints are owner/admin-only; access is enforced by `ensureOrgAc
 | `GET` | `/v2/volunteering/organisations/{id}/wallet` | Wallet balance and recent activity summary. |
 | `GET` | `/v2/volunteering/organisations/{id}/wallet/transactions` | Paginated wallet transaction log. |
 | `POST` | `/v2/volunteering/organisations/{id}/wallet/deposit` | Transfer credits from the caller's personal wallet into the org wallet. |
-| `PUT` | `/v2/volunteering/organisations/{id}/wallet/auto-pay` | Toggle auto-pay. |
 
-Wallet and auto-pay details are in the [Volunteering module guide](volunteering.md).
+**There is no auto-pay toggle endpoint.** `vol_organizations.auto_pay_enabled` is read (and stripped from directory responses) but no `/v2` route writes it — `grep -n "auto_pay\|auto-pay" routes/api.php` returns nothing. The only route under that name is the accessible (GOV.UK) frontend's `POST /{tenantSlug}/accessible/volunteering/organisations/{id}/wallet/auto-pay` (`routes/govuk-alpha-parity/volunteering.php:80`), and its handler `volunteeringOrgAutoPay()` changes no state: it checks the org gate and redirects back with `status=auto-credit-always-on`. Wallet mechanics are in the [Volunteering module guide](volunteering.md).
 
 ---
 
@@ -184,7 +183,7 @@ Reviews are shared with the Volunteering module (`vol_reviews` table). They cove
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `POST` | `/v2/volunteering/reviews` | Yes | Create a review. `target_type` = `organization` or `user`. Rating 1–5. |
-| `GET` | `/v2/volunteering/reviews/{type}/{id}` | No | List reviews for a target. `type` = `organization` or `user`. |
+| `GET` | `/v2/volunteering/reviews/{type}/{id}` | Yes | List reviews for a target. `type` = `organization` or `user`. |
 
 Constraints enforced by `VolunteerService::createReview()`:
 
@@ -197,9 +196,9 @@ Reviews are stored approved (`approved = 1`) by default. There is currently no m
 
 ---
 
-## Impact stats (public profile)
+## Impact stats (organisation profile)
 
-`VolunteerService::getOrganisationById()` returns these aggregated stats on the public org profile:
+`VolunteerService::getOrganisationById()` returns these aggregated stats on the org profile:
 
 | Field | Source |
 |-------|--------|
@@ -215,11 +214,11 @@ The directory listing (`getOrganisations`) computes these with fixed-count group
 
 ## Security and privacy invariants
 
-- **Wallet data never reaches unauthenticated callers.** `organisations()` and `showOrganisation()` explicitly `unset($org['balance'], $org['auto_pay_enabled'])` before returning. Owners read financial state from the ownership-scoped `/stats` endpoint.
+- **Wallet data never reaches the directory or detail responses.** Both endpoints require `auth:sanctum`, and on top of that `organisations()` and `showOrganisation()` explicitly `unset($org['balance'], $org['auto_pay_enabled'])` before returning. Owners read financial state from the ownership-scoped `/stats` endpoint.
 - **Cross-tenant isolation.** All queries bind `tenant_id`. The `HasTenantScope` trait on `VolOrganization` adds the scope automatically to Eloquent queries; raw SQL paths pass it explicitly.
 - **Org access gate.** `ensureOrgAccess()` returns `null` (→ `403`) for any caller who is neither the org's creator, an active owner/admin member, nor a site super-admin. There is no way to reach dashboard endpoints for an org in a different tenant because the DB lookup includes `AND tenant_id = ?`.
 - **Duplicate name prevention.** `createOrganization()` rejects a registration when an org with the same case-insensitive name already exists for the tenant and has not been declined.
-- **Rate limiting.** Registration: 5 calls/min per IP. Directory: 60/min. Org show: 120/min.
+- **Rate limiting.** Registration (`volunteering_org_create`): 5 calls/min. Directory (`volunteering_orgs`): 60/min. Org show (`volunteering_org_show`): 120/min. `BaseApiController::rateLimit()` keys the limiter on `user:{id}` whenever a user resolves and only falls back to `ip:{address}` when there is none — so on these authenticated routes the window is always per authenticated user, never per IP.
 
 ---
 
@@ -272,8 +271,8 @@ Key test files:
 
 | Failure | Behaviour | Recovery |
 |---------|-----------|----------|
-| Org stuck in `pending` after registration | Public directory does not show it; owner sees pending state. Happens when no admin has approved. | Tenant admin navigates to `/admin/volunteering/organizations` and sets `status = active`. |
+| Org stuck in `pending` after registration | The directory does not show it; owner sees pending state. Happens when no admin has approved. | Tenant admin navigates to `/admin/volunteering/organizations` and sets `status = active`. |
 | Slug collision on registration | `createOrganization()` retries the DB insert up to three times with a different suffix. After three failures it returns `SERVER_ERROR`. | Rare in practice; check `laravel.log` for the `VolunteerService::createOrganization error` entry and retry the registration manually. |
 | Duplicate org name rejected at registration | `409 ALREADY_EXISTS` returned. Happens when an active/pending org with the same name (case-insensitive) already exists for the tenant. | Ask the registrant to use a distinct name, or a tenant admin can decline the existing pending org first. |
-| Wallet balance / `auto_pay_enabled` appearing in public response | This should not happen — both fields are explicitly removed before `respondWithData()`. If observed, check that neither field appears in the model's `toArray()` output after a `VolOrganization` is fetched via the `getOrganisationById` path. | Confirm the `unset()` calls in `VolunteerController::showOrganisation()` and `organisations()` are in place. |
+| Wallet balance / `auto_pay_enabled` appearing in a directory or detail response | This should not happen — both fields are explicitly removed before `respondWithData()`. If observed, check that neither field appears in the model's `toArray()` output after a `VolOrganization` is fetched via the `getOrganisationById` path. | Confirm the `unset()` calls in `VolunteerController::showOrganisation()` and `organisations()` are in place. |
 | `ensureOrgAccess` returns null for a legitimate org admin | `403 FORBIDDEN` on all dashboard endpoints. The check queries `org_members` for `org_type = 'volunteer'` and `status = 'active'`. | Verify the `org_members` row exists, has `role` in `('owner', 'admin')`, `status = 'active'`, and `org_type = 'volunteer'`. |

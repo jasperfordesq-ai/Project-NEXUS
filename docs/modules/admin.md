@@ -1,6 +1,6 @@
 # Admin Module
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide covers the tenant admin panel and the platform super-admin surface: who can access each tier, how server-side enforcement works, what the audit trail captures, and where the code lives.
 
@@ -8,7 +8,7 @@ This guide covers the tenant admin panel and the platform super-admin surface: w
 
 ## Audience and supported workflows
 
-**Tenant admins** — manage one timebank community: approve and suspend members, manage listings, configure modules and features, run newsletters, export audit logs, moderate content, manage federation partnerships, and configure the tenant.
+**Tenant admins** — manage one timebank community: approve and suspend members, manage listings, configure modules and features, run newsletters, export audit logs, and configure the tenant. Content moderation and safeguarding are no longer admin-panel surfaces (they moved to the broker panel on 2026-07-02), and federation partnership management is super-admin only — see "Retired from the admin panel" below.
 
 **Platform super-admins** — manage the platform itself: create and delete tenants, move users between tenants, grant or revoke super-admin rights, control the federation whitelist, view cross-tenant billing, and review provisioning requests.
 
@@ -33,7 +33,7 @@ The React admin SPA lives at `/{tenantSlug}/admin` and is rendered by `AdminApp.
 
 `SuperAdminRoute` uses `isPlatformSuperAdminUser(user)`: it allows `role=super_admin`, `role=god`, `is_super_admin=true`, or `is_god=true`, and deliberately rejects `is_tenant_super_admin=true`. The admin sidebar uses the same predicate before showing the platform panel link. These client checks are defence-in-depth only; every sensitive endpoint is independently enforced server-side.
 
-Feature-gated admin sections (federation, newsletters, podcasts, partner API, member premium) redirect to `/admin/not-found` when the tenant feature is off, using `FeatureGatedElement` inside `routes.tsx`.
+Feature-gated admin sections redirect to `/admin/not-found` when the tenant feature is off, using `FeatureGatedElement` inside `routes.tsx`. The complete set of gated features is `volunteering` (13 routes), `member_premium` (2), `caring_community` (1), `podcasts` (1), and `newsletter` (one layout wrapper around `<Outlet />` at `routes.tsx:408-430` that gates 17 child routes). Federation and the partner API are not gated this way because they no longer exist in the admin panel at all.
 
 ---
 
@@ -71,12 +71,15 @@ Select user-management and listing endpoints use `withoutMiddleware('admin')->mi
 
 ### Controller-level defence in depth
 
-Every controller method that performs a state-changing operation calls one of three protected helpers from `BaseApiController` as a second layer of authorisation:
+Every controller method that performs a state-changing operation calls one of three protected **throwing guards** from `BaseApiController` as a second layer of authorisation:
 
 - `requireAdmin()` — mirrors `EnsureIsAdmin`; throws 403 if not admin.
 - `requireSuperAdmin()` — accepts both platform super-admins and tenant super-admins. Used for within-tenant elevated operations.
 - `requirePlatformSuperAdmin()` — explicitly rejects `is_tenant_super_admin`; used for cross-tenant operations such as tenant CRUD, federation whitelist, and cross-tenant user moves.
-- `isPlatformSuperAdmin()` — non-throwing predicate; used to branch between scoped and cross-tenant views without returning 403.
+
+Alongside those three, `BaseApiController` also exposes one **non-throwing predicate**:
+
+- `isPlatformSuperAdmin()` — returns a bool; used to branch between tenant-scoped and cross-tenant views without returning 403.
 
 **Every query that touches tenant data must be scoped by `tenant_id`.** Use `$this->getTenantId()` (which reads `TenantContext::getId()`) and include `AND tenant_id = ?` in every WHERE clause. See `AGENTS.md` for the mandatory pattern.
 
@@ -128,13 +131,10 @@ The route map in `react-frontend/src/admin/routes.tsx` defines all admin pages. 
 | Events | `/admin/events` | `AdminEventsController` |
 | Groups | `/admin/groups` | `AdminGroupsController` |
 | Volunteering | `/admin/volunteering` | `AdminVolunteerController` |
-| Safeguarding | `/admin/safeguarding` | `AdminSafeguardingController` |
-| Federation | `/admin/federation` | `AdminFederationController` (and related controllers) |
 | Enterprise / GDPR | `/admin/enterprise` | `AdminEnterpriseController` |
 | Analytics | `/admin/community-analytics` | `AdminCommunityAnalyticsController`, `AdminAnalyticsReportsController` |
 | Newsletters | `/admin/newsletters` | `AdminNewsletterController` |
-| Moderation | `/admin/moderation` | `AdminFeedController`, `AdminCommentsController`, `AdminReviewsController` |
-| Reports | `/admin/reports` | `AdminReportsController` |
+| Analytics reports | `/admin/reports/members`, `/admin/reports/hours`, `/admin/reports/inactive-members` | `AdminAnalyticsReportsController` |
 | System / settings | `/admin/settings`, `/admin/cron-jobs`, `/admin/sso` | `AdminConfigController`, `AdminCronController`, `AdminSsoProvidersController` |
 | Retention policies | `/admin/retention` | `AdminRetentionController` |
 | Activity log | `/admin/activity-log` | `AdminAuditLogController` |
@@ -142,6 +142,18 @@ The route map in `react-frontend/src/admin/routes.tsx` defines all admin pages. 
 | Marketplace | `/admin/marketplace` | `AdminMarketplaceController` |
 | Billing | `/admin/billing` | `AdminBillingController` |
 | SSO providers | `/admin/sso` | `AdminSsoProvidersController` |
+
+### Retired from the admin panel (2026-07-02, no redirects)
+
+The sections below were removed from `routes.tsx` outright — `/admin/moderation`, `/admin/reports` (as a moderation queue), `/admin/safeguarding` and `/admin/federation` do not resolve:
+
+| Former section | Where it lives now | Server-side controllers (still present) |
+| --- | --- | --- |
+| Content moderation — queue, feed, comments, reviews, member-content reports | Broker panel — `/broker/moderation/*` | `AdminFeedController`, `AdminCommentsController`, `AdminReviewsController`, `AdminReportsController` (`/v2/admin/reports*`, now `broker-or-admin`); moderation settings/queue/stats are served by `AdminAnalyticsReportsController` |
+| Safeguarding dashboard and options | Broker panel — `/broker/safeguarding`, `/broker/safeguarding-options` | `AdminSafeguardingController`, `AdminSafeguardingOptionsController` |
+| Federation partnerships and inbound API partners | Super-admin-only Partner Timebanks panel — `/partner-timebanks/*` and `/partner-timebanks/inbound-api` | `AdminFederationController` (`/v2/admin/federation/*`) |
+
+The moderation and safeguarding React components stay on disk and are reused in the broker panel via thin wrappers. The federation row is the internal partnership admin surface — not the external federation kill switch, which is a separate, dormant subsystem.
 
 **Super-admin only** (require `super-admin` middleware, served at `/super-admin/*`):
 
@@ -296,8 +308,10 @@ vendor/bin/phpunit tests/Laravel/Feature/Controllers/AdminAccessControlTest.php
 # Specific controller suites (examples)
 vendor/bin/phpunit tests/Laravel/Feature/Controllers/AdminUsersControllerTest.php
 vendor/bin/phpunit tests/Laravel/Feature/Controllers/AdminConfigControllerTest.php
-vendor/bin/phpunit tests/Laravel/Feature/Controllers/AdminAuditLogControllerTest.php
+vendor/bin/phpunit tests/Laravel/Feature/Controllers/AdminSecurityAuditTest.php
 ```
+
+`AdminAuditLogController` has no dedicated test file of its own; `AdminSecurityAuditTest` is the closest audit-focused suite.
 
 `AdminAccessControlTest` verifies that non-admin users receive 403 from admin endpoints and that broker-role users are rejected by admin-only endpoints while accepted by `broker-or-admin` endpoints.
 

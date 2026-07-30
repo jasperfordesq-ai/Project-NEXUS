@@ -85,4 +85,6 @@ rm -f docs/openapi.json
 npm run check:i18n:baseline && npm run check:i18n:gaps
 ```
 
-Local pre-commit/pre-push hooks (Husky) run a subset automatically. If a commit is blocked **solely** by a pre-existing failure in files your change does not touch, the documented exception in [CONTRIBUTING.md](../CONTRIBUTING.md) applies.
+**Nothing above runs automatically on commit or push.** Husky is intentionally disabled at repository root — there is no root `.husky/` directory and no `husky`/`lint-staged` dependency (the only Husky config in the tree belongs to the `mobile/` subproject). Run the commands yourself, or rely on CI.
+
+The one real local hook is `scripts/git-hooks/pre-commit`, installed once per clone with `bash scripts/git-hooks/install-hooks.sh`. It runs **only the PHP test files staged in the current commit**, so a failure is always in a file you are committing right now. 🔴 Never `--no-verify` past it. The pre-existing-failure exception in [CONTRIBUTING.md](../CONTRIBUTING.md) covers lint/build failures in files your change does not touch — it does not cover this gate.

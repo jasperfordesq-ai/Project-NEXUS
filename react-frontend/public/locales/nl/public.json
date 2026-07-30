@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Bèta",
-      "preview": "Voorbeeld"
+      "preview": "Voorbeeld",
+      "dormant": "Gebouwd, niet ingeschakeld"
     },
     "title": "Functies",
     "meta_title": "Functies - Project NEXUS v1.5",
     "meta_description": "Alle modules in Project NEXUS v1.5, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
     "heading": "Wat Project NEXUS doet",
-    "subheading": "Project NEXUS is een multi-tenant communityplatform van enterprise-niveau. Alle onderstaande modules zijn beschikbaar in v1.5. We labelen volwassenheid eerlijk: items zonder label zijn algemeen beschikbaar; nieuwere of nog te verharden oppervlakken dragen een Bèta- of Preview-label.",
+    "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v1.5 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
     "maturity_key_title": "Hoe we volwassenheid labelen",
     "maturity_ga": "Algemeen beschikbaar - stabiel, ondersteund, in productie bij pilot-tenants.",
     "maturity_beta": "Vandaag in productie, maar het publieke oppervlak of het wire-protocol wordt nog verhard.",
@@ -32,7 +33,7 @@
       "database_label": "Database",
       "database_value": "MariaDB 10.11",
       "frontend_label": "Frontend",
-      "frontend_value": "Reageer 18 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Infrastructuur",
       "infrastructure_value": "Docker, Redis, volledige PWA",
       "mobile_label": "Mobiel",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Federatie",
-        "intro": "Een federatielaag met vier protocollen voor uitwisseling tussen communities — Nexus (native), Komunitin (15 endpoints), Credit Commons Protocol (11 endpoints, CEN-compatibel) en TimeOverflow.",
+        "intro": "Federatie betekent hier twee verschillende dingen, en ze bevinden zich in verschillende stadia. Het verbinden van gemeenschappen die op één installatie leven, is een dagelijkse praktijk. Het verbinden met andere installaties en andere platforms is gebouwd en getest, maar standaard uitgeschakeld en momenteel niet in gebruik.",
         "items": {
           "federation_network": {
-            "title": "Federatienetwerk",
-            "description": "Verbind meerdere NEXUS-communities in een netwerk voor ontdekking, advertenties, evenementen en berichten tussen communities."
+            "title": "Gemeenschapsnetwerk (dezelfde installatie)",
+            "description": "Koppel meerdere community's die op één installatie worden gehost voor ontdekking, lijsten, evenementen en berichtenuitwisseling tussen de community's."
           },
           "external_partner_federation": {
             "title": "Federatie met externe partners",
-            "description": "Live met externe timebanking-platforms — partnerschappen opgezet, berichten stromen, kredietuitwisseling wordt actief getest.",
-            "note": "Er zijn echte partnerschappen die dagelijks data uitwisselen. De wire-protocollen worden nog verhard tegen randgevallen — behandel externe kredietoverschrijvingen als gesuperviseerd, niet geautomatiseerd."
+            "description": "Maak verbinding met andere NEXUS-installaties en met andere tijdbankplatforms via vier gedocumenteerde protocollen: Nexus native, Komunitin, Credit Commons (CEN-compatibel) en TimeOverflow.",
+            "note": "Compleet en getest, en standaard uitgeschakeld: elk extern eindpunt antwoordt met een tijdelijk niet-beschikbaar antwoord totdat een operator dit inschakelt. Er is vandaag geen externe partner aangesloten. Andere platformexploitanten hebben interesse getoond, dus de basis is gelegd en gecontroleerd, maar we ontwikkelen deze pas verder als er een concrete integratie op tafel ligt. Als u met ons wilt samenwerken, neem dan contact met ons op."
           },
           "multi_protocol_adapters": {
             "title": "Multi-protocol adapters",
-            "description": "Tweezijdige synchronisatie voor 9 entiteitstypen: leden, advertenties, evenementen, groepen, verbindingen, vrijwilligerswerk, beoordelingen, overschrijvingen, berichten."
+            "description": "Adapters voor tweerichtingssynchronisatie van negen entiteitstypen (leden, vermeldingen, evenementen, groepen, verbindingen, vrijwilligerswerk, beoordelingen, overdrachten, berichten) in alle vier de protocollen.",
+            "note": "Gebouwd en gedekt door tests naast de externe partnerfederatie, en inactief om dezelfde reden: er is niets ingeschakeld, dus er wordt niets gesynchroniseerd."
           },
           "federation_neighborhoods": {
             "title": "Federatie-buurten",
-            "description": "Geografisch gegroepeerde clusters van gefedereerde communities voor regionale coördinatie."
+            "description": "Geografisch gegroepeerde clusters van verbonden gemeenschappen voor regionale coördinatie."
           },
           "credit_agreements": {
             "title": "Kredietovereenkomsten",
-            "description": "Onderhandelde wisselkoersvoorwaarden tussen gefedereerde communities."
+            "description": "Onderhandelde wisselkoersvoorwaarden tussen verbonden gemeenschappen."
           },
           "federation_analytics": {
             "title": "Federatie-analytics",
-            "description": "Live admin-dashboards voor partneractiviteit, sync-status en gefedereerd transactievolume."
+            "description": "Beheerdersdashboards voor activiteiten tussen verschillende gemeenschappen, synchronisatiestatus en federatief transactievolume."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "Verwerking van e-mailwebhooks",
-            "description": "Afhandeling van SendGrid-events voor bounces, klachten en aflevering."
+            "description": "Postmark bounce-, klacht-, open- en leveringsgebeurtenisafhandeling."
           },
           "500plus_phpunit_tests": {
             "title": "500+ PHPUnit-tests",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Standaard gebouwd, getest en uitgeschakeld. Het werk is gedaan en gecontroleerd, maar er wordt nog geen gebruik van gemaakt. We zullen het verder ontwikkelen als er echte vraag naar is."
   },
   "changelog_page": {
     "title": "Wijzigingslog",

@@ -2154,7 +2154,7 @@
     },
     "about": {
       "title": "About this page",
-      "body": "Use this page when setting up an integration with a third-party service, a municipality's data system, or a federated NEXUS network. Every endpoint listed here is live and scoped to this deployment. Sample payloads are illustrative - real values depend on your tenant slug and partner credentials. Share this URL with integration partners rather than pointing them to the raw API docs.",
+      "body": "Use this page when setting up an integration with a third-party service, a municipality's data system, or a federated NEXUS network. Every endpoint listed here is scoped to this deployment, but most are not switched on: the Partner API and external federation ship disabled and answer with a temporarily-unavailable response until an operator enables them, and the Partner API is also a per-community setting that starts off. Check with your platform administrator before sharing this with a partner. Sample payloads are illustrative - real values depend on your community slug and partner credentials.",
       "last_refreshed": "Last refreshed {{date}}."
     },
     "sections": {

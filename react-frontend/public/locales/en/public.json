@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Beta",
-      "preview": "Preview"
+      "preview": "Preview",
+      "dormant": "Built, not enabled"
     },
     "title": "Features",
     "meta_title": "Features - Project NEXUS v1.5",
     "meta_description": "Every module shipped in Project NEXUS v1.5, with honest maturity labels for federation, timebanking, marketplace, community tools, safety, analytics, and open-source infrastructure.",
     "heading": "What Project NEXUS does",
-    "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.5 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip.",
+    "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.5 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
     "maturity_key_title": "How we label maturity",
     "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
     "maturity_beta": "Working in production today, but the public surface or wire protocol is still being hardened.",
@@ -32,7 +33,7 @@
       "database_label": "Database",
       "database_value": "MariaDB 10.11",
       "frontend_label": "Frontend",
-      "frontend_value": "React 18 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Infrastructure",
       "infrastructure_value": "Docker, Redis, full PWA",
       "mobile_label": "Mobile",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Federation",
-        "intro": "A four-protocol federation layer for cross-community exchange — Nexus (native), Komunitin (15 endpoints), Credit Commons Protocol (11 endpoints, CEN-compatible), and TimeOverflow.",
+        "intro": "Federation means two different things here, and they are at different stages. Connecting communities that live on one installation is in everyday use. Connecting to other installations and other platforms is built and tested, but switched off by default and not currently in use.",
         "items": {
           "federation_network": {
-            "title": "Federation Network",
-            "description": "Connect multiple NEXUS communities into a network for cross-community discovery, listings, events, and messaging."
+            "title": "Community Network (same installation)",
+            "description": "Link multiple communities hosted on one installation for cross-community discovery, listings, events, and messaging."
           },
           "external_partner_federation": {
             "title": "External Partner Federation",
-            "description": "Live with external timebanking platforms — partnerships established, messages flowing, credit exchange under active testing.",
-            "note": "Real partnerships exist and exchange data daily. The wire protocols are still being hardened against edge cases — treat external credit transfers as supervised, not automated."
+            "description": "Connect to other NEXUS installations and to other timebanking platforms over four documented protocols: Nexus native, Komunitin, Credit Commons (CEN-compatible), and TimeOverflow.",
+            "note": "Complete and tested, and switched off by default — every external endpoint answers with a temporarily-unavailable response until an operator enables it. No external partner is connected today. Other platform operators have expressed interest, so the groundwork is in place and audited, but we are not developing it further until a concrete integration is on the table. If you want to federate with us, get in touch."
           },
           "multi_protocol_adapters": {
             "title": "Multi-Protocol Adapters",
-            "description": "Two-way sync across 9 entity types: members, listings, events, groups, connections, volunteering, reviews, transfers, messages."
+            "description": "Adapters for two-way sync of 9 entity types — members, listings, events, groups, connections, volunteering, reviews, transfers, messages — across all four protocols.",
+            "note": "Built and covered by tests alongside External Partner Federation, and dormant for the same reason: nothing is switched on, so nothing is syncing."
           },
           "federation_neighborhoods": {
             "title": "Federation Neighborhoods",
-            "description": "Geographically grouped clusters of federated communities for regional coordination."
+            "description": "Geographically grouped clusters of linked communities for regional coordination."
           },
           "credit_agreements": {
             "title": "Credit Agreements",
-            "description": "Negotiated exchange-rate terms between federated communities."
+            "description": "Negotiated exchange-rate terms between linked communities."
           },
           "federation_analytics": {
             "title": "Federation Analytics",
-            "description": "Live admin dashboards for partner activity, sync health, and federated transaction volume."
+            "description": "Admin dashboards for cross-community activity, sync health, and federated transaction volume."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "Email Webhook Processing",
-            "description": "SendGrid bounce, complaint, and delivery event handling."
+            "description": "Postmark bounce, complaint, open, and delivery event handling."
           },
           "500plus_phpunit_tests": {
             "title": "500+ PHPUnit Tests",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Built, tested and switched off by default. The work is done and audited, but nothing is using it yet - we will develop it further when there is real demand."
   },
   "changelog_page": {
     "title": "Changelog",

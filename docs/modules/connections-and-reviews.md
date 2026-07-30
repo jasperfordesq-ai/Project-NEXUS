@@ -2,7 +2,7 @@
 
 Audience: maintainers and contributors working on member social graph, reputation, or skill endorsement features.
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 ## Supported workflows
 
@@ -14,7 +14,7 @@ Last reviewed: 2026-07-14
 
 ## Feature gates
 
-Both features default to **on** and are togglable per tenant in the admin "Module Configuration" panel (`/admin/tenant-features`).
+Both features default to **on** and are togglable per tenant in the admin "Module Configuration" panel (`/admin/module-configuration`). `/admin/tenant-features` is retired and survives only as a redirect stub to that path.
 
 | Flag | Default | Toggle key |
 |------|---------|------------|

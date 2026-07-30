@@ -1,6 +1,6 @@
 # Listings / Marketplace Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 Audience: maintainers and contributors working on the listings module — the offer/request board at the heart of the timebanking workflow.
 
@@ -30,7 +30,7 @@ Supported workflows:
 
 - **Module gate:** `listings`. All listing routes are wrapped in `Route::middleware('module:listings')` in `routes/api.php`. The React frontend wraps the listings pages in `<FeatureGate module="listings" redirect="/" />` in `react-frontend/src/routes/AppRoutes.tsx`.
 - **Authentication:** browse, detail, featured, nearby, CRUD, analytics, reports, and favourites inherit `auth:sanctum`. Only the popular-tag and tag-autocomplete helper routes deliberately remove that middleware while retaining the module gate.
-- The module defaults to **enabled** (`listings: true` in the React `defaultFeatures` map and in `TenantContext::FEATURE_DEFAULTS`). A tenant admin can disable it to hide the board entirely.
+- The module defaults to **enabled**. `listings` is a *module* default, not a feature default: `App\Services\TenantFeatureConfig::MODULE_DEFAULTS['listings'] => true`, and `listings: true` in the React `defaultModules` map (`react-frontend/src/contexts/TenantContext.tsx`). There is no `TenantContext::FEATURE_DEFAULTS` constant — `app/Core/TenantContext.php` only references `TenantFeatureConfig::FEATURE_DEFAULTS`, which does not contain `listings`. A tenant admin can disable the module to hide the board entirely.
 - **Tenant scoping is enforced by the `HasTenantScope` trait** on `App\Models\Listing`. Every query automatically includes `WHERE tenant_id = <current>`. Never bypass this; always use `TenantContext::getId()` in raw queries.
 - Category resolution (slug → id) is also tenant-scoped: `WHERE type = 'listing' AND tenant_id = ?`.
 - The `user_saved_listings` table carries an explicit `tenant_id` column; favourite operations filter on it.

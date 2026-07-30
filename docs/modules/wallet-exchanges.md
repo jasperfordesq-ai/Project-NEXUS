@@ -1,6 +1,6 @@
 # Wallet & Exchanges Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide is a how-to/reference for maintainers of the time-credit **Wallet** and the structured **Exchanges** workflow in Project NEXUS. It describes the exchange lifecycle, the ledger invariants that keep credits conserved, the idempotency guard on transfers, money-column precision, tenant scoping, feature gates, failure modes, and the regression tests that protect this surface.
 
@@ -122,7 +122,9 @@ Note this guard is specific to `WalletService::transfer()` (the direct member-to
 
 ## Tenant scoping & cross-tenant transactions
 
-All native wallet/exchange queries filter by the active tenant. Inbound **federation** transactions (from external partners) live in `federation_transactions` and are surfaced read-only in wallet history with synthetic negative ids and a `source: 'federation'` marker; they are already credited by the federation webhook handler and are scoped by `receiver_tenant_id`.
+All native wallet/exchange queries filter by the active tenant. Inbound **federation** transactions (from external partners) live in `federation_transactions` and are surfaced read-only in wallet history with synthetic negative ids and a `source: 'federation'` marker; they are credited by the federation webhook handler and are scoped by `receiver_tenant_id`.
+
+> **This inflow is built and dormant — no external partner is crediting wallets today.** The handler is `FederationExternalWebhookController::receive`, whose route (`routes/api.php:3585`) carries the `federation.external:webhooks` middleware. External federation is off by default and has been off in production since 2026-07-27, so `EnsureExternalFederationEnabled` answers every request with HTTP 503 + `Retry-After` and code `FEDERATION_EXTERNAL_DISABLED` before the controller executes. Treat `federation_transactions` as a historical/latent table when reasoning about ledger integrity or reconciliation, not as live traffic. Internal cross-tenant transactions are a different, live mechanism.
 
 ## TransactionCompleted side effects
 

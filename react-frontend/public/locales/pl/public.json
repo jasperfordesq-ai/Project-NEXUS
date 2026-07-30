@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Beta",
-      "preview": "Podgląd"
+      "preview": "Podgląd",
+      "dormant": "Zbudowany, nie włączony"
     },
     "title": "Funkcje",
     "meta_title": "Funkcje - Project NEXUS v1.5",
     "meta_description": "Każdy moduł dostarczony w Project NEXUS v1.5, z uczciwymi etykietami dojrzałości dla federacji, bankowania czasu, marketplace'u, narzędzi społecznościowych, bezpieczeństwa, analityki i infrastruktury open source.",
     "heading": "Co robi Project NEXUS",
-    "subheading": "Project NEXUS to wielodzierżawcza platforma społecznościowa klasy enterprise. Wszystkie poniższe moduły są dostępne w v1.5 już dziś. Dojrzałość oznaczamy uczciwie: pozycje bez etykiety są ogólnie dostępne; nowsze lub aktywnie utwardzane obszary mają etykietę Beta lub Podgląd.",
+    "subheading": "Project NEXUS to platforma społecznościowa klasy korporacyjnej, obsługująca wielu dzierżawców. Każdy poniższy moduł jest już dostępny w wersji 1.5. Uczciwie etykietujemy moduły: nieoznaczone elementy są ogólnie dostępne; nowsze lub aktywnie utwardzające się powierzchnie mają chip Beta lub Preview; a wbudowany, niewłączony chip oznacza, że ​​praca została zakończona i wyłączona i oczekuje na żądanie.",
     "maturity_key_title": "Jak oznaczamy dojrzałość",
     "maturity_ga": "Ogólnie dostępne - stabilne, wspierane, używane produkcyjnie u dzierżawców pilotażowych.",
     "maturity_beta": "Dziś działa produkcyjnie, ale interfejs publiczny lub protokół komunikacji jest jeszcze utwardzany.",
@@ -32,7 +33,7 @@
       "database_label": "Baza danych",
       "database_value": "MariaDB 10.11",
       "frontend_label": "Frontend",
-      "frontend_value": "React 18 + TypeScript + HeroUI + CSS Tailwind 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Infrastruktura",
       "infrastructure_value": "Docker, Redis, pełna PWA",
       "mobile_label": "Przenośny",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Federacja",
-        "intro": "Warstwa federacji z czterema protokołami do wymiany między społecznościami — Nexus (natywny), Komunitin (15 endpointów), Credit Commons Protocol (11 endpointów, kompatybilny z CEN) i TimeOverflow.",
+        "intro": "Federacja oznacza tutaj dwie różne rzeczy i są one na różnych etapach. Łączenie społeczności żyjących na jednej instalacji jest w codziennym użyciu. Łączenie z innymi instalacjami i innymi platformami jest zbudowane i przetestowane, ale domyślnie wyłączone i obecnie nie jest używane.",
         "items": {
           "federation_network": {
-            "title": "Sieć federacji",
-            "description": "Połącz wiele społeczności NEXUS w sieć dla odkrywania, ogłoszeń, wydarzeń i wiadomości między społecznościami."
+            "title": "Sieć społecznościowa (ta sama instalacja)",
+            "description": "Połącz wiele społeczności hostowanych w jednej instalacji, aby móc odkrywać między społecznościami, zamieszczać listy, wydarzenia i przesyłać wiadomości."
           },
           "external_partner_federation": {
             "title": "Federacja z partnerami zewnętrznymi",
-            "description": "Działa z zewnętrznymi platformami bankowania czasu — partnerstwa nawiązane, wiadomości przepływają, wymiana kredytów aktywnie testowana.",
-            "note": "Istnieją realne partnerstwa wymieniające dane każdego dnia. Protokoły komunikacyjne są jeszcze utwardzane przeciwko przypadkom brzegowym — traktuj zewnętrzne transfery kredytów jako nadzorowane, nie automatyczne."
+            "description": "Połącz się z innymi instalacjami NEXUS i innymi platformami banków czasu za pomocą czterech udokumentowanych protokołów: natywny Nexus, Komunitin, Credit Commons (kompatybilny z CEN) i TimeOverflow.",
+            "note": "Kompletny, przetestowany i domyślnie wyłączony — każdy zewnętrzny punkt końcowy odpowiada tymczasowo niedostępną odpowiedzią, dopóki operator jej nie włączy. Żaden partner zewnętrzny nie jest dzisiaj podłączony. Inni operatorzy platform wyrazili zainteresowanie, zatem istnieją już prace przygotowawcze i skontrolowane, ale nie będziemy ich dalej rozwijać, dopóki nie będzie możliwa konkretna integracja. Jeśli chcesz się z nami zjednoczyć, skontaktuj się z nami."
           },
           "multi_protocol_adapters": {
             "title": "Adaptery wieloprotokołowe",
-            "description": "Dwukierunkowa synchronizacja dla 9 typów encji: członków, ogłoszeń, wydarzeń, grup, połączeń, wolontariatu, recenzji, transferów, wiadomości."
+            "description": "Adaptery do dwukierunkowej synchronizacji 9 typów jednostek — członków, list, wydarzeń, grup, połączeń, wolontariatu, recenzji, transferów i wiadomości — we wszystkich czterech protokołach.",
+            "note": "Zbudowany i objęty testami wraz z Federacją Partnerów Zewnętrznych i nieaktywny z tego samego powodu: nic nie jest włączone, więc nic nie jest synchronizowane."
           },
           "federation_neighborhoods": {
             "title": "Sąsiedztwa federacji",
-            "description": "Geograficznie pogrupowane klastry sfederowanych społeczności dla koordynacji regionalnej."
+            "description": "Geograficznie pogrupowane klastry powiązanych społeczności w celu koordynacji regionalnej."
           },
           "credit_agreements": {
             "title": "Umowy kredytowe",
-            "description": "Wynegocjowane warunki kursu wymiany między sfederowanymi społecznościami."
+            "description": "Negocjowane warunki kursów wymiany pomiędzy połączonymi społecznościami."
           },
           "federation_analytics": {
             "title": "Analityka federacji",
-            "description": "Bieżące pulpity admina dla aktywności partnerów, stanu synchronizacji i wolumenu transakcji federacyjnych."
+            "description": "Panele administracyjne umożliwiające monitorowanie aktywności między społecznościami, stanu synchronizacji i wolumenu transakcji federacyjnych."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "Przetwarzanie webhooków e-mail",
-            "description": "Obsługa zdarzeń SendGrid: odbicia, skargi i zdarzenia dostarczenia."
+            "description": "Obsługa zdarzeń związanych ze stemplem pocztowym, reklamacjami, otwarciem i dostawą."
           },
           "500plus_phpunit_tests": {
             "title": "500+ testów PHPUnit",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Domyślnie zbudowany, przetestowany i wyłączony. Praca jest wykonana i audytowana, ale nic z niej jeszcze nie korzysta - będziemy ją dalej rozwijać, gdy będzie realne zapotrzebowanie."
   },
   "changelog_page": {
     "title": "Dziennik zmian",

@@ -2170,7 +2170,7 @@
     },
     "about": {
       "title": "Acerca de esta página",
-      "body": "Utilice esta página cuando configure una integración con un servicio de terceros, el sistema de datos de un municipio o una red NEXUS federada. Todos los puntos finales enumerados aquí están activos y tienen como alcance esta implementación. Las cargas útiles de muestra son ilustrativas: los valores reales dependen de su slug de inquilino y de las credenciales de socio. Comparta esta URL con socios de integración en lugar de indicarles los documentos API sin procesar.",
+      "body": "Utilice esta página cuando configure una integración con un servicio de terceros, el sistema de datos de un municipio o una red NEXUS federada. Todos los puntos finales enumerados aquí están sujetos a esta implementación, pero la mayoría no están activados: la API de socio y la federación externa se envían deshabilitadas y responden con una respuesta de no disponible temporalmente hasta que un operador las habilite, y la API de socio también es una configuración por comunidad que comienza. Consulte con el administrador de su plataforma antes de compartir esto con un socio. Las cargas útiles de muestra son ilustrativas: los valores reales dependen de las credenciales de su comunidad y de su socio.",
       "last_refreshed": "{{date}}actualizado por última vez."
     },
     "sections": {

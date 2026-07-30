@@ -1,6 +1,6 @@
 # Database & Migrations
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 > **Diátaxis:** explanation + how-to. How Project NEXUS structures its database, the two migration systems, and how to add schema changes safely.
 
@@ -44,9 +44,11 @@ When adding foreign keys, check **column-type consistency** (signed vs unsigned 
 `database/schema/mysql-schema.sql` is the **full current schema** plus `laravel_migrations` table data, committed to git so a new contributor can stand up a working database. Its size and migration count change frequently, so verify the file itself rather than relying on copied counts:
 
 ```bash
-docker compose up -d
+docker compose --profile docker-php up -d app
 docker exec nexus-php-app php artisan migrate --seed
 ```
+
+The `--profile docker-php` flag is required: the `app` service is profile-gated in `compose.yml` (line 22), so a bare `docker compose up -d` never creates the `nexus-php-app` container and the `docker exec` on the next line fails with "no such container". `npm run dev:docker` wraps the same invocation. Four opt-in application services are profile-gated — `app` (`docker-php`), `frontend` (`docker-frontend`), `queue` (`docker-queue`) and `sales` (`docker-sales`) — plus `phpmyadmin` (`nexus-phpmyadmin`) behind the `tools` profile (`compose.yml` line 294), for five profile-gated services in total.
 
 The seed step creates the master tenant (`tenant_id=1`) and a first-run platform administrator. Development installs default to `admin@project-nexus.local` / `ChangeMe123!`; set `NEXUS_BOOTSTRAP_ADMIN_EMAIL` and `NEXUS_BOOTSTRAP_ADMIN_PASSWORD` before seeding to use different credentials.
 

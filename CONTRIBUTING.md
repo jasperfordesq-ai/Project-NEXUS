@@ -157,7 +157,7 @@ nexus-v1/
 │   ├── Services/                 # Business logic services
 │   └── Listeners/                # Event listeners
 ├── accessible-frontend/          # HTML-first accessible frontend served by Laravel
-├── mobile/                       # Capacitor + Expo mobile app
+├── mobile/                       # Expo (React Native) mobile app
 ├── database/
 │   └── migrations/               # Laravel migrations (use these for new schema changes)
 ├── migrations/                   # Legacy SQL migrations (historical)
@@ -234,7 +234,7 @@ The React frontend lives in `react-frontend/`. See [react-frontend/CLAUDE.md](re
 ### Adding a new page
 
 1. Create a page component in `react-frontend/src/pages/`.
-2. Add the route in `App.tsx` — wrap with `FeatureGate` if the feature is tenant-gated.
+2. Add the route in the right route module — `react-frontend/src/routes/AppRoutes.tsx` for member pages (this is also where all `FeatureGate` gating lives), `src/routes/PublicAppRoutes.tsx` for pre-auth public pages, `src/routes/AuthRoutes.tsx` for auth pages, `src/admin/routes.tsx` for admin. `src/App.tsx` is a thin shell with one catch-all delegating to `TenantShell` — do not add page routes there.
 3. Call `usePageTitle()` at the top of the component.
 4. Use `tenantPath()` for all internal navigation links.
 5. Write a Vitest test covering the key render paths.
@@ -259,7 +259,7 @@ docker compose --profile docker-frontend up -d frontend
 ```bash
 cd react-frontend
 npm test          # Run Vitest in watch mode
-npm run lint      # TypeScript check (tsc --noEmit)
+npm run lint      # ESLint + TypeScript (blocking)
 npm run build     # Production build check
 ```
 
@@ -322,9 +322,15 @@ docker compose --profile docker-php up -d app
 ```bash
 # From your local machine via Docker
 docker exec nexus-php-app vendor/bin/phpunit
-docker exec nexus-php-app vendor/bin/phpunit --testsuite Unit
-docker exec nexus-php-app vendor/bin/phpunit --testsuite Services
+docker exec nexus-php-app vendor/bin/phpunit --testsuite Laravel
+docker exec nexus-php-app vendor/bin/phpunit --testsuite LaravelMigrated
+docker exec nexus-php-app vendor/bin/phpunit --testsuite Integration
 ```
+
+The only declared suites are `Laravel`, `Integration`, and `LaravelMigrated`
+(`phpunit.xml`). Names that match nothing — `--testsuite Unit`, `--testsuite Services` —
+exit 0 with "No tests executed!", which reads as a pass. Unit tests live under
+`tests/Laravel/Unit` and run as part of the `Laravel` suite.
 
 Test environment uses `APP_ENV=testing`, database `nexus_test`, and `CACHE_DRIVER=array`.
 
@@ -332,12 +338,11 @@ Test environment uses `APP_ENV=testing`, database `nexus_test`, and `CACHE_DRIVE
 
 ## Mobile Contribution Workflow
 
-The mobile app is a Capacitor + Expo application in `mobile/`. It shares the same React component patterns as the main frontend.
+The mobile app is an Expo (React Native) application in `mobile/`, built and released through EAS. It shares the same React component patterns as the main frontend. It does **not** use Capacitor — Capacitor (`@capacitor/cli`, `@capacitor/core` in the root `package.json`) wraps the React web app, not `mobile/`.
 
 ### Stack
 
-- Expo (React Native)
-- Capacitor (native bridge)
+- Expo (React Native) + Expo Router, released via EAS
 - TypeScript strict mode
 - Same HeroUI and Tailwind conventions as `react-frontend/` where applicable
 
@@ -345,8 +350,10 @@ The mobile app is a Capacitor + Expo application in `mobile/`. It shares the sam
 
 ```bash
 cd mobile
-npx expo test
+npm test
 ```
+
+`mobile/package.json` maps `test` to Jest. There is no `expo test` command in the installed Expo SDK.
 
 ### Key notes
 
@@ -402,7 +409,7 @@ Project NEXUS serves timebanks worldwide. **Never add Ireland-specific or any ot
 - Use `Validator::isPhone()` for international E.164 phone validation — never `isIrishPhone()` or any pattern matching `+353`, `08x`, or `00353`.
 - Use neutral international examples in form placeholders (e.g., `+1 555 123 4567`), not Irish numbers.
 - Never default maps or location fields to Ireland/Dublin. Use a neutral global centre.
-- `validateIrishLocation()` is legacy code — do not call it.
+- Do not add locale-specific location validation. The old `validateIrishLocation()` helper has been deleted; `app/Core/Validator.php` deliberately exposes no Irish-specific validator (see the note at the top of that file about `isIrishPhone()`).
 
 ### Dead legacy themes — never touch
 
@@ -480,15 +487,16 @@ npm run test:ui-contracts -- --run      # UI contracts (blocking)
 npm run build                           # Production build (blocking)
 ```
 
-The broad Vitest worker pool currently has a documented systemic hang. CI keeps its focused smoke and coverage runs non-blocking until that is resolved, so a full `npm test -- --run` is advisory rather than the release success criterion.
+The full frontend suite **is** a release success criterion. CI runs it as `React Full Suite (shard N/8)` (`react-tests-full`, via `react-frontend/scripts/run-vitest-shard.mjs`), blocking since 2026-07-28 and listed in the `release-gate` `needs:` array. It covers every suite except the 55 quarantined in `react-frontend/src/test/failing-suites.baseline.json`, so a green pipeline proves 1,228 of 1,283 suites; that list may only shrink, and its ceiling is enforced by `react-frontend/scripts/check-quarantine-budget.mjs` (run as `npm run check:quarantine-budget`). That ceiling step deliberately lives in the `react-build` job, not in `react-tests-full`, so it cannot be swallowed by a job-level `continue-on-error`. The focused smoke step is also blocking — it runs serially (`--pool=forks --poolOptions.forks.singleFork=true`), which is what fixed the old parallel worker-pool hang. Only the coverage report step is non-blocking.
 
 ### PHP backend (PHPUnit)
 
 ```bash
 # Via Docker (recommended)
 docker exec nexus-php-app vendor/bin/phpunit
-docker exec nexus-php-app vendor/bin/phpunit --testsuite Unit
-docker exec nexus-php-app vendor/bin/phpunit --testsuite Services
+docker exec nexus-php-app vendor/bin/phpunit --testsuite Laravel
+docker exec nexus-php-app vendor/bin/phpunit --testsuite LaravelMigrated
+docker exec nexus-php-app vendor/bin/phpunit --testsuite Integration
 docker exec nexus-php-app php tests/run-api-tests.php
 ```
 

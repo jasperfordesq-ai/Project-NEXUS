@@ -1,6 +1,6 @@
 # Podcasts Module
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 Audience: maintainers and contributors working on the Podcasts feature — audio hosting, RSS distribution, listen analytics, or admin moderation.
 
@@ -28,7 +28,7 @@ To enable for a tenant:
 UPDATE tenants SET features = JSON_SET(features, '$.podcasts', true) WHERE id = <tenant_id>;
 ```
 
-Or toggle through the admin UI at `/admin/tenant-features`.
+Or toggle through the admin UI at `/admin/module-configuration` (`/admin/tenant-features` is retired and survives only as a redirect stub to that path).
 
 ---
 
@@ -68,7 +68,7 @@ Migrations (in order):
 | Admin API controller | `app/Http/Controllers/Api/AdminPodcastController.php` |
 | Shared controller concern | `app/Http/Controllers/Api/Concerns/InteractsWithPodcasts.php` |
 | Async media job | `app/Jobs/ProcessPodcastEpisodeMedia.php` |
-| Durable cleanup service/job/command | `app/Services/PodcastMediaCleanupService.php`, `app/Jobs/DeletePodcastMedia.php`, `app/Console/Commands/DispatchPodcastMediaCleanup.php` |
+| Durable cleanup service/job/command | `app/Services/PodcastMediaCleanupService.php`, `app/Jobs/CleanupPodcastMedia.php`, `app/Console/Commands/DispatchPodcastMediaCleanup.php` |
 | Scheduled release command | `app/Console/Commands/ReleaseScheduledPodcastEpisodes.php` |
 | Models | `app/Models/PodcastShow.php`, `PodcastEpisode.php`, `PodcastEpisodeChapter.php`, `PodcastEpisodeListen.php`, `PodcastEpisodeReaction.php` |
 | React pages | `react-frontend/src/pages/podcasts/` |

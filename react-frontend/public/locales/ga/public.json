@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Béite",
-      "preview": "Réamhamharc"
+      "preview": "Réamhamharc",
+      "dormant": "Tógtha, ní cumasaithe"
     },
     "title": "Gnéithe",
     "meta_title": "Gnéithe - Project NEXUS v1.5",
     "meta_description": "Gach modúl atá curtha ar fáil i Project NEXUS v1.5, le lipéid mhacánta aibíochta don chónaidhm, do bhanc ama, don mhargadh, d'uirlisí pobail, don tslándáil, don anailísíocht agus don bhonneagar foinse oscailte.",
     "heading": "Cad a dhéanann Project NEXUS",
-    "subheading": "Ardán pobail ilthionónta de chineál fiontair is ea Project NEXUS. Tá gach modúl thíos ar fáil i v1.5 inniu. Lipéadaimid an aibíocht go macánta: tá míreanna gan lipéad ar fáil go ginearálta; iompraíonn dromchlaí níos nuaí nó dromchlaí atá á neartú lipéad Béite nó Réamhamharc.",
+    "subheading": "Is ardán pobail ilthionónta de ghrád fiontair é Tionscadal NEXUS. Seoltar gach modúl thíos i v1.5 inniu. Déanaimid modúil a lipéadú go hionraic: tá míreanna neamh-mharcáilte ar Fáil Go Ginearálta; iompraíonn dromchlaí níos nuaí nó dromchlaí atá cruaite go gníomhach sceallóg Béite nó Réamhamhairc; agus ciallaíonn sliseanna Tógtha nach bhfuil cumasaithe go bhfuil an obair críochnaithe agus múchta, ag fanacht leis an éileamh.",
     "maturity_key_title": "Conas a lipéadaímid aibíocht",
     "maturity_ga": "Ar fáil go ginearálta - cobhsaí, tacaithe, in úsáid i dtáirgeadh ar fud na dtionóntaí píolótacha.",
     "maturity_beta": "Ag obair i dtáirgeadh inniu, ach tá an dromchla poiblí nó an prótacal sreangach á neartú fós.",
@@ -32,7 +33,7 @@
       "database_label": "Bunachar sonraí",
       "database_value": "MariaDB 10.11",
       "frontend_label": "Tosach",
-      "frontend_value": "Freagair 18 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Bonneagar",
       "infrastructure_value": "Docker, Redis, PWA iomlán",
       "mobile_label": "Soghluaiste",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Cónaidhm",
-        "intro": "Ciseal cónaidhme le ceithre phrótacal le haghaidh malartaithe idirphobail — Nexus (dúchasach), Komunitin (15 chríochphointe), Credit Commons Protocol (11 chríochphointe, comhoiriúnach le CEN) agus TimeOverflow.",
+        "intro": "Ciallaíonn Cónaidhm dhá rud difriúil anseo, agus tá siad ag céimeanna éagsúla. Baintear úsáid laethúil as pobail a chónaíonn ar shuiteáil amháin a nascadh. Déantar nascadh le suiteálacha agus ardáin eile a thógáil agus a thástáil, ach múchtar é de réir réamhshocraithe agus níl sé in úsáid faoi láthair.",
         "items": {
           "federation_network": {
-            "title": "Líonra cónaidhme",
-            "description": "Nasc pobail NEXUS iolracha i líonra le haghaidh aimsithe, fógraí, imeachtaí agus teachtaireachtaí idirphobail."
+            "title": "Líonra Pobail (suiteáil chéanna)",
+            "description": "Nasc pobail iolracha arna óstáil ar shuiteáil amháin le haghaidh fionnachtain trasphobail, liostaí, imeachtaí agus teachtaireachtaí."
           },
           "external_partner_federation": {
             "title": "Cónaidhm le páirtithe seachtracha",
-            "description": "Beo le hardáin sheachtracha banc ama — comhpháirtíochtaí bunaithe, teachtaireachtaí ag sreabhadh, malartú creidmheasa á thástáil go gníomhach.",
-            "note": "Tá comhpháirtíochtaí fíora ann a mhalartaíonn sonraí gach lá. Tá na prótacail sreangacha á neartú fós in aghaidh cásanna teorann — caith le haistrithe creidmheasa seachtracha mar fheighilte, ní mar uathoibríocha."
+            "description": "Ceangail le suiteálacha NEXUS eile agus le hardáin bainc ama eile thar cheithre phrótacal doiciméadaithe: Nexus native, Komunitin, Credit Commons (CEN-comhoiriúnach), agus TimeOverflow.",
+            "note": "Críochnaithe agus tástáladh, agus múchta de réir réamhshocraithe - freagraíonn gach críochphointe seachtrach le freagra nach bhfuil ar fáil go sealadach go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach ceangailte inniu. Tá suim léirithe ag oibreoirí ardán eile, agus mar sin tá an bhunobair i bhfeidhm agus iniúchta, ach nílimid ag forbairt tuilleadh é go dtí go mbeidh comhtháthú nithiúil ar an tábla. Más mian leat cónascadh a dhéanamh linn, déan teagmháil linn."
           },
           "multi_protocol_adapters": {
             "title": "Cuibheoirí ilphrótacal",
-            "description": "Sioncrónú dhá-bhealaigh do 9 gcineál aonáin: baill, fógraí, imeachtaí, grúpaí, naisc, obair dheonach, athbhreithnithe, aistrithe, teachtaireachtaí."
+            "description": "Cuibheoirí le haghaidh sioncronaithe déthreo de 9 gcineál eintitis — baill, liostaí, imeachtaí, grúpaí, naisc, obair dheonach, léirmheasanna, aistrithe, teachtaireachtaí — thar na ceithre phrótacal.",
+            "note": "Tógtha agus clúdaithe ag tástálacha taobh le Cónaidhm na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon rud ar siúl, mar sin níl aon rud ag sioncronú."
           },
           "federation_neighborhoods": {
             "title": "Comharsanachtaí cónaidhme",
-            "description": "Braislí geografacha de phobail chónasctha le haghaidh comhordaithe réigiúnaigh."
+            "description": "Cnuasaigh de phobail nasctha atá grúpáilte go geografach le haghaidh comhordú réigiúnach."
           },
           "credit_agreements": {
             "title": "Comhaontuithe creidmheasa",
-            "description": "Téarmaí ráta malairte idirbheartaithe idir pobail chónasctha."
+            "description": "Téarmaí ráta malairte idirbheartaithe idir pobail nasctha."
           },
           "federation_analytics": {
             "title": "Anailísíocht chónaidhme",
-            "description": "Painéil riaracháin bheo le haghaidh ghníomhaíocht na bpáirtithe, sláinte sioncrónaithe agus líon na n-idirbheart cónasctha."
+            "description": "Deais admin le haghaidh gníomhaíochta trasphobail, sláinte sioncronaithe, agus líon na n-idirbheart cónasctha."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "Próiseáil webhook ríomhphoist",
-            "description": "Láimhseáil eachtraí SendGrid de phreaba, gearáin agus seachadtaí."
+            "description": "Preab postmharc, gearán, oscailt, agus láimhseáil imeacht seachadta."
           },
           "500plus_phpunit_tests": {
             "title": "500+ tástálacha PHPUnit",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Tógtha, tástáladh agus múchta de réir réamhshocraithe. Déantar an obair agus déantar iniúchadh uirthi, ach níl aon rud á úsáid fós - déanfaimid tuilleadh forbartha air nuair a bhíonn fíor-éileamh ann."
   },
   "changelog_page": {
     "title": "Loga athrú",

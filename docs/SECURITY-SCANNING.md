@@ -1,6 +1,6 @@
 # Security Scanning
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-30
 
 Project NEXUS is a public AGPL repository. Security scanning must distinguish reachable production risk from development-tooling noise.
 
@@ -19,6 +19,7 @@ Do **not** open a public issue for an unpatched vulnerability. Use the private d
 | `.github/workflows/dependency-review.yml` | Lightweight PR gate — runs only when package files change. |
 | `owasp-suppressions.xml` | OWASP Dependency-Check suppressions with documented reasons. |
 | `.trivyignore` | Trivy suppressions with documented reasons. |
+| `.npm-audit-exceptions.json` | npm-audit exceptions (advisory id, scope, reason, added date) consumed by `scripts/npm-audit-gate.mjs`. |
 | `.semgrepignore` | Semgrep path exclusions (dead/legacy code). |
 | `composer.lock`, `package-lock.json`, `react-frontend/package-lock.json`, `e2e/package-lock.json`, `mobile/package-lock.json` | Dependency state that scanners evaluate. |
 
@@ -28,17 +29,19 @@ Do **not** open a public issue for an unpatched vulnerability. Use the private d
 
 The `security-scan.yml` workflow runs the following tools in order. The CI definition is the authoritative reference — this table is a summary only.
 
-| Tool | What it covers | Blocking? |
-| --- | --- | --- |
-| `composer audit --locked` | PHP CVEs in `composer.lock` | Yes |
-| Enlightn Security Checker | A second advisory-database pass over `composer.lock` | Yes |
-| Trivy filesystem (table) | Filesystem CVEs at CRITICAL/HIGH | Yes, respects `.trivyignore` |
-| Trivy filesystem (SARIF) | Same — uploads to GitHub Security tab | No (visibility only) |
-| Semgrep (SAST) | PHP injection, secret patterns, security anti-patterns | No (SARIF upload only) |
-| TruffleHog | Verified secrets in git history | Yes |
-| OWASP Dependency-Check | Transitive CVEs across PHP + installed root/React/E2E npm dependency trees, CVSS ≥ 7 | Yes, respects `owasp-suppressions.xml` |
-| `npm audit --omit=dev` | Production npm CVEs at high+ across the root, React, E2E, and mobile lockfiles | Yes |
-| Trivy container scan | OS/library CVEs inside the built Docker image | Yes (push events only) |
+| # | Tool (step name) | What it covers | Blocking? |
+| --- | --- | --- | --- |
+| 1 | `composer audit --locked` | PHP CVEs in `composer.lock` | Yes |
+| 2 | Trivy filesystem (table) | Filesystem CVEs at CRITICAL/HIGH | Yes, respects `.trivyignore` |
+| 3 | Trivy filesystem (SARIF) | Same — uploads to GitHub Security tab | No (visibility only) |
+| 4 | Semgrep (SAST) | PHP injection, secret patterns, security anti-patterns | No (SARIF upload only) |
+| 5 | TruffleHog (`Check for Hardcoded Secrets`) | Verified secrets in git history | Yes |
+| 6 | Enlightn Security Checker (`PHP Security Checker`) | A second advisory-database pass over `composer.lock` | Yes |
+| 7 | `scripts/npm-audit-gate.mjs` (`NPM Audit (production deps — blocking)`) | Production npm CVEs at high+ across the root, React, E2E, and mobile lockfiles | Yes, respects `.npm-audit-exceptions.json` |
+| 8 | OWASP Dependency-Check | Transitive CVEs across PHP + installed root/React/E2E npm dependency trees, CVSS ≥ 7 | Yes, respects `owasp-suppressions.xml` |
+| 9 | Trivy container scan (separate `container-scan` job) | OS/library CVEs inside the built Docker image | Yes (push events only) |
+
+The npm step is **not** raw `npm audit`. It runs `scripts/npm-audit-gate.mjs` four times — bare, `--prefix react-frontend`, `--prefix e2e`, and `--prefix mobile --package-lock-only`. The wrapper blocks on `high`/`critical` advisories unless the advisory carries a dated, scope-matched entry in `.npm-audit-exceptions.json`, in which case it is printed as excepted and the gate still exits 0. Consequence: the local commands below can surface a HIGH that CI deliberately passes. One exception is live today — `GHSA-mh99-v99m-4gvg` (`brace-expansion`, scope `mobile`, added 2026-07-25).
 
 Full scan results land in the GitHub Security tab (SARIF uploads) and as workflow artifacts for the OWASP HTML report.
 
@@ -103,6 +106,15 @@ To see all severities (informational):
 
 ```bash
 npm audit --omit=dev
+```
+
+To reproduce the blocking CI gate exactly — including the `.npm-audit-exceptions.json` allowances — run the wrapper instead:
+
+```bash
+node scripts/npm-audit-gate.mjs
+node scripts/npm-audit-gate.mjs --prefix react-frontend
+node scripts/npm-audit-gate.mjs --prefix e2e
+node scripts/npm-audit-gate.mjs --prefix mobile --package-lock-only
 ```
 
 ### Quick local Trivy scan (optional)
@@ -185,6 +197,26 @@ Group related entries under a shared comment block when multiple CVEs share the 
 ```
 
 The `until` date enforces expiry — OWASP Dependency-Check will re-surface the finding after that date even if the suppression file is not updated.
+
+### npm-audit exception format (`.npm-audit-exceptions.json`)
+
+`scripts/npm-audit-gate.mjs` reads the `exceptions` array. An entry only applies to the tree whose npm prefix matches its `scope` (or `*` for every tree):
+
+```json
+{
+  "exceptions": [
+    {
+      "id": "GHSA-xxxx-xxxx-xxxx",
+      "scope": "mobile",
+      "package": "example-lib",
+      "reason": "No in-range fix; the only npm-offered fix is a breaking major of an on-hold app. Path processes repo-controlled input at build time only.",
+      "added": "2026-07-25"
+    }
+  ]
+}
+```
+
+There is no automatic expiry here — the gate prints every excepted advisory on each run, and the file's own comment requires a quarterly review alongside `.trivyignore`. Remove an entry as soon as an in-range fix ships.
 
 ### Suppression hygiene rules
 

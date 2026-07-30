@@ -2170,7 +2170,7 @@
     },
     "about": {
       "title": "Sobre esta página",
-      "body": "Utilize esta página ao configurar uma integração com um serviço de terceiros, um sistema de dados municipal ou uma rede NEXUS federada. Cada endpoint listado aqui está ativo e com escopo para esta implantação. As cargas úteis de exemplo são ilustrativas – os valores reais dependem do seu slug de locatário e das credenciais do parceiro. Compartilhe esse URL com parceiros de integração em vez de direcioná-los para os documentos brutos da API.",
+      "body": "Utilize esta página ao configurar uma integração com um serviço de terceiros, um sistema de dados municipal ou uma rede NEXUS federada. Cada endpoint listado aqui tem como escopo esta implantação, mas a maioria não está ativada: a API do Parceiro e a federação externa são desativadas e respondem com uma resposta temporariamente indisponível até que um operador os ative, e a API do Parceiro também é uma configuração por comunidade que começa. Verifique com o administrador da sua plataforma antes de compartilhar isso com um parceiro. As cargas úteis de amostra são ilustrativas - os valores reais dependem do slug da sua comunidade e das credenciais do parceiro.",
       "last_refreshed": "{{date}}atualizado pela última vez."
     },
     "sections": {

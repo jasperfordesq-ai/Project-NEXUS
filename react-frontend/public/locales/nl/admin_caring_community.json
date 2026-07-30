@@ -2154,7 +2154,7 @@
     },
     "about": {
       "title": "Over deze pagina",
-      "body": "Gebruik deze pagina bij het opzetten van een integratie met een dienst van derden, het datasysteem van een gemeente of een federatief NEXUS-netwerk. Elk hier vermeld eindpunt is live en gericht op deze implementatie. Voorbeeldpayloads zijn ter illustratie: de echte waarden zijn afhankelijk van uw tenant-slug en partnerreferenties. Deel deze URL met integratiepartners in plaats van hen naar de onbewerkte API-documenten te verwijzen.",
+      "body": "Gebruik deze pagina bij het opzetten van een integratie met een dienst van derden, het datasysteem van een gemeente of een federatief NEXUS-netwerk. Elk hier vermeld eindpunt is afgestemd op deze implementatie, maar de meeste zijn niet ingeschakeld: de Partner API en de externe federatie zijn uitgeschakeld en antwoorden met een tijdelijk niet-beschikbaar antwoord totdat een operator ze inschakelt, en de Partner API is ook een instelling per community die begint. Neem contact op met uw platformbeheerder voordat u dit met een partner deelt. Voorbeeldpayloads zijn ter illustratie: de werkelijke waarden zijn afhankelijk van uw community-slug en partnerreferenties.",
       "last_refreshed": "Laatst vernieuwd{{date}}."
     },
     "sections": {

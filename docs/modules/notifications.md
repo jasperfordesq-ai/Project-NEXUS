@@ -1,6 +1,6 @@
 # Notifications & Email Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide is a how-to/reference for maintainers of the notifications and email subsystem in Project NEXUS. It covers the three delivery channels (in-app bell, email, push/FCM), the recipient-locale invariant that every notification path must honour, the dispatcher flow, the queue, tenant scoping, the frontend inbox, and the regression tests that protect this surface.
 
@@ -154,7 +154,7 @@ Services:
 | `PushNotificationService` | `app/Services/PushNotificationService.php` | Manages `push_subscriptions` rows (subscribe / unsubscribe / count). Delegates sending to `WebPushService`. |
 | `WebPushService` | `app/Services/WebPushService.php` | VAPID browser push; called by `fanOutPush()`. |
 | `FCMPushService` | `app/Services/FCMPushService.php` | Firebase Cloud Messaging for Capacitor mobile app; called by `fanOutPush()`. |
-| `EmailDispatchService` | `app/Services/EmailDispatchService.php` | Low-level send wrapper (SendGrid / SMTP). All notification email sends go through `EmailDispatchService::sendRaw()`. |
+| `EmailDispatchService` | `app/Services/EmailDispatchService.php` | Low-level send wrapper over `App\Core\Mailer` (SMTP, Gmail API, or Postmark). All notification email sends go through `EmailDispatchService::sendRaw()`. SendGrid is retired — a legacy `sendgrid` tenant setting deliberately has no case and falls through to the platform provider. |
 
 Models:
 
@@ -191,9 +191,9 @@ Listeners (most implement `ShouldQueue`; `SendWelcomeNotification` and
 | `NotifyAdminOfNewCommunityEvent` | `CommunityEventCreated` | Bell to admins on new event. |
 | `NotifyAdminOfNewVolunteerOpportunity` | `VolunteerOpportunityCreated` | Bell to admins on new opportunity. |
 | `SendWelcomeNotification` | `UserRegistered` | Welcome bell to new member. |
-| `NotifyGroupChatroomMessage` | `GroupChatroomMessageSent` | Bell to group chatroom participants. |
+| `NotifyGroupChatroomMessage` | `GroupChatroomMessagePosted` | Bell to group chatroom participants. |
 | `NotifyGroupMemberJoined` | `GroupMemberJoined` | Bell to group organisers. |
-| `NotifyJobAlertSubscribers` | `ListingCreated` | Email to users with matching job alert subscriptions. |
+| `NotifyJobAlertSubscribers` | `JobVacancyCreated` | Email to users with matching job alert subscriptions. Dispatched by `JobVacancyService::create()` — not wired to `ListingCreated`. |
 
 ---
 
@@ -214,7 +214,7 @@ Types that do not match any category are counted in `other`.
 - **Opt-out.** `email_transactions`, `email_messages`, and `email_reviews` preferences on `users.notification_preferences` are checked before sending the corresponding email type. The `/v2/notifications/unsubscribe` route supports one-click unsubscribe compliance (Gmail / Yahoo Feb-2024 bulk-sender rules).
 - **Push subscription ownership.** `PushNotificationService::subscribe()` and `unsubscribe()` are keyed on `(user_id, endpoint)` and always write `tenant_id`. The VAPID public key is served unauthenticated (`GET /push/vapid-key`) but subscriptions require auth.
 - **Bell field hiding.** `Notification::$hidden` excludes `tenant_id` from JSON serialization so it is never exposed to the client.
-- **No hardcoded locale strings.** Every `__('emails.*')` or `__('notifications.*')` call must reference a key in the translation files under `lang/`. This is enforced by `scripts/check-i18n.sh` (runs in CI pre-push). Never inline English strings in notification or email code.
+- **No hardcoded locale strings.** Every `__('emails.*')` or `__('notifications.*')` call must reference a key in the translation files under `lang/`. This is enforced by `scripts/check-i18n.sh`, which runs in CI (`.github/workflows/ci.yml`) — there is no local pre-push hook. Never inline English strings in notification or email code.
 
 ---
 

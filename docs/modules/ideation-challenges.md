@@ -192,7 +192,7 @@ All endpoints below require `auth:sanctum`; there are no anonymous ideation read
 | `pages/ideation/CampaignDetailPage.tsx` | `/{tenant}/ideation/campaigns/:id` |
 | `pages/ideation/OutcomesDashboardPage.tsx` | `/{tenant}/ideation/outcomes` |
 | `admin/modules/ideation/IdeationAdmin.tsx` | `/admin/ideation` |
-| `components/ideation/` | `TeamChatrooms`, `TeamDocuments`, `TeamTasks` — rendered inside the group/team detail view |
+| `components/ideation/` | `TeamChatrooms`, `TeamTasks` (the only two symbols exported from `components/ideation/index.ts`) — rendered inside the group/team detail view |
 
 **Accessible (GOV.UK) frontend** (`accessible-frontend/views/`):
 
@@ -270,7 +270,7 @@ Key coverage:
 | Invalid status transition | `updateChallengeStatus()` returns `CONFLICT` error; HTTP 409 | Use one of the explicit transitions above; `open` may move directly to `voting`, `evaluating`, or `closed` |
 | Vote on closed/evaluating challenge | `voteIdea()` returns `CONFLICT` (`challenge_voting_not_allowed`) | No action needed; the challenge must be `open` or `voting` to accept votes |
 | Idea edit after challenge leaves `open` | `updateIdea()` returns `CONFLICT` (`challenge_closed_for_edits`) | Editing becomes available only if an admin returns the challenge to `open` through a valid lifecycle path; idea status can be changed separately by an admin |
-| Notification email failure | `EmailDispatchService::sendRaw()` returns false; logged as `Log::warning` — the primary action still succeeds | Check `email_logs` and the configured mail provider's delivery logs |
+| Notification email failure | `EmailDispatchService::sendRaw()` returns false; logged as `Log::warning` — the primary action still succeeds | Check the `email_log` table and the configured mail provider's delivery logs |
 | Outcome `winning_idea_id` FK violation | Service validates that the idea belongs to the challenge; returns `VALIDATION_INVALID_VALUE` | Pass a valid idea ID that was submitted to the same challenge |
 | Team conversion denied or repeated | Caller is not the idea author/challenge creator/admin, or `idea_team_links` already contains the idea | Use an authorized caller; if already converted, reuse the existing implementation group rather than creating another |
 | Category deleted while challenges reference it | `ChallengeCategoryService::delete()` nulls out `category_id` on affected challenges before deleting the category row | No recovery needed; challenges retain their free-text `category` field |

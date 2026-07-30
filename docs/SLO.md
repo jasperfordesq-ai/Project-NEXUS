@@ -1,6 +1,6 @@
 # Service Level Objectives
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 Project NEXUS starts with a small set of SLOs that can be measured and acted on. A few watched signals are better than a large dashboard nobody trusts.
 
@@ -31,7 +31,7 @@ Regression coverage lives in `tests/Laravel/Feature/Console/SloCheckTest.php`.
 | User journey | Valid login attempts. |
 | Target | At least 99.5% non-5xx success and p95 latency below 1000 ms over 28 days. |
 | Failure signal | Server-side login errors and high latency, excluding wrong-password 401s. |
-| Primary source | Sentry transaction metrics for `POST /api/v2/auth/login`. |
+| Primary source | Sentry transaction metrics for `POST /api/auth/login` (the login route is not under the `v2` namespace — `routes/api.php:3040`). |
 
 `login_attempts` can provide supporting context, but the authoritative login SLO belongs in Sentry because application data cannot reliably distinguish all user mistakes from system failures.
 

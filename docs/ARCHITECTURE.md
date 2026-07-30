@@ -1,6 +1,6 @@
 # Project NEXUS Architecture
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 Platform version: 1.5.8
 
 This document is the maintained architecture map for Project NEXUS. It is intentionally compact: use it to understand the runtime boundaries, primary code paths, and documents to read next.
@@ -87,6 +87,6 @@ Local development is Docker-first: the Laravel/PHP app, MariaDB, Redis, and Meil
 
 ## Documentation Sufficiency
 
-The maintained documentation covers setup, topology, deployment, incident response, monitoring, SLOs, Sentry, API reference policy, testing, security scanning, federation, custom domains, accessible frontend constraints, contributor terms, versioning, and changelog discipline. Every live product module has a curated guide under `docs/modules/`; federation, mobile, and the accessible frontend use dedicated cross-cutting references linked from [MODULES.md](MODULES.md).
+The maintained documentation covers setup, topology, deployment, incident response, monitoring, SLOs, Sentry, API reference policy, testing, security scanning, federation, custom domains, accessible frontend constraints, contributor terms, versioning, and changelog discipline. 24 curated module guides live under `docs/modules/`; federation, mobile, and the accessible frontend use dedicated cross-cutting references linked from [MODULES.md](MODULES.md). One live product module is still uncovered: **Caring Community** (feature gate `caring_community`, default off) has 3 API controllers, 49 services, 227 routes, a member SPA at `caring/*`, admin pages and scheduled commands, but no guide — it is listed in [MODULES.md](MODULES.md) with its code paths only.
 
 The ongoing risk is implementation drift. Update the relevant guide and machine-readable API contract in the same change as behaviour, keep every maintained page indexed from [README.md](README.md), and run the documentation, version, and changelog checks before release.

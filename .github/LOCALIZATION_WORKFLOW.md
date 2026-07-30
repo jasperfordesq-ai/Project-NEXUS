@@ -1,18 +1,41 @@
 # Localization Workflow
 
-This project now has two separate i18n quality gates:
+CI's `i18n-drift` job ("Translation Drift Detection" in `.github/workflows/ci.yml`) runs ten
+BLOCKING i18n checks plus several WARNING/INFO ones. These are the five you normally run by
+hand — the first three cover the React JSON locales, the last two cover the PHP `lang/` files:
 
-1. Structural safety
+1. Structural safety (BLOCKING)
    Run `node scripts/check-i18n-drift.mjs`
    Purpose: every locale file must match English key structure.
 
-2. Content completeness
-   Run `node scripts/translate-i18n-gaps.mjs --summary`
-   Purpose: find strings that are still missing or still identical to English outside the admin-only namespaces.
+2. Content completeness (INFO in CI)
+   Run `node scripts/translate-i18n-gaps.mjs --summary` (alias `npm run check:i18n:gaps`)
+   Purpose: find strings that are still missing or still identical to English, outside the
+   namespaces the script skips (`admin_nav.json`, `admin_dashboard.json`, `super_admin.json`,
+   `api_controllers_1/2/3.json` and the `*.php` entries — see its `SKIP_NAMESPACES`).
 
-3. Regression guard
-   Run `node scripts/check-i18n-gap-regression.mjs`
+3. Regression guard (WARNING in CI)
+   Run `node scripts/check-i18n-gap-regression.mjs` (alias `npm run check:i18n:baseline`)
    Purpose: fail fast if the non-admin untranslated / English-fallback debt gets worse than the committed baseline.
+
+4. PHP `lang/` key parity (BLOCKING)
+   Run `node scripts/check-php-lang-parity.mjs`
+   Purpose: every `lang/<locale>/*.php` file must carry the same key set as `lang/en`. It compares
+   KEY SETS only — it cannot see a value that is still English.
+
+5. PHP `lang/` untranslated ratchet (BLOCKING)
+   Run `node scripts/check-php-lang-untranslated.mjs`
+   Purpose: shrink-only ceiling on `lang/` values that are byte-identical to English. The committed
+   ceiling lives in `.github/php-lang-untranslated-baseline.json` (currently 249) and may only go
+   down; regenerate it with `--write-baseline`, never by hand.
+
+The remaining blocking checks in that job are `check-i18n-literals.mjs`, `scripts/check-i18n.sh`
+(hardcoded PHP strings), `check-admin-i18n-token-integrity.mjs`, `check-admin-ui-literals.mjs`,
+`check-admin-i18n.mjs`, `check-i18n-stubs.mjs`, and `check-i18n-vars.mjs`.
+
+**`translate-i18n-gaps.mjs` cannot fill `lang/*.php`** — it is scoped to
+`react-frontend/public/locales` and reads only `*.json`. The PHP path is the separate
+`node scripts/translate-php-lang-gaps.mjs --google --namespace <file>`.
 
 ## Ownership
 
@@ -40,13 +63,25 @@ Use these states mentally when reviewing locale work:
 3. Run `node scripts/translate-i18n-gaps.mjs --summary` to see English fallback debt.
 4. Run `node scripts/check-i18n-gap-regression.mjs` and confirm the baseline does not regress.
 5. If translation credentials are available, run `node scripts/translate-i18n-gaps.mjs`.
-6. Add `Translation Status:` and `Translation Reviewer:` to the PR description before merge.
-7. Review the changed locale files before merge.
+6. If the change touched `lang/en/*.php`, run `node scripts/check-php-lang-parity.mjs` and
+   `node scripts/check-php-lang-untranslated.mjs`, and fill the new values with
+   `node scripts/translate-php-lang-gaps.mjs --google --namespace <file>`.
+7. Add `Translation Status:` and `Translation Reviewer:` to the PR description before merge.
+8. Review the changed locale files before merge.
 
 ## Notes
 
-- Admin namespaces (`admin.json`, `admin_nav.json`, `admin_dashboard.json`, `super_admin.json`) are included in translation like all other namespaces.
-- Irish (`ga`) uses the OpenAI path when `OPENAI_API_KEY` is available because DeepL does not support Irish.
+- Admin namespaces are translated content and are drift-gated like every other namespace — there is
+  no "admin is English-only" policy (that was voided on 2026-06-06). But policy and tooling differ:
+  `translate-i18n-gaps.mjs` deliberately skips `admin_nav.json`, `admin_dashboard.json` and
+  `super_admin.json` (plus `api_controllers_1/2/3.json` and the `*.php` entries) via its
+  `SKIP_NAMESPACES` set, and `check-i18n-gap-regression.mjs` additionally skips `admin.json`. Only
+  `admin.json` is filled by `translate-i18n-gaps.mjs`; new keys in the other three must be filled
+  another way rather than by re-running that script.
+- Irish (`ga`) is not translatable through DeepL, so it needs either the OpenAI path
+  (`OPENAI_API_KEY` set) or the Google path (`--google`). Both cover `ga` normally — this is a
+  DeepL limitation, not a blanket Irish exclusion. `translate-i18n-gaps.mjs` skips `ga` only when
+  neither backend is selected.
 
 ## Acceptable residual English
 

@@ -1,6 +1,6 @@
 # Documentation Architecture
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This page defines how Project NEXUS documentation is organised and kept trustworthy. It is a maintainer guide, not a dump of audit notes.
 
@@ -66,6 +66,8 @@ Project NEXUS documentation follows these external standards:
 
 ## Coverage Status
 
-The maintained public set is fully indexed. Every live product module has a curated guide under `docs/modules/`, while federation, mobile, and the accessible frontend have dedicated cross-cutting references. The machine-readable API contract remains the endpoint source of truth.
+The maintained public set is fully indexed. 24 live product modules have a curated guide under `docs/modules/`, while federation, mobile, and the accessible frontend have dedicated cross-cutting references. The machine-readable API contract remains the endpoint source of truth.
+
+One known gap: **Caring Community** (feature gate `caring_community`, default off — the same default as marketplace, courses and podcasts, all of which are documented) has no guide, despite 3 API controllers, 49 services, 227 routes in `routes/api.php`, 50 files directly under `react-frontend/src/pages/caring-community/`, an admin module and scheduled commands. It appears in docs as cross-references from [modules/volunteering.md](modules/volunteering.md), [modules/admin.md](modules/admin.md) (which counts it among the gated admin features) and [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md), a code-paths row in [MODULES.md](MODULES.md), and the matching coverage-gap notes in [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) — but nowhere as a guide.
 
 Treat documentation coverage as a release invariant rather than a standing backlog: when behaviour changes, update its guide and contract in the same change. Record any newly discovered documentation gap as a specific, scoped issue instead of adding an open-ended audit dump to the repository.

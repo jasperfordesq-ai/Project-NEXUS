@@ -1,6 +1,6 @@
 # Jobs / Hiring Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 How-to / reference guide for the Jobs (Hiring) module: posting vacancies, the application and hiring pipeline, interviews and offers, job alerts, syndication feeds, the hiring **bias / fairness audit**, and GDPR handling for applicant data. Verified against the live service layer (`app/Services/Job*`), `app/Listeners/NotifyJobAlertSubscribers.php`, and `routes/api.php`.
 
@@ -54,11 +54,11 @@ Tenant/platform admins have a moderation and analytics superset via `/v2/admin/j
 
 **Frontend entry points:** React jobs pages under `react-frontend/src/pages` and `react-frontend/src/admin` (hiring surfaces), plus the accessible GOV.UK track at `/{tenantSlug}/accessible/...` (parity tests `JobsParityTest`, `JobsBiasAuditParityTest`, `JobsCvUploadParityTest`, `JobsApplicationHistoryParityTest`).
 
-**Routes / API contract:** member routes are `/v2/jobs/*`, admin routes `/v2/admin/jobs/*`, and public feeds `/v2/jobs/feed.*` in `routes/api.php` (≈ lines 55–60, 606–710, 2121–2134). Refer to that file and the OpenAPI surface rather than copying the endpoint table here. Note `index`, `show`, `employerReviews`, and the feed routes are explicitly public (`withoutMiddleware('auth:sanctum')`); everything else requires auth.
+**Routes / API contract:** the public syndication feeds `/v2/jobs/feed.*` are at `routes/api.php` lines 67–69, member routes `/v2/jobs/*` run from line 993 to 1097, and admin routes `/v2/admin/jobs/*` run 2625–2645. Refer to that file and the OpenAPI surface rather than copying the endpoint table here. **Only the three syndication feeds are anonymous** — and not via `withoutMiddleware`: they are registered outside the `auth:sanctum` group with throttle-only middleware. Every other jobs route, including `index`, `show` and `employerReviews`, requires `auth:sanctum`.
 
 ## Posting a vacancy
 
-`JobVacancyService::createVacancy()` (via `POST /v2/jobs`) builds a `job_vacancies` row. The initial status depends on spam scoring and tenant moderation settings:
+`JobVacancyService::create()` (via `POST /v2/jobs`) builds a `job_vacancies` row. The initial status depends on spam scoring and tenant moderation settings:
 
 1. **Spam scoring** — when `jobs.spam_detection` is on (default), `JobSpamDetectionService::analyzeJob()` returns a `score`, `flags`, and `action` (`allow` / `flag` / `block`). The score and flags are stored on the vacancy.
 2. **Status resolution:**

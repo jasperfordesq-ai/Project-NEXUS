@@ -10,8 +10,10 @@ condition of their permissive (BSD / MIT / Apache / ISC) licences.
   dependency, version, licence, source URL) is in
   [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 - Regenerate and re-audit with: `node scripts/check-licenses.mjs --write`
-  (or `npm run check:licenses`). The audit **fails** if a new strong-copyleft
-  (GPL/AGPL/SSPL) dependency is introduced.
+  (or `npm run licenses:write`). `npm run check:licenses` runs the same audit
+  **without** `--write`, so it verifies licences but does not refresh the
+  inventory. The audit **fails** if a new strong-copyleft (GPL/AGPL/SSPL)
+  dependency is introduced.
 
 ## Production dependency licence summary
 

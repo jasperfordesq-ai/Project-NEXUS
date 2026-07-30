@@ -1,6 +1,6 @@
 # Volunteering Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 How-to / reference guide for the Volunteering module: organisations, opportunities, shifts, hour logging, and the time-credit mint on approval. Verified against the live service layer (`app/Services/Volunteer*`, `app/Services/Shift*`, `app/Services/VolOrgWalletService.php`) and `routes/api.php`.
 
@@ -19,7 +19,7 @@ The module serves two distinct roles — the "two hats" model. A single user can
 
 Platform/tenant admins have a superset of both via the `/v2/admin/volunteering/*` surface (`AdminVolunteerController`, `VolunteerCommunityController`, `VolunteerWellbeingController`, `VolunteerExpenseController`).
 
-The two hats are enforced in code: an organisation starts at `status = 'pending'` after registration (`VolunteerService::createOrganization`) and only appears in the public directory once a tenant admin approves it to `active`/`approved` (`getOrganisations` filters on `whereIn('status', ['approved', 'active'])`). Until then the owner sees a pending-approval state rather than a live org.
+The two hats are enforced in code: an organisation starts at `status = 'pending'` after registration (`VolunteerService::createOrganization`) and only appears in the (member-only) organisation directory once a tenant admin approves it to `active`/`approved` (`getOrganisations` filters on `whereIn('status', ['approved', 'active'])`). Until then the owner sees a pending-approval state rather than a live org.
 
 ## Tenant scoping and feature gate
 
@@ -49,7 +49,7 @@ The two hats are enforced in code: an organisation starts at `status = 'pending'
 
 **Frontend entry points:** React `react-frontend/src/pages` (volunteering pages and org dashboard) and the accessible GOV.UK track under `/{tenantSlug}/accessible/...` (`app/Http/Controllers/GovukAlpha`, `VolunteeringParityTest` and friends).
 
-**Routes / API contract:** member routes are `/v2/volunteering/*` and admin routes `/v2/admin/volunteering/*` in `routes/api.php` (≈ lines 774–816 and 2052–2106). Refer to that file and the OpenAPI surface rather than copying the endpoint table here. Note `opportunities`, `showOpportunity`, `organisations`, and `showOrganisation` are explicitly public (`withoutMiddleware('auth:sanctum')`); everything else requires auth.
+**Routes / API contract:** the main member block `/v2/volunteering/*` is `routes/api.php` lines 1161–1203, with the community / shift / certificate routes at 3340–3406; admin routes `/v2/admin/volunteering/*` are 2543–2601. Refer to that file and the OpenAPI surface rather than copying the endpoint table here. **Every `/v2/volunteering/*` route requires `auth:sanctum` except the two guardian-consent verification routes** — so `opportunities`, `showOpportunity`, `organisations` and `showOrganisation` are all authenticated. The only anonymous exceptions in the module are `GET` and `POST /v2/volunteering/guardian-consents/verify/{token}` (`routes/api.php:3386-3387`), which are the only volunteering routes that chain `->withoutMiddleware('auth:sanctum')`; they authenticate by signed token instead. The `GET` is a read-only token lookup and the grant itself is `POST`-only, so an unauthenticated prefetch (e.g. a mail scanner) can never flip consent state.
 
 ## Hour logging and the credit mint
 
@@ -66,7 +66,7 @@ This is the core invariant of the module. **Approving logged hours always mints 
    - Rows are written to `vol_org_transactions` (audit, `balance_after` may be negative) and the platform `transactions` table (`transaction_type = 'volunteer'`).
    - Payment outcomes are exposed via `VolunteerService::getLastPaymentOutcome()`: `paid` | `no_whole_hours` | `already_paid` | `already_processed` | `null` (declined).
 
-> **Removed from the standard approval (`verifyHours`) path in the June-2026 overhaul:** the old per-org "auto-pay" dependency and the `insufficient_balance` trap that used to block credit when the org wallet was empty. The trap was *not* deleted from the codebase — the legacy `applyVolunteerAutoPayment()` helper still contains it and is still reached on the self-log auto-approve path when `org.auto_pay_enabled` is set. The standard approval flow in `verifyHours()` mints unconditionally.
+> **Removed in the June-2026 overhaul:** the old per-org "auto-pay" dependency and the `insufficient_balance` trap that used to block credit when the org wallet was empty. Both were removed from *both* mint paths. `verifyHours()` mints unconditionally, and so does the legacy private helper `applyVolunteerAutoPayment()` (`app/Services/VolunteerService.php:2850`), which debits the org wallet unconditionally and lets it go negative. That helper is still reached on the self-log auto-approve path, but it is called whenever the new log resolves to `status = 'approved'` — **not** gated on `org.auto_pay_enabled`. Nothing in the codebase reads `auto_pay_enabled` to decide whether to mint; it survives only as a reported flag.
 
 ### Side-effects on `pending → approved`
 
@@ -99,7 +99,7 @@ All three pin tenant context with `TenantContext::setById()` / `restoreAfterScop
 
 ## Certificates
 
-`VolunteerCertificateService::generate()` sums a volunteer's **approved** hours (optionally filtered by org/date), writes a `vol_certificates` row with a 12-char `verification_code`, and emails the volunteer in their locale. `verify($code)` is the public verification path (tenant-scoped when a tenant context is present); `generateHtml()` renders a printable certificate. Optional minimum-hours gate: `volunteering.min_hours_for_certificate`.
+`VolunteerCertificateService::generate()` sums a volunteer's **approved** hours (optionally filtered by org/date), writes a `vol_certificates` row with a 12-char `verification_code`, and emails the volunteer in their locale. `verify($code)` is the verification path (tenant-scoped when a tenant context is present); it is **not** anonymous — both `GET /v2/volunteering/certificates/verify/{code}` (`routes/api.php:3343`) and `/certificates/{code}/html` (`routes/api.php:3344`) explicitly carry `->middleware('auth:sanctum')`, so a third party cannot verify a certificate without a signed-in session. `generateHtml()` renders a printable certificate. Optional minimum-hours gate: `volunteering.min_hours_for_certificate`.
 
 ## Safeguarding
 
@@ -125,7 +125,7 @@ Safeguarding is a cross-cutting concern, not a sub-feature of hour logging. `Saf
 | Approving hours mints nothing (`no_whole_hours`) | Log floored to 0 whole hours (e.g. 0.5h entry). | Expected. Sub-hour logs accumulate value in the org wallet; the volunteer is credited once whole hours are reached. |
 | Hours approved but no second credit on retry | Idempotency gate (`already_processed` / `already_paid`). | Expected and correct — no action. |
 | Org wallet shows a negative balance | The mint debits the org unconditionally on approval. | Expected by design; reconcile via `depositFromUser` or `adminAdjustment`. |
-| New organisation not in the public directory | Status is `pending` awaiting tenant-admin approval. | Approve it (`/v2/admin/volunteering/organizations/{id}/status`). |
+| New organisation not in the organisation directory | Status is `pending` awaiting tenant-admin approval. | Approve it (`/v2/admin/volunteering/organizations/{id}/status`). |
 | Volunteer cannot log hours | Caring Community `allow_member_self_log` is off, or no approved application / org membership. | Grant membership/approve application, or adjust the tenant policy. |
 | Waitlist spot offer never claimed | `notified` offer expired. | `expireStaleNotifications()` (cron) cascades the offer to the next person automatically. |
 | All endpoints return `403 FEATURE_DISABLED` | `volunteering` feature off for the tenant. | Re-enable the feature in tenant settings. |

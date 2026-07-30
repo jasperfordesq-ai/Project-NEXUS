@@ -3,7 +3,7 @@
   "info": {
     "title": "Project NEXUS v2 API",
     "version": "2.0.0",
-    "description": "The complete V2 REST API for Project NEXUS. Use this standard when building federated integrations."
+    "description": "REST API for the Project NEXUS v2 member, admin and super-admin surfaces. This document does NOT cover the partner-facing federation protocols — the Komunitin, Credit Commons and Native V1 route families, the Partner API under /api/partner/v1, and the cross-node aggregates, inbound hour-transfer and external webhook receiver endpoints are all absent from it. Those surfaces are additionally switched off by default and answer 503 until an operator enables them. See docs/FEDERATION_API_MANUAL.md, which is the reference for building a federated integration."
   },
   "servers": [
     {
@@ -25954,6 +25954,9 @@
           },
           "429": {
             "description": "Rate limit exceeded"
+          },
+          "503": {
+            "description": "External federation is disabled. This route sits behind the nexus protocol kill switch, which is off by default and has been off in production since 2026-07-27, so the endpoint answers 503 with a Retry-After header and the error code FEDERATION_EXTERNAL_DISABLED before any credential is examined. This is the response a partner receives today."
           }
         },
         "x-controller-action": "App\\Http\\Controllers\\Api\\EventFederationInboundController@apply"

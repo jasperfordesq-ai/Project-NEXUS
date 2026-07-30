@@ -1,8 +1,8 @@
 # Module Guide Map
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
-This page maps every live product module and cross-cutting client surface to its primary code and maintained documentation. It is a navigation aid, not a replacement for source code.
+This page maps the live product modules and cross-cutting client surfaces to their primary code and maintained documentation. It is a navigation aid, not a replacement for source code. Coverage is not complete: Caring Community is listed below but has no curated guide yet.
 
 > Maintained module guides live under `docs/modules/`. The **source code** (`app/Services/`, `routes/api.php`) and machine-readable API contract remain authoritative. Federation, mobile, and the accessible frontend are cross-cutting surfaces with dedicated reference suites rather than duplicate module guides. The earlier per-module engine-report snapshots (dated 2026-03-29) were removed from the public repo because they had drifted from current behaviour; do not treat archived copies as live reference.
 
@@ -11,6 +11,7 @@ This page maps every live product module and cross-cutting client surface to its
 | Admin | `app/Http/Controllers/Api/Admin*`, admin services | `react-frontend/src/admin` | [modules/admin.md](modules/admin.md) |
 | AI chat | `AiChatController`, `AiChatService`, `app/Services/AI/` | AI chat and admin trace surfaces | [modules/ai-chat.md](modules/ai-chat.md) |
 | Blog and resources | blog/resource controllers and services | blog, knowledge, and resource-library pages | [modules/blog-and-resources.md](modules/blog-and-resources.md) |
+| Caring Community | `CaringCommunityApiController`, `AdminCaringCommunityController`, `CaringSubRegionController`, `app/Services/CaringCommunity/` (40 classes) plus 9 top-level `Caring*` services — 49 in total, 227 routes in `routes/api.php`, 3 commands in the `caring:` namespace (`caring:nudges-dispatch`, `caring:hour-transfers-retry`, `caring:civic-digest-dispatch` — the last defined in `CivicDigestDispatch.php`; all scheduled at `bootstrap/app.php:353-378`) plus 2 `tenant:` maintenance commands (`tenant:apply-caring-community-preset`, `tenant:audit-agoris-caring-content`) | `react-frontend/src/caring/CaringApp` mounted at `caring/*`, 50 files directly under `react-frontend/src/pages/caring-community/` (53 including `__tests__/`), `react-frontend/src/admin/modules/caring-community/` | **No guide yet** — `routes/api.php` and the services are authoritative |
 | Connections and reviews | connection/review controllers and services | network, connection, review, and endorsement pages | [modules/connections-and-reviews.md](modules/connections-and-reviews.md) |
 | Courses | course controllers and `app/Services/Course*` | catalogue, learning, instructor, and admin course pages | [modules/courses.md](modules/courses.md) |
 | Events | `EventsController`, event services, recurring-event logic | event pages and accessible event routes | [modules/events.md](modules/events.md) |

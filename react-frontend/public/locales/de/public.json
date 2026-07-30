@@ -2,13 +2,14 @@
   "features_page": {
     "chips": {
       "beta": "Beta",
-      "preview": "Vorschau"
+      "preview": "Vorschau",
+      "dormant": "Gebaut, nicht aktiviert"
     },
     "title": "Funktionen",
     "meta_title": "Funktionen - Project NEXUS v1.5",
     "meta_description": "Alle Module von Project NEXUS v1.5 mit ehrlichen Reifegrad-Kennzeichnungen für Föderation, Zeitbanking, Marktplatz, Community-Tools, Sicherheit, Analytik und Open-Source-Infrastruktur.",
     "heading": "Was Project NEXUS leistet",
-    "subheading": "Project NEXUS ist eine unternehmenstaugliche, mandantenfähige Community-Plattform. Alle unten aufgeführten Module sind in v1.5 verfügbar. Wir kennzeichnen den Reifegrad ehrlich: nicht markierte Einträge sind allgemein verfügbar, neuere oder noch in der Härtung befindliche Oberflächen tragen ein Beta- oder Vorschau-Label.",
+    "subheading": "Project NEXUS ist eine mandantenfähige Community-Plattform der Unternehmensklasse. Jedes der folgenden Module wird heute in Version 1.5 ausgeliefert. Wir kennzeichnen Module ehrlich: Nicht gekennzeichnete Artikel sind allgemein verfügbar; neuere oder aktiv härtende Oberflächen tragen einen Beta- oder Preview-Chip; und ein eingebauter, nicht aktivierter Chip bedeutet, dass die Arbeit beendet und ausgeschaltet ist und auf Nachfrage gewartet wird.",
     "maturity_key_title": "So kennzeichnen wir den Reifegrad",
     "maturity_ga": "Allgemein verfügbar - stabil, unterstützt, produktiv in Pilot-Mandanten im Einsatz.",
     "maturity_beta": "Heute im Produktivbetrieb, aber die öffentliche Schnittstelle oder das Wire-Protokoll wird noch gehärtet.",
@@ -32,7 +33,7 @@
       "database_label": "Datenbank",
       "database_value": "MariaDB 10.11",
       "frontend_label": "Frontend",
-      "frontend_value": "React 18 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
       "infrastructure_label": "Infrastruktur",
       "infrastructure_value": "Docker, Redis, vollständige PWA",
       "mobile_label": "Mobil",
@@ -79,32 +80,33 @@
       },
       "federation": {
         "title": "Föderation",
-        "intro": "Eine Föderationsschicht mit vier Protokollen für gemeinschaftsübergreifenden Austausch - Nexus (nativ), Komunitin (15 Endpunkte), Credit Commons Protocol (11 Endpunkte, CEN-kompatibel) und TimeOverflow.",
+        "intro": "„Föderation“ bedeutet hier zwei verschiedene Dinge, und sie befinden sich in unterschiedlichen Stadien. Die Verbindung von Gemeinschaften, die auf einer Installation leben, ist Alltag. Die Verbindung zu anderen Installationen und anderen Plattformen ist erstellt und getestet, aber standardmäßig deaktiviert und wird derzeit nicht verwendet.",
         "items": {
           "federation_network": {
-            "title": "Föderationsnetzwerk",
-            "description": "Verbinden Sie mehrere NEXUS-Communities zu einem Netzwerk für gemeinschaftsübergreifende Entdeckung, Inserate, Veranstaltungen und Nachrichten."
+            "title": "Community-Netzwerk (gleiche Installation)",
+            "description": "Verknüpfen Sie mehrere Communitys, die auf einer Installation gehostet werden, um Community-übergreifende Entdeckungen, Einträge, Ereignisse und Nachrichten zu ermöglichen."
           },
           "external_partner_federation": {
             "title": "Externe Partner-Föderation",
-            "description": "Im Live-Betrieb mit externen Zeitbanking-Plattformen - Partnerschaften bestehen, Nachrichten fließen, Kreditaustausch wird aktiv getestet.",
-            "note": "Echte Partnerschaften existieren und tauschen täglich Daten aus. Die Wire-Protokolle werden noch gegen Sonderfälle gehärtet - externe Kreditübertragungen sollten als überwacht, nicht automatisiert behandelt werden."
+            "description": "Stellen Sie über vier dokumentierte Protokolle eine Verbindung zu anderen NEXUS-Installationen und anderen Timebanking-Plattformen her: Nexus native, Komunitin, Credit Commons (CEN-kompatibel) und TimeOverflow.",
+            "note": "Vollständig und getestet und standardmäßig ausgeschaltet – jeder externe Endpunkt antwortet mit einer vorübergehend nicht verfügbaren Antwort, bis ein Operator sie aktiviert. Heute ist kein externer Partner angeschlossen. Andere Plattformbetreiber haben Interesse bekundet, sodass die Grundlagen vorhanden und geprüft sind. Wir entwickeln sie jedoch erst dann weiter, wenn eine konkrete Integration auf dem Tisch liegt. Wenn Sie mit uns zusammenarbeiten möchten, nehmen Sie Kontakt mit uns auf."
           },
           "multi_protocol_adapters": {
             "title": "Multi-Protokoll-Adapter",
-            "description": "Bidirektionale Synchronisation für 9 Entitätstypen: Mitglieder, Inserate, Veranstaltungen, Gruppen, Verbindungen, Freiwilligenarbeit, Bewertungen, Übertragungen, Nachrichten."
+            "description": "Adapter für die bidirektionale Synchronisierung von 9 Entitätstypen – Mitglieder, Einträge, Ereignisse, Gruppen, Verbindungen, Freiwilligenarbeit, Bewertungen, Übertragungen, Nachrichten – über alle vier Protokolle hinweg.",
+            "note": "Zusammen mit der External Partner Federation entwickelt und getestet und aus dem gleichen Grund ruhend: Nichts ist eingeschaltet, also wird nichts synchronisiert."
           },
           "federation_neighborhoods": {
             "title": "Föderations-Nachbarschaften",
-            "description": "Geografisch gruppierte Cluster föderierter Communities für die regionale Koordination."
+            "description": "Geografisch gruppierte Cluster verbundener Gemeinden zur regionalen Koordination."
           },
           "credit_agreements": {
             "title": "Kreditvereinbarungen",
-            "description": "Verhandelte Wechselkursbedingungen zwischen föderierten Communities."
+            "description": "Ausgehandelte Wechselkursbedingungen zwischen verbundenen Gemeinschaften."
           },
           "federation_analytics": {
             "title": "Föderations-Analytik",
-            "description": "Live-Admin-Dashboards für Partneraktivität, Sync-Status und föderierte Transaktionsvolumina."
+            "description": "Admin-Dashboards für Community-übergreifende Aktivitäten, Synchronisierungszustand und föderiertes Transaktionsvolumen."
           }
         }
       },
@@ -395,7 +397,7 @@
           },
           "email_webhook_processing": {
             "title": "E-Mail-Webhook-Verarbeitung",
-            "description": "Verarbeitung von SendGrid-Bounces, -Beschwerden und -Zustellereignissen."
+            "description": "Bearbeitung von Poststempel-Rücksendungen, Beschwerden, Öffnungen und Zustellungsereignissen."
           },
           "500plus_phpunit_tests": {
             "title": "500+ PHPUnit-Tests",
@@ -411,7 +413,8 @@
           }
         }
       }
-    }
+    },
+    "maturity_dormant": "Gebaut, getestet und standardmäßig ausgeschaltet. Die Arbeit ist abgeschlossen und geprüft, aber noch wird sie von nichts genutzt – wir werden sie weiterentwickeln, wenn echte Nachfrage besteht."
   },
   "changelog_page": {
     "title": "Änderungsprotokoll",

@@ -2186,7 +2186,7 @@
     },
     "about": {
       "title": "O tej stronie",
-      "body": "Skorzystaj z tej strony, konfigurując integrację z usługą strony trzeciej, gminnym systemem danych lub stowarzyszoną siecią NEXUS. Każdy wymieniony tutaj punkt końcowy jest aktywny i ma zakres tego wdrożenia. Przykładowe ładunki mają charakter ilustracyjny — rzeczywiste wartości zależą od informacji o dzierżawie i poświadczeń partnera. Udostępnij ten adres URL partnerom zajmującym się integracją, zamiast wskazywać im nieprzetworzone dokumenty API.",
+      "body": "Skorzystaj z tej strony, konfigurując integrację z usługą strony trzeciej, gminnym systemem danych lub stowarzyszoną siecią NEXUS. Każdy wymieniony tutaj punkt końcowy jest objęty zakresem tego wdrożenia, ale większość nie jest włączona: interfejs API partnera i statek federacji zewnętrznej są wyłączone i odpowiadają tymczasowo niedostępną odpowiedzią, dopóki operator ich nie włączy, a interfejs API partnerów jest również ustawieniem dla społeczności, które zaczyna się. Zanim udostępnisz to partnerowi, skontaktuj się z administratorem platformy. Przykładowe ładunki mają charakter poglądowy — rzeczywiste wartości zależą od ślimaka społecznościowego i danych uwierzytelniających partnera.",
       "last_refreshed": "Ostatnio odświeżony{{date}}."
     },
     "sections": {

@@ -117,7 +117,11 @@ import { Button, Card, Input } from "@heroui/react";
 
 | File | Purpose |
 |------|---------|
-| `src/App.tsx` | Routes, providers, feature/module gates |
+| `src/App.tsx` | Providers plus one catch-all route delegating to `TenantShell` |
+| `src/routes/AppRoutes.tsx` | Member-facing page routes and all `FeatureGate` gating |
+| `src/routes/PublicAppRoutes.tsx` | Pre-auth public routes |
+| `src/routes/AuthRoutes.tsx` | Login / register / recovery routes |
+| `src/admin/routes.tsx` | Admin routes |
 | `src/lib/api.ts` | API client with token refresh & interceptors |
 | `src/types/api.ts` | TypeScript interfaces for API responses |
 
@@ -145,7 +149,6 @@ import { Button, Card, Input } from "@heroui/react";
 | `useNotifications` | via NotificationsContext | Notification list, unread count, mark-read |
 | `useApiErrorHandler` | `src/hooks/useApiErrorHandler.ts` | App-level API error → toast listener |
 | `useAppUpdate` | `src/hooks/useAppUpdate.ts` | Capacitor native app version check |
-| `useGeolocation` | `src/hooks/useGeolocation.ts` | Browser geolocation with localStorage cache |
 | `useLegalGate` | `src/hooks/useLegalGate.ts` | Legal doc acceptance check & `acceptAll()` |
 | `usePushNotifications` | `src/hooks/usePushNotifications.ts` | FCM push registration (Capacitor only) |
 
@@ -165,11 +168,11 @@ import { Button, Card, Input } from "@heroui/react";
 
 ## Maps & Location Providers
 
-Three independent per-tenant settings, all configurable in `/admin/tenant-features → "Maps & location"`:
+Three independent per-tenant settings, all configurable in `/admin/module-configuration → "Maps & location"`:
 
 | Setting | Values | Default | Effect |
 | --- | --- | --- | --- |
-| `maps` (feature flag) | on / off | on | Off ⇒ no map components render anywhere; no Google API key reaches the browser. |
+| `maps` (feature flag) | on / off | **off** (opt-in per tenant — `TenantFeatureConfig::FEATURE_DEFAULTS` and the TS default map both set `false`) | Off ⇒ no map components render anywhere; no Google API key reaches the browser. |
 | `map_provider` (general setting) | `google` / `openstreetmap` / `ordnance_survey` | `google` | Renderer for interactive maps. `ordnance_survey` reuses the Leaflet view with OS Maps API tiles (Crown copyright attribution); degrades to free OSM tiles when no OS key resolves. |
 | `geocoding_provider` (general setting) | `google` / `nominatim` / `os_places` | `google` | Address autocomplete. **Always on regardless of `maps` flag.** `os_places` gives UPRN-backed UK address validation via the server-side proxy `/v2/geo/os-places/search` (OS Data Hub key never reaches the browser). |
 
@@ -199,16 +202,16 @@ const { hasFeature, hasModule } = useTenant();
 if (hasFeature('gamification')) { /* show gamification UI */ }
 if (hasModule('wallet')) { /* show wallet nav item */ }
 
-// In App.tsx route definitions
+// In src/routes/AppRoutes.tsx route definitions
 <FeatureGate feature="events"><EventsPage /></FeatureGate>
 <FeatureGate module="wallet"><WalletPage /></FeatureGate>
 ```
 
-Admin UI: `/admin/tenant-features` (React admin) — toggle switches for all features & modules per tenant.
+Admin UI: `/admin/module-configuration` (React admin, `src/admin/modules/config/ModuleConfiguration.tsx`) — toggle switches for all features & modules per tenant. `/admin/tenant-features` is retired and only redirects there.
 
 ## Pages
 
-All pages use `usePageTitle()` and are feature/module gated in `App.tsx`:
+All pages use `usePageTitle()`. Member-facing rows are defined and feature/module gated in `src/routes/AppRoutes.tsx`; the public rows (Home, About, Contact, Help Center, Blog, Newsletter Unsub) live in `src/routes/PublicAppRoutes.tsx`:
 
 | Page | Route | Gate |
 |------|-------|------|
@@ -220,14 +223,14 @@ All pages use `usePageTitle()` and are feature/module gated in `App.tsx`:
 | Feed | `/feed` | Module: `feed` |
 | Events | `/events`, `/events/:id` | Feature: `events` |
 | Groups | `/groups`, `/groups/:id` | Feature: `groups` |
-| Members | `/members` | — (protected) |
-| Profile | `/profile/:id` | — (public) |
+| Members | `/members` | Feature: `connections` |
+| Profile | `/profile`, `/profile/:id` | Module: `profile` (protected) |
 | Exchanges | `/exchanges`, `/exchanges/:id` | Feature: `exchange_workflow` |
-| Notifications | `/notifications` | — (protected) |
-| Settings | `/settings` | — (protected) |
+| Notifications | `/notifications` | Module: `notifications` |
+| Settings | `/settings` | Module: `settings` |
 | Search | `/search` | Feature: `search` |
 | AI Chat | `/chat` | Feature: `ai_chat` |
-| Polls | `/polls`, `/polls/:id` | Feature: `polls` |
+| Polls | `/polls` | Feature: `polls` |
 | Job Vacancies | `/jobs`, `/jobs/:id`, `/jobs/create` | Feature: `job_vacancies` |
 | Ideation | `/ideation`, `/ideation/:id` | Feature: `ideation_challenges` |
 | Skills | `/skills` | — (protected) |
@@ -238,10 +241,10 @@ All pages use `usePageTitle()` and are feature/module gated in `App.tsx`:
 | Volunteering | `/volunteering` | Feature: `volunteering` |
 | Blog | `/blog`, `/blog/:slug` | Feature: `blog` |
 | Resources | `/resources` | Feature: `resources` |
-| Organisations | `/organisations`, `/organisations/:id` | Feature: `organisations` |
+| Organisations | `/organisations`, `/organisations/:id` | Feature: `volunteering` |
 | Federation | `/federation/*` | Feature: `federation` |
 | Group Exchanges | `/group-exchanges`, `/group-exchanges/:id`, `/group-exchanges/create` | Feature: `group_exchanges` |
-| Matches | `/matches` | — (redirect → listings) |
+| Matches | `/matches`, `/matches/preferences` | Module: `listings` (redirect → `/dashboard`) |
 | Newsletter Unsub | `/newsletter/unsubscribe` | — (public) |
 | Onboarding | `/onboarding` | — (protected) |
 | Help Center | `/help` | — (public) |
@@ -263,8 +266,8 @@ Per-tenant custom legal documents (Terms, Privacy, Cookies) managed via admin, r
 | `src/index.css` | `.legal-content` styles |
 
 **Key details:**
-- API response unwrapping uses `'data' in data ? data.data : data` (NOT `data.data ?? data`)
-- `useLegalDocument` validates response shape before setting state
+- Response unwrapping is done by the shared client, not by these files: `src/lib/api.ts` uses `'data' in data ? data.data : data` (NOT `data.data ?? data`). Do not re-unwrap `res.data` in the legal hook or pages.
+- `useLegalDocument` validates response shape before setting state — it requires `res.success` plus `'id' in res.data && 'content' in res.data`, and silently falls through to default content otherwise
 - `CustomLegalDocument` detects documents with their own section numbering
 
 ## Zod Runtime Validation (Dev Only)
@@ -281,28 +284,43 @@ API responses validated against Zod schemas in development mode:
 
 ## PWA Update Architecture
 
-**TL;DR:** deploys propagate to users on their next navigation, with no UI prompt. The "Update available" banner exists but is defence-in-depth, not the primary mechanism.
+**TL;DR:** deploys propagate to users on their next navigation, with no UI prompt. There is no "Update available" banner any more — `UpdateAvailableBanner.tsx` and `useVersionCheck` were removed (see layer 3); the stale-build gate in `api.ts` is the only backstop.
 
 Three layers, in priority order:
 
-### 1. NetworkFirst HTML shell (primary, 99% of cases)
+### 1. Network-first/network-only navigation (primary)
 
-In [vite.config.ts](vite.config.ts) the workbox config does **not** precache `index.html`. Only content-hashed JS/CSS/icons are in `globPatterns`. `navigateFallback: null` disables vite-plugin-pwa's default precache-first NavigationRoute (which would otherwise shadow everything below). A `runtimeCaching` rule with a function `urlPattern` catches all navigation requests and serves them `NetworkFirst` with a 3s timeout. Online → fresh shell on every navigation. Offline → cached fallback.
+In [vite.config.ts](vite.config.ts) `globPatterns` precaches `index.html`, the content-hashed startup graph (`assets/app-*.js`, `assets/index-*.css`, `assets/vendor-react-*.js`, `assets/vendor-i18n-*.js`), `sw-push-handler.js`, and install metadata (`manifest.json`, `favicon.svg`, `og-default.svg`, `icons/*.png`). The precached index is deliberate: it is the clean-install offline fallback and is consulted only when both the network and the runtime HTML cache miss. `navigateFallback: null` disables vite-plugin-pwa's default precache-first NavigationRoute (which would otherwise shadow everything below) — that, not excluding HTML from the precache, is what keeps navigations fresh.
+
+Navigations are handled by **two** `runtimeCaching` rules, in order:
+
+1. **NetworkOnly** for any same-origin navigation that does *not* match the identity-free public-path allowlist — protected, auth/token, CMS, tenant-prefixed, and unknown navigations. These are never cached, so identity-bearing HTML cannot be replayed after logout. There is no offline fallback for them.
+2. **NetworkFirst** for the public allowlist only (`/`, `features`, `changelog`, `about`, `faq`, `contact`, `help`, `terms`, `privacy`, `blog/:slug`, `developers/*`, `pricing`, and the rest of the regex in `vite.config.ts`).
 
 ```ts
-runtimeCaching: [{
+// Rule 2 — identity-free public HTML shell only.
+{
   urlPattern: ({ request, url }) => {
     if (request.mode !== 'navigate') return false;
+    if (url.origin !== self.location.origin) return false;
     const p = url.pathname;
     if (p.startsWith('/api/')) return false;       // bypass to network
-    if (p.startsWith('/admin-legacy/')) return false;
     if (p === '/health.php') return false;
     if (p === '/api/sw-reset') return false;       // recovery URL
-    return true;
+    // …then an inline allowlist regex literal over the normalised path.
+    // There is no named constant for it — abridged with `…` below; the full
+    // literal is in vite.config.ts.
+    return /^(?:|features|changelog|about|faq|contact|help|terms|privacy|blog(?:\/[^/]+)?|…)$/
+      .test(p.toLowerCase().split('/').filter(Boolean).join('/'));
   },
   handler: 'NetworkFirst',
-  options: { cacheName: 'nexus-html-shell', networkTimeoutSeconds: 3, ... },
-}]
+  options: {
+    cacheName: 'nexus-public-html-shell-v3',
+    networkTimeoutSeconds: 3,
+    cacheableResponse: { statuses: [200], headers: { 'X-Nexus-Spa-Shell': '1' } },
+    precacheFallback: { fallbackURL: 'index.html' },
+  },
+}
 ```
 
 ### 2. API stale-client gate (secondary safety net)
@@ -312,14 +330,14 @@ Every API response carries `X-Build: <commit-sha>` set by `app/Http/Middleware/S
 In [src/lib/api.ts](src/lib/api.ts), `checkStaleBuild()` runs on every response from `request()`, `download()`, and `upload()`:
 
 - **Match** → clear the mismatch tracker.
-- **First mismatch** → record timestamp in `localStorage` (`nexus_build_mismatch_since`) and dispatch the `nexus:sw_update_available` event. (The old `UpdateAvailableBanner` UI that listened for this has been removed — the event is currently fire-and-forget; NetworkFirst navigation is the recovery path.)
+- **First mismatch** → record the timestamp in `localStorage` (`nexus_build_mismatch_since`) and add a `'Stale client detected'` Sentry breadcrumb, then return. Nothing else happens: no DOM event is dispatched and no UI is shown (the code comment reads "Silently start the grace timer"). The old `UpdateAvailableBanner` that used to surface this has been removed — network-first/network-only navigation is the recovery path.
 - **Mismatch persists ≥ 10 minutes** → `window.location.replace('/api/sw-reset')`. Forces nuclear recovery via the nginx route that returns `Clear-Site-Data` plus an inline SW unregister + cache wipe script.
 
-The 10-minute grace gives NetworkFirst navigation (any page navigation fetches a fresh shell) a chance to recover the user organically. Only when that has clearly failed do we eject them.
+The 10-minute grace gives network-first/network-only navigation (any page navigation fetches a fresh shell — network-only for authenticated pages, network-first for the public allowlist) a chance to recover the user organically. Only when that has clearly failed do we eject them.
 
 ### 3. ~~Soft update banner~~ (removed)
 
-`UpdateAvailableBanner.tsx` and `useVersionCheck` have been removed — layers 1 and 2 proved sufficient and users should never need a manual "update" button. If a visible banner is ever reintroduced, it must listen for `nexus:sw_update_available` and do the Android-Chrome dance (disconnect Pusher → postMessage SKIP_WAITING → `controllerchange`-fallback with cache-busted reload).
+`UpdateAvailableBanner.tsx` and `useVersionCheck` have been removed — layers 1 and 2 proved sufficient and users should never need a manual "update" button. Nothing in the codebase emits a stale-build event today, so a reintroduced banner would have to add its own notification channel (e.g. dispatch a new event from `checkStaleBuild()` and listen for it) and do the Android-Chrome dance (disconnect Pusher → postMessage SKIP_WAITING → `controllerchange`-fallback with cache-busted reload).
 
 ### Sentry visibility
 
@@ -327,10 +345,10 @@ The 10-minute grace gives NetworkFirst navigation (any page navigation fetches a
 
 ### Things to never reintroduce
 
-- HTML in `globPatterns` — every PWA tutorial copies `'**/*.{js,css,html,ico,png,svg,woff2}'` from the vite-plugin-pwa README; that single `'html'` is the original sin that caused six months of staleness incidents.
-- `navigateFallback: 'index.html'` — vite-plugin-pwa's default. Silently registers a precache-first NavigationRoute *before* any runtimeCaching rules. Always set to `null` when using NetworkFirst navigation.
+- Blanket globs like `'**/*.{js,css,html,ico,png,svg,woff2}'` copied from the vite-plugin-pwa README — precaching *every* HTML file and every heavyweight chunk is the original sin that caused six months of staleness incidents. The explicit `globPatterns` / `globIgnores` lists are the fix. Note `index.html` itself IS precached on purpose (clean-install offline fallback, and `precacheFallback` for the public shell rule depends on it) — do not remove it.
+- `navigateFallback: 'index.html'` — vite-plugin-pwa's default. Silently registers a precache-first NavigationRoute *before* any runtimeCaching rules. Always set to `null` when using network-first/network-only navigation.
 - `/clear-site-data` nginx route — older SWs intercepted it and served the precached SPA shell. Useless for actually-stuck users. Use `/api/sw-reset` only (the universal `/^\/api\//` denylist guarantees every SW we've ever shipped passes it through).
-- `sw-rescue.js`-style force-eviction shims — not needed when deploys propagate via NetworkFirst.
+- `sw-rescue.js`-style force-eviction shims — not needed when deploys propagate via network-first/network-only navigation.
 - Manual "Update to latest version" buttons — users should never need one.
 
 ## Prerender Pipeline (bot-only, detached, three-layer freshness)
@@ -341,11 +359,11 @@ Prerendered HTML is **served only to SEO crawlers**, never to real users. This k
 
 The engine has three independent freshness mechanisms working together — defence in depth so no single failure leaves stale pages live:
 
-1. **Observer hook (millisecond layer).** Eloquent model observers (`PostPrerenderObserver`, `ListingPrerenderObserver`, `EventPrerenderObserver`, `JobVacancyPrerenderObserver`, `GroupPrerenderObserver`, `MarketplaceListingPrerenderObserver`, `MarketplaceCategoryPrerenderObserver`, `VolOpportunityPrerenderObserver`, `IdeationChallengePrerenderObserver`, `PagePrerenderObserver`, `ResourceItemPrerenderObserver`) delete the affected snapshot and enqueue a NORMAL-priority recache on every `saved`/`deleted` event. Wired in `AppServiceProvider::boot()`. To add a new content type, extend `PrerenderInvalidationObserver` and implement `routesFor()` — the base class handles the rest. Failures are swallowed and logged; the model save never blocks.
+1. **Observer hook (millisecond layer).** Eloquent model observers (`PostPrerenderObserver`, `ListingPrerenderObserver`, `EventPrerenderObserver`, `JobVacancyPrerenderObserver`, `GroupPrerenderObserver`, `MarketplaceListingPrerenderObserver`, `MarketplaceCategoryPrerenderObserver`, `VolOpportunityPrerenderObserver`, `IdeationChallengePrerenderObserver`, `PagePrerenderObserver`, `ResourceItemPrerenderObserver`, `CoursePrerenderObserver`, `CourseSectionPrerenderObserver`, `CourseLessonPrerenderObserver`) delete the affected snapshot and enqueue a NORMAL-priority recache on every `saved`/`deleted` event. Wired in `AppServiceProvider::boot()`. To add a new content type, extend `PrerenderInvalidationObserver` and implement `routesFor()` — the base class handles the rest. Failures are swallowed and logged; the model save never blocks.
 
 2. **Sitemap drift detector (minute layer).** `prerender:detect-drift` cron (every 2 min) walks each tenant's sitemap, parses `<lastmod>` values, and compares against snapshot mtimes. Anything stale gets a HIGH-priority recache. This is the safety net for code paths that bypass Eloquent (raw DB writes, queue jobs, migrations, admin tools that use the query builder). Cap: `--max-tenants` × `--max-routes` per pass so a single tick stays bounded.
 
-3. **TTL auto-recache (hour/day floor).** `prerender:auto-recache` cron (every 15–30 min) reads `config/prerender.php`'s per-pattern TTLs (homepage 6h, content indexes 6–24h, individual items 1–7d, static pages 30d) and enqueues LOW-priority recaches for snapshots past their TTL. Backstop for the cases where both observer and drift detector miss (e.g. content that doesn't appear in the sitemap).
+3. **TTL auto-recache (hour/day floor).** `prerender:auto-recache` cron (every 20 min — `->cron('*/20 * * * *')` in `bootstrap/app.php`) reads `config/prerender.php`'s per-pattern TTLs (homepage `/` 6h; the `/blog` index 12h — the only index pattern; item patterns `/blog/**` and `/page/*` 7d; legal/static pages 30d, except `/changelog` at 7d; `default` 7d) and enqueues LOW-priority recaches for snapshots past their TTL. Backstop for the cases where both observer and drift detector miss (e.g. content that doesn't appear in the sitemap).
 
 External-system hook: `POST /api/v2/admin/prerender/invalidate` with HMAC or Bearer auth lets headless CMS / marketing automation tools invalidate routes without going through the model layer.
 
@@ -365,7 +383,7 @@ The React app emits `<meta name="prerender-status-code" content="404|410|503">` 
 1. Writes a `_status` sidecar next to `index.html` containing the integer status.
 2. Adds an entry to `.prerender-status-overrides.json`.
 
-The bash orchestrator aggregates the JSON into `/etc/nginx/prerender-status-overrides.list`. nginx includes this file inside a `map` block, and the server block uses `error_page` + conditional `return` to serve the snapshot body with the correct HTTP status. The list is validated by `nginx -t` before reload; the prior version is restored on validation failure.
+The bash orchestrator (`write_nginx_status_overrides` in `scripts/prerender-tenants.sh`) rebuilds the aggregate from every live `_status` sidecar into `.status-overrides.list` inside the shared prerender volume — `/usr/share/nginx/html/prerendered/.status-overrides.list`, overridable via `PRERENDER_STATUS_OVERRIDE_LIST`. nginx `include`s that file inside a `map` block ([nginx.bluegreen.conf](nginx.bluegreen.conf)), so it must contain only `"key" "value";` data lines; the server block then uses `error_page` + conditional `return` to serve the snapshot body with the correct HTTP status. The list is validated by `nginx -t` before reload; the prior version is restored from the `.bak` copy on validation failure.
 
 ### AI-friendly Markdown variant (Round 5)
 
@@ -379,12 +397,13 @@ After rendering the HTML snapshot, the worker also extracts a clean Markdown bod
 
 nginx writes a JSONL bot-only access log to the shared prerender volume (`.bot-access.jsonl`). The admin Analytics tab reads it via `crawlerAnalytics()`, surfacing hits by status / crawler / host, top URIs, IP-verification rate, and the spoofed-vs-verified breakdown for major crawlers. IP verification uses `/etc/nginx/prerender-trusted-bot-ips.list` (refreshed weekly by `scripts/refresh-bot-ip-ranges.sh` pulling Google / Bing / DuckDuckGo / Apple feeds).
 
-### Admin UI (`/admin/prerender`)
+### Admin UI (`/admin/seo/prerender`)
 
 **Access:** platform super-admin only. Sidebar hides the entry for tenant super-admins because the engine operates cross-tenant. Backend uses `requirePlatformSuperAdmin` on every mutating endpoint.
 
-Eight tabs:
+Nine tabs:
 - **Overview** — health banner (auto-hides when green), KPIs, Freshness automation, **TTL inspector** (which `config/prerender.php` pattern owns a route + the TTL), **Sitemap explorer** (static + dynamic routes per tenant), wildcard purge, force-refresh
+- **Tenant safety** — per-tenant inspector to run before refreshing or deleting anything: compares the tenant's route plan against the saved cache and explains why each snapshot exists
 - **Inventory** — every snapshot with HTTP status, SEO score, age, content/asset flags, integrity (sha256 sidecar check); bulk-select + bulk-recache; filter by host/route/staleness/status/issue
 - **Coverage** — per-tenant expected-vs-rendered matrix with "Refresh all stale" bulk action
 - **Jobs** — priority swimlanes (HIGH/NORMAL/LOW chips), retry-failed button, realtime updates via Pusher
@@ -399,7 +418,7 @@ Eight tabs:
 
 **Per-tenant concurrency cap.** One in-flight job per tenant (NULL-tenant jobs serialize on the host worker lock). Stops a slow tenant from starving others.
 
-**Stale-job reaper.** `prerender:reap-stale` runs every 5 min from BOTH the in-container Laravel scheduler AND the host cron file (`/etc/cron.d/nexus-prerender-processor`). Belt-and-braces: if the scheduler dies, the host catches it.
+**Stale-job reaper.** `prerender:reap-stale` runs from the host cron file **only** (`/etc/cron.d/nexus-prerender-processor`, written by `scripts/deploy/phases/install-prerender-cron.sh` — `PRERENDER_REAPER_INTERVAL_MINUTES`, default 5, via `scripts/prerender-reap-stale.sh`). It is **not** in the in-container Laravel schedule: `bootstrap/app.php` `withSchedule()` registers only `prerender:detect-drift` and `prerender:auto-recache`. If that cron file goes missing the reaper stops entirely; the only detection is the 300s heartbeat expectation in `PrerenderService` turning the health check yellow then red.
 
 **Scheduler liveness.** Every prerender scheduled task stamps `prerender:sched:<name>:last_ok_at` on success. `health()` checks each is fresh; yellow at 2× expected interval, red at 3×. Catches the silent "supervisord died" failure mode.
 
@@ -420,12 +439,10 @@ Eight tabs:
 
 **Observability artefacts** (committed):
 - `docs-public/observability/prerender-grafana-dashboard.json`
-- `docs-public/observability/prerender-alerts.yml` — 7 Prometheus rules (4 critical, 3 warning)
+- `docs-public/observability/prerender-alerts.yml` — 8 Prometheus rules (4 critical, 4 warning)
 - `docs-public/observability/prerender-runbook.md` — alert-by-alert response steps
 
 **Prometheus metrics worth knowing**: `nexus_prerender_health_status` (0/1/2 enum, alertable), `breaker_tripped`, `queue_oldest_age_seconds`, `failures_recent`, `coverage_ratio`, plus per-tenant `tenant_rendered{slug}` / `tenant_missing{slug}` gauges and per-status `jobs_total{status}` counters.
-
-### Serving rules ([nginx.bluegreen.conf](nginx.bluegreen.conf))
 
 ### Serving rules ([nginx.bluegreen.conf](nginx.bluegreen.conf))
 
@@ -491,7 +508,7 @@ npm install              # Install dependencies
 npm run dev              # Dev server (localhost:5173)
 npm run build            # Production build
 npm test                 # Run Vitest tests
-npm run lint             # TypeScript check (tsc --noEmit)
+npm run lint             # ESLint (src, max 10 warnings) + tsc --noEmit
 ```
 
 ## 🔴 Deployment Warning

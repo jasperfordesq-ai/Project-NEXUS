@@ -1,6 +1,6 @@
 # Marketplace Module Guide
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-30
 
 This guide is a how-to/reference for maintainers of the **Marketplace** module — a standalone goods/commerce surface where members list physical items for sale, negotiate offers, or give items away. Cash-priced orders use Stripe Connect, while supported item and community-delivery flows can use time credits. It is **completely separate from the timebanking Listings module** (`ListingService` / `listings` table): different tables, service layer, and Meilisearch index.
 
@@ -13,7 +13,7 @@ Use this guide when changing marketplace listings, the buyer/seller order lifecy
 Supported workflows:
 
 - **Listing management** — a seller creates, edits, photographs, renews, and removes item listings (separate from timebanking offers/requests). Explicitly zero-price promotions can activate; priced promotion checkout is fail-closed until a real payment authorization flow is implemented.
-- **Browse & discovery** — public browse/search/nearby/featured/free, categories, saved listings, saved searches, and personal collections.
+- **Browse & discovery** — browse/search/nearby/featured/free, categories, saved listings, saved searches, and personal collections. All of these require a signed-in member; see "Tenant & feature-gate rules" below.
 - **Offers / negotiation** — a buyer makes an offer on a listing; the seller accepts, declines, or counters; an accepted offer becomes an order.
 - **Order lifecycle** — direct buy-now or offer-driven order, moving through `pending_payment → paid → shipped → delivered → completed`, with cancel, dispute, and rating branches.
 - **Payments & escrow** — Stripe Connect PaymentIntents or hosted Checkout Sessions, with destination charges for immediate settlement and separate charge/transfer for delayed escrow payout.
@@ -23,15 +23,16 @@ Supported workflows:
 
 ## Tenant & feature-gate rules
 
-- **Feature gate:** `marketplace` (**default OFF** — `App\Services\TenantFeatureConfig::DEFAULTS['marketplace'] => false`). The whole module is dark until a tenant explicitly enables it.
-- **Backend enforcement is per-controller, not middleware.** Every marketplace controller calls `TenantContext::hasFeature('marketplace')` (via a private `ensureFeature()` helper) and returns `FEATURE_DISABLED` (HTTP 403) when the feature is off. This applies to the **public** browse/search endpoints too — `MarketplaceListingController::index()` gates before serving. The accessible (GOV.UK) frontend gates the same way with `abort_unless(TenantContext::hasFeature('marketplace'), 403)`.
-- **React frontend:** routes are wrapped in `<FeatureGate feature="marketplace" …>` in `react-frontend/src/App.tsx` (the main `marketplace` route shows a "coming soon" fallback; sub-routes redirect).
+- **Feature gate:** `marketplace` (**default OFF** — `App\Services\TenantFeatureConfig::FEATURE_DEFAULTS['marketplace'] => false`). That class declares only `FEATURE_DEFAULTS` and `MODULE_DEFAULTS`; there is no `::DEFAULTS` constant on it (`MarketplaceConfigurationService` is the class that has a `DEFAULTS` — an easy confusion). The whole module is dark until a tenant explicitly enables it.
+- **There are no unauthenticated marketplace endpoints.** Every `/v2/marketplace/*` route sits inside an `auth:sanctum` group — the write/management routes in the group opened at `routes/api.php:184`, and the read/browse routes (`listings`, `nearby`, `featured`, `free`, `listings/{id}`, `categories*`, `sellers/*`, `pickup-slots`) in the group opened at `routes/api.php:1558`, whose header comment reads "Courses, podcasts, and marketplace contain member identity and require auth." No marketplace route uses `withoutMiddleware`. The only marketplace route outside an auth group is the Stripe Connect webhook at `routes/api.php:3703`. An unauthenticated browse call therefore gets 401, not a listing page.
+- **Feature enforcement is per-controller, not middleware.** Every marketplace controller calls `TenantContext::hasFeature('marketplace')` (via a private `ensureFeature()` helper) and returns `FEATURE_DISABLED` (HTTP 403) when the feature is off. This applies to the browse/search endpoints too — `MarketplaceListingController::index()` gates before serving. The accessible (GOV.UK) frontend gates the same way with `abort_unless(TenantContext::hasFeature('marketplace'), 403)`.
+- **React frontend:** marketplace routes are wrapped in `<FeatureGate …>` in `react-frontend/src/routes/AppRoutes.tsx`, but not all on the same flag or with the same off-state behaviour. The main `marketplace` route (`AppRoutes.tsx:780-781`) and `marketplace/free` (`:836-837`) both render a "coming soon" fallback (`<ComingSoonPage feature={t('coming_soon.features.marketplace')} />`); the remaining `marketplace/*` routes redirect instead (`redirect="/"` for the browse/detail/public-seller-profile routes plus `marketplace/:id/edit` at `:1383`, `redirect="/dashboard"` for the other sell/order/seller-tooling routes); and the three `marketplace/seller/coupons*` routes (`:1340-1360`) are gated on `feature="merchant_coupons"`, not `marketplace`. `App.tsx` holds no route definitions — it is a provider shell whose only route is the `/*` catch-all rendering `TenantShell`.
 - **Tenant scoping is mandatory.** Every marketplace table carries `tenant_id` and every query is scoped by `App\Core\TenantContext::getId()`. Order, escrow, and pickup operations re-pin tenant via `TenantContext::runForTenant()` / `setById()` so cron and webhook paths (which boot without a tenant) operate under the correct tenant.
 - **Module-level config** lives in `App\Services\MarketplaceConfigurationService` (per-tenant key/value with `DEFAULTS`), independent of the authoritative `marketplace` feature flag. Notable defaults: Stripe `false`, shipping `false`, community delivery `false`, hybrid pricing `false`, promotions `false`, escrow `false`, platform fee `5%`, escrow auto-release `14` days, moderation `true`, free items `true`, business sellers `true`, max active listings `50`, listing duration `30` days, max images `20`. The redundant `marketplace.enabled` setting was removed; use the feature flag as the single module switch. Config reads fail closed rather than silently auto-approving or authorizing value movement.
 
 ## Key code & data locations
 
-Routes are defined in [`routes/api.php`](../../routes/api.php) under the "Marketplace Module — Authenticated routes" and "— Public routes" sections (`/v2/marketplace/*`), the admin section (`/v2/admin/marketplace/*`), and the Stripe webhook (`/v2/marketplace/webhooks/stripe`). Do not copy the endpoint table here — read the route file or the OpenAPI/`docs/API.md` reference for the live list. The module spans ~14 member-facing controllers, one admin controller, and ~18 services.
+Routes are defined in [`routes/api.php`](../../routes/api.php) under the "Marketplace Module — Authenticated routes" section at line 1282 and the "Marketplace Module — authenticated content routes" section at line 1572 (both `/v2/marketplace/*`), the admin section (`/v2/admin/marketplace/*`), and the Stripe webhook (`/v2/marketplace/webhooks/stripe`). Do not copy the endpoint table here — read the route file or the OpenAPI/`docs/API.md` reference for the live list. The module spans ~14 member-facing controllers, one admin controller, and ~18 services.
 
 | Concern | Route prefix | Controller |
 | --- | --- | --- |
@@ -77,7 +78,7 @@ Models / tables (all carry `tenant_id`):
 
 Frontend entry points:
 
-- React: `react-frontend/src/pages/marketplace/` (`MarketplacePage`, `MarketplaceListingPage`, `CreateMarketplaceListingPage`, `BuyerOrdersPage`, `SellerOrdersPage`, `StripeOnboardingPage`, `FreeItemsPage`, `MarketplaceCollectionsPage`, seller sub-pages incl. `SellerPickupSlotsPage`, etc.), routed in `react-frontend/src/App.tsx`.
+- React: `react-frontend/src/pages/marketplace/` (`MarketplacePage`, `MarketplaceListingPage`, `CreateMarketplaceListingPage`, `BuyerOrdersPage`, `SellerOrdersPage`, `StripeOnboardingPage`, `FreeItemsPage`, `MarketplaceCollectionsPage`, seller sub-pages incl. `SellerPickupSlotsPage`, etc.), routed in `react-frontend/src/routes/AppRoutes.tsx`.
 - Accessible (GOV.UK): commerce parity routes under `app/Http/Controllers/GovukAlpha/` (`CommerceParity` concern).
 
 ## Item types & pricing
@@ -99,7 +100,7 @@ Additional pricing fields are `price` (`decimal(10,2)`), `price_currency`, and o
 `marketplace_listings.status` is `draft | active | sold | reserved | expired | removed`; `moderation_status` is `pending | approved | rejected | flagged`.
 
 1. **Create** (`MarketplaceListingService::create`) — status defaults to `active` (or `draft`). Moderation defaults on, so new content is `pending` unless a tenant explicitly disables moderation. `expires_at` is set from the tenant's listing duration (default 30 days). Tenant policies for free/business/hybrid/shipping/community-delivery listings are enforced at the service boundary, and the max-active count plus insert are serialized per seller. Only active, approved content is best-effort synced to the `marketplace_listings` Meilisearch index.
-2. **Browse/search** — only `status = active AND moderation_status = approved` listings are publicly visible (see the [Search guide](search.md)). Search uses Meilisearch with an SQL fallback; price-range and posted-within facets force the SQL path.
+2. **Browse/search** — only `status = active AND moderation_status = approved` listings are visible to browsing members (see the [Search guide](search.md)). Search uses Meilisearch with an SQL fallback; price-range and posted-within facets force the SQL path.
 3. **Update / images / video / renew** — owner-only; re-indexed on save. Activation and renewal refuse suspended sellers and terminal `sold`/`reserved`/`removed` listings. Image reordering must contain every gallery image exactly once, and deleting the primary image promotes the next image atomically.
 4. **Sold / reserved** — tracked inventory is decremented under a row lock. A listing whose inventory is intentionally untracked (`inventory_count = NULL`) remains available for subsequent orders; a finite inventory reaching zero becomes sold.
 5. **Remove** — soft-removes (`status = removed`) and deletes the Meilisearch document.
@@ -140,7 +141,7 @@ Merchant coupons are resolved from seller-owned server records; the client does 
 
 ## Moderation, reports & sellers
 
-- **Listing moderation** is optional (`marketplace.moderation_enabled`). When on, new listings are `pending` and must be approved by an admin (`AdminMarketplaceController::approveListing` / `rejectListing` / `bulkReject`) before they are searchable. With trusted auto-approve (`marketplace.auto_approve_trusted`) and DSA-compliance flags as additional config.
+- **Listing moderation** is optional (`marketplace.moderation_enabled`). When on, new listings are `pending` and must be approved by an admin (`AdminMarketplaceController::approveListing` / `rejectListing` / `bulkReject`) before they are searchable. There is **no** `marketplace.auto_approve_trusted` config key — the marketplace has no trusted-auto-approve setting (the similarly named `jobs.auto_approve_trusted` and `listing.auto_approve_trusted` belong to other modules).
 - **DSA user reports** — any member can report a listing (`POST /v2/marketplace/listings/{id}/report` → `marketplace_reports`, handled by `MarketplaceReportService`). Admins list/acknowledge/resolve reports and view transparency stats (`/v2/admin/marketplace/{reports,transparency}`).
 - **Seller management** — admins verify (`verifySeller`) or suspend (`suspendSeller`, which also pulls the seller's live listings to `removed`/`rejected`). Seller stats (`total_sales`, `total_revenue`) are incremented atomically on order completion.
 
@@ -155,13 +156,13 @@ Merchant coupons are resolved from seller-owned server records; the client does 
 - **External evidence links are HTTP(S) only.** Submission validation rejects executable/opaque schemes, and admin rendering treats legacy unsafe values as text rather than clickable URLs.
 - Email/notification rendering must wrap in `LocaleContext::withLocale($recipient, …)` so order/payout emails render in the recipient's `preferred_language`. Order notifications are de-duplicated per (order, event, user, channel) via `marketplace_order_notification_deliveries`.
 - Notifications run **outside** the financial `DB::transaction` so a notification failure can never roll back a payment, payout, or credit transfer.
-- Public browse, group, collection, map, and AI-search paths expose only active, approved, unexpired listings from active, approved, non-suspended sellers; the feature gate is enforced even on unauthenticated reads.
+- Browse, group, collection, map, and AI-search paths expose only active, approved, unexpired listings from active, approved, non-suspended sellers. These are authenticated reads (`auth:sanctum`), and the feature gate is applied on top of that in the controller.
 
 ## Failure modes & recovery
 
 | Failure | How it is handled |
 | --- | --- |
-| **Feature disabled** | All marketplace endpoints (incl. public browse) return `FEATURE_DISABLED` (403). |
+| **Feature disabled** | All marketplace endpoints (including browse/search) return `FEATURE_DISABLED` (403) to authenticated callers. Unauthenticated callers get 401 from `auth:sanctum` first. |
 | **Two buyers race the same item** | Direct purchase locks the listing row and re-checks `status = active` / inventory inside the transaction; the loser gets "no longer available". |
 | **Buyer-confirm races auto-release cron** | Atomic status-predicated completion / escrow release: exactly one caller wins; the loser is a no-op (stats untouched, no second payout). |
 | **Concurrent escrow hold** | `UNIQUE(order_id)` plus an exists-check; a concurrent `holdFunds()` returns the existing escrow. |
@@ -205,7 +206,7 @@ Important test files:
 | `tests/Laravel/Unit/Services/MarketplaceCommunityDeliveryServiceTest.php` | Time-credit settlement, insufficient-balance rollback. |
 | `tests/Laravel/Unit/Services/MarketplaceListingServiceTest.php` | Create/update/renew, moderation gating, max-active enforcement. |
 | `tests/Laravel/Unit/Services/MarketplaceOfferServiceTest.php` | Offer accept/decline/counter → order. |
-| `tests/Laravel/Feature/Controllers/Marketplace*ControllerTest.php`, `AdminMarketplaceControllerTest.php` | Feature gating (incl. public routes), ownership/role gates, moderation, reports, seller verify/suspend. |
+| `tests/Laravel/Feature/Controllers/Marketplace*ControllerTest.php`, `AdminMarketplaceControllerTest.php` | Feature gating (including the browse/content routes), ownership/role gates, moderation, reports, seller verify/suspend. |
 
 React: `react-frontend/src/pages/marketplace/*.test.tsx` (e.g. `npm test -- BuyerOrdersPage`).
 
