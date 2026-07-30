@@ -65,7 +65,7 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // component by its own path, so the stub never installed. Retargeting the mocks
 // at the real paths cleared 40 of them in one pass. The other two are fixed for
 // that defect but held back by a second, i18n-dependent text assertion.
-const BASELINE = 55;
+const BASELINE = 54;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

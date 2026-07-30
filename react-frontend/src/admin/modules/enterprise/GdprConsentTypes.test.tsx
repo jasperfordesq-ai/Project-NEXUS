@@ -243,10 +243,10 @@ describe('GdprConsentTypes', () => {
       expect(document.querySelector('[role="dialog"]')).toBeTruthy();
     });
 
-    const confirmBtn = screen.getAllByRole('button').find((b) =>
-      b.textContent?.toLowerCase() === 'confirm'
-    );
-    if (confirmBtn) await user.click(confirmBtn);
+    // This page passes confirmLabel={t('enterprise.gdpr_delete')}, so the
+    // button reads "Delete", not "Confirm". Locating it by label found nothing,
+    // and the old `if (confirmBtn)` guard turned that into a silent no-click.
+    await user.click(screen.getByTestId('confirm-modal-confirm'));
 
     await waitFor(() => {
       expect(mockDeleteConsentType).toHaveBeenCalledWith(5);
@@ -269,10 +269,11 @@ describe('GdprConsentTypes', () => {
       b.getAttribute('aria-label')?.toLowerCase().includes('delete')
     );
     if (deleteBtn) await user.click(deleteBtn);
-    await waitFor(() => document.querySelector('[role="dialog"]'));
+    await waitFor(() => {
+      expect(document.querySelector('[role="dialog"]')).toBeTruthy();
+    });
 
-    const confirmBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase() === 'confirm');
-    if (confirmBtn) await user.click(confirmBtn);
+    await user.click(screen.getByTestId('confirm-modal-confirm'));
 
     await waitFor(() => {
       expect(mockToast.success).toHaveBeenCalled();

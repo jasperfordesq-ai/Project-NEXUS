@@ -93,8 +93,24 @@ export function ConfirmModal({
           <p className="text-muted">{message}</p>
           {children}
         </ModalBody>
+        {/*
+          The two action buttons carry stable test ids. Call sites routinely
+          override `confirmLabel` with their own wording (this modal's default
+          is "Confirm", but e.g. the GDPR consent-type page passes "Delete"), so
+          a test that located the confirm button by its text was really asserting
+          one particular translation. When the label stopped being "Confirm" the
+          lookup silently returned undefined and the click never happened —
+          which is how two delete tests sat quarantined as a "dialog race".
+          Target these ids, not the label.
+        */}
         <ModalFooter>
-          <Button autoFocus variant="tertiary" onPress={onClose} isDisabled={isLoading}>
+          <Button
+            autoFocus
+            variant="tertiary"
+            onPress={onClose}
+            isDisabled={isLoading}
+            data-testid="confirm-modal-cancel"
+          >
             {resolvedCancelLabel}
           </Button>
           <Button
@@ -102,6 +118,7 @@ export function ConfirmModal({
             onPress={handleConfirm}
             isLoading={isLoading}
             isDisabled={isLoading || inFlightRef.current}
+            data-testid="confirm-modal-confirm"
           >
             {resolvedConfirmLabel}
           </Button>
