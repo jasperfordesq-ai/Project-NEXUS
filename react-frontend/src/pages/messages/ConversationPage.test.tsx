@@ -193,6 +193,67 @@ const mockConversationResponse = {
   },
 };
 
+type SafeguardingFixture = Record<string, unknown> | null;
+
+const vettingRequiredMeta: SafeguardingFixture = {
+  restricted: true,
+  code: 'VETTING_REQUIRED',
+  required_vetting_types: ['dbs_enhanced'],
+  required_vetting_labels: ['Enhanced DBS'],
+};
+
+/**
+ * Total mock for every GET the page makes, driven by ONE source of truth.
+ *
+ * MessagesController::show() calls getConversation() once and returns it as
+ * meta.conversation on EVERY response — the initial load, the 5s
+ * `direction=newer&cursor=…` poll and the `per_page=1` policy recheck all carry the
+ * same safeguarding meta. A per-URL mock that lets them disagree is not merely
+ * untidy, it is contract-impossible, and it made these tests wall-clock-dependent:
+ * the composer gate is re-derived from whichever request answered last, so once a
+ * render under CI load crossed the 5s poll interval the poll's stale answer
+ * overwrote the state under test and the 1000ms waitFor could not recover. Two 5s
+ * intervals are live here (message polling and the safeguarding recheck), so it
+ * oscillated rather than failed once — which is why --retry=1 never rescued it.
+ *
+ * `afterRecheck` is applied when, and only when, the recheck endpoint is hit, so
+ * each test still proves that Check again / focus / visibilitychange is what moved
+ * the policy. The poll may then fire at any moment and only ever confirms it.
+ */
+function mockConversationApi(options: {
+  initial: SafeguardingFixture;
+  afterRecheck?: SafeguardingFixture;
+}) {
+  let safeguarding = options.initial;
+  const flipsOnRecheck = 'afterRecheck' in options;
+
+  const payload = () => ({
+    ...mockConversationResponse,
+    meta: {
+      ...mockConversationResponse.meta,
+      conversation: { ...mockConversationResponse.meta.conversation, safeguarding },
+    },
+  });
+
+  mockApi.get.mockImplementation((url: string) => {
+    if (url === '/v2/messages/restriction-status') {
+      return Promise.resolve({
+        success: true,
+        data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null },
+      });
+    }
+    // refreshSafeguardingPolicy is the only caller that adds per_page=1.
+    if (url.includes('per_page=1')) {
+      if (flipsOnRecheck) safeguarding = options.afterRecheck!;
+      return Promise.resolve(payload());
+    }
+    // Initial load AND the `direction=newer&cursor=MQ==` poll. Same endpoint,
+    // same conversation meta — that is the whole point.
+    return Promise.resolve(payload());
+  });
+  mockApi.put.mockResolvedValue({ success: true });
+}
+
 describe('ConversationPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -539,37 +600,13 @@ describe('ConversationPage', () => {
   });
 
   it('unlocks an open conversation when Check again returns allow', async () => {
-    const blocked = {
-      ...mockConversationResponse,
-      meta: {
-        ...mockConversationResponse.meta,
-        conversation: {
-          ...mockConversationResponse.meta.conversation,
-          safeguarding: {
-            restricted: true,
-            code: 'VETTING_REQUIRED',
-            required_vetting_types: ['dbs_enhanced'],
-            required_vetting_labels: ['Enhanced DBS'],
-          },
-        },
-      },
-    };
-    mockApi.get.mockImplementation((url: string) => {
-      if (url === '/v2/messages/restriction-status') {
-        return Promise.resolve({ success: true, data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null } });
-      }
-      if (url.includes('per_page=1')) {
-        return Promise.resolve(mockConversationResponse);
-      }
-      return Promise.resolve(blocked);
-    });
-    mockApi.put.mockResolvedValue({ success: true });
+    mockConversationApi({ initial: vettingRequiredMeta, afterRecheck: null });
 
     render(<ConversationPage />);
-    await waitFor(() => expect(screen.getByText('safeguarding_check_again')).toBeDefined());
+    await screen.findByText('safeguarding_check_again');
     fireEvent.click(screen.getByText('safeguarding_check_again'));
 
-    await waitFor(() => expect(screen.getByTestId('message-input-area')).toBeDefined());
+    await screen.findByTestId('message-input-area');
     expect(screen.queryByText('safeguarding_vetting_required.title')).toBeNull();
   });
 
@@ -629,68 +666,62 @@ describe('ConversationPage', () => {
     expect(screen.queryByText('safeguarding_vetting_required.title')).toBeNull();
   });
 
-  it('rechecks on window focus and re-locks after revocation', async () => {
-    const revoked = {
-      ...mockConversationResponse,
-      meta: {
-        ...mockConversationResponse.meta,
-        conversation: {
-          ...mockConversationResponse.meta.conversation,
-          safeguarding: {
-            restricted: true,
-            code: 'VETTING_REQUIRED',
-            required_vetting_types: ['dbs_enhanced'],
-            required_vetting_labels: ['Enhanced DBS'],
-          },
-        },
-      },
-    };
+  it('keeps the composer open when a background poll returns no policy information', async () => {
+    vi.useFakeTimers();
+
     mockApi.get.mockImplementation((url: string) => {
       if (url === '/v2/messages/restriction-status') {
         return Promise.resolve({ success: true, data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null } });
       }
-      if (url.includes('per_page=1')) return Promise.resolve(revoked);
+      // api.ts RESOLVES rather than throws on 503 / maintenance mode / expired
+      // session / failed token refresh, and those envelopes carry no meta at all.
+      // An incremental poll must not read that absence as a safeguarding
+      // restriction and lock a member out of their own composer.
+      if (url.includes('direction=newer') && !url.includes('per_page=1')) {
+        return Promise.resolve({ success: false, code: 'SERVICE_UNAVAILABLE' });
+      }
       return Promise.resolve(mockConversationResponse);
     });
     mockApi.put.mockResolvedValue({ success: true });
 
     render(<ConversationPage />);
-    await waitFor(() => expect(screen.getByTestId('message-input-area')).toBeDefined());
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('message-input-area')).toBeDefined();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    // Pin that the poll actually ran — otherwise this passes vacuously.
+    // stringContaining, not the literal URL: loadConversation reverses the
+    // descending payload and takes the last chronological message, so for the
+    // ascending [id:1, id:2] fixture the cursor is btoa('1') === 'MQ=='.
+    expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('direction=newer'));
+    expect(screen.getByTestId('message-input-area')).toBeDefined();
+    expect(screen.queryByTestId('composer-blocked')).toBeNull();
+  });
+
+  it('rechecks on window focus and re-locks after revocation', async () => {
+    mockConversationApi({ initial: null, afterRecheck: vettingRequiredMeta });
+
+    render(<ConversationPage />);
+    await screen.findByTestId('message-input-area');
     window.dispatchEvent(new Event('focus'));
 
-    await waitFor(() => expect(screen.getByTestId('composer-blocked')).toBeDefined());
+    await screen.findByTestId('composer-blocked');
   });
 
   it('rechecks when the document becomes visible', async () => {
-    const blocked = {
-      ...mockConversationResponse,
-      meta: {
-        ...mockConversationResponse.meta,
-        conversation: {
-          ...mockConversationResponse.meta.conversation,
-          safeguarding: {
-            restricted: true,
-            code: 'VETTING_REQUIRED',
-            required_vetting_types: ['dbs_enhanced'],
-            required_vetting_labels: ['Enhanced DBS'],
-          },
-        },
-      },
-    };
-    mockApi.get.mockImplementation((url: string) => {
-      if (url === '/v2/messages/restriction-status') {
-        return Promise.resolve({ success: true, data: { messaging_disabled: false, under_monitoring: false, restriction_reason: null } });
-      }
-      if (url.includes('per_page=1')) return Promise.resolve(mockConversationResponse);
-      return Promise.resolve(blocked);
-    });
-    mockApi.put.mockResolvedValue({ success: true });
+    mockConversationApi({ initial: vettingRequiredMeta, afterRecheck: null });
 
     render(<ConversationPage />);
-    await waitFor(() => expect(screen.getByTestId('composer-blocked')).toBeDefined());
+    await screen.findByTestId('composer-blocked');
     Object.defineProperty(document, 'hidden', { configurable: true, value: false });
     document.dispatchEvent(new Event('visibilitychange'));
 
-    await waitFor(() => expect(screen.getByTestId('message-input-area')).toBeDefined());
+    await screen.findByTestId('message-input-area');
   });
 });

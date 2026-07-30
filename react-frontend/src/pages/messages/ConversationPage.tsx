@@ -705,8 +705,22 @@ export function ConversationPage() {
       // Use the last message ID as cursor to get only newer messages
       const cursor = btoa(String(lastMessageIdRef.current));
       const response = await api.get<Message[]>(`/v2/messages/${targetId}?direction=newer&cursor=${cursor}`);
-      const pollConversationMeta = response.meta?.conversation as ConversationMeta | undefined;
-      applySafeguardingMeta(pollConversationMeta?.safeguarding);
+      // An incremental "newer messages" fetch is not a policy preflight. api.ts
+      // resolves rather than throws on 503 / maintenance / expired session, and
+      // those envelopes carry no meta at all — while evaluateSafeguardingMeta
+      // reads absent policy information as fail-closed 'unavailable'. Applying
+      // them unconditionally therefore replaced the composer with the "policy
+      // could not be evaluated" panel on any transient blip. Only move the gate
+      // when the poll actually carried a conversation payload, matching
+      // refreshSafeguardingPolicy below. Nothing is loosened: show() returns
+      // meta.conversation on every response including this poll, so a real
+      // revocation still arrives here and still locks.
+      const pollConversationMeta = response.success
+        ? (response.meta?.conversation as ConversationMeta | undefined)
+        : undefined;
+      if (pollConversationMeta) {
+        applySafeguardingMeta(pollConversationMeta.safeguarding);
+      }
 
       if (response.success && response.data && response.data.length > 0) {
         const newMessages = response.data;

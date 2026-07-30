@@ -543,6 +543,20 @@ jobs:
         # retry. A genuinely broken test still fails both attempts and still reds
         # this step; only the timing lottery is removed.
         #
+        # 🔴 The ConversationPage half is FIXED as of 2026-07-30 and is no longer a
+        # reason to keep --retry=1. It was never a timing lottery: pollForNewMessages
+        # rewrote the composer's safeguarding gate from every 5s poll response, and
+        # three tests mocked api.get with URL branching that never modelled the poll
+        # URL, so the poll answered with a payload contradicting the state under
+        # test. A second 5s interval (the safeguarding recheck) disagreed on the same
+        # deadline, so the gate OSCILLATED — which is exactly why --retry=1 never
+        # rescued it. Fixed in ConversationPage.tsx (poll only moves the gate when
+        # the response actually carried meta.conversation) plus one total api.get
+        # mock in the suite. Verified deterministic with the poll interval forced to
+        # 50ms, i.e. ~100 polls per test. If ConversationPage reds this step again,
+        # do NOT re-attribute it to load — look for a new un-modelled request.
+        # TeamChatrooms still needs the retry, so --retry=1 stays for now.
+        #
         # 🔴 This step is now fully subsumed by react-tests-full (its files are a
         # subset of the 1,177 that job runs). Retire it once that job has a longer
         # green record — keeping both costs CI time for no extra coverage.
