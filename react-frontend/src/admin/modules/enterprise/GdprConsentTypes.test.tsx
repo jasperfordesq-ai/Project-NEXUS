@@ -38,7 +38,25 @@ const mockAuthUser = vi.hoisted(() => ({
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
-    useAuth: () => ({ user: mockAuthUser.current, isAuthenticated: true }),
+    // The override must return DEFAULTS.useAuth's FULL shape — ContextOverrides
+    // is Partial<typeof DEFAULTS>, so the key is optional but its value type is
+    // not. And that shape types `user` as the literal `null`, so a real user
+    // object needs the cast below. (Widening it in src/test/mock-contexts.ts is
+    // the better fix and would clear this class of error in several other test
+    // files, but the type ratchet is baselined per file × error code, so it
+    // would require regenerating the whole baseline — not worth coupling to
+    // this fix.)
+    useAuth: () => ({
+      user: mockAuthUser.current as unknown as null,
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
   })
 );
 
