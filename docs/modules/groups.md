@@ -49,7 +49,7 @@ Services:
 | `App\Services\GroupAnnouncementService` | Announcement CRUD (admin-only write) |
 | `App\Services\GroupFileService` | File uploads, downloads, folder management |
 | `App\Services\GroupChatroomService` | Chatrooms, messages, pin/unpin |
-| `App\Services\GroupModerationService` | Content flagging and moderator actions |
+| `App\Services\GroupModerationService` | Content flagging and moderator actions — **no callers; not reachable from any route** (see [Moderation](#moderation)) |
 | `App\Services\GroupAuditService` | Audit log writes on every member/content action |
 | `App\Services\GroupWebhookService` | Outbound webhook fires on join, discussion create, post, file upload |
 | `App\Services\GroupWelcomeService` | Sends welcome message when a member is accepted |
@@ -68,8 +68,12 @@ Models and tables:
 | — | `group_chatrooms` | `is_default`, `is_private`, `category` |
 | — | `group_chatroom_messages` | Cascade-deleted on chatroom delete |
 | — | `group_chatroom_pinned_messages` | Admin-pinned messages |
-| — | `group_content_flags` | Moderation reports |
-| — | `group_bans` | Tenant-scoped bans; optional `expires_at` |
+| — | `group_content_flags` | Flag records for `GroupModerationService` (see the moderation caveat below) |
+
+There is no platform-wide group ban table. Bans are per-group and live in the
+`group_members` pivot as `status = 'banned'`. A `group_user_bans` table exists in the
+schema dump but is vestigial: it has no `user_id` column, so it cannot record which user
+is banned, and no code reads or writes it.
 
 Frontend entry points (`react-frontend/src/`):
 
@@ -191,7 +195,25 @@ Events are linked to groups via `events.group_id`. When a group is deleted, `eve
 
 Content types that can be flagged: `group`, `discussion`, `post`.
 
-`GroupModerationService::isUserBanned()` queries a tenant-scoped `group_bans` table (`user_id` + `tenant_id`, with an optional `expires_at` for temporary suspensions). **That table does not exist in the repository** — `group_bans` appears at `app/Services/GroupModerationService.php:108` and nowhere else: no Laravel migration, no legacy SQL migration, and no entry in `database/schema/mysql-schema.sql`. Because the query is wrapped in a `try`/`catch (\Throwable)` that logs a warning and returns `false`, the ban check currently reports "not banned" for everyone. Treat platform-wide group bans as unimplemented rather than as an enforced control.
+🔴 **`GroupModerationService` is not reachable from any route.** It has no callers
+anywhere in `app/`. The live admin group-moderation endpoint,
+`GET /v2/admin/groups/moderation` (`AdminGroupsController::moderation`), reads the
+platform-wide `reports` table (`reports.content_type = 'group'`) and does not use this
+service or `group_content_flags` at all. Treat the table above as the service's own
+storage, not as the moderation queue an admin sees.
+
+Bans are **per-group, not platform-wide**: `group_members.status = 'banned'`, enforced by
+`GroupService` when a user tries to join (`app/Services/GroupService.php:701`, `:760`) and
+when membership is resolved (`:846`), returning code `BANNED`. There is no platform-wide
+group ban.
+
+A `GroupModerationService::isUserBanned()` method used to imply otherwise. It queried a
+`group_bans` table that has never existed in any migration or in the schema dump, inside a
+`catch (\Throwable)` that logged a warning and returned `false` — so it reported "not
+banned" for everyone. It had no callers, so no control was being bypassed, but it would
+have trapped its first caller. **It was removed on 2026-07-30**; the guard against
+reintroducing it without a backing table is
+`GroupModerationServiceTest::test_isUserBanned_is_not_reintroduced_without_a_backing_table`.
 
 ## Security and privacy invariants
 
@@ -233,4 +255,7 @@ Key regression tests to run before any change to the group membership or permiss
 
 - `GroupServiceTest` — join/leave, pending request accept/reject, sole-admin guard, ban check, member role update
 - `GroupPermissionManagerTest` — ROLE_PERMISSIONS matrix, tenant admin bypass, cross-tenant isolation
-- `GroupModerationServiceTest` — flag, approve, hide, delete actions; ban check
+- `GroupModerationServiceTest` — action/content/reason constants, flag insert and failure
+  paths, moderate-when-flag-absent, and two schema-invariant guards: every table the
+  service queries must have a `CREATE TABLE` in the schema dump, and every column its write
+  paths touch must exist on `group_content_flags`

@@ -55,7 +55,6 @@ class GroupModerationService
                 'description'  => $description,
                 'status'       => 'pending',
                 'created_at'   => now(),
-                'updated_at'   => now(),
             ]);
 
             return $id;
@@ -71,8 +70,11 @@ class GroupModerationService
     public static function moderateContent($flagId, $action, $moderatorId, $moderatorNotes = '')
     {
         try {
+            $tenantId = \App\Core\TenantContext::getId();
+
             $flag = DB::table('group_content_flags')
                 ->where('id', $flagId)
+                ->where('tenant_id', $tenantId)
                 ->first();
 
             if (!$flag) {
@@ -81,39 +83,18 @@ class GroupModerationService
 
             DB::table('group_content_flags')
                 ->where('id', $flagId)
+                ->where('tenant_id', $tenantId)
                 ->update([
-                    'status'          => $action === self::ACTION_APPROVE ? 'approved' : 'resolved',
-                    'moderated_by'    => $moderatorId,
-                    'moderator_notes' => $moderatorNotes,
-                    'moderated_at'    => now(),
-                    'action_taken'    => $action,
-                    'updated_at'      => now(),
+                    'status'            => $action === self::ACTION_APPROVE ? 'approved' : 'resolved',
+                    'moderated_by'      => $moderatorId,
+                    'moderator_notes'   => $moderatorNotes,
+                    'resolved_at'       => now(),
+                    'moderation_action' => $action,
                 ]);
 
             return true;
         } catch (\Throwable $e) {
             Log::warning('Failed to moderate content', ['flag_id' => $flagId, 'error' => $e->getMessage()]);
-            return false;
-        }
-    }
-
-    /**
-     * Check if a user is banned from groups.
-     */
-    public static function isUserBanned($userId)
-    {
-        try {
-            $tenantId = \App\Core\TenantContext::getId();
-
-            return DB::table('group_bans')
-                ->where('user_id', $userId)
-                ->where('tenant_id', $tenantId)
-                ->where(function ($q) {
-                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-                })
-                ->exists();
-        } catch (\Throwable $e) {
-            Log::warning('[GroupModeration] Failed to check user ban status: ' . $e->getMessage());
             return false;
         }
     }
@@ -156,7 +137,7 @@ class GroupModerationService
             $query = DB::table('group_content_flags')
                 ->where('tenant_id', $tenantId)
                 ->whereIn('status', ['approved', 'resolved'])
-                ->orderByDesc('moderated_at');
+                ->orderByDesc('resolved_at');
 
             if (!empty($filters['content_type'])) {
                 $query->where('content_type', $filters['content_type']);
