@@ -704,6 +704,84 @@ describe('ConversationPage', () => {
     expect(screen.queryByTestId('composer-blocked')).toBeNull();
   });
 
+  it('keeps a send-time safeguarding denial when a background poll reports allow', async () => {
+    vi.useFakeTimers();
+
+    // Every GET reports allow (safeguarding: null) — that is the UNLOCKED preflight
+    // read which the poll and the recheck interval both consume. The send is what
+    // denies, and MessageService::send re-evaluates the gate against LOCKED
+    // tenant-scoped rows inside the write transaction (MessageService.php:636,
+    // "Definitive write check"). The two can therefore legitimately disagree, and
+    // the locked answer is the authoritative one.
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.post.mockResolvedValue({
+      success: false,
+      code: 'VETTING_REQUIRED',
+      error: 'This conversation is paused by a community safeguarding rule.',
+      errors: [{
+        code: 'VETTING_REQUIRED',
+        message: 'This conversation is paused by a community safeguarding rule.',
+        required_vetting_types: ['dbs_enhanced'],
+        required_vetting_labels: ['DBS Enhanced'],
+      }],
+    });
+
+    render(<ConversationPage />);
+    await act(async () => { await Promise.resolve(); await Promise.resolve(); });
+
+    fireEvent.change(screen.getByLabelText('mock-message-input'), { target: { value: 'Hello Sarah' } });
+    await act(async () => {
+      fireEvent.submit(screen.getByTestId('message-input-area'));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByText('safeguarding_vetting_required.title')).toBeDefined();
+
+    // Fires BOTH background 5s timers: the message poll and the blocked-policy
+    // recheck (armed because the status is now 'deny'). Neither may overturn the
+    // send-time denial or the member loses their only explanation seconds after
+    // hitting send.
+    await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+
+    // Pin that a poll really ran — otherwise this passes vacuously.
+    expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('direction=newer'));
+    expect(screen.getByText('safeguarding_vetting_required.title')).toBeDefined();
+    expect(screen.getByText('DBS Enhanced')).toBeDefined();
+    expect(screen.queryByTestId('message-input-area')).toBeNull();
+  });
+
+  it('lets the member clear a send-time denial with an explicit recheck', async () => {
+    // Holding a send denial against background timers must not strand the member:
+    // "Check again" is an authoritative re-ask and still unlocks the composer.
+    mockApi.get.mockResolvedValue(mockConversationResponse);
+    mockApi.put.mockResolvedValue({ success: true });
+    mockApi.post.mockResolvedValue({
+      success: false,
+      code: 'VETTING_REQUIRED',
+      error: 'This conversation is paused by a community safeguarding rule.',
+      errors: [{
+        code: 'VETTING_REQUIRED',
+        message: 'This conversation is paused by a community safeguarding rule.',
+        required_vetting_types: ['dbs_enhanced'],
+        required_vetting_labels: ['DBS Enhanced'],
+      }],
+    });
+
+    render(<ConversationPage />);
+    await screen.findByLabelText('mock-message-input');
+
+    fireEvent.change(screen.getByLabelText('mock-message-input'), { target: { value: 'Hello Sarah' } });
+    fireEvent.submit(screen.getByTestId('message-input-area'));
+
+    await screen.findByText('safeguarding_vetting_required.title');
+    fireEvent.click(screen.getByText('safeguarding_check_again'));
+
+    await screen.findByTestId('message-input-area');
+    expect(screen.queryByText('safeguarding_vetting_required.title')).toBeNull();
+  });
+
   it('rechecks on window focus and re-locks after revocation', async () => {
     mockConversationApi({ initial: null, afterRecheck: vettingRequiredMeta });
 

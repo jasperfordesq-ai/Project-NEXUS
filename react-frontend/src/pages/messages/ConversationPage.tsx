@@ -128,6 +128,27 @@ interface SafeguardingPolicyEvaluation {
   notice: SafeguardingBlockNotice | null;
 }
 
+/**
+ * What prompted a safeguarding re-evaluation. This decides whether an incoming
+ * `allow` is allowed to erase a denial the member is currently looking at.
+ *
+ * - `authoritative` — the conversation was (re)loaded, or the member asked:
+ *   "Check again", or returning focus/visibility to the tab. Always applied.
+ * - `background` — a timer asked: the message poll, or the blocked-policy
+ *   recheck interval. Applied, except it may not clear a `source: 'send'` denial.
+ *
+ * Why the asymmetry: `MessageService::send` re-evaluates the gate against LOCKED
+ * tenant-scoped rows inside the write transaction (`MessageService.php:636`,
+ * documented as the "Definitive write check"), whereas the preflight state in
+ * `getConversation()` — the `safeguarding` meta every GET returns, poll included
+ * — comes from the UNLOCKED read. A background `allow` is therefore strictly
+ * weaker evidence than the denial the member's own send attempt just returned,
+ * and letting it win silently deleted their only explanation ~5s after they hit
+ * send. The member is never stranded: the panel's "Check again" button, and
+ * simply returning to the tab, both still clear it.
+ */
+type SafeguardingRefreshTrigger = 'authoritative' | 'background';
+
 type MessageSendFailure = Pick<ApiResponse<unknown>, 'code' | 'error' | 'errors'>;
 
 const SAFEGUARDING_BLOCK_CODES = new Set([
@@ -381,6 +402,11 @@ export function ConversationPage() {
   const [safeguardingPolicyStatus, setSafeguardingPolicyStatus] = useState<SafeguardingPolicyStatus>('unavailable');
   const [isRefreshingSafeguarding, setIsRefreshingSafeguarding] = useState(false);
   const safeguardingRefreshInFlightRef = useRef(false);
+  // Mirrors the live notice's provenance so a background refresh can tell a
+  // send-time denial from a preflight one without threading state through every
+  // `setSafeguardingBlockNotice` call site (there are several success paths that
+  // legitimately clear it). Synced from the state itself, so it cannot drift.
+  const safeguardingNoticeSourceRef = useRef<SafeguardingBlockNotice['source'] | null>(null);
   const [isRequestingVettingReview, setIsRequestingVettingReview] = useState(false);
   const [vettingReviewRequested, setVettingReviewRequested] = useState(false);
   // Explicit "request coordinator help" action state
@@ -688,14 +714,38 @@ export function ConversationPage() {
   );
   const otherUserIdVerified = otherUserBadges.some((badge) => badge.type === 'id_verified');
 
-  const applySafeguardingMeta = useCallback((safeguarding: SafeguardingMeta | null | undefined) => {
+  const applySafeguardingMeta = useCallback((
+    safeguarding: SafeguardingMeta | null | undefined,
+    trigger: SafeguardingRefreshTrigger = 'authoritative',
+  ) => {
     const evaluation = evaluateSafeguardingMeta(safeguarding);
-    setSafeguardingPolicyStatus(evaluation.status);
-    setSafeguardingBlockNotice(evaluation.notice);
+
+    // Keep the cached conversation meta truthful either way — the guard below is
+    // about what the member is shown, not about discarding the server's answer.
     setConversation((current) => current
       ? { ...current, meta: { ...current.meta, safeguarding } }
       : current);
+
+    // A background timer may unlock a preflight restriction (the recipient can
+    // withdraw a preference while the conversation is open), but it may not
+    // overturn the locked send-time decision. Only an explicit `allow` is held
+    // back: a background 'unavailable' still applies, so fail-closed is intact.
+    if (trigger === 'background'
+      && evaluation.status === 'allow'
+      && safeguardingNoticeSourceRef.current === 'send') {
+      return;
+    }
+
+    setSafeguardingPolicyStatus(evaluation.status);
+    setSafeguardingBlockNotice(evaluation.notice);
   }, []);
+
+  // Single sync point for the provenance ref above: derived from the notice state
+  // itself, so every existing setter (including the post-send success paths that
+  // clear it) is covered without being rewritten.
+  useEffect(() => {
+    safeguardingNoticeSourceRef.current = safeguardingBlockNotice?.source ?? null;
+  }, [safeguardingBlockNotice]);
 
   const pollForNewMessages = useCallback(async () => {
     // Only poll when we have a target user ID and a known last message
@@ -719,7 +769,7 @@ export function ConversationPage() {
         ? (response.meta?.conversation as ConversationMeta | undefined)
         : undefined;
       if (pollConversationMeta) {
-        applySafeguardingMeta(pollConversationMeta.safeguarding);
+        applySafeguardingMeta(pollConversationMeta.safeguarding, 'background');
       }
 
       if (response.success && response.data && response.data.length > 0) {
@@ -965,7 +1015,9 @@ export function ConversationPage() {
     }
   }, [isRequestingVettingReview, t, toast, vettingReviewRequested]);
 
-  const refreshSafeguardingPolicy = useCallback(async () => {
+  const refreshSafeguardingPolicy = useCallback(async (
+    trigger: SafeguardingRefreshTrigger = 'authoritative',
+  ) => {
     if (!targetId || safeguardingRefreshInFlightRef.current) return;
     safeguardingRefreshInFlightRef.current = true;
     setIsRefreshingSafeguarding(true);
@@ -976,9 +1028,10 @@ export function ConversationPage() {
         : '?per_page=1';
       const response = await api.get<Message[]>(`/v2/messages/${targetId}${query}`);
       const refreshedMeta = response.meta?.conversation as ConversationMeta | undefined;
-      applySafeguardingMeta(response.success ? refreshedMeta?.safeguarding : undefined);
+      applySafeguardingMeta(response.success ? refreshedMeta?.safeguarding : undefined, trigger);
     } catch {
-      applySafeguardingMeta(undefined);
+      // Fail closed regardless of trigger: 'unavailable' is never held back.
+      applySafeguardingMeta(undefined, trigger);
     } finally {
       safeguardingRefreshInFlightRef.current = false;
       setIsRefreshingSafeguarding(false);
@@ -988,9 +1041,11 @@ export function ConversationPage() {
   useEffect(() => {
     if (!targetId || isLoading) return;
 
-    const handleFocus = () => { void refreshSafeguardingPolicy(); };
+    // The member coming back to the tab is an explicit re-ask, so these may clear
+    // a send-time denial.
+    const handleFocus = () => { void refreshSafeguardingPolicy('authoritative'); };
     const handleVisibility = () => {
-      if (!document.hidden) void refreshSafeguardingPolicy();
+      if (!document.hidden) void refreshSafeguardingPolicy('authoritative');
     };
 
     window.addEventListener('focus', handleFocus);
@@ -1015,7 +1070,7 @@ export function ConversationPage() {
     }
 
     const interval = window.setInterval(() => {
-      void refreshSafeguardingPolicy();
+      void refreshSafeguardingPolicy('background');
     }, SAFEGUARDING_RECHECK_INTERVAL_MS);
 
     return () => window.clearInterval(interval);
@@ -1031,6 +1086,11 @@ export function ConversationPage() {
     const notice = extractSafeguardingBlockNotice(response);
 
     if (notice) {
+      // Record provenance synchronously. The syncing effect only runs after
+      // commit, and a background poll resolving inside that window would
+      // otherwise see no send-sourced notice and clear this one immediately —
+      // the exact behaviour this guard exists to prevent.
+      safeguardingNoticeSourceRef.current = notice.source;
       setSafeguardingBlockNotice(notice);
       setSafeguardingPolicyStatus(notice.status);
       refreshRestrictionStatus();
@@ -2325,7 +2385,9 @@ export function ConversationPage() {
               size="sm"
               variant="tertiary"
               className="bg-theme-elevated text-theme-primary"
-              onPress={refreshSafeguardingPolicy}
+              // Wrapped, not passed by reference: onPress hands the callback a
+              // PressEvent, which would arrive as the trigger argument.
+              onPress={() => { void refreshSafeguardingPolicy('authoritative'); }}
               isPending={isRefreshingSafeguarding}
             >
               {t('safeguarding_check_again')}

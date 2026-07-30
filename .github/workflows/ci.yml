@@ -557,6 +557,16 @@ jobs:
         # do NOT re-attribute it to load — look for a new un-modelled request.
         # TeamChatrooms still needs the retry, so --retry=1 stays for now.
         #
+        # A second, latent instance of the same family was closed on 2026-07-30:
+        # the two "in-page safeguarding panel" tests submit and then assert on a
+        # send-time denial, which either 5s background timer used to erase by
+        # applying the preflight 'allow' the mock returns for every URL. That one
+        # was fixed in the component as a safeguarding SEMANTICS change (a
+        # source:'send' notice now outranks a background 'allow', because
+        # MessageService::send re-checks against LOCKED rows while the preflight
+        # reads unlocked) rather than by widening the mocks, so the tests assert
+        # real product behaviour. Both are pinned by regression tests.
+        #
         # 🔴 This step is now fully subsumed by react-tests-full (its files are a
         # subset of the 1,177 that job runs). Retire it once that job has a longer
         # green record — keeping both costs CI time for no extra coverage.
