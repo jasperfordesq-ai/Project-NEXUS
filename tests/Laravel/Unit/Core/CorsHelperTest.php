@@ -65,10 +65,39 @@ class CorsHelperTest extends TestCase
         ));
     }
 
+    /** `app` is an allowlisted CORS_ALLOWED_SUBDOMAINS label. */
     public function test_isOriginAllowed_with_subdomain_match_returns_true(): void
     {
         $this->assertTrue(CorsHelper::isOriginAllowed(
             'https://app.project-nexus.ie',
+            ['https://project-nexus.ie']
+        ));
+    }
+
+    /**
+     * This copy was hardened on 2026-04-12 (9f2b2a00f) but the hardening was
+     * never asserted, which is part of why nobody noticed it had not reached
+     * App\Helpers\CorsHelper — the copy on the live request path — for 3.5
+     * months. Both copies now delegate to App\Support\CorsOriginMatcher, and both
+     * test classes assert the behaviour.
+     */
+    public function test_isOriginAllowed_rejects_non_allowlisted_single_label(): void
+    {
+        $this->assertFalse(CorsHelper::isOriginAllowed(
+            'https://evil.project-nexus.ie',
+            ['https://project-nexus.ie']
+        ));
+    }
+
+    public function test_isOriginAllowed_rejects_nested_subdomain(): void
+    {
+        $this->assertFalse(CorsHelper::isOriginAllowed(
+            'https://a.b.project-nexus.ie',
+            ['https://project-nexus.ie']
+        ));
+
+        $this->assertFalse(CorsHelper::isOriginAllowed(
+            'https://app.b.project-nexus.ie',
             ['https://project-nexus.ie']
         ));
     }

@@ -6,6 +6,8 @@
 
 namespace App\Helpers;
 
+use App\Support\CorsOriginMatcher;
+
 /**
  * CORS Helper
  *
@@ -24,18 +26,21 @@ namespace App\Helpers;
  *  - The App\Core copy has exactly one call site: FederationController's
  *    legacy_v1 preflight/headers pair.
  *
- * Known divergences, both caused by a fix landing on one copy only:
+ * Known divergences, both caused by a fix landing on one copy only, both now
+ * closed:
  *
- *  1. isOriginAllowed() here still accepts ANY subdomain of an allowed host,
- *     including nested labels (a.b.project-nexus.ie). The App\Core copy was
- *     hardened on 2026-04-12 (9f2b2a00f) to match only single leading labels
- *     present in CORS_ALLOWED_SUBDOMAINS. That hardening never reached this
- *     copy — so it does not currently apply to the request path that actually
- *     serves production. Deliberately NOT changed here: it is a behaviour
- *     change to the outermost middleware on every API response and needs its
- *     own review, not a drive-by edit inside a duplication cleanup.
- *  2. handlePreflight() read $_SERVER['REQUEST_METHOD'] directly until
- *     2026-07-30, mirroring a bug fixed in the App\Core copy the day before.
+ *  1. RESOLVED 2026-07-30. isOriginAllowed() here accepted ANY subdomain of an
+ *     allowed host, including nested labels (a.b.project-nexus.ie), because the
+ *     2026-04-12 hardening (9f2b2a00f) reached the App\Core copy alone — so for
+ *     3.5 months it did not apply to the path that actually serves production.
+ *     That was not theoretical: on 2026-07-30 api.project-nexus.ie reflected
+ *     `Access-Control-Allow-Origin: https://evil.project-nexus.ie` (and
+ *     `https://a.b.project-nexus.ie`) next to
+ *     `Access-Control-Allow-Credentials: true`. Both copies now delegate to
+ *     {@see \App\Support\CorsOriginMatcher}, which holds the one implementation
+ *     of the matching rules.
+ *  2. RESOLVED 2026-07-30. handlePreflight() read $_SERVER['REQUEST_METHOD']
+ *     directly, mirroring a bug fixed in the App\Core copy the day before.
  *     See requestMethod() below.
  *
  * getAllowedOrigins() also differs on purpose-by-accident: this copy merges
@@ -216,32 +221,28 @@ class CorsHelper
             $allowedOrigins = self::getConfiguredOrigins();
         }
 
-        // Direct match against static list
-        if (in_array($origin, $allowedOrigins, true)) {
+        // Direct match against the static list, then subdomain matching against
+        // the CORS_ALLOWED_SUBDOMAINS allowlist. Both live in CorsOriginMatcher
+        // so this copy and the App\Core one cannot drift apart again.
+        if (CorsOriginMatcher::matchesAllowlist($origin, $allowedOrigins)) {
             return true;
-        }
-
-        // Parse origin to check subdomains and dynamic domains
-        $originHost = parse_url($origin, PHP_URL_HOST);
-        if ($originHost === null) {
-            return false;
-        }
-
-        $originScheme = parse_url($origin, PHP_URL_SCHEME) ?: 'https';
-
-        // Check subdomain matches (e.g., https://tenant.project-nexus.ie)
-        foreach ($allowedOrigins as $allowed) {
-            $allowedHost = parse_url($allowed, PHP_URL_HOST);
-            if ($allowedHost && str_ends_with($originHost, '.' . $allowedHost)) {
-                $allowedScheme = parse_url($allowed, PHP_URL_SCHEME);
-                if ($allowedScheme === $originScheme) {
-                    return true;
-                }
-            }
         }
 
         // Dynamic check: is this a tenant's custom domain?
         // Covers origins like https://hour-timebank.ie from tenants with custom domains.
+        //
+        // 🔴 This step became load-bearing for https://uk.timebank.global (tenant
+        // 11, which serves the React app and therefore does call the API
+        // cross-origin) when the subdomain allowlist landed above: `uk` is not an
+        // allowlisted label, so the exact match here is now the only thing that
+        // grants it CORS. It is a row in `tenants.domain` (verified on production
+        // 2026-07-30, is_active=1), so it matches. The consequence is that a
+        // simultaneous Redis AND database outage would drop its CORS headers,
+        // where the old wildcard would have kept them — i.e. during a total
+        // backend outage that tenant sees a CORS error instead of a readable 5xx.
+        // timebanks.us and pairc-goodman.com already depended on this step, since
+        // no configured apex host covers them. Adding https://uk.timebank.global
+        // to ALLOWED_ORIGINS in production's .env would remove that dependency.
         $tenantDomains = self::getTenantDomainOrigins();
         if (in_array($origin, $tenantDomains, true)) {
             return true;

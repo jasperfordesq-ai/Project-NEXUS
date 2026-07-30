@@ -6,11 +6,22 @@
 
 namespace App\Core;
 
+use App\Support\CorsOriginMatcher;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
  * CORS header management with origin allowlisting.
+ *
+ * One of two copies of this class — see {@see \App\Helpers\CorsHelper} for the
+ * full history. That one is the hot path (outermost middleware, every API
+ * response); this one has a single call site, FederationController's legacy_v1
+ * preflight. The origin-matching rules they share live in
+ * {@see \App\Support\CorsOriginMatcher} so they cannot drift again. What still
+ * differs on purpose: getAllowedOrigins() here returns only the configured list,
+ * while the App\Helpers copy merges tenant custom domains from the database
+ * because AppServiceProvider depends on that. Do not collapse the two without
+ * reconciling it — tenant custom-domain CORS would silently break.
  */
 class CorsHelper
 {
@@ -160,54 +171,17 @@ class CorsHelper
             $allowedOrigins = self::getConfiguredOrigins();
         }
 
-        // Direct match
-        if (in_array($origin, $allowedOrigins, true)) {
+        // Direct match, then the explicit subdomain allowlist (security
+        // hardening 2026-04-12: previously ANY subdomain of an allowed host was
+        // accepted; now only labels present in CORS_ALLOWED_SUBDOMAINS match).
+        //
+        // The rules moved into CorsOriginMatcher on 2026-07-30, when this
+        // hardening was finally extended to the App\Helpers copy that serves
+        // production. Keeping one implementation is the point: this hardening
+        // sat in this class alone for 3.5 months precisely because it was a
+        // second copy of logic that someone had to remember to update twice.
+        if (CorsOriginMatcher::matchesAllowlist($origin, $allowedOrigins)) {
             return true;
-        }
-
-        // Parse origin for subdomain checks
-        $originHost = parse_url($origin, PHP_URL_HOST);
-        if ($originHost === null) {
-            return false;
-        }
-
-        $originScheme = parse_url($origin, PHP_URL_SCHEME) ?: 'https';
-
-        // Explicit subdomain allowlist (security hardening 2026-04-12).
-        // Previously accepted ANY subdomain of an allowed host; now only
-        // subdomains present in CORS_ALLOWED_SUBDOMAINS may match.
-        $allowedSubsRaw = getenv('CORS_ALLOWED_SUBDOMAINS');
-        if ($allowedSubsRaw === false || $allowedSubsRaw === '') {
-            $allowedSubsRaw = $_ENV['CORS_ALLOWED_SUBDOMAINS'] ?? '';
-        }
-        if ($allowedSubsRaw === '') {
-            $allowedSubsRaw = 'app,api,staging,admin,super-admin,project-nexus';
-        }
-        $allowedSubs = array_filter(array_map(
-            static fn ($s) => strtolower(trim($s)),
-            explode(',', $allowedSubsRaw)
-        ));
-
-        // Check subdomain matches against the explicit subdomain allowlist
-        foreach ($allowedOrigins as $allowed) {
-            $allowedHost = parse_url($allowed, PHP_URL_HOST);
-            if ($allowedHost && str_ends_with($originHost, '.' . $allowedHost)) {
-                $allowedScheme = parse_url($allowed, PHP_URL_SCHEME);
-                if ($allowedScheme !== $originScheme) {
-                    continue;
-                }
-                // Extract the leading label (e.g. "app" from "app.example.com")
-                $prefixLen = strlen($originHost) - strlen('.' . $allowedHost);
-                if ($prefixLen <= 0) {
-                    continue;
-                }
-                $leadingLabels = substr($originHost, 0, $prefixLen);
-                // Only match when the leading label set is a single entry in
-                // the allowlist (no nested sub-subdomains like a.b.host.com).
-                if (in_array(strtolower($leadingLabels), $allowedSubs, true)) {
-                    return true;
-                }
-            }
         }
 
         // Dynamic check: tenant custom domains
