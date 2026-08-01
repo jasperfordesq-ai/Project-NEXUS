@@ -98,6 +98,8 @@ return [
         'messages' => 'Messagerie',
         'members' => 'Membres',
         'events' => 'Événements',
+        'whats_on' => 'Quoi de neuf',
+        'venues' => 'Lieux partenaires',
         'volunteering' => 'Bénévolat',
         'organisations' => 'Structures',
         'jobs' => 'Offres',

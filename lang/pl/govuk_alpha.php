@@ -98,6 +98,8 @@ return [
         'messages' => 'Wiadomości',
         'members' => 'Członkowie',
         'events' => 'Wydarzenia',
+        'whats_on' => 'Co się dzieje',
+        'venues' => 'Lokale partnerskie',
         'volunteering' => 'Zgłaszanie się na ochotnika',
         'organisations' => 'Organizacje',
         'jobs' => 'Oferty pracy',

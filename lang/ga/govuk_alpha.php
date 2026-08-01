@@ -98,6 +98,8 @@ return [
         'messages' => 'Teachtaireachtaí',
         'members' => 'Baill',
         'events' => 'Imeachtaí',
+        'whats_on' => 'Cad atá ar',
+        'venues' => 'Ionaid chomhpháirtíochta',
         'volunteering' => 'Obair dheonach',
         'organisations' => 'Eagraíochtaí',
         'jobs' => 'Poist',

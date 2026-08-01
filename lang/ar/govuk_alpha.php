@@ -98,6 +98,8 @@ return [
         'messages' => 'الرسائل',
         'members' => 'الأعضاء',
         'events' => 'الأحداث',
+        'whats_on' => 'ماذا يجري',
+        'venues' => 'أماكن الشركاء',
         'volunteering' => 'التطوع',
         'organisations' => 'المنظمات',
         'jobs' => 'الفرص الوظيفية',

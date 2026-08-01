@@ -98,6 +98,8 @@ return [
         'messages' => 'Berichten',
         'members' => 'Leden',
         'events' => 'Evenementen',
+        'whats_on' => 'Wat is er aan de hand',
+        'venues' => 'Partnerlocaties',
         'volunteering' => 'Vrijwilligerswerk',
         'organisations' => 'Organisaties',
         'jobs' => 'Vacatures',

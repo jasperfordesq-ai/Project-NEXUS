@@ -236,7 +236,15 @@ trait MembersParity
 
         $tenantId = \App\Core\TenantContext::getId();
         $search = trim(self::asStr($request->query('q')));
-        $radius = $this->allowed(self::asStr($request->query('radius', '25')), ['5', '10', '25', '50', '100'], '25');
+        // The saved match-preference radius seeds the default; an explicit
+        // ?radius= always wins. savedNearDefault() returns 'any' when nothing
+        // is stored, which this page (radius-mandatory) maps back to 25.
+        $savedDefault = $this->savedNearDefault();
+        $radius = $this->allowed(
+            self::asStr($request->query('radius', $savedDefault === 'any' ? '25' : $savedDefault)),
+            ['5', '10', '25', '50', '100'],
+            '25',
+        );
         $limit = $this->membersIntQuery($request, 'limit', 24, 1, 100);
         $offset = $this->membersIntQuery($request, 'offset', 0, 0, 100000);
 

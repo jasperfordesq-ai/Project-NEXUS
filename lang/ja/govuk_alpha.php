@@ -98,6 +98,8 @@ return [
         'messages' => 'メッセージ',
         'members' => 'メンバー',
         'events' => 'イベント',
+        'whats_on' => '何が起こっているのか',
+        'venues' => '提携会場',
         'volunteering' => 'ボランティア活動',
         'organisations' => '組織',
         'jobs' => '求人',

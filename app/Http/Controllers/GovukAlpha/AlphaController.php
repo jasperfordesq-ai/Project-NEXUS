@@ -68,6 +68,8 @@ class AlphaController extends Controller
     // ($this->view, $this->currentUserId, $this->assertTenantSlug, self::asStr,
     // $this->allowed). Method names are module-prefixed and unique.
     use Concerns\FeedParity;
+    use Concerns\PartnerVenuesParity;
+    use Concerns\PublicEventsParity;
     use Concerns\ListingsParity;
     use Concerns\MessagesParity;
     use Concerns\EventsParity;
@@ -12050,8 +12052,21 @@ class AlphaController extends Controller
             $items['events'] = route('govuk-alpha.events.index', ['tenantSlug' => $tenantSlug]);
         }
 
+        // Anonymous visitors get the public What's On listing instead of the
+        // member events page — the accessible twin of the React /whats-on.
+        if ($userId === null
+            && TenantContext::hasFeature('events')
+            && TenantContext::hasFeature('public_events')) {
+            $items['whats_on'] = route('govuk-alpha.whats-on.index', ['tenantSlug' => $tenantSlug]);
+            unset($items['events']);
+        }
+
         if (TenantContext::hasFeature('volunteering')) {
             $items['volunteering'] = route('govuk-alpha.volunteering.index', ['tenantSlug' => $tenantSlug]);
+        }
+
+        if ($userId !== null && TenantContext::hasFeature('partner_venues')) {
+            $items['venues'] = route('govuk-alpha.venues.index', ['tenantSlug' => $tenantSlug]);
         }
 
         // Organisations is NOT on the flat service nav — it lives on the Explore
@@ -12714,7 +12729,7 @@ class AlphaController extends Controller
             $filters['posted_within'] = (int) $posted;
         }
 
-        $near = $this->allowed($request->query('near', 'any'), ['any', '5', '10', '25', '50'], 'any');
+        $near = $this->allowed(self::asStr($request->query('near', $this->savedNearDefault())), ['any', '5', '10', '25', '50', '100'], 'any');
         $filters['near'] = $near;
         $filters = array_merge($filters, $this->nearMeFilters($near));
 
@@ -12729,6 +12744,47 @@ class AlphaController extends Controller
      *
      * @return array{near_lat: float|null, near_lng: float|null, radius_km: float|null, near_no_location: bool}
      */
+    /**
+     * The signed-in member's saved match-preference radius, snapped to the
+     * near-me option set, as the DEFAULT for filter pages when no ?near= was
+     * given. Parity with the React useSavedRadiusKm hook: the preference seeds
+     * the filter, an explicit choice always wins. 'any' when signed out or no
+     * preference is stored.
+     */
+    private function savedNearDefault(): string
+    {
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return 'any';
+        }
+
+        try {
+            $saved = DB::table('match_preferences')
+                ->where('tenant_id', TenantContext::getId())
+                ->where('user_id', $userId)
+                ->value('max_distance_km');
+        } catch (\Throwable) {
+            return 'any';
+        }
+
+        if ($saved === null || ! is_numeric($saved)) {
+            return 'any';
+        }
+
+        $km = (float) $saved;
+        $best = '25';
+        $bestDelta = PHP_FLOAT_MAX;
+        foreach ([5, 10, 25, 50, 100] as $option) {
+            $delta = abs($option - $km);
+            if ($delta < $bestDelta) {
+                $bestDelta = $delta;
+                $best = (string) $option;
+            }
+        }
+
+        return $best;
+    }
+
     private function nearMeFilters(string $near): array
     {
         $out = ['near_lat' => null, 'near_lng' => null, 'radius_km' => null, 'near_no_location' => false];
@@ -12755,7 +12811,7 @@ class AlphaController extends Controller
 
     private function eventFilters(Request $request): array
     {
-        $near = $this->allowed($request->query('near', 'any'), ['any', '5', '10', '25', '50'], 'any');
+        $near = $this->allowed(self::asStr($request->query('near', $this->savedNearDefault())), ['any', '5', '10', '25', '50', '100'], 'any');
 
         return array_merge([
             'search' => trim(self::asStr($request->query('q'))) ?: null,

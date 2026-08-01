@@ -207,7 +207,7 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'events', href: '/events', labelKey: 'nav.events', descriptionKey: 'nav_desc.events', icon: Calendar, feature: 'events', placements: both('community-local', 'community') },
   { id: 'groups', href: '/groups', labelKey: 'nav.groups', descriptionKey: 'nav_desc.groups', icon: Users, feature: 'groups', placements: both('community-local', 'community') },
   { id: 'volunteering', href: '/volunteering', labelKey: 'nav.volunteering', descriptionKey: 'nav_desc.volunteering', icon: Heart, feature: 'volunteering', placements: both('community-local', 'community') },
-  { id: 'venues', href: '/venues', labelKey: 'nav.venues', descriptionKey: 'nav_desc.venues', icon: Store, feature: 'partner_venues', placements: both('community-local', 'community') },
+  { id: 'venues', href: '/venues', labelKey: 'nav.venues', descriptionKey: 'nav_desc.venues', icon: Store, auth: 'authenticated', feature: 'partner_venues', placements: both('community-local', 'community') },
   { id: 'organisations', href: '/organisations', labelKey: 'nav.organisations', descriptionKey: 'nav_desc.organisations', icon: Building2, feature: 'volunteering', placements: both('community-local', 'community') },
   {
     id: 'federation-hub', href: '/federation', labelKey: 'nav.federation_hub', descriptionKey: 'nav_desc.federation_hub', icon: Globe,

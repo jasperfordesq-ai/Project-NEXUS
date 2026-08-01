@@ -98,6 +98,8 @@ return [
         'messages' => 'Messaggi',
         'members' => 'Membri',
         'events' => 'Eventi',
+        'whats_on' => 'In programma',
+        'venues' => 'Locali partner',
         'volunteering' => 'Volontariato',
         'organisations' => 'Organizzazioni',
         'jobs' => 'Opportunità',
