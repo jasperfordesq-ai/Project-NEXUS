@@ -2755,4 +2755,20 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'paid_push_campaign_not_rejectable' => 'ステータス: :status ではキャンペーンを拒否できません',
     'paid_push_campaign_not_dispatchable' => 'キャンペーンを送信する準備ができていません (ステータス: :status)。',
     'member_premium_tier_missing_price' => '階層 \':tier\' には :interval のストライプ価格がありません — 管理者は最初にストライプへの同期を実行する必要があります',
+
+    // Partner venues — engagement recording at local partner premises.
+    'partner_venues_feature_disabled' => 'このコミュニティでは提携店舗が有効になっていません',
+    'partner_venue_not_found' => '提携店舗が見つかりません',
+    'partner_venue_archived' => '提携店舗をアーカイブしました',
+    'partner_venue_pass_invalid' => 'この会員パスは無効です',
+    'partner_venue_record_forbidden' => 'この店舗の訪問を記録する権限がありません',
+    'partner_venue_staff_member_not_found' => 'このコミュニティにその会員が見つかりません',
+    'partner_venue_visit_xp_description' => ':venue を訪問しました',
+    'partner_venue_csv_date' => '日付',
+    'partner_venue_csv_time' => '時刻',
+    'partner_venue_csv_venue' => '店舗',
+    'partner_venue_csv_member_id' => '会員ID',
+    'partner_venue_csv_member' => '会員',
+    'partner_venue_csv_recorded_by' => '記録者',
+    'partner_venue_csv_source' => '記録方法',
 ];

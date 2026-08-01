@@ -3372,6 +3372,29 @@ Route::get('/v2/volunteering/shifts/{id}/checkin', [\App\Http\Controllers\Api\Vo
 Route::post('/v2/volunteering/checkin/verify/{token}', [\App\Http\Controllers\Api\VolunteerCheckInController::class, 'verifyCheckIn']);
 Route::post('/v2/volunteering/checkin/checkout/{token}', [\App\Http\Controllers\Api\VolunteerCheckInController::class, 'checkOut']);
 Route::get('/v2/volunteering/shifts/{id}/checkins', [\App\Http\Controllers\Api\VolunteerCheckInController::class, 'shiftCheckIns']);
+
+// Partner venues — member pass QR, staff-scanned engagement recording, and
+// tenant-admin management. Engagement only: the platform issues no coupon and
+// applies no discount here.
+Route::middleware('feature:partner_venues')->group(function (): void {
+    Route::get('/v2/partner-venues', [\App\Http\Controllers\Api\PartnerVenueController::class, 'index']);
+    Route::get('/v2/partner-venues/pass', [\App\Http\Controllers\Api\PartnerVenueController::class, 'pass']);
+    Route::post('/v2/partner-venues/pass/rotate', [\App\Http\Controllers\Api\PartnerVenueController::class, 'rotatePass']);
+    Route::get('/v2/partner-venues/my-visits', [\App\Http\Controllers\Api\PartnerVenueController::class, 'myVisits']);
+    // POST-only by design: member details are revealed only after an authorised
+    // staff account confirms the scan, so a prefetch can never disclose them.
+    Route::post('/v2/partner-venues/visits/verify/{token}', [\App\Http\Controllers\Api\PartnerVenueController::class, 'recordVisit']);
+
+    Route::get('/v2/admin/partner-venues', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'index']);
+    Route::post('/v2/admin/partner-venues', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'store']);
+    Route::get('/v2/admin/partner-venues/reports/summary', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'summary']);
+    Route::get('/v2/admin/partner-venues/visits/export.csv', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'exportCsv']);
+    Route::put('/v2/admin/partner-venues/{id}', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'update'])->whereNumber('id');
+    Route::post('/v2/admin/partner-venues/{id}/archive', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'archive'])->whereNumber('id');
+    Route::get('/v2/admin/partner-venues/{id}/staff', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'staff'])->whereNumber('id');
+    Route::post('/v2/admin/partner-venues/{id}/staff', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'addStaff'])->whereNumber('id');
+    Route::delete('/v2/admin/partner-venues/{id}/staff/{userId}', [\App\Http\Controllers\Api\AdminPartnerVenueController::class, 'removeStaff'])->whereNumber('id')->whereNumber('userId');
+});
 Route::get('/v2/volunteering/opportunities/{id}/recurring-patterns', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'recurringPatterns']);
 Route::post('/v2/volunteering/opportunities/{id}/recurring-patterns', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'createRecurringPattern']);
 Route::put('/v2/volunteering/recurring-patterns/{id}', [\App\Http\Controllers\Api\VolunteerCommunityController::class, 'updateRecurringPattern']);

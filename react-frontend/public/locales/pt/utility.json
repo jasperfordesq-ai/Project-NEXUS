@@ -178,7 +178,8 @@
       "nexus_score": "NexusScore",
       "goals": "Goals",
       "polls": "Polls",
-      "federation": "Federation"
+      "federation": "Federation",
+      "partner_venues": "Locais parceiros"
     }
   },
   "newsletter": {

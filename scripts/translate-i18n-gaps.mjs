@@ -186,7 +186,11 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
 // listed language. Do not broaden these to every locale.
 const LANGUAGE_IDENTICAL_VALUE_ALLOWLIST = {
   de: new Set(['Status:']),
-  fr: new Set(['Article 9.', 'page.']),
+  // 'Café' is the native word in these three, not a copied English value — the
+  // curation test finds no locale file where they render English 'Café' as
+  // anything else.
+  fr: new Set(['Article 9.', 'page.', 'Café']),
+  pt: new Set(['Café']),
   nl: new Set([
     'Ortsteil (district)',
     'Payload (JSON)',
@@ -194,6 +198,7 @@ const LANGUAGE_IDENTICAL_VALUE_ALLOWLIST = {
     'Status:',
     'Tip:',
     'platform super-admin',
+    'Café',
   ]),
 };
 

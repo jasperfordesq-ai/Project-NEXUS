@@ -67,6 +67,11 @@ class TenantFeatureConfig
         // Podcasts — opt-in per tenant. Member-created shows are controlled
         // separately by podcasts.allow_member_show_creation and default ON there.
         'podcasts' => false,
+        // Partner venues — a tenant-managed directory of local partner premises
+        // where a member's pass QR can be scanned to record engagement. Records
+        // engagement only: no coupon is issued and no discount is applied by the
+        // platform. Default OFF, opt-in per community.
+        'partner_venues' => false,
         // Explore / Discover curated discovery page. Default ON so the navbar link
         // keeps showing where it already does; admins can turn it off per tenant in
         // Module Configuration, which hides the navbar link and blocks the route.

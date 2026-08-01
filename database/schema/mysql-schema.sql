@@ -2158,7 +2158,7 @@ CREATE TABLE `community_ranks` (
   KEY `idx_tenant` (`tenant_id`),
   KEY `idx_rank_score` (`rank_score`),
   KEY `idx_position` (`tenant_id`,`rank_position`)
-) ENGINE=InnoDB AUTO_INCREMENT=12436 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Community rank scores for users';
+) ENGINE=InnoDB AUTO_INCREMENT=12419 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Community rank scores for users';
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `communityrank_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -12322,7 +12322,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=393 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=394 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15253,6 +15253,87 @@ CREATE TABLE `paid_push_campaigns` (
   KEY `paid_push_campaigns_tenant_id_status_index` (`tenant_id`,`status`),
   KEY `paid_push_campaigns_tenant_id_scheduled_at_index` (`tenant_id`,`scheduled_at`),
   KEY `paid_push_campaigns_tenant_id_index` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `partner_member_passes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `partner_member_passes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token` char(64) NOT NULL COMMENT 'Opaque bearer of the member pass QR; rotatable in place',
+  `status` varchar(20) NOT NULL DEFAULT 'active' COMMENT 'active|revoked',
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `partner_member_passes_token_unique` (`token`),
+  UNIQUE KEY `partner_member_passes_tenant_user_unique` (`tenant_id`,`user_id`),
+  KEY `partner_member_passes_user_id_foreign` (`user_id`),
+  CONSTRAINT `partner_member_passes_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `partner_member_passes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `partner_venue_visits`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `partner_venue_visits` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `venue_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT 'Member whose engagement is recorded',
+  `recorded_by_user_id` int(11) DEFAULT NULL COMMENT 'Venue staff account that recorded the visit',
+  `source` varchar(20) NOT NULL DEFAULT 'member_pass' COMMENT 'member_pass|venue_poster',
+  `visited_on` date NOT NULL,
+  `visited_at` timestamp NULL DEFAULT NULL,
+  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `partner_venue_visits_daily_unique` (`tenant_id`,`venue_id`,`user_id`,`visited_on`),
+  KEY `partner_venue_visits_venue_index` (`tenant_id`,`venue_id`,`visited_at`),
+  KEY `partner_venue_visits_user_index` (`tenant_id`,`user_id`,`visited_at`),
+  KEY `partner_venue_visits_venue_id_foreign` (`venue_id`),
+  KEY `partner_venue_visits_user_id_foreign` (`user_id`),
+  KEY `partner_venue_visits_recorded_by_foreign` (`recorded_by_user_id`),
+  CONSTRAINT `partner_venue_visits_recorded_by_foreign` FOREIGN KEY (`recorded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `partner_venue_visits_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `partner_venue_visits_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `partner_venue_visits_venue_id_foreign` FOREIGN KEY (`venue_id`) REFERENCES `partner_venues` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `partner_venues`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `partner_venues` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `slug` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `category` varchar(50) DEFAULT NULL COMMENT 'cafe|shop|leisure|community|other — display grouping only',
+  `offer_summary` varchar(255) DEFAULT NULL COMMENT 'Display-only description of the venue''s own offer; not enforced by the platform',
+  `address_line` varchar(255) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `postcode` varchar(20) DEFAULT NULL,
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(10,7) DEFAULT NULL,
+  `website` varchar(255) DEFAULT NULL,
+  `contact_email` varchar(255) DEFAULT NULL,
+  `logo_url` varchar(255) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'active' COMMENT 'active|paused|archived',
+  `poster_token` char(64) DEFAULT NULL COMMENT 'Reserved for venue-poster self-service check-in; not issued in v1',
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `partner_venues_tenant_slug_unique` (`tenant_id`,`slug`),
+  UNIQUE KEY `partner_venues_poster_token_unique` (`poster_token`),
+  KEY `partner_venues_tenant_status_index` (`tenant_id`,`status`),
+  KEY `partner_venues_created_by_foreign` (`created_by`),
+  CONSTRAINT `partner_venues_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `partner_venues_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `password_resets`;
@@ -20408,7 +20489,8 @@ INSERT INTO `laravel_migrations` VALUES
 (389,'2026_07_14_000100_remove_insurance_document_data',100),
 (390,'2026_07_14_000200_move_message_media_to_private_storage',100),
 (391,'2026_07_26_000001_add_external_federation_kill_switch',100),
-(392,'2026_07_27_000001_add_partner_api_kill_switch',101);
+(392,'2026_07_27_000001_add_partner_api_kill_switch',101),
+(393,'2026_08_01_000001_create_partner_venue_tables',102);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

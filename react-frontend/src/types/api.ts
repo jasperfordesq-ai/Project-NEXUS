@@ -1211,6 +1211,12 @@ export interface TenantFeatures {
   podcasts: boolean;
   /** Explore / Discover curated discovery page — default ON, gateable per tenant. */
   explore: boolean;
+  /**
+   * Partner venues — member pass QR scanned by venue staff to record
+   * engagement at local partner premises. Engagement only: the platform
+   * issues no coupon and applies no discount. Opt-in per tenant.
+   */
+  partner_venues: boolean;
   /** Authenticator-app 2FA enrollment. Existing enrollments remain enforced when disabled. */
   two_factor_authentication: boolean;
   /** Passkey enrollment. Existing passkeys remain usable when disabled. */

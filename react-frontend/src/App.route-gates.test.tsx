@@ -133,6 +133,24 @@ describe('App route feature gates', () => {
     expect(protectedRoutesSource).toMatch(/path="marketplace\/:id\/edit"[\s\S]*?<FeatureGate feature="marketplace"/);
   });
 
+  it('gates partner venue routes behind the partner_venues feature', () => {
+    expect(protectedRoutesSource).toMatch(/path="venues"[\s\S]*?<FeatureGate feature="partner_venues"/);
+    expect(protectedRoutesSource).toMatch(/path="venues\/pass"[\s\S]*?<FeatureGate feature="partner_venues"/);
+    expect(protectedRoutesSource).toMatch(/path="venues\/checkin\/:token"[\s\S]*?<FeatureGate feature="partner_venues"/);
+  });
+
+  it('keeps the venue pass and scan-landing routes out of the public registry', () => {
+    // The pass QR identifies a member and the scan-landing page records a
+    // visit, so neither may resolve without authentication. An unauthenticated
+    // scanner must be sent through login and returned, exactly like
+    // volunteering/checkin/:token.
+    for (const routePath of ['venues', 'venues/pass', 'venues/checkin/:token']) {
+      const declaration = `path="${routePath}"`;
+      expect(protectedRoutesSource).toContain(declaration);
+      expect(publicRoutesSource).not.toContain(declaration);
+    }
+  });
+
   it('keeps every audited identity-bearing route inside the authenticated tree only', () => {
     expect(protectedRoutesStart).toBeGreaterThan(-1);
     expect(protectedRoutesEnd).toBeGreaterThan(protectedRoutesStart);

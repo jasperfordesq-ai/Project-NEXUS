@@ -227,6 +227,7 @@ const MarketplaceModerationPage = lazy(() => import('./modules/marketplace/Marke
 const MarketplaceSellerAdmin = lazy(() => import('./modules/marketplace/MarketplaceSellerAdmin'));
 const MarketplaceCasesPage = lazy(() => import('./modules/marketplace/MarketplaceCasesPage'));
 const AdminCouponsPage = lazy(() => import('./modules/marketplace/AdminCouponsPage'));
+const PartnerVenuesAdminPage = lazy(() => import('./modules/venues/PartnerVenuesAdminPage'));
 
 // Ideation / Challenges module
 const IdeationAdmin = lazy(() => import('./modules/ideation/IdeationAdmin'));
@@ -691,6 +692,9 @@ export function AdminRoutes() {
       <Route path="marketplace/sellers" element={<Lazy><MarketplaceSellerAdmin /></Lazy>} />
       <Route path="marketplace/cases" element={<Lazy><MarketplaceCasesPage /></Lazy>} />
       <Route path="marketplace/coupons" element={<Lazy><AdminCouponsPage /></Lazy>} />
+
+      {/* ─── PARTNER VENUES ─── */}
+      <Route path="partner-venues" element={<Lazy><PartnerVenuesAdminPage /></Lazy>} />
 
       {/* ─── IDEATION / CHALLENGES ─── */}
       <Route path="ideation" element={<Lazy><IdeationAdmin /></Lazy>} />

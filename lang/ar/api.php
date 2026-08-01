@@ -2755,4 +2755,20 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'paid_push_campaign_not_rejectable' => 'لا يمكن رفض الحملة بالحالة: :status',
     'paid_push_campaign_not_dispatchable' => 'الحملة ليست جاهزة للإرسال (الحالة: :status).',
     'member_premium_tier_missing_price' => 'لا يحتوي المستوى \':tier\' على سعر شريطي لـ :interval — يجب على المسؤول تشغيل المزامنة مع الشريط أولاً',
+
+    // Partner venues — engagement recording at local partner premises.
+    'partner_venues_feature_disabled' => 'الأماكن الشريكة غير مفعّلة في هذا المجتمع',
+    'partner_venue_not_found' => 'لم يتم العثور على المكان الشريك',
+    'partner_venue_archived' => 'تمت أرشفة المكان الشريك',
+    'partner_venue_pass_invalid' => 'بطاقة العضوية هذه غير صالحة',
+    'partner_venue_record_forbidden' => 'ليس لديك إذن لتسجيل الزيارات في هذا المكان',
+    'partner_venue_staff_member_not_found' => 'لم يتم العثور على العضو في هذا المجتمع',
+    'partner_venue_visit_xp_description' => 'زار :venue',
+    'partner_venue_csv_date' => 'التاريخ',
+    'partner_venue_csv_time' => 'الوقت',
+    'partner_venue_csv_venue' => 'المكان',
+    'partner_venue_csv_member_id' => 'معرّف العضو',
+    'partner_venue_csv_member' => 'العضو',
+    'partner_venue_csv_recorded_by' => 'سُجّل بواسطة',
+    'partner_venue_csv_source' => 'المصدر',
 ];

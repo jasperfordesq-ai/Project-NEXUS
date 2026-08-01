@@ -19,6 +19,7 @@ import Bell from 'lucide-react/icons/bell';
 import UserCircle from 'lucide-react/icons/circle-user';
 import Settings from 'lucide-react/icons/settings';
 import Calendar from 'lucide-react/icons/calendar';
+import Store from 'lucide-react/icons/store';
 import Users from 'lucide-react/icons/users';
 import Gamepad2 from 'lucide-react/icons/gamepad-2';
 import Target from 'lucide-react/icons/target';
@@ -236,6 +237,17 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     configSource: 'tenant_features',
     configOptions: [],
     detailPageUrl: '/admin/events/settings',
+  },
+  {
+    // Partner venues — records engagement when venue staff scan a member's
+    // pass. Deliberately separate from marketplace/merchant_coupons: no
+    // coupon is issued and no discount is applied by the platform.
+    id: 'partner_venues',
+    icon: Store,
+    type: 'feature',
+    configSource: 'tenant_features',
+    configOptions: [],
+    detailPageUrl: '/admin/partner-venues',
   },
   {
     id: 'groups',

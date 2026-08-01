@@ -203,6 +203,8 @@
     "module_desc_settings": "User settings",
     "module_name_events": "Events",
     "module_desc_events": "Community events with RSVPs",
+    "module_name_partner_venues": "Partner Venues",
+    "module_desc_partner_venues": "Record member visits at local partner venues by QR",
     "module_name_groups": "Groups",
     "module_desc_groups": "Community groups and discussions",
     "module_name_gamification": "Gamification",

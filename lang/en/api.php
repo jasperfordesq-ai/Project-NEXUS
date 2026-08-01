@@ -3275,4 +3275,20 @@ return [
     'paid_push_campaign_approve_pending_only' => 'Only pending_review campaigns can be approved.',
     'paid_push_campaign_not_rejectable' => 'Campaign cannot be rejected in status: :status',
     'paid_push_campaign_not_dispatchable' => 'Campaign is not ready to dispatch (status: :status).',
+
+    // Partner venues — engagement recording at local partner premises.
+    'partner_venues_feature_disabled' => 'Partner venues are not enabled for this community',
+    'partner_venue_not_found' => 'Partner venue not found',
+    'partner_venue_archived' => 'Partner venue archived',
+    'partner_venue_pass_invalid' => 'This membership pass is not valid',
+    'partner_venue_record_forbidden' => 'You do not have permission to record visits for this venue',
+    'partner_venue_staff_member_not_found' => 'Member not found in this community',
+    'partner_venue_visit_xp_description' => 'Visited :venue',
+    'partner_venue_csv_date' => 'Date',
+    'partner_venue_csv_time' => 'Time',
+    'partner_venue_csv_venue' => 'Venue',
+    'partner_venue_csv_member_id' => 'Member ID',
+    'partner_venue_csv_member' => 'Member',
+    'partner_venue_csv_recorded_by' => 'Recorded by',
+    'partner_venue_csv_source' => 'Source',
 ];

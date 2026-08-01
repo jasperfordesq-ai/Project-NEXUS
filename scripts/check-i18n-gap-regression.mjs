@@ -71,6 +71,9 @@ const NO_TRANSLATE_VALUES = new Set([
   'Index Follow',
 ]);
 
+// 'Café' is the native word in fr/pt/nl, not a copied English value: no locale
+// file renders an English 'Café' as anything else, so a translator would leave
+// it alone. Mirrors the entry in scripts/translate-i18n-gaps.mjs.
 const LOCALE_IDENTITY_VALUES = new Map([
   ['es', new Set(['{{count}} total', '{{count}} ideas'])],
   ['fr', new Set([
@@ -80,11 +83,12 @@ const LOCALE_IDENTITY_VALUES = new Map([
     'Participants ({{count}})',
     '{{count}} votes',
     '{{count}} articles',
+    'Café',
   ])],
   ['it', new Set(['{{count}} post'])],
   ['ga', new Set(['{{count}} post'])],
-  ['nl', new Set(['{{count}} check-ins'])],
-  ['pt', new Set(['Total: {{count}}', '{{count}} total', '{{count}} check-ins'])],
+  ['nl', new Set(['{{count}} check-ins', 'Café'])],
+  ['pt', new Set(['Total: {{count}}', '{{count}} total', '{{count}} check-ins', 'Café'])],
 ]);
 
 const UNIT_OR_FORMAT_PATTERN = /^[\s\d.,:;()+\-–—~/%×∞]*[a-zA-Z]{0,3}[\s\d.,:;()+\-–—~/%×∞]*$/u;

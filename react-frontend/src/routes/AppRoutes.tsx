@@ -149,6 +149,9 @@ const VolOrgDashboardPage = lazyWithRetry(() => import('@/pages/volunteering/Vol
 const MyOrganisationsPage = lazyWithRetry(() => import('@/pages/volunteering/MyOrganisationsPage'));
 const DonationReceiptPage = lazyWithRetry(() => import('@/pages/volunteering/DonationReceiptPage'));
 const CheckInVerifyPage = lazyWithRetry(() => import('@/pages/volunteering/CheckInVerifyPage'));
+const PartnerVenuesPage = lazyWithRetry(() => import('@/pages/venues/PartnerVenuesPage'));
+const MyPassPage = lazyWithRetry(() => import('@/pages/venues/MyPassPage'));
+const VenueVisitVerifyPage = lazyWithRetry(() => import('@/pages/venues/VenueVisitVerifyPage'));
 const OrganisationsPage = lazyWithRetry(() => import('@/pages/organisations/OrganisationsPage'));
 const OrganisationDetailPage = lazyWithRetry(() => import('@/pages/organisations/OrganisationDetailPage'));
 const RegisterOrganisationPage = lazyWithRetry(() => import('@/pages/organisations/RegisterOrganisationPage'));
@@ -1546,6 +1549,31 @@ export function AppRoutes() {
             <FeatureGate feature="volunteering" fallback={<ComingSoonPage feature={t('coming_soon.features.volunteering')} />}>
               <FeatureErrorBoundary featureName="Donations">
                 <DonationReceiptPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+
+          {/* Feature-gated: Partner venues. The scan-landing route sits inside
+              ProtectedRoute like volunteering/checkin/:token, so an
+              unauthenticated scanner is sent through login and returns here. */}
+          <Route path="venues" element={
+            <FeatureGate feature="partner_venues" fallback={<ComingSoonPage feature={t('coming_soon.features.partner_venues')} />}>
+              <FeatureErrorBoundary featureName="Partner venues">
+                <PartnerVenuesPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          <Route path="venues/pass" element={
+            <FeatureGate feature="partner_venues" fallback={<ComingSoonPage feature={t('coming_soon.features.partner_venues')} />}>
+              <FeatureErrorBoundary featureName="Partner venues">
+                <MyPassPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          <Route path="venues/checkin/:token" element={
+            <FeatureGate feature="partner_venues" fallback={<ComingSoonPage feature={t('coming_soon.features.partner_venues')} />}>
+              <FeatureErrorBoundary featureName="Partner venues">
+                <VenueVisitVerifyPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />

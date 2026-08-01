@@ -131,6 +131,8 @@ const defaultFeatures: TenantFeatures = {
   // Explore / Discover curated discovery page. Default ON — synced with PHP
   // TenantFeatureConfig::FEATURE_DEFAULTS. Admins can disable it per tenant.
   explore: true,
+  // Partner venues — opt-in per tenant. Synced with PHP TenantFeatureConfig.
+  partner_venues: false,
   // Security feature switches govern new enrollment only. Existing TOTP
   // challenges and passkey sign-in remain available to prevent lockouts.
   two_factor_authentication: true,

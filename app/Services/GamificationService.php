@@ -57,6 +57,8 @@ class GamificationService
         'send_message'         => 2,
         'make_connection'      => 10,
         'complete_goal'        => 10,
+        'venue_visit'          => 10,
+        'event_attendance_verified' => 15,
     ];
 
     public const LEVEL_THRESHOLDS = [
@@ -100,6 +102,8 @@ class GamificationService
         'complete_profile'     => 50,
         'earn_badge'           => 25,
         'complete_goal'        => 10,
+        'venue_visit'          => 10,
+        'event_attendance_verified' => 15,
     ];
 
     /**
