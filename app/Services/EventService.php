@@ -240,37 +240,18 @@ class EventService
             });
 
         $isTenantAdmin = self::isTenantAdmin($viewerId, $tenantId);
-        $query->where(function (Builder $visibility) use ($viewerId, $tenantId, $isTenantAdmin) {
-            $visibility->whereNull('events.group_id')
-                ->orWhereExists(function ($group) use ($viewerId, $tenantId, $isTenantAdmin) {
-                    $group->selectRaw('1')
-                        ->from('groups as visible_groups')
-                        ->whereColumn('visible_groups.id', 'events.group_id')
-                        ->where('visible_groups.tenant_id', $tenantId)
-                        ->where('visible_groups.status', GroupStatus::Active->value);
+        self::applyDiscoveryVisibility($query, $viewerId, $tenantId, $isTenantAdmin);
 
-                    if ($isTenantAdmin) {
-                        return;
-                    }
-
-                    $group->where(function ($audience) use ($viewerId, $tenantId) {
-                        $audience->whereNull('visible_groups.visibility')
-                            ->orWhere('visible_groups.visibility', 'public');
-
-                        if ($viewerId !== null) {
-                            $audience->orWhere('visible_groups.owner_id', $viewerId)
-                                ->orWhereExists(function ($membership) use ($tenantId, $viewerId) {
-                                    $membership->selectRaw('1')
-                                        ->from('group_members as event_group_members')
-                                        ->whereColumn('event_group_members.group_id', 'visible_groups.id')
-                                        ->where('event_group_members.tenant_id', $tenantId)
-                                        ->where('event_group_members.user_id', $viewerId)
-                                        ->where('event_group_members.status', 'active');
-                                });
-                        }
-                    });
-                });
-        });
+        // Anonymous (public) discovery additionally sees only published events.
+        // publication_status is nullable for events created before the lifecycle
+        // migration, and those are treated as published — same as the authored
+        // listing, which does not filter on it at all.
+        if (! empty($filters['public_only'])) {
+            $query->where(function (Builder $published) {
+                $published->whereNull('events.publication_status')
+                    ->orWhere('events.publication_status', EventPublicationState::Published->value);
+            });
+        }
 
         if ($when === 'upcoming') {
             $query->where('start_time', '>=', $snapshotAt);
@@ -789,6 +770,93 @@ class EventService
     /**
      * Get a single event by ID without embedding attendee identities.
      */
+    /**
+     * The audience predicate shared by every discovery query.
+     *
+     * Extracted so the anonymous/public listing and the public detail lookup
+     * cannot drift from the authenticated listing: an event is visible when it
+     * belongs to no group, or to an active group the viewer is allowed to see.
+     * A null viewer (anonymous) reaches only public-visibility groups, because
+     * both the owner and membership branches are viewer-scoped.
+     */
+    private static function applyDiscoveryVisibility(
+        Builder $query,
+        ?int $viewerId,
+        int $tenantId,
+        bool $isTenantAdmin,
+    ): void {
+        $query->where(function (Builder $visibility) use ($viewerId, $tenantId, $isTenantAdmin) {
+            $visibility->whereNull('events.group_id')
+                ->orWhereExists(function ($group) use ($viewerId, $tenantId, $isTenantAdmin) {
+                    $group->selectRaw('1')
+                        ->from('groups as visible_groups')
+                        ->whereColumn('visible_groups.id', 'events.group_id')
+                        ->where('visible_groups.tenant_id', $tenantId)
+                        ->where('visible_groups.status', GroupStatus::Active->value);
+
+                    if ($isTenantAdmin) {
+                        return;
+                    }
+
+                    $group->where(function ($audience) use ($viewerId, $tenantId) {
+                        $audience->whereNull('visible_groups.visibility')
+                            ->orWhere('visible_groups.visibility', 'public');
+
+                        if ($viewerId !== null) {
+                            $audience->orWhere('visible_groups.owner_id', $viewerId)
+                                ->orWhereExists(function ($membership) use ($tenantId, $viewerId) {
+                                    $membership->selectRaw('1')
+                                        ->from('group_members as event_group_members')
+                                        ->whereColumn('event_group_members.group_id', 'visible_groups.id')
+                                        ->where('event_group_members.tenant_id', $tenantId)
+                                        ->where('event_group_members.user_id', $viewerId)
+                                        ->where('event_group_members.status', 'active');
+                                });
+                        }
+                    });
+                });
+        });
+    }
+
+    /**
+     * Fetch one event for an ANONYMOUS visitor.
+     *
+     * getById() refuses a null viewer outright (EventPolicy needs a user), which
+     * is correct for the member API. This is the deliberately separate public
+     * path: same audience predicate as the public listing, same published-only
+     * and active-status constraints, so an event that would not appear in the
+     * public list cannot be opened directly by guessing its id.
+     *
+     * Returns the raw row; the caller is responsible for the public projection.
+     * Nothing here loads RSVP rows, attendance, or viewer-specific state.
+     *
+     * @return array<string, mixed>|null
+     */
+    public static function getPublicById(int $id): ?array
+    {
+        $tenantId = (int) TenantContext::getId();
+
+        $query = Event::query()
+            ->with([
+                'user:id,first_name,last_name,organization_name,profile_type,avatar_url',
+                'category:id,name,slug,color,type',
+            ])
+            ->whereKey($id)
+            ->where(function (Builder $status) {
+                $status->whereNull('status')->orWhere('status', 'active');
+            })
+            ->where(function (Builder $published) {
+                $published->whereNull('events.publication_status')
+                    ->orWhere('events.publication_status', EventPublicationState::Published->value);
+            });
+
+        self::applyDiscoveryVisibility($query, null, $tenantId, false);
+
+        $event = $query->first();
+
+        return $event?->toArray();
+    }
+
     public static function getById(int $id, ?int $currentUserId = null): ?array
     {
         /** @var Event|null $event */

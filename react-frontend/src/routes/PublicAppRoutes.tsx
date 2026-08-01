@@ -32,6 +32,8 @@ const CaringCommunityPage = lazyWithRetry(() => import('@/pages/caring-community
 const InviteRedemptionPage = lazyWithRetry(() => import('@/pages/caring-community/InviteRedemptionPage'));
 const NewsletterUnsubscribePage = lazyWithRetry(() => import('@/pages/newsletter/NewsletterUnsubscribePage'));
 const EventGuardianConsentPage = lazyWithRetry(() => import('@/pages/events/EventGuardianConsentPage'));
+const PublicEventsListPage = lazyWithRetry(() => import('@/pages/events/PublicEventsListPage'));
+const PublicEventDetailPage = lazyWithRetry(() => import('@/pages/events/PublicEventDetailPage'));
 const NotFoundPage = lazyWithRetry(() => import('@/pages/errors/NotFoundPage'));
 const ComingSoonPage = lazyWithRetry(() => import('@/pages/errors/ComingSoonPage'));
 
@@ -135,6 +137,15 @@ export function PublicAppRoutes() {
         <Route path="blog/:slug" element={<FeatureGate feature="blog" redirect="/"><FeatureErrorBoundary featureName={navLabel('blog')}><BlogPostPage /></FeatureErrorBoundary></FeatureGate>} />
         <Route path="coupons" element={<FeatureGate feature="merchant_coupons" fallback={<ComingSoonPage feature={label('coupons')} />}><FeatureErrorBoundary featureName={label('coupons')}><CouponsPage /></FeatureErrorBoundary></FeatureGate>} />
         <Route path="coupons/:id" element={<FeatureGate feature="merchant_coupons" redirect="/coupons"><FeatureErrorBoundary featureName={label('coupons')}><CouponDetailPage /></FeatureErrorBoundary></FeatureGate>} />
+        {/* Public events advertising, deliberately at /whats-on rather than
+            /events. TenantShell picks the route registry by PATH, not by auth
+            state, so reusing /events would hand the lighter public registry to
+            signed-in members too and replace their real events page. A distinct
+            URL also gives a council something clean to link to. Both gates must
+            pass — a community with events but without public_events sees
+            nothing here. */}
+        <Route path="whats-on" element={<FeatureGate feature="events" redirect="/"><FeatureGate feature="public_events" redirect="/"><FeatureErrorBoundary featureName={navLabel('events')}><PublicEventsListPage /></FeatureErrorBoundary></FeatureGate></FeatureGate>} />
+        <Route path="whats-on/:id" element={<FeatureGate feature="events" redirect="/"><FeatureGate feature="public_events" redirect="/"><FeatureErrorBoundary featureName={navLabel('events')}><PublicEventDetailPage /></FeatureErrorBoundary></FeatureGate></FeatureGate>} />
         <Route path="pricing" element={<ErrorBoundary><PricingPage /></ErrorBoundary>} />
         <Route path={CARING_COMMUNITY_ROUTE.path} element={<FeatureGate feature={CARING_COMMUNITY_ROUTE.feature} fallback={<ComingSoonPage feature={label('caring_community')} />}><FeatureErrorBoundary featureName={label('caring_community')}><CaringCommunityPage /></FeatureErrorBoundary></FeatureGate>} />
         <Route path="join/:code" element={<ErrorBoundary><InviteRedemptionPage /></ErrorBoundary>} />

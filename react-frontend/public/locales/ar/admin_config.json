@@ -203,6 +203,8 @@
     "module_desc_settings": "إعدادات المستخدم",
     "module_name_events": "الأحداث",
     "module_desc_events": "أحداث المجتمع مع RSVPs",
+    "module_name_public_events": "الأحداث العامة",
+    "module_desc_public_events": "السماح للأشخاص الذين ليس لديهم حساب بتصفح الأحداث المنشورة",
     "module_name_partner_venues": "أماكن الشركاء",
     "module_desc_partner_venues": "تسجيل زيارات الأعضاء في أماكن الشركاء المحلية عن طريق QR",
     "module_name_groups": "المجموعات",

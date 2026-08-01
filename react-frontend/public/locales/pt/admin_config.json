@@ -203,6 +203,8 @@
     "module_desc_settings": "Configurações do usuário",
     "module_name_events": "Eventos",
     "module_desc_events": "Eventos comunitários com confirmações de presença",
+    "module_name_public_events": "Eventos Públicos",
+    "module_desc_public_events": "Permita que pessoas sem conta naveguem em eventos publicados",
     "module_name_partner_venues": "Locais Parceiros",
     "module_desc_partner_venues": "Registre visitas de membros em locais parceiros locais por QR",
     "module_name_groups": "Grupos",

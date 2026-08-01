@@ -203,6 +203,8 @@
     "module_desc_settings": "Impostazioni utente",
     "module_name_events": "Eventi",
     "module_desc_events": "Eventi della community con RSVP",
+    "module_name_public_events": "Eventi pubblici",
+    "module_desc_public_events": "Consenti alle persone senza account di sfogliare gli eventi pubblicati",
     "module_name_partner_venues": "Luoghi partner",
     "module_desc_partner_venues": "Registra le visite dei membri presso le sedi dei partner locali tramite QR",
     "module_name_groups": "Gruppi",

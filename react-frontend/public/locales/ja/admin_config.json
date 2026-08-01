@@ -203,6 +203,8 @@
     "module_desc_settings": "ユーザー設定",
     "module_name_events": "イベント",
     "module_desc_events": "出欠確認のあるコミュニティ イベント",
+    "module_name_public_events": "公開イベント",
+    "module_desc_public_events": "アカウントを持たない人でも公開されたイベントを閲覧できるようにする",
     "module_name_partner_venues": "提携会場",
     "module_desc_partner_venues": "地元のパートナー会場でのメンバーの訪問を QR で記録",
     "module_name_groups": "グループ",

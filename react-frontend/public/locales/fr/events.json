@@ -911,6 +911,30 @@
     "save": "Enregistrer les rappels",
     "reset": "Rétablir les valeurs par défaut"
   },
+  "public": {
+    "title": "Quoi de neuf",
+    "meta_description": "Événements et activités communautaires ouverts à tous dans {{community}}.",
+    "intro": "Événements et activités communautaires près de chez vous. Connectez-vous pour réserver une place.",
+    "loading": "Chargement des événements…",
+    "empty": "Aucun événement à venir n’est répertorié pour le moment. Veuillez revenir bientôt.",
+    "online": "Événement en ligne",
+    "join_prompt": "Les membres peuvent réserver une place, organiser leurs propres sessions et partager leurs compétences.",
+    "register_prompt": "Connectez-vous pour réserver une place à cet événement.",
+    "login_cta": "Se connecter",
+    "back_to_events": "Retour à tous les événements",
+    "not_found_title": "Événement non disponible",
+    "not_found_body": "Cet événement peut être terminé, annulé ou n'être visible que par les membres.",
+    "accessibility_heading": "Accessibilité à ce lieu",
+    "accessibility": {
+      "step_free": "Accès sans marche",
+      "accessible_toilet": "Toilettes accessibles",
+      "hearing_loop": "Boucle auditive",
+      "quiet_space": "Espace calme",
+      "seating": "Places disponibles",
+      "parking": "Stationnement accessible"
+    },
+    "hosted_by": "Organisé par {{name}}"
+  },
   "going_many": "{{count}} participant(s)",
   "interested_many": "{{count}} intéressé(s)"
 }

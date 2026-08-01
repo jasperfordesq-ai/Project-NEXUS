@@ -911,6 +911,30 @@
     "save": "Salva promemoria",
     "reset": "Ripristina predefiniti"
   },
+  "public": {
+    "title": "Cosa succede?",
+    "meta_description": "Eventi e attività della community aperti a tutti a {{community}}.",
+    "intro": "Eventi e attività della comunità vicino a te. Accedi per prenotare un posto.",
+    "loading": "Caricamento eventi…",
+    "empty": "Non ci sono eventi imminenti elencati in questo momento. Ti invitiamo a ricontrollare presto.",
+    "online": "Evento on-line",
+    "join_prompt": "I membri possono prenotare un posto, ospitare le proprie sessioni e condividere competenze.",
+    "register_prompt": "Accedi per prenotare un posto a questo evento.",
+    "login_cta": "Registrazione",
+    "back_to_events": "Torna a tutti gli eventi",
+    "not_found_title": "Evento non disponibile",
+    "not_found_body": "Questo evento potrebbe essere terminato, essere stato annullato o essere visibile solo ai membri.",
+    "accessibility_heading": "Accessibilità in questa sede",
+    "accessibility": {
+      "step_free": "Accesso senza gradini",
+      "accessible_toilet": "WC accessibile",
+      "hearing_loop": "Circuito uditivo",
+      "quiet_space": "Spazio tranquillo",
+      "seating": "Posti a sedere disponibili",
+      "parking": "Parcheggio accessibile"
+    },
+    "hosted_by": "Organizzato da {{name}}"
+  },
   "going_many": "{{count}} partecipante/i",
   "interested_many": "{{count}} interessato/i"
 }

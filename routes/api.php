@@ -74,6 +74,18 @@ Route::get('/v2/jobs/feed/indeed.xml', [\App\Http\Controllers\Api\JobFeedControl
 Route::get('/v2/clubs', [\App\Http\Controllers\Api\ClubsApiController::class, 'index']);
 
 // ============================================
+// PUBLIC ROUTES — Events advertising (no auth required)
+// Read-only. Gated by BOTH `events` and `public_events`, so opting a community
+// into public advertising is a deliberate, separate decision. Registration
+// still requires an account — nothing here is a write path.
+// ============================================
+Route::middleware(['feature:events', 'feature:public_events'])->group(function (): void {
+    Route::get('/v2/public/events', [\App\Http\Controllers\Api\EventPublicController::class, 'index']);
+    Route::get('/v2/public/events/{id}', [\App\Http\Controllers\Api\EventPublicController::class, 'show'])
+        ->whereNumber('id');
+});
+
+// ============================================
 // PUBLIC ROUTES — SEO metadata (no auth required)
 // React frontend fetches per-page metadata for <head> tags
 // ============================================

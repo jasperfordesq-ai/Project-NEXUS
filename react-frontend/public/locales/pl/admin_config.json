@@ -203,6 +203,8 @@
     "module_desc_settings": "Ustawienia użytkownika",
     "module_name_events": "Wydarzenia",
     "module_desc_events": "Wydarzenia społecznościowe z potwierdzeniem uczestnictwa",
+    "module_name_public_events": "Wydarzenia publiczne",
+    "module_desc_public_events": "Pozwól osobom nieposiadającym konta przeglądać opublikowane wydarzenia",
     "module_name_partner_venues": "Miejsca partnerskie",
     "module_desc_partner_venues": "Rejestruj wizyty członków w lokalnych lokalizacjach partnerskich za pomocą QR",
     "module_name_groups": "Grupy",

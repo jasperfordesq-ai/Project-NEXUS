@@ -1217,6 +1217,11 @@ export interface TenantFeatures {
    * issues no coupon and applies no discount. Opt-in per tenant.
    */
   partner_venues: boolean;
+  /**
+   * Public events advertising — lets anonymous visitors browse published
+   * events at /whats-on without an account. Registration still requires login.
+   */
+  public_events: boolean;
   /** Authenticator-app 2FA enrollment. Existing enrollments remain enforced when disabled. */
   two_factor_authentication: boolean;
   /** Passkey enrollment. Existing passkeys remain usable when disabled. */

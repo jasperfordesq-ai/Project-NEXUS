@@ -133,6 +133,31 @@ describe('App route feature gates', () => {
     expect(protectedRoutesSource).toMatch(/path="marketplace\/:id\/edit"[\s\S]*?<FeatureGate feature="marketplace"/);
   });
 
+  it('serves public events advertising from /whats-on, never from /events', () => {
+    // TenantShell picks the route registry by path, not by auth state, so a
+    // public declaration at "events" would hand the lighter public registry to
+    // signed-in members and replace their real events page.
+    expect(publicRoutesSource).toContain('path="whats-on"');
+    expect(publicRoutesSource).toContain('path="whats-on/:id"');
+    expect(publicRoutesSource).not.toContain('path="events"');
+    expect(publicRoutesSource).not.toContain('path="events/:id"');
+
+    // The member events routes stay inside the authenticated tree.
+    expect(protectedRoutesSource).toContain('path="events"');
+    expect(protectedRoutesSource).toContain('path="events/:id"');
+  });
+
+  it('requires both events and public_events for the public advertising routes', () => {
+    expect(publicRoutesSource).toMatch(/path="whats-on"[\s\S]*?feature="events"[\s\S]*?feature="public_events"/);
+    expect(publicRoutesSource).toMatch(/path="whats-on\/:id"[\s\S]*?feature="events"[\s\S]*?feature="public_events"/);
+  });
+
+  it('lets the public route registry serve /whats-on', () => {
+    // Without an entry in TenantShell's public patterns the anonymous visitor
+    // would be handed the full registry, where /whats-on does not exist.
+    expect(tenantShellSource).toContain('whats-on');
+  });
+
   it('gates partner venue routes behind the partner_venues feature', () => {
     expect(protectedRoutesSource).toMatch(/path="venues"[\s\S]*?<FeatureGate feature="partner_venues"/);
     expect(protectedRoutesSource).toMatch(/path="venues\/pass"[\s\S]*?<FeatureGate feature="partner_venues"/);

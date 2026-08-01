@@ -900,5 +900,29 @@
     "source_lookup_failed": "利用不可",
     "save": "リマインダーを保存",
     "reset": "初期値に戻す"
+  },
+  "public": {
+    "title": "何が起こっているのか",
+    "meta_description": "{{community}} の誰もが参加できるコミュニティ イベントやアクティビティ。",
+    "intro": "近くのコミュニティイベントやアクティビティ。サインインして場所を予約します。",
+    "loading": "イベントを読み込み中…",
+    "empty": "現在、予定されているイベントはありません。すぐにもう一度ご確認ください。",
+    "online": "オンラインイベント",
+    "join_prompt": "メンバーは場所を予約し、独自のセッションを主催し、スキルを共有できます。",
+    "register_prompt": "このイベントの場所を予約するにはサインインしてください。",
+    "login_cta": "サインイン",
+    "back_to_events": "すべてのイベントに戻る",
+    "not_found_title": "イベントは利用できません",
+    "not_found_body": "このイベントは終了したか、中止されたか、メンバーのみが閲覧できる可能性があります。",
+    "accessibility_heading": "この会場のアクセシビリティ",
+    "accessibility": {
+      "step_free": "段差なくアクセス可能",
+      "accessible_toilet": "バリアフリートイレ",
+      "hearing_loop": "聴覚ループ",
+      "quiet_space": "静かな空間",
+      "seating": "座席あり",
+      "parking": "バリアフリー駐車場"
+    },
+    "hosted_by": "主催: {{name}}"
   }
 }

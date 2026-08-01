@@ -203,6 +203,8 @@
     "module_desc_settings": "Gebruikersinstellingen",
     "module_name_events": "Evenementen",
     "module_desc_events": "Community-evenementen met RSVP's",
+    "module_name_public_events": "Publieke evenementen",
+    "module_desc_public_events": "Laat mensen zonder account door gepubliceerde evenementen bladeren",
     "module_name_partner_venues": "Partnerlocaties",
     "module_desc_partner_venues": "Registreer ledenbezoeken aan lokale partnerlocaties via QR",
     "module_name_groups": "Groepen",

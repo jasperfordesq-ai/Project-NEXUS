@@ -911,6 +911,30 @@
     "save": "Guardar lembretes",
     "reset": "Repor predefinições"
   },
+  "public": {
+    "title": "O que está acontecendo",
+    "meta_description": "Eventos e atividades comunitárias abertas a todos em {{community}}.",
+    "intro": "Eventos e atividades comunitárias perto de você. Faça login para reservar um lugar.",
+    "loading": "Carregando eventos…",
+    "empty": "Não há eventos futuros listados no momento. Verifique novamente em breve.",
+    "online": "Evento on-line",
+    "join_prompt": "Os membros podem reservar um lugar, organizar as suas próprias sessões e partilhar competências.",
+    "register_prompt": "Faça login para reservar um lugar neste evento.",
+    "login_cta": "Entrar",
+    "back_to_events": "Voltar para todos os eventos",
+    "not_found_title": "Evento não disponível",
+    "not_found_body": "Este evento pode ter terminado, sido cancelado ou pode estar visível apenas para membros.",
+    "accessibility_heading": "Acessibilidade neste local",
+    "accessibility": {
+      "step_free": "Acesso sem etapas",
+      "accessible_toilet": "Banheiro acessível",
+      "hearing_loop": "Loop auditivo",
+      "quiet_space": "Espaço tranquilo",
+      "seating": "Assentos disponíveis",
+      "parking": "Estacionamento acessível"
+    },
+    "hosted_by": "Organizado por {{name}}"
+  },
   "going_many": "{{count}} vão",
   "interested_many": "{{count}} interessados"
 }

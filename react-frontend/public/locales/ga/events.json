@@ -931,6 +931,30 @@
     "save": "Sábháil meabhrúcháin",
     "reset": "Athshocraigh go réamhshocruithe"
   },
+  "public": {
+    "title": "Cad atá ar",
+    "meta_description": "Imeachtaí agus gníomhaíochtaí pobail oscailte do gach duine i {{community}}.",
+    "intro": "Imeachtaí agus gníomhaíochtaí pobail in aice leat. Sínigh isteach chun áit a chur in áirithe.",
+    "loading": "Imeachtaí á lódáil…",
+    "empty": "Níl aon imeachtaí atá le teacht liostaithe faoi láthair. Seiceáil ar ais go luath le do thoil.",
+    "online": "Imeacht ar líne",
+    "join_prompt": "Is féidir le baill áit a chur in áirithe, a seisiúin féin a óstáil agus scileanna a roinnt.",
+    "register_prompt": "Sínigh isteach chun áit a chur in áirithe ag an imeacht seo.",
+    "login_cta": "Sínigh isteach",
+    "back_to_events": "Ar ais chuig gach imeacht",
+    "not_found_title": "Níl an t-imeacht ar fáil",
+    "not_found_body": "Seans go bhfuil an teagmhas seo críochnaithe, curtha ar ceal, nó seans go mbeidh sé le feiceáil ag baill amháin.",
+    "accessibility_heading": "Inrochtaineacht ag an ionad seo",
+    "accessibility": {
+      "step_free": "Rochtain gan chéim",
+      "accessible_toilet": "Leithreas inrochtana",
+      "hearing_loop": "Lúb éisteachta",
+      "quiet_space": "Spás ciúin",
+      "seating": "Suíocháin ar fáil",
+      "parking": "Páirceáil inrochtana"
+    },
+    "hosted_by": "Arna óstáil ag {{name}}"
+  },
   "going_few": "{{count}} ag dul",
   "going_many": "{{count}} ag dul",
   "going_two": "{{count}} ag dul",

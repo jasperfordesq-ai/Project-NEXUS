@@ -72,6 +72,11 @@ class TenantFeatureConfig
         // engagement only: no coupon is issued and no discount is applied by the
         // platform. Default OFF, opt-in per community.
         'partner_venues' => false,
+        // Public events advertising — lets anonymous visitors browse and read
+        // published events without an account. Registration still requires
+        // login. Default OFF: a community opts in to putting its events on the
+        // open web. Effective exposure requires `events` as well.
+        'public_events' => false,
         // Explore / Discover curated discovery page. Default ON so the navbar link
         // keeps showing where it already does; admins can turn it off per tenant in
         // Module Configuration, which hides the navbar link and blocks the route.

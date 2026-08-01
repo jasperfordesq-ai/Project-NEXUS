@@ -239,6 +239,16 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     detailPageUrl: '/admin/events/settings',
   },
   {
+    // Public events advertising at /whats-on. Requires `events` as well —
+    // this switch only decides whether published events are also visible to
+    // people without an account.
+    id: 'public_events',
+    icon: Globe,
+    type: 'feature',
+    configSource: 'tenant_features',
+    configOptions: [],
+  },
+  {
     // Partner venues — records engagement when venue staff scan a member's
     // pass. Deliberately separate from marketplace/merchant_coupons: no
     // coupon is issued and no discount is applied by the platform.

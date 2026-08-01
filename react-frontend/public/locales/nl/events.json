@@ -900,5 +900,29 @@
     "source_lookup_failed": "niet beschikbaar",
     "save": "Herinneringen opslaan",
     "reset": "Standaard herstellen"
+  },
+  "public": {
+    "title": "Wat is er aan de hand",
+    "meta_description": "Community-evenementen en -activiteiten zijn voor iedereen toegankelijk in {{community}}.",
+    "intro": "Community-evenementen en -activiteiten bij u in de buurt. Meld u aan om een ​​plaats te reserveren.",
+    "loading": "Gebeurtenissen laden…",
+    "empty": "Er zijn momenteel geen aankomende evenementen vermeld. Kom binnenkort nog eens terug.",
+    "online": "Online evenement",
+    "join_prompt": "Leden kunnen een plek boeken, hun eigen sessies organiseren en vaardigheden delen.",
+    "register_prompt": "Log in om een ​​plaats te reserveren voor dit evenement.",
+    "login_cta": "Log in",
+    "back_to_events": "Terug naar alle evenementen",
+    "not_found_title": "Evenement niet beschikbaar",
+    "not_found_body": "Dit evenement is mogelijk afgelopen, geannuleerd of is mogelijk alleen zichtbaar voor leden.",
+    "accessibility_heading": "Bereikbaarheid op deze locatie",
+    "accessibility": {
+      "step_free": "Traploze toegang",
+      "accessible_toilet": "Toegankelijk toilet",
+      "hearing_loop": "Gehoorlus",
+      "quiet_space": "Rustige ruimte",
+      "seating": "Zitplaatsen beschikbaar",
+      "parking": "Toegankelijke parkeergelegenheid"
+    },
+    "hosted_by": "Georganiseerd door {{name}}"
   }
 }

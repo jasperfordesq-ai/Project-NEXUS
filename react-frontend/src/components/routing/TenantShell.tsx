@@ -410,6 +410,7 @@ const publicRuntimePrefixes = [
   'pricing',
   'join',
   'public',
+  'whats-on',
 ];
 
 function routeNeedsTenantAppRuntime(pathname: string, slugPrefix?: string): boolean {
@@ -439,6 +440,9 @@ const publicRegistryPatterns = [
   /^volunteering\/guardian-consent\/verify\/[^/]+$/,
   /^page\/[^/]+$/,
   /^blog(\/[^/]+)?$/,
+  // Public events advertising. Numeric-only detail segment so this can never
+  // shadow a future authenticated sub-route under the same prefix.
+  /^whats-on(\/\d+)?$/,
   /^coupons(\/[^/]+)?$/,
   /^join\/[^/]+$/,
   new RegExp(`^${CARING_COMMUNITY_ROUTE.path}$`),
