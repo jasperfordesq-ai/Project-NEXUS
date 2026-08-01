@@ -200,7 +200,7 @@ final class EventAttendanceService
             try {
                 $metadata = json_encode([
                     'schema_version' => 1,
-                    'credit_mode' => 'off',
+                    'credit_mode' => (string) config('events.attendance_credit_mode', 'off'),
                 ], JSON_THROW_ON_ERROR);
             } catch (JsonException $exception) {
                 throw new EventAttendanceException('event_attendance_metadata_invalid');
@@ -236,9 +236,14 @@ final class EventAttendanceService
                 $attendee,
                 $persistedActor,
             );
-            if (($credit['status'] ?? null) !== 'disabled') {
+            // Still fail-closed, but against an explicit allow-set rather than
+            // "disabled only": an UNRECOGNISED status means some writer we did
+            // not review returned it, and that must abort rather than be
+            // treated as success.
+            if (! in_array($credit['status'] ?? null, EventCreditService::SETTLED_STATUSES, true)) {
                 throw new EventAttendanceException('event_attendance_credit_writer_not_authorized');
             }
+            $creditStatus = (string) $credit['status'];
 
             $outbox = $this->outbox->record(
                 $tenantId,
@@ -255,7 +260,7 @@ final class EventAttendanceService
                     'actor_user_id' => (int) $persistedActor->getKey(),
                     'attendance_version' => 1,
                     'status' => 'checked_in',
-                    'credit_status' => 'disabled',
+                    'credit_status' => $creditStatus,
                     'occurred_at' => $now->toIso8601String(),
                 ],
             );
@@ -265,7 +270,7 @@ final class EventAttendanceService
             return new EventAttendanceResult(
                 $attendance,
                 'checked_in',
-                'disabled',
+                $creditStatus,
                 $activityId,
                 (int) $outbox['id'],
             );
@@ -560,7 +565,9 @@ final class EventAttendanceService
                     $attendee,
                     $persistedActor,
                 );
-                if (($credit['status'] ?? null) !== 'disabled') {
+                // Same allow-set posture as record(): an unrecognised status is
+                // an unreviewed writer and still aborts.
+                if (! in_array($credit['status'] ?? null, EventCreditService::SETTLED_STATUSES, true)) {
                     throw new EventAttendanceException('event_attendance_credit_writer_not_authorized');
                 }
             }
@@ -863,7 +870,7 @@ final class EventAttendanceService
         try {
             return json_encode([
                 'schema_version' => 2,
-                'credit_mode' => 'off',
+                'credit_mode' => (string) config('events.attendance_credit_mode', 'off'),
                 'before' => $before,
                 'after' => [
                     'state' => (string) $stored->attendance_status,

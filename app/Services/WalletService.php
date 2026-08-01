@@ -45,6 +45,63 @@ class WalletService
      * config() read the tenant setting while transfer() hardcoded the ceiling,
      * so a stricter tenant cap was advertised but silently not enforced).
      */
+    /**
+     * Mint time credits to a member against the community, with no payer.
+     *
+     * This is the existing "system credit" shape made callable: a transaction
+     * with `sender_id IS NULL`, exactly like `starting_balance`,
+     * `community_fund` and `admin_grant`, which the wallet UI already renders.
+     * It is NOT a transfer — nobody is debited — so it deliberately does not go
+     * through transfer() and is not subject to the peer-transfer cap. Callers
+     * own the policy question of whether a mint is authorised at all.
+     *
+     * The caller must already hold a database transaction if it needs the mint
+     * and its own bookkeeping to be atomic.
+     *
+     * @return int The transaction id.
+     */
+    public function mintToMember(
+        int $tenantId,
+        int $recipientId,
+        float $amount,
+        string $transactionType,
+        string $description,
+    ): int {
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('Mint amount must be positive.');
+        }
+
+        // Lock the recipient row before incrementing, matching transfer()'s
+        // ordering so a mint and a transfer touching the same member cannot
+        // interleave into a lost update.
+        DB::table('users')
+            ->where('id', $recipientId)
+            ->where('tenant_id', $tenantId)
+            ->lockForUpdate()
+            ->first();
+
+        $updated = DB::table('users')
+            ->where('id', $recipientId)
+            ->where('tenant_id', $tenantId)
+            ->increment('balance', $amount);
+
+        if ($updated !== 1) {
+            throw new \RuntimeException('Mint recipient not found in this tenant.');
+        }
+
+        return (int) DB::table('transactions')->insertGetId([
+            'tenant_id' => $tenantId,
+            'sender_id' => null,
+            'receiver_id' => $recipientId,
+            'amount' => $amount,
+            'description' => $description,
+            'transaction_type' => $transactionType,
+            'status' => 'completed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     public function maxTransferAmount(?int $tenantId = null): float
     {
         $tenantId ??= TenantContext::getId();
@@ -792,6 +849,7 @@ class WalletService
                     'community_fund'   => __('api.wallet_counterparty_community_fund'),
                     'starting_balance' => __('api.wallet_counterparty_system'),
                     'admin_grant'      => __('api.wallet_counterparty_admin'),
+                    'event_attendance_reward' => __('api.wallet_counterparty_community_fund'),
                     default            => __('api.wallet_counterparty_unknown'),
                 };
                 return ['id' => 0, 'name' => $label, 'avatar' => null];

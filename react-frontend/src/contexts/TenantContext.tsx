@@ -135,6 +135,8 @@ const defaultFeatures: TenantFeatures = {
   partner_venues: false,
   // Public events advertising — opt-in per tenant. Synced with PHP TenantFeatureConfig.
   public_events: false,
+  // Attendance rewards — opt-in per tenant. Synced with PHP TenantFeatureConfig.
+  event_attendance_credits: false,
   // Security feature switches govern new enrollment only. Existing TOTP
   // challenges and passkey sign-in remain available to prevent lockouts.
   two_factor_authentication: true,

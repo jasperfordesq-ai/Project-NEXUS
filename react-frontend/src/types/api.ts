@@ -1222,6 +1222,12 @@ export interface TenantFeatures {
    * events at /whats-on without an account. Registration still requires login.
    */
   public_events: boolean;
+  /**
+   * Attendance rewards — grants time credits on verified event check-in,
+   * minted against the community. Additionally requires
+   * EVENTS_ATTENDANCE_CREDIT_MODE=treasury and a per-event amount.
+   */
+  event_attendance_credits: boolean;
   /** Authenticator-app 2FA enrollment. Existing enrollments remain enforced when disabled. */
   two_factor_authentication: boolean;
   /** Passkey enrollment. Existing passkeys remain usable when disabled. */

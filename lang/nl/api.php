@@ -2771,4 +2771,8 @@ KANDIDATEN::candidates',
     'partner_venue_csv_member' => 'Lid',
     'partner_venue_csv_recorded_by' => 'Vastgelegd door',
     'partner_venue_csv_source' => 'Bron',
+
+    // Event attendance rewards (time credits granted on verified check-in).
+    'event_attendance_reward_description' => 'Deelnamebeloning: :event',
+    'event_attendance_rewards_disabled' => 'Deelnamebeloningen zijn niet ingeschakeld voor deze gemeenschap',
 ];

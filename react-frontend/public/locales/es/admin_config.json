@@ -203,6 +203,8 @@
     "module_desc_settings": "Configuraciones de usuario",
     "module_name_events": "Eventos",
     "module_desc_events": "Eventos comunitarios con confirmación de asistencia",
+    "module_name_event_attendance_credits": "Recompensas de asistencia",
+    "module_desc_event_attendance_credits": "Otorgar créditos de tiempo a miembros en el registro de evento verificado",
     "module_name_public_events": "Eventos públicos",
     "module_desc_public_events": "Permitir que las personas sin una cuenta exploren los eventos publicados",
     "module_name_partner_venues": "Lugares asociados",

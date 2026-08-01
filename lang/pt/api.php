@@ -2771,4 +2771,8 @@ CANDIDATOS::candidates',
     'partner_venue_csv_member' => 'Membro',
     'partner_venue_csv_recorded_by' => 'Registado por',
     'partner_venue_csv_source' => 'Origem',
+
+    // Event attendance rewards (time credits granted on verified check-in).
+    'event_attendance_reward_description' => 'Recompensa de participação: :event',
+    'event_attendance_rewards_disabled' => 'As recompensas de participação não estão ativadas para esta comunidade',
 ];

@@ -77,6 +77,12 @@ class TenantFeatureConfig
         // login. Default OFF: a community opts in to putting its events on the
         // open web. Effective exposure requires `events` as well.
         'public_events' => false,
+        // Attendance rewards — grants time credits to a member on VERIFIED
+        // event check-in, minted against the community so hosting is never a
+        // personal cost. Default OFF, and additionally requires
+        // EVENTS_ATTENDANCE_CREDIT_MODE=treasury plus a per-event amount, so
+        // this switch alone cannot move credits.
+        'event_attendance_credits' => false,
         // Explore / Discover curated discovery page. Default ON so the navbar link
         // keeps showing where it already does; admins can turn it off per tenant in
         // Module Configuration, which hides the navbar link and blocks the route.

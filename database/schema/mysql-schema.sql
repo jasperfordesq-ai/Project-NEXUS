@@ -8509,6 +8509,7 @@ CREATE TABLE `events` (
   `category_id` int(11) DEFAULT NULL,
   `volunteer_opportunity_id` int(11) DEFAULT NULL COMMENT 'Linked vol opp (Signed)',
   `auto_log_hours` tinyint(1) DEFAULT 0 COMMENT 'Auto-log hours upon attendance',
+  `attendance_credit_amount` decimal(10,2) DEFAULT NULL COMMENT 'Time credits granted once per member on verified check-in; NULL grants nothing',
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(11,8) DEFAULT NULL,
   `accessibility_step_free` tinyint(1) DEFAULT NULL,
@@ -12322,7 +12323,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=394 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=395 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -20490,7 +20491,8 @@ INSERT INTO `laravel_migrations` VALUES
 (390,'2026_07_14_000200_move_message_media_to_private_storage',100),
 (391,'2026_07_26_000001_add_external_federation_kill_switch',100),
 (392,'2026_07_27_000001_add_partner_api_kill_switch',101),
-(393,'2026_08_01_000001_create_partner_venue_tables',102);
+(393,'2026_08_01_000001_create_partner_venue_tables',102),
+(394,'2026_08_01_000002_add_event_attendance_credit_amount',103);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

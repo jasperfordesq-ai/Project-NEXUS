@@ -203,6 +203,8 @@
     "module_desc_settings": "Impostazioni utente",
     "module_name_events": "Eventi",
     "module_desc_events": "Eventi della community con RSVP",
+    "module_name_event_attendance_credits": "Premi di partecipazione",
+    "module_desc_event_attendance_credits": "Concedi crediti di tempo ai membri al momento del check-in dell'evento verificato",
     "module_name_public_events": "Eventi pubblici",
     "module_desc_public_events": "Consenti alle persone senza account di sfogliare gli eventi pubblicati",
     "module_name_partner_venues": "Luoghi partner",

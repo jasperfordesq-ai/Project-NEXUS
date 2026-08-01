@@ -3276,6 +3276,10 @@ return [
     'paid_push_campaign_not_rejectable' => 'Campaign cannot be rejected in status: :status',
     'paid_push_campaign_not_dispatchable' => 'Campaign is not ready to dispatch (status: :status).',
 
+    // Event attendance rewards (time credits granted on verified check-in).
+    'event_attendance_reward_description' => 'Attendance reward: :event',
+    'event_attendance_rewards_disabled' => 'Attendance rewards are not enabled for this community',
+
     // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Partner venues are not enabled for this community',
     'partner_venue_not_found' => 'Partner venue not found',

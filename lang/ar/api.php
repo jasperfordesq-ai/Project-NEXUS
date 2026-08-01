@@ -2771,4 +2771,8 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'partner_venue_csv_member' => 'العضو',
     'partner_venue_csv_recorded_by' => 'سُجّل بواسطة',
     'partner_venue_csv_source' => 'المصدر',
+
+    // Event attendance rewards (time credits granted on verified check-in).
+    'event_attendance_reward_description' => 'مكافأة الحضور: :event',
+    'event_attendance_rewards_disabled' => 'مكافآت الحضور غير مفعّلة في هذا المجتمع',
 ];

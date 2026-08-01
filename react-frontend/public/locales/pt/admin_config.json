@@ -203,6 +203,8 @@
     "module_desc_settings": "Configurações do usuário",
     "module_name_events": "Eventos",
     "module_desc_events": "Eventos comunitários com confirmações de presença",
+    "module_name_event_attendance_credits": "Recompensas de participação",
+    "module_desc_event_attendance_credits": "Conceda créditos de tempo aos membros no check-in verificado do evento",
     "module_name_public_events": "Eventos Públicos",
     "module_desc_public_events": "Permita que pessoas sem conta naveguem em eventos publicados",
     "module_name_partner_venues": "Locais Parceiros",

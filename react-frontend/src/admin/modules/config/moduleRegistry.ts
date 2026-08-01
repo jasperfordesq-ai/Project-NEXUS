@@ -20,6 +20,7 @@ import UserCircle from 'lucide-react/icons/circle-user';
 import Settings from 'lucide-react/icons/settings';
 import Calendar from 'lucide-react/icons/calendar';
 import Store from 'lucide-react/icons/store';
+import Gift from 'lucide-react/icons/gift';
 import Users from 'lucide-react/icons/users';
 import Gamepad2 from 'lucide-react/icons/gamepad-2';
 import Target from 'lucide-react/icons/target';
@@ -244,6 +245,16 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     // people without an account.
     id: 'public_events',
     icon: Globe,
+    type: 'feature',
+    configSource: 'tenant_features',
+    configOptions: [],
+  },
+  {
+    // Attendance rewards. This switch alone cannot move credits — the server
+    // additionally requires EVENTS_ATTENDANCE_CREDIT_MODE=treasury and a
+    // per-event amount set by an admin.
+    id: 'event_attendance_credits',
+    icon: Gift,
     type: 'feature',
     configSource: 'tenant_features',
     configOptions: [],

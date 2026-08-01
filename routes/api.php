@@ -3385,6 +3385,13 @@ Route::post('/v2/volunteering/checkin/verify/{token}', [\App\Http\Controllers\Ap
 Route::post('/v2/volunteering/checkin/checkout/{token}', [\App\Http\Controllers\Api\VolunteerCheckInController::class, 'checkOut']);
 Route::get('/v2/volunteering/shifts/{id}/checkins', [\App\Http\Controllers\Api\VolunteerCheckInController::class, 'shiftCheckIns']);
 
+// Event attendance rewards — a tenant-admin funding decision, not an organiser
+// field: the credits are minted against the community.
+Route::middleware(['feature:events', 'feature:event_attendance_credits'])->group(function (): void {
+    Route::get('/v2/admin/events/{id}/attendance-reward', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'show'])->whereNumber('id');
+    Route::put('/v2/admin/events/{id}/attendance-reward', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'update'])->whereNumber('id');
+});
+
 // Partner venues — member pass QR, staff-scanned engagement recording, and
 // tenant-admin management. Engagement only: the platform issues no coupon and
 // applies no discount here.

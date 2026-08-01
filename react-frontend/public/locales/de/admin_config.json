@@ -203,6 +203,8 @@
     "module_desc_settings": "Benutzereinstellungen",
     "module_name_events": "Veranstaltungen",
     "module_desc_events": "Community-Events mit RSVPs",
+    "module_name_event_attendance_credits": "Anwesenheitsprämien",
+    "module_desc_event_attendance_credits": "Gewähren Sie Mitgliedern beim verifizierten Event-Check-in Zeitgutschriften",
     "module_name_public_events": "Öffentliche Veranstaltungen",
     "module_desc_public_events": "Lassen Sie Personen ohne Konto veröffentlichte Veranstaltungen durchsuchen",
     "module_name_partner_venues": "Partner-Veranstaltungsorte",

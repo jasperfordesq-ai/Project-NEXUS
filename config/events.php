@@ -45,15 +45,50 @@ return [
     | Event attendance credits
     |--------------------------------------------------------------------------
     |
-    | Automatic event-attendance credit transfers are deliberately disabled.
-    | The historical implementation charged whichever organiser or tenant
-    | administrator performed check-in and used mutable RSVP state as its
-    | idempotency claim. No value other than "off" is currently supported;
-    | unknown values fail closed until the immutable claim-ledger flow exists.
+    | Attendance rewards are OFF unless deliberately configured. The historical
+    | implementation charged whichever organiser or tenant administrator
+    | performed check-in and used mutable RSVP state as its idempotency claim;
+    | that is what the immutable claim ledger replaced.
+    |
+    | Supported modes:
+    |
+    |   off       No credits are granted. The reviewed writer is not reachable.
+    |             This remains the default everywhere.
+    |
+    |   treasury  Credits are MINTED to the attendee against the community
+    |             (sender_id IS NULL, transaction_type event_attendance_reward —
+    |             the same shape as starting_balance / community_fund /
+    |             admin_grant). No member or organiser is debited: the community
+    |             funds engagement rewards, so hosting is never a personal cost.
+    |
+    | Any other value still fails closed and logs at critical.
+    |
+    | A reward requires ALL THREE of: this mode, the tenant's
+    | `event_attendance_credits` feature flag, and a per-event
+    | `attendance_credit_amount`. The reviewed semantics are:
+    |
+    |   payer     the community treasury (funding_source_type tenant_treasury)
+    |   amount    flat per event, clamped to attendance_credit_max below
+    |   trigger   verified check-in only, once per (tenant, event, member) via
+    |             the claim ledger's unique key — never RSVP, which is unverified
+    |   consent   attendee consent is implicit in registering and attending;
+    |             the payer's consent is the admin enabling the flag and setting
+    |             an amount
+    |   failure   never blocks attendance — the claim records `failed` and the
+    |             check-in still stands
+    |   reversal  admin-initiated only, as a child claim; no automatic clawback
     |
     */
 
     'attendance_credit_mode' => env('EVENTS_ATTENDANCE_CREDIT_MODE', 'off'),
+
+    /**
+     * Hard ceiling on a single event's attendance reward. An organiser can set
+     * any amount up to this; the writer clamps rather than rejects so a stale
+     * larger value on an existing event cannot mint more than the community
+     * has agreed to.
+     */
+    'attendance_credit_max' => (float) env('EVENTS_ATTENDANCE_CREDIT_MAX', 2.0),
 
     'attendance' => [
         'opens_before_minutes' => (int) env('EVENTS_ATTENDANCE_OPENS_BEFORE_MINUTES', 30),

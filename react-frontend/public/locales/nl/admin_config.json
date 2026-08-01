@@ -203,6 +203,8 @@
     "module_desc_settings": "Gebruikersinstellingen",
     "module_name_events": "Evenementen",
     "module_desc_events": "Community-evenementen met RSVP's",
+    "module_name_event_attendance_credits": "Aanwezigheidsbeloningen",
+    "module_desc_event_attendance_credits": "Verleen tijdskrediet aan leden bij het geverifieerde inchecken bij een evenement",
     "module_name_public_events": "Publieke evenementen",
     "module_desc_public_events": "Laat mensen zonder account door gepubliceerde evenementen bladeren",
     "module_name_partner_venues": "Partnerlocaties",

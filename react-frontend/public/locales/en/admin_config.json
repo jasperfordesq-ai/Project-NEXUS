@@ -203,6 +203,8 @@
     "module_desc_settings": "User settings",
     "module_name_events": "Events",
     "module_desc_events": "Community events with RSVPs",
+    "module_name_event_attendance_credits": "Attendance Rewards",
+    "module_desc_event_attendance_credits": "Grant time credits to members on verified event check-in",
     "module_name_public_events": "Public Events",
     "module_desc_public_events": "Let people without an account browse published events",
     "module_name_partner_venues": "Partner Venues",

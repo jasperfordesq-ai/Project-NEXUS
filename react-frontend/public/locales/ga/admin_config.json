@@ -203,6 +203,8 @@
     "module_desc_settings": "Socruithe úsáideora",
     "module_name_events": "Imeachtaí",
     "module_desc_events": "Imeachtaí pobail le RSVPanna",
+    "module_name_event_attendance_credits": "Luaíochtaí Tinrimh",
+    "module_desc_event_attendance_credits": "Deonaigh creidmheasanna ama do chomhaltaí ar sheiceáil isteach fíoraithe imeachta",
     "module_name_public_events": "Imeachtaí Poiblí",
     "module_desc_public_events": "Lig do dhaoine gan chuntas imeachtaí foilsithe a bhrabhsáil",
     "module_name_partner_venues": "Ionaid Chomhpháirtithe",

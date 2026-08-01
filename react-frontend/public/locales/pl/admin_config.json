@@ -203,6 +203,8 @@
     "module_desc_settings": "Ustawienia użytkownika",
     "module_name_events": "Wydarzenia",
     "module_desc_events": "Wydarzenia społecznościowe z potwierdzeniem uczestnictwa",
+    "module_name_event_attendance_credits": "Nagrody za obecność",
+    "module_desc_event_attendance_credits": "Przyznaj członkom kredyty czasowe po zweryfikowaniu meldowania się na wydarzeniu",
     "module_name_public_events": "Wydarzenia publiczne",
     "module_desc_public_events": "Pozwól osobom nieposiadającym konta przeglądać opublikowane wydarzenia",
     "module_name_partner_venues": "Miejsca partnerskie",

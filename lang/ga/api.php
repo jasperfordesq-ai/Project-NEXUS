@@ -2771,4 +2771,8 @@ IARRTHÓIRÍ: :candidates',
     'partner_venue_csv_member' => 'Ball',
     'partner_venue_csv_recorded_by' => 'Taifeadta ag',
     'partner_venue_csv_source' => 'Foinse',
+
+    // Event attendance rewards (time credits granted on verified check-in).
+    'event_attendance_reward_description' => 'Luach saothair freastail: :event',
+    'event_attendance_rewards_disabled' => 'Níl luach saothair freastail cumasaithe don phobal seo',
 ];

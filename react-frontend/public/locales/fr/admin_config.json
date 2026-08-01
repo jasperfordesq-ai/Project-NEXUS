@@ -203,6 +203,8 @@
     "module_desc_settings": "Paramètres utilisateur",
     "module_name_events": "Événements",
     "module_desc_events": "Événements communautaires avec RSVP",
+    "module_name_event_attendance_credits": "Récompenses de participation",
+    "module_desc_event_attendance_credits": "Accorder des crédits de temps aux membres lors de l'enregistrement vérifié d'un événement",
     "module_name_public_events": "Événements publics",
     "module_desc_public_events": "Permettez aux personnes sans compte de parcourir les événements publiés",
     "module_name_partner_venues": "Lieux partenaires",

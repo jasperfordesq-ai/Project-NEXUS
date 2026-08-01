@@ -2771,4 +2771,8 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'partner_venue_csv_member' => '会員',
     'partner_venue_csv_recorded_by' => '記録者',
     'partner_venue_csv_source' => '記録方法',
+
+    // Event attendance rewards (time credits granted on verified check-in).
+    'event_attendance_reward_description' => '参加報酬: :event',
+    'event_attendance_rewards_disabled' => 'このコミュニティでは参加報酬が有効になっていません',
 ];
