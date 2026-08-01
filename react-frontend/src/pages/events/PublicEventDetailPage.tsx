@@ -41,7 +41,6 @@ export default function PublicEventDetailPage() {
   const [event, setEvent] = useState<PublicEventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const locale = getFormattingLocale();
 
   usePageTitle(event?.title ?? t('public.title'));
 
@@ -88,8 +87,9 @@ export default function PublicEventDetailPage() {
   }
 
   const start = event.start_time ? new Date(event.start_time) : null;
+  // getFormattingLocale() inline, per the locale-formatting contract.
   const whenLabel = start && !Number.isNaN(start.getTime())
-    ? start.toLocaleString(locale, {
+    ? start.toLocaleString(getFormattingLocale(), {
         weekday: 'long',
         day: 'numeric',
         month: 'long',

@@ -47,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Three build- and routing-level gates caught real defects in the partner-venue and public-events work.** Recorded rather than folded silently into the feature commits, because each is a distinct class of mistake worth seeing.
+
+  `venues` and `whats-on` were added as top-level routes without being added to `RESERVED_PATHS`. That list is what stops a tenant slug being mistaken for an app route, so until this was fixed a community whose slug happened to be `venues` would have had its pages resolve to the venue directory instead. `tenant-routing.test.ts` derives the expected set from the router itself, which is exactly why it caught it.
+
+  The two public events pages hoisted `getFormattingLocale()` into a local variable and passed it to `toLocaleString`. The locale-formatting contract requires the call at the formatting site, and it is a **blocking prebuild step**, so this failed the production build while `tsc --noEmit` was perfectly happy — a reminder that typechecking is not the build.
+
+  The admin venues page also surfaced raw server error strings in toasts and used raw database values (`venue.status`, `row.role`) as translation fallbacks. Both are barred for admin UI; every status and role the API can return already has a key, so the fallbacks were unreachable anyway.
+
 - **Every "near me" filter opened at a hardcoded 25 km, ignoring the search distance the member had already saved.** `match_preferences.max_distance_km` has existed for some time — editable on the Matches preferences page, clamped to the tenant ceiling server-side — but nothing outside that one page ever read it. So a member who set their radius to 50 km still got 25 km on Listings, Events, Volunteering and Members, and had to change it again on every page, every visit.
 
   A new `useSavedRadiusKm` hook is the shared reader. It fetches the preference once per session (memoised at module scope, because several filters can mount on one page and this must not become N identical requests), and snaps a saved value to the nearest offered option so a preference of 30 km opens the dropdown on 25 rather than showing a blank selection. Changing the radius in any filter now writes it back, so the next page opens on the same distance. Clearing filters returns to the member's saved radius rather than the platform fallback — clearing a filter should not discard a preference.

@@ -28,13 +28,15 @@ import { useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEvent } from '@/lib/public-events-api';
 import { getFormattingLocale } from '@/lib/helpers';
 
-function formatWhen(event: PublicEvent, locale: string): string {
+function formatWhen(event: PublicEvent): string {
   if (!event.start_time) return '';
 
   const start = new Date(event.start_time);
   if (Number.isNaN(start.getTime())) return '';
 
-  return start.toLocaleString(locale, {
+  // getFormattingLocale() is called inline rather than passed in: the
+  // locale-formatting contract requires it at the toLocaleString call site.
+  return start.toLocaleString(getFormattingLocale(), {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -49,7 +51,6 @@ export default function PublicEventsListPage() {
   const { tenantPath, tenant } = useTenant();
   const [events, setEvents] = useState<PublicEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const locale = getFormattingLocale();
 
   const load = useCallback(async () => {
     const res = await publicEventsApi.list();
@@ -105,7 +106,7 @@ export default function PublicEventsListPage() {
                   >
                     {event.title}
                   </Link>
-                  <p className="text-sm text-theme-muted">{formatWhen(event, locale)}</p>
+                  <p className="text-sm text-theme-muted">{formatWhen(event)}</p>
                 </div>
 
                 {event.category?.name && (
