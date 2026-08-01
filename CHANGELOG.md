@@ -47,6 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The Spanish and Arabic "give feedback" links on the accessible frontend were dead, because a translator translated the `mailto:` URL scheme.** Spanish rendered it as `enviar correo a:` and Arabic as the transliteration `ميلتو:`, so in both languages the footer feedback link pointed at a scheme no browser understands and simply did nothing. Both now use `mailto:` again.
+
+  **The checker that should have caught this had a hole, and that is the more important fix.** `hasSuspiciousCorruption()` exempted anything `isUrlOrEmail()` recognised, and its bare-email pattern (`^[^\s@]+@[^\s@]+\.[^\s@]+$`) matched the *Arabic* corruption outright — the mangled value contains no spaces, so `ميلتو:feedback@project-nexus.ie?subject=…` read as "an email address" and skipped every corruption check. Spanish was only caught incidentally, by an unrelated question-mark heuristic, because it happened to contain spaces. There is now an explicit check that a translated value keeps the URI scheme its English source had, evaluated *before* the URL exemption, plus a bare-email pattern that rejects `:` and `?` so a broken URL can no longer masquerade as an email. Verified by re-breaking the value and confirming the gate fails, then confirming it passes once fixed — and the scheme list is a known-scheme allowlist rather than "any word before a colon", which on the first attempt flagged ordinary labels like `Error:` and `Rating: :value of 5`.
+
+  A sweep of every `lang/` namespace (PHP and JSON, all ten locales) found no other mangled scheme: 10 locale values carry a real URI scheme and all are now correct.
+
+  **And the check is now wired into CI.** `scripts/check-govuk-alpha-translations.mjs` existed but nothing invoked it, so its findings had been sitting unread — the Spanish breakage was being reported to no one. It runs as a blocking step in the Translation Drift Detection job. Same lesson as the token-integrity gate: an unenforced check is not a check.
+
 - **Partner venue visits now appear in a member's data export, and the pass token deliberately does not.** Venue visits are movement data — where a member went and when — recorded by venue staff rather than entered by the member, which is precisely why they belong in a subject access request. The membership pass token is excluded on purpose: it is a live bearer credential, so writing it into a downloadable archive would turn a leaked export into a usable pass. Members can see and rotate the token in the app instead. Two tests cover it, including one asserting the token appears nowhere in the archive JSON.
 
 - **Three build- and routing-level gates caught real defects in the partner-venue and public-events work.** Recorded rather than folded silently into the feature commits, because each is a distinct class of mistake worth seeing.

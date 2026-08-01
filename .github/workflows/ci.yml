@@ -969,6 +969,15 @@ jobs:
       - name: "BLOCKING: PHP lang/ untranslated value ratchet"
         run: node scripts/check-php-lang-untranslated.mjs
 
+      # Added 2026-08-01. This script already existed but nothing ran it, so its
+      # findings rotted: it had been reporting a corrupted Spanish feedback link
+      # (a translator turned "mailto:" into "enviar correo a:") for an unknown
+      # length of time, and a second, worse case in Arabic was slipping past the
+      # script itself. Same lesson as the token-integrity gate above — an
+      # unenforced check is not a check.
+      - name: "BLOCKING: Accessible frontend translation integrity"
+        run: node scripts/check-govuk-alpha-translations.mjs
+
       # Added 2026-07-29. Translators (human or machine) translate things that
       # must stay literal — routes, placeholders, config keys. This caught the
       # Irish admin copy rendering the route /partner/v1 as /comhpháirtí/v1,

@@ -9,7 +9,7 @@ return [
     'service_name' => 'مشروع NEXUS يمكن الوصول إليه',
     'phase' => 'إصدار تجريبي',
     'feedback' => 'تقديم ردود الفعل',
-    'feedback_url' => 'ميلتو:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
+    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
     'cookie_banner' => [
         'aria_label' => 'ملفات تعريف الارتباط على :service',
         'heading' => 'ملفات تعريف الارتباط على :service',

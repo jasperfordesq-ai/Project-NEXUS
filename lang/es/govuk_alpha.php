@@ -9,7 +9,7 @@ return [
     'service_name' => 'Proyecto NEXUS Accesible',
     'phase' => 'Versión beta',
     'feedback' => 'dar retroalimentación',
-    'feedback_url' => 'enviar correo a:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
+    'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
     'cookie_banner' => [
         'aria_label' => 'Cookies en :service',
         'heading' => 'Cookies en :service',

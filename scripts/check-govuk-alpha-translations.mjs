@@ -211,7 +211,31 @@ function isPlaceholderOrFormatOnly(value) {
 }
 
 function isUrlOrEmail(value) {
-  return /^(https?:\/\/|mailto:)/i.test(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  // The bare-email branch deliberately rejects ':' and '?': without that, a
+  // corrupted URL whose scheme had been translated (mailto: -> ميلتو:) still
+  // matched as "an email address" — no spaces to give it away — and was
+  // exempted from every corruption check below. That is exactly how a broken
+  // Arabic feedback link survived unnoticed.
+  return /^(https?:\/\/|mailto:)/i.test(value)
+    || /^[^\s@:?]+@[^\s@:?]+\.[^\s@:?]+$/.test(value);
+}
+
+/**
+ * A translated value must keep the URI scheme the English value had.
+ *
+ * Machine translation treats `mailto:` as prose: Spanish produced
+ * "enviar correo a:" and Arabic the transliteration "ميلتو:", both of which
+ * turn the link into dead text. Comparing the scheme is exact — no heuristic —
+ * so it cannot false-positive on a legitimately translated URL path or query.
+ */
+function hasBrokenUrlScheme(englishValue, value) {
+  // A KNOWN scheme list, not "any word before a colon". Matching the generic
+  // shape flagged ordinary labels — "Error:", "Rating: :value of 5", "Data:" —
+  // whose translations legitimately change the word before the colon.
+  const englishScheme = /^(https?:|mailto:|tel:|sms:|webcal:|ftp:)/i.exec(englishValue.trim());
+  if (englishScheme === null) return false;
+
+  return !value.trim().toLowerCase().startsWith(englishScheme[1].toLowerCase());
 }
 
 function isNumberOrSymbolOnly(value) {
@@ -233,6 +257,10 @@ function hasSuspiciousQuestionMark(englishValue, value) {
 }
 
 function hasSuspiciousCorruption(locale, key, englishValue, value) {
+  // Checked BEFORE the URL exemption: the whole point is to catch a value that
+  // no longer looks like a URL because its scheme was translated away.
+  if (hasBrokenUrlScheme(englishValue, value)) return true;
+
   if (isUrlOrEmail(value)) return false;
 
   const hasMojibake = /\uFFFD|[\u00C2\u00C3][\u0080-\u00BF]|\u00E2(?:[\u0080-\u00BF]|\u20AC)|\u00F0\u0178|\u00EF\u00BF\u00BD/u.test(value);
