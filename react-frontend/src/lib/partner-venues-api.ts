@@ -133,8 +133,12 @@ export const partnerVenuesApi = {
   adminSummary: (days = 30): Promise<ApiResponse<VenueSummary>> =>
     api.get(`/v2/admin/partner-venues/reports/summary?days=${days}`),
 
-  adminExportCsv: (venueId?: number) =>
-    api.download(
-      `/v2/admin/partner-venues/visits/export.csv${venueId ? `?venue_id=${venueId}` : ''}`,
-    ),
+  adminExportCsv: (filters: { venueId?: number; from?: string; to?: string } = {}) => {
+    const query = new URLSearchParams();
+    if (filters.venueId) query.set('venue_id', String(filters.venueId));
+    if (filters.from) query.set('from', filters.from);
+    if (filters.to) query.set('to', filters.to);
+    const suffix = query.toString();
+    return api.download(`/v2/admin/partner-venues/visits/export.csv${suffix ? `?${suffix}` : ''}`);
+  },
 };

@@ -187,6 +187,7 @@ function useAdminNav(): NavSection[] {
       ...(hasFeature('podcasts') ? [{ label: t('podcasts'), href: '/admin/podcasts', icon: Podcast, keywords: keyword(t('search_keywords.podcasts')) }] : []),
       ...(hasFeature('ideation_challenges') ? [{ label: t('ideation_challenges'), href: '/admin/ideation', icon: Lightbulb }] : []),
       ...(hasFeature('volunteering') ? [{ label: t('volunteering'), href: '/admin/volunteering', icon: Heart }] : []),
+      ...(hasFeature('partner_venues') ? [{ label: t('partner_venues'), href: '/admin/partner-venues', icon: Store }] : []),
     ];
 
     const sections: NavSection[] = [

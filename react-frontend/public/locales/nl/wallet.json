@@ -165,5 +165,6 @@
   "signed_hours_value_one": "{{sign}}{{count}}u",
   "signed_hours_value_other": "{{sign}}{{count}}u",
   "hours_value_one": "{{count}}u",
-  "hours_value_other": "{{count}}u"
+  "hours_value_other": "{{count}}u",
+  "venue_pass": "Mijn locatiepas"
 }

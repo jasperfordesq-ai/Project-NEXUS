@@ -160,13 +160,14 @@
   "description_placeholder": "Para que é esta transferência?",
   "new_balance_after": "O seu novo saldo será de {{balance}} horas",
   "transfer_summary": "Está prestes a enviar {{amount}} {{unit}} para {{name}}",
-  "pending_in_many": "+{{count}}h pendentes",
   "pending_in_one": "+{{count}}h pendentes",
   "pending_in_other": "+{{count}}h pendentes",
-  "signed_hours_value_many": "{{sign}}{{count}}h",
   "signed_hours_value_one": "{{sign}}{{count}}h",
   "signed_hours_value_other": "{{sign}}{{count}}h",
-  "hours_value_many": "{{count}}h",
   "hours_value_one": "{{count}}h",
-  "hours_value_other": "{{count}}h"
+  "hours_value_other": "{{count}}h",
+  "venue_pass": "Meu passe para local",
+  "pending_in_many": "+{{count}}h pendentes",
+  "signed_hours_value_many": "{{sign}}{{count}}h",
+  "hours_value_many": "{{count}}h"
 }

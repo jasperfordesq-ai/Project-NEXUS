@@ -165,5 +165,6 @@
   "signed_hours_value_one": "{{sign}}{{count}}h",
   "signed_hours_value_other": "{{sign}}{{count}}h",
   "hours_value_one": "{{count}}h",
-  "hours_value_other": "{{count}}h"
+  "hours_value_other": "{{count}}h",
+  "venue_pass": "Mein Veranstaltungsortpass"
 }

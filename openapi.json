@@ -28348,6 +28348,679 @@
           }
         }
       }
+    },
+    "/api/v2/partner-venues": {
+      "get": {
+        "summary": "GET /api/v2/partner-venues",
+        "description": "Maintained Partner Venues operation. Active venue directory for members: name, category, informational offer summary, address, logo. No coupons or discounts - engagement recording only.",
+        "operationId": "PartnerVenueController_index",
+        "tags": [
+          "Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\PartnerVenueController@index"
+      }
+    },
+    "/api/v2/partner-venues/pass": {
+      "get": {
+        "summary": "GET /api/v2/partner-venues/pass",
+        "description": "Maintained Partner Venues operation. Get-or-create the member's venue pass: an opaque bearer token plus the check-in URL the QR encodes.",
+        "operationId": "PartnerVenueController_pass",
+        "tags": [
+          "Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\PartnerVenueController@pass"
+      }
+    },
+    "/api/v2/partner-venues/pass/rotate": {
+      "post": {
+        "summary": "POST /api/v2/partner-venues/pass/rotate",
+        "description": "Maintained Partner Venues operation. Rotate the member's pass token, invalidating the previous QR.",
+        "operationId": "PartnerVenueController_rotatePass",
+        "tags": [
+          "Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\PartnerVenueController@rotatePass"
+      }
+    },
+    "/api/v2/partner-venues/my-visits": {
+      "get": {
+        "summary": "GET /api/v2/partner-venues/my-visits",
+        "description": "Maintained Partner Venues operation. The member's own recorded visits.",
+        "operationId": "PartnerVenueController_myVisits",
+        "tags": [
+          "Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\PartnerVenueController@myVisits"
+      }
+    },
+    "/api/v2/partner-venues/visits/verify/{token}": {
+      "post": {
+        "summary": "POST /api/v2/partner-venues/visits/verify/{token}",
+        "description": "Maintained Partner Venues operation. Staff-side visit recording: verifies a scanned pass token and records at most one visit per member per venue per day. Requires an active staff membership on the venue or tenant admin.",
+        "operationId": "PartnerVenueController_recordVisit",
+        "tags": [
+          "Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\PartnerVenueController@recordVisit",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "venue_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/admin/partner-venues": {
+      "get": {
+        "summary": "GET /api/v2/admin/partner-venues",
+        "description": "Maintained Partner Venues operation. Admin venue list with visit/member/staff counts; filterable by status.",
+        "operationId": "AdminPartnerVenueController_index",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@index",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "paused",
+                "archived"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "POST /api/v2/admin/partner-venues",
+        "description": "Maintained Partner Venues operation. Create a venue. offer_summary is informational text only.",
+        "operationId": "AdminPartnerVenueController_store",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@store"
+      }
+    },
+    "/api/v2/admin/partner-venues/{id}": {
+      "put": {
+        "summary": "PUT /api/v2/admin/partner-venues/{id}",
+        "description": "Maintained Partner Venues operation. Update a venue.",
+        "operationId": "AdminPartnerVenueController_update",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/admin/partner-venues/{id}/archive": {
+      "post": {
+        "summary": "POST /api/v2/admin/partner-venues/{id}/archive",
+        "description": "Maintained Partner Venues operation. Archive a venue; pass scanning stops but history remains.",
+        "operationId": "AdminPartnerVenueController_archive",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@archive",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/admin/partner-venues/{id}/staff": {
+      "get": {
+        "summary": "GET /api/v2/admin/partner-venues/{id}/staff",
+        "description": "Maintained Partner Venues operation. Staff roster (org_members, org_type=partner_venue).",
+        "operationId": "AdminPartnerVenueController_staff",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@staff",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "POST /api/v2/admin/partner-venues/{id}/staff",
+        "description": "Maintained Partner Venues operation. Add a staff member (roles owner|admin|member; any active row may record visits).",
+        "operationId": "AdminPartnerVenueController_addStaff",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@addStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "owner",
+                      "admin",
+                      "member"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/admin/partner-venues/{id}/staff/{userId}": {
+      "delete": {
+        "summary": "DELETE /api/v2/admin/partner-venues/{id}/staff/{userId}",
+        "description": "Maintained Partner Venues operation. Remove a staff member.",
+        "operationId": "AdminPartnerVenueController_removeStaff",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@removeStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/admin/partner-venues/reports/summary": {
+      "get": {
+        "summary": "GET /api/v2/admin/partner-venues/reports/summary",
+        "description": "Maintained Partner Venues operation. Per-venue engagement summary: total visits, unique members, recent window.",
+        "operationId": "AdminPartnerVenueController_summary",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@summary",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/admin/partner-venues/visits/export.csv": {
+      "get": {
+        "summary": "GET /api/v2/admin/partner-venues/visits/export.csv",
+        "description": "Maintained Partner Venues operation. Streamed CSV of visits (capped at 20,000 rows), filterable by venue_id and created-on date range.",
+        "operationId": "AdminPartnerVenueController_exportCsv",
+        "tags": [
+          "Admin Partner Venues"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminPartnerVenueController@exportCsv",
+        "parameters": [
+          {
+            "name": "venue_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ]
+      }
     }
   }
 }

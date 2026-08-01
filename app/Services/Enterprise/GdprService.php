@@ -1415,6 +1415,29 @@ class GdprService
                 // Table may not exist
             }
 
+            // 3b (continued). Delete the partner-venue member pass. It is a
+            // STANDING BEARER CREDENTIAL — venue staff can record a visit from
+            // the QR alone, no login — so like passkeys and API tokens it must
+            // not survive erasure. Visit HISTORY rows stay (same posture as
+            // messages: the row survives, PII resolves through the anonymised
+            // users join), but the scannable credential dies here. A missing
+            // table means nothing to erase; a failing DELETE on an existing
+            // table is critical, exactly like refresh-token sessions.
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('partner_member_passes')) {
+                    $this->query(
+                        "DELETE FROM partner_member_passes WHERE user_id = ? AND tenant_id = ?",
+                        [$userId, $this->tenantId]
+                    );
+                }
+            } catch (\Throwable $e) {
+                $criticalErasureFailed = true;
+                $this->logger->error('GDPR CRITICAL erasure step failed (partner venue pass)', [
+                    'user_id' => $userId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // 3c. Revoke API tokens (Sanctum personal_access_tokens)
             try {
                 $this->query(

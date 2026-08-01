@@ -42,6 +42,7 @@ import Pencil from 'lucide-react/icons/pencil';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { PageHeader } from '../../components/PageHeader';
+import { MemberSearchPicker, type MemberSearchMember } from '../../components/MemberSearchPicker';
 import {
   partnerVenuesApi,
   type PartnerVenueAdminRow,
@@ -95,13 +96,19 @@ export default function PartnerVenuesAdminPage() {
 
   const [staffVenue, setStaffVenue] = useState<PartnerVenueAdminRow | null>(null);
   const [staff, setStaff] = useState<VenueStaffRow[]>([]);
-  const [newStaffId, setNewStaffId] = useState('');
+  const [staffQuery, setStaffQuery] = useState('');
+  const [staffMember, setStaffMember] = useState<MemberSearchMember | null>(null);
   const [newStaffRole, setNewStaffRole] = useState('member');
+
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [exportVenueId, setExportVenueId] = useState('all');
+  const [exportFrom, setExportFrom] = useState('');
+  const [exportTo, setExportTo] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
     const [listRes, summaryRes] = await Promise.all([
-      partnerVenuesApi.adminList(),
+      partnerVenuesApi.adminList(statusFilter !== 'all' ? statusFilter : undefined),
       partnerVenuesApi.adminSummary(),
     ]);
 
@@ -112,7 +119,7 @@ export default function PartnerVenuesAdminPage() {
       setSummary(summaryRes.data);
     }
     setLoading(false);
-  }, []);
+  }, [statusFilter]);
 
   useEffect(() => {
     void load();
@@ -189,18 +196,20 @@ export default function PartnerVenuesAdminPage() {
 
   async function openStaff(venue: PartnerVenueAdminRow) {
     setStaffVenue(venue);
-    setNewStaffId('');
+    setStaffQuery('');
+    setStaffMember(null);
     setNewStaffRole('member');
     const res = await partnerVenuesApi.adminStaff(venue.id);
     setStaff(res.success && res.data ? res.data.staff ?? [] : []);
   }
 
   async function handleAddStaff() {
-    if (!staffVenue || !newStaffId.trim()) return;
-    const res = await partnerVenuesApi.adminAddStaff(staffVenue.id, Number(newStaffId), newStaffRole);
+    if (!staffVenue || !staffMember) return;
+    const res = await partnerVenuesApi.adminAddStaff(staffVenue.id, staffMember.id, newStaffRole);
     if (res.success && res.data) {
       setStaff(res.data.staff ?? []);
-      setNewStaffId('');
+      setStaffQuery('');
+      setStaffMember(null);
       toast.success(t('venues:admin.staff_added'));
       await load();
     } else {
@@ -220,7 +229,11 @@ export default function PartnerVenuesAdminPage() {
 
   async function handleExport() {
     try {
-      const blob = await partnerVenuesApi.adminExportCsv();
+      const blob = await partnerVenuesApi.adminExportCsv({
+        venueId: exportVenueId !== 'all' ? Number(exportVenueId) : undefined,
+        from: exportFrom || undefined,
+        to: exportTo || undefined,
+      });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -256,15 +269,85 @@ export default function PartnerVenuesAdminPage() {
 
       {summary && (
         <Card>
-          <CardBody>
-            <p className="text-sm text-theme-muted">{t('venues:admin.total_visits')}</p>
-            <p className="text-3xl font-semibold">{summary.total_visits}</p>
+          <CardBody className="space-y-4">
+            <div>
+              <p className="text-sm text-theme-muted">{t('venues:admin.total_visits')}</p>
+              <p className="text-3xl font-semibold">{summary.total_visits}</p>
+            </div>
+            {summary.venues.length > 0 && (
+              <Table aria-label={t('venues:admin.report_title')}>
+                <TableHeader>
+                  <TableColumn>{t('venues:admin.name')}</TableColumn>
+                  <TableColumn>{t('venues:admin.report_total_visits')}</TableColumn>
+                  <TableColumn>{t('venues:admin.report_unique_members')}</TableColumn>
+                  <TableColumn>{t('venues:admin.report_recent_visits', { days: summary.window_days })}</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {summary.venues.map((row) => (
+                    <TableRow key={row.venue_id}>
+                      <TableCell><span className="font-medium">{row.venue_name}</span></TableCell>
+                      <TableCell>{row.total_visits}</TableCell>
+                      <TableCell>{row.unique_members}</TableCell>
+                      <TableCell>{row.recent_visits}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Select
+                label={t('venues:admin.export_venue')}
+                selectedKeys={[exportVenueId]}
+                onSelectionChange={(keys) => {
+                  if (keys === 'all') return;
+                  const first = Array.from(keys)[0];
+                  if (first !== undefined) setExportVenueId(String(first));
+                }}
+              >
+                {[
+                  <SelectItem key="all" id="all">{t('venues:admin.export_all_venues')}</SelectItem>,
+                  ...venues.map((venue) => (
+                    <SelectItem key={String(venue.id)} id={String(venue.id)}>{venue.name}</SelectItem>
+                  )),
+                ]}
+              </Select>
+              <Input
+                label={t('venues:admin.export_from')}
+                type="date"
+                value={exportFrom}
+                onChange={(e) => setExportFrom(e.target.value)}
+              />
+              <Input
+                label={t('venues:admin.export_to')}
+                type="date"
+                value={exportTo}
+                onChange={(e) => setExportTo(e.target.value)}
+              />
+            </div>
           </CardBody>
         </Card>
       )}
 
       <Card>
-        <CardBody>
+        <CardBody className="space-y-4">
+          <div className="max-w-56">
+            <Select
+              label={t('venues:admin.filter_status')}
+              selectedKeys={[statusFilter]}
+              onSelectionChange={(keys) => {
+                if (keys === 'all') return;
+                const first = Array.from(keys)[0];
+                if (first !== undefined) setStatusFilter(String(first));
+              }}
+            >
+              {[
+                <SelectItem key="all" id="all">{t('venues:admin.filter_all')}</SelectItem>,
+                ...STATUSES.map((status) => (
+                  <SelectItem key={status} id={status}>{t(`venues:admin.status_${status}`)}</SelectItem>
+                )),
+              ]}
+            </Select>
+          </div>
           {loading ? (
             <div className="py-12 text-center">
               <Spinner className="mx-auto" aria-label={t('venues:loading')} />
@@ -455,12 +538,16 @@ export default function PartnerVenuesAdminPage() {
             </ul>
           )}
 
-          <div className="grid grid-cols-2 gap-3 items-end">
-            <Input
-              label={t('venues:admin.staff_member_id')}
-              type="number"
-              value={newStaffId}
-              onChange={(e) => setNewStaffId(e.target.value)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 items-end">
+            <MemberSearchPicker
+              label={t('venues:admin.staff_member')}
+              placeholder={t('venues:admin.staff_member_placeholder')}
+              value={staffQuery}
+              onValueChange={setStaffQuery}
+              selectedMember={staffMember}
+              onSelectedMemberChange={setStaffMember}
+              noResultsText={t('venues:admin.staff_no_matches')}
+              clearText={t('venues:admin.staff_clear')}
             />
             <Select
               label={t('venues:admin.staff_role')}
@@ -480,7 +567,7 @@ export default function PartnerVenuesAdminPage() {
           </div>
           <Button
             color="primary"
-            isDisabled={!newStaffId.trim()}
+            isDisabled={!staffMember}
             onPress={handleAddStaff}
           >
             {t('venues:admin.add_staff')}

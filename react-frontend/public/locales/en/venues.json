@@ -91,6 +91,20 @@
     "staff_add_failed": "We could not add that member.",
     "staff_removed": "Staff member removed.",
     "export_failed": "We could not export the visit log.",
-    "manage_column": "Manage"
+    "manage_column": "Manage",
+    "report_title": "Engagement by venue",
+    "report_total_visits": "Total visits",
+    "report_unique_members": "Unique members",
+    "report_recent_visits": "Last {{days}} days",
+    "export_venue": "Export venue",
+    "export_all_venues": "All venues",
+    "export_from": "From",
+    "export_to": "To",
+    "filter_status": "Status",
+    "filter_all": "All statuses",
+    "staff_member": "Member",
+    "staff_member_placeholder": "Search members by name…",
+    "staff_no_matches": "No matching members",
+    "staff_clear": "Clear"
   }
 }

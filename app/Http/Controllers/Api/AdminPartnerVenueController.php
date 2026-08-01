@@ -41,6 +41,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_index', 60, 60);
 
         $status = $request->query('status');
 
@@ -53,6 +54,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $actorId = $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_write', 30, 60);
 
         $validated = $request->validate($this->rules());
 
@@ -65,6 +67,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_write', 30, 60);
 
         $venue = $this->venueService->find($id);
 
@@ -83,6 +86,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_write', 30, 60);
 
         $venue = $this->venueService->find($id);
 
@@ -99,6 +103,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_staff', 60, 60);
 
         if ($this->venueService->find($id) === null) {
             return $this->respondWithError('NOT_FOUND', __('api.partner_venue_not_found'), null, 404);
@@ -111,6 +116,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_staff_write', 30, 60);
 
         if ($this->venueService->find($id) === null) {
             return $this->respondWithError('NOT_FOUND', __('api.partner_venue_not_found'), null, 404);
@@ -138,6 +144,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_staff_write', 30, 60);
 
         if ($this->venueService->find($id) === null) {
             return $this->respondWithError('NOT_FOUND', __('api.partner_venue_not_found'), null, 404);
@@ -152,6 +159,7 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        $this->rateLimit('admin_partner_venues_summary', 60, 60);
 
         $days = (int) ($request->query('days') ?? 30);
 
@@ -162,6 +170,8 @@ class AdminPartnerVenueController extends BaseApiController
     {
         $this->ensureFeature();
         $this->requireAdmin();
+        // Streams up to 20k rows per call — the tightest limit on this controller.
+        $this->rateLimit('admin_partner_venues_export', 10, 300);
 
         $venueId = $request->query('venue_id');
         $rows = $this->visitService->visitRows(

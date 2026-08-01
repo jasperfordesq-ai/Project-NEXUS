@@ -22,6 +22,7 @@ import Globe from 'lucide-react/icons/globe';
 import GraduationCap from 'lucide-react/icons/graduation-cap';
 import Handshake from 'lucide-react/icons/handshake';
 import Heart from 'lucide-react/icons/heart';
+import Store from 'lucide-react/icons/store';
 import HelpCircle from 'lucide-react/icons/circle-help';
 import Home from 'lucide-react/icons/house';
 import Info from 'lucide-react/icons/info';
@@ -101,6 +102,7 @@ type NavigationNavKey =
   | 'social_prescribing'
   | 'strategic_plan'
   | 'timebanking_guide'
+  | 'venues'
   | 'volunteering'
   | 'wallet';
 
@@ -205,6 +207,7 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'events', href: '/events', labelKey: 'nav.events', descriptionKey: 'nav_desc.events', icon: Calendar, feature: 'events', placements: both('community-local', 'community') },
   { id: 'groups', href: '/groups', labelKey: 'nav.groups', descriptionKey: 'nav_desc.groups', icon: Users, feature: 'groups', placements: both('community-local', 'community') },
   { id: 'volunteering', href: '/volunteering', labelKey: 'nav.volunteering', descriptionKey: 'nav_desc.volunteering', icon: Heart, feature: 'volunteering', placements: both('community-local', 'community') },
+  { id: 'venues', href: '/venues', labelKey: 'nav.venues', descriptionKey: 'nav_desc.venues', icon: Store, feature: 'partner_venues', placements: both('community-local', 'community') },
   { id: 'organisations', href: '/organisations', labelKey: 'nav.organisations', descriptionKey: 'nav_desc.organisations', icon: Building2, feature: 'volunteering', placements: both('community-local', 'community') },
   {
     id: 'federation-hub', href: '/federation', labelKey: 'nav.federation_hub', descriptionKey: 'nav_desc.federation_hub', icon: Globe,

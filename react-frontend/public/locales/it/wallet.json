@@ -160,13 +160,14 @@
   "description_placeholder": "A cosa serve questo trasferimento?",
   "new_balance_after": "Il tuo nuovo saldo sarà {{balance}} ore",
   "transfer_summary": "Stai per inviare {{amount}} {{unit}} a {{name}}",
-  "pending_in_many": "+{{count}}h in attesa",
   "pending_in_one": "+{{count}}h in attesa",
   "pending_in_other": "+{{count}}h in attesa",
-  "signed_hours_value_many": "{{sign}}{{count}}h",
   "signed_hours_value_one": "{{sign}}{{count}}h",
   "signed_hours_value_other": "{{sign}}{{count}}h",
-  "hours_value_many": "{{count}}h",
   "hours_value_one": "{{count}}h",
-  "hours_value_other": "{{count}}h"
+  "hours_value_other": "{{count}}h",
+  "venue_pass": "Il mio pass per la sede",
+  "pending_in_many": "+{{count}}h in attesa",
+  "signed_hours_value_many": "{{sign}}{{count}}h",
+  "hours_value_many": "{{count}}h"
 }

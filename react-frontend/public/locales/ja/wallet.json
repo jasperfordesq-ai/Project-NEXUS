@@ -160,10 +160,11 @@
   "description_placeholder": "この送金は何のためですか？",
   "new_balance_after": "あなたの新しい残高は{{balance}}時間になります",
   "transfer_summary": "{{amount}} {{unit}}を {{name}} に送ろうとしています",
-  "pending_in_other": "+{{count}}時間の保留中",
-  "signed_hours_value_other": "{{sign}}{{count}}h",
-  "hours_value_other": "{{count}}h",
   "pending_in_one": "+{{count}}時間 保留中",
+  "pending_in_other": "+{{count}}時間の保留中",
   "signed_hours_value_one": "{{sign}}{{count}}時間",
-  "hours_value_one": "{{count}}h"
+  "signed_hours_value_other": "{{sign}}{{count}}h",
+  "hours_value_one": "{{count}}h",
+  "hours_value_other": "{{count}}h",
+  "venue_pass": "私の会場パス"
 }

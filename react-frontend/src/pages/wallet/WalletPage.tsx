@@ -28,11 +28,13 @@ import Download from 'lucide-react/icons/download';
 import Send from 'lucide-react/icons/send';
 import AlertTriangle from 'lucide-react/icons/triangle-alert';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
+import QrCode from 'lucide-react/icons/qr-code';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageMeta } from '@/components/seo';
 import { EmptyState } from '@/components/feedback';
 import { TransferModal, DonateModal, CommunityFundCard } from '@/components/wallet';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { usePageTitle } from '@/hooks';
@@ -42,6 +44,7 @@ type TransactionFilter = 'all' | 'earned' | 'spent' | 'pending';
 
 export function WalletPage() {
   const { t } = useTranslation('wallet');
+  const { hasFeature, tenantPath } = useTenant();
   usePageTitle(t('title'));
   const [searchParams, setSearchParams] = useSearchParams();
   const [balance, setBalance] = useState<WalletBalance | null>(null);
@@ -334,6 +337,18 @@ export function WalletPage() {
               >
                 {t('donate')}
               </Button>
+              {hasFeature('partner_venues') && (
+                <Button
+                  as={Link}
+                  to={tenantPath('/venues/pass')}
+                  variant="secondary"
+                  size="lg"
+                  className="w-full px-6 font-medium"
+                  startContent={<QrCode className="h-5 w-5" aria-hidden="true" />}
+                >
+                  {t('venue_pass')}
+                </Button>
+              )}
             </div>
           </div>
         </GlassCard>
