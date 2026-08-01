@@ -14,6 +14,7 @@ import { MemberFilterSheet, type MemberFilterDraft } from '@/components/members/
 // barrel import of these would resolve to undefined and crash every test.
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useFilterDraft } from '@/hooks/useFilterDraft';
+import { persistRadiusPreference, useSavedRadiusKm } from '@/hooks/useSavedRadiusKm';
 import { useSetAppBarTitle } from '@/hooks/useAppBarTitle';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { Chip } from '@/components/ui/Chip';
@@ -175,7 +176,19 @@ export function MembersPage() {
     storedViewMode && (VALID_VIEW_MODES as string[]).includes(storedViewMode) ? storedViewMode as ViewMode : 'grid'
   );
   const [nearMeEnabled, setNearMeEnabled] = useState(false);
+  // Members hand-rolls its radius control rather than using ProximityFilter, so
+  // it needs the saved preference wired up separately. Starts at the fallback
+  // and adopts the member's saved radius once it resolves, unless they have
+  // already changed it on this page.
+  const savedRadiusKm = useSavedRadiusKm();
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
+  const radiusTouchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!radiusTouchedRef.current) {
+      setRadiusKm(savedRadiusKm);
+    }
+  }, [savedRadiusKm]);
   const { user, isAuthenticated } = useAuth();
   const { tenantPath } = useTenant();
   const hasMapsFeature = useFeature('maps');
@@ -436,6 +449,8 @@ export function MembersPage() {
       // Same guard as handleNearMeToggle — nearby needs coordinates on the profile.
       toast.error(t('members.near_me_no_location'));
     }
+    radiusTouchedRef.current = true;
+    persistRadiusPreference(next.radiusKm);
     setRadiusKm(next.radiusKm);
     setNearMeEnabled(nearby);
     // Nearby mode ignores sort server-side, so entering it drops the explicit sort
@@ -495,8 +510,11 @@ export function MembersPage() {
     setDebouncedQuery('');
     setSortBy(null);
     setNearMeEnabled(false);
-    setRadiusKm(DEFAULT_RADIUS_KM);
-  }, []);
+    // "Clear all" returns to the member's saved radius, not the platform
+    // fallback — clearing filters should not discard their preference.
+    radiusTouchedRef.current = false;
+    setRadiusKm(savedRadiusKm);
+  }, [savedRadiusKm]);
 
   return (
     <div className="space-y-5">
@@ -731,8 +749,11 @@ export function MembersPage() {
                 selectedKeys={[String(radiusKm)]}
                 disallowEmptySelection
                 onSelectionChange={(keys) => {
-                  const val = keys instanceof Set ? ([...keys][0] as string) : '25';
-                  setRadiusKm(Number(val) || 25);
+                  const val = keys instanceof Set ? ([...keys][0] as string) : String(DEFAULT_RADIUS_KM);
+                  const next = Number(val) || DEFAULT_RADIUS_KM;
+                  radiusTouchedRef.current = true;
+                  persistRadiusPreference(next);
+                  setRadiusKm(next);
                 }}
                 className="w-32"
                 classNames={{
