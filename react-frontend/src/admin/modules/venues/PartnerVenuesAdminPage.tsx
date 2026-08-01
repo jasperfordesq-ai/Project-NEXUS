@@ -163,7 +163,9 @@ export default function PartnerVenuesAdminPage() {
       setEditorOpen(false);
       await load();
     } else {
-      toast.error(res.error || t('venues:admin.save_failed'));
+      // Admin UI shows its own translated message rather than passing the
+      // server string through — see scripts/check-admin-ui-literals.mjs.
+      toast.error(t('venues:admin.save_failed'));
     }
     setSaving(false);
   }
@@ -181,7 +183,7 @@ export default function PartnerVenuesAdminPage() {
       toast.success(t('venues:admin.archived'));
       await load();
     } else {
-      toast.error(res.error || t('venues:admin.save_failed'));
+      toast.error(t('venues:admin.save_failed'));
     }
   }
 
@@ -202,7 +204,7 @@ export default function PartnerVenuesAdminPage() {
       toast.success(t('venues:admin.staff_added'));
       await load();
     } else {
-      toast.error(res.error || t('venues:admin.staff_add_failed'));
+      toast.error(t('venues:admin.staff_add_failed'));
     }
   }
 
@@ -277,7 +279,7 @@ export default function PartnerVenuesAdminPage() {
                 <TableColumn>{t('venues:admin.visits')}</TableColumn>
                 <TableColumn>{t('venues:admin.members')}</TableColumn>
                 <TableColumn>{t('venues:admin.staff')}</TableColumn>
-                <TableColumn>{t('common:actions')}</TableColumn>
+                <TableColumn>{t('venues:admin.manage_column')}</TableColumn>
               </TableHeader>
               <TableBody>
                 {venues.map((venue) => (
@@ -290,7 +292,8 @@ export default function PartnerVenuesAdminPage() {
                     </TableCell>
                     <TableCell>
                       <Chip color={statusColor(venue.status)} variant="secondary">
-                        {t(`venues:admin.status_${venue.status}`, { defaultValue: venue.status })}
+                        {/* Every status the API can return has a key, so no raw fallback. */}
+                        {t(`venues:admin.status_${venue.status}`)}
                       </Chip>
                     </TableCell>
                     <TableCell>{venue.visit_count}</TableCell>
@@ -441,7 +444,7 @@ export default function PartnerVenuesAdminPage() {
                   <div>
                     <div className="font-medium">{row.name || `#${row.user_id}`}</div>
                     <div className="text-xs text-theme-muted">
-                      {t(`venues:admin.role_${row.role}`, { defaultValue: row.role })}
+                      {t(`venues:admin.role_${row.role}`)}
                     </div>
                   </div>
                   <Button variant="tertiary" onPress={() => void handleRemoveStaff(row.user_id)}>

@@ -90,6 +90,7 @@
     "category": "Categoria",
     "description": "Descrizione",
     "postcode": "CAP",
-    "status_archived": "Archiviato"
+    "status_archived": "Archiviato",
+    "manage_column": "Gestisci"
   }
 }

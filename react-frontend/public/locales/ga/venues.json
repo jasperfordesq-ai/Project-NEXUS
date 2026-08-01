@@ -90,6 +90,7 @@
     "category": "Catagóir",
     "description": "Cur síos",
     "postcode": "Cód poist",
-    "status_archived": "Cartlannaithe"
+    "status_archived": "Cartlannaithe",
+    "manage_column": "Bainistigh"
   }
 }

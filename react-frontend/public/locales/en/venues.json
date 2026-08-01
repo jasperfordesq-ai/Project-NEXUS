@@ -90,6 +90,7 @@
     "staff_added": "Staff member added.",
     "staff_add_failed": "We could not add that member.",
     "staff_removed": "Staff member removed.",
-    "export_failed": "We could not export the visit log."
+    "export_failed": "We could not export the visit log.",
+    "manage_column": "Manage"
   }
 }

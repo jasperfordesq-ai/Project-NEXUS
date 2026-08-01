@@ -90,6 +90,7 @@
     "category": "Categorie",
     "description": "Beschrijving",
     "postcode": "Postcode",
-    "status_archived": "Gearchiveerd"
+    "status_archived": "Gearchiveerd",
+    "manage_column": "Beheren"
   }
 }

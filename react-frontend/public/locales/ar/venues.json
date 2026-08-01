@@ -90,6 +90,7 @@
     "category": "الفئة",
     "description": "الوصف",
     "postcode": "الرمز البريدي",
-    "status_archived": "مؤرشف"
+    "status_archived": "مؤرشف",
+    "manage_column": "إدارة"
   }
 }

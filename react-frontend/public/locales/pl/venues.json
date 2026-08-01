@@ -90,6 +90,7 @@
     "category": "Kategoria",
     "description": "Opis",
     "postcode": "Kod pocztowy",
-    "status_archived": "Zarchiwizowane"
+    "status_archived": "Zarchiwizowane",
+    "manage_column": "Zarządzaj"
   }
 }

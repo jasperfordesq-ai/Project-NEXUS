@@ -90,6 +90,7 @@
     "category": "カテゴリー",
     "description": "説明",
     "postcode": "郵便番号",
-    "status_archived": "アーカイブ済み"
+    "status_archived": "アーカイブ済み",
+    "manage_column": "管理"
   }
 }

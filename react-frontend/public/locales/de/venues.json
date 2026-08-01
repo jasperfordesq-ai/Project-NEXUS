@@ -90,6 +90,7 @@
     "category": "Kategorie",
     "description": "Beschreibung",
     "postcode": "Postleitzahl",
-    "status_archived": "Archiviert"
+    "status_archived": "Archiviert",
+    "manage_column": "Verwalten"
   }
 }
