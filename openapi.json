@@ -19638,6 +19638,119 @@
         ]
       }
     },
+    "/api/v2/admin/events/{id}/attendance-reward": {
+      "get": {
+        "summary": "GET /api/v2/admin/events/{id}/attendance-reward",
+        "description": "Maintained Events operation served by AdminEventAttendanceRewardController@show. Reports the configured attendance reward, the community ceiling, the active credit mode, and per-status claim totals.",
+        "operationId": "AdminEventAttendanceReward_show",
+        "tags": [
+          "Admin Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminEventAttendanceRewardController@show",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "put": {
+        "summary": "PUT /api/v2/admin/events/{id}/attendance-reward",
+        "description": "Maintained Events operation served by AdminEventAttendanceRewardController@update. Sets the time credits granted once per member on verified check-in; null or 0 clears the reward. Clamped to events.attendance_credit_max.",
+        "operationId": "AdminEventAttendanceReward_update",
+        "tags": [
+          "Admin Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "description": "Time credits granted per attendee on verified check-in. null or 0 clears the reward."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminEventAttendanceRewardController@update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
     "/api/v2/admin/events/{id}/complete": {
       "post": {
         "summary": "POST /api/v2/admin/events/{id}/complete",
