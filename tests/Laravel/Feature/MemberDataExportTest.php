@@ -93,6 +93,91 @@ class MemberDataExportTest extends TestCase
         $this->assertSame(2.5, $archive['vol_logs']['given'][0]['hours']);
     }
 
+    /**
+     * Partner venue visits are movement data recorded by venue staff on the
+     * member's behalf — the member never entered it themselves, which is
+     * exactly why it has to appear in a subject access request.
+     */
+    public function test_export_includes_partner_venue_visits_but_never_the_pass_token(): void
+    {
+        $userId = $this->makeUser(self::PRIMARY_TENANT_ID);
+
+        $venueId = (int) DB::table('partner_venues')->insertGetId([
+            'tenant_id' => self::PRIMARY_TENANT_ID,
+            'name' => 'The Time Union Cafe',
+            'slug' => 'time-union-cafe-' . uniqid(),
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('partner_venue_visits')->insert([
+            'tenant_id' => self::PRIMARY_TENANT_ID,
+            'venue_id' => $venueId,
+            'user_id' => $userId,
+            'source' => 'member_pass',
+            'visited_on' => now()->toDateString(),
+            'visited_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $passToken = str_repeat('a', 64);
+        DB::table('partner_member_passes')->insert([
+            'tenant_id' => self::PRIMARY_TENANT_ID,
+            'user_id' => $userId,
+            'token' => $passToken,
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $archive = app(MemberDataExportService::class)->buildArchive($userId);
+
+        $this->assertArrayHasKey('partner_venue_visits', $archive);
+        $this->assertNotEmpty($archive['partner_venue_visits']);
+        $this->assertSame('The Time Union Cafe', $archive['partner_venue_visits'][0]['venue_name']);
+
+        // 🔴 The pass token is a live bearer credential. Exporting it would turn
+        // a leaked archive into a usable membership pass, so it must never
+        // appear anywhere in the export.
+        $this->assertStringNotContainsString(
+            $passToken,
+            json_encode($archive, JSON_THROW_ON_ERROR),
+            'The membership pass token must never be written into a data export.'
+        );
+    }
+
+    public function test_export_excludes_other_users_visits(): void
+    {
+        $me = $this->makeUser(self::PRIMARY_TENANT_ID);
+        $other = $this->makeUser(self::PRIMARY_TENANT_ID);
+
+        $venueId = (int) DB::table('partner_venues')->insertGetId([
+            'tenant_id' => self::PRIMARY_TENANT_ID,
+            'name' => 'Someone Else Cafe',
+            'slug' => 'someone-else-cafe-' . uniqid(),
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('partner_venue_visits')->insert([
+            'tenant_id' => self::PRIMARY_TENANT_ID,
+            'venue_id' => $venueId,
+            'user_id' => $other,
+            'source' => 'member_pass',
+            'visited_on' => now()->toDateString(),
+            'visited_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $archive = app(MemberDataExportService::class)->buildArchive($me);
+
+        $this->assertEmpty($archive['partner_venue_visits']);
+    }
+
     public function test_export_excludes_other_users_data(): void
     {
         $me     = $this->makeUser(self::PRIMARY_TENANT_ID);

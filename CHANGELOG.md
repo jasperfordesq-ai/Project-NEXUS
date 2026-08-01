@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Partner venue visits now appear in a member's data export, and the pass token deliberately does not.** Venue visits are movement data — where a member went and when — recorded by venue staff rather than entered by the member, which is precisely why they belong in a subject access request. The membership pass token is excluded on purpose: it is a live bearer credential, so writing it into a downloadable archive would turn a leaked export into a usable pass. Members can see and rotate the token in the app instead. Two tests cover it, including one asserting the token appears nowhere in the archive JSON.
+
 - **Three build- and routing-level gates caught real defects in the partner-venue and public-events work.** Recorded rather than folded silently into the feature commits, because each is a distinct class of mistake worth seeing.
 
   `venues` and `whats-on` were added as top-level routes without being added to `RESERVED_PATHS`. That list is what stops a tenant slug being mistaken for an app route, so until this was fixed a community whose slug happened to be `venues` would have had its pages resolve to the venue directory instead. `tenant-routing.test.ts` derives the expected set from the router itself, which is exactly why it caught it.

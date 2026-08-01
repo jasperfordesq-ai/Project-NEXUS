@@ -59,6 +59,7 @@ class MemberDataExportService
             'tandem_suggestions'         => $this->tandemSuggestions($userId, $tenantId),
             'listings'                   => $this->listings($userId, $tenantId),
             'events_attended'            => $this->eventsAttended($userId, $tenantId),
+            'partner_venue_visits'       => $this->partnerVenueVisits($userId, $tenantId),
             'groups_membership'          => $this->groupsMembership($userId, $tenantId),
             'messages_metadata'          => $this->messagesMetadata($userId, $tenantId),
             'feed_posts'                 => $this->feedPosts($userId, $tenantId),
@@ -401,6 +402,50 @@ class MemberDataExportService
     }
 
     /** @return array<string,array<int,array<string,mixed>>> */
+    /**
+     * Recorded visits to partner venues.
+     *
+     * This is movement data — where a member went and when — so it belongs in a
+     * subject access request even though the member never entered it themselves;
+     * venue staff recorded it on their behalf. The membership pass token is
+     * deliberately NOT exported: it is a live bearer credential, and putting it
+     * in a downloadable archive would turn a leaked export into a usable pass.
+     * The member can see and rotate the token in the app instead.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function partnerVenueVisits(int $userId, int $tenantId): array
+    {
+        if (! Schema::hasTable('partner_venue_visits') || ! Schema::hasTable('partner_venues')) {
+            return [];
+        }
+
+        $rows = DB::table('partner_venue_visits as v')
+            ->leftJoin('partner_venues as pv', function ($join) use ($tenantId): void {
+                $join->on('pv.id', '=', 'v.venue_id')
+                    ->where('pv.tenant_id', '=', $tenantId);
+            })
+            ->where('v.tenant_id', $tenantId)
+            ->where('v.user_id', $userId)
+            ->orderByDesc('v.visited_at')
+            ->get(['v.id', 'v.venue_id', 'pv.name as venue_name', 'v.source', 'v.visited_on', 'v.visited_at', 'v.created_at']);
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[] = [
+                'id' => (int) $r->id,
+                'venue_id' => (int) $r->venue_id,
+                'venue_name' => $r->venue_name ?? null,
+                'source' => $r->source ?? null,
+                'visited_on' => $r->visited_on ?? null,
+                'visited_at' => $this->iso($r->visited_at ?? null),
+                'created_at' => $this->iso($r->created_at ?? null),
+            ];
+        }
+
+        return $out;
+    }
+
     private function supportRelationships(int $userId, int $tenantId): array
     {
         if (!Schema::hasTable('caring_support_relationships')) {
