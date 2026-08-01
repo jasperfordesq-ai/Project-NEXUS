@@ -118,7 +118,7 @@ describe('PublicEventDetailPage', () => {
 
     render(<PublicEventDetailPage />);
 
-    expect(await screen.findByRole('link', { name: /sign in/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /sign in/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /going|rsvp|book/i })).not.toBeInTheDocument();
   });
 

@@ -934,7 +934,10 @@
       "quiet_space": "Espacio tranquilo",
       "seating": "Asientos disponibles",
       "parking": "Aparcamiento accesible"
-    }
+    },
+    "member_prompt": "Has iniciado sesión: el registro y tus confirmaciones de asistencia se encuentran disponibles en la página completa de eventos.",
+    "member_cta": "Ir a eventos comunitarios",
+    "member_event_cta": "Abra este evento en la aplicación comunitaria"
   },
   "going_many": "{{count}} asistirán",
   "interested_many": "{{count}} interesados"

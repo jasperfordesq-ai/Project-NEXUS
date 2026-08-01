@@ -924,6 +924,9 @@
       "quiet_space": "Rustige ruimte",
       "seating": "Zitplaatsen beschikbaar",
       "parking": "Toegankelijke parkeergelegenheid"
-    }
+    },
+    "member_prompt": "Je bent ingelogd - registratie en je RSVP's staan ​​live op de volledige evenementenpagina.",
+    "member_cta": "Ga naar gemeenschapsevenementen",
+    "member_event_cta": "Open dit evenement in de community-app"
   }
 }

@@ -924,6 +924,9 @@
       "quiet_space": "Ruhiger Raum",
       "seating": "Sitzplätze vorhanden",
       "parking": "Barrierefreier Parkplatz"
-    }
+    },
+    "member_prompt": "Sie sind angemeldet – die Registrierung und Ihre Zusagen werden auf der vollständigen Veranstaltungsseite angezeigt.",
+    "member_cta": "Gehen Sie zu Gemeinschaftsveranstaltungen",
+    "member_event_cta": "Öffnen Sie diese Veranstaltung in der Community-App"
   }
 }

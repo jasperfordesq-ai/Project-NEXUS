@@ -924,6 +924,9 @@
       "quiet_space": "Quiet space",
       "seating": "Seating available",
       "parking": "Accessible parking"
-    }
+    },
+    "member_prompt": "You're signed in — registration and your RSVPs live on the full events page.",
+    "member_cta": "Go to community events",
+    "member_event_cta": "Open this event in the community app"
   }
 }

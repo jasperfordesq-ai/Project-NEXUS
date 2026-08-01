@@ -944,7 +944,10 @@
       "quiet_space": "Cicha przestrzeń",
       "seating": "Dostępne miejsca siedzące",
       "parking": "Dostępny parking"
-    }
+    },
+    "member_prompt": "Jesteś zalogowany — rejestracja i Twoje odpowiedzi są widoczne na stronie z pełnymi wydarzeniami.",
+    "member_cta": "Idź na wydarzenia społecznościowe",
+    "member_event_cta": "Otwórz to wydarzenie w aplikacji społecznościowej"
   },
   "going_few": "{{count}} będzie działać",
   "going_many": "{{count}} będzie działać",

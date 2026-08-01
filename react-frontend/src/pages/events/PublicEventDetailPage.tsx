@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -29,7 +29,7 @@ import Accessibility from 'lucide-react/icons/accessibility';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEventDetail } from '@/lib/public-events-api';
 import { getFormattingLocale } from '@/lib/helpers';
 
@@ -37,6 +37,9 @@ export default function PublicEventDetailPage() {
   const { t } = useTranslation('events');
   const { id } = useParams<{ id: string }>();
   const { tenantPath, tenant } = useTenant();
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [event, setEvent] = useState<PublicEventDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -211,12 +214,24 @@ export default function PublicEventDetailPage() {
         </Card>
       )}
 
-      <Card className="p-6 text-center space-y-3">
-        <p className="text-theme-muted">{t('public.register_prompt')}</p>
-        <Button color="primary" as={Link} to={tenantPath('/login')}>
-          {t('public.login_cta')}
-        </Button>
-      </Card>
+      {isAuthenticated ? (
+        <Card className="p-6 text-center space-y-3">
+          <p className="text-theme-muted">{t('public.member_prompt')}</p>
+          <Button color="primary" as={Link} to={tenantPath(`/events/${event.id}`)}>
+            {t('public.member_event_cta')}
+          </Button>
+        </Card>
+      ) : (
+        <Card className="p-6 text-center space-y-3">
+          <p className="text-theme-muted">{t('public.register_prompt')}</p>
+          <Button
+            color="primary"
+            onPress={() => navigate(tenantPath('/login'), { state: { from: tenantPath(location.pathname) + location.search } })}
+          >
+            {t('public.login_cta')}
+          </Button>
+        </Card>
+      )}
     </div>
   );
 }

@@ -246,6 +246,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     id: 'public_events',
     icon: Globe,
     type: 'feature',
+    stage: 'beta',
     configSource: 'tenant_features',
     configOptions: [],
   },
@@ -256,8 +257,12 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     id: 'event_attendance_credits',
     icon: Gift,
     type: 'feature',
+    stage: 'beta',
     configSource: 'tenant_features',
     configOptions: [],
+    // The monthly cap + platform-readiness chip live on Event Settings, which
+    // also links through to the claims ledger.
+    detailPageUrl: '/admin/events/settings',
   },
   {
     // Partner venues — records engagement when venue staff scan a member's
@@ -266,6 +271,7 @@ const FEATURE_MODULES: ModuleDefinition[] = [
     id: 'partner_venues',
     icon: Store,
     type: 'feature',
+    stage: 'beta',
     configSource: 'tenant_features',
     configOptions: [],
     detailPageUrl: '/admin/partner-venues',

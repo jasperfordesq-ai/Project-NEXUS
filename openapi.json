@@ -29021,6 +29021,123 @@
           }
         ]
       }
+    },
+    "/api/v2/public/events": {
+      "get": {
+        "summary": "GET /api/v2/public/events",
+        "description": "Maintained Events operation served by EventPublicController@index. Anonymous listing of published, publicly visible events behind the events + public_events tenant flags. Serves the PublicEventProjection allowlist only — no joining links, RSVP/attendee data, or organiser contact details; organiser first name only.",
+        "operationId": "EventPublic_index",
+        "tags": [
+          "Public Events"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\EventPublicController@index",
+        "parameters": [
+          {
+            "name": "when",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "upcoming",
+                "past",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/public/events/{id}": {
+      "get": {
+        "summary": "GET /api/v2/public/events/{id}",
+        "description": "Maintained Events operation served by EventPublicController@show. Anonymous detail view of one published event (adds description and venue accessibility to the projection). Draft, private-group and unknown events return an identical 404 so the endpoint cannot be used to probe.",
+        "operationId": "EventPublic_show",
+        "tags": [
+          "Public Events"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\EventPublicController@show",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
     }
   }
 }

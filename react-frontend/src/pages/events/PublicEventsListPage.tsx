@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -24,7 +24,7 @@ import Video from 'lucide-react/icons/video';
 import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '@/hooks';
 import { PageMeta } from '@/components/seo';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
 import { publicEventsApi, type PublicEvent } from '@/lib/public-events-api';
 import { getFormattingLocale } from '@/lib/helpers';
 
@@ -49,6 +49,9 @@ export default function PublicEventsListPage() {
   usePageTitle(t('public.title'));
 
   const { tenantPath, tenant } = useTenant();
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<PublicEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -136,12 +139,27 @@ export default function PublicEventsListPage() {
         </ul>
       )}
 
-      <Card className="p-6 text-center space-y-3">
-        <p className="text-theme-muted">{t('public.join_prompt')}</p>
-        <Button color="primary" as={Link} to={tenantPath('/login')}>
-          {t('public.login_cta')}
-        </Button>
-      </Card>
+      {isAuthenticated ? (
+        // TenantShell picks the registry by PATH, so a signed-in member who
+        // follows a shared /whats-on link still lands here — hand them
+        // through to their full member events page instead of a sign-in CTA.
+        <Card className="p-6 text-center space-y-3">
+          <p className="text-theme-muted">{t('public.member_prompt')}</p>
+          <Button color="primary" as={Link} to={tenantPath('/events')}>
+            {t('public.member_cta')}
+          </Button>
+        </Card>
+      ) : (
+        <Card className="p-6 text-center space-y-3">
+          <p className="text-theme-muted">{t('public.join_prompt')}</p>
+          <Button
+            color="primary"
+            onPress={() => navigate(tenantPath('/login'), { state: { from: tenantPath(location.pathname) + location.search } })}
+          >
+            {t('public.login_cta')}
+          </Button>
+        </Card>
+      )}
     </div>
   );
 }

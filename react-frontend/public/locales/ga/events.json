@@ -954,7 +954,10 @@
       "quiet_space": "Spás ciúin",
       "seating": "Suíocháin ar fáil",
       "parking": "Páirceáil inrochtana"
-    }
+    },
+    "member_prompt": "Tá tú sínithe isteach — clárú agus do RSVPanna beo ar an leathanach iomlán imeachtaí.",
+    "member_cta": "Téigh chuig imeachtaí pobail",
+    "member_event_cta": "Oscail an ócáid ​​​​seo san aip pobail"
   },
   "going_few": "{{count}} ag dul",
   "going_many": "{{count}} ag dul",

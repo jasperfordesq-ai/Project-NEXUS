@@ -133,6 +133,7 @@ describe('navigationRegistry', () => {
       'feed',
       'messages',
       'saved',
+      'venues',
       'wallet',
     ]));
 
@@ -143,6 +144,31 @@ describe('navigationRegistry', () => {
         expect(anonymousIds.has(id), `${id} leaked to an anonymous user`).toBe(false);
         expect(memberIds.has(id), `${id} was hidden from an authenticated member`).toBe(true);
       });
+    }
+  });
+
+  it('applies anonOnly and multi-feature policy identically on desktop and mobile', () => {
+    const anonymous = allEnabledContext({ isAuthenticated: false });
+    const member = allEnabledContext({ isAuthenticated: true });
+
+    for (const surfaceItems of [desktopItems, mobileItems]) {
+      // whats-on is the signed-out twin of the member events page: shown to
+      // anonymous visitors, never to members.
+      expect(ids(surfaceItems(anonymous)).has('whats-on')).toBe(true);
+      expect(ids(surfaceItems(member)).has('whats-on')).toBe(false);
+
+      // ALL features listed on a destination must be on — dropping either
+      // flag hides it.
+      for (const disabled of ['events', 'public_events'] as const) {
+        const context = allEnabledContext({
+          isAuthenticated: false,
+          hasFeature: feature => feature !== disabled,
+        });
+        expect(
+          ids(surfaceItems(context)).has('whats-on'),
+          `whats-on visible with ${disabled} off`,
+        ).toBe(false);
+      }
     }
   });
 

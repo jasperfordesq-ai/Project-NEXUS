@@ -195,8 +195,13 @@ final class EventOpenApiCoverageTest extends TestCase
 
     private static function isMaintainedEventPath(string $path): bool
     {
+        // `public/events` is named explicitly: the original pattern matched
+        // `events...` and `admin/events...` but not `public/events...`, so the
+        // public endpoints shipped without spec entries and this test — whose
+        // whole purpose is spec ⇄ routes in both directions — structurally
+        // could not notice. A new events surface must extend this list.
         return preg_match(
-            '#^/api/v2/(?:admin/events(?:/|$)|admin/prerender/events$|events(?:/|$)|event-broadcasts(?:/|$)|event-templates(?:/|$)|federation/(?:ingest/)?events$)#D',
+            '#^/api/v2/(?:admin/events(?:/|$)|admin/prerender/events$|events(?:/|$)|public/events(?:/|$)|event-broadcasts(?:/|$)|event-templates(?:/|$)|federation/(?:ingest/)?events$)#D',
             $path,
         ) === 1;
     }

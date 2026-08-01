@@ -104,7 +104,8 @@ type NavigationNavKey =
   | 'timebanking_guide'
   | 'venues'
   | 'volunteering'
-  | 'wallet';
+  | 'wallet'
+  | 'whats_on';
 
 type NavigationLegalKey =
   | 'accessibility'
@@ -164,7 +165,11 @@ interface NavigationDestinationDefinition {
   descriptionKey?: NavigationDescriptionKey;
   icon: LucideIcon;
   auth?: 'authenticated';
+  /** Show ONLY to signed-out visitors (e.g. the public What's On, whose signed-in twin is the member Events page). */
+  anonOnly?: true;
   feature?: keyof TenantFeatures;
+  /** ALL listed features must be on — for surfaces gated by two flags (e.g. events + public_events). */
+  features?: readonly (keyof TenantFeatures)[];
   module?: keyof TenantModules;
   tenantSlugs?: readonly string[];
   placements: {
@@ -205,6 +210,10 @@ export const NAVIGATION_DESTINATIONS = [
   { id: 'members', href: '/members', labelKey: 'nav.members', descriptionKey: 'nav_desc.members', icon: Users, feature: 'connections', placements: both('community-local', 'community') },
   { id: 'connections', href: '/connections', labelKey: 'nav.connections', descriptionKey: 'nav_desc.connections', icon: Users2, feature: 'connections', placements: both('community-local', 'community') },
   { id: 'events', href: '/events', labelKey: 'nav.events', descriptionKey: 'nav_desc.events', icon: Calendar, feature: 'events', placements: both('community-local', 'community') },
+  // The signed-out twin of Events: public advertising at /whats-on. Members
+  // never see both — this one is anonOnly, and TenantShell serves the member
+  // EventsPage at /events once signed in.
+  { id: 'whats-on', href: '/whats-on', labelKey: 'nav.whats_on', descriptionKey: 'nav_desc.whats_on', icon: Calendar, anonOnly: true, features: ['events', 'public_events'], placements: both('community-local', 'community') },
   { id: 'groups', href: '/groups', labelKey: 'nav.groups', descriptionKey: 'nav_desc.groups', icon: Users, feature: 'groups', placements: both('community-local', 'community') },
   { id: 'volunteering', href: '/volunteering', labelKey: 'nav.volunteering', descriptionKey: 'nav_desc.volunteering', icon: Heart, feature: 'volunteering', placements: both('community-local', 'community') },
   { id: 'venues', href: '/venues', labelKey: 'nav.venues', descriptionKey: 'nav_desc.venues', icon: Store, auth: 'authenticated', feature: 'partner_venues', placements: both('community-local', 'community') },
@@ -316,7 +325,10 @@ function isDestinationVisible(
   context: NavigationGateContext,
 ): boolean {
   if ('auth' in destination && destination.auth === 'authenticated' && !context.isAuthenticated) return false;
+  if ('anonOnly' in destination && destination.anonOnly && context.isAuthenticated) return false;
   if ('feature' in destination && destination.feature && !context.hasFeature(destination.feature)) return false;
+  if ('features' in destination && destination.features
+    && !(destination.features as readonly (keyof TenantFeatures)[]).every((flag) => context.hasFeature(flag))) return false;
   if ('module' in destination && destination.module && !context.hasModule(destination.module)) return false;
   if ('tenantSlugs' in destination && destination.tenantSlugs) {
     const tenantSlugs = destination.tenantSlugs as readonly string[];
