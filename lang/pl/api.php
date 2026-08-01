@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => 'Nie znaleziono żądania wymiany',
     'log_not_found' => 'Nie znaleziono dziennika',
     'challenge_not_found' => 'Nie znaleziono wyzwania',
+    'challenge_field_invalid' => 'Co najmniej jedno pole wyzwania jest nieprawidłowe',
     'segment_not_found' => 'Nie znaleziono segmentu',
     'webhook_not_found' => 'Nie znaleziono webhooka',
     'subscriber_not_found' => 'Nie znaleziono abonenta',

@@ -1289,14 +1289,16 @@ class EventsController extends BaseApiController
         // Always make the idempotent claim for a going RSVP. This lets a retry
         // recover from a transient XP-write failure, while the database unique
         // key prevents duplicate awards after status cycling or RSVP recreation.
+        // Routed through EngagementService so admin-defined challenges on
+        // attend_event actually progress — XP is unchanged (same XP_VALUES
+        // lookup), challenge progress is what the direct awardXP call lacked.
         if ($status === 'going') {
             try {
-                \App\Services\GamificationService::awardXP(
+                \App\Services\EngagementService::record(
                     $userId,
-                    \App\Services\GamificationService::XP_VALUES['attend_event'],
                     'attend_event',
+                    'event:' . $id,
                     __('govuk_alpha.profile.activity_types.event_rsvp'),
-                    'event:' . $id
                 );
             } catch (\Throwable $e) {
                 \Log::warning('Gamification XP award failed', ['action' => 'attend_event', 'user' => $userId, 'error' => $e->getMessage()]);

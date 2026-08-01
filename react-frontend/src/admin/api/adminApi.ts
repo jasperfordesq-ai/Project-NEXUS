@@ -712,7 +712,62 @@ export const adminGamification = {
 
   resetBadgeConfig: (badgeKey: string) =>
     api.post<{ success: boolean }>(`/v2/admin/gamification/badge-config/${badgeKey}/reset`),
+
+  listChallenges: (params: { limit?: number; offset?: number; challenge_type?: string; is_active?: boolean } = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && `${value}` !== '') query.set(key, `${value}`);
+    });
+    const suffix = query.toString();
+    return api.get<AdminChallengesPage>(`/v2/admin/gamification/challenges${suffix ? `?${suffix}` : ''}`);
+  },
+
+  createChallenge: (data: AdminChallengePayload) =>
+    api.post<AdminChallenge>('/v2/admin/gamification/challenges', data),
+
+  updateChallenge: (id: number, data: Partial<AdminChallengePayload>) =>
+    api.put<AdminChallenge>(`/v2/admin/gamification/challenges/${id}`, data),
+
+  deleteChallenge: (id: number) =>
+    api.delete<{ deleted: boolean }>(`/v2/admin/gamification/challenges/${id}`),
 };
+
+export interface AdminChallenge {
+  id: number;
+  tenant_id?: number;
+  title: string;
+  description: string | null;
+  challenge_type: 'daily' | 'weekly' | 'monthly' | 'special';
+  action_type: string;
+  target_count: number;
+  xp_reward: number;
+  badge_reward: string | null;
+  start_date: string;
+  end_date: string;
+  is_active: boolean | number;
+  created_at?: string;
+}
+
+export interface AdminChallengePayload {
+  title: string;
+  description?: string | null;
+  challenge_type: AdminChallenge['challenge_type'];
+  action_type: string;
+  target_count: number;
+  xp_reward: number;
+  badge_reward?: string | null;
+  start_date: string;
+  end_date: string;
+  is_active?: boolean;
+}
+
+export interface AdminChallengesPage {
+  challenges: AdminChallenge[];
+  total: number;
+  /** Only these action types ever progress — the form must not offer others. */
+  supported_action_types: string[];
+  challenge_types: Array<AdminChallenge['challenge_type']>;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Matching

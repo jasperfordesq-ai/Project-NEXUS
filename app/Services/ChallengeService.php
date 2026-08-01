@@ -39,6 +39,28 @@ class ChallengeService
     public const CHALLENGE_TYPES = ['daily', 'weekly', 'monthly', 'special'];
 
     /**
+     * The action_types an admin may put on a challenge.
+     *
+     * Deliberately NOT the whole of GamificationService::XP_VALUES: challenge
+     * progress only advances through EngagementService::record(), and only
+     * these actions are wired through it. A challenge on any other XP action
+     * would sit at zero forever — the exact trap the admin UI must not offer.
+     *
+     * Semantics worth knowing when adding to this list:
+     *  - venue_visit                 once per member/venue/day (DB unique key)
+     *  - event_attendance_verified   once per member/event (claim ledger key)
+     *  - attend_event                on a "going" RSVP; XP is
+     *                                reference-deduplicated but progress can be
+     *                                re-triggered by RSVP cycling — fine for
+     *                                engagement, not for airtight counting
+     */
+    public const SUPPORTED_ACTION_TYPES = [
+        'venue_visit',
+        'event_attendance_verified',
+        'attend_event',
+    ];
+
+    /**
      * Get all challenges for a tenant.
      *
      * 🔴 `challenges` has NO `status` column and NO `category` column. The real
@@ -189,6 +211,88 @@ class ChallengeService
         $challenge->save();
 
         return $challenge->id;
+    }
+
+    /**
+     * Update a tenant-owned challenge. Same validation posture as create():
+     * enum and NOT NULL constraints are checked here rather than left to the
+     * database, whose non-strict mode would truncate instead of reject.
+     *
+     * @param  array<string,mixed>  $data  Only known columns are applied.
+     */
+    public static function update(int $id, int $tenantId, array $data): bool
+    {
+        $challenge = self::getModelById($id, $tenantId);
+        if ($challenge === null) {
+            return false;
+        }
+
+        if (array_key_exists('title', $data)) {
+            $title = trim((string) $data['title']);
+            if ($title === '') {
+                throw new \InvalidArgumentException('challenges.title is NOT NULL: a non-empty title is required.');
+            }
+            $challenge->title = $title;
+        }
+        if (array_key_exists('description', $data)) {
+            $challenge->description = $data['description'] !== null ? (string) $data['description'] : null;
+        }
+        if (array_key_exists('challenge_type', $data)) {
+            $challengeType = (string) $data['challenge_type'];
+            if (! in_array($challengeType, self::CHALLENGE_TYPES, true)) {
+                throw new \InvalidArgumentException(sprintf(
+                    'challenges.challenge_type must be one of %s, got "%s".',
+                    implode('|', self::CHALLENGE_TYPES),
+                    $challengeType
+                ));
+            }
+            $challenge->challenge_type = $challengeType;
+        }
+        if (array_key_exists('action_type', $data)) {
+            $actionType = trim((string) $data['action_type']);
+            if ($actionType === '') {
+                throw new \InvalidArgumentException('challenges.action_type is NOT NULL: an action_type is required.');
+            }
+            $challenge->action_type = $actionType;
+        }
+        if (array_key_exists('target_count', $data)) {
+            $challenge->target_count = max(1, (int) $data['target_count']);
+        }
+        if (array_key_exists('xp_reward', $data)) {
+            $challenge->xp_reward = max(0, (int) $data['xp_reward']);
+        }
+        if (array_key_exists('badge_reward', $data)) {
+            $challenge->badge_reward = $data['badge_reward'] !== null ? (string) $data['badge_reward'] : null;
+        }
+        if (array_key_exists('is_active', $data)) {
+            $challenge->is_active = (bool) $data['is_active'];
+        }
+        if (array_key_exists('start_date', $data)) {
+            $challenge->start_date = self::toDateString($data['start_date']);
+        }
+        if (array_key_exists('end_date', $data)) {
+            $challenge->end_date = self::toDateString($data['end_date']);
+        }
+
+        return $challenge->save();
+    }
+
+    /**
+     * Delete a tenant-owned challenge.
+     *
+     * 🔴 user_challenge_progress has ON DELETE CASCADE onto challenges, so
+     * deleting a challenge erases every member's progress on it — including
+     * completed-but-unclaimed rewards. The admin UI warns before offering
+     * this; deactivation (is_active=false) is the reversible alternative.
+     */
+    public static function delete(int $id, int $tenantId): bool
+    {
+        $challenge = self::getModelById($id, $tenantId);
+        if ($challenge === null) {
+            return false;
+        }
+
+        return (bool) $challenge->delete();
     }
 
     /**

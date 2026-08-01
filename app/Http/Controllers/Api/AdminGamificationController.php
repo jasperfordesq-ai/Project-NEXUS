@@ -277,6 +277,194 @@ class AdminGamificationController extends BaseApiController
         }
     }
 
+    // ── Challenges CRUD ─────────────────────────────────────────────────
+    //
+    // Challenges were member-visible (view + claim on both frontends) long
+    // before an admin could create one anywhere but the database console.
+    // action_type is restricted to ChallengeService::SUPPORTED_ACTION_TYPES:
+    // only actions wired through EngagementService ever progress, so offering
+    // any other XP action here would create challenges stuck at zero.
+
+    /** GET /api/v2/admin/gamification/challenges */
+    public function challenges(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+
+        $filters = [
+            'limit' => (int) $this->input('limit', 50),
+            'offset' => (int) $this->input('offset', 0),
+        ];
+        if ($this->input('challenge_type')) {
+            $filters['challenge_type'] = (string) $this->input('challenge_type');
+        }
+        if ($this->input('is_active') !== null && $this->input('is_active') !== '') {
+            $filters['is_active'] = filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        $result = \App\Services\ChallengeService::getAll($tenantId, $filters);
+
+        return $this->respondWithData([
+            'challenges' => $result['items'],
+            'total' => $result['total'],
+            'supported_action_types' => \App\Services\ChallengeService::SUPPORTED_ACTION_TYPES,
+            'challenge_types' => \App\Services\ChallengeService::CHALLENGE_TYPES,
+        ]);
+    }
+
+    /**
+     * Shared field validation for challenge writes.
+     *
+     * @param  array<string,mixed>  $data
+     * @return string|null a field name that failed, or null when valid
+     */
+    private function invalidChallengeField(array $data, bool $partial): ?string
+    {
+        if (! $partial || array_key_exists('title', $data)) {
+            if (trim((string) ($data['title'] ?? '')) === '') {
+                return 'title';
+            }
+        }
+        if (! $partial || array_key_exists('action_type', $data)) {
+            if (! in_array((string) ($data['action_type'] ?? ''), \App\Services\ChallengeService::SUPPORTED_ACTION_TYPES, true)) {
+                return 'action_type';
+            }
+        }
+        if (array_key_exists('challenge_type', $data)
+            && ! in_array((string) $data['challenge_type'], \App\Services\ChallengeService::CHALLENGE_TYPES, true)) {
+            return 'challenge_type';
+        }
+        if (array_key_exists('target_count', $data) && (int) $data['target_count'] < 1) {
+            return 'target_count';
+        }
+        if (array_key_exists('xp_reward', $data)
+            && ((int) $data['xp_reward'] < 0 || (int) $data['xp_reward'] > 1000)) {
+            return 'xp_reward';
+        }
+
+        $start = $data['start_date'] ?? null;
+        $end = $data['end_date'] ?? null;
+        if (! $partial && (empty($start) || empty($end))) {
+            return empty($start) ? 'start_date' : 'end_date';
+        }
+        if (! empty($start) && ! empty($end)) {
+            try {
+                if (\Illuminate\Support\Carbon::parse((string) $end)->lt(\Illuminate\Support\Carbon::parse((string) $start))) {
+                    return 'end_date';
+                }
+            } catch (\Throwable) {
+                return 'end_date';
+            }
+        }
+
+        return null;
+    }
+
+    /** POST /api/v2/admin/gamification/challenges */
+    public function createChallenge(): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+
+        $data = [
+            'title' => trim((string) $this->input('title', '')),
+            'description' => $this->input('description'),
+            'challenge_type' => (string) $this->input('challenge_type', 'weekly'),
+            'action_type' => (string) $this->input('action_type', ''),
+            'target_count' => (int) $this->input('target_count', 1),
+            'xp_reward' => (int) $this->input('xp_reward', 50),
+            'badge_reward' => $this->input('badge_reward'),
+            'start_date' => $this->input('start_date'),
+            'end_date' => $this->input('end_date'),
+            'is_active' => filter_var($this->input('is_active', true), FILTER_VALIDATE_BOOLEAN),
+        ];
+
+        if (($field = $this->invalidChallengeField($data, false)) !== null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.challenge_field_invalid'), $field, 422);
+        }
+
+        try {
+            $id = \App\Services\ChallengeService::create($tenantId, $data);
+
+            return $this->respondWithData(
+                \App\Services\ChallengeService::getById((int) $id, $tenantId),
+                null,
+                201,
+            );
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (\Throwable $e) {
+            Log::error('Failed to create challenge: ' . $e->getMessage());
+
+            return $this->respondWithError('SERVER_ERROR', __('api.create_failed', ['resource' => 'challenge']), null, 500);
+        }
+    }
+
+    /** PUT /api/v2/admin/gamification/challenges/{id} */
+    public function updateChallenge(int $id): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+
+        if (\App\Services\ChallengeService::getById($id, $tenantId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.challenge_not_found'), null, 404);
+        }
+
+        $data = [];
+        foreach (['title', 'description', 'challenge_type', 'action_type', 'badge_reward', 'start_date', 'end_date'] as $key) {
+            if ($this->input($key) !== null) {
+                $data[$key] = $this->input($key);
+            }
+        }
+        foreach (['target_count', 'xp_reward'] as $key) {
+            if ($this->input($key) !== null) {
+                $data[$key] = (int) $this->input($key);
+            }
+        }
+        if ($this->input('is_active') !== null) {
+            $data['is_active'] = filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        if (($field = $this->invalidChallengeField($data, true)) !== null) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.challenge_field_invalid'), $field, 422);
+        }
+
+        try {
+            \App\Services\ChallengeService::update($id, $tenantId, $data);
+
+            return $this->respondWithData(\App\Services\ChallengeService::getById($id, $tenantId));
+        } catch (\InvalidArgumentException $e) {
+            return $this->respondWithError('VALIDATION_ERROR', $e->getMessage(), null, 422);
+        } catch (\Throwable $e) {
+            Log::error('Failed to update challenge: ' . $e->getMessage());
+
+            return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => 'challenge']), null, 500);
+        }
+    }
+
+    /** DELETE /api/v2/admin/gamification/challenges/{id} */
+    public function deleteChallenge(int $id): JsonResponse
+    {
+        $this->requireAdmin();
+        $tenantId = $this->getTenantId();
+
+        if (\App\Services\ChallengeService::getById($id, $tenantId) === null) {
+            return $this->respondWithError('NOT_FOUND', __('api.challenge_not_found'), null, 404);
+        }
+
+        try {
+            \App\Services\ChallengeService::delete($id, $tenantId);
+
+            // ON DELETE CASCADE takes member progress with it — the admin UI
+            // warns before calling this.
+            return $this->respondWithData(['deleted' => true]);
+        } catch (\Throwable $e) {
+            Log::warning('AdminGamificationController: deleteChallenge failed: ' . $e->getMessage(), ['context' => __METHOD__]);
+
+            return $this->respondWithError('SERVER_ERROR', __('api.delete_failed', ['resource' => 'challenge']), null, 500);
+        }
+    }
+
     /** POST /api/v2/admin/gamification/recheck-all */
     public function recheckAll(): JsonResponse
     {

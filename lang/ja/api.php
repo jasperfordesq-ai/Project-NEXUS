@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => '交換リクエストが見つかりません',
     'log_not_found' => 'ログが見つかりません',
     'challenge_not_found' => 'チャレンジが見つかりません',
+    'challenge_field_invalid' => '1 つ以上のチャレンジフィールドが無効です',
     'segment_not_found' => 'セグメントが見つかりません',
     'webhook_not_found' => 'Webhook が見つかりません',
     'subscriber_not_found' => '購読者が見つかりません',

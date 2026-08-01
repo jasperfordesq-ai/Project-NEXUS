@@ -2172,12 +2172,13 @@ class AlphaController extends Controller
         }
         if ($status === 'going') {
             try {
-                \App\Services\GamificationService::awardXP(
+                // Via EngagementService so attend_event challenges progress on
+                // the accessible frontend exactly as they do on the React one.
+                \App\Services\EngagementService::record(
                     $userId,
-                    \App\Services\GamificationService::XP_VALUES['attend_event'],
                     'attend_event',
+                    'event:' . $id,
                     __('govuk_alpha.profile.activity_types.event_rsvp'),
-                    'event:' . $id
                 );
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Alpha RSVP XP award failed', ['error' => $e->getMessage()]);

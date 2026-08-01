@@ -93,6 +93,7 @@ const CommunityFund = lazy(() => import('./modules/timebanking/CommunityFund'));
 // the broker control panel (incl. match approvals) lives at /broker/*
 // (see react-frontend/src/broker/pages/).
 const GamificationHub = lazy(() => import('./modules/gamification/GamificationHub'));
+const ChallengesAdmin = lazy(() => import('./modules/gamification/ChallengesAdmin'));
 const CampaignList = lazy(() => import('./modules/gamification/CampaignList'));
 const CampaignForm = lazy(() => import('./modules/gamification/CampaignForm'));
 const GamificationAnalytics = lazy(() => import('./modules/gamification/GamificationAnalytics'));
@@ -390,6 +391,7 @@ export function AdminRoutes() {
       <Route path="gamification/campaigns/edit/:id" element={<Lazy><CampaignForm /></Lazy>} />
       <Route path="gamification/analytics" element={<Lazy><GamificationAnalytics /></Lazy>} />
       <Route path="gamification/badge-config" element={<Lazy><BadgeConfiguration /></Lazy>} />
+      <Route path="gamification/challenges" element={<Lazy><ChallengesAdmin /></Lazy>} />
       <Route path="custom-badges" element={<Lazy><CustomBadges /></Lazy>} />
       <Route path="custom-badges/create" element={<Lazy><CreateBadge /></Lazy>} />
 

@@ -219,72 +219,270 @@
       "legendary": "Legendary"
     },
     "badges": {
-      "vol_1h": { "name": "First Steps", "description": "Log your first volunteer hour" },
-      "vol_10h": { "name": "Helping Hand", "description": "Volunteer 10 hours" },
-      "vol_50h": { "name": "Change Maker", "description": "Volunteer 50 hours" },
-      "vol_100h": { "name": "TimeBank Legend", "description": "Volunteer 100 hours" },
-      "vol_250h": { "name": "Volunteer Hero", "description": "Volunteer 250 hours" },
-      "vol_500h": { "name": "Volunteer Champion", "description": "Volunteer 500 hours" },
-      "offer_1": { "name": "First Offer", "description": "Post your first offer" },
-      "offer_5": { "name": "Generous Soul", "description": "Post 5 offers" },
-      "offer_10": { "name": "Gift Giver", "description": "Post 10 offers" },
-      "offer_25": { "name": "Offer Master", "description": "Post 25 offers" },
-      "request_1": { "name": "First Request", "description": "Post your first request" },
-      "request_5": { "name": "Community Seeker", "description": "Make 5 requests" },
-      "request_10": { "name": "Active Requester", "description": "Make 10 requests" },
-      "earn_1": { "name": "First Earn", "description": "Earn your first time credit" },
-      "earn_10": { "name": "Go Getter", "description": "Earn 10 time credits" },
-      "earn_50": { "name": "Credit Builder", "description": "Earn 50 time credits" },
-      "earn_100": { "name": "Centurion", "description": "Earn 100 time credits" },
-      "earn_250": { "name": "Credit Master", "description": "Earn 250 time credits" },
-      "spend_1": { "name": "First Spend", "description": "Spend your first time credit" },
-      "spend_10": { "name": "Active Spender", "description": "Spend 10 time credits" },
-      "spend_50": { "name": "Generous Spender", "description": "Spend 50 time credits" },
-      "transaction_1": { "name": "First Exchange", "description": "Complete your first transaction" },
-      "transaction_10": { "name": "Active Trader", "description": "Complete 10 transactions" },
-      "transaction_50": { "name": "Exchange Master", "description": "Complete 50 transactions" },
-      "diversity_3": { "name": "Community Helper", "description": "Help 3 different people" },
-      "diversity_10": { "name": "Diverse Giver", "description": "Help 10 different people" },
-      "diversity_25": { "name": "Community Pillar", "description": "Help 25 different people" },
-      "connect_1": { "name": "First Friend", "description": "Make your first connection" },
-      "connect_10": { "name": "Social Butterfly", "description": "Make 10 connections" },
-      "connect_25": { "name": "Network Builder", "description": "Make 25 connections" },
-      "connect_50": { "name": "Community Connector", "description": "Make 50 connections" },
-      "msg_1": { "name": "Conversation Starter", "description": "Send your first message" },
-      "msg_50": { "name": "Active Communicator", "description": "Send 50 messages" },
-      "msg_200": { "name": "Communication Pro", "description": "Send 200 messages" },
-      "review_1": { "name": "First Feedback", "description": "Leave your first review" },
-      "review_10": { "name": "Trusted Reviewer", "description": "Leave 10 reviews" },
-      "review_25": { "name": "Review Expert", "description": "Leave 25 reviews" },
-      "5star_1": { "name": "First 5-Star", "description": "Receive your first 5-star review" },
-      "5star_10": { "name": "Highly Rated", "description": "Receive 10 five-star reviews" },
-      "5star_25": { "name": "Excellence Award", "description": "Receive 25 five-star reviews" },
-      "event_attend_1": { "name": "First Event", "description": "Attend your first event" },
-      "event_attend_10": { "name": "Event Regular", "description": "Attend 10 events" },
-      "event_attend_25": { "name": "Event Enthusiast", "description": "Attend 25 events" },
-      "event_host_1": { "name": "Event Host", "description": "Host your first event" },
-      "event_host_5": { "name": "Event Organizer", "description": "Host 5 events" },
-      "group_join_1": { "name": "Team Player", "description": "Join your first group" },
-      "group_join_5": { "name": "Community Member", "description": "Join 5 groups" },
-      "group_create": { "name": "Group Founder", "description": "Create your first group" },
-      "post_1": { "name": "First Post", "description": "Create your first post" },
-      "post_25": { "name": "Content Creator", "description": "Create 25 posts" },
-      "post_100": { "name": "Prolific Poster", "description": "Create 100 posts" },
-      "likes_50": { "name": "Getting Noticed", "description": "Receive 50 likes" },
-      "likes_200": { "name": "Popular Voice", "description": "Receive 200 likes" },
-      "profile_complete": { "name": "Profile Pro", "description": "Complete your profile" },
-      "member_30d": { "name": "Monthly Member", "description": "Be a member for 30 days" },
-      "member_180d": { "name": "Semester Member", "description": "Be a member for 6 months" },
-      "member_365d": { "name": "Annual Member", "description": "Be a member for one year" },
-      "streak_7d": { "name": "Week Warrior", "description": "Maintain a 7-day streak" },
-      "streak_30d": { "name": "Monthly Dedication", "description": "Maintain a 30-day streak" },
-      "streak_100d": { "name": "Streak Master", "description": "Maintain a 100-day streak" },
-      "streak_365d": { "name": "Year-Long Legend", "description": "Maintain a 365-day streak" },
-      "level_5": { "name": "Rising Star", "description": "Reach level 5" },
-      "level_10": { "name": "Community Champion", "description": "Reach level 10" },
-      "early_adopter": { "name": "Early Adopter", "description": "Be an early adopter of the platform" },
-      "verified": { "name": "Verified Member", "description": "Complete identity verification" },
-      "volunteer_org": { "name": "Organization Partner", "description": "Create a volunteer organization" }
+      "vol_1h": {
+        "name": "First Steps",
+        "description": "Log your first volunteer hour"
+      },
+      "vol_10h": {
+        "name": "Helping Hand",
+        "description": "Volunteer 10 hours"
+      },
+      "vol_50h": {
+        "name": "Change Maker",
+        "description": "Volunteer 50 hours"
+      },
+      "vol_100h": {
+        "name": "TimeBank Legend",
+        "description": "Volunteer 100 hours"
+      },
+      "vol_250h": {
+        "name": "Volunteer Hero",
+        "description": "Volunteer 250 hours"
+      },
+      "vol_500h": {
+        "name": "Volunteer Champion",
+        "description": "Volunteer 500 hours"
+      },
+      "offer_1": {
+        "name": "First Offer",
+        "description": "Post your first offer"
+      },
+      "offer_5": {
+        "name": "Generous Soul",
+        "description": "Post 5 offers"
+      },
+      "offer_10": {
+        "name": "Gift Giver",
+        "description": "Post 10 offers"
+      },
+      "offer_25": {
+        "name": "Offer Master",
+        "description": "Post 25 offers"
+      },
+      "request_1": {
+        "name": "First Request",
+        "description": "Post your first request"
+      },
+      "request_5": {
+        "name": "Community Seeker",
+        "description": "Make 5 requests"
+      },
+      "request_10": {
+        "name": "Active Requester",
+        "description": "Make 10 requests"
+      },
+      "earn_1": {
+        "name": "First Earn",
+        "description": "Earn your first time credit"
+      },
+      "earn_10": {
+        "name": "Go Getter",
+        "description": "Earn 10 time credits"
+      },
+      "earn_50": {
+        "name": "Credit Builder",
+        "description": "Earn 50 time credits"
+      },
+      "earn_100": {
+        "name": "Centurion",
+        "description": "Earn 100 time credits"
+      },
+      "earn_250": {
+        "name": "Credit Master",
+        "description": "Earn 250 time credits"
+      },
+      "spend_1": {
+        "name": "First Spend",
+        "description": "Spend your first time credit"
+      },
+      "spend_10": {
+        "name": "Active Spender",
+        "description": "Spend 10 time credits"
+      },
+      "spend_50": {
+        "name": "Generous Spender",
+        "description": "Spend 50 time credits"
+      },
+      "transaction_1": {
+        "name": "First Exchange",
+        "description": "Complete your first transaction"
+      },
+      "transaction_10": {
+        "name": "Active Trader",
+        "description": "Complete 10 transactions"
+      },
+      "transaction_50": {
+        "name": "Exchange Master",
+        "description": "Complete 50 transactions"
+      },
+      "diversity_3": {
+        "name": "Community Helper",
+        "description": "Help 3 different people"
+      },
+      "diversity_10": {
+        "name": "Diverse Giver",
+        "description": "Help 10 different people"
+      },
+      "diversity_25": {
+        "name": "Community Pillar",
+        "description": "Help 25 different people"
+      },
+      "connect_1": {
+        "name": "First Friend",
+        "description": "Make your first connection"
+      },
+      "connect_10": {
+        "name": "Social Butterfly",
+        "description": "Make 10 connections"
+      },
+      "connect_25": {
+        "name": "Network Builder",
+        "description": "Make 25 connections"
+      },
+      "connect_50": {
+        "name": "Community Connector",
+        "description": "Make 50 connections"
+      },
+      "msg_1": {
+        "name": "Conversation Starter",
+        "description": "Send your first message"
+      },
+      "msg_50": {
+        "name": "Active Communicator",
+        "description": "Send 50 messages"
+      },
+      "msg_200": {
+        "name": "Communication Pro",
+        "description": "Send 200 messages"
+      },
+      "review_1": {
+        "name": "First Feedback",
+        "description": "Leave your first review"
+      },
+      "review_10": {
+        "name": "Trusted Reviewer",
+        "description": "Leave 10 reviews"
+      },
+      "review_25": {
+        "name": "Review Expert",
+        "description": "Leave 25 reviews"
+      },
+      "5star_1": {
+        "name": "First 5-Star",
+        "description": "Receive your first 5-star review"
+      },
+      "5star_10": {
+        "name": "Highly Rated",
+        "description": "Receive 10 five-star reviews"
+      },
+      "5star_25": {
+        "name": "Excellence Award",
+        "description": "Receive 25 five-star reviews"
+      },
+      "event_attend_1": {
+        "name": "First Event",
+        "description": "Attend your first event"
+      },
+      "event_attend_10": {
+        "name": "Event Regular",
+        "description": "Attend 10 events"
+      },
+      "event_attend_25": {
+        "name": "Event Enthusiast",
+        "description": "Attend 25 events"
+      },
+      "event_host_1": {
+        "name": "Event Host",
+        "description": "Host your first event"
+      },
+      "event_host_5": {
+        "name": "Event Organizer",
+        "description": "Host 5 events"
+      },
+      "group_join_1": {
+        "name": "Team Player",
+        "description": "Join your first group"
+      },
+      "group_join_5": {
+        "name": "Community Member",
+        "description": "Join 5 groups"
+      },
+      "group_create": {
+        "name": "Group Founder",
+        "description": "Create your first group"
+      },
+      "post_1": {
+        "name": "First Post",
+        "description": "Create your first post"
+      },
+      "post_25": {
+        "name": "Content Creator",
+        "description": "Create 25 posts"
+      },
+      "post_100": {
+        "name": "Prolific Poster",
+        "description": "Create 100 posts"
+      },
+      "likes_50": {
+        "name": "Getting Noticed",
+        "description": "Receive 50 likes"
+      },
+      "likes_200": {
+        "name": "Popular Voice",
+        "description": "Receive 200 likes"
+      },
+      "profile_complete": {
+        "name": "Profile Pro",
+        "description": "Complete your profile"
+      },
+      "member_30d": {
+        "name": "Monthly Member",
+        "description": "Be a member for 30 days"
+      },
+      "member_180d": {
+        "name": "Semester Member",
+        "description": "Be a member for 6 months"
+      },
+      "member_365d": {
+        "name": "Annual Member",
+        "description": "Be a member for one year"
+      },
+      "streak_7d": {
+        "name": "Week Warrior",
+        "description": "Maintain a 7-day streak"
+      },
+      "streak_30d": {
+        "name": "Monthly Dedication",
+        "description": "Maintain a 30-day streak"
+      },
+      "streak_100d": {
+        "name": "Streak Master",
+        "description": "Maintain a 100-day streak"
+      },
+      "streak_365d": {
+        "name": "Year-Long Legend",
+        "description": "Maintain a 365-day streak"
+      },
+      "level_5": {
+        "name": "Rising Star",
+        "description": "Reach level 5"
+      },
+      "level_10": {
+        "name": "Community Champion",
+        "description": "Reach level 10"
+      },
+      "early_adopter": {
+        "name": "Early Adopter",
+        "description": "Be an early adopter of the platform"
+      },
+      "verified": {
+        "name": "Verified Member",
+        "description": "Complete identity verification"
+      },
+      "volunteer_org": {
+        "name": "Organization Partner",
+        "description": "Create a volunteer organization"
+      }
     },
     "customized": "Customized",
     "delete_badge_aria": "Delete {{name}}",
@@ -386,5 +584,56 @@
     "threshold_count_other": "Threshold: {{count}}",
     "xp_count_one": "{{count}} XP",
     "xp_count_other": "{{count}} XP"
+  },
+  "challenges": {
+    "page_title": "Challenges",
+    "title": "Challenges",
+    "desc": "Time-boxed goals members complete by doing real things — visiting venues, attending events. Rewards are claimed by the member once completed.",
+    "hub_desc": "Create and manage member challenges",
+    "refresh": "Refresh",
+    "create": "Create challenge",
+    "edit": "Edit",
+    "edit_title": "Edit challenge",
+    "save": "Save changes",
+    "delete": "Delete",
+    "delete_title": "Delete challenge",
+    "delete_confirm": "Delete “{{title}}”? Every member's progress on it — including completed but unclaimed rewards — is deleted with it. Deactivating instead keeps progress.",
+    "deleted": "Challenge deleted",
+    "delete_failed": "Could not delete the challenge",
+    "created": "Challenge created",
+    "updated": "Challenge updated",
+    "save_failed": "Could not save the challenge",
+    "form_invalid": "Complete the required fields — the end date must not be before the start date",
+    "search": "Search challenges…",
+    "empty_title": "No challenges yet",
+    "empty_desc": "Create a challenge to give members a time-boxed goal, like visiting five partner venues this month.",
+    "col_title": "Challenge",
+    "col_action": "Counts",
+    "col_cadence": "Cadence",
+    "col_target": "Target",
+    "col_reward": "Reward",
+    "col_window": "Window",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "label_actions": "Actions for {{title}}",
+    "form_title": "Title",
+    "form_description": "Description",
+    "form_action": "Counted action",
+    "form_action_desc": "Only these actions advance challenge progress. Verified attendance counts once per event; RSVPs can be re-triggered by members changing their response.",
+    "form_cadence": "Cadence",
+    "form_target": "Target count",
+    "form_xp": "XP reward",
+    "form_start": "Starts",
+    "form_end": "Ends",
+    "form_active_desc": "Inactive challenges are hidden from members and stop counting progress.",
+    "type_daily": "Daily",
+    "type_weekly": "Weekly",
+    "type_monthly": "Monthly",
+    "type_special": "Special",
+    "action_venue_visit": "Partner venue visits",
+    "action_event_attendance_verified": "Verified event attendance",
+    "action_attend_event": "Event RSVPs (going)"
   }
 }

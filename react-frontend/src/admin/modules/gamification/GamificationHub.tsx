@@ -12,6 +12,7 @@ import Megaphone from 'lucide-react/icons/megaphone';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import Settings2 from 'lucide-react/icons/settings-2';
 import Gift from 'lucide-react/icons/gift';
+import Trophy from 'lucide-react/icons/trophy';
 import { usePageTitle } from '@/hooks';
 import { useToast, useTenant } from '@/contexts';
 import { adminGamification } from '../../api/adminApi';
@@ -283,6 +284,21 @@ export function GamificationHub() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{t('gamification.analytics')}</p>
                     <p className="text-xs text-muted">{t('gamification.gamification_insights')}</p>
+                  </div>
+                  <ArrowRight aria-hidden="true" size={16} className="text-muted" />
+                </CardBody>
+              </Card>
+            </Link>
+
+            <Link to={tenantPath("/admin/gamification/challenges")} className="block">
+              <Card className="bg-surface-secondary hover:bg-surface-tertiary transition-colors cursor-pointer">
+                <CardBody className="flex flex-row items-center gap-3 p-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-danger/10 text-danger">
+                    <Trophy aria-hidden="true" size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground">{t('challenges.title')}</p>
+                    <p className="text-xs text-muted">{t('challenges.hub_desc')}</p>
                   </div>
                   <ArrowRight aria-hidden="true" size={16} className="text-muted" />
                 </CardBody>

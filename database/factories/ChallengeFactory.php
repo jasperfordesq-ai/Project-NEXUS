@@ -7,31 +7,36 @@
 namespace Database\Factories;
 
 use App\Models\Challenge;
+use App\Services\ChallengeService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * 🔴 Matches the REAL `challenges` schema. The previous definition invented
+ * `category`, `status`, `starts_at`/`ends_at` columns and drew
+ * `challenge_type`/`action_type` from vocabularies that exist nowhere in the
+ * database or the code — it predated the schema settling and had zero users,
+ * so it misled without ever failing. Values now come from the same constants
+ * the service validates against.
+ */
 class ChallengeFactory extends Factory
 {
     protected $model = Challenge::class;
 
     public function definition(): array
     {
-        $start = $this->faker->dateTimeBetween('-1 week', '+1 week');
+        $start = $this->faker->dateTimeBetween('-1 week', 'now');
 
         return [
             'tenant_id'      => 2,
             'title'          => $this->faker->sentence(4),
             'description'    => $this->faker->paragraph(),
-            'challenge_type' => $this->faker->randomElement(['individual', 'team', 'community']),
-            'action_type'    => $this->faker->randomElement(['transactions', 'listings', 'events', 'connections']),
-            'target_count'   => $this->faker->numberBetween(1, 50),
+            'challenge_type' => $this->faker->randomElement(ChallengeService::CHALLENGE_TYPES),
+            'action_type'    => $this->faker->randomElement(ChallengeService::SUPPORTED_ACTION_TYPES),
+            'target_count'   => $this->faker->numberBetween(1, 10),
             'xp_reward'      => $this->faker->numberBetween(10, 500),
             'badge_reward'   => $this->faker->optional()->slug(2),
-            'category'       => $this->faker->optional()->word(),
-            'start_date'     => $start,
-            'end_date'       => $this->faker->dateTimeBetween($start, '+2 months'),
-            'starts_at'      => null,
-            'ends_at'        => null,
-            'status'         => $this->faker->randomElement(['draft', 'active', 'completed', 'expired']),
+            'start_date'     => $start->format('Y-m-d'),
+            'end_date'       => $this->faker->dateTimeBetween('+1 week', '+2 months')->format('Y-m-d'),
             'is_active'      => true,
         ];
     }
@@ -40,6 +45,13 @@ class ChallengeFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $id,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
         ]);
     }
 }

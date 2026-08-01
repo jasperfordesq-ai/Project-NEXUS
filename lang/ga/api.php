@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => 'Níor aimsíodh iarratas malairte',
     'log_not_found' => 'Níor aimsíodh an logáil',
     'challenge_not_found' => 'Dúshlán gan aimsiú',
+    'challenge_field_invalid' => 'Tá réimse dúshlán amháin nó níos mó neamhbhailí',
     'segment_not_found' => 'Deighleog gan aimsiú',
     'webhook_not_found' => 'Níor aimsíodh cuaille gréasáin',
     'subscriber_not_found' => 'Níor aimsíodh an síntiúsóir',

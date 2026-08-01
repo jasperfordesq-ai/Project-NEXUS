@@ -120,6 +120,7 @@ return [
     'exchange_not_found'           => 'Exchange request not found',
     'log_not_found'                => 'Log not found',
     'challenge_not_found'          => 'Challenge not found',
+    'challenge_field_invalid'      => 'One or more challenge fields are invalid',
     'segment_not_found'            => 'Segment not found',
     'webhook_not_found'            => 'Webhook not found',
     'subscriber_not_found'         => 'Subscriber not found',

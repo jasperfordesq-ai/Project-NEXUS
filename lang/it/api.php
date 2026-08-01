@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => 'Richiesta di scambio non trovata',
     'log_not_found' => 'Registro non trovato',
     'challenge_not_found' => 'Sfida non trovata',
+    'challenge_field_invalid' => 'Uno o più campi di sfida non sono validi',
     'segment_not_found' => 'Segmento non trovato',
     'webhook_not_found' => 'Webhook non trovato',
     'subscriber_not_found' => 'Iscritto non trovato',

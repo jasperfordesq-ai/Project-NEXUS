@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => 'Uitwisselingsverzoek niet gevonden',
     'log_not_found' => 'Logboek niet gevonden',
     'challenge_not_found' => 'Uitdaging niet gevonden',
+    'challenge_field_invalid' => 'Een of meer uitdagingsvelden zijn ongeldig',
     'segment_not_found' => 'Segment niet gevonden',
     'webhook_not_found' => 'Webhook niet gevonden',
     'subscriber_not_found' => 'Abonnee niet gevonden',

@@ -352,6 +352,7 @@ function useAdminNav(): NavSection[] {
         zone: 'growth' as const,
         items: [
           { label: t('gamification_hub'), href: '/admin/gamification', icon: Gamepad2 },
+          { label: t('challenges'), href: '/admin/gamification/challenges', icon: Trophy },
           { label: t('campaigns'), href: '/admin/gamification/campaigns', icon: Target },
           { label: t('custom_badges'), href: '/admin/custom-badges', icon: Medal },
           { label: t('analytics'), href: '/admin/gamification/analytics', icon: BarChart3 },

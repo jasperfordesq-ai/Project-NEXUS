@@ -2309,6 +2309,10 @@ Route::get('/v2/admin/gamification/campaigns', [\App\Http\Controllers\Api\AdminG
 Route::post('/v2/admin/gamification/campaigns', [\App\Http\Controllers\Api\AdminGamificationController::class, 'createCampaign']);
 Route::put('/v2/admin/gamification/campaigns/{id}', [\App\Http\Controllers\Api\AdminGamificationController::class, 'updateCampaign']);
 Route::delete('/v2/admin/gamification/campaigns/{id}', [\App\Http\Controllers\Api\AdminGamificationController::class, 'deleteCampaign']);
+Route::get('/v2/admin/gamification/challenges', [\App\Http\Controllers\Api\AdminGamificationController::class, 'challenges']);
+Route::post('/v2/admin/gamification/challenges', [\App\Http\Controllers\Api\AdminGamificationController::class, 'createChallenge']);
+Route::put('/v2/admin/gamification/challenges/{id}', [\App\Http\Controllers\Api\AdminGamificationController::class, 'updateChallenge'])->whereNumber('id');
+Route::delete('/v2/admin/gamification/challenges/{id}', [\App\Http\Controllers\Api\AdminGamificationController::class, 'deleteChallenge'])->whereNumber('id');
 Route::post('/v2/admin/gamification/recheck-all', [\App\Http\Controllers\Api\AdminGamificationController::class, 'recheckAll']);
 Route::post('/v2/admin/gamification/bulk-award', [\App\Http\Controllers\Api\AdminGamificationController::class, 'bulkAward']);
 Route::get('/v2/admin/gamification/badge-config', [\App\Http\Controllers\Api\AdminGamificationController::class, 'getBadgeConfig']);

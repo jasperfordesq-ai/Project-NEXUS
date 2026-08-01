@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => 'لم يتم العثور على طلب التبادل',
     'log_not_found' => 'لم يتم العثور على السجل',
     'challenge_not_found' => 'لم يتم العثور على التحدي',
+    'challenge_field_invalid' => 'واحد أو أكثر من حقول الاختبار غير صالحة',
     'segment_not_found' => 'لم يتم العثور على المقطع',
     'webhook_not_found' => 'لم يتم العثور على الرد التلقائي على الويب',
     'subscriber_not_found' => 'لم يتم العثور على المشترك',

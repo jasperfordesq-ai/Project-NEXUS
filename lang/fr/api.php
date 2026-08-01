@@ -80,6 +80,7 @@ return [
     'exchange_not_found' => 'Demande d\'échange introuvable',
     'log_not_found' => 'Journal introuvable',
     'challenge_not_found' => 'Défi introuvable',
+    'challenge_field_invalid' => 'Un ou plusieurs champs de défi ne sont pas valides',
     'segment_not_found' => 'Segment introuvable',
     'webhook_not_found' => 'Webhook introuvable',
     'subscriber_not_found' => 'Abonné introuvable',
