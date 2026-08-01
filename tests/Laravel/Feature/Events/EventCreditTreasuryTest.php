@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\EventAttendance;
 use App\Models\User;
 use App\Services\EventCreditService;
+use App\Services\WalletService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\Laravel\TestCase;
@@ -310,6 +311,96 @@ class EventCreditTreasuryTest extends TestCase
 
         $this->assertSame(1.0, $this->balanceOf($first));
         $this->assertSame(1.0, $this->balanceOf($second));
+    }
+
+    // ── Failure never costs the member their check-in ───────────────────
+
+    public function test_a_failed_mint_records_the_claim_as_failed_and_grants_nothing(): void
+    {
+        config(['events.attendance_credit_mode' => 'treasury']);
+        $this->setFeature(true);
+
+        $organiser = $this->member();
+        $attendee = $this->member();
+        $event = $this->event($organiser, 1.0);
+
+        // Force the wallet to fail the way a real outage would.
+        $this->app->bind(WalletService::class, function () {
+            return new class extends WalletService {
+                public function __construct() {}
+
+                public function mintToMember(
+                    int $tenantId,
+                    int $recipientId,
+                    float $amount,
+                    string $transactionType,
+                    string $description,
+                ): int {
+                    throw new \RuntimeException('wallet unavailable');
+                }
+            };
+        });
+
+        $result = app(EventCreditService::class)->settleAttendance(
+            $event,
+            $this->attendance($event, $attendee),
+            $attendee,
+            $organiser,
+        );
+
+        $this->assertSame('deferred_failed', $result['status']);
+        $this->assertSame(0.0, $this->balanceOf($attendee), 'No credit may be granted when the mint fails.');
+
+        // The claim survives as the durable record an admin can retry from.
+        $claim = DB::table('event_attendance_credit_claims')->where('id', $result['claim_id'])->first();
+        $this->assertNotNull($claim);
+        $this->assertSame('failed', $claim->status);
+        $this->assertSame('mint_failed', $claim->failure_code);
+        $this->assertNotNull($claim->failed_at);
+        $this->assertNull($claim->transaction_id);
+
+        // 🔴 The status must be one the attendance interlock accepts, or a
+        // wallet outage would abort the check-in itself — the exact coupling
+        // this design exists to prevent.
+        $this->assertContains($result['status'], EventCreditService::SETTLED_STATUSES);
+    }
+
+    public function test_no_engagement_is_recorded_when_the_mint_fails(): void
+    {
+        config(['events.attendance_credit_mode' => 'treasury']);
+        $this->setFeature(true);
+
+        $organiser = $this->member();
+        $attendee = $this->member();
+        $event = $this->event($organiser, 1.0);
+
+        $this->app->bind(WalletService::class, function () {
+            return new class extends WalletService {
+                public function __construct() {}
+
+                public function mintToMember(
+                    int $tenantId,
+                    int $recipientId,
+                    float $amount,
+                    string $transactionType,
+                    string $description,
+                ): int {
+                    throw new \RuntimeException('wallet unavailable');
+                }
+            };
+        });
+
+        app(EventCreditService::class)->settleAttendance(
+            $event,
+            $this->attendance($event, $attendee),
+            $attendee,
+            $organiser,
+        );
+
+        $this->assertDatabaseMissing('user_xp_log', [
+            'user_id' => $attendee->id,
+            'action' => 'event_attendance_verified',
+        ]);
     }
 
     // ── Engagement wiring ───────────────────────────────────────────────
