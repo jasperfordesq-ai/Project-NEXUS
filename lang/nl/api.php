@@ -2776,5 +2776,6 @@ KANDIDATEN::candidates',
     'event_attendance_claim_not_found' => 'Beloningsclaim niet gevonden',
     'event_attendance_claim_not_retryable' => 'Alleen een mislukte beloningsclaim kan opnieuw worden geprobeerd',
     'event_attendance_claim_not_reversible' => 'Alleen een voltooide beloningsclaim kan worden teruggedraaid',
+    'event_attendance_mode_disabled' => 'Het genereren van aanwezigheidsbeloningen is uitgeschakeld op platformniveau',
     'events_config_monthly_cap_invalid' => 'De maandelijkse beloningslimiet moet een positief aantal credits zijn, of leeg als er geen limiet is.',
 ];

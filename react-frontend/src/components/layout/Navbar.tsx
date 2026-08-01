@@ -107,13 +107,17 @@ export interface CommunityNavItem {
   icon: typeof Users;
   /** Optional feature gate. Items without a feature are always visible (auth/module gates handled at build time). */
   feature?: keyof TenantFeatures;
+  /** Multi-flag gate (ALL required) — mirrors NavigationItemPolicy so this re-filter can never develop a blind spot for dual-gated items. */
+  features?: readonly (keyof TenantFeatures)[];
 }
 
 export function getVisibleCommunityItems(
   items: CommunityNavItem[],
   hasFeature: (feature: keyof TenantFeatures) => boolean,
 ): CommunityNavItem[] {
-  return items.filter(item => !item.feature || hasFeature(item.feature));
+  return items.filter(item =>
+    (!item.feature || hasFeature(item.feature))
+    && (!item.features || item.features.every(flag => hasFeature(flag))));
 }
 
 // Base styling shared by every utility-bar item, WITHOUT a text colour so each
@@ -332,7 +336,9 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     return items;
   }, [communityExploreItems, communityLocalItems, communityMainItems]);
   const visibleCommunityItems = useMemo(
-    () => communityItems.filter(item => !item.feature || hasFeature(item.feature)),
+    () => communityItems.filter(item =>
+      (!item.feature || hasFeature(item.feature))
+      && (!item.features || item.features.every(flag => hasFeature(flag)))),
     [communityItems, hasFeature],
   );
   const communityLeftSections = useMemo<DesktopNavPanelSection[]>(() => {

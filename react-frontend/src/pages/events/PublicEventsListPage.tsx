@@ -112,21 +112,31 @@ export default function PublicEventsListPage() {
                   <p className="text-sm text-theme-muted">{formatWhen(event)}</p>
                 </div>
 
-                {event.category?.name && (
-                  <Chip variant="secondary">{event.category.name}</Chip>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {event.operational_status === 'cancelled' && (
+                    <Chip color="danger" variant="secondary">{t('public.cancelled')}</Chip>
+                  )}
+                  {event.operational_status === 'postponed' && (
+                    <Chip color="warning" variant="secondary">{t('public.postponed')}</Chip>
+                  )}
+                  {event.category?.name && (
+                    <Chip variant="secondary">{event.category.name}</Chip>
+                  )}
+                </div>
 
-                {event.is_online ? (
-                  <p className="text-sm text-theme-muted flex items-center gap-1.5">
-                    <Video className="w-4 h-4" aria-hidden="true" />
-                    {t('public.online')}
-                  </p>
-                ) : event.location ? (
+                {/* Hybrid events have BOTH a venue and a remote option — show both. */}
+                {event.location && event.attendance_mode !== 'online' && (
                   <p className="text-sm text-theme-muted flex items-start gap-1.5">
                     <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
                     <span>{event.location}</span>
                   </p>
-                ) : null}
+                )}
+                {event.attendance_mode !== 'in_person' && (
+                  <p className="text-sm text-theme-muted flex items-center gap-1.5">
+                    <Video className="w-4 h-4" aria-hidden="true" />
+                    {t(event.attendance_mode === 'hybrid' ? 'public.hybrid' : 'public.online')}
+                  </p>
+                )}
 
                 {event.organizer_name && (
                   <p className="text-sm text-theme-muted">

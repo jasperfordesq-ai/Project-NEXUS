@@ -2776,5 +2776,6 @@ IARRTHÓIRÍ: :candidates',
     'event_attendance_claim_not_found' => 'Níor aimsíodh éileamh ar luaíocht',
     'event_attendance_claim_not_retryable' => 'Ní féidir ach éileamh ar luaíocht teipthe a fháil ar ais',
     'event_attendance_claim_not_reversible' => 'Ní féidir ach éileamh comhlánaithe ar luaíocht a fhreaschur',
+    'event_attendance_mode_disabled' => 'Múchtar mionú luach saothair tinrimh ag leibhéal an ardáin',
     'events_config_monthly_cap_invalid' => 'Caithfidh líon dearfach creidmheasanna a bheith sa caidhp luach saothair míosúil, nó folamh gan aon teorainn.',
 ];

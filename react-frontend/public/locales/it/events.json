@@ -605,7 +605,8 @@
         "check_in": "È stata registrata la presenza.",
         "check_out": "È stata verificata la presenza.",
         "no_show": "La partecipazione è stata contrassegnata come mancata presentazione.",
-        "undo": "La correzione delle presenze è stata registrata."
+        "undo": "La correzione delle presenze è stata registrata.",
+        "check_in_reward_already_granted": "Check-in: il premio di partecipazione è già stato concesso in precedenza, quindi non sono stati emessi nuovi crediti."
       },
       "action_error": "Impossibile aggiornare il record delle presenze.",
       "version_conflict": "Questo record di presenze è cambiato altrove. Il roster è stato aggiornato.",
@@ -937,7 +938,10 @@
     },
     "member_prompt": "Hai effettuato l'accesso: la registrazione e le tue risposte sono pubblicate nella pagina completa degli eventi.",
     "member_cta": "Vai agli eventi della comunità",
-    "member_event_cta": "Apri questo evento nell'app della community"
+    "member_event_cta": "Apri questo evento nell'app della community",
+    "cancelled": "Annullato",
+    "postponed": "Rinviato",
+    "hybrid": "Di persona e online"
   },
   "going_many": "{{count}} partecipante/i",
   "interested_many": "{{count}} interessato/i"

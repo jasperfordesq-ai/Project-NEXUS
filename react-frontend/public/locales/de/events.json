@@ -596,7 +596,8 @@
         "check_in": "Die Anwesenheit wurde überprüft.",
         "check_out": "Die Anwesenheit wurde überprüft.",
         "no_show": "Die Anwesenheit wurde als Nichterscheinen gewertet.",
-        "undo": "Die Anwesenheitskorrektur wurde erfasst."
+        "undo": "Die Anwesenheitskorrektur wurde erfasst.",
+        "check_in_reward_already_granted": "Eingecheckt – die Anwesenheitsprämie wurde bereits früher gewährt, es wurden also keine neuen Gutschriften ausgestellt."
       },
       "action_error": "Die Anwesenheitsliste konnte nicht aktualisiert werden.",
       "version_conflict": "Dieser Besucherrekord hat sich an anderer Stelle geändert. Der Kader wurde aktualisiert.",
@@ -927,6 +928,9 @@
     },
     "member_prompt": "Sie sind angemeldet – die Registrierung und Ihre Zusagen werden auf der vollständigen Veranstaltungsseite angezeigt.",
     "member_cta": "Gehen Sie zu Gemeinschaftsveranstaltungen",
-    "member_event_cta": "Öffnen Sie diese Veranstaltung in der Community-App"
+    "member_event_cta": "Öffnen Sie diese Veranstaltung in der Community-App",
+    "cancelled": "Abgesagt",
+    "postponed": "Verschoben",
+    "hybrid": "Persönlich und online"
   }
 }

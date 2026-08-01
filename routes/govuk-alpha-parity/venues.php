@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(RequireAccessibleAuthentication::class)->group(function (): void {
     Route::get('/venues', [AlphaController::class, 'venuesIndex'])->name('venues.index');
     Route::get('/venues/pass', [AlphaController::class, 'venuesPass'])->name('venues.pass');
+    Route::post('/venues/pass/rotate', [AlphaController::class, 'venuesPassRotate'])
+        ->middleware('throttle:nexus-route-10-per-1m')
+        ->name('venues.pass.rotate');
     Route::get('/venues/checkin/{token}', [AlphaController::class, 'venuesCheckin'])
         ->where('token', '[A-Za-z0-9]+')
         ->name('venues.checkin');

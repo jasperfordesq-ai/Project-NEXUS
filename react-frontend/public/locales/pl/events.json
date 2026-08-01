@@ -614,7 +614,8 @@
         "check_in": "Sprawdzono obecność.",
         "check_out": "Sprawdzono obecność.",
         "no_show": "Obecność oznaczono jako niestawienie się.",
-        "undo": "Odnotowano korektę frekwencji."
+        "undo": "Odnotowano korektę frekwencji.",
+        "check_in_reward_already_granted": "Zameldowałem się — nagroda za obecność została już przyznana wcześniej, więc nie wydano żadnych nowych punktów."
       },
       "action_error": "Nie udało się zaktualizować listy obecności.",
       "version_conflict": "Ten rekord frekwencji uległ zmianie w innym miejscu. Lista zawodników została odświeżona.",
@@ -947,7 +948,10 @@
     },
     "member_prompt": "Jesteś zalogowany — rejestracja i Twoje odpowiedzi są widoczne na stronie z pełnymi wydarzeniami.",
     "member_cta": "Idź na wydarzenia społecznościowe",
-    "member_event_cta": "Otwórz to wydarzenie w aplikacji społecznościowej"
+    "member_event_cta": "Otwórz to wydarzenie w aplikacji społecznościowej",
+    "cancelled": "Odwołany",
+    "postponed": "Odłożony",
+    "hybrid": "Osobiście i online"
   },
   "going_few": "{{count}} będzie działać",
   "going_many": "{{count}} będzie działać",

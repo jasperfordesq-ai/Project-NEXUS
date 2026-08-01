@@ -18,6 +18,8 @@ return [
         'apply' => 'Zastosuj filtry',
         'empty' => 'Nie ma jeszcze żadnych wydarzeń do pokazania. Sprawdź ponownie wkrótce.',
         'online_tag' => 'W Internecie',
+        'cancelled_tag' => 'Odwołany',
+        'postponed_tag' => 'Odłożony',
         'more' => 'Pokaż więcej wydarzeń',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Kończy się',
         'where' => 'Gdzie',
         'online' => 'Wydarzenie w Internecie',
+        'hybrid' => 'można dołączyć również online',
         'location_tba' => 'Lokalizacja zostanie ogłoszona',
         'organiser' => 'Organizowane przez',
         'accessibility_title' => 'Dostępność obiektu',

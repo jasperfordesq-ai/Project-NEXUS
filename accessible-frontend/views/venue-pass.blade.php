@@ -10,6 +10,18 @@
     </a>
 
     <h1 class="govuk-heading-xl">{{ __('govuk_alpha_venues.pass.title') }}</h1>
+
+    @if (request()->query('status') === 'rotated')
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="venue-pass-rotated-title">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="venue-pass-rotated-title">{{ __('govuk_alpha.states.success_title') }}</h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">{{ __('govuk_alpha_venues.pass.rotated_notice') }}</p>
+            </div>
+        </div>
+    @endif
+
     <p class="govuk-body-l">{{ __('govuk_alpha_venues.pass.intro') }}</p>
 
     {{-- Server-rendered SVG: the QR works with no JavaScript and no external
@@ -21,6 +33,14 @@
     <div class="govuk-inset-text">
         <p class="govuk-body govuk-!-margin-bottom-0">{{ __('govuk_alpha_venues.pass.privacy') }}</p>
     </div>
+
+    <form method="post" action="{{ route('govuk-alpha.venues.pass.rotate', ['tenantSlug' => $tenantSlug]) }}" class="govuk-!-margin-bottom-6">
+        @csrf
+        <p class="govuk-body">{{ __('govuk_alpha_venues.pass.rotate_hint') }}</p>
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            {{ __('govuk_alpha_venues.pass.rotate_button') }}
+        </button>
+    </form>
 
     <h2 class="govuk-heading-m">{{ __('govuk_alpha_venues.pass.visits_title') }}</h2>
     @if ($visits === [])

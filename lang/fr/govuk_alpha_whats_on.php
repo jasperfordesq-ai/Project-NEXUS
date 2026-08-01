@@ -18,6 +18,8 @@ return [
         'apply' => 'Appliquer des filtres',
         'empty' => 'Aucun événement à afficher pour l\'instant. Revenez bientôt.',
         'online_tag' => 'En ligne',
+        'cancelled_tag' => 'Annulé',
+        'postponed_tag' => 'Reporté',
         'more' => 'Afficher plus d\'événements',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Se termine',
         'where' => 'Où',
         'online' => 'Événement en ligne',
+        'hybrid' => 'également joignable en ligne',
         'location_tba' => 'Lieu à annoncer',
         'organiser' => 'Organisé par',
         'accessibility_title' => 'Accessibilité du site',

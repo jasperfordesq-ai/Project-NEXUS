@@ -321,9 +321,21 @@ class AdminGamificationController extends BaseApiController
     private function invalidChallengeField(array $data, bool $partial): ?string
     {
         if (! $partial || array_key_exists('title', $data)) {
-            if (trim((string) ($data['title'] ?? '')) === '') {
+            $title = trim((string) ($data['title'] ?? ''));
+            // Length checked here because this database runs non-strict SQL
+            // mode: an overlong value would be silently TRUNCATED, not
+            // rejected (challenges.title varchar(255)).
+            if ($title === '' || mb_strlen($title) > 255) {
                 return 'title';
             }
+        }
+        if (array_key_exists('description', $data) && $data['description'] !== null
+            && mb_strlen((string) $data['description']) > 5000) {
+            return 'description';
+        }
+        if (array_key_exists('badge_reward', $data) && $data['badge_reward'] !== null
+            && mb_strlen((string) $data['badge_reward']) > 50) {
+            return 'badge_reward';
         }
         if (! $partial || array_key_exists('action_type', $data)) {
             if (! in_array((string) ($data['action_type'] ?? ''), \App\Services\ChallengeService::SUPPORTED_ACTION_TYPES, true)) {

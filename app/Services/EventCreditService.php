@@ -297,13 +297,36 @@ final class EventCreditService
         }
 
         try {
-            $transactionId = $this->wallet->mintToMember(
-                $tenantId,
-                $attendeeId,
-                $amount,
-                self::TRANSACTION_TYPE,
-                __('api.event_attendance_reward_description', ['event' => $eventTitle]),
-            );
+            // The wallet write and the claim's completion commit TOGETHER.
+            // With them separate, a failure of the completion UPDATE after a
+            // successful mint stranded the claim at `pending` — a state no
+            // retry path accepts — while the money had already moved. Inside
+            // one transaction, either both land or the catch below records an
+            // honestly-retryable `failed` claim with no money moved.
+            // (mintToMember runs its own inner transaction; under an ambient
+            // one that is a savepoint, so this nests correctly from the
+            // check-in path too.)
+            $transactionId = DB::transaction(function () use ($tenantId, $attendeeId, $amount, $eventTitle, $claimId): int {
+                $transactionId = $this->wallet->mintToMember(
+                    $tenantId,
+                    $attendeeId,
+                    $amount,
+                    self::TRANSACTION_TYPE,
+                    __('api.event_attendance_reward_description', ['event' => $eventTitle]),
+                );
+
+                DB::table('event_attendance_credit_claims')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', $claimId)
+                    ->update([
+                        'status' => 'completed',
+                        'transaction_id' => $transactionId,
+                        'completed_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                return $transactionId;
+            });
         } catch (\Throwable $exception) {
             // The claim stays as the durable record that this was attempted and
             // failed, so an admin can retry it. Attendance is unaffected.
@@ -328,16 +351,6 @@ final class EventCreditService
             return $this->outcome('deferred_failed', $claimId, null, $amount);
         }
 
-        DB::table('event_attendance_credit_claims')
-            ->where('tenant_id', $tenantId)
-            ->where('id', $claimId)
-            ->update([
-                'status' => 'completed',
-                'transaction_id' => $transactionId,
-                'completed_at' => now(),
-                'updated_at' => now(),
-            ]);
-
         // Record the engagement once the credit is real, so XP and challenge
         // progress reflect verified attendance rather than an RSVP.
         EngagementService::record(
@@ -355,10 +368,24 @@ final class EventCreditService
      * check-in resume — including the monthly cap, which an admin retry does
      * NOT bypass, so retries cannot be used to spend around the budget.
      *
+     * Deliberate: the retry mints the CLAIM's frozen amount (re-clamped to the
+     * global ceiling), not the event's current configuration — the claim is
+     * the durable record of what was promised at attendance time, and an
+     * admin lowering the event's amount later does not rewrite history.
+     *
      * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
      */
     public function retryClaim(int $tenantId, int $claimId): array
     {
+        // The platform mode is the master kill switch for MINTING — with it
+        // off, an admin retry must not create credits either. (Reversal stays
+        // available with the mode off: it returns money to the community and
+        // is exactly what an operator needs after killing the switch.)
+        $mode = strtolower(trim((string) config('events.attendance_credit_mode', 'off')));
+        if ($mode !== 'treasury') {
+            return $this->outcome('disabled');
+        }
+
         $claim = DB::table('event_attendance_credit_claims')
             ->where('tenant_id', $tenantId)
             ->where('id', $claimId)
@@ -539,13 +566,30 @@ final class EventCreditService
             ->value('title') ?? '');
 
         try {
-            $transactionId = $this->wallet->reclaimFromMember(
-                $tenantId,
-                (int) $claim->user_id,
-                (float) $claim->amount,
-                self::REVERSAL_TRANSACTION_TYPE,
-                __('api.event_attendance_reward_reversal_description', ['event' => $eventTitle]),
-            );
+            // Same atomicity contract as attemptMint(): the reclaim and the
+            // child claim's completion commit together, so the child can never
+            // be stranded at `pending` after the money already moved back.
+            $transactionId = DB::transaction(function () use ($tenantId, $claim, $childId, $eventTitle): int {
+                $transactionId = $this->wallet->reclaimFromMember(
+                    $tenantId,
+                    (int) $claim->user_id,
+                    (float) $claim->amount,
+                    self::REVERSAL_TRANSACTION_TYPE,
+                    __('api.event_attendance_reward_reversal_description', ['event' => $eventTitle]),
+                );
+
+                DB::table('event_attendance_credit_claims')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', $childId)
+                    ->update([
+                        'status' => 'completed',
+                        'transaction_id' => $transactionId,
+                        'completed_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                return $transactionId;
+            });
         } catch (\Throwable $exception) {
             DB::table('event_attendance_credit_claims')
                 ->where('tenant_id', $tenantId)
@@ -569,16 +613,6 @@ final class EventCreditService
 
             return $this->outcome('reverse_failed', $childId, null, (float) $claim->amount);
         }
-
-        DB::table('event_attendance_credit_claims')
-            ->where('tenant_id', $tenantId)
-            ->where('id', $childId)
-            ->update([
-                'status' => 'completed',
-                'transaction_id' => $transactionId,
-                'completed_at' => now(),
-                'updated_at' => now(),
-            ]);
 
         return $this->outcome('reversed', $childId, $transactionId, (float) $claim->amount);
     }

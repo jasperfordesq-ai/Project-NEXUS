@@ -2776,5 +2776,6 @@ CANDIDATOS::candidates',
     'event_attendance_claim_not_found' => 'Reivindicação de recompensa não encontrada',
     'event_attendance_claim_not_retryable' => 'Apenas uma reivindicação de recompensa com falha pode ser tentada novamente',
     'event_attendance_claim_not_reversible' => 'Somente uma reivindicação de recompensa concluída pode ser revertida',
+    'event_attendance_mode_disabled' => 'A cunhagem de recompensas de participação está desativada no nível da plataforma',
     'events_config_monthly_cap_invalid' => 'O limite de recompensa mensal deve ser um número positivo de créditos ou vazio se não houver limite.',
 ];

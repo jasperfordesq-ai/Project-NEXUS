@@ -605,7 +605,8 @@
         "check_in": "A presença foi verificada.",
         "check_out": "A presença foi verificada.",
         "no_show": "A participação foi marcada como não comparecimento.",
-        "undo": "A correção de comparecimento foi registrada."
+        "undo": "A correção de comparecimento foi registrada.",
+        "check_in_reward_already_granted": "Check-in — a recompensa de participação já foi concedida anteriormente, portanto não foram emitidos novos créditos."
       },
       "action_error": "O registro de presença não pôde ser atualizado.",
       "version_conflict": "Este recorde de comparecimento mudou em outro lugar. A lista foi atualizada.",
@@ -937,7 +938,10 @@
     },
     "member_prompt": "Você está conectado – a inscrição e suas confirmações de presença estão disponíveis na página completa dos eventos.",
     "member_cta": "Vá a eventos da comunidade",
-    "member_event_cta": "Abra este evento no aplicativo da comunidade"
+    "member_event_cta": "Abra este evento no aplicativo da comunidade",
+    "cancelled": "Cancelado",
+    "postponed": "Postergado",
+    "hybrid": "Presencial e online"
   },
   "going_many": "{{count}} vão",
   "interested_many": "{{count}} interessados"

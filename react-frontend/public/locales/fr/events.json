@@ -605,7 +605,8 @@
         "check_in": "Les présences ont été enregistrées.",
         "check_out": "Les présences ont été vérifiées.",
         "no_show": "La participation a été marquée comme une non-présentation.",
-        "undo": "La correction de fréquentation a été enregistrée."
+        "undo": "La correction de fréquentation a été enregistrée.",
+        "check_in_reward_already_granted": "Enregistré : la récompense de présence a déjà été accordée plus tôt, donc aucun nouveau crédit n'a été émis."
       },
       "action_error": "Le relevé de présence n'a pas pu être mis à jour.",
       "version_conflict": "Ce record de fréquentation a changé ailleurs. La liste a été rafraîchie.",
@@ -937,7 +938,10 @@
     },
     "member_prompt": "Vous êtes connecté - l'inscription et vos RSVP sont en direct sur la page complète des événements.",
     "member_cta": "Aller aux événements communautaires",
-    "member_event_cta": "Ouvrez cet événement dans l'application communautaire"
+    "member_event_cta": "Ouvrez cet événement dans l'application communautaire",
+    "cancelled": "Annulé",
+    "postponed": "Reporté",
+    "hybrid": "En personne et en ligne"
   },
   "going_many": "{{count}} participant(s)",
   "interested_many": "{{count}} intéressé(s)"

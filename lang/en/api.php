@@ -3284,6 +3284,7 @@ return [
     'event_attendance_claim_not_found' => 'Reward claim not found',
     'event_attendance_claim_not_retryable' => 'Only a failed reward claim can be retried',
     'event_attendance_claim_not_reversible' => 'Only a completed reward claim can be reversed',
+    'event_attendance_mode_disabled' => 'Attendance reward minting is switched off at platform level',
     'events_config_monthly_cap_invalid' => 'The monthly reward cap must be a positive number of credits, or empty for no cap.',
 
     // Partner venues — engagement recording at local partner premises.

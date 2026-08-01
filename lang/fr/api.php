@@ -2776,5 +2776,6 @@ CANDIDATS ::candidates',
     'event_attendance_claim_not_found' => 'Demande de récompense introuvable',
     'event_attendance_claim_not_retryable' => 'Seule une demande de récompense ayant échoué peut être réessayée',
     'event_attendance_claim_not_reversible' => 'Seule une demande de récompense complétée peut être annulée',
+    'event_attendance_mode_disabled' => 'La frappe des récompenses de présence est désactivée au niveau de la plateforme',
     'events_config_monthly_cap_invalid' => 'Le plafond de récompense mensuel doit être un nombre positif de crédits, ou vide s\'il n\'y a pas de plafond.',
 ];

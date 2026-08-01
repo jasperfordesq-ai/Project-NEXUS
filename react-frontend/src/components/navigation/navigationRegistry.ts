@@ -317,6 +317,8 @@ export interface NavigationItemPolicy {
   icon: LucideIcon;
   auth?: 'authenticated';
   feature?: keyof TenantFeatures;
+  /** Multi-flag gate (ALL required) — carried so downstream re-filters see it. */
+  features?: readonly (keyof TenantFeatures)[];
   module?: keyof TenantModules;
 }
 
@@ -374,6 +376,7 @@ export function getNavigationItems(
         icon: destination.icon,
         auth: 'auth' in destination ? destination.auth : undefined,
         feature: 'feature' in destination ? destination.feature : undefined,
+        features: 'features' in destination ? destination.features : undefined,
         module: 'module' in destination ? destination.module : undefined,
       });
     }

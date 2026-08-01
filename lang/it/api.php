@@ -2776,5 +2776,6 @@ CANDIDATI::candidates',
     'event_attendance_claim_not_found' => 'Richiesta di premio non trovata',
     'event_attendance_claim_not_retryable' => 'È possibile ritentare solo una richiesta di premio non riuscita',
     'event_attendance_claim_not_reversible' => 'Solo una richiesta di ricompensa completata può essere annullata',
+    'event_attendance_mode_disabled' => 'L\'assegnazione dei premi per la partecipazione è disattivata a livello di piattaforma',
     'events_config_monthly_cap_invalid' => 'Il limite massimo del premio mensile deve essere un numero positivo di crediti o vuoto se non è presente alcun limite.',
 ];

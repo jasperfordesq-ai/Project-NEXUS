@@ -555,7 +555,7 @@ class EventCreditAdminOpsTest extends TestCase
         $this->assertSame(0.0, $this->balanceOf($attendee));
     }
 
-    public function test_the_ledger_endpoints_are_feature_gated(): void
+    public function test_gating_split_between_minting_and_correction_paths(): void
     {
         config(['events.attendance_credit_mode' => 'treasury']);
         $this->setFeature(false);
@@ -563,7 +563,12 @@ class EventCreditAdminOpsTest extends TestCase
         $admin = $this->member(['role' => 'admin']);
         $this->actingAs($admin);
 
-        $this->apiGet('/v2/admin/events/attendance-claims')->assertStatus(403);
+        // Retry MINTS → stays behind the tenant flag.
         $this->apiPost('/v2/admin/events/attendance-claims/1/retry')->assertStatus(403);
+
+        // The audit ledger and the reversal path deliberately survive the flag
+        // being off — that is the incident state in which they are needed.
+        // (Full behavioural coverage in EventCreditHardeningTest.)
+        $this->apiGet('/v2/admin/events/attendance-claims')->assertStatus(200);
     }
 }

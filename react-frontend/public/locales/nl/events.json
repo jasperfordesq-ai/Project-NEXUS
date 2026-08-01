@@ -596,7 +596,8 @@
         "check_in": "De aanwezigheid werd ingecheckt.",
         "check_out": "De aanwezigheid werd gecontroleerd.",
         "no_show": "De deelname werd aangemerkt als no-show.",
-        "undo": "De aanwezigheidscorrectie werd geregistreerd."
+        "undo": "De aanwezigheidscorrectie werd geregistreerd.",
+        "check_in_reward_already_granted": "Ingecheckt: de aanwezigheidsbeloning werd al eerder toegekend, dus er zijn geen nieuwe credits uitgegeven."
       },
       "action_error": "De aanwezigheidsregistratie kon niet worden bijgewerkt.",
       "version_conflict": "Dit bezoekersrecord veranderde elders. Het rooster is vernieuwd.",
@@ -927,6 +928,9 @@
     },
     "member_prompt": "Je bent ingelogd - registratie en je RSVP's staan ​​live op de volledige evenementenpagina.",
     "member_cta": "Ga naar gemeenschapsevenementen",
-    "member_event_cta": "Open dit evenement in de community-app"
+    "member_event_cta": "Open dit evenement in de community-app",
+    "cancelled": "Geannuleerd",
+    "postponed": "Uitgesteld",
+    "hybrid": "Persoonlijk en online"
   }
 }

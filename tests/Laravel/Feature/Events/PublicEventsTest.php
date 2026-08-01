@@ -333,4 +333,61 @@ class PublicEventsTest extends TestCase
             'The member projection is unchanged — only the public one is reduced.'
         );
     }
+
+    // ── Operational status + attendance mode (re-audit hardening) ───────
+
+    public function test_a_cancelled_event_stays_listed_but_says_so(): void
+    {
+        $organiser = $this->organiser();
+        $event = $this->event($organiser, [], [
+            'publication_status' => 'published',
+            'operational_status' => 'cancelled',
+        ]);
+
+        $list = $this->apiGet('/v2/public/events');
+        $list->assertStatus(200);
+        $row = collect($list->json('data'))->firstWhere('id', $event->id);
+
+        // People who saw the poster need to learn the plan changed — the
+        // event stays visible WITH its state, rather than looking normal
+        // (the pre-fix behaviour) or vanishing.
+        $this->assertNotNull($row, 'Cancelled events must stay discoverable.');
+        $this->assertSame('cancelled', $row['operational_status']);
+
+        $detail = $this->apiGet('/v2/public/events/' . $event->id);
+        $detail->assertStatus(200);
+        $this->assertSame('cancelled', $detail->json('data.operational_status'));
+    }
+
+    public function test_attendance_mode_reflects_remote_options_not_the_raw_column(): void
+    {
+        $organiser = $this->organiser();
+
+        // The create form only ever writes allow_remote_attendance — the raw
+        // is_online column stays false. The public surface must compute the
+        // mode the way the member contract does, or every hybrid event reads
+        // as in-person to visitors (the pre-fix behaviour).
+        $hybrid = $this->event($organiser, [
+            'title' => 'Hybrid Repair Cafe',
+            'allow_remote_attendance' => true,
+        ], ['publication_status' => 'published']);
+
+        $onlineOnly = $this->event($organiser, [
+            'title' => 'Online Seed Swap',
+            'location' => null,
+            'allow_remote_attendance' => true,
+        ], ['publication_status' => 'published']);
+
+        $inPerson = $this->event($organiser, [
+            'title' => 'Orchard Walk',
+        ], ['publication_status' => 'published']);
+
+        $rows = collect($this->apiGet('/v2/public/events')->json('data'));
+
+        $this->assertSame('hybrid', $rows->firstWhere('id', $hybrid->id)['attendance_mode']);
+        $this->assertTrue($rows->firstWhere('id', $hybrid->id)['is_online']);
+        $this->assertSame('online', $rows->firstWhere('id', $onlineOnly->id)['attendance_mode']);
+        $this->assertSame('in_person', $rows->firstWhere('id', $inPerson->id)['attendance_mode']);
+        $this->assertFalse($rows->firstWhere('id', $inPerson->id)['is_online']);
+    }
 }

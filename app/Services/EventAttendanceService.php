@@ -558,6 +558,7 @@ final class EventAttendanceService
                 throw $exception;
             }
 
+            $creditStatus = null;
             if ($action === EventAttendanceAction::CheckIn) {
                 $credit = $this->creditService->settleAttendance(
                     $event,
@@ -570,6 +571,7 @@ final class EventAttendanceService
                 if (! in_array($credit['status'] ?? null, EventCreditService::SETTLED_STATUSES, true)) {
                     throw new EventAttendanceException('event_attendance_credit_writer_not_authorized');
                 }
+                $creditStatus = (string) $credit['status'];
             }
 
             $outbox = $this->outbox->record(
@@ -603,6 +605,7 @@ final class EventAttendanceService
                 false,
                 $activityId,
                 (int) $outbox['id'],
+                $creditStatus,
             );
         }, 3);
     }

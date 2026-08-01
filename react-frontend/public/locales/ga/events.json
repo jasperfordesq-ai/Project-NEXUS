@@ -623,7 +623,8 @@
         "check_in": "Seiceáladh tinreamh isteach.",
         "check_out": "Seiceáladh tinreamh amach.",
         "no_show": "Marcáladh an tinreamh mar gan seó.",
-        "undo": "Taifeadadh an ceartúchán tinrimh."
+        "undo": "Taifeadadh an ceartúchán tinrimh.",
+        "check_in_reward_already_granted": "Seiceáilte isteach - deonaíodh an luaíocht tinrimh cheana féin, mar sin níor eisíodh aon chreidmheasanna nua."
       },
       "action_error": "Níorbh fhéidir an taifead tinrimh a nuashonrú.",
       "version_conflict": "D'athraigh an taifead tinrimh seo áit eile. Tá an uainchlár athnuachan.",
@@ -957,7 +958,10 @@
     },
     "member_prompt": "Tá tú sínithe isteach — clárú agus do RSVPanna beo ar an leathanach iomlán imeachtaí.",
     "member_cta": "Téigh chuig imeachtaí pobail",
-    "member_event_cta": "Oscail an ócáid ​​​​seo san aip pobail"
+    "member_event_cta": "Oscail an ócáid ​​​​seo san aip pobail",
+    "cancelled": "Ar ceal",
+    "postponed": "ar athló",
+    "hybrid": "Go pearsanta agus ar líne"
   },
   "going_few": "{{count}} ag dul",
   "going_many": "{{count}} ag dul",

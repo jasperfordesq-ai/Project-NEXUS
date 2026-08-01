@@ -18,6 +18,8 @@ return [
         'apply' => 'Apply filters',
         'empty' => 'No events to show yet. Check back soon.',
         'online_tag' => 'Online',
+        'cancelled_tag' => 'Cancelled',
+        'postponed_tag' => 'Postponed',
         'more' => 'Show more events',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Ends',
         'where' => 'Where',
         'online' => 'Online event',
+        'hybrid' => 'also joinable online',
         'location_tba' => 'Location to be announced',
         'organiser' => 'Organised by',
         'accessibility_title' => 'Venue accessibility',

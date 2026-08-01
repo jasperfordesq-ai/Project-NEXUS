@@ -196,7 +196,11 @@ class AdminPartnerVenueController extends BaseApiController
             ]);
 
             foreach ($rows as $row) {
-                fputcsv($out, [
+                // member_name/recorded_by come from member-controlled profile
+                // fields — sanitised so a name like "=HYPERLINK(...)" cannot
+                // execute as a formula in the admin's spreadsheet. Same
+                // sanitiser as every other CSV export in the codebase.
+                fputcsv($out, \App\Support\CsvExportSanitizer::row([
                     $row['visited_on'],
                     $row['visited_at'],
                     $row['venue_name'],
@@ -204,7 +208,7 @@ class AdminPartnerVenueController extends BaseApiController
                     $row['member_name'],
                     $row['recorded_by'],
                     $row['source'],
-                ]);
+                ]));
             }
 
             fclose($out);

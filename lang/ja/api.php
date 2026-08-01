@@ -2776,5 +2776,6 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'event_attendance_claim_not_found' => '報酬請求が見つかりません',
     'event_attendance_claim_not_retryable' => '失敗した報酬請求のみが再試行できます',
     'event_attendance_claim_not_reversible' => '完了した報酬請求のみを取り消すことができます',
+    'event_attendance_mode_disabled' => '出席報酬の鋳造はプラットフォーム レベルでオフになります',
     'events_config_monthly_cap_invalid' => '毎月の報酬の上限は、正のクレジット数にするか、上限がない場合は空にする必要があります。',
 ];

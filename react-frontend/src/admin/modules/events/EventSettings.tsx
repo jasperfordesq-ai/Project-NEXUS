@@ -47,6 +47,11 @@ export default function EventSettings() {
   const { tenantPath, hasFeature } = useTenant();
   const [snapshot, setSnapshot] = useState<EventConfigurationResponse | null>(null);
   const [draft, setDraft] = useState<EventConfiguration | null>(null);
+  // The cap renders from its own STRING state: a controlled number input
+  // deriving its value from the parsed draft eats intermediate keystrokes —
+  // typing the leading "0" of "0.5" parsed to 0 → null → the field wiped
+  // itself, making every legal value below 1 untypeable.
+  const [capText, setCapText] = useState('');
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -64,6 +69,7 @@ export default function EventSettings() {
       if (!response.success || !response.data) throw new Error(t('load_failed'));
       setSnapshot(response.data);
       setDraft(response.data.config);
+      setCapText(response.data.config.attendance_credit_monthly_cap !== null ? String(response.data.config.attendance_credit_monthly_cap) : '');
       setReason('');
       setAuditEntries(auditResponse.success && auditResponse.data ? auditResponse.data : []);
     } catch {
@@ -115,6 +121,7 @@ export default function EventSettings() {
       if (!response.success || !response.data) throw new Error(t('save_failed'));
       setSnapshot(response.data);
       setDraft(response.data.config);
+      setCapText(response.data.config.attendance_credit_monthly_cap !== null ? String(response.data.config.attendance_credit_monthly_cap) : '');
       setReason('');
       const auditResponse = await adminConfig.getEventConfigAuditLog();
       setAuditEntries(auditResponse.success && auditResponse.data ? auditResponse.data : auditEntries);
@@ -141,6 +148,7 @@ export default function EventSettings() {
       if (!response.success || !response.data) throw new Error(t('restore_failed'));
       setSnapshot(response.data);
       setDraft(response.data.config);
+      setCapText(response.data.config.attendance_credit_monthly_cap !== null ? String(response.data.config.attendance_credit_monthly_cap) : '');
       setReason('');
       const auditResponse = await adminConfig.getEventConfigAuditLog();
       setAuditEntries(auditResponse.success && auditResponse.data ? auditResponse.data : auditEntries);
@@ -286,8 +294,9 @@ export default function EventSettings() {
                 type="number"
                 min={0.01}
                 step={0.5}
-                value={draft.attendance_credit_monthly_cap !== null ? String(draft.attendance_credit_monthly_cap) : ''}
+                value={capText}
                 onValueChange={(value) => {
+                  setCapText(value);
                   const parsed = Number(value);
                   setDraft({
                     ...draft,

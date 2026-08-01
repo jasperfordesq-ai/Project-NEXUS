@@ -122,7 +122,10 @@ class AdminEventAttendanceRewardController extends BaseApiController
      */
     public function claims(Request $request): JsonResponse
     {
-        $this->ensureFeature();
+        // Deliberately NOT feature-gated: this is the read-only audit ledger.
+        // The realistic incident flow is "disable the flag to stop the
+        // bleeding, then inspect what happened" — gating the ledger behind
+        // the same flag would blind the admin at exactly that moment.
         $this->requireAdmin();
         $this->rateLimit('event_attendance_claims_list', 60, 60);
 
@@ -233,6 +236,8 @@ class AdminEventAttendanceRewardController extends BaseApiController
      */
     public function retry(int $claimId): JsonResponse
     {
+        // Retry MINTS, so it keeps the tenant feature gate — and the service
+        // additionally re-checks the platform mode kill switch.
         $this->ensureFeature();
         $this->requireAdmin();
         $this->rateLimit('event_attendance_claims_retry', 30, 60);
@@ -242,6 +247,7 @@ class AdminEventAttendanceRewardController extends BaseApiController
         return match ($result['status']) {
             'not_found' => $this->respondWithError('NOT_FOUND', __('api.event_attendance_claim_not_found'), null, 404),
             'not_retryable' => $this->respondWithError('CONFLICT', __('api.event_attendance_claim_not_retryable'), null, 409),
+            'disabled' => $this->respondWithError('CONFLICT', __('api.event_attendance_mode_disabled'), null, 409),
             default => $this->respondWithData($result),
         };
     }
@@ -251,7 +257,10 @@ class AdminEventAttendanceRewardController extends BaseApiController
      */
     public function reverse(Request $request, int $claimId): JsonResponse
     {
-        $this->ensureFeature();
+        // Deliberately NOT feature-gated: reversal is the CORRECTION path —
+        // it returns credits to the community, and it must keep working after
+        // an admin disables the feature precisely because something went
+        // wrong. Only requireAdmin() and the claim's own state gate it.
         $this->requireAdmin();
         $this->rateLimit('event_attendance_claims_reverse', 30, 60);
 

@@ -31,7 +31,12 @@ export interface PublicEvent {
   location: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** True when the event has ANY remote option (fully online or hybrid). */
   is_online: boolean;
+  /** Mirrors the member contract's location.mode semantics. */
+  attendance_mode: 'in_person' | 'online' | 'hybrid';
+  /** Cancelled/postponed events stay listed but must say so. */
+  operational_status: 'scheduled' | 'postponed' | 'cancelled' | 'completed';
   image_url: string | null;
   category: PublicEventCategory | null;
   organizer_name: string | null;

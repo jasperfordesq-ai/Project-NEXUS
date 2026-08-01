@@ -18,6 +18,8 @@ return [
         'apply' => 'Applica filtri',
         'empty' => 'Nessun evento da mostrare ancora. Ricontrolla presto.',
         'online_tag' => 'In linea',
+        'cancelled_tag' => 'Annullato',
+        'postponed_tag' => 'Rinviato',
         'more' => 'Mostra più eventi',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Finisce',
         'where' => 'Dove',
         'online' => 'Evento on-line',
+        'hybrid' => 'associabile anche on-line',
         'location_tba' => 'Luogo da annunciare',
         'organiser' => 'Organizzato da',
         'accessibility_title' => 'Accessibilità della sede',

@@ -71,35 +71,42 @@ class WalletService
             throw new \InvalidArgumentException('Mint amount must be positive.');
         }
 
-        // Lock the recipient row before incrementing, matching transfer()'s
-        // ordering so a mint and a transfer touching the same member cannot
-        // interleave into a lost update.
-        DB::table('users')
-            ->where('id', $recipientId)
-            ->where('tenant_id', $tenantId)
-            ->lockForUpdate()
-            ->first();
+        // One transaction for the balance write AND its ledger row, matching
+        // transfer(). Without this, a failure between the two statements left
+        // the balance permanently incremented with no transactions row — and
+        // because the caller records such failures as retryable, the retry
+        // minted AGAIN: a silent double-credit with a single ledger entry.
+        return (int) DB::transaction(function () use ($tenantId, $recipientId, $amount, $transactionType, $description): int {
+            // Lock the recipient row before incrementing, matching transfer()'s
+            // ordering so a mint and a transfer touching the same member cannot
+            // interleave into a lost update.
+            DB::table('users')
+                ->where('id', $recipientId)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
 
-        $updated = DB::table('users')
-            ->where('id', $recipientId)
-            ->where('tenant_id', $tenantId)
-            ->increment('balance', $amount);
+            $updated = DB::table('users')
+                ->where('id', $recipientId)
+                ->where('tenant_id', $tenantId)
+                ->increment('balance', $amount);
 
-        if ($updated !== 1) {
-            throw new \RuntimeException('Mint recipient not found in this tenant.');
-        }
+            if ($updated !== 1) {
+                throw new \RuntimeException('Mint recipient not found in this tenant.');
+            }
 
-        return (int) DB::table('transactions')->insertGetId([
-            'tenant_id' => $tenantId,
-            'sender_id' => null,
-            'receiver_id' => $recipientId,
-            'amount' => $amount,
-            'description' => $description,
-            'transaction_type' => $transactionType,
-            'status' => 'completed',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            return (int) DB::table('transactions')->insertGetId([
+                'tenant_id' => $tenantId,
+                'sender_id' => null,
+                'receiver_id' => $recipientId,
+                'amount' => $amount,
+                'description' => $description,
+                'transaction_type' => $transactionType,
+                'status' => 'completed',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
     }
 
     /**
@@ -123,34 +130,38 @@ class WalletService
             throw new \InvalidArgumentException('Reclaim amount must be positive.');
         }
 
-        // Same lock ordering as mintToMember()/transfer(), so a reclaim cannot
-        // interleave with either into a lost update.
-        DB::table('users')
-            ->where('id', $memberId)
-            ->where('tenant_id', $tenantId)
-            ->lockForUpdate()
-            ->first();
+        // Atomic for the same reason as mintToMember(): the balance change and
+        // its ledger row must commit together or not at all.
+        return (int) DB::transaction(function () use ($tenantId, $memberId, $amount, $transactionType, $description): int {
+            // Same lock ordering as mintToMember()/transfer(), so a reclaim
+            // cannot interleave with either into a lost update.
+            DB::table('users')
+                ->where('id', $memberId)
+                ->where('tenant_id', $tenantId)
+                ->lockForUpdate()
+                ->first();
 
-        $updated = DB::table('users')
-            ->where('id', $memberId)
-            ->where('tenant_id', $tenantId)
-            ->decrement('balance', $amount);
+            $updated = DB::table('users')
+                ->where('id', $memberId)
+                ->where('tenant_id', $tenantId)
+                ->decrement('balance', $amount);
 
-        if ($updated !== 1) {
-            throw new \RuntimeException('Reclaim member not found in this tenant.');
-        }
+            if ($updated !== 1) {
+                throw new \RuntimeException('Reclaim member not found in this tenant.');
+            }
 
-        return (int) DB::table('transactions')->insertGetId([
-            'tenant_id' => $tenantId,
-            'sender_id' => $memberId,
-            'receiver_id' => null,
-            'amount' => $amount,
-            'description' => $description,
-            'transaction_type' => $transactionType,
-            'status' => 'completed',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            return (int) DB::table('transactions')->insertGetId([
+                'tenant_id' => $tenantId,
+                'sender_id' => $memberId,
+                'receiver_id' => null,
+                'amount' => $amount,
+                'description' => $description,
+                'transaction_type' => $transactionType,
+                'status' => 'completed',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
     }
 
     public function maxTransferAmount(?int $tenantId = null): float

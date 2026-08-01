@@ -596,7 +596,8 @@
         "check_in": "Attendance was checked in.",
         "check_out": "Attendance was checked out.",
         "no_show": "Attendance was marked as a no-show.",
-        "undo": "The attendance correction was recorded."
+        "undo": "The attendance correction was recorded.",
+        "check_in_reward_already_granted": "Checked in — the attendance reward was already granted earlier, so no new credits were issued."
       },
       "action_error": "The attendance record could not be updated.",
       "version_conflict": "This attendance record changed elsewhere. The roster has been refreshed.",
@@ -927,6 +928,9 @@
     },
     "member_prompt": "You're signed in — registration and your RSVPs live on the full events page.",
     "member_cta": "Go to community events",
-    "member_event_cta": "Open this event in the community app"
+    "member_event_cta": "Open this event in the community app",
+    "cancelled": "Cancelled",
+    "postponed": "Postponed",
+    "hybrid": "In person and online"
   }
 }

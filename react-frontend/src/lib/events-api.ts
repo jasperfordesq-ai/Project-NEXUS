@@ -969,6 +969,12 @@ export const eventPeopleAttendanceMutationSchema = z.object({
   checked_in_at: nullableString,
   checked_out_at: nullableString,
   history_entry_id: z.number().int().positive().nullable(),
+  /**
+   * Credit settle outcome on check_in transitions (null for other actions and
+   * idempotent replays). 'already_settled' means a re-check-in after an undo
+   * did not re-issue the reward. Optional for tolerance of older payloads.
+   */
+  credit_status: z.string().nullable().optional(),
 }).strict();
 
 const eventPeopleBulkResultBaseSchema = z.object({

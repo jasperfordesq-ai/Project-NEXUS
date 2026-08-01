@@ -127,7 +127,15 @@ export function EventCheckInWorkspace({ eventId }: { eventId: number }) {
         }
         return;
       }
-      toast.success(t(`manage.check_in.success.${action}`));
+      // A re-check-in after an undo is financially a no-op (the reward was
+      // already granted); tell staff instead of showing the identical
+      // success toast and leaving them to wonder.
+      const creditStatus = response.data.mutation.credit_status ?? null;
+      if (action === 'check_in' && creditStatus === 'already_settled') {
+        toast.info(t('manage.check_in.success.check_in_reward_already_granted'));
+      } else {
+        toast.success(t(`manage.check_in.success.${action}`));
+      }
       setUndoTarget(null);
       setUndoReason('');
       await loadPeople();

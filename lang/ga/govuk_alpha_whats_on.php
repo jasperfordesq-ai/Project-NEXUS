@@ -18,6 +18,8 @@ return [
         'apply' => 'Cuir scagairí i bhfeidhm',
         'empty' => 'Níl aon imeachtaí le taispeáint fós. Seiceáil ar ais go luath.',
         'online_tag' => 'Ar líne',
+        'cancelled_tag' => 'Ar ceal',
+        'postponed_tag' => 'ar athló',
         'more' => 'Taispeáin níos mó imeachtaí',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Críochnaíonn',
         'where' => 'Cá',
         'online' => 'Imeacht ar líne',
+        'hybrid' => 'ar líne freisin',
         'location_tba' => 'Suíomh le fógairt',
         'organiser' => 'Arna eagrú ag',
         'accessibility_title' => 'Inrochtaineacht ionaid',

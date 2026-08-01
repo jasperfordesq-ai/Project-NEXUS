@@ -93,6 +93,26 @@ trait PartnerVenuesParity
     }
 
     /**
+     * Rotate the member's pass — invalidates the previous QR, the recovery
+     * action when a pass may have been photographed. Parity with the React
+     * MyPassPage's "get a new code" button.
+     */
+    public function venuesPassRotate(Request $request, string $tenantSlug): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        abort_unless(TenantContext::hasFeature('partner_venues'), 403);
+
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        app(PartnerVenueVisitService::class)->rotatePass($userId);
+
+        return redirect()->route('govuk-alpha.venues.pass', ['tenantSlug' => $tenantSlug, 'status' => 'rotated']);
+    }
+
+    /**
      * Staff scan landing page. Deliberately confirms nothing on GET.
      */
     public function venuesCheckin(Request $request, string $tenantSlug, string $token): Response|RedirectResponse

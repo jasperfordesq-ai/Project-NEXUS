@@ -605,7 +605,8 @@
         "check_in": "Se registró la asistencia.",
         "check_out": "Se comprobó la asistencia.",
         "no_show": "La asistencia se marcó como no presentación.",
-        "undo": "Se registró la corrección de asistencia."
+        "undo": "Se registró la corrección de asistencia.",
+        "check_in_reward_already_granted": "Registrado: la recompensa por asistencia ya se otorgó anteriormente, por lo que no se emitieron nuevos créditos."
       },
       "action_error": "No se pudo actualizar el registro de asistencia.",
       "version_conflict": "Este récord de asistencia cambió en otros lugares. La plantilla ha sido renovada.",
@@ -937,7 +938,10 @@
     },
     "member_prompt": "Has iniciado sesión: el registro y tus confirmaciones de asistencia se encuentran disponibles en la página completa de eventos.",
     "member_cta": "Ir a eventos comunitarios",
-    "member_event_cta": "Abra este evento en la aplicación comunitaria"
+    "member_event_cta": "Abra este evento en la aplicación comunitaria",
+    "cancelled": "Cancelado",
+    "postponed": "Aplazado",
+    "hybrid": "En persona y en línea"
   },
   "going_many": "{{count}} asistirán",
   "interested_many": "{{count}} interesados"

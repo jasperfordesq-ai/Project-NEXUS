@@ -2776,5 +2776,6 @@ KANDIDATEN::candidates',
     'event_attendance_claim_not_found' => 'Prämienanspruch nicht gefunden',
     'event_attendance_claim_not_retryable' => 'Nur ein fehlgeschlagener Prämienanspruch kann erneut versucht werden',
     'event_attendance_claim_not_reversible' => 'Nur ein abgeschlossener Prämienanspruch kann rückgängig gemacht werden',
+    'event_attendance_mode_disabled' => 'Das Prägen von Anwesenheitsprämien ist auf Plattformebene ausgeschaltet',
     'events_config_monthly_cap_invalid' => 'Die monatliche Prämienobergrenze muss eine positive Anzahl an Credits sein oder leer sein, wenn keine Obergrenze vorliegt.',
 ];

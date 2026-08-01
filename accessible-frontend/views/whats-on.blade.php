@@ -57,10 +57,16 @@
                         @if ($eventWhen)
                             <span>{{ $eventWhen }}</span>
                         @endif
-                        @if (!empty($event['is_online']))
-                            <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-2">{{ __('govuk_alpha_whats_on.index.online_tag') }}</strong>
-                        @elseif (!empty($event['location']))
+                        @if (($event['operational_status'] ?? 'scheduled') === 'cancelled')
+                            <strong class="govuk-tag govuk-tag--red govuk-!-margin-left-2">{{ __('govuk_alpha_whats_on.index.cancelled_tag') }}</strong>
+                        @elseif (($event['operational_status'] ?? 'scheduled') === 'postponed')
+                            <strong class="govuk-tag govuk-tag--yellow govuk-!-margin-left-2">{{ __('govuk_alpha_whats_on.index.postponed_tag') }}</strong>
+                        @endif
+                        @if (!empty($event['location']) && ($event['attendance_mode'] ?? 'in_person') !== 'online')
                             <span class="govuk-!-margin-left-2">{{ $event['location'] }}</span>
+                        @endif
+                        @if (($event['attendance_mode'] ?? 'in_person') !== 'in_person')
+                            <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-2">{{ __('govuk_alpha_whats_on.index.online_tag') }}</strong>
                         @endif
                     </p>
                     @if (!empty($event['category']['name']))
@@ -71,8 +77,17 @@
         </ul>
 
         @if ($nextCursor)
+            @php
+                // Explicit callback: array_filter's default drops the STRING
+                // "0" (PHP loose-falsy), which would silently lose a member's
+                // literal search for "0" when paging.
+                $whatsOnMoreParams = array_filter(
+                    ['tenantSlug' => $tenantSlug, 'when' => $when, 'q' => $search !== '' ? $search : null, 'cursor' => $nextCursor],
+                    static fn ($value): bool => $value !== null && $value !== '',
+                );
+            @endphp
             <a class="govuk-button govuk-button--secondary" data-module="govuk-button"
-               href="{{ route('govuk-alpha.whats-on.index', array_filter(['tenantSlug' => $tenantSlug, 'when' => $when, 'q' => $search !== '' ? $search : null, 'cursor' => $nextCursor])) }}">
+               href="{{ route('govuk-alpha.whats-on.index', $whatsOnMoreParams) }}">
                 {{ __('govuk_alpha_whats_on.index.more') }}
             </a>
         @endif

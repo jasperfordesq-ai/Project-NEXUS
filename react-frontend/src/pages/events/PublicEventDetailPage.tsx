@@ -119,13 +119,19 @@ export default function PublicEventDetailPage() {
     name: event.title ?? '',
     startDate: event.start_time ?? undefined,
     endDate: event.end_time ?? undefined,
-    eventAttendanceMode: event.is_online
-      ? 'https://schema.org/OnlineEventAttendanceMode'
-      : 'https://schema.org/OfflineEventAttendanceMode',
-    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: event.attendance_mode === 'hybrid'
+      ? 'https://schema.org/MixedEventAttendanceMode'
+      : event.attendance_mode === 'online'
+        ? 'https://schema.org/OnlineEventAttendanceMode'
+        : 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: event.operational_status === 'cancelled'
+      ? 'https://schema.org/EventCancelled'
+      : event.operational_status === 'postponed'
+        ? 'https://schema.org/EventPostponed'
+        : 'https://schema.org/EventScheduled',
     description: event.description ?? undefined,
     image: event.image_url ?? undefined,
-    location: event.is_online
+    location: event.attendance_mode === 'online'
       ? { '@type': 'VirtualLocation', name: tenant?.name ?? '' }
       : event.location
         ? { '@type': 'Place', name: event.location, address: event.location }
@@ -155,7 +161,15 @@ export default function PublicEventDetailPage() {
 
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold">{event.title}</h1>
-        {event.category?.name && <Chip variant="secondary">{event.category.name}</Chip>}
+        <div className="flex flex-wrap gap-2">
+          {event.operational_status === 'cancelled' && (
+            <Chip color="danger" variant="secondary">{t('public.cancelled')}</Chip>
+          )}
+          {event.operational_status === 'postponed' && (
+            <Chip color="warning" variant="secondary">{t('public.postponed')}</Chip>
+          )}
+          {event.category?.name && <Chip variant="secondary">{event.category.name}</Chip>}
+        </div>
       </header>
 
       <Card className="p-6 space-y-3">
@@ -166,17 +180,18 @@ export default function PublicEventDetailPage() {
           </p>
         )}
 
-        {event.is_online ? (
-          <p className="flex items-start gap-2">
-            <Video className="w-5 h-5 mt-0.5 text-theme-muted flex-shrink-0" aria-hidden="true" />
-            <span>{t('public.online')}</span>
-          </p>
-        ) : event.location ? (
+        {event.location && event.attendance_mode !== 'online' && (
           <p className="flex items-start gap-2">
             <MapPin className="w-5 h-5 mt-0.5 text-theme-muted flex-shrink-0" aria-hidden="true" />
             <span>{event.location}</span>
           </p>
-        ) : null}
+        )}
+        {event.attendance_mode !== 'in_person' && (
+          <p className="flex items-start gap-2">
+            <Video className="w-5 h-5 mt-0.5 text-theme-muted flex-shrink-0" aria-hidden="true" />
+            <span>{t(event.attendance_mode === 'hybrid' ? 'public.hybrid' : 'public.online')}</span>
+          </p>
+        )}
 
         {event.organizer_name && (
           <p className="text-theme-muted">
@@ -214,7 +229,7 @@ export default function PublicEventDetailPage() {
         </Card>
       )}
 
-      {isAuthenticated ? (
+      {event.operational_status === 'cancelled' ? null : isAuthenticated ? (
         <Card className="p-6 text-center space-y-3">
           <p className="text-theme-muted">{t('public.member_prompt')}</p>
           <Button color="primary" as={Link} to={tenantPath(`/events/${event.id}`)}>

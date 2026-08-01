@@ -18,6 +18,8 @@ return [
         'apply' => 'Pas filters toe',
         'empty' => 'Er zijn nog geen evenementen om te tonen. Kom snel terug.',
         'online_tag' => 'Online evenement',
+        'cancelled_tag' => 'Geannuleerd',
+        'postponed_tag' => 'Uitgesteld',
         'more' => 'Toon meer evenementen',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Eindigt',
         'where' => 'Waar',
         'online' => 'Online evenement',
+        'hybrid' => 'ook online te joinen',
         'location_tba' => 'Locatie wordt nog bekend gemaakt',
         'organiser' => 'Georganiseerd door',
         'accessibility_title' => 'Bereikbaarheid van de locatie',

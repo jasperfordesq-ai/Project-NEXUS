@@ -18,6 +18,8 @@ return [
         'apply' => 'フィルターを適用する',
         'empty' => '表示するイベントはまだありません。すぐにもう一度確認してください。',
         'online_tag' => 'オンライン',
+        'cancelled_tag' => 'キャンセル',
+        'postponed_tag' => '延期した',
         'more' => 'さらにイベントを表示',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => '終わり',
         'where' => 'どこ',
         'online' => 'オンラインイベント',
+        'hybrid' => 'オンラインでも参加可能',
         'location_tba' => '場所は発表予定',
         'organiser' => '主催',
         'accessibility_title' => '会場のアクセス',

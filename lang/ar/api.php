@@ -2776,5 +2776,6 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'event_attendance_claim_not_found' => 'لم يتم العثور على المطالبة بالمكافأة',
     'event_attendance_claim_not_retryable' => 'يمكن فقط إعادة محاولة المطالبة بالمكافأة الفاشلة',
     'event_attendance_claim_not_reversible' => 'يمكن فقط عكس المطالبة بالمكافأة المكتملة',
+    'event_attendance_mode_disabled' => 'تم إيقاف سك مكافأة الحضور على مستوى المنصة',
     'events_config_monthly_cap_invalid' => 'يجب أن يكون الحد الأقصى للمكافأة الشهرية عددًا موجبًا من الأرصدة، أو أن يكون فارغًا بدون أي حد أقصى.',
 ];

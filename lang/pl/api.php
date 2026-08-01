@@ -2776,5 +2776,6 @@ KANDYDACI::candidates',
     'event_attendance_claim_not_found' => 'Nie znaleziono roszczenia o nagrodę',
     'event_attendance_claim_not_retryable' => 'Można ponowić jedynie nieudaną próbę ubiegania się o nagrodę',
     'event_attendance_claim_not_reversible' => 'Cofnąć można wyłącznie roszczenie o nagrodę zakończone',
+    'event_attendance_mode_disabled' => 'Wybijanie nagród za obecność jest wyłączone na poziomie platformy',
     'events_config_monthly_cap_invalid' => 'Miesięczny limit nagród musi być dodatnią liczbą kredytów lub pusty w przypadku braku limitu.',
 ];

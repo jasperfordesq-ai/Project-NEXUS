@@ -34,6 +34,16 @@
     @endif
     <h1 class="govuk-heading-xl">{{ $event['title'] }}</h1>
 
+    @php
+        $whatsOnStatus = $event['operational_status'] ?? 'scheduled';
+        $whatsOnMode = $event['attendance_mode'] ?? 'in_person';
+    @endphp
+    @if ($whatsOnStatus === 'cancelled')
+        <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--red">{{ __('govuk_alpha_whats_on.index.cancelled_tag') }}</strong></p>
+    @elseif ($whatsOnStatus === 'postponed')
+        <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--yellow">{{ __('govuk_alpha_whats_on.index.postponed_tag') }}</strong></p>
+    @endif
+
     <dl class="govuk-summary-list">
         @if ($startsAt)
             <div class="govuk-summary-list__row">
@@ -50,8 +60,10 @@
         <div class="govuk-summary-list__row">
             <dt class="govuk-summary-list__key">{{ __('govuk_alpha_whats_on.show.where') }}</dt>
             <dd class="govuk-summary-list__value">
-                @if (!empty($event['is_online']))
+                @if ($whatsOnMode === 'online')
                     {{ __('govuk_alpha_whats_on.show.online') }}
+                @elseif ($whatsOnMode === 'hybrid')
+                    {{ $event['location'] ?? __('govuk_alpha_whats_on.show.location_tba') }} — {{ __('govuk_alpha_whats_on.show.hybrid') }}
                 @else
                     {{ $event['location'] ?? __('govuk_alpha_whats_on.show.location_tba') }}
                 @endif
@@ -84,10 +96,12 @@
         </ul>
     @endif
 
-    <div class="govuk-inset-text">
-        <p class="govuk-body govuk-!-margin-bottom-2">{{ __('govuk_alpha_whats_on.show.register_prompt') }}</p>
-        <a class="govuk-button" data-module="govuk-button" href="{{ route('govuk-alpha.login', ['tenantSlug' => $tenantSlug]) }}">
-            {{ __('govuk_alpha_whats_on.show.sign_in_to_register') }}
-        </a>
-    </div>
+    @if ($whatsOnStatus !== 'cancelled')
+        <div class="govuk-inset-text">
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ __('govuk_alpha_whats_on.show.register_prompt') }}</p>
+            <a class="govuk-button" data-module="govuk-button" href="{{ route('govuk-alpha.login', ['tenantSlug' => $tenantSlug]) }}">
+                {{ __('govuk_alpha_whats_on.show.sign_in_to_register') }}
+            </a>
+        </div>
+    @endif
 @endsection

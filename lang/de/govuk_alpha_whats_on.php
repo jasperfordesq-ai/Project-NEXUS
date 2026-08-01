@@ -18,6 +18,8 @@ return [
         'apply' => 'Wenden Sie Filter an',
         'empty' => 'Noch keine Veranstaltungen zum Anzeigen. Schauen Sie bald wieder vorbei.',
         'online_tag' => 'Online-Veranstaltung',
+        'cancelled_tag' => 'Abgesagt',
+        'postponed_tag' => 'Verschoben',
         'more' => 'Weitere Veranstaltungen anzeigen',
     ],
     'show' => [
@@ -27,6 +29,7 @@ return [
         'ends' => 'Endet',
         'where' => 'Wo',
         'online' => 'Online-Veranstaltung',
+        'hybrid' => 'auch online beitrittsfähig',
         'location_tba' => 'Ort wird noch bekannt gegeben',
         'organiser' => 'Organisiert von',
         'accessibility_title' => 'Zugänglichkeit des Veranstaltungsortes',

@@ -2776,5 +2776,6 @@ CANDIDATOS::candidates',
     'event_attendance_claim_not_found' => 'Reclamo de recompensa no encontrado',
     'event_attendance_claim_not_retryable' => 'Solo se puede volver a intentar un reclamo de recompensa fallido',
     'event_attendance_claim_not_reversible' => 'Solo se puede revertir un reclamo de recompensa completado',
+    'event_attendance_mode_disabled' => 'La acuñación de recompensas por asistencia está desactivada a nivel de plataforma',
     'events_config_monthly_cap_invalid' => 'El límite de recompensa mensual debe ser un número positivo de créditos o estar vacío si no hay límite.',
 ];

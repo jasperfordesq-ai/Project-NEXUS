@@ -24,6 +24,15 @@ final readonly class EventAttendanceTransitionResult
         public bool $replayed,
         public ?int $activityId,
         public ?int $outboxId,
+        /**
+         * Outcome of the credit settle on a CheckIn transition (one of
+         * EventCreditService::SETTLED_STATUSES), null for other actions.
+         * Carried so the check-in UI can tell staff when a re-check-in after
+         * an undo did NOT re-issue a reward (already_settled) — previously
+         * the record() path reported this but the transition path silently
+         * dropped it.
+         */
+        public ?string $creditStatus = null,
     ) {
     }
 
@@ -44,6 +53,7 @@ final readonly class EventAttendanceTransitionResult
             'checked_in_at' => $this->attendance->checked_in_at?->toIso8601String(),
             'checked_out_at' => $this->attendance->checked_out_at?->toIso8601String(),
             'history_entry_id' => $this->activityId,
+            'credit_status' => $this->creditStatus,
         ];
     }
 }

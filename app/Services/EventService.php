@@ -242,14 +242,27 @@ class EventService
         $isTenantAdmin = self::isTenantAdmin($viewerId, $tenantId);
         self::applyDiscoveryVisibility($query, $viewerId, $tenantId, $isTenantAdmin);
 
-        // Anonymous (public) discovery additionally sees only published events.
+        // Anonymous (public) discovery sees only published events.
         // publication_status is nullable for events created before the lifecycle
-        // migration, and those are treated as published — same as the authored
-        // listing, which does not filter on it at all.
+        // migration, and those are treated as published.
         if (! empty($filters['public_only'])) {
             $query->where(function (Builder $published) {
                 $published->whereNull('events.publication_status')
                     ->orWhere('events.publication_status', EventPublicationState::Published->value);
+            });
+        } elseif (! $isTenantAdmin) {
+            // Members see published events plus their OWN drafts/pending.
+            // Without this, the list rendered full cards (title, image,
+            // organiser) of other members' unpublished events — the detail
+            // page 404s them via EventPolicy::view(), but by then the
+            // moderation workflow's whole point was already defeated. Tenant
+            // admins keep full visibility; they operate the review queue.
+            $query->where(function (Builder $visible) use ($viewerId) {
+                $visible->whereNull('events.publication_status')
+                    ->orWhere('events.publication_status', EventPublicationState::Published->value);
+                if ($viewerId !== null) {
+                    $visible->orWhere('events.user_id', $viewerId);
+                }
             });
         }
 

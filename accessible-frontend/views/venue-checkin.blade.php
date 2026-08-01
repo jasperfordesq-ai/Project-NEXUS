@@ -31,18 +31,20 @@
             </div>
         </div>
         <a class="govuk-link" href="{{ route('govuk-alpha.venues.index', ['tenantSlug' => $tenantSlug]) }}">{{ __('govuk_alpha_venues.checkin.done') }}</a>
-    @elseif ($status === 'forbidden')
-        <div class="govuk-error-summary" role="alert" aria-labelledby="venue-checkin-error-title" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="venue-checkin-error-title">{{ __('govuk_alpha_venues.checkin.forbidden_title') }}</h2>
-            <div class="govuk-error-summary__body">
-                <p class="govuk-body">{{ __('govuk_alpha_venues.checkin.forbidden_body') }}</p>
+    @elseif ($status === 'forbidden' || $status === 'invalid_pass')
+        {{-- Page-level outcome, not field validation: the GOV.UK error summary
+             contract expects a list of links back to invalid fields, which
+             does not exist here. The notification banner is the pattern for
+             "something on this page needs your attention". --}}
+        @php
+            $checkinNoticeKey = $status === 'forbidden' ? 'forbidden' : 'invalid';
+        @endphp
+        <div class="govuk-notification-banner" role="alert" aria-labelledby="venue-checkin-notice-title" data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="venue-checkin-notice-title">{{ __('govuk_alpha_venues.checkin.' . $checkinNoticeKey . '_title') }}</h2>
             </div>
-        </div>
-    @elseif ($status === 'invalid_pass')
-        <div class="govuk-error-summary" role="alert" aria-labelledby="venue-checkin-invalid-title" data-module="govuk-error-summary">
-            <h2 class="govuk-error-summary__title" id="venue-checkin-invalid-title">{{ __('govuk_alpha_venues.checkin.invalid_title') }}</h2>
-            <div class="govuk-error-summary__body">
-                <p class="govuk-body">{{ __('govuk_alpha_venues.checkin.invalid_body') }}</p>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-body">{{ __('govuk_alpha_venues.checkin.' . $checkinNoticeKey . '_body') }}</p>
             </div>
         </div>
     @else

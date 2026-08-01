@@ -90,6 +90,18 @@ return [
      */
     'attendance_credit_max' => (float) env('EVENTS_ATTENDANCE_CREDIT_MAX', 2.0),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Monthly cap clock
+    |--------------------------------------------------------------------------
+    | The tenant monthly cap (attendance_credit_monthly_cap, set per tenant in
+    | Event Settings) resets at the start of the calendar month in the APP
+    | timezone (config('app.timezone')), not any tenant-local zone. Write and
+    | read use the same clock, so accounting is internally consistent; a tenant
+    | far from the app zone just sees its budget roll a few hours off local
+    | midnight on the 1st. Revisit only if tenants gain a timezone setting.
+    */
+
     'attendance' => [
         'opens_before_minutes' => (int) env('EVENTS_ATTENDANCE_OPENS_BEFORE_MINUTES', 30),
         'closes_after_hours' => (int) env('EVENTS_ATTENDANCE_CLOSES_AFTER_HOURS', 24),

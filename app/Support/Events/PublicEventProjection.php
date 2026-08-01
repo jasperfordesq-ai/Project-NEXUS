@@ -34,6 +34,33 @@ final class PublicEventProjection
         $organiser = is_array($event['user'] ?? null) ? $event['user'] : [];
         $category = is_array($event['category'] ?? null) ? $event['category'] : [];
 
+        $locationLabel = is_string($event['location'] ?? null) && trim((string) $event['location']) !== ''
+            ? $event['location']
+            : null;
+
+        // Same remote/hybrid semantics as the member contract's location.mode
+        // (EventContractMapper::location): the raw is_online column alone is
+        // NOT the truth — the create form only ever writes
+        // allow_remote_attendance, so relying on is_online rendered every
+        // hybrid/online event as in-person on the public pages. The link
+        // itself stays private; only the FACT of a remote option is public.
+        $remote = (bool) ($event['is_online'] ?? false)
+            || (bool) ($event['allow_remote_attendance'] ?? false)
+            || (is_string($event['online_link'] ?? null) && trim((string) $event['online_link']) !== '')
+            || (is_string($event['video_url'] ?? null) && trim((string) $event['video_url']) !== '');
+        $attendanceMode = match (true) {
+            $remote && $locationLabel !== null => 'hybrid',
+            $remote => 'online',
+            default => 'in_person',
+        };
+
+        // Cancelled/postponed events stay listed (people who saw the poster
+        // need to learn the plan changed) but must SAY so. Only the state is
+        // public — the organiser-written cancellation_reason is member-facing.
+        $operationalStatus = in_array($event['operational_status'] ?? null, ['scheduled', 'postponed', 'cancelled', 'completed'], true)
+            ? $event['operational_status']
+            : 'scheduled';
+
         $projection = [
             'id' => (int) ($event['id'] ?? 0),
             'title' => $event['title'] ?? null,
@@ -44,10 +71,12 @@ final class PublicEventProjection
             // Location LABEL only. Coordinates are included because they are
             // already public on the page's map, but no venue contact details,
             // access codes or joining links are.
-            'location' => $event['location'] ?? null,
+            'location' => $locationLabel,
             'latitude' => $event['latitude'] ?? null,
             'longitude' => $event['longitude'] ?? null,
-            'is_online' => (bool) ($event['is_online'] ?? false),
+            'is_online' => $remote,
+            'attendance_mode' => $attendanceMode,
+            'operational_status' => $operationalStatus,
             'image_url' => $event['image_url'] ?? null,
             'category' => $category === [] ? null : [
                 'id' => (int) ($category['id'] ?? 0),
