@@ -184,7 +184,8 @@
     "attendance_total_one": "{{count}} 件の返信",
     "attendance_total_other": "{{count}} 件の返信",
     "view_all_series_one": "すべての {{count}} イベントをシリーズで表示する",
-    "view_all_series_other": "すべての {{count}} イベントをシリーズで表示する"
+    "view_all_series_other": "すべての {{count}} イベントをシリーズで表示する",
+    "attendance_reward_badge": "参加して {{amount}} 時間のクレジットを獲得しましょう"
   },
   "card": {
     "cancelled": "キャンセル",
@@ -908,6 +909,7 @@
     "loading": "イベントを読み込み中…",
     "empty": "現在、予定されているイベントはありません。すぐにもう一度ご確認ください。",
     "online": "オンラインイベント",
+    "hosted_by": "主催: {{name}}",
     "join_prompt": "メンバーは場所を予約し、独自のセッションを主催し、スキルを共有できます。",
     "register_prompt": "このイベントの場所を予約するにはサインインしてください。",
     "login_cta": "サインイン",
@@ -922,7 +924,6 @@
       "quiet_space": "静かな空間",
       "seating": "座席あり",
       "parking": "バリアフリー駐車場"
-    },
-    "hosted_by": "主催: {{name}}"
+    }
   }
 }

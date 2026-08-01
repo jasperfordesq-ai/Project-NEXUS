@@ -3279,6 +3279,11 @@ return [
     // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Attendance reward: :event',
     'event_attendance_rewards_disabled' => 'Attendance rewards are not enabled for this community',
+    'event_attendance_reward_reversal_description' => 'Attendance reward reversed: :event',
+    'event_attendance_claim_not_found' => 'Reward claim not found',
+    'event_attendance_claim_not_retryable' => 'Only a failed reward claim can be retried',
+    'event_attendance_claim_not_reversible' => 'Only a completed reward claim can be reversed',
+    'events_config_monthly_cap_invalid' => 'The monthly reward cap must be a positive number of credits, or empty for no cap.',
 
     // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Partner venues are not enabled for this community',

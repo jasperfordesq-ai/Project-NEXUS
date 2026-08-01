@@ -185,6 +185,7 @@
     "attendance_total_other": "{{count}} freagra",
     "view_all_series_one": "Féach ar gach {{count}} imeacht sa tsraith",
     "view_all_series_other": "Féach ar gach {{count}} imeacht sa tsraith",
+    "attendance_reward_badge": "Tuill creidmheasanna ama {{amount}} as freastal",
     "events_in_series_few": "{{count}} imeacht sa tsraith",
     "events_in_series_many": "{{count}} imeacht sa tsraith",
     "events_in_series_two": "{{count}} imeacht sa tsraith",
@@ -938,6 +939,7 @@
     "loading": "Imeachtaí á lódáil…",
     "empty": "Níl aon imeachtaí atá le teacht liostaithe faoi láthair. Seiceáil ar ais go luath le do thoil.",
     "online": "Imeacht ar líne",
+    "hosted_by": "Arna óstáil ag {{name}}",
     "join_prompt": "Is féidir le baill áit a chur in áirithe, a seisiúin féin a óstáil agus scileanna a roinnt.",
     "register_prompt": "Sínigh isteach chun áit a chur in áirithe ag an imeacht seo.",
     "login_cta": "Sínigh isteach",
@@ -952,8 +954,7 @@
       "quiet_space": "Spás ciúin",
       "seating": "Suíocháin ar fáil",
       "parking": "Páirceáil inrochtana"
-    },
-    "hosted_by": "Arna óstáil ag {{name}}"
+    }
   },
   "going_few": "{{count}} ag dul",
   "going_many": "{{count}} ag dul",

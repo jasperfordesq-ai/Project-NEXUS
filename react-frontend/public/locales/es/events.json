@@ -185,6 +185,7 @@
     "attendance_total_other": "{{count}} respuestas",
     "view_all_series_one": "Ver los {{count}} eventos de la serie",
     "view_all_series_other": "Ver los {{count}} eventos de la serie",
+    "attendance_reward_badge": "Gana {{amount}} créditos de tiempo por asistir",
     "events_in_series_many": "{{count}} eventos en la serie",
     "max_capacity_many": "{{count}} capacidad máxima",
     "spots_left_many": "{{count}} plazas disponibles",
@@ -918,6 +919,7 @@
     "loading": "Cargando eventos…",
     "empty": "No hay eventos próximos listados en este momento. Vuelva a consultar pronto.",
     "online": "evento en línea",
+    "hosted_by": "Organizado por {{name}}",
     "join_prompt": "Los miembros pueden reservar un lugar, organizar sus propias sesiones y compartir habilidades.",
     "register_prompt": "Inicia sesión para reservar un lugar en este evento.",
     "login_cta": "Iniciar sesión",
@@ -932,8 +934,7 @@
       "quiet_space": "Espacio tranquilo",
       "seating": "Asientos disponibles",
       "parking": "Aparcamiento accesible"
-    },
-    "hosted_by": "Organizado por {{name}}"
+    }
   },
   "going_many": "{{count}} asistirán",
   "interested_many": "{{count}} interesados"

@@ -2755,8 +2755,6 @@ KANDYDACI::candidates',
     'paid_push_campaign_not_rejectable' => 'Nie można odrzucić kampanii ze statusem: :status',
     'paid_push_campaign_not_dispatchable' => 'Kampania nie jest gotowa do wysyłki (stan: :status).',
     'member_premium_tier_missing_price' => 'Poziom „:tier” nie ma ceny Stripe dla :interval — administrator musi najpierw uruchomić Synchronizację z Stripe',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Lokale partnerskie nie są włączone w tej społeczności',
     'partner_venue_not_found' => 'Nie znaleziono lokalu partnerskiego',
     'partner_venue_archived' => 'Lokal partnerski zarchiwizowany',
@@ -2771,8 +2769,11 @@ KANDYDACI::candidates',
     'partner_venue_csv_member' => 'Członek',
     'partner_venue_csv_recorded_by' => 'Zarejestrowane przez',
     'partner_venue_csv_source' => 'Źródło',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Nagroda za udział: :event',
     'event_attendance_rewards_disabled' => 'Nagrody za udział nie są włączone w tej społeczności',
+    'event_attendance_reward_reversal_description' => 'Odwrócona nagroda za obecność: :event',
+    'event_attendance_claim_not_found' => 'Nie znaleziono roszczenia o nagrodę',
+    'event_attendance_claim_not_retryable' => 'Można ponowić jedynie nieudaną próbę ubiegania się o nagrodę',
+    'event_attendance_claim_not_reversible' => 'Cofnąć można wyłącznie roszczenie o nagrodę zakończone',
+    'events_config_monthly_cap_invalid' => 'Miesięczny limit nagród musi być dodatnią liczbą kredytów lub pusty w przypadku braku limitu.',
 ];

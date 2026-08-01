@@ -102,6 +102,57 @@ class WalletService
         ]);
     }
 
+    /**
+     * Return previously minted credits from a member to the community.
+     *
+     * The exact mirror of mintToMember(): sender is the member, receiver is
+     * NULL (the community). Used by admin-initiated reversals of attendance
+     * rewards. The balance is allowed to go negative — a member may have spent
+     * the reward before an admin reverses it, and the reversal must still be
+     * recordable. vol_organizations.balance already carries the same
+     * may-go-negative semantics for organisation wallets.
+     */
+    public function reclaimFromMember(
+        int $tenantId,
+        int $memberId,
+        float $amount,
+        string $transactionType,
+        string $description,
+    ): int {
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('Reclaim amount must be positive.');
+        }
+
+        // Same lock ordering as mintToMember()/transfer(), so a reclaim cannot
+        // interleave with either into a lost update.
+        DB::table('users')
+            ->where('id', $memberId)
+            ->where('tenant_id', $tenantId)
+            ->lockForUpdate()
+            ->first();
+
+        $updated = DB::table('users')
+            ->where('id', $memberId)
+            ->where('tenant_id', $tenantId)
+            ->decrement('balance', $amount);
+
+        if ($updated !== 1) {
+            throw new \RuntimeException('Reclaim member not found in this tenant.');
+        }
+
+        return (int) DB::table('transactions')->insertGetId([
+            'tenant_id' => $tenantId,
+            'sender_id' => $memberId,
+            'receiver_id' => null,
+            'amount' => $amount,
+            'description' => $description,
+            'transaction_type' => $transactionType,
+            'status' => 'completed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     public function maxTransferAmount(?int $tenantId = null): float
     {
         $tenantId ??= TenantContext::getId();
@@ -850,6 +901,7 @@ class WalletService
                     'starting_balance' => __('api.wallet_counterparty_system'),
                     'admin_grant'      => __('api.wallet_counterparty_admin'),
                     'event_attendance_reward' => __('api.wallet_counterparty_community_fund'),
+                    'event_attendance_reversal' => __('api.wallet_counterparty_community_fund'),
                     default            => __('api.wallet_counterparty_unknown'),
                 };
                 return ['id' => 0, 'name' => $label, 'avatar' => null];

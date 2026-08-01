@@ -5,13 +5,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import CalendarCog from 'lucide-react/icons/calendar-cog';
+import Gift from 'lucide-react/icons/gift';
 import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import Save from 'lucide-react/icons/save';
 import ShieldCheck from 'lucide-react/icons/shield-check';
 import { PageHeader } from '../../components/PageHeader';
 import { adminConfig, type EventConfiguration, type EventConfigurationAuditEntry, type EventConfigurationResponse } from '../../api/adminApi';
-import { useToast } from '@/contexts';
+import { useTenant, useToast } from '@/contexts';
 import { usePageTitle } from '@/hooks';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
@@ -41,6 +43,8 @@ export default function EventSettings() {
   usePageTitle(t('title'));
   const toast = useToast();
   const confirm = useConfirm();
+  const navigate = useNavigate();
+  const { tenantPath, hasFeature } = useTenant();
   const [snapshot, setSnapshot] = useState<EventConfigurationResponse | null>(null);
   const [draft, setDraft] = useState<EventConfiguration | null>(null);
   const [reason, setReason] = useState('');
@@ -266,6 +270,54 @@ export default function EventSettings() {
           </Card.Content>
           <Card.Footer className="justify-end"><Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || !reason.trim()} onPress={() => void restore(['safety_enforcement_mode', 'notification_delivery_mode'])}>{t('restore_section')}</Button></Card.Footer>
         </Card>
+
+        {hasFeature('event_attendance_credits') && (
+          <Card>
+            <Card.Header>
+              <div>
+                <h2 className="flex items-center gap-2 text-base font-semibold"><Gift size={18} />{t('rewards_title')}</h2>
+                <p className="text-sm text-muted">{t('rewards_desc')}</p>
+              </div>
+            </Card.Header>
+            <Card.Content className="grid gap-5 md:grid-cols-2">
+              <Input
+                label={t('rewards_monthly_cap')}
+                description={t('rewards_monthly_cap_desc')}
+                type="number"
+                min={0.01}
+                step={0.5}
+                value={draft.attendance_credit_monthly_cap !== null ? String(draft.attendance_credit_monthly_cap) : ''}
+                onValueChange={(value) => {
+                  const parsed = Number(value);
+                  setDraft({
+                    ...draft,
+                    attendance_credit_monthly_cap: value.trim() === '' || !Number.isFinite(parsed) || parsed <= 0 ? null : parsed,
+                  });
+                }}
+                aria-label={t('rewards_monthly_cap')}
+              />
+              <div className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-surface-secondary p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium">{t('capability_attendance_credits')}</span>
+                  <Chip size="sm" variant="soft" color={capabilities.attendance_credits ? 'success' : 'default'}>
+                    {t(capabilities.attendance_credits ? 'available' : 'platform_off')}
+                  </Chip>
+                </div>
+                <p className="text-xs leading-5 text-muted">{t('rewards_amounts_hint')}</p>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => navigate(tenantPath('/admin/events/attendance-rewards'))}
+                >
+                  {t('rewards_open_ledger')}
+                </Button>
+              </div>
+            </Card.Content>
+            <Card.Footer className="justify-end">
+              <Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || !reason.trim()} onPress={() => void restore(['attendance_credit_monthly_cap'])}>{t('restore_section')}</Button>
+            </Card.Footer>
+          </Card>
+        )}
 
         <Card className="border-warning/40">
           <Card.Header><div><h2 className="flex items-center gap-2 text-base font-semibold"><ShieldCheck size={18} />{t('change_control')}</h2><p className="text-sm text-muted">{t('change_control_desc')}</p></div></Card.Header>

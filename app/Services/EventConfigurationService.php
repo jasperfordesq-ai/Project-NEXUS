@@ -35,6 +35,12 @@ final class EventConfigurationService
         'federation_sharing_enabled' => true,
         'safety_enforcement_mode' => null,
         'notification_delivery_mode' => null,
+        // Monthly ceiling on attendance-reward minting, in time credits.
+        // Null means uncapped. Enforced by EventCreditService per calendar
+        // month over COMPLETED attendance_reward claims, so a reversed claim
+        // frees its budget. This caps the tenant treasury's exposure — the
+        // per-event amount only caps a single reward.
+        'attendance_credit_monthly_cap' => null,
     ];
 
     /** @return array{config:array<string,mixed>,defaults:array<string,mixed>,version:int,capabilities:array<string,mixed>,impact:array<string,int>} */
@@ -371,6 +377,17 @@ final class EventConfigurationService
 
         $out = [];
         foreach ($input as $key => $value) {
+            // Nullable numeric, unlike every other null-default key (which are
+            // string choices) — validated here so the generic branches below
+            // never see it.
+            if ($key === 'attendance_credit_monthly_cap') {
+                if ($value !== null && (! is_numeric($value) || (float) $value <= 0 || (float) $value > 100000)) {
+                    throw ValidationException::withMessages([$key => __('api.events_config_monthly_cap_invalid')]);
+                }
+                $out[$key] = $value === null ? null : round((float) $value, 2);
+                continue;
+            }
+
             $default = self::DEFAULTS[$key];
             if (is_bool($default)) {
                 if (! is_bool($value)) {

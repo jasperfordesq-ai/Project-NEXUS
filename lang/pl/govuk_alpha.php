@@ -1305,6 +1305,7 @@ return [
         'interested' => '{0} Jeszcze nikt nie jest zainteresowany|{1} 1 osoba zainteresowana|[2,*] :count osoby zainteresowane',
         'spots_left' => 'Zostały miejsca:count',
         'full' => 'Pełny',
+        'attendance_reward_tag' => 'Zdobądź :amount punktów czasowych za uczestnictwo',
         'rsvp_title' => 'Twój RSVP',
         'rsvp_hint' => 'Poinformuj organizatora, czy planujesz wziąć udział.',
         'rsvp_status_label' => 'Stan RSVP',

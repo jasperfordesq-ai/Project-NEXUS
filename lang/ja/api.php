@@ -2755,8 +2755,6 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'paid_push_campaign_not_rejectable' => 'ステータス: :status ではキャンペーンを拒否できません',
     'paid_push_campaign_not_dispatchable' => 'キャンペーンを送信する準備ができていません (ステータス: :status)。',
     'member_premium_tier_missing_price' => '階層 \':tier\' には :interval のストライプ価格がありません — 管理者は最初にストライプへの同期を実行する必要があります',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'このコミュニティでは提携店舗が有効になっていません',
     'partner_venue_not_found' => '提携店舗が見つかりません',
     'partner_venue_archived' => '提携店舗をアーカイブしました',
@@ -2771,8 +2769,11 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'partner_venue_csv_member' => '会員',
     'partner_venue_csv_recorded_by' => '記録者',
     'partner_venue_csv_source' => '記録方法',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => '参加報酬: :event',
     'event_attendance_rewards_disabled' => 'このコミュニティでは参加報酬が有効になっていません',
+    'event_attendance_reward_reversal_description' => '出席報酬が取り消されました: :event',
+    'event_attendance_claim_not_found' => '報酬請求が見つかりません',
+    'event_attendance_claim_not_retryable' => '失敗した報酬請求のみが再試行できます',
+    'event_attendance_claim_not_reversible' => '完了した報酬請求のみを取り消すことができます',
+    'events_config_monthly_cap_invalid' => '毎月の報酬の上限は、正のクレジット数にするか、上限がない場合は空にする必要があります。',
 ];

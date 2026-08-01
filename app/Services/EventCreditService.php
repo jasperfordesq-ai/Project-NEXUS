@@ -46,6 +46,14 @@ final class EventCreditService
 
     public const TRANSACTION_TYPE = 'event_attendance_reward';
 
+    public const REVERSAL_CLAIM_TYPE = 'attendance_reward_reversal';
+
+    // ≤30 chars — transactions.transaction_type is varchar(30) and this
+    // environment's non-strict sql_mode TRUNCATES rather than rejects, so a
+    // longer name would silently store a different string than the label map
+    // and every query filter expect.
+    public const REVERSAL_TRANSACTION_TYPE = 'event_attendance_reversal';
+
     public const FUNDING_SOURCE = 'tenant_treasury';
 
     /** Recognised outcomes. Anything else means the writer is not authorised. */
@@ -59,6 +67,7 @@ final class EventCreditService
 
     public function __construct(
         private readonly WalletService $wallet,
+        private readonly EventConfigurationService $config,
     ) {}
 
     /**
@@ -162,17 +171,129 @@ final class EventCreditService
                 'updated_at' => $now,
             ]);
         } catch (UniqueConstraintViolationException) {
-            // Already rewarded for this event — the ledger's unique key is the
-            // guarantee, not a prior read.
-            return $this->outcome('already_settled');
+            // A claim for this subject already exists. If it previously failed
+            // (wallet outage, monthly cap), resume it rather than reporting it
+            // paid — otherwise a failed claim permanently blocks the member's
+            // reward because every later check-in lands here.
+            return $this->resumeExistingClaim($tenantId, $eventId, $attendeeId, (string) $event->title);
         } catch (QueryException $exception) {
             if ($this->isUniqueConflict($exception)) {
-                return $this->outcome('already_settled');
+                return $this->resumeExistingClaim($tenantId, $eventId, $attendeeId, (string) $event->title);
             }
 
             throw $exception;
         } catch (\JsonException) {
             return $this->outcome('deferred_failed');
+        }
+
+        return $this->attemptMint($claimId, $tenantId, $eventId, $attendeeId, $amount, (string) $event->title);
+    }
+
+    /**
+     * A prior claim for this subject exists; resume it if (and only if) it is
+     * sitting in `failed`. The conditional UPDATE is the race guard: of two
+     * concurrent resumers, exactly one moves failed→pending and mints.
+     *
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    private function resumeExistingClaim(
+        int $tenantId,
+        int $eventId,
+        int $attendeeId,
+        string $eventTitle,
+    ): array {
+        $claim = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->where('user_id', $attendeeId)
+            ->where('claim_type', self::CLAIM_TYPE)
+            ->first();
+
+        if ($claim === null || (string) $claim->status !== 'failed') {
+            return $this->outcome('already_settled');
+        }
+
+        $resumed = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', (int) $claim->id)
+            ->where('status', 'failed')
+            ->update([
+                'status' => 'pending',
+                'failure_code' => null,
+                'failed_at' => null,
+                'updated_at' => now(),
+            ]);
+
+        if ($resumed !== 1) {
+            return $this->outcome('already_settled');
+        }
+
+        return $this->attemptMint(
+            (int) $claim->id,
+            $tenantId,
+            $eventId,
+            $attendeeId,
+            $this->clampToCeiling((float) $claim->amount),
+            $eventTitle,
+        );
+    }
+
+    /**
+     * Take a claim that is `pending` through the mint: monthly cap, wallet
+     * write, completion, engagement. Every exit leaves the claim in a terminal
+     * or retryable state — never stranded in `pending` (the wallet failure and
+     * cap paths both move it to `failed`).
+     *
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    private function attemptMint(
+        int $claimId,
+        int $tenantId,
+        int $eventId,
+        int $attendeeId,
+        float $amount,
+        string $eventTitle,
+    ): array {
+        // Monthly treasury ceiling. Deliberately lock-free: two concurrent
+        // check-ins can each pass the read and overshoot the cap by at most one
+        // reward (itself capped by attendance_credit_max). That bounded
+        // overshoot is preferred over serialising every check-in on a
+        // tenant-wide lock.
+        $cap = $this->monthlyCap($tenantId);
+        if ($cap !== null) {
+            $spent = (float) DB::table('event_attendance_credit_claims')
+                ->where('tenant_id', $tenantId)
+                ->where('claim_type', self::CLAIM_TYPE)
+                ->where('status', 'completed')
+                ->where('completed_at', '>=', now()->startOfMonth())
+                ->sum('amount');
+
+            if ($spent + $amount > $cap) {
+                DB::table('event_attendance_credit_claims')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', $claimId)
+                    ->update([
+                        'status' => 'failed',
+                        'failure_code' => 'monthly_cap_reached',
+                        'failed_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                // Expected policy outcome, not an incident — hence info. The
+                // claim is retryable by an admin (or by a later check-in
+                // resume) once the month rolls over or the cap is raised.
+                Log::info('Event attendance reward blocked by monthly cap', [
+                    'tenant_id' => $tenantId,
+                    'event_id' => $eventId,
+                    'attendee_id' => $attendeeId,
+                    'claim_id' => $claimId,
+                    'cap' => $cap,
+                    'spent' => $spent,
+                    'amount' => $amount,
+                ]);
+
+                return $this->outcome('deferred_failed', $claimId, null, $amount);
+            }
         }
 
         try {
@@ -181,7 +302,7 @@ final class EventCreditService
                 $attendeeId,
                 $amount,
                 self::TRANSACTION_TYPE,
-                __('api.event_attendance_reward_description', ['event' => (string) $event->title]),
+                __('api.event_attendance_reward_description', ['event' => $eventTitle]),
             );
         } catch (\Throwable $exception) {
             // The claim stays as the durable record that this was attempted and
@@ -223,10 +344,289 @@ final class EventCreditService
             $attendeeId,
             'event_attendance_verified',
             'event:' . $eventId,
-            __('api.event_attendance_reward_description', ['event' => (string) $event->title]),
+            __('api.event_attendance_reward_description', ['event' => $eventTitle]),
         );
 
         return $this->outcome('settled', $claimId, $transactionId, $amount);
+    }
+
+    /**
+     * Admin-initiated retry of a `failed` reward claim. Same money path as a
+     * check-in resume — including the monthly cap, which an admin retry does
+     * NOT bypass, so retries cannot be used to spend around the budget.
+     *
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    public function retryClaim(int $tenantId, int $claimId): array
+    {
+        $claim = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $claimId)
+            ->first();
+
+        if ($claim === null) {
+            return $this->outcome('not_found');
+        }
+
+        if ((string) $claim->claim_type !== self::CLAIM_TYPE || (string) $claim->status !== 'failed') {
+            return $this->outcome('not_retryable', $claimId);
+        }
+
+        $resumed = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $claimId)
+            ->where('status', 'failed')
+            ->update([
+                'status' => 'pending',
+                'failure_code' => null,
+                'failed_at' => null,
+                'updated_at' => now(),
+            ]);
+
+        if ($resumed !== 1) {
+            return $this->outcome('not_retryable', $claimId);
+        }
+
+        $eventTitle = (string) (DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('id', (int) $claim->event_id)
+            ->value('title') ?? '');
+
+        return $this->attemptMint(
+            $claimId,
+            $tenantId,
+            (int) $claim->event_id,
+            (int) $claim->user_id,
+            $this->clampToCeiling((float) $claim->amount),
+            $eventTitle,
+        );
+    }
+
+    /**
+     * Admin-initiated reversal of a `completed` reward: a child claim
+     * (parent_claim_id) records the reversal, the member's balance is reduced
+     * (allowed to go negative — they may have spent the reward), and the
+     * original claim moves to `reversed`, which also frees its monthly-cap
+     * budget. One reversal per reward, enforced twice: the conditional
+     * completed→reversed UPDATE and the child claim's unique subject key.
+     *
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    public function reverseClaim(int $tenantId, int $claimId, int $actorId, string $reason): array
+    {
+        $claim = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $claimId)
+            ->first();
+
+        if ($claim === null) {
+            return $this->outcome('not_found');
+        }
+
+        if ((string) $claim->claim_type !== self::CLAIM_TYPE
+            || (string) $claim->status !== 'completed'
+            || $claim->reversed_at !== null) {
+            return $this->outcome('not_reversible', $claimId);
+        }
+
+        // Claim the original first — of two concurrent reversals exactly one
+        // wins this UPDATE, and a failed reclaim rolls it back below.
+        $claimed = DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $claimId)
+            ->where('status', 'completed')
+            ->whereNull('reversed_at')
+            ->update([
+                'status' => 'reversed',
+                'reversed_at' => now(),
+                'reversal_code' => 'admin_reversal',
+                'updated_at' => now(),
+            ]);
+
+        if ($claimed !== 1) {
+            return $this->outcome('not_reversible', $claimId);
+        }
+
+        $now = now();
+
+        try {
+            $childId = (int) DB::table('event_attendance_credit_claims')->insertGetId([
+                'tenant_id' => $tenantId,
+                'event_id' => (int) $claim->event_id,
+                'attendance_id' => (int) $claim->attendance_id,
+                'user_id' => (int) $claim->user_id,
+                'claim_type' => self::REVERSAL_CLAIM_TYPE,
+                'idempotency_key' => sprintf(
+                    'event_credit:%d:%d:%d:%s',
+                    $tenantId,
+                    (int) $claim->event_id,
+                    (int) $claim->user_id,
+                    self::REVERSAL_CLAIM_TYPE,
+                ),
+                'funding_source_type' => self::FUNDING_SOURCE,
+                'funding_source_id' => null,
+                // Reversal flows FROM the member back TO the community.
+                'payer_user_id' => (int) $claim->user_id,
+                'payee_user_id' => null,
+                'amount' => (float) $claim->amount,
+                'unit' => 'time_credit',
+                'status' => 'pending',
+                'transaction_id' => null,
+                'parent_claim_id' => $claimId,
+                'metadata' => json_encode([
+                    'schema_version' => 1,
+                    'mode' => 'treasury',
+                    'actor_user_id' => $actorId,
+                    'reason' => $reason,
+                ], JSON_THROW_ON_ERROR),
+                'claimed_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        } catch (\Throwable $exception) {
+            $isConflict = $exception instanceof UniqueConstraintViolationException
+                || ($exception instanceof QueryException && $this->isUniqueConflict($exception));
+
+            if (! $isConflict) {
+                $this->restoreReversedClaim($tenantId, $claimId);
+                throw $exception;
+            }
+
+            // A prior reversal attempt left a child row. Resume it only from
+            // `failed`; any other state means a reversal is already in flight
+            // or done, so put the original back the way we found it.
+            $child = DB::table('event_attendance_credit_claims')
+                ->where('tenant_id', $tenantId)
+                ->where('event_id', (int) $claim->event_id)
+                ->where('user_id', (int) $claim->user_id)
+                ->where('claim_type', self::REVERSAL_CLAIM_TYPE)
+                ->first();
+
+            $resumed = $child !== null && (string) $child->status === 'failed'
+                ? DB::table('event_attendance_credit_claims')
+                    ->where('tenant_id', $tenantId)
+                    ->where('id', (int) $child->id)
+                    ->where('status', 'failed')
+                    ->update([
+                        'status' => 'pending',
+                        'failure_code' => null,
+                        'failed_at' => null,
+                        'updated_at' => now(),
+                    ])
+                : 0;
+
+            if ($resumed !== 1) {
+                $this->restoreReversedClaim($tenantId, $claimId);
+
+                return $this->outcome('not_reversible', $claimId);
+            }
+
+            $childId = (int) $child->id;
+        }
+
+        return $this->attemptReclaim($tenantId, $claimId, $childId, $claim);
+    }
+
+    /**
+     * @param object $claim the ORIGINAL (completed) claim row
+     * @return array{status:string,claim_id:int|null,transaction_id:int|null,amount?:float}
+     */
+    private function attemptReclaim(int $tenantId, int $originalId, int $childId, object $claim): array
+    {
+        $eventTitle = (string) (DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('id', (int) $claim->event_id)
+            ->value('title') ?? '');
+
+        try {
+            $transactionId = $this->wallet->reclaimFromMember(
+                $tenantId,
+                (int) $claim->user_id,
+                (float) $claim->amount,
+                self::REVERSAL_TRANSACTION_TYPE,
+                __('api.event_attendance_reward_reversal_description', ['event' => $eventTitle]),
+            );
+        } catch (\Throwable $exception) {
+            DB::table('event_attendance_credit_claims')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $childId)
+                ->update([
+                    'status' => 'failed',
+                    'failure_code' => 'reclaim_failed',
+                    'failed_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+            // The money did not move, so the original must read as still paid.
+            $this->restoreReversedClaim($tenantId, $originalId);
+
+            Log::error('Event attendance reward reversal failed', [
+                'tenant_id' => $tenantId,
+                'claim_id' => $originalId,
+                'reversal_claim_id' => $childId,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return $this->outcome('reverse_failed', $childId, null, (float) $claim->amount);
+        }
+
+        DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $childId)
+            ->update([
+                'status' => 'completed',
+                'transaction_id' => $transactionId,
+                'completed_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        return $this->outcome('reversed', $childId, $transactionId, (float) $claim->amount);
+    }
+
+    private function restoreReversedClaim(int $tenantId, int $claimId): void
+    {
+        DB::table('event_attendance_credit_claims')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $claimId)
+            ->where('status', 'reversed')
+            ->update([
+                'status' => 'completed',
+                'reversed_at' => null,
+                'reversal_code' => null,
+                'updated_at' => now(),
+            ]);
+    }
+
+    /** The tenant's monthly treasury ceiling, or null when uncapped. */
+    private function monthlyCap(int $tenantId): ?float
+    {
+        try {
+            $cap = $this->config->value('attendance_credit_monthly_cap', null, $tenantId);
+        } catch (\Throwable $exception) {
+            // A broken config read must not turn into free minting — treat an
+            // unreadable cap as the smallest possible budget already spent.
+            Log::warning('Event attendance reward monthly cap lookup failed; blocking mint', [
+                'tenant_id' => $tenantId,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return 0.01;
+        }
+
+        if ($cap === null || ! is_numeric($cap)) {
+            return null;
+        }
+
+        $cap = round((float) $cap, 2);
+
+        return $cap > 0 ? $cap : null;
+    }
+
+    private function clampToCeiling(float $amount): float
+    {
+        $ceiling = round((float) config('events.attendance_credit_max', 2.0), 2);
+
+        return $ceiling > 0 ? min($amount, $ceiling) : $amount;
     }
 
     private function tenantAllowsRewards(int $tenantId): bool

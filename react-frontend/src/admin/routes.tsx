@@ -197,6 +197,7 @@ const RegionalAnalyticsPage = lazy(() => import('./modules/analytics/RegionalAna
 // Events module
 const EventsAdmin = lazy(() => import('./modules/events/EventsAdmin'));
 const EventSettings = lazy(() => import('./modules/events/EventSettings'));
+const EventRewardClaimsAdmin = lazy(() => import('./modules/events/EventRewardClaimsAdmin'));
 
 // Polls module
 const PollsAdmin = lazy(() => import('./modules/polls/PollsAdmin'));
@@ -657,6 +658,7 @@ export function AdminRoutes() {
       {/* ─── EVENTS ─── */}
       <Route path="events" element={<Lazy><EventsAdmin /></Lazy>} />
       <Route path="events/settings" element={<Lazy><EventSettings /></Lazy>} />
+      <Route path="events/attendance-rewards" element={<Lazy><EventRewardClaimsAdmin /></Lazy>} />
 
       {/* ─── POLLS ─── */}
       <Route path="polls" element={<Lazy><PollsAdmin /></Lazy>} />

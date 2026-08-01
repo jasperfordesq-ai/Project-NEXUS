@@ -1305,6 +1305,7 @@ return [
         'interested' => '{0} Nog niemand geïnteresseerd|{1} 1 persoon geïnteresseerd|[2,*] :count mensen geïnteresseerd',
         'spots_left' => ':count plaatsen vrij',
         'full' => 'Vol',
+        'attendance_reward_tag' => 'Verdien :amount tijdskredieten voor deelname',
         'rsvp_title' => 'Jouw RSVP',
         'rsvp_hint' => 'Vertel de organisator of u van plan bent aanwezig te zijn.',
         'rsvp_status_label' => 'RSVP-status',

@@ -254,6 +254,19 @@
             @endif
 
             @php
+                // Treasury attendance reward — shown only when the tenant has
+                // the feature on AND this event carries a positive amount.
+                $alphaAttendanceReward = \App\Core\TenantContext::hasFeature('event_attendance_credits')
+                    && !empty($event['attendance_credit_amount'])
+                    && (float) $event['attendance_credit_amount'] > 0
+                        ? round((float) $event['attendance_credit_amount'], 2)
+                        : null;
+            @endphp
+            @if ($alphaAttendanceReward !== null)
+                <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--green">{{ __('govuk_alpha.events.attendance_reward_tag', ['amount' => $alphaAttendanceReward]) }}</strong></p>
+            @endif
+
+            @php
                 // Mirror EventsParity::eventsIsSeries — only recurring events get the
                 // series-edit flow; a non-series event would just be redirected.
                 $eventIsSeries = !empty($event['is_series'])

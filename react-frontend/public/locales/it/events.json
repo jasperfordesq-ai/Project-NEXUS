@@ -185,6 +185,7 @@
     "attendance_total_other": "{{count}} risposte",
     "view_all_series_one": "Visualizza tutti i {{count}} eventi della serie",
     "view_all_series_other": "Visualizza tutti i {{count}} eventi della serie",
+    "attendance_reward_badge": "Guadagna {{amount}} crediti di tempo per la partecipazione",
     "events_in_series_many": "{{count}} eventi nella serie",
     "max_capacity_many": "Capacità max {{count}}",
     "spots_left_many": "{{count}} posti rimasti",
@@ -918,6 +919,7 @@
     "loading": "Caricamento eventi…",
     "empty": "Non ci sono eventi imminenti elencati in questo momento. Ti invitiamo a ricontrollare presto.",
     "online": "Evento on-line",
+    "hosted_by": "Organizzato da {{name}}",
     "join_prompt": "I membri possono prenotare un posto, ospitare le proprie sessioni e condividere competenze.",
     "register_prompt": "Accedi per prenotare un posto a questo evento.",
     "login_cta": "Registrazione",
@@ -932,8 +934,7 @@
       "quiet_space": "Spazio tranquillo",
       "seating": "Posti a sedere disponibili",
       "parking": "Parcheggio accessibile"
-    },
-    "hosted_by": "Organizzato da {{name}}"
+    }
   },
   "going_many": "{{count}} partecipante/i",
   "interested_many": "{{count}} interessato/i"

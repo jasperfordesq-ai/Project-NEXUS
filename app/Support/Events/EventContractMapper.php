@@ -140,6 +140,16 @@ final class EventContractMapper
             $result['distance_km'] = round((float) $event['distance_km'], 2);
         }
 
+        // Member-facing surface only — the public projection's allowlist
+        // deliberately omits it. Only a configured, positive reward is worth
+        // sending; clients additionally gate the badge on the tenant's
+        // event_attendance_credits flag.
+        if (isset($event['attendance_credit_amount'])
+            && is_numeric($event['attendance_credit_amount'])
+            && (float) $event['attendance_credit_amount'] > 0) {
+            $result['attendance_credit_amount'] = round((float) $event['attendance_credit_amount'], 2);
+        }
+
         return $result;
     }
 

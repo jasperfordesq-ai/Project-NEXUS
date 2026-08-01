@@ -184,7 +184,8 @@
     "attendance_total_one": "{{count}} reacties",
     "attendance_total_other": "{{count}} reacties",
     "view_all_series_one": "Bekijk alle {{count}} gebeurtenissen in series",
-    "view_all_series_other": "Bekijk alle {{count}} gebeurtenissen in series"
+    "view_all_series_other": "Bekijk alle {{count}} gebeurtenissen in series",
+    "attendance_reward_badge": "Verdien {{amount}} tijdskredieten voor deelname"
   },
   "card": {
     "cancelled": "Geannuleerd",
@@ -908,6 +909,7 @@
     "loading": "Gebeurtenissen laden…",
     "empty": "Er zijn momenteel geen aankomende evenementen vermeld. Kom binnenkort nog eens terug.",
     "online": "Online evenement",
+    "hosted_by": "Georganiseerd door {{name}}",
     "join_prompt": "Leden kunnen een plek boeken, hun eigen sessies organiseren en vaardigheden delen.",
     "register_prompt": "Log in om een ​​plaats te reserveren voor dit evenement.",
     "login_cta": "Log in",
@@ -922,7 +924,6 @@
       "quiet_space": "Rustige ruimte",
       "seating": "Zitplaatsen beschikbaar",
       "parking": "Toegankelijke parkeergelegenheid"
-    },
-    "hosted_by": "Georganiseerd door {{name}}"
+    }
   }
 }

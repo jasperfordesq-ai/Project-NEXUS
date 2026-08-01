@@ -2755,8 +2755,6 @@ CANDIDATS ::candidates',
     'paid_push_campaign_not_rejectable' => 'La campagne ne peut pas être rejetée avec le statut : :status',
     'paid_push_campaign_not_dispatchable' => 'La campagne n\'est pas prête à être distribuée (statut : :status).',
     'member_premium_tier_missing_price' => 'Le niveau « :tier » n\'a pas de prix Stripe pour :interval — l\'administrateur doit d\'abord exécuter Sync to Stripe',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Les lieux partenaires ne sont pas activés pour cette communauté',
     'partner_venue_not_found' => 'Lieu partenaire introuvable',
     'partner_venue_archived' => 'Lieu partenaire archivé',
@@ -2771,8 +2769,11 @@ CANDIDATS ::candidates',
     'partner_venue_csv_member' => 'Membre',
     'partner_venue_csv_recorded_by' => 'Enregistré par',
     'partner_venue_csv_source' => 'Origine',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Récompense de participation : :event',
     'event_attendance_rewards_disabled' => 'Les récompenses de participation ne sont pas activées pour cette communauté',
+    'event_attendance_reward_reversal_description' => 'Récompense de présence annulée : :event',
+    'event_attendance_claim_not_found' => 'Demande de récompense introuvable',
+    'event_attendance_claim_not_retryable' => 'Seule une demande de récompense ayant échoué peut être réessayée',
+    'event_attendance_claim_not_reversible' => 'Seule une demande de récompense complétée peut être annulée',
+    'events_config_monthly_cap_invalid' => 'Le plafond de récompense mensuel doit être un nombre positif de crédits, ou vide s\'il n\'y a pas de plafond.',
 ];

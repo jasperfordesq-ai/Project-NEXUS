@@ -185,6 +185,7 @@
     "attendance_total_other": "{{count}} رد",
     "view_all_series_one": "عرض جميع أحداث {{count}} المتسلسلة",
     "view_all_series_other": "عرض جميع أحداث {{count}} المتسلسلة",
+    "attendance_reward_badge": "احصل على {{amount}} من أرصدة الوقت للحضور",
     "events_in_series_few": "أحداث {{count}} متسلسلة",
     "events_in_series_many": "أحداث {{count}} متسلسلة",
     "events_in_series_two": "أحداث {{count}} متسلسلة",
@@ -948,6 +949,7 @@
     "loading": "جارٍ تحميل الأحداث…",
     "empty": "لا توجد أحداث قادمة مدرجة الآن. يرجى التحقق مرة أخرى قريبا.",
     "online": "الحدث على الانترنت",
+    "hosted_by": "بتنظيم {{name}}",
     "join_prompt": "يمكن للأعضاء حجز مكان واستضافة جلساتهم الخاصة ومشاركة المهارات.",
     "register_prompt": "قم بتسجيل الدخول لحجز مكان في هذا الحدث.",
     "login_cta": "تسجيل الدخول",
@@ -962,8 +964,7 @@
       "quiet_space": "مساحة هادئة",
       "seating": "أماكن الجلوس متاحة",
       "parking": "موقف سيارات يمكن الوصول إليه"
-    },
-    "hosted_by": "بتنظيم {{name}}"
+    }
   },
   "going_few": "{{count}} جاري",
   "going_many": "{{count}} جاري",

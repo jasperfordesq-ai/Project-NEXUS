@@ -2755,8 +2755,6 @@ KANDIDATEN::candidates',
     'paid_push_campaign_not_rejectable' => 'Campagne kan niet worden afgewezen met status: :status',
     'paid_push_campaign_not_dispatchable' => 'Campagne is niet klaar voor verzending (status: :status).',
     'member_premium_tier_missing_price' => 'Niveau \':tier\' heeft geen Stripe-prijs voor :interval - de beheerder moet eerst Sync to Stripe uitvoeren',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Partnerlocaties zijn niet ingeschakeld voor deze gemeenschap',
     'partner_venue_not_found' => 'Partnerlocatie niet gevonden',
     'partner_venue_archived' => 'Partnerlocatie gearchiveerd',
@@ -2771,8 +2769,11 @@ KANDIDATEN::candidates',
     'partner_venue_csv_member' => 'Lid',
     'partner_venue_csv_recorded_by' => 'Vastgelegd door',
     'partner_venue_csv_source' => 'Bron',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Deelnamebeloning: :event',
     'event_attendance_rewards_disabled' => 'Deelnamebeloningen zijn niet ingeschakeld voor deze gemeenschap',
+    'event_attendance_reward_reversal_description' => 'Aanwezigheidsbeloning omgekeerd: :event',
+    'event_attendance_claim_not_found' => 'Beloningsclaim niet gevonden',
+    'event_attendance_claim_not_retryable' => 'Alleen een mislukte beloningsclaim kan opnieuw worden geprobeerd',
+    'event_attendance_claim_not_reversible' => 'Alleen een voltooide beloningsclaim kan worden teruggedraaid',
+    'events_config_monthly_cap_invalid' => 'De maandelijkse beloningslimiet moet een positief aantal credits zijn, of leeg als er geen limiet is.',
 ];

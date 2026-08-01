@@ -1245,6 +1245,7 @@ return [
         'interested' => '{0} No one interested yet|{1} 1 person interested|[2,*] :count people interested',
         'spots_left' => ':count places left',
         'full' => 'Full',
+        'attendance_reward_tag' => 'Earn :amount time credits for attending',
         'rsvp_title' => 'Your RSVP',
         'rsvp_hint' => 'Tell the organiser whether you plan to attend.',
         'rsvp_status_label' => 'RSVP status',

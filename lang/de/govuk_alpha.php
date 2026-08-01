@@ -1305,6 +1305,7 @@ return [
         'interested' => '{0} Noch niemand interessiert|{1} 1 Person interessiert|[2,*] :count Personen interessiert',
         'spots_left' => ':count freie Plätze',
         'full' => 'Voll',
+        'attendance_reward_tag' => 'Verdienen Sie :amount Zeitguthaben für Ihre Teilnahme',
         'rsvp_title' => 'Euer RSVP',
         'rsvp_hint' => 'Teilen Sie dem Veranstalter mit, ob Sie teilnehmen möchten.',
         'rsvp_status_label' => 'RSVP-Status',

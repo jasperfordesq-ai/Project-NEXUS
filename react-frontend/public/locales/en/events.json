@@ -184,7 +184,8 @@
     "attendance_total_one": "{{count}} responses",
     "attendance_total_other": "{{count}} responses",
     "view_all_series_one": "View all {{count}} events in series",
-    "view_all_series_other": "View all {{count}} events in series"
+    "view_all_series_other": "View all {{count}} events in series",
+    "attendance_reward_badge": "Earn {{amount}} time credits for attending"
   },
   "card": {
     "cancelled": "Cancelled",

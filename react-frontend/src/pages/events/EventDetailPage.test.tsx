@@ -1074,3 +1074,25 @@ describe('EventDetailPage', () => {
     })).not.toBeInTheDocument();
   });
 });
+
+describe('attendance reward badge', () => {
+  it('shows the earn-credits chip when the event pays a reward', async () => {
+    const rewardEvent = createCanonicalEventFixture({ attendance_credit_amount: 1.5 });
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.includes('/attendees')) return Promise.resolve({ success: true, data: [] });
+      if (url.startsWith('/v2/polls?') || url.includes('series_id=')) return Promise.resolve({ success: true, data: [] });
+      return Promise.resolve({ success: true, data: rewardEvent });
+    });
+
+    renderEventRoute(<EventDetailPage />, { route: '/test/events/1', path: '/:tenantSlug/events/:id' });
+
+    expect(await screen.findByText('Earn 1.5 time credits for attending')).toBeInTheDocument();
+  });
+
+  it('shows no reward chip when the event has no reward', async () => {
+    installSuccessfulEventResponses();
+    await renderLoadedEvent();
+
+    expect(screen.queryByText(/time credits for attending/)).not.toBeInTheDocument();
+  });
+});

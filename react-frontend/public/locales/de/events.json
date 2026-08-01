@@ -184,7 +184,8 @@
     "attendance_total_one": "{{count}} Antworten",
     "attendance_total_other": "{{count}} Antworten",
     "view_all_series_one": "Alle {{count}} Veranstaltungen der Reihe anzeigen",
-    "view_all_series_other": "Alle {{count}} Veranstaltungen der Reihe anzeigen"
+    "view_all_series_other": "Alle {{count}} Veranstaltungen der Reihe anzeigen",
+    "attendance_reward_badge": "Verdienen Sie {{amount}} Zeitguthaben für Ihre Teilnahme"
   },
   "card": {
     "cancelled": "Abgesagt",
@@ -908,6 +909,7 @@
     "loading": "Ereignisse werden geladen…",
     "empty": "Derzeit sind keine bevorstehenden Veranstaltungen aufgeführt. Bitte schauen Sie bald wieder vorbei.",
     "online": "Online-Veranstaltung",
+    "hosted_by": "Veranstaltet von {{name}}",
     "join_prompt": "Mitglieder können einen Platz buchen, ihre eigenen Sitzungen veranstalten und ihre Fähigkeiten teilen.",
     "register_prompt": "Melden Sie sich an, um einen Platz für diese Veranstaltung zu buchen.",
     "login_cta": "anmelden",
@@ -922,7 +924,6 @@
       "quiet_space": "Ruhiger Raum",
       "seating": "Sitzplätze vorhanden",
       "parking": "Barrierefreier Parkplatz"
-    },
-    "hosted_by": "Veranstaltet von {{name}}"
+    }
   }
 }

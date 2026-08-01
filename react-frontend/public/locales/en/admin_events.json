@@ -135,6 +135,22 @@
     "tab_published": "Published",
     "unlimited_capacity": "Unlimited",
     "unknown": "Unknown",
-    "tabs_aria": "Event status filter"
+    "tabs_aria": "Event status filter",
+    "action_attendance_reward": "Attendance reward",
+    "reward_modal_title": "Attendance reward — {{title}}",
+    "reward_modal_body": "Credits minted from the community treasury to each verified attendee. Clear the amount to switch the reward off for this event.",
+    "reward_loading": "Loading reward…",
+    "reward_platform_off": "Minting is switched off at platform level — amounts can be set now and pay out when it is enabled.",
+    "reward_amount_label": "Reward per attendee (credits)",
+    "reward_amount_desc": "Up to {{ceiling}} credits. Leave empty for no reward.",
+    "reward_claims_completed": "{{n}} paid ({{total}} credits)",
+    "reward_claims_failed": "{{n}} failed",
+    "reward_claims_pending": "{{n}} pending",
+    "reward_claims_reversed": "{{n}} reversed",
+    "reward_save": "Save reward",
+    "reward_saved": "Reward saved",
+    "reward_save_failed": "Could not save the reward",
+    "reward_load_failed": "Could not load the reward",
+    "reward_invalid_amount": "Enter a valid amount"
   }
 }

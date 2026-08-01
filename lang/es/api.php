@@ -2755,8 +2755,6 @@ CANDIDATOS::candidates',
     'paid_push_campaign_not_rejectable' => 'La campaña no se puede rechazar en el estado: :status',
     'paid_push_campaign_not_dispatchable' => 'La campaña no está lista para enviarse (estado: :status).',
     'member_premium_tier_missing_price' => 'El nivel \':tier\' no tiene precio de Stripe para :interval: el administrador debe ejecutar Sync to Stripe primero',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Los locales asociados no están activados para esta comunidad',
     'partner_venue_not_found' => 'Local asociado no encontrado',
     'partner_venue_archived' => 'Local asociado archivado',
@@ -2771,8 +2769,11 @@ CANDIDATOS::candidates',
     'partner_venue_csv_member' => 'Miembro',
     'partner_venue_csv_recorded_by' => 'Registrado por',
     'partner_venue_csv_source' => 'Origen',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Recompensa por asistencia: :event',
     'event_attendance_rewards_disabled' => 'Las recompensas por asistencia no están activadas para esta comunidad',
+    'event_attendance_reward_reversal_description' => 'Recompensa por asistencia invertida: :event',
+    'event_attendance_claim_not_found' => 'Reclamo de recompensa no encontrado',
+    'event_attendance_claim_not_retryable' => 'Solo se puede volver a intentar un reclamo de recompensa fallido',
+    'event_attendance_claim_not_reversible' => 'Solo se puede revertir un reclamo de recompensa completado',
+    'events_config_monthly_cap_invalid' => 'El límite de recompensa mensual debe ser un número positivo de créditos o estar vacío si no hay límite.',
 ];

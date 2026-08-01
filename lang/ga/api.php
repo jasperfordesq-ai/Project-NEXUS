@@ -2755,8 +2755,6 @@ IARRTHÓIRÍ: :candidates',
     'paid_push_campaign_not_rejectable' => 'Ní féidir an feachtas a dhiúltú i stádas: :status',
     'paid_push_campaign_not_dispatchable' => 'Níl an feachtas réidh le seoladh (stádas: :status).',
     'member_premium_tier_missing_price' => 'Níl aon Phraghas Stráice ag Sraith \':tier\' le haghaidh :interval — caithfidh an riarthóir Sync to Stripe a rith ar dtús',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Níl ionaid chomhpháirtíochta cumasaithe don phobal seo',
     'partner_venue_not_found' => 'Ionad comhpháirtíochta gan aimsiú',
     'partner_venue_archived' => 'Cuireadh an t-ionad comhpháirtíochta i gcartlann',
@@ -2771,8 +2769,11 @@ IARRTHÓIRÍ: :candidates',
     'partner_venue_csv_member' => 'Ball',
     'partner_venue_csv_recorded_by' => 'Taifeadta ag',
     'partner_venue_csv_source' => 'Foinse',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Luach saothair freastail: :event',
     'event_attendance_rewards_disabled' => 'Níl luach saothair freastail cumasaithe don phobal seo',
+    'event_attendance_reward_reversal_description' => 'Luach saothair freastail aisiompaithe: :event',
+    'event_attendance_claim_not_found' => 'Níor aimsíodh éileamh ar luaíocht',
+    'event_attendance_claim_not_retryable' => 'Ní féidir ach éileamh ar luaíocht teipthe a fháil ar ais',
+    'event_attendance_claim_not_reversible' => 'Ní féidir ach éileamh comhlánaithe ar luaíocht a fhreaschur',
+    'events_config_monthly_cap_invalid' => 'Caithfidh líon dearfach creidmheasanna a bheith sa caidhp luach saothair míosúil, nó folamh gan aon teorainn.',
 ];

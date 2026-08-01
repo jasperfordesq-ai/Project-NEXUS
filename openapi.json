@@ -26,798 +26,798 @@
       }
     },
     "schemas": {
-        "MarketplaceOrderCreateInput": {
-          "type": "object",
-          "required": [
-            "listing_id",
-            "idempotency_key"
-          ],
-          "properties": {
-            "listing_id": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "offer_id": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "Accepted offer belonging to the buyer.",
-              "nullable": true
-            },
-            "quantity": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            },
-            "shipping_option_id": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "Seller-owned option; its current server price and currency are authoritative.",
-              "nullable": true
-            },
-            "shipping_method": {
-              "type": "string",
-              "enum": [
-                "pickup",
-                "community_delivery"
-              ],
-              "description": "Used only for zero-cost pickup or community delivery.",
-              "nullable": true
-            },
-            "pickup_slot_id": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "Optional seller-owned pickup slot reserved atomically with order creation; valid only for pickup fulfilment.",
-              "nullable": true
-            },
-            "delivery_address": {
-              "type": "object",
-              "additionalProperties": true,
-              "nullable": true
-            },
-            "delivery_notes": {
-              "type": "string",
-              "maxLength": 500,
-              "nullable": true
-            },
-            "coupon_code": {
-              "type": "string",
-              "maxLength": 64,
-              "nullable": true
-            },
-            "idempotency_key": {
-              "type": "string",
-              "minLength": 16,
-              "maxLength": 100
-            },
-            "loyalty_redemption_id": {
-              "type": "integer",
-              "minimum": 1,
-              "description": "Pending redemption validated and applied atomically by the server; cannot be combined with a coupon.",
-              "nullable": true
-            },
-            "payment_method": {
-              "type": "string",
-              "enum": [
-                "cash",
-                "time_credits",
-                "free"
-              ],
-              "default": "cash",
-              "nullable": true
-            }
+      "MarketplaceOrderCreateInput": {
+        "type": "object",
+        "required": [
+          "listing_id",
+          "idempotency_key"
+        ],
+        "properties": {
+          "listing_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "offer_id": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Accepted offer belonging to the buyer.",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          "shipping_option_id": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Seller-owned option; its current server price and currency are authoritative.",
+            "nullable": true
+          },
+          "shipping_method": {
+            "type": "string",
+            "enum": [
+              "pickup",
+              "community_delivery"
+            ],
+            "description": "Used only for zero-cost pickup or community delivery.",
+            "nullable": true
+          },
+          "pickup_slot_id": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Optional seller-owned pickup slot reserved atomically with order creation; valid only for pickup fulfilment.",
+            "nullable": true
+          },
+          "delivery_address": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "delivery_notes": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "coupon_code": {
+            "type": "string",
+            "maxLength": 64,
+            "nullable": true
+          },
+          "idempotency_key": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 100
+          },
+          "loyalty_redemption_id": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Pending redemption validated and applied atomically by the server; cannot be combined with a coupon.",
+            "nullable": true
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "cash",
+              "time_credits",
+              "free"
+            ],
+            "default": "cash",
+            "nullable": true
           }
-        },
-        "MarketplacePerson": {
-          "type": "object",
-          "required": [
-            "id",
-            "name"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "name": {
-              "type": "string"
-            },
-            "avatar_url": {
-              "type": "string",
-              "nullable": true
-            }
+        }
+      },
+      "MarketplacePerson": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
           }
-        },
-        "MarketplaceListingSummary": {
-          "type": "object",
-          "required": [
-            "id",
-            "title"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "title": {
-              "type": "string"
-            },
-            "price": {
-              "type": "number",
-              "format": "double",
-              "nullable": true
-            },
-            "price_currency": {
-              "type": "string",
-              "nullable": true
-            },
-            "status": {
-              "type": "string",
-              "nullable": true
-            },
-            "delivery_method": {
-              "type": "string",
-              "nullable": true
-            },
-            "image": {
-              "type": "object",
-              "properties": {
-                "url": {
-                  "type": "string",
-                  "nullable": true
-                },
-                "thumbnail_url": {
-                  "type": "string",
-                  "nullable": true
-                }
+        }
+      },
+      "MarketplaceListingSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "price_currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "delivery_method": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "nullable": true
               },
-              "nullable": true
-            }
-          }
-        },
-        "MarketplaceOrder": {
-          "type": "object",
-          "required": [
-            "id",
-            "order_number",
-            "status",
-            "quantity",
-            "unit_price",
-            "total_price",
-            "currency",
-            "payment_method",
-            "requires_payment",
-            "listing"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "order_number": {
-              "type": "string",
-              "pattern": "^MKT-[0-9A-HJKMNP-TV-Z]{26}$"
-            },
-            "status": {
-              "type": "string",
-              "enum": [
-                "pending_payment",
-                "paid",
-                "shipped",
-                "delivered",
-                "completed",
-                "cancelled",
-                "refunded",
-                "disputed"
-              ]
-            },
-            "quantity": {
-              "type": "integer",
-              "minimum": 1
-            },
-            "unit_price": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0
-            },
-            "total_price": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0
-            },
-            "currency": {
-              "type": "string"
-            },
-            "time_credits_used": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0,
-              "nullable": true
-            },
-            "wallet_transaction_id": {
-              "type": "integer",
-              "nullable": true
-            },
-            "wallet_refund_transaction_id": {
-              "type": "integer",
-              "description": "Present after a time-credit refund; null for cash, free, and historical orders.",
-              "nullable": true
-            },
-            "loyalty_redemption_id": {
-              "type": "integer",
-              "nullable": true
-            },
-            "payment_method": {
-              "type": "string",
-              "enum": [
-                "cash",
-                "time_credits",
-                "free"
-              ]
-            },
-            "requires_payment": {
-              "type": "boolean"
-            },
-            "payment_expires_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "shipping_method": {
-              "type": "string",
-              "nullable": true
-            },
-            "shipping_option_id": {
-              "type": "integer",
-              "nullable": true
-            },
-            "shipping_cost": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0,
-              "nullable": true
-            },
-            "tracking_number": {
-              "type": "string",
-              "nullable": true
-            },
-            "tracking_url": {
-              "type": "string",
-              "nullable": true
-            },
-            "delivery_address": {
-              "type": "object",
-              "additionalProperties": true,
-              "nullable": true
-            },
-            "delivery_notes": {
-              "type": "string",
-              "nullable": true
-            },
-            "buyer_confirmed_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "seller_confirmed_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "auto_complete_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "cancelled_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "cancellation_reason": {
-              "type": "string",
-              "nullable": true
-            },
-            "escrow_released_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "created_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "updated_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "listing": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplaceListingSummary"
-                }
-              ],
-              "nullable": true,
-              "description": "Null when a historical order outlives its deleted listing."
-            },
-            "buyer": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplacePerson"
-                }
-              ],
-              "nullable": true
-            },
-            "seller": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplacePerson"
-                }
-              ],
-              "nullable": true
-            },
-            "ratings": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "additionalProperties": true
+              "thumbnail_url": {
+                "type": "string",
+                "nullable": true
               }
             },
-            "dispute": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "integer"
-                },
-                "reason": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "created_at": {
-                  "type": "string",
-                  "format": "date-time",
-                  "nullable": true
-                }
-              },
-              "nullable": true
-            }
+            "nullable": true
           }
-        },
-        "MarketplaceReport": {
-          "type": "object",
-          "required": [
-            "id",
-            "marketplace_listing_id",
-            "status",
-            "can_appeal",
-            "viewer_role",
-            "listing"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "marketplace_listing_id": {
-              "type": "integer"
-            },
-            "reason": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string",
-              "description": "Hidden from the affected seller.",
-              "nullable": true
-            },
-            "evidence_urls": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uri"
-              },
-              "description": "Hidden from the affected seller.",
-              "nullable": true
-            },
-            "status": {
-              "type": "string",
-              "enum": [
-                "received",
-                "acknowledged",
-                "under_review",
-                "action_taken",
-                "no_action",
-                "appealed",
-                "appeal_resolved"
-              ]
-            },
-            "acknowledged_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "resolved_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "resolution_reason": {
-              "type": "string",
-              "nullable": true
-            },
-            "action_taken": {
-              "type": "string",
-              "enum": [
-                "none",
-                "warning",
-                "listing_removed",
-                "seller_suspended"
-              ],
-              "nullable": true
-            },
-            "appeal_text": {
-              "type": "string",
-              "description": "Visible only to the user who lodged the appeal.",
-              "nullable": true
-            },
-            "appeal_resolved_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "can_appeal": {
-              "type": "boolean"
-            },
-            "viewer_role": {
-              "type": "string",
-              "enum": [
-                "reporter",
-                "seller"
-              ]
-            },
-            "listing": {
+        }
+      },
+      "MarketplaceOrder": {
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "status",
+          "quantity",
+          "unit_price",
+          "total_price",
+          "currency",
+          "payment_method",
+          "requires_payment",
+          "listing"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "order_number": {
+            "type": "string",
+            "pattern": "^MKT-[0-9A-HJKMNP-TV-Z]{26}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_payment",
+              "paid",
+              "shipped",
+              "delivered",
+              "completed",
+              "cancelled",
+              "refunded",
+              "disputed"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "unit_price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "total_price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string"
+          },
+          "time_credits_used": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "nullable": true
+          },
+          "wallet_transaction_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "wallet_refund_transaction_id": {
+            "type": "integer",
+            "description": "Present after a time-credit refund; null for cash, free, and historical orders.",
+            "nullable": true
+          },
+          "loyalty_redemption_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "cash",
+              "time_credits",
+              "free"
+            ]
+          },
+          "requires_payment": {
+            "type": "boolean"
+          },
+          "payment_expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "shipping_method": {
+            "type": "string",
+            "nullable": true
+          },
+          "shipping_option_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "shipping_cost": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "nullable": true
+          },
+          "tracking_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "tracking_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "delivery_address": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true
+          },
+          "delivery_notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "buyer_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "seller_confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "auto_complete_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancellation_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "escrow_released_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "listing": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceListingSummary"
+              }
+            ],
+            "nullable": true,
+            "description": "Null when a historical order outlives its deleted listing."
+          },
+          "buyer": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplacePerson"
+              }
+            ],
+            "nullable": true
+          },
+          "seller": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplacePerson"
+              }
+            ],
+            "nullable": true
+          },
+          "ratings": {
+            "type": "array",
+            "items": {
               "type": "object",
-              "required": [
-                "id",
-                "title",
-                "status"
-              ],
-              "properties": {
-                "id": {
-                  "type": "integer"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                }
-              },
-              "nullable": true,
-              "description": "Null when the referenced historical listing no longer exists."
+              "additionalProperties": true
             }
-          }
-        },
-        "MarketplaceDisputeOrder": {
-          "type": "object",
-          "required": [
-            "id",
-            "order_number",
-            "total_price",
-            "time_credits_used",
-            "currency",
-            "status",
-            "listing"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "order_number": {
-              "type": "string"
-            },
-            "total_price": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0
-            },
-            "time_credits_used": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0
-            },
-            "currency": {
-              "type": "string"
-            },
-            "status": {
-              "type": "string"
-            },
-            "listing": {
-              "type": "object",
-              "required": [
-                "id",
-                "title"
-              ],
-              "properties": {
-                "id": {
-                  "type": "integer"
-                },
-                "title": {
-                  "type": "string"
-                }
+          },
+          "dispute": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
               },
-              "nullable": true,
-              "description": "Null when the order references a deleted historical listing."
-            },
-            "buyer": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplacePerson"
-                }
-              ],
-              "nullable": true
-            },
-            "seller": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplacePerson"
-                }
-              ],
-              "nullable": true
-            }
-          }
-        },
-        "MarketplaceDispute": {
-          "type": "object",
-          "required": [
-            "id",
-            "order_id",
-            "reason",
-            "description",
-            "status",
-            "order"
-          ],
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "order_id": {
-              "type": "integer"
-            },
-            "reason": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "evidence_urls": {
-              "type": "array",
-              "items": {
+              "reason": {
                 "type": "string"
               },
-              "nullable": true
+              "status": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
             },
-            "status": {
-              "type": "string",
-              "enum": [
-                "open",
-                "under_review",
-                "resolved_buyer",
-                "resolved_seller",
-                "escalated",
-                "closed"
-              ]
-            },
-            "prior_order_status": {
-              "type": "string",
-              "nullable": true
-            },
-            "resolution_notes": {
-              "type": "string",
-              "nullable": true
-            },
-            "refund_amount": {
-              "type": "number",
-              "format": "double",
-              "minimum": 0,
-              "description": "Null until a buyer refund is recorded, including on historical disputes.",
-              "nullable": true
-            },
-            "created_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "resolved_at": {
-              "type": "string",
-              "format": "date-time",
-              "nullable": true
-            },
-            "opened_by": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplacePerson"
-                }
-              ],
-              "nullable": true
-            },
-            "order": {
-              "type": "object",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/MarketplaceDisputeOrder"
-                }
-              ],
-              "nullable": true,
-              "description": "Null only for a historical dispute whose order is unavailable."
-            }
+            "nullable": true
           }
-        },
-        "MarketplaceOrderResponse": {
-          "type": "object",
-          "required": [
-            "data",
-            "meta"
-          ],
-          "properties": {
-            "data": {
-              "$ref": "#/components/schemas/MarketplaceOrder"
+        }
+      },
+      "MarketplaceReport": {
+        "type": "object",
+        "required": [
+          "id",
+          "marketplace_listing_id",
+          "status",
+          "can_appeal",
+          "viewer_role",
+          "listing"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "marketplace_listing_id": {
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "description": "Hidden from the affected seller.",
+            "nullable": true
+          },
+          "evidence_urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
             },
-            "meta": {
-              "type": "object",
-              "required": [
-                "base_url"
-              ],
-              "properties": {
-                "base_url": {
-                  "type": "string"
-                }
+            "description": "Hidden from the affected seller.",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "received",
+              "acknowledged",
+              "under_review",
+              "action_taken",
+              "no_action",
+              "appealed",
+              "appeal_resolved"
+            ]
+          },
+          "acknowledged_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolved_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolution_reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "action_taken": {
+            "type": "string",
+            "enum": [
+              "none",
+              "warning",
+              "listing_removed",
+              "seller_suspended"
+            ],
+            "nullable": true
+          },
+          "appeal_text": {
+            "type": "string",
+            "description": "Visible only to the user who lodged the appeal.",
+            "nullable": true
+          },
+          "appeal_resolved_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "can_appeal": {
+            "type": "boolean"
+          },
+          "viewer_role": {
+            "type": "string",
+            "enum": [
+              "reporter",
+              "seller"
+            ]
+          },
+          "listing": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "title": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            },
+            "nullable": true,
+            "description": "Null when the referenced historical listing no longer exists."
+          }
+        }
+      },
+      "MarketplaceDisputeOrder": {
+        "type": "object",
+        "required": [
+          "id",
+          "order_number",
+          "total_price",
+          "time_credits_used",
+          "currency",
+          "status",
+          "listing"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "order_number": {
+            "type": "string"
+          },
+          "total_price": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "time_credits_used": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "listing": {
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "nullable": true,
+            "description": "Null when the order references a deleted historical listing."
+          },
+          "buyer": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplacePerson"
+              }
+            ],
+            "nullable": true
+          },
+          "seller": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplacePerson"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "MarketplaceDispute": {
+        "type": "object",
+        "required": [
+          "id",
+          "order_id",
+          "reason",
+          "description",
+          "status",
+          "order"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "order_id": {
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "evidence_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "under_review",
+              "resolved_buyer",
+              "resolved_seller",
+              "escalated",
+              "closed"
+            ]
+          },
+          "prior_order_status": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolution_notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "refund_amount": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "description": "Null until a buyer refund is recorded, including on historical disputes.",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolved_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "opened_by": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplacePerson"
+              }
+            ],
+            "nullable": true
+          },
+          "order": {
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarketplaceDisputeOrder"
+              }
+            ],
+            "nullable": true,
+            "description": "Null only for a historical dispute whose order is unavailable."
+          }
+        }
+      },
+      "MarketplaceOrderResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MarketplaceOrder"
+          },
+          "meta": {
+            "type": "object",
+            "required": [
+              "base_url"
+            ],
+            "properties": {
+              "base_url": {
+                "type": "string"
               }
             }
           }
-        },
-        "MarketplaceReportResponse": {
-          "type": "object",
-          "required": [
-            "data",
-            "meta"
-          ],
-          "properties": {
-            "data": {
+        }
+      },
+      "MarketplaceReportResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MarketplaceReport"
+          },
+          "meta": {
+            "type": "object",
+            "required": [
+              "base_url"
+            ],
+            "properties": {
+              "base_url": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "MarketplaceReportCollectionResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
               "$ref": "#/components/schemas/MarketplaceReport"
-            },
-            "meta": {
-              "type": "object",
-              "required": [
-                "base_url"
-              ],
-              "properties": {
-                "base_url": {
-                  "type": "string"
-                }
+            }
+          },
+          "meta": {
+            "type": "object",
+            "required": [
+              "base_url"
+            ],
+            "properties": {
+              "base_url": {
+                "type": "string"
               }
             }
           }
-        },
-        "MarketplaceReportCollectionResponse": {
-          "type": "object",
-          "required": [
-            "data",
-            "meta"
-          ],
-          "properties": {
-            "data": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/MarketplaceReport"
-              }
-            },
-            "meta": {
-              "type": "object",
-              "required": [
-                "base_url"
-              ],
-              "properties": {
-                "base_url": {
-                  "type": "string"
-                }
+        }
+      },
+      "MarketplaceDisputeCollectionResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketplaceDispute"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "required": [
+              "base_url",
+              "current_page",
+              "per_page",
+              "total",
+              "total_pages",
+              "has_more"
+            ],
+            "properties": {
+              "base_url": {
+                "type": "string"
+              },
+              "current_page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "per_page": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "total_pages": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "has_more": {
+                "type": "boolean"
               }
             }
           }
-        },
-        "MarketplaceDisputeCollectionResponse": {
-          "type": "object",
-          "required": [
-            "data",
-            "meta"
-          ],
-          "properties": {
-            "data": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/MarketplaceDispute"
+        }
+      },
+      "MarketplaceActionResponse": {
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "properties": {
+          "data": {
+            "type": "object",
+            "required": [
+              "message",
+              "status"
+            ],
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "action_taken": {
+                "type": "string",
+                "nullable": true
               }
-            },
-            "meta": {
-              "type": "object",
-              "required": [
-                "base_url",
-                "current_page",
-                "per_page",
-                "total",
-                "total_pages",
-                "has_more"
-              ],
-              "properties": {
-                "base_url": {
-                  "type": "string"
-                },
-                "current_page": {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                "per_page": {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                "total": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "total_pages": {
-                  "type": "integer",
-                  "minimum": 0
-                },
-                "has_more": {
-                  "type": "boolean"
-                }
+            }
+          },
+          "meta": {
+            "type": "object",
+            "required": [
+              "base_url"
+            ],
+            "properties": {
+              "base_url": {
+                "type": "string"
               }
             }
           }
-        },
-        "MarketplaceActionResponse": {
-          "type": "object",
-          "required": [
-            "data",
-            "meta"
-          ],
-          "properties": {
-            "data": {
-              "type": "object",
-              "required": [
-                "message",
-                "status"
-              ],
-              "properties": {
-                "message": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "string"
-                },
-                "action_taken": {
-                  "type": "string",
-                  "nullable": true
-                }
-              }
-            },
-            "meta": {
-              "type": "object",
-              "required": [
-                "base_url"
-              ],
-              "properties": {
-                "base_url": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
+        }
+      },
       "EventRecurrenceCapabilities": {
         "type": "object",
         "additionalProperties": false,
@@ -19749,6 +19749,236 @@
             }
           }
         ]
+      }
+    },
+    "/api/v2/admin/events/attendance-claims": {
+      "get": {
+        "summary": "GET /api/v2/admin/events/attendance-claims",
+        "description": "Maintained Events operation served by AdminEventAttendanceRewardController@claims. Tenant-wide attendance-reward ledger: reward and reversal claims with member and event context, filterable by event_id, status, claim_type, and created-at date range; paginated.",
+        "operationId": "AdminEventAttendanceReward_claims",
+        "tags": [
+          "Admin Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminEventAttendanceRewardController@claims",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "completed",
+                "failed",
+                "reversed"
+              ]
+            }
+          },
+          {
+            "name": "claim_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "attendance_reward",
+                "attendance_reward_reversal"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/admin/events/attendance-claims/{claimId}/retry": {
+      "post": {
+        "summary": "POST /api/v2/admin/events/attendance-claims/{claimId}/retry",
+        "description": "Maintained Events operation served by AdminEventAttendanceRewardController@retry. Re-attempts the mint for a FAILED reward claim through the same money path as a check-in resume — the monthly cap still applies. 409 when the claim is not failed.",
+        "operationId": "AdminEventAttendanceReward_retry",
+        "tags": [
+          "Admin Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "409": {
+            "description": "Claim is not in a state this action accepts"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminEventAttendanceRewardController@retry",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/admin/events/attendance-claims/{claimId}/reverse": {
+      "post": {
+        "summary": "POST /api/v2/admin/events/attendance-claims/{claimId}/reverse",
+        "description": "Maintained Events operation served by AdminEventAttendanceRewardController@reverse. Reverses a COMPLETED reward: records a child claim (parent_claim_id) and reclaims the credits from the member, whose balance may go negative. Requires a reason. One reversal per reward; 409 otherwise.",
+        "operationId": "AdminEventAttendanceReward_reverse",
+        "tags": [
+          "Admin Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "409": {
+            "description": "Claim is not in a state this action accepts"
+          },
+          "422": {
+            "description": "Validation or state-transition failure"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\AdminEventAttendanceRewardController@reverse",
+        "parameters": [
+          {
+            "name": "claimId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v2/admin/events/{id}/complete": {

@@ -303,6 +303,8 @@ export interface EventConfiguration {
   federation_sharing_enabled: boolean;
   safety_enforcement_mode: 'off' | 'shadow' | 'enforce' | null;
   notification_delivery_mode: 'direct' | 'shadow_outbox' | 'outbox_authoritative' | null;
+  /** Monthly treasury ceiling for attendance rewards, in credits. Null = uncapped. */
+  attendance_credit_monthly_cap: number | null;
 }
 
 export interface EventConfigurationCapabilities {
@@ -520,6 +522,84 @@ export const adminConfig = {
   deleteGlossaryEntry: (id: number) =>
     api.delete<{ deleted: boolean }>(
       `/v2/admin/translation/glossary/${id}`
+    ),
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Event attendance rewards (treasury mint) — per-event amount + claims ledger
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AdminAttendanceRewardInfo {
+  event_id: number;
+  attendance_credit_amount: number | null;
+  ceiling: number;
+  /** Platform env mode — 'treasury' when minting is possible, 'off' otherwise. */
+  mode: string;
+  claims: Array<{ status: string; count: number; total_amount: number }>;
+}
+
+export interface AdminAttendanceClaim {
+  id: number;
+  event_id: number;
+  event_title: string | null;
+  user_id: number;
+  member_name: string | null;
+  claim_type: 'attendance_reward' | 'attendance_reward_reversal';
+  amount: number;
+  status: 'pending' | 'completed' | 'failed' | 'reversed';
+  failure_code: string | null;
+  reversal_code: string | null;
+  transaction_id: number | null;
+  parent_claim_id: number | null;
+  created_at: string;
+  completed_at: string | null;
+  failed_at: string | null;
+  reversed_at: string | null;
+}
+
+export interface AdminAttendanceClaimsPage {
+  claims: AdminAttendanceClaim[];
+  pagination: { page: number; per_page: number; total: number; total_pages: number };
+}
+
+export const adminEventRewards = {
+  getReward: (eventId: number) =>
+    api.get<AdminAttendanceRewardInfo>(`/v2/admin/events/${eventId}/attendance-reward`),
+
+  setReward: (eventId: number, amount: number | null) =>
+    api.put<{ event_id: number; attendance_credit_amount: number | null; ceiling: number }>(
+      `/v2/admin/events/${eventId}/attendance-reward`,
+      { amount },
+    ),
+
+  listClaims: (params: {
+    event_id?: number;
+    status?: AdminAttendanceClaim['status'];
+    claim_type?: AdminAttendanceClaim['claim_type'];
+    from?: string;
+    to?: string;
+    page?: number;
+    per_page?: number;
+  } = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && `${value}` !== '') query.set(key, `${value}`);
+    });
+    const suffix = query.toString();
+    return api.get<AdminAttendanceClaimsPage>(
+      `/v2/admin/events/attendance-claims${suffix ? `?${suffix}` : ''}`,
+    );
+  },
+
+  retryClaim: (claimId: number) =>
+    api.post<{ status: string; claim_id: number | null; transaction_id: number | null }>(
+      `/v2/admin/events/attendance-claims/${claimId}/retry`,
+    ),
+
+  reverseClaim: (claimId: number, reason: string) =>
+    api.post<{ status: string; claim_id: number | null; transaction_id: number | null }>(
+      `/v2/admin/events/attendance-claims/${claimId}/reverse`,
+      { reason },
     ),
 };
 

@@ -1305,6 +1305,7 @@ return [
         'interested' => '{0} لا أحد مهتم حتى الآن|{1} شخص واحد مهتم|[2,*] :count أشخاص مهتمون',
         'spots_left' => ':count الأماكن المتبقية',
         'full' => 'كامل',
+        'attendance_reward_tag' => 'احصل على :amount من أرصدة الوقت للحضور',
         'rsvp_title' => 'RSVP الخاص بك',
         'rsvp_hint' => 'أخبر المنظم إذا كنت تخطط للحضور.',
         'rsvp_status_label' => 'حالة RSVP',

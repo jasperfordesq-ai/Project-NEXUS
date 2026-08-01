@@ -3390,6 +3390,11 @@ Route::get('/v2/volunteering/shifts/{id}/checkins', [\App\Http\Controllers\Api\V
 Route::middleware(['feature:events', 'feature:event_attendance_credits'])->group(function (): void {
     Route::get('/v2/admin/events/{id}/attendance-reward', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'show'])->whereNumber('id');
     Route::put('/v2/admin/events/{id}/attendance-reward', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'update'])->whereNumber('id');
+    // Ledger + remediation. 'attendance-claims' is a literal segment, so it
+    // can never collide with the numeric {id} routes above.
+    Route::get('/v2/admin/events/attendance-claims', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'claims']);
+    Route::post('/v2/admin/events/attendance-claims/{claimId}/retry', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'retry'])->whereNumber('claimId');
+    Route::post('/v2/admin/events/attendance-claims/{claimId}/reverse', [\App\Http\Controllers\Api\AdminEventAttendanceRewardController::class, 'reverse'])->whereNumber('claimId');
 });
 
 // Partner venues — member pass QR, staff-scanned engagement recording, and

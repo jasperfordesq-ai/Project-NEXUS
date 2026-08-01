@@ -1305,6 +1305,7 @@ return [
         'interested' => '{0} まだ誰も興味を持っていません|{1} 1 人が興味を持っています|[2,*] :count 人が興味を持っています',
         'spots_left' => ':count 残りあと',
         'full' => 'フル',
+        'attendance_reward_tag' => '参加して :amount 時間のクレジットを獲得しましょう',
         'rsvp_title' => 'あなたの RSVP',
         'rsvp_hint' => '参加する予定があるかどうかを主催者に伝えてください。',
         'rsvp_status_label' => 'RSVPステータス',

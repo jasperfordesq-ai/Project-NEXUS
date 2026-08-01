@@ -20,12 +20,14 @@ import XCircle from 'lucide-react/icons/circle-x';
 import MapPin from 'lucide-react/icons/map-pin';
 import Users from 'lucide-react/icons/users';
 import MoreVertical from 'lucide-react/icons/more-vertical';
+import Gift from 'lucide-react/icons/gift';
 import { useAdminPageMeta } from '../../AdminMetaContext';
 import { useTenant, useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { PageHeader } from '../../components/PageHeader';
 import { DataTable, type Column } from '../../components/DataTable';
 import { EmptyState } from '../../components/EmptyState';
+import { adminEventRewards, type AdminAttendanceRewardInfo } from '../../api/adminApi';
 import {
   Button,
   Checkbox,
@@ -34,6 +36,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -206,7 +209,7 @@ const formatDateTime = (iso: string, timezone: string, allDay: boolean) => {
 export function EventsAdmin() {
   const { t } = useTranslation('admin_events');
   useAdminPageMeta({ title: t('events.events_admin_title') });
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const requestedPublicationState = (() => {
@@ -231,6 +234,57 @@ export function EventsAdmin() {
   const [actionLoading, setActionLoading] = useState(false);
   const [seriesActionAcknowledged, setSeriesActionAcknowledged] = useState(false);
   const loadGenerationRef = useRef(0);
+
+  // Attendance reward (treasury) — a funding decision, so it lives on the
+  // admin surface rather than the organiser's event form.
+  const rewardsEnabled = hasFeature('event_attendance_credits');
+  const [rewardModal, setRewardModal] = useState<AdminEvent | null>(null);
+  const [rewardInfo, setRewardInfo] = useState<AdminAttendanceRewardInfo | null>(null);
+  const [rewardAmount, setRewardAmount] = useState('');
+  const [rewardLoading, setRewardLoading] = useState(false);
+  const [rewardSaving, setRewardSaving] = useState(false);
+
+  const openRewardModal = async (event: AdminEvent) => {
+    setRewardModal(event);
+    setRewardInfo(null);
+    setRewardAmount('');
+    setRewardLoading(true);
+    try {
+      const res = await adminEventRewards.getReward(event.id);
+      if (res.success && res.data) {
+        setRewardInfo(res.data);
+        setRewardAmount(res.data.attendance_credit_amount !== null ? String(res.data.attendance_credit_amount) : '');
+      } else {
+        toast.error(t('events.reward_load_failed'));
+        setRewardModal(null);
+      }
+    } finally {
+      setRewardLoading(false);
+    }
+  };
+
+  const saveReward = async () => {
+    if (!rewardModal) return;
+    const trimmed = rewardAmount.trim();
+    const amount = trimmed === '' ? null : Number(trimmed);
+    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) {
+      toast.error(t('events.reward_invalid_amount'));
+      return;
+    }
+
+    setRewardSaving(true);
+    try {
+      const res = await adminEventRewards.setReward(rewardModal.id, amount);
+      if (res.success) {
+        toast.success(t('events.reward_saved'));
+        setRewardModal(null);
+      } else {
+        toast.error(t('events.reward_save_failed'));
+      }
+    } finally {
+      setRewardSaving(false);
+    }
+  };
 
   useEffect(() => {
     setPublicationState(requestedPublicationState);
@@ -474,7 +528,7 @@ export function EventsAdmin() {
           >
             <Eye size={14} aria-hidden="true" />
           </Button>
-          {availableActions(item).length > 0 && (
+          {(availableActions(item).length > 0 || rewardsEnabled) && (
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -488,19 +542,38 @@ export function EventsAdmin() {
               </DropdownTrigger>
               <DropdownMenu
                 aria-label={t('events.label_event_actions', { title: item.title })}
-                onAction={(key: Key) => openActionModal(item, key as LifecycleAction)}
+                onAction={(key: Key) => {
+                  if (key === 'attendance_reward') {
+                    void openRewardModal(item);
+                    return;
+                  }
+                  openActionModal(item, key as LifecycleAction);
+                }}
               >
-                {availableActions(item).map((action) => (
-                  <DropdownItem
-                    key={action}
-                    id={action}
-                    className={['reject', 'cancel', 'archive'].includes(action) ? 'text-danger' : undefined}
-                    variant={['reject', 'cancel', 'archive'].includes(action) ? 'danger' : undefined}
-                    startContent={action === 'cancel' ? <XCircle size={14} aria-hidden="true" /> : undefined}
-                  >
-                    {t(`events.action_${action}`)}
-                  </DropdownItem>
-                ))}
+                {[
+                  ...availableActions(item).map((action) => (
+                    <DropdownItem
+                      key={action}
+                      id={action}
+                      className={['reject', 'cancel', 'archive'].includes(action) ? 'text-danger' : undefined}
+                      variant={['reject', 'cancel', 'archive'].includes(action) ? 'danger' : undefined}
+                      startContent={action === 'cancel' ? <XCircle size={14} aria-hidden="true" /> : undefined}
+                    >
+                      {t(`events.action_${action}`)}
+                    </DropdownItem>
+                  )),
+                  ...(rewardsEnabled
+                    ? [(
+                      <DropdownItem
+                        key="attendance_reward"
+                        id="attendance_reward"
+                        startContent={<Gift size={14} aria-hidden="true" />}
+                      >
+                        {t('events.action_attendance_reward')}
+                      </DropdownItem>
+                    )]
+                    : []),
+                ]}
               </DropdownMenu>
             </Dropdown>
           )}
@@ -647,6 +720,71 @@ export function EventsAdmin() {
               </ModalFooter>
             </>
           )}
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={rewardModal !== null}
+        onOpenChange={(open) => { if (!open && !rewardSaving) setRewardModal(null); }}
+        size="md"
+      >
+        <ModalContent>
+          <ModalHeader className="flex items-center gap-2">
+            <Gift size={16} aria-hidden="true" />
+            {t('events.reward_modal_title', { title: rewardModal?.title ?? '' })}
+          </ModalHeader>
+          <ModalBody className="space-y-4">
+            {rewardLoading || !rewardInfo ? (
+              <p className="text-sm text-muted">{t('events.reward_loading')}</p>
+            ) : (
+              <>
+                {rewardInfo.mode !== 'treasury' && (
+                  <Chip size="sm" variant="soft" color="warning">
+                    {t('events.reward_platform_off')}
+                  </Chip>
+                )}
+                <p className="text-sm text-muted">{t('events.reward_modal_body')}</p>
+                <Input
+                  label={t('events.reward_amount_label')}
+                  description={t('events.reward_amount_desc', { ceiling: rewardInfo.ceiling })}
+                  type="number"
+                  min={0}
+                  max={rewardInfo.ceiling}
+                  step={0.25}
+                  value={rewardAmount}
+                  onValueChange={setRewardAmount}
+                  aria-label={t('events.reward_amount_label')}
+                />
+                {rewardInfo.claims.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {rewardInfo.claims.map((row) => (
+                      <Chip
+                        key={row.status}
+                        size="sm"
+                        variant="soft"
+                        color={row.status === 'completed' ? 'success' : row.status === 'failed' ? 'danger' : 'default'}
+                      >
+                        {t(`events.reward_claims_${row.status}`, { n: row.count, total: row.total_amount })}
+                      </Chip>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="tertiary" isDisabled={rewardSaving} onPress={() => setRewardModal(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              data-testid="save-attendance-reward"
+              isPending={rewardSaving}
+              isDisabled={rewardLoading || !rewardInfo}
+              onPress={() => void saveReward()}
+            >
+              {t('events.reward_save')}
+            </Button>
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </div>

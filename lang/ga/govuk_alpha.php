@@ -1305,6 +1305,7 @@ return [
         'interested' => '{0} Níl suim ag éinne fós|{1} 1 duine ar spéis leis|[2,*] :count duine ar spéis leis',
         'spots_left' => ':count áiteanna fágtha',
         'full' => 'Iomlán',
+        'attendance_reward_tag' => 'Tuill creidmheasanna ama :amount as freastal',
         'rsvp_title' => 'Do RSVP',
         'rsvp_hint' => 'Abair leis an eagraí an bhfuil sé ar intinn agat a bheith i láthair.',
         'rsvp_status_label' => 'Stádas RSVP',

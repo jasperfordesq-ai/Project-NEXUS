@@ -2755,8 +2755,6 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'paid_push_campaign_not_rejectable' => 'لا يمكن رفض الحملة بالحالة: :status',
     'paid_push_campaign_not_dispatchable' => 'الحملة ليست جاهزة للإرسال (الحالة: :status).',
     'member_premium_tier_missing_price' => 'لا يحتوي المستوى \':tier\' على سعر شريطي لـ :interval — يجب على المسؤول تشغيل المزامنة مع الشريط أولاً',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'الأماكن الشريكة غير مفعّلة في هذا المجتمع',
     'partner_venue_not_found' => 'لم يتم العثور على المكان الشريك',
     'partner_venue_archived' => 'تمت أرشفة المكان الشريك',
@@ -2771,8 +2769,11 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'partner_venue_csv_member' => 'العضو',
     'partner_venue_csv_recorded_by' => 'سُجّل بواسطة',
     'partner_venue_csv_source' => 'المصدر',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'مكافأة الحضور: :event',
     'event_attendance_rewards_disabled' => 'مكافآت الحضور غير مفعّلة في هذا المجتمع',
+    'event_attendance_reward_reversal_description' => 'تم عكس مكافأة الحضور: :event',
+    'event_attendance_claim_not_found' => 'لم يتم العثور على المطالبة بالمكافأة',
+    'event_attendance_claim_not_retryable' => 'يمكن فقط إعادة محاولة المطالبة بالمكافأة الفاشلة',
+    'event_attendance_claim_not_reversible' => 'يمكن فقط عكس المطالبة بالمكافأة المكتملة',
+    'events_config_monthly_cap_invalid' => 'يجب أن يكون الحد الأقصى للمكافأة الشهرية عددًا موجبًا من الأرصدة، أو أن يكون فارغًا بدون أي حد أقصى.',
 ];

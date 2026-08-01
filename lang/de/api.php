@@ -2755,8 +2755,6 @@ KANDIDATEN::candidates',
     'paid_push_campaign_not_rejectable' => 'Kampagne kann im Status :status nicht abgelehnt werden',
     'paid_push_campaign_not_dispatchable' => 'Kampagne ist nicht versandbereit (Status: :status).',
     'member_premium_tier_missing_price' => 'Stufe „:tier“ hat keinen Stripe-Preis für :interval – der Administrator muss zuerst „Mit Stripe synchronisieren“ ausführen',
-
-    // Partner venues — engagement recording at local partner premises.
     'partner_venues_feature_disabled' => 'Partnerstandorte sind für diese Community nicht aktiviert',
     'partner_venue_not_found' => 'Partnerstandort nicht gefunden',
     'partner_venue_archived' => 'Partnerstandort archiviert',
@@ -2771,8 +2769,11 @@ KANDIDATEN::candidates',
     'partner_venue_csv_member' => 'Mitglied',
     'partner_venue_csv_recorded_by' => 'Erfasst von',
     'partner_venue_csv_source' => 'Quelle',
-
-    // Event attendance rewards (time credits granted on verified check-in).
     'event_attendance_reward_description' => 'Teilnahmebelohnung: :event',
     'event_attendance_rewards_disabled' => 'Teilnahmebelohnungen sind für diese Community nicht aktiviert',
+    'event_attendance_reward_reversal_description' => 'Anwesenheitsbelohnung rückgängig gemacht: :event',
+    'event_attendance_claim_not_found' => 'Prämienanspruch nicht gefunden',
+    'event_attendance_claim_not_retryable' => 'Nur ein fehlgeschlagener Prämienanspruch kann erneut versucht werden',
+    'event_attendance_claim_not_reversible' => 'Nur ein abgeschlossener Prämienanspruch kann rückgängig gemacht werden',
+    'events_config_monthly_cap_invalid' => 'Die monatliche Prämienobergrenze muss eine positive Anzahl an Credits sein oder leer sein, wenn keine Obergrenze vorliegt.',
 ];

@@ -272,6 +272,8 @@ export const eventSchema = z.object({
     slug: nullableString,
   }).nullable().optional(),
   distance_km: z.number().nonnegative().optional(),
+  /** Present only when the event pays a treasury attendance reward. */
+  attendance_credit_amount: z.number().positive().optional(),
 }).passthrough();
 
 export const eventRegistrationResponseSchema = z.object({

@@ -47,6 +47,7 @@ import Repeat from 'lucide-react/icons/repeat';
 import ArrowRight from 'lucide-react/icons/arrow-right';
 import CalendarRange from 'lucide-react/icons/calendar-range';
 import Video from 'lucide-react/icons/video';
+import Gift from 'lucide-react/icons/gift';
 import BarChart3 from 'lucide-react/icons/chart-column';
 import Settings from 'lucide-react/icons/settings';
 import Ticket from 'lucide-react/icons/ticket';
@@ -126,7 +127,7 @@ export function EventDetailPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
-  const { tenantPath } = useTenant();
+  const { tenantPath, hasFeature } = useTenant();
   const toast = useToast();
   const confirm = useConfirm();
 
@@ -965,6 +966,11 @@ export function EventDetailPage() {
               {event.series.recurrence && (
                 <Chip variant="flat" color="secondary" size="sm" startContent={<Repeat className="w-3 h-3" aria-hidden="true" />}>
                   {t('detail.recurring_event')}
+                </Chip>
+              )}
+              {hasFeature('event_attendance_credits') && (event.attendance_credit_amount ?? 0) > 0 && !isPast && !isCancelled && (
+                <Chip variant="flat" color="success" size="sm" startContent={<Gift className="w-3 h-3" aria-hidden="true" />}>
+                  {t('detail.attendance_reward_badge', { amount: event.attendance_credit_amount })}
                 </Chip>
               )}
               {event.location.mode !== 'in_person' && (
