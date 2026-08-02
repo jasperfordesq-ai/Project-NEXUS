@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Saving a repeating event failed with the unhelpful message "Invalid status".** Changing the repeat pattern of a series that has already been published is refused on purpose: regenerating its dates would discard occurrences people have registered for. That rule is right, but the message told the organiser nothing at all. It now explains the rule and what to do instead — edit the single occurrence, or cancel the series and start a new one.
 
-- **The event Federation tab showed a raw internal label** (`manage.federation.health.not_configured`) instead of readable text, because none of the five sharing-status labels had ever been translated. All five now read properly in all eleven languages.
+- **The event Federation tab showed a raw internal label** (`manage.federation.health.not_configured`) instead of readable text, because none of the five sharing-status labels had ever been translated. All five now read properly in all eleven languages: "No partners set up", "Sharing normally", "Sending to partners", "Deliveries failing" and "Withdrawn from partners".
 
 - **Event settings looked broken because Save appeared dead.** Every change to community policy needs a reason recorded against it, which is good governance — but the Save button simply greyed out with no explanation, as did every Restore button on the page. The page now says which of the two things is missing ("nothing to save yet" or "add a reason"), marks the reason field as required, and shows a notice at the top when there are unsaved changes.
 
