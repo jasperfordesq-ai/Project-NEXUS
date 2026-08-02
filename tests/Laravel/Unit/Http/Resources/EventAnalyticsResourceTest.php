@@ -50,7 +50,12 @@ final class EventAnalyticsResourceTest extends TestCase
         self::assertTrue($resource['optional_funnel']['event_views']['suppressed']);
         self::assertNull($resource['safeguarding']['guardian_consents']['value']);
         self::assertTrue($resource['tickets']['redacted']);
-        self::assertSame(5, $resource['communications']['by_channel']['email']['delivered']);
+        // by_channel is deliberately cast to an object so an EMPTY map
+        // serialises as {} rather than [] — PHP cannot distinguish the two, and
+        // the client's schema declares a record, so [] failed the whole
+        // response. Read it as an object here for the same reason.
+        $byChannel = (array) $resource['communications']['by_channel'];
+        self::assertSame(5, $byChannel['email']['delivered']);
         self::assertArrayNotHasKey('recipient_emails', $resource);
         self::assertArrayNotHasKey('member_ids', $resource);
         self::assertArrayNotHasKey('raw_answers', $resource);
