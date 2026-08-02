@@ -288,12 +288,17 @@ SQL)
             'failed' => 0,
             'dead_lettered' => 0,
         ];
+        // Immutable zero template. $totals is a RUNNING accumulator below, so
+        // seeding a newly-seen channel from it handed that channel every count
+        // already tallied for earlier channels — the second and later channels
+        // came out inflated.
+        $channelZeroes = $totals;
         $channels = [];
         foreach ($rows as $row) {
             $channel = (string) $row->channel;
             $status = (string) $row->status;
             $count = (int) $row->aggregate_count;
-            $channels[$channel] ??= $totals;
+            $channels[$channel] ??= $channelZeroes;
             if (array_key_exists($status, $totals)) {
                 $totals[$status] += $count;
                 $channels[$channel][$status] += $count;

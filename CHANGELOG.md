@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The event analytics tab said "could not be loaded" for almost every event.** The request was succeeding; the page was throwing the answer away. One field — the per-channel message delivery breakdown — is an empty map for any event that hasn't sent notifications yet, and PHP has only one array type, so an empty map was sent as an empty *list* rather than an empty *object*. The page validates that response field-by-field and rejected the whole thing. It is now always sent as an object. Both test suites missed it because neither could see it: the backend test asserted individual values while its own passing response contained the malformed field, and the frontend tests used hand-written fixtures where an empty map is unambiguous. The new test checks the actual JSON type.
+
+- **Per-channel delivery counts were inflated.** In the same breakdown, a channel that first appeared partway through the results was seeded with the running totals accumulated for earlier channels instead of starting at zero, so second and subsequent channels reported everything counted before them as their own.
+
 - **Event check-in and safety pages were completely broken in production.** Both send a request header that neither of the two CORS allow-lists included, so the browser refused the request before it left the page — and reported it as "unable to connect", which looks like an outage rather than a configuration gap. Both headers are now allowed in both places, and a test pins every custom header the frontend sends against both lists so this cannot recur.
 
 - **Saving a repeating event failed with the unhelpful message "Invalid status".** Changing the repeat pattern of a series that has already been published is refused on purpose: regenerating its dates would discard occurrences people have registered for. That rule is right, but the message told the organiser nothing at all. It now explains the rule and what to do instead — edit the single occurrence, or cancel the series and start a new one.

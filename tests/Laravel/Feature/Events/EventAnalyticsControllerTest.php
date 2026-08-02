@@ -46,6 +46,21 @@ final class EventAnalyticsControllerTest extends TestCase
             ->assertJsonMissingPath('data.tenant_id')
             ->assertJsonMissingPath('data.organizer_id')
             ->assertJsonMissingPath('data.communications.recipients');
+
+        // 🔴 by_channel must be a JSON OBJECT even when empty. PHP has one array
+        // type, so an empty map json_encodes to `[]` — and the client declares
+        // this field as a record and rejects the ENTIRE response as contract
+        // drift, which is exactly how the analytics tab broke in production for
+        // every event with no notification deliveries. Asserting a path is not
+        // enough here; the JSON TYPE is the contract, so decode the raw body.
+        $decoded = json_decode((string) $dashboard->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($decoded['data']['communications']['by_channel']);
+        self::assertStringContainsString(
+            '"by_channel":{}',
+            (string) $dashboard->getContent(),
+            'An empty by_channel map must serialise as {} — [] fails the client contract.',
+        );
+
         self::assertStringContainsString('no-store', (string) $dashboard->headers->get('Cache-Control'));
 
         DB::table('events')->where('id', $event->id)->update(['title' => '=1+1']);

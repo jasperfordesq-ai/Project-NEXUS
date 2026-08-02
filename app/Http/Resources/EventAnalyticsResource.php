@@ -144,7 +144,13 @@ final class EventAnalyticsResource
             'failed' => self::count($value['failed'] ?? 0),
             'dead_lettered' => self::count($value['dead_lettered'] ?? 0),
             'delivery_rate' => self::rate(self::array($value['delivery_rate'] ?? null)),
-            'by_channel' => $channels,
+            // Cast so an EMPTY map serialises as {} and not []. PHP has one
+            // array type, so json_encode turns an empty map into a JSON ARRAY —
+            // and the client's schema declares this as a record, so the whole
+            // analytics response was rejected as contract drift for every event
+            // with no notification deliveries yet. That is most events, which is
+            // why the analytics tab simply said "could not be loaded".
+            'by_channel' => (object) $channels,
         ];
     }
 
