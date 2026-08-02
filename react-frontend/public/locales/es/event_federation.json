@@ -65,7 +65,7 @@
         "not_configured": "No hay socios configurados",
         "healthy": "Compartiendo normalmente",
         "delivering": "Envío a socios",
-        "degraded": "Algunas entregas necesitan atención.",
+        "degraded": "Entregas fallidas",
         "withdrawn": "Retirado de socios"
       }
     }

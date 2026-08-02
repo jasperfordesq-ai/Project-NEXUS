@@ -65,7 +65,7 @@
         "not_configured": "No partners set up",
         "healthy": "Sharing normally",
         "delivering": "Sending to partners",
-        "degraded": "Some deliveries need attention",
+        "degraded": "Deliveries failing",
         "withdrawn": "Withdrawn from partners"
       }
     }

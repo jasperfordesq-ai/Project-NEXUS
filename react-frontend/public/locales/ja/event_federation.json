@@ -65,7 +65,7 @@
         "not_configured": "パートナーが設定されていません",
         "healthy": "通常の共有",
         "delivering": "パートナーに送信する",
-        "degraded": "一部の配送には注意が必要です",
+        "degraded": "配信が失敗する",
         "withdrawn": "パートナーから撤退しました"
       }
     }

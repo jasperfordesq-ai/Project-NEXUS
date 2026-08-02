@@ -65,7 +65,7 @@
         "not_configured": "Brak skonfigurowanych partnerów",
         "healthy": "Udostępnianie normalnie",
         "delivering": "Wysyłanie do partnerów",
-        "degraded": "Niektóre dostawy wymagają uwagi",
+        "degraded": "Dostawy nie powiodły się",
         "withdrawn": "Wycofane partnerom"
       }
     }

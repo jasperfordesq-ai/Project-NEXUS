@@ -65,7 +65,7 @@
         "not_configured": "Nenhum parceiro configurado",
         "healthy": "Compartilhando normalmente",
         "delivering": "Envio para parceiros",
-        "degraded": "Algumas entregas precisam de atenção",
+        "degraded": "Falha nas entregas",
         "withdrawn": "Retirado dos parceiros"
       }
     }
