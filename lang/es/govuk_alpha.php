@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Volver al evento',
             'manager_intro' => 'Crea y mantén el orden del programa, las sesiones, los ponentes, las salas, los itinerarios y el acceso del público sin depender de JavaScript.',
             'viewer_intro' => 'Consulta el orden del programa, las sesiones, las salas, los itinerarios y los ponentes en la zona horaria del evento.',
+            'cancelled_heading' => 'Importante',
+            'cancelled_notice' => 'Este evento ha sido cancelado. El orden de ejecución a continuación se mantiene como registro; ninguna de estas sesiones continúa.',
             'load_error' => 'No se pudo cargar el programa del evento.',
             'add_session' => 'Añadir una sesión',
             'create_session' => 'Crear sesión',

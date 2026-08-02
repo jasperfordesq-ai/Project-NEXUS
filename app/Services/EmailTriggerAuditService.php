@@ -193,6 +193,7 @@ class EmailTriggerAuditService
                 $this->checkListingExpiryReminderSourceHealth($tenantId, $since, $windowHours),
                 $this->checkEventReminderSourceHealth($tenantId, $since, $windowHours),
                 $this->checkEventReminderDeliveryClaimHealth($tenantId, $since, $windowHours),
+                $this->checkEventOutboxDeliveryHealth($tenantId, $since, $windowHours),
                 $this->checkGoalReminderSourceHealth($tenantId, $since, $windowHours),
                 $this->checkVolunteerReminderSourceHealth($tenantId, $since, $windowHours),
                 $this->checkVolunteerReminderDeliveryClaimHealth($tenantId, $since, $windowHours),
@@ -270,6 +271,7 @@ class EmailTriggerAuditService
             'billing_audit_log' => 'checkBillingAndStripeHealth',
             'civic_digest_delivery_claims' => 'checkCivicDigestClaimSourceHealth',
             'email_log' => 'checkTenantContextAndWebhookHealth',
+            'event_notification_deliveries' => 'checkEventOutboxDeliveryHealth',
             'event_reminder_delivery_claims' => 'checkEventReminderDeliveryClaimHealth',
             'event_reminders' => 'checkEventReminderSourceHealth',
             'federation_inbound_connections' => 'checkFederationConnectionDeliveryHealth',
@@ -1715,6 +1717,88 @@ class EmailTriggerAuditService
             $since,
             $windowHours
         );
+    }
+
+    /**
+     * Health of the CANONICAL event notification pipeline.
+     *
+     * 🔴 Everything above this method watches the LEGACY reminder tables
+     * (event_reminders, event_reminder_delivery_claims) and the
+     * 'event_reminder' email_log category. Under the default configuration
+     * (events.reminders.mode = canonical, events.notification_delivery.mode =
+     * outbox_authoritative) the legacy sender no-ops, so those tables stay
+     * empty and their checks are permanently silent — every reminder, update
+     * and lifecycle email actually flows through event_domain_outbox /
+     * event_notification_deliveries under the 'event_outbox' category, which
+     * nothing was watching. Event email could therefore break for a tenant
+     * without raising a single alarm.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function checkEventOutboxDeliveryHealth(?int $tenantId, \DateTimeInterface $since, int $windowHours): array
+    {
+        if (! $this->hasTables(['event_notification_deliveries'])) {
+            return [];
+        }
+
+        $issues = [];
+
+        // Queued long past the point a worker should have taken it. Mirrors
+        // the 15-minute overdue threshold the legacy reminder check uses.
+        $stuck = DB::table('event_notification_deliveries')
+            ->select('tenant_id', DB::raw('COUNT(*) as count'))
+            ->whereIn('status', ['pending', 'retry'])
+            ->where('created_at', '<', now()->subMinutes(15))
+            ->when($tenantId !== null, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->groupBy('tenant_id')
+            ->get();
+        $issues = array_merge($issues, $this->rowsToIssues(
+            $stuck,
+            'event_outbox_deliveries_overdue_pending',
+            'critical',
+            'events',
+            'event_created_update_cancellation_rsvp_reminder',
+            ['minutes' => 15],
+        ));
+
+        // Gave up entirely: these recipients were never told.
+        $deadLettered = DB::table('event_notification_deliveries')
+            ->select('tenant_id', DB::raw('COUNT(*) as count'))
+            ->where('status', 'dead_letter')
+            ->where('updated_at', '>=', $since)
+            ->when($tenantId !== null, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->groupBy('tenant_id')
+            ->get();
+        $issues = array_merge($issues, $this->rowsToIssues(
+            $deadLettered,
+            'event_outbox_deliveries_dead_lettered',
+            'critical',
+            'events',
+            'event_created_update_cancellation_rsvp_reminder',
+            ['window_hours' => $windowHours],
+        ));
+
+        // Outbox rows nothing ever picked up — the pipeline's own intake
+        // failing, upstream of any individual delivery.
+        if ($this->hasTables(['event_domain_outbox'])) {
+            $unprocessed = DB::table('event_domain_outbox')
+                ->select('tenant_id', DB::raw('COUNT(*) as count'))
+                ->whereNull('processed_at')
+                ->where('created_at', '<', now()->subMinutes(30))
+                ->when($tenantId !== null, fn ($q) => $q->where('tenant_id', $tenantId))
+                ->groupBy('tenant_id')
+                ->get();
+            $issues = array_merge($issues, $this->rowsToIssues(
+                $unprocessed,
+                'event_outbox_rows_unprocessed',
+                'critical',
+                'events',
+                'event_created_update_cancellation_rsvp_reminder',
+                ['minutes' => 30],
+            ));
+        }
+
+        return $issues;
     }
 
     /**

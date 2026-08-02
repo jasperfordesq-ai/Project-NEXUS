@@ -510,6 +510,19 @@ export function EventAgendaWorkspace({ event }: EventAgendaWorkspaceProps) {
         )}
       </div>
 
+      {agenda?.event_status?.is_cancelled && (
+        <div
+          role="status"
+          className="rounded-xl border border-danger-200 bg-danger-50 px-4 py-3 text-sm text-danger-700 dark:border-danger-800 dark:bg-danger-950/40 dark:text-danger-200"
+        >
+          {/* Sessions keep their own 'scheduled' status when the event is
+              cancelled — the agenda is deliberately preserved as a record —
+              so without this the whole programme reads as though it is
+              still going ahead. */}
+          {t('manage.agenda.event_cancelled_notice')}
+        </div>
+      )}
+
       {scheduled.length === 0 ? (
         <div className="rounded-xl border border-dashed border-theme-default bg-theme-surface px-5 py-12 text-center">
           <CalendarDays className="mx-auto h-10 w-10 text-theme-subtle" aria-hidden="true" />

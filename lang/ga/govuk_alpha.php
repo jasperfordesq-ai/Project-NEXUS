@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Ar ais chuig an ócáid',
             'manager_intro' => 'Cruthaigh agus coinnigh an t-ord reatha, seisiúin, cainteoirí, seomraí, rianta agus rochtain an lucht féachana gan a bheith ag brath ar JavaScript.',
             'viewer_intro' => 'Féach ar an ord reatha, seisiúin, seomraí, rianta agus cainteoirí i gcrios ama na hócáide.',
+            'cancelled_heading' => 'Tábhachtach',
+            'cancelled_notice' => 'Cuireadh an imeacht seo ar ceal. Coimeádtar an t-ord reatha thíos mar thaifead — níl aon cheann de na seisiúin seo ag dul ar aghaidh.',
             'load_error' => 'Níorbh fhéidir clár na hócáide a luchtú.',
             'add_session' => 'Cuir seisiún leis',
             'create_session' => 'Cruthaigh seisiún',

@@ -677,7 +677,8 @@
         "public": "Iedereen die het evenement kan bekijken",
         "registered": "Bevestigde deelnemers",
         "staff": "Alleen evenementmedewerkers"
-      }
+      },
+      "event_cancelled_notice": "Dit evenement is geannuleerd. De onderstaande agenda wordt als verslag bewaard; geen van deze sessies gaat door."
     },
     "team": {
       "title": "Gedelegeerd team",

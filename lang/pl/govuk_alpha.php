@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Powrót do wydarzenia',
             'manager_intro' => 'Twórz i aktualizuj harmonogram, sesje, prelegentów, sale, ścieżki i dostęp dla odbiorców bez polegania na JavaScript.',
             'viewer_intro' => 'Wyświetl harmonogram, sesje, sale, ścieżki i prelegentów w strefie czasowej wydarzenia.',
+            'cancelled_heading' => 'Ważny',
+            'cancelled_notice' => 'To wydarzenie zostało odwołane. Poniższa kolejność jest zapisywana — żadna z tych sesji się nie odbędzie.',
             'load_error' => 'Nie udało się wczytać programu wydarzenia.',
             'add_session' => 'Dodaj sesję',
             'create_session' => 'Utwórz sesję',

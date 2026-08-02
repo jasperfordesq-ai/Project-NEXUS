@@ -858,10 +858,34 @@ final class EventOfflineCheckinSyncService
                 throw new EventOfflineCheckinException('event_offline_attendance_version_invalid');
             }
             $fingerprint = strtolower(trim((string) ($item['credential_fingerprint'] ?? '')));
-            $hash = EventCheckinSecurity::hashReference(
-                (string) ($item['credential_hash_reference'] ?? ''),
-                $fingerprint,
-            );
+
+            // PROOF OF SCAN. The manifest hands the device each registrant's
+            // credential hash so it can verify a scan offline — but if sync
+            // then accepts that same hash back as the evidence, a device with
+            // the manifest can fabricate a check-in for anyone on the list
+            // without ever meeting them. When the device sends the raw
+            // credential it actually scanned, we derive the hash ourselves;
+            // the manifest hash cannot be reversed into the raw value, so
+            // that item is genuine. Optional, so existing devices keep
+            // working — they are simply recorded as unproven.
+            $rawCredential = $item['credential'] ?? null;
+            if (is_string($rawCredential) && trim($rawCredential) !== '') {
+                $derived = EventCheckinSecurity::credentialVerifier($rawCredential);
+                $hash = EventCheckinSecurity::hashReference(
+                    $derived['hash'],
+                    $derived['fingerprint'],
+                );
+                $fingerprint = $derived['fingerprint'];
+            } else {
+                if ((bool) config('events.offline_checkin.require_scan_proof', false)) {
+                    throw new EventOfflineCheckinException('event_offline_scan_proof_required');
+                }
+                $hash = EventCheckinSecurity::hashReference(
+                    (string) ($item['credential_hash_reference'] ?? ''),
+                    $fingerprint,
+                );
+            }
+
             $reason = EventCheckinSecurity::sanitizedText($item['reason'] ?? null, 500, false);
 
             $normalized[] = [

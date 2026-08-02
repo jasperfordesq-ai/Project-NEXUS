@@ -677,7 +677,8 @@
         "public": "Alle Personen mit Veranstaltungszugriff",
         "registered": "Bestätigte Teilnehmende",
         "staff": "Nur Veranstaltungsteam"
-      }
+      },
+      "event_cancelled_notice": "Diese Veranstaltung wurde abgesagt. Die nachstehende Tagesordnung wird als Protokoll aufbewahrt – keine dieser Sitzungen findet statt."
     },
     "team": {
       "title": "Delegiertes Team",

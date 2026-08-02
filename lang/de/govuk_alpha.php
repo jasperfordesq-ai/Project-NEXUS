@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Zurück zur Veranstaltung',
             'manager_intro' => 'Erstellen und pflegen Sie Ablauf, Sitzungen, Vortragende, Räume, Programmlinien und Zielgruppenzugriff ohne JavaScript vorauszusetzen.',
             'viewer_intro' => 'Sehen Sie Ablauf, Sitzungen, Räume, Programmlinien und Vortragende in der Zeitzone der Veranstaltung.',
+            'cancelled_heading' => 'Wichtig',
+            'cancelled_notice' => 'Diese Veranstaltung wurde abgesagt. Die nachstehende Reihenfolge wird protokolliert – keine dieser Sitzungen findet statt.',
             'load_error' => 'Das Veranstaltungsprogramm konnte nicht geladen werden.',
             'add_session' => 'Sitzung hinzufügen',
             'create_session' => 'Sitzung erstellen',

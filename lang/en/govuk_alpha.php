@@ -1268,6 +1268,8 @@ return [
             'back_to_event' => 'Back to event',
             'manager_intro' => 'Create and maintain the running order, sessions, speakers, rooms, tracks and audience access without relying on JavaScript.',
             'viewer_intro' => 'View the running order, sessions, rooms, tracks and speakers in the event time zone.',
+            'cancelled_heading' => 'Important',
+            'cancelled_notice' => 'This event has been cancelled. The running order below is kept as a record — none of these sessions are going ahead.',
             'load_error' => 'The event agenda could not be loaded.',
             'add_session' => 'Add a session',
             'create_session' => 'Create session',

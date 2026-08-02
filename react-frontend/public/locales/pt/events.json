@@ -686,7 +686,8 @@
         "public": "Todas as pessoas que podem ver o evento",
         "registered": "Participantes confirmados",
         "staff": "Somente a equipe do evento"
-      }
+      },
+      "event_cancelled_notice": "Este evento foi cancelado. A agenda abaixo é mantida como um registro – nenhuma dessas sessões será realizada."
     },
     "team": {
       "title": "Equipe delegada",

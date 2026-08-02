@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Retour à l’événement',
             'manager_intro' => 'Créez et gérez le déroulé, les sessions, les intervenants, les salles, les parcours et l’accès du public sans dépendre de JavaScript.',
             'viewer_intro' => 'Consultez le déroulé, les sessions, les salles, les parcours et les intervenants dans le fuseau horaire de l’événement.',
+            'cancelled_heading' => 'À noter',
+            'cancelled_notice' => 'Cet événement a été annulé. L\'ordre de passage ci-dessous est conservé à titre d\'enregistrement : aucune de ces sessions n\'a lieu.',
             'load_error' => 'Le programme de l’événement n’a pas pu être chargé.',
             'add_session' => 'Ajouter une session',
             'create_session' => 'Créer la session',

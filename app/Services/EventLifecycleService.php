@@ -432,6 +432,19 @@ final class EventLifecycleService
             'cancelled',
             'event_unavailable',
         );
+
+        // Not-yet-sent broadcasts die with the event. Reminders, registrations
+        // and the waitlist were already cascaded here; broadcasts were not, so
+        // an announcement scheduled before the cancellation still reached
+        // attendees afterwards. Anything already in flight is skipped, never
+        // allowed to block the cancellation itself.
+        $broadcastCascade = app(EventBroadcastService::class)
+            ->cancelPendingForLifecycleWithinTransaction(
+                $event,
+                $actor,
+                $reason,
+                $idempotencyPrefix,
+            );
         $legacyWaitlistCancelled = DB::table('event_waitlist')
             ->where('tenant_id', $tenantId)
             ->where('event_id', $eventId)
@@ -465,6 +478,9 @@ final class EventLifecycleService
                     + $legacyWaitlistCancelled,
                 'registrations_cancelled' => $canonicalRegistrations['cancelled']
                     + $legacyRegistrationsCancelled,
+                'broadcasts_cancelled' => $broadcastCascade['cancelled'],
+                'broadcast_deliveries_cancelled' => $broadcastCascade['deliveries_cancelled'],
+                'broadcasts_skipped_in_flight' => $broadcastCascade['skipped_in_flight'],
             ],
             'recipient_user_ids' => $recipientIds,
         ];

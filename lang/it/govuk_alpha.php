@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Torna all’evento',
             'manager_intro' => 'Crea e gestisci la scaletta, le sessioni, i relatori, le sale, i percorsi e l’accesso del pubblico senza dipendere da JavaScript.',
             'viewer_intro' => 'Visualizza la scaletta, le sessioni, le sale, i percorsi e i relatori nel fuso orario dell’evento.',
+            'cancelled_heading' => 'Importante',
+            'cancelled_notice' => 'Questo evento è stato cancellato. L\'ordine di esecuzione riportato di seguito viene conservato come registro: nessuna di queste sessioni avrà luogo.',
             'load_error' => 'Non è stato possibile caricare il programma dell’evento.',
             'add_session' => 'Aggiungi una sessione',
             'create_session' => 'Crea sessione',

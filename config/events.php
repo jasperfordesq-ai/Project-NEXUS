@@ -175,6 +175,19 @@ return [
 
     'recurrence' => [
         'engine_v2_enabled' => env('EVENTS_RECURRENCE_V2_ENABLED', false),
+
+        /*
+         * Retry window for creating a recurring series (legacy engine only).
+         *
+         * That engine derives each occurrence_key from the new row's own
+         * auto-increment id, so the unique key on (tenant_id, occurrence_key)
+         * cannot catch a repeat submission — a retried or double-clicked
+         * request used to create a second full set of occurrences. Within this
+         * window, an identical template from the same member (same title, same
+         * start time) is treated as a retry and the original is returned.
+         * Set to 0 to disable the guard entirely.
+         */
+        'duplicate_window_seconds' => (int) env('EVENTS_RECURRENCE_DUPLICATE_WINDOW_SECONDS', 600),
         'max_occurrences' => (int) env('EVENTS_RECURRENCE_MAX_OCCURRENCES', 366),
         'max_horizon_years' => (int) env('EVENTS_RECURRENCE_MAX_HORIZON_YEARS', 20),
         'materialization' => [
@@ -329,6 +342,25 @@ return [
         'base_retry_seconds' => (int) env('EVENTS_NOTIFICATION_OUTBOX_BASE_RETRY_SECONDS', 60),
         'max_retry_seconds' => (int) env('EVENTS_NOTIFICATION_OUTBOX_MAX_RETRY_SECONDS', 3600),
         'stale_claim_minutes' => (int) env('EVENTS_NOTIFICATION_OUTBOX_STALE_CLAIM_MINUTES', 10),
+    ],
+
+    'offline_checkin' => [
+        /*
+         * Require offline sync items to prove the QR was actually scanned.
+         *
+         * The device manifest contains each registrant's credential hash so a
+         * phone can verify a scan with no signal. If sync accepts that same
+         * hash back as the evidence, a device holding the manifest can
+         * fabricate a check-in for anyone on the list. A device that instead
+         * submits the RAW scanned credential is proving possession, because
+         * the manifest hash cannot be reversed into it.
+         *
+         * Default false so existing devices keep syncing (their items are
+         * simply recorded as unproven in scan_proof_verified). Turn this on
+         * once every device in the field sends the raw credential, and the
+         * offline audit trail becomes trustworthy end to end.
+         */
+        'require_scan_proof' => env('EVENTS_OFFLINE_REQUIRE_SCAN_PROOF', false),
     ],
 
 ];

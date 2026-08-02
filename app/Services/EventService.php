@@ -5264,6 +5264,24 @@ class EventService
 
         try {
             return DB::transaction(function () use ($userId, $data, $tenantId, $frequency): array {
+                // 🔴 RETRY GUARD. This engine derives each occurrence_key from
+                // the NEW row's own auto-increment id, so the schema's
+                // uq_events_tenant_occurrence unique key can never fire for a
+                // repeat submission — a retried or double-clicked request
+                // silently produced a SECOND full set of occurrences. Nothing
+                // downstream can tell the two sets apart, and cleaning them up
+                // by hand is miserable. A template that is identical in
+                // creator, title and start time and was made moments ago is a
+                // retry, not a second series, so we hand back the first one.
+                $replay = self::recentDuplicateRecurringTemplate($tenantId, $userId, $data);
+                if ($replay !== null) {
+                    return [
+                        'template_id' => $replay,
+                        'occurrences' => self::existingOccurrenceCount($tenantId, $replay),
+                        'idempotent_replay' => true,
+                    ];
+                }
+
                 // A template is an abstract schedule definition, never a
                 // concrete registration target, so it receives no key.
                 $template = self::create($userId, array_merge($data, [
@@ -5551,6 +5569,65 @@ class EventService
      * @param array<string,mixed> $data
      * @return array{template_id:int,occurrences:int}
      */
+    /**
+     * The id of an identical recurring template this member created moments
+     * ago, if one exists — i.e. evidence that this request is a retry.
+     *
+     * Deliberately narrow: same tenant, same creator, same title, same start
+     * time, still a live template, created inside a short window. Two people
+     * running similar series, or the same person deliberately creating another
+     * series later, are all unaffected.
+     */
+    private static function recentDuplicateRecurringTemplate(
+        int $tenantId,
+        int $userId,
+        array $data,
+    ): ?int {
+        $windowSeconds = (int) config('events.recurrence.duplicate_window_seconds', 600);
+        if ($windowSeconds <= 0) {
+            return null;
+        }
+
+        $title = trim((string) ($data['title'] ?? ''));
+        $startTime = $data['start_time'] ?? null;
+        if ($title === '' || $startTime === null || $startTime === '') {
+            return null;
+        }
+
+        // strtotime, matching how this file parses every other incoming date.
+        $startAt = strtotime((string) $startTime);
+        if ($startAt === false) {
+            return null;
+        }
+
+        $existing = DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $userId)
+            ->where('is_recurring_template', 1)
+            ->where('title', $title)
+            ->where('start_time', date('Y-m-d H:i:s', $startAt))
+            ->where('created_at', '>=', now()->subSeconds($windowSeconds))
+            ->where(function ($query): void {
+                $query->whereNull('status')->orWhere('status', '<>', 'cancelled');
+            })
+            ->orderByDesc('id')
+            ->value('id');
+
+        return $existing === null ? null : (int) $existing;
+    }
+
+    /**
+     * How many occurrences the template already has, so a replayed create
+     * returns the same shape (and type) as the original call.
+     */
+    private static function existingOccurrenceCount(int $tenantId, int $templateId): int
+    {
+        return (int) DB::table('events')
+            ->where('tenant_id', $tenantId)
+            ->where('parent_event_id', $templateId)
+            ->count();
+    }
+
     private static function createRecurringV2(int $userId, array $data): array
     {
         $tenantId = (int) TenantContext::getId();

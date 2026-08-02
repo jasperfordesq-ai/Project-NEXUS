@@ -544,6 +544,169 @@ final class EventBroadcastService
         }, 3);
     }
 
+    /**
+     * Cancel this event's not-yet-sent broadcasts because the event itself is
+     * being cancelled.
+     *
+     * Sibling of EventRegistrationService/EventWaitlistService's
+     * cancelActiveForLifecycleWithinTransaction, and called from the same
+     * cascade. Without it a broadcast scheduled before the cancellation still
+     * went out afterwards, telling attendees about an event that is no longer
+     * happening — registrations, waitlist and reminders were all being
+     * cancelled correctly; broadcasts were simply missed.
+     *
+     * Differs from cancel() in three deliberate ways, because this runs as a
+     * cascade rather than an operator action: it takes no expected version
+     * (it reads each row's current one under lock), it never authorises
+     * against the actor (the caller has already authorised cancelling the
+     * whole event), and a broadcast that is already sending or partly
+     * delivered is SKIPPED rather than throwing — a half-sent announcement
+     * must not be able to block the event's own cancellation.
+     *
+     * @return array{cancelled:int,deliveries_cancelled:int,skipped_in_flight:int}
+     */
+    public function cancelPendingForLifecycleWithinTransaction(
+        Event $event,
+        User $actor,
+        string $reason,
+        string $idempotencyPrefix,
+    ): array {
+        if (DB::transactionLevel() <= 0) {
+            throw new EventBroadcastException('event_broadcast_transaction_required');
+        }
+
+        $tenantId = $this->support->tenantId();
+        $eventId = (int) $event->getKey();
+        if ((int) $event->tenant_id !== $tenantId || $eventId <= 0) {
+            throw new EventBroadcastException('event_broadcast_event_scope_invalid');
+        }
+
+        $reason = trim($reason);
+        if ($reason === '') {
+            $reason = 'event_cancelled';
+        }
+        $reason = mb_substr($reason, 0, 500);
+
+        $cancellable = [
+            EventBroadcastStatus::Draft->value,
+            EventBroadcastStatus::Scheduled->value,
+        ];
+
+        $broadcasts = DB::table('event_broadcasts')
+            ->where('tenant_id', $tenantId)
+            ->where('event_id', $eventId)
+            ->whereIn('status', $cancellable)
+            ->lockForUpdate()
+            ->get();
+
+        $now = CarbonImmutable::now('UTC');
+        $cancelled = 0;
+        $deliveriesCancelled = 0;
+        $skipped = 0;
+
+        foreach ($broadcasts as $row) {
+            $broadcastId = (int) $row->id;
+
+            // Already going out — the deliveries trigger forbids
+            // processing -> cancelled, and half-recalling a send would be
+            // dishonest anyway. Leave it and report it.
+            $inFlight = DB::table('event_broadcast_deliveries')
+                ->where('tenant_id', $tenantId)
+                ->where('broadcast_id', $broadcastId)
+                ->whereIn('status', [
+                    EventBroadcastDeliveryStatus::Processing->value,
+                    EventBroadcastDeliveryStatus::Delivered->value,
+                ])
+                ->exists();
+            if ($inFlight) {
+                $skipped++;
+
+                continue;
+            }
+
+            $from = EventBroadcastStatus::from((string) $row->status);
+            $currentVersion = (int) $row->broadcast_version;
+            $newVersion = $currentVersion + 1;
+
+            $updated = DB::table('event_broadcasts')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $broadcastId)
+                ->where('status', $from->value)
+                ->where('broadcast_version', $currentVersion)
+                ->update([
+                    'status' => EventBroadcastStatus::Cancelled->value,
+                    'broadcast_version' => $newVersion,
+                    'cancelled_by_user_id' => (int) $actor->id,
+                    'cancelled_at' => $now,
+                    'updated_by_user_id' => (int) $actor->id,
+                    'updated_at' => $now,
+                ]);
+            if ($updated !== 1) {
+                // Someone changed it between the lock and here; leave it to
+                // its own operator rather than fighting for it.
+                $skipped++;
+
+                continue;
+            }
+
+            $deliveriesCancelled += DB::table('event_broadcast_deliveries')
+                ->where('tenant_id', $tenantId)
+                ->where('broadcast_id', $broadcastId)
+                ->whereIn('status', [
+                    EventBroadcastDeliveryStatus::Pending->value,
+                    EventBroadcastDeliveryStatus::Retry->value,
+                ])
+                ->update([
+                    'status' => EventBroadcastDeliveryStatus::Cancelled->value,
+                    'cancelled_at' => $now,
+                    'claim_token' => null,
+                    'claimed_at' => null,
+                    'next_attempt_at' => null,
+                    'updated_at' => $now,
+                ]);
+
+            $keyHash = $this->support->idempotencyHash(
+                $idempotencyPrefix . ':broadcast:' . $broadcastId,
+            );
+            $requestHash = $this->support->requestHash([
+                'action' => EventBroadcastAction::Cancelled->value,
+                'broadcast_id' => $broadcastId,
+                'actor_user_id' => (int) $actor->id,
+                'expected_version' => $currentVersion,
+                'reason' => $reason,
+            ]);
+
+            $this->insertHistory(
+                $tenantId,
+                $eventId,
+                $broadcastId,
+                $newVersion,
+                EventBroadcastAction::Cancelled,
+                $from,
+                EventBroadcastStatus::Cancelled,
+                (int) $actor->id,
+                $keyHash,
+                $requestHash,
+                (string) $row->content_hash,
+                [
+                    'contract_version' => 1,
+                    'reason_recorded' => true,
+                    'cascade' => 'event_lifecycle',
+                    'cancelled_delivery_count' => $deliveriesCancelled,
+                ],
+                $now,
+            );
+
+            $cancelled++;
+        }
+
+        return [
+            'cancelled' => $cancelled,
+            'deliveries_cancelled' => $deliveriesCancelled,
+            'skipped_in_flight' => $skipped,
+        ];
+    }
+
     /** @return array{broadcast:EventBroadcast,changed:bool} */
     public function retryFailed(
         int $broadcastId,

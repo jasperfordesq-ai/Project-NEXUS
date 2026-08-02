@@ -48,6 +48,24 @@ final class EventSessionContractMapper
                 self::intValue($facts['agenda_version'] ?? $eventData['agenda_version'] ?? 0),
             ),
             'timezone' => self::nullableString($eventData['timezone'] ?? null) ?? 'UTC',
+            // The parent event's lifecycle travels WITH the agenda. Sessions
+            // carry their own status ('scheduled') which says nothing about
+            // whether the event still exists, so an agenda for a cancelled
+            // event used to render every session as perfectly live. Nothing
+            // cascades to event_sessions on cancellation by design — the
+            // agenda is preserved as a record — so the honest fix is to tell
+            // the client the truth about the parent.
+            'event_status' => [
+                'operational_status' => self::enumValue(
+                    $eventData['operational_status'] ?? 'scheduled',
+                ),
+                'publication_status' => self::enumValue(
+                    $eventData['publication_status'] ?? 'published',
+                ),
+                'is_cancelled' => self::enumValue(
+                    $eventData['operational_status'] ?? 'scheduled',
+                ) === 'cancelled',
+            ],
             'permissions' => [
                 'manage' => $canManage,
             ],

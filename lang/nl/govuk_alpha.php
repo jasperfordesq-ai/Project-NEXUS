@@ -927,6 +927,8 @@ return [
             'back_to_event' => 'Terug naar evenement',
             'manager_intro' => 'Maak en beheer de volgorde, sessies, sprekers, zalen, programmalijnen en toegang voor doelgroepen zonder afhankelijk te zijn van JavaScript.',
             'viewer_intro' => 'Bekijk de volgorde, sessies, zalen, programmalijnen en sprekers in de tijdzone van het evenement.',
+            'cancelled_heading' => 'Belangrijk',
+            'cancelled_notice' => 'Dit evenement is geannuleerd. De onderstaande startvolgorde wordt bijgehouden als record; geen van deze sessies gaat door.',
             'load_error' => 'Het evenementprogramma kon niet worden geladen.',
             'add_session' => 'Sessie toevoegen',
             'create_session' => 'Sessie maken',

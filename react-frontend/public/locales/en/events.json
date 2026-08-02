@@ -677,7 +677,8 @@
         "public": "All event viewers",
         "registered": "Confirmed attendees",
         "staff": "Event staff only"
-      }
+      },
+      "event_cancelled_notice": "This event has been cancelled. The agenda below is kept as a record — none of these sessions are going ahead."
     },
     "team": {
       "title": "Delegated team",

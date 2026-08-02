@@ -477,6 +477,15 @@ export const eventAgendaSchema = z.object({
   event_id: z.number().int().positive(),
   agenda_version: z.number().int().nonnegative(),
   timezone: z.string().min(1),
+  // The parent event's lifecycle. Sessions keep their own 'scheduled' status
+  // even when the event is cancelled (the agenda is preserved as a record),
+  // so this is the only thing that tells a reader the event is off.
+  // Optional so a client can talk to a backend that predates it.
+  event_status: z.object({
+    operational_status: z.string(),
+    publication_status: z.string(),
+    is_cancelled: z.boolean(),
+  }).passthrough().optional(),
   permissions: z.object({
     manage: z.boolean(),
   }).strict(),

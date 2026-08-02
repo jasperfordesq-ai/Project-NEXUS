@@ -695,7 +695,8 @@
         "public": "Wszyscy, którzy mogą wyświetlić wydarzenie",
         "registered": "Potwierdzeni uczestnicy",
         "staff": "Tylko obsługa wydarzenia"
-      }
+      },
+      "event_cancelled_notice": "To wydarzenie zostało odwołane. Poniższy porządek obrad jest przechowywany w formie protokołu — żadna z tych sesji nie odbędzie się."
     },
     "team": {
       "title": "Delegowany zespół",

@@ -704,7 +704,8 @@
         "public": "Gach duine ar féidir leo an ócáid a fheiceáil",
         "registered": "Lucht freastail deimhnithe",
         "staff": "Foireann na hócáide amháin"
-      }
+      },
+      "event_cancelled_notice": "Cuireadh an imeacht seo ar ceal. Coimeádtar an clár oibre thíos mar thaifead — níl aon cheann de na seisiúin seo ag dul ar aghaidh."
     },
     "team": {
       "title": "Foireann tarmligthe",

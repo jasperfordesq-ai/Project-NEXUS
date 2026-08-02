@@ -55,6 +55,26 @@
     <h1 class="govuk-heading-xl">{{ __('govuk_alpha.events.agenda.title') }}</h1>
     <p class="govuk-body-l">{{ $canManage ? __('govuk_alpha.events.agenda.manager_intro') : __('govuk_alpha.events.agenda.viewer_intro') }}</p>
 
+    {{-- Sessions keep their own 'scheduled' status after the event is
+         cancelled (the agenda is preserved as a record), so without this the
+         whole running order reads as though it is still happening. --}}
+    @if (($agenda['event_status']['is_cancelled'] ?? false) === true)
+        <div class="govuk-notification-banner" role="region"
+             aria-labelledby="govuk-notification-banner-title-agenda"
+             data-module="govuk-notification-banner">
+            <div class="govuk-notification-banner__header">
+                <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title-agenda">
+                    {{ __('govuk_alpha.events.agenda.cancelled_heading') }}
+                </h2>
+            </div>
+            <div class="govuk-notification-banner__content">
+                <p class="govuk-notification-banner__heading">
+                    {{ __('govuk_alpha.events.agenda.cancelled_notice') }}
+                </p>
+            </div>
+        </div>
+    @endif
+
     @if ($canManage)
         <details class="govuk-details" data-module="govuk-details" @if(old('action') === 'create') open @endif>
             <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ __('govuk_alpha.events.agenda.add_session') }}</span></summary>

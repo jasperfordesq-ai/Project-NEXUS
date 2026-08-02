@@ -686,7 +686,8 @@
         "public": "Toutes les personnes pouvant voir l’événement",
         "registered": "Participants confirmés",
         "staff": "Équipe de l’événement uniquement"
-      }
+      },
+      "event_cancelled_notice": "Cet événement a été annulé. L’ordre du jour ci-dessous est conservé à titre de dossier – aucune de ces sessions n’aura lieu."
     },
     "team": {
       "title": "Équipe déléguée",
