@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
+
+- **A tool to finish the recurring-events engine migration.** The platform has carried two recurrence engines for some time: the older one that every existing repeating event uses, and a newer one that was built to replace it but never switched on. Being stuck between the two is what broke editing a single occurrence, because the database was enforcing the new engine's rules on the old engine's data. `events:migrate-recurrence-to-v2` converts existing series onto the newer engine properly — translating each series' repeat pattern using the engine's own logic rather than a reimplementation, and giving every occurrence the calendar identity the newer engine expects.
+
+  It is deliberately cautious. A dry run reports exactly what would change and writes nothing. It never creates, deletes or reshapes occurrences, so registrations and attendance stay attached to the events they are already on. It can be run twice safely. And it refuses a series rather than forcing it whenever conversion would be unsafe — an unsupported repeat pattern, two occurrences sharing a start time, or an occurrence whose identity is referenced by records that cannot be rewritten.
+
+  After conversion, editing one occurrence of a series records that it diverged from the rest — something the older engine could not track at all.
 
 - **Editing one occurrence of a repeating event failed for everyone.** Saving a single occurrence also tried to record per-occurrence "override" bookkeeping, but the database only accepts that bookkeeping from the newer recurrence engine — and every occurrence any community has ever created came from the older engine, which is the default. So the save was rejected outright. The content change itself was always valid; only the bookkeeping was impossible, so it is now skipped for older-engine occurrences, which have no concept of it. Every recurring occurrence on the platform was affected.
 
