@@ -71,23 +71,36 @@ class PartnerVenueService
             return [];
         }
 
+        $venueIds = $venues->pluck('id')->all();
+
         // Visit totals per venue in one pass rather than N+1 counts.
         $totals = DB::table('partner_venue_visits')
             ->where('tenant_id', $tenantId)
-            ->whereIn('venue_id', $venues->pluck('id')->all())
+            ->whereIn('venue_id', $venueIds)
             ->groupBy('venue_id')
             ->selectRaw('venue_id, COUNT(*) AS visit_count, COUNT(DISTINCT user_id) AS member_count')
             ->get()
             ->keyBy('venue_id');
 
+        // Staff counts batched too — this was one query per venue, sitting
+        // right beside the batched totals above.
+        $staffCounts = DB::table('org_members')
+            ->where('tenant_id', $tenantId)
+            ->where('org_type', self::ORG_TYPE)
+            ->whereIn('organization_id', $venueIds)
+            ->where('status', 'active')
+            ->groupBy('organization_id')
+            ->selectRaw('organization_id, COUNT(*) AS staff_count')
+            ->pluck('staff_count', 'organization_id');
+
         return $venues
-            ->map(function (PartnerVenue $venue) use ($totals): array {
+            ->map(function (PartnerVenue $venue) use ($totals, $staffCounts): array {
                 $row = $this->toPublicArray($venue);
                 $row['status'] = $venue->status;
                 $row['contact_email'] = $venue->contact_email;
                 $row['visit_count'] = (int) ($totals[$venue->id]->visit_count ?? 0);
                 $row['member_count'] = (int) ($totals[$venue->id]->member_count ?? 0);
-                $row['staff_count'] = $this->staffCount((int) $venue->id);
+                $row['staff_count'] = (int) ($staffCounts[$venue->id] ?? 0);
 
                 return $row;
             })

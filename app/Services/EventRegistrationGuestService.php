@@ -22,6 +22,13 @@ use Illuminate\Support\Facades\Schema;
 final class EventRegistrationGuestService
 {
     private const ACTIVE_REGISTRATION_STATES = ['invited', 'pending', 'confirmed'];
+
+    /**
+     * Guest rows that occupy a seat. 'withdrawn' and 'anonymised' guests have
+     * given their place back (the schema CHECK constrains status to exactly
+     * these three values).
+     */
+    private const CAPACITY_CONSUMING_GUEST_STATES = ['captured'];
     private const SUPPORTED_LOCALES = [
         'ar', 'de', 'en', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt',
     ];
@@ -149,6 +156,33 @@ final class EventRegistrationGuestService
                 ->count();
             if ($guestCount >= (int) $settings->max_guests_per_registration) {
                 throw new EventRegistrationFoundationException('event_registration_guest_limit_reached');
+            }
+
+            // 🔴 VENUE CAPACITY. max_guests_per_registration caps how many
+            // guests ONE member may bring; it says nothing about how many
+            // bodies the room holds. Without this check a 2-capacity event
+            // accepted 22 attendees — every registration is one capacity unit
+            // (party_size is never written above 1), so guests were invisible
+            // to availableSlotsLocked() and the capacity gate never fired for
+            // them. For a community venue that limit is often a fire limit,
+            // so guests are now counted against it like anyone else.
+            // The event row is already locked by concreteEvent(..., true).
+            $capacity = $event->getAttribute('max_attendees');
+            if ($capacity !== null && $capacity !== '' && (int) $capacity > 0) {
+                $activeRegistrations = (int) DB::table('event_registrations')
+                    ->where('tenant_id', $tenantId)
+                    ->where('event_id', $eventId)
+                    ->whereIn('registration_state', self::ACTIVE_REGISTRATION_STATES)
+                    ->count();
+                $activeGuests = (int) DB::table('event_registration_guests')
+                    ->where('tenant_id', $tenantId)
+                    ->where('event_id', $eventId)
+                    ->whereIn('status', self::CAPACITY_CONSUMING_GUEST_STATES)
+                    ->count();
+
+                if ($activeRegistrations + $activeGuests >= (int) $capacity) {
+                    throw new EventRegistrationFoundationException('event_registration_guest_capacity_full');
+                }
             }
             $guestNumber = ((int) DB::table('event_registration_guests')
                 ->where('tenant_id', $tenantId)

@@ -719,6 +719,17 @@ final class EventRegistrationProductController extends BaseApiController
     private function productError(EventRegistrationFoundationException $exception): JsonResponse
     {
         $reason = $exception->getMessage();
+        if ($reason === 'event_registration_guest_capacity_full') {
+            // Same code/message as a full event on the registration path — from
+            // the member's point of view it is the same fact, and the generic
+            // 422 "validation failed" fallback would explain nothing.
+            return $this->respondWithError(
+                'EVENT_CAPACITY_FULL',
+                __('event_registration.capacity_full'),
+                null,
+                409,
+            );
+        }
         if ($reason === 'event_registration_guests_tenant_disabled') {
             return $this->respondWithError(
                 'EVENT_REGISTRATION_GUESTS_DISABLED',

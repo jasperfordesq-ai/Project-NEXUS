@@ -265,6 +265,15 @@ class PartnerVenueVisitService
      *
      * @return array<string, mixed>
      */
+    /**
+     * NOTE ON SCOPE: total_visits/unique_members are deliberately LIFETIME
+     * figures (the admin card reads "Total visits recorded"); only
+     * recent_visits honours $days. So the grouped scan covers the tenant's
+     * whole visit history by design, served by the
+     * (tenant_id, venue_id, visited_at) index. If a tenant ever exceeds
+     * roughly a million visits this wants a nightly rollup rather than a
+     * live GROUP BY — it is not a bug, it is a known scale ceiling.
+     */
     public function summary(int $days = 30): array
     {
         $tenantId = TenantContext::getId();

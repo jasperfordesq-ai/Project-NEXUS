@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Core\TenantContext;
+use App\I18n\LocaleContext;
 use App\Models\Event;
 use App\Models\EventAttendance;
 use App\Models\User;
@@ -296,6 +297,17 @@ final class EventCreditService
             }
         }
 
+        // 🔴 Rendered in the ATTENDEE's language, not the actor's. This string
+        // is stored permanently in transactions.description and the XP log —
+        // the member reads it in their own wallet later. Every caller here is
+        // someone ELSE (organiser scanning at the door, admin retrying), so
+        // without this wrap a Spanish member's ledger line was frozen in the
+        // English of whoever happened to check them in, with no re-render path.
+        $description = LocaleContext::withLocale(
+            $this->recipientLocale($tenantId, $attendeeId),
+            static fn (): string => __('api.event_attendance_reward_description', ['event' => $eventTitle]),
+        );
+
         try {
             // The wallet write and the claim's completion commit TOGETHER.
             // With them separate, a failure of the completion UPDATE after a
@@ -306,13 +318,13 @@ final class EventCreditService
             // (mintToMember runs its own inner transaction; under an ambient
             // one that is a savepoint, so this nests correctly from the
             // check-in path too.)
-            $transactionId = DB::transaction(function () use ($tenantId, $attendeeId, $amount, $eventTitle, $claimId): int {
+            $transactionId = DB::transaction(function () use ($tenantId, $attendeeId, $amount, $description, $claimId): int {
                 $transactionId = $this->wallet->mintToMember(
                     $tenantId,
                     $attendeeId,
                     $amount,
                     self::TRANSACTION_TYPE,
-                    __('api.event_attendance_reward_description', ['event' => $eventTitle]),
+                    $description,
                 );
 
                 DB::table('event_attendance_credit_claims')
@@ -352,12 +364,14 @@ final class EventCreditService
         }
 
         // Record the engagement once the credit is real, so XP and challenge
-        // progress reflect verified attendance rather than an RSVP.
+        // progress reflect verified attendance rather than an RSVP. Reuses the
+        // recipient-localised description for the same reason: the XP log is
+        // read by the member, not by whoever scanned them in.
         EngagementService::record(
             $attendeeId,
             'event_attendance_verified',
             'event:' . $eventId,
-            __('api.event_attendance_reward_description', ['event' => $eventTitle]),
+            $description,
         );
 
         return $this->outcome('settled', $claimId, $transactionId, $amount);
@@ -565,17 +579,24 @@ final class EventCreditService
             ->where('id', (int) $claim->event_id)
             ->value('title') ?? '');
 
+        // Same reasoning as the mint: the member reads this reversal line in
+        // their own wallet, so it renders in THEIR language, not the admin's.
+        $description = LocaleContext::withLocale(
+            $this->recipientLocale($tenantId, (int) $claim->user_id),
+            static fn (): string => __('api.event_attendance_reward_reversal_description', ['event' => $eventTitle]),
+        );
+
         try {
             // Same atomicity contract as attemptMint(): the reclaim and the
             // child claim's completion commit together, so the child can never
             // be stranded at `pending` after the money already moved back.
-            $transactionId = DB::transaction(function () use ($tenantId, $claim, $childId, $eventTitle): int {
+            $transactionId = DB::transaction(function () use ($tenantId, $claim, $childId, $description): int {
                 $transactionId = $this->wallet->reclaimFromMember(
                     $tenantId,
                     (int) $claim->user_id,
                     (float) $claim->amount,
                     self::REVERSAL_TRANSACTION_TYPE,
-                    __('api.event_attendance_reward_reversal_description', ['event' => $eventTitle]),
+                    $description,
                 );
 
                 DB::table('event_attendance_credit_claims')
@@ -654,6 +675,25 @@ final class EventCreditService
         $cap = round((float) $cap, 2);
 
         return $cap > 0 ? $cap : null;
+    }
+
+    /**
+     * The member's stored language, for rendering ledger text they will read.
+     * Null (LocaleContext's no-op) when unknown, so a missing preference can
+     * never break a mint.
+     */
+    private function recipientLocale(int $tenantId, int $userId): ?string
+    {
+        try {
+            $locale = DB::table('users')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $userId)
+                ->value('preferred_language');
+
+            return is_string($locale) && $locale !== '' ? $locale : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function clampToCeiling(float $amount): float

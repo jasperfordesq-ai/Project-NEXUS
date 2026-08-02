@@ -65,7 +65,13 @@ final class EventStaffControllerTest extends TestCase
             ->assertJsonPath('data.idempotent_replay', true)
             ->assertJsonPath('data.history_entry_id', $historyId)
             ->assertJsonPath('data.assignment.version', 1);
-        $this->assertSame(1, DB::table('event_staff_assignment_history')->count());
+        // Scoped to THIS assignment: the table is append-only (a trigger blocks
+        // DELETE), so an unscoped count only ever passed against a pristine
+        // database and failed for good after any interrupted run left a row.
+        $this->assertSame(
+            1,
+            DB::table('event_staff_assignment_history')->where('assignment_id', $assignmentId)->count(),
+        );
 
         $this->apiGet("/v2/events/{$eventId}/staff")
             ->assertOk()
@@ -96,7 +102,10 @@ final class EventStaffControllerTest extends TestCase
             ->assertJsonPath('data.changed', false)
             ->assertJsonPath('data.idempotent_replay', true)
             ->assertJsonPath('data.assignment.version', 2);
-        $this->assertSame(2, DB::table('event_staff_assignment_history')->count());
+        $this->assertSame(
+            2,
+            DB::table('event_staff_assignment_history')->where('assignment_id', $assignmentId)->count(),
+        );
 
         $this->apiGet("/v2/events/{$eventId}/staff")
             ->assertOk()
