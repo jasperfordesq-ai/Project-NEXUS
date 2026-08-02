@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'La registrazione agli eventi è disattivata per questa comunità.',
     'events_guests_disabled' => 'La registrazione degli ospiti è disattivata per questa comunità.',
     'events_recurrence_disabled' => 'Gli eventi ricorrenti sono disattivati per questa comunità.',
+    'events_recurrence_root_published' => 'Lo schema di ripetizione di una serie pubblicata non può essere modificato, poiché la rigenerazione delle sue date eliminerebbe le occorrenze per le quali le persone si sono già registrate. Modifica invece una singola occorrenza oppure annulla la serie e creane una nuova.',
     'auth_required' => 'Autenticazione richiesta',
     'auth_required_detail' => 'Devi essere loggato per accedere a questa risorsa.',
     'admin_access_required' => 'È richiesto l\'accesso amministrativo',

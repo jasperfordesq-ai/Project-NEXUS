@@ -86,7 +86,12 @@ class EnsureCorsHeaders
             $response->headers->set('Access-Control-Allow-Origin', $origin);
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-Requested-With, X-CSRF-TOKEN, Accept, Accept-Language, X-Tenant-Id, X-Tenant-Slug, X-Trusted-Device, X-Timezone, X-Locale, X-Request-Id, X-Events-Contract');
+            // 🔴 Keep in step with config/cors.php's allowed_headers. A custom
+            // header missing from EITHER list fails the preflight, and the
+            // browser reports it as "unable to connect" rather than as a CORS
+            // problem — which is how the per-feature event contract headers
+            // silently took down the check-in and safety pages in production.
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-Requested-With, X-CSRF-TOKEN, Accept, Accept-Language, X-Tenant-Id, X-Tenant-Slug, X-Trusted-Device, X-Timezone, X-Locale, X-Request-Id, X-Events-Contract, X-Event-Checkin-Contract, X-Event-Safety-Contract');
             $response->headers->set('Access-Control-Expose-Headers', 'X-Request-Id, X-Build, X-Events-Contract');
         }
 

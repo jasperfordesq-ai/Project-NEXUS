@@ -9,7 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Platform switches you can set yourself.** Platform-wide rollout gates — the attendance-credit engine, the newer recurring-events engine, rolling recurrence, recurrence blueprints, timed waitlist offers and optional analytics — used to live only in server environment variables, so raising one needed someone with server access. There is now a Platform switches screen for the platform owner. A switch there sets the ceiling; each community still controls its own settings underneath, so turning something on centrally never enables it for anybody by itself, and reverting a switch hands the decision back to the server configuration. Only that fixed list of switches can be changed, and a tenant administrator cannot reach the screen at all.
+
+  Worth knowing: the other capabilities listed on a community's Event settings page — ticketing, agenda, offline check-in, broadcasts, registration forms, invitations, safety evidence and federation delivery — are *not* switches. They report whether the feature is installed, which depends on the database, so they stay read-only.
+
 ### Fixed
+
+- **Event check-in and safety pages were completely broken in production.** Both send a request header that neither of the two CORS allow-lists included, so the browser refused the request before it left the page — and reported it as "unable to connect", which looks like an outage rather than a configuration gap. Both headers are now allowed in both places, and a test pins every custom header the frontend sends against both lists so this cannot recur.
+
+- **Saving a repeating event failed with the unhelpful message "Invalid status".** Changing the repeat pattern of a series that has already been published is refused on purpose: regenerating its dates would discard occurrences people have registered for. That rule is right, but the message told the organiser nothing at all. It now explains the rule and what to do instead — edit the single occurrence, or cancel the series and start a new one.
+
+- **The event Federation tab showed a raw internal label** (`manage.federation.health.not_configured`) instead of readable text, because none of the five sharing-status labels had ever been translated. All five now read properly in all eleven languages.
+
+- **Event settings looked broken because Save appeared dead.** Every change to community policy needs a reason recorded against it, which is good governance — but the Save button simply greyed out with no explanation, as did every Restore button on the page. The page now says which of the two things is missing ("nothing to save yet" or "add a reason"), marks the reason field as required, and shows a notice at the top when there are unsaved changes.
 
 - **Cleared the events audit backlog — the five findings previously left for a decision are now all fixed.**
 

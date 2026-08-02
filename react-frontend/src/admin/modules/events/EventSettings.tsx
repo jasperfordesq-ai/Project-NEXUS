@@ -168,6 +168,16 @@ export default function EventSettings() {
   }
 
   const capabilities = snapshot.capabilities;
+  // Every change here is recorded with a justification, so Save stays disabled
+  // until a reason is given. That is deliberate, but a silently dead button
+  // reads as a broken page — so say which of the two things is missing, and
+  // surface it at the top rather than only beside the button.
+  const reasonMissing = !reason.trim();
+  const awaitingReason = changed && reasonMissing;
+  const saveHint = !changed
+    ? t('save_hint_no_changes')
+    : (reasonMissing ? t('save_hint_reason_required') : null);
+
   return (
     <div className="mx-auto max-w-6xl px-4 pb-10">
       <PageHeader
@@ -176,6 +186,12 @@ export default function EventSettings() {
         icon={<CalendarCog size={22} />}
         actions={<Chip variant="soft">{t('version', { version: snapshot.version })}</Chip>}
       />
+
+      {awaitingReason && (
+        <Alert color="warning" title={t('unsaved_changes_title')} className="mb-6">
+          {t('unsaved_changes_desc')}
+        </Alert>
+      )}
 
       <Card className="mb-6">
         <Card.Header>
@@ -245,7 +261,7 @@ export default function EventSettings() {
               <Switch isSelected={draft.moderation_required} onValueChange={value => updateBoolean('moderation_required', value)} aria-label={t('moderation_required')} />
             </div>
           </Card.Content>
-          <Card.Footer className="justify-end"><Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || !reason.trim()} onPress={() => void restore(['creation_role', 'moderation_required', 'default_capacity'])}>{t('restore_section')}</Button></Card.Footer>
+          <Card.Footer className="flex flex-wrap items-center justify-end gap-3">{reasonMissing && <p className="mr-auto text-xs text-muted">{t('restore_needs_reason')}</p>}<Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || reasonMissing} onPress={() => void restore(['creation_role', 'moderation_required', 'default_capacity'])}>{t('restore_section')}</Button></Card.Footer>
         </Card>
 
         {POLICY_SECTIONS.map(section => (
@@ -262,7 +278,7 @@ export default function EventSettings() {
                 );
               })}
             </Card.Content>
-            <Card.Footer className="justify-end"><Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || !reason.trim()} onPress={() => void restore(section.keys)}>{t('restore_section')}</Button></Card.Footer>
+            <Card.Footer className="flex flex-wrap items-center justify-end gap-3">{reasonMissing && <p className="mr-auto text-xs text-muted">{t('restore_needs_reason')}</p>}<Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || reasonMissing} onPress={() => void restore(section.keys)}>{t('restore_section')}</Button></Card.Footer>
           </Card>
         ))}
 
@@ -276,7 +292,7 @@ export default function EventSettings() {
               <SelectItem id="global">{t('use_platform_default')}</SelectItem><SelectItem id="direct">{t('notifications_direct')}</SelectItem><SelectItem id="shadow_outbox">{t('notifications_shadow')}</SelectItem><SelectItem id="outbox_authoritative">{t('notifications_outbox')}</SelectItem>
             </Select>
           </Card.Content>
-          <Card.Footer className="justify-end"><Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || !reason.trim()} onPress={() => void restore(['safety_enforcement_mode', 'notification_delivery_mode'])}>{t('restore_section')}</Button></Card.Footer>
+          <Card.Footer className="flex flex-wrap items-center justify-end gap-3">{reasonMissing && <p className="mr-auto text-xs text-muted">{t('restore_needs_reason')}</p>}<Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || reasonMissing} onPress={() => void restore(['safety_enforcement_mode', 'notification_delivery_mode'])}>{t('restore_section')}</Button></Card.Footer>
         </Card>
 
         {hasFeature('event_attendance_credits') && (
@@ -323,17 +339,31 @@ export default function EventSettings() {
               </div>
             </Card.Content>
             <Card.Footer className="justify-end">
-              <Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || !reason.trim()} onPress={() => void restore(['attendance_credit_monthly_cap'])}>{t('restore_section')}</Button>
+              <Button size="sm" variant="tertiary" startContent={<RotateCcw size={14} />} isDisabled={saving || reasonMissing} onPress={() => void restore(['attendance_credit_monthly_cap'])}>{t('restore_section')}</Button>
             </Card.Footer>
           </Card>
         )}
 
         <Card className="border-warning/40">
           <Card.Header><div><h2 className="flex items-center gap-2 text-base font-semibold"><ShieldCheck size={18} />{t('change_control')}</h2><p className="text-sm text-muted">{t('change_control_desc')}</p></div></Card.Header>
-          <Card.Content><Textarea label={t('reason')} value={reason} onValueChange={setReason} minRows={3} placeholder={t('reason_placeholder')} aria-label={t('reason')} /></Card.Content>
-          <Card.Footer className="flex flex-wrap justify-end gap-2">
-            <Button variant="tertiary" startContent={<RotateCcw size={16} />} isDisabled={saving || !reason.trim()} onPress={() => void restore()}>{t('restore_defaults')}</Button>
-            <Button startContent={<Save size={16} />} isPending={saving} isDisabled={!changed || !reason.trim()} onPress={save}>{t('save')}</Button>
+          <Card.Content>
+            <Textarea
+              label={t('reason')}
+              value={reason}
+              onValueChange={setReason}
+              minRows={3}
+              placeholder={t('reason_placeholder')}
+              aria-label={t('reason')}
+              isRequired
+              isInvalid={awaitingReason}
+              description={t('reason_help')}
+              errorMessage={awaitingReason ? t('reason_required_error') : undefined}
+            />
+          </Card.Content>
+          <Card.Footer className="flex flex-wrap items-center justify-end gap-3">
+            {saveHint && <p className="mr-auto text-xs text-muted">{saveHint}</p>}
+            <Button variant="tertiary" startContent={<RotateCcw size={16} />} isDisabled={saving || reasonMissing} onPress={() => void restore()}>{t('restore_defaults')}</Button>
+            <Button startContent={<Save size={16} />} isPending={saving} isDisabled={!changed || reasonMissing} onPress={save}>{t('save')}</Button>
           </Card.Footer>
         </Card>
 

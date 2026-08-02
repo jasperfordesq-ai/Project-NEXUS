@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Grund",
   "claims_reverse_success": "Belohnung rückgängig gemacht",
   "claims_reverse_failed": "Die Stornierung wurde nicht abgeschlossen – überprüfen Sie den Anspruchsstatus",
-  "claims_cancel": "Stornieren"
+  "claims_cancel": "Stornieren",
+  "unsaved_changes_title": "Sie haben nicht gespeicherte Änderungen",
+  "unsaved_changes_desc": "Ihre Änderungen sind noch nicht live. Fügen Sie unten auf dieser Seite unter Änderungskontrolle einen Grund für die Änderung hinzu und wählen Sie dann Speichern aus.",
+  "save_hint_no_changes": "Es gibt noch nichts zu speichern – ändern Sie zuerst eine Einstellung.",
+  "save_hint_reason_required": "Fügen Sie oben einen Grund hinzu, um Speichern zu aktivieren.",
+  "reason_help": "Erforderlich. Wird im Audit-Protokoll aufgezeichnet, damit die Community sehen kann, wer eine Richtlinie geändert hat und warum.",
+  "reason_required_error": "Bevor Ihre Änderungen gespeichert werden können, ist ein Grund erforderlich.",
+  "restore_needs_reason": "Fügen Sie unter „Kontrolle ändern“ einen Grund hinzu, um diesen Abschnitt wiederherzustellen."
 }

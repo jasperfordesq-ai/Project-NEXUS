@@ -354,9 +354,36 @@ export interface EventConfigurationAuditEntry {
   created_at: string;
 }
 
+export interface PlatformCapabilityRow {
+  capability: string;
+  type: 'bool' | 'enum';
+  values: string[];
+  value: string;
+  source: 'platform_override' | 'environment';
+  env_value: string;
+}
+
 export const adminConfig = {
   get: () =>
     api.get<TenantConfig>('/v2/admin/config'),
+
+  // Platform rollout switches (platform super-admin only). These set the
+  // ceiling each community's own event settings sit under.
+  getPlatformCapabilities: () =>
+    api.get<{ capabilities: PlatformCapabilityRow[] }>('/v2/admin/super/platform-capabilities'),
+
+  setPlatformCapability: (capability: string, value: string | boolean, reason?: string) =>
+    api.put<{ capabilities: PlatformCapabilityRow[] }>('/v2/admin/super/platform-capabilities', {
+      capability,
+      value,
+      ...(reason ? { reason } : {}),
+    }),
+
+  clearPlatformCapability: (capability: string) =>
+    api.put<{ capabilities: PlatformCapabilityRow[] }>('/v2/admin/super/platform-capabilities', {
+      capability,
+      clear: true,
+    }),
 
   updateFeature: (feature: string, enabled: boolean, options?: { confirmDisable?: boolean }) =>
     api.put<{ success: boolean }>('/v2/admin/config/features', {

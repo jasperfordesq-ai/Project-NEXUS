@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'このコミュニティではイベント登録が無効です。',
     'events_guests_disabled' => 'このコミュニティではゲスト登録が無効です。',
     'events_recurrence_disabled' => 'このコミュニティでは定期イベントが無効です。',
+    'events_recurrence_root_published' => '公開されたシリーズの繰り返しパターンは変更できません。日付を再生成すると、ユーザーがすでに登録した出来事が破棄されるためです。代わりに単一の出現を編集するか、シリーズをキャンセルして新しいものを作成してください。',
     'auth_required' => '認証が必要です',
     'auth_required_detail' => 'このリソースにアクセスするには、ログインする必要があります。',
     'admin_access_required' => '管理者アクセスが必要です',

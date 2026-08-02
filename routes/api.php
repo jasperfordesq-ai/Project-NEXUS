@@ -2938,6 +2938,12 @@ Route::get('/v2/admin/super/users', [\App\Http\Controllers\Api\AdminSuperControl
 Route::post('/v2/admin/super/users', [\App\Http\Controllers\Api\AdminSuperController::class, 'userCreate']);
 Route::get('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userShow']);
 Route::put('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userUpdate']);
+// Platform rollout switches. Platform super-admin only — these set the ceiling
+// every community's own settings sit under, so they are not tenant-admin
+// endpoints. Authorisation is enforced in the controller, not just here.
+Route::get('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'index']);
+Route::put('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'update']);
+
 Route::post('/v2/admin/super/users/{id}/grant-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantSuperAdmin']);
 Route::post('/v2/admin/super/users/{id}/revoke-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeSuperAdmin']);
 Route::post('/v2/admin/super/users/{id}/grant-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantGlobalSuperAdmin']);

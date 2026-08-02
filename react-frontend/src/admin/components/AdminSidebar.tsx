@@ -381,6 +381,7 @@ function useAdminNav(): NavSection[] {
           { label: t('seo_overview'), href: '/admin/seo', icon: Search },
           { label: t('search_analytics'), href: '/admin/search-analytics', icon: BarChart3, keywords: keyword(t('search_keywords.search_analytics')) },
           ...(isPlatformSuperAdmin ? [{ label: t('prerender_engine'), href: '/admin/seo/prerender', icon: Zap }] : []),
+          ...(isPlatformSuperAdmin ? [{ label: t('platform_capabilities'), href: '/admin/platform-capabilities', icon: Zap }] : []),
           { label: t('error_404_tracking'), href: '/admin/404-errors', icon: AlertTriangle, keywords: keyword(t('search_keywords.error_404_tracking')) },
         ],
       },

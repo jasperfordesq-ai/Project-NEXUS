@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'L’inscription aux événements est désactivée pour cette communauté.',
     'events_guests_disabled' => 'L’inscription des invités est désactivée pour cette communauté.',
     'events_recurrence_disabled' => 'Les événements récurrents sont désactivés pour cette communauté.',
+    'events_recurrence_root_published' => 'Le modèle de répétition d\'une série publiée ne peut pas être modifié, car la régénération de ses dates supprimerait les occurrences pour lesquelles les personnes se sont déjà inscrites. Modifiez plutôt une seule occurrence ou annulez la série et créez-en une nouvelle.',
     'auth_required' => 'Authentification requise',
     'auth_required_detail' => 'Vous devez être connecté pour accéder à cette ressource.',
     'admin_access_required' => 'Accès administrateur requis',

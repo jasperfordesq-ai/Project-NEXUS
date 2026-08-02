@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Razón",
   "claims_reverse_success": "Recompensa revertida",
   "claims_reverse_failed": "La reversión no se completó: verifique el estado del reclamo",
-  "claims_cancel": "Cancelar"
+  "claims_cancel": "Cancelar",
+  "unsaved_changes_title": "Tienes cambios sin guardar",
+  "unsaved_changes_desc": "Tus cambios aún no están disponibles. Agregue un motivo para el cambio en Control de cambios en la parte inferior de esta página y luego elija Guardar.",
+  "save_hint_no_changes": "Aún no hay nada que guardar; primero cambie una configuración.",
+  "save_hint_reason_required": "Agregue un motivo arriba para habilitar Guardar.",
+  "reason_help": "Requerido. Registrado en el registro de auditoría para que la comunidad pueda ver quién cambió una política y por qué.",
+  "reason_required_error": "Se requiere un motivo antes de que se puedan guardar los cambios.",
+  "restore_needs_reason": "Agregue un motivo en Control de cambios para restaurar esta sección."
 }

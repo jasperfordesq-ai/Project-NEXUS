@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Reason",
   "claims_reverse_success": "Reward reversed",
   "claims_reverse_failed": "The reversal did not complete — check the claim status",
-  "claims_cancel": "Cancel"
+  "claims_cancel": "Cancel",
+  "unsaved_changes_title": "You have unsaved changes",
+  "unsaved_changes_desc": "Your changes are not live yet. Add a reason for the change under Change control at the bottom of this page, then choose Save.",
+  "save_hint_no_changes": "Nothing to save yet — change a setting first.",
+  "save_hint_reason_required": "Add a reason above to enable Save.",
+  "reason_help": "Required. Recorded in the audit log so the community can see who changed a policy and why.",
+  "reason_required_error": "A reason is required before your changes can be saved.",
+  "restore_needs_reason": "Add a reason under Change control to restore this section."
 }

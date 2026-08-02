@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'Event registration is disabled for this community.',
     'events_guests_disabled' => 'Guest registration is disabled for this community.',
     'events_recurrence_disabled' => 'Recurring Events are disabled for this community.',
+    'events_recurrence_root_published' => 'The repeat pattern of a published series cannot be changed, because regenerating its dates would discard occurrences people have already registered for. Edit a single occurrence instead, or cancel the series and create a new one.',
     // ============================================
     // AUTHENTICATION & AUTHORIZATION
     // ============================================

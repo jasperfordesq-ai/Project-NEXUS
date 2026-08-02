@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
@@ -61,5 +62,35 @@ describe('EventSettings', () => {
     expect(screen.getByRole('heading', { name: 'Current operational footprint' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Configuration history' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save Event settings' })).toBeDisabled();
+  });
+
+  it('explains why Save is disabled instead of leaving a dead button', async () => {
+    render(<EventSettings />);
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Event settings' })).toBeInTheDocument());
+
+    // Nothing touched yet: Save is disabled because there is nothing to save,
+    // and it says so. Previously it was simply inert, which read as a broken
+    // page — the whole point of this fix.
+    expect(screen.getByText('Nothing to save yet — change a setting first.')).toBeInTheDocument();
+    expect(screen.queryByText(/Your changes are not live yet/)).not.toBeInTheDocument();
+
+    // Flip a policy switch: now the blocker is the missing reason, and the page
+    // says that at the top as well as beside the button.
+    const registrationSwitch = screen.getByRole('switch', { name: 'Allow Event registration' });
+    await userEvent.click(registrationSwitch);
+
+    await waitFor(() => expect(screen.getByText(/Your changes are not live yet/)).toBeInTheDocument());
+    expect(screen.getByText('Add a reason above to enable Save.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save Event settings' })).toBeDisabled();
+
+    // Give a reason and Save becomes usable, with the warning gone.
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Reason for change' }),
+      'Turning registration off for the winter break.',
+    );
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save Event settings' })).toBeEnabled());
+    expect(screen.queryByText(/Your changes are not live yet/)).not.toBeInTheDocument();
   });
 });

@@ -60,7 +60,14 @@
       "error_code": "Cód diagnóiseach: {{code}}",
       "error_code_unknown": "Níl cód diagnóiseach ar fáil",
       "attempt_count": "{{count}} as {{max}}",
-      "generated_at": "Nuashonraithe {{time}}"
+      "generated_at": "Nuashonraithe {{time}}",
+      "health": {
+        "not_configured": "Níor bunaíodh comhpháirtithe",
+        "healthy": "Roinnt de ghnáth",
+        "delivering": "A sheoladh chuig comhpháirtithe",
+        "degraded": "Teastaíonn aird ar roinnt seachadtaí",
+        "withdrawn": "Tarraingthe siar ó chomhpháirtithe"
+      }
     }
   }
 }

@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'Tá clárú Imeachtaí díchumasaithe don phobal seo.',
     'events_guests_disabled' => 'Tá clárú aíonna díchumasaithe don phobal seo.',
     'events_recurrence_disabled' => 'Tá Imeachtaí athfhillteacha díchumasaithe don phobal seo.',
+    'events_recurrence_root_published' => 'Ní féidir an patrún athchraolta de shraith foilsithe a athrú, mar go gcuirfí deireadh le teagmhais ar chláraigh daoine dóibh cheana féin dá ndéanfaí na dátaí a athghiniúint. Cuir teagmhas amháin in eagar ina ionad sin, nó cuir an tsraith ar ceal agus cruthaigh ceann nua.',
     'auth_required' => 'Fíordheimhniú ag teastáil',
     'auth_required_detail' => 'Ní mór duit a bheith logáilte isteach chun an acmhainn seo a rochtain.',
     'admin_access_required' => 'Rochtain admin ag teastáil',

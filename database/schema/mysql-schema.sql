@@ -5121,6 +5121,7 @@ CREATE TABLE `event_offline_sync_items` (
   `expected_attendance_version` bigint(20) unsigned NOT NULL,
   `credential_fingerprint` char(16) NOT NULL,
   `credential_hash_reference` char(64) NOT NULL,
+  `scan_proof_verified` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1 when the device submitted the raw scanned credential, not just the manifest hash',
   `credential_id` bigint(20) unsigned DEFAULT NULL,
   `registration_id` bigint(20) unsigned DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
@@ -12326,7 +12327,7 @@ CREATE TABLE `laravel_migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=397 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=399 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `leaderboard_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -15500,6 +15501,21 @@ CREATE TABLE `pilot_inquiries` (
   KEY `pilot_inquiries_tenant_id_stage_index` (`tenant_id`,`stage`),
   KEY `pilot_inquiries_contact_email_index` (`contact_email`),
   KEY `pilot_inquiries_tenant_id_index` (`tenant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `platform_capability_overrides`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `platform_capability_overrides` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `capability` varchar(64) NOT NULL,
+  `value` varchar(64) NOT NULL,
+  `updated_by_user_id` int(10) unsigned DEFAULT NULL,
+  `reason` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `platform_capability_overrides_capability_unique` (`capability`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `podcast_episode_chapters`;
@@ -20497,7 +20513,9 @@ INSERT INTO `laravel_migrations` VALUES
 (392,'2026_07_27_000001_add_partner_api_kill_switch',101),
 (393,'2026_08_01_000001_create_partner_venue_tables',102),
 (394,'2026_08_01_000002_add_event_attendance_credit_amount',103),
-(396,'2026_08_02_000001_add_events_perf_indexes',104);
+(396,'2026_08_02_000001_add_events_perf_indexes',104),
+(397,'2026_08_02_000002_add_offline_checkin_scan_proof',105),
+(398,'2026_08_02_000003_create_platform_capability_overrides',106);
 /*!40000 ALTER TABLE `laravel_migrations` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

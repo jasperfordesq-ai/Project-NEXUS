@@ -60,7 +60,14 @@
       "error_code": "رمز التشخيص: {{code}}",
       "error_code_unknown": "رمز التشخيص غير متاح",
       "attempt_count": "{{count}} من {{max}}",
-      "generated_at": "آخر تحديث: {{time}}"
+      "generated_at": "آخر تحديث: {{time}}",
+      "health": {
+        "not_configured": "لم يتم إعداد أي شركاء",
+        "healthy": "المشاركة بشكل طبيعي",
+        "delivering": "إرسال إلى الشركاء",
+        "degraded": "بعض عمليات التسليم تحتاج إلى الاهتمام",
+        "withdrawn": "انسحبت من الشركاء"
+      }
     }
   }
 }

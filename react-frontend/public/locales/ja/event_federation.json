@@ -60,7 +60,14 @@
       "error_code": "診断コード: {{code}}",
       "error_code_unknown": "診断コードを利用できません",
       "attempt_count": "{{max}}回中{{count}}回",
-      "generated_at": "更新日時: {{time}}"
+      "generated_at": "更新日時: {{time}}",
+      "health": {
+        "not_configured": "パートナーが設定されていません",
+        "healthy": "通常の共有",
+        "delivering": "パートナーに送信する",
+        "degraded": "一部の配送には注意が必要です",
+        "withdrawn": "パートナーから撤退しました"
+      }
     }
   }
 }

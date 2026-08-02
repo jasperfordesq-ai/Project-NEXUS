@@ -60,7 +60,14 @@
       "error_code": "Diagnosecode: {{code}}",
       "error_code_unknown": "Diagnosecode niet beschikbaar",
       "attempt_count": "{{count}} van {{max}}",
-      "generated_at": "Bijgewerkt: {{time}}"
+      "generated_at": "Bijgewerkt: {{time}}",
+      "health": {
+        "not_configured": "Er zijn geen partners ingesteld",
+        "healthy": "Normaal delen",
+        "delivering": "Verzenden naar partners",
+        "degraded": "Sommige leveringen hebben aandacht nodig",
+        "withdrawn": "Teruggetrokken van partners"
+      }
     }
   }
 }

@@ -157,6 +157,7 @@
   "algorithm_settings": "Configuración del algoritmo",
   "seo_overview": "Descripción general de SEO",
   "prerender_engine": "Motor de prerenderizado",
+  "platform_capabilities": "Interruptores de la plataforma",
   "error_404_tracking": "Seguimiento de errores 404",
   "match_debug_panel": "Panel de depuración de coincidencias",
   "timebanking": "banco de tiempo",

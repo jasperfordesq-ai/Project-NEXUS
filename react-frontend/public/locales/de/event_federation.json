@@ -60,7 +60,14 @@
       "error_code": "Diagnosecode: {{code}}",
       "error_code_unknown": "Diagnosecode nicht verfügbar",
       "attempt_count": "{{count}} von {{max}}",
-      "generated_at": "Aktualisiert: {{time}}"
+      "generated_at": "Aktualisiert: {{time}}",
+      "health": {
+        "not_configured": "Es wurden keine Partner eingerichtet",
+        "healthy": "Normales Teilen",
+        "delivering": "Versand an Partner",
+        "degraded": "Einige Lieferungen erfordern Aufmerksamkeit",
+        "withdrawn": "Von Partnern zurückgezogen"
+      }
     }
   }
 }

@@ -60,7 +60,14 @@
       "error_code": "Code de diagnostic : {{code}}",
       "error_code_unknown": "Code de diagnostic indisponible",
       "attempt_count": "{{count}} sur {{max}}",
-      "generated_at": "Mis à jour : {{time}}"
+      "generated_at": "Mis à jour : {{time}}",
+      "health": {
+        "not_configured": "Aucun partenaire configuré",
+        "healthy": "Partager normalement",
+        "delivering": "Envoi aux partenaires",
+        "degraded": "Certaines livraisons nécessitent une attention particulière",
+        "withdrawn": "Retiré des partenaires"
+      }
     }
   }
 }

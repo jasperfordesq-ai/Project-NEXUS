@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Powód",
   "claims_reverse_success": "Nagroda odwrócona",
   "claims_reverse_failed": "Cofanie nie zostało zakończone — sprawdź status roszczenia",
-  "claims_cancel": "Anulować"
+  "claims_cancel": "Anulować",
+  "unsaved_changes_title": "Masz niezapisane zmiany",
+  "unsaved_changes_desc": "Twoje zmiany nie są jeszcze aktywne. Dodaj przyczynę zmiany w obszarze Kontrola zmian u dołu tej strony, a następnie wybierz pozycję Zapisz.",
+  "save_hint_no_changes": "Nie ma jeszcze nic do zapisania — najpierw zmień ustawienie.",
+  "save_hint_reason_required": "Dodaj powód powyżej, aby włączyć funkcję Zapisz.",
+  "reason_help": "Wymagany. Zapisywane w dzienniku audytu, aby społeczność mogła zobaczyć, kto i dlaczego zmienił politykę.",
+  "reason_required_error": "Aby zmiany mogły zostać zapisane, wymagany jest powód.",
+  "restore_needs_reason": "Dodaj powód w obszarze Kontrola zmian, aby przywrócić tę sekcję."
 }

@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Motivo",
   "claims_reverse_success": "Ricompensa invertita",
   "claims_reverse_failed": "Lo storno non è stato completato: controlla lo stato del reclamo",
-  "claims_cancel": "Cancellare"
+  "claims_cancel": "Cancellare",
+  "unsaved_changes_title": "Sono presenti modifiche non salvate",
+  "unsaved_changes_desc": "Le tue modifiche non sono ancora attive. Aggiungi un motivo per la modifica in Controllo modifica nella parte inferiore di questa pagina, quindi seleziona Salva.",
+  "save_hint_no_changes": "Niente da salvare ancora: modifica prima un'impostazione.",
+  "save_hint_reason_required": "Aggiungi un motivo qui sopra per abilitare il salvataggio.",
+  "reason_help": "Necessario. Registrato nel registro di controllo in modo che la comunità possa vedere chi ha modificato una politica e perché.",
+  "reason_required_error": "È necessario un motivo prima che le modifiche possano essere salvate.",
+  "restore_needs_reason": "Aggiungi un motivo in Modifica controllo per ripristinare questa sezione."
 }

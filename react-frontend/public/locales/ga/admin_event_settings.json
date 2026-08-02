@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Cúis",
   "claims_reverse_success": "Luach saothair aisiompaithe",
   "claims_reverse_failed": "Níor chríochnaigh an aisiompú - seiceáil stádas an éilimh",
-  "claims_cancel": "Cealaigh"
+  "claims_cancel": "Cealaigh",
+  "unsaved_changes_title": "Tá athruithe gan sábháil agat",
+  "unsaved_changes_desc": "Níl d'athruithe beo go fóill. Cuir cúis leis an athrú faoi Rialú Athrú ag bun an leathanaigh seo, ansin roghnaigh Sábháil.",
+  "save_hint_no_changes": "Níl aon rud le sábháil go fóill - athraigh socrú ar dtús.",
+  "save_hint_reason_required": "Cuir cúis leis thuas chun Sábháil a chumasú.",
+  "reason_help": "Ag teastáil. Taifeadta sa loga iniúchta ionas gur féidir leis an bpobal a fheiceáil cé a d'athraigh polasaí agus cén fáth.",
+  "reason_required_error": "Tá cúis ag teastáil sular féidir do chuid athruithe a shábháil.",
+  "restore_needs_reason": "Cuir cúis leis faoi Rialú Athraithe chun an chuid seo a athchóiriú."
 }

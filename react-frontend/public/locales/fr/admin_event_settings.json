@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Raison",
   "claims_reverse_success": "Récompense inversée",
   "claims_reverse_failed": "L'annulation n'a pas abouti : vérifiez l'état de la réclamation.",
-  "claims_cancel": "Annuler"
+  "claims_cancel": "Annuler",
+  "unsaved_changes_title": "Vous avez des modifications non enregistrées",
+  "unsaved_changes_desc": "Vos modifications ne sont pas encore actives. Ajoutez une raison pour la modification sous Contrôle des modifications au bas de cette page, puis choisissez Enregistrer.",
+  "save_hint_no_changes": "Rien à enregistrer pour l'instant : modifiez d'abord un paramètre.",
+  "save_hint_reason_required": "Ajoutez une raison ci-dessus pour activer Enregistrer.",
+  "reason_help": "Requis. Enregistré dans le journal d'audit afin que la communauté puisse voir qui a modifié une politique et pourquoi.",
+  "reason_required_error": "Une raison est requise avant que vos modifications puissent être enregistrées.",
+  "restore_needs_reason": "Ajoutez une raison sous Contrôle des modifications pour restaurer cette section."
 }

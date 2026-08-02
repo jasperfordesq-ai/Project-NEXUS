@@ -60,7 +60,14 @@
       "error_code": "Diagnostic code: {{code}}",
       "error_code_unknown": "Diagnostic code unavailable",
       "attempt_count": "{{count}} of {{max}}",
-      "generated_at": "Updated {{time}}"
+      "generated_at": "Updated {{time}}",
+      "health": {
+        "not_configured": "No partners set up",
+        "healthy": "Sharing normally",
+        "delivering": "Sending to partners",
+        "degraded": "Some deliveries need attention",
+        "withdrawn": "Withdrawn from partners"
+      }
     }
   }
 }

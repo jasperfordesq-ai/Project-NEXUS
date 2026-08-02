@@ -154,5 +154,12 @@
   "claims_reverse_reason": "Reden",
   "claims_reverse_success": "Beloning omgekeerd",
   "claims_reverse_failed": "De terugboeking is niet voltooid. Controleer de claimstatus",
-  "claims_cancel": "Annuleren"
+  "claims_cancel": "Annuleren",
+  "unsaved_changes_title": "U heeft niet-opgeslagen wijzigingen",
+  "unsaved_changes_desc": "Uw wijzigingen zijn nog niet live. Voeg een reden voor de wijziging toe onder Wijzigingsbeheer onderaan deze pagina en kies vervolgens Opslaan.",
+  "save_hint_no_changes": "Er is nog niets om op te slaan. Wijzig eerst een instelling.",
+  "save_hint_reason_required": "Voeg hierboven een reden toe om Opslaan in te schakelen.",
+  "reason_help": "Vereist. Opgenomen in het auditlogboek, zodat de community kan zien wie een beleid heeft gewijzigd en waarom.",
+  "reason_required_error": "Er is een reden vereist voordat uw wijzigingen kunnen worden opgeslagen.",
+  "restore_needs_reason": "Voeg een reden toe onder Wijzigingsbeheer om deze sectie te herstellen."
 }

@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'Rejestracja na wydarzenia jest wyłączona w tej społeczności.',
     'events_guests_disabled' => 'Rejestracja gości jest wyłączona w tej społeczności.',
     'events_recurrence_disabled' => 'Wydarzenia cykliczne są wyłączone w tej społeczności.',
+    'events_recurrence_root_published' => 'Nie można zmienić schematu powtórzeń opublikowanej serii, ponieważ ponowne wygenerowanie jej dat spowodowałoby odrzucenie wydarzeń, na które ludzie już się zarejestrowali. Zamiast tego edytuj pojedyncze wystąpienie lub anuluj serię i utwórz nowe.',
     'auth_required' => 'Wymagane uwierzytelnienie',
     'auth_required_detail' => 'Aby uzyskać dostęp do tego zasobu, musisz się zalogować.',
     'admin_access_required' => 'Wymagany dostęp administratora',

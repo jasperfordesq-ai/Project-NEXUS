@@ -154,5 +154,12 @@
   "claims_reverse_reason": "理由",
   "claims_reverse_success": "報酬が逆転",
   "claims_reverse_failed": "取り消しは完了しませんでした - 請求ステータスを確認してください",
-  "claims_cancel": "キャンセル"
+  "claims_cancel": "キャンセル",
+  "unsaved_changes_title": "未保存の変更があります",
+  "unsaved_changes_desc": "変更はまだ反映されていません。このページの下部にある [変更管理] に変更の理由を追加し、[保存] を選択します。",
+  "save_hint_no_changes": "まだ保存するものはありません。最初に設定を変更してください。",
+  "save_hint_reason_required": "保存を有効にする理由を上に追加します。",
+  "reason_help": "必須。監査ログに記録されるため、コミュニティは誰が、なぜポリシーを変更したかを確認できます。",
+  "reason_required_error": "変更を保存するには理由が必要です。",
+  "restore_needs_reason": "このセクションを復元する理由を「変更制御」の下に追加します。"
 }

@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'Veranstaltungsanmeldungen sind für diese Community deaktiviert.',
     'events_guests_disabled' => 'Gastregistrierungen sind für diese Community deaktiviert.',
     'events_recurrence_disabled' => 'Wiederkehrende Veranstaltungen sind für diese Community deaktiviert.',
+    'events_recurrence_root_published' => 'Das Wiederholungsmuster einer veröffentlichten Serie kann nicht geändert werden, da durch die Neugenerierung ihrer Daten Ereignisse verworfen würden, für die sich Personen bereits registriert haben. Bearbeiten Sie stattdessen ein einzelnes Vorkommen oder brechen Sie die Serie ab und erstellen Sie eine neue.',
     'auth_required' => 'Authentifizierung erforderlich',
     'auth_required_detail' => 'Sie müssen angemeldet sein, um auf diese Ressource zugreifen zu können.',
     'admin_access_required' => 'Administratorzugriff erforderlich',

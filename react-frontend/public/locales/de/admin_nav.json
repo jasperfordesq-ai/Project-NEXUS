@@ -157,6 +157,7 @@
   "algorithm_settings": "Algorithmuseinstellungen",
   "seo_overview": "SEO-Übersicht",
   "prerender_engine": "Prerender-Engine",
+  "platform_capabilities": "Plattform-Schalter",
   "error_404_tracking": "404-Fehlerverfolgung",
   "match_debug_panel": "Match-Debug-Panel",
   "timebanking": "Zeitbanking",

@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'Registratie voor evenementen is uitgeschakeld voor deze community.',
     'events_guests_disabled' => 'Gastregistratie is uitgeschakeld voor deze community.',
     'events_recurrence_disabled' => 'Terugkerende evenementen zijn uitgeschakeld voor deze community.',
+    'events_recurrence_root_published' => 'Het herhalingspatroon van een gepubliceerde serie kan niet worden gewijzigd, omdat het opnieuw genereren van de datums gebeurtenissen waarvoor mensen zich al hebben geregistreerd, zou weggooien. Bewerk in plaats daarvan één exemplaar of annuleer de reeks en maak een nieuwe.',
     'auth_required' => 'Authenticatie vereist',
     'auth_required_detail' => 'U moet ingelogd zijn om toegang te krijgen tot deze bron.',
     'admin_access_required' => 'Beheerderstoegang vereist',

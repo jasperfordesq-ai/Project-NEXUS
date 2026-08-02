@@ -24,6 +24,7 @@ return [
     'events_registration_disabled' => 'A inscrição em eventos está desativada para esta comunidade.',
     'events_guests_disabled' => 'A inscrição de convidados está desativada para esta comunidade.',
     'events_recurrence_disabled' => 'Os eventos recorrentes estão desativados para esta comunidade.',
+    'events_recurrence_root_published' => 'O padrão de repetição de uma série publicada não pode ser alterado, pois a regeneração de suas datas descartaria ocorrências nas quais as pessoas já se registraram. Edite uma única ocorrência ou cancele a série e crie uma nova.',
     'auth_required' => 'Autenticação necessária',
     'auth_required_detail' => 'Você deve estar logado para acessar este recurso.',
     'admin_access_required' => 'Acesso de administrador necessário',

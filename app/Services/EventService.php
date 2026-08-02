@@ -5758,8 +5758,13 @@ class EventService
     private static function assertDraftRecurrenceRoot(object $template): void
     {
         if ((string) ($template->publication_status ?? '') !== EventPublicationState::Draft->value) {
+            // Refusing is correct — regenerating a published series would
+            // discard occurrences people have registered for. But the old
+            // message was the generic "Invalid status", which told an organiser
+            // nothing: they simply saw their save fail. Say what the rule is
+            // and what they can do instead.
             throw ValidationException::withMessages([
-                'publication_status' => [__('api.invalid_status')],
+                'publication_status' => [__('api.events_recurrence_root_published')],
             ]);
         }
     }

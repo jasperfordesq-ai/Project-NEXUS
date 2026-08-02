@@ -60,7 +60,14 @@
       "error_code": "Kod diagnostyczny: {{code}}",
       "error_code_unknown": "Kod diagnostyczny niedostępny",
       "attempt_count": "{{count}} z {{max}}",
-      "generated_at": "Zaktualizowano: {{time}}"
+      "generated_at": "Zaktualizowano: {{time}}",
+      "health": {
+        "not_configured": "Brak skonfigurowanych partnerów",
+        "healthy": "Udostępnianie normalnie",
+        "delivering": "Wysyłanie do partnerów",
+        "degraded": "Niektóre dostawy wymagają uwagi",
+        "withdrawn": "Wycofane partnerom"
+      }
     }
   }
 }

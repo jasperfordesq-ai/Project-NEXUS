@@ -1028,6 +1028,20 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Platform rollout switches the owner set in the UI override their
+        // environment defaults. Applied here, once, so every existing
+        // config('events...') read picks them up with no call site changing.
+        // Only capabilities with a stored row are touched, and the lookup fails
+        // open to the environment — a missing or unreadable table must never
+        // slam every gate shut.
+        try {
+            app(\App\Services\PlatformCapabilityService::class)->applyToConfig();
+        } catch (\Throwable $exception) {
+            \Illuminate\Support\Facades\Log::warning('Platform capability overrides not applied', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
         // Cloudflare terminates TLS and proxies to origin as HTTP. Without this,
         // route()/url() emit http:// URLs that the browser blocks via CSP
         // (form-action 'self') because the page is loaded over https://.
