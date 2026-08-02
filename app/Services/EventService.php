@@ -5755,6 +5755,25 @@ class EventService
         return $inserted;
     }
 
+    /**
+     * Can this occurrence carry per-occurrence override evidence?
+     *
+     * Mirrors exactly what the `events` override-evidence trigger demands, so
+     * we never attempt a write the database will reject: a recurrence identity
+     * plus the v2 (sabre-vobject) engine at version 2. Legacy occurrences —
+     * everything the default engine has ever produced — answer false.
+     */
+    private static function supportsRecurrenceOverrideEvidence(object $event): bool
+    {
+        $recurrenceId = trim((string) ($event->getRawOriginal('recurrence_id') ?? ''));
+        $engine = trim((string) ($event->getRawOriginal('recurrence_engine') ?? ''));
+        $engineVersion = trim((string) ($event->getRawOriginal('recurrence_engine_version') ?? ''));
+
+        return $recurrenceId !== ''
+            && $engine === EventRecurrenceService::ENGINE
+            && $engineVersion === '2';
+    }
+
     private static function assertDraftRecurrenceRoot(object $template): void
     {
         if ((string) ($template->publication_status ?? '') !== EventPublicationState::Draft->value) {
@@ -6222,21 +6241,38 @@ class EventService
                             $actualChangedFields,
                         )));
                         sort($overrideFields);
-                        DB::table('events')
-                            ->where('tenant_id', $tenantId)
-                            ->where('id', $eventId)
-                            ->where('parent_event_id', $rootId)
-                            ->update([
-                                'is_recurrence_exception' => 1,
-                                'recurrence_override_fields' => json_encode($overrideFields, JSON_THROW_ON_ERROR),
-                                'recurrence_override_version' => max(
-                                    0,
-                                    (int) ($storedOverrides->recurrence_override_version ?? 0),
-                                ) + 1,
-                                'recurrence_override_updated_at' => now(),
-                                'recurrence_override_updated_by' => $userId,
-                                'updated_at' => now(),
-                            ]);
+
+                        // 🔴 Per-occurrence override evidence is v2-engine
+                        // machinery, and the DB trigger enforces that: it
+                        // requires recurrence_id plus engine 'sabre-vobject'
+                        // version '2', and SIGNALs
+                        // event_recurrence_override_evidence_invalid otherwise.
+                        // Legacy occurrences have none of those columns, so
+                        // writing evidence for one threw — which made editing a
+                        // single occurrence of ANY recurring event fail
+                        // outright, on every tenant, because the legacy engine
+                        // is the default. The content edit above has already
+                        // succeeded; for a legacy row we simply do not record
+                        // override tracking it has no concept of. (The
+                        // revision recording below is already guarded the same
+                        // way, on recurrence_id.)
+                        if (self::supportsRecurrenceOverrideEvidence($event)) {
+                            DB::table('events')
+                                ->where('tenant_id', $tenantId)
+                                ->where('id', $eventId)
+                                ->where('parent_event_id', $rootId)
+                                ->update([
+                                    'is_recurrence_exception' => 1,
+                                    'recurrence_override_fields' => json_encode($overrideFields, JSON_THROW_ON_ERROR),
+                                    'recurrence_override_version' => max(
+                                        0,
+                                        (int) ($storedOverrides->recurrence_override_version ?? 0),
+                                    ) + 1,
+                                    'recurrence_override_updated_at' => now(),
+                                    'recurrence_override_updated_by' => $userId,
+                                    'updated_at' => now(),
+                                ]);
+                        }
                         $recurrenceId = trim((string) $event->getRawOriginal('recurrence_id'));
                         $occurrenceKey = trim((string) $event->getRawOriginal('occurrence_key'));
                         if ($recurrenceId !== '' && $occurrenceKey !== '') {

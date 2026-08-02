@@ -139,6 +139,87 @@ final class PlatformCapabilityOverrideTest extends TestCase
         self::assertCount(count(PlatformCapabilityService::CAPABILITIES), $rows);
     }
 
+    public function test_a_platform_super_admin_can_actually_read_and_save_a_switch(): void
+    {
+        // 🔴 This is the test that was missing. The suite only proved a tenant
+        // admin is REFUSED, so the success path was never executed once — and it
+        // 500'd in production on the first click, because the controller called
+        // a BaseApiController helper (getJsonInput) that does not exist.
+        // Refusal tests alone do not prove an endpoint works.
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+        $this->actingAs($owner);
+
+        $this->apiGet('/v2/admin/super/platform-capabilities')
+            ->assertStatus(200)
+            ->assertJsonPath('data.capabilities.0.capability', 'attendance_credits');
+
+        $save = $this->apiPut('/v2/admin/super/platform-capabilities', [
+            'capability' => 'attendance_credits',
+            'value' => 'treasury',
+            'reason' => 'Enabling for the Coventry pilot.',
+        ]);
+        $save->assertStatus(200);
+
+        self::assertSame(
+            'treasury',
+            (string) DB::table('platform_capability_overrides')
+                ->where('capability', 'attendance_credits')
+                ->value('value'),
+            'The switch must actually persist, not just return 200.',
+        );
+
+        // A boolean switch sent as a real JSON boolean must work too — that is
+        // what the UI's toggle sends.
+        $this->apiPut('/v2/admin/super/platform-capabilities', [
+            'capability' => 'recurrence_v2',
+            'value' => true,
+        ])->assertStatus(200);
+
+        self::assertSame(
+            '1',
+            (string) DB::table('platform_capability_overrides')
+                ->where('capability', 'recurrence_v2')
+                ->value('value'),
+        );
+
+        // And reverting must clear it.
+        $this->apiPut('/v2/admin/super/platform-capabilities', [
+            'capability' => 'recurrence_v2',
+            'clear' => true,
+        ])->assertStatus(200);
+
+        self::assertSame(
+            0,
+            (int) DB::table('platform_capability_overrides')->where('capability', 'recurrence_v2')->count(),
+        );
+    }
+
+    public function test_a_rejected_value_answers_422_rather_than_500(): void
+    {
+        $owner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active',
+            'is_approved' => true,
+            'role' => 'admin',
+            'is_super_admin' => true,
+        ]);
+        $this->actingAs($owner);
+
+        $this->apiPut('/v2/admin/super/platform-capabilities', [
+            'capability' => 'attendance_credits',
+            'value' => 'unlimited_free_money',
+        ])->assertStatus(422);
+
+        $this->apiPut('/v2/admin/super/platform-capabilities', [
+            'capability' => 'app.key',
+            'value' => 'anything',
+        ])->assertStatus(422);
+    }
+
     public function test_the_endpoints_require_platform_super_admin(): void
     {
         $tenantAdmin = User::factory()->forTenant($this->testTenantId)->create([

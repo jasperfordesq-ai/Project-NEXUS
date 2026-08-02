@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Editing one occurrence of a repeating event failed for everyone.** Saving a single occurrence also tried to record per-occurrence "override" bookkeeping, but the database only accepts that bookkeeping from the newer recurrence engine — and every occurrence any community has ever created came from the older engine, which is the default. So the save was rejected outright. The content change itself was always valid; only the bookkeeping was impossible, so it is now skipped for older-engine occurrences, which have no concept of it. Every recurring occurrence on the platform was affected.
+
+  This also corrects an earlier note in this changelog: the published-series restriction described previously is real, but it was *not* what blocked these saves.
+
+- **The new Platform switches screen returned a server error on every change.** The endpoint called a helper that does not exist on the base controller, so the first click failed. Its test only proved that a community administrator is *refused* — the working path was never once executed. It is now covered end to end: reading the switches, saving a mode, saving a toggle, reverting to the server setting, and rejecting a bad value with a clear message rather than a crash.
+
+- **Moved Platform switches out of Growth & Discovery** into Platform operations, beside Module configuration, where the per-community switches it governs already live. It had been filed under SEO only because that was where the one other owner-level screen happened to sit.
+
 ### Added
 
 - **Platform switches you can set yourself.** Platform-wide rollout gates — the attendance-credit engine, the newer recurring-events engine, rolling recurrence, recurrence blueprints, timed waitlist offers and optional analytics — used to live only in server environment variables, so raising one needed someone with server access. There is now a Platform switches screen for the platform owner. A switch there sets the ceiling; each community still controls its own settings underneath, so turning something on centrally never enables it for anybody by itself, and reverting a switch hands the decision back to the server configuration. Only that fixed list of switches can be changed, and a tenant administrator cannot reach the screen at all.

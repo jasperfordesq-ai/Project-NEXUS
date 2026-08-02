@@ -74,6 +74,7 @@ import Cpu from 'lucide-react/icons/cpu';
 import Handshake from 'lucide-react/icons/handshake';
 import MapPin from 'lucide-react/icons/map-pin';
 import Puzzle from 'lucide-react/icons/puzzle';
+import SlidersHorizontal from 'lucide-react/icons/sliders-horizontal';
 import Podcast from 'lucide-react/icons/podcast';
 import Palette from 'lucide-react/icons/palette';
 import ShoppingBag from 'lucide-react/icons/shopping-bag';
@@ -381,7 +382,6 @@ function useAdminNav(): NavSection[] {
           { label: t('seo_overview'), href: '/admin/seo', icon: Search },
           { label: t('search_analytics'), href: '/admin/search-analytics', icon: BarChart3, keywords: keyword(t('search_keywords.search_analytics')) },
           ...(isPlatformSuperAdmin ? [{ label: t('prerender_engine'), href: '/admin/seo/prerender', icon: Zap }] : []),
-          ...(isPlatformSuperAdmin ? [{ label: t('platform_capabilities'), href: '/admin/platform-capabilities', icon: Zap }] : []),
           { label: t('error_404_tracking'), href: '/admin/404-errors', icon: AlertTriangle, keywords: keyword(t('search_keywords.error_404_tracking')) },
         ],
       },
@@ -431,6 +431,7 @@ function useAdminNav(): NavSection[] {
           { label: t('settings'), href: '/admin/settings', icon: Settings },
           { label: t('onboarding_settings'), href: '/admin/onboarding-settings', icon: Heart },
           ...(isSuperAdmin ? [{ label: t('module_configuration'), href: '/admin/module-configuration', icon: Puzzle }] : []),
+          ...(isPlatformSuperAdmin ? [{ label: t('platform_capabilities'), href: '/admin/platform-capabilities', icon: SlidersHorizontal }] : []),
           { label: t('operations'), href: '/admin/operations', icon: Activity },
           { label: t('support_reports'), href: '/admin/support-reports', icon: Bug, keywords: keyword(t('search_keywords.support_reports')) },
           { label: t('translation_config'), href: '/admin/translation-config', icon: Languages },

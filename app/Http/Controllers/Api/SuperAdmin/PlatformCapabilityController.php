@@ -40,7 +40,9 @@ final class PlatformCapabilityController extends BaseApiController
         $actorId = $this->requirePlatformSuperAdmin();
         $this->rateLimit('platform_capability_update', 20, 60);
 
-        $input = $this->getJsonInput();
+        // getAllInput(), not getJsonInput() — the latter does not exist on
+        // BaseApiController, and calling it 500s the whole request.
+        $input = $this->getAllInput();
         $capability = is_string($input['capability'] ?? null) ? trim($input['capability']) : '';
         $reason = is_string($input['reason'] ?? null) ? $input['reason'] : null;
 
