@@ -174,6 +174,9 @@ final class EventLifecycleServiceTest extends TestCase
                     'reminders_cancelled' => 0,
                     'waitlist_cancelled' => 0,
                     'registrations_cancelled' => 0,
+                    'broadcasts_cancelled' => 0,
+                    'broadcast_deliveries_cancelled' => 0,
+                    'broadcasts_skipped_in_flight' => 0,
                 ],
             ],
             json_decode((string) $history->metadata, true, 512, JSON_THROW_ON_ERROR),
@@ -616,6 +619,9 @@ final class EventLifecycleServiceTest extends TestCase
             'reminders_cancelled' => 1,
             'waitlist_cancelled' => 1,
             'registrations_cancelled' => 2,
+            'broadcasts_cancelled' => 0,
+            'broadcast_deliveries_cancelled' => 0,
+            'broadcasts_skipped_in_flight' => 0,
         ], $result->cascade);
         $recipients = $result->affectedRecipientUserIds;
         sort($recipients);
@@ -749,6 +755,9 @@ final class EventLifecycleServiceTest extends TestCase
             'reminders_cancelled' => 1,
             'waitlist_cancelled' => 1,
             'registrations_cancelled' => 3,
+            'broadcasts_cancelled' => 0,
+            'broadcast_deliveries_cancelled' => 0,
+            'broadcasts_skipped_in_flight' => 0,
         ], $result->cascade);
         self::assertSame(3, DB::table('event_registrations')
             ->where('event_id', $event->id)

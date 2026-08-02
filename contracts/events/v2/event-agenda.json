@@ -3,6 +3,11 @@
   "event_id": 101,
   "agenda_version": 3,
   "timezone": "Europe/Dublin",
+  "event_status": {
+    "operational_status": "scheduled",
+    "publication_status": "published",
+    "is_cancelled": false
+  },
   "permissions": {
     "manage": false
   },
