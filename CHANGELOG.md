@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Changed
+
+- **The old recurring-events engine has been retired and removed.** The platform carried two engines for months; the newer one is now the only one. This removes the split that caused editing a single occurrence to fail, and it retires a generator with real defects: it ignored the weekdays an organiser selected (a "every Monday and Thursday" series simply repeated weekly from whatever day it started), it treated the first occurrence as one interval *after* the date you chose rather than on it, and it could not record that an individual occurrence had been changed.
+
+  Two deliberate consequences. **A series can now run to 366 occurrences instead of 52** — the old ceiling was a limitation of the removed generator. And **the rollout switch no longer restores the old behaviour**: it now governs only the optional extras (rolling recurrence, revisions, blueprints) and what the API advertises. Turning it off does not bring the old engine back, because there is nothing to bring back.
+
+  Existing series were converted first, and protection against a double-submitted series — which previously only guarded the old path — was carried over to the new one rather than deleted with it.
 
 - **A tool to finish the recurring-events engine migration.** The platform has carried two recurrence engines for some time: the older one that every existing repeating event uses, and a newer one that was built to replace it but never switched on. Being stuck between the two is what broke editing a single occurrence, because the database was enforcing the new engine's rules on the old engine's data. `events:migrate-recurrence-to-v2` converts existing series onto the newer engine properly — translating each series' repeat pattern using the engine's own logic rather than a reimplementation, and giving every occurrence the calendar identity the newer engine expects.
 

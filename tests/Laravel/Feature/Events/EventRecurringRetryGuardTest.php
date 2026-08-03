@@ -19,12 +19,13 @@ use Tests\Laravel\TestCase;
 /**
  * A retried "create recurring series" request must not create a second series.
  *
- * The legacy engine (the DEFAULT — events.recurrence.engine_v2_enabled is
- * false) derives each occurrence_key from the new row's own auto-increment id,
- * so the schema's unique key on (tenant_id, occurrence_key) can never fire for
- * a repeat submission. A double-click or a client retry therefore produced a
- * complete duplicate set of occurrences that nothing downstream could tell
- * apart.
+ * 🔴 STILL REQUIRED AFTER THE LEGACY ENGINE WAS REMOVED. v2's occurrence keys
+ * are content-derived, so duplicate OCCURRENCES inside one series are
+ * structurally impossible — but a retried request builds a NEW template with
+ * its own keys, so nothing stops a second complete series. The endpoint has no
+ * idempotency key, only a 5/min rate limit. Deleting this guard along with the
+ * legacy generator would have reintroduced the bug on the engine everything now
+ * uses.
  */
 final class EventRecurringRetryGuardTest extends TestCase
 {
@@ -33,7 +34,6 @@ final class EventRecurringRetryGuardTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config(['events.recurrence.engine_v2_enabled' => false]);
         TenantContext::reset();
         TenantContext::setById($this->testTenantId);
     }

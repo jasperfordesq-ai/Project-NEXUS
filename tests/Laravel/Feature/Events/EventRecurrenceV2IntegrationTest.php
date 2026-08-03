@@ -803,23 +803,46 @@ final class EventRecurrenceV2IntegrationTest extends TestCase
             ->count());
     }
 
-    public function test_rollout_flag_off_preserves_legacy_engine_and_count_semantics(): void
+    /**
+     * Turning the rollout flag off must NOT silently resurrect the old engine.
+     *
+     * This test used to assert the opposite — that a false flag produced a
+     * 'legacy' series. The legacy generator has since been REMOVED, so there is
+     * nothing to fall back to. The flag now governs only the optional v2 extras
+     * (materialization, revisions, blueprints) and what capability the API
+     * advertises. Pinning that here stops anyone from assuming the switch is
+     * still a way back to the old behaviour.
+     */
+    public function test_the_rollout_flag_no_longer_gates_creation(): void
     {
         config()->set('events.recurrence.engine_v2_enabled', false);
         $organizer = $this->activeUser();
         Sanctum::actingAs($organizer, ['*']);
 
         $created = $this->apiPost('/v2/events/recurring', $this->payload([
-            'title' => 'Legacy recurrence remains authoritative',
+            'title' => 'Series created with the rollout flag off',
             'recurrence_frequency' => 'weekly',
             'recurrence_ends_type' => 'after_count',
             'recurrence_ends_after_count' => 2,
         ]))->assertCreated();
         $templateId = (int) $created->json('data.template.id');
 
-        $this->assertSame('legacy', DB::table('events')->where('id', $templateId)->value('recurrence_engine'));
-        $this->assertSame('1', DB::table('events')->where('id', $templateId)->value('recurrence_engine_version'));
+        $this->assertSame(
+            'sabre-vobject',
+            DB::table('events')->where('id', $templateId)->value('recurrence_engine'),
+            'Creation is v2 regardless of the flag — the legacy engine no longer exists.',
+        );
+        $this->assertSame('2', DB::table('events')->where('id', $templateId)->value('recurrence_engine_version'));
+
+        // v2 counts the start date as the first occurrence, the way calendar
+        // software does; legacy started one interval later. COUNT=2 therefore
+        // yields 2 occurrences including the DTSTART instant.
         $this->assertSame(2, DB::table('events')->where('parent_event_id', $templateId)->count());
+        $this->assertSame(
+            0,
+            DB::table('events')->where('parent_event_id', $templateId)->whereNull('recurrence_id')->count(),
+            'Every occurrence carries a v2 calendar identity.',
+        );
     }
 
     private function activeUser(): User

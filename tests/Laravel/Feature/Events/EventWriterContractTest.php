@@ -621,15 +621,20 @@ final class EventWriterContractTest extends TestCase
 
         $this->assertSame(1, (int) $template->is_recurring_template);
         $this->assertNull($template->occurrence_key);
-        $this->assertSame('legacy', $template->recurrence_engine);
-        $this->assertSame('1', $template->recurrence_engine_version);
+        // v2 is the only engine now — the legacy generator was removed.
+        $this->assertSame('sabre-vobject', $template->recurrence_engine);
+        $this->assertSame('2', $template->recurrence_engine_version);
         $this->assertSame('draft', $template->status);
         $this->assertCount(2, $occurrences);
         foreach ($occurrences as $occurrence) {
-            $this->assertSame("event:{$this->testTenantId}:{$occurrence->id}", $occurrence->occurrence_key);
-            $this->assertSame('legacy', $occurrence->recurrence_engine);
-            $this->assertSame('1', $occurrence->recurrence_engine_version);
+            // Content-derived key, not one built from the row's own id: that is
+            // what makes a repeat submission structurally unable to duplicate an
+            // occurrence.
+            $this->assertStringStartsWith('recurrence:', (string) $occurrence->occurrence_key);
+            $this->assertSame('sabre-vobject', $occurrence->recurrence_engine);
+            $this->assertSame('2', $occurrence->recurrence_engine_version);
             $this->assertSame('draft', $occurrence->status);
+            $this->assertNotNull($occurrence->recurrence_id, 'A v2 occurrence carries a calendar identity.');
         }
 
         $this->apiPost("/v2/events/{$templateId}/rsvp", ['status' => 'going'])
@@ -644,7 +649,10 @@ final class EventWriterContractTest extends TestCase
             'end_time' => '2027-06-15 10:30:00',
             'recurrence_frequency' => 'weekly',
             'recurrence_ends_type' => 'after_count',
-            'recurrence_ends_after_count' => 53,
+            // 53 was rejected by the legacy generator, which capped a series at
+            // 52. v2 allows up to events.recurrence.max_occurrences (366), so
+            // the boundary that must still be enforced is that one.
+            'recurrence_ends_after_count' => 400,
         ]))->assertStatus(422);
         $this->assertSame($beforeInvalid, DB::table('events')
             ->where('tenant_id', $this->testTenantId)

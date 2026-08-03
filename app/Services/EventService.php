@@ -5230,49 +5230,30 @@ class EventService
     {
         self::$errors = [];
 
-        if ((bool) config('events.recurrence.engine_v2_enabled', false)) {
-            if (! app(EventRecurrenceMaterializationService::class)->schemaAvailable()) {
-                self::$errors[] = [
-                    'code' => 'EVENT_RECURRENCE_UNAVAILABLE',
-                    'message' => __('api.service_unavailable'),
-                ];
+        // The legacy engine has been retired. v2 (sabre-vobject) is the only
+        // recurrence engine: it honours the weekdays the organiser actually
+        // chose, counts the start date as the first occurrence the way calendar
+        // software does, and can track per-occurrence changes — none of which
+        // the legacy generator could do. Existing legacy series were converted
+        // by events:migrate-recurrence-to-v2.
+        if (! app(EventRecurrenceMaterializationService::class)->schemaAvailable()) {
+            self::$errors[] = [
+                'code' => 'EVENT_RECURRENCE_UNAVAILABLE',
+                'message' => __('api.service_unavailable'),
+            ];
 
-                return null;
-            }
-            return self::createRecurringV2($userId, $data);
-        }
-
-        // Validate recurrence frequency
-        $frequency = $data['recurrence_frequency'] ?? null;
-        $validFrequencies = ['daily', 'weekly', 'monthly', 'yearly', 'custom'];
-        if (!$frequency || !in_array($frequency, $validFrequencies)) {
-            self::$errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.event_recurrence_frequency_required'), 'field' => 'recurrence_frequency'];
             return null;
         }
 
-        validator($data, [
-            'recurrence_interval' => ['nullable', 'integer', 'min:1', 'max:365'],
-            'recurrence_days' => ['nullable', 'string', 'max:50'],
-            'recurrence_day_of_month' => ['nullable', 'integer', 'between:1,31'],
-            'recurrence_ends_type' => ['nullable', Rule::in(['never', 'after_count', 'on_date'])],
-            'recurrence_ends_after_count' => ['nullable', 'integer', 'between:1,52'],
-            'recurrence_ends_on_date' => ['nullable', 'date'],
-            'recurrence_rrule' => ['nullable', 'string', 'max:2048'],
-        ])->validate();
-
-        $tenantId = (int) TenantContext::getId();
-
         try {
-            return DB::transaction(function () use ($userId, $data, $tenantId, $frequency): array {
-                // 🔴 RETRY GUARD. This engine derives each occurrence_key from
-                // the NEW row's own auto-increment id, so the schema's
-                // uq_events_tenant_occurrence unique key can never fire for a
-                // repeat submission — a retried or double-clicked request
-                // silently produced a SECOND full set of occurrences. Nothing
-                // downstream can tell the two sets apart, and cleaning them up
-                // by hand is miserable. A template that is identical in
-                // creator, title and start time and was made moments ago is a
-                // retry, not a second series, so we hand back the first one.
+            return DB::transaction(function () use ($userId, $data): array {
+                // 🔴 RETRY GUARD — still required on v2. v2's occurrence keys
+                // are content-derived, so duplicate OCCURRENCES within a series
+                // are structurally impossible; but a retried request builds a
+                // NEW template with its own keys, so nothing stops a second
+                // complete series. The endpoint has no idempotency key, only a
+                // rate limit.
+                $tenantId = (int) TenantContext::getId();
                 $replay = self::recentDuplicateRecurringTemplate($tenantId, $userId, $data);
                 if ($replay !== null) {
                     return [
@@ -5282,229 +5263,16 @@ class EventService
                     ];
                 }
 
-                // A template is an abstract schedule definition, never a
-                // concrete registration target, so it receives no key.
-                $template = self::create($userId, array_merge($data, [
-                    '_is_recurring_template' => true,
-                ]));
-                $templateId = (int) $template->id;
-
-                DB::table('events')
-                    ->where('id', $templateId)
-                    ->where('tenant_id', $tenantId)
-                    ->update([
-                        'is_recurring_template' => 1,
-                        'occurrence_key' => null,
-                        'recurrence_engine' => self::RECURRENCE_ENGINE,
-                        'recurrence_engine_version' => self::RECURRENCE_ENGINE_VERSION,
-                    ]);
-
-                $interval = (int) ($data['recurrence_interval'] ?? 1);
-                $daysOfWeek = $data['recurrence_days'] ?? null;
-                $dayOfMonth = $data['recurrence_day_of_month'] ?? null;
-                $endsType = $data['recurrence_ends_type'] ?? 'after_count';
-                $endsAfterCount = $data['recurrence_ends_after_count'] ?? 10;
-                $endsOnDate = $data['recurrence_ends_on_date'] ?? null;
-                $rrule = $data['recurrence_rrule'] ?? null;
-
-                DB::statement(
-                    "INSERT INTO event_recurrence_rules
-                     (event_id, tenant_id, frequency, interval_value, days_of_week, day_of_month, rrule, ends_type, ends_after_count, ends_on_date)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    [
-                        $templateId,
-                        $tenantId,
-                        $frequency,
-                        $interval,
-                        $daysOfWeek,
-                        $dayOfMonth,
-                        $rrule,
-                        $endsType,
-                        $endsAfterCount,
-                        $endsOnDate,
-                    ]
-                );
-
-                return [
-                    'template_id' => $templateId,
-                    'occurrences' => self::generateOccurrences($templateId, $data),
-                ];
+                return self::createRecurringV2($userId, $data);
             });
         } catch (ValidationException | AuthorizationException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            Log::error("EventService::createRecurring error: " . $e->getMessage());
+            Log::error('EventService::createRecurring error: ' . $e->getMessage());
             self::$errors[] = ['code' => 'SERVER_ERROR', 'message' => __('api.event_recurring_create_failed')];
+
             return null;
         }
-    }
-
-    /**
-     * Generate occurrence events from a recurrence template.
-     */
-    private static function generateOccurrences(int $templateId, array $data): int
-    {
-        $tenantId = (int) \App\Core\TenantContext::getId();
-
-        $template = DB::table('events')
-            ->where('tenant_id', $tenantId)
-            ->where('id', $templateId)
-            ->where('is_recurring_template', 1)
-            ->lockForUpdate()
-            ->first();
-        if ($template === null) {
-            return 0;
-        }
-        self::assertDraftRecurrenceRoot($template);
-
-        $rule = DB::table('event_recurrence_rules')
-            ->where('tenant_id', $tenantId)
-            ->where('event_id', $templateId)
-            ->lockForUpdate()
-            ->first();
-        if ($rule === null) {
-            return 0;
-        }
-
-        $eventTimezone = self::isIanaTimezone((string) ($template->timezone ?? ''))
-            ? (string) $template->timezone
-            : 'UTC';
-        $eventZone = new \DateTimeZone($eventTimezone);
-        $utcZone = new \DateTimeZone('UTC');
-        $startTime = (new \DateTime((string) $template->start_time, $utcZone))->setTimezone($eventZone);
-        $endTime = $template->end_time
-            ? (new \DateTime((string) $template->end_time, $utcZone))->setTimezone($eventZone)
-            : null;
-        $duration = $endTime ? $startTime->diff($endTime) : null;
-
-        $frequency = $rule->frequency;
-        $interval = max(1, (int) $rule->interval_value);
-        $endsType = $rule->ends_type;
-        $maxOccurrences = $endsType === 'after_count' ? min((int) ($rule->ends_after_count ?? 10), 52) : 52;
-        $endsOnDate = $rule->ends_on_date
-            ? new \DateTime($rule->ends_on_date . ' 23:59:59', $eventZone)
-            : null;
-
-        $occurrences = [];
-        $current = clone $startTime;
-        $monthsAdded = 0;
-
-        for ($i = 0; $i < $maxOccurrences; $i++) {
-            switch ($frequency) {
-                case 'daily':   $current->modify("+{$interval} days"); break;
-                case 'weekly':  $current->modify("+{$interval} weeks"); break;
-                case 'monthly':
-                    // Re-anchor each occurrence to the template's day-of-month,
-                    // clamped to the target month's length. Naive mutable
-                    // "+1 month" overflows (May 31 → Jul 1) and the series then
-                    // permanently drifts to the 1st, skipping months entirely.
-                    $monthsAdded += $interval;
-                    $anchor = clone $startTime;
-                    $anchor->modify('first day of this month');
-                    $anchor->modify("+{$monthsAdded} months");
-                    $dayOfMonth = min((int) $startTime->format('j'), (int) $anchor->format('t'));
-                    $current = $anchor->setDate((int) $anchor->format('Y'), (int) $anchor->format('n'), $dayOfMonth);
-                    break;
-                case 'yearly':  $current->modify("+{$interval} years"); break;
-                default:        $current->modify("+{$interval} weeks"); break;
-            }
-
-            if ($endsOnDate && $current > $endsOnDate) {
-                break;
-            }
-            $oneYearOut = new \DateTime('+1 year', $eventZone);
-            if ($current > $oneYearOut) {
-                break;
-            }
-
-            $occStart = clone $current;
-            $occEnd = null;
-            if ($duration) {
-                $occEnd = clone $occStart;
-                $occEnd->add($duration);
-            }
-
-            $occurrences[] = [
-                'start' => (clone $occStart)->setTimezone($utcZone)->format('Y-m-d H:i:s'),
-                'end'   => $occEnd
-                    ? (clone $occEnd)->setTimezone($utcZone)->format('Y-m-d H:i:s')
-                    : null,
-                'date'  => $occStart->format('Y-m-d'),
-            ];
-        }
-
-        $count = 0;
-        foreach ($occurrences as $occ) {
-            try {
-                DB::transaction(function () use ($tenantId, $template, $templateId, $occ): void {
-                    $occurrenceId = (int) DB::table('events')->insertGetId([
-                        'tenant_id' => $tenantId,
-                        'user_id' => (int) $template->user_id,
-                        'title' => $template->title,
-                        'description' => $template->description ?? '',
-                        'location' => $template->location,
-                        'start_time' => $occ['start'],
-                        'end_time' => $occ['end'],
-                        'timezone' => $template->timezone ?? 'UTC',
-                        'timezone_source' => $template->timezone_source ?? 'preexisting_unverified',
-                        'all_day' => (int) ($template->all_day ?? 0),
-                        'group_id' => $template->group_id,
-                        'category_id' => $template->category_id,
-                        'latitude' => $template->latitude,
-                        'longitude' => $template->longitude,
-                        'accessibility_step_free' => $template->accessibility_step_free,
-                        'accessibility_toilet' => $template->accessibility_toilet,
-                        'accessibility_hearing_loop' => $template->accessibility_hearing_loop,
-                        'accessibility_quiet_space' => $template->accessibility_quiet_space,
-                        'accessibility_seating' => $template->accessibility_seating,
-                        'accessibility_parking' => $template->accessibility_parking,
-                        'accessibility_parking_details' => $template->accessibility_parking_details,
-                        'accessibility_transit_details' => $template->accessibility_transit_details,
-                        'accessibility_assistance_contact' => $template->accessibility_assistance_contact,
-                        'accessibility_notes' => $template->accessibility_notes,
-                        'federated_visibility' => $template->federated_visibility ?? 'none',
-                        'parent_event_id' => $templateId,
-                        'occurrence_date' => $occ['date'],
-                        'occurrence_key' => null,
-                        'recurrence_engine' => self::RECURRENCE_ENGINE,
-                        'recurrence_engine_version' => self::RECURRENCE_ENGINE_VERSION,
-                        'is_recurring_template' => 0,
-                        'max_attendees' => $template->max_attendees,
-                        'series_id' => $template->series_id,
-                        'cover_image' => $template->cover_image,
-                        'image_url' => $template->image_url,
-                        'is_online' => (int) ($template->is_online ?? 0),
-                        'online_link' => $template->online_link,
-                        'allow_remote_attendance' => (int) ($template->allow_remote_attendance ?? 0),
-                        'video_url' => $template->video_url,
-                        'status' => 'draft',
-                        'publication_status' => EventPublicationState::Draft->value,
-                        'operational_status' => EventOperationalState::Scheduled->value,
-                        'lifecycle_version' => 0,
-                        'calendar_sequence' => 0,
-                        'publication_status_changed_at' => now(),
-                        'publication_status_changed_by' => (int) $template->user_id,
-                        'operational_status_changed_at' => now(),
-                        'operational_status_changed_by' => (int) $template->user_id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    DB::table('events')
-                        ->where('tenant_id', $tenantId)
-                        ->where('id', $occurrenceId)
-                        ->update([
-                            'occurrence_key' => self::newOccurrenceKey($tenantId, $occurrenceId),
-                        ]);
-                });
-                $count++;
-            } catch (\Throwable $e) {
-                Log::error("Failed to generate occurrence: " . $e->getMessage());
-                throw $e;
-            }
-        }
-
-        return $count;
     }
 
     /**

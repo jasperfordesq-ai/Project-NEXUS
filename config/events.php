@@ -174,7 +174,16 @@ return [
     */
 
     'recurrence' => [
-        'engine_v2_enabled' => env('EVENTS_RECURRENCE_V2_ENABLED', false),
+        /*
+         * The v2 (sabre-vobject) engine. Defaults to TRUE: the legacy generator
+         * has been REMOVED, so v2 is the only engine that can create a series.
+         *
+         * This flag no longer gates creation — it now only gates the optional v2
+         * extras (materialization, revisions, definition blueprints) and what
+         * capability the API reports. Setting it false does not restore the old
+         * engine; there is nothing to restore.
+         */
+        'engine_v2_enabled' => env('EVENTS_RECURRENCE_V2_ENABLED', true),
 
         /*
          * Retry window for creating a recurring series (legacy engine only).
