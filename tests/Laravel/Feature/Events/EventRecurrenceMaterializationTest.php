@@ -351,11 +351,24 @@ final class EventRecurrenceMaterializationTest extends TestCase
         self::assertSame(1, $legacy['active_legacy_never_blockers']);
         self::assertFalse($legacy['unhealthy']);
 
+        // The v2 writer is permanently on now (the legacy engine was removed),
+        // so "writer on, materialization off" is the normal resting state — it
+        // used to be reported as 'misconfigured', which flagged every
+        // installation as unhealthy the moment the engine switch was turned on.
         config()->set('events.recurrence.engine_v2_enabled', true);
+        $writerOnly = app(EventHealthService::class)->snapshot($tenantId)['recurrence'];
+        self::assertSame('disabled', $writerOnly['rollout_state']);
+        self::assertFalse($writerOnly['unhealthy']);
+
+        // The genuinely incoherent combination is the other way round:
+        // materialization ON with the writer OFF would run the cron with nothing
+        // able to write. That must still be reported.
+        config()->set('events.recurrence.engine_v2_enabled', false);
+        config()->set('events.recurrence.materialization.enabled', true);
         $mismatched = app(EventHealthService::class)->snapshot($tenantId)['recurrence'];
         self::assertSame('misconfigured', $mismatched['rollout_state']);
         self::assertTrue($mismatched['unhealthy']);
-        config()->set('events.recurrence.engine_v2_enabled', false);
+        config()->set('events.recurrence.materialization.enabled', false);
 
         DB::table('event_recurrence_rules')->where('event_id', $legacyRoot)->delete();
         DB::table('events')->where('id', $legacyRoot)->delete();

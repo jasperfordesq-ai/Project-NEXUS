@@ -354,7 +354,15 @@ final class EventHealthService
         $snapshot['revision_version_drift'] = (clone $revisionDrift)->count();
         $snapshot['oldest_heartbeat_age_seconds'] = $this->ageInSeconds($oldestHeartbeat);
         $rolloutEnabled = $configuration['enabled'] && $configuration['engine_v2_writer_enabled'];
-        $rolloutDisabled = ! $configuration['enabled'] && ! $configuration['engine_v2_writer_enabled'];
+        // 🔴 The v2 writer is now PERMANENTLY on — the legacy engine has been
+        // removed, so engine_v2_enabled defaults true and no longer gates
+        // creation. "Writer on, materialization off" is therefore the NORMAL
+        // resting state, not a mixed one; treating it as misconfigured reported
+        // every installation as unhealthy the moment the engine switch went on.
+        // The one genuinely incoherent combination remains: materialization ON
+        // with the writer OFF, which would run the cron with nothing able to
+        // write. That still falls through to 'misconfigured' below.
+        $rolloutDisabled = ! $configuration['enabled'];
         $snapshot['v2_continuity_blocked'] = ! $rolloutEnabled
             && (clone $eligibleV2)->count() > 0;
         $snapshot['rollout_state'] = $rolloutEnabled
