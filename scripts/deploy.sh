@@ -63,7 +63,7 @@ else
     fi
 fi
 
-echo "===> [4/4] Blue/green deploy (zero-downtime, detached)"
+echo "===> [4/5] Blue/green deploy (zero-downtime, detached)"
 ENV_FILE=".secrets.local/deploy.env"
 [ -f "$ENV_FILE" ] || { echo "===> Missing $ENV_FILE — cannot reach the server."; exit 2; }
 SSH_HOST=$(grep ^PROD_SSH_HOST "$ENV_FILE" | cut -d= -f2-)
@@ -74,3 +74,44 @@ ssh -i "$SSH_KEY" -o RequestTTY=force "$SSH_HOST" \
 echo ""
 echo "===> Deploy launched. Watch it with:"
 echo "       ssh -i \"\$PROD_SSH_KEY\" \"\$PROD_SSH_HOST\" \"cd /opt/nexus-php && sudo bash scripts/deploy/bluegreen-deploy.sh monitor\""
+
+# --- [5/5] post-deploy watch -------------------------------------------------
+# The blue/green engine smoke-tests the candidate BEFORE the traffic switch,
+# but nothing used to watch the minutes AFTER it. Wait for the deploy to
+# finish, then watch production error rates for 30 minutes against the new
+# release tag. On a spike it alarms and prints the rollback command — it never
+# rolls back by itself. Skip with SKIP_POSTDEPLOY_WATCH=1 (e.g. when a second
+# deploy will immediately supersede this one).
+if [ "${SKIP_POSTDEPLOY_WATCH:-0}" = "1" ]; then
+    echo "===> [5/5] Post-deploy watch SKIPPED (SKIP_POSTDEPLOY_WATCH=1)."
+    exit 0
+fi
+
+echo "===> [5/5] Waiting for the deploy to finish, then watching error rates (~50 min total)"
+DEPLOY_DEADLINE=$(( $(date +%s) + 45 * 60 ))
+while :; do
+    STATE=$(ssh -i "$SSH_KEY" -o RequestTTY=force -o ConnectTimeout=20 "$SSH_HOST" \
+        "cd /opt/nexus-php && sudo bash scripts/deploy/bluegreen-deploy.sh status" 2>/dev/null \
+        | grep '^status=' | head -1 | cut -d= -f2)
+    case "$STATE" in
+        success) echo "===> Deploy finished on the server. Starting the 30-minute error watch."; break ;;
+        failed)  echo "===> Deploy FAILED on the server — see: bluegreen-deploy.sh logs. No watch needed."; exit 1 ;;
+    esac
+    if [ "$(date +%s)" -ge "$DEPLOY_DEADLINE" ]; then
+        echo "===> Deploy still not finished after 45 minutes — check it manually. Skipping the watch."
+        exit 1
+    fi
+    echo "     ...deploy ${STATE:-starting}. Checking again in 60s."
+    sleep 60
+done
+
+if node scripts/postdeploy-watch.mjs; then
+    echo "===> ✓ Deploy verified: error levels stayed normal after the switch."
+else
+    WATCH_RC=$?
+    if [ "$WATCH_RC" = "1" ]; then
+        echo "===> ⚠⚠⚠ ERROR SPIKE after this deploy — read the output above; the rollback command is printed there."
+        exit 1
+    fi
+    echo "===> ⚠ The watch could not run (see above) — the deploy is live but UNVERIFIED."
+fi

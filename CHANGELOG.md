@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The slowest stretch of the automated checks was split into more parallel groups.** The PHP tests ran in six parallel groups whose times ranged from 15 to 29 minutes — the slowest group set the pace for every push. They now run in ten groups, aiming for roughly 12–15 minutes each. The split method is unchanged (it balances by file count, deliberately, for stability), so the exact times need a few runs to settle and will be re-measured rather than assumed.
+
 - **The full test suite now runs automatically every night.** The checks that run on each push deliberately test only what changed — that keeps pushes fast, but it means a problem spanning two areas can hide if only one of them changes. (That is exactly how the mobile-app agenda bug stayed invisible for weeks.) A complete run of every check now happens nightly at 3:30am on GitHub's machines, so anything the shortcuts miss is caught within a day instead of whenever someone next forces a full run. The nightly run and the ordinary push runs can no longer cancel each other.
 
 - **Changing a shared data contract now wakes every app that depends on it.** The files describing the agreed shape of event data (`contracts/`) are read by the server, the website, and the mobile app — but changing them previously triggered checks for none of the three. All three now run whenever a contract file changes, which would have caught the mobile agenda bug on the day it was introduced.
@@ -48,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Moved Platform switches out of Growth & Discovery** into Platform operations, beside Module configuration, where the per-community switches it governs already live. It had been filed under SEO only because that was where the one other owner-level screen happened to sit.
 
 ### Added
+
+- **Deploys are now watched for half an hour after they go live.** The deploy process tested the new version *before* switching traffic to it, but nothing watched the minutes *after* — a problem that appeared ten minutes post-switch was only noticed when someone complained. The deploy command now waits for the switch, then watches production error levels against the newly deployed version for 30 minutes, using the per-deploy error tagging added earlier. If errors spike well above normal it raises the alarm and prints the one-command rollback — it never rolls back on its own, and if it cannot check (for example, a missing monitoring key) it says "unverified" rather than pretending health. Requires a one-time monitoring key setup; until then it reports honestly that it could not verify.
 
 - **A quick local check to run before pushing.** `node scripts/preflight.mjs` looks at what actually changed and runs only the relevant fast checks — catching type errors, broken tests you just touched, missing changelog updates and licence headers locally in a few minutes, instead of twenty-plus minutes later on GitHub. It is deliberately honest: a check that could not run (for example, because Docker is off) is reported as "not checked", never quietly counted as a pass. It uses the same changed-area rules as the GitHub pipeline, which remains the authority — the heavy suites stay there. On its very first run it caught a real mistake (an unrefreshed in-app changelog copy) before it reached GitHub.
 
