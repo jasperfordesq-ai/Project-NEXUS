@@ -337,6 +337,20 @@ export const eventAgendaSchema = z.object({
   event_id: z.number().int().positive(),
   agenda_version: z.number().int().nonnegative(),
   timezone: z.string().min(1),
+  // Added to contracts/events/v2/event-agenda.json by 8dcba2260. The backend and
+  // react-frontend were updated in lockstep; this client was not, so .strict()
+  // rejected the key and parseContract turned that into EVENTS_CONTRACT_DRIFT —
+  // a runtime throw, not just a test failure. Optional because the web schema
+  // (react-frontend/src/lib/events-api.ts) treats it as optional, so the backend
+  // is not guaranteed to emit it. The status values are plain strings for the
+  // same reason the web client uses strings: a new lifecycle value must not
+  // break the client. Unknown KEYS are still rejected, which is the drift signal
+  // this schema exists to provide.
+  event_status: z.object({
+    operational_status: z.string().min(1),
+    publication_status: z.string().min(1),
+    is_cancelled: z.boolean(),
+  }).strict().optional(),
   permissions: z.object({ manage: z.boolean() }).strict(),
   sessions: z.array(eventAgendaSessionSchema),
 }).strict();

@@ -49,6 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The mobile app would have refused to read event agendas.** The events work added a new `event_status` field to the shared event-agenda contract. The server and the website were both updated to know about it; the native mobile client was not. That client checks every response against an exact list of expected fields and rejects anything unfamiliar outright, so it would have thrown a contract error rather than showing the agenda. The client now recognises the field — treated as optional, and with the status values read as plain text, so a future lifecycle value cannot break it the same way. Unfamiliar fields are still rejected, which is the point of the check.
+
+  No released build was affected: the native app is in testing and has no users. It went unnoticed because the mobile checks only run when the mobile folder or the CI configuration changes, and none of the events work touched either — so a green tick on those commits never covered this.
+
 - **The event analytics tab said "could not be loaded" for almost every event.** The request was succeeding; the page was throwing the answer away. One field — the per-channel message delivery breakdown — is an empty map for any event that hasn't sent notifications yet, and PHP has only one array type, so an empty map was sent as an empty *list* rather than an empty *object*. The page validates that response field-by-field and rejected the whole thing. It is now always sent as an object. Both test suites missed it because neither could see it: the backend test asserted individual values while its own passing response contained the malformed field, and the frontend tests used hand-written fixtures where an empty map is unambiguous. The new test checks the actual JSON type.
 
 - **Per-channel delivery counts were inflated.** In the same breakdown, a channel that first appeared partway through the results was seeded with the running totals accumulated for earlier channels instead of starting at zero, so second and subsequent channels reported everything counted before them as their own.
