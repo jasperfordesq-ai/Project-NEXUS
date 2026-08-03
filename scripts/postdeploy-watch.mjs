@@ -90,7 +90,12 @@ async function main() {
   async function countErrors(projectIds, query, range) {
     const p = new URLSearchParams();
     p.append('field', 'count()');
-    p.append('query', `event.type:error ${query}`.trim());
+    // dataset=errors, with NO event.type filter: logged error messages arrive
+    // as event.type:default, not :error, and a type filter silently dropped
+    // them (verified live 2026-08-03: 5 real events counted as 0). The
+    // errors dataset is exactly what the Sentry UI calls "errors".
+    p.append('dataset', 'errors');
+    p.append('query', query.trim());
     for (const id of projectIds) p.append('project', id);
     if (range.statsPeriod) p.append('statsPeriod', range.statsPeriod);
     if (range.start) { p.append('start', range.start); p.append('end', range.end); }
