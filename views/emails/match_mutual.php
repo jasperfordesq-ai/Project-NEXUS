@@ -127,7 +127,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
 
                     <!-- Header with mutual gradient -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); padding: 40px 40px 50px; text-align: center; border-radius: 16px 16px 0 0;">
+                        <td style="background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); padding: 40px 40px 50px; text-align: center; border-radius: 16px 16px 0 0;">
                             <!-- Handshake emoji with glow effect -->
                             <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                 <span style="font-size: 42px; line-height: 1;">&#129309;</span>
@@ -162,7 +162,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                     <td style="padding: 0 40px 25px; text-align: center;" class="mobile-padding">
-                                        <div style="display: inline-block; background: linear-gradient(135deg, <?= $primaryColor ?>, <?= $accentColor ?>); color: white; padding: 12px 28px; border-radius: 30px; font-weight: 800; font-size: 18px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+                                        <div style="display: inline-block; background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?>, <?= $accentColor ?>); color: white; padding: 12px 28px; border-radius: 30px; font-weight: 800; font-size: 18px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
                                             &#129309; <?= $matchScore ?>% <?= __('emails.match_mutual.match_label') ?>
                                         </div>
                                     </td>
@@ -176,7 +176,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                                     <td style="padding: 0 40px 30px;" class="mobile-padding">
 
                                         <!-- They can help you -->
-                                        <div class="exchange-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid <?= $primaryColor ?>; border-radius: 16px; padding: 24px; margin-bottom: 12px; position: relative;">
+                                        <div class="exchange-card" style="background-color: #ecfdf5; background-image: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid <?= $primaryColor ?>; border-radius: 16px; padding: 24px; margin-bottom: 12px; position: relative;">
                                             <!-- Arrow badge -->
                                             <div style="position: absolute; top: -12px; left: 24px; background: <?= $primaryColor ?>; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700;">
                                                 <?= __('emails.match_mutual.they_offer') ?>
@@ -208,7 +208,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                                         </div>
 
                                         <!-- You can help them -->
-                                        <div class="exchange-card" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid <?= $blueColor ?>; border-radius: 16px; padding: 24px; position: relative;">
+                                        <div class="exchange-card" style="background-color: #eff6ff; background-image: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid <?= $blueColor ?>; border-radius: 16px; padding: 24px; position: relative;">
                                             <!-- Arrow badge -->
                                             <div style="position: absolute; top: -12px; left: 24px; background: <?= $blueColor ?>; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700;">
                                                 <?= __('emails.match_mutual.you_offer') ?>
@@ -240,7 +240,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                     <td style="padding: 0 40px 30px;" class="mobile-padding">
-                                        <div class="info-box" style="background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); border: 1px solid #fde047; border-radius: 12px; padding: 18px 20px; text-align: center;">
+                                        <div class="info-box" style="background-color: #fefce8; background-image: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); border: 1px solid #fde047; border-radius: 12px; padding: 18px 20px; text-align: center;">
                                             <p style="margin: 0; font-size: 15px; color: <?= $textColor ?>; line-height: 1.6;">
                                                 &#128161; <strong style="color: #ca8a04;"><?= __('emails.match_mutual.rare_notice') ?></strong>
                                             </p>
@@ -255,7 +255,7 @@ $matchScore = isset($match['match_score']) ? (int) $match['match_score'] : null;
                                     <td style="padding: 10px 40px 20px; text-align: center;" class="mobile-padding">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td class="button-td" style="border-radius: 12px; background: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+                                                <td class="button-td" style="border-radius: 12px; background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
                                                     <a href="<?= $listingUrl ?>" style="display: inline-block; padding: 18px 44px; font-size: 17px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px;"><?= __('emails.match_mutual.connect_with', ['name' => htmlspecialchars($posterName)]) ?> &#8594;</a>
                                                 </td>
                                             </tr>

@@ -6,6 +6,7 @@
 
 namespace App\Services;
 
+use App\Core\EmailBackground;
 use App\Core\EmailTemplateBuilder;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
@@ -1740,7 +1741,7 @@ class NotificationDispatcher
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #f97316, #ef4444); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #f97316; background-image: linear-gradient(135deg, #f97316, #ef4444); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$hotHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$hotSubheading}</p>
     </div>
@@ -1790,7 +1791,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #10b981, #06b6d4); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #10b981; background-image: linear-gradient(135deg, #10b981, #06b6d4); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$mutualHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$mutualSubheading}</p>
     </div>
@@ -1878,7 +1879,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$digestHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$digestWaiting}</p>
     </div>
@@ -1909,7 +1910,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #f59e0b; background-image: linear-gradient(135deg, #f59e0b, #d97706); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$approvalHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -1925,7 +1926,7 @@ HTML;
             {$reviewNote}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/broker/exchanges?status=pending_broker" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnReview}</a>
+            <a href="{$frontendUrl}{$basePath}/broker/exchanges?status=pending_broker" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnReview}</a>
         </div>
     </div>
 </div>
@@ -1947,7 +1948,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #16a34a); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$matchedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -1961,7 +1962,7 @@ HTML;
             {$matchedViewNote}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/listings/{$listingId}" style="display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnViewMatch}</a>
+            <a href="{$frontendUrl}{$basePath}/listings/{$listingId}" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnViewMatch}</a>
         </div>
     </div>
 </div>
@@ -1995,7 +1996,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$rejectedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -2009,7 +2010,7 @@ HTML;
             {$rejectedEncouragement}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/matches" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnBrowse}</a>
+            <a href="{$frontendUrl}{$basePath}/matches" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$btnBrowse}</a>
         </div>
     </div>
 </div>
@@ -2033,7 +2034,7 @@ HTML;
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 0;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-  <tr><td style="background:linear-gradient(135deg,#10b981,#059669);padding:32px;text-align:center;">
+  <tr><td style="background-color: #10b981; background-image: linear-gradient(135deg,#10b981,#059669);padding:32px;text-align:center;">
     <h1 style="margin:0;color:#fff;font-size:24px;">{$creditTitle}</h1>
   </td></tr>
   <tr><td style="padding:32px;">
@@ -2170,7 +2171,14 @@ HTML;
 
         $emailConfig = self::getExchangeEmailConfig($type, $data, $details);
 
+        // Solid colour first, gradient second. Outlook strips gradient
+        // backgrounds, and both the header title and the CTA label are white —
+        // without a solid fallback they render invisibly. See EmailBackground.
+        $brandBg = EmailBackground::gradient((string) $emailConfig['gradient']);
+        $brandBgColor = EmailBackground::firstColor((string) $emailConfig['gradient']) ?? '#4f46e5';
+
         $year = date('Y');
+        $buttonFallback = __('emails.common.button_fallback_short');
         $greeting = __('emails.common.greeting', ['name' => $userName]);
         $sentByText = __('emails.notification.sent_by', ['community' => $tenantName]);
         $allRightsReserved = __('emails.footer.all_rights_reserved');
@@ -2188,7 +2196,7 @@ HTML;
             <td align="center">
                 <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <tr>
-                        <td style="background: {$emailConfig['gradient']}; padding: 32px 24px; text-align: center;">
+                        <td bgcolor="{$brandBgColor}" style="{$brandBg} padding: 32px 24px; text-align: center;">
                             <div style="font-size: 48px; margin-bottom: 12px;">{$emailConfig['icon']}</div>
                             <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">{$emailConfig['title']}</h1>
                             <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantName}</p>
@@ -2243,12 +2251,19 @@ HTML;
                     {$emailConfig['alertBox']}
                     <tr>
                         <td style="padding: 0 24px 32px; text-align: center;">
-                            <a href="{$actionUrl}" style="display: inline-block; background: {$emailConfig['gradient']}; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">{$emailConfig['buttonText']}</a>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                                <tr>
+                                    <td bgcolor="{$brandBgColor}" style="border-radius: 8px; {$brandBg}">
+                                        <a href="{$actionUrl}" style="display: inline-block; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">{$emailConfig['buttonText']}</a>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 0 24px 24px;">
                             <p style="margin: 0; font-size: 14px; color: #6b7280; text-align: center;">{$emailConfig['helpText']}</p>
+                            <p style="margin: 12px 0 0; font-size: 12px; color: #9ca3af; text-align: center;">{$buttonFallback}<br><a href="{$actionUrl}" style="color: #4f46e5; word-break: break-all; font-size: 11px;">{$actionUrl}</a></p>
                         </td>
                     </tr>
                     <tr>
@@ -2306,7 +2321,10 @@ HTML;
                 'gradient' => 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                 'icon' => '📥',
                 'title' => __('notifications.exchange_title_request_received'),
-                'message' => __('emails_notifications.exchange.request_received_msg', ['name' => "<strong>{$requesterName}</strong>", 'hours' => "<strong>{$hours} hour(s)</strong>"]),
+                // The :hours placeholder supplies the number only — every locale's
+                // own string carries the unit. Appending an English unit here
+                // duplicated it in English and leaked English into other locales.
+                'message' => __('emails_notifications.exchange.request_received_msg', ['name' => "<strong>{$requesterName}</strong>", 'hours' => "<strong>{$hours}</strong>"]),
                 'buttonText' => __('notifications.exchange_btn_review'),
                 'helpText' => __('notifications.exchange_help_review'),
                 'typeColor' => $typeColor,
@@ -2412,7 +2430,8 @@ HTML;
                 'gradient' => 'linear-gradient(135deg, #10b981, #059669)',
                 'icon' => '🎉',
                 'title' => __('notifications.exchange_title_completed'),
-                'message' => __('emails_notifications.exchange.completed_msg', ['hours' => "<strong>{$finalHours} hour(s)</strong>"]),
+                // See request_received_msg above — the locale string carries the unit.
+                'message' => __('emails_notifications.exchange.completed_msg', ['hours' => "<strong>{$finalHours}</strong>"]),
                 'buttonText' => __('notifications.exchange_btn_view_wallet'),
                 'helpText' => __('notifications.exchange_help_completed'),
                 'typeColor' => $typeColor,
@@ -2665,14 +2684,14 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #16a34a); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
     <div style="background: #f8fafc; padding: 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
         <p style="color: #1e293b; font-size: 16px; line-height: 1.6;">{$body}</p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/dashboard" style="display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$cta}</a>
+            <a href="{$frontendUrl}{$basePath}/dashboard" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #16a34a); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$cta}</a>
         </div>
     </div>
 </div>
@@ -2693,7 +2712,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #dc2626; background-image: linear-gradient(135deg, #dc2626, #991b1b); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -2701,7 +2720,7 @@ HTML;
         <p style="color: #1e293b; font-size: 16px; line-height: 1.6;">{$body}</p>
         {$reasonHtml}
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/verify-identity" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$cta}</a>
+            <a href="{$frontendUrl}{$basePath}/verify-identity" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$cta}</a>
         </div>
     </div>
 </div>
@@ -2732,7 +2751,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
         <h1 style="color: white; margin: 0; font-size: 24px;">{$volAcceptedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$volTenantLabel}</p>
@@ -2749,7 +2768,7 @@ HTML;
             {$volApprovedNext}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/volunteering/opportunities/{$oppId}" style="display: inline-block; background: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewOpp}</a>
+            <a href="{$frontendUrl}{$basePath}/volunteering/opportunities/{$oppId}" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewOpp}</a>
         </div>
     </div>
 </div>
@@ -2776,7 +2795,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$volDeclinedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$volTenantLabel}</p>
     </div>
@@ -2792,7 +2811,7 @@ HTML;
             {$volDeclinedEncouragement}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/volunteering" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnBrowse}</a>
+            <a href="{$frontendUrl}{$basePath}/volunteering" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnBrowse}</a>
         </div>
     </div>
 </div>
@@ -2824,7 +2843,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <div style="font-size: 48px; margin-bottom: 12px;">⏰💰</div>
         <h1 style="color: white; margin: 0; font-size: 24px;">{$volHoursPaidHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$volTenantLabel}</p>
@@ -2847,7 +2866,7 @@ HTML;
             {$volHoursPaidDetail}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/wallet" style="display: inline-block; background: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewWallet}</a>
+            <a href="{$frontendUrl}{$basePath}/wallet" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewWallet}</a>
         </div>
     </div>
 </div>
@@ -2882,7 +2901,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
         <h1 style="color: white; margin: 0; font-size: 24px;">{$volHoursApprovedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$volTenantLabel}</p>
@@ -2899,7 +2918,7 @@ HTML;
             {$volHoursApprovedThanks}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/volunteering?tab=hours" style="display: inline-block; background: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewHours}</a>
+            <a href="{$frontendUrl}{$basePath}/volunteering?tab=hours" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewHours}</a>
         </div>
     </div>
 </div>
@@ -2925,7 +2944,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">{$volHoursDeclinedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$volTenantLabel}</p>
     </div>
@@ -2937,7 +2956,7 @@ HTML;
             {$volHoursDeclinedNote}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/volunteering?tab=hours" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewHours}</a>
+            <a href="{$frontendUrl}{$basePath}/volunteering?tab=hours" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnViewHours}</a>
         </div>
     </div>
 </div>
@@ -2965,7 +2984,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #f43f5e, #e11d48); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #f43f5e; background-image: linear-gradient(135deg, #f43f5e, #e11d48); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <div style="font-size: 48px; margin-bottom: 12px;">🙋</div>
         <h1 style="color: white; margin: 0; font-size: 24px;">{$volAppReceivedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$volTenantLabel}</p>
@@ -2982,7 +3001,7 @@ HTML;
             {$volAppReceivedNote}
         </p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$frontendUrl}{$basePath}/volunteering/org/{$orgId}/dashboard?tab=applications" style="display: inline-block; background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnReviewApp}</a>
+            <a href="{$frontendUrl}{$basePath}/volunteering/org/{$orgId}/dashboard?tab=applications" style="display: inline-block; background-color: #f43f5e; background-image: linear-gradient(135deg, #f43f5e, #e11d48); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$volBtnReviewApp}</a>
         </div>
     </div>
 </div>

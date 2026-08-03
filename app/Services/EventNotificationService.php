@@ -944,7 +944,7 @@ class EventNotificationService
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 22px;">{$safeSubject}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -952,7 +952,7 @@ class EventNotificationService
         <p style="color: #1e293b; font-size: 16px; line-height: 1.6;">{$greeting}</p>
         <p style="color: #1e293b; font-size: 16px; line-height: 1.6;">{$safeContent}</p>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$fullUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewEventLabel}</a>
+            <a href="{$fullUrl}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewEventLabel}</a>
         </div>
     </div>
 </div>
@@ -985,7 +985,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 22px;">{$rsvpHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -999,7 +999,7 @@ HTML;
             <span style="display: inline-block; background: {$statusColor}; color: white; padding: 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 600;">{$statusBadge}</span>
         </div>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$eventUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewEventLabel}</a>
+            <a href="{$eventUrl}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewEventLabel}</a>
         </div>
     </div>
 </div>
@@ -1046,7 +1046,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #ef4444; background-image: linear-gradient(135deg, #ef4444, #dc2626); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 22px;">{$cancelledHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -1059,7 +1059,7 @@ HTML;
         </div>
         {$reasonHtml}
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$eventsUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$browseEventsLabel}</a>
+            <a href="{$eventsUrl}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$browseEventsLabel}</a>
         </div>
     </div>
 </div>
@@ -1140,7 +1140,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #f59e0b; background-image: linear-gradient(135deg, #f59e0b, #d97706); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 22px;">{$updatedHeading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -1151,7 +1151,7 @@ HTML;
             <ul style="padding-left: 20px; margin: 0;">{$changesHtml}</ul>
         </div>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$eventUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewUpdatedLabel}</a>
+            <a href="{$eventUrl}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewUpdatedLabel}</a>
         </div>
     </div>
 </div>
@@ -1203,7 +1203,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: #10b981; background-image: linear-gradient(135deg, #10b981, #059669); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 22px;">{$heading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -1217,7 +1217,7 @@ HTML;
             {$locationHtml}
         </div>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$eventUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$ctaLabel}</a>
+            <a href="{$eventUrl}" style="display: inline-block; background-color: #10b981; background-image: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$ctaLabel}</a>
         </div>
     </div>
 </div>
@@ -1244,6 +1244,9 @@ HTML;
             ? htmlspecialchars(__('emails.events.reminder_heading_24h'), ENT_QUOTES, 'UTF-8')
             : htmlspecialchars(__('emails.events.reminder_heading_1h'), ENT_QUOTES, 'UTF-8');
         $gradientColors = $reminderType === '24h' ? '#6366f1, #8b5cf6' : '#f59e0b, #ef4444';
+        // Solid fallback for clients that strip gradients (Outlook) — the heading
+        // over this header is white. See App\Core\EmailBackground.
+        $gradientSolid = $reminderType === '24h' ? '#6366f1' : '#f59e0b';
         $timeNote = $reminderType === '24h'
             ? __('emails.events.reminder_time_note_24h')
             : __('emails.events.reminder_time_note_1h');
@@ -1264,7 +1267,7 @@ HTML;
 
         return <<<HTML
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
-    <div style="background: linear-gradient(135deg, {$gradientColors}); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
+    <div style="background-color: {$gradientSolid}; background-image: linear-gradient(135deg, {$gradientColors}); padding: 24px; border-radius: 16px 16px 0 0; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 22px;">{$heading}</h1>
         <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">{$tenantName}</p>
     </div>
@@ -1276,7 +1279,7 @@ HTML;
             {$locationHtml}
         </div>
         <div style="text-align: center; margin-top: 24px;">
-            <a href="{$eventUrl}" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewEventLabel}</a>
+            <a href="{$eventUrl}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$viewEventLabel}</a>
         </div>
     </div>
 </div>

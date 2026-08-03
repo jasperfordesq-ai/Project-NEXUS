@@ -71,7 +71,7 @@ class EmailTemplate
                                     <td style="padding: 30px 40px; text-align: center;" class="mobile-padding">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td style="border-radius: 10px; background: linear-gradient(135deg, {$brandColor} 0%, {$brandColorDark} 100%);" class="button-primary">
+                                                <td style="border-radius: 10px; background-color: {$brandColor}; background-image: linear-gradient(135deg, {$brandColor} 0%, {$brandColorDark} 100%);" class="button-primary">
                                                     <a href="{$btnUrl}" style="display: inline-block; padding: 16px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 10px;">{$btnText}</a>
                                                 </td>
                                             </tr>
@@ -168,7 +168,7 @@ HTML;
 
                     <!-- Header with gradient -->
                     <tr>
-                        <td style="padding: 30px 40px; text-align: center; background: linear-gradient(135deg, {$brandColor} 0%, {$brandColorDark} 100%); border-radius: 16px 16px 0 0;">
+                        <td style="padding: 30px 40px; text-align: center; background-color: {$brandColor}; background-image: linear-gradient(135deg, {$brandColor} 0%, {$brandColorDark} 100%); border-radius: 16px 16px 0 0;">
                             <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">{$tenantName}</h1>
                         </td>
                     </tr>
@@ -199,7 +199,7 @@ HTML;
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                     <td style="padding: 0 40px 20px;" class="mobile-padding">
-                                        <div style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); padding: 20px; border-radius: 12px; border-left: 4px solid {$brandColor};">
+                                        <div style="background-color: #f5f3ff; background-image: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); padding: 20px; border-radius: 12px; border-left: 4px solid {$brandColor};">
                                             <div style="margin: 0; font-size: 16px; line-height: 1.8; color: {$textColor};" class="text-dark">{$body}</div>
                                         </div>
                                     </td>

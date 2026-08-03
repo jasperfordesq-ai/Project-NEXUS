@@ -750,7 +750,7 @@ class NewsletterService
         .content ul, .content ol { color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 16px; padding-left: 24px; }
         .content li { margin-bottom: 8px; }
         .content img { max-width: 100%; height: auto; border-radius: 12px; margin: 20px 0; display: block; }
-        .content blockquote { margin: 20px 0; padding: 20px 25px; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-left: 4px solid {$color}; border-radius: 0 12px 12px 0; font-style: italic; color: #4b5563; }
+        .content blockquote { margin: 20px 0; padding: 20px 25px; background-color: #f5f3ff; background-image: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-left: 4px solid {$color}; border-radius: 0 12px 12px 0; font-style: italic; color: #4b5563; }
         @media screen and (max-width: 600px) {
             .email-container { width: 100% !important; max-width: 100% !important; }
             .content { padding: 30px 20px !important; }
@@ -775,7 +775,7 @@ class NewsletterService
             <td style="padding: 40px 10px;">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" align="center" class="email-container" style="margin: auto;">
                     <tr>
-                        <td class="header" style="padding: 35px 40px; text-align: center; background: linear-gradient(135deg, {$color} 0%, {$colorDark} 100%); border-radius: 16px 16px 0 0;">
+                        <td class="header" style="padding: 35px 40px; text-align: center; background-color: {$color}; background-image: linear-gradient(135deg, {$color} 0%, {$colorDark} 100%); border-radius: 16px 16px 0 0;">
                             <h1 style="margin: 0; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">{$tenantName}</h1>
                         </td>
                     </tr>

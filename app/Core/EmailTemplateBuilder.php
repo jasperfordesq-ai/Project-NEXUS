@@ -487,6 +487,10 @@ HTML;
         $text = self::esc($block['text']);
         $url = self::sanitizeButtonUrl((string) ($block['url'] ?? ''));
         $fallbackText = __('emails.common.button_fallback_short');
+        // Solid colour first: clients that strip the gradient must still paint a
+        // background behind the white label. See App\Core\EmailBackground.
+        $buttonBg = EmailBackground::gradient((string) $theme['gradient']);
+        $buttonBgColor = EmailBackground::firstColor((string) $theme['gradient']) ?? $theme['primary'];
 
         return <<<HTML
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -494,7 +498,7 @@ HTML;
                                     <td style="padding: 24px 40px 8px; text-align: center;" class="mobile-padding">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td style="border-radius: 10px; background: {$theme['gradient']};" class="button-primary">
+                                                <td bgcolor="{$buttonBgColor}" style="border-radius: 10px; {$buttonBg}" class="button-primary">
                                                     <a href="{$url}" style="display: inline-block; padding: 16px 36px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 10px; letter-spacing: 0.3px;">{$text}</a>
                                                 </td>
                                             </tr>
@@ -557,6 +561,11 @@ HTML;
     {
         $bgColor = '#f3f4f6';
         $mutedColor = '#6b7280';
+
+        // Solid colour first: the header title is white, so a client that strips
+        // the gradient must still get a background. See App\Core\EmailBackground.
+        $headerBg = EmailBackground::gradient((string) $theme['gradient']);
+        $headerBgColor = EmailBackground::firstColor((string) $theme['gradient']) ?? $theme['primary'];
 
         // Translated footer strings
         $allRightsReserved = __('emails.footer.all_rights_reserved');
@@ -637,7 +646,7 @@ HTML;
 
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 32px 40px; text-align: center; background: {$theme['gradient']};">
+                        <td bgcolor="{$headerBgColor}" style="padding: 32px 40px; text-align: center; {$headerBg}">
                             <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; line-height: 1.3;">{$title}</h1>
                             <p style="margin: 8px 0 0; font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, 0.85);">{$tenantName}</p>
                         </td>

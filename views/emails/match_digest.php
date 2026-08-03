@@ -133,7 +133,7 @@ $remainingCount = max(0, $totalCount - 5);
 
                     <!-- Header with purple gradient -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); padding: 40px 40px 50px; text-align: center; border-radius: 16px 16px 0 0;">
+                        <td style="background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); padding: 40px 40px 50px; text-align: center; border-radius: 16px 16px 0 0;">
                             <!-- Chart emoji with glow effect -->
                             <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                 <span style="font-size: 42px; line-height: 1;">&#128202;</span>
@@ -172,7 +172,7 @@ $remainingCount = max(0, $totalCount - 5);
                                             <tr>
                                                 <?php if ($hotCount > 0): ?>
                                                 <td class="stat-box" style="width: <?= $mutualCount > 0 ? '50%' : '100%' ?>; padding-right: <?= $mutualCount > 0 ? '8px' : '0' ?>; vertical-align: top;">
-                                                    <div class="stat-card" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #fdba74; border-radius: 14px; padding: 20px; text-align: center;">
+                                                    <div class="stat-card" style="background-color: #fff7ed; background-image: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #fdba74; border-radius: 14px; padding: 20px; text-align: center;">
                                                         <div style="font-size: 36px; font-weight: 800; color: <?= $hotColor ?>; line-height: 1;">
                                                             &#128293; <?= $hotCount ?>
                                                         </div>
@@ -183,7 +183,7 @@ $remainingCount = max(0, $totalCount - 5);
                                                 <?php endif; ?>
                                                 <?php if ($mutualCount > 0): ?>
                                                 <td class="stat-box" style="width: <?= $hotCount > 0 ? '50%' : '100%' ?>; padding-left: <?= $hotCount > 0 ? '8px' : '0' ?>; vertical-align: top;">
-                                                    <div class="stat-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #6ee7b7; border-radius: 14px; padding: 20px; text-align: center;">
+                                                    <div class="stat-card" style="background-color: #ecfdf5; background-image: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #6ee7b7; border-radius: 14px; padding: 20px; text-align: center;">
                                                         <div style="font-size: 36px; font-weight: 800; color: <?= $mutualColor ?>; line-height: 1;">
                                                             &#129309; <?= $mutualCount ?>
                                                         </div>
@@ -259,7 +259,7 @@ $remainingCount = max(0, $totalCount - 5);
                                     <td style="padding: 10px 40px 20px; text-align: center;" class="mobile-padding">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
                                             <tr>
-                                                <td class="button-td" style="border-radius: 12px; background: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);">
+                                                <td class="button-td" style="border-radius: 12px; background-color: <?= $primaryColor ?>; background-image: linear-gradient(135deg, <?= $primaryColor ?> 0%, <?= $accentColor ?> 100%); box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);">
                                                     <a href="<?= $matchesUrl ?>" style="display: inline-block; padding: 18px 44px; font-size: 17px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 12px;"><?= __('emails.match_digest.view_all_matches') ?> &#8594;</a>
                                                 </td>
                                             </tr>
