@@ -32,6 +32,10 @@ php:
   - 'scripts/**'
   - 'Dockerfile'
   - 'Dockerfile.prod'
+  # The production blue/green image recipe previously woke NOTHING when
+  # changed — same blind-spot class as contracts/** before 2026-08-03.
+  - 'Dockerfile.bluegreen'
+  - 'compose.bluegreen.yml'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 

@@ -49,11 +49,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **A quick local check to run before pushing.** `node scripts/preflight.mjs` looks at what actually changed and runs only the relevant fast checks — catching type errors, broken tests you just touched, missing changelog updates and licence headers locally in a few minutes, instead of twenty-plus minutes later on GitHub. It is deliberately honest: a check that could not run (for example, because Docker is off) is reported as "not checked", never quietly counted as a pass. It uses the same changed-area rules as the GitHub pipeline, which remains the authority — the heavy suites stay there. On its very first run it caught a real mistake (an unrefreshed in-app changelog copy) before it reached GitHub.
+
 - **Platform switches you can set yourself.** Platform-wide rollout gates — the attendance-credit engine, the newer recurring-events engine, rolling recurrence, recurrence blueprints, timed waitlist offers and optional analytics — used to live only in server environment variables, so raising one needed someone with server access. There is now a Platform switches screen for the platform owner. A switch there sets the ceiling; each community still controls its own settings underneath, so turning something on centrally never enables it for anybody by itself, and reverting a switch hands the decision back to the server configuration. Only that fixed list of switches can be changed, and a tenant administrator cannot reach the screen at all.
 
   Worth knowing: the other capabilities listed on a community's Event settings page — ticketing, agenda, offline check-in, broadcasts, registration forms, invitations, safety evidence and federation delivery — are *not* switches. They report whether the feature is installed, which depends on the database, so they stay read-only.
 
 ### Fixed
+
+- **Server errors now name the exact deploy that produced them.** Errors reported to the monitoring service carried only the platform version (e.g. `1.5.8`), which spans many deploys — so "which deploy introduced this error?" was unanswerable, and errors from background workers carried no identifier at all. The error reporter now uses the same build stamp as the `X-Build` response header, derived the same way, so an error's release always matches the deployed code that threw it. The website side already did this correctly; the server now matches. Takes effect from the next deploy.
 
 - **The mobile app would have refused to read event agendas.** The events work added a new `event_status` field to the shared event-agenda contract. The server and the website were both updated to know about it; the native mobile client was not. That client checks every response against an exact list of expected fields and rejects anything unfamiliar outright, so it would have thrown a contract error rather than showing the agenda. The client now recognises the field — treated as optional, and with the status values read as plain text, so a future lifecycle value cannot break it the same way. Unfamiliar fields are still rejected, which is the point of the check.
 

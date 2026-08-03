@@ -433,6 +433,17 @@ $stmt = Database::query(
 
 ## Validation Commands
 
+### Local preflight — run BEFORE pushing
+
+```bash
+node scripts/preflight.mjs               # check working tree + unpushed commits
+node scripts/preflight.mjs --base <sha>  # replay a committed range (validation)
+```
+
+Change-aware local checks (a few minutes) that catch ordinary mistakes before the 20–35-minute CI round-trip: docs/version/changelog hygiene, SPDX, workflow YAML parsing, scoped PHPStan + focused PHPUnit on changed files (Docker; **never** host PHPUnit — incomplete host `vendor/` gives false failures), frontend `tsc` + test-type ratchet + focused vitest (`--retry=0`), mobile `tsc`, and the php-lang gates. Area detection reads `.github/ci-paths.yml`, so preflight and CI agree on what a change touches.
+
+Statuses are honest: **UNAVAILABLE** (e.g. Docker down, timeout) is never a pass — exit 0 all good, 1 something failed, 2 nothing failed but something couldn't run. Passing preflight does **not** replace CI: the full GitHub pipeline remains the authoritative gate, and full suites / Docker builds / E2E / accessibility are deliberately deferred to it. There is intentionally no pre-push hook — run it yourself.
+
 ### Backend CI gates
 
 ```bash
