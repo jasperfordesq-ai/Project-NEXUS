@@ -2,7 +2,7 @@
 # Project NEXUS - Immutable PHP Runtime for Blue/Green Deploys
 # =============================================================================
 
-FROM php:8.2.30-apache
+FROM php:8.5.9-apache
 
 ARG DEBIAN_FRONTEND=noninteractive
 

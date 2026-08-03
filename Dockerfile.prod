@@ -4,7 +4,7 @@
 # Apache + PHP 8.2 optimized for production
 # =============================================================================
 
-FROM php:8.2.30-apache
+FROM php:8.5.9-apache
 
 # Build arguments
 ARG DEBIAN_FRONTEND=noninteractive

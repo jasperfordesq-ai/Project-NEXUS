@@ -5,7 +5,7 @@
 # PHP 8.1 with all required extensions
 # =============================================================================
 
-FROM php:8.2.30-apache
+FROM php:8.5.9-apache
 
 # Build arguments
 ARG DEBIAN_FRONTEND=noninteractive
