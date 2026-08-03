@@ -99,13 +99,20 @@ jobs:
     if: needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     env:
-      SHARD_TOTAL: '6'
+      # 6 → 10 on 2026-08-03. Measured at 6: shards ranged 15–29 min (~125 min
+      # total compute), so the slowest shard was the pipeline's long pole. The
+      # hash split balances by file COUNT, so ~12.5 min/shard is the expected
+      # value at 10, not a guarantee — re-measure after a few runs and only
+      # then judge. Runners are free on this public repo; the one-time full
+      # reshuffle (crc32 % total changes every assignment) is the documented
+      # trade-off of changing the total, not a regression.
+      SHARD_TOTAL: '10'
       PHPUNIT_SHARD_TIMEOUT_SECONDS: '2400'
 
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
     services:
       mariadb:
