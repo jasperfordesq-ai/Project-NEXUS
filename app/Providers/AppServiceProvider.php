@@ -1391,11 +1391,20 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
+        // Release = the deployed COMMIT, not the version. app.version (e.g.
+        // 1.5.8) spans many deploys, so a version-based release cannot answer
+        // "which deploy introduced this error". SecurityHeaders::buildCommit()
+        // is the same derivation that stamps the X-Build response header
+        // (.build-version file → BUILD_COMMIT env → git), so the release on a
+        // Sentry event always equals the X-Build of the code that threw it.
+        // Version stays as a fallback for environments with no commit at all.
+        $buildCommit = \App\Http\Middleware\SecurityHeaders::buildCommit();
+
         try {
             \Sentry\init([
                 'dsn' => $dsn,
                 'environment' => config('services.sentry.environment', 'production'),
-                'release' => 'nexus-php@' . (config('app.version', 'unknown')),
+                'release' => 'nexus-php@' . ($buildCommit !== '' ? $buildCommit : config('app.version', 'unknown')),
                 'sample_rate' => 1.0,
                 'traces_sample_rate' => config('services.sentry.traces_sample_rate', 0.1),
                 'send_default_pii' => false,

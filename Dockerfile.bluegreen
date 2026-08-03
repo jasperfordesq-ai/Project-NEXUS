@@ -212,6 +212,14 @@ RUN printf '{"service":"nexus-php-api","commit":"%s","commit_short":"%s","deploy
         "$BUILD_COMMIT" "$(echo "$BUILD_COMMIT" | cut -c1-8)" \
         > /var/www/html/httpdocs/.build-version \
     && chmod 644 /var/www/html/httpdocs/.build-version
+# Persist the commit into the runtime environment. The ARG above only exists at
+# build time, so env('BUILD_COMMIT') was empty in every running container and
+# config/sentry.php's per-deploy release fallback (nexus-php@<commit>) could
+# never fire — Sentry events either carried a hand-set static SENTRY_RELEASE
+# from the server .env (version-only, spans many deploys) or no release at all
+# (queue/scheduler workers). With this ENV, all three containers built from
+# this image report the exact deployed commit on every event.
+ENV BUILD_COMMIT=$BUILD_COMMIT
 
 RUN mkdir -p /var/www/html/storage/app/public \
              /var/www/html/storage/framework/cache/data \

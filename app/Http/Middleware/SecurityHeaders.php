@@ -32,7 +32,11 @@ class SecurityHeaders
      * string means "unknown" — header is then omitted so old clients don't
      * see a phantom mismatch.
      */
-    private static function buildCommit(): string
+    // Public because Sentry initialisation (AppServiceProvider::initializeSentry)
+    // reports the SAME commit as this header — one derivation, so an error's
+    // release in Sentry always matches the X-Build header of the deploy that
+    // produced it.
+    public static function buildCommit(): string
     {
         if (self::$cachedBuildCommit !== null) {
             return self::$cachedBuildCommit;
