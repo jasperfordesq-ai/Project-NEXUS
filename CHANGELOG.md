@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Deploying now waits for the checks, and refuses if they did not all run.** The deploy script pushed to GitHub and immediately told the server to go live. But pushing is the thing that *starts* the automated checks, so the deploy and the checks began at the same moment and the deploy always finished first — nothing ever read the result. Code could go live and the checks could fail twenty minutes later, with no connection between the two.
+
+  There was a second, quieter problem. The checks skip whole sections when they judge an area untouched, and a skipped section counts as a pass on the overall result. So a commit could carry a green tick while its PHP tests, its React tests, the container build, the end-to-end run and the accessibility audit had never run on it at all. That was the normal state, not an edge case.
+
+  Deploying now stops after pushing and asks GitHub one question: has every required check actually run, and passed, on exactly this version of the code? A skipped check counts as "not checked". If the answer is no, it starts a full check and waits; if that does not pass, nothing is deployed and the reason is printed. If it cannot reach GitHub or is not signed in, it refuses rather than assuming the best. `ALLOW_UNVERIFIED_DEPLOY=1` overrides it for a genuine emergency and says loudly that it has.
+
+  Nothing was removed or made faster: everything that ran before still runs. The change is that the deploy is now connected to the result. Requesting a full check run also genuinely runs everything now — the container build and translation-drift checks previously stayed skipped even when everything was explicitly asked for.
+
 - **The old recurring-events engine has been retired and removed.** The platform carried two engines for months; the newer one is now the only one. This removes the split that caused editing a single occurrence to fail, and it retires a generator with real defects: it ignored the weekdays an organiser selected (a "every Monday and Thursday" series simply repeated weekly from whatever day it started), it treated the first occurrence as one interval *after* the date you chose rather than on it, and it could not record that an individual occurrence had been changed.
 
   Two deliberate consequences. **A series can now run to 366 occurrences instead of 52** — the old ceiling was a limitation of the removed generator. And **the rollout switch no longer restores the old behaviour**: it now governs only the optional extras (rolling recurrence, revisions, blueprints) and what the API advertises. Turning it off does not bring the old engine back, because there is nothing to bring back.

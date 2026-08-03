@@ -588,7 +588,22 @@ Full deployment guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 | **Legacy Wrapper** | `scripts/safe-deploy.sh` (compatibility shim only; production delegates to blue-green) |
 | **Method** | Zero-downtime blue/green switch via Apache route file |
 
-**Preferred: gated deploy from the dev machine.** Run `bash scripts/deploy.sh` — it runs the larastan/PHPStan static-analysis gate first (catches the job-offers class of bug; only NEW findings beyond `phpstan-baseline.neon` block — override a false alarm with `ALLOW_PHPSTAN_FAIL=1`), then pushes and runs the blue/green deploy below. The gate runs locally in the `nexus-php-app` container, so it adds only a couple of minutes and can't break the server-side deploy. The raw steps below still work as a fallback.
+**Preferred: gated deploy from the dev machine.** Run `bash scripts/deploy.sh` — it runs the larastan/PHPStan static-analysis gate first (catches the job-offers class of bug; only NEW findings beyond `phpstan-baseline.neon` block — override a false alarm with `ALLOW_PHPSTAN_FAIL=1`), pushes, **then blocks until GitHub confirms the pushed commit is fully checked**, and only then runs the blue/green deploy below. The static gate runs locally in the `nexus-php-app` container, so it adds only a couple of minutes and can't break the server-side deploy. The raw steps below still work as a fallback — but they bypass the check gate.
+
+### 🔴 A green tick is NOT proof the code was checked
+
+`ci.yml` skips whole jobs when its `changes` filter judges an area untouched, and `release-gate` treats a **skipped** need as passing (it fails only on `failure`/`cancelled`). Combined with `cancel-in-progress`, a commit routinely carries a green tick while its PHP suite, React suite, Docker build, E2E and accessibility jobs never ran on it. Example: run `30795897364` on `7277682cd` is green with **11 of 20 jobs skipped**.
+
+`scripts/predeploy-ci-check.sh` is the compensating control. It requires a completed run **for that exact SHA** in which every required job actually *ran* and passed — skipped counts as unchecked — and it **fails closed** (no `gh`, not authenticated, no run, commit not on `origin/main` ⇒ refuse). `scripts/deploy.sh` calls it with `--trigger`, so a partially-covered commit starts a forced full run and waits.
+
+```bash
+bash scripts/predeploy-ci-check.sh            # is HEAD fully checked? (report only)
+bash scripts/predeploy-ci-check.sh --trigger  # force a full run and wait for it
+```
+
+🔴 `workflow_dispatch` must genuinely force **every** job, or the verifier can never reach full coverage and deploys block forever. `docker-verify` and `i18n-drift` each needed an explicit `|| github.event_name == 'workflow_dispatch'` escape for this reason — keep that property when editing their `if:` conditions, and add any new job to `REQUIRED_JOBS` in the verifier (an unrecognised job name makes it refuse, by design).
+
+Emergency override: `ALLOW_UNVERIFIED_DEPLOY=1 bash scripts/deploy.sh` — deliberate, loud, and not for routine use.
 
 ```bash
 # Step 1: Push code

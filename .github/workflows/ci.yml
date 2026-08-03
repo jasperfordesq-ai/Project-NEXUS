@@ -767,7 +767,8 @@ jobs:
     if: >-
       always()
       && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-      && (needs.changes.outputs.php == 'true' || needs.changes.outputs.frontend == 'true')
+      && (needs.changes.outputs.php == 'true' || needs.changes.outputs.frontend == 'true'
+      || github.event_name == 'workflow_dispatch')
       && needs.php-checks.result == 'success'
       && needs.react-build.result != 'failure' && needs.react-build.result != 'cancelled'
       && needs.api-contract.result != 'failure' && needs.api-contract.result != 'cancelled'
@@ -930,7 +931,12 @@ jobs:
   i18n-drift:
     name: Translation Drift Detection
     needs: i18n-changed
-    if: needs.i18n-changed.outputs.run == 'true'
+    # workflow_dispatch forces this on even when no i18n path changed, so a
+    # deliberate "check everything" run really does check everything. The
+    # pre-deploy verifier (scripts/predeploy-ci-check.sh) treats a SKIPPED job
+    # as "not checked", so without this escape a forced run could never reach
+    # full coverage and deploys would be blocked forever.
+    if: needs.i18n-changed.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
