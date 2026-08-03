@@ -490,10 +490,18 @@ class UsersControllerTest extends TestCase
             'type' => 'password_changed',
         ]);
 
-        $this->assertCount(1, $mailer->calls);
-        $this->assertSame($user->email, $mailer->calls[0]['to']);
-        $this->assertSame('security_alert', $mailer->calls[0]['options']['category']);
-        $this->assertSame($this->testTenantId, $mailer->calls[0]['options']['tenant_id']);
+        // Assert on the security_alert email specifically, not the TOTAL call
+        // count: other legitimate emails (e.g. admin notifications) can fire in
+        // the same request depending on what earlier test files left in the
+        // shared tenant, so a total-count pin is order-dependent — it broke
+        // shard 4 when the 2026-08-03 reshard changed this file's neighbours.
+        $securityAlerts = array_values(array_filter(
+            $mailer->calls,
+            static fn (array $call): bool => ($call['options']['category'] ?? null) === 'security_alert'
+        ));
+        $this->assertCount(1, $securityAlerts);
+        $this->assertSame($user->email, $securityAlerts[0]['to']);
+        $this->assertSame($this->testTenantId, $securityAlerts[0]['options']['tenant_id']);
     }
 
     // ================================================================
@@ -535,10 +543,19 @@ class UsersControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertCount(1, $mailer->calls);
-        $this->assertSame($user->email, $mailer->calls[0]['to']);
-        $this->assertSame('account_deleted', $mailer->calls[0]['options']['category']);
-        $this->assertSame($this->testTenantId, $mailer->calls[0]['options']['tenant_id']);
+        // Same rationale as the security_alert assertion above: pin the
+        // account_deleted email itself, not the total number of emails the
+        // deletion request happened to send. The total varies with tenant
+        // state left by earlier files in the shard (observed: 2 calls on CI
+        // shard 4 after the 2026-08-03 reshard; 1 call when the file runs
+        // alone) — the goodbye email is what this test exists to prove.
+        $accountDeleted = array_values(array_filter(
+            $mailer->calls,
+            static fn (array $call): bool => ($call['options']['category'] ?? null) === 'account_deleted'
+        ));
+        $this->assertCount(1, $accountDeleted);
+        $this->assertSame($user->email, $accountDeleted[0]['to']);
+        $this->assertSame($this->testTenantId, $accountDeleted[0]['options']['tenant_id']);
     }
 
     // ================================================================
