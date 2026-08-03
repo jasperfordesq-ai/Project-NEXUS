@@ -594,14 +594,19 @@ Full deployment guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 `ci.yml` skips whole jobs when its `changes` filter judges an area untouched, and `release-gate` treats a **skipped** need as passing (it fails only on `failure`/`cancelled`). Combined with `cancel-in-progress`, a commit routinely carries a green tick while its PHP suite, React suite, Docker build, E2E and accessibility jobs never ran on it. Example: run `30795897364` on `7277682cd` is green with **11 of 20 jobs skipped**.
 
-`scripts/predeploy-ci-check.sh` is the compensating control. It requires a completed run **for that exact SHA** in which every required job actually *ran* and passed — skipped counts as unchecked — and it **fails closed** (no `gh`, not authenticated, no run, commit not on `origin/main` ⇒ refuse). `scripts/deploy.sh` calls it with `--trigger`, so a partially-covered commit starts a forced full run and waits.
+`scripts/predeploy-ci-check.sh` is the compensating control at deploy time. Evidence evaluation lives in `scripts/predeploy-ci-verify.mjs`, which uses **result inheritance**: a required check counts as passed if it ran and passed on the exact deploy SHA, **or** on an ancestor commit with none of its watched paths (per `.github/ci-paths.yml`) changed since. A check that *failed* on the newest code it ran against always refuses — the walk never skips past a failure — and skipped/cancelled are never evidence. It **fails closed** (no `gh`/`node`, not authenticated, no evidence, commit not on `origin/main` ⇒ refuse). `scripts/deploy.sh` calls it with `--trigger`, so a genuinely uncovered commit forces a full run and waits; with the nightly scheduled full run, evidence is normally fresh and deploys verify in seconds.
 
 ```bash
 bash scripts/predeploy-ci-check.sh            # is HEAD fully checked? (report only)
-bash scripts/predeploy-ci-check.sh --trigger  # force a full run and wait for it
+bash scripts/predeploy-ci-check.sh --trigger  # force a full run only if evidence is missing
 ```
 
-🔴 `workflow_dispatch` must genuinely force **every** job, or the verifier can never reach full coverage and deploys block forever. `docker-verify` and `i18n-drift` each needed an explicit `|| github.event_name == 'workflow_dispatch'` escape for this reason — keep that property when editing their `if:` conditions, and add any new job to `REQUIRED_JOBS` in the verifier (an unrecognised job name makes it refuse, by design).
+🔴 Invariants to preserve when touching CI or the verifier:
+
+- `.github/ci-paths.yml` is the **single source of truth** for which paths wake which areas — both `dorny/paths-filter` steps in ci.yml and the verifier read it. Change watch-lists there and only there.
+- `workflow_dispatch` **and** `schedule` must genuinely force **every** job (each job's `if:` carries the escape), or the verifier can never reach full coverage and deploys block forever. `docker-verify` and `i18n-drift` needed explicit escapes for this reason.
+- A new ci.yml job ⇒ add it to `REQUIRED_JOBS` in `scripts/predeploy-ci-verify.mjs` (an unrecognised job name on the deploy SHA's runs makes it refuse, by design).
+- The nightly `schedule` run (03:30 UTC) has its **own concurrency group** so it and push runs never cancel each other — keep that when editing `concurrency:`.
 
 Emergency override: `ALLOW_UNVERIFIED_DEPLOY=1 bash scripts/deploy.sh` — deliberate, loud, and not for routine use.
 

@@ -6,11 +6,23 @@ on:
   pull_request:
     branches: [main]
   # Manual trigger — forces every job to run regardless of changed paths
-  # (the per-job `github.event_name == 'workflow_dispatch'` conditions below
-  # already opt in). Use this to run the full suite on the current HEAD when
-  # the last push only touched paths the changes-preflight skips (e.g. a
-  # CHANGELOG- or .github-only commit).
+  # (the per-job workflow_dispatch/schedule conditions below already opt in).
+  # Use this to run the full suite on the current HEAD when the last push only
+  # touched paths the changes-preflight skips (e.g. a CHANGELOG- or
+  # .github-only commit). The deploy verifier (scripts/predeploy-ci-check.sh)
+  # relies on this: it refuses to deploy a commit whose required jobs never
+  # ran, and --trigger uses this dispatch to force the full run.
   workflow_dispatch:
+  # Nightly full sweep at 03:30 UTC. Change-aware skipping means a job can stay
+  # asleep for weeks while code it depends on drifts (the mobile contract bug,
+  # 2026-08-03, sat invisible exactly this way). Every job below treats
+  # `schedule` like `workflow_dispatch`, so the complete suite runs nightly —
+  # and the deploy verifier then finds fresh full evidence instead of forcing
+  # a ~40-minute dispatch run at deploy time. Scheduled runs get their own
+  # concurrency group (below) so they never cancel, or get cancelled by, a
+  # late-night push run.
+  schedule:
+    - cron: '30 3 * * *'
 
 permissions:
   contents: read
@@ -23,7 +35,10 @@ permissions:
 # (Different workflows use different github.workflow names, so they never
 # cancel each other; different branches/PRs get their own group via github.ref.)
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Scheduled (nightly) runs get their own group: a 03:30 sweep must not cancel
+  # an in-flight late-night push run, and a morning push must not kill the
+  # nightly evidence the deploy verifier depends on.
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'ci' }}
   cancel-in-progress: true
 
 env:
@@ -56,34 +71,13 @@ jobs:
       - id: filter
         uses: dorny/paths-filter@v3
         with:
-          filters: |
-            php:
-              - 'app/**'
-              - 'routes/**'
-              - 'config/**'
-              - 'database/**'
-              - 'bootstrap/**'
-              - 'tests/**'
-              - 'lang/**'
-              - 'composer.json'
-              - 'composer.lock'
-              - 'phpunit.xml'
-              - 'scripts/**'
-              - 'Dockerfile'
-              - 'Dockerfile.prod'
-              - '.github/workflows/ci.yml'
-            frontend:
-              - 'react-frontend/**'
-              - '.github/workflows/ci.yml'
-            mobile:
-              - 'mobile/**'
-              - '.github/workflows/ci.yml'
-            accessible:
-              - 'accessible-frontend/**'
-              - 'app/Http/Controllers/GovukAlpha/**'
-              - 'lang/**/govuk_alpha*.php'
-              - 'vite.accessible-frontend.config.ts'
-              - '.github/workflows/ci.yml'
+          # Path lists live in .github/ci-paths.yml — the SAME file the deploy
+          # verifier (scripts/predeploy-ci-verify.mjs) reads to decide whether
+          # an older check result still covers the commit being deployed. One
+          # source of truth: CI's skip decisions and the deploy verifier can
+          # never disagree about what a job depends on. Change watch-lists
+          # there and only there.
+          filters: .github/ci-paths.yml
 
   # ─────────────────────────────────────────────────────────────────
   # Stage 1a: PHP Tests — PHPUnit, sharded across parallel runners.
@@ -102,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: changes
-    if: needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     env:
       SHARD_TOTAL: '6'
@@ -282,7 +276,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: changes
-    if: needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     services:
       mariadb:
@@ -463,7 +457,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
@@ -655,7 +649,7 @@ jobs:
     name: "BLOCKING: API Contract Validation"
     runs-on: ubuntu-latest
     needs: [changes, react-build]
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
@@ -713,7 +707,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     strategy:
       fail-fast: false
       matrix:
@@ -766,9 +760,9 @@ jobs:
     needs: [changes, php-checks, react-build, api-contract]
     if: >-
       always()
-      && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
       && (needs.changes.outputs.php == 'true' || needs.changes.outputs.frontend == 'true'
-      || github.event_name == 'workflow_dispatch')
+      || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
       && needs.php-checks.result == 'success'
       && needs.react-build.result != 'failure' && needs.react-build.result != 'cancelled'
       && needs.api-contract.result != 'failure' && needs.api-contract.result != 'cancelled'
@@ -906,27 +900,10 @@ jobs:
       - id: filter
         uses: dorny/paths-filter@v3
         with:
-          filters: |
-            i18n:
-              - 'react-frontend/public/locales/**'
-              - 'react-frontend/src/**/*.ts'
-              - 'react-frontend/src/**/*.tsx'
-              - 'lang/**'
-              - 'app/**/*.php'
-              - 'src/**/*.php'
-              - 'scripts/check-i18n*.mjs'
-              - 'scripts/check-i18n.sh'
-              # Not matched by check-i18n*.mjs above — different prefix.
-              - 'scripts/check-admin-i18n*.mjs'
-              # Nor by check-admin-i18n*.mjs — the name is check-admin-ui-*.
-              - 'scripts/check-admin-ui-literals.mjs'
-              - 'scripts/check-php-i18n-coverage.mjs'
-              - 'scripts/check-php-lang-parity.mjs'
-              - 'scripts/check-php-lang-untranslated.mjs'
-              - 'scripts/php-lang-invariant-allowlist.json'
-              - 'scripts/php/dump-lang.php'
-              - '.github/i18n-gap-baseline.json'
-              - '.github/php-lang-untranslated-baseline.json'
+          # The i18n path list lives in .github/ci-paths.yml alongside the
+          # area filters — same single-source-of-truth rule as the `changes`
+          # job above; the deploy verifier reads the identical list.
+          filters: .github/ci-paths.yml
 
   i18n-drift:
     name: Translation Drift Detection
@@ -936,7 +913,7 @@ jobs:
     # pre-deploy verifier (scripts/predeploy-ci-check.sh) treats a SKIPPED job
     # as "not checked", so without this escape a forced run could never reach
     # full coverage and deploys would be blocked forever.
-    if: needs.i18n-changed.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.i18n-changed.outputs.run == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
 
     steps:
@@ -1195,7 +1172,7 @@ jobs:
     name: E2E Smoke Tests
     runs-on: ubuntu-latest
     needs: [changes, react-build]
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
@@ -1657,7 +1634,7 @@ jobs:
     name: Accessibility Audit (WCAG 2.1 AA)
     runs-on: ubuntu-latest
     needs: [changes, react-build]
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
@@ -1729,7 +1706,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: changes
-    if: needs.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.mobile == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
@@ -1769,7 +1746,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     needs: changes
-    if: needs.changes.outputs.accessible == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.changes.outputs.accessible == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     services:
       mariadb:

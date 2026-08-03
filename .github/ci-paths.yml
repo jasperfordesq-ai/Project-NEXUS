@@ -1,0 +1,79 @@
+# Single source of truth: which paths wake which CI areas.
+#
+# Consumed by TWO readers, which is the whole point:
+#   1. .github/workflows/ci.yml — both dorny/paths-filter steps (the `changes`
+#      job and the `i18n-changed` job) load this file, so push-time skipping
+#      decisions come from here.
+#   2. scripts/predeploy-ci-verify.mjs — the deploy verifier uses the same
+#      lists to decide whether a check's result on an ANCESTOR commit still
+#      covers the commit being deployed ("no watched path changed since").
+#
+# Because both read the same file, the deploy verifier can never disagree with
+# CI about what a job depends on. If you change what a job watches, change it
+# here and only here.
+#
+# contracts/ holds shared payload shapes consumed by the PHP backend, the React
+# frontend, AND the native mobile client. A contract change must wake all
+# three, or a consumer drifts invisibly: mobile/'s .strict() agenda schema sat
+# broken for weeks (2026-08-03) because contracts/** appeared in no filter.
+
+php:
+  - 'app/**'
+  - 'routes/**'
+  - 'config/**'
+  - 'database/**'
+  - 'bootstrap/**'
+  - 'tests/**'
+  - 'lang/**'
+  - 'contracts/**'
+  - 'composer.json'
+  - 'composer.lock'
+  - 'phpunit.xml'
+  - 'scripts/**'
+  - 'Dockerfile'
+  - 'Dockerfile.prod'
+  - '.github/workflows/ci.yml'
+  - '.github/ci-paths.yml'
+
+frontend:
+  - 'react-frontend/**'
+  - 'contracts/**'
+  - '.github/workflows/ci.yml'
+  - '.github/ci-paths.yml'
+
+mobile:
+  - 'mobile/**'
+  - 'contracts/**'
+  - '.github/workflows/ci.yml'
+  - '.github/ci-paths.yml'
+
+accessible:
+  - 'accessible-frontend/**'
+  - 'app/Http/Controllers/GovukAlpha/**'
+  - 'lang/**/govuk_alpha*.php'
+  - 'vite.accessible-frontend.config.ts'
+  - '.github/workflows/ci.yml'
+  - '.github/ci-paths.yml'
+
+i18n:
+  - 'react-frontend/public/locales/**'
+  - 'react-frontend/src/**/*.ts'
+  - 'react-frontend/src/**/*.tsx'
+  - 'lang/**'
+  - 'app/**/*.php'
+  - 'src/**/*.php'
+  - 'scripts/check-i18n*.mjs'
+  - 'scripts/check-i18n.sh'
+  # Not matched by check-i18n*.mjs above — different prefix.
+  - 'scripts/check-admin-i18n*.mjs'
+  # Nor by check-admin-i18n*.mjs — the name is check-admin-ui-*.
+  - 'scripts/check-admin-ui-literals.mjs'
+  - 'scripts/check-php-i18n-coverage.mjs'
+  - 'scripts/check-php-lang-parity.mjs'
+  - 'scripts/check-php-lang-untranslated.mjs'
+  - 'scripts/php-lang-invariant-allowlist.json'
+  - 'scripts/php/dump-lang.php'
+  - '.github/i18n-gap-baseline.json'
+  - '.github/php-lang-untranslated-baseline.json'
+  - '.github/workflows/ci.yml'
+  - '.github/ci-paths.yml'
