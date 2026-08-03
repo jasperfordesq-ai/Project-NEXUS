@@ -10,6 +10,29 @@ The sections below apply only to Claude Code. All universal project rules, stack
 
 ---
 
+## 🔴 Write to the owner in PLAIN ENGLISH (owner instruction, 2026-08-03)
+
+The owner is not a professional developer. Progress updates and final summaries
+have become dense and jargon-heavy to the point of being unreadable. The owner
+has asked, directly, for this to stop. Treat it as binding.
+
+- **Lead with the answer.** Did it work, break, or is it unknown? Say that first.
+- **Explain what it means for the platform**, not how it works internally.
+- **No unexplained jargon.** If a technical term is genuinely needed, define it in
+  the same sentence. Avoid insider shorthand entirely: "gate", "lane", "shard",
+  "ratchet", "critical path", "fail closed", "contract drift".
+- **Short sentences. Short summaries.** A long dense summary does not get read,
+  so it is worse than no summary.
+- **Be honest about coverage.** Never let "it passed" stand in for "it ran". If a
+  check was skipped or could not run, say so in words.
+- **Do not claim something is finished or optimal** unless it has been verified.
+  Repeatedly declaring work "done" and then reopening it has cost real trust.
+
+This governs messages TO THE OWNER only. Code comments, commit messages, CHANGELOG
+entries and files under `docs/` keep their normal technical precision.
+
+---
+
 ## Verification / Definition of Done
 
 After ANY code edit, run the relevant tests AND typecheck (tsc/PHPStan) before committing. Never commit unverified changes.
