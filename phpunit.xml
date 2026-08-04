@@ -13,7 +13,12 @@
     </testsuite>
   </testsuites>
   <php>
-    <env name="APP_ENV" value="testing"/>
+    <!-- force: a Docker dev container exports APP_ENV=development, and without
+         force PHPUnit leaves an already-set variable alone. Note force alone is
+         NOT sufficient — PhpHandler writes putenv()/$_ENV but not $_SERVER, which
+         is the adapter Laravel consults first; tests/bootstrap.php sets $_SERVER
+         and is the authoritative fix. Both are kept so neither path regresses. -->
+    <env name="APP_ENV" value="testing" force="true"/>
     <!-- Fixed test key (NOT a secret) so encryption/cookie/session tests don't throw
          MissingAppKeyException — the CI phpunit step never set APP_KEY (~107 errors). -->
     <env name="APP_KEY" value="base64:HfQEDtbtr90JIXhsaAhSFWnzIo1f31VZ2e5qLqKKnls=" force="true"/>

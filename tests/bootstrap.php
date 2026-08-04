@@ -90,8 +90,31 @@ if (!$isDocker) {
     }
 }
 
-// Set default testing environment variables
+// Set default testing environment variables.
+//
+// 🔴 APP_ENV must be written to $_SERVER and putenv(), not just $_ENV.
+//
+// Laravel resolves env() through Dotenv's repository, whose default adapters are
+// consulted in order: ServerConstAdapter ($_SERVER) BEFORE EnvConstAdapter
+// ($_ENV). The Docker dev container sets a real APP_ENV=development, which PHP
+// CLI exposes in $_SERVER, so setting only $_ENV['APP_ENV'] here lost the race:
+// app()->environment() returned 'development' for the entire local test suite.
+// phpunit.xml's <env name="APP_ENV" value="testing"/> could not fix it either —
+// PHPUnit's PhpHandler writes putenv() and $_ENV but never $_SERVER, so even
+// force="true" leaves the container's $_SERVER value winning.
+//
+// This was not merely cosmetic. AppServiceProvider::loadCachedJsonTranslations()
+// has a testing-only fast path that skips freshness-checking every locale JSON
+// file on the bind mount, and a testing-only locale narrowing
+// (app.test_translation_locales). Neither ever engaged locally, so every test
+// paid ~1.1s of translation-cache work: measured 1,549 ms per test before this
+// fix versus ~410 ms after, on tests whose bodies do nothing.
+//
+// CI was never affected — its workflow exports a real APP_ENV=testing — which is
+// exactly why this stayed invisible: local was the slow, divergent one.
 $_ENV['APP_ENV'] = 'testing';
+$_SERVER['APP_ENV'] = 'testing';
+putenv('APP_ENV=testing');
 $_ENV['APP_DEBUG'] = 'true';
 
 // Set timezone
