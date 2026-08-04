@@ -55,7 +55,12 @@ const minimatch = mmMod.minimatch || mmMod;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const IS_WIN = process.platform === 'win32';
 const CHECK_TIMEOUT_MS = 300_000; // one stuck check must not hang the push
-const VITEST_FILE_CAP = 10;       // focused tests only — a bigger set is CI's job
+// Focused tests only — the full suite remains CI's job. Raised from 10 to 40 on
+// 2026-08-04: vitest.config.ts now runs files concurrently on a developer
+// machine (~16 forks on a 32-thread CPU), so 40 files costs roughly what 10 used
+// to. Override with NEXUS_PREFLIGHT_VITEST_CAP when deliberately widening or
+// narrowing the local net.
+const VITEST_FILE_CAP = Number.parseInt(process.env.NEXUS_PREFLIGHT_VITEST_CAP ?? '', 10) || 40;
 
 const args = process.argv.slice(2);
 const baseIdx = args.indexOf('--base');
@@ -202,7 +207,11 @@ for (const wf of areas.workflows) {
 // --- PHP ---------------------------------------------------------------------
 if (areas.php.length) {
   const phpApp = files.filter((f) => f.startsWith('app/') && f.endsWith('.php') && existsSync(path.join(ROOT, f)));
-  const phpTests = files.filter((f) => f.startsWith('tests/') && f.endsWith('.php') && existsSync(path.join(ROOT, f)));
+  // Must match phpunit.xml's suffix="Test.php". A plain *.php under tests/ is a
+  // helper (tests/bootstrap.php, a base TestCase, a trait), and handing one to
+  // phpunit as a test path fails with "Class bootstrap cannot be found" — a
+  // confusing false FAIL for anyone editing test infrastructure.
+  const phpTests = files.filter((f) => f.startsWith('tests/') && /Test\.php$/.test(f) && existsSync(path.join(ROOT, f)));
   const docker = dockerPhpAvailable();
 
   if (phpApp.length) {

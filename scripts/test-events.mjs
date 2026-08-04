@@ -613,11 +613,16 @@ if (shouldRun('react')) {
     'src/admin/modules/events/EventsAdmin.test.tsx',
     'src/components/compose/tabs/EventTab.test.tsx',
   ];
+  // Concurrency is deliberately NOT pinned here. react-frontend/vitest.config.ts
+  // owns it and already distinguishes the two environments: CI keeps the old
+  // serial behaviour (maxForks 2, fileParallelism false) while a developer
+  // workstation scales to half its logical cores. Re-adding --maxWorkers=1 /
+  // --no-file-parallelism here would override that and silently reimpose the
+  // serial run everywhere. Set NEXUS_VITEST_MAX_FORKS=1 to force serial for a
+  // one-off debugging run instead.
   const [npmCommand, npmArgs] = npmInvocation([
     '--prefix', 'react-frontend', 'run', 'test', '--',
     '--run',
-    '--maxWorkers=1',
-    '--no-file-parallelism',
     ...reactTests,
   ]);
   run(
