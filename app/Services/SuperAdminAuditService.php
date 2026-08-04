@@ -19,41 +19,64 @@ use Illuminate\Support\Facades\Log;
 class SuperAdminAuditService
 {
     /**
+     * Sentinel written when log() is handed an action type this class does not
+     * know about. It is a real enum member so the row stays queryable and the
+     * admin UI can label it (`audit_action_unknown` exists in every locale) —
+     * unlike the empty string MariaDB would otherwise coerce it to.
+     */
+    public const UNKNOWN_ACTION = 'unknown';
+
+    /**
      * Human-readable labels for each action type.
+     *
+     * 🔴 The keys of this map are the canonical set of values log() may write, and
+     * they MUST match the `super_admin_audit_log.action_type` enum exactly. The
+     * platform runs MariaDB with `strict => false` (config/database.php), so an
+     * out-of-enum value is NOT rejected — it is silently coerced to '' while the
+     * INSERT reports success. Drift is therefore invisible at runtime, which is
+     * how 'tenant_purged' went unrecorded from 2026-03 to 2026-08.
+     * Pinned by Tests\Laravel\Unit\Database\SuperAdminAuditActionTypeContractTest.
      */
     private const ACTION_LABELS = [
-        'tenant_created'          => 'Tenant Created',
-        'tenant_updated'          => 'Tenant Updated',
-        'tenant_deleted'          => 'Tenant Deleted',
-        'tenant_purged'           => 'Tenant Purged',
-        'tenant_moved'            => 'Tenant Moved',
-        'hub_toggled'             => 'Hub Toggled',
-        'super_admin_granted'     => 'Super Admin Granted',
-        'super_admin_revoked'     => 'Super Admin Revoked',
-        'user_created'            => 'User Created',
-        'user_updated'            => 'User Updated',
-        'user_moved'              => 'User Moved',
-        'bulk_users_moved'        => 'Bulk Users Moved',
-        'bulk_tenants_updated'    => 'Bulk Tenants Updated',
+        'tenant_created'              => 'Tenant Created',
+        'tenant_updated'              => 'Tenant Updated',
+        'tenant_deleted'              => 'Tenant Deleted',
+        'tenant_purged'               => 'Tenant Purged',
+        'tenant_moved'                => 'Tenant Moved',
+        'hub_toggled'                 => 'Hub Toggled',
+        'super_admin_granted'         => 'Super Admin Granted',
+        'super_admin_revoked'         => 'Super Admin Revoked',
+        'global_super_admin_granted'  => 'Global Super Admin Granted',
+        'global_super_admin_revoked'  => 'Global Super Admin Revoked',
+        'user_created'                => 'User Created',
+        'user_updated'                => 'User Updated',
+        'user_moved'                  => 'User Moved',
+        'bulk_users_moved'            => 'Bulk Users Moved',
+        'bulk_tenants_updated'        => 'Bulk Tenants Updated',
+        self::UNKNOWN_ACTION          => 'Unrecognised Action',
     ];
 
     /**
-     * FontAwesome icon class for each action type.
+     * FontAwesome icon class for each action type. Must carry the same keys as
+     * ACTION_LABELS — see the note there.
      */
     private const ACTION_ICONS = [
-        'tenant_created'          => 'fa-plus-circle',
-        'tenant_updated'          => 'fa-pen',
-        'tenant_deleted'          => 'fa-trash',
-        'tenant_purged'           => 'fa-radiation',
-        'tenant_moved'            => 'fa-arrows-alt',
-        'hub_toggled'             => 'fa-toggle-on',
-        'super_admin_granted'     => 'fa-user-shield',
-        'super_admin_revoked'     => 'fa-user-slash',
-        'user_created'            => 'fa-user-plus',
-        'user_updated'            => 'fa-user-edit',
-        'user_moved'              => 'fa-exchange-alt',
-        'bulk_users_moved'        => 'fa-users',
-        'bulk_tenants_updated'    => 'fa-building',
+        'tenant_created'              => 'fa-plus-circle',
+        'tenant_updated'              => 'fa-pen',
+        'tenant_deleted'              => 'fa-trash',
+        'tenant_purged'               => 'fa-radiation',
+        'tenant_moved'                => 'fa-arrows-alt',
+        'hub_toggled'                 => 'fa-toggle-on',
+        'super_admin_granted'         => 'fa-user-shield',
+        'super_admin_revoked'         => 'fa-user-slash',
+        'global_super_admin_granted'  => 'fa-shield-halved',
+        'global_super_admin_revoked'  => 'fa-shield-slash',
+        'user_created'                => 'fa-user-plus',
+        'user_updated'                => 'fa-user-edit',
+        'user_moved'                  => 'fa-exchange-alt',
+        'bulk_users_moved'            => 'fa-users',
+        'bulk_tenants_updated'        => 'fa-building',
+        self::UNKNOWN_ACTION          => 'fa-question-circle',
     ];
 
     public function __construct()
@@ -61,7 +84,26 @@ class SuperAdminAuditService
     }
 
     /**
+     * Every action type log() can faithfully record — i.e. the values that must
+     * exist as `super_admin_audit_log.action_type` enum members.
+     *
+     * @return array<int,string>
+     */
+    public static function actionTypes(): array
+    {
+        return array_keys(self::ACTION_LABELS);
+    }
+
+    /**
      * Log an audit entry to super_admin_audit_log.
+     *
+     * Returns TRUE when the entry was recorded faithfully, FALSE when it was not
+     * — either because the row could not be written at all, or because
+     * $actionType is not a known action and was degraded to UNKNOWN_ACTION.
+     *
+     * 🔴 FALSE does not imply "nothing was written". Callers performing
+     * destructive work should surface a warning on FALSE rather than assume
+     * either outcome; see TenantProvisioning\TenantPurgeService.
      */
     public static function log(
         string $actionType,
@@ -73,6 +115,20 @@ class SuperAdminAuditService
         ?string $description = null
     ): bool {
         try {
+            // Validate BEFORE the insert. Checking the insert's own outcome cannot
+            // catch an unknown action type: with strict mode off the write succeeds
+            // and only the stored value is blanked, so the failure is invisible
+            // downstream. Fail OPEN — record the row under UNKNOWN_ACTION so the
+            // actor, target, values and description survive — and report false.
+            $faithful = array_key_exists($actionType, self::ACTION_LABELS);
+            if (!$faithful) {
+                Log::error('SuperAdminAuditService::log unknown action_type — recorded as "' . self::UNKNOWN_ACTION . '"', [
+                    'action_type' => $actionType,
+                    'target_type' => $targetType,
+                    'target_id'   => $targetId,
+                ]);
+            }
+
             $access = SuperPanelAccess::getAccess();
             $actorUserId = $access['user_id'] ?? ($_SESSION['user_id'] ?? 0);
             $actorTenantId = $access['tenant_id'] ?? ($_SESSION['tenant_id'] ?? 0);
@@ -96,7 +152,7 @@ class SuperAdminAuditService
                 'actor_tenant_id' => $actorTenantId,
                 'actor_name'     => $actorName,
                 'actor_email'    => $actorEmail,
-                'action_type'    => $actionType,
+                'action_type'    => $faithful ? $actionType : self::UNKNOWN_ACTION,
                 'target_type'    => $targetType,
                 'target_id'      => $targetId,
                 'target_name'    => $targetName,
@@ -108,7 +164,7 @@ class SuperAdminAuditService
                 'created_at'     => now(),
             ]);
 
-            return true;
+            return $faithful;
         } catch (\Throwable $e) {
             Log::error('SuperAdminAuditService::log failed', [
                 'error' => $e->getMessage(),

@@ -13,6 +13,7 @@ use App\Services\ContentModerationService;
 use App\Services\JobVacancyService;
 use App\Services\KiAgentService;
 use App\Services\MatchingService;
+use App\Services\SuperAdminAuditService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
@@ -740,5 +741,67 @@ class SchemaWriteRegressionTest extends TestCase
 
         $this->assertNotContains($id, array_column($result['items'], 'id'));
         $this->assertSame(0, $result['total']);
+    }
+
+    // =====================================================================
+    // 2026-08-04 — super_admin_audit_log.action_type vs SuperAdminAuditService
+    // =====================================================================
+
+    /**
+     * The enum shipped without 'tenant_purged', so every permanent tenant purge
+     * was audited with action_type = '' — the write succeeded, log() returned
+     * true, and the entry became invisible to the audit log's action filter.
+     * 'global_super_admin_granted' / '_revoked' had the same gap.
+     *
+     * Sibling to Tests\Laravel\Unit\Database\SuperAdminAuditActionTypeContractTest,
+     * which pins the same contract against the committed schema dump with no
+     * database. This one proves THIS database has actually been migrated — the
+     * failure the dump-based test cannot see.
+     */
+    public function test_every_audit_action_type_round_trips_through_the_real_enum(): void
+    {
+        foreach (SuperAdminAuditService::actionTypes() as $type) {
+            $marker = 'enum contract ' . uniqid('', true);
+
+            $this->assertTrue(
+                SuperAdminAuditService::log($type, 'tenant', $this->testTenantId, $marker),
+                "log() reported action_type '{$type}' was not recorded faithfully."
+            );
+
+            $stored = DB::table('super_admin_audit_log')
+                ->where('target_name', $marker)
+                ->orderByDesc('id')
+                ->value('action_type');
+
+            $this->assertSame(
+                $type,
+                $stored,
+                "action_type '{$type}' was stored as '" . (string) $stored . "'. An empty string means this "
+                . 'database is missing the enum member — run: docker exec -e DB_DATABASE=nexus_test '
+                . 'nexus-php-app php artisan migrate --force'
+            );
+        }
+    }
+
+    /**
+     * An unknown action type must still produce a row — losing the actor, target,
+     * old/new values and description to protect one field would be a worse trade —
+     * but it must be flagged, and stored under the queryable sentinel rather than
+     * the '' that MariaDB would otherwise coerce it to.
+     */
+    public function test_unknown_action_type_is_recorded_under_the_sentinel_and_reported(): void
+    {
+        $marker = 'enum sentinel ' . uniqid('', true);
+
+        $this->assertFalse(
+            SuperAdminAuditService::log('not_a_real_action_type', 'tenant', $this->testTenantId, $marker),
+            'log() must report an unknown action type as not faithfully recorded.'
+        );
+
+        $row = DB::table('super_admin_audit_log')->where('target_name', $marker)->first();
+
+        $this->assertNotNull($row, 'the row must still be written — fail open, not closed');
+        $this->assertSame(SuperAdminAuditService::UNKNOWN_ACTION, $row->action_type);
+        $this->assertNotSame('', $row->action_type, 'must never store the empty-string coercion');
     }
 }

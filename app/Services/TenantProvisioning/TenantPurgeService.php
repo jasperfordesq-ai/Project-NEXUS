@@ -197,7 +197,10 @@ class TenantPurgeService
         $report['manual_followups'] = self::manualFollowups($tenant);
 
         // 4. Audit + cache invalidation.
-        SuperAdminAuditService::log(
+        //    log() returns false when the entry was not recorded faithfully. A purge
+        //    is irreversible and this row is its only record, so surface that rather
+        //    than discarding the return value as every other call site does.
+        $audited = SuperAdminAuditService::log(
             'tenant_purged',
             'tenant',
             $tenantId,
@@ -206,6 +209,9 @@ class TenantPurgeService
             ['rows_deleted' => $totalRows, 'members_deleted' => $membersDeleted, 'tables' => count($report['tables'])],
             "Permanently purged tenant '{$tenant->name}' ({$slug}) — {$totalRows} rows across " . count($report['tables']) . ' tables, ' . $membersDeleted . ' members deleted'
         );
+        if (!$audited) {
+            $report['warnings'][] = 'Audit entry for this purge was not recorded faithfully — check the application log.';
+        }
 
         try {
             Cache::store('redis')->forget("t{$tenantId}:tenant_bootstrap");

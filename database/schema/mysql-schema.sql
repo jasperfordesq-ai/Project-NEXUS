@@ -17260,7 +17260,7 @@ CREATE TABLE `super_admin_audit_log` (
   `actor_tenant_id` int(10) unsigned NOT NULL,
   `actor_name` varchar(255) NOT NULL,
   `actor_email` varchar(255) NOT NULL,
-  `action_type` enum('tenant_created','tenant_updated','tenant_deleted','tenant_moved','hub_toggled','super_admin_granted','super_admin_revoked','user_created','user_updated','user_moved','bulk_users_moved','bulk_tenants_updated') NOT NULL,
+  `action_type` enum('tenant_created','tenant_updated','tenant_deleted','tenant_moved','hub_toggled','super_admin_granted','super_admin_revoked','user_created','user_updated','user_moved','bulk_users_moved','bulk_tenants_updated','tenant_purged','global_super_admin_granted','global_super_admin_revoked','unknown') NOT NULL,
   `target_type` enum('tenant','user','bulk') NOT NULL,
   `target_id` int(10) unsigned DEFAULT NULL,
   `target_name` varchar(255) DEFAULT NULL,

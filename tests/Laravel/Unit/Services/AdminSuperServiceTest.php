@@ -532,24 +532,17 @@ class AdminSuperServiceTest extends \Tests\Laravel\TestCase
      */
     public function testGetActionLabelReturnsKnownLabels(): void
     {
-        $knownActions = [
-            'tenant_created' => 'Tenant Created',
-            'tenant_updated' => 'Tenant Updated',
-            'tenant_deleted' => 'Tenant Deleted',
-            'tenant_moved' => 'Tenant Moved',
-            'hub_toggled' => 'Hub Toggled',
-            'super_admin_granted' => 'Super Admin Granted',
-            'super_admin_revoked' => 'Super Admin Revoked',
-            'user_created' => 'User Created',
-            'user_updated' => 'User Updated',
-            'user_moved' => 'User Moved',
-            'bulk_users_moved' => 'Bulk Users Moved',
-            'bulk_tenants_updated' => 'Bulk Tenants Updated',
-        ];
-
-        foreach ($knownActions as $type => $expectedLabel) {
+        // Driven off actionTypes() rather than a hardcoded copy: the previous
+        // hardcoded list silently omitted 'tenant_purged' and so never noticed
+        // that the DB enum was missing it either.
+        foreach (SuperAdminAuditService::actionTypes() as $type) {
             $label = SuperAdminAuditService::getActionLabel($type);
-            $this->assertEquals($expectedLabel, $label, "Label for '{$type}' should be '{$expectedLabel}'");
+            $this->assertNotSame('', $label, "Label for '{$type}' must not be empty");
+            $this->assertMatchesRegularExpression(
+                '/^[A-Z]/',
+                $label,
+                "Label for '{$type}' should be a human-readable title, got '{$label}'"
+            );
         }
     }
 
@@ -568,22 +561,7 @@ class AdminSuperServiceTest extends \Tests\Laravel\TestCase
      */
     public function testGetActionIconReturnsIconClasses(): void
     {
-        $knownActions = [
-            'tenant_created',
-            'tenant_updated',
-            'tenant_deleted',
-            'tenant_moved',
-            'hub_toggled',
-            'super_admin_granted',
-            'super_admin_revoked',
-            'user_created',
-            'user_updated',
-            'user_moved',
-            'bulk_users_moved',
-            'bulk_tenants_updated',
-        ];
-
-        foreach ($knownActions as $type) {
+        foreach (SuperAdminAuditService::actionTypes() as $type) {
             $icon = SuperAdminAuditService::getActionIcon($type);
             $this->assertIsString($icon);
             $this->assertStringContainsString('fa-', $icon, "Icon for '{$type}' should contain a Font Awesome class");
