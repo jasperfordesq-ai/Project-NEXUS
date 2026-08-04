@@ -36,6 +36,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [DATABASE.md](DATABASE.md) | Database, the two migration systems, the schema dump, and tenant scoping. |
 | [CI.md](CI.md) | The CI pipeline, which checks are blocking, PR gates, and how to run them locally. |
 | [TESTING.md](TESTING.md) | Test-layer meanings, E2E status, and generated-report policy. |
+| [LOCAL-PERFORMANCE.md](LOCAL-PERFORMANCE.md) | Getting full speed from a development machine, which concurrency knobs are machine-aware, and the container file-I/O bottleneck that CPU tuning cannot fix. |
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |

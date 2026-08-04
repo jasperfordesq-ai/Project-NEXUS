@@ -489,6 +489,11 @@ npm run build                           # Production build (blocking)
 
 The full frontend suite **is** a release success criterion. CI runs it as `React Full Suite (shard N/8)` (`react-tests-full`, via `react-frontend/scripts/run-vitest-shard.mjs`), blocking since 2026-07-28 and listed in the `release-gate` `needs:` array. It covers every suite except the 55 quarantined in `react-frontend/src/test/failing-suites.baseline.json`, so a green pipeline proves 1,228 of 1,283 suites; that list may only shrink, and its ceiling is enforced by `react-frontend/scripts/check-quarantine-budget.mjs` (run as `npm run check:quarantine-budget`). That ceiling step deliberately lives in the `react-build` job, not in `react-tests-full`, so it cannot be swallowed by a job-level `continue-on-error`. The focused smoke step is also blocking — it runs serially (`--pool=forks --poolOptions.forks.singleFork=true`), which is what fixed the old parallel worker-pool hang. Only the coverage report step is non-blocking.
 
+Test files run concurrently on a developer machine and serially in CI — see
+[docs/LOCAL-PERFORMANCE.md](docs/LOCAL-PERFORMANCE.md). Use
+`NEXUS_VITEST_MAX_FORKS=1` to reproduce a suspected ordering bug serially, and do
+not hard-code `--maxWorkers` or `--no-file-parallelism` into scripts.
+
 ### PHP backend (PHPUnit)
 
 ```bash
@@ -517,6 +522,13 @@ docker exec nexus-php-app vendor/bin/phpstan analyse --no-progress --memory-limi
 ```
 
 PHPStan/Larastan targets the Laravel `app/` codebase with the repository baseline in `phpstan-baseline.neon`. Keep new findings out of touched code and run the configured command before risky backend changes.
+
+For a full local run, use the workstation config, which raises only the worker
+count and job size — never the level, paths, or ignore rules:
+
+```bash
+docker exec nexus-php-app php vendor/bin/phpstan analyse --configuration phpstan.local.neon --memory-limit=4G --no-progress
+```
 
 ---
 

@@ -39,11 +39,57 @@ After ANY code edit, run the relevant tests AND typecheck (tsc/PHPStan) before c
 
 ## Testing
 
-Never run more than one heavy test suite at a time; run suites sequentially to avoid CPU starvation and false failures.
+**The old "never run more than one heavy suite at a time" rule is retired (2026-08-04).**
+It existed for a 16 GB, low-core machine where a second suite really did cause CPU
+starvation and false failures. The dev workstation is now a Ryzen 9 9950X3D
+(16 cores / 32 threads) with 96 GB RAM, and Docker already sees all 32 CPUs and
+45.9 GB. Serialising work on it wastes most of the machine.
+
+What applies now:
+
+- **Run test suites in parallel.** Two or three heavy suites at once is fine and
+  expected. Measured on this machine: `src/components/ui` (66 files) went
+  78.8s → 12.1s and the events React step 67s → 11s, with identical pass counts.
+- **Frontend concurrency is automatic, and it is machine-aware.**
+  `react-frontend/vitest.config.ts` derives fork count from
+  `os.availableParallelism()` locally and deliberately keeps CI on the old
+  serial numbers (`ubuntu-latest` is 4 vCPU, and the 8-shard gate was stabilised
+  there). Do **not** pass `--maxWorkers` / `--no-file-parallelism` in scripts —
+  that overrides the config and reimposes the serial run everywhere. To force
+  serial for one debugging run, use `NEXUS_VITEST_MAX_FORKS=1`.
+- **PHPStan is disk-bound, PHPUnit is not — and the difference is measured.** The
+  repo is bind-mounted into Docker over 9p: reading `app/`'s 1,750 PHP files takes
+  **4,644 ms** on the mount versus **45 ms** on the container's own filesystem
+  (~103× slower). That costs PHPStan dearly — a cold full run is **458s** on the
+  mount and **53s** on container ext4 — and is why more workers barely help.
+  🔴 It costs **PHPUnit nothing**: the same 30 test files measured 539,815 ms on
+  the mount and 539,059 ms on ext4. Slow PHP tests are ~1.4s per test spent inside
+  the tests (bootstrap is 94 ms, a DB query 0.29 ms, and enabling CLI OPcache buys
+  only ~7%) — an open code-level question, NOT a Docker or hardware one. Do not
+  blame the mount for it. See `docs/LOCAL-PERFORMANCE.md`, which also records why
+  moving the tree into WSL2 was considered and **rejected**.
+- **Full PHPStan now runs locally.** The app container's memory cap was 2 GB
+  while CI invokes PHPStan with `--memory-limit=2G` — the whole budget — so the
+  analyser was OOM-killed, which is what the old "PHPStan hangs locally, analyse
+  specific paths" advice was really describing. `compose.yml` now allows 8 GB and
+  a full run completes.
+
+Constraints that are still real and are NOT about machine size:
+
+- **Never background a vitest run** — it deadlocks. Foreground only.
+- **Never run PHPUnit on the Windows host** — the host `vendor/` is incomplete
+  (no ext-gmp/pcntl/posix) and produces dozens of false failures. Use the
+  container, or report the check as unavailable.
+- **`phpunit --filter` scans the whole suite** — pass a path plus `--no-coverage`.
 
 ## Environment / Platform Notes
 
 This is a Windows + WSL2/Docker environment. Avoid inline Bash with Windows paths (backslashes collapse); write scripts to temp files and use forward slashes or grep-based extraction. SSH host strings already include the user prefix.
+
+**Hardware (rebuilt 2026-08-04):** AMD Ryzen 9 9950X3D, 16 cores / 32 threads,
+96 GB DDR5-5200, Samsung 9100 PRO 4 TB NVMe. Docker/WSL2 gets 32 CPUs and
+45.9 GB by default (no `.wslconfig` present, so WSL2 takes its 50%-of-RAM
+default). Assume generous CPU and memory; assume **slow** container file I/O.
 
 ## Version Control / Commit Hygiene
 

@@ -1,0 +1,40 @@
+# PHPStan configuration — LOCAL WORKSTATION ONLY. Not used by CI.
+#
+# WHY THIS FILE EXISTS
+# -------------------
+# phpstan.neon pins `parallel.maximumNumberOfProcesses: 2`. That number is
+# correct for CI: every ci.yml job runs on `ubuntu-latest` (4 vCPU), and each
+# PHPStan worker is a separate PHP process with its own memory ceiling, so a
+# high worker count there risks an OOM-killed runner rather than a faster run.
+#
+# It is badly wrong for a 16-core/32-thread developer workstation, where it
+# leaves the analyser using ~6% of the machine. Rather than retune the shared
+# file and change CI's behaviour as a side effect, this config includes it and
+# overrides only the parallelism. phpstan.neon stays the single source of truth
+# for level, paths, baseline, and every ignoreErrors rule.
+#
+# USAGE (from the repo root — the container, not the Windows host: host PHP is
+# missing extensions and gives false results)
+#
+#   docker exec nexus-php-app php vendor/bin/phpstan analyse \
+#     --configuration phpstan.local.neon --memory-limit=4G --no-progress
+#
+# Add `clear-result-cache` before `analyse` when you want a true cold timing;
+# warm runs are cache-dominated and tell you nothing about parallelism.
+#
+# 🔴 CI PARITY: this file changes ONLY worker count and job size — never the
+# level, paths, or ignore rules. If a finding appears here it appears in CI too.
+# Do not add rule overrides to this file; a local config that disagrees with the
+# gate is worse than no local config, because it makes a red gate look green.
+includes:
+    - phpstan.neon
+
+parameters:
+    parallel:
+        processTimeout: 1200.0
+        # Half the logical cores on the reference workstation (32T). Left below
+        # the core count on purpose: each worker is a full PHP process holding
+        # its own reflection data, so this is bounded by container memory
+        # (compose.yml gives the app container 8g) before it is bounded by CPU.
+        maximumNumberOfProcesses: 12
+        jobSize: 20

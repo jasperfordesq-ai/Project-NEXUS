@@ -162,7 +162,7 @@ Recovery: ledger movements are atomic, so a failed operation leaves no partial s
 
 ## Test commands & key regression tests
 
-Run the backend suites (run heavy suites one at a time):
+Run the backend suites (these may be run in parallel — see [local performance](../LOCAL-PERFORMANCE.md)):
 
 ```bash
 vendor/bin/phpunit --testsuite=Laravel,LaravelMigrated --colors=always

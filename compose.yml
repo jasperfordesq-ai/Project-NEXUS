@@ -89,10 +89,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    # Container memory limit — must be above PHP memory_limit (1G, set in Dockerfile)
-    # to leave headroom for Apache workers, OPcache (256M), and OS overhead.
-    mem_limit: 2g
-    mem_reservation: 512m
+    # Container memory limit — LOCAL DEVELOPMENT ONLY. Production limits live in
+    # compose.bluegreen.yml / compose.prod.yml and are deliberately NOT changed
+    # here: the production VM has 16GB total and its 2G cap is sized for that.
+    #
+    # This must be above PHP memory_limit (1G, set in Dockerfile) to leave
+    # headroom for Apache workers, OPcache (256M), and OS overhead. It was 2g,
+    # which made a full local PHPStan run impossible — CI invokes it with
+    # --memory-limit=2G, i.e. the entire container budget, so the analyser was
+    # OOM-killed rather than finishing (this is the real cause of the
+    # "local PHPStan hangs, analyse specific paths instead" workaround).
+    # 8g on a 96GB workstation is still under 9% of host RAM.
+    mem_limit: 8g
+    mem_reservation: 1g
 
   # ---------------------------------------------------------------------------
   # MariaDB 10.11 Database (MySQL-compatible, Internal only)

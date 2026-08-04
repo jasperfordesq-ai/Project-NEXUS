@@ -133,7 +133,7 @@ Safeguarding is a cross-cutting concern, not a sub-feature of hour logging. `Saf
 
 ## Tests and verification
 
-Run the volunteering suites (sequentially — never run multiple heavy suites at once):
+Run the volunteering suites (these may be run in parallel — see [local performance](../LOCAL-PERFORMANCE.md)):
 
 ```bash
 vendor/bin/phpunit --filter Volunteer --colors=always

@@ -205,7 +205,7 @@ The feed query (`getOpenJobs`) returns only `status = open`, `deadline` null-or-
 
 ## Tests and verification
 
-Run the job suites (sequentially — never run multiple heavy suites at once):
+Run the job suites (these may be run in parallel — see [local performance](../LOCAL-PERFORMANCE.md)):
 
 ```bash
 vendor/bin/phpunit --filter Job --colors=always

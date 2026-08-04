@@ -84,6 +84,7 @@ nav:
       - Database & migrations: DATABASE.md
       - CI & quality gates: CI.md
       - Testing: TESTING.md
+      - Local performance: LOCAL-PERFORMANCE.md
       - Custom domains: CUSTOM-DOMAINS.md
       - React dual-backend guardrails: REACT-DUAL-BACKEND.md
       - Federation API manual: FEDERATION_API_MANUAL.md

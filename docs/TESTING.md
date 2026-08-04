@@ -45,6 +45,25 @@ The list is a fix-and-remove queue, not a set of exemptions:
 - Record *why* each entry fails. Entries sharing a root cause get fixed as a group;
   lumping unrelated failures together is how the queue becomes an exemption list.
 
+## Local concurrency differs from CI on purpose
+
+`react-frontend/vitest.config.ts` derives its fork count from
+`os.availableParallelism()`. A developer machine runs test files concurrently
+(half its logical cores); CI stays on the original serial settings
+(`maxForks: 2`, `fileParallelism: false`) because every ci.yml job runs on a
+4-vCPU `ubuntu-latest` runner and the eight-shard gate was stabilised there.
+
+Two consequences worth knowing:
+
+- A suite that depends on file execution order or on shared module state can
+  pass in one mode and fail in the other. Reproduce serially with
+  `NEXUS_VITEST_MAX_FORKS=1` before concluding a test is flaky.
+- Do not pin `--maxWorkers` or `--no-file-parallelism` in scripts; those flags
+  override the config and reimpose serial execution everywhere.
+
+See [LOCAL-PERFORMANCE.md](LOCAL-PERFORMANCE.md) for the measured figures and for
+the container file-I/O limit that dominates PHP-side timings.
+
 ## Two ways a test passes locally and fails in CI
 
 Both have cost real debugging time, and both are properties of the environment
