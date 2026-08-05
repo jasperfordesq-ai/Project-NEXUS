@@ -204,6 +204,162 @@ class RegionalPanelIsolationTest extends TestCase
         );
     }
 
+    /*
+     * ── Body-supplied tenant ids ────────────────────────────────────────────
+     *
+     * 🔴 Added after an audit of this work. The tests above cover reads and the
+     * URL-addressed tenantShow/tenantUpdate, but the tier-A mutations that take a
+     * tenant id from the REQUEST BODY were only verified by reading the code.
+     * That is the exact class of hole that keeps billing in tier B — an id from
+     * the body with no branch check — so it needs to be tested, not inspected.
+     * The bulk endpoints matter most: they loop, and a check that covers only the
+     * first id, or only one end of a move, reads as correct.
+     */
+
+    public function test_a_tenant_cannot_be_created_under_a_sibling_branch(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiPost('/v2/admin/super/tenants', [
+            'name' => 'Smuggled Child',
+            'slug' => 'smuggled-' . uniqid('', false),
+            'parent_id' => $this->siblingId,
+        ])->assertStatus(403);
+
+        $this->assertDatabaseMissing('tenants', ['parent_id' => $this->siblingId]);
+    }
+
+    public function test_a_user_cannot_be_created_inside_a_sibling_branch(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiPost('/v2/admin/super/users', [
+            'tenant_id' => $this->siblingId,
+            'email' => 'smuggled-' . uniqid('', false) . '@example.test',
+            'first_name' => 'Smuggled',
+            'last_name' => 'User',
+            'password' => 'TestPassword123!',
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            0,
+            (int) DB::table('users')->where('tenant_id', $this->siblingId)->where('first_name', 'Smuggled')->count()
+        );
+    }
+
+    public function test_a_bulk_update_rejects_a_sibling_id_mixed_in_with_its_own(): void
+    {
+        // 🔴 The interesting case: a valid id alongside one from another branch.
+        // A check on only the first element would let the sibling through.
+        $this->actAsRegional();
+
+        $this->apiPost('/v2/admin/super/bulk/update-tenants', [
+            'tenant_ids' => [$this->childId, $this->siblingId],
+            'action' => 'deactivate',
+        ])->assertStatus(200);
+
+        // Own child updated; sibling untouched and reported as denied.
+        $this->assertSame(0, (int) DB::table('tenants')->where('id', $this->childId)->value('is_active'));
+        $this->assertSame(1, (int) DB::table('tenants')->where('id', $this->siblingId)->value('is_active'));
+    }
+
+    public function test_a_bulk_move_cannot_pull_a_member_out_of_a_sibling_branch(): void
+    {
+        // Both ends must be checked. Checking only the destination would let a
+        // branch admin harvest members out of someone else's branch.
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $ownMember = User::factory()->forTenant($this->childId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+
+        $this->actAsRegional();
+
+        $this->apiPost('/v2/admin/super/bulk/move-users', [
+            'user_ids' => [$ownMember->id, $siblingMember->id],
+            'target_tenant_id' => $this->hubId,
+        ])->assertStatus(200);
+
+        $this->assertSame(
+            $this->siblingChildId,
+            (int) DB::table('users')->where('id', $siblingMember->id)->value('tenant_id'),
+            'A member of another branch must not be moved.'
+        );
+    }
+
+    public function test_a_bulk_move_cannot_push_members_into_a_sibling_branch(): void
+    {
+        $ownMember = User::factory()->forTenant($this->childId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+
+        $this->actAsRegional();
+
+        $this->apiPost('/v2/admin/super/bulk/move-users', [
+            'user_ids' => [$ownMember->id],
+            'target_tenant_id' => $this->siblingId,
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            $this->childId,
+            (int) DB::table('users')->where('id', $ownMember->id)->value('tenant_id')
+        );
+    }
+
+    public function test_a_single_user_move_is_refused_at_both_ends(): void
+    {
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $ownMember = User::factory()->forTenant($this->childId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+
+        $this->actAsRegional();
+
+        // Out of a sibling branch...
+        $this->apiPost("/v2/admin/super/users/{$siblingMember->id}/move-tenant", [
+            'new_tenant_id' => $this->hubId,
+        ])->assertStatus(403);
+
+        // ...and into one.
+        $this->apiPost("/v2/admin/super/users/{$ownMember->id}/move-tenant", [
+            'new_tenant_id' => $this->siblingId,
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            $this->siblingChildId,
+            (int) DB::table('users')->where('id', $siblingMember->id)->value('tenant_id')
+        );
+        $this->assertSame(
+            $this->childId,
+            (int) DB::table('users')->where('id', $ownMember->id)->value('tenant_id')
+        );
+    }
+
+    public function test_a_sibling_tenant_cannot_be_moved_into_this_branch(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/tenants/{$this->siblingId}/move", [
+            'new_parent_id' => $this->hubId,
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            '/8200/',
+            DB::table('tenants')->where('id', $this->siblingId)->value('path')
+        );
+    }
+
+    public function test_sibling_federation_features_cannot_be_read_or_changed(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiGet("/v2/admin/super/federation/tenant/{$this->siblingId}/features")
+            ->assertStatus(403);
+    }
+
     public function test_the_audit_log_shows_no_sibling_branch_activity(): void
     {
         $siblingActor = User::factory()->forTenant($this->siblingId)->admin()->create();
