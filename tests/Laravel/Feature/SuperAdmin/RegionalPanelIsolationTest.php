@@ -360,6 +360,161 @@ class RegionalPanelIsolationTest extends TestCase
             ->assertStatus(403);
     }
 
+    /*
+     * ── Full tier-A coverage ────────────────────────────────────────────────
+     *
+     * 🔴 Added after a second audit pass. Classifying every super route by its
+     * RUNTIME gate showed 22 endpoints admit a branch admin, but only 14 had an
+     * isolation test. The remaining eight were code-verified only — and "I read
+     * the check and it looked right" is exactly the standard that let the
+     * empty-path hole survive. Every tier-A endpoint now has one.
+     */
+
+    public function test_a_sibling_member_cannot_be_read(): void
+    {
+        // Direct PII read of somebody in another branch.
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'first_name' => 'Sasha', 'last_name' => 'Sibling',
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiGet("/v2/admin/super/users/{$siblingMember->id}")->assertStatus(403);
+    }
+
+    public function test_a_sibling_member_cannot_be_modified(): void
+    {
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'first_name' => 'Sasha', 'last_name' => 'Sibling',
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/users/{$siblingMember->id}", ['first_name' => 'Hijacked'])
+            ->assertStatus(403);
+
+        $this->assertSame(
+            'Sasha',
+            DB::table('users')->where('id', $siblingMember->id)->value('first_name')
+        );
+    }
+
+    public function test_a_branch_admin_cannot_promote_someone_in_a_sibling_branch(): void
+    {
+        // 🔴 Granting super-admin inside another branch would hand that branch away.
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/users/{$siblingMember->id}/grant-super-admin", [])
+            ->assertStatus(403);
+
+        $this->assertSame(
+            0,
+            (int) DB::table('users')->where('id', $siblingMember->id)->value('is_tenant_super_admin')
+        );
+    }
+
+    public function test_a_branch_admin_cannot_demote_someone_in_a_sibling_branch(): void
+    {
+        $siblingAdmin = User::factory()->forTenant($this->siblingId)->admin()->create();
+        DB::table('users')->where('id', $siblingAdmin->id)->update(['is_tenant_super_admin' => 1]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/users/{$siblingAdmin->id}/revoke-super-admin", [])
+            ->assertStatus(403);
+
+        $this->assertSame(
+            1,
+            (int) DB::table('users')->where('id', $siblingAdmin->id)->value('is_tenant_super_admin'),
+            'A sibling branch keeps its own super-admin.'
+        );
+    }
+
+    public function test_a_sibling_tenant_cannot_be_turned_into_a_hub(): void
+    {
+        // Structural: making a tenant a hub changes what can be nested under it.
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/tenants/{$this->siblingChildId}/toggle-hub", [])
+            ->assertStatus(403);
+
+        $this->assertSame(
+            0,
+            (int) DB::table('tenants')->where('id', $this->siblingChildId)->value('allows_subtenants')
+        );
+    }
+
+    public function test_a_sibling_tenant_cannot_be_reactivated(): void
+    {
+        DB::table('tenants')->where('id', $this->siblingChildId)->update(['is_active' => 0]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/tenants/{$this->siblingChildId}/reactivate", [])
+            ->assertStatus(403);
+
+        $this->assertSame(
+            0,
+            (int) DB::table('tenants')->where('id', $this->siblingChildId)->value('is_active')
+        );
+    }
+
+    public function test_a_sibling_members_federation_features_cannot_be_changed(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiPut("/v2/admin/super/federation/tenant/{$this->siblingId}/features", [
+            'feature' => 'federation',
+            'enabled' => true,
+        ])->assertStatus(403);
+    }
+
+    public function test_move_and_promote_is_refused_at_both_ends(): void
+    {
+        // The last tier-A endpoint without coverage. It both moves a member and
+        // grants them super-admin, so a gap here would hand away a branch.
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $ownMember = User::factory()->forTenant($this->childId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+
+        $this->actAsRegional();
+
+        // Promoting someone out of another branch...
+        $this->apiPost("/v2/admin/super/users/{$siblingMember->id}/move-and-promote", [
+            'target_tenant_id' => $this->hubId,
+        ])->assertStatus(403);
+
+        // ...and installing one of ours as super-admin of a sibling.
+        $this->apiPost("/v2/admin/super/users/{$ownMember->id}/move-and-promote", [
+            'target_tenant_id' => $this->siblingId,
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            0,
+            (int) DB::table('users')->where('id', $ownMember->id)->value('is_tenant_super_admin')
+        );
+        $this->assertSame(
+            $this->siblingChildId,
+            (int) DB::table('users')->where('id', $siblingMember->id)->value('tenant_id')
+        );
+    }
+
+    public function test_the_dashboard_counts_only_this_branch(): void
+    {
+        // 🔴 Aggregates leak too. A count that includes other branches discloses
+        // the size of the installation and of its other networks.
+        $this->actAsRegional();
+
+        $data = $this->apiGet('/v2/admin/super/dashboard')->assertStatus(200)->json('data');
+
+        // Branch A is exactly two tenants: the hub and its child.
+        $this->assertSame(2, (int) ($data['total_tenants'] ?? -1), 'The dashboard must count only the caller\'s branch.');
+    }
+
     public function test_the_audit_log_shows_no_sibling_branch_activity(): void
     {
         $siblingActor = User::factory()->forTenant($this->siblingId)->admin()->create();
