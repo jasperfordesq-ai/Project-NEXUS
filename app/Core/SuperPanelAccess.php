@@ -99,23 +99,50 @@ class SuperPanelAccess
         }
 
         $isGod = !empty($user->is_god) || $user->role === 'god';
-        $hasSuperAdminFlag = !empty($user->is_tenant_super_admin) || !empty($user->is_super_admin);
 
-        // RULE 1: Must have tenant_super_admin flag, platform super flag, or god mode.
-        if (!$hasSuperAdminFlag && !$isGod) {
+        /*
+         * 🔴 A PLATFORM super-admin is platform-wide, wherever their account sits.
+         *
+         * This used to compute `$hasGlobalAccess = $isGod || tenant_id === 1`, so a
+         * user with `is_super_admin = 1` on any tenant other than the master
+         * resolved to **regional** and was confined to that tenant's subtree —
+         * while `EnsureIsSuperAdmin`, the gate guarding the same endpoints, admits
+         * exactly those users platform-wide. The two disagreed about what the same
+         * flag meant.
+         *
+         * That disagreement is also what made the empty-path hole reachable in the
+         * test suite: an `is_super_admin` account on tenant 2 was treated as
+         * regional, and tenant 2's seeded path is NULL, so the prefix was empty —
+         * i.e. a wildcard. Aligning the two definitions removes the mismatch AND
+         * the risk that a real platform super-admin provisioned off the master
+         * tenant is denied by RULE 3 below.
+         *
+         * The predicate is deliberately identical to EnsureIsSuperAdmin's. If you
+         * change one, change both.
+         */
+        $isPlatformSuperAdmin = $isGod
+            || !empty($user->is_super_admin)
+            || in_array($user->role ?? '', ['super_admin', 'god'], true);
+
+        $isTenantSuperAdmin = !empty($user->is_tenant_super_admin);
+
+        // RULE 1: Must hold one of the two super-admin capacities.
+        if (!$isPlatformSuperAdmin && !$isTenantSuperAdmin) {
             self::$currentAccess['reason'] = 'Not a Super Admin for any tenant';
             return self::$currentAccess;
         }
 
-        // RULE 2: Tenant admins need a hub/master tenant; god mode is platform-global.
+        // A tenant super-admin ON the master tenant is global by design — see
+        // app/Middleware/SuperPanelAccess.php's header.
         $isMaster = ((int)$user->tenant_id === 1);
+        $hasGlobalAccess = $isPlatformSuperAdmin || $isMaster;
 
-        if (!$isGod && !$isMaster && !$user->allows_subtenants) {
+        // RULE 2: a REGIONAL grant needs a tenant that may actually have children.
+        // Platform/master access is unaffected by this.
+        if (!$hasGlobalAccess && !$user->allows_subtenants) {
             self::$currentAccess['reason'] = 'Tenant does not have sub-tenant capability';
             return self::$currentAccess;
         }
-
-        $hasGlobalAccess = $isGod || $isMaster;
 
         /*
          * 🔴 RULE 3: a regional grant REQUIRES a usable materialised path.

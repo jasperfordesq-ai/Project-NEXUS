@@ -204,6 +204,88 @@ class SubtreeBoundaryEmptyPathTest extends TestCase
         $this->assertFalse(SuperPanelAccess::canAccessTenant($siblingId), 'A sibling branch must not be reachable.');
     }
 
+    /**
+     * 🔴 A PLATFORM super-admin must be master wherever their account sits.
+     *
+     * This previously resolved by tenant id: global only for god or tenant 1. So
+     * `is_super_admin = 1` on any other tenant was treated as **regional** and
+     * confined to that tenant's subtree — while `EnsureIsSuperAdmin`, guarding the
+     * very same endpoints, admits those users platform-wide. The two disagreed
+     * about what one flag meant, and that mismatch is what made the empty-path
+     * hole reachable from the existing test fixtures.
+     */
+    public function test_a_platform_super_admin_is_master_even_off_the_master_tenant(): void
+    {
+        $user = $this->hubWithPath('/9100/');
+        DB::table('users')->where('id', $user->id)->update([
+            'is_super_admin' => 1,
+            'is_tenant_super_admin' => 0,
+        ]);
+        SuperPanelAccess::reset();
+
+        $access = SuperPanelAccess::getAccess((int) $user->id);
+
+        $this->assertTrue($access['granted']);
+        $this->assertSame('master', $access['level'], 'A platform super-admin must not be confined to a subtree.');
+        $this->assertSame('global', $access['scope']);
+
+        // And no filter is applied for them.
+        $filter = SuperPanelAccess::subtreeFilter((int) $user->id);
+        $this->assertFalse($filter['deny']);
+        $this->assertFalse($filter['filter']);
+    }
+
+    public function test_a_platform_super_admin_is_not_blocked_by_a_missing_path(): void
+    {
+        // RULE 3 (empty path denies) must apply to REGIONAL only. Otherwise the
+        // empty-path fix would lock out a platform super-admin whose own tenant
+        // happens to have no path.
+        $user = $this->hubWithPath(null);
+        DB::table('users')->where('id', $user->id)->update([
+            'is_super_admin' => 1,
+            'is_tenant_super_admin' => 0,
+        ]);
+        SuperPanelAccess::reset();
+
+        $access = SuperPanelAccess::getAccess((int) $user->id);
+
+        $this->assertTrue($access['granted'], 'A platform super-admin is path-independent.');
+        $this->assertSame('master', $access['level']);
+    }
+
+    public function test_a_tenant_super_admin_without_sub_tenant_capability_is_refused(): void
+    {
+        $tenantId = (int) DB::table('tenants')->insertGetId([
+            'name' => 'Leaf Tenant',
+            'slug' => 'leaf-' . uniqid('', false),
+            'is_active' => 1,
+            'allows_subtenants' => 0,
+            'depth' => 1,
+            'path' => '/9200/9201/',
+            'max_depth' => 0,
+        ]);
+        $user = User::factory()->forTenant($tenantId)->create(['status' => 'active', 'is_approved' => true]);
+        DB::table('users')->where('id', $user->id)->update(['is_tenant_super_admin' => 1]);
+        SuperPanelAccess::reset();
+
+        $access = SuperPanelAccess::getAccess((int) $user->id);
+
+        $this->assertFalse($access['granted'], 'A tenant with no children must not get a subtree panel.');
+        $this->assertStringContainsString('sub-tenant', (string) $access['reason']);
+    }
+
+    public function test_an_ordinary_member_gets_nothing(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        SuperPanelAccess::reset();
+
+        $access = SuperPanelAccess::getAccess((int) $user->id);
+
+        $this->assertFalse($access['granted']);
+        $this->assertSame('none', $access['level']);
+        $this->assertTrue(SuperPanelAccess::subtreeFilter((int) $user->id)['deny']);
+    }
+
     public function test_a_prefix_must_not_match_a_merely_similar_path(): void
     {
         // /900/ must not match /9001/ — a real risk of prefix matching if the

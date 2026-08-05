@@ -523,6 +523,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- **A platform-wide administrator whose account happened to sit on the wrong community was being treated as a local one.** Two parts of the system disagreed about what the platform-administrator flag meant. The gate guarding those screens let such a person straight through, platform-wide — but the code that decides *how much they can see* only granted full reach to accounts on the very first community, or to the top-level owner account. Anyone else with that flag was quietly confined to their own community's branch.
+
+  Both now use the same definition, written out side by side so a future change to one is obvious in the other. This also removes a risk introduced by the fix below: without it, a genuine platform administrator whose community had no recorded position would have been locked out of the panel entirely.
+
 - **A community administrator whose community had no position recorded in the hierarchy would have been able to see the entire platform.** The platform supports a community that has communities beneath it having its own administrator, who should see only their own branch. That boundary is enforced by comparing the start of a text field that records each community's position in the tree — and that field is allowed to be empty.
 
   An empty value does not mean "no access". It means **everything**. Anything at all "starts with" nothing, and the equivalent database filter matches every row. Measured rather than assumed: the filter an empty value produces matched every community in the database.
