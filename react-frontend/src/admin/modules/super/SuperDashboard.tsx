@@ -24,7 +24,8 @@ import Network from 'lucide-react/icons/network';
 import Activity from 'lucide-react/icons/activity';
 import ListChecks from 'lucide-react/icons/list-checks';
 import { usePageTitle } from '@/hooks';
-import { useTenant, useToast } from '@/contexts';
+import { useAuth, useTenant, useToast } from '@/contexts';
+import { superPanelLevel } from '@/lib/access';
 import { adminSuper } from '../../api/adminApi';
 import { StatCard } from '../../components/StatCard';
 import { PageHeader } from '../../components/PageHeader';
@@ -34,6 +35,7 @@ export function SuperDashboard() {
   const { t } = useTranslation('admin_super');
   usePageTitle(t('super.page_title'));
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
   const toast = useToast();
 
   const [stats, setStats] = useState<SuperAdminDashboardStats | null>(null);
@@ -71,20 +73,40 @@ export function SuperDashboard() {
     loadData();
   }, [loadData]);
 
+  /*
+   * `master` sees the whole installation; `regional` sees its own community and
+   * the communities beneath it, and nothing else — the API enforces that, so the
+   * page must not describe itself as platform-wide to them. Calling a branch view
+   * "platform-wide" is how somebody concludes they are seeing everyone's data.
+   */
+  const isPlatformLevel = superPanelLevel(user) === 'master';
+
+  /*
+   * 🔴 Federation Controls is TIER B — platform-only. Its endpoints
+   * (`/admin/super/federation/*`) sit behind `EnsureIsSuperAdmin` and answer 403
+   * to the super-admin of a branch, verified by hand on 2026-08-05. Offering the
+   * card to a `regional` user is a control the API will refuse, which is the one
+   * thing this panel must never do. Every other action here is tier A and is
+   * subtree-scoped server-side, so it is safe for both levels.
+   */
   const quickActions = [
     { label: t('super.create_tenant'), href: tenantPath('/super-admin/tenants/create'), icon: Plus },
     { label: t('super.view_hierarchy'), href: tenantPath('/super-admin/tenants/hierarchy'), icon: Network },
     { label: t('super.bulk_operations'), href: tenantPath('/super-admin/bulk'), icon: ListChecks },
     { label: t('super.cross_tenant_users'), href: tenantPath('/super-admin/users'), icon: Users },
     { label: t('super.audit_log'), href: tenantPath('/super-admin/audit'), icon: Activity },
-    { label: t('super.federation_controls'), href: tenantPath('/super-admin/federation'), icon: Globe },
+    ...(isPlatformLevel
+      ? [{ label: t('super.federation_controls'), href: tenantPath('/super-admin/federation'), icon: Globe }]
+      : []),
   ];
 
   return (
     <div>
       <PageHeader
         title={t('super.super_dashboard_title')}
-        description={t('super.super_dashboard_desc')}
+        description={isPlatformLevel
+          ? t('super.super_dashboard_desc')
+          : t('super.super_dashboard_desc_branch')}
         actions={
           <Button
             variant="tertiary"

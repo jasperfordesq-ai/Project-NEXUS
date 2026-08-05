@@ -235,6 +235,7 @@
     "super_audit_log_desc": "プラットフォーム全体で実行されたすべてのスーパー管理者のアクションを表示する",
     "super_audit_log_title": "スーパー監査ログ",
     "super_dashboard_desc": "テナント、パートナーシップ、システムの健全性に関するプラットフォーム全体の概要",
+    "super_dashboard_desc_branch": "コミュニティとその下のコミュニティの概要",
     "super_dashboard_title": "スーパーダッシュボード",
     "super_partnerships_desc": "プラットフォーム全体にわたるすべてのフェデレーション パートナーシップを表示および管理します",
     "super_partnerships_title": "スーパーパートナーシップ",

@@ -235,6 +235,7 @@
     "super_audit_log_desc": "Afficher toutes les actions des super-administrateurs entreprises sur la plateforme",
     "super_audit_log_title": "Super journal d'audit",
     "super_dashboard_desc": "Présentation à l’échelle de la plateforme des locataires, des partenariats et de l’état du système",
+    "super_dashboard_desc_branch": "Aperçu de votre communauté et des communautés situées en dessous",
     "super_dashboard_title": "Super tableau de bord",
     "super_partnerships_desc": "Afficher et gérer tous les partenariats de fédération sur la plateforme",
     "super_partnerships_title": "Super partenariats",

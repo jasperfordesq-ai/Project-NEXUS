@@ -235,6 +235,7 @@
     "super_audit_log_desc": "View all super-admin actions taken across the platform",
     "super_audit_log_title": "Super Audit Log",
     "super_dashboard_desc": "Platform-wide overview of tenants, partnerships, and system health",
+    "super_dashboard_desc_branch": "Overview of your community and the communities beneath it",
     "super_dashboard_title": "Super Dashboard",
     "super_partnerships_desc": "View and manage all federation partnerships across the platform",
     "super_partnerships_title": "Super Partnerships",

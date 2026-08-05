@@ -235,6 +235,7 @@
     "super_audit_log_desc": "Bekijk alle superbeheerdersacties die op het platform zijn uitgevoerd",
     "super_audit_log_title": "Superauditlogboek",
     "super_dashboard_desc": "Platformbreed overzicht van tenants, partnerschappen en systeemgezondheid",
+    "super_dashboard_desc_branch": "Overzicht van uw community en de community's eronder",
     "super_dashboard_title": "Superdashboard",
     "super_partnerships_desc": "Bekijk en beheer alle federatiepartnerschappen op het platform",
     "super_partnerships_title": "Superpartnerschappen",

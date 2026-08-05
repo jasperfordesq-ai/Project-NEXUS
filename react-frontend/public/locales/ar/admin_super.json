@@ -235,6 +235,7 @@
     "super_audit_log_desc": "عرض جميع إجراءات المشرف المتميز المتخذة عبر النظام الأساسي",
     "super_audit_log_title": "سجل التدقيق الفائق",
     "super_dashboard_desc": "نظرة عامة على مستوى النظام الأساسي للمستأجرين والشراكات وسلامة النظام",
+    "super_dashboard_desc_branch": "نظرة عامة على مجتمعك والمجتمعات التي تحته",
     "super_dashboard_title": "لوحة القيادة الفائقة",
     "super_partnerships_desc": "عرض وإدارة جميع شراكات الاتحاد عبر المنصة",
     "super_partnerships_title": "الشراكات الفائقة",

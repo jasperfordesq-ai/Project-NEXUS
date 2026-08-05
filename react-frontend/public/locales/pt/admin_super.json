@@ -235,6 +235,7 @@
     "super_audit_log_desc": "Veja todas as ações do superadministrador realizadas na plataforma",
     "super_audit_log_title": "Registro de superauditoria",
     "super_dashboard_desc": "Visão geral de toda a plataforma sobre locatários, parcerias e integridade do sistema",
+    "super_dashboard_desc_branch": "Visão geral da sua comunidade e das comunidades abaixo dela",
     "super_dashboard_title": "Superpainel",
     "super_partnerships_desc": "Visualize e gerencie todas as parcerias da federação na plataforma",
     "super_partnerships_title": "Super Parcerias",

@@ -235,6 +235,7 @@
     "super_audit_log_desc": "Visualizza tutte le azioni del super amministratore eseguite sulla piattaforma",
     "super_audit_log_title": "Registro di controllo eccellente",
     "super_dashboard_desc": "Panoramica a livello di piattaforma su tenant, partnership e integrità del sistema",
+    "super_dashboard_desc_branch": "Panoramica della tua comunità e delle comunità sottostanti",
     "super_dashboard_title": "Cruscotto eccellente",
     "super_partnerships_desc": "Visualizza e gestisci tutte le partnership federative sulla piattaforma",
     "super_partnerships_title": "Super partnership",

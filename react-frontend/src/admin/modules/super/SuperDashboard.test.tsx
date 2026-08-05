@@ -16,9 +16,26 @@ const mockToast = {
   warning: vi.fn(),
 };
 
+// Swapped per test so one render can be the platform owner and the next the
+// super-admin of a branch community.
+const { mockUser } = vi.hoisted(() => ({
+  mockUser: { current: null as Record<string, unknown> | null },
+}));
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useAuth: () => ({
+      user: mockUser.current,
+      isAuthenticated: mockUser.current !== null,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
     useTenant: () => ({
       tenant: { id: 1, name: 'Master', slug: 'master' },
       tenantPath: (p: string) => `/master${p}`,
@@ -61,8 +78,48 @@ const MOCK_TENANTS = [
 describe('SuperDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUser.current = { id: 1, super_panel_level: 'master', is_super_admin: true };
     mockGetDashboard.mockResolvedValue({ success: true, data: MOCK_STATS });
     mockListTenants.mockResolvedValue({ success: true, data: MOCK_TENANTS });
+  });
+
+  /*
+   * 🔴 Tier-B controls must not be offered to a branch super-admin.
+   *
+   * Federation Controls is platform-only: `/admin/super/federation/*` sits behind
+   * `EnsureIsSuperAdmin` and answers 403 to a `regional` caller — confirmed by
+   * hand against a running server on 2026-08-05, where the card was rendered and
+   * would have led straight to a refusal. A panel that offers a control the API
+   * refuses is worse than one that omits it, because the user cannot tell whether
+   * they lack permission or the platform is broken.
+   */
+  describe('tier-B controls by panel level', () => {
+    it('offers Federation Controls to the platform owner', async () => {
+      mockUser.current = { id: 1, super_panel_level: 'master', is_super_admin: true };
+      render(<SuperDashboard />);
+      await waitFor(() => {
+        expect(screen.getByRole('link', { name: /federation/i })).toBeInTheDocument();
+      });
+    });
+
+    it('hides Federation Controls from the super-admin of a branch', async () => {
+      mockUser.current = { id: 2, super_panel_level: 'regional', is_tenant_super_admin: true };
+      render(<SuperDashboard />);
+      // Wait for load to finish so absence is not merely "not rendered yet".
+      await waitFor(() => {
+        expect(screen.getByRole('link', { name: /hierarchy/i })).toBeInTheDocument();
+      });
+      expect(screen.queryByRole('link', { name: /federation/i })).not.toBeInTheDocument();
+    });
+
+    it('does not describe a branch view as platform-wide', async () => {
+      mockUser.current = { id: 2, super_panel_level: 'regional', is_tenant_super_admin: true };
+      render(<SuperDashboard />);
+      await waitFor(() => {
+        expect(screen.getByRole('link', { name: /hierarchy/i })).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/platform-wide/i)).not.toBeInTheDocument();
+    });
   });
 
   // ── loading ────────────────────────────────────────────────────────────────

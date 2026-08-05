@@ -235,6 +235,7 @@
     "super_audit_log_desc": "Sehen Sie sich alle auf der Plattform durchgeführten Superadministrator-Aktionen an",
     "super_audit_log_title": "Super-Audit-Protokoll",
     "super_dashboard_desc": "Plattformweiter Überblick über Mieter, Partnerschaften und Systemzustand",
+    "super_dashboard_desc_branch": "Überblick über Ihre Community und die darunter liegenden Communities",
     "super_dashboard_title": "Super-Dashboard",
     "super_partnerships_desc": "Zeigen Sie alle Föderationspartnerschaften auf der Plattform an und verwalten Sie sie",
     "super_partnerships_title": "Super-Partnerschaften",

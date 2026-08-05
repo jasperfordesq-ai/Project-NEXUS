@@ -235,6 +235,7 @@
     "super_audit_log_desc": "Ver todas las acciones de superadministrador realizadas en toda la plataforma",
     "super_audit_log_title": "Registro de súper auditoría",
     "super_dashboard_desc": "Descripción general de toda la plataforma sobre inquilinos, asociaciones y estado del sistema",
+    "super_dashboard_desc_branch": "Descripción general de su comunidad y las comunidades que se encuentran debajo de ella",
     "super_dashboard_title": "Súper tablero",
     "super_partnerships_desc": "Ver y gestionar todas las asociaciones de federaciones en toda la plataforma",
     "super_partnerships_title": "Súper asociaciones",
