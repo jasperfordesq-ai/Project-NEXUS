@@ -39,6 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Worth being straight about one limit: the records are protected against the application and ordinary database edits, not against someone with full database access who empties the table outright.
 
+- **The same screen now exists on the accessible version of the site, which had none of it.** When the guardian-arrangement screen was first built it was built only in the main app. The accessible site — the plain-HTML version intended for people who need the most accessible experience — was left with nothing: no way to see an arrangement made about you, and no way to agree, refuse or withdraw. That was the wrong way round, because the people most likely to be under such an arrangement are the people most likely to be using that version.
+
+  It is now there in full, and it works entirely without JavaScript: every action is an ordinary form with a button. It shows who has been recorded as responsible for you, when, any note from your coordinators, your current answer, and any reason you gave. It offers the same three answers, with the same optional reason and the same explicit statement that you do not have to give one. Guardians see the people they support and whether each has agreed. It is linked from the settings hub — an unlinked page is an undiscoverable one — and it has been added to the list of pages the screen-reader check scans, where it passes with no problems found.
+
+  Both versions call exactly the same underlying code, so the rules about what answers are possible, the record of who did what, and the notifications to coordinators cannot drift apart between them.
+
 - **A carer could be told they were allowed to read a vulnerable person's messages, and it was never true.** On the linked-accounts screen a family saw four identical on/off switches: view activity, manage their listings, send and receive time credits, and view their messages. The first three now work. The fourth never did — nothing in the platform ever checked it. It saved, it showed as on, and no part of the system paid it any attention.
 
   That is worse than the feature being absent, because a family could reasonably act on it. In a safeguarding feature it is the most serious kind of error, and it appeared in both the main app and the accessible version. The clinching detail: the database column's own description lists **three** permissions. The fourth reached both screens and never reached the design.

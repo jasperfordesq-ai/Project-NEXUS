@@ -41,6 +41,20 @@ Route::post('/settings/linked-accounts/revoke', [AlphaController::class, 'settin
     ->middleware('throttle:nexus-route-20-per-1m')
     ->name('settings.linked-accounts.revoke');
 
+// Guardian arrangements (member side).
+//
+// 🔴 Parity with the React safeguarding tab. Without these the accessible
+// frontend had no way for a member to see, agree to, refuse, or withdraw a
+// guardian arrangement — on the frontend most likely to be used by the people
+// those arrangements are about. One POST for all three answers: the action is a
+// form field, so the page needs plain submit buttons and no JavaScript.
+Route::get('/settings/guardians', [AlphaController::class, 'settingsGuardians'])
+    ->name('settings.guardians');
+
+Route::post('/settings/guardians/respond', [AlphaController::class, 'settingsRespondToGuardian'])
+    ->middleware('throttle:nexus-route-10-per-1m')
+    ->name('settings.guardians.respond');
+
 // Appearance / theme.
 Route::get('/settings/appearance', [AlphaController::class, 'settingsAppearance'])
     ->name('settings.appearance');

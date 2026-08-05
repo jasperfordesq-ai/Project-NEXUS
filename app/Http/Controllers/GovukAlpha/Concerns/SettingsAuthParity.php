@@ -10,6 +10,7 @@ use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\BrokerControlConfigService;
 use App\Services\Enterprise\GdprService;
+use App\Services\GuardianArrangementService;
 use App\Services\InsuranceCertificateService;
 use App\Services\SubAccountService;
 use Illuminate\Http\RedirectResponse;
@@ -145,6 +146,108 @@ trait SettingsAuthParity
             'permissionKeys' => self::SETTINGS_LINK_PERMISSIONS,
             'maxChildren' => SubAccountService::MAX_CHILDREN,
             'status' => self::asStr($request->query('status')) ?: null,
+        ]);
+    }
+
+    /**
+     * Guardian arrangements — the accessible frontend's equivalent of the React
+     * safeguarding tab's "Guardian arrangements" section.
+     *
+     * 🔴 Why this page has to exist. Coordinators record that someone is
+     * responsible for supporting a member; that member is the subject of the
+     * arrangement and is the only person who can answer it. Until 2026-08-05 the
+     * React app had no screen for it either, and when one was built this frontend
+     * was left without one — meaning a member using the accessible site could not
+     * see the arrangement, agree to it, refuse it, or withdraw. That is the wrong
+     * way round: the people most likely to be under a guardian arrangement are
+     * exactly the people most likely to be using this frontend.
+     *
+     * Everything here goes through GuardianArrangementService, the same code the
+     * React app uses, so the transition rules, the append-only audit write and
+     * the staff notification cannot differ between the two frontends.
+     */
+    public function settingsGuardians(Request $request, string $tenantSlug): Response|RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $service = app(GuardianArrangementService::class);
+        $tenantId = TenantContext::getId();
+
+        try {
+            $guardians = $service->forWard($userId, $tenantId);
+            $wards = $service->forGuardian($userId, $tenantId);
+        } catch (\Throwable $e) {
+            report($e);
+            $guardians = [];
+            $wards = [];
+        }
+
+        return $this->view('accessible-frontend::settings-guardians', [
+            'title' => __('govuk_alpha_settings.guardians.title'),
+            'tenantSlug' => $tenantSlug,
+            'activeNav' => 'account',
+            'guardians' => $guardians,
+            'wards' => $wards,
+            'status' => self::asStr($request->query('status')) ?: null,
+        ]);
+    }
+
+    /**
+     * Record the member's own answer: agree, refuse, or withdraw.
+     *
+     * One handler for all three, matching the service's single entry point. The
+     * action arrives as a form field rather than three routes so the page can use
+     * plain submit buttons with no JavaScript — this frontend is HTML-first.
+     */
+    public function settingsRespondToGuardian(Request $request, string $tenantSlug): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $assignmentId = (int) $request->input('assignment_id');
+        $action = self::asStr($request->input('action'));
+        $reason = self::asStr($request->input('reason')) ?: null;
+
+        if ($assignmentId <= 0 || ! in_array($action, GuardianArrangementService::WARD_ACTIONS, true)) {
+            return $this->settingsGuardianRedirect($tenantSlug, 'guardian-failed');
+        }
+
+        try {
+            $result = app(GuardianArrangementService::class)->respond(
+                $userId,
+                TenantContext::getId(),
+                $assignmentId,
+                $action,
+                $reason,
+                $request->ip(),
+                $request->userAgent(),
+            );
+            // A refused transition and a missing arrangement are reported
+            // distinctly, because "you cannot do that from here" and "that is not
+            // yours" need different wording for the member.
+            $status = $result['ok']
+                ? 'guardian-' . $action
+                : ($result['code'] === 'NOT_FOUND' ? 'guardian-not-found' : 'guardian-not-allowed');
+        } catch (\Throwable $e) {
+            report($e);
+            $status = 'guardian-failed';
+        }
+
+        return $this->settingsGuardianRedirect($tenantSlug, $status);
+    }
+
+    private function settingsGuardianRedirect(string $tenantSlug, string $status): RedirectResponse
+    {
+        return redirect()->route('govuk-alpha.settings.guardians', [
+            'tenantSlug' => $tenantSlug,
+            'status' => $status,
         ]);
     }
 

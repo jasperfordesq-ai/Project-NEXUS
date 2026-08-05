@@ -63,6 +63,45 @@ The general-purpose safeguarding relationship. Columns: `guardian_user_id`,
   > and carries the consent action, covered by tests in
   > `SafeguardingTab.test.tsx`. An API with no caller is not a fix; check the
   > screen exists.
+  >
+  > 🔴 And a screen in ONE frontend is not a fix either. The React section shipped
+  > first and the accessible (GOV.UK) frontend had nothing — on the frontend most
+  > likely to be used by the very people these arrangements are about. Parity
+  > landed the same day: `/{tenantSlug}/accessible/settings/guardians`
+  > (`settings-guardians.blade.php`, `SettingsAuthParity::settingsGuardians`),
+  > HTML-first with plain form POSTs and no JavaScript, linked from the settings
+  > hub, in the a11y scan's member-page list, and covered by
+  > `AccessibleGuardianArrangementTest`. When you add a member-facing capability,
+  > build it in both or record why not.
+
+### A ward may agree, REFUSE, or WITHDRAW (2026-08-05)
+
+The table originally held one ward-facing column, `consent_given_at`, so the only
+action available to the subject of an arrangement was to agree — `revoked_at` is
+staff-only. That is not consent, and withdrawal was impossible.
+
+- Columns: `consent_declined_at`, `consent_withdrawn_at`, `ward_response_reason`.
+  Mutually exclusive in practice; each transition clears the other two, so the row
+  always states one current position.
+- All three responses go through `GuardianArrangementService::respond()` under a
+  row lock, with one transition table (`ALLOWED_FROM`). Withdrawal requires a
+  prior agreement. Both frontends call it, so they cannot diverge.
+- **A reason is offered and never required.** Requiring somebody to justify
+  refusing a safeguarding arrangement is pressure to consent. Both UIs say so.
+- `safeguarding_assignment_events` is the append-only trail — action, actor and
+  actor role, reason, IP, user agent — protected by BEFORE UPDATE / BEFORE DELETE
+  triggers raising `SQLSTATE 45000`. Note `TRUNCATE` bypasses DELETE triggers, so
+  this is immutability against the application and ordinary SQL, not against
+  someone with full database access.
+- Staff (the assigning member) and the guardian are notified on a refusal or
+  withdrawal, each in their own language via `LocaleContext`.
+- The guardian has their own view (`GET /v2/safeguarding/my-wards`), and a pending
+  decision is surfaced outside Settings by `GuardianConsentPrompt` on the
+  dashboard — previously the only routes in were an email or knowing to dig.
+
+> 🔴 Do not reuse `SafeguardingService::recordConsent()` for any of this. Called
+> without an assignment id it sets consent on **every** unconsented assignment for
+> that ward, and returns `true` when zero rows changed.
 - Revocation is a soft delete (`revoked_at`), so history survives.
 - Create and revoke both write an `activity_log` row with actor and IP.
 - **It is a record, not a capability.** No authorisation path anywhere consults

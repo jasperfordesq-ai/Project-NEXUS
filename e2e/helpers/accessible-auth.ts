@@ -84,6 +84,12 @@ export const ALPHA_PUBLIC_PAGES = [
  * had no accessibility coverage on the pages that actually carry it.
  */
 export const ALPHA_MEMBER_PAGES = [
+  // Guardian arrangements: the screen where a member agrees to, refuses, or
+  // withdraws from a safeguarding arrangement made about them. It carries form
+  // controls, a status tag and notification banners, so it is exactly the kind of
+  // page a screen-reader scan must cover — and the population it serves is the
+  // one most likely to be using this frontend.
+  `${base}/settings/guardians`,
   `${base}/dashboard`,
   `${base}/feed`,
   `${base}/listings`,

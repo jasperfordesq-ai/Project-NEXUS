@@ -37,6 +37,15 @@
                         'href' => route('govuk-alpha.settings.linked-accounts', ['tenantSlug' => $tenantSlug]),
                     ];
                 }
+                // Guardian arrangements. Reuses the page title as its label rather
+                // than adding a `nav.guardians` key with the identical value — a
+                // duplicate string is a duplicate translation to keep correct.
+                if (\Illuminate\Support\Facades\Route::has('govuk-alpha.settings.guardians')) {
+                    $settingsTabs[] = [
+                        'label' => __('govuk_alpha_settings.guardians.title'),
+                        'href' => route('govuk-alpha.settings.guardians', ['tenantSlug' => $tenantSlug]),
+                    ];
+                }
                 if (\Illuminate\Support\Facades\Route::has('govuk-alpha.settings.appearance')) {
                     $settingsTabs[] = [
                         'label' => __('govuk_alpha_settings.nav.appearance'),
