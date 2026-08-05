@@ -33,15 +33,16 @@
  *   node scripts/check-php-lang-untranslated.mjs --write-baseline # lock in progress
  */
 
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { dumpLangTree as sharedDumpLangTree } from './lib/load-php-array.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
+// Still referenced by the existence pre-check below; the dump itself now goes
+// through the shared reader, which resolves both paths from ROOT itself.
 const DUMP_SCRIPT = path.join(ROOT, 'scripts', 'php', 'dump-lang.php');
-const LANG_DIR = path.join(ROOT, 'lang');
 const ALLOWLIST_PATH = path.join(ROOT, 'scripts', 'php-lang-invariant-allowlist.json');
 const BASELINE_PATH = path.join(ROOT, '.github', 'php-lang-untranslated-baseline.json');
 const SOURCE_LOCALE = 'en';
@@ -55,31 +56,17 @@ const LOCALE_FILTER = args.includes('--locale') ? args[args.indexOf('--locale') 
 // ── Reading ──────────────────────────────────────────────────────────────────
 
 /**
- * Run the dump script, falling back to the PHP container when there is no PHP on
- * PATH — the same fallback scripts/lib/load-php-array.mjs uses, so this gate is
- * runnable on a dev machine that only has Docker.
+ * Reading is delegated to the shared dumpLangTree() in
+ * scripts/lib/load-php-array.mjs — one PHP process, with a host→container
+ * fallback so the gate runs on a Docker-first dev machine with no host PHP.
+ *
+ * 🔴 That fallback used to live here, inline, which is why THIS gate worked
+ * locally while check-php-lang-parity.mjs did not: parity called a bare `php`
+ * and hard-failed when it was absent. Keeping one copy is the point — do not
+ * re-inline it.
  */
 function dumpLangTree() {
-  const phpArgs = ['-d', 'display_errors=stderr', DUMP_SCRIPT, LANG_DIR];
-
-  try {
-    return JSON.parse(execFileSync('php', phpArgs, {
-      encoding: 'utf8',
-      maxBuffer: 256 * 1024 * 1024,
-    }));
-  } catch (error) {
-    if (!error || typeof error !== 'object' || error.code !== 'ENOENT') throw error;
-  }
-
-  const container = process.env.NEXUS_PHP_CONTAINER || 'nexus-php-app';
-  const containerRoot = (process.env.NEXUS_PHP_CONTAINER_ROOT || '/var/www/html').replace(/\/$/u, '');
-
-  return JSON.parse(execFileSync('docker', [
-    'exec', container, 'php',
-    '-d', 'display_errors=stderr',
-    `${containerRoot}/scripts/php/dump-lang.php`,
-    `${containerRoot}/lang`,
-  ], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }));
+  return sharedDumpLangTree({ root: ROOT });
 }
 
 function readJson(file) {

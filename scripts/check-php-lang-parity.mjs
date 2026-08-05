@@ -25,39 +25,38 @@
 
 import { readdirSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
-import { execFileSync } from 'child_process';
+import { dumpLangTree } from './lib/load-php-array.mjs';
 
 const LANG_DIR = join(process.cwd(), 'lang');
 const SUMMARY_ONLY = process.argv.includes('--summary');
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-function loadPhpLangFile(file) {
-  // `require` the PHP array file and emit it as JSON. The file path is passed
-  // as a script argument (not interpolated) so quoting is shell-safe.
-  const out = execFileSync(
-    'php',
-    ['-d', 'display_errors=stderr', '-r', 'echo json_encode(require $argv[1]);', file],
-    { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }
-  );
-  const parsed = JSON.parse(out);
-  if (parsed === null || typeof parsed !== 'object') {
-    throw new Error(`${file} did not return a PHP array`);
-  }
-  return parsed;
-}
-
-function flattenKeys(obj, prefix = '') {
-  const keys = [];
-  for (const [key, val] of Object.entries(obj)) {
-    const fullKey = prefix ? `${prefix}.${key}` : key;
-    if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-      keys.push(...flattenKeys(val, fullKey));
-    } else {
-      keys.push(fullKey);
+/**
+ * Every lang file's flat key set, keyed "<locale>/<file>.php".
+ *
+ * 🔴 Read via the shared dumpLangTree(), which runs ONE PHP process and falls
+ * back to the app container when the host has no PHP. This script previously
+ * called `php` directly, once per file, and hard-exited 1 with "PHP CLI not
+ * found on PATH" when it was absent. On this Docker-first project that is the
+ * normal state of a dev machine — AGENTS.md forbids host PHP because the host
+ * `vendor/` is incomplete — so the gate could never pass locally, and preflight
+ * surfaced it as a real FAILURE, indistinguishable from actual key drift. It
+ * also cost 462 process starts.
+ *
+ * dump-lang.php already flattens nested arrays with dots, matching Laravel's
+ * dotted key syntax, so no separate flatten step is needed here.
+ */
+function loadKeySets() {
+  const tree = dumpLangTree({ root: process.cwd() });
+  const sets = new Map();
+  for (const [path, values] of Object.entries(tree)) {
+    if (values === null || typeof values !== 'object') {
+      throw new Error(`${path} did not return a PHP array`);
     }
+    sets.set(path, new Set(Object.keys(values)));
   }
-  return keys;
+  return sets;
 }
 
 // ─── Main ────────────────────────────────────────────────────
@@ -67,10 +66,13 @@ if (!existsSync(LANG_DIR)) {
   process.exit(1);
 }
 
+let keySets;
 try {
-  execFileSync('php', ['--version'], { stdio: 'ignore' });
-} catch {
-  console.error('PHP CLI not found on PATH — required to parse lang/*.php files.');
+  keySets = loadKeySets();
+} catch (error) {
+  console.error('Could not read lang/*.php via PHP (host PATH or the app container).');
+  console.error(`  ${error instanceof Error ? error.message : String(error)}`);
+  console.error('  Start Docker (or install a PHP CLI) and re-run — this check has NOT run.');
   process.exit(1);
 }
 
@@ -102,22 +104,22 @@ let totalMissingFiles = 0;
 let totalFilesChecked = 0;
 
 for (const file of enFiles) {
-  const enContent = loadPhpLangFile(join(enDir, file));
-  const enKeys = new Set(flattenKeys(enContent));
+  const enKeys = keySets.get(`en/${file}`);
+  if (!enKeys) {
+    console.error(`[ERROR] en/${file} exists on disk but was not readable as a PHP array.`);
+    process.exit(1);
+  }
 
   for (const lang of nonEnLangs) {
-    const langFile = join(LANG_DIR, lang, file);
     totalFilesChecked++;
 
-    if (!existsSync(langFile)) {
+    const langKeys = keySets.get(`${lang}/${file}`);
+    if (!langKeys) {
       console.log(`[MISSING FILE] ${lang}/${file} — entire namespace missing`);
       totalMissingFiles++;
       totalMissing += enKeys.size;
       continue;
     }
-
-    const langContent = loadPhpLangFile(langFile);
-    const langKeys = new Set(flattenKeys(langContent));
 
     const missing = [...enKeys].filter(k => !langKeys.has(k));
     const extra = [...langKeys].filter(k => !enKeys.has(k));
