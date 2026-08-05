@@ -1638,7 +1638,7 @@ jobs:
   # Stage 8: Accessibility Checks (blocking)
   # ─────────────────────────────────────────────────────────────────
   accessibility-check:
-    name: Accessibility Audit (WCAG 2.1 AA)
+    name: Accessibility Audit (App Shell & Offline State)
     runs-on: ubuntu-latest
     needs: [changes, react-build]
     if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
@@ -1650,6 +1650,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Download React build artifact
         uses: actions/download-artifact@v4
@@ -1657,56 +1658,50 @@ jobs:
           name: react-frontend-build
           path: react-frontend/dist
 
-      - name: Install axe-core CLI and serve
-        run: npm install -g @axe-core/cli serve
-
-      - name: Serve built frontend and run WCAG scan
+      - name: Install dependencies
         run: |
-          # Serve the built React app locally (not production!)
-          npx serve -s react-frontend/dist -l 3000 &
+          npm ci
+          npx playwright install --with-deps chromium
+
+      # 🔴 This job used to run the axe CLI over four tenant URLs served by
+      # `serve -s dist`. Measured on 2026-08-05, that was vacuous:
+      #   * `serve -s` is an SPA fallback server, so all four URLs returned the
+      #     SAME byte-identical 1,836-byte index.html. There were never 4 pages.
+      #   * With no API reachable, TenantShell cannot load tenant config, so the
+      #     app rendered its "Unable to connect" screen for every one of them.
+      #     About, Help and Login were never scanned and could not be.
+      #   * The count was forced to zero by three independent swallowing paths:
+      #     `> file 2>&1` wrote axe's own error text into the JSON file, `|| true`
+      #     discarded its exit code, and the inline python parser ended in a bare
+      #     `except: print(0)`. A scanner crash counted as a pass.
+      # Scanned honestly, that screen had 1 serious violation (white on the
+      # default accent, 4.46:1 against AA's 4.5:1) and no `main` landmark at all.
+      #
+      # It now tests exactly what a backendless build can legitimately render —
+      # the app shell and its offline state — through Playwright + axe with real
+      # exit codes. Pages with real data are covered by the Real-Browser
+      # Accessibility Gate in the e2e-smoke job, which runs the full Docker stack
+      # with authenticated member and admin sessions and fails on ALL violations.
+      # That is the authoritative browser-level gate; this is the cheap signal.
+      - name: "BLOCKING: App shell and offline-state accessibility"
+        run: |
+          npx --yes serve -s react-frontend/dist -l 3000 > /tmp/serve.log 2>&1 &
           SERVE_PID=$!
-          sleep 3
-
-          echo "Running axe accessibility scan on local build..."
-
-          PAGES=(
-            "http://localhost:3000/hour-timebank"
-            "http://localhost:3000/hour-timebank/login"
-            "http://localhost:3000/hour-timebank/about"
-            "http://localhost:3000/hour-timebank/help"
-          )
-
-          VIOLATIONS=0
-          for PAGE in "${PAGES[@]}"; do
-            echo "Scanning: $PAGE"
-            axe "$PAGE" --tags wcag2a,wcag2aa --reporter json > /tmp/axe-result.json 2>&1 || true
-
-            VIOLS=$(cat /tmp/axe-result.json | python3 -c "
-          import json,sys
-          try:
-            data = json.load(sys.stdin)
-            v = sum(len(r.get('violations',[])) for r in data if isinstance(r,dict))
-            print(v)
-          except: print(0)
-          " 2>/dev/null || echo "0")
-
-            echo "  Violations: $VIOLS"
-            VIOLATIONS=$((VIOLATIONS + VIOLS))
+          trap 'kill "$SERVE_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            curl --fail --silent http://localhost:3000/ >/dev/null && break
+            sleep 1
           done
-
-          echo ""
-          echo "Total violations across all pages: $VIOLATIONS"
-
-          # Clean up local server
-          kill "$SERVE_PID" 2>/dev/null || true
-
-          if [ "$VIOLATIONS" -gt 0 ]; then
-            echo "::error::Accessibility: Found $VIOLATIONS WCAG 2.1 AA violations. Fix before merging."
+          curl --fail --silent http://localhost:3000/ >/dev/null || {
+            echo "::error::Static server never became ready"
+            cat /tmp/serve.log || true
             exit 1
-          else
-            echo "PASS: No WCAG 2.1 AA violations detected."
-            exit 0
-          fi
+          }
+          npx playwright test --config=e2e/playwright.shell.config.ts
+        env:
+          E2E_SHELL_BASE_URL: http://localhost:3000
+          E2E_TENANT: hour-timebank
+          CI: true
 
   mobile-release:
     name: Android Native Release Gate

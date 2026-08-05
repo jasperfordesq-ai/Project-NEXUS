@@ -42,6 +42,14 @@ php:
 frontend:
   - 'react-frontend/**'
   - 'contracts/**'
+  # e2e/** woke NOTHING until 2026-08-05 — the same blind-spot class as
+  # contracts/** above. The frontend cluster is what RUNS these specs
+  # (e2e-smoke and accessibility-check both invoke Playwright from e2e/), so a
+  # change to an e2e test or helper could previously be pushed without the job
+  # that executes it ever running, and the deploy verifier would inherit a
+  # stale pass for it.
+  - 'e2e/**'
+  - 'playwright.config.ts'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 
@@ -56,6 +64,16 @@ accessible:
   - 'app/Http/Controllers/GovukAlpha/**'
   - 'lang/**/govuk_alpha*.php'
   - 'vite.accessible-frontend.config.ts'
+  # The accessible frontend's BLOCKING browser accessibility scan lives here —
+  # e2e/tests/accessible-frontend-a11y.spec.ts, its setup project, and
+  # e2e/helpers/accessible-auth.ts. Without these entries the scan's own source
+  # could change without the scan running.
+  - 'e2e/tests/accessible-frontend-a11y.*'
+  - 'e2e/helpers/accessible-auth.ts'
+  - 'e2e/playwright.alpha.config.ts'
+  # The accessible frontend's routes are declared here, and its PHP contract
+  # test asserts against them.
+  - 'routes/govuk-alpha.php'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 

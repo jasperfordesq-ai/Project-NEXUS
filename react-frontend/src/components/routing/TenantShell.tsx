@@ -636,7 +636,13 @@ export function SlugUrlGuard({ slug }: { slug: string }) {
 function BootstrapError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation('common');
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-[var(--surface-base)]">
+    // 🔴 `main` is required, not decorative. This was a bare `div`, so the screen
+    // had NO landmark at all and a screen-reader user had nothing to navigate to
+    // — on the one screen that appears when everything else has failed.
+    <main
+      id="main-content"
+      className="min-h-screen flex items-center justify-center px-4 bg-[var(--surface-base)]"
+    >
       <div className="text-center max-w-sm">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500/20 mb-6">
           <svg className="w-8 h-8 text-[var(--color-warning)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -650,15 +656,31 @@ function BootstrapError({ onRetry }: { onRetry: () => void }) {
         <p className="text-theme-muted mb-6 text-sm">
           {t('errors.connection_failed_detail')}
         </p>
+        {/*
+          🔴 Deliberately NOT `bg-accent`. Two reasons, and both matter:
+
+          1. Contrast. White on the default accent (#6366f1) measures 4.46:1
+             against WCAG AA's 4.5:1 for 14px text — a real serious-rated axe
+             failure, confirmed on the built app. `--color-action-static` is
+             ~6.3:1. The wider problem is that `--accent-foreground` is hardcoded
+             `#ffffff` while `--accent-color` is chosen at runtime per tenant and
+             per user, so NOTHING guarantees that pairing anywhere else it is
+             used. Tracked separately; do not "restore consistency" here by
+             reverting to `bg-accent`.
+          2. This screen renders precisely BECAUSE tenant config failed to load,
+             so the tenant accent was never received. Styling it with runtime
+             tenant theming is wrong on its own terms — a fixed, contrast-checked
+             colour is correct for a last-resort screen.
+        */}
         <button
           type="button"
           onClick={onRetry}
-          className="px-6 py-2 rounded-lg bg-accent text-white font-medium text-sm hover:opacity-90 transition-opacity"
+          className="px-6 py-2 rounded-lg bg-[var(--color-action-static)] text-[var(--color-action-static-foreground)] font-medium text-sm hover:opacity-90 transition-opacity"
         >
           {t('actions.retry')}
         </button>
       </div>
-    </div>
+    </main>
   );
 }
 
