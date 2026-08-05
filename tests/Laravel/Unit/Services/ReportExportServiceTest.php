@@ -28,7 +28,13 @@ class ReportExportServiceTest extends TestCase
         $this->assertArrayHasKey('hours_summary', $types);
         $this->assertArrayHasKey('social_value', $types);
         $this->assertArrayHasKey('municipal_impact', $types);
-        $this->assertCount(9, $types);
+        // Added 2026-08-05 so the Hours report's "By Member" and "By Period"
+        // tabs export what is actually on screen. Before these existed, every
+        // tab of that report exported category data under a filename naming
+        // the tab you were looking at.
+        $this->assertArrayHasKey('hours_member', $types);
+        $this->assertArrayHasKey('hours_period', $types);
+        $this->assertCount(11, $types);
     }
 
     public function test_export_returns_failure_for_empty_data(): void

@@ -728,5 +728,10 @@
     "support_reports": "bugs|feedback|diagnostiek|Sentry",
     "retention_policies": "bewaring|AVG|verwijdering|opschonen|archief",
     "sso_providers": "single sign-on|OpenID Connect|Entra|identiteit|inloggen"
-  }
+  },
+  "user_report": "Gebruikersrapport",
+  "municipal_impact": "Gemeentelijke Impactrapporten",
+  "regional_analytics": "Regionale analyses",
+  "nexus_score": "Nexus-score",
+  "performance": "Prestaties"
 }

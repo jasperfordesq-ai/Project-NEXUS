@@ -728,5 +728,10 @@
     "support_reports": "バグ|フィードバック|診断|Sentry",
     "retention_policies": "保持|GDPR|廃棄|削除|アーカイブ",
     "sso_providers": "シングルサインオン|OpenID Connect|Entra|ID|ログイン"
-  }
+  },
+  "user_report": "ユーザーレポート",
+  "municipal_impact": "自治体の影響レポート",
+  "regional_analytics": "地域分析",
+  "nexus_score": "ネクサススコア",
+  "performance": "パフォーマンス"
 }

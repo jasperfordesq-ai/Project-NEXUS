@@ -290,6 +290,20 @@ if (areas.i18n.length) {
   record('i18n checks', 'SKIP', 'no lang/locale changes');
 }
 
+// These two are keyed on FRONTEND changes as well as locale changes, and that is
+// the whole point of them being here. A `t('new_key')` added to a .tsx with no
+// locale file touched leaves areas.i18n empty, so the block above skips — which
+// is exactly how commit e9308223b reached CI with five admin sidebar entries
+// whose labels did not exist in any language, and burned a ~35-minute round trip
+// on a check that takes two seconds locally. Both scripts read source files to
+// decide what must exist, so a source-only change can break either one.
+if (areas.frontend.length || areas.i18n.length) {
+  sh('admin i18n key coverage', 'node scripts/check-admin-i18n.mjs');
+  sh('translation drift', 'node scripts/check-i18n-drift.mjs');
+} else {
+  record('translation coverage', 'SKIP', 'no frontend or locale changes');
+}
+
 // ---------------------------------------------------------------------------
 // 5. Verdict — plainly, and never let "couldn't run" read as "passed"
 // ---------------------------------------------------------------------------

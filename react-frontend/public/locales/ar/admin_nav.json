@@ -744,5 +744,10 @@
     "support_reports": "أخطاء|ملاحظات|تشخيصات|الحراسة",
     "retention_policies": "الاحتفاظ بنفسك|اللائحة العامة لحماية البيانات (GDPR) | التخلص من المرض | التطهير | الأرشيف",
     "sso_providers": "تسجيل دخول واحد|OpenID Connect|إدخال|هوية|تسجيل دخول"
-  }
+  },
+  "user_report": "تقرير المستخدم",
+  "municipal_impact": "تقارير الأثر البلدي",
+  "regional_analytics": "التحليلات الإقليمية",
+  "nexus_score": "نقاط نيكزس",
+  "performance": "أداء"
 }

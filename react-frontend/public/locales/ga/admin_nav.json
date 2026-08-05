@@ -740,5 +740,10 @@
     "support_reports": "fabhtanna|aiseolas|diaghnóiseacha|Sentry",
     "retention_policies": "coimeád|GDPR|diúscairt|cuir as|cartlann",
     "sso_providers": "síniú-aonar|Ceangal OpenID|Entra|aitheantas|logáil isteach"
-  }
+  },
+  "user_report": "Tuairisc Úsáideoir",
+  "municipal_impact": "Tuarascálacha Tionchair Chathrach",
+  "regional_analytics": "Anailísí Réigiúnacha",
+  "nexus_score": "Scór Nexus",
+  "performance": "Feidhmíocht"
 }

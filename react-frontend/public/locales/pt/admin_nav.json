@@ -732,5 +732,10 @@
     "support_reports": "bugs|feedback|diagnósticos|Sentry",
     "retention_policies": "retenção|LGPD|descarte|purga|arquivo",
     "sso_providers": "single sign-on|OpenID Connect|Entra|identidade|login"
-  }
+  },
+  "user_report": "Relatório do usuário",
+  "municipal_impact": "Relatórios de Impacto Municipal",
+  "regional_analytics": "Análise Regional",
+  "nexus_score": "Pontuação do Nexus",
+  "performance": "Desempenho"
 }

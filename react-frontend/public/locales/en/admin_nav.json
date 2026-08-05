@@ -728,5 +728,10 @@
     }
   },
   "support_requests_count_one": "{{count}} open support requests",
-  "support_requests_count_other": "{{count}} open support requests"
+  "support_requests_count_other": "{{count}} open support requests",
+  "user_report": "User Report",
+  "municipal_impact": "Municipal Impact Reports",
+  "regional_analytics": "Regional Analytics",
+  "nexus_score": "Nexus Score",
+  "performance": "Performance"
 }

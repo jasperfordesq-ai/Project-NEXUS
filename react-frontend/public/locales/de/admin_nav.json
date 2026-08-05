@@ -728,5 +728,10 @@
     "support_reports": "Fehler|Feedback|Diagnose|Sentry",
     "retention_policies": "Aufbewahrung|DSGVO|Entsorgung|Löschung|Archiv",
     "sso_providers": "einmalige Anmeldung|OpenID Connect|Entra|Identität|Anmeldung"
-  }
+  },
+  "user_report": "Benutzerbericht",
+  "municipal_impact": "Kommunale Wirkungsberichte",
+  "regional_analytics": "Regionale Analysen",
+  "nexus_score": "Nexus-Score",
+  "performance": "Leistung"
 }

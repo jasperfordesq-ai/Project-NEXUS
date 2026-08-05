@@ -736,5 +736,10 @@
     "support_reports": "błędy|opinie|diagnostyka|Sentry",
     "retention_policies": "przechowywanie|RODO|usuwanie|czyszczenie|archiwizacja",
     "sso_providers": "logowanie jednokrotne|OpenID Connect|Entra|tożsamość|logowanie"
-  }
+  },
+  "user_report": "Raport użytkownika",
+  "municipal_impact": "Miejskie raporty oddziaływania",
+  "regional_analytics": "Analityka regionalna",
+  "nexus_score": "Wynik Nexusa",
+  "performance": "Wydajność"
 }
