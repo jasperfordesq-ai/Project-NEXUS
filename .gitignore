@@ -163,6 +163,8 @@ compose.prod.yml
 playwright-report/
 test-results/
 e2e/reports/
+# Saved Playwright session state — holds a live bearer token. Never commit.
+e2e/.auth/
 
 # ─── Mobile App (active — HeroUI Native v3 migration) ───────────────────────
 # /mobile/ is now tracked. Restored from c6d7e0bb0^ on 2026-05-25.

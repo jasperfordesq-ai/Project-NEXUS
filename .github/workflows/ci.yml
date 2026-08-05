@@ -1811,6 +1811,14 @@ jobs:
           mysql -h 127.0.0.1 -u root -ptesting nexus_test -e "INSERT INTO tenants (id, name, slug, is_active) VALUES (1, 'Test Tenant', 'test-tenant', 1), (2, 'Hour Timebank', 'hour-timebank', 1);"
           mysql -h 127.0.0.1 -u root -ptesting nexus_test -e "INSERT IGNORE INTO categories (id, name, slug, tenant_id, type) VALUES (1, 'General', 'general', 1, 'listing');"
           php artisan migrate --force
+          # 🔴 Load-bearing: the a11y scan authenticates as a member. Until
+          # 2026-08-05 this job created NO users, so the six auth-gated paths in
+          # the scan answered 302, Playwright followed the redirect, and axe
+          # scanned the login page while the job reported BLOCKING green. The
+          # scan's setup project now fails outright without a usable login, so
+          # this seed is what keeps the job honest rather than merely passing.
+          # E2ETestDataSeeder is idempotent and refuses to run in production.
+          E2E_TENANT_ID=2 php artisan db:seed --class="Database\Seeders\E2ETestDataSeeder" --force
 
       - name: "BLOCKING: Build accessible frontend"
         run: npm run build:accessible-frontend
