@@ -35,6 +35,16 @@ export interface User {
   is_super_admin?: boolean;
   is_god?: boolean;
   is_tenant_super_admin?: boolean;
+  /**
+   * How far the super panel reaches for this user, resolved by the SERVER and
+   * supplied by GET /v2/users/me. 'master' = whole installation, 'regional' =
+   * own community plus its descendants, 'none' = no panel.
+   *
+   * 🔴 Do not derive this from the flags above. Eligibility also depends on the
+   * community allowing sub-communities and having a usable position in the
+   * hierarchy — see src/lib/access.ts superPanelLevel().
+   */
+  super_panel_level?: 'master' | 'regional' | 'none';
   is_admin?: boolean;
   status?: 'active' | 'inactive' | 'suspended' | 'pending';
   tenant_id?: number;

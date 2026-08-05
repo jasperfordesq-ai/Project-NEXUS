@@ -15,6 +15,16 @@ vi.mock('@/contexts', () =>
       hasFeature: vi.fn(() => true),
       hasModule: vi.fn(() => true),
     }),
+    /*
+     * 🔴 Required now that the panel is two-tiered. The platform-only sections
+     * (Federation, Commercial, Provisioning) render only for an explicit
+     * 'master' level, and createMockContexts defaults `user` to null — which
+     * resolves to 'none' and hides them. This file asserts the FULL platform
+     * navigation, so it must act as a platform super-admin.
+     */
+    // Cast: only `user` matters here, and a partial AuthContext shape would trip
+    // the test-type ratchet (which is shrink-only, so it must not grow).
+    useAuth: () => ({ user: { is_super_admin: true, super_panel_level: 'master' } } as never),
   })
 );
 

@@ -60,6 +60,31 @@ class UsersController extends BaseApiController
             return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
         }
 
+        /*
+         * The caller's super-panel reach, resolved server-side.
+         *
+         * 🔴 The UI must not infer this from flags. Whether a super-admin gets the
+         * panel — and whether they get the whole installation or only their own
+         * branch — depends on more than `is_tenant_super_admin`: the tenant must
+         * allow sub-tenants AND have a usable materialised path, or
+         * SuperPanelAccess refuses outright. A sidebar that guessed from flags
+         * alone would offer a link that 403s, which is worse than no link.
+         *
+         * 'master'   — whole installation
+         * 'regional' — own tenant plus descendants only
+         * 'none'     — no super panel; hide the entry entirely
+         */
+        try {
+            \App\Core\SuperPanelAccess::reset();
+            $access = \App\Core\SuperPanelAccess::getAccess($userId);
+            $profile['super_panel_level'] = !empty($access['granted'])
+                ? (string) $access['level']
+                : 'none';
+        } catch (\Throwable $e) {
+            // Never break /me over this — absent is treated as 'none' by the UI.
+            $profile['super_panel_level'] = 'none';
+        }
+
         return $this->respondWithData($profile);
     }
 

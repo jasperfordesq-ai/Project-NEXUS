@@ -9,6 +9,8 @@ type UserLike = {
   is_super_admin?: unknown;
   is_tenant_super_admin?: unknown;
   is_god?: unknown;
+  /** Server-resolved super-panel reach — see superPanelLevel() below. */
+  super_panel_level?: unknown;
 } | null | undefined;
 
 function userRole(user: UserLike): string {
@@ -75,6 +77,57 @@ export function isPlatformSuperAdminUser(user: UserLike): boolean {
     user?.is_super_admin === true ||
     user?.is_god === true
   );
+}
+
+/** How far the super panel reaches for this user. Server-resolved. */
+export type SuperPanelLevel = 'master' | 'regional' | 'none';
+
+/**
+ * The caller's super-panel reach, as decided by the server.
+ *
+ * 🔴 Never infer this from flags. Whether a super-admin gets the panel — and
+ * whether they get the whole installation or only their own branch — depends on
+ * more than `is_tenant_super_admin`: their tenant must allow sub-tenants AND have
+ * a usable position in the hierarchy, or the backend refuses outright. Guessing
+ * from flags would offer a link that 403s, which is worse than no link.
+ *
+ * Supplied as `super_panel_level` by GET /v2/users/me. Anything unrecognised or
+ * absent is treated as 'none' — fail closed, matching the backend.
+ */
+export function superPanelLevel(user: UserLike): SuperPanelLevel {
+  const raw = (user as { super_panel_level?: unknown } | null | undefined)?.super_panel_level;
+  if (raw === 'master' || raw === 'regional' || raw === 'none') return raw;
+
+  /*
+   * 🔴 Field absent — fall back to the platform flags.
+   *
+   * `super_panel_level` is new. A client holding a /me payload from before it
+   * existed (a cached response, a session spanning the deploy, an older native
+   * build) would otherwise have the panel disappear for a genuine platform
+   * super-admin. Falling back preserves exactly the previous behaviour.
+   *
+   * Note the asymmetry, which is deliberate: only the PLATFORM case is inferred.
+   * 'regional' is never guessed, because eligibility for it also depends on the
+   * community allowing sub-communities and having a usable position in the
+   * hierarchy — facts the client does not have. No level, no branch panel.
+   */
+  return isPlatformSuperAdminUser(user) ? 'master' : 'none';
+}
+
+/** True when this user should be offered the super panel at all. */
+export function canAccessSuperPanel(user: UserLike): boolean {
+  return superPanelLevel(user) !== 'none';
+}
+
+/**
+ * True when the user may only act within their own branch, so the panel must
+ * hide its platform-only sections — billing and platform revenue, the federation
+ * kill switches, platform capabilities, provisioning, and granting platform
+ * super-admin. The API refuses those regardless; this stops the UI showing
+ * controls that cannot work.
+ */
+export function isRegionalSuperPanelUser(user: UserLike): boolean {
+  return superPanelLevel(user) === 'regional';
 }
 
 /**

@@ -10,7 +10,8 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTenant } from '@/contexts';
+import { useAuth, useTenant } from '@/contexts';
+import { superPanelLevel } from '@/lib/access';
 import { ScrollShadow } from '@/components/ui';
 import { Button, Tooltip } from '@/components/ui';
 import Activity from 'lucide-react/icons/activity';
@@ -54,6 +55,29 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
   const { t } = useTranslation('super_admin');
   const location = useLocation();
   const { tenantPath } = useTenant();
+  const { user } = useAuth();
+
+  /*
+   * 🔴 Two tiers, matching the API exactly.
+   *
+   * A 'regional' caller — the super-admin of a community that has communities
+   * beneath it — may use the community/member/hierarchy/audit screens, which the
+   * backend confines to their own branch. They are refused everything
+   * platform-wide: platform income and pricing, the federation switches, the
+   * provisioning queue and platform enquiries.
+   *
+   * The API enforces this regardless (tier B sits behind EnsureIsSuperAdmin, which
+   * refuses tenant super-admins). Hiding it here is so the panel does not show
+   * controls that can only fail. If you add a section, decide which tier it is in
+   * and gate it — an ungated addition shows a branch admin a dead end.
+   *
+   * Fail closed: ask for an explicit 'master'. An earlier version asked "is this
+   * caller regional?" and hid the sections if so — which meant a caller resolving
+   * to 'none' (no super-panel reach at all) was shown every platform control.
+   * Nobody like that should reach this component, but "should not" is not a
+   * guarantee, so ask for the positive.
+   */
+  const showPlatformSections = superPanelLevel(user) === 'master';
 
   const sections: NavSection[] = [
     {
@@ -61,8 +85,12 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
       title: t('sidebar.section_overview'),
       items: [
         { key: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard, path: '/super-admin' },
-        { key: 'pilot-inquiries', label: t('nav.pilot_inquiries'), icon: FileSearch, path: '/super-admin/platform/pilot-inquiries' },
-        { key: 'provisioning', label: t('nav.provisioning_queue'), icon: Building2, path: '/super-admin/provisioning-requests' },
+        // Platform-only: enquiries and the provisioning queue span the whole
+        // installation, and approving a request assigns a parent anywhere in the tree.
+        ...(showPlatformSections ? [
+          { key: 'pilot-inquiries', label: t('nav.pilot_inquiries'), icon: FileSearch, path: '/super-admin/platform/pilot-inquiries' },
+          { key: 'provisioning', label: t('nav.provisioning_queue'), icon: Building2, path: '/super-admin/provisioning-requests' },
+        ] : []),
       ],
     },
     {
@@ -76,7 +104,9 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         { key: 'audit', label: t('nav.audit_log'), icon: ScrollText, path: '/super-admin/audit' },
       ],
     },
-    {
+    // Platform-only: these control connections to other installations for the
+    // whole platform, including the external kill switches.
+    ...(showPlatformSections ? [{
       key: 'federation',
       title: t('sidebar.section_federation'),
       items: [
@@ -85,8 +115,11 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         { key: 'partnerships', label: t('nav.partnerships'), icon: Handshake, path: '/super-admin/federation/partnerships' },
         { key: 'federation-audit', label: t('nav.federation_audit'), icon: Activity, path: '/super-admin/federation/audit' },
       ],
-    },
-    {
+    }] : []),
+    // Platform-only: platform income and pricing. The billing endpoints also take
+    // the community they act on from the request without a branch check, which is
+    // the concrete reason a branch admin must not reach them.
+    ...(showPlatformSections ? [{
       key: 'commercial',
       title: t('sidebar.section_commercial'),
       items: [
@@ -95,7 +128,7 @@ export function SuperAdminSidebar({ collapsed, onToggle }: SuperAdminSidebarProp
         { key: 'regional-analytics', label: t('nav.regional_analytics'), icon: BarChart3, path: '/super-admin/regional-analytics/subscriptions' },
         { key: 'national-kiss', label: t('nav.national_dashboard'), icon: Landmark, path: '/super-admin/national/kiss' },
       ],
-    },
+    }] : []),
   ];
 
   const isActive = (path: string) => {

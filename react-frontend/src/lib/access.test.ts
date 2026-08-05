@@ -9,7 +9,10 @@ import {
   hasBrokerPanelAccess,
   hasBrokerRole,
   hasPartnerPanelAccess,
+  canAccessSuperPanel,
   isPlatformSuperAdminUser,
+  isRegionalSuperPanelUser,
+  superPanelLevel,
   isSuperAdminUser,
 } from './access';
 
@@ -148,5 +151,72 @@ describe('hasBrokerPanelAccess', () => {
     expect(hasBrokerPanelAccess({ role: 'member' })).toBe(false);
     expect(hasBrokerPanelAccess(null)).toBe(false);
     expect(hasBrokerPanelAccess(undefined)).toBe(false);
+  });
+});
+
+/**
+ * Super-panel reach: 'master' (whole installation), 'regional' (own community plus
+ * descendants), or 'none'.
+ *
+ * 🔴 The level is decided by the SERVER and arrives on the /me payload, because
+ * eligibility depends on facts the client does not have — whether the community
+ * allows sub-communities, and whether it has a usable position in the hierarchy.
+ */
+describe('superPanelLevel / canAccessSuperPanel', () => {
+  it('uses the server-supplied level when present', () => {
+    expect(superPanelLevel({ super_panel_level: 'master' })).toBe('master');
+    expect(superPanelLevel({ super_panel_level: 'regional' })).toBe('regional');
+    expect(superPanelLevel({ super_panel_level: 'none' })).toBe('none');
+  });
+
+  /**
+   * 🔴 The field is new. A client holding a /me payload from before it existed —
+   * a cached response, a session spanning the deploy, an older native build —
+   * must not silently lose the panel.
+   */
+  it('falls back to the platform flags when the level is absent', () => {
+    expect(superPanelLevel({ is_super_admin: true })).toBe('master');
+    expect(superPanelLevel({ is_god: true })).toBe('master');
+    expect(superPanelLevel({ role: 'super_admin' })).toBe('master');
+    expect(superPanelLevel({ role: 'god' })).toBe('master');
+  });
+
+  /**
+   * 🔴 Asymmetric on purpose. Only the PLATFORM case is inferred. 'regional' is
+   * never guessed from flags: a tenant super-admin on a community that has no
+   * children, or no position in the hierarchy, is refused by the backend — so
+   * guessing would offer a link that 403s.
+   */
+  it('never infers regional from is_tenant_super_admin alone', () => {
+    expect(superPanelLevel({ is_tenant_super_admin: true })).toBe('none');
+    expect(canAccessSuperPanel({ is_tenant_super_admin: true })).toBe(false);
+  });
+
+  it('treats an unrecognised level as none', () => {
+    expect(superPanelLevel({ super_panel_level: 'sideways' })).toBe('none');
+    expect(superPanelLevel({ super_panel_level: 42 })).toBe('none');
+    expect(superPanelLevel({ super_panel_level: null })).toBe('none');
+  });
+
+  it('gives ordinary users and absent users no reach', () => {
+    expect(superPanelLevel({ role: 'member' })).toBe('none');
+    expect(superPanelLevel({ is_admin: true })).toBe('none');
+    expect(superPanelLevel(null)).toBe('none');
+    expect(superPanelLevel(undefined)).toBe('none');
+  });
+
+  it('canAccessSuperPanel admits both tiers and nobody else', () => {
+    expect(canAccessSuperPanel({ super_panel_level: 'master' })).toBe(true);
+    expect(canAccessSuperPanel({ super_panel_level: 'regional' })).toBe(true);
+    expect(canAccessSuperPanel({ super_panel_level: 'none' })).toBe(false);
+    expect(canAccessSuperPanel(null)).toBe(false);
+  });
+
+  it('isRegionalSuperPanelUser is true only for an explicit regional level', () => {
+    expect(isRegionalSuperPanelUser({ super_panel_level: 'regional' })).toBe(true);
+    expect(isRegionalSuperPanelUser({ super_panel_level: 'master' })).toBe(false);
+    // Not inferred from flags — see above.
+    expect(isRegionalSuperPanelUser({ is_tenant_super_admin: true })).toBe(false);
+    expect(isRegionalSuperPanelUser(null)).toBe(false);
   });
 });

@@ -89,7 +89,7 @@ import { Accordion, AccordionItem } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { canAccessSuperPanel, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
 import type { LucideIcon } from 'lucide-react';
 interface NavItem {
   label: string;
@@ -172,6 +172,9 @@ function useAdminNav(): NavSection[] {
   const isGod = (user?.role as string) === 'god' || userRecord?.is_god === true;
   const isSuperAdmin = isSuperAdminUser(user);
   const isPlatformSuperAdmin = isPlatformSuperAdminUser(user);
+  // Server-resolved: covers both a platform super-admin and the super-admin of a
+  // community that has communities beneath it. See the super-admin entry below.
+  const canSeeSuperPanel = canAccessSuperPanel(user);
 
   return useMemo(() => {
     const communityItems: NavItem[] = [
@@ -206,7 +209,19 @@ function useAdminNav(): NavSection[] {
         href: '/broker',
         zone: 'overview',
       },
-      ...(isPlatformSuperAdmin ? [{
+      /*
+       * 🔴 Gated on the SERVER-resolved super-panel level, not on
+       * `isPlatformSuperAdmin`. The panel is now two tiers: a platform
+       * super-admin gets the whole installation, and the super-admin of a
+       * community that has communities beneath it gets its own branch only. Both
+       * should see this entry; nobody else should.
+       *
+       * Do not substitute a flag check here. Eligibility also requires the
+       * community to allow sub-communities AND to have a usable position in the
+       * hierarchy — the backend refuses otherwise, so a flag-based guess would
+       * offer a link that 403s.
+       */
+      ...(canSeeSuperPanel ? [{
         key: 'super-admin',
         label: t('super_admin_panel'),
         icon: Crown,
