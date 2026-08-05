@@ -361,6 +361,23 @@ function useAdminNav(): NavSection[] {
         ],
       }] : []),
       {
+        /*
+         * 🔴 The single front door for reporting.
+         *
+         * TBUK's tester reported "Reporting unclear, could not assess" — a
+         * DISCOVERABILITY complaint, not a correctness one. At the time reporting was
+         * spread across five separate panels, and SEVEN analytics screens had no
+         * sidebar entry at all: they existed only if you already knew the URL
+         * (`/admin/groups/analytics`, `/admin/newsletters/analytics`,
+         * `/admin/smart-matching/analytics`, `/admin/analytics/regional`,
+         * `/admin/timebanking/user-report`, `/admin/nexus-score/analytics`,
+         * `/admin/performance`). Municipal Impact — the only export on the platform
+         * whose figures reconcile with its screen — lived solely in the Caring panel.
+         *
+         * Every reporting surface an administrator can reach is now listed here.
+         * If you add an analytics or report screen, add it to THIS section; a screen
+         * with no sidebar entry is a screen nobody finds.
+         */
         key: 'analytics',
         label: t('analytics_reporting'),
         icon: BarChart3,
@@ -371,6 +388,18 @@ function useAdminNav(): NavSection[] {
           { label: t('member_reports'), href: '/admin/reports/members', icon: Users },
           ...(hasModule('wallet') ? [{ label: t('hours_reports'), href: '/admin/reports/hours', icon: Clock }] : []),
           { label: t('inactive_members'), href: '/admin/reports/inactive-members', icon: UserX },
+          // Previously reachable only by typing the URL.
+          ...(hasModule('wallet') ? [{ label: t('user_report'), href: '/admin/timebanking/user-report', icon: Clock }] : []),
+          ...(hasFeature('caring_community') ? [{ label: t('municipal_impact'), href: '/caring/municipal-impact', icon: FileText }] : []),
+          { label: t('regional_analytics'), href: '/admin/analytics/regional', icon: BarChart3 },
+          // Each of these mirrors the gate on its own module's section — an
+          // analytics link for a disabled module is a dead end, and there is a
+          // regression test asserting exactly that for newsletters.
+          ...(hasFeature('groups') ? [{ label: t('groups'), href: '/admin/groups/analytics', icon: Users }] : []),
+          ...(hasFeature('newsletter') ? [{ label: t('newsletters'), href: '/admin/newsletters/analytics', icon: Mail }] : []),
+          ...(hasFeature('exchange_workflow') ? [{ label: t('smart_matching'), href: '/admin/smart-matching/analytics', icon: Zap }] : []),
+          { label: t('nexus_score'), href: '/admin/nexus-score/analytics', icon: Activity },
+          { label: t('performance'), href: '/admin/performance', icon: Activity },
         ],
       },
       {

@@ -2921,6 +2921,13 @@ Route::get('/v2/admin/safeguarding/members/{userId}/activity.csv', [\App\Http\Co
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/v2/safeguarding/my-preferences', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'myPreferences']);
     Route::get('/v2/safeguarding/my-vetting-status', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'myVettingStatus']);
+    // A ward can now SEE the guardian arrangements recorded against them, and
+    // consent to one. `safeguarding_assignments.consent_given_at` previously had no
+    // writer at all — the only method that sets it had zero callers — so the admin
+    // "consented wards" count read a column nothing could populate, and the ward was
+    // never shown the assignment despite being notified about it.
+    Route::get('/v2/safeguarding/my-guardians', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'myGuardians']);
+    Route::post('/v2/safeguarding/consent-to-guardian', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'consentToGuardian'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/confirm-policy-review', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'confirmPolicyReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/vetting-review-request', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'requestVettingReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/revoke', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'revoke']);

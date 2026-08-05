@@ -176,6 +176,114 @@ class SafeguardingMemberController extends BaseApiController
     }
 
     /** POST /v2/safeguarding/confirm-policy-review */
+    /**
+     * GET /api/v2/safeguarding/my-guardians
+     *
+     * The guardian arrangements recorded against the signed-in member (as ward).
+     *
+     * 🔴 Why this exists. `safeguarding_assignments` pairs a guardian with a ward and
+     * carries a `consent_given_at` column, and staff are notified when an assignment
+     * is created — but the ward had NO way to see it. The notification even
+     * deep-links to `/settings?tab=safeguarding`, and that tab only ever fetched
+     * preferences and vetting status, never assignments. So a member could be
+     * assigned a guardian, be emailed about it, follow the link, and find nothing.
+     *
+     * Only the ward's own rows are returned, and the guardian is identified by name
+     * only — a ward learning who is responsible for them is the point; exposing
+     * contact details is not.
+     */
+    public function myGuardians(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+
+        $rows = DB::table('safeguarding_assignments as sa')
+            ->join('users as g', 'g.id', '=', 'sa.guardian_user_id')
+            ->where('sa.tenant_id', $tenantId)
+            ->where('sa.ward_user_id', $userId)
+            ->whereNull('sa.revoked_at')
+            ->orderByDesc('sa.assigned_at')
+            ->select([
+                'sa.id',
+                'sa.assigned_at',
+                'sa.consent_given_at',
+                'sa.notes',
+                'g.first_name',
+                'g.last_name',
+            ])
+            ->get();
+
+        return $this->respondWithData([
+            'guardians' => $rows->map(fn ($r) => [
+                'id' => (int) $r->id,
+                'guardian_name' => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                'assigned_at' => $r->assigned_at,
+                'consent_given_at' => $r->consent_given_at,
+                'consent_given' => $r->consent_given_at !== null,
+                'notes' => $r->notes,
+            ])->all(),
+        ]);
+    }
+
+    /**
+     * POST /api/v2/safeguarding/consent-to-guardian
+     *
+     * The ward records their consent to a guardian arrangement.
+     *
+     * 🔴 `safeguarding_assignments.consent_given_at` had NO WRITER. The only method
+     * that sets it — SafeguardingService::recordConsent() — had zero callers, so the
+     * column could never be populated and the admin dashboard's "consented wards"
+     * count (AdminSafeguardingController, `whereNotNull('consent_given_at')`) was
+     * structurally always zero. A safeguarding feature that reports consent it cannot
+     * record is worse than one that does not claim to.
+     *
+     * Consent is given by the WARD and by nobody else — that is the whole point of
+     * the column, and it is why this lives on the member controller rather than the
+     * admin one. Staff create the assignment; only the subject can consent to it.
+     */
+    public function consentToGuardian(Request $request): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+
+        $assignmentId = $request->input('assignment_id');
+        if (!is_numeric($assignmentId)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.resource_not_found'), 'assignment_id', 422);
+        }
+        $assignmentId = (int) $assignmentId;
+
+        // Scope to the caller's OWN assignment: a ward may only consent for
+        // themselves, and only to a live arrangement.
+        $assignment = DB::table('safeguarding_assignments')
+            ->where('id', $assignmentId)
+            ->where('tenant_id', $tenantId)
+            ->where('ward_user_id', $userId)
+            ->whereNull('revoked_at')
+            ->first();
+
+        if (!$assignment) {
+            return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
+        }
+
+        if ($assignment->consent_given_at !== null) {
+            // Idempotent: already consented is not an error.
+            return $this->respondWithData(['consent_given' => true, 'already_given' => true]);
+        }
+
+        $recorded = app(\App\Services\SafeguardingService::class)->recordConsent($userId, $assignmentId);
+        if (!$recorded) {
+            return $this->respondWithError('UPDATE_FAILED', __('api.alert_update_failed'), null, 500);
+        }
+
+        try {
+            \App\Models\ActivityLog::log($userId, 'safeguarding_guardian_consent_given', "Ward consented to assignment #{$assignmentId}");
+        } catch (\Throwable $e) {
+            Log::warning('[SafeguardingMember] Failed to log guardian consent: ' . $e->getMessage());
+        }
+
+        return $this->respondWithData(['consent_given' => true, 'already_given' => false]);
+    }
+
     public function confirmPolicyReview(): JsonResponse
     {
         $userId = $this->requireAuth();

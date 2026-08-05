@@ -33,7 +33,17 @@ The general-purpose safeguarding relationship. Columns: `guardian_user_id`,
 - **Created by staff, not by members.** `POST /v2/admin/safeguarding/assignments`,
   gated by `AdminSafeguardingController::requireSafeguardingStaff('manage')`, which
   admits admin tiers, `broker`, and holders of the `safeguarding.manage` permission.
-  There is no member-facing endpoint.
+  A member cannot create one.
+- **Consent belongs to the ward.** The ward sees their own arrangements at
+  `GET /v2/safeguarding/my-guardians` and consents at
+  `POST /v2/safeguarding/consent-to-guardian`, which is the only writer of
+  `consent_given_at`. A guardian consenting on the ward's behalf is refused, and
+  there are tests for that boundary.
+  > Until 2026-08-05 this column had **no writer at all** —
+  > `SafeguardingService::recordConsent()` had zero callers — so the admin
+  > "consented wards" count was structurally always zero, and the ward was never
+  > shown the assignment despite being notified about it. If you add another
+  > consent-bearing column, check something can actually write it.
 - Revocation is a soft delete (`revoked_at`), so history survives.
 - Create and revoke both write an `activity_log` row with actor and IP.
 - **It is a record, not a capability.** No authorisation path anywhere consults
@@ -211,7 +221,7 @@ registration, which has no rejection path at all.
 
 | Mechanism | Who initiates | Who consents | Can act for them? |
 |---|---|---|---|
-| `safeguarding_assignments` | broker / admin | — (no writer for `consent_given_at`) | **No** — record only |
+| `safeguarding_assignments` | broker / admin | the **ward**, via `POST /v2/safeguarding/consent-to-guardian` | **No** — record only |
 | `event_guardian_consents` | minor, or an event manager | external guardian, via token | **Yes**, within events |
 | `vol_guardian_consents` | the minor | external guardian, via token | Gates the minor; no proxy action |
 | `account_relationships` | any member | the dependent | **Yes** — listings and transfers (attributed + audited); messages not yet |
