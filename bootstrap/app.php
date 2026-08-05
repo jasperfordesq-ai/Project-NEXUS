@@ -578,6 +578,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
             'broker-or-admin' => \App\Http\Middleware\EnsureIsBrokerOrAdmin::class,
             'super-admin' => \App\Http\Middleware\EnsureIsSuperAdmin::class,
+            // Subtree tier of the super panel: platform super-admins AND super-admins
+            // of a tenant that has children, the latter confined to their own subtree.
+            // 🔴 Only for endpoints that already scope themselves — see the class docblock.
+            'super-panel' => \App\Http\Middleware\EnsureSuperPanelAccess::class,
             'federation.api' => \App\Http\Middleware\FederationApiAuth::class,
             'federation.external' => \App\Http\Middleware\EnsureExternalFederationEnabled::class,
             'partner.api' => \App\Http\Middleware\PartnerApiAuth::class,

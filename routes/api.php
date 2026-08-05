@@ -2964,7 +2964,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // ============================================
 // Super Admin routes — Sanctum auth + super-admin middleware
 // ============================================
-Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Super panel — TIER A: subtree-scoped
+|--------------------------------------------------------------------------
+|
+| Reachable by a platform super-admin (whole installation) AND by the
+| super-admin of a tenant that has children, confined to its own tenant plus
+| descendants. That confinement is what makes a hub tenant its own panel
+| without leaking sibling branches.
+|
+| 🔴 EVERY endpoint in this group must already scope itself, via
+| SuperPanelAccess::canAccessTenant() or SuperPanelAccess::subtreeFilter().
+| Verified 2026-08-05:
+|   - dashboard / tenantList / tenantHierarchy / userList / audit scope through
+|     TenantVisibilityService and SuperAdminAuditService, both of which now fail
+|     closed on an unusable materialised path;
+|   - the tenant and user mutations each call canAccessTenant(), and
+|     userMoveTenant checks BOTH ends of the move.
+|
+| 🔴 Do NOT add an endpoint here for convenience. Several endpoints in tier B
+| read a tenant id straight from the request body and check only that the caller
+| is a super-admin — moving one of those here would let a branch admin act on
+| another branch. Harden first, then move.
+*/
+Route::middleware(['auth:sanctum', 'super-panel'])->group(function () {
 
 Route::get('/v2/admin/super/dashboard', [\App\Http\Controllers\Api\AdminSuperController::class, 'dashboard']);
 Route::get('/v2/admin/super/tenants', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantList']);
@@ -2972,31 +2996,78 @@ Route::get('/v2/admin/super/tenants/hierarchy', [\App\Http\Controllers\Api\Admin
 Route::post('/v2/admin/super/tenants', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantCreate']);
 Route::get('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantShow']);
 Route::put('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantUpdate']);
-Route::delete('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantDelete']);
-Route::get('/v2/admin/super/tenants/{id}/purge-preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurgePreview']);
-Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge']);
 Route::post('/v2/admin/super/tenants/{id}/reactivate', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantReactivate']);
 Route::post('/v2/admin/super/tenants/{id}/toggle-hub', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantToggleHub']);
 Route::post('/v2/admin/super/tenants/{id}/move', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantMove']);
+
 Route::get('/v2/admin/super/users', [\App\Http\Controllers\Api\AdminSuperController::class, 'userList']);
 Route::post('/v2/admin/super/users', [\App\Http\Controllers\Api\AdminSuperController::class, 'userCreate']);
 Route::get('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userShow']);
 Route::put('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'userUpdate']);
-// Platform rollout switches. Platform super-admin only — these set the ceiling
-// every community's own settings sit under, so they are not tenant-admin
-// endpoints. Authorisation is enforced in the controller, not just here.
-Route::get('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'index']);
-Route::put('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'update']);
 
+// Grants/revokes the TENANT super-admin flag — scoped by canAccessTenant.
+// The GLOBAL equivalents are platform-level and stay in tier B.
 Route::post('/v2/admin/super/users/{id}/grant-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantSuperAdmin']);
 Route::post('/v2/admin/super/users/{id}/revoke-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeSuperAdmin']);
-Route::post('/v2/admin/super/users/{id}/grant-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantGlobalSuperAdmin']);
-Route::post('/v2/admin/super/users/{id}/revoke-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeGlobalSuperAdmin']);
 Route::post('/v2/admin/super/users/{id}/move-tenant', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveTenant']);
 Route::post('/v2/admin/super/users/{id}/move-and-promote', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveAndPromote']);
 Route::post('/v2/admin/super/bulk/move-users', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkMoveUsers']);
 Route::post('/v2/admin/super/bulk/update-tenants', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkUpdateTenants']);
+
 Route::get('/v2/admin/super/audit', [\App\Http\Controllers\Api\AdminSuperController::class, 'audit']);
+
+// Per-tenant federation feature toggles — scoped by canAccessTenant. The
+// platform-wide federation controls stay in tier B.
+Route::get('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetTenantFeatures']);
+Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationUpdateTenantFeature']);
+
+}); // End Route::middleware(['auth:sanctum', 'super-panel'])
+
+/*
+|--------------------------------------------------------------------------
+| Super panel — TIER B: PLATFORM ONLY
+|--------------------------------------------------------------------------
+|
+| Platform super-admins and god only. EnsureIsSuperAdmin explicitly refuses
+| is_tenant_super_admin, and that is the point: the powers below are
+| installation-wide, not branch-wide.
+|
+| 🔴 Two distinct reasons an endpoint belongs here, both load-bearing:
+|
+| 1. The power itself is platform-wide — platform revenue and pricing, the
+|    external-federation kill switches, platform rollout capabilities, and
+|    granting PLATFORM super-admin (a branch admin who could mint one would
+|    escape their own branch entirely).
+|
+| 2. It is NOT SAFE for a branch admin yet. Verified 2026-08-05: the billing
+|    endpoints take a tenant id straight from the request body and check only
+|    requireSuperAdmin() — no canAccessTenant(). A branch admin admitted here
+|    could set another branch billing plan. They need that check adding before
+|    they could ever move to tier A.
+|
+| Tenant DELETE and PURGE are deliberately kept here even though they do scope
+| themselves. They are irreversible, and a branch admin building a network needs
+| create/update/move rather than the ability to destroy a whole community. Move
+| them to tier A only as a conscious decision.
+*/
+Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
+
+// Irreversible tenant destruction — scoped, but master-only by choice (above).
+Route::delete('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantDelete']);
+Route::get('/v2/admin/super/tenants/{id}/purge-preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurgePreview']);
+Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge']);
+
+// Platform rollout switches. Platform super-admin only — these set the ceiling
+// every community own settings sit under, so they are not tenant-admin
+// endpoints. Authorisation is enforced in the controller, not just here.
+Route::get('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'index']);
+Route::put('/v2/admin/super/platform-capabilities', [\App\Http\Controllers\Api\SuperAdmin\PlatformCapabilityController::class, 'update']);
+
+// PLATFORM super-admin grants. Never branch-level: this is the escape hatch.
+Route::post('/v2/admin/super/users/{id}/grant-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantGlobalSuperAdmin']);
+Route::post('/v2/admin/super/users/{id}/revoke-global-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeGlobalSuperAdmin']);
+
+// Installation-wide federation control, including the external kill switches.
 Route::get('/v2/admin/super/federation', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationOverview']);
 Route::get('/v2/admin/super/federation/system-controls', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetSystemControls']);
 Route::get('/v2/admin/super/federation/jwt-status', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetJwtStatus']);
@@ -3011,8 +3082,6 @@ Route::get('/v2/admin/super/federation/partnerships', [\App\Http\Controllers\Api
 Route::post('/v2/admin/super/federation/partnerships/{id}/suspend', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationSuspendPartnership']);
 Route::post('/v2/admin/super/federation/partnerships/{id}/reactivate', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationReactivatePartnership']);
 Route::post('/v2/admin/super/federation/partnerships/{id}/terminate', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationTerminatePartnership']);
-Route::get('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationGetTenantFeatures']);
-Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationUpdateTenantFeature']);
 
 // Impersonate and super-admin promotion — requires super-admin (moved from admin group)
 Route::post('/v2/admin/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminUsersController::class, 'impersonate']);
@@ -3022,7 +3091,9 @@ Route::put('/v2/admin/users/{id}/global-super-admin', [\App\Http\Controllers\Api
 // Identity verification fee configuration (super admin only)
 Route::put('/v2/admin/super/identity/fee', [\App\Http\Controllers\Api\AdminSuperController::class, 'setIdentityVerificationFee']);
 
-// Billing snapshot and plan assignment (god-level only)
+// Billing snapshot and plan assignment (god-level only).
+// 🔴 These read a tenant id from the body with no canAccessTenant() check — see
+// reason 2 in the block comment above.
 Route::get('/v2/admin/super/billing/snapshot', [\App\Http\Controllers\Api\AdminSuperController::class, 'getBillingSnapshot']);
 Route::post('/v2/admin/super/billing/assign-plan', [\App\Http\Controllers\Api\AdminSuperController::class, 'assignPlan']);
 Route::get('/v2/admin/super/billing/revenue', [\App\Http\Controllers\Api\AdminSuperController::class, 'getRevenueDashboard']);
@@ -3033,7 +3104,8 @@ Route::post('/v2/admin/super/billing/pause', [\App\Http\Controllers\Api\AdminSup
 Route::post('/v2/admin/super/billing/resume', [\App\Http\Controllers\Api\AdminSuperController::class, 'resumeTenantBilling']);
 Route::post('/v2/admin/super/billing/grace-period', [\App\Http\Controllers\Api\AdminSuperController::class, 'setBillingGracePeriod']);
 
-// AG44 — Tenant provisioning queue (super-admin review + approve)
+// AG44 — Tenant provisioning queue (super-admin review + approve).
+// Approval assigns a parent tenant anywhere in the tree, so platform-only.
 Route::get('/v2/super-admin/provisioning-requests', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'index']);
 Route::get('/v2/super-admin/provisioning-requests/{id}', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'show'])->whereNumber('id');
 Route::post('/v2/super-admin/provisioning-requests/{id}/approve', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'approve'])->whereNumber('id');
