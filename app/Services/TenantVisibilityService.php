@@ -81,9 +81,14 @@ class TenantVisibilityService
                 ->orderBy('name');
 
             // Scope by access level
-            $access = SuperPanelAccess::getAccess();
-            if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
-                $query->where('path', 'LIKE', $access['tenant_path'] . '%');
+            // 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). The previous
+            // condition applied NO filter when the path was empty, which handed
+            // the caller the entire platform instead of nothing.
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny']) {
+                $query->whereRaw('1 = 0');
+            } elseif ($filter['filter']) {
+                $query->where('path', 'LIKE', $filter['prefix'] . '%');
             }
 
             if (isset($filters['is_active'])) {
@@ -196,9 +201,13 @@ class TenantVisibilityService
                 ->orderBy('users.created_at', 'desc');
 
             // Scope by access level
-            $access = SuperPanelAccess::getAccess();
-            if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
-                $query->where('tenants.path', 'LIKE', $access['tenant_path'] . '%');
+            // 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). This is the
+            // user list: the largest cross-tenant PII surface in the panel.
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny']) {
+                $query->whereRaw('1 = 0');
+            } elseif ($filter['filter']) {
+                $query->where('tenants.path', 'LIKE', $filter['prefix'] . '%');
             }
 
             if (!empty($filters['tenant_id'])) {
@@ -286,9 +295,14 @@ class TenantVisibilityService
                 ->orderBy('name');
 
             // Scope by access level
-            $access = SuperPanelAccess::getAccess();
-            if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
-                $query->where('path', 'LIKE', $access['tenant_path'] . '%');
+            // 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). The previous
+            // condition applied NO filter when the path was empty, which handed
+            // the caller the entire platform instead of nothing.
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny']) {
+                $query->whereRaw('1 = 0');
+            } elseif ($filter['filter']) {
+                $query->where('path', 'LIKE', $filter['prefix'] . '%');
             }
 
             $tenants = $query->get()->map(fn($t) => (array) $t)->all();
@@ -438,9 +452,14 @@ class TenantVisibilityService
                 ->orderBy('name');
 
             // Scope by access level
-            $access = SuperPanelAccess::getAccess();
-            if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
-                $query->where('path', 'LIKE', $access['tenant_path'] . '%');
+            // 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). The previous
+            // condition applied NO filter when the path was empty, which handed
+            // the caller the entire platform instead of nothing.
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny']) {
+                $query->whereRaw('1 = 0');
+            } elseif ($filter['filter']) {
+                $query->where('path', 'LIKE', $filter['prefix'] . '%');
             }
 
             return $query->get()->map(function ($tenant) {

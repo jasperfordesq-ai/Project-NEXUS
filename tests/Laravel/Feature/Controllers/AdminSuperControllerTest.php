@@ -33,6 +33,29 @@ class AdminSuperControllerTest extends TestCase
             'is_super_admin' => 1,
             'is_tenant_super_admin' => 1,
         ]);
+
+        /*
+         * 🔴 The acting tenant needs a materialised path, because a real one
+         * always has one — TenantHierarchyService sets it immediately after
+         * insert. The seeded test tenant has a NULL path, which is not a
+         * realistic fixture.
+         *
+         * This matters more than it looks. `getAccess()` only grants `master` to
+         * god, or to a user on tenant 1 — so a user with `is_super_admin = 1` on
+         * tenant 2, as created here, resolves to **regional**, whose boundary is a
+         * prefix match on that path. With a NULL path the prefix was empty, and an
+         * empty prefix matches EVERYTHING (`str_starts_with($x, '')` is true;
+         * `LIKE '%'` matches every row). Three tests in this file were therefore
+         * passing *because of* that hole. Backfilling the path here makes the
+         * fixture honest; see SubtreeBoundaryEmptyPathTest for the guard itself.
+         */
+        $existingPath = DB::table('tenants')->where('id', $this->testTenantId)->value('path');
+        if (trim((string) $existingPath) === '') {
+            DB::table('tenants')->where('id', $this->testTenantId)->update([
+                'path' => '/' . $this->testTenantId . '/',
+            ]);
+        }
+
         $admin->refresh();
         return $admin;
     }

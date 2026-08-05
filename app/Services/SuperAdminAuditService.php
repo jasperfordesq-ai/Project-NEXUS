@@ -188,16 +188,25 @@ class SuperAdminAuditService
                 ->orderByDesc('created_at');
 
             // Scope by access level — regional admins only see their subtree
-            $access = SuperPanelAccess::getAccess();
-            if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
-                $tenantPath = $access['tenant_path'];
+            /*
+             * 🔴 Fail closed — see SuperPanelAccess::subtreeFilter(). This block
+             * had TWO fail-open branches: an empty tenant_path skipped the filter
+             * entirely, and so did an empty $subtreeIds. Either one handed a
+             * regional caller the whole platform's audit log.
+             */
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny']) {
+                $query->whereRaw('1 = 0');
+            } elseif ($filter['filter']) {
                 // Get all tenant IDs in the subtree
                 $subtreeIds = DB::table('tenants')
-                    ->where('path', 'LIKE', $tenantPath . '%')
+                    ->where('path', 'LIKE', $filter['prefix'] . '%')
                     ->pluck('id')
                     ->all();
 
-                if (!empty($subtreeIds)) {
+                if (empty($subtreeIds)) {
+                    $query->whereRaw('1 = 0');
+                } else {
                     $query->whereIn('actor_tenant_id', $subtreeIds);
                 }
             }
@@ -260,13 +269,18 @@ class SuperAdminAuditService
                 ->where('created_at', '>=', $since);
 
             // Scope for regional admins
-            $access = SuperPanelAccess::getAccess();
-            if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
+            // 🔴 Fail closed — same two fail-open branches as getLog() above.
+            $filter = SuperPanelAccess::subtreeFilter();
+            if ($filter['deny']) {
+                $baseQuery->whereRaw('1 = 0');
+            } elseif ($filter['filter']) {
                 $subtreeIds = DB::table('tenants')
-                    ->where('path', 'LIKE', $access['tenant_path'] . '%')
+                    ->where('path', 'LIKE', $filter['prefix'] . '%')
                     ->pluck('id')
                     ->all();
-                if (!empty($subtreeIds)) {
+                if (empty($subtreeIds)) {
+                    $baseQuery->whereRaw('1 = 0');
+                } else {
                     $baseQuery->whereIn('actor_tenant_id', $subtreeIds);
                 }
             }

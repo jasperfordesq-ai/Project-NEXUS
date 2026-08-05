@@ -117,6 +117,28 @@ class SuperPanelAccess
 
         $hasGlobalAccess = $isGod || $isMaster;
 
+        /*
+         * 🔴 RULE 3: a regional grant REQUIRES a usable materialised path.
+         *
+         * The subtree boundary is a string-prefix match on `tenants.path`, and
+         * `tenants.path` is nullable with no default. An empty prefix does not
+         * mean "no access" — it means "everything":
+         *   - `str_starts_with($anything, '')` is TRUE in PHP, so
+         *     canAccessTenant() would admit EVERY tenant on the platform;
+         *   - the list clause becomes `path LIKE '%'`, which matches every row.
+         *
+         * So a hub tenant with an unpopulated path would give its super-admin the
+         * whole installation — tenant list, user list, hierarchy, dashboard and
+         * audit log. Not exploitable while EnsureIsSuperAdmin refuses
+         * is_tenant_super_admin, but it must never become the reason a
+         * hierarchical panel leaks. Deny, loudly, rather than resolve to a
+         * wildcard. Master/god access is path-independent and unaffected.
+         */
+        if (!$hasGlobalAccess && trim((string) ($user->tenant_path ?? '')) === '') {
+            self::$currentAccess['reason'] = 'Tenant has no materialised path; refusing subtree access';
+            return self::$currentAccess;
+        }
+
         // ACCESS GRANTED - determine scope
         self::$currentAccess = [
             'granted' => true,
@@ -168,7 +190,19 @@ class SuperPanelAccess
             return false;
         }
 
-        return str_starts_with($target->path, $access['tenant_path']);
+        /*
+         * 🔴 Fail closed on an empty prefix. `str_starts_with($x, '')` is TRUE, so
+         * without this an empty tenant_path admits every tenant. getAccess() now
+         * refuses to grant `regional` without a path, so this is defence in depth —
+         * keep both, because this method is public and callers may construct an
+         * access array by other means.
+         */
+        $prefix = trim((string) ($access['tenant_path'] ?? ''));
+        if ($prefix === '') {
+            return false;
+        }
+
+        return str_starts_with((string) $target->path, $prefix);
     }
 
     /**
@@ -271,10 +305,61 @@ class SuperPanelAccess
             ];
         }
 
+        // 🔴 An empty prefix would produce `LIKE '%'` — every row. Deny instead.
+        $prefix = trim((string) ($access['tenant_path'] ?? ''));
+        if ($prefix === '') {
+            return [
+                'sql' => "1 = 0",
+                'params' => []
+            ];
+        }
+
         return [
             'sql' => "{$tableAlias}.path LIKE ?",
-            'params' => [$access['tenant_path'] . '%']
+            'params' => [$prefix . '%']
         ];
+    }
+
+    /**
+     * How a query should be confined for the current caller — fail closed.
+     *
+     * 🔴 Replaces a fail-OPEN idiom that was repeated at six call sites:
+     *
+     *     if ($access['granted'] && $access['level'] === 'regional' && !empty($access['tenant_path'])) {
+     *         $query->where('path', 'LIKE', $access['tenant_path'] . '%');
+     *     }
+     *
+     * When the path was empty that condition is FALSE, so **no filter was applied
+     * at all** and the caller received the entire platform — the opposite of the
+     * intent. Anything that was not cleanly "regional with a path" silently got
+     * the master view.
+     *
+     * Use this instead, and handle all three outcomes:
+     *   - deny   => the caller gets nothing (add `1 = 0`)
+     *   - filter => confine to `prefix`
+     *   - neither => master; no confinement needed
+     *
+     * @return array{deny:bool, filter:bool, prefix:?string}
+     */
+    public static function subtreeFilter(?int $userId = null): array
+    {
+        $access = self::getAccess($userId);
+
+        if (empty($access['granted'])) {
+            return ['deny' => true, 'filter' => false, 'prefix' => null];
+        }
+
+        if (($access['level'] ?? null) === 'master') {
+            return ['deny' => false, 'filter' => false, 'prefix' => null];
+        }
+
+        $prefix = trim((string) ($access['tenant_path'] ?? ''));
+        if ($prefix === '') {
+            // Regional without a usable path. Never widen to everything.
+            return ['deny' => true, 'filter' => false, 'prefix' => null];
+        }
+
+        return ['deny' => false, 'filter' => true, 'prefix' => $prefix];
     }
 
     /**

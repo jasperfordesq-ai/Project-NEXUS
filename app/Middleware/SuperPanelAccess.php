@@ -124,6 +124,25 @@ class SuperPanelAccess
 
         $hasGlobalAccess = $isGod || $isMaster;
 
+        /*
+         * 🔴 A regional grant REQUIRES a usable materialised path.
+         *
+         * `tenants.path` is nullable with no default, and the subtree boundary is
+         * a string-prefix match. An empty prefix means EVERYTHING, not nothing:
+         * `str_starts_with($anything, '')` is TRUE, and `path LIKE '%'` matches
+         * every row. A hub tenant with no path would therefore hand its
+         * super-admin the whole installation.
+         *
+         * 🔴 This class is currently registered nowhere and called by nothing —
+         * the live gate is EnsureIsSuperAdmin, which refuses is_tenant_super_admin
+         * outright. The guard is here so that WIRING THIS UP does not silently
+         * open that hole. See the mirrored fix in app/Core/SuperPanelAccess.php.
+         */
+        if (!$hasGlobalAccess && trim((string) ($user['tenant_path'] ?? '')) === '') {
+            self::$currentAccess['reason'] = 'Tenant has no materialised path; refusing subtree access';
+            return self::$currentAccess;
+        }
+
         // ACCESS GRANTED - determine scope
         self::$currentAccess = [
             'granted' => true,
@@ -177,7 +196,14 @@ class SuperPanelAccess
         // Target's path must START WITH user's tenant path
         // e.g., user path /2/, target path /2/5/ = YES
         // e.g., user path /2/, target path /3/ = NO
-        return str_starts_with($target['path'], $access['tenant_path']);
+        // 🔴 Fail closed on an empty prefix: str_starts_with($x, '') is TRUE, so
+        // without this an empty tenant_path would admit every tenant.
+        $prefix = trim((string) ($access['tenant_path'] ?? ''));
+        if ($prefix === '') {
+            return false;
+        }
+
+        return str_starts_with((string) $target['path'], $prefix);
     }
 
     /**
@@ -286,10 +312,19 @@ class SuperPanelAccess
             ];
         }
 
-        // Regional: restrict to subtree using path LIKE
+        // Regional: restrict to subtree using path LIKE.
+        // 🔴 An empty prefix yields `LIKE '%'` — every row. Deny instead.
+        $prefix = trim((string) ($access['tenant_path'] ?? ''));
+        if ($prefix === '') {
+            return [
+                'sql' => "1 = 0",
+                'params' => []
+            ];
+        }
+
         return [
             'sql' => "{$tableAlias}.path LIKE ?",
-            'params' => [$access['tenant_path'] . '%']
+            'params' => [$prefix . '%']
         ];
     }
 
