@@ -54,6 +54,32 @@ All business logic must preserve tenant isolation. PHP code should resolve tenan
 
 Feature availability is tenant-configured. User-facing routes, API actions, accessible frontend pages, notifications, search entries, and navigation should all check the same feature gate rather than assuming a module is globally enabled.
 
+## Authorisation Model
+
+Authorisation has five tiers — member, broker/coordinator, administrator, network administrator, platform administrator — expressed as a `users.role` string plus boolean flags, with `app/Support/Authorization/AdminTier.php` as the canonical predicate. A broker is an *operational* role with its own application and its own routes, not a junior administrator; `AdminTier` deliberately excludes it from the admin tier.
+
+Cross-tenant reach inside the super-admin panel is graded rather than absolute. `app/Core/SuperPanelAccess.php` resolves a level: `master` (platform-global) or `regional` (the actor's own hub tenant and its descendants only, enforced by a materialised-path prefix match). Any cross-tenant action must check both the source and the destination tenant.
+
+A second permission/RBAC schema (`roles`, `permissions`, `user_roles`, `user_permissions`, with per-organisation scoping) coexists with the tier model and is used for a narrow, specific set of capabilities. It has not replaced the tier model, and a grantable permission slug is not necessarily an enforced one.
+
+See [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md).
+
+## Safeguarding and Consent
+
+Safeguarding, guardian relationships and consent form a substantial subsystem of roughly thirty tables spanning four largely independent mechanisms: staff-created guardian↔ward assignments, per-event guardian consent for minors, per-opportunity guardian consent for volunteering, and member-to-member linked accounts. Consent records are versioned and hashed with provenance; the per-event implementation additionally uses encrypted guardian identity, single-use expiring tokens, and an append-only history table protected by database triggers.
+
+Concern-raising is separate again: `safeguarding_reports` is a case-management workflow with severity-driven SLAs, escalation and an append-only action log, distinct from generic content reporting. There are currently four independent reporting systems across the platform.
+
+Two architectural rules follow from how this is built. A relationship record is never itself authorisation — a guardian gains no capability unless an explicit check grants it. And a permission must not be presented to users unless something enforces it.
+
+See [SAFEGUARDING-AND-CONSENT.md](SAFEGUARDING-AND-CONSENT.md).
+
+## Reporting and Analytics
+
+Reporting is not a single subsystem. There are roughly twenty-five admin-facing report, analytics and dashboard surfaces spread across the tenant admin panel, the broker panel, the caring-community panel and the super-admin panel, with per-module analytics living alongside their own modules rather than in a shared reporting area. Date-range handling, export parameters and export formats are decided per surface rather than centrally, and only a minority accept an arbitrary calendar range.
+
+Anything new in this area should reuse `ReportExportService` and, critically, send the *same* filters to the export endpoint that the screen is displaying — an export whose figures cannot be reconciled with the screen is worse than no export.
+
 ## User Interfaces
 
 The React frontend is the primary UI. It uses React 19, TypeScript, HeroUI v3, Tailwind CSS 4, Lucide icons, translation namespaces, CSS tokens, and the local motion shim. New user-facing UI belongs here unless it is specifically part of the accessible frontend.

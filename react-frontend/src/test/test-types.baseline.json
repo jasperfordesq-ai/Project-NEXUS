@@ -1857,7 +1857,6 @@
       "TS2769": 1
     },
     "src/pages/listings/CreateListingPage.test.tsx": {
-      "TS2339": 10,
       "TS2345": 1,
       "TS2739": 2,
       "TS2740": 2
@@ -2223,6 +2222,6 @@
   },
   "totals": {
     "fileCount": 650,
-    "errorCount": 1947
+    "errorCount": 1937
   }
 }

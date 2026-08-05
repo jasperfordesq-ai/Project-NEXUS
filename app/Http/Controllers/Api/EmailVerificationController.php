@@ -140,8 +140,35 @@ class EmailVerificationController extends BaseApiController
             // Gamification is optional
         }
 
+        // Tell the client whether the member is now ACTIVE or still waiting on an
+        // administrator, so the verify-email screen can say so.
+        //
+        // 🔴 VerifyEmailPage has always had an "awaiting approval" panel, but it
+        // derived the condition from `tenant.settings.admin_approval` in the
+        // bootstrap payload — and that key is DELIBERATELY excluded from the public
+        // bootstrap (TenantBootstrapController names it in its exclusion list), so
+        // the flag was permanently false and the panel was dead code. Returning it
+        // here fixes the screen without leaking a tenant configuration value to
+        // anonymous callers, which is why it was excluded in the first place.
+        //
+        // Re-read the row rather than inferring from the UPDATE above: the approval
+        // branch only activates an already-approved member, so "approval required"
+        // does not by itself mean this member is still pending.
+        $stillPending = false;
+        try {
+            $state = DB::selectOne(
+                "SELECT status, is_approved FROM users WHERE id = ? AND tenant_id = ?",
+                [$userId, $tenantId]
+            );
+            $stillPending = $state !== null
+                && ((string) $state->status === 'pending' || (int) $state->is_approved !== 1);
+        } catch (\Throwable $e) {
+            Log::warning('[EmailVerification] Failed to read post-verification state: ' . $e->getMessage());
+        }
+
         return $this->respondWithData([
             'verified' => true,
+            'requires_approval' => $stillPending,
             'message' => __('api_controllers_1.email_verification.verified_successfully')
         ]);
     }

@@ -247,14 +247,78 @@ class AdminTimebankingControllerTest extends TestCase
         $this->assertEquals(15.0, $data['new_balance']);
         $this->assertEquals(-5.0, $data['adjustment']);
 
-        // Verify transaction: user is sender (deduction), admin is receiver
+        // A deduction is a ONE-SIDED treasury movement: the member is the sender
+        // and the other side is NULL.
+        //
+        // This assertion previously required `receiver_id === admin->id`, which
+        // codified a real defect rather than catching it: the admin was recorded
+        // as the counterparty while their own users.balance was never moved, so
+        // the ledger did not reconcile for them and every adjustment inflated
+        // their apparent total_earned/total_spent on the admin dashboard (both are
+        // derived with SUM(amount) GROUP BY receiver_id/sender_id).
         $txn = \Illuminate\Support\Facades\DB::selectOne(
             "SELECT * FROM transactions WHERE tenant_id = ? AND sender_id = ? AND description LIKE '%Deduction test%'",
             [$this->testTenantId, $user->id]
         );
         $this->assertNotNull($txn);
-        $this->assertEquals($admin->id, (int) $txn->receiver_id);
+        $this->assertNull($txn->receiver_id, 'An admin adjustment must not name the admin as counterparty.');
         $this->assertEquals(5.0, (float) $txn->amount);
+        $this->assertSame('admin_grant', $txn->transaction_type, 'An admin adjustment must be distinguishable from a member transfer.');
+    }
+
+    public function test_adjust_balance_credit_is_one_sided_and_typed(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $user = User::factory()->forTenant($this->testTenantId)->create(['balance' => 1.0]);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/timebanking/adjust-balance', [
+            'user_id' => $user->id,
+            'amount' => 4.0,
+            'reason' => 'Credit test',
+        ])->assertStatus(200);
+
+        $txn = \Illuminate\Support\Facades\DB::selectOne(
+            "SELECT * FROM transactions WHERE tenant_id = ? AND receiver_id = ? AND description LIKE '%Credit test%'",
+            [$this->testTenantId, $user->id]
+        );
+        $this->assertNotNull($txn);
+        $this->assertNull($txn->sender_id, 'A credit adjustment must not name the admin as counterparty.');
+        $this->assertSame('admin_grant', $txn->transaction_type);
+    }
+
+    public function test_adjust_balance_writes_an_audit_row_with_before_and_after(): void
+    {
+        // For most of this endpoint's life both its docblock and its route comment
+        // claimed the action was audited, and nothing was written anywhere. The
+        // mandatory reason survived only as a text prefix on the transaction
+        // description. This is the regression guard for that.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $user = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/timebanking/adjust-balance', [
+            'user_id' => $user->id,
+            'amount' => -2.5,
+            'reason' => 'Corrected a duplicated exchange',
+        ])->assertStatus(200);
+
+        $row = \Illuminate\Support\Facades\DB::selectOne(
+            "SELECT * FROM org_audit_log
+             WHERE tenant_id = ? AND action = 'member_balance_adjusted' AND target_user_id = ?
+             ORDER BY id DESC LIMIT 1",
+            [$this->testTenantId, $user->id]
+        );
+
+        $this->assertNotNull($row, 'A balance adjustment must leave an audit row.');
+        $this->assertEquals($admin->id, (int) $row->user_id, 'The audit row must record the acting admin.');
+
+        $details = json_decode((string) $row->details, true);
+        $this->assertIsArray($details);
+        $this->assertSame('Corrected a duplicated exchange', $details['reason']);
+        $this->assertEquals(-2.5, (float) $details['adjustment']);
+        $this->assertEquals(10.0, (float) $details['previous_balance']);
+        $this->assertEquals(7.5, (float) $details['new_balance']);
     }
 
     // ================================================================

@@ -80,7 +80,9 @@ export function PodcastMiniPlayer({ tabBarMayShow = true }: PodcastMiniPlayerPro
         data-podcast-miniplayer
         className={`fixed inset-x-0 z-[290] transition-transform duration-200 ${
           tabBarVisible
-            ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)] md:bottom-0 md:pb-[env(safe-area-inset-bottom,0px)]'
+            /* `lg:` must match MobileTabBar's `lg:hidden` — at md the bar is still
+               on screen, so docking to bottom-0 there would overlap it. */
+            ? 'bottom-[calc(env(safe-area-inset-bottom,0px)+4rem)] lg:bottom-0 lg:pb-[env(safe-area-inset-bottom,0px)]'
             : 'bottom-0 pb-[env(safe-area-inset-bottom,0px)]'
         }`}
       >

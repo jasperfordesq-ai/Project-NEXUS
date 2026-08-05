@@ -37,14 +37,14 @@
     "loading": "読み込み中",
     "next": "次へ",
     "no": "いいえ",
+    "ok": "OK",
     "pending": "保留中",
     "previous": "前へ",
     "retry": "再試行",
     "save": "保存",
     "select_all": "すべて選択",
     "select_item": "項目の選択",
-    "yes": "はい",
-    "ok": "OK"
+    "yes": "はい"
   },
   "shared": {
     "broker_actions": "ブローカーのアクション",
@@ -57,6 +57,7 @@
     "no_history_available": "利用可能な履歴が見つかりません",
     "no_legal_documents_found": "法的文書が見つかりませんでした",
     "no_members_found": "メンバーが見つかりませんでした",
+    "loading": "読み込み中",
     "no_data": "データなし",
     "no_data_available": "利用可能なデータがありません",
     "no_recent_broker_activity": "最近のブローカー活動は見つかりませんでした",
@@ -67,12 +68,12 @@
     "refresh": "リフレッシュ",
     "search": "検索...",
     "select_all_rows": "すべての行を選択",
+    "select_row": "行を選択 {{id}}",
     "data_table": "データ",
-    "total_count": "{{count}}合計",
-    "loading": "読み込み中",
-    "select_row": "行を選択 {{id}}"
+    "total_count": "{{count}}合計"
   },
   "reports": {
+    "active_30d_total": "30日以内にアクティブ",
     "active_members": "アクティブなメンバー",
     "already_notified": "すでに通知されています",
     "at_risk": "危険にさらされています",
@@ -96,6 +97,8 @@
     "col_hours_received": "受信時間",
     "col_initial": "イニシャル",
     "col_joined": "参加しました",
+    "col_retained": "保持",
+    "col_retention_rate": "定着率",
     "col_last_activity": "最後のアクティビティ",
     "col_last_login": "最終ログイン",
     "col_listings": "リスト",
@@ -141,8 +144,14 @@
     "group_by_daily": "日ごとにグループ化",
     "group_by_monthly": "月ごとにグループ化",
     "group_by_weekly": "週単位でグループ化する",
+    "unknown_period": "不明な期間",
+    "week_period": "週 {{week}}、{{year}}",
     "hours": "営業時間",
+    "hours_reports_page_desc": "タイムクレジットの交換量、メンバー残高、カテゴリ別トレンドを分析する。",
+    "hours_reports_page_title": "時間レポート",
     "hours_value": "{{value}}時間",
+    "inactive_members_page_desc": "disengaging のリスクがあるメンバーを特定し、フォローアップ通知を管理する。",
+    "inactive_members_page_title": "非アクティブメンバー",
     "label_active_members": "アクティブなメンバー",
     "label_approve": "承認する",
     "label_approved": "承認済み",
@@ -164,6 +173,10 @@
     "label_least_active_members": "最もアクティブでないメンバー",
     "label_listing_rate": "上場率",
     "label_login_rate": "ログイン率",
+    "label_posts_created": "作成された投稿",
+    "label_comments_created": "作成されたコメント",
+    "label_event_rsvps": "イベントへの参加表明",
+    "label_new_connections": "新しいつながり",
     "label_messaging_rate": "メッセージング速度",
     "label_moderation_queue": "モデレーションキュー",
     "label_monetary_value": "金銭的価値",
@@ -193,10 +206,14 @@
     "label_unique_categories": "ユニークなカテゴリー",
     "label_unique_givers": "ユニークなギバー",
     "mark_as_notified": "通知済みとしてマークする",
+    "member_reports_page_desc": "メンバーの活動、保持、エンゲージメント、貢献パターンを追跡します。",
+    "member_reports_page_title": "メンバー報告",
     "members_marked_notified": "通知済みとしてマークされたメンバー",
     "members_selected": "メンバーが選ばれました",
     "members_selected_count": "{{count}}が選択されました",
     "moderation_pending": "保留中",
+    "moderation_queue_page_desc": "コミュニティに表示される前に、保留中およびフラグ付きのコンテンツを確認します。",
+    "moderation_queue_page_title": "モデレーションキュー",
     "moderation_settings": "モデレーション設定",
     "moderation_settings_updated": "モデレーション設定が更新されました",
     "never": "決してしない",
@@ -268,21 +285,10 @@
     "hours_by_category_aria": "カテゴリごとの交換時間を示す棒グラフ",
     "hours_distribution_aria": "交換時間の分布を示す円グラフ",
     "hours_trend_aria": "時間の経過に伴う交換時間を示す面グラフ",
-    "members_selected_count_other": "{{count}}が選択されました",
-    "days_count_other": "{{count}} 日",
-    "unknown_period": "不明な期間",
-    "week_period": "週 {{week}}、{{year}}",
     "members_selected_count_one": "{{count}} 選択済み",
+    "members_selected_count_other": "{{count}}が選択されました",
     "days_count_one": "{{count}}日",
-    "active_30d_total": "30日以内にアクティブ",
-    "hours_reports_page_desc": "タイムクレジットの交換量、メンバー残高、カテゴリ別トレンドを分析する。",
-    "hours_reports_page_title": "時間レポート",
-    "inactive_members_page_desc": "disengaging のリスクがあるメンバーを特定し、フォローアップ通知を管理する。",
-    "inactive_members_page_title": "非アクティブメンバー",
-    "member_reports_page_desc": "メンバーの活動、保持、エンゲージメント、貢献パターンを追跡します。",
-    "member_reports_page_title": "メンバー報告",
-    "moderation_queue_page_desc": "コミュニティに表示される前に、保留中およびフラグ付きのコンテンツを確認します。",
-    "moderation_queue_page_title": "モデレーションキュー"
+    "days_count_other": "{{count}} 日"
   },
   "municipal_reports": {
     "meta": {
@@ -300,13 +306,13 @@
       "body_1_before_kiss": "自治体影響レポートは、プログラムの価値を実証するために自治体パートナー、州、資金提供者と共有する証拠パックです。検証されたケア時間、アクティブなメンバー、パートナー組織が表示されます。",
       "body_1_after_kiss": " 方法論、正式な介護サービスに対する推定コスト相殺 (",
       "body_1_after_chf": "時間の値 x 予防乗数)。",
+      "kiss_abbr": "思いやりのあるコミュニティ",
       "chf_abbr": "CHF",
       "body_2_prefix": "を使用します。",
       "body_2_after_audience": "切り替えて物語の枠組みを切り替えます。",
       "body_2_after_canton": "複数の自治体を集約し、州規模でのコスト回避を示します。",
       "body_2_after_municipality": "地域住民とパートナー組織に焦点を当てます。",
-      "body_2_after_cooperative": "メンバーの維持率、互恵率、コーディネーターの作業負荷を示します。 PDF としてエクスポートしてパートナーに送信するか、CSV としてエクスポートしてさらに分析します。レポート テンプレートを保存すると、将来同じ構成をすぐに再生成できます。",
-      "kiss_abbr": "思いやりのあるコミュニティ"
+      "body_2_after_cooperative": "メンバーの維持率、互恵率、コーディネーターの作業負荷を示します。 PDF としてエクスポートしてパートナーに送信するか、CSV としてエクスポートしてさらに分析します。レポート テンプレートを保存すると、将来同じ構成をすぐに再生成できます。"
     },
     "actions": {
       "analytics": "コミュニティ分析",
@@ -391,14 +397,14 @@
     },
     "values": {
       "hours": "{{count}}h",
+      "formatted_hours": "{{value}}時間",
       "disabled": "無効",
       "activities": "{{count}} アクティビティ",
       "trend_detail": "{{participants}} 人の参加者、{{activities}} 人のアクティビティ",
-      "hours_other": "{{count}}h",
-      "activities_other": "{{count}} アクティビティ",
-      "formatted_hours": "{{value}}時間",
       "hours_one": "{{count}}h",
-      "activities_one": "{{count}}のアクティビティ"
+      "hours_other": "{{count}}h",
+      "activities_one": "{{count}}のアクティビティ",
+      "activities_other": "{{count}} アクティビティ"
     },
     "toast": {
       "load_failed": "地方自治体の影響データをロードできませんでした。",
@@ -508,8 +514,8 @@
         "future_care_credit_pool_desc_one": "正の組合員残高の合計 - 協同組合の暗黙の将来介護準備金。アクティブなメンバー ベース: {{count}}。",
         "future_care_credit_pool_desc_other": "正の組合員残高の合計 - 協同組合の暗黙の将来介護準備金。アクティブなメンバー ベース: {{count}}。"
       },
-      "logs_count_other": "{{count}} ログ",
-      "logs_count_one": "{{count}}のログ"
+      "logs_count_one": "{{count}}のログ",
+      "logs_count_other": "{{count}} ログ"
     },
     "cards": {
       "verified_hours": {

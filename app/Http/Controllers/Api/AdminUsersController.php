@@ -638,6 +638,117 @@ class AdminUsersController extends BaseApiController
     // =========================================================================
 
     /** POST /api/v2/admin/users/{id}/approve */
+    /**
+     * POST /api/v2/admin/users/{id}/reject
+     *
+     * Reject a PENDING registration, with a mandatory reason.
+     *
+     * 🔴 There was no way to do this. A community could approve, suspend, ban or
+     * hard-delete a pending applicant and nothing else — so in practice a
+     * registration was declined by leaving it pending forever, invisibly and
+     * unreasoned, or by banning someone who had never been a member. `users` had no
+     * `rejection_reason` column at all, so even suspension and ban reasons survived
+     * only as free text inside an audit blob.
+     *
+     * Modelled on ListingModerationService::reject(), which has enforced a non-empty
+     * reason at the service layer for years. The reason is stored on the row (not
+     * only in a log), the actor and time are recorded, and the applicant is told —
+     * in their own language — so a decision is never silently absorbed.
+     *
+     * Deliberately reversible: `approve()` clears the rejection, so a community can
+     * change its mind without the applicant having to register again.
+     */
+    public function reject(int $id): JsonResponse
+    {
+        $adminId = $this->requireBrokerOrAdmin();
+        $tenantId = $this->getTenantId();
+
+        $reason = trim((string) $this->input('reason', ''));
+        if ($reason === '') {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.reason_required'), 'reason');
+        }
+
+        $user = User::findById($id, true);
+        if (!$user || $user['tenant_id'] != $tenantId) {
+            return $this->respondWithError('NOT_FOUND', __('api.user_not_found'), null, 404);
+        }
+        if (!$this->canManageSecurityTarget($adminId, $user)) {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+
+        $outcome = DB::transaction(function () use ($adminId, $id, $tenantId, $reason): array {
+            $target = $this->lockManageableSecurityTarget($adminId, $id, $tenantId);
+            if ($target === null) {
+                return ['status' => 'denied'];
+            }
+
+            // Only a pending applicant can be rejected. An already-approved member
+            // is suspended or banned instead — those are different decisions with
+            // different consequences, and conflating them would let "reject" be used
+            // to quietly remove an active member.
+            if (!empty($target['is_approved']) || (string) ($target['status'] ?? '') !== 'pending') {
+                return ['status' => 'not_pending'];
+            }
+
+            DB::update(
+                "UPDATE users
+                    SET status = 'rejected',
+                        is_approved = 0,
+                        rejection_reason = ?,
+                        rejected_at = NOW(),
+                        rejected_by = ?,
+                        updated_at = NOW()
+                  WHERE id = ? AND tenant_id = ?",
+                [mb_substr($reason, 0, 500), $adminId, $id, $tenantId]
+            );
+
+            return ['status' => 'rejected', 'user' => $target];
+        }, 3);
+
+        if (($outcome['status'] ?? null) === 'denied') {
+            return $this->respondWithError('AUTH_INSUFFICIENT_PERMISSIONS', __('api.insufficient_permissions'), null, 403);
+        }
+        if (($outcome['status'] ?? null) === 'not_pending') {
+            return $this->respondWithError('INVALID_STATUS', __('api.invalid_status'), null, 400);
+        }
+
+        $target = $outcome['user'];
+
+        ActivityLog::log($adminId, 'admin_reject_user', "Rejected user #{$id} ({$target['email']}): {$reason}");
+        $this->auditLogService->logAction(
+            $tenantId,
+            'member_registration_rejected',
+            $adminId,
+            ['reason' => $reason, 'email' => $target['email'] ?? null],
+            null,
+            $id,
+        );
+
+        // Tell the applicant, in their own language. A rejection the person never
+        // hears about is indistinguishable from being ignored.
+        //
+        // NB: pass the locale STRING, not the row. withLocale() accepts
+        // string|object|null — handing it the array from findById()/the locked
+        // target raises a TypeError which the catch below would swallow, silently
+        // losing the notification. `preferred_language` comes from
+        // User::findByIdSelectColumns(), which includes it precisely so
+        // notification paths can honour the recipient's language.
+        try {
+            LocaleContext::withLocale($user['preferred_language'] ?? null, function () use ($id, $reason) {
+                Notification::createNotification(
+                    $id,
+                    __('api_controllers_2.registration.rejected_notice', ['reason' => $reason]),
+                    '/contact',
+                    'system',
+                );
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify rejected applicant', ['user_id' => $id, 'error' => $e->getMessage()]);
+        }
+
+        return $this->respondWithData(['rejected' => true, 'id' => $id]);
+    }
+
     public function approve(int $id): JsonResponse
     {
         $adminId = $this->requireBrokerOrAdmin();
@@ -669,6 +780,18 @@ class AdminUsersController extends BaseApiController
                 'is_approved' => 1,
                 'tenant_id' => $tenantId,
             ]);
+            // Approving clears any earlier rejection, so a community can change its
+            // mind without the applicant having to register again. Also lifts a
+            // 'rejected' status, which activatePendingStatus() only handles for
+            // 'pending'.
+            DB::update(
+                "UPDATE users
+                    SET rejection_reason = NULL, rejected_at = NULL, rejected_by = NULL,
+                        status = CASE WHEN status = 'rejected' THEN 'active' ELSE status END,
+                        updated_at = NOW()
+                  WHERE id = ? AND tenant_id = ?",
+                [$id, $tenantId]
+            );
             $this->activatePendingStatus($id, $tenantId);
             return ['status' => 'approved', 'user' => $target];
         }, 3);

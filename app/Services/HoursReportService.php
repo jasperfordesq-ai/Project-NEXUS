@@ -311,7 +311,13 @@ class HoursReportService
             $conditions .= " AND {$column} >= ?";
         }
         if (!empty($dateRange['to'])) {
-            $conditions .= " AND {$column} <= ?";
+            // 🔴 `{$column} <= '2026-06-30'` against a DATETIME column compares
+            // against 2026-06-30 00:00:00 and therefore silently DROPS the whole
+            // of the last requested day. A "1–30 June" report returned 1–29 June,
+            // on screen and in every export. Use an exclusive upper bound on the
+            // following midnight instead: still index-friendly (unlike wrapping
+            // the column in DATE()), and inclusive of the final day.
+            $conditions .= " AND {$column} < DATE_ADD(?, INTERVAL 1 DAY)";
         }
         return $conditions;
     }

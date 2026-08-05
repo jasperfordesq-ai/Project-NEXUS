@@ -571,7 +571,17 @@ class WalletService
      * @throws \InvalidArgumentException On validation failure
      * @throws \RuntimeException On insufficient balance or self-transfer
      */
-    public function transfer(int $senderId, array $data): array
+    /**
+     * Move credits from $senderId to a recipient.
+     *
+     * @param int|null $actingUserId When a linked-account carer/guardian is
+     *        spending the sender's balance on their behalf, the carer's id. NULL
+     *        (the default, and every ordinary transfer) means the sender acted
+     *        themselves. Recorded on the ledger row as `acting_user_id` — the
+     *        owner of the credits stays the sender either way, but a proxy debit
+     *        must never be indistinguishable from the member's own.
+     */
+    public function transfer(int $senderId, array $data, ?int $actingUserId = null): array
     {
         $recipient = $data['recipient'] ?? $data['user_id'] ?? $data['username'] ?? $data['email'] ?? null;
         $amount = (float) ($data['amount'] ?? 0);
@@ -659,9 +669,12 @@ class WalletService
         // credits to the real recipient. Folding content in means an identical
         // retry still dedups (double-submit protection intact) while a different
         // recipient/amount is treated as the distinct transfer it is.
+        // `acting_user_id` is folded in so a carer's proxy transfer can never
+        // replay (and be credited against) the member's own identical transfer, or
+        // vice versa — they are genuinely different actions.
         $fingerprint = $hasExplicitKey
-            ? sha1('key:' . $explicitKey . '|' . $receiver->id . '|' . $amount . '|' . $description)
-            : sha1('content:' . $receiver->id . '|' . $amount . '|' . $description);
+            ? sha1('key:' . $explicitKey . '|' . $receiver->id . '|' . $amount . '|' . $description . '|' . ($actingUserId ?? 0))
+            : sha1('content:' . $receiver->id . '|' . $amount . '|' . $description . '|' . ($actingUserId ?? 0));
         $idemCacheKey = "wallettx:idem:{$tenantId}:{$senderId}:{$fingerprint}";
         $idemTtl = $hasExplicitKey ? 86400 : 120;
 
@@ -694,7 +707,7 @@ class WalletService
         }
 
         try {
-            $txn = DB::transaction(function () use ($senderId, $receiver, $amount, $description, $tenantId) {
+            $txn = DB::transaction(function () use ($senderId, $receiver, $amount, $description, $tenantId, $actingUserId) {
                 // Lock both user rows in consistent ID order to prevent deadlocks
                 // when two users transfer to each other simultaneously
                 $minId = min($senderId, $receiver->id);
@@ -712,6 +725,11 @@ class WalletService
                 $txn = $this->transaction->newInstance([
                     'sender_id'   => $senderId,
                     'receiver_id' => $receiver->id,
+                    // NULL for an ordinary transfer the sender made themselves.
+                    // Populated only when a linked-account carer/guardian sent it
+                    // on the sender's behalf, so a proxy debit of someone else's
+                    // balance is always attributable to the person who did it.
+                    'acting_user_id' => $actingUserId,
                     'amount'      => $amount,
                     'description' => $description,
                     'status'      => 'completed',

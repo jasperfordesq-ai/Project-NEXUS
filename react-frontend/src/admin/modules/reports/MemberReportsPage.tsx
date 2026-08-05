@@ -52,66 +52,100 @@ import { useToast } from '@/contexts/ToastContext';
 // Types
 // ---------------------------------------------------------------------------
 
+/*
+ * 🔴 These interfaces MUST mirror app/Services/MemberReportService.php as wrapped
+ * by AdminAnalyticsReportsController::memberReports(). They previously described
+ * fields the backend has never returned — `avatar_url`, `last_login`,
+ * `joined_at`, `count`, `initial`/`month_1..12`, `listing_rate`,
+ * `avg_sessions_per_user`, `total_active_30d`, `listings_count` — which left the
+ * Registration Trends chart permanently empty, the retention table rendering all
+ * zeros, four engagement tiles blank, and every avatar and date column empty.
+ * The page test mocked the invented shape too, so CI stayed green throughout.
+ * Copy from the service, not from what a tile would like to display.
+ */
+
+/** type=active → getActiveMembers() */
 interface ActiveMember {
   id: number;
   name: string;
   email: string;
-  avatar_url: string | null;
-  last_login: string | null;
+  profile_image_url: string | null;
+  last_login_at: string | null;
+  created_at: string;
   transaction_count: number;
   hours_given: number;
   hours_received: number;
-  joined_at: string;
 }
 
+/** type=least_active → getLeastActiveMembers(). A DIFFERENT shape from active:
+ *  no transaction/hours columns, but it carries `days_inactive`. */
+interface LeastActiveMember {
+  id: number;
+  name: string;
+  email: string;
+  last_login_at: string | null;
+  created_at: string;
+  days_inactive: number | null;
+}
+
+/** type=registrations → getNewRegistrations(); rows live under `data`. */
 interface RegistrationTrend {
   period: string;
-  count: number;
-  cumulative: number;
+  registrations: number;
 }
 
+/** type=retention → getMemberRetention(); `retention_rate` is a 0–1 fraction. */
 interface RetentionCohort {
   cohort: string;
-  initial: number;
-  month_1: number;
-  month_2: number;
-  month_3: number;
-  month_6: number;
-  month_12: number;
+  cohort_month: string;
+  joined: number;
+  retained: number;
+  retention_rate: number;
 }
 
+/** type=engagement → getEngagementMetrics(). `*_rate` are 0–1 fractions. */
 interface EngagementMetrics {
+  period_days: number;
+  total_users: number;
+  active_users: number;
   login_rate: number;
+  trading_users: number;
   trading_rate: number;
-  listing_rate: number;
-  messaging_rate: number;
-  event_attendance_rate: number;
-  avg_sessions_per_user: number;
-  avg_transactions_per_user: number;
-  total_active_30d: number;
-  total_active_90d: number;
-  total_members: number;
+  posts_created: number;
+  comments_created: number;
+  event_rsvps: number;
+  new_connections: number;
 }
 
+/** Rows per page. Sent to the API AND used to derive the page count, so the
+ *  request and the pagination control cannot drift apart. */
+const MEMBER_PAGE_SIZE = 20;
+
+/** type=top_contributors → { contributors: getTopContributors() } */
 interface TopContributor {
   id: number;
   name: string;
-  avatar_url: string | null;
+  profile_image_url: string | null;
   hours_given: number;
   hours_received: number;
+  total_hours: number;
   transaction_count: number;
-  listings_count: number;
 }
 
 interface ReportData extends Partial<EngagementMetrics> {
-  members?: ActiveMember[];
-  data?: ActiveMember[];
+  /** active and least_active both return `members` + `total`. */
+  members?: (ActiveMember | LeastActiveMember)[];
   total?: number;
-  pagination?: { total?: number };
-  trends?: RegistrationTrend[];
-  registrations?: RegistrationTrend[];
+  threshold_days?: number;
+  /** registrations */
+  data?: RegistrationTrend[];
+  period_type?: string;
+  months_back?: number;
+  total_registrations?: number;
+  /** retention */
   cohorts?: RetentionCohort[];
-  retention?: RetentionCohort[];
+  overall?: { total_joined: number; total_retained: number; overall_retention_rate: number };
+  /** top_contributors */
   contributors?: TopContributor[];
 }
 
@@ -132,21 +166,53 @@ const tooltipStyle = {
 // CSV Export helper
 // ---------------------------------------------------------------------------
 
-async function exportCsv(reportType: string) {
+/**
+ * Which export type (if any) genuinely matches each tab.
+ *
+ * 🔴 The export used to be hardcoded to `members` with no parameters at all, so
+ * every one of the six tabs downloaded the same complete all-time member
+ * directory — differing only in filename. Four tabs have no matching export on
+ * the backend at all; for those the button is disabled rather than handing the
+ * operator a file that has nothing to do with what they were looking at.
+ *
+ * `active` maps to the member directory, which is a legitimate artefact in its
+ * own right, but note it is NOT period-filtered: ReportExportService::getMemberData()
+ * reads only `status`. A true "most active in period" export would need a new
+ * export type backed by MemberReportService::getActiveMembers().
+ */
+function memberExportTypeForTab(reportType: string): string | null {
+  switch (reportType) {
+    case 'active': return 'members';        // full directory (all-time)
+    case 'least_active': return 'inactive'; // honours `days`
+    default: return null;                   // registrations / retention / engagement / top_contributors
+  }
+}
+
+async function exportCsv(reportType: string, period: string) {
+  const exportType = memberExportTypeForTab(reportType);
+  if (!exportType) return;
   const token = tokenManager.getAccessToken();
   const tenantId = tokenManager.getTenantId();
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   if (tenantId) headers['X-Tenant-ID'] = tenantId;
 
+  const params = new URLSearchParams({ format: 'csv' });
+  // `inactive` genuinely filters on `days`; passing it keeps the file in step
+  // with the threshold shown on screen.
+  if (exportType === 'inactive') params.set('days', period);
+
   const apiBase = import.meta.env.VITE_API_BASE || '/api';
-  const res = await fetch(`${apiBase}/v2/admin/reports/members/export?format=csv`, { headers, credentials: 'include' });
+  const res = await fetch(`${apiBase}/v2/admin/reports/${exportType}/export?${params}`, { headers, credentials: 'include' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `member-report-${reportType}.csv`;
+  // Name the file after what it CONTAINS, not the tab. `members` is the complete
+  // directory and is not period-scoped, so calling it "member-report-active"
+  // overstated what the operator was getting.
+  a.download = exportType === 'members' ? 'member-directory.csv' : `member-report-${reportType}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -198,7 +264,7 @@ export function MemberReportsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ type: reportType, period, page: String(page), limit: '20' });
+      const params = new URLSearchParams({ type: reportType, period, page: String(page), limit: String(MEMBER_PAGE_SIZE) });
       if (reportType === 'registrations') params.append('group_by', groupBy);
       const res = await api.get(`/v2/admin/reports/members?${params}`);
       if (res.data) {
@@ -224,9 +290,9 @@ export function MemberReportsPage() {
   // -------------------------------------------------------------------------
 
   const renderActiveMembers = () => {
-    const members = (data?.members ?? data?.data ?? []) as ActiveMember[];
-    const total = data?.total ?? data?.pagination?.total ?? members.length;
-    const totalPages = Math.max(1, Math.ceil(total / 20));
+    const members = (data?.members ?? []) as ActiveMember[];
+    const total = data?.total ?? members.length;
+    const totalPages = Math.max(1, Math.ceil(total / MEMBER_PAGE_SIZE));
 
     return (
       <>
@@ -248,7 +314,7 @@ export function MemberReportsPage() {
               <TableRow key={m.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Avatar size="sm" src={resolveAvatarUrl(m.avatar_url) || undefined} name={m.name} />
+                    <Avatar size="sm" src={resolveAvatarUrl(m.profile_image_url) || undefined} name={m.name} />
                     <div>
                       <p className="text-sm font-medium">{m.name}</p>
                       <p className="text-xs text-muted">{m.email}</p>
@@ -257,7 +323,7 @@ export function MemberReportsPage() {
                 </TableCell>
                 <TableCell>
                   <span className="text-sm text-muted">
-                    {m.last_login ? new Date(m.last_login).toLocaleDateString(getFormattingLocale()) : t('reports.never')}
+                    {m.last_login_at ? new Date(m.last_login_at).toLocaleDateString(getFormattingLocale()) : t('reports.never')}
                   </span>
                 </TableCell>
                 <TableCell>
@@ -266,7 +332,7 @@ export function MemberReportsPage() {
                 <TableCell className="text-sm text-success font-medium">{formatNumber(m.hours_given ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
                 <TableCell className="text-sm text-warning font-medium">{formatNumber(m.hours_received ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
                 <TableCell className="text-sm text-muted">
-                  {m.joined_at ? new Date(m.joined_at).toLocaleDateString(getFormattingLocale()) : '---'}
+                  {m.created_at ? new Date(m.created_at).toLocaleDateString(getFormattingLocale()) : '---'}
                 </TableCell>
               </TableRow>
             ))}
@@ -282,7 +348,10 @@ export function MemberReportsPage() {
   };
 
   const renderRegistrations = () => {
-    const trends = (data?.trends ?? data?.registrations ?? []) as RegistrationTrend[];
+    // getNewRegistrations() returns its rows under `data`. The page previously
+    // looked for `trends`/`registrations`, neither of which exists, so this chart
+    // always rendered the "no registration data" placeholder.
+    const trends = data?.data ?? [];
 
     return (
       <Card >
@@ -317,7 +386,7 @@ export function MemberReportsPage() {
                 <YAxis tick={{ fontSize: 12 }} tickLine={false} allowDecimals={false} tickFormatter={(value: number) => formatNumber(value)} />
                 <Tooltip contentStyle={tooltipStyle} labelFormatter={(value) => formatPeriodLabel(String(value))} formatter={(value) => formatNumber(Number(value))} />
                 <Legend />
-                <Bar dataKey="count" name={t('reports.new_registrations')} fill={CHART_COLOR_MAP.success} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="registrations" name={t('reports.new_registrations')} fill={CHART_COLOR_MAP.success} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -331,7 +400,13 @@ export function MemberReportsPage() {
   };
 
   const renderRetention = () => {
-    const cohorts = (data?.cohorts ?? data?.retention ?? []) as RetentionCohort[];
+    // getMemberRetention() returns one retention figure per cohort
+    // ({joined, retained, retention_rate}), NOT a month-by-month grid. This table
+    // used to render Initial/Month 1/2/3/6/12 columns from `initial` and
+    // `month_N` fields that the backend has never produced, so every cell showed
+    // 0 / 0%. It now shows what the service actually computes.
+    const cohorts = data?.cohorts ?? [];
+    const overall = data?.overall;
 
     return (
       <Card >
@@ -343,12 +418,9 @@ export function MemberReportsPage() {
           <Table aria-label={t('reports.label_retention_cohorts')}  isStriped>
             <TableHeader>
               <TableColumn>{t('reports.col_cohort')}</TableColumn>
-              <TableColumn className="text-center">{t('reports.col_initial')}</TableColumn>
-              <TableColumn className="text-center">{t('reports.col_month_1')}</TableColumn>
-              <TableColumn className="text-center">{t('reports.col_month_2')}</TableColumn>
-              <TableColumn className="text-center">{t('reports.col_month_3')}</TableColumn>
-              <TableColumn className="text-center">{t('reports.col_month_6')}</TableColumn>
-              <TableColumn className="text-center">{t('reports.col_month_12')}</TableColumn>
+              <TableColumn className="text-center">{t('reports.col_joined')}</TableColumn>
+              <TableColumn className="text-center">{t('reports.col_retained')}</TableColumn>
+              <TableColumn className="text-center">{t('reports.col_retention_rate')}</TableColumn>
             </TableHeader>
             <TableBody
               emptyContent={t('reports.no_retention_data')}
@@ -356,30 +428,33 @@ export function MemberReportsPage() {
               loadingContent={<Spinner />}
             >
               {cohorts.map((c) => {
-                const pctCell = (val: number, key: string) => {
-                  const pct = c.initial > 0 ? (val / c.initial) * 100 : 0;
-                  const color = pct >= 60 ? 'text-success' : pct >= 30 ? 'text-warning' : 'text-danger';
-                  return (
-                    <TableCell key={key} className={`text-center font-medium ${color}`}>
-                      {formatNumber(pct / 100, { style: 'percent', maximumFractionDigits: 0 })}
-                      <span className="text-xs text-muted ml-1">({formatNumber(val)})</span>
-                    </TableCell>
-                  );
-                };
+                // retention_rate is already a 0–1 fraction from the service.
+                const rate = c.retention_rate ?? 0;
+                const color = rate >= 0.6 ? 'text-success' : rate >= 0.3 ? 'text-warning' : 'text-danger';
                 return (
-                  <TableRow key={c.cohort}>
+                  <TableRow key={c.cohort_month || c.cohort}>
                     <TableCell className="font-medium text-foreground">{c.cohort}</TableCell>
-                    <TableCell className="text-center">{c.initial}</TableCell>
-                    {pctCell(c.month_1, 'm1')}
-                    {pctCell(c.month_2, 'm2')}
-                    {pctCell(c.month_3, 'm3')}
-                    {pctCell(c.month_6, 'm6')}
-                    {pctCell(c.month_12, 'm12')}
+                    <TableCell className="text-center">{formatNumber(c.joined ?? 0)}</TableCell>
+                    <TableCell className="text-center">{formatNumber(c.retained ?? 0)}</TableCell>
+                    <TableCell className={`text-center font-medium ${color}`}>
+                      {formatNumber(rate, { style: 'percent', maximumFractionDigits: 0 })}
+                    </TableCell>
                   </TableRow>
                 );
               })}
             </TableBody>
           </Table>
+
+          {overall && (
+            <p className="mt-3 text-sm text-muted">
+              {t('reports.col_joined')}: <strong>{formatNumber(overall.total_joined ?? 0)}</strong>
+              {' · '}
+              {t('reports.col_retained')}: <strong>{formatNumber(overall.total_retained ?? 0)}</strong>
+              {' · '}
+              {t('reports.col_retention_rate')}:{' '}
+              <strong>{formatNumber(overall.overall_retention_rate ?? 0, { style: 'percent', maximumFractionDigits: 0 })}</strong>
+            </p>
+          )}
         </CardBody>
       </Card>
     );
@@ -404,16 +479,22 @@ export function MemberReportsPage() {
             color="success"
             loading={loading}
           />
+          {/*
+            getEngagementMetrics() returns no `listing_rate` or `messaging_rate`.
+            These two tiles used to read those non-existent fields and therefore
+            always displayed 0.0%. They now show two counts the service really
+            does compute for the selected period.
+          */}
           <StatCard
-            label={t('reports.label_listing_rate')}
-            value={metrics ? formatNumber(Number(metrics.listing_rate ?? 0), { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '\u2014'}
+            label={t('reports.label_posts_created')}
+            value={metrics ? formatNumber(metrics.posts_created ?? 0) : '\u2014'}
             icon={BarChart3}
             color="warning"
             loading={loading}
           />
           <StatCard
-            label={t('reports.label_messaging_rate')}
-            value={metrics ? formatNumber(Number(metrics.messaging_rate ?? 0), { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '\u2014'}
+            label={t('reports.label_new_connections')}
+            value={metrics ? formatNumber(metrics.new_connections ?? 0) : '\u2014'}
             icon={Activity}
             color="default"
             loading={loading}
@@ -421,38 +502,46 @@ export function MemberReportsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/*
+            `total_active_30d`, `total_members`, `avg_sessions_per_user` and
+            `avg_transactions_per_user` are not returned by getEngagementMetrics()
+            — the first two cards showed "0 / 0" and the last two "0.0" on every
+            tenant. `active_users` / `total_users` express the same idea and are
+            real; the period is whatever the selector is set to, so the label is
+            deliberately period-neutral.
+          */}
           <Card >
             <CardBody className="p-4">
-              <p className="text-sm text-muted">{t('reports.active_30d_total')}</p>
+              <p className="text-sm text-muted">{t('reports.label_active_members')}</p>
               {loading ? (
                 <Skeleton role="status" aria-busy="true" aria-label={t('common.loading')} className="mt-1 h-7 w-20 rounded bg-surface-secondary" />
               ) : (
                 <p className="text-2xl font-bold text-foreground">
-                  {metrics?.total_active_30d?.toLocaleString(getFormattingLocale()) ?? 0} / {metrics?.total_members?.toLocaleString(getFormattingLocale()) ?? 0}
+                  {formatNumber(metrics?.active_users ?? 0)} / {formatNumber(metrics?.total_users ?? 0)}
                 </p>
               )}
             </CardBody>
           </Card>
           <Card >
             <CardBody className="p-4">
-              <p className="text-sm text-muted">{t('reports.avg_sessions_per_user')}</p>
+              <p className="text-sm text-muted">{t('reports.label_comments_created')}</p>
               {loading ? (
                 <Skeleton role="status" aria-busy="true" aria-label={t('common.loading')} className="mt-1 h-7 w-20 rounded bg-surface-secondary" />
               ) : (
                 <p className="text-2xl font-bold text-foreground">
-                  {formatNumber(metrics?.avg_sessions_per_user ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                  {formatNumber(metrics?.comments_created ?? 0)}
                 </p>
               )}
             </CardBody>
           </Card>
           <Card >
             <CardBody className="p-4">
-              <p className="text-sm text-muted">{t('reports.avg_transactions_per_user')}</p>
+              <p className="text-sm text-muted">{t('reports.label_event_rsvps')}</p>
               {loading ? (
                 <Skeleton role="status" aria-busy="true" aria-label={t('common.loading')} className="mt-1 h-7 w-20 rounded bg-surface-secondary" />
               ) : (
                 <p className="text-2xl font-bold text-foreground">
-                  {formatNumber(metrics?.avg_transactions_per_user ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                  {formatNumber(metrics?.event_rsvps ?? 0)}
                 </p>
               )}
             </CardBody>
@@ -479,7 +568,7 @@ export function MemberReportsPage() {
               <TableColumn className="text-right">{t('reports.col_given')}</TableColumn>
               <TableColumn className="text-right">{t('reports.col_received')}</TableColumn>
               <TableColumn className="text-right">{t('reports.col_transactions')}</TableColumn>
-              <TableColumn className="text-right">{t('reports.col_listings')}</TableColumn>
+              <TableColumn className="text-right">{t('reports.col_total')}</TableColumn>
             </TableHeader>
             <TableBody
               emptyContent={t('reports.no_contributor_data')}
@@ -495,14 +584,16 @@ export function MemberReportsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Avatar size="sm" src={resolveAvatarUrl(c.avatar_url) || undefined} name={c.name} />
+                      <Avatar size="sm" src={resolveAvatarUrl(c.profile_image_url) || undefined} name={c.name} />
                       <span className="font-medium text-foreground">{c.name}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right text-success font-medium">{formatNumber(c.hours_given ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
                   <TableCell className="text-right text-warning font-medium">{formatNumber(c.hours_received ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
                   <TableCell className="text-right text-accent">{c.transaction_count}</TableCell>
-                  <TableCell className="text-right text-muted">{c.listings_count}</TableCell>
+                  {/* getTopContributors() returns no listings count; it returns
+                      total_hours, which is the figure this leaderboard ranks on. */}
+                  <TableCell className="text-right text-muted">{formatNumber(c.total_hours ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -513,9 +604,9 @@ export function MemberReportsPage() {
   };
 
   const renderLeastActive = () => {
-    const members = (data?.members ?? data?.data ?? []) as ActiveMember[];
-    const total = data?.total ?? data?.pagination?.total ?? members.length;
-    const totalPages = Math.max(1, Math.ceil(total / 20));
+    const members = (data?.members ?? []) as LeastActiveMember[];
+    const total = data?.total ?? members.length;
+    const totalPages = Math.max(1, Math.ceil(total / MEMBER_PAGE_SIZE));
 
     return (
       <>
@@ -523,7 +614,9 @@ export function MemberReportsPage() {
           <TableHeader>
             <TableColumn>{t('reports.col_member')}</TableColumn>
             <TableColumn>{t('reports.col_last_login')}</TableColumn>
-            <TableColumn>{t('reports.col_transactions')}</TableColumn>
+            {/* getLeastActiveMembers() returns days_inactive, NOT transaction_count.
+                The old Transactions column was always blank here. */}
+            <TableColumn>{t('reports.col_days_inactive')}</TableColumn>
             <TableColumn>{t('reports.col_joined')}</TableColumn>
           </TableHeader>
           <TableBody
@@ -535,7 +628,7 @@ export function MemberReportsPage() {
               <TableRow key={m.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Avatar size="sm" src={resolveAvatarUrl(m.avatar_url) || undefined} name={m.name} />
+                    <Avatar size="sm" name={m.name} />
                     <div>
                       <p className="text-sm font-medium">{m.name}</p>
                       <p className="text-xs text-muted">{m.email}</p>
@@ -546,14 +639,14 @@ export function MemberReportsPage() {
                   <Chip
                     size="sm"
                     variant="soft"
-                    color={m.last_login ? 'default' : 'danger'}
+                    color={m.last_login_at ? 'default' : 'danger'}
                   >
-                    {m.last_login ? new Date(m.last_login).toLocaleDateString(getFormattingLocale()) : t('reports.never')}
+                    {m.last_login_at ? new Date(m.last_login_at).toLocaleDateString(getFormattingLocale()) : t('reports.never')}
                   </Chip>
                 </TableCell>
-                <TableCell className="text-sm">{m.transaction_count}</TableCell>
+                <TableCell className="text-sm">{m.days_inactive != null ? formatNumber(m.days_inactive) : '—'}</TableCell>
                 <TableCell className="text-sm text-muted">
-                  {m.joined_at ? new Date(m.joined_at).toLocaleDateString(getFormattingLocale()) : '---'}
+                  {m.created_at ? new Date(m.created_at).toLocaleDateString(getFormattingLocale()) : '---'}
                 </TableCell>
               </TableRow>
             ))}
@@ -593,11 +686,14 @@ export function MemberReportsPage() {
                 <SelectItem key={opt.key} id={opt.key}>{opt.label}</SelectItem>
               ))}
             </Select>
+            {/* Disabled on tabs with no matching backend export, rather than
+                downloading an unrelated file. See memberExportTypeForTab(). */}
             <Button
               variant="tertiary"
               startContent={<Download size={16} aria-hidden="true" />}
+              isDisabled={memberExportTypeForTab(reportType) === null}
               onPress={async () => {
-                try { await exportCsv(reportType); } catch { toast.error(t('reports.failed_to_export_c_s_v')); }
+                try { await exportCsv(reportType, period); } catch { toast.error(t('reports.failed_to_export_c_s_v')); }
               }}
               size="sm"
             >

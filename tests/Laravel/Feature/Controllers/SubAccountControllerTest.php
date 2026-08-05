@@ -301,6 +301,214 @@ class SubAccountControllerTest extends TestCase
         ]);
     }
 
+    // ------------------------------------------------------------------
+    //  Acting on a dependent's behalf — can_manage_listings / can_transact
+    //
+    //  🔴 These are the first tests of these permissions doing anything at all.
+    //  Both were offered as toggles in the UI, with labels promising exactly these
+    //  abilities, while hasPermission() had a single caller in the whole codebase
+    //  (for can_view_activity) and no endpoint existed through which the others
+    //  could be checked. Families were told a carer had powers the carer lacked.
+    // ------------------------------------------------------------------
+
+    /**
+     * Listing validation requires a category belonging to this tenant. The CI seed
+     * pins category id=1 to tenant 1, so force it onto the test tenant — this runs
+     * inside DatabaseTransactions and is rolled back per test. Mirrors the helper
+     * in ListingsControllerTest.
+     */
+    private function ensureListingCategory(int $id = 1): int
+    {
+        DB::table('categories')->updateOrInsert(
+            ['id' => $id],
+            [
+                'tenant_id' => $this->testTenantId,
+                'name' => 'General',
+                'slug' => 'general',
+                'type' => 'listing',
+                'updated_at' => now(),
+            ]
+        );
+
+        return $id;
+    }
+
+    public function test_carer_with_permission_can_post_a_listing_for_the_dependent(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $categoryId = $this->ensureListingCategory();
+        $this->createActiveRelationship($parent, $child, [
+            'can_view_activity' => true,
+            'can_manage_listings' => true,
+        ]);
+
+        $response = $this->apiPost("/v2/users/me/sub-accounts/{$child->id}/listings", [
+            'title' => 'Help with the weekly shop',
+            'description' => 'Happy to collect groceries for neighbours on a Tuesday morning.',
+            'type' => 'offer',
+            'category_id' => $categoryId,
+            'hours_estimate' => 2,
+        ]);
+
+        $response->assertStatus(201);
+        $listingId = (int) $response->json('data.id');
+        $this->assertGreaterThan(0, $listingId);
+
+        $listing = DB::table('listings')->where('id', $listingId)->first();
+        // The listing belongs to the DEPENDENT...
+        $this->assertEquals($child->id, (int) $listing->user_id);
+        // ...but the carer who actually posted it is recorded.
+        $this->assertEquals($parent->id, (int) $listing->acting_user_id);
+
+        // A proxy action must leave a durable record beyond the notification.
+        $audit = DB::table('org_audit_log')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('action', 'subaccount_listing_created')
+            ->where('target_user_id', $child->id)
+            ->first();
+        $this->assertNotNull($audit, 'Posting for a dependent must be audited.');
+        $this->assertEquals($parent->id, (int) $audit->user_id);
+
+        // And the dependent is told something was posted in their name.
+        $this->assertDatabaseHas('notifications', ['user_id' => $child->id]);
+    }
+
+    public function test_carer_without_the_listing_permission_is_refused(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $this->createActiveRelationship($parent, $child, [
+            'can_view_activity' => true,
+            'can_manage_listings' => false,
+        ]);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$child->id}/listings", [
+            'title' => 'Should never be created',
+            'description' => 'This request must be refused because the permission is off.',
+            'type' => 'offer',
+        ])->assertStatus(403);
+
+        $this->assertDatabaseMissing('listings', ['user_id' => $child->id]);
+    }
+
+    public function test_a_stranger_cannot_post_for_another_member(): void
+    {
+        // No relationship at all — the permission check must fail closed.
+        $parent = $this->authenticatedUser();
+        $stranger = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$stranger->id}/listings", [
+            'title' => 'Not my account',
+            'description' => 'There is no linked-account relationship between these two users.',
+            'type' => 'offer',
+        ])->assertStatus(403);
+
+        $this->assertDatabaseMissing('listings', ['user_id' => $stranger->id]);
+    }
+
+    public function test_carer_with_permission_can_send_credits_from_the_dependents_balance(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 10.0,
+        ]);
+        $recipient = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 0.0,
+        ]);
+        $this->createActiveRelationship($parent, $child, [
+            'can_view_activity' => true,
+            'can_transact' => true,
+        ]);
+
+        // The factory assigns a random starting balance, so capture the carer's own
+        // balance and assert it is UNCHANGED rather than assuming it is zero.
+        $parentBalanceBefore = (float) DB::table('users')->where('id', $parent->id)->value('balance');
+
+        $response = $this->apiPost("/v2/users/me/sub-accounts/{$child->id}/transfer", [
+            'recipient' => $recipient->id,
+            'amount' => 3.0,
+            'description' => 'Thanks for the lift',
+        ]);
+
+        $response->assertStatus(200);
+
+        // The credits leave the DEPENDENT's balance, and the carer's is untouched.
+        $this->assertEquals(7.0, (float) DB::table('users')->where('id', $child->id)->value('balance'));
+        $this->assertEquals(3.0, (float) DB::table('users')->where('id', $recipient->id)->value('balance'));
+        $this->assertEquals(
+            $parentBalanceBefore,
+            (float) DB::table('users')->where('id', $parent->id)->value('balance'),
+            "A carer's own balance must never change when they act for a dependent."
+        );
+
+        // The ledger row names the dependent as sender and the carer as the actor.
+        $txn = DB::table('transactions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('sender_id', $child->id)
+            ->where('receiver_id', $recipient->id)
+            ->first();
+        $this->assertNotNull($txn);
+        $this->assertEquals($parent->id, (int) $txn->acting_user_id, 'A proxy debit must be attributable to the carer.');
+
+        $audit = DB::table('org_audit_log')
+            ->where('action', 'subaccount_transfer_sent')
+            ->where('target_user_id', $child->id)
+            ->first();
+        $this->assertNotNull($audit, 'Spending a dependent\'s credits must be audited.');
+    }
+
+    public function test_carer_without_the_transact_permission_cannot_spend_the_dependents_credits(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 10.0,
+        ]);
+        $recipient = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 0.0,
+        ]);
+        $this->createActiveRelationship($parent, $child, [
+            'can_view_activity' => true,
+            'can_transact' => false,
+        ]);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$child->id}/transfer", [
+            'recipient' => $recipient->id,
+            'amount' => 3.0,
+        ])->assertStatus(403);
+
+        // Nothing moved.
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $child->id)->value('balance'));
+        $this->assertEquals(0.0, (float) DB::table('users')->where('id', $recipient->id)->value('balance'));
+    }
+
+    public function test_a_pending_relationship_grants_nothing(): void
+    {
+        // Approval by the dependent is what legitimises a carer acting for them, so
+        // a relationship the dependent has not approved must confer no powers.
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 10.0,
+        ]);
+
+        DB::table('account_relationships')->insert([
+            'tenant_id' => $this->testTenantId,
+            'parent_user_id' => $parent->id,
+            'child_user_id' => $child->id,
+            'relationship_type' => 'carer',
+            'permissions' => json_encode(['can_manage_listings' => true, 'can_transact' => true]),
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$child->id}/listings", [
+            'title' => 'Pending relationship should not work',
+            'description' => 'The dependent has not approved this relationship yet.',
+            'type' => 'offer',
+        ])->assertStatus(403);
+    }
+
     /** @return array<string, bool> */
     private function relationshipPermissions(int $relationshipId): array
     {

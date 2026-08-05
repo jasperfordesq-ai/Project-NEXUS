@@ -1037,7 +1037,13 @@ class ListingService
      *
      * @throws ValidationException
      */
-    public static function create(int $userId, array $data): Listing
+    /**
+     * @param int|null $actingUserId When a linked-account carer/guardian is posting
+     *        on the owner's behalf, the carer's id. NULL (the default, and every
+     *        ordinary create) means the owner posted it themselves. The listing
+     *        belongs to $userId either way; this only records who acted.
+     */
+    public static function create(int $userId, array $data, ?int $actingUserId = null): Listing
     {
         self::validateData($data);
         self::enforceMaxListingsPerUser($userId);
@@ -1064,9 +1070,10 @@ class ListingService
             }
         }
 
-        $listing = DB::transaction(function () use ($userId, $data, $initialStatus, $initialModerationStatus) {
+        $listing = DB::transaction(function () use ($userId, $data, $initialStatus, $initialModerationStatus, $actingUserId) {
             $listing = new Listing([
                 'user_id'               => $userId,
+                'acting_user_id'        => $actingUserId,
                 'title'                 => trim($data['title']),
                 'description'           => trim($data['description']),
                 'type'                  => $data['type'] ?? 'offer',

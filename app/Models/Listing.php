@@ -23,6 +23,10 @@ class Listing extends Model
 
     protected $fillable = [
         'user_id',
+        // Who actually created/edited this, when that is not the owner — currently
+        // a linked-account carer/guardian posting on a dependent's behalf. NULL for
+        // every listing the owner created themselves.
+        'acting_user_id',
         'category_id',
         'title',
         'description',

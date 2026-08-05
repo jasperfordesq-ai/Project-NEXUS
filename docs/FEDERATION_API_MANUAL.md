@@ -34,6 +34,17 @@ Two things this table does *not* cover, deliberately:
 - **Federation between communities inside one installation is unaffected** and
   keeps working. The switch governs traffic with *other installations* only. The
   member-facing `/api/v2/federation/*` routes are internal and stay available.
+  Two things are worth knowing about how that internal surface is gated, because
+  the two halves of the switchboard behave differently **on purpose**:
+  the *external* controls fail **closed** (a missing row, a missing column or any
+  error resolves to disabled), whereas the *internal* controls fail **open** — if
+  the `federation_system_control` row is absent or unreadable, internal
+  cross-tenant federation resolves to enabled with whitelist mode off, and the
+  service will persist that permissive row on first read. Internal cross-tenant
+  federation is ungated by design, so this is deliberate rather than a bug; do not
+  "harden" it without an explicit decision. Note also that a member exchange still
+  requires the partnership to be active and **each member** to have opted in
+  individually.
 - The Partner API has its **own** switch, independent of the federation one.
   Turning external federation on does not turn the Partner API on, or vice versa.
 

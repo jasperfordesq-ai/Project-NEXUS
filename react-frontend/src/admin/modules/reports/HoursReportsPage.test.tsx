@@ -65,41 +65,68 @@ vi.mock('@/contexts', () =>
 // Fixtures
 // ─────────────────────────────────────────────────────────────────────────────
 
+/*
+ * 🔴 These fixtures MUST mirror what app/Services/HoursReportService.php really
+ * returns. They previously described an invented shape — `category`, `month`,
+ * `unique_givers`, `percentage`, `members` as a flat array of `{id,
+ * profile_image_url, balance}` — none of which the backend has ever produced.
+ * Because the mocks agreed with the (equally wrong) component types, this suite
+ * stayed green while the By Member tab threw in production and three charts and
+ * a summary tile rendered blank. Fixtures for a page like this are only worth
+ * anything if they are copied from the service, so copy from the service.
+ */
+
+/** Mirrors HoursReportService::getHoursSummary(). */
 const makeSummary = (overrides = {}) => ({
   total_hours: 120.5,
   total_transactions: 44,
   avg_hours_per_transaction: 2.7,
-  unique_givers: 15,
+  max_single_transaction: 8,
+  unique_providers: 15,
   unique_receivers: 18,
-  min_hours: 0.5,
-  max_hours: 8,
+  total_members: 30,
+  participation_rate: 50,
+  this_month: { hours: 20, transactions: 8 },
+  last_month: { hours: 15, transactions: 6 },
   ...overrides,
 });
 
+/** Mirrors HoursReportService::getHoursByCategory(). */
 const makeCategoryData = () => ({
   categories: [
-    { category: 'Gardening', total_hours: 30, transaction_count: 10, percentage: 25 },
-    { category: 'Cooking', total_hours: 60, transaction_count: 20, percentage: 50 },
+    { category_id: 1, category_name: 'Gardening', category_color: '#10B981', total_hours: 30, transaction_count: 10, unique_providers: 4, unique_receivers: 6 },
+    { category_id: 2, category_name: 'Cooking', category_color: '#6366F1', total_hours: 60, transaction_count: 20, unique_providers: 9, unique_receivers: 11 },
   ],
 });
 
+/**
+ * Mirrors HoursReportService::getHoursByMember() — a PAGINATED ENVELOPE
+ * (`{ data, total }`), not a flat array. The component reading this as an array
+ * is the bug this fixture now protects against.
+ */
 const makeMemberData = () => ({
-  members: [
-    {
-      id: 1, name: 'Alice', profile_image_url: null,
-      hours_given: 10, hours_received: 5, total_hours: 15, balance: 5,
-    },
-    {
-      id: 2, name: 'Bob', profile_image_url: null,
-      hours_given: 2, hours_received: 8, total_hours: 10, balance: -6,
-    },
-  ],
+  members: {
+    data: [
+      {
+        user_id: 1, name: 'Alice', avatar_url: null,
+        hours_given: 10, hours_received: 5, total_hours: 15,
+        given_count: 4, received_count: 2, total_transactions: 6,
+      },
+      {
+        user_id: 2, name: 'Bob', avatar_url: null,
+        hours_given: 2, hours_received: 8, total_hours: 10,
+        given_count: 1, received_count: 3, total_transactions: 4,
+      },
+    ],
+    total: 2,
+  },
 });
 
+/** Mirrors HoursReportService::getHoursByPeriod() — key is `period` ('YYYY-MM'). */
 const makePeriodData = () => ({
   periods: [
-    { month: '2025-01', total_hours: 40, transaction_count: 12, unique_givers: 5, unique_receivers: 7 },
-    { month: '2025-02', total_hours: 55, transaction_count: 18, unique_givers: 8, unique_receivers: 10 },
+    { period: '2025-01', period_label: 'January 2025', total_hours: 40, transaction_count: 12, unique_providers: 5, unique_receivers: 7, unique_participants: 12 },
+    { period: '2025-02', period_label: 'February 2025', total_hours: 55, transaction_count: 18, unique_providers: 8, unique_receivers: 10, unique_participants: 18 },
   ],
 });
 

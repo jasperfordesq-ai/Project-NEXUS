@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Spinner, Button, Input, Chip, Select, SelectItem, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
+import { Card, CardBody, CardHeader, Spinner, Button, Input, Chip, Select, SelectItem, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination } from '@/components/ui';
 import { useState, useEffect, useCallback } from 'react';
 
 import {
@@ -55,46 +55,75 @@ import { formatNumber, getFormattingLocale } from '@/lib/helpers';
 // Types
 // ---------------------------------------------------------------------------
 
+/*
+ * 🔴 These interfaces MUST mirror what app/Services/HoursReportService.php
+ * actually returns. They previously described a shape the backend has never
+ * produced (`category`, `month`, `unique_givers`, `members` as a flat array),
+ * which left the category axis, the trend axis and a summary tile permanently
+ * blank and made the "By Member" tab throw. The page test mocked the invented
+ * shape too, so CI stayed green. If you change either side, change both, and
+ * check HoursReportsPage.test.tsx still mocks the real thing.
+ */
+
+/** HoursReportService::getHoursByCategory() */
 interface CategoryHours {
-  category: string;
+  category_id: number | null;
+  category_name: string;
+  category_color: string;
   total_hours: number;
   transaction_count: number;
-  percentage: number;
+  unique_providers: number;
+  unique_receivers: number;
 }
 
+/** HoursReportService::getHoursByMember() — note: no `balance` is returned. */
 interface MemberHours {
-  id: number;
+  user_id: number;
   name: string;
-  profile_image_url: string | null;
+  avatar_url: string | null;
   hours_given: number;
   hours_received: number;
   total_hours: number;
-  balance: number;
+  given_count: number;
+  received_count: number;
+  total_transactions: number;
 }
 
+/** getHoursByMember() returns a paginated envelope, NOT a flat array. */
+interface MemberHoursPage {
+  data: MemberHours[];
+  total: number;
+}
+
+/** HoursReportService::getHoursByPeriod() — `period` is 'YYYY-MM'. */
 interface PeriodHours {
-  month: string;
+  period: string;
+  period_label: string;
   total_hours: number;
   transaction_count: number;
-  unique_givers: number;
+  unique_providers: number;
   unique_receivers: number;
+  unique_participants: number;
 }
 
 interface HoursReportData {
   categories?: CategoryHours[];
-  members?: MemberHours[];
+  members?: MemberHoursPage;
   periods?: PeriodHours[];
 }
 
+/** HoursReportService::getHoursSummary() */
 interface HoursSummary {
-  period?: { from: string; to: string };
   total_hours: number;
   total_transactions: number;
   avg_hours_per_transaction: number;
-  unique_givers: number;
+  max_single_transaction: number;
+  unique_providers: number;
   unique_receivers: number;
-  min_hours: number;
-  max_hours: number;
+  total_members: number;
+  participation_rate: number;
+  this_month?: { hours: number; transactions: number };
+  last_month?: { hours: number; transactions: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -110,6 +139,10 @@ const tooltipStyle = {
 
 const PIE_COLORS = CHART_COLORS;
 
+/** Rows per page for the By Member table. Sent to the API AND used to derive the
+ *  page count, so the request and the pagination control cannot drift apart. */
+const MEMBER_PAGE_SIZE = 50;
+
 const SORT_OPTIONS = [
   { key: 'total' },
   { key: 'given' },
@@ -120,7 +153,28 @@ const SORT_OPTIONS = [
 // CSV Export helper
 // ---------------------------------------------------------------------------
 
-async function exportCsv(exportType: string, dateFrom?: string, dateTo?: string) {
+/**
+ * Map the active tab (`groupBy`) to its export type.
+ *
+ * 🔴 This function exists because the export URL used to be hardcoded to
+ * `hours_category` while only the *filename* varied by tab — so an operator on
+ * "By Member" clicked Export and received category totals in a file called
+ * `hours-report-member.csv`. The whole point of an export is that it matches the
+ * screen; if you add a tab, add its export type here and in
+ * ReportExportService::SUPPORTED_TYPES.
+ */
+function exportTypeForTab(groupBy: string): string {
+  switch (groupBy) {
+    case 'member': return 'hours_member';
+    case 'period': return 'hours_period';
+    case 'category':
+    default: return 'hours_category';
+  }
+}
+
+/** `tab` is the active groupBy ('category' | 'member' | 'period'). */
+async function exportCsv(tab: string, dateFrom?: string, dateTo?: string) {
+  const exportType = exportTypeForTab(tab);
   const token = tokenManager.getAccessToken();
   const tenantId = tokenManager.getTenantId();
   const headers: Record<string, string> = {};
@@ -132,13 +186,15 @@ async function exportCsv(exportType: string, dateFrom?: string, dateTo?: string)
   if (dateTo) params.append('date_to', dateTo);
 
   const apiBase = import.meta.env.VITE_API_BASE || '/api';
-  const res = await fetch(`${apiBase}/v2/admin/reports/hours_category/export?${params}`, { headers, credentials: 'include' });
+  const res = await fetch(`${apiBase}/v2/admin/reports/${exportType}/export?${params}`, { headers, credentials: 'include' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `hours-report-${exportType}.csv`;
+  // Name the file after the tab the operator was looking at; the URL above uses
+  // the mapped export type so the CONTENTS match that tab.
+  a.download = `hours-report-${tab}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -180,7 +236,7 @@ export function HoursReportsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ group_by: groupBy, page: String(page), limit: '50' });
+      const params = new URLSearchParams({ group_by: groupBy, page: String(page), limit: String(MEMBER_PAGE_SIZE) });
       if (dateFrom) params.append('date_from', dateFrom);
       if (dateTo) params.append('date_to', dateTo);
       if (groupBy === 'member') params.append('sort_by', sortBy);
@@ -229,7 +285,7 @@ export function HoursReportsPage() {
       />
       <StatCard
         label={t('reports.label_unique_givers')}
-        value={summary?.unique_givers ?? '\u2014'}
+        value={summary?.unique_providers ?? '\u2014'}
         icon={Users}
         color="success"
         loading={!summary}
@@ -267,7 +323,7 @@ export function HoursReportsPage() {
                   <BarChart data={categories} layout="vertical" margin={{ left: 80 }}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                     <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(value: number) => formatNumber(value)} />
-                    <YAxis type="category" dataKey="category" tick={{ fontSize: 11 }} width={80} />
+                    <YAxis type="category" dataKey="category_name" tick={{ fontSize: 11 }} width={80} />
                     <Tooltip contentStyle={tooltipStyle} />
                     <Bar dataKey="total_hours" name={t('reports.hours')} fill={CHART_COLOR_MAP.primary} radius={[0, 4, 4, 0]} fillOpacity={0.8} />
                   </BarChart>
@@ -297,7 +353,7 @@ export function HoursReportsPage() {
                     <Pie
                       data={categories.filter((c) => c.total_hours > 0)}
                       dataKey="total_hours"
-                      nameKey="category"
+                      nameKey="category_name"
                       cx="50%"
                       cy="50%"
                       outerRadius={110}
@@ -311,7 +367,7 @@ export function HoursReportsPage() {
                       {categories
                         .filter((c) => c.total_hours > 0)
                         .map((entry, index) => (
-                          <Cell key={`cell-${entry.category}`} fill={PIE_COLORS[index % PIE_COLORS.length]} fillOpacity={0.85} />
+                          <Cell key={`cell-${entry.category_id ?? entry.category_name}`} fill={PIE_COLORS[index % PIE_COLORS.length]} fillOpacity={0.85} />
                         ))}
                     </Pie>
                     <Tooltip
@@ -339,7 +395,10 @@ export function HoursReportsPage() {
   // -------------------------------------------------------------------------
 
   const renderMember = () => {
-    const members = (data?.members ?? []) as MemberHours[];
+    // getHoursByMember() returns { data, total }. Treating it as an array here
+    // is what made this tab throw "members.map is not a function".
+    const members = data?.members?.data ?? [];
+    const memberPages = Math.max(1, Math.ceil((data?.members?.total ?? 0) / MEMBER_PAGE_SIZE));
 
     return (
       <div>
@@ -376,30 +435,53 @@ export function HoursReportsPage() {
             isLoading={loading}
             loadingContent={<Spinner />}
           >
-            {members.map((m) => (
-              <TableRow key={m.id}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Avatar size="sm" src={m.profile_image_url ?? undefined} name={m.name} />
-                    <span className="text-sm font-medium">{m.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-success font-medium">{formatNumber(m.hours_given ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
-                <TableCell className="text-sm text-warning font-medium">{formatNumber(m.hours_received ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
-                <TableCell className="text-sm text-muted font-medium">{formatNumber(m.total_hours ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
-                <TableCell>
-                  <Chip
-                    size="sm"
-                    variant="soft"
-                    color={(m.balance ?? 0) >= 0 ? 'success' : 'danger'}
-                  >
-                    {formatNumber(m.balance ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1, signDisplay: (m.balance ?? 0) >= 0 ? 'always' : 'auto' })}
-                  </Chip>
-                </TableCell>
-              </TableRow>
-            ))}
+            {members.map((m) => {
+              // The service returns no `balance` field. The meaningful figure in
+              // an hours report is the member's net position over the selected
+              // range, which is derivable from the two columns beside it.
+              const net = (m.hours_given ?? 0) - (m.hours_received ?? 0);
+              return (
+                <TableRow key={m.user_id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar size="sm" src={m.avatar_url ?? undefined} name={m.name} />
+                      <span className="text-sm font-medium">{m.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-success font-medium">{formatNumber(m.hours_given ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
+                  <TableCell className="text-sm text-warning font-medium">{formatNumber(m.hours_received ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
+                  <TableCell className="text-sm text-muted font-medium">{formatNumber(m.total_hours ?? 0, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</TableCell>
+                  <TableCell>
+                    <Chip
+                      size="sm"
+                      variant="soft"
+                      color={net >= 0 ? 'success' : 'danger'}
+                    >
+                      {formatNumber(net, { minimumFractionDigits: 1, maximumFractionDigits: 1, signDisplay: net >= 0 ? 'always' : 'auto' })}
+                    </Chip>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
+
+        {/*
+          The `page` state was already being sent to the API but there was no
+          control to change it, so this table silently showed only the first 50
+          members of however many the tenant has. `total` comes from the same
+          paginated envelope that used to be mis-read as an array.
+        */}
+        {memberPages > 1 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination
+              total={memberPages}
+              page={page}
+              onChange={setPage}
+              showControls
+            />
+          </div>
+        )}
       </div>
     );
   };
@@ -436,11 +518,11 @@ export function HoursReportsPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                   <XAxis
-                    dataKey="month"
+                    dataKey="period"
                     tick={{ fontSize: 11 }}
                     tickLine={false}
-                    tickFormatter={(month: string) => {
-                      const match = /^(\d{4})-(\d{2})$/.exec(month);
+                    tickFormatter={(period: string) => {
+                      const match = /^(\d{4})-(\d{2})$/.exec(period);
                       return match
                         ? new Date(Number(match[1]), Number(match[2]) - 1, 1).toLocaleDateString(getFormattingLocale(), { month: 'short', year: 'numeric' })
                         : t('reports.unknown_period');

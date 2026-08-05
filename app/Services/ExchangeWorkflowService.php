@@ -14,6 +14,7 @@ use App\Models\ExchangeHistory;
 use App\Models\ExchangeRequest;
 use App\Models\Listing;
 use App\Models\User;
+use App\Support\Authorization\AdminTier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -536,7 +537,15 @@ class ExchangeWorkflowService
 
         if (!$isRequester && !$isProvider) {
             $caller = \App\Models\User::find($userId);
-            if (!$caller || (!$caller->is_broker && !$caller->is_admin && !$caller->is_super_admin && !$caller->is_god)) {
+            // 🔴 This used to test `$caller->is_broker`, which does not exist —
+            // there is no `is_broker` column on `users` and no accessor for one, so
+            // the expression was always falsy. Combined with `is_admin` being a
+            // deprecated flag that brokers are not granted, a genuine broker
+            // (role = 'broker') reaching this branch was REJECTED. Use the
+            // canonical predicate instead: admin tier via AdminTier::allows(), or
+            // an operational role. See docs/ROLES-AND-PERMISSIONS.md — checking
+            // only flags, or only the role string, under-authorises real staff.
+            if (!$caller || !self::callerHasStaffAuthority($caller)) {
                 throw new \RuntimeException('UNAUTHORIZED: caller is not a party to this exchange and does not have broker/admin privileges');
             }
             $role = 'broker';
@@ -1256,6 +1265,319 @@ class ExchangeWorkflowService
 
             return true;
         });
+    }
+
+    /**
+     * Whether a non-party caller may act on an exchange as staff.
+     *
+     * Admin tier (AdminTier::allows) OR an operational role (broker /
+     * coordinator). Deliberately not a flags-only or role-string-only check:
+     * `super_admin`, `god`, `tenant_admin` and `coordinator` are never written to
+     * `users.role` by the admin API, while `broker` is, so either test alone
+     * misses real staff.
+     *
+     * @param object|array<string,mixed>|null $caller
+     */
+    private static function callerHasStaffAuthority(object|array|null $caller): bool
+    {
+        if ($caller === null) {
+            return false;
+        }
+
+        if (AdminTier::allows($caller)) {
+            return true;
+        }
+
+        $role = (string) data_get($caller, 'role', '');
+
+        return in_array($role, AdminTier::OPERATIONAL_ROLES, true);
+    }
+
+    /**
+     * Resolve a DISPUTED exchange by setting the final hours figure (broker/admin).
+     *
+     * 🔴 Why this exists. A disputed exchange used to be a permanent dead end, and
+     * it is the one state where credits are stuck BEFORE they move:
+     *
+     *  - `disputed` is only ever entered automatically, by processConfirmations()
+     *    when the two parties' confirmed hours differ by more than 0.25h.
+     *  - TRANSITIONS has always permitted disputed → completed, and
+     *    completeExchange() explicitly accepts `disputed` and even sends a
+     *    dedicated "dispute resolved" email — but it is private and its only
+     *    caller sits behind confirmCompletion(), whose own guard excludes
+     *    `disputed`. So that whole path was unreachable.
+     *  - cancelExchange()'s staff branch was unreachable from every HTTP route
+     *    (the member routes 404 non-parties first) and, until the fix above,
+     *    would have rejected brokers anyway.
+     *
+     * Meanwhile AdminBrokerController::dashboard() counts disputed exchanges as
+     * "needs attention" and SloCheck alarms on them ageing — the product was
+     * advertising a queue with no action attached to it.
+     *
+     * The final figure is clamped to the SAME proposed_hours ± variance window
+     * that individual confirmations use, so an arbitrator cannot post a number the
+     * workflow would have refused from a participant. A note is mandatory and is
+     * recorded in exchange_history, which is already surfaced to both members.
+     *
+     * @return array{ok: bool, error?: string, final_hours?: float}
+     */
+    public static function resolveDispute(int $exchangeId, int $actorId, float $finalHours, string $notes): array
+    {
+        $exchange = ExchangeRequest::find($exchangeId);
+        if (!$exchange) {
+            return ['ok' => false, 'error' => 'NOT_FOUND'];
+        }
+
+        if ($exchange->status !== self::STATUS_DISPUTED) {
+            return ['ok' => false, 'error' => 'NOT_DISPUTED'];
+        }
+
+        $notes = trim($notes);
+        if ($notes === '') {
+            return ['ok' => false, 'error' => 'REASON_REQUIRED'];
+        }
+
+        $caller = \App\Models\User::find($actorId);
+        if (!self::callerHasStaffAuthority($caller)) {
+            return ['ok' => false, 'error' => 'UNAUTHORIZED'];
+        }
+
+        if (!is_finite($finalHours) || $finalHours <= 0) {
+            return ['ok' => false, 'error' => 'INVALID_HOURS'];
+        }
+
+        $config = BrokerControlConfigService::getConfig('exchange_workflow');
+        $variancePercent = (int) ($config['max_hour_variance_percent'] ?? 25);
+        $varianceFactor = $variancePercent / 100;
+        $proposed = (float) $exchange->proposed_hours;
+        $minHours = $proposed * (1 - $varianceFactor);
+        $maxHours = $proposed * (1 + $varianceFactor);
+        $clamped = max($minHours, min($maxHours, $finalHours));
+
+        self::logHistory(
+            $exchangeId,
+            'dispute_resolved',
+            $actorId,
+            'broker',
+            self::STATUS_DISPUTED,
+            self::STATUS_COMPLETED,
+            sprintf(
+                'Dispute resolved at %.2f hours (requester claimed %s, provider claimed %s). %s',
+                $clamped,
+                $exchange->requester_confirmed_hours ?? '—',
+                $exchange->provider_confirmed_hours ?? '—',
+                $notes
+            )
+        );
+
+        // completeExchange() moves the credits, flips the status and — because it
+        // sees the pre-existing `disputed` status — sends the dispute-resolved
+        // notifications rather than the ordinary completion ones.
+        if (!self::completeExchange($exchangeId, $clamped)) {
+            return ['ok' => false, 'error' => 'COMPLETE_FAILED'];
+        }
+
+        return ['ok' => true, 'final_hours' => $clamped];
+    }
+
+    /**
+     * Reverse a COMPLETED exchange, putting both members' credits back.
+     *
+     * 🔴 Why this exists. A completed exchange was uncorrectable. `TRANSITIONS`
+     * makes `completed` terminal, no endpoint amended or reversed one, and the only
+     * tool an administrator had was the single-member balance adjustment — applied
+     * twice by hand, with no link to the exchange and, until 2026-08-04, no audit
+     * row at all. A mis-recorded exchange moved real credits and nothing could put
+     * them back traceably.
+     *
+     * Deliberately modelled on MarketplaceTimeCreditSettlementService::refund(),
+     * which is the only existing in-house pattern that reverses a two-sided
+     * time-credit movement correctly. Copied from it, point by point:
+     *
+     *  - A COMPENSATING transaction, never a mutation or deletion of the original.
+     *    The original entry stays exactly as it was; the correction is its own
+     *    ledger row, mirroring sender and receiver.
+     *  - The amount is re-read from the ORIGINAL transaction under lock, never
+     *    taken from caller input, so a reversal cannot move a different sum from
+     *    the one that was moved.
+     *  - Direction is taken from the original row's sender/receiver rather than
+     *    re-derived from the listing type. createTransaction() picks payer and payee
+     *    based on whether the listing is an offer or a request, and re-deriving that
+     *    here would risk reversing backwards if that logic ever changes.
+     *  - Both user rows are locked in deterministic min/max id order, so two
+     *    concurrent reversals involving overlapping members cannot deadlock.
+     *  - Double reversal is blocked TWICE: an early guard on
+     *    `reversal_transaction_id`, and a UNIQUE index on that column so a race
+     *    cannot slip past the guard.
+     *  - Balances may go negative. If the payee has already spent the credits, the
+     *    correction still has to complete; the resulting negative balance is an
+     *    explicit debt recorded in the ledger, exactly as the marketplace refund
+     *    treats it.
+     *
+     * Recorded in `exchange_history` (which both members can already see) AND in
+     * `org_audit_log` (durable, exportable, survives the exchange row).
+     *
+     * Scope note: this reverses. It does not re-post at a corrected figure — an
+     * "amend" would be a second money path and is deliberately not built here. To
+     * correct a figure: reverse, then create the exchange again at the right hours.
+     *
+     * @return array{ok: bool, error?: string, reversal_transaction_id?: int, amount?: float}
+     */
+    public static function reverseCompletedExchange(int $exchangeId, int $actorId, string $reason): array
+    {
+        $reason = trim($reason);
+        if ($reason === '') {
+            return ['ok' => false, 'error' => 'REASON_REQUIRED'];
+        }
+
+        $caller = User::find($actorId);
+        if (!self::callerHasStaffAuthority($caller)) {
+            return ['ok' => false, 'error' => 'UNAUTHORIZED'];
+        }
+
+        $tenantId = TenantContext::getId();
+
+        try {
+            $result = DB::transaction(function () use ($exchangeId, $actorId, $reason, $tenantId): array {
+                $locked = DB::table('exchange_requests')
+                    ->where('id', $exchangeId)
+                    ->where('tenant_id', $tenantId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$locked) {
+                    return ['ok' => false, 'error' => 'NOT_FOUND'];
+                }
+
+                // Idempotency: already reversed is a no-op, not an error, so a
+                // retried request cannot produce a second compensating entry.
+                if ($locked->reversal_transaction_id !== null) {
+                    return [
+                        'ok' => true,
+                        'reversal_transaction_id' => (int) $locked->reversal_transaction_id,
+                        'already_reversed' => true,
+                    ];
+                }
+
+                if ((string) $locked->status !== self::STATUS_COMPLETED) {
+                    return ['ok' => false, 'error' => 'NOT_COMPLETED'];
+                }
+
+                if ($locked->transaction_id === null) {
+                    // Completed with no ledger row: nothing moved, so there is
+                    // nothing to reverse and inventing an entry would be wrong.
+                    return ['ok' => false, 'error' => 'NO_TRANSACTION'];
+                }
+
+                $original = DB::table('transactions')
+                    ->where('id', $locked->transaction_id)
+                    ->where('tenant_id', $tenantId)
+                    ->where('status', 'completed')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$original) {
+                    return ['ok' => false, 'error' => 'ORIGINAL_NOT_FOUND'];
+                }
+
+                $amount = round((float) $original->amount, 2);
+                if ($amount <= 0) {
+                    return ['ok' => false, 'error' => 'INVALID_AMOUNT'];
+                }
+
+                // The original moved payer → payee. The reversal moves it back.
+                $originalPayerId = (int) $original->sender_id;
+                $originalPayeeId = (int) $original->receiver_id;
+                if ($originalPayerId <= 0 || $originalPayeeId <= 0) {
+                    return ['ok' => false, 'error' => 'ORIGINAL_NOT_TWO_SIDED'];
+                }
+
+                // Deterministic lock order prevents deadlock against a concurrent
+                // reversal or transfer touching the same two members.
+                foreach ([min($originalPayerId, $originalPayeeId), max($originalPayerId, $originalPayeeId)] as $lockId) {
+                    DB::table('users')
+                        ->where('id', $lockId)
+                        ->where('tenant_id', $tenantId)
+                        ->lockForUpdate()
+                        ->first();
+                }
+
+                $reversalId = (int) DB::table('transactions')->insertGetId([
+                    'tenant_id' => $tenantId,
+                    // Mirrored: the payee gives the credits back to the payer.
+                    'sender_id' => $originalPayeeId,
+                    'receiver_id' => $originalPayerId,
+                    'acting_user_id' => $actorId,
+                    'amount' => $amount,
+                    'description' => '[Exchange Reversal] #' . $exchangeId . ': ' . $reason,
+                    'transaction_type' => 'exchange_reversal',
+                    'status' => 'completed',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Deliberately allowed to go negative — see the docblock. A
+                // correction that cannot complete because the payee already spent
+                // the credits would leave the ledger permanently wrong.
+                DB::table('users')->where('id', $originalPayeeId)->where('tenant_id', $tenantId)
+                    ->decrement('balance', $amount);
+                DB::table('users')->where('id', $originalPayerId)->where('tenant_id', $tenantId)
+                    ->increment('balance', $amount);
+
+                // The UNIQUE index on reversal_transaction_id is what makes this
+                // safe against a racing second reversal.
+                DB::table('exchange_requests')
+                    ->where('id', $exchangeId)
+                    ->where('tenant_id', $tenantId)
+                    ->update([
+                        'reversal_transaction_id' => $reversalId,
+                        'reversed_at' => now(),
+                        'reversed_by' => $actorId,
+                        'reversal_reason' => mb_substr($reason, 0, 500),
+                        'updated_at' => now(),
+                    ]);
+
+                self::logHistory(
+                    $exchangeId,
+                    'reversed',
+                    $actorId,
+                    'broker',
+                    self::STATUS_COMPLETED,
+                    self::STATUS_COMPLETED,
+                    sprintf('Reversed %.2f hours (transaction #%d). %s', $amount, $reversalId, $reason)
+                );
+
+                // Durable, exportable, and survives deletion of the exchange row —
+                // exchange_history cascades with its parent.
+                app(AuditLogService::class)->logAction(
+                    $tenantId,
+                    'exchange_reversed',
+                    $actorId,
+                    [
+                        'exchange_id' => $exchangeId,
+                        'original_transaction_id' => (int) $original->id,
+                        'reversal_transaction_id' => $reversalId,
+                        'amount' => $amount,
+                        'payer_restored' => $originalPayerId,
+                        'payee_debited' => $originalPayeeId,
+                        'reason' => $reason,
+                    ],
+                    null,
+                    $originalPayerId,
+                );
+
+                return [
+                    'ok' => true,
+                    'reversal_transaction_id' => $reversalId,
+                    'amount' => $amount,
+                ];
+            });
+        } catch (\Throwable $e) {
+            Log::error('Exchange reversal failed', ['exchange_id' => $exchangeId, 'error' => $e->getMessage()]);
+            return ['ok' => false, 'error' => 'REVERSAL_FAILED'];
+        }
+
+        return $result;
     }
 
     private static function logHistory(

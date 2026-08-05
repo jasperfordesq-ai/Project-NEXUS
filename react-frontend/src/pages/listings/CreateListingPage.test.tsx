@@ -117,9 +117,9 @@ describe('CreateListingPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseParams.mockReturnValue({ id: undefined });
-    api.get.mockResolvedValue({ success: true, data: mockCategories });
-    api.post.mockResolvedValue({ success: true, data: { id: 42 } });
-    api.put.mockResolvedValue({ success: true });
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: mockCategories });
+    vi.mocked(api.post).mockResolvedValue({ success: true, data: { id: 42 } });
+    vi.mocked(api.put).mockResolvedValue({ success: true });
   });
 
   it('renders create listing form heading', async () => {
@@ -138,7 +138,7 @@ describe('CreateListingPage', () => {
   });
 
   it('shows create form (not edit mode) with no id param', async () => {
-    api.get.mockImplementation(() => new Promise(() => {})); // never resolves
+    vi.mocked(api.get).mockImplementation(() => new Promise(() => {})); // never resolves
     render(<CreateListingPage />);
     // In create mode (no id), the form renders immediately (no loading screen)
     // The heading should be present
@@ -221,7 +221,7 @@ describe('CreateListingPage', () => {
       },
     });
     let resolvePost: (v: { success: boolean; data: { id: number } }) => void = () => {};
-    api.post.mockReturnValue(new Promise((resolve) => { resolvePost = resolve; }));
+    vi.mocked(api.post).mockReturnValue(new Promise((resolve) => { resolvePost = resolve; }));
 
     const { container } = render(<CreateListingPage />);
     await waitFor(() => screen.getByText(/Create New Listing/i));
@@ -293,7 +293,7 @@ describe('CreateListingPage', () => {
     }
 
     it('shows an error toast and does not navigate when creation fails', async () => {
-      api.post.mockResolvedValue({ success: false, error: 'Listing limit reached', code: 'HTTP_422' });
+      vi.mocked(api.post).mockResolvedValue({ success: false, error: 'Listing limit reached', code: 'HTTP_422' });
 
       const { container } = render(<CreateListingPage />);
       await waitFor(() => screen.getByText(/Create New Listing/i));
@@ -315,8 +315,55 @@ describe('CreateListingPage', () => {
       expect(screen.getByDisplayValue('Garden help offered locally')).toBeInTheDocument();
     });
 
+    it('shows per-field server validation messages on the fields themselves', async () => {
+      // TBUK J-05: the API reports validation failures as
+      // {errors: [{code, message, field}]} but the form used to discard them and
+      // show only a generic toast, so the member was told the save failed and
+      // never which field was wrong.
+      vi.mocked(api.post).mockResolvedValue({
+        success: false,
+        code: 'VALIDATION_ERROR',
+        error: 'Validation failed',
+        errors: [
+          { code: 'VALIDATION_ERROR', message: 'Title must be at least 5 characters.', field: 'title' },
+          { code: 'VALIDATION_ERROR', message: 'Estimated hours must be greater than zero.', field: 'hours_estimate' },
+        ],
+      });
+
+      const { container } = render(<CreateListingPage />);
+      await waitFor(() => screen.getByText(/Create New Listing/i));
+      fillAndSubmitCreateForm(container);
+
+      // Both field messages are rendered against their inputs.
+      await waitFor(() => {
+        expect(screen.getByText('Title must be at least 5 characters.')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Estimated hours must be greater than zero.')).toBeInTheDocument();
+
+      // The generic subtitle is suppressed once we have something specific to say.
+      expect(errorToast).toHaveBeenCalledWith('Failed to save listing', undefined);
+      expect(successToast).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('puts server errors with no recognised field into the toast', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        success: false,
+        errors: [{ code: 'VALIDATION_ERROR', message: 'Something global went wrong.' }],
+      });
+
+      const { container } = render(<CreateListingPage />);
+      await waitFor(() => screen.getByText(/Create New Listing/i));
+      fillAndSubmitCreateForm(container);
+
+      await waitFor(() => {
+        expect(errorToast).toHaveBeenCalledWith('Failed to save listing', 'Something global went wrong.');
+      });
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
     it('falls back to the translated error subtitle when the API returns no error detail', async () => {
-      api.post.mockResolvedValue({ success: false });
+      vi.mocked(api.post).mockResolvedValue({ success: false });
 
       const { container } = render(<CreateListingPage />);
       await waitFor(() => screen.getByText(/Create New Listing/i));
@@ -358,7 +405,7 @@ describe('CreateListingPage', () => {
 
       beforeEach(() => {
         mockUseParams.mockReturnValue({ id: '42' });
-        api.get.mockImplementation((url: string) => {
+        vi.mocked(api.get).mockImplementation((url: string) => {
           if (url.includes('/v2/listings/42')) {
             return Promise.resolve({ success: true, data: existingListing });
           }
@@ -367,7 +414,7 @@ describe('CreateListingPage', () => {
       });
 
       it('shows an error toast and does not navigate when the update fails', async () => {
-        api.put.mockResolvedValue({ success: false, error: 'You cannot edit this listing', code: 'HTTP_403' });
+        vi.mocked(api.put).mockResolvedValue({ success: false, error: 'You cannot edit this listing', code: 'HTTP_403' });
 
         const { container } = render(<CreateListingPage />);
         await waitFor(() => {
@@ -408,7 +455,7 @@ describe('CreateListingPage', () => {
       });
 
       it('does not place an active API-provided image scheme in the DOM', async () => {
-        api.get.mockImplementation((url: string) => {
+        vi.mocked(api.get).mockImplementation((url: string) => {
           if (url.includes('/v2/listings/42')) {
             return Promise.resolve({
               success: true,

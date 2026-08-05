@@ -22,6 +22,10 @@ class Transaction extends Model
     protected $fillable = [
         'sender_id', 'receiver_id', 'amount', 'description',
         'transaction_type', 'status', 'source_match_id', 'deleted_for_sender', 'deleted_for_receiver',
+        // Who actually initiated this, when that is not one of the two parties —
+        // currently a linked-account carer/guardian spending a dependent's
+        // balance. NULL for every ordinary transfer.
+        'acting_user_id',
     ];
 
     /**

@@ -168,6 +168,83 @@ class AdminEnterpriseControllerTest extends TestCase
         $this->assertSame((int) $admin->id, (int) $row->processed_by);
     }
 
+    /**
+     * 🔴 Marking an ERASURE request 'completed' used to write the status string and
+     * nothing else — stamping processed_at and processed_by while the member's data
+     * remained entirely intact. That manufactures a false compliance record, and it
+     * also silences the daily overdue-request alarm, because the request no longer
+     * looks open.
+     *
+     * Note the wider design is deliberate: there is no automated erasure worker
+     * on purpose (see OverdueGdprRequestCheck — "fulfilling a DSAR is a human/legal
+     * decision"). The administrator's action is meant to be the trigger; it just
+     * never did anything.
+     */
+    public function test_completing_an_erasure_request_actually_erases_the_member(): void
+    {
+        $admin   = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $subject = User::factory()->forTenant($this->testTenantId)->create([
+            'email' => 'erase-me-' . uniqid() . '@example.com',
+            'first_name' => 'Erase',
+            'last_name' => 'Me',
+        ]);
+        $originalEmail = $subject->email;
+        Sanctum::actingAs($admin);
+
+        $requestId = DB::table('gdpr_requests')->insertGetId([
+            'user_id'      => $subject->id,
+            'tenant_id'    => $this->testTenantId,
+            'request_type' => 'erasure',
+            'status'       => 'pending',
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
+
+        $response = $this->apiPut("/v2/admin/enterprise/gdpr/requests/{$requestId}", [
+            'status' => 'completed',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.erasure_performed', true);
+
+        $row = DB::table('users')->where('id', $subject->id)
+            ->first(['email', 'first_name', 'status', 'deleted_at', 'anonymized_at']);
+
+        $this->assertNotNull($row, 'Erasure anonymises the row rather than deleting it.');
+        $this->assertNotSame($originalEmail, $row->email, 'The email must not survive an Article 17 erasure.');
+        $this->assertStringContainsString('@anonymized.local', (string) $row->email);
+        $this->assertSame('Deleted', $row->first_name);
+        $this->assertNotNull($row->anonymized_at);
+
+        $request = DB::table('gdpr_requests')->where('id', $requestId)->first();
+        $this->assertSame('completed', $request->status);
+        $this->assertNotNull($request->processed_at);
+    }
+
+    public function test_completing_an_erasure_request_twice_does_not_error(): void
+    {
+        // A request already completed must not attempt a second erasure.
+        $admin   = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $subject = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($admin);
+
+        $requestId = DB::table('gdpr_requests')->insertGetId([
+            'user_id'      => $subject->id,
+            'tenant_id'    => $this->testTenantId,
+            'request_type' => 'erasure',
+            'status'       => 'completed',
+            'processed_at' => now(),
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
+
+        $this->apiPut("/v2/admin/enterprise/gdpr/requests/{$requestId}", ['status' => 'completed'])
+            ->assertStatus(200);
+
+        // Untouched: the guard skips an already-completed request.
+        $this->assertNotNull(DB::table('users')->where('id', $subject->id)->value('email'));
+    }
+
     // ================================================================
     // MONITORING — GET /v2/admin/enterprise/monitoring
     // ================================================================

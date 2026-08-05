@@ -606,6 +606,149 @@ class AdminBrokerController extends BaseApiController
         }
     }
 
+    /**
+     * POST /api/v2/admin/broker/exchanges/{id}/resolve-dispute
+     *
+     * Arbitrate a DISPUTED exchange by setting the final hours figure.
+     *
+     * A disputed exchange was previously unresolvable by anyone — see
+     * ExchangeWorkflowService::resolveDispute() for the full history. This is the
+     * action the broker dashboard's "needs attention" count and the disputed-age
+     * SLO check have always implied existed.
+     *
+     * `final_hours` is clamped service-side to the same proposed ± variance window
+     * a participant's own confirmation would be, and `notes` is mandatory and is
+     * written to exchange_history, which both members can see.
+     */
+    public function resolveExchangeDispute(int $id): JsonResponse
+    {
+        $adminId = $this->requireBrokerOrAdmin();
+        $tenantId = TenantContext::getId();
+
+        $notes = trim((string) $this->input('notes', ''));
+        if ($notes === '') {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.reason_required'), 'notes');
+        }
+
+        $rawHours = $this->input('final_hours');
+        if (!is_numeric($rawHours)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.amount_invalid'), 'final_hours');
+        }
+        $finalHours = (float) $rawHours;
+
+        try {
+            $exchange = DB::selectOne(
+                "SELECT id, status, tenant_id, requester_id, provider_id FROM exchange_requests WHERE id = ? AND tenant_id = ?",
+                [$id, $tenantId]
+            );
+
+            if (!$exchange) {
+                return $this->respondWithError('NOT_FOUND', __('api.exchange_not_found'), null, 404);
+            }
+            if ($exchange->status !== 'disputed') {
+                // Reusing the generic `invalid_status` rather than adding a new
+                // `exchange_not_disputed` key: new PHP lang keys must be filled in
+                // all eleven locales via scripts/translate-php-lang-gaps.mjs, which
+                // requires a PHP CLI to verify what it writes. A more specific
+                // message is worth adding on a machine that has one.
+                return $this->respondWithError('INVALID_STATUS', __('api.invalid_status'));
+            }
+            // Conflict of interest matters more here than anywhere: arbitrating a
+            // dispute you are a party to decides your own credits.
+            if ((int) $exchange->requester_id === (int) $adminId
+                || (int) $exchange->provider_id === (int) $adminId) {
+                return $this->respondWithError('FORBIDDEN', __('api.cannot_broker_own_exchange'), null, 403);
+            }
+
+            $result = $this->exchangeWorkflowService::resolveDispute($id, $adminId, $finalHours, $notes);
+            if (!($result['ok'] ?? false)) {
+                $code = (string) ($result['error'] ?? 'SERVER_ERROR');
+                $status = in_array($code, ['NOT_FOUND'], true) ? 404
+                    : (in_array($code, ['UNAUTHORIZED'], true) ? 403
+                    : (in_array($code, ['NOT_DISPUTED', 'REASON_REQUIRED', 'INVALID_HOURS'], true) ? 400 : 500));
+                return $this->respondWithError($code, __('api.exchange_complete_failed'), null, $status);
+            }
+
+            $this->auditLogService->log('exchange_dispute_resolved', null, $adminId, [
+                'exchange_id' => $id,
+                'final_hours' => $result['final_hours'] ?? null,
+                'notes' => $notes,
+                'actor_role' => $this->resolveActorRole(),
+            ]);
+
+            return $this->respondWithData([
+                'id' => $id,
+                'status' => 'completed',
+                'final_hours' => $result['final_hours'] ?? null,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Exchange dispute resolution failed', ['exchange_id' => $id, 'error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_ERROR', __('api.exchange_complete_failed'), null, 500);
+        }
+    }
+
+    /**
+     * POST /api/v2/admin/broker/exchanges/{id}/reverse
+     *
+     * Reverse a COMPLETED exchange, restoring both members' credits.
+     *
+     * See ExchangeWorkflowService::reverseCompletedExchange() for the full
+     * rationale and the safety properties. A mandatory reason is recorded in the
+     * exchange's own history (visible to both members) and in the tenant audit log.
+     *
+     * This does not re-post at a corrected figure — reverse, then create the
+     * exchange again at the right hours.
+     */
+    public function reverseExchange(int $id): JsonResponse
+    {
+        $adminId = $this->requireBrokerOrAdmin();
+        $tenantId = TenantContext::getId();
+
+        $reason = trim((string) $this->input('reason', ''));
+        if ($reason === '') {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.reason_required'), 'reason');
+        }
+
+        try {
+            $exchange = DB::selectOne(
+                "SELECT id, status, tenant_id, requester_id, provider_id FROM exchange_requests WHERE id = ? AND tenant_id = ?",
+                [$id, $tenantId]
+            );
+
+            if (!$exchange) {
+                return $this->respondWithError('NOT_FOUND', __('api.exchange_not_found'), null, 404);
+            }
+            // Reversing an exchange you are a party to moves your own credits.
+            if ((int) $exchange->requester_id === (int) $adminId
+                || (int) $exchange->provider_id === (int) $adminId) {
+                return $this->respondWithError('FORBIDDEN', __('api.cannot_broker_own_exchange'), null, 403);
+            }
+
+            $result = $this->exchangeWorkflowService::reverseCompletedExchange($id, $adminId, $reason);
+            if (!($result['ok'] ?? false)) {
+                $code = (string) ($result['error'] ?? 'SERVER_ERROR');
+                $status = match ($code) {
+                    'NOT_FOUND' => 404,
+                    'UNAUTHORIZED' => 403,
+                    'REASON_REQUIRED', 'NOT_COMPLETED', 'NO_TRANSACTION',
+                    'ORIGINAL_NOT_FOUND', 'INVALID_AMOUNT', 'ORIGINAL_NOT_TWO_SIDED' => 400,
+                    default => 500,
+                };
+                return $this->respondWithError($code, __('api.update_failed', ['resource' => 'exchange']), null, $status);
+            }
+
+            return $this->respondWithData([
+                'id' => $id,
+                'reversal_transaction_id' => $result['reversal_transaction_id'] ?? null,
+                'amount' => $result['amount'] ?? null,
+                'already_reversed' => $result['already_reversed'] ?? false,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Exchange reversal endpoint failed', ['exchange_id' => $id, 'error' => $e->getMessage()]);
+            return $this->respondWithError('SERVER_ERROR', __('api.update_failed', ['resource' => 'exchange']), null, 500);
+        }
+    }
+
     /** POST /api/v2/admin/broker/exchanges/{id}/reject */
     public function rejectExchange(int $id): JsonResponse
     {

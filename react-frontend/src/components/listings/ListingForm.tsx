@@ -43,7 +43,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { SkillTagsInput } from '@/components/listings/SkillTagsInput';
 import { LoadingScreen } from '@/components/feedback';
 import { useAuth, useToast, useTenant } from '@/contexts';
-import { api } from '@/lib/api';
+import { api, type ApiErrorDetail } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveThumbnailUrl } from '@/lib/helpers';
 import { safeImageSource } from '@/lib/safeImageSource';
@@ -63,6 +63,61 @@ interface FormData {
   experience_level?: string;
   equipment_provided?: string;
   accessibility_notes?: string;
+}
+
+/**
+ * FormData keys a server-side validation error is allowed to name.
+ *
+ * The API returns per-field validation failures as
+ * `{errors: [{code, message, field}, ...]}` (see
+ * ListingsController::store/update → BaseApiController::respondWithErrors), but
+ * this form used to discard them and show only a generic toast — so a member
+ * whose save was rejected was told it failed and never which field was wrong.
+ * That was TBUK's J-05 finding ("on create failure, no sys message about
+ * what/why"). Anything not in this set falls back to the toast, so an unexpected
+ * field name can never silently vanish.
+ */
+const SERVER_FIELD_KEYS = new Set<string>([
+  'title',
+  'description',
+  'type',
+  'service_type',
+  'category_id',
+  'hours_estimate',
+  'location',
+  'latitude',
+  'longitude',
+  'skill_tags',
+  'experience_level',
+  'equipment_provided',
+  'accessibility_notes',
+]);
+
+/**
+ * Split an API error payload into per-field messages this form can render, plus
+ * anything left over that belongs in the toast.
+ */
+function splitServerErrors(details: ApiErrorDetail[] | undefined): {
+  fieldErrors: Partial<Record<keyof FormData, string>>;
+  unmapped: string[];
+} {
+  const fieldErrors: Partial<Record<keyof FormData, string>> = {};
+  const unmapped: string[] = [];
+
+  for (const detail of details ?? []) {
+    const message = detail?.message?.trim();
+    if (!message) continue;
+    const field = typeof detail.field === 'string' ? detail.field : '';
+    if (field && SERVER_FIELD_KEYS.has(field)) {
+      // Keep the first message per field — the API may report several.
+      const key = field as keyof FormData;
+      if (!fieldErrors[key]) fieldErrors[key] = message;
+    } else {
+      unmapped.push(message);
+    }
+  }
+
+  return { fieldErrors, unmapped };
 }
 
 const initialFormData: FormData = {
@@ -368,17 +423,35 @@ export function ListingForm({
       // rejected save. Check success explicitly and bail out — otherwise the user
       // gets a false success toast and is navigated away while their listing was
       // never created/updated. Returning here keeps the form state intact.
+      // Surface per-field validation failures on the fields themselves, and put
+      // anything unattributable in the toast. Returns true when the save failed.
+      const handleSaveFailure = (response: { error?: string; errors?: ApiErrorDetail[] }): void => {
+        const { fieldErrors, unmapped } = splitServerErrors(response.errors);
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors((prev) => ({ ...prev, ...fieldErrors }));
+        }
+        // Only fall back to the generic subtitle when the server told us nothing
+        // more specific than "it failed".
+        const detail = unmapped.length > 0
+          ? unmapped.join(' ')
+          : (Object.keys(fieldErrors).length > 0 ? undefined : response.error);
+        toast.error(
+          t('form.save_error_title'),
+          detail || (Object.keys(fieldErrors).length > 0 ? undefined : t('form.save_error_subtitle')),
+        );
+      };
+
       let savedId = listingId;
       if (isEditing) {
         const response = await api.put(`/v2/listings/${listingId}`, payload);
         if (!response.success) {
-          toast.error(t('form.save_error_title'), response.error || t('form.save_error_subtitle'));
+          handleSaveFailure(response);
           return;
         }
       } else {
         const response = await api.post<{ id: number }>('/v2/listings', payload);
         if (!response.success) {
-          toast.error(t('form.save_error_title'), response.error || t('form.save_error_subtitle'));
+          handleSaveFailure(response);
           return;
         }
         if (response.data) {

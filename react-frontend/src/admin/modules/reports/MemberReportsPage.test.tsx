@@ -89,32 +89,97 @@ vi.mock('@/contexts', () =>
 );
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
+/*
+ * 🔴 These MUST mirror app/Services/MemberReportService.php as wrapped by
+ * AdminAnalyticsReportsController::memberReports(). They previously invented
+ * `avatar_url`, `last_login`, `joined_at`, `listings_count`, `count`,
+ * `initial`/`month_N`, `listing_rate`, `total_active_30d` and
+ * `avg_sessions_per_user` — none of which the backend returns. Combined with the
+ * vacuous assertions this file used to carry (`expect(true).toBe(true)`,
+ * `expect(document.body).toBeTruthy()`), that let a permanently-empty
+ * Registration Trends chart, an all-zero retention table and four blank
+ * engagement tiles sit in production while CI stayed green. Copy from the
+ * service, and assert real values.
+ */
+
+/** getActiveMembers() member row. */
 const makeMember = (overrides = {}) => ({
   id: 1,
   name: 'Alice Active',
   email: 'alice@example.com',
-  avatar_url: null,
-  last_login: '2026-06-01T10:00:00Z',
+  profile_image_url: null,
+  last_login_at: '2026-06-01T10:00:00Z',
+  created_at: '2025-01-01T00:00:00Z',
   transaction_count: 5,
   hours_given: 3.0,
   hours_received: 2.0,
-  joined_at: '2025-01-01T00:00:00Z',
   ...overrides,
 });
 
+/** getLeastActiveMembers() row — a different shape: days_inactive, no counts. */
+const makeLeastActiveMember = (overrides = {}) => ({
+  id: 2,
+  name: 'Dormant Dan',
+  email: 'dan@example.com',
+  last_login_at: null,
+  created_at: '2024-03-01T00:00:00Z',
+  days_inactive: 412,
+  ...overrides,
+});
+
+/** getTopContributors() row. */
 const makeContributor = (overrides = {}) => ({
   id: 10,
   name: 'Top Contributor',
-  avatar_url: null,
+  profile_image_url: null,
   hours_given: 20.0,
   hours_received: 10.0,
+  total_hours: 30.0,
   transaction_count: 12,
-  listings_count: 4,
   ...overrides,
 });
 
+/** getNewRegistrations() — rows under `data`. */
+const makeRegistrationsResponse = () => ({
+  data: {
+    period_type: 'monthly',
+    months_back: 12,
+    total_registrations: 7,
+    data: [
+      { period: '2026-01', registrations: 3 },
+      { period: '2026-02', registrations: 4 },
+    ],
+  },
+});
+
+/** getMemberRetention() — retention_rate is a 0–1 fraction. */
+const makeRetentionResponse = () => ({
+  data: {
+    cohorts: [
+      { cohort: 'January 2026', cohort_month: '2026-01', joined: 10, retained: 8, retention_rate: 0.8 },
+    ],
+    overall: { total_joined: 10, total_retained: 8, overall_retention_rate: 0.8 },
+  },
+});
+
+/** getEngagementMetrics() — rates are 0–1 fractions. */
+const makeEngagementResponse = () => ({
+  data: {
+    period_days: 30,
+    total_users: 300,
+    active_users: 120,
+    login_rate: 0.4,
+    trading_users: 60,
+    trading_rate: 0.2,
+    posts_created: 42,
+    comments_created: 87,
+    event_rsvps: 19,
+    new_connections: 23,
+  },
+});
+
 const makeActiveResponse = (members: object[] = []) => ({
-  data: { members, total: members.length },
+  data: { members, total: members.length, period_days: 30 },
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,14 +194,10 @@ describe('MemberReportsPage', () => {
     const { MemberReportsPage } = await import('./MemberReportsPage');
     render(<MemberReportsPage />);
 
-    // The active tab shows a table with isLoading — the Spinner is emitted as role=status + aria-busy
-    const spinners = screen.queryAllByRole('status');
-    const busy = spinners.find((el) => el.getAttribute('aria-busy') === 'true');
-    // If spinner is in the table body, it may not have aria-busy; just assert something loading-related rendered
-    // (HeroUI TableBody loadingContent uses Spinner which has role=status)
-    expect(spinners.length).toBeGreaterThanOrEqual(0); // non-crash assertion — see below
-    // Primary assertion: no crash
-    expect(document.body).toBeTruthy();
+    // Assert a real loading affordance, not merely that the page didn't crash.
+    // HeroUI's TableBody loadingContent renders Spinner as role="status".
+    const spinner = await screen.findByRole('status');
+    expect(spinner).toBeInTheDocument();
   });
 
   it('renders the page header', async () => {
@@ -180,6 +241,16 @@ describe('MemberReportsPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Alice Active')).toBeInTheDocument();
     });
+
+    // Regression guard: these three columns read last_login_at / created_at /
+    // transaction_count. When the page read `last_login` and `joined_at` instead,
+    // the row still rendered — it just said "Never" and "---" forever. Assert the
+    // real values so that failure mode cannot come back silently.
+    const row = screen.getByText('Alice Active').closest('tr');
+    expect(row).not.toBeNull();
+    expect(row!.textContent).not.toMatch(/Never/i);
+    expect(row!.textContent).not.toContain('---');
+    expect(row!.textContent).toContain('5'); // transaction_count
   });
 
   it('shows member email in active tab', async () => {
@@ -215,58 +286,100 @@ describe('MemberReportsPage', () => {
     }
   });
 
-  it('renders engagement tab stat cards when data is available', async () => {
-    const engagementData = {
-      data: {
-        login_rate: 0.75,
-        trading_rate: 0.5,
-        listing_rate: 0.3,
-        messaging_rate: 0.6,
-        event_attendance_rate: 0.2,
-        avg_sessions_per_user: 4.2,
-        avg_transactions_per_user: 2.1,
-        total_active_30d: 120,
-        total_active_90d: 200,
-        total_members: 300,
-      },
-    };
-    mockApi.get.mockResolvedValue(engagementData);
+  /**
+   * Switch tabs, failing loudly if the tab cannot be found. The previous version
+   * of these tests fell back to `expect(true).toBe(true)` when the tab lookup
+   * missed, so a page that stopped rendering its tabs entirely would still pass.
+   */
+  async function switchToTab(match: string) {
+    const tabs = screen.getAllByRole('tab');
+    const tab = tabs.find((el) => el.textContent?.toLowerCase().includes(match));
+    expect(tab, `no tab matching "${match}" — tabs were: ${tabs.map((el) => el.textContent).join(', ')}`).toBeTruthy();
+    fireEvent.click(tab!);
+  }
+
+  it('renders real engagement figures, not placeholder zeros', async () => {
+    mockApi.get.mockResolvedValue(makeEngagementResponse());
     const { MemberReportsPage } = await import('./MemberReportsPage');
     render(<MemberReportsPage />);
 
-    // Switch to engagement tab programmatically via click
     await waitFor(() => screen.getByTestId('page-header'));
+    await switchToTab('engag');
 
-    const tabs = screen.getAllByRole('tab');
-    const engTab = tabs.find((t) => t.textContent?.toLowerCase().includes('engag'));
-    if (engTab) {
-      fireEvent.click(engTab);
-      await waitFor(() => {
-        expect(screen.getAllByTestId('stat-card').length).toBeGreaterThan(0);
-      });
-    } else {
-      expect(true).toBe(true);
-    }
+    // Every one of these reads a field the service genuinely returns. When the
+    // page read listing_rate / messaging_rate / total_active_30d /
+    // avg_sessions_per_user instead, all four rendered 0 and this suite passed.
+    // StatCard splits label and value across elements, so assert on the rendered
+    // text of the whole panel rather than exact-matching a single text node.
+    await waitFor(() => expect(document.body.textContent).toContain('40.0%')); // login_rate
+    const shown = document.body.textContent ?? '';
+    expect(shown).toContain('20.0%');    // trading_rate
+    expect(shown).toContain('42');       // posts_created
+    expect(shown).toContain('23');       // new_connections
+    expect(shown).toContain('87');       // comments_created
+    expect(shown).toContain('19');       // event_rsvps
+    expect(shown).toContain('120 / 300'); // active_users / total_users
   });
 
-  it('renders top contributors when switching to top_contributors tab', async () => {
-    const contribData = { data: { contributors: [makeContributor()] } };
-    mockApi.get.mockResolvedValue(contribData);
+  it('renders the registration trend from the `data` key', async () => {
+    mockApi.get.mockResolvedValue(makeRegistrationsResponse());
     const { MemberReportsPage } = await import('./MemberReportsPage');
     render(<MemberReportsPage />);
 
     await waitFor(() => screen.getByTestId('page-header'));
+    await switchToTab('registr');
 
-    const tabs = screen.getAllByRole('tab');
-    const contribTab = tabs.find((t) => t.textContent?.toLowerCase().includes('contrib'));
-    if (contribTab) {
-      fireEvent.click(contribTab);
-      await waitFor(() => {
-        expect(screen.getByText('Top Contributor')).toBeInTheDocument();
-      });
-    } else {
-      expect(true).toBe(true);
-    }
+    // The chart is only rendered when rows are found. While the page looked for
+    // `trends`/`registrations` this always fell through to the empty state.
+    await waitFor(() => {
+      expect(screen.queryByText(/no registration data/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders retention cohorts with a real rate', async () => {
+    mockApi.get.mockResolvedValue(makeRetentionResponse());
+    const { MemberReportsPage } = await import('./MemberReportsPage');
+    render(<MemberReportsPage />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+    await switchToTab('retent');
+
+    await waitFor(() => expect(screen.getByText('January 2026')).toBeInTheDocument());
+    // joined / retained / retention_rate — the old table read `initial` and
+    // `month_N`, so every cell showed 0 and 0%. Scope to the row: the overall
+    // summary line below the table legitimately shows the same 80%.
+    const row = screen.getByText('January 2026').closest('tr');
+    expect(row).not.toBeNull();
+    expect(row!.textContent).toContain('10');  // joined
+    expect(row!.textContent).toContain('8');   // retained
+    expect(row!.textContent).toContain('80%'); // retention_rate
+  });
+
+  it('renders top contributors with total hours', async () => {
+    mockApi.get.mockResolvedValue({ data: { contributors: [makeContributor()] } });
+    const { MemberReportsPage } = await import('./MemberReportsPage');
+    render(<MemberReportsPage />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+    await switchToTab('contrib');
+
+    await waitFor(() => expect(screen.getByText('Top Contributor')).toBeInTheDocument());
+    // total_hours replaced the non-existent listings_count in the last column.
+    expect(screen.getByText('30.0')).toBeInTheDocument();
+  });
+
+  it('renders days_inactive on the least-active tab', async () => {
+    mockApi.get.mockResolvedValue(makeActiveResponse([makeLeastActiveMember()]));
+    const { MemberReportsPage } = await import('./MemberReportsPage');
+    render(<MemberReportsPage />);
+
+    await waitFor(() => screen.getByTestId('page-header'));
+    await switchToTab('least');
+
+    await waitFor(() => expect(screen.getByText('Dormant Dan')).toBeInTheDocument());
+    // This column used to render transaction_count, which this endpoint never
+    // returns, so it was always blank.
+    expect(screen.getByText('412')).toBeInTheDocument();
   });
 
   it('calls API on mount', async () => {

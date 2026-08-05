@@ -34,13 +34,24 @@ type VerifyState = 'loading' | 'success' | 'error';
 export function VerifyEmailPage() {
   const { t } = useTranslation('auth');
   usePageTitle(t('page_meta.verify_email.title'));
-  const { branding, tenantPath, tenant } = useTenant();
+  const { branding, tenantPath } = useTenant();
   const { isAuthenticated } = useAuth();
   const toast = useToast();
 
-  // Check if tenant requires admin approval (from bootstrap settings)
-  const requiresApproval = tenant?.settings?.admin_approval === true
-    || tenant?.settings?.admin_approval === 'true';
+  /*
+   * Whether this member is still waiting on an administrator after verifying.
+   *
+   * 🔴 This used to read `tenant.settings.admin_approval` from the bootstrap
+   * payload, and that key is DELIBERATELY excluded from the public bootstrap (see
+   * TenantBootstrapController's exclusion list) — so the value was permanently
+   * undefined, the flag permanently false, and the "awaiting approval" panel below
+   * was dead code. Since approval-required is the DEFAULT for a new community, that
+   * meant the default new-member experience never explained itself.
+   *
+   * The verify-email response now reports it directly, which fixes the screen
+   * without publishing a tenant configuration value to anonymous callers.
+   */
+  const [requiresApproval, setRequiresApproval] = useState(false);
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
@@ -61,9 +72,13 @@ export function VerifyEmailPage() {
 
     async function verifyEmail() {
       try {
-        const response = await api.post('/auth/verify-email', { token });
+        const response = await api.post<{ verified?: boolean; requires_approval?: boolean }>(
+          '/auth/verify-email',
+          { token },
+        );
         if (!cancelled) {
           if (response.success) {
+            setRequiresApproval(response.data?.requires_approval === true);
             setState('success');
           } else {
             setState('error');

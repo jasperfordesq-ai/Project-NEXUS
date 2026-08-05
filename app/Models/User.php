@@ -522,6 +522,20 @@ class User extends Authenticatable
      * NB: only the users row moves — the user's content stays in the old
      * tenant (a full content migration has never been implemented).
      *
+     * 🔴 The money consequence of that, spelled out because it is not obvious and
+     * no test covers it: `users.balance` is a column on `users`, so it moves WITH
+     * the member, while every `transactions` row keeps the OLD tenant_id and
+     * Transaction is tenant-scoped. The member therefore arrives in the
+     * destination tenant with a real balance and an EMPTY history (zero earned,
+     * zero spent, zero transactions per WalletService::getBalance()), while the
+     * origin tenant keeps that history attributed to a member who is no longer
+     * there. Nothing recomputes balance from the ledger, and there is no repair
+     * tooling. Callers must not present this as "transfer a member between
+     * timebanks" — it reassigns an account.
+     *
+     * `moved` is the affected-row count of the single UPDATE (0 or 1). `failed`
+     * carries a passkey precondition, not a list of tables.
+     *
      * @return array{success: bool, moved: int, failed: array<string>}
      */
     public static function moveTenant(int $userId, int $newTenantId): array

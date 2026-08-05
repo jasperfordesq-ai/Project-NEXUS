@@ -82,6 +82,8 @@ nav:
       - API reference (OpenAPI): api-reference.md
       - Internationalisation: I18N.md
       - Database & migrations: DATABASE.md
+      - Roles & permissions: ROLES-AND-PERMISSIONS.md
+      - Safeguarding & consent: SAFEGUARDING-AND-CONSENT.md
       - CI & quality gates: CI.md
       - Testing: TESTING.md
       - Local performance: LOCAL-PERFORMANCE.md

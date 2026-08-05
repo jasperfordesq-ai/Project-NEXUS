@@ -392,6 +392,387 @@ class AdminBrokerControllerTest extends TestCase
         $response->assertJsonPath('data.status', 'accepted');
     }
 
+    /**
+     * A disputed exchange used to be a permanent dead end: the credits were stuck
+     * BEFORE they moved, and no member, broker or admin could act, even though the
+     * dashboard counted disputed exchanges as needing attention. These tests cover
+     * the arbitration path that now exists.
+     */
+    public function test_resolve_dispute_completes_a_disputed_exchange_and_moves_credits(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $provider = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id'                 => $this->testTenantId,
+            'listing_id'                => $listingId,
+            'requester_id'              => $requester->id,
+            'provider_id'               => $provider->id,
+            'proposed_hours'            => 2.0,
+            'requester_confirmed_hours' => 1.5,
+            'provider_confirmed_hours'  => 2.4,
+            'requester_confirmed_at'    => now(),
+            'provider_confirmed_at'     => now(),
+            'status'                    => 'disputed',
+            'created_at'                => now(),
+            'updated_at'                => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/resolve-dispute", [
+            'final_hours' => 2.0,
+            'notes'       => 'Spoke to both parties; two hours agreed.',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.status', 'completed');
+        // assertJsonPath compares identically and JSON renders 2.0 as 2.
+        $this->assertEquals(2.0, $response->json('data.final_hours'));
+
+        $exchange = DB::table('exchange_requests')->where('id', $exchangeId)->first();
+        $this->assertSame('completed', $exchange->status);
+
+        // The arbitration is visible to both members via exchange_history.
+        $history = DB::table('exchange_history')
+            ->where('exchange_id', $exchangeId)
+            ->where('action', 'dispute_resolved')
+            ->first();
+        $this->assertNotNull($history, 'Resolving a dispute must be recorded in exchange_history.');
+        $this->assertSame('broker', $history->actor_role);
+        $this->assertEquals($admin->id, (int) $history->actor_id);
+        $this->assertStringContainsString('two hours agreed', (string) $history->notes);
+    }
+
+    public function test_resolve_dispute_requires_a_note(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => 'disputed',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/resolve-dispute", [
+            'final_hours' => 2.0,
+            'notes'       => '   ',
+        ])->assertStatus(400);
+
+        $this->assertSame(
+            'disputed',
+            DB::table('exchange_requests')->where('id', $exchangeId)->value('status')
+        );
+    }
+
+    public function test_resolve_dispute_rejects_a_non_disputed_exchange(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => 'accepted',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/resolve-dispute", [
+            'final_hours' => 2.0,
+            'notes'       => 'Should not apply',
+        ])->assertStatus(400);
+    }
+
+    public function test_resolve_dispute_blocks_an_arbitrator_who_is_a_party(): void
+    {
+        // Conflict of interest matters most here: arbitrating your own dispute
+        // decides your own credits.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $admin->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => 'disputed',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/resolve-dispute", [
+            'final_hours' => 2.0,
+            'notes'       => 'Resolving my own dispute',
+        ])->assertStatus(403);
+
+        $this->assertSame(
+            'disputed',
+            DB::table('exchange_requests')->where('id', $exchangeId)->value('status')
+        );
+    }
+
+    public function test_resolve_dispute_clamps_hours_to_the_variance_window(): void
+    {
+        // An arbitrator must not be able to post a figure the workflow would have
+        // refused from a participant. Default window is proposed ±25%.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 4.0, 'status' => 'disputed',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/resolve-dispute", [
+            'final_hours' => 99.0,
+            'notes'       => 'Deliberately absurd figure',
+        ]);
+
+        $response->assertStatus(200);
+        // 4.0 + 25% = 5.0 — the absurd 99.0 must be clamped, not accepted.
+        $this->assertEquals(5.0, $response->json('data.final_hours'));
+    }
+
+    // ------------------------------------------------------------------
+    //  Reversing a completed exchange
+    //
+    //  Before this existed a mis-recorded exchange could not be corrected at all:
+    //  `completed` is a terminal status, and the only tool was the single-member
+    //  balance adjustment applied twice by hand, with no link to the exchange.
+    // ------------------------------------------------------------------
+
+    /**
+     * Build a completed exchange with a real ledger row, returning
+     * [exchangeId, transactionId, payerId, payeeId].
+     *
+     * @return array{0:int,1:int,2:int,3:int}
+     */
+    private function makeCompletedExchange(int $payerId, int $payeeId, float $hours = 2.0): array
+    {
+        $listingId = $this->makeListingId($this->testTenantId, $payeeId);
+
+        $transactionId = (int) DB::table('transactions')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'sender_id' => $payerId,
+            'receiver_id' => $payeeId,
+            'amount' => $hours,
+            'description' => 'Exchange fixture',
+            'transaction_type' => 'exchange',
+            'status' => 'completed',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $exchangeId = (int) DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'listing_id' => $listingId,
+            'requester_id' => $payerId,
+            'provider_id' => $payeeId,
+            'proposed_hours' => $hours,
+            'final_hours' => $hours,
+            'transaction_id' => $transactionId,
+            'status' => 'completed',
+            'completed_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return [$exchangeId, $transactionId, $payerId, $payeeId];
+    }
+
+    public function test_reverse_completed_exchange_restores_both_balances(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        // The payer paid 2h (so is 2h down), the payee earned 2h.
+        $payer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 8.0]);
+        $payee = User::factory()->forTenant($this->testTenantId)->create(['balance' => 12.0]);
+
+        [$exchangeId, $originalTxnId] = $this->makeCompletedExchange($payer->id, $payee->id, 2.0);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", [
+            'reason' => 'Recorded against the wrong member',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(2.0, $response->json('data.amount'));
+
+        // Credits are put back on both sides.
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $payer->id)->value('balance'));
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $payee->id)->value('balance'));
+
+        // The ORIGINAL entry is untouched — a reversal is a compensating record,
+        // never a mutation or deletion of history.
+        $original = DB::table('transactions')->where('id', $originalTxnId)->first();
+        $this->assertSame('completed', $original->status);
+        $this->assertEquals($payer->id, (int) $original->sender_id);
+        $this->assertEquals(2.0, (float) $original->amount);
+
+        // The compensating entry mirrors it and is typed and attributed.
+        $reversalId = (int) $response->json('data.reversal_transaction_id');
+        $reversal = DB::table('transactions')->where('id', $reversalId)->first();
+        $this->assertSame('exchange_reversal', $reversal->transaction_type);
+        $this->assertEquals($payee->id, (int) $reversal->sender_id, 'Reversal must mirror the original.');
+        $this->assertEquals($payer->id, (int) $reversal->receiver_id);
+        $this->assertEquals($admin->id, (int) $reversal->acting_user_id);
+
+        // Linked back on the exchange, and recorded for both members to see.
+        $exchange = DB::table('exchange_requests')->where('id', $exchangeId)->first();
+        $this->assertEquals($reversalId, (int) $exchange->reversal_transaction_id);
+        $this->assertEquals($admin->id, (int) $exchange->reversed_by);
+        $this->assertNotNull($exchange->reversed_at);
+        $this->assertSame('Recorded against the wrong member', $exchange->reversal_reason);
+
+        $history = DB::table('exchange_history')
+            ->where('exchange_id', $exchangeId)->where('action', 'reversed')->first();
+        $this->assertNotNull($history, 'A reversal must appear in the exchange history.');
+
+        $audit = DB::table('org_audit_log')
+            ->where('action', 'exchange_reversed')->orderByDesc('id')->first();
+        $this->assertNotNull($audit, 'A reversal must leave a durable audit row.');
+    }
+
+    public function test_reversing_twice_is_a_no_op_and_does_not_double_refund(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $payer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 8.0]);
+        $payee = User::factory()->forTenant($this->testTenantId)->create(['balance' => 12.0]);
+        [$exchangeId] = $this->makeCompletedExchange($payer->id, $payee->id, 2.0);
+
+        Sanctum::actingAs($admin);
+
+        $first = $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", ['reason' => 'First']);
+        $first->assertStatus(200);
+        $firstReversalId = (int) $first->json('data.reversal_transaction_id');
+
+        $second = $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", ['reason' => 'Second attempt']);
+        $second->assertStatus(200);
+        $second->assertJsonPath('data.already_reversed', true);
+        $this->assertSame($firstReversalId, (int) $second->json('data.reversal_transaction_id'));
+
+        // Balances reflect exactly ONE reversal.
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $payer->id)->value('balance'));
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $payee->id)->value('balance'));
+
+        // And exactly one compensating row exists.
+        $this->assertSame(1, DB::table('transactions')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('transaction_type', 'exchange_reversal')
+            ->where('description', 'like', '%#' . $exchangeId . ':%')
+            ->count());
+    }
+
+    public function test_reverse_allows_the_payee_balance_to_go_negative(): void
+    {
+        // If the payee already spent the credits the correction must still complete;
+        // the negative balance is an explicit debt in the ledger. Same decision the
+        // marketplace refund makes.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $payer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0.0]);
+        $payee = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0.5]);
+        [$exchangeId] = $this->makeCompletedExchange($payer->id, $payee->id, 2.0);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", [
+            'reason' => 'Payee already spent the credits',
+        ])->assertStatus(200);
+
+        $this->assertEquals(2.0, (float) DB::table('users')->where('id', $payer->id)->value('balance'));
+        $this->assertEquals(-1.5, (float) DB::table('users')->where('id', $payee->id)->value('balance'));
+    }
+
+    public function test_reverse_requires_a_reason(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $payer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 8.0]);
+        $payee = User::factory()->forTenant($this->testTenantId)->create(['balance' => 12.0]);
+        [$exchangeId] = $this->makeCompletedExchange($payer->id, $payee->id, 2.0);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", ['reason' => '  '])
+            ->assertStatus(400);
+
+        $this->assertNull(DB::table('exchange_requests')->where('id', $exchangeId)->value('reversal_transaction_id'));
+    }
+
+    public function test_reverse_rejects_a_non_completed_exchange(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = $this->makeListingId($this->testTenantId, $provider->id);
+
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2.0, 'status' => 'accepted',
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", ['reason' => 'Not completed'])
+            ->assertStatus(400);
+    }
+
+    public function test_reverse_blocks_an_admin_who_is_a_party(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create(['balance' => 8.0]);
+        $payee = User::factory()->forTenant($this->testTenantId)->create(['balance' => 12.0]);
+        [$exchangeId] = $this->makeCompletedExchange($admin->id, $payee->id, 2.0);
+
+        Sanctum::actingAs($admin);
+
+        $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", ['reason' => 'Reversing my own'])
+            ->assertStatus(403);
+
+        $this->assertNull(DB::table('exchange_requests')->where('id', $exchangeId)->value('reversal_transaction_id'));
+    }
+
+    public function test_reverse_uses_the_original_amount_not_the_current_final_hours(): void
+    {
+        // The amount is re-read from the original ledger row under lock. If someone
+        // edits final_hours afterwards, the reversal must still move what was
+        // actually moved.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $payer = User::factory()->forTenant($this->testTenantId)->create(['balance' => 8.0]);
+        $payee = User::factory()->forTenant($this->testTenantId)->create(['balance' => 12.0]);
+        [$exchangeId] = $this->makeCompletedExchange($payer->id, $payee->id, 2.0);
+
+        DB::table('exchange_requests')->where('id', $exchangeId)->update(['final_hours' => 9.0]);
+
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost("/v2/admin/broker/exchanges/{$exchangeId}/reverse", [
+            'reason' => 'final_hours was tampered with',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(2.0, $response->json('data.amount'), 'Reversal must use the ledger amount, not final_hours.');
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $payer->id)->value('balance'));
+    }
+
     public function test_approve_exchange_returns_404_for_wrong_tenant(): void
     {
         $adminB = User::factory()->forTenant(999)->admin()->create();

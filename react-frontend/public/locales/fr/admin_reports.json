@@ -37,14 +37,14 @@
     "loading": "Chargement",
     "next": "Suivant",
     "no": "Non",
+    "ok": "OK",
     "pending": "En attente",
     "previous": "Précédent",
     "retry": "Réessayer",
     "save": "Enregistrer",
     "select_all": "Sélectionner tout",
     "select_item": "Sélectionner un article",
-    "yes": "Oui",
-    "ok": "OK"
+    "yes": "Oui"
   },
   "shared": {
     "broker_actions": "Actions des courtiers",
@@ -57,6 +57,7 @@
     "no_history_available": "Aucun historique disponible trouvé",
     "no_legal_documents_found": "Aucun document juridique trouvé",
     "no_members_found": "Aucun membre trouvé trouvé",
+    "loading": "Chargement",
     "no_data": "Aucune donnée",
     "no_data_available": "Aucune donnée disponible",
     "no_recent_broker_activity": "Aucune activité récente de courtier trouvée",
@@ -67,12 +68,12 @@
     "refresh": "Rafraîchir",
     "search": "Recherche...",
     "select_all_rows": "Sélectionner toutes les lignes",
+    "select_row": "Sélectionner la ligne {{id}}",
     "data_table": "Données",
-    "total_count": "{{count}}total",
-    "loading": "Chargement",
-    "select_row": "Sélectionner la ligne {{id}}"
+    "total_count": "{{count}}total"
   },
   "reports": {
+    "active_30d_total": "Actif dans 30 jours",
     "active_members": "Membres actifs",
     "already_notified": "Déjà notifié",
     "at_risk": "À risque",
@@ -96,6 +97,8 @@
     "col_hours_received": "Heures reçues",
     "col_initial": "Initiale",
     "col_joined": "Rejoint",
+    "col_retained": "Conservé",
+    "col_retention_rate": "Taux de rétention",
     "col_last_activity": "Dernière activité",
     "col_last_login": "Dernière connexion",
     "col_listings": "Annonces",
@@ -141,8 +144,14 @@
     "group_by_daily": "Regrouper par jour",
     "group_by_monthly": "Regrouper par mois",
     "group_by_weekly": "Regrouper par Hebdomadaire",
+    "unknown_period": "Période inconnue",
+    "week_period": "Semaine {{week}}, {{year}}",
     "hours": "Heures",
+    "hours_reports_page_desc": "Analyser le volume des échanges de crédits de temps, les soldes des membres, et les tendances par catégorie.",
+    "hours_reports_page_title": "Rapports d'heures",
     "hours_value": "Horaires{{value}}",
+    "inactive_members_page_desc": "Identifier les membres à risque de désengagement et gérer les notifications de suivi.",
+    "inactive_members_page_title": "Membres inactifs",
     "label_active_members": "Membres actifs",
     "label_approve": "Approuver",
     "label_approved": "Approuvé",
@@ -150,6 +159,7 @@
     "label_content_type_filter": "Filtre de type de contenu",
     "label_currency": "Devise",
     "label_days_threshold": "Seuil de jours",
+    "label_dormant": "Inactif",
     "label_events_held": "Événements organisés",
     "label_flag_type": "Type de drapeau",
     "label_flagged": "Marqué",
@@ -163,6 +173,10 @@
     "label_least_active_members": "Membres les moins actifs",
     "label_listing_rate": "Tarif d'inscription",
     "label_login_rate": "Tarif de connexion",
+    "label_posts_created": "Messages créés",
+    "label_comments_created": "Commentaires créés",
+    "label_event_rsvps": "RSVP aux événements",
+    "label_new_connections": "Nouvelles connexions",
     "label_messaging_rate": "Tarif de messagerie",
     "label_moderation_queue": "File d'attente de modération",
     "label_monetary_value": "Valeur monétaire",
@@ -192,10 +206,14 @@
     "label_unique_categories": "Catégories uniques",
     "label_unique_givers": "Donateurs uniques",
     "mark_as_notified": "Marquer comme notifié",
+    "member_reports_page_desc": "Suivre l'activité des membres, la rétention, l'engagement et les modèles de contribution.",
+    "member_reports_page_title": "Rapports des membres",
     "members_marked_notified": "Membres marqués comme notifiés",
     "members_selected": "Membres sélectionnés",
     "members_selected_count": "{{count}}sélectionné",
     "moderation_pending": "En attente",
+    "moderation_queue_page_desc": "Examiner le contenu en attente et signalé avant qu'il n'apparaisse dans la communauté.",
+    "moderation_queue_page_title": "File d'attente de modération",
     "moderation_settings": "Paramètres de modération",
     "moderation_settings_updated": "Paramètres de modération mis à jour",
     "never": "Jamais",
@@ -267,24 +285,12 @@
     "hours_by_category_aria": "Graphique à barres montrant les heures échangées par catégorie",
     "hours_distribution_aria": "Diagramme circulaire montrant la répartition des heures d'échange de temps",
     "hours_trend_aria": "Graphique en aires montrant les heures échangées au fil du temps",
-    "members_selected_count_many": "{{count}}sélectionné",
     "members_selected_count_one": "{{count}}sélectionné",
     "members_selected_count_other": "{{count}}sélectionné",
-    "days_count_many": "{{count}} jours",
     "days_count_one": "{{count}} jours",
     "days_count_other": "{{count}} jours",
-    "unknown_period": "Période inconnue",
-    "week_period": "Semaine {{week}}, {{year}}",
-    "active_30d_total": "Actif dans 30 jours",
-    "hours_reports_page_desc": "Analyser le volume des échanges de crédits de temps, les soldes des membres, et les tendances par catégorie.",
-    "hours_reports_page_title": "Rapports d'heures",
-    "inactive_members_page_desc": "Identifier les membres à risque de désengagement et gérer les notifications de suivi.",
-    "inactive_members_page_title": "Membres inactifs",
-    "member_reports_page_desc": "Suivre l'activité des membres, la rétention, l'engagement et les modèles de contribution.",
-    "member_reports_page_title": "Rapports des membres",
-    "moderation_queue_page_desc": "Examiner le contenu en attente et signalé avant qu'il n'apparaisse dans la communauté.",
-    "moderation_queue_page_title": "File d'attente de modération",
-    "label_dormant": "Inactif"
+    "members_selected_count_many": "{{count}}sélectionné",
+    "days_count_many": "{{count}} jours"
   },
   "municipal_reports": {
     "meta": {
@@ -302,13 +308,13 @@
       "body_1_before_kiss": "Le rapport d'impact municipal est un ensemble de preuves que vous partagez avec les partenaires municipaux, les cantons et les bailleurs de fonds pour démontrer la valeur du programme. Il affiche les heures de soins vérifiées, les membres actifs, les organisations partenaires et, à l'aide du",
       "body_1_after_kiss": " méthodologie, une estimation des coûts compensés par les services de soins formels (",
       "body_1_after_chf": "valeur des heures x multiplicateur de prévention).",
+      "kiss_abbr": "Communauté bienveillante",
       "chf_abbr": "CHF",
       "body_2_prefix": "Utilisez le",
       "body_2_after_audience": "basculez pour changer le cadrage narratif:",
       "body_2_after_canton": "regroupe plusieurs communes et montre une économie de coûts à l’échelle cantonale;",
       "body_2_after_municipality": "se concentre sur les résidents locaux touchés et les organisations partenaires;",
-      "body_2_after_cooperative": "montre la fidélisation des membres, le taux de réciprocité et la charge de travail du coordinateur. Exportez sous PDF pour envoyer aux partenaires ou sous CSV pour une analyse plus approfondie. Enregistrez des modèles de rapport pour régénérer rapidement la même configuration dans les périodes futures.",
-      "kiss_abbr": "Communauté bienveillante"
+      "body_2_after_cooperative": "montre la fidélisation des membres, le taux de réciprocité et la charge de travail du coordinateur. Exportez sous PDF pour envoyer aux partenaires ou sous CSV pour une analyse plus approfondie. Enregistrez des modèles de rapport pour régénérer rapidement la même configuration dans les périodes futures."
     },
     "actions": {
       "analytics": "Analyse de la communauté",
@@ -331,9 +337,9 @@
       "exports": "Exportations",
       "csv_pdf": "CSV/PDF",
       "verified_hours": "Horaires vérifiés",
+      "participants": "Participants",
       "organisations": "Organisations",
-      "total_value": "Valeur totale",
-      "participants": "Participants"
+      "total_value": "Valeur totale"
     },
     "loading": "Chargement des données d'impact municipal",
     "period": "Période de déclaration",
@@ -356,13 +362,13 @@
     },
     "readiness": {
       "municipal_value": "Valeur municipale",
+      "participation": "Participation",
       "partner_network": "Réseau de partenaires",
       "local_exchange": "Échange local",
       "status": {
         "ready": "Prêt",
         "needs_data": "Besoin de données"
-      },
-      "participation": "Participation"
+      }
     },
     "readiness_intro": {
       "prefix": "Ces quatre signaux indiquent si le rapport contient suffisamment de données pour convaincre un public externe.",
@@ -393,16 +399,16 @@
     },
     "values": {
       "hours": "{{count}}h",
+      "formatted_hours": "{{value}}h",
       "disabled": "Désactivé",
       "activities": "{{count}} activités",
       "trend_detail": "{{participants}} participants, {{activities}} activités",
-      "hours_many": "{{count}}h",
       "hours_one": "{{count}}h",
       "hours_other": "{{count}}h",
-      "activities_many": "{{count}} activités",
       "activities_one": "{{count}} activités",
       "activities_other": "{{count}} activités",
-      "formatted_hours": "{{value}}h"
+      "hours_many": "{{count}}h",
+      "activities_many": "{{count}} activités"
     },
     "toast": {
       "load_failed": "Échec du chargement des données d'impact municipal.",
@@ -486,9 +492,9 @@
         "no_partner_activity": "Aucune activité partenaire sur cette période.",
         "top_5_categories": "Top 5 des catégories (répartition géographique/activité)",
         "no_category_data": "Aucune donnée de catégorie sur cette période.",
-        "trusted_total_many": "sur {{count}} total de confiance.",
         "trusted_total_one": "sur {{count}} total de confiance.",
-        "trusted_total_other": "sur {{count}} total de confiance."
+        "trusted_total_other": "sur {{count}} total de confiance.",
+        "trusted_total_many": "sur {{count}} total de confiance."
       },
       "cooperative": {
         "empty_title": "Coopérative (cooperative interne)",
@@ -506,19 +512,19 @@
         "coordinator_load_desc": "{{pending}} en attente auprès de {{coordinators}} coordinateurs.",
         "future_care_credit_pool": "Pool de soldes de crédits pour soins futurs",
         "future_care_credit_pool_desc": "Somme des soldes positifs des membres - la réserve implicite de soins futurs de la coopérative. Base de membres actifs: {{count}}.",
-        "member_retention_desc_many": "{{count}} membres actifs à la fois pendant cette période et la période équivalente précédente.",
         "member_retention_desc_one": "{{count}} membres actifs à la fois pendant cette période et la période équivalente précédente.",
         "member_retention_desc_other": "{{count}} membres actifs à la fois pendant cette période et la période équivalente précédente.",
-        "reciprocity_rate_desc_many": "Les supporters {{count}} ont également reçu des heures au cours de cette période.",
         "reciprocity_rate_desc_one": "Les supporters {{count}} ont également reçu des heures au cours de cette période.",
         "reciprocity_rate_desc_other": "Les supporters {{count}} ont également reçu des heures au cours de cette période.",
-        "future_care_credit_pool_desc_many": "Somme des soldes positifs des membres - la réserve implicite de soins futurs de la coopérative. Base de membres actifs: {{count}}.",
         "future_care_credit_pool_desc_one": "Somme des soldes positifs des membres - la réserve implicite de soins futurs de la coopérative. Base de membres actifs: {{count}}.",
-        "future_care_credit_pool_desc_other": "Somme des soldes positifs des membres - la réserve implicite de soins futurs de la coopérative. Base de membres actifs: {{count}}."
+        "future_care_credit_pool_desc_other": "Somme des soldes positifs des membres - la réserve implicite de soins futurs de la coopérative. Base de membres actifs: {{count}}.",
+        "member_retention_desc_many": "{{count}} membres actifs à la fois pendant cette période et la période équivalente précédente.",
+        "reciprocity_rate_desc_many": "Les supporters {{count}} ont également reçu des heures au cours de cette période.",
+        "future_care_credit_pool_desc_many": "Somme des soldes positifs des membres - la réserve implicite de soins futurs de la coopérative. Base de membres actifs: {{count}}."
       },
-      "logs_count_many": "{{count}} journaux",
       "logs_count_one": "{{count}} journaux",
-      "logs_count_other": "{{count}} journaux"
+      "logs_count_other": "{{count}} journaux",
+      "logs_count_many": "{{count}} journaux"
     },
     "cards": {
       "verified_hours": {

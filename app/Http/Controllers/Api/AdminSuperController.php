@@ -984,7 +984,26 @@ class AdminSuperController extends BaseApiController
         ]);
     }
 
-    /** POST /api/v2/super-admin/users/{id}/move-promote */
+    /**
+     * POST /api/v2/admin/super/users/{id}/move-and-promote
+     *
+     * (The path was previously documented here as
+     * `/api/v2/super-admin/users/{id}/move-promote`, which does not exist — see
+     * routes/api.php for the registered path.)
+     *
+     * Scoping: SuperPanelAccess::canAccessTenant() is checked on BOTH the source
+     * and the destination tenant, so a `regional`-level super admin (a hub
+     * tenant's own super admin) can only move users within their own subtree.
+     * Only `master` level (god, or the master tenant's super admin) is
+     * unrestricted. Preserve that both-ends check in any change here.
+     *
+     * 🔴 See User::moveTenant(): the move updates users.tenant_id ONLY. The
+     * member's transactions, listings, messages and group memberships keep the
+     * old tenant_id, so balance travels with them while history does not. The
+     * `records_moved` / `tables_failed` response fields describe that single-row
+     * update and a passkey precondition — they are not a multi-table migration
+     * report.
+     */
     public function userMoveAndPromote(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();

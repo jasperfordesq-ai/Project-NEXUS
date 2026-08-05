@@ -94,8 +94,13 @@ Route::get('/v2/seo/metadata/{slug}', [\App\Http\Controllers\Api\SeoController::
 Route::get('/v2/seo/redirects', [\App\Http\Controllers\Api\SeoController::class, 'redirects']);
 
 // ============================================
-// PUBLIC ROUTES — Explore / Discover
-// Supports both authenticated (personalized) and anonymous (global) access
+// Explore / Discover — AUTHENTICATED ONLY
+// 🔴 This block was previously headed "PUBLIC ROUTES" and claimed it "supports
+// both authenticated (personalized) and anonymous (global) access". That is
+// false: the group below is auth:sanctum, so every route here 401s for an
+// anonymous caller. There is no public listings/explore surface anywhere in the
+// platform (no public_listings feature flag exists) — a logged-out visitor
+// cannot browse offers. Do not cite this comment as evidence that they can.
 // ============================================
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/v2/explore', [\App\Http\Controllers\Api\ExploreController::class, 'index']);
@@ -859,6 +864,13 @@ Route::put('/v2/users/me/sub-accounts/{id}/approve', [\App\Http\Controllers\Api\
 Route::put('/v2/users/me/sub-accounts/{id}/permissions', [\App\Http\Controllers\Api\SubAccountController::class, 'updatePermissions']);
 Route::delete('/v2/users/me/sub-accounts/{id}', [\App\Http\Controllers\Api\SubAccountController::class, 'revokeRelationship']);
 Route::get('/v2/users/me/sub-accounts/{childId}/activity', [\App\Http\Controllers\Api\SubAccountController::class, 'getChildActivity']);
+// Acting on a dependent's behalf. These two routes are the ONLY places
+// `can_manage_listings` and `can_transact` are enforced — before they existed both
+// permissions were offered as toggles in the UI (with labels promising exactly
+// these abilities) and checked nowhere, because no endpoint could reach them.
+// Each records the acting carer on the row it writes and audits to org_audit_log.
+Route::post('/v2/users/me/sub-accounts/{childId}/listings', [\App\Http\Controllers\Api\SubAccountController::class, 'createListingForChild'])->middleware('onboarding-required');
+Route::post('/v2/users/me/sub-accounts/{childId}/transfer', [\App\Http\Controllers\Api\SubAccountController::class, 'transferForChild'])->middleware('onboarding-required');
 
 // ============================================
 // MIGRATED ROUTES — Social (Wallet, Feed, Notifications, Reviews, Search, Polls)
@@ -1653,6 +1665,11 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::get('/v2/admin/users', [\App\Http\Controllers\Api\AdminUsersController::class, 'index']);
     Route::get('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'show'])->whereNumber('id');
     Route::post('/v2/admin/users/{id}/approve', [\App\Http\Controllers\Api\AdminUsersController::class, 'approve']);
+    // Reject a PENDING registration with a mandatory reason. Until this existed the
+    // only options were approve, suspend, ban or hard-delete — so a declined
+    // applicant was left pending indefinitely, invisibly and unreasoned, and there
+    // was nowhere on `users` to record why. Reversible: approve() clears it.
+    Route::post('/v2/admin/users/{id}/reject', [\App\Http\Controllers\Api\AdminUsersController::class, 'reject']);
     Route::post('/v2/admin/users/{id}/suspend', [\App\Http\Controllers\Api\AdminUsersController::class, 'suspend']);
     Route::post('/v2/admin/users/{id}/reactivate', [\App\Http\Controllers\Api\AdminUsersController::class, 'reactivate']);
     Route::put('/v2/admin/users/{id}', [\App\Http\Controllers\Api\AdminUsersController::class, 'update'])->whereNumber('id');
@@ -2373,7 +2390,9 @@ Route::get('/v2/admin/timebanking/stats', [\App\Http\Controllers\Api\AdminTimeba
 Route::get('/v2/admin/timebanking/alerts', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'alerts']);
 Route::put('/v2/admin/timebanking/alerts/{id}', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'updateAlert']);
 // Broker-or-admin: brokers may adjust a member's time balance from the broker
-// panel's member-detail drawer (audited; controller enforces broker-or-admin).
+// panel's member-detail drawer (controller enforces broker-or-admin and a
+// mandatory reason). Audited to org_audit_log as `member_balance_adjusted` with
+// before/after balances, inside the same transaction as the balance change.
 Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function () {
     Route::post('/v2/admin/timebanking/adjust-balance', [\App\Http\Controllers\Api\AdminTimebankingController::class, 'adjustBalance']);
 });
@@ -2472,6 +2491,18 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     // reviewer) but blocks scripted abuse.
     Route::post('/v2/admin/broker/exchanges/{id}/approve', [\App\Http\Controllers\Api\AdminBrokerController::class, 'approveExchange'])->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/admin/broker/exchanges/{id}/reject', [\App\Http\Controllers\Api\AdminBrokerController::class, 'rejectExchange'])->middleware('throttle:nexus-route-60-per-1m');
+    // Arbitrate a disputed exchange. Until this existed, `disputed` was a terminal
+    // dead end that nobody — member, broker or admin — could act on, while the
+    // broker dashboard counted disputed exchanges as needing attention and the SLO
+    // check alarmed on them ageing. Controller enforces broker-or-admin plus a
+    // self-dealing guard; the service clamps the hours and requires a note.
+    Route::post('/v2/admin/broker/exchanges/{id}/resolve-dispute', [\App\Http\Controllers\Api\AdminBrokerController::class, 'resolveExchangeDispute'])->middleware('throttle:nexus-route-60-per-1m');
+    // Reverse a COMPLETED exchange, restoring both members' credits. Before this
+    // existed a mis-recorded exchange could not be corrected at all: `completed` is
+    // terminal, and the only tool was the single-member balance adjustment applied
+    // twice by hand with no link to the exchange. Throttled harder than the others
+    // because it moves credits in both directions.
+    Route::post('/v2/admin/broker/exchanges/{id}/reverse', [\App\Http\Controllers\Api\AdminBrokerController::class, 'reverseExchange'])->middleware('throttle:nexus-route-30-per-1m');
     Route::get('/v2/admin/broker/risk-tags', [\App\Http\Controllers\Api\AdminBrokerController::class, 'riskTags']);
     Route::get('/v2/admin/broker/messages', [\App\Http\Controllers\Api\AdminBrokerController::class, 'messages']);
     Route::get('/v2/admin/broker/messages/unreviewed-count', [\App\Http\Controllers\Api\AdminBrokerController::class, 'unreviewedCount']);

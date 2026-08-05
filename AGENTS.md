@@ -31,7 +31,7 @@ Project NEXUS is an enterprise **multi-tenant community platform** with timebank
 
 **Core Modules:** Feed, Listings, Messages, Events, Groups, Members, Connections, Wallet, Volunteering, Organizations, Blog, Resources, Goals, Matches, Reviews, Search, Leaderboard, Achievements, Help, AI Chat.
 
-**Platform Features:** Multi-tenant architecture, gamification (badges, XP, challenges), federation, real-time WebSockets (Pusher), push notifications (FCM), light/dark theme, PWA, and two separate native paths — `capacitor/` wrapping the React web app, and a distinct Expo / React Native client in `mobile/`. Those are different codebases; do not treat "the mobile app" as one thing.
+**Platform Features:** Multi-tenant architecture, gamification (badges, XP, challenges), federation, real-time WebSockets (Pusher), push notifications (FCM), light/dark theme, PWA, and two separate native paths — a Capacitor wrapper around the React web app, and a distinct Expo / React Native client in `mobile/`. Those are different codebases; do not treat "the mobile app" as one thing. 🔴 The Capacitor native project directory `capacitor/` is **not in this repo** — it was removed in `df8bf84d6` and is gitignored (`.gitignore:176`), so it is machine-local. Only `react-frontend/src/types/capacitor.d.ts` and the Capacitor-aware hooks are public. Do not assume `capacitor/` exists in a fresh clone.
 
 **Federation is two things.** Internal cross-tenant federation (communities on one installation) is live and ungated by design. External partner federation (other installations, other platforms) is built and tested but **switched off by default** and has been off in production since 2026-07-27, with no partner connected — see the kill-switch rules below and `docs/FEDERATION_API_MANUAL.md`.
 
@@ -428,6 +428,58 @@ $stmt = Database::query(
 - **Controllers**: `jsonResponse()` + `getJsonInput()` helpers
 - **Authentication**: `Auth::user()`, `ApiAuth::authenticate()` (token-based), `Csrf::token()`
 - **Feature gating**: `TenantContext::hasFeature('events')` (PHP) / `useTenant().hasFeature('events')` (React)
+
+### 🔴 Authorisation — there are FIVE tiers, and `broker` is not a junior admin
+
+Full reference: [docs/ROLES-AND-PERMISSIONS.md](docs/ROLES-AND-PERMISSIONS.md).
+Summary, because getting this wrong is common:
+
+`member` → `broker`/`coordinator` → `admin`/`tenant_admin` → `is_tenant_super_admin`
+(network admin: own tenant **+ its sub-tenants**) → `is_super_admin`/`god` (platform).
+
+- `app/Support/Authorization/AdminTier.php` is the canonical predicate. It
+  **deliberately returns `false` for `broker`/`coordinator`** — a broker is an
+  operational role with its own application (`react-frontend/src/broker/`), not a
+  lesser admin, and is deliberately refused generic `/v2/admin/*`.
+- Gates: `EnsureIsBrokerOrAdmin`, `EnsureIsAdmin`, `EnsureIsSuperAdmin`.
+  `EnsureIsSuperAdmin` deliberately rejects `is_tenant_super_admin`.
+- Cross-tenant scoping in the super-admin panel is `app/Core/SuperPanelAccess.php`:
+  level `master` (god, or master-tenant super admin) sees everything; level
+  `regional` (hub-tenant super admin) is confined to its own subtree by a
+  materialised-path prefix match. Cross-tenant actions must check
+  `canAccessTenant()` **at both ends** — see `AdminSuperController::userMoveTenant()`.
+- 🔴 `super_admin`, `god`, `tenant_admin` and `coordinator` are **never written to
+  `users.role`** by the API — they are expressed as boolean flags. A gate that
+  checks only the role string will under-authorise a real platform admin. Use
+  `AdminTier`.
+- 🔴 Most declared RBAC permission slugs are **not enforced anywhere**. Grantable
+  ≠ checked. Verify before relying on one.
+
+### 🔴 Safeguarding, guardians and consent EXIST — ~30 tables, previously undocumented
+
+Full reference: [docs/SAFEGUARDING-AND-CONSENT.md](docs/SAFEGUARDING-AND-CONSENT.md).
+This subsystem had no documentation until 2026-08-04, which caused at least one
+audit to conclude it did not exist. It does, and parts of it are the best-built
+code in the repo.
+
+- Guardian relationships: `safeguarding_assignments` (staff-created, record-only —
+  confers **no** capability), `event_guardian_consents` (encrypted identity,
+  single-use token, DB-trigger-enforced append-only history — copy this pattern),
+  `vol_guardian_consents` (genuinely gates minors).
+- Consent: `user_consents` is versioned and hashed. `consent_types` is
+  PLATFORM-GLOBAL GDPR consent and does **not** model proxy representation.
+- Concerns: `safeguarding_reports` is a real case workflow (SLA, escalation,
+  append-only action log). 🔴 There are **four** parallel reporting systems and
+  none can reference an exchange.
+- Staff decisions: `member_vetting_attestations` has closed reason codes and
+  before/after values — the model to imitate.
+- `account_relationships` presents four carer permissions. `can_view_activity`,
+  `can_manage_listings` and `can_transact` are enforced (since 2026-08-04) via
+  `SubAccountService`; proxy actions MUST record `acting_user_id` and audit to
+  `org_audit_log`. 🔴 **`can_view_messages` is still NOT enforced** — it needs the
+  counterparty notice first; do not wire it up or present it as working.
+- A relationship record is never authorisation. Nothing is implicit — add an
+  explicit check.
 
 ---
 

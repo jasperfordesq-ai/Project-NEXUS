@@ -156,8 +156,20 @@ class AdminTimebankingController extends BaseApiController
     /** POST /api/v2/admin/timebanking/adjust-balance */
     public function adjustBalance(): JsonResponse
     {
-        // broker-or-admin: brokers may credit/debit a member's time balance
-        // (with a reason). The action is audited below with the actor id.
+        // broker-or-admin: brokers may credit/debit a member's time balance, with
+        // a mandatory reason.
+        //
+        // Audited to `org_audit_log` as `member_balance_adjusted`, with the actor,
+        // the target member, the reason and the before/after balances — written
+        // INSIDE the same DB transaction as the balance change, so an adjustment
+        // can never land without its record. For most of this endpoint's life two
+        // comments claimed it was audited while nothing was written at all; if you
+        // refactor this method, keep the audit write inside the transaction.
+        //
+        // The ledger entry is one-sided (NULL counterparty, transaction_type
+        // 'admin_grant') because administration creates or destroys the credits —
+        // see the note at the INSERT below for why naming the admin there was
+        // wrong.
         $adminId = $this->requireBrokerOrAdmin();
         $tenantId = $this->getTenantId();
 
@@ -217,13 +229,47 @@ class AdminTimebankingController extends BaseApiController
                 );
 
                 $absAmount = abs($amount);
-                if ($amount > 0) {
-                    DB::insert("INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, status, created_at) VALUES (?, ?, ?, ?, ?, 'completed', NOW())",
-                        [$tenantId, $adminId, $userId, $absAmount, '[Admin Adjustment] ' . $reason]);
-                } else {
-                    DB::insert("INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, status, created_at) VALUES (?, ?, ?, ?, ?, 'completed', NOW())",
-                        [$tenantId, $userId, $adminId, $absAmount, '[Admin Adjustment] ' . $reason]);
-                }
+
+                // One-sided treasury movement: credits are created or destroyed by
+                // administration, so the OTHER side of the entry is NULL rather
+                // than the acting admin. Recording the admin there was actively
+                // harmful — their own users.balance was never moved, so the ledger
+                // did not reconcile for them, and stats()/userReport() derive
+                // total_earned/total_spent with SUM(amount) GROUP BY
+                // receiver_id/sender_id, which meant every adjustment inflated the
+                // acting admin's apparent totals on the admin dashboard.
+                // Same shape as WalletService::reclaimFromMember().
+                // transaction_type is set explicitly so an administrative
+                // adjustment is distinguishable from a member-to-member transfer;
+                // it previously fell back to the 'transfer' column default.
+                DB::insert(
+                    "INSERT INTO transactions (tenant_id, sender_id, receiver_id, amount, description, transaction_type, status, created_at, updated_at)
+                     VALUES (?, ?, ?, ?, ?, 'admin_grant', 'completed', NOW(), NOW())",
+                    $amount > 0
+                        ? [$tenantId, null, $userId, $absAmount, '[Admin Adjustment] ' . $reason]
+                        : [$tenantId, $userId, null, $absAmount, '[Admin Adjustment] ' . $reason]
+                );
+
+                // Audit INSIDE the transaction, deliberately: a balance correction
+                // without a durable record of who made it and why is exactly the
+                // hole this endpoint had for its whole life (two comments claimed
+                // it was audited; nothing was). logAction() uses a raw insertGetId
+                // and does NOT swallow failures, so if the audit row cannot be
+                // written the adjustment rolls back with it. That is the intended
+                // trade: no silent unaudited money movement.
+                app(\App\Services\AuditLogService::class)->logAction(
+                    $tenantId,
+                    'member_balance_adjusted',
+                    $adminId,
+                    [
+                        'reason' => $reason,
+                        'adjustment' => $amount,
+                        'previous_balance' => $currentBalance,
+                        'new_balance' => $newBalance,
+                    ],
+                    null,
+                    $userId,
+                );
 
                 return [
                     'previous_balance' => $currentBalance,

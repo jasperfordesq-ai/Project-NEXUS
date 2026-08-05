@@ -526,6 +526,34 @@ export function LoginPage() {
                           </div>
                         </div>
                       )}
+                      {/*
+                        🔴 There was no branch for AUTH_ACCOUNT_PENDING_APPROVAL, and
+                        approval-required is the DEFAULT for a new community
+                        (TenantSettingsService::requiresAdminApproval() returns true
+                        when unset). So the normal new-member experience was: sign up,
+                        be told to check your email, verify, try to log in, and get a
+                        single line of red text with no explanation of who approves,
+                        how long it takes, or what to do next. This explains it.
+                      */}
+                      {loginErrorCode === 'AUTH_ACCOUNT_PENDING_APPROVAL' && (
+                        <div className="mt-3 flex items-start gap-2">
+                          <ShieldAlert className="w-4 h-4 text-[var(--color-warning)] mt-0.5 flex-shrink-0" aria-hidden="true" />
+                          <div>
+                            <p className="text-amber-600 dark:text-amber-400 text-xs">
+                              {t('login.pending_approval')}
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              as={Link}
+                              to={tenantPath('/contact')}
+                              className="mt-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                            >
+                              {t('login.pending_approval_contact')}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                       {loginErrorCode === 'AUTH_VERIFICATION_FAILED' && (
                         <div className="mt-3 flex items-start gap-2">
                           <ShieldX className="w-4 h-4 text-[var(--color-error)] mt-0.5 flex-shrink-0" aria-hidden="true" />

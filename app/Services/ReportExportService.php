@@ -19,6 +19,17 @@ class ReportExportService
     private ?MunicipalImpactReportService $municipalImpactReportService;
 
     /**
+     * Hard ceiling on exported rows.
+     *
+     * NOTE: the row-based exports below still carry their own `LIMIT 10000`
+     * literals rather than referencing this constant, and none of them tells the
+     * operator when truncation has occurred — an export that silently stops at
+     * 10,000 rows reads as a complete data set. Both are worth fixing; this
+     * constant exists so new code has one place to reference.
+     */
+    private const MAX_EXPORT_ROWS = 10000;
+
+    /**
      * Supported export report types.
      */
     private const SUPPORTED_TYPES = [
@@ -26,6 +37,13 @@ class ReportExportService
         'members'         => 'Member Directory',
         'hours_summary'   => 'Hours Summary',
         'hours_category'  => 'Hours by Category',
+        // hours_member / hours_period exist so that every tab of the Hours report
+        // can export the data it is actually displaying. Before they existed the
+        // UI sent 'hours_category' for all three tabs, so "By Member" and
+        // "Monthly Trend" silently downloaded category totals under a filename
+        // naming the tab the operator had been looking at.
+        'hours_member'    => 'Hours by Member',
+        'hours_period'    => 'Hours by Period',
         'events'          => 'Events Report',
         'listings'        => 'Listings Report',
         'inactive'        => 'Inactive Members',
@@ -268,6 +286,8 @@ class ReportExportService
             'members'        => $this->getMemberData($tenantId, $filters),
             'hours_summary'  => $this->getHoursSummaryData($tenantId, $filters),
             'hours_category' => $this->getHoursCategoryData($tenantId, $filters),
+            'hours_member'   => $this->getHoursMemberData($tenantId, $filters),
+            'hours_period'   => $this->getHoursPeriodData($tenantId, $filters),
             'events'         => $this->getEventData($tenantId, $filters),
             'listings'       => $this->getListingData($tenantId, $filters),
             'inactive'       => $this->getInactiveData($tenantId, $filters),
@@ -428,6 +448,83 @@ class ReportExportService
                 $r->unique_receivers,
             ], $rows),
         ];
+    }
+
+    /**
+     * Hours by member, for the Hours report's "By Member" tab.
+     *
+     * Deliberately delegates to HoursReportService — the SAME service that
+     * renders the screen — rather than re-implementing the query here. The
+     * category export below has its own copy of the SQL and has already drifted
+     * from the screen once (it groups by c.name where the screen groups by
+     * c.id, c.name, c.color, so two categories sharing a name merge in the
+     * export but not on screen). Reuse removes that whole class of bug: if the
+     * figures on screen are right, the export's are right too.
+     *
+     * No limit/offset is passed: an export should contain the whole range, not
+     * whichever page the operator happened to be viewing.
+     */
+    private function getHoursMemberData(int $tenantId, array $filters): array
+    {
+        $service = app(HoursReportService::class);
+        $result = $service->getHoursByMember(
+            $tenantId,
+            $this->toHoursDateRange($filters),
+            'total',
+            self::MAX_EXPORT_ROWS,
+            0
+        );
+
+        return [
+            'headers' => ['Member', 'Hours Given', 'Hours Received', 'Total Hours', 'Given Count', 'Received Count', 'Transactions'],
+            'rows' => array_map(fn(array $r) => [
+                $r['name'],
+                $r['hours_given'],
+                $r['hours_received'],
+                $r['total_hours'],
+                $r['given_count'],
+                $r['received_count'],
+                $r['total_transactions'],
+            ], $result['data'] ?? []),
+        ];
+    }
+
+    /**
+     * Hours by period, for the Hours report's "Monthly Trend" tab.
+     * Delegates to HoursReportService for the same reason as above.
+     */
+    private function getHoursPeriodData(int $tenantId, array $filters): array
+    {
+        $service = app(HoursReportService::class);
+        $rows = $service->getHoursByPeriod($tenantId, $this->toHoursDateRange($filters));
+
+        return [
+            'headers' => ['Period', 'Total Hours', 'Transactions', 'Unique Providers', 'Unique Receivers', 'Unique Participants'],
+            'rows' => array_map(fn(array $r) => [
+                $r['period_label'] ?? $r['period'],
+                $r['total_hours'],
+                $r['transaction_count'],
+                $r['unique_providers'],
+                $r['unique_receivers'],
+                $r['unique_participants'],
+            ], $rows),
+        ];
+    }
+
+    /**
+     * Translate this service's `date_from`/`date_to` filter names into the
+     * `from`/`to` shape HoursReportService expects.
+     */
+    private function toHoursDateRange(array $filters): array
+    {
+        $range = [];
+        if (!empty($filters['date_from'])) {
+            $range['from'] = $filters['date_from'];
+        }
+        if (!empty($filters['date_to'])) {
+            $range['to'] = $filters['date_to'];
+        }
+        return $range;
     }
 
     private function getEventData(int $tenantId, array $filters): array
@@ -942,7 +1039,12 @@ class ReportExportService
             $conditions .= " AND {$column} >= ?";
         }
         if (!empty($filters['date_to'])) {
-            $conditions .= " AND {$column} <= ?";
+            // See HoursReportService::buildDateConditions() — `<= 'YYYY-MM-DD'`
+            // against a DATETIME column excludes the entire final day. Keep these
+            // two builders in step; an export whose range differs from the screen
+            // by one day is exactly the kind of thing that destroys trust in a
+            // report.
+            $conditions .= " AND {$column} < DATE_ADD(?, INTERVAL 1 DAY)";
         }
         return $conditions;
     }

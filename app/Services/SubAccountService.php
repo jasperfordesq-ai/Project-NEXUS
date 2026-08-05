@@ -12,6 +12,7 @@ use App\Models\AccountRelationship;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 /**
  * SubAccountService — Laravel DI-based service for family/guardian accounts.
@@ -419,6 +420,158 @@ class SubAccountService
         }
 
         return $this->activityService->getDashboardData($childUserId);
+    }
+
+    /**
+     * Post a listing on a dependent's behalf (`can_manage_listings`).
+     *
+     * The listing BELONGS to the dependent — it is their offer, and any exchange
+     * that follows is theirs. `acting_user_id` records that the carer posted it.
+     *
+     * 🔴 Context, because this is the first real enforcement of these permissions.
+     * `account_relationships` has offered `can_manage_listings`, `can_transact` and
+     * `can_view_messages` for a long time, and both frontends show all three as
+     * toggles with explicit labels ("Manage their listings", "Send and receive time
+     * credits", "View their messages") — but `hasPermission()` had exactly one
+     * caller in the whole codebase, for `can_view_activity`. Nothing checked the
+     * other three, and there was no endpoint through which they could have been
+     * checked. Families were being told a carer had powers the carer did not have.
+     *
+     * The safeguarding contact policy is re-asserted at use time, not just at
+     * grant time: a relationship approved months ago must not keep working after a
+     * safeguarding restriction lands on either party.
+     *
+     * @return int|null Listing id, or null with $this->errors populated.
+     */
+    public function createListingForChild(int $parentUserId, int $childUserId, array $data): ?int
+    {
+        if (! $this->hasPermission($parentUserId, $childUserId, 'can_manage_listings')) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api_controllers_2.sub_account.no_permission')];
+            return null;
+        }
+
+        try {
+            $this->assertRelationshipContactsAllowed($parentUserId, $childUserId, 'subaccount_manage_listings');
+        } catch (\Throwable $e) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => $e->getMessage()];
+            return null;
+        }
+
+        try {
+            $listing = ListingService::create($childUserId, $data, $parentUserId);
+        } catch (\Throwable $e) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()];
+            return null;
+        }
+
+        $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_listing_created', [
+            'listing_id' => $listing->id,
+        ]);
+
+        // The dependent is told, in their own language, that something was posted
+        // in their name. A proxy action the owner never learns about is not
+        // consent, it is substitution.
+        $this->notifyChildOfProxyAction(
+            $childUserId,
+            'api_controllers_2.sub_account.listing_created_notice',
+            '/listings/' . $listing->id,
+        );
+
+        return (int) $listing->id;
+    }
+
+    /**
+     * Send credits from a dependent's balance on their behalf (`can_transact`).
+     *
+     * Delegates to WalletService::transfer(), which already carries the transfer
+     * cap, decimal-precision rule, safeguarding contact check, deterministic lock
+     * ordering, over-spend guard and idempotency claim. Re-implementing any of that
+     * here would be a second, weaker money path — the carer route must be exactly
+     * as safe as the member's own, not similar to it.
+     *
+     * @return array<string,mixed>|null Formatted transaction, or null with errors.
+     */
+    public function transferForChild(int $parentUserId, int $childUserId, array $data): ?array
+    {
+        if (! $this->hasPermission($parentUserId, $childUserId, 'can_transact')) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api_controllers_2.sub_account.no_permission')];
+            return null;
+        }
+
+        try {
+            $this->assertRelationshipContactsAllowed($parentUserId, $childUserId, 'subaccount_transact');
+        } catch (\Throwable $e) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => $e->getMessage()];
+            return null;
+        }
+
+        try {
+            // Sender is the DEPENDENT (it is their balance); the carer is recorded
+            // as the acting user on the ledger row.
+            $txn = app(WalletService::class)->transfer($childUserId, $data, $parentUserId);
+        } catch (\Throwable $e) {
+            $this->errors[] = ['code' => 'TRANSFER_FAILED', 'message' => $e->getMessage()];
+            return null;
+        }
+
+        $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_transfer_sent', [
+            'transaction_id' => $txn['id'] ?? null,
+            'amount' => $data['amount'] ?? null,
+        ]);
+
+        $this->notifyChildOfProxyAction(
+            $childUserId,
+            'api_controllers_2.sub_account.transfer_notice',
+            '/wallet',
+        );
+
+        return $txn;
+    }
+
+    /**
+     * Record a proxy action against the durable tenant audit log.
+     *
+     * Deliberately `org_audit_log` rather than only a notification: a carer
+     * spending a dependent's credits, or posting in their name, must leave a record
+     * that outlives the notification and is exportable by an administrator.
+     */
+    private function auditProxyAction(int $parentUserId, int $childUserId, string $action, array $details): void
+    {
+        try {
+            app(AuditLogService::class)->logAction(
+                TenantContext::getId(),
+                $action,
+                $parentUserId,
+                $details,
+                null,
+                $childUserId,
+            );
+        } catch (\Throwable $e) {
+            // Never fail the member-facing action on an audit hiccup, but do not
+            // let it pass silently either.
+            Log::error('Failed to audit linked-account proxy action', [
+                'action' => $action,
+                'parent_user_id' => $parentUserId,
+                'child_user_id' => $childUserId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /** Tell the dependent, in their own language, that a carer acted for them. */
+    private function notifyChildOfProxyAction(int $childUserId, string $messageKey, string $link): void
+    {
+        try {
+            $child = User::find($childUserId);
+            LocaleContext::withLocale($child, function () use ($childUserId, $messageKey, $link) {
+                Notification::createNotification($childUserId, __($messageKey), $link, 'system');
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify dependent of linked-account proxy action', [
+                'child_user_id' => $childUserId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

@@ -181,6 +181,66 @@ class SubAccountController extends BaseApiController
         return $this->respondWithData($activity);
     }
 
+    /**
+     * POST /api/v2/users/me/sub-accounts/{childId}/listings
+     *
+     * Post a listing on a dependent's behalf. Requires an active linked-account
+     * relationship carrying `can_manage_listings`.
+     *
+     * This and the transfer endpoint below are the first places those permissions
+     * are actually enforced — see SubAccountService::createListingForChild() for
+     * why that matters. The listing belongs to the dependent; the carer is recorded
+     * as the acting user.
+     */
+    public function createListingForChild($childId): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_create_listing', 10, 60);
+
+        $listingId = $this->subAccountService->createListingForChild(
+            $userId,
+            (int) $childId,
+            $this->getAllInput(),
+        );
+
+        if ($listingId === null) {
+            $errors = $this->subAccountService->getErrors();
+            $status = (($errors[0]['code'] ?? '') === 'FORBIDDEN') ? 403 : 422;
+            return $this->respondWithErrors($errors, $status);
+        }
+
+        return $this->respondWithData(['id' => $listingId], null, 201);
+    }
+
+    /**
+     * POST /api/v2/users/me/sub-accounts/{childId}/transfer
+     *
+     * Send credits from a dependent's balance on their behalf. Requires an active
+     * linked-account relationship carrying `can_transact`.
+     *
+     * Rate limited harder than the listing route: this one spends someone else's
+     * money.
+     */
+    public function transferForChild($childId): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_transfer', 5, 60);
+
+        $txn = $this->subAccountService->transferForChild(
+            $userId,
+            (int) $childId,
+            $this->getAllInput(),
+        );
+
+        if ($txn === null) {
+            $errors = $this->subAccountService->getErrors();
+            $status = (($errors[0]['code'] ?? '') === 'FORBIDDEN') ? 403 : 422;
+            return $this->respondWithErrors($errors, $status);
+        }
+
+        return $this->respondWithData($txn);
+    }
+
     private function normalizeRelationships(array $relationships): array
     {
         foreach ($relationships as &$relationship) {

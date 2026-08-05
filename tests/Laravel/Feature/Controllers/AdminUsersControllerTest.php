@@ -198,6 +198,131 @@ class AdminUsersControllerTest extends TestCase
         $this->assertNull($gate, 'approved member must pass the login gates');
     }
 
+    // ================================================================
+    // REJECT — POST /v2/admin/users/{id}/reject
+    //
+    // 🔴 There was no way to reject an applicant at all. A community could
+    // approve, suspend, ban or hard-delete, and nothing else — so a declined
+    // registration was left pending indefinitely, invisibly and unreasoned, and
+    // `users` had nowhere to record why. `users.status` did not even have a
+    // 'rejected' value, though RegistrationService already wrote one on a lost
+    // invite-code race; under this database's STRICT_TRANS_TABLES that threw,
+    // so the invite race 500'd instead of returning its intended 422.
+    // ================================================================
+
+    public function test_reject_marks_a_pending_applicant_with_a_reason(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $pending = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'pending',
+            'is_approved' => false,
+            'email_verified_at' => now(),
+        ]);
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost('/v2/admin/users/' . $pending->id . '/reject', [
+            'reason' => 'Outside the area this community covers',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.rejected', true);
+
+        $row = DB::table('users')->where('id', $pending->id)
+            ->first(['status', 'is_approved', 'rejection_reason', 'rejected_at', 'rejected_by']);
+
+        // The 'rejected' enum value must actually persist — this database runs
+        // STRICT_TRANS_TABLES, so before the migration this write threw.
+        $this->assertSame('rejected', strtolower((string) $row->status));
+        $this->assertSame(0, (int) $row->is_approved);
+        // The reason lives on the row, not only in a log.
+        $this->assertSame('Outside the area this community covers', $row->rejection_reason);
+        $this->assertNotNull($row->rejected_at);
+        $this->assertEquals($admin->id, (int) $row->rejected_by);
+
+        // The applicant is told, rather than left wondering.
+        $this->assertDatabaseHas('notifications', ['user_id' => $pending->id]);
+
+        // And it is durably audited.
+        $audit = DB::table('org_audit_log')
+            ->where('action', 'member_registration_rejected')
+            ->where('target_user_id', $pending->id)
+            ->first();
+        $this->assertNotNull($audit, 'Rejecting an applicant must be audited.');
+    }
+
+    public function test_reject_requires_a_reason(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $pending = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'pending', 'is_approved' => false,
+        ]);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/users/' . $pending->id . '/reject', ['reason' => '   '])
+            ->assertStatus(400);
+
+        $this->assertSame(
+            'pending',
+            strtolower((string) DB::table('users')->where('id', $pending->id)->value('status'))
+        );
+    }
+
+    public function test_reject_refuses_an_already_approved_member(): void
+    {
+        // Rejecting is a decision about an APPLICANT. Removing an active member is
+        // suspension or a ban — different decisions with different consequences.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $member = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/users/' . $member->id . '/reject', ['reason' => 'Changed my mind'])
+            ->assertStatus(400);
+
+        $this->assertSame(
+            'active',
+            strtolower((string) DB::table('users')->where('id', $member->id)->value('status'))
+        );
+    }
+
+    public function test_reject_returns_403_for_regular_member(): void
+    {
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($member);
+
+        $this->apiPost('/v2/admin/users/1/reject', ['reason' => 'Nope'])->assertStatus(403);
+    }
+
+    public function test_approving_a_rejected_applicant_clears_the_rejection(): void
+    {
+        // A community must be able to change its mind without the applicant having
+        // to register again.
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        $rejected = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'pending',
+            'is_approved' => false,
+            'email_verified_at' => now(),
+        ]);
+        $mailer = new AdminUsersSuccessfulEmailDispatchService();
+        app()->instance(EmailDispatchService::class, $mailer);
+        Sanctum::actingAs($admin);
+
+        $this->apiPost('/v2/admin/users/' . $rejected->id . '/reject', ['reason' => 'Rejected in error'])
+            ->assertStatus(200);
+
+        $this->apiPost('/v2/admin/users/' . $rejected->id . '/approve')->assertStatus(200);
+
+        $row = DB::table('users')->where('id', $rejected->id)
+            ->first(['status', 'is_approved', 'rejection_reason', 'rejected_at', 'rejected_by']);
+
+        $this->assertSame('active', strtolower((string) $row->status));
+        $this->assertSame(1, (int) $row->is_approved);
+        $this->assertNull($row->rejection_reason, 'Approving must clear the earlier rejection.');
+        $this->assertNull($row->rejected_at);
+        $this->assertNull($row->rejected_by);
+    }
+
     public function test_approve_repairs_already_approved_account_stuck_on_pending_status(): void
     {
         // Accounts approved by the pre-fix endpoint ended up is_approved=1

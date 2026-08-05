@@ -447,6 +447,49 @@ class RegistrationService
             }
         }
 
+        // Record WHICH VERSION of the terms this member agreed to.
+        //
+        // 🔴 The `terms_accepted` field is validated above and was then thrown
+        // away — nothing was written anywhere. A fully versioned
+        // `user_legal_acceptances` table already existed (version_id,
+        // version_number, ip_address, user_agent, session_id, and an
+        // `acceptance_method` enum whose 'registration' value was never once
+        // used), and LegalDocumentService::acceptAll() was already written for
+        // exactly this and already defaulted to 'registration' — it simply had no
+        // caller here. The only versioned record a member ever received was
+        // created later, at first login, by the legal gate, and stamped
+        // 'login_prompt'. So between registering and first logging in there was no
+        // evidence at all of which terms a member had agreed to, and for anyone who
+        // never logged in, none ever.
+        //
+        // Deliberately AFTER the user row commits and BEFORE the event fires:
+        // acceptAll() needs a real user id, and a member must not receive a welcome
+        // email implying they are set up if this failed.
+        //
+        // Non-fatal by design: a tenant with no active legal documents records
+        // nothing (there is no version to pin, which is the honest outcome), and a
+        // failure here must not destroy an otherwise valid registration. It is
+        // logged at error level rather than swallowed, because an unrecorded
+        // acceptance is a compliance gap, not noise.
+        //
+        // Scope: this covers the email/password path, which the React app AND the
+        // accessible frontend both use (AlphaController::storeRegister delegates
+        // here). It deliberately does NOT cover OAuth signup — that path
+        // (SocialAuthService → RegistrationOrchestrationService) never presents a
+        // terms checkbox, so recording an acceptance there would fabricate consent
+        // the member never gave. Those members are correctly captured at first
+        // login by the legal gate, stamped 'login_prompt'. Do not "fix" the OAuth
+        // path by calling acceptAll() on it.
+        try {
+            LegalDocumentService::acceptAll((int) $user->id, 'registration');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to record registration terms acceptance', [
+                'user_id' => (int) $user->id,
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         // Dispatch UserRegistered event (triggers welcome notification, etc.)
         try {
             event(new UserRegistered($user, $tenantId));
@@ -495,6 +538,26 @@ class RegistrationService
             }
         }
 
+        // 🔴 `requires_approval` MUST be returned. The React app has always been
+        // built to consume it — AuthContext reads `requires_approval`,
+        // `requires_waitlist` and `waitlist_position`, and RegisterPage renders a
+        // dedicated "awaiting approval" panel keyed off it — but this method never
+        // sent any of them, so that panel was unreachable code and every new member
+        // saw only "check your email".
+        //
+        // That is not an edge case: TenantSettingsService::requiresAdminApproval()
+        // returns TRUE when the setting is unset, so awaiting-approval is the
+        // DEFAULT experience for a freshly provisioned community. Members were
+        // being left to discover it by failing to log in, where the only signal was
+        // one line of red text.
+        //
+        // `requires_waitlist` / `waitlist_position` are deliberately NOT returned:
+        // the waitlist registration mode is declared in RegistrationPolicyService
+        // but this method does not implement it (it only honours `closed` and
+        // `invite_only`), so claiming a waitlist position here would be inventing
+        // one. Wire those up when the mode is genuinely implemented.
+        $requiresApproval = $this->tenantSettings->requiresAdminApproval($tenantId);
+
         return [
             'user' => [
                 'id' => $user->id,
@@ -503,6 +566,7 @@ class RegistrationService
                 'last_name' => $user->last_name,
             ],
             'requires_verification' => true,
+            'requires_approval' => $requiresApproval,
             'message' => __('emails_misc.registration.success_message'),
         ];
     }

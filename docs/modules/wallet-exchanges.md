@@ -74,11 +74,38 @@ State-by-state:
 6. **Completion or dispute** (`processConfirmations()`):
    - Hours agree (difference `< 0.01`) → complete at that figure.
    - Hours differ but within `0.25` h tolerance → complete at the average.
-   - Hours differ by more than the tolerance → **`disputed`**; both parties are emailed in their own locale. A broker/admin resolves the dispute, which completes the exchange (`disputed → completed`).
+   - Hours differ by more than the tolerance → **`disputed`**; both parties are emailed in their own locale. A broker/admin resolves the dispute via `POST /v2/admin/broker/exchanges/{id}/resolve-dispute` → `ExchangeWorkflowService::resolveDispute()`, which completes the exchange (`disputed → completed`). The submitted figure is clamped to the same `proposed_hours ± max_hour_variance_percent` window a participant's own confirmation would be, a note is mandatory, and a broker who is a party to the exchange is refused.
+     > ⚠️ This line described the intended behaviour long before it worked. Until 2026-08-04 `disputed` was a dead end: `completeExchange()` accepted the status but was private and reachable only through a guard that excluded it, and `cancelExchange()`'s staff branch had no route and tested a non-existent `is_broker` flag. Credits were stuck before they moved while the broker dashboard counted the queue and the SLO check alarmed on it. Do not assume a documented broker action is reachable — check for the route.
 7. **Completion settles the ledger.** `completeExchange()` → `createTransaction()` performs the credit movement (see invariants) and links `transaction_id` back onto the exchange. Notifications are sent only **after** the financial transaction commits.
 8. **Rating.** After `completed`, either party may submit one 1–5 star rating via `ExchangeRatingService::submitRating()`; a second attempt by the same rater is rejected.
 
-Terminal states (`completed`, `cancelled`, `expired`) accept no further transitions.
+Terminal states (`completed`, `cancelled`, `expired`) accept no further **status**
+transitions.
+
+**A completed exchange can, however, be reversed** —
+`POST /v2/admin/broker/exchanges/{id}/reverse` →
+`ExchangeWorkflowService::reverseCompletedExchange()`. The status deliberately stays
+`completed`; the question "does this exchange still stand?" is answered by
+`exchange_requests.reversal_transaction_id IS NOT NULL`, **not** by the status.
+Read that column, not the status, before treating a completed exchange as settled.
+
+The reversal follows `MarketplaceTimeCreditSettlementService::refund()`:
+
+- A **compensating** `transactions` row (`transaction_type = 'exchange_reversal'`)
+  mirroring the original's sender/receiver. The original row is never mutated or
+  deleted.
+- The amount is re-read from the **original transaction under lock**, never from
+  caller input and never from `final_hours` — so editing `final_hours` afterwards
+  cannot change what a reversal moves.
+- Both user rows locked in deterministic min/max id order.
+- Double reversal blocked twice: a service guard **and** the
+  `uq_exchange_reversal_once` UNIQUE index on `reversal_transaction_id`. A guard
+  alone races; the index cannot.
+- Balances **may go negative** if the payee already spent the credits — an explicit
+  debt in the ledger, the same decision the marketplace refund makes.
+- Recorded in `exchange_history` (member-visible) and `org_audit_log` (durable).
+- Reversal only; it does not re-post at a corrected figure. To amend hours: reverse,
+  then record the exchange again correctly.
 
 ## Ledger invariants
 

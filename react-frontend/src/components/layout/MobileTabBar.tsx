@@ -6,8 +6,19 @@
 /**
  * Mobile Bottom Tab Bar
  * Fixed navigation bar at the bottom of the screen on mobile devices.
- * Hidden on md+ screens. Shows up to 5 tabs: Feed, Listings, Create, Messages, Menu.
+ * Shows up to 5 tabs: Feed, Listings, Create, Messages, Menu.
  * Only visible when the user is authenticated and not on auth pages.
+ *
+ * 🔴 Breakpoint: `lg:hidden`, NOT `md:hidden`. It must stay aligned with the
+ * desktop navigation's `hidden lg:flex` in Navbar.tsx, because those two are the
+ * only primary navigation an authenticated member has — the hamburger that opens
+ * MobileDrawer is deliberately rendered for guests only. When this bar was
+ * `md:hidden` there was a dead band from 768px to 1023px in which a signed-in
+ * member had NO navigation at all: the bar had gone and the desktop nav had not
+ * yet appeared. A phone in landscape is 844–932px, so it landed squarely in that
+ * band. If you change this breakpoint, change Navbar's to match, and also update
+ * the `[data-mobile-tabbar]` media query in index.css and the mini-player offset
+ * in PodcastMiniPlayer.tsx.
  */
 
 import React, { useState, useCallback } from 'react';
@@ -121,11 +132,11 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
     <>
       {/* Spacer so page content isn't hidden behind the fixed bar */}
       {/* Spacer matches tab bar height + safe-area bottom so content isn't hidden behind it */}
-      <div className="h-[calc(4rem+env(safe-area-inset-bottom,0px))] md:hidden" aria-hidden="true" />
+      <div className="h-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:hidden" aria-hidden="true" />
 
       <nav
         data-mobile-tabbar
-        className={`fixed bottom-0 left-0 right-0 z-300 pb-[env(safe-area-inset-bottom,0px)] md:hidden transition-all duration-200 ${isHidden ? 'translate-y-[calc(100%+12px)] pointer-events-none' : ''}`}
+        className={`fixed bottom-0 left-0 right-0 z-300 pb-[env(safe-area-inset-bottom,0px)] lg:hidden transition-all duration-200 ${isHidden ? 'translate-y-[calc(100%+12px)] pointer-events-none' : ''}`}
         aria-label={t('aria.mobile_navigation')}
       >
         {/* Glass surface */}

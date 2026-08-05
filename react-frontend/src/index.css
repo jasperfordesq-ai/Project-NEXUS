@@ -913,8 +913,7 @@
   to { opacity: 1; transform: none; }
 }
 
-/* Keep every text-entry surface at the iOS no-zoom baseline and move the
-   fixed navigation out of the way while the software keyboard has focus. */
+/* Keep every text-entry surface at the iOS no-zoom baseline. */
 @media (max-width: 767px) {
   input,
   textarea,
@@ -922,7 +921,13 @@
   [contenteditable="true"] {
     font-size: 16px !important;
   }
+}
 
+/* These rules move the bottom tab bar out of the way, so their breakpoint must
+   track the bar's own `lg:hidden` (1023px) — not the 767px used above for the
+   iOS no-zoom font size. They were previously inside the 767px block, which meant
+   that from 768px to 1023px the keyboard/modal handling silently did nothing. */
+@media (max-width: 1023px) {
   body:has(input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus) [data-mobile-tabbar],
   body:has([data-slot="modal-backdrop"]) [data-mobile-tabbar],
   body:has([data-slot="drawer-backdrop"]) [data-mobile-tabbar],

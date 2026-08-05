@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Feature\Controllers;
 
+use App\Models\User;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -155,6 +156,186 @@ class RegistrationControllerTest extends TestCase
         ]);
 
         $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+    }
+
+    /**
+     * 🔴 Registration validated `terms_accepted` and then discarded it. The
+     * versioned `user_legal_acceptances` table already existed — including an
+     * `acceptance_method` enum whose 'registration' value had never once been
+     * written — and LegalDocumentService::acceptAll() was already built for this
+     * and already defaulted to 'registration'. It simply had no caller. The only
+     * versioned record a member ever got was created later, at first login, by the
+     * legal gate and stamped 'login_prompt', so between registering and first
+     * logging in there was no evidence of which terms they had agreed to.
+     */
+    public function test_register_pins_the_accepted_terms_version(): void
+    {
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+
+        $documentId = (int) DB::table('legal_documents')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'document_type' => 'terms',
+            'title' => 'Terms',
+            'slug' => 'terms-' . uniqid(),
+            'requires_acceptance' => 1,
+            'acceptance_required_for' => 'registration',
+            'notify_on_update' => 0,
+            'is_active' => 1,
+            'created_by' => $admin->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // No tenant_id on this table — versions are tenant-scoped through their
+        // parent document.
+        $versionId = (int) DB::table('legal_document_versions')->insertGetId([
+            'document_id' => $documentId,
+            'version_number' => '2.4',
+            'content' => 'The terms in force at the moment this member registered.',
+            'is_current' => 1,
+            'is_draft' => 0,
+            'effective_date' => now()->toDateString(),
+            'created_by' => $admin->id,
+            'published_by' => $admin->id,
+            'published_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('legal_documents')->where('id', $documentId)
+            ->update(['current_version_id' => $versionId]);
+
+        $email = 'termsversion-' . uniqid() . '@gmail.com';
+
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'Terms',
+            'last_name' => 'Tester',
+            'email' => $email,
+            'location' => 'Toronto, Canada',
+            'phone' => '+15551234567',
+            'password' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'password_confirmation' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'terms_accepted' => true,
+            'form_started_at' => (int) (microtime(true) * 1000) - 6000,
+            'latitude' => 43.6532,
+            'longitude' => -79.3832,
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+
+        $userId = (int) DB::table('users')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('email', $email)
+            ->value('id');
+        $this->assertGreaterThan(0, $userId);
+
+        $acceptance = DB::table('user_legal_acceptances')
+            ->where('user_id', $userId)
+            ->where('version_id', $versionId)
+            ->first();
+
+        $this->assertNotNull(
+            $acceptance,
+            'Registering must record WHICH version of the terms the member accepted.'
+        );
+        // The specific version, not just "the terms".
+        $this->assertSame('2.4', $acceptance->version_number);
+        $this->assertEquals($documentId, (int) $acceptance->document_id);
+        // 'registration', not the 'login_prompt' the legal gate would later stamp.
+        $this->assertSame('registration', $acceptance->acceptance_method);
+        $this->assertNotNull($acceptance->accepted_at);
+    }
+
+    public function test_register_still_succeeds_when_the_tenant_has_no_legal_documents(): void
+    {
+        // No version exists to pin, so nothing is recorded — that is the honest
+        // outcome, and it must not break registration.
+        DB::table('legal_documents')->where('tenant_id', $this->testTenantId)->update(['is_active' => 0]);
+
+        $email = 'nolegal-' . uniqid() . '@gmail.com';
+
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'No',
+            'last_name' => 'Legal',
+            'email' => $email,
+            'location' => 'Toronto, Canada',
+            'phone' => '+15551234567',
+            'password' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'password_confirmation' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'terms_accepted' => true,
+            'form_started_at' => (int) (microtime(true) * 1000) - 6000,
+            'latitude' => 43.6532,
+            'longitude' => -79.3832,
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+
+        $userId = (int) DB::table('users')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('email', $email)
+            ->value('id');
+        $this->assertGreaterThan(0, $userId, 'Registration must still create the account.');
+    }
+
+    /**
+     * 🔴 The React app has always been built to consume `requires_approval` —
+     * AuthContext reads it and RegisterPage has a dedicated "awaiting approval"
+     * panel — but registration never returned it, so that panel was unreachable and
+     * every new member saw only "check your email". Not an edge case:
+     * requiresAdminApproval() returns TRUE when the setting is unset, so this is the
+     * DEFAULT experience for a new community.
+     */
+    public function test_register_reports_that_approval_is_required(): void
+    {
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'general.admin_approval'],
+            ['setting_value' => '1', 'setting_type' => 'boolean', 'updated_at' => now()]
+        );
+
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'Pending',
+            'last_name' => 'Applicant',
+            'email' => 'pending-' . uniqid() . '@gmail.com',
+            'location' => 'Toronto, Canada',
+            'phone' => '+15551234567',
+            'password' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'password_confirmation' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'terms_accepted' => true,
+            'form_started_at' => (int) (microtime(true) * 1000) - 6000,
+            'latitude' => 43.6532,
+            'longitude' => -79.3832,
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+        $this->assertTrue(
+            $response->json('data.requires_approval'),
+            'Registration must tell the member they are awaiting approval.'
+        );
+    }
+
+    public function test_register_reports_no_approval_needed_when_the_setting_is_off(): void
+    {
+        DB::table('tenant_settings')->updateOrInsert(
+            ['tenant_id' => $this->testTenantId, 'setting_key' => 'general.admin_approval'],
+            ['setting_value' => '0', 'setting_type' => 'boolean', 'updated_at' => now()]
+        );
+
+        $response = $this->apiPost('/v2/auth/register', [
+            'first_name' => 'Self',
+            'last_name' => 'Serve',
+            'email' => 'selfserve-' . uniqid() . '@gmail.com',
+            'location' => 'Toronto, Canada',
+            'phone' => '+15551234567',
+            'password' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'password_confirmation' => 'CoffeeMugSundayMorningPhpUnitTest2026',
+            'terms_accepted' => true,
+            'form_started_at' => (int) (microtime(true) * 1000) - 6000,
+            'latitude' => 43.6532,
+            'longitude' => -79.3832,
+        ]);
+
+        $this->assertContains($response->getStatusCode(), [200, 201], 'Response body: ' . $response->getContent());
+        $this->assertFalse($response->json('data.requires_approval'));
     }
 
     public function test_register_is_blocked_when_admin_registration_mode_is_closed(): void

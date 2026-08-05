@@ -317,6 +317,92 @@ class AdminEnterpriseController extends BaseApiController
         if (empty($status)) { return $this->respondWithError('VALIDATION_ERROR', __('api.status_required'), 'status', 422); }
 
         try {
+            // 🔴 Marking an ERASURE request 'completed' must actually erase.
+            //
+            // This endpoint used to write the status string and nothing else, so an
+            // administrator could mark a right-to-be-forgotten request "completed",
+            // stamping processed_at and processed_by, while the member's data
+            // remained entirely intact. That is worse than an unprocessed request:
+            // it manufactures a false compliance record, and the daily
+            // overdue-request alarm (gdpr:check-overdue-requests) stops flagging it
+            // because it no longer looks open.
+            //
+            // NOTE on the wider design, because it is easy to misread: the absence
+            // of an automated erasure worker is DELIBERATE and documented in
+            // OverdueGdprRequestCheck — "fulfilling a DSAR is a human/legal
+            // decision". Requests are meant to be actioned by an administrator, with
+            // that command alarming on a backlog. So the fix is not to add a worker;
+            // it is to make the administrator's action do what it claims.
+            //
+            // GdprService::executeAccountDeletion() was already built for exactly
+            // this: it takes the request id, performs the Article 17 erasure, and
+            // then marks the request completed itself — or, if a critical PII step
+            // failed, deliberately leaves it as 'processing' so an admin retries
+            // rather than seeing a false success. All of that was simply unreachable.
+            if ($status === 'completed') {
+                $request = DB::selectOne(
+                    "SELECT id, user_id, request_type, status FROM gdpr_requests WHERE id = ? AND tenant_id = ?",
+                    [$id, $tenantId]
+                );
+
+                if (!$request) {
+                    return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
+                }
+
+                if ((string) $request->request_type === 'erasure' && (string) $request->status !== 'completed') {
+                    // Build the service tenant-scoped explicitly: GdprService
+                    // captures its tenant at construction, and a container-resolved
+                    // instance may predate the request's tenant being set — which
+                    // would scope the erasure to the wrong tenant and silently
+                    // affect zero rows.
+                    $subjectId = (int) $request->user_id;
+
+                    // The subject row may already be gone (e.g. erased through the
+                    // admin user-delete path). Let the admin close the request in
+                    // that case rather than blocking on an erasure that cannot run.
+                    $subjectExists = DB::selectOne(
+                        "SELECT id FROM users WHERE id = ? AND tenant_id = ?",
+                        [$subjectId, $tenantId]
+                    ) !== null;
+
+                    if ($subjectExists) {
+                        try {
+                            (new \App\Services\Enterprise\GdprService($tenantId))
+                                ->executeAccountDeletion($subjectId, $this->getUserId(), $id);
+                        } catch (\Throwable $e) {
+                            Log::error('[AdminEnterprise] GDPR erasure failed while completing request', [
+                                'request_id' => $id,
+                                'user_id' => $subjectId,
+                                'error' => $e->getMessage(),
+                            ]);
+                            return $this->respondWithError('DELETE_FAILED', __('api.user_delete_failed'), null, 500);
+                        }
+
+                        // executeAccountDeletion() has already set the final status
+                        // (completed, or processing if PII survived). Persist any
+                        // notes without overwriting that decision.
+                        if ($notes !== null) {
+                            DB::update(
+                                "UPDATE gdpr_requests SET notes = ?, updated_at = NOW() WHERE id = ? AND tenant_id = ?",
+                                [$notes, $id, $tenantId]
+                            );
+                        }
+
+                        $finalStatus = (string) (DB::selectOne(
+                            "SELECT status FROM gdpr_requests WHERE id = ? AND tenant_id = ?",
+                            [$id, $tenantId]
+                        )->status ?? $status);
+
+                        return $this->respondWithData([
+                            'id' => $id,
+                            'status' => $finalStatus,
+                            'updated' => true,
+                            'erasure_performed' => true,
+                        ]);
+                    }
+                }
+            }
+
             $updates = ["status = ?", "updated_at = NOW()"]; $params = [$status];
             if ($notes !== null) { $updates[] = "notes = ?"; $params[] = $notes; }
             if ($status === 'completed') { $updates[] = "processed_at = NOW()"; $updates[] = "processed_by = ?"; $params[] = $this->getUserId(); }
