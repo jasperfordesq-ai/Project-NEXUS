@@ -173,6 +173,22 @@ interface MyVettingStatus {
   revoked_at?: string | null;
 }
 
+/**
+ * The ward records their own agreement. Only the ward can: the endpoint refuses
+ * a guardian consenting on their behalf, and there is a test for that boundary
+ * specifically — a consent record signed by the wrong person is worse than none
+ * at all.
+ *
+ * Module scope on purpose: declared inside the component this is a fresh object
+ * every render, which either destabilises `handleRespond` or has to be omitted
+ * from its dependency list.
+ */
+const RESPONSE_ENDPOINTS = {
+  consent: '/v2/safeguarding/consent-to-guardian',
+  decline: '/v2/safeguarding/decline-guardian',
+  withdraw: '/v2/safeguarding/withdraw-guardian-consent',
+} as const;
+
 export function SafeguardingTab() {
   const { t } = useTranslation('settings');
   const toast = useToast();
@@ -269,18 +285,6 @@ export function SafeguardingTab() {
     }
   }, [pendingRevoke, t, toast, confirmModal]);
 
-  /**
-   * The ward records their own agreement. Only the ward can: the endpoint
-   * refuses a guardian consenting on their behalf, and there is a test for that
-   * boundary specifically — a consent record signed by the wrong person is worse
-   * than none at all.
-   */
-  const ENDPOINTS = {
-    consent: '/v2/safeguarding/consent-to-guardian',
-    decline: '/v2/safeguarding/decline-guardian',
-    withdraw: '/v2/safeguarding/withdraw-guardian-consent',
-  } as const;
-
   const handleRespond = useCallback(async (
     assignmentId: number,
     action: 'consent' | 'decline' | 'withdraw',
@@ -292,7 +296,7 @@ export function SafeguardingTab() {
       const body: Record<string, unknown> = { assignment_id: assignmentId };
       if (reason && reason.trim() !== '') body.reason = reason.trim();
 
-      const res = await api.post<{ state: string; already: boolean }>(ENDPOINTS[action], body);
+      const res = await api.post<{ state: string; already: boolean }>(RESPONSE_ENDPOINTS[action], body);
       if (!res.success) {
         // 🔴 api.ts never throws, so this check is the only thing standing
         // between a failed request and a false success message.

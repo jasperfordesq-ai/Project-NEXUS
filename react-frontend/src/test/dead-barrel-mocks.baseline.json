@@ -566,7 +566,6 @@
         "SelectItem",
         "Spinner",
         "Switch",
-        "Textarea",
         "ToggleButton",
         "ToggleButtonGroup"
       ]
@@ -588,6 +587,6 @@
   },
   "totals": {
     "offenderFileCount": 89,
-    "rowCount": 280
+    "rowCount": 279
   }
 }

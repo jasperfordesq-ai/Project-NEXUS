@@ -1822,6 +1822,14 @@ jobs:
         run: php vendor/bin/phpunit --no-coverage --testsuite=Laravel --filter=GovukAlphaFrontendTest
 
       - name: "BLOCKING: Accessible frontend browser accessibility"
+        # 🔴 SESSION_DRIVER must NOT be `array` here. The array driver discards the
+        # session at the end of every request, so the login POST cannot carry a
+        # CSRF token and no session survives to the next page — the scan's login
+        # step fails outright. That was harmless while this scan never
+        # authenticated; it is fatal now that it does. The job-level `array` is
+        # kept for the PHPUnit step, which wants no filesystem state.
+        env:
+          SESSION_DRIVER: file
         run: |
           php -S 127.0.0.1:8090 -t httpdocs httpdocs/index.php > /tmp/accessible-frontend.log 2>&1 &
           SERVER_PID=$!

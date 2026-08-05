@@ -130,6 +130,9 @@ vi.mock('@/components/ui', settingsUiMock);
 vi.mock('@/components/ui/Modal', settingsUiMock);
 vi.mock('@/components/ui/Tabs', settingsUiMock);
 vi.mock('@/components/ui/useDisclosure', settingsUiMock);
+// The tabs import UI components by direct path, so a barrel-only override is
+// dead for them. SafeguardingTab and ProfileTab both take Textarea this way.
+vi.mock('@/components/ui/Textarea', settingsUiMock);
 
 // ── Mock lucide-react icons ───────────────────────────────────────────────────
 vi.mock('lucide-react', () => {

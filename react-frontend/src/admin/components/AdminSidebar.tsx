@@ -536,7 +536,13 @@ function useAdminNav(): NavSection[] {
     // overview zone entry above.
 
     return sections.filter((section) => section.href || (section.items?.length ?? 0) > 0);
-  }, [hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, t]);
+    // 🔴 `canSeeSuperPanel` MUST stay in this list. For the super-admin of a
+    // branch community every other identity dep here is false both before and
+    // after `/me` resolves, so omitting it means nothing changes when the level
+    // arrives, the memo is never recomputed, and the super-panel entry never
+    // appears — the exact "there is no link to the panel" symptom reported on
+    // 2026-08-05.
+  }, [canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, t]);
 }
 
 interface AdminSidebarProps {
