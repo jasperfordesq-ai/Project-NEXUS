@@ -50,9 +50,10 @@ own application.
   grant platform privileges.
 - **Network administrator** (`is_tenant_super_admin`) — an administrator whose
   scope extends to their tenant *and its sub-tenants*. Only grantable where the
-  parent tenant has `allows_subtenants`. Accepted by `EnsureIsAdmin`, **not** by
-  `EnsureIsSuperAdmin` — a compromised network admin cannot become a platform
-  compromise.
+  parent tenant has `allows_subtenants`. Accepted by `EnsureIsAdmin` and, since
+  2026-08-05, by the subtree tier of the super panel (`EnsureSuperPanelAccess`).
+  Still **not** accepted by `EnsureIsSuperAdmin` — a compromised network admin
+  cannot become a platform compromise. See "The panel has two tiers" below.
 - **Platform administrator** — cross-tenant: tenant CRUD, moving users between
   tenants, platform-wide federation controls, the super-admin panel. `god` is the
   break-glass tier and is the only one with an unconditional allow.
@@ -64,14 +65,53 @@ resolves an access *level* and every cross-tenant action is checked against it:
 
 | Who | Level | Scope |
 |---|---|---|
-| `is_god` / `role = 'god'` | `master` | Platform-global |
+| `is_super_admin` / `is_god` / `role = 'super_admin'`\|`'god'` | `master` | Platform-global, **wherever their account sits** |
 | `is_tenant_super_admin` on the **master** tenant (id 1) | `master` | Platform-global |
 | `is_tenant_super_admin` on a **hub** tenant (`allows_subtenants = 1`) | `regional` | That tenant **and its descendants only** |
+| anyone else | `none` | No panel |
 
 `SuperPanelAccess::canAccessTenant()` implements the subtree test as a
 materialised-path prefix match (`str_starts_with($target->path, $access['tenant_path'])`),
 and `getScopeClause()` gives the equivalent `path LIKE ?` predicate for list
 queries.
+
+> 🔴 **`tenants.path` is nullable, and an empty prefix means EVERYTHING, not
+> nothing.** `str_starts_with($x, '')` is `true` and `LIKE '%'` matches every row.
+> A `regional` grant therefore REQUIRES a usable path: `getAccess()` refuses
+> otherwise, `canAccessTenant()` and `getScopeClause()` fail closed, and
+> `subtreeFilter()` exists so the six list call-sites cannot repeat the old
+> fail-open idiom (`if (regional && !empty(path)) { filter }` applied **no** filter
+> when the path was empty). Do not make the column `NOT NULL` — the path is set in
+> a second UPDATE after insert, because it is built from the row's own id.
+> Tests: `tests/Laravel/Feature/SuperAdmin/SubtreeBoundaryEmptyPathTest.php`.
+
+### The panel has two tiers (2026-08-05)
+
+Endpoints are split by **what the power reaches**, not by convenience:
+
+| Tier | Gate | Contents |
+|---|---|---|
+| **A — subtree** | `super-panel` (`EnsureSuperPanelAccess`) | Tenant/user lists, hierarchy, dashboard, audit, and the tenant/user mutations — all of which confine themselves via `canAccessTenant()` or `subtreeFilter()`. Admits `master` **and** `regional`. |
+| **B — platform only** | `super-admin` (`EnsureIsSuperAdmin`) | Platform revenue/pricing, external-federation kill switches, platform capabilities, provisioning queue, granting PLATFORM super-admin, and tenant delete/purge. `master` only. |
+
+🔴 Two reasons something is in tier B, and both matter:
+
+1. The power is platform-wide. Granting PLATFORM super-admin especially — that is
+   the escape hatch out of one's own branch.
+2. It is **not yet safe** for a regional caller. The billing endpoints read
+   `tenant_id` from the request body and check only `requireSuperAdmin()`, with no
+   `canAccessTenant()`. Add that check before ever moving one to tier A.
+
+Tenant delete/purge stay in tier B by choice despite scoping correctly: they are
+irreversible, and building a network needs create/move, not destroy.
+
+**Frontend.** `GET /v2/users/me` returns `super_panel_level`
+(`master`/`regional`/`none`), resolved server-side — the UI must not infer it from
+flags, because eligibility also depends on `allows_subtenants` and the path.
+`SuperAdminRoute` admits both tiers; `PlatformOnlyRoute` guards the tier-B screens
+so a bookmarked URL refuses cleanly instead of rendering a page whose every request
+403s; and `SuperAdminSidebar` hides the tier-B sections. Isolation is proven by
+`tests/Laravel/Feature/SuperAdmin/RegionalPanelIsolationTest.php`.
 
 **This is what keeps a network administrator inside their own network.** A hub
 tenant's super admin sees and acts on their own tenant and the children beneath

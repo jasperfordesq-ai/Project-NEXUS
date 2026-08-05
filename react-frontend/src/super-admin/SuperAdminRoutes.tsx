@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { Navigate, Route, useParams } from 'react-router-dom';
 import { LoadingScreen } from '@/components/feedback';
 import { useTenant } from '@/contexts';
+import { PlatformOnlyRoute } from '@/admin/SuperAdminRoute';
 
 const SuperDashboard = lazy(() => import('@/admin/modules/super/SuperDashboard'));
 const TenantListAdmin = lazy(() => import('@/admin/modules/super/TenantList'));
@@ -67,18 +68,37 @@ export function SuperAdminRoutes() {
       <Route path="users/:id/edit" element={<Lazy><SuperUserForm /></Lazy>} />
       <Route path="bulk" element={<Lazy><BulkOperations /></Lazy>} />
       <Route path="audit" element={<Lazy><SuperAuditLog /></Lazy>} />
-      <Route path="federation" element={<Lazy><FederationControls /></Lazy>} />
-      <Route path="federation/whitelist" element={<Lazy><FederationWhitelist /></Lazy>} />
-      <Route path="federation/partnerships" element={<Lazy><SuperPartnerships /></Lazy>} />
-      <Route path="federation/audit" element={<Lazy><FederationAuditLog /></Lazy>} />
+
+      {/* Per-community federation feature toggles are subtree-scoped by the API
+          (canAccessTenant), so a branch admin may use them. */}
       <Route path="federation/tenant/:tenantId/features" element={<Lazy><FederationTenantFeatures /></Lazy>} />
       <Route path="tenants/:tenantId/features" element={<SuperAdminTenantFeatureRedirect />} />
-      <Route path="billing" element={<Lazy><BillingControl /></Lazy>} />
-      <Route path="billing/revenue" element={<Lazy><RevenueDashboard /></Lazy>} />
-      <Route path="platform/pilot-inquiries" element={<Lazy><PilotInquiryAdminPage /></Lazy>} />
-      <Route path="provisioning-requests" element={<Lazy><ProvisioningRequestsPage /></Lazy>} />
-      <Route path="national/kiss" element={<Lazy><NationalKissDashboardPage /></Lazy>} />
-      <Route path="regional-analytics/subscriptions" element={<Lazy><RegionalAnalyticsAdminPage /></Lazy>} />
+
+      {/*
+        🔴 PLATFORM-ONLY screens. Hiding these from the sidebar is not enough — a
+        bookmark, a pasted URL or a stale link routes straight here, and the page
+        then fires requests the API refuses one by one, which looks broken rather
+        than refused. PlatformOnlyRoute sends a branch admin back to the panel
+        dashboard instead.
+
+        The API remains the authority: these endpoints sit behind
+        EnsureIsSuperAdmin, which refuses tenant super-admins, and
+        RegionalPanelIsolationTest proves it. This guard is about refusing
+        cleanly. If you add a platform-wide screen, add it INSIDE this block.
+      */}
+      <Route element={<PlatformOnlyRoute />}>
+        <Route path="federation" element={<Lazy><FederationControls /></Lazy>} />
+        <Route path="federation/whitelist" element={<Lazy><FederationWhitelist /></Lazy>} />
+        <Route path="federation/partnerships" element={<Lazy><SuperPartnerships /></Lazy>} />
+        <Route path="federation/audit" element={<Lazy><FederationAuditLog /></Lazy>} />
+        <Route path="billing" element={<Lazy><BillingControl /></Lazy>} />
+        <Route path="billing/revenue" element={<Lazy><RevenueDashboard /></Lazy>} />
+        <Route path="platform/pilot-inquiries" element={<Lazy><PilotInquiryAdminPage /></Lazy>} />
+        <Route path="provisioning-requests" element={<Lazy><ProvisioningRequestsPage /></Lazy>} />
+        <Route path="national/kiss" element={<Lazy><NationalKissDashboardPage /></Lazy>} />
+        <Route path="regional-analytics/subscriptions" element={<Lazy><RegionalAnalyticsAdminPage /></Lazy>} />
+      </Route>
+
       <Route path="*" element={<SuperAdminNotFoundRedirect />} />
     </>
   );

@@ -159,4 +159,96 @@ describe('SuperAdminRoute', () => {
     expect(screen.queryByTestId('outlet')).not.toBeInTheDocument();
     expect(screen.getByTestId('redirect')).toBeInTheDocument();
   });
+
+  /**
+   * 🔴 The panel now has two tiers, and this guard is the entry to both.
+   *
+   * It previously required a PLATFORM super-admin, which meant that once the
+   * admin sidebar started offering the panel to the super-admin of a community
+   * with communities beneath it, clicking that link silently bounced them back to
+   * /admin. A dead link is worse than no link.
+   */
+  describe('branch (regional) super-admin entry', () => {
+    it('admits a regional caller into the panel', async () => {
+      mockAuth.user = { id: 20, is_tenant_super_admin: true, super_panel_level: 'regional' };
+      const { SuperAdminRoute } = await import('./SuperAdminRoute');
+      render(<SuperAdminRoute />);
+      expect(screen.getByTestId('outlet')).toBeInTheDocument();
+      expect(screen.queryByTestId('redirect')).not.toBeInTheDocument();
+    });
+
+    /**
+     * 🔴 Asymmetric on purpose. The flag alone is not enough: the community must
+     * also allow sub-communities and have a usable position in the hierarchy, and
+     * only the server knows that. Without a level, no branch panel.
+     */
+    it('refuses a tenant super-admin whose level the server did not grant', async () => {
+      mockAuth.user = { id: 21, is_tenant_super_admin: true };
+      const { SuperAdminRoute } = await import('./SuperAdminRoute');
+      render(<SuperAdminRoute />);
+      expect(screen.getByTestId('redirect')).toBeInTheDocument();
+      expect(screen.queryByTestId('outlet')).not.toBeInTheDocument();
+    });
+
+    it('refuses an explicit level of none', async () => {
+      mockAuth.user = { id: 22, is_tenant_super_admin: true, super_panel_level: 'none' };
+      const { SuperAdminRoute } = await import('./SuperAdminRoute');
+      render(<SuperAdminRoute />);
+      expect(screen.getByTestId('redirect')).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * 🔴 PlatformOnlyRoute guards the platform-wide screens INSIDE the panel —
+   * billing, platform revenue, federation controls, the provisioning queue.
+   *
+   * Hiding them from the sidebar is a convention, not a control: a bookmark or a
+   * pasted URL still routes straight to the page, which then fires requests the
+   * API refuses one by one and looks broken. The API is still the authority (those
+   * endpoints refuse tenant super-admins, proven by RegionalPanelIsolationTest);
+   * this is about refusing cleanly.
+   */
+  describe('PlatformOnlyRoute', () => {
+    it('lets a platform super-admin through', async () => {
+      mockAuth.user = { id: 30, is_super_admin: true, super_panel_level: 'master' };
+      const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
+      render(<PlatformOnlyRoute />);
+      expect(screen.getByTestId('outlet')).toBeInTheDocument();
+    });
+
+    it('sends a branch admin back to the panel dashboard, not to a broken page', async () => {
+      mockAuth.user = { id: 31, is_tenant_super_admin: true, super_panel_level: 'regional' };
+      const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
+      render(<PlatformOnlyRoute />);
+      const redirect = screen.getByTestId('redirect');
+      expect(redirect.getAttribute('data-to')).toBe('/test/super-admin');
+      expect(screen.queryByTestId('outlet')).not.toBeInTheDocument();
+    });
+
+    it('fails closed when no level can be established', async () => {
+      // Requires an explicit 'master'; anything else is refused.
+      mockAuth.user = { id: 32, is_admin: true };
+      const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
+      render(<PlatformOnlyRoute />);
+      expect(screen.getByTestId('redirect')).toBeInTheDocument();
+    });
+
+    it('still admits a platform super-admin whose payload predates the level field', async () => {
+      // Backwards compatibility: superPanelLevel() falls back to the platform
+      // flags, so a cached /me from before the field existed does not lock them out.
+      mockAuth.user = { id: 33, is_super_admin: true };
+      const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
+      render(<PlatformOnlyRoute />);
+      expect(screen.getByTestId('outlet')).toBeInTheDocument();
+    });
+
+    it('shows the loading screen rather than deciding early', async () => {
+      mockAuth.isLoading = true;
+      mockAuth.user = null;
+      const { PlatformOnlyRoute } = await import('./SuperAdminRoute');
+      render(<PlatformOnlyRoute />);
+      expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
+      expect(screen.queryByTestId('redirect')).not.toBeInTheDocument();
+    });
+  });
 });
