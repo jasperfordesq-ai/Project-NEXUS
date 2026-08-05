@@ -24,6 +24,17 @@ easy to mistake for each other.
 
 ## Guardian relationships — three separate systems
 
+> 🔴 **"Guardian" means two unrelated things, and both are user-facing.** Staff
+> record guardian arrangements in `safeguarding_assignments`, which grant
+> **nothing**. Separately, a member can create an `account_relationships` link and
+> choose `guardian` as its `relationship_type`, and that one **can** grant real
+> abilities (listings, transfers). There is no foreign key between the two tables
+> and no file in the codebase touches both — verified 2026-08-05. Nothing on
+> screen distinguished them until the same date, when both surfaces gained an
+> explicit note saying which is which and where the other lives. Keep that
+> distinction in any new copy: conflating them is a safeguarding error, not a
+> wording preference.
+
 ### 1. `safeguarding_assignments` — guardian ↔ ward pairs
 
 The general-purpose safeguarding relationship. Columns: `guardian_user_id`,
@@ -44,6 +55,14 @@ The general-purpose safeguarding relationship. Columns: `guardian_user_id`,
   > "consented wards" count was structurally always zero, and the ward was never
   > shown the assignment despite being notified about it. If you add another
   > consent-bearing column, check something can actually write it.
+  >
+  > 🔴 The endpoints alone did not fix it. When they were added, **no frontend
+  > called them**, so a ward still could not see or agree to an arrangement —
+  > the same defect one layer up. The UI landed later the same day: a "Guardian
+  > arrangements" section in `SafeguardingTab.tsx` lists the ward's arrangements
+  > and carries the consent action, covered by tests in
+  > `SafeguardingTab.test.tsx`. An API with no caller is not a fix; check the
+  > screen exists.
 - Revocation is a soft delete (`revoked_at`), so history survives.
 - Create and revoke both write an `activity_log` row with actor and IP.
 - **It is a record, not a capability.** No authorisation path anywhere consults
@@ -109,7 +128,20 @@ A member-to-member relationship, self-service, distinct from all of the above.
 | `can_view_activity` | ✅ | `SubAccountService::getChildActivitySummary()` |
 | `can_manage_listings` | ✅ | `SubAccountService::createListingForChild()` → `POST /v2/users/me/sub-accounts/{childId}/listings` |
 | `can_transact` | ✅ | `SubAccountService::transferForChild()` → `POST /v2/users/me/sub-accounts/{childId}/transfer` |
-| `can_view_messages` | ❌ **not yet** | see below |
+| `can_view_messages` | ❌ **not enforced, and no longer offered** | see below |
+
+**Update 2026-08-05: `can_view_messages` is no longer presented to members.** It
+was removed from `SubAccountsManager.tsx`'s `PERMISSION_KEYS` and from
+`SettingsAuthParity::SETTINGS_LINK_PERMISSIONS`, which also stops the accessible
+frontend accepting it on save (that constant drives display *and* all three write
+paths). Both screens now state explicitly that carers cannot read messages,
+rather than the control silently disappearing — a family that had switched it on
+needs to know it never did anything. The permissions endpoint still accepts the
+key for backward compatibility, and it remains in
+`SubAccountService::DEFAULT_PERMISSIONS` so historical rows parse; a table there
+records which keys are real. Note the
+`account_relationships.permissions` column comment lists only the three enforced
+keys — evidence the fourth reached both UIs and never the schema.
 
 Until 2026-08-04 **only `can_view_activity` was enforced** — `hasPermission()` had a
 single caller in the whole codebase, while all four toggles were presented to users
@@ -132,12 +164,13 @@ Two rules the proxy endpoints follow, and that anything added here must follow t
 - The safeguarding contact policy is re-asserted **at use time**, not only at grant
   time, and a `pending` relationship confers nothing.
 
-> 🔴 **`can_view_messages` is still not enforced, deliberately.** Letting a carer
-> read a dependent's conversations exposes the *other* party, who never agreed to
-> it. The platform's established answer for staff oversight is to notify — see
-> `BrokerMessageVisibilityService::getUserRestrictionStatus()`'s
+> 🔴 **`can_view_messages` is not enforced and is no longer offered.** Letting a
+> carer read a dependent's conversations exposes the *other* party, who never
+> agreed to it. The platform's established answer for staff oversight is to
+> notify — see `BrokerMessageVisibilityService::getUserRestrictionStatus()`'s
 > `review_notice_required`. Until the equivalent notice exists for carers, do not
-> wire this permission up, and do not present it as working.
+> wire this permission up, and do not re-add it to either frontend's permission
+> list "for consistency" with the type or the constant.
 
 ---
 
@@ -224,7 +257,7 @@ registration, which has no rejection path at all.
 | `safeguarding_assignments` | broker / admin | the **ward**, via `POST /v2/safeguarding/consent-to-guardian` | **No** — record only |
 | `event_guardian_consents` | minor, or an event manager | external guardian, via token | **Yes**, within events |
 | `vol_guardian_consents` | the minor | external guardian, via token | Gates the minor; no proxy action |
-| `account_relationships` | any member | the dependent | **Yes** — listings and transfers (attributed + audited); messages not yet |
+| `account_relationships` | any member | the dependent | **Yes** — listings and transfers (attributed + audited); messages not offered |
 | `caring_caregiver_links` | any member (`pending`) | — (no activation endpoint) | Blocked in practice |
 | Paper onboarding intake | admin | the member, offline on paper | **Yes** — creates the account |
 | Event staff roles | event manager | — | **Yes**, capability-scoped, fully enforced |

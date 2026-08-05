@@ -63,12 +63,29 @@ trait SettingsAuthParity
     /** The relationship types SubAccountService::RELATIONSHIP_TYPES accepts. */
     private const SETTINGS_LINK_TYPES = ['family', 'guardian', 'carer', 'organization'];
 
-    /** The sub-account permission keys (SubAccountService::DEFAULT_PERMISSIONS). */
+    /**
+     * The sub-account permissions actually OFFERED — i.e. the ones the backend
+     * enforces (SubAccountService::hasPermission is consulted for each).
+     *
+     * 🔴 `can_view_messages` is deliberately absent. It was rendered here as a
+     * fourth checkbox labelled "View their messages" and nothing in the backend
+     * ever checked it, so a family could tick it, see it save, and reasonably
+     * believe a carer could read a dependent's conversations. In a safeguarding
+     * feature that is worse than the capability being absent. The
+     * `account_relationships.permissions` column comment lists only three keys,
+     * which is corroboration it was never designed — it reached both UIs and
+     * never the schema.
+     *
+     * It is not merely unbuilt: letting a carer read a dependent's messages
+     * exposes the OTHER party, who never agreed. The platform's established
+     * answer is to notify (see BrokerMessageVisibilityService's
+     * `review_notice_required`). Until that notice exists for carers, do not
+     * re-add this key.
+     */
     private const SETTINGS_LINK_PERMISSIONS = [
         'can_view_activity',
         'can_manage_listings',
         'can_transact',
-        'can_view_messages',
     ];
 
     /**

@@ -358,6 +358,17 @@
       "review_requested_button": "Zażądano przeglądu",
       "review_requested_toast": "Poproszono o opinię brokera.",
       "review_error": "Nie można było poprosić o recenzję brokera. Spróbuj ponownie."
+    },
+    "guardians": {
+      "title": "Ustalenia opiekunów",
+      "intro": "Twoi koordynatorzy zanotowali, że te osoby są odpowiedzialne za wspieranie Cię. To tylko rekord. Nie pozwala im to na tworzenie ofert, wykorzystywanie Twoich kredytów czasowych ani czytanie Twoich wiadomości.",
+      "none": "Nie zarejestrowano dla Ciebie żadnych ustaleń dotyczących opiekunów.",
+      "recorded_label": "Data dodana",
+      "consented_label": "Data, kiedy się zgodziłeś",
+      "awaiting_consent": "Czekam na Twoją zgodę",
+      "consent_button": "Zgadzam się na ten układ",
+      "consent_toast": "Twoja umowa została zarejestrowana.",
+      "consent_error": "Nie udało się zarejestrować Twojej umowy. Spróbuj ponownie."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Nie udało się załadować połączonych kont",
     "add_failed": "Nie udało się dodać połączonego konta",
     "remove_failed": "Nie udało się usunąć",
-    "approve_failed": "Nie udało się zatwierdzić"
+    "approve_failed": "Nie udało się zatwierdzić",
+    "messages_not_offered": "Opiekunowie nie mogą czytać wiadomości. Ta opcja została usunięta, ponieważ nigdy nie działała, a druga osoba w rozmowie nie wyraziła zgody na jej udostępnienie.",
+    "scope_note": "Są to linki, które sam konfigurujesz, a druga osoba zatwierdza. Ustalenia zarejestrowane przez Twoich koordynatorów są wyświetlane osobno, w ustawieniach zabezpieczeń."
   },
   "appearance_prefs": {
     "title": "Preferencje wyglądu",

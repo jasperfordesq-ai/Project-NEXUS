@@ -49,11 +49,37 @@ interface NormalizedRelationship extends Omit<AccountRelationshipRow, 'permissio
   permissions: Record<PermissionKey, boolean>;
 }
 
+/**
+ * The permissions actually OFFERED to members — i.e. the ones the backend
+ * enforces.
+ *
+ * 🔴 `can_view_messages` is deliberately absent. It was rendered here as a
+ * fourth switch, identical to the other three, labelled "View messages" — and
+ * nothing in the backend ever checked it. `SubAccountService::hasPermission()`
+ * is never consulted for it. So a family could switch it on, see it save, and
+ * reasonably believe a carer could read a dependent's conversations, when no
+ * such thing happened. In a safeguarding feature that is worse than the
+ * capability being absent.
+ *
+ * Corroboration that it was never designed: the `account_relationships`
+ * `permissions` column comment lists three keys — can_view_activity,
+ * can_manage_listings, can_transact. The fourth reached the UI and never the
+ * schema.
+ *
+ * It is NOT simply "unbuilt". Letting a carer read a dependent's messages
+ * exposes the OTHER party to that conversation, who never agreed to it. The
+ * platform's established answer for oversight is to notify — see
+ * BrokerMessageVisibilityService::getUserRestrictionStatus()'s
+ * `review_notice_required`. Until that notice exists for carers, do not offer
+ * this, and do not re-add it to this list to "match the type".
+ *
+ * The key stays in PermissionKey and DEFAULT_PERMISSIONS so historical rows
+ * that already stored it still parse.
+ */
 const PERMISSION_KEYS: PermissionKey[] = [
   'can_view_activity',
   'can_manage_listings',
   'can_transact',
-  'can_view_messages',
 ];
 
 const DEFAULT_PERMISSIONS: Record<PermissionKey, boolean> = {
@@ -308,6 +334,15 @@ export function SubAccountsManager() {
                     );
                   })}
                 </div>
+                {/*
+                  Stated explicitly rather than left as an absence. A family that
+                  previously switched "View messages" on needs to know it never
+                  did anything and is not being offered — silently dropping the
+                  control would leave them believing it was still in force.
+                */}
+                <p className="text-xs text-theme-muted">
+                  {t('sub_accounts.messages_not_offered')}
+                </p>
               </div>
             )}
 
@@ -403,6 +438,17 @@ export function SubAccountsManager() {
       </div>
 
       <p className="text-sm text-theme-subtle">{t('sub_accounts.description')}</p>
+
+      {/*
+        🔴 Disambiguation, not decoration. A link created here can be typed
+        "guardian", and coordinators separately record "guardian arrangements" in
+        safeguarding_assignments — two unrelated systems that share a word, with
+        no foreign key and no file in the codebase touching both. Without this
+        note a member cannot tell which one they are looking at, and the two carry
+        completely different consequences: a link here can grant real abilities,
+        while a safeguarding arrangement grants none.
+      */}
+      <p className="text-xs text-theme-muted">{t('sub_accounts.scope_note')}</p>
 
       {isLoading && (
         <div className="flex justify-center py-8" role="status" aria-busy="true" aria-label={t('common:loading')}>

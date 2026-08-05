@@ -24,6 +24,32 @@ class SubAccountService
 {
     public const RELATIONSHIP_TYPES = ['family', 'guardian', 'carer', 'organization'];
 
+    /**
+     * 🔴 THREE of these are enforced. `can_view_messages` is NOT, and is no
+     * longer offered by either frontend (2026-08-05).
+     *
+     * | key                 | enforced | where                        |
+     * |---------------------|----------|------------------------------|
+     * | can_view_activity   | yes      | getChildActivitySummary()    |
+     * | can_manage_listings | yes      | createListingForChild()      |
+     * | can_transact        | yes      | transferForChild()           |
+     * | can_view_messages   | NO       | nothing reads it, anywhere   |
+     *
+     * It stays in this list only so historical rows that already stored it
+     * continue to parse, and because the permissions endpoint still accepts it
+     * for backward compatibility. Both UIs deliberately stopped rendering it:
+     * they showed a switch labelled "View their messages" that saved
+     * successfully and did nothing, so a family could be told a carer could read
+     * a dependent's conversations. The `account_relationships.permissions`
+     * column comment lists only the first three — the fourth reached the UIs and
+     * never the schema.
+     *
+     * Do NOT wire it up without building the counterparty notice first. Letting
+     * a carer read a dependent's messages exposes the OTHER party to that
+     * conversation, who never agreed to it. The established pattern is to notify
+     * — see BrokerMessageVisibilityService::getUserRestrictionStatus()'s
+     * `review_notice_required`.
+     */
     public const DEFAULT_PERMISSIONS = [
         'can_view_activity'   => true,
         'can_manage_listings' => false,

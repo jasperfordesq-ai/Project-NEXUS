@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'Bekijk hun activiteit',
             'can_manage_listings' => 'Beheer hun vermeldingen',
             'can_transact' => 'Verzend en ontvang tijdskredieten',
-            'can_view_messages' => 'Bekijk hun berichten',
         ],
         'permissions_none' => 'Er zijn nog geen machtigingen verleend.',
         'save_permissions' => 'Machtigingen opslaan',

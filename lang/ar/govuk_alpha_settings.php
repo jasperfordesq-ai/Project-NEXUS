@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'عرض نشاطهم',
             'can_manage_listings' => 'إدارة قوائمهم',
             'can_transact' => 'إرسال واستقبال الاعتمادات الوقت',
-            'can_view_messages' => 'عرض رسائلهم',
         ],
         'permissions_none' => 'لم يتم منح أي أذونات حتى الآن.',
         'save_permissions' => 'حفظ الأذونات',

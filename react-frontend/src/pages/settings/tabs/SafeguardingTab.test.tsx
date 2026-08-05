@@ -62,13 +62,29 @@ const vettingStatus = {
   revoked_at: null,
 };
 
-function mockLoads(statusOverrides: Record<string, unknown> = {}, preferences = [preference]) {
+const guardian = {
+  id: 77,
+  guardian_name: 'Grace Guardian',
+  assigned_at: '2026-08-01T09:00:00Z',
+  consent_given_at: null,
+  consent_given: false,
+  notes: 'Recorded during onboarding.',
+};
+
+function mockLoads(
+  statusOverrides: Record<string, unknown> = {},
+  preferences = [preference],
+  guardians: Array<Record<string, unknown>> = [],
+) {
   mockedGet.mockImplementation((url: string) => {
     if (url === '/v2/safeguarding/my-preferences') {
       return Promise.resolve({ success: true, data: { preferences, count: preferences.length } });
     }
     if (url === '/v2/safeguarding/my-vetting-status') {
       return Promise.resolve({ success: true, data: { ...vettingStatus, ...statusOverrides } });
+    }
+    if (url === '/v2/safeguarding/my-guardians') {
+      return Promise.resolve({ success: true, data: { guardians } });
     }
     return Promise.resolve({ success: false });
   });
@@ -127,6 +143,80 @@ describe('SafeguardingTab', () => {
 
     await waitFor(() => expect(screen.getByText(/has not configured a supported safeguarding contact policy/i)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'Request broker review' })).toBeNull();
+  });
+
+  /**
+   * 🔴 Guardian arrangements. These exist because the backend half shipped
+   * without a screen: `/v2/safeguarding/my-guardians` and
+   * `/v2/safeguarding/consent-to-guardian` were added on 2026-08-05 and had NO
+   * caller in either frontend, so a ward still could not see or agree to an
+   * arrangement. That is the same defect the endpoints replaced — the column's
+   * only writer, SafeguardingService::recordConsent(), had no callers either.
+   * An API with no UI is not a fix. These tests are the guard.
+   */
+  describe('guardian arrangements', () => {
+    it('fetches arrangements and tells the ward when there are none', async () => {
+      render(<SafeguardingTab />);
+
+      await waitFor(() =>
+        expect(mockedGet).toHaveBeenCalledWith('/v2/safeguarding/my-guardians'),
+      );
+      expect(screen.getByText('Guardian arrangements')).toBeInTheDocument();
+      expect(
+        screen.getByText('No guardian arrangements have been recorded for you.'),
+      ).toBeInTheDocument();
+    });
+
+    it('shows the ward who is responsible for them, and that it grants nothing', async () => {
+      mockLoads({}, [preference], [guardian]);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
+      expect(screen.getByText('Recorded during onboarding.')).toBeInTheDocument();
+      expect(screen.getByText('Waiting for your agreement')).toBeInTheDocument();
+      // The record confers no capability, and the screen must say so — no
+      // authorisation path anywhere consults safeguarding_assignments.
+      expect(screen.getByText(/does not allow them to create listings/i)).toBeInTheDocument();
+    });
+
+    it('records the ward’s agreement against the right arrangement', async () => {
+      mockLoads({}, [preference], [guardian]);
+      mockedPost.mockResolvedValue({ success: true, data: { consent_given: true, already_given: false } });
+      render(<SafeguardingTab />);
+
+      const agree = await screen.findByRole('button', { name: 'I agree to this arrangement' });
+      fireEvent.click(agree);
+
+      await waitFor(() =>
+        expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/consent-to-guardian', {
+          assignment_id: 77,
+        }),
+      );
+      expect(toast.success).toHaveBeenCalled();
+    });
+
+    it('offers no agree button once consent is already recorded', async () => {
+      mockLoads({}, [preference], [
+        { ...guardian, consent_given: true, consent_given_at: '2026-08-02T09:00:00Z' },
+      ]);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
+      expect(screen.queryByRole('button', { name: 'I agree to this arrangement' })).toBeNull();
+      expect(screen.getByText(/Date you agreed/)).toBeInTheDocument();
+    });
+
+    it('surfaces a failure instead of silently reporting success', async () => {
+      mockLoads({}, [preference], [guardian]);
+      mockedPost.mockResolvedValue({ success: false, error: 'nope' });
+      render(<SafeguardingTab />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'I agree to this arrangement' }));
+
+      // api.ts never throws, so a missing `success` check would show success here.
+      await waitFor(() => expect(toast.error).toHaveBeenCalled());
+      expect(toast.success).not.toHaveBeenCalled();
+    });
   });
 
   it('preserves member preference revocation', async () => {

@@ -20,6 +20,7 @@ import Trash2 from 'lucide-react/icons/trash-2';
 import CheckCircle2 from 'lucide-react/icons/circle-check';
 import MinusCircle from 'lucide-react/icons/circle-minus';
 import Lock from 'lucide-react/icons/lock';
+import Users from 'lucide-react/icons/users';
 import TriangleAlert from 'lucide-react/icons/triangle-alert';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
@@ -57,6 +58,31 @@ interface MyPreferencesResponse {
   count: number;
 }
 
+/**
+ * A guardian arrangement recorded against the signed-in member, as ward.
+ *
+ * 🔴 Why this section exists. `safeguarding_assignments` pairs a guardian with a
+ * ward and carries a `consent_given_at` column. Staff create the assignment and
+ * BOTH parties are emailed — and the ward's email deep-links to
+ * `/settings?tab=safeguarding`, this very tab, which until now fetched only
+ * preferences and vetting status. So a member could be told someone had been made
+ * responsible for them, follow the link, and find nothing about it.
+ *
+ * Worse, nothing in the platform could record their consent: the endpoint that
+ * writes that column was added on 2026-08-05 and, until this section, had no
+ * caller in either frontend. The admin dashboard's "consented wards" count read a
+ * column that no human could populate. An API with no UI is the same bug as a
+ * method with no caller — which is exactly what it replaced.
+ */
+interface MyGuardian {
+  id: number;
+  guardian_name: string;
+  assigned_at: string | null;
+  consent_given_at: string | null;
+  consent_given: boolean;
+  notes: string | null;
+}
+
 interface MyVettingStatus {
   policy: {
     configured: boolean;
@@ -81,6 +107,8 @@ export function SafeguardingTab() {
   const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<MemberPreference[]>([]);
   const [vettingStatus, setVettingStatus] = useState<MyVettingStatus | null>(null);
+  const [guardians, setGuardians] = useState<MyGuardian[]>([]);
+  const [consentingId, setConsentingId] = useState<number | null>(null);
   const [isRequestingReview, setIsRequestingReview] = useState(false);
   const [isConfirmingPolicyReview, setIsConfirmingPolicyReview] = useState(false);
   const [revokingId, setRevokingId] = useState<number | null>(null);
@@ -89,9 +117,10 @@ export function SafeguardingTab() {
   const loadPreferences = useCallback(async () => {
     try {
       setLoading(true);
-      const [preferencesResponse, vettingResponse] = await Promise.all([
+      const [preferencesResponse, vettingResponse, guardiansResponse] = await Promise.all([
         api.get<MyPreferencesResponse>('/v2/safeguarding/my-preferences'),
         api.get<MyVettingStatus>('/v2/safeguarding/my-vetting-status'),
+        api.get<{ guardians: MyGuardian[] }>('/v2/safeguarding/my-guardians'),
       ]);
       if (preferencesResponse.success && preferencesResponse.data) {
         setPreferences(preferencesResponse.data.preferences ?? []);
@@ -99,6 +128,13 @@ export function SafeguardingTab() {
         setPreferences([]);
       }
       setVettingStatus(vettingResponse.success && vettingResponse.data ? vettingResponse.data : null);
+      // 🔴 api.ts never throws, so `success` must be checked explicitly — a
+      // `catch` here would not see a failed request.
+      setGuardians(
+        guardiansResponse.success && guardiansResponse.data
+          ? guardiansResponse.data.guardians ?? []
+          : [],
+      );
     } catch (error) {
       logError('Failed to load safeguarding preferences', error);
       setPreferences([]);
@@ -143,6 +179,35 @@ export function SafeguardingTab() {
       confirmModal.onClose();
     }
   }, [pendingRevoke, t, toast, confirmModal]);
+
+  /**
+   * The ward records their own agreement. Only the ward can: the endpoint
+   * refuses a guardian consenting on their behalf, and there is a test for that
+   * boundary specifically — a consent record signed by the wrong person is worse
+   * than none at all.
+   */
+  const handleConsent = useCallback(async (assignmentId: number) => {
+    if (consentingId !== null) return;
+    setConsentingId(assignmentId);
+    try {
+      const res = await api.post<{ consent_given: boolean; already_given: boolean }>(
+        '/v2/safeguarding/consent-to-guardian',
+        { assignment_id: assignmentId },
+      );
+      if (!res.success) {
+        toast.error(t('safeguarding.guardians.consent_error'));
+        return;
+      }
+      // Re-read rather than guess the timestamp the server stored.
+      await loadPreferences();
+      toast.success(t('safeguarding.guardians.consent_toast'));
+    } catch (error) {
+      logError('Guardian consent failed', error);
+      toast.error(t('safeguarding.guardians.consent_error'));
+    } finally {
+      setConsentingId(null);
+    }
+  }, [consentingId, loadPreferences, t, toast]);
 
   const handleRequestReview = useCallback(async () => {
     if (!vettingStatus?.policy.configured || !vettingStatus.policy.contact_policy_available || isRequestingReview) return;
@@ -298,6 +363,93 @@ export function SafeguardingTab() {
                     </Button>
                   )}
                 </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/*
+          Guardian arrangements. Named "Guardian arrangements" and explicitly
+          described as staff-recorded, because a member-created link in Linked
+          Accounts can ALSO be typed "guardian" — two unrelated things sharing a
+          word, in a safeguarding context. The intro states plainly that this
+          record confers no ability to act, which is true: no authorisation path
+          anywhere consults safeguarding_assignments.
+        */}
+        <div className="mb-6 rounded-xl border border-theme-default bg-theme-surface p-4">
+          <div className="flex items-start gap-3">
+            <Users className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold text-theme-primary">
+                {t('safeguarding.guardians.title')}
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-theme-muted">
+                {t('safeguarding.guardians.intro')}
+              </p>
+
+              {guardians.length === 0 ? (
+                <p className="mt-3 text-sm text-theme-muted">
+                  {t('safeguarding.guardians.none')}
+                </p>
+              ) : (
+                <ul className="mt-3 space-y-3">
+                  {guardians.map((guardian) => (
+                    <li
+                      key={guardian.id}
+                      className="rounded-lg border border-theme-default bg-theme-elevated p-3"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-theme-primary">
+                            {guardian.guardian_name}
+                          </p>
+                          {guardian.assigned_at && (
+                            <p className="mt-1 text-xs text-theme-muted">
+                              {/*
+                                Label and date are rendered separately rather
+                                than interpolated. A one-word "Recorded" came
+                                back meaning AUDIO recording in ja/es/pl/pt, and
+                                the interpolated variant was silently dropped by
+                                the translator's placeholder guard in all ten
+                                locales. "Date added" survives both.
+                              */}
+                              {t('safeguarding.guardians.recorded_label')}:{' '}
+                              {new Date(guardian.assigned_at).toLocaleDateString(getFormattingLocale())}
+                            </p>
+                          )}
+                          {guardian.notes && (
+                            <p className="mt-1 text-xs leading-relaxed text-theme-muted">
+                              {guardian.notes}
+                            </p>
+                          )}
+                        </div>
+                        {guardian.consent_given ? (
+                          <Chip size="sm" variant="soft" color="success">
+                            {t('safeguarding.guardians.consented_label')}
+                            {guardian.consent_given_at
+                              ? `: ${new Date(guardian.consent_given_at).toLocaleDateString(getFormattingLocale())}`
+                              : ''}
+                          </Chip>
+                        ) : (
+                          <div className="flex flex-col items-end gap-2">
+                            <Chip size="sm" variant="soft" color="warning">
+                              {t('safeguarding.guardians.awaiting_consent')}
+                            </Chip>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              isLoading={consentingId === guardian.id}
+                              isDisabled={consentingId !== null}
+                              onPress={() => handleConsent(guardian.id)}
+                            >
+                              {t('safeguarding.guardians.consent_button')}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>

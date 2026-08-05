@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'Féach ar a ngníomhaíocht',
             'can_manage_listings' => 'Bainistigh a liostaí',
             'can_transact' => 'Seol agus faigh creidmheasanna ama',
-            'can_view_messages' => 'Féach ar a gcuid teachtaireachtaí',
         ],
         'permissions_none' => 'Níl cead tugtha fós.',
         'save_permissions' => 'Sábháil ceadanna',

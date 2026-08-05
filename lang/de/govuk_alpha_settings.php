@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'Sehen Sie sich ihre Aktivitäten an',
             'can_manage_listings' => 'Verwalten Sie ihre Einträge',
             'can_transact' => 'Zeitguthaben senden und empfangen',
-            'can_view_messages' => 'Sehen Sie sich ihre Nachrichten an',
         ],
         'permissions_none' => 'Noch keine Berechtigungen erteilt.',
         'save_permissions' => 'Berechtigungen speichern',

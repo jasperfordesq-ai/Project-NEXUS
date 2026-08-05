@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'Zobacz ich aktywność',
             'can_manage_listings' => 'Zarządzaj ich ofertami',
             'can_transact' => 'Wysyłaj i odbieraj kredyty czasowe',
-            'can_view_messages' => 'Zobacz ich wiadomości',
         ],
         'permissions_none' => 'Nie przyznano jeszcze żadnych uprawnień.',
         'save_permissions' => 'Zapisz uprawnienia',

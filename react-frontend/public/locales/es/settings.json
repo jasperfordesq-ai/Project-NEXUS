@@ -358,6 +358,17 @@
       "review_requested_button": "Revisión solicitada",
       "review_requested_toast": "Se solicita revisión del agente inmobiliario.",
       "review_error": "No se pudo solicitar la revisión del corredor. Por favor inténtalo de nuevo."
+    },
+    "guardians": {
+      "title": "Arreglos de tutor",
+      "intro": "Sus coordinadores han registrado que estas personas son responsables de apoyarlo. Este es sólo un registro. No les permite crear listados, usar sus créditos de tiempo ni leer sus mensajes.",
+      "none": "No se han registrado acuerdos de tutoría para usted.",
+      "recorded_label": "Fecha agregada",
+      "consented_label": "Fecha que acordaste",
+      "awaiting_consent": "Esperando su acuerdo",
+      "consent_button": "Estoy de acuerdo con este acuerdo",
+      "consent_toast": "Su acuerdo ha sido registrado.",
+      "consent_error": "Su acuerdo no pudo ser registrado. Por favor inténtalo de nuevo."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Error al cargar las cuentas vinculadas",
     "add_failed": "Error al añadir la cuenta vinculada",
     "remove_failed": "Error al eliminar",
-    "approve_failed": "Error al aprobar"
+    "approve_failed": "Error al aprobar",
+    "messages_not_offered": "Los cuidadores no pueden leer mensajes. Esa opción se eliminó porque nunca funcionó y la otra persona en una conversación no aceptó que se compartiera.",
+    "scope_note": "Estos son enlaces que usted mismo configura y la otra persona aprueba. Los arreglos registrados por sus coordinadores se muestran por separado, en su configuración de protección."
   },
   "appearance_prefs": {
     "title": "Preferencias de apariencia",

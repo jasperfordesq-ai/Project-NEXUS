@@ -358,6 +358,17 @@
       "review_requested_button": "Revisão solicitada",
       "review_requested_toast": "Revisão do corretor solicitada.",
       "review_error": "A revisão do corretor não pôde ser solicitada. Por favor, tente novamente."
+    },
+    "guardians": {
+      "title": "Arranjos de guardiões",
+      "intro": "Seus coordenadores registraram que essas pessoas são responsáveis ​​por apoiá-lo. Este é apenas um registro. Não permite que eles criem listagens, usem seus créditos de tempo ou leiam suas mensagens.",
+      "none": "Nenhum arranjo de tutor foi registrado para você.",
+      "recorded_label": "Data adicionada",
+      "consented_label": "Data que você concordou",
+      "awaiting_consent": "Esperando pelo seu acordo",
+      "consent_button": "Eu concordo com esse acordo",
+      "consent_toast": "Seu acordo foi registrado.",
+      "consent_error": "Não foi possível registrar seu acordo. Por favor, tente novamente."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Falha ao carregar contas vinculadas",
     "add_failed": "Falha ao adicionar conta vinculada",
     "remove_failed": "Falha ao remover",
-    "approve_failed": "Falha ao aprovar"
+    "approve_failed": "Falha ao aprovar",
+    "messages_not_offered": "Os cuidadores não podem ler mensagens. Essa opção foi removida porque nunca funcionou e a outra pessoa na conversa não concordou com seu compartilhamento.",
+    "scope_note": "Esses são links que você mesmo configura e a outra pessoa aprova. Os arranjos registrados pelos seus coordenadores são mostrados separadamente, nas suas configurações de proteção."
   },
   "appearance_prefs": {
     "title": "Preferências de aparência",

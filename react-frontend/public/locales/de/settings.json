@@ -358,6 +358,17 @@
       "review_requested_button": "Rezension angefordert",
       "review_requested_toast": "Maklerbewertung angefordert.",
       "review_error": "Die Maklerbewertung konnte nicht angefordert werden. Bitte versuchen Sie es erneut."
+    },
+    "guardians": {
+      "title": "Vorsorgevereinbarungen",
+      "intro": "Ihre Koordinatoren haben aufgezeichnet, dass diese Personen für Ihre Unterstützung verantwortlich sind. Dies ist nur eine Aufzeichnung. Es ist ihnen nicht gestattet, Einträge zu erstellen, Ihr Zeitguthaben zu nutzen oder Ihre Nachrichten zu lesen.",
+      "none": "Für Sie sind keine Vormundsvereinbarungen hinterlegt.",
+      "recorded_label": "Datum hinzugefügt",
+      "consented_label": "Datum, an dem Sie zugestimmt haben",
+      "awaiting_consent": "Warten auf Ihre Zustimmung",
+      "consent_button": "Ich stimme dieser Vereinbarung zu",
+      "consent_toast": "Ihre Zustimmung wurde erfasst.",
+      "consent_error": "Ihre Zustimmung konnte nicht erfasst werden. Bitte versuchen Sie es erneut."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Verknüpfte Konten konnten nicht geladen werden",
     "add_failed": "Verknüpftes Konto konnte nicht hinzugefügt werden",
     "remove_failed": "Entfernen fehlgeschlagen",
-    "approve_failed": "Genehmigung fehlgeschlagen"
+    "approve_failed": "Genehmigung fehlgeschlagen",
+    "messages_not_offered": "Betreuer können keine Nachrichten lesen. Diese Option wurde entfernt, da sie nie funktionierte und die andere Person in einer Konversation der Weitergabe nicht zugestimmt hat.",
+    "scope_note": "Dabei handelt es sich um Links, die Sie selbst einrichten und denen die andere Person zustimmt. Von Ihren Koordinatoren erfasste Vereinbarungen werden in Ihren Schutzeinstellungen separat angezeigt."
   },
   "appearance_prefs": {
     "title": "Darstellungseinstellungen",

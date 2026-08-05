@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'Ver su actividad',
             'can_manage_listings' => 'Administrar sus listados',
             'can_transact' => 'Enviar y recibir créditos de tiempo',
-            'can_view_messages' => 'Ver sus mensajes',
         ],
         'permissions_none' => 'Aún no se han concedido permisos.',
         'save_permissions' => 'Guardar permisos',

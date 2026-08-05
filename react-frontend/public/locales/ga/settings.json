@@ -358,6 +358,17 @@
       "review_requested_button": "Athbhreithniú iarrtha",
       "review_requested_toast": "Iarradh athbhreithniú bróicéir.",
       "review_error": "Níorbh fhéidir an t-athbhreithniú bróicéir a iarraidh. Bain triail eile as."
+    },
+    "guardians": {
+      "title": "Socruithe caomhnóra",
+      "intro": "Tá sé taifeadta ag do chomhordaitheoirí go bhfuil na daoine seo freagrach as tacaíocht a thabhairt duit. Is taifead amháin é seo. Ní cheadaíonn sé dóibh liostaí a chruthú, do chreidmheasanna ama a úsáid, ná do theachtaireachtaí a léamh.",
+      "none": "Níl aon socruithe caomhnóra taifeadta duit.",
+      "recorded_label": "Dáta curtha leis",
+      "consented_label": "Dáta ar aontaigh tú",
+      "awaiting_consent": "Ag fanacht le do chomhaontú",
+      "consent_button": "Aontaím leis an socrú seo",
+      "consent_toast": "Taifeadadh do chomhaontú.",
+      "consent_error": "Níorbh fhéidir do chomhaontú a thaifeadadh. Bain triail eile as."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Theip ar chuntais nasctha a lódáil",
     "add_failed": "Theip ar chuntas nasctha a chur leis",
     "remove_failed": "Theip ar bhaint",
-    "approve_failed": "Theip ar cheadú"
+    "approve_failed": "Theip ar cheadú",
+    "messages_not_offered": "Ní féidir le cúramóirí teachtaireachtaí a léamh. Baineadh an rogha sin toisc nár oibrigh sé riamh, agus níor aontaigh an duine eile i gcomhrá go ndéanfaí é a roinnt.",
+    "scope_note": "Is naisc iad seo a bhunaíonn tú féin agus a cheadaíonn an duine eile. Taispeántar na socruithe a thaifeadann do chomhordaitheoirí ar leithligh, faoi do shocruithe cosanta."
   },
   "appearance_prefs": {
     "title": "Roghanna Cuma",

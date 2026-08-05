@@ -358,6 +358,17 @@
       "review_requested_button": "Beoordeling aangevraagd",
       "review_requested_toast": "Makelaarsbeoordeling aangevraagd.",
       "review_error": "De makelaarsbeoordeling kon niet worden aangevraagd. Probeer het opnieuw."
+    },
+    "guardians": {
+      "title": "Guardian-regelingen",
+      "intro": "Uw coördinatoren hebben vastgelegd dat deze mensen verantwoordelijk zijn voor de ondersteuning van u. Dit is slechts een record. Het staat hen niet toe om vermeldingen te maken, uw tijdskrediet te gebruiken of uw berichten te lezen.",
+      "none": "Er zijn geen voogdijregelingen voor u vastgelegd.",
+      "recorded_label": "Datum toegevoegd",
+      "consented_label": "Datum waarop u akkoord ging",
+      "awaiting_consent": "Wachten op uw akkoord",
+      "consent_button": "Ik ga akkoord met deze regeling",
+      "consent_toast": "Uw overeenkomst is vastgelegd.",
+      "consent_error": "Uw overeenkomst kon niet worden vastgelegd. Probeer het opnieuw."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Kon gekoppelde accounts niet laden",
     "add_failed": "Kon gekoppeld account niet toevoegen",
     "remove_failed": "Kon niet verwijderen",
-    "approve_failed": "Kon niet goedkeuren"
+    "approve_failed": "Kon niet goedkeuren",
+    "messages_not_offered": "Verzorgers kunnen geen berichten lezen. Die optie is verwijderd omdat deze nooit heeft gewerkt en de andere persoon in een gesprek er niet mee heeft ingestemd dat deze wordt gedeeld.",
+    "scope_note": "Dit zijn links die je zelf hebt opgezet en waar de ander mee akkoord gaat. Afspraken vastgelegd door uw coördinatoren worden afzonderlijk weergegeven, onder uw beveiligingsinstellingen."
   },
   "appearance_prefs": {
     "title": "Uiterlijk Voorkeuren",

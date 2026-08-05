@@ -358,6 +358,17 @@
       "review_requested_button": "Richiesta revisione",
       "review_requested_toast": "Richiesta revisione del broker.",
       "review_error": "Non è stato possibile richiedere la revisione del broker. Per favore riprova."
+    },
+    "guardians": {
+      "title": "Disposizioni del tutore",
+      "intro": "I tuoi coordinatori hanno registrato che queste persone sono responsabili del tuo supporto. Questo è solo un record. Non consente loro di creare elenchi, utilizzare i tuoi crediti di tempo o leggere i tuoi messaggi.",
+      "none": "Non è stata registrata alcuna disposizione per il tutore per te.",
+      "recorded_label": "Data aggiunta",
+      "consented_label": "Data concordata",
+      "awaiting_consent": "In attesa del tuo accordo",
+      "consent_button": "Sono d'accordo con questo accordo",
+      "consent_toast": "Il tuo accordo è stato registrato.",
+      "consent_error": "Non è stato possibile registrare il tuo accordo. Per favore riprova."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Impossibile caricare gli account collegati",
     "add_failed": "Impossibile aggiungere l'account collegato",
     "remove_failed": "Rimozione fallita",
-    "approve_failed": "Approvazione fallita"
+    "approve_failed": "Approvazione fallita",
+    "messages_not_offered": "Gli assistenti non possono leggere i messaggi. Questa opzione è stata rimossa perché non ha mai funzionato e l'altra persona nella conversazione non ha acconsentito alla sua condivisione.",
+    "scope_note": "Questi sono i collegamenti che imposti tu stesso e che l'altra persona approva. Le disposizioni registrate dai tuoi coordinatori vengono visualizzate separatamente, nelle impostazioni di protezione."
   },
   "appearance_prefs": {
     "title": "Preferenze aspetto",

@@ -358,6 +358,17 @@
       "review_requested_button": "Révision demandée",
       "review_requested_toast": "Examen du courtier demandé.",
       "review_error": "L'examen du courtier n'a pas pu être demandé. Veuillez réessayer."
+    },
+    "guardians": {
+      "title": "Dispositions des tuteurs",
+      "intro": "Vos coordinateurs ont enregistré que ces personnes sont chargées de vous soutenir. Il s'agit uniquement d'un enregistrement. Cela ne leur permet pas de créer des annonces, d'utiliser vos crédits de temps ou de lire vos messages.",
+      "none": "Aucune disposition de tuteur n'a été enregistrée pour vous.",
+      "recorded_label": "Date d'ajout",
+      "consented_label": "Date à laquelle vous avez accepté",
+      "awaiting_consent": "En attendant votre accord",
+      "consent_button": "J'accepte cet arrangement",
+      "consent_toast": "Votre accord a été enregistré.",
+      "consent_error": "Votre accord n'a pas pu être enregistré. Veuillez réessayer."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Impossible de charger les comptes liés",
     "add_failed": "Impossible d'ajouter le compte lié",
     "remove_failed": "Échec de la suppression",
-    "approve_failed": "Échec de l'approbation"
+    "approve_failed": "Échec de l'approbation",
+    "messages_not_offered": "Les soignants ne peuvent pas lire les messages. Cette option a été supprimée car elle n’a jamais fonctionné et l’autre personne participant à une conversation n’a pas accepté qu’elle soit partagée.",
+    "scope_note": "Ce sont des liens que vous créez vous-même et que l’autre personne approuve. Les arrangements enregistrés par vos coordinateurs sont affichés séparément, sous vos paramètres de sauvegarde."
   },
   "appearance_prefs": {
     "title": "Préférences d'apparence",

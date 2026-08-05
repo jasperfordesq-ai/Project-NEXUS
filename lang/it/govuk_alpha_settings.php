@@ -55,7 +55,6 @@ return [
             'can_view_activity' => 'Visualizza la loro attività',
             'can_manage_listings' => 'Gestisci le loro inserzioni',
             'can_transact' => 'Invia e ricevi crediti di tempo',
-            'can_view_messages' => 'Visualizza i loro messaggi',
         ],
         'permissions_none' => 'Nessuna autorizzazione ancora concessa.',
         'save_permissions' => 'Salva permessi',

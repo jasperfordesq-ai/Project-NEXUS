@@ -216,8 +216,38 @@ describe('SubAccountsManager', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Permissions')).toBeInTheDocument();
-      expect(screen.getByText('View messages')).toBeInTheDocument();
+      // The three permissions the backend actually enforces.
+      expect(screen.getByText('View activity')).toBeInTheDocument();
+      expect(screen.getByText('Manage listings')).toBeInTheDocument();
+      expect(screen.getByText('Make transactions')).toBeInTheDocument();
     });
+  });
+
+  /**
+   * 🔴 This asserted the opposite until 2026-08-05: it required a "View
+   * messages" switch to exist and to POST `can_view_messages: true`. That
+   * permission was never enforced anywhere — SubAccountService::hasPermission is
+   * not consulted for it — so the test was pinning a UI promise the backend
+   * never kept, in a safeguarding feature. Do not "restore" it: letting a carer
+   * read a dependent's messages exposes the other party to that conversation,
+   * who never agreed. It needs the counterparty notice first.
+   */
+  it('does not offer a messages permission, and says so', async () => {
+    mockLoad();
+
+    render(<SubAccountsManager />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Permissions')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('View messages')).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Toggle View messages permission for Child One'),
+    ).not.toBeInTheDocument();
+    // Stated, not silently dropped — a family that had switched it on needs to
+    // know it never did anything.
+    expect(screen.getByText(/Carers cannot read messages/i)).toBeInTheDocument();
   });
 
   it('sends nested permission updates to the backend', async () => {
@@ -226,12 +256,12 @@ describe('SubAccountsManager', () => {
 
     render(<SubAccountsManager />);
 
-    const switchControl = await screen.findByLabelText('Toggle View messages permission for Child One');
+    const switchControl = await screen.findByLabelText('Toggle Manage listings permission for Child One');
     fireEvent.click(switchControl);
 
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/1/permissions', {
-        permissions: { can_view_messages: true },
+        permissions: { can_manage_listings: true },
       });
     });
   });

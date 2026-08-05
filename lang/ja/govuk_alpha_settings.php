@@ -55,7 +55,6 @@ return [
             'can_view_activity' => '彼らの活動を見る',
             'can_manage_listings' => 'リストを管理する',
             'can_transact' => 'タイムクレジットの送受信',
-            'can_view_messages' => '彼らのメッセージを見る',
         ],
         'permissions_none' => 'まだ権限が付与されていません。',
         'save_permissions' => '権限を保存する',

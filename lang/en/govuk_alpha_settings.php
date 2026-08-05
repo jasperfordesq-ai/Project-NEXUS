@@ -37,7 +37,6 @@ return [
             'can_view_activity' => 'View their activity',
             'can_manage_listings' => 'Manage their listings',
             'can_transact' => 'Send and receive time credits',
-            'can_view_messages' => 'View their messages',
         ],
         'permissions_none' => 'No permissions granted yet.',
         'save_permissions' => 'Save permissions',

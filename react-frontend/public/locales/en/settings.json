@@ -358,6 +358,17 @@
       "review_requested_button": "Review requested",
       "review_requested_toast": "Broker review requested.",
       "review_error": "The broker review could not be requested. Please try again."
+    },
+    "guardians": {
+      "title": "Guardian arrangements",
+      "intro": "Your coordinators have recorded that these people are responsible for supporting you. This is a record only. It does not allow them to create listings, use your time credits, or read your messages.",
+      "none": "No guardian arrangements have been recorded for you.",
+      "recorded_label": "Date added",
+      "consented_label": "Date you agreed",
+      "awaiting_consent": "Waiting for your agreement",
+      "consent_button": "I agree to this arrangement",
+      "consent_toast": "Your agreement has been recorded.",
+      "consent_error": "Your agreement could not be recorded. Please try again."
     }
   },
   "header": {
@@ -606,7 +617,9 @@
     "load_failed": "Failed to load linked accounts",
     "add_failed": "Failed to add linked account",
     "remove_failed": "Failed to remove",
-    "approve_failed": "Failed to approve"
+    "approve_failed": "Failed to approve",
+    "messages_not_offered": "Carers cannot read messages. That option was removed because it never worked, and the other person in a conversation has not agreed to it being shared.",
+    "scope_note": "These are links you set up yourself and the other person approves. Arrangements recorded by your coordinators are shown separately, under your safeguarding settings."
   },
   "appearance_prefs": {
     "title": "Appearance Preferences",
