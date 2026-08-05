@@ -26,7 +26,10 @@ vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
     useAuth: () => ({
-      user: mockUser.current,
+      // `as never` because these fixtures carry only the fields this page reads
+      // (the panel level and the two admin flags); the real User type is large
+      // and spelling it out here would obscure what the test is actually about.
+      user: mockUser.current as never,
       isAuthenticated: mockUser.current !== null,
       login: vi.fn(),
       logout: vi.fn(),
