@@ -74,7 +74,14 @@ The general-purpose safeguarding relationship. Columns: `guardian_user_id`,
   > `AccessibleGuardianArrangementTest`. When you add a member-facing capability,
   > build it in both or record why not.
 
-### A ward may agree, REFUSE, or WITHDRAW (2026-08-05)
+- Revocation is a soft delete (`revoked_at`), so history survives.
+- Create and revoke both write an `activity_log` row with actor and IP.
+- **It is a record, not a capability.** No authorisation path anywhere consults
+  this table — a guardian does not thereby gain the ability to act for, message
+  for, or transact for their ward. It exists to be reported on and to inform staff.
+- Surfaced in the broker and admin safeguarding dashboards.
+
+#### A ward may agree, REFUSE, or WITHDRAW (2026-08-05)
 
 The table originally held one ward-facing column, `consent_given_at`, so the only
 action available to the subject of an arrangement was to agree — `revoked_at` is
@@ -102,12 +109,6 @@ staff-only. That is not consent, and withdrawal was impossible.
 > 🔴 Do not reuse `SafeguardingService::recordConsent()` for any of this. Called
 > without an assignment id it sets consent on **every** unconsented assignment for
 > that ward, and returns `true` when zero rows changed.
-- Revocation is a soft delete (`revoked_at`), so history survives.
-- Create and revoke both write an `activity_log` row with actor and IP.
-- **It is a record, not a capability.** No authorisation path anywhere consults
-  this table — a guardian does not thereby gain the ability to act for, message
-  for, or transact for their ward. It exists to be reported on and to inform staff.
-- Surfaced in the broker and admin safeguarding dashboards.
 
 ### 2. `event_guardian_consents` — parental consent for minors at events
 
