@@ -368,7 +368,37 @@
       "awaiting_consent": "Wachten op uw akkoord",
       "consent_button": "Ik ga akkoord met deze regeling",
       "consent_toast": "Uw overeenkomst is vastgelegd.",
-      "consent_error": "Uw overeenkomst kon niet worden vastgelegd. Probeer het opnieuw."
+      "consent_error": "Uw overeenkomst kon niet worden vastgelegd. Probeer het opnieuw.",
+      "state_pending": "Wachten op uw antwoord",
+      "state_consented": "Jij was het ermee eens",
+      "state_declined": "Je was het er niet mee eens",
+      "state_withdrawn": "U heeft uw overeenkomst ingetrokken",
+      "decline_button": "Ik ben het er niet mee eens",
+      "withdraw_button": "Mijn overeenkomst intrekken",
+      "agree_after_all_button": "Ik ben het er immers mee eens",
+      "reason_label": "Reden (optioneel)",
+      "reason_hint": "U hoeft geen reden op te geven. Als u dat doet, zullen uw coördinatoren het zien.",
+      "your_reason": "Jouw reden",
+      "decline_confirm_title": "Vertel ons dat u het er niet mee eens bent?",
+      "decline_confirm_body": "Uw coördinatoren krijgen te horen dat u niet akkoord gaat met deze regeling. U kunt later van gedachten veranderen.",
+      "decline_confirm_yes": "Ja, ik ben het er niet mee eens",
+      "withdraw_confirm_title": "Uw overeenkomst intrekken?",
+      "withdraw_confirm_body": "Uw coördinatoren krijgen te horen dat u uw akkoord heeft ingetrokken. U kunt later opnieuw akkoord gaan.",
+      "withdraw_confirm_yes": "Ja, intrekken",
+      "decline_toast": "Uw coördinatoren hebben te horen gekregen dat u het er niet mee eens bent.",
+      "withdraw_toast": "Uw overeenkomst is ingetrokken.",
+      "response_error": "Dat was niet meer te redden. Probeer het opnieuw.",
+      "wards_title": "Mensen die je steunt",
+      "wards_intro": "Uw coördinatoren hebben vastgelegd dat u verantwoordelijk bent voor de ondersteuning van deze mensen. Je kunt zien of ze akkoord zijn gegaan. Hierdoor kun je niet voor hen optreden.",
+      "wards_none": "U bent voor niemand verantwoordelijk gesteld.",
+      "ward_state_pending": "Wachten op hun antwoord",
+      "ward_state_consented": "Ze waren het erover eens",
+      "ward_state_declined": "Ze waren het er niet mee eens",
+      "ward_state_withdrawn": "Ze hebben hun overeenkomst ingetrokken"
+    },
+    "guardians_prompt": {
+      "message": "Er is iemand geregistreerd die verantwoordelijk is voor de ondersteuning van u. Jouw antwoord is nodig.",
+      "action": "Bekijk dit"
     }
   },
   "header": {

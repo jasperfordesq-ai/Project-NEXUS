@@ -25,6 +25,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A member could agree to a guardian arrangement and nothing else — they could not refuse it, and could not change their mind.** When coordinators record that someone is responsible for supporting a member, that member is the subject of the arrangement. The only button they had was "I agree". There was no way to say no, and no way to withdraw afterwards — undoing it was a staff-only action. There was not even anywhere in the database to store a refusal.
+
+  A consent that cannot be refused is not consent, it is a button. And a consent that cannot be withdrawn falls short of the ordinary expectation that withdrawing is as easy as agreeing.
+
+  A member can now agree, refuse, or withdraw agreement they previously gave, and change their mind in either direction afterwards. A reason can be given and is **never required** — making somebody justify refusing a safeguarding arrangement is pressure to agree, so the screen says explicitly that they do not have to. Their coordinators and the named guardian are told when they refuse or withdraw, each in their own language, because a refusal is a safeguarding signal that must not sit silently in a table.
+
+  Three further gaps closed at the same time:
+
+  - **The guardian could see nothing.** They were emailed that they had been made responsible for someone and then had no screen for it — they could not see the arrangement, or whether the member had agreed at all. Half the relationship was invisible. They now have a "People you support" section, which appears only if they actually support someone, and which states that it does not let them act on anyone's behalf.
+  - **Nothing told a member there was a decision waiting.** The only routes in were an email, or knowing to look several clicks deep in settings. There is now a prompt on the dashboard, which shows nothing at all when there is nothing pending.
+  - **Every change is now recorded in a trail that cannot be rewritten.** Who did what, when, in what capacity, and any reason they gave. The database itself refuses attempts to alter or remove those records — that is tested, not assumed.
+
+  Worth being straight about one limit: the records are protected against the application and ordinary database edits, not against someone with full database access who empties the table outright.
+
 - **A carer could be told they were allowed to read a vulnerable person's messages, and it was never true.** On the linked-accounts screen a family saw four identical on/off switches: view activity, manage their listings, send and receive time credits, and view their messages. The first three now work. The fourth never did — nothing in the platform ever checked it. It saved, it showed as on, and no part of the system paid it any attention.
 
   That is worse than the feature being absent, because a family could reasonably act on it. In a safeguarding feature it is the most serious kind of error, and it appeared in both the main app and the accessible version. The clinching detail: the database column's own description lists **three** permissions. The fourth reached both screens and never reached the design.

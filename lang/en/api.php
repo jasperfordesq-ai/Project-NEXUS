@@ -3303,4 +3303,8 @@ return [
     'partner_venue_csv_member' => 'Member',
     'partner_venue_csv_recorded_by' => 'Recorded by',
     'partner_venue_csv_source' => 'Source',
+    'safeguarding_guardian_response_invalid' => 'That response is not available for this arrangement.',
+    'safeguarding_ward_consented_notification' => ':name has agreed to their guardian arrangement.',
+    'safeguarding_ward_declined_notification' => ':name has declined their guardian arrangement.',
+    'safeguarding_ward_withdrawn_notification' => ':name has withdrawn their agreement to a guardian arrangement.',
 ];

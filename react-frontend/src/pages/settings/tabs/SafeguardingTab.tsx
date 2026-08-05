@@ -28,6 +28,7 @@ import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
+import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -74,13 +75,86 @@ interface MyPreferencesResponse {
  * column that no human could populate. An API with no UI is the same bug as a
  * method with no caller — which is exactly what it replaced.
  */
+type ArrangementState = 'pending' | 'consented' | 'declined' | 'withdrawn';
+
 interface MyGuardian {
   id: number;
   guardian_name: string;
   assigned_at: string | null;
   consent_given_at: string | null;
+  consent_declined_at: string | null;
+  consent_withdrawn_at: string | null;
+  ward_response_reason: string | null;
+  state: ArrangementState;
   consent_given: boolean;
   notes: string | null;
+}
+
+/**
+ * 🔴 The guardian's own view, which did not exist.
+ *
+ * A guardian was emailed that they had been made responsible for someone and
+ * then had no screen for it, so half the relationship was invisible — including
+ * whether the ward had agreed at all.
+ */
+interface MyWard {
+  id: number;
+  ward_name: string;
+  assigned_at: string | null;
+  state: ArrangementState;
+}
+
+/** Which response a given position allows. Mirrors the service's transition table. */
+const NEXT_ACTIONS: Record<ArrangementState, Array<'consent' | 'decline' | 'withdraw'>> = {
+  pending: ['consent', 'decline'],
+  consented: ['withdraw'],
+  declined: ['consent'],
+  withdrawn: ['consent'],
+};
+
+const STATE_COLOR: Record<ArrangementState, 'success' | 'warning' | 'danger' | 'default'> = {
+  pending: 'warning',
+  consented: 'success',
+  declined: 'danger',
+  withdrawn: 'default',
+};
+
+/**
+ * Derive the position from the timestamps when the server has not sent `state`.
+ *
+ * 🔴 Defensive on purpose. `NEXT_ACTIONS[guardian.state]` would be `undefined`
+ * for an unexpected or missing value, and `.includes()` on that throws — taking
+ * the whole settings tab down. This is the same failure the Hours report had when
+ * it called `.map()` on an object the API actually returned. Never index a lookup
+ * table with an unvalidated server value.
+ */
+function normaliseGuardian(raw: MyGuardian): MyGuardian {
+  const known: ArrangementState[] = ['pending', 'consented', 'declined', 'withdrawn'];
+  if (known.includes(raw.state)) return raw;
+
+  const derived: ArrangementState = raw.consent_withdrawn_at
+    ? 'withdrawn'
+    : raw.consent_declined_at
+      ? 'declined'
+      : raw.consent_given_at
+        ? 'consented'
+        : 'pending';
+  return { ...raw, state: derived };
+}
+
+function normaliseWard(raw: MyWard): MyWard {
+  const known: ArrangementState[] = ['pending', 'consented', 'declined', 'withdrawn'];
+  return known.includes(raw.state) ? raw : { ...raw, state: 'pending' };
+}
+
+/** The date that explains the current position, so the chip can carry it. */
+function stateDate(guardian: MyGuardian): string | null {
+  switch (guardian.state) {
+    case 'consented': return guardian.consent_given_at;
+    case 'declined': return guardian.consent_declined_at;
+    case 'withdrawn': return guardian.consent_withdrawn_at;
+    default: return null;
+  }
 }
 
 interface MyVettingStatus {
@@ -108,7 +182,16 @@ export function SafeguardingTab() {
   const [preferences, setPreferences] = useState<MemberPreference[]>([]);
   const [vettingStatus, setVettingStatus] = useState<MyVettingStatus | null>(null);
   const [guardians, setGuardians] = useState<MyGuardian[]>([]);
+  const [wards, setWards] = useState<MyWard[]>([]);
   const [consentingId, setConsentingId] = useState<number | null>(null);
+  // Refusing and withdrawing go through a confirm step with an OPTIONAL reason.
+  // Agreeing does not: adding friction to consent is fine, adding it to refusal
+  // would be a nudge toward agreeing.
+  const [pendingResponse, setPendingResponse] = useState<
+    { guardian: MyGuardian; action: 'decline' | 'withdraw' } | null
+  >(null);
+  const [responseReason, setResponseReason] = useState('');
+  const responseModal = useDisclosure();
   const [isRequestingReview, setIsRequestingReview] = useState(false);
   const [isConfirmingPolicyReview, setIsConfirmingPolicyReview] = useState(false);
   const [revokingId, setRevokingId] = useState<number | null>(null);
@@ -117,10 +200,11 @@ export function SafeguardingTab() {
   const loadPreferences = useCallback(async () => {
     try {
       setLoading(true);
-      const [preferencesResponse, vettingResponse, guardiansResponse] = await Promise.all([
+      const [preferencesResponse, vettingResponse, guardiansResponse, wardsResponse] = await Promise.all([
         api.get<MyPreferencesResponse>('/v2/safeguarding/my-preferences'),
         api.get<MyVettingStatus>('/v2/safeguarding/my-vetting-status'),
-        api.get<{ guardians: MyGuardian[] }>('/v2/safeguarding/my-guardians'),
+        api.get<{ guardians: MyGuardian[]; pending_count: number }>('/v2/safeguarding/my-guardians'),
+        api.get<{ wards: MyWard[] }>('/v2/safeguarding/my-wards'),
       ]);
       if (preferencesResponse.success && preferencesResponse.data) {
         setPreferences(preferencesResponse.data.preferences ?? []);
@@ -132,7 +216,12 @@ export function SafeguardingTab() {
       // `catch` here would not see a failed request.
       setGuardians(
         guardiansResponse.success && guardiansResponse.data
-          ? guardiansResponse.data.guardians ?? []
+          ? (guardiansResponse.data.guardians ?? []).map(normaliseGuardian)
+          : [],
+      );
+      setWards(
+        wardsResponse.success && wardsResponse.data
+          ? (wardsResponse.data.wards ?? []).map(normaliseWard)
           : [],
       );
     } catch (error) {
@@ -186,28 +275,66 @@ export function SafeguardingTab() {
    * boundary specifically — a consent record signed by the wrong person is worse
    * than none at all.
    */
-  const handleConsent = useCallback(async (assignmentId: number) => {
+  const ENDPOINTS = {
+    consent: '/v2/safeguarding/consent-to-guardian',
+    decline: '/v2/safeguarding/decline-guardian',
+    withdraw: '/v2/safeguarding/withdraw-guardian-consent',
+  } as const;
+
+  const handleRespond = useCallback(async (
+    assignmentId: number,
+    action: 'consent' | 'decline' | 'withdraw',
+    reason?: string,
+  ) => {
     if (consentingId !== null) return;
     setConsentingId(assignmentId);
     try {
-      const res = await api.post<{ consent_given: boolean; already_given: boolean }>(
-        '/v2/safeguarding/consent-to-guardian',
-        { assignment_id: assignmentId },
-      );
+      const body: Record<string, unknown> = { assignment_id: assignmentId };
+      if (reason && reason.trim() !== '') body.reason = reason.trim();
+
+      const res = await api.post<{ state: string; already: boolean }>(ENDPOINTS[action], body);
       if (!res.success) {
-        toast.error(t('safeguarding.guardians.consent_error'));
+        // 🔴 api.ts never throws, so this check is the only thing standing
+        // between a failed request and a false success message.
+        toast.error(
+          action === 'consent'
+            ? t('safeguarding.guardians.consent_error')
+            : t('safeguarding.guardians.response_error'),
+        );
         return;
       }
-      // Re-read rather than guess the timestamp the server stored.
+      // Re-read rather than guess what the server stored.
       await loadPreferences();
-      toast.success(t('safeguarding.guardians.consent_toast'));
+      toast.success(
+        action === 'consent'
+          ? t('safeguarding.guardians.consent_toast')
+          : action === 'decline'
+            ? t('safeguarding.guardians.decline_toast')
+            : t('safeguarding.guardians.withdraw_toast'),
+      );
     } catch (error) {
-      logError('Guardian consent failed', error);
-      toast.error(t('safeguarding.guardians.consent_error'));
+      logError('Guardian arrangement response failed', error);
+      toast.error(t('safeguarding.guardians.response_error'));
     } finally {
       setConsentingId(null);
     }
   }, [consentingId, loadPreferences, t, toast]);
+
+  /** Refusing and withdrawing confirm first, and offer an optional reason. */
+  const openResponseModal = useCallback((guardian: MyGuardian, action: 'decline' | 'withdraw') => {
+    setPendingResponse({ guardian, action });
+    setResponseReason('');
+    responseModal.onOpen();
+  }, [responseModal]);
+
+  const confirmResponse = useCallback(async () => {
+    if (!pendingResponse) return;
+    const { guardian, action } = pendingResponse;
+    responseModal.onClose();
+    setPendingResponse(null);
+    await handleRespond(guardian.id, action, responseReason);
+    setResponseReason('');
+  }, [handleRespond, pendingResponse, responseModal, responseReason]);
 
   const handleRequestReview = useCallback(async () => {
     if (!vettingStatus?.policy.configured || !vettingStatus.policy.contact_policy_available || isRequestingReview) return;
@@ -422,30 +549,66 @@ export function SafeguardingTab() {
                               {guardian.notes}
                             </p>
                           )}
+                          {guardian.ward_response_reason && (
+                            <p className="mt-1 text-xs leading-relaxed text-theme-muted">
+                              <span className="font-medium">
+                                {t('safeguarding.guardians.your_reason')}:
+                              </span>{' '}
+                              {guardian.ward_response_reason}
+                            </p>
+                          )}
                         </div>
-                        {guardian.consent_given ? (
-                          <Chip size="sm" variant="soft" color="success">
-                            {t('safeguarding.guardians.consented_label')}
-                            {guardian.consent_given_at
-                              ? `: ${new Date(guardian.consent_given_at).toLocaleDateString(getFormattingLocale())}`
+                        {/*
+                          One chip stating the current position, then only the
+                          responses that position allows — mirroring the service's
+                          transition table, so the UI cannot offer an action the
+                          backend will refuse.
+                        */}
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          <Chip size="sm" variant="soft" color={STATE_COLOR[guardian.state]}>
+                            {t(`safeguarding.guardians.state_${guardian.state}`)}
+                            {stateDate(guardian)
+                              ? `: ${new Date(stateDate(guardian) as string).toLocaleDateString(getFormattingLocale())}`
                               : ''}
                           </Chip>
-                        ) : (
-                          <div className="flex flex-col items-end gap-2">
-                            <Chip size="sm" variant="soft" color="warning">
-                              {t('safeguarding.guardians.awaiting_consent')}
-                            </Chip>
+
+                          {NEXT_ACTIONS[guardian.state].includes('consent') && (
                             <Button
                               size="sm"
                               variant="secondary"
                               isLoading={consentingId === guardian.id}
                               isDisabled={consentingId !== null}
-                              onPress={() => handleConsent(guardian.id)}
+                              onPress={() => handleRespond(guardian.id, 'consent')}
                             >
-                              {t('safeguarding.guardians.consent_button')}
+                              {guardian.state === 'pending'
+                                ? t('safeguarding.guardians.consent_button')
+                                : t('safeguarding.guardians.agree_after_all_button')}
                             </Button>
-                          </div>
-                        )}
+                          )}
+
+                          {/* Refusing is offered as plainly as agreeing. */}
+                          {NEXT_ACTIONS[guardian.state].includes('decline') && (
+                            <Button
+                              size="sm"
+                              variant="danger-soft"
+                              isDisabled={consentingId !== null}
+                              onPress={() => openResponseModal(guardian, 'decline')}
+                            >
+                              {t('safeguarding.guardians.decline_button')}
+                            </Button>
+                          )}
+
+                          {NEXT_ACTIONS[guardian.state].includes('withdraw') && (
+                            <Button
+                              size="sm"
+                              variant="danger-soft"
+                              isDisabled={consentingId !== null}
+                              onPress={() => openResponseModal(guardian, 'withdraw')}
+                            >
+                              {t('safeguarding.guardians.withdraw_button')}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -454,6 +617,40 @@ export function SafeguardingTab() {
             </div>
           </div>
         </div>
+
+        {/*
+          The other half of the relationship. A guardian used to see nothing at
+          all — they were emailed and then had no screen. Only rendered when they
+          actually support someone, so it does not clutter every member's settings.
+        */}
+        {wards.length > 0 && (
+          <div className="mb-6 rounded-xl border border-theme-default bg-theme-surface p-4">
+            <div className="flex items-start gap-3">
+              <Users className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-theme-primary">
+                  {t('safeguarding.guardians.wards_title')}
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-theme-muted">
+                  {t('safeguarding.guardians.wards_intro')}
+                </p>
+                <ul className="mt-3 space-y-2">
+                  {wards.map((ward) => (
+                    <li
+                      key={ward.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-theme-default bg-theme-elevated p-3"
+                    >
+                      <span className="text-sm font-medium text-theme-primary">{ward.ward_name}</span>
+                      <Chip size="sm" variant="soft" color={STATE_COLOR[ward.state]}>
+                        {t(`safeguarding.guardians.ward_state_${ward.state}`)}
+                      </Chip>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
 
         {preferences.length === 0 ? (
           <div className="p-6 text-center rounded-lg bg-theme-elevated border border-theme-default">
@@ -532,6 +729,70 @@ export function SafeguardingTab() {
           </div>
         )}
       </GlassCard>
+
+      {/*
+        Confirm refusing or withdrawing, with an OPTIONAL reason.
+
+        🔴 The reason must never be required. Making somebody justify refusing a
+        safeguarding arrangement is pressure to consent, which would defeat the
+        purpose of offering the choice at all. The hint says so explicitly.
+      */}
+      <Modal isOpen={responseModal.isOpen} onOpenChange={responseModal.onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>
+                {pendingResponse?.action === 'withdraw'
+                  ? t('safeguarding.guardians.withdraw_confirm_title')
+                  : t('safeguarding.guardians.decline_confirm_title')}
+              </ModalHeader>
+              <ModalBody>
+                <p className="text-sm text-theme-secondary">
+                  {pendingResponse?.action === 'withdraw'
+                    ? t('safeguarding.guardians.withdraw_confirm_body')
+                    : t('safeguarding.guardians.decline_confirm_body')}
+                </p>
+                {pendingResponse?.guardian && (
+                  <p className="mt-2 text-sm font-medium text-theme-primary">
+                    {pendingResponse.guardian.guardian_name}
+                  </p>
+                )}
+                <Textarea
+                  className="mt-3"
+                  label={t('safeguarding.guardians.reason_label')}
+                  description={t('safeguarding.guardians.reason_hint')}
+                  value={responseReason}
+                  onValueChange={setResponseReason}
+                  maxLength={500}
+                  minRows={2}
+                  maxRows={5}
+                />
+              </ModalBody>
+              <ModalFooter>
+                {/*
+                  Reuses the already-translated common "Cancel" rather than
+                  adding a new key. A one-word string is skipped by the
+                  translator's single-word guard (it treats them as code values),
+                  and overriding that guard is how "Recorded" came back meaning
+                  audio recording in four languages.
+                */}
+                <Button variant="tertiary" onPress={onClose}>
+                  {t('cancel', { ns: 'common' })}
+                </Button>
+                <Button
+                  variant="danger"
+                  onPress={confirmResponse}
+                  isLoading={consentingId !== null}
+                >
+                  {pendingResponse?.action === 'withdraw'
+                    ? t('safeguarding.guardians.withdraw_confirm_yes')
+                    : t('safeguarding.guardians.decline_confirm_yes')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Confirm revocation */}
       <Modal isOpen={confirmModal.isOpen} onOpenChange={confirmModal.onOpenChange}>

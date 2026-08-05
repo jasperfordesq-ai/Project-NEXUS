@@ -2926,8 +2926,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // writer at all — the only method that sets it had zero callers — so the admin
     // "consented wards" count read a column nothing could populate, and the ward was
     // never shown the assignment despite being notified about it.
+    // Guardian arrangements, member side. A ward may agree, REFUSE, or WITHDRAW —
+    // all three, because a consent that cannot be refused or withdrawn is not
+    // consent. `my-wards` is the guardian's own view, which did not exist at all.
     Route::get('/v2/safeguarding/my-guardians', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'myGuardians']);
+    Route::get('/v2/safeguarding/my-wards', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'myWards']);
     Route::post('/v2/safeguarding/consent-to-guardian', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'consentToGuardian'])->middleware('throttle:nexus-route-10-per-1m');
+    Route::post('/v2/safeguarding/decline-guardian', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'declineGuardian'])->middleware('throttle:nexus-route-10-per-1m');
+    Route::post('/v2/safeguarding/withdraw-guardian-consent', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'withdrawGuardianConsent'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/confirm-policy-review', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'confirmPolicyReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/vetting-review-request', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'requestVettingReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/revoke', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'revoke']);

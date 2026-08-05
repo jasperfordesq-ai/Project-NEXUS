@@ -2779,4 +2779,8 @@ KANDIDATEN::candidates',
     'event_attendance_claim_not_reversible' => 'Nur ein abgeschlossener Prämienanspruch kann rückgängig gemacht werden',
     'event_attendance_mode_disabled' => 'Das Prägen von Anwesenheitsprämien ist auf Plattformebene ausgeschaltet',
     'events_config_monthly_cap_invalid' => 'Die monatliche Prämienobergrenze muss eine positive Anzahl an Credits sein oder leer sein, wenn keine Obergrenze vorliegt.',
+    'safeguarding_guardian_response_invalid' => 'Diese Antwort ist für diese Vereinbarung nicht verfügbar.',
+    'safeguarding_ward_consented_notification' => ':name hat seiner Vormundsvereinbarung zugestimmt.',
+    'safeguarding_ward_declined_notification' => ':name hat seine Vormundschaftsvereinbarung abgelehnt.',
+    'safeguarding_ward_withdrawn_notification' => ':name hat seine Zustimmung zu einer Vormundschaftsvereinbarung zurückgezogen.',
 ];

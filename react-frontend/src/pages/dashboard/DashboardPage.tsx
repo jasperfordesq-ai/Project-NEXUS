@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
+import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
 import { Progress } from '@/components/ui/Progress';
 import { Skeleton } from '@/components/ui/Skeleton';
 /**
@@ -366,6 +367,15 @@ export function DashboardPage() {
     <>
       <PageMeta title={t('meta.title')} description={t('meta.description')} noIndex />
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6 min-w-0 max-w-full">
+        {/*
+          A guardian arrangement waiting for the member's answer. Renders nothing
+          when there is none. Without this the only route to that decision was an
+          email, or knowing to look several clicks deep in Settings.
+        */}
+        <motion.div variants={itemVariants}>
+          <GuardianConsentPrompt />
+        </motion.div>
+
         {/* Onboarding Banner */}
         {user && user.onboarding_completed === false && (
           <motion.div variants={itemVariants}>

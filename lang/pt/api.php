@@ -2779,4 +2779,8 @@ CANDIDATOS::candidates',
     'event_attendance_claim_not_reversible' => 'Somente uma reivindicação de recompensa concluída pode ser revertida',
     'event_attendance_mode_disabled' => 'A cunhagem de recompensas de participação está desativada no nível da plataforma',
     'events_config_monthly_cap_invalid' => 'O limite de recompensa mensal deve ser um número positivo de créditos ou vazio se não houver limite.',
+    'safeguarding_guardian_response_invalid' => 'Essa resposta não está disponível para este acordo.',
+    'safeguarding_ward_consented_notification' => ':name concordou com o acordo de tutor.',
+    'safeguarding_ward_declined_notification' => ':name recusou o acordo de tutor.',
+    'safeguarding_ward_withdrawn_notification' => ':name retirou seu acordo com um acordo de tutor.',
 ];

@@ -2779,4 +2779,8 @@ KANDIDATEN::candidates',
     'event_attendance_claim_not_reversible' => 'Alleen een voltooide beloningsclaim kan worden teruggedraaid',
     'event_attendance_mode_disabled' => 'Het genereren van aanwezigheidsbeloningen is uitgeschakeld op platformniveau',
     'events_config_monthly_cap_invalid' => 'De maandelijkse beloningslimiet moet een positief aantal credits zijn, of leeg als er geen limiet is.',
+    'safeguarding_guardian_response_invalid' => 'Dat antwoord is niet beschikbaar voor deze regeling.',
+    'safeguarding_ward_consented_notification' => ':name heeft ingestemd met hun voogdijregeling.',
+    'safeguarding_ward_declined_notification' => ':name heeft de voogdijregeling afgewezen.',
+    'safeguarding_ward_withdrawn_notification' => ':name heeft zijn akkoord met een voogdijregeling ingetrokken.',
 ];

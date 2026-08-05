@@ -2779,4 +2779,8 @@ CANDIDATI::candidates',
     'event_attendance_claim_not_reversible' => 'Solo una richiesta di ricompensa completata può essere annullata',
     'event_attendance_mode_disabled' => 'L\'assegnazione dei premi per la partecipazione è disattivata a livello di piattaforma',
     'events_config_monthly_cap_invalid' => 'Il limite massimo del premio mensile deve essere un numero positivo di crediti o vuoto se non è presente alcun limite.',
+    'safeguarding_guardian_response_invalid' => 'Tale risposta non è disponibile per questo accordo.',
+    'safeguarding_ward_consented_notification' => ':name ha accettato l\'accordo con il suo tutore.',
+    'safeguarding_ward_declined_notification' => ':name ha rifiutato il contratto di tutore.',
+    'safeguarding_ward_withdrawn_notification' => ':name ha ritirato il proprio consenso a un accordo di tutore.',
 ];

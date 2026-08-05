@@ -368,7 +368,37 @@
       "awaiting_consent": "Warten auf Ihre Zustimmung",
       "consent_button": "Ich stimme dieser Vereinbarung zu",
       "consent_toast": "Ihre Zustimmung wurde erfasst.",
-      "consent_error": "Ihre Zustimmung konnte nicht erfasst werden. Bitte versuchen Sie es erneut."
+      "consent_error": "Ihre Zustimmung konnte nicht erfasst werden. Bitte versuchen Sie es erneut.",
+      "state_pending": "Ich warte auf Ihre Antwort",
+      "state_consented": "Du hast zugestimmt",
+      "state_declined": "Du warst nicht einverstanden",
+      "state_withdrawn": "Sie haben Ihre Einwilligung zurückgezogen",
+      "decline_button": "Ich stimme nicht zu",
+      "withdraw_button": "Meine Zustimmung widerrufen",
+      "agree_after_all_button": "Ich stimme schließlich zu",
+      "reason_label": "Grund (optional)",
+      "reason_hint": "Einen Grund müssen Sie nicht angeben. Wenn Sie dies tun, wird es Ihren Koordinatoren angezeigt.",
+      "your_reason": "Dein Grund",
+      "decline_confirm_title": "Sagen Sie uns, dass Sie nicht einverstanden sind?",
+      "decline_confirm_body": "Ihren Koordinatoren wird mitgeteilt, dass Sie mit dieser Vereinbarung nicht einverstanden sind. Sie können Ihre Meinung später ändern.",
+      "decline_confirm_yes": "Ja, ich stimme nicht zu",
+      "withdraw_confirm_title": "Ihr Einverständnis widerrufen?",
+      "withdraw_confirm_body": "Ihren Koordinatoren wird mitgeteilt, dass Sie Ihre Zustimmung zurückgezogen haben. Sie können später noch einmal zustimmen.",
+      "withdraw_confirm_yes": "Ja, ziehen Sie es zurück",
+      "decline_toast": "Ihren Koordinatoren wurde mitgeteilt, dass Sie damit nicht einverstanden sind.",
+      "withdraw_toast": "Ihre Einwilligung wurde zurückgezogen.",
+      "response_error": "Das konnte nicht gerettet werden. Bitte versuchen Sie es erneut.",
+      "wards_title": "Menschen, die Sie unterstützen",
+      "wards_intro": "Ihre Koordinatoren haben aufgezeichnet, dass Sie für die Unterstützung dieser Menschen verantwortlich sind. Sie können sehen, ob sie zugestimmt haben. Das erlaubt Ihnen nicht, für sie zu handeln.",
+      "wards_none": "Sie wurden für niemanden als verantwortlich gemeldet.",
+      "ward_state_pending": "Warten auf ihre Antwort",
+      "ward_state_consented": "Sie stimmten zu",
+      "ward_state_declined": "Sie waren nicht einverstanden",
+      "ward_state_withdrawn": "Sie zogen ihre Vereinbarung zurück"
+    },
+    "guardians_prompt": {
+      "message": "Es wurde festgestellt, dass jemand für Ihre Unterstützung verantwortlich ist. Ihre Antwort wird benötigt.",
+      "action": "Überprüfen Sie dies"
     }
   },
   "header": {

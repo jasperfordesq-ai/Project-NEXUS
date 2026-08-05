@@ -368,7 +368,37 @@
       "awaiting_consent": "Esperando su acuerdo",
       "consent_button": "Estoy de acuerdo con este acuerdo",
       "consent_toast": "Su acuerdo ha sido registrado.",
-      "consent_error": "Su acuerdo no pudo ser registrado. Por favor inténtalo de nuevo."
+      "consent_error": "Su acuerdo no pudo ser registrado. Por favor inténtalo de nuevo.",
+      "state_pending": "Esperando tu respuesta",
+      "state_consented": "estuviste de acuerdo",
+      "state_declined": "no estuviste de acuerdo",
+      "state_withdrawn": "Retiraste tu acuerdo",
+      "decline_button": "no estoy de acuerdo",
+      "withdraw_button": "Retirar mi acuerdo",
+      "agree_after_all_button": "Estoy de acuerdo después de todo",
+      "reason_label": "Razón (opcional)",
+      "reason_hint": "No es necesario dar una razón. Si lo haces, tus coordinadores lo verán.",
+      "your_reason": "tu razon",
+      "decline_confirm_title": "¿Dinos que no estás de acuerdo?",
+      "decline_confirm_body": "Se informará a sus coordinadores que usted no está de acuerdo con este acuerdo. Puedes cambiar de opinión más tarde.",
+      "decline_confirm_yes": "Si, no estoy de acuerdo",
+      "withdraw_confirm_title": "¿Retirar su acuerdo?",
+      "withdraw_confirm_body": "Se informará a sus coordinadores que ha retirado su acuerdo. Puedes volver a aceptar más tarde.",
+      "withdraw_confirm_yes": "Si, retirarlo",
+      "decline_toast": "A sus coordinadores les han dicho que no está de acuerdo.",
+      "withdraw_toast": "Su acuerdo ha sido retirado.",
+      "response_error": "Eso no se pudo salvar. Por favor inténtalo de nuevo.",
+      "wards_title": "personas a las que apoyas",
+      "wards_intro": "Sus coordinadores han dejado constancia de que usted es responsable de apoyar a estas personas. Puedes ver si están de acuerdo. Esto no te permite actuar por ellos.",
+      "wards_none": "No ha sido registrado como responsable de nadie.",
+      "ward_state_pending": "Esperando su respuesta",
+      "ward_state_consented": "estuvieron de acuerdo",
+      "ward_state_declined": "ellos no estuvieron de acuerdo",
+      "ward_state_withdrawn": "Retiraron su acuerdo"
+    },
+    "guardians_prompt": {
+      "message": "Alguien ha sido registrado como responsable de apoyarte. Se necesita tu respuesta.",
+      "action": "Revisa esto"
     }
   },
   "header": {

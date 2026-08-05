@@ -368,7 +368,37 @@
       "awaiting_consent": "Czekam na Twoją zgodę",
       "consent_button": "Zgadzam się na ten układ",
       "consent_toast": "Twoja umowa została zarejestrowana.",
-      "consent_error": "Nie udało się zarejestrować Twojej umowy. Spróbuj ponownie."
+      "consent_error": "Nie udało się zarejestrować Twojej umowy. Spróbuj ponownie.",
+      "state_pending": "Czekam na Twoją odpowiedź",
+      "state_consented": "Zgodziłeś się",
+      "state_declined": "Nie zgodziłeś się",
+      "state_withdrawn": "Wycofałeś swoją zgodę",
+      "decline_button": "Nie zgadzam się",
+      "withdraw_button": "Wycofaj moją zgodę",
+      "agree_after_all_button": "W końcu się zgadzam",
+      "reason_label": "Powód (opcjonalnie)",
+      "reason_hint": "Nie musisz podawać powodu. Jeśli to zrobisz, Twoi koordynatorzy to zobaczą.",
+      "your_reason": "Twój powód",
+      "decline_confirm_title": "Powiedz nam, że się nie zgadzasz?",
+      "decline_confirm_body": "Twoi koordynatorzy zostaną poinformowani, że nie wyrażasz zgody na takie ustalenia. Później możesz zmienić zdanie.",
+      "decline_confirm_yes": "Tak, nie zgadzam się",
+      "withdraw_confirm_title": "Wycofać zgodę?",
+      "withdraw_confirm_body": "Twoi koordynatorzy zostaną poinformowani, że wycofałeś swoją zgodę. Możesz zgodzić się ponownie później.",
+      "withdraw_confirm_yes": "Tak, wycofaj to",
+      "decline_toast": "Twoim koordynatorom powiedziano, że się nie zgadzasz.",
+      "withdraw_toast": "Twoja zgoda została wycofana.",
+      "response_error": "Tego nie udało się uratować. Spróbuj ponownie.",
+      "wards_title": "Osoby, które wspierasz",
+      "wards_intro": "Twoi koordynatorzy odnotowali, że jesteś odpowiedzialny za wspieranie tych osób. Możesz zobaczyć, czy się zgodzili. To nie pozwala ci działać w ich imieniu.",
+      "wards_none": "Nie zostałeś zarejestrowany jako odpowiedzialny za kogokolwiek.",
+      "ward_state_pending": "Czekam na ich odpowiedź",
+      "ward_state_consented": "Zgodzili się",
+      "ward_state_declined": "Nie zgodzili się",
+      "ward_state_withdrawn": "Wycofali się ze swojej umowy"
+    },
+    "guardians_prompt": {
+      "message": "Ktoś został zapisany jako odpowiedzialny za wspieranie Cię. Twoja odpowiedź jest potrzebna.",
+      "action": "Przejrzyj to"
     }
   },
   "header": {

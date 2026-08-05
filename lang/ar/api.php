@@ -2779,4 +2779,8 @@ XP: :xp | المستوى: :level | التبادلات المكتملة: :complet
     'event_attendance_claim_not_reversible' => 'يمكن فقط عكس المطالبة بالمكافأة المكتملة',
     'event_attendance_mode_disabled' => 'تم إيقاف سك مكافأة الحضور على مستوى المنصة',
     'events_config_monthly_cap_invalid' => 'يجب أن يكون الحد الأقصى للمكافأة الشهرية عددًا موجبًا من الأرصدة، أو أن يكون فارغًا بدون أي حد أقصى.',
+    'safeguarding_guardian_response_invalid' => 'هذا الرد غير متوفر لهذا الترتيب.',
+    'safeguarding_ward_consented_notification' => 'وافق :name على ترتيبات الوصي الخاصة بهم.',
+    'safeguarding_ward_declined_notification' => 'لقد رفض :name ترتيب الوصي الخاص به.',
+    'safeguarding_ward_withdrawn_notification' => 'قام :name بسحب موافقته على ترتيبات الوصي.',
 ];

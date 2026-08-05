@@ -2779,4 +2779,8 @@ IARRTHÓIRÍ: :candidates',
     'event_attendance_claim_not_reversible' => 'Ní féidir ach éileamh comhlánaithe ar luaíocht a fhreaschur',
     'event_attendance_mode_disabled' => 'Múchtar mionú luach saothair tinrimh ag leibhéal an ardáin',
     'events_config_monthly_cap_invalid' => 'Caithfidh líon dearfach creidmheasanna a bheith sa caidhp luach saothair míosúil, nó folamh gan aon teorainn.',
+    'safeguarding_guardian_response_invalid' => 'Níl an freagra sin ar fáil don socrú seo.',
+    'safeguarding_ward_consented_notification' => ':name tar éis a socrú caomhnóra a chomhaontú.',
+    'safeguarding_ward_declined_notification' => 'Dhiúltaigh :name a socrú caomhnóra.',
+    'safeguarding_ward_withdrawn_notification' => 'Tá :name tar éis a gcomhaontú maidir le socrú caomhnóra a tharraingt siar.',
 ];

@@ -368,7 +368,37 @@
       "awaiting_consent": "Ag fanacht le do chomhaontú",
       "consent_button": "Aontaím leis an socrú seo",
       "consent_toast": "Taifeadadh do chomhaontú.",
-      "consent_error": "Níorbh fhéidir do chomhaontú a thaifeadadh. Bain triail eile as."
+      "consent_error": "Níorbh fhéidir do chomhaontú a thaifeadadh. Bain triail eile as.",
+      "state_pending": "Ag fanacht le do fhreagra",
+      "state_consented": "D'aontaigh tú",
+      "state_declined": "Níor aontaigh tú",
+      "state_withdrawn": "Tharraing tú do chomhaontú siar",
+      "decline_button": "Ní aontaím",
+      "withdraw_button": "Tarraing siar mo chomhaontú",
+      "agree_after_all_button": "Aontaím tar éis an tsaoil",
+      "reason_label": "Fáth (roghnach)",
+      "reason_hint": "Ní gá duit cúis a thabhairt. Má dhéanann tú, feicfidh do chomhordaitheoirí é.",
+      "your_reason": "Do chúis",
+      "decline_confirm_title": "Inis dúinn nach n-aontaíonn tú?",
+      "decline_confirm_body": "Inseofar do do chomhordaitheoirí nach n-aontaíonn tú leis an socrú seo. Is féidir leat d'intinn a athrú níos déanaí.",
+      "decline_confirm_yes": "Sea, ní aontaím",
+      "withdraw_confirm_title": "A tharraingt siar do chomhaontú?",
+      "withdraw_confirm_body": "Inseofar do do chomhordaitheoirí go bhfuil do chomhaontú tarraingthe siar agat. Is féidir leat aontú arís ar ball.",
+      "withdraw_confirm_yes": "Sea, é a tharraingt siar",
+      "decline_toast": "Dúradh le do chomhordaitheoirí nach n-aontaíonn tú.",
+      "withdraw_toast": "Tá do chomhaontú tarraingthe siar.",
+      "response_error": "Níorbh fhéidir é sin a shábháil. Bain triail eile as.",
+      "wards_title": "Daoine a dtacaíonn tú leo",
+      "wards_intro": "Tá sé taifeadta ag do chomhordaitheoirí go bhfuil tú freagrach as tacú leis na daoine seo. Is féidir leat a fheiceáil cibé an bhfuil siad aontaithe. Ní ligeann sé seo duit gníomhú ar a son.",
+      "wards_none": "Níor taifeadadh go bhfuil tú freagrach as aon duine.",
+      "ward_state_pending": "Ag fanacht lena bhfreagra",
+      "ward_state_consented": "D'aontaigh siad",
+      "ward_state_declined": "Níor aontaigh siad",
+      "ward_state_withdrawn": "Tharraing siad a gcomhaontú siar"
+    },
+    "guardians_prompt": {
+      "message": "Taifeadadh go bhfuil duine éigin freagrach as tacaíocht a thabhairt duit. Tá do fhreagra ag teastáil.",
+      "action": "Déan athbhreithniú air seo"
     }
   },
   "header": {

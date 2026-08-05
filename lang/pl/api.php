@@ -2779,4 +2779,8 @@ KANDYDACI::candidates',
     'event_attendance_claim_not_reversible' => 'Cofnąć można wyłącznie roszczenie o nagrodę zakończone',
     'event_attendance_mode_disabled' => 'Wybijanie nagród za obecność jest wyłączone na poziomie platformy',
     'events_config_monthly_cap_invalid' => 'Miesięczny limit nagród musi być dodatnią liczbą kredytów lub pusty w przypadku braku limitu.',
+    'safeguarding_guardian_response_invalid' => 'Ta odpowiedź nie jest dostępna w przypadku tego rozwiązania.',
+    'safeguarding_ward_consented_notification' => ':name zgodził się na umowę z opiekunem.',
+    'safeguarding_ward_declined_notification' => ':name odrzucił umowę z opiekunem.',
+    'safeguarding_ward_withdrawn_notification' => ':name wycofał swoją zgodę na ustanowienie opiekuna.',
 ];

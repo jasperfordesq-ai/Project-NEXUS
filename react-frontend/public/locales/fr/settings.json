@@ -368,7 +368,37 @@
       "awaiting_consent": "En attendant votre accord",
       "consent_button": "J'accepte cet arrangement",
       "consent_toast": "Votre accord a été enregistré.",
-      "consent_error": "Votre accord n'a pas pu être enregistré. Veuillez réessayer."
+      "consent_error": "Votre accord n'a pas pu être enregistré. Veuillez réessayer.",
+      "state_pending": "En attendant ta réponse",
+      "state_consented": "Vous avez accepté",
+      "state_declined": "Vous n'êtes pas d'accord",
+      "state_withdrawn": "Vous avez retiré votre accord",
+      "decline_button": "je ne suis pas d'accord",
+      "withdraw_button": "Retirer mon accord",
+      "agree_after_all_button": "je suis d'accord après tout",
+      "reason_label": "Raison (facultatif)",
+      "reason_hint": "Vous n'êtes pas obligé de donner une raison. Si vous le faites, vos coordinateurs le verront.",
+      "your_reason": "Votre raison",
+      "decline_confirm_title": "Dites-nous que vous n'êtes pas d'accord ?",
+      "decline_confirm_body": "Vos coordinateurs seront informés que vous n’acceptez pas cet arrangement. Vous pourrez changer d'avis plus tard.",
+      "decline_confirm_yes": "Oui, je ne suis pas d'accord",
+      "withdraw_confirm_title": "Retirer votre accord ?",
+      "withdraw_confirm_body": "Vos coordinateurs seront informés que vous avez retiré votre accord. Vous pourrez à nouveau vous mettre d'accord plus tard.",
+      "withdraw_confirm_yes": "Oui, retire-le",
+      "decline_toast": "Vos coordinateurs ont été informés que vous n'êtes pas d'accord.",
+      "withdraw_toast": "Votre accord a été retiré.",
+      "response_error": "Cela n'a pas pu être sauvé. Veuillez réessayer.",
+      "wards_title": "Les personnes que vous soutenez",
+      "wards_intro": "Vos coordinateurs ont enregistré que vous êtes responsable du soutien à ces personnes. Vous pouvez voir s’ils sont d’accord. Cela ne vous permet pas d'agir à leur place.",
+      "wards_none": "Vous n’avez été enregistré comme responsable de personne.",
+      "ward_state_pending": "En attendant leur réponse",
+      "ward_state_consented": "Ils ont accepté",
+      "ward_state_declined": "Ils n'étaient pas d'accord",
+      "ward_state_withdrawn": "Ils ont retiré leur accord"
+    },
+    "guardians_prompt": {
+      "message": "Une personne a été enregistrée comme responsable de votre soutien. Votre réponse est nécessaire.",
+      "action": "Revoir ceci"
     }
   },
   "header": {

@@ -368,7 +368,37 @@
       "awaiting_consent": "في انتظار موافقتك",
       "consent_button": "وأنا أوافق على هذا الترتيب",
       "consent_toast": "لقد تم تسجيل اتفاقيتك.",
-      "consent_error": "لا يمكن تسجيل اتفاقيتك. يرجى المحاولة مرة أخرى."
+      "consent_error": "لا يمكن تسجيل اتفاقيتك. يرجى المحاولة مرة أخرى.",
+      "state_pending": "في انتظار إجابتك",
+      "state_consented": "لقد وافقت",
+      "state_declined": "أنت لم توافق",
+      "state_withdrawn": "لقد سحبت اتفاقيتك",
+      "decline_button": "أنا لا أوافق",
+      "withdraw_button": "سحب اتفاقي",
+      "agree_after_all_button": "أنا أوافق بعد كل شيء",
+      "reason_label": "السبب (اختياري)",
+      "reason_hint": "ليس عليك أن تعطي سببا. إذا قمت بذلك، فسوف يرى منسقوك ذلك.",
+      "your_reason": "السبب الخاص بك",
+      "decline_confirm_title": "أخبرنا أنك غير موافق؟",
+      "decline_confirm_body": "سيتم إخبار منسقيك أنك لا توافق على هذا الترتيب. يمكنك تغيير رأيك لاحقا.",
+      "decline_confirm_yes": "نعم، أنا لا أوافق",
+      "withdraw_confirm_title": "هل تسحب اتفاقيتك؟",
+      "withdraw_confirm_body": "سيتم إخبار منسقيك أنك قمت بسحب اتفاقيتك. يمكنك الموافقة مرة أخرى لاحقًا.",
+      "withdraw_confirm_yes": "نعم، اسحبه",
+      "decline_toast": "لقد تم إخبار منسقيك أنك لا توافق على ذلك.",
+      "withdraw_toast": "لقد تم سحب اتفاقيتك.",
+      "response_error": "لا يمكن حفظ ذلك. يرجى المحاولة مرة أخرى.",
+      "wards_title": "الأشخاص الذين تدعمهم",
+      "wards_intro": "لقد سجل منسقوك أنك مسؤول عن دعم هؤلاء الأشخاص. يمكنك معرفة ما إذا كانوا قد وافقوا. هذا لا يسمح لك بالتصرف نيابة عنهم.",
+      "wards_none": "لم يتم تسجيلك كمسؤول عن أي شخص.",
+      "ward_state_pending": "في انتظار جوابهم",
+      "ward_state_consented": "وافقوا",
+      "ward_state_declined": "لم يوافقوا",
+      "ward_state_withdrawn": "لقد سحبوا اتفاقهم"
+    },
+    "guardians_prompt": {
+      "message": "تم تسجيل شخص ما كمسؤول عن دعمك. هناك حاجة لإجابتك.",
+      "action": "قم بمراجعة هذا"
     }
   },
   "header": {

@@ -2779,4 +2779,8 @@ CANDIDATS ::candidates',
     'event_attendance_claim_not_reversible' => 'Seule une demande de récompense complétée peut être annulée',
     'event_attendance_mode_disabled' => 'La frappe des récompenses de présence est désactivée au niveau de la plateforme',
     'events_config_monthly_cap_invalid' => 'Le plafond de récompense mensuel doit être un nombre positif de crédits, ou vide s\'il n\'y a pas de plafond.',
+    'safeguarding_guardian_response_invalid' => 'Cette réponse n’est pas disponible pour cet arrangement.',
+    'safeguarding_ward_consented_notification' => ':name a accepté son accord de tuteur.',
+    'safeguarding_ward_declined_notification' => ':name a refusé son accord de tuteur.',
+    'safeguarding_ward_withdrawn_notification' => ':name a retiré son accord concernant un accord de tuteur.',
 ];

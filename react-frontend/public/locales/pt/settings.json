@@ -368,7 +368,37 @@
       "awaiting_consent": "Esperando pelo seu acordo",
       "consent_button": "Eu concordo com esse acordo",
       "consent_toast": "Seu acordo foi registrado.",
-      "consent_error": "Não foi possível registrar seu acordo. Por favor, tente novamente."
+      "consent_error": "Não foi possível registrar seu acordo. Por favor, tente novamente.",
+      "state_pending": "Esperando pela sua resposta",
+      "state_consented": "Você concordou",
+      "state_declined": "Você não concordou",
+      "state_withdrawn": "Você retirou seu contrato",
+      "decline_button": "eu não concordo",
+      "withdraw_button": "Retirar meu acordo",
+      "agree_after_all_button": "eu concordo afinal",
+      "reason_label": "Razão (opcional)",
+      "reason_hint": "Você não precisa dar um motivo. Se você fizer isso, seus coordenadores verão.",
+      "your_reason": "Seu motivo",
+      "decline_confirm_title": "Diga-nos que você não concorda?",
+      "decline_confirm_body": "Seus coordenadores serão informados de que você não concorda com este acordo. Você pode mudar de ideia mais tarde.",
+      "decline_confirm_yes": "Sim, eu não concordo",
+      "withdraw_confirm_title": "Retirar seu acordo?",
+      "withdraw_confirm_body": "Seus coordenadores serão informados de que você retirou seu acordo. Você pode concordar novamente mais tarde.",
+      "withdraw_confirm_yes": "Sim, retire-o",
+      "decline_toast": "Seus coordenadores foram informados de que você não concorda.",
+      "withdraw_toast": "Seu acordo foi retirado.",
+      "response_error": "Isso não poderia ser salvo. Por favor, tente novamente.",
+      "wards_title": "Pessoas que você apoia",
+      "wards_intro": "Seus coordenadores registraram que você é responsável por apoiar essas pessoas. Você pode ver se eles concordaram. Isso não permite que você aja por eles.",
+      "wards_none": "Você não foi registrado como responsável por ninguém.",
+      "ward_state_pending": "Esperando pela resposta deles",
+      "ward_state_consented": "Eles concordaram",
+      "ward_state_declined": "Eles não concordaram",
+      "ward_state_withdrawn": "Eles retiraram o acordo"
+    },
+    "guardians_prompt": {
+      "message": "Alguém foi registrado como responsável por apoiá-lo. Sua resposta é necessária.",
+      "action": "Revise isto"
     }
   },
   "header": {

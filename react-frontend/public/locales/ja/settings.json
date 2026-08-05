@@ -368,7 +368,37 @@
       "awaiting_consent": "あなたの同意を待っています",
       "consent_button": "この取り決めに同意します",
       "consent_toast": "あなたの同意は記録されました。",
-      "consent_error": "同意を記録できませんでした。もう一度試してください。"
+      "consent_error": "同意を記録できませんでした。もう一度試してください。",
+      "state_pending": "あなたの答えを待っています",
+      "state_consented": "あなたは同意しました",
+      "state_declined": "同意しませんでした",
+      "state_withdrawn": "契約を撤回しました",
+      "decline_button": "同意しません",
+      "withdraw_button": "同意を撤回します",
+      "agree_after_all_button": "結局同意する",
+      "reason_label": "理由（任意）",
+      "reason_hint": "理由を言う必要はありません。そうすれば、コーディネーターがそれを確認します。",
+      "your_reason": "あなたの理由",
+      "decline_confirm_title": "同意しないと伝えてください?",
+      "decline_confirm_body": "あなたがこの取り決めに同意しないことがコーディネーターに伝えられます。後で考えを変えることもできます。",
+      "decline_confirm_yes": "はい、同意しません",
+      "withdraw_confirm_title": "契約を撤回しますか？",
+      "withdraw_confirm_body": "あなたが契約を撤回したことがコーディネーターに伝えられます。後で再度同意することもできます。",
+      "withdraw_confirm_yes": "はい、撤回します",
+      "decline_toast": "あなたのコーディネーターは、あなたが同意しないと言われました。",
+      "withdraw_toast": "あなたの契約は撤回されました。",
+      "response_error": "それは救えなかった。もう一度試してください。",
+      "wards_title": "あなたがサポートする人々",
+      "wards_intro": "あなたのコーディネーターは、あなたがこれらの人々をサポートする責任があると記録しました。彼らが同意したかどうかを確認できます。これでは、あなたが彼らのために行動することはできません。",
+      "wards_none": "あなたは誰に対しても責任があると記録されていません。",
+      "ward_state_pending": "彼らの答えを待っています",
+      "ward_state_consented": "彼らは同意した",
+      "ward_state_declined": "彼らは同意しませんでした",
+      "ward_state_withdrawn": "彼らは合意を撤回した"
+    },
+    "guardians_prompt": {
+      "message": "誰かがあなたをサポートする責任があると記録されています。あなたの答えが必要です。",
+      "action": "これを確認してください"
     }
   },
   "header": {

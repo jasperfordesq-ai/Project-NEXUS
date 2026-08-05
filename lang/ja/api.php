@@ -2779,4 +2779,8 @@ XP: :xp |レベル: :level |完了した交換: :completed_exchanges
     'event_attendance_claim_not_reversible' => '完了した報酬請求のみを取り消すことができます',
     'event_attendance_mode_disabled' => '出席報酬の鋳造はプラットフォーム レベルでオフになります',
     'events_config_monthly_cap_invalid' => '毎月の報酬の上限は、正のクレジット数にするか、上限がない場合は空にする必要があります。',
+    'safeguarding_guardian_response_invalid' => 'この取り決めではその応答は利用できません。',
+    'safeguarding_ward_consented_notification' => ':name は後見人の取り決めに同意しました。',
+    'safeguarding_ward_declined_notification' => ':name は後見人の手配を拒否しました。',
+    'safeguarding_ward_withdrawn_notification' => ':name は後見人契約への同意を撤回しました。',
 ];

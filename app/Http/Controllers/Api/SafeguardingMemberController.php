@@ -195,33 +195,14 @@ class SafeguardingMemberController extends BaseApiController
     public function myGuardians(): JsonResponse
     {
         $userId = $this->requireAuth();
+        $service = app(\App\Services\GuardianArrangementService::class);
         $tenantId = TenantContext::getId();
 
-        $rows = DB::table('safeguarding_assignments as sa')
-            ->join('users as g', 'g.id', '=', 'sa.guardian_user_id')
-            ->where('sa.tenant_id', $tenantId)
-            ->where('sa.ward_user_id', $userId)
-            ->whereNull('sa.revoked_at')
-            ->orderByDesc('sa.assigned_at')
-            ->select([
-                'sa.id',
-                'sa.assigned_at',
-                'sa.consent_given_at',
-                'sa.notes',
-                'g.first_name',
-                'g.last_name',
-            ])
-            ->get();
-
+        // `state` is what the UI keys off: pending | consented | declined |
+        // withdrawn. `consent_given` is retained for the original contract.
         return $this->respondWithData([
-            'guardians' => $rows->map(fn ($r) => [
-                'id' => (int) $r->id,
-                'guardian_name' => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
-                'assigned_at' => $r->assigned_at,
-                'consent_given_at' => $r->consent_given_at,
-                'consent_given' => $r->consent_given_at !== null,
-                'notes' => $r->notes,
-            ])->all(),
+            'guardians'     => $service->forWard($userId, $tenantId),
+            'pending_count' => $service->pendingCountForWard($userId, $tenantId),
         ]);
     }
 
@@ -243,6 +224,73 @@ class SafeguardingMemberController extends BaseApiController
      */
     public function consentToGuardian(Request $request): JsonResponse
     {
+        // Ownership, liveness and the ward-only rule are all enforced inside
+        // GuardianArrangementService::respond() under a row lock — duplicating
+        // the lookup here would only create a second place to get it wrong.
+        return $this->recordWardResponse($request, \App\Services\GuardianArrangementService::ACTION_CONSENTED);
+    }
+
+    /**
+     * POST /api/v2/safeguarding/decline-guardian
+     *
+     * 🔴 The ward REFUSES the arrangement.
+     *
+     * Until 2026-08-05 there was no such endpoint and no column to hold the
+     * answer: `safeguarding_assignments` carried only `consent_given_at`, so the
+     * sole action available to a ward was to agree. A consent that cannot be
+     * refused is not consent — it is a button. Staff are notified, because a
+     * refusal is a safeguarding signal that must not sit silently in a table.
+     *
+     * A reason is accepted and never required. Compelling someone to justify
+     * refusing is pressure to consent.
+     */
+    public function declineGuardian(Request $request): JsonResponse
+    {
+        return $this->recordWardResponse($request, \App\Services\GuardianArrangementService::ACTION_DECLINED);
+    }
+
+    /**
+     * POST /api/v2/safeguarding/withdraw-guardian-consent
+     *
+     * 🔴 The ward WITHDRAWS agreement they previously gave.
+     *
+     * `revoked_at` is staff-only, so before this a ward could agree and then had
+     * no way back — they had to ask the people the arrangement covers to undo it.
+     * Withdrawing must be as easy as giving.
+     */
+    public function withdrawGuardianConsent(Request $request): JsonResponse
+    {
+        return $this->recordWardResponse($request, \App\Services\GuardianArrangementService::ACTION_WITHDRAWN);
+    }
+
+    /**
+     * GET /api/v2/safeguarding/my-wards
+     *
+     * 🔴 The guardian's own view, which did not exist.
+     *
+     * A guardian was emailed that they had been made responsible for someone and
+     * then had no screen showing it — half the relationship was invisible, and
+     * they could not see whether the ward had agreed, refused or withdrawn. Names
+     * and the ward's position only; contact details are not the point.
+     */
+    public function myWards(): JsonResponse
+    {
+        $userId = $this->requireAuth();
+
+        return $this->respondWithData([
+            'wards' => app(\App\Services\GuardianArrangementService::class)
+                ->forGuardian($userId, TenantContext::getId()),
+        ]);
+    }
+
+    /**
+     * Shared handler for all three ward responses.
+     *
+     * One path so the transition rules, the append-only audit write and the staff
+     * notification cannot drift between agree, refuse and withdraw.
+     */
+    private function recordWardResponse(Request $request, string $action): JsonResponse
+    {
         $userId = $this->requireAuth();
         $tenantId = TenantContext::getId();
 
@@ -250,38 +298,51 @@ class SafeguardingMemberController extends BaseApiController
         if (!is_numeric($assignmentId)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.resource_not_found'), 'assignment_id', 422);
         }
-        $assignmentId = (int) $assignmentId;
 
-        // Scope to the caller's OWN assignment: a ward may only consent for
-        // themselves, and only to a live arrangement.
-        $assignment = DB::table('safeguarding_assignments')
-            ->where('id', $assignmentId)
-            ->where('tenant_id', $tenantId)
-            ->where('ward_user_id', $userId)
-            ->whereNull('revoked_at')
-            ->first();
+        $reason = $request->input('reason');
+        $reason = is_string($reason) ? $reason : null;
 
-        if (!$assignment) {
-            return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
-        }
+        $result = app(\App\Services\GuardianArrangementService::class)->respond(
+            $userId,
+            $tenantId,
+            (int) $assignmentId,
+            $action,
+            $reason,
+            $request->ip(),
+            $request->userAgent(),
+        );
 
-        if ($assignment->consent_given_at !== null) {
-            // Idempotent: already consented is not an error.
-            return $this->respondWithData(['consent_given' => true, 'already_given' => true]);
-        }
-
-        $recorded = app(\App\Services\SafeguardingService::class)->recordConsent($userId, $assignmentId);
-        if (!$recorded) {
-            return $this->respondWithError('UPDATE_FAILED', __('api.alert_update_failed'), null, 500);
+        if (!$result['ok']) {
+            // 404 for "not yours or not live" — deliberately indistinguishable, so
+            // this cannot be used to probe other members' arrangements.
+            if ($result['code'] === 'NOT_FOUND') {
+                return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
+            }
+            return $this->respondWithError(
+                'VALIDATION_ERROR',
+                __('api.safeguarding_guardian_response_invalid'),
+                null,
+                422
+            );
         }
 
         try {
-            \App\Models\ActivityLog::log($userId, 'safeguarding_guardian_consent_given', "Ward consented to assignment #{$assignmentId}");
+            \App\Models\ActivityLog::log(
+                $userId,
+                "safeguarding_guardian_{$action}",
+                "Ward recorded '{$action}' on assignment #{$assignmentId}"
+            );
         } catch (\Throwable $e) {
-            Log::warning('[SafeguardingMember] Failed to log guardian consent: ' . $e->getMessage());
+            Log::warning('[SafeguardingMember] Failed to log guardian response: ' . $e->getMessage());
         }
 
-        return $this->respondWithData(['consent_given' => true, 'already_given' => false]);
+        return $this->respondWithData([
+            'state'         => $result['state'],
+            'already'       => $result['already'],
+            // Kept for the existing consent caller's contract.
+            'consent_given' => $result['state'] === 'consented',
+            'already_given' => $result['already'] && $result['state'] === 'consented',
+        ]);
     }
 
     public function confirmPolicyReview(): JsonResponse

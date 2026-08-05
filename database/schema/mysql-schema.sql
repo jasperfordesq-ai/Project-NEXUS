@@ -16672,6 +16672,30 @@ CREATE TABLE `roles` (
 DROP TABLE IF EXISTS `safeguarding_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `safeguarding_assignment_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `assignment_id` bigint(20) unsigned NOT NULL,
+  `ward_user_id` int(11) NOT NULL,
+  `guardian_user_id` int(11) NOT NULL,
+  `action` varchar(24) NOT NULL,
+  `actor_role` varchar(16) NOT NULL,
+  `actor_user_id` int(11) DEFAULT NULL,
+  `reason` varchar(500) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_sg_assignment_events_assignment` (`tenant_id`,`assignment_id`,`id`),
+  KEY `idx_sg_assignment_events_ward` (`tenant_id`,`ward_user_id`,`created_at`),
+  CONSTRAINT `chk_sg_assignment_events_action` CHECK (`action` in ('created','consented','declined','withdrawn','revoked')),
+  CONSTRAINT `chk_sg_assignment_events_actor` CHECK (`actor_role` in ('ward','staff','system'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_sg_assignment_events_no_update` BEFORE UPDATE ON `safeguarding_assignment_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'safeguarding_assignment_events_immutable' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_sg_assignment_events_no_delete` BEFORE DELETE ON `safeguarding_assignment_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'safeguarding_assignment_events_immutable' */;;
+DROP TABLE IF EXISTS `safeguarding_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
 CREATE TABLE `safeguarding_assignments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `guardian_user_id` int(11) NOT NULL,
@@ -16680,6 +16704,9 @@ CREATE TABLE `safeguarding_assignments` (
   `assigned_by` int(11) NOT NULL,
   `assigned_at` datetime NOT NULL DEFAULT current_timestamp(),
   `consent_given_at` datetime DEFAULT NULL,
+  `consent_declined_at` datetime DEFAULT NULL,
+  `consent_withdrawn_at` datetime DEFAULT NULL,
+  `ward_response_reason` varchar(500) DEFAULT NULL,
   `revoked_at` datetime DEFAULT NULL,
   `notes` text DEFAULT NULL,
   PRIMARY KEY (`id`),

@@ -2779,4 +2779,8 @@ CANDIDATOS::candidates',
     'event_attendance_claim_not_reversible' => 'Solo se puede revertir un reclamo de recompensa completado',
     'event_attendance_mode_disabled' => 'La acuñación de recompensas por asistencia está desactivada a nivel de plataforma',
     'events_config_monthly_cap_invalid' => 'El límite de recompensa mensual debe ser un número positivo de créditos o estar vacío si no hay límite.',
+    'safeguarding_guardian_response_invalid' => 'Esa respuesta no está disponible para este acuerdo.',
+    'safeguarding_ward_consented_notification' => ':name ha aceptado su acuerdo de tutoría.',
+    'safeguarding_ward_declined_notification' => ':name ha rechazado su acuerdo de tutoría.',
+    'safeguarding_ward_withdrawn_notification' => ':name ha retirado su acuerdo de tutoría.',
 ];

@@ -368,7 +368,37 @@
       "awaiting_consent": "Waiting for your agreement",
       "consent_button": "I agree to this arrangement",
       "consent_toast": "Your agreement has been recorded.",
-      "consent_error": "Your agreement could not be recorded. Please try again."
+      "consent_error": "Your agreement could not be recorded. Please try again.",
+      "state_pending": "Waiting for your answer",
+      "state_consented": "You agreed",
+      "state_declined": "You did not agree",
+      "state_withdrawn": "You withdrew your agreement",
+      "decline_button": "I do not agree",
+      "withdraw_button": "Withdraw my agreement",
+      "agree_after_all_button": "I agree after all",
+      "reason_label": "Reason (optional)",
+      "reason_hint": "You do not have to give a reason. If you do, your coordinators will see it.",
+      "your_reason": "Your reason",
+      "decline_confirm_title": "Tell us you do not agree?",
+      "decline_confirm_body": "Your coordinators will be told that you do not agree to this arrangement. You can change your mind later.",
+      "decline_confirm_yes": "Yes, I do not agree",
+      "withdraw_confirm_title": "Withdraw your agreement?",
+      "withdraw_confirm_body": "Your coordinators will be told that you have withdrawn your agreement. You can agree again later.",
+      "withdraw_confirm_yes": "Yes, withdraw it",
+      "decline_toast": "Your coordinators have been told that you do not agree.",
+      "withdraw_toast": "Your agreement has been withdrawn.",
+      "response_error": "That could not be saved. Please try again.",
+      "wards_title": "People you support",
+      "wards_intro": "Your coordinators have recorded that you are responsible for supporting these people. You can see whether they have agreed. This does not let you act for them.",
+      "wards_none": "You have not been recorded as responsible for anyone.",
+      "ward_state_pending": "Waiting for their answer",
+      "ward_state_consented": "They agreed",
+      "ward_state_declined": "They did not agree",
+      "ward_state_withdrawn": "They withdrew their agreement"
+    },
+    "guardians_prompt": {
+      "message": "Someone has been recorded as responsible for supporting you. Your answer is needed.",
+      "action": "Review this"
     }
   },
   "header": {

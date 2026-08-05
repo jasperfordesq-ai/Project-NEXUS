@@ -67,6 +67,10 @@ const guardian = {
   guardian_name: 'Grace Guardian',
   assigned_at: '2026-08-01T09:00:00Z',
   consent_given_at: null,
+  consent_declined_at: null,
+  consent_withdrawn_at: null,
+  ward_response_reason: null,
+  state: 'pending',
   consent_given: false,
   notes: 'Recorded during onboarding.',
 };
@@ -75,6 +79,7 @@ function mockLoads(
   statusOverrides: Record<string, unknown> = {},
   preferences = [preference],
   guardians: Array<Record<string, unknown>> = [],
+  wards: Array<Record<string, unknown>> = [],
 ) {
   mockedGet.mockImplementation((url: string) => {
     if (url === '/v2/safeguarding/my-preferences') {
@@ -84,7 +89,13 @@ function mockLoads(
       return Promise.resolve({ success: true, data: { ...vettingStatus, ...statusOverrides } });
     }
     if (url === '/v2/safeguarding/my-guardians') {
-      return Promise.resolve({ success: true, data: { guardians } });
+      return Promise.resolve({
+        success: true,
+        data: { guardians, pending_count: guardians.filter((g) => g.state === 'pending').length },
+      });
+    }
+    if (url === '/v2/safeguarding/my-wards') {
+      return Promise.resolve({ success: true, data: { wards } });
     }
     return Promise.resolve({ success: false });
   });
@@ -173,7 +184,7 @@ describe('SafeguardingTab', () => {
 
       await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
       expect(screen.getByText('Recorded during onboarding.')).toBeInTheDocument();
-      expect(screen.getByText('Waiting for your agreement')).toBeInTheDocument();
+      expect(screen.getByText('Waiting for your answer')).toBeInTheDocument();
       // The record confers no capability, and the screen must say so — no
       // authorisation path anywhere consults safeguarding_assignments.
       expect(screen.getByText(/does not allow them to create listings/i)).toBeInTheDocument();
@@ -195,15 +206,131 @@ describe('SafeguardingTab', () => {
       expect(toast.success).toHaveBeenCalled();
     });
 
-    it('offers no agree button once consent is already recorded', async () => {
+    it('offers withdraw, not agree, once consent is recorded', async () => {
       mockLoads({}, [preference], [
-        { ...guardian, consent_given: true, consent_given_at: '2026-08-02T09:00:00Z' },
+        { ...guardian, state: 'consented', consent_given: true, consent_given_at: '2026-08-02T09:00:00Z' },
       ]);
       render(<SafeguardingTab />);
 
       await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
       expect(screen.queryByRole('button', { name: 'I agree to this arrangement' })).toBeNull();
-      expect(screen.getByText(/Date you agreed/)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Withdraw my agreement' })).toBeInTheDocument();
+    });
+
+    /**
+     * 🔴 The core gap this work exists to close: a ward could ONLY agree. There
+     * was no refusal endpoint and no column to hold the answer. A consent that
+     * cannot be refused is not consent.
+     */
+    it('lets the ward refuse, as plainly as agreeing', async () => {
+      mockLoads({}, [preference], [guardian]);
+      mockedPost.mockResolvedValue({ success: true, data: { state: 'declined', already: false } });
+      render(<SafeguardingTab />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'I do not agree' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Yes, I do not agree' }));
+
+      await waitFor(() =>
+        expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/decline-guardian', {
+          assignment_id: 77,
+        }),
+      );
+      expect(toast.success).toHaveBeenCalled();
+    });
+
+    it('sends an optional reason only when the ward actually gave one', async () => {
+      mockLoads({}, [preference], [guardian]);
+      mockedPost.mockResolvedValue({ success: true, data: { state: 'declined', already: false } });
+      render(<SafeguardingTab />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'I do not agree' }));
+      fireEvent.change(await screen.findByLabelText(/Reason \(optional\)/i), {
+        target: { value: '  I would rather not say much  ' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Yes, I do not agree' }));
+
+      await waitFor(() =>
+        expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/decline-guardian', {
+          assignment_id: 77,
+          reason: 'I would rather not say much',
+        }),
+      );
+    });
+
+    it('lets the ward withdraw agreement they already gave', async () => {
+      mockLoads({}, [preference], [
+        { ...guardian, state: 'consented', consent_given: true, consent_given_at: '2026-08-02T09:00:00Z' },
+      ]);
+      mockedPost.mockResolvedValue({ success: true, data: { state: 'withdrawn', already: false } });
+      render(<SafeguardingTab />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'Withdraw my agreement' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Yes, withdraw it' }));
+
+      await waitFor(() =>
+        expect(mockedPost).toHaveBeenCalledWith('/v2/safeguarding/withdraw-guardian-consent', {
+          assignment_id: 77,
+        }),
+      );
+    });
+
+    it('lets a ward who refused change their mind', async () => {
+      mockLoads({}, [preference], [
+        { ...guardian, state: 'declined', consent_declined_at: '2026-08-02T09:00:00Z' },
+      ]);
+      render(<SafeguardingTab />);
+
+      // The chip carries the date alongside the state, so match loosely.
+      await waitFor(() => expect(screen.getByText(/You did not agree/)).toBeInTheDocument());
+      expect(screen.getByRole('button', { name: 'I agree after all' })).toBeInTheDocument();
+    });
+
+    it('shows the ward their own recorded reason back', async () => {
+      mockLoads({}, [preference], [
+        { ...guardian, state: 'declined', consent_declined_at: '2026-08-02T09:00:00Z', ward_response_reason: 'Not comfortable yet' },
+      ]);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText(/Not comfortable yet/)).toBeInTheDocument());
+    });
+
+    /**
+     * 🔴 Guards against the crash class that took down the Hours report: indexing
+     * a lookup table with an unvalidated server value. `NEXT_ACTIONS[undefined]`
+     * is undefined and `.includes()` on it throws, killing the whole tab.
+     */
+    it('does not crash when the server omits or mangles the state field', async () => {
+      mockLoads({}, [preference], [
+        { ...guardian, state: undefined },
+        { ...guardian, id: 78, guardian_name: 'Odd State', state: 'something_new', consent_given_at: '2026-08-02T09:00:00Z' },
+      ]);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
+      // Derived from the timestamps rather than trusted blindly.
+      expect(screen.getByText('Odd State')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'I agree to this arrangement' })).toBeInTheDocument();
+    });
+
+    it('shows a guardian the people they support, and only when there are any', async () => {
+      mockLoads({}, [preference], [], [
+        { id: 90, ward_name: 'Wendy Ward', assigned_at: '2026-08-01T09:00:00Z', state: 'declined' },
+      ]);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText('People you support')).toBeInTheDocument());
+      expect(screen.getByText('Wendy Ward')).toBeInTheDocument();
+      expect(screen.getByText('They did not agree')).toBeInTheDocument();
+      // And it grants nothing — the copy must keep saying so.
+      expect(screen.getByText(/does not let you act for them/i)).toBeInTheDocument();
+    });
+
+    it('hides the guardian section entirely when they support nobody', async () => {
+      mockLoads({}, [preference], [guardian], []);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
+      expect(screen.queryByText('People you support')).toBeNull();
     });
 
     it('surfaces a failure instead of silently reporting success', async () => {
