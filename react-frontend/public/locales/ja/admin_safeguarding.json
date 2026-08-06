@@ -37,14 +37,14 @@
     "loading": "読み込み中",
     "next": "次へ",
     "no": "いいえ",
+    "ok": "OK",
     "pending": "保留中",
     "previous": "前へ",
     "retry": "再試行",
     "save": "保存",
     "select_all": "すべて選択",
     "select_item": "項目の選択",
-    "yes": "はい",
-    "ok": "OK"
+    "yes": "はい"
   },
   "shared": {
     "broker_actions": "ブローカーのアクション",
@@ -57,6 +57,7 @@
     "no_history_available": "利用可能な履歴が見つかりません",
     "no_legal_documents_found": "法的文書が見つかりませんでした",
     "no_members_found": "メンバーが見つかりませんでした",
+    "loading": "読み込み中",
     "no_data": "データなし",
     "no_data_available": "利用可能なデータがありません",
     "no_recent_broker_activity": "最近のブローカー活動は見つかりませんでした",
@@ -67,10 +68,9 @@
     "refresh": "リフレッシュ",
     "search": "検索...",
     "select_all_rows": "すべての行を選択",
+    "select_row": "行を選択 {{id}}",
     "data_table": "データ",
-    "total_count": "{{count}}合計",
-    "loading": "読み込み中",
-    "select_row": "行を選択 {{id}}"
+    "total_count": "{{count}}合計"
   },
   "safeguarding": {
     "active": "アクティブ",
@@ -124,6 +124,29 @@
     "guardian": "ガーディアン",
     "guardian_assignment_created": "ガーディアンの割り当てが作成されました",
     "guardian_assignments": "ガーディアンの割り当て",
+    "support": {
+      "title": "承認待ちの準備済みアクション",
+      "intro": "支援者が用意しましたが、支援メンバーはまだ回答していません。メンバーがオフラインで (電話、直接、または紙で) 承認した場合は、ここに記録してください。記録はメンバー自身のクリックとしてではなく、スタッフによるオフライン承認として保存され、メンバーには常に自分の名前で記録されたことが通知されます。",
+      "col_what": "用意されたもの",
+      "col_supported": "サポートメンバー",
+      "col_prepared_by": "によって準備された",
+      "type_listing_create": "新しいリスト",
+      "type_credit_transfer": "時間単位の転送",
+      "none_pending": "何も答えを待っていません。",
+      "attest_button": "オフライン承認を記録する",
+      "attest_title": "オフライン承認を記録する",
+      "attest_intro": "{{name}} が {{what}} を承認したことを記録しています — プラットフォームの外で与えられました。これはすぐに実行されます。",
+      "channel_label": "承認はどのように行われましたか?",
+      "channel_phone": "電話で",
+      "channel_in_person": "対面で",
+      "channel_paper": "書面で",
+      "witness_label": "証人（オプション）",
+      "witness_hint": "他に承認を聞いた、または見た人がいるとしたら誰ですか。",
+      "attest_notice": "これはスタッフによるオフライン承認として記録され、メンバー自身のクリックとは区別され、メンバーには自分の名前で記録されたことが通知されます。",
+      "attest_confirm_button": "記録して実行する",
+      "attested_toast": "記録されました。それが今実行され、メンバーに伝えられました。",
+      "attest_failed": "録音できませんでした。何も変わりませんでした。"
+    },
     "help": {
       "title": "ここでの保護の仕組み",
       "subtitle": "このダッシュボードに表示されるフローのガイド - フラグ設定、アクティベーション、メンバーの自律性、監査。詳細についてはセクションを展開してください。",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "例:交換中に追加のサポートが必要になる場合があります",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "例: needs_additional_support",
     "placeholder_review_notes": "ノートを確認...",
     "placeholder_search_messages": "メッセージを検索...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "保護オプション",
     "safeguarding_options_desc": "メンバーが利用できる保護オプションを作成および管理する",
     "save_changes": "変更を保存",
+    "status_active": "アクティブ",
+    "status_revoked": "取り消し済み",
+    "status_expired": "期限切れ",
     "save_failed": "保存に失敗しました",
     "severity": "重大度",
     "tab_flagged_messages": "フラグ付きメッセージ",
@@ -367,6 +394,7 @@
     "ward": "支援対象メンバー",
     "aria_deactivate_option": "オプションを無効にする",
     "aria_edit_option": "編集オプション",
+    "deactivate_confirm_question": "無効化",
     "vetting_access_ni": "審査アクセス Ni",
     "vetting_dbs_basic": "DB ベーシックの審査",
     "vetting_dbs_enhanced": "強化されたデータベースの検査",
@@ -376,10 +404,6 @@
     "vetting_other": "その他の審査",
     "vetting_pvg_scotland": "Pvg スコットランドの審査",
     "tabs_aria": "セクションの保護",
-    "status_active": "アクティブ",
-    "status_revoked": "取り消し済み",
-    "status_expired": "期限切れ",
-    "deactivate_confirm_question": "無効化",
-    "placeholder_option_key": "例: needs_additional_support"
+    "tab_support_actions": "支援アクション"
   }
 }

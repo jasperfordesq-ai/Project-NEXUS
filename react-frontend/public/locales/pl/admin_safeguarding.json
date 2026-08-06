@@ -37,14 +37,14 @@
     "loading": "Ładowanie",
     "next": "Następny",
     "no": "Nie",
+    "ok": "OK",
     "pending": "Oczekujące",
     "previous": "Poprzedni",
     "retry": "Spróbuj ponownie",
     "save": "Zapisz",
     "select_all": "Wybierz wszystko",
     "select_item": "Wybierz element",
-    "yes": "Tak",
-    "ok": "OK"
+    "yes": "Tak"
   },
   "shared": {
     "broker_actions": "Działania brokera",
@@ -57,6 +57,7 @@
     "no_history_available": "Nie znaleziono dostępnej historii",
     "no_legal_documents_found": "Nie znaleziono żadnych dokumentów prawnych",
     "no_members_found": "Nie znaleziono żadnych członków",
+    "loading": "Ładowanie",
     "no_data": "Brak danych",
     "no_data_available": "Brak dostępnych danych",
     "no_recent_broker_activity": "Nie znaleziono ostatniej aktywności brokera",
@@ -67,10 +68,9 @@
     "refresh": "Odświeżać",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
+    "select_row": "Wybierz wiersz {{id}}",
     "data_table": "Dane",
-    "total_count": "Łącznie{{count}}",
-    "loading": "Ładowanie",
-    "select_row": "Wybierz wiersz {{id}}"
+    "total_count": "Łącznie{{count}}"
   },
   "safeguarding": {
     "active": "Aktywny",
@@ -124,6 +124,29 @@
     "guardian": "Strażnik",
     "guardian_assignment_created": "Utworzono przypisanie opiekuna",
     "guardian_assignments": "Zadania Strażników",
+    "support": {
+      "title": "Przygotowane działania czekają na zatwierdzenie",
+      "intro": "Pomocnik je przygotował, a wspierany członek jeszcze nie odpowiedział. Jeśli członek zatwierdził dokument offline — telefonicznie, osobiście lub w formie papierowej — zapisz to tutaj. Rekord jest przechowywany jako zatwierdzenie offline przez personel, a nie jako własne kliknięcie członka, a członek jest zawsze powiadamiany, że został zarejestrowany w jego imieniu.",
+      "col_what": "Co zostało przygotowane",
+      "col_supported": "Wspierany członek",
+      "col_prepared_by": "Przygotowane przez",
+      "type_listing_create": "Nowe zestawienie",
+      "type_credit_transfer": "Przelew kredytowy w czasie",
+      "none_pending": "Nic nie czeka na odpowiedź.",
+      "attest_button": "Nagraj zgodę offline",
+      "attest_title": "Nagraj zatwierdzenie offline",
+      "attest_intro": "Nagrywasz to, które {{name}} zostało zatwierdzone {{what}} i zostało Ci przekazane poza platformą. To wykona to natychmiast.",
+      "channel_label": "W jaki sposób wydano zgodę?",
+      "channel_phone": "Przez telefon",
+      "channel_in_person": "Osobiście",
+      "channel_paper": "Na papierze",
+      "witness_label": "Świadek (opcjonalnie)",
+      "witness_hint": "Kto jeszcze słyszał lub widział zgodę, jeśli w ogóle.",
+      "attest_notice": "Jest to rejestrowane jako zatwierdzenie offline przez personel – można to odróżnić od kliknięcia dokonanego przez członka – a członek zostanie powiadomiony, że zostało to zarejestrowane w jego imieniu.",
+      "attest_confirm_button": "Nagraj i wykonaj",
+      "attested_toast": "Nagrany. Zostało to już wykonane i członek został poinformowany.",
+      "attest_failed": "Nie udało się tego nagrać. Nic nie zostało zmienione."
+    },
     "help": {
       "title": "Jak tutaj działa ochrona",
       "subtitle": "Przewodnik po przepływach, które widzisz na tym pulpicie nawigacyjnym - flagowanie, aktywacje, autonomia członków, audyt. Rozwiń dowolną sekcję, aby poznać szczegóły.",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "np. Podczas wymian mogę potrzebować dodatkowego wsparcia",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "np. needs_additional_support",
     "placeholder_review_notes": "Przejrzyj notatki...",
     "placeholder_search_messages": "Wyszukaj wiadomości...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "Opcje zabezpieczające",
     "safeguarding_options_desc": "Twórz i zarządzaj opcjami zabezpieczeń dostępnymi dla członków",
     "save_changes": "Zapisz zmiany",
+    "status_active": "Aktywny",
+    "status_revoked": "Cofnięte",
+    "status_expired": "Wygasło",
     "save_failed": "Zapisywanie nie powiodło się",
     "severity": "Dotkliwość",
     "tab_flagged_messages": "Oznaczone wiadomości",
@@ -367,6 +394,7 @@
     "ward": "Wspierany członek",
     "aria_deactivate_option": "Dezaktywuj opcję",
     "aria_edit_option": "Edytuj opcję",
+    "deactivate_confirm_question": "Dezaktywuj",
     "vetting_access_ni": "Dostęp do weryfikacji Ni",
     "vetting_dbs_basic": "Sprawdzanie Dbs Basic",
     "vetting_dbs_enhanced": "Udoskonalone sprawdzanie bazy danych",
@@ -376,10 +404,6 @@
     "vetting_other": "Sprawdzanie Inne",
     "vetting_pvg_scotland": "Sprawdzanie Pvg Scotland",
     "tabs_aria": "Sekcje zabezpieczające",
-    "status_active": "Aktywny",
-    "status_revoked": "Cofnięte",
-    "status_expired": "Wygasło",
-    "deactivate_confirm_question": "Dezaktywuj",
-    "placeholder_option_key": "np. needs_additional_support"
+    "tab_support_actions": "Działania wspierające"
   }
 }

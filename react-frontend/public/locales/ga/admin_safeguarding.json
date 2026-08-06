@@ -37,14 +37,14 @@
     "loading": "Ag lódáil",
     "next": "Ar aghaidh",
     "no": "Níl",
+    "ok": "OK",
     "pending": "Ar feitheamh",
     "previous": "Roimhe Seo",
     "retry": "Bain triail eile as",
     "save": "Sábháil",
     "select_all": "Roghnaigh Uile",
     "select_item": "Roghnaigh Mír",
-    "yes": "Tá",
-    "ok": "OK"
+    "yes": "Tá"
   },
   "shared": {
     "broker_actions": "Gníomhartha Bróicéara",
@@ -57,6 +57,7 @@
     "no_history_available": "Níor aimsíodh aon stair le fáil",
     "no_legal_documents_found": "Níor aimsíodh aon doiciméad dlíthiúil",
     "no_members_found": "Níor aimsíodh aon bhall",
+    "loading": "Luchtú",
     "no_data": "Gan sonraí",
     "no_data_available": "Níl aon sonraí ar fáil",
     "no_recent_broker_activity": "Níor aimsíodh aon ghníomhaíocht bróicéir le déanaí",
@@ -67,10 +68,9 @@
     "refresh": "Athnuaigh",
     "search": "Cuardach...",
     "select_all_rows": "Roghnaigh gach sraith",
+    "select_row": "Roghnaigh sraith {{id}}",
     "data_table": "Sonraí",
-    "total_count": "{{count}}iomlán",
-    "loading": "Luchtú",
-    "select_row": "Roghnaigh sraith {{id}}"
+    "total_count": "{{count}}iomlán"
   },
   "safeguarding": {
     "active": "Gníomhach",
@@ -124,6 +124,29 @@
     "guardian": "Caomhnóir",
     "guardian_assignment_created": "Cruthaíodh tasc caomhnóra",
     "guardian_assignments": "Sannacháin Chaomhnóra",
+    "support": {
+      "title": "Gníomhartha ullmhaithe ag fanacht le ceadú",
+      "intro": "D'ullmhaigh cúntóir iad seo agus níl freagra tugtha fós ag an gcomhalta a fhaigheann tacaíocht. Má tá ceann as líne ceadaithe ag an gcomhalta — ar an nguthán, go pearsanta nó ar pháipéar — taifead anseo é. Stóráiltear an taifead mar cheadú as líne a ghlacann an fhoireann, ní mar chliceáil an chomhalta féin riamh, agus cuirtear in iúl don bhall i gcónaí go ndearnadh é a thaifeadadh ina ainm.",
+      "col_what": "Cad a ullmhaíodh",
+      "col_supported": "Ball tacaithe",
+      "col_prepared_by": "Arna ullmhú ag",
+      "type_listing_create": "Liosta nua",
+      "type_credit_transfer": "Aistriú creidmheasa ama",
+      "none_pending": "Níl aon rud ag fanacht le freagra.",
+      "attest_button": "Taifead ceadú as líne",
+      "attest_title": "Taifead formheas as líne",
+      "attest_intro": "Tá tú ag taifeadadh gur cheadaigh {{name}} {{what}} — a tugadh duit lasmuigh den ardán. Déanfaidh sé seo láithreach é.",
+      "channel_label": "Conas a tugadh an ceadú?",
+      "channel_phone": "Ar an nguthán",
+      "channel_in_person": "Go pearsanta",
+      "channel_paper": "Ar pháipéar",
+      "witness_label": "Finné (roghnach)",
+      "witness_hint": "Cé eile a chuala nó a chonaic an formheas, más éinne.",
+      "attest_notice": "Déantar é seo a thaifeadadh mar cheadú as líne a ghlacann an fhoireann — ar féidir é a idirdhealú ó chliceáil an chomhalta féin — agus cuirfear in iúl don bhall go ndearnadh é a thaifeadadh ina ainm.",
+      "attest_confirm_button": "Taifead agus cuir i gcrích",
+      "attested_toast": "Taifeadta. Tá sé déanta anois agus tá sé curtha in iúl don bhall.",
+      "attest_failed": "Níorbh fhéidir é a thaifeadadh. Níor athraíodh aon rud."
+    },
     "help": {
       "title": "Conas a oibríonn cosaint anseo",
       "subtitle": "Treoir ar na sreafaí a fheiceann tú ar an deais seo - bratach, gníomhachtaithe, neamhspleáchas na mball, iniúchadh. Leathnaigh aon chuid le haghaidh sonraí.",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "e.g. Seans go mbeidh tacaíocht bhreise de dhíth orm le linn malartuithe",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "m.sh. needs_additional_support",
     "placeholder_review_notes": "Nótaí Léirmheasa...",
     "placeholder_search_messages": "Cuardaigh Teachtaireachtaí...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "Roghanna Coimirce",
     "safeguarding_options_desc": "Cruthaigh agus bainistigh roghanna cosanta atá ar fáil do chomhaltaí",
     "save_changes": "Sábháil Athruithe",
+    "status_active": "Gníomhach",
+    "status_revoked": "Díghníomhaithe",
+    "status_expired": "Éagtha",
     "save_failed": "Theip ar shábháil",
     "severity": "Déine",
     "tab_flagged_messages": "Teachtaireachtaí Brataithe",
@@ -367,6 +394,7 @@
     "ward": "Ball tacaithe",
     "aria_deactivate_option": "Rogha a dhíghníomhachtú",
     "aria_edit_option": "Cuir Rogha in Eagar",
+    "deactivate_confirm_question": "Díchumasú",
     "vetting_access_ni": "Rochtain Ghrinnfhiosrúcháin Ni",
     "vetting_dbs_basic": "Dbs Bunúsach Grinnfhiosrúcháin",
     "vetting_dbs_enhanced": "Dbs Grinnfhiosrúcháin Feabhsaithe",
@@ -376,10 +404,6 @@
     "vetting_other": "Grinnfhiosrúchán Eile",
     "vetting_pvg_scotland": "Grinnfhiosrúchán Pvg Albain",
     "tabs_aria": "Rannóga cosanta",
-    "status_active": "Gníomhach",
-    "status_revoked": "Díghníomhaithe",
-    "status_expired": "Éagtha",
-    "deactivate_confirm_question": "Díchumasú",
-    "placeholder_option_key": "m.sh. needs_additional_support"
+    "tab_support_actions": "Gníomhartha Tacaíochta"
   }
 }

@@ -37,14 +37,14 @@
     "loading": "Laden",
     "next": "Als nächstes",
     "no": "Nein",
+    "ok": "OK",
     "pending": "Ausstehend",
     "previous": "Zurück",
     "retry": "Versuchen Sie es noch einmal",
     "save": "Speichern",
     "select_all": "Wählen Sie „Alle“ aus",
     "select_item": "Wählen Sie Artikel aus",
-    "yes": "Ja",
-    "ok": "OK"
+    "yes": "Ja"
   },
   "shared": {
     "broker_actions": "Makleraktionen",
@@ -57,6 +57,7 @@
     "no_history_available": "Keine verfügbare Historie gefunden",
     "no_legal_documents_found": "Es wurden keine Rechtsdokumente gefunden",
     "no_members_found": "Keine Mitglieder gefunden",
+    "loading": "Lädt",
     "no_data": "Keine Daten",
     "no_data_available": "Keine Daten verfügbar",
     "no_recent_broker_activity": "Keine aktuelle Brokeraktivität gefunden",
@@ -67,10 +68,9 @@
     "refresh": "Aktualisieren",
     "search": "Suchen...",
     "select_all_rows": "Wählen Sie alle Zeilen aus",
+    "select_row": "Zeile auswählen {{id}}",
     "data_table": "Daten",
-    "total_count": "{{count}}insgesamt",
-    "loading": "Lädt",
-    "select_row": "Zeile auswählen {{id}}"
+    "total_count": "{{count}}insgesamt"
   },
   "safeguarding": {
     "active": "Aktiv",
@@ -124,6 +124,29 @@
     "guardian": "Wächter",
     "guardian_assignment_created": "Betreuerzuweisung erstellt",
     "guardian_assignments": "Wächteraufgaben",
+    "support": {
+      "title": "Vorbereitete Maßnahmen warten auf Genehmigung",
+      "intro": "Ein Helfer hat diese vorbereitet und das unterstützte Mitglied hat noch nicht geantwortet. Wenn das Mitglied eine Offline-Genehmigung erteilt hat – telefonisch, persönlich oder auf Papier – notieren Sie sie hier. Der Datensatz wird als Offline-Genehmigung durch das Personal gespeichert, niemals als eigener Klick des Mitglieds, und das Mitglied wird immer darüber informiert, dass die Aufzeichnung in seinem Namen erfolgt ist.",
+      "col_what": "Was wurde vorbereitet",
+      "col_supported": "Unterstütztes Mitglied",
+      "col_prepared_by": "Hergestellt von",
+      "type_listing_create": "Ein neuer Eintrag",
+      "type_credit_transfer": "Eine Zeitgutschrift-Überweisung",
+      "none_pending": "Nichts wartet auf eine Antwort.",
+      "attest_button": "Offline-Genehmigung aufzeichnen",
+      "attest_title": "Zeichnen Sie eine Offline-Genehmigung auf",
+      "attest_intro": "Sie zeichnen das {{name}} genehmigte {{what}} auf, das Ihnen außerhalb der Plattform gegeben wurde. Dadurch wird es sofort ausgeführt.",
+      "channel_label": "Wie wurde die Genehmigung erteilt?",
+      "channel_phone": "Telefonisch",
+      "channel_in_person": "Persönlich",
+      "channel_paper": "Auf Papier",
+      "witness_label": "Zeuge (optional)",
+      "witness_hint": "Wer hat sonst noch die Genehmigung gehört oder gesehen?",
+      "attest_notice": "Dies wird als Offline-Genehmigung durch das Personal aufgezeichnet – erkennbar am eigenen Klick des Mitglieds – und das Mitglied wird benachrichtigt, dass die Aufzeichnung in seinem Namen erfolgt ist.",
+      "attest_confirm_button": "Aufzeichnen und durchführen",
+      "attested_toast": "Aufgezeichnet. Es wurde nun durchgeführt und dem Mitglied mitgeteilt.",
+      "attest_failed": "Konnte es nicht aufnehmen. Es wurde nichts geändert."
+    },
     "help": {
       "title": "Wie Absicherung hier funktioniert",
       "subtitle": "Eine Anleitung zu den Abläufen, die Sie auf diesem Dashboard sehen – Kennzeichnung, Aktivierungen, Mitgliederautonomie, Prüfung. Erweitern Sie einen beliebigen Abschnitt, um Einzelheiten anzuzeigen.",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "z.B. Möglicherweise benötige ich beim Austausch zusätzliche Unterstützung",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "z. B. needs_additional_support",
     "placeholder_review_notes": "Rezensionsnotizen...",
     "placeholder_search_messages": "Nachrichten durchsuchen...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "Absicherungsmöglichkeiten",
     "safeguarding_options_desc": "Erstellen und verwalten Sie Schutzoptionen, die den Mitgliedern zur Verfügung stehen",
     "save_changes": "Änderungen speichern",
+    "status_active": "Aktiv",
+    "status_revoked": "Zurückgezogen",
+    "status_expired": "Abgelaufen",
     "save_failed": "Speichern fehlgeschlagen",
     "severity": "Schweregrad",
     "tab_flagged_messages": "Gekennzeichnete Nachrichten",
@@ -367,6 +394,7 @@
     "ward": "Unterstütztes Mitglied",
     "aria_deactivate_option": "Option deaktivieren",
     "aria_edit_option": "Option bearbeiten",
+    "deactivate_confirm_question": "Deaktivieren",
     "vetting_access_ni": "Überprüfung des Zugriffs Ni",
     "vetting_dbs_basic": "Überprüfung von Dbs Basic",
     "vetting_dbs_enhanced": "Dbs-Überprüfung verbessert",
@@ -376,10 +404,6 @@
     "vetting_other": "Andere überprüfen",
     "vetting_pvg_scotland": "Überprüfung von Pvg Schottland",
     "tabs_aria": "Abschnitte sichern",
-    "status_active": "Aktiv",
-    "status_revoked": "Zurückgezogen",
-    "status_expired": "Abgelaufen",
-    "deactivate_confirm_question": "Deaktivieren",
-    "placeholder_option_key": "z. B. needs_additional_support"
+    "tab_support_actions": "Unterstützungsaktionen"
   }
 }

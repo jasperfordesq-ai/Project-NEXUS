@@ -37,14 +37,14 @@
     "loading": "تحميل",
     "next": "التالي",
     "no": "لا",
+    "ok": "OK",
     "pending": "قيد الانتظار",
     "previous": "سابق",
     "retry": "أعد المحاولة",
     "save": "يحفظ",
     "select_all": "حدد الكل",
     "select_item": "حدد العنصر",
-    "yes": "نعم",
-    "ok": "OK"
+    "yes": "نعم"
   },
   "shared": {
     "broker_actions": "إجراءات الوسيط",
@@ -57,6 +57,7 @@
     "no_history_available": "لم يتم العثور على أي سجل متاح",
     "no_legal_documents_found": "لم يتم العثور على وثائق قانونية",
     "no_members_found": "لم يتم العثور على أعضاء وجدت",
+    "loading": "جارٍ التحميل",
     "no_data": "لا توجد بيانات",
     "no_data_available": "لا توجد بيانات متاحة",
     "no_recent_broker_activity": "لم يتم العثور على أي نشاط وسيط حديث",
@@ -67,10 +68,9 @@
     "refresh": "ينعش",
     "search": "يبحث...",
     "select_all_rows": "حدد كافة الصفوف",
+    "select_row": "اختر الصف {{id}}",
     "data_table": "بيانات",
-    "total_count": "إجمالي{{count}}",
-    "loading": "جارٍ التحميل",
-    "select_row": "اختر الصف {{id}}"
+    "total_count": "إجمالي{{count}}"
   },
   "safeguarding": {
     "active": "نشيط",
@@ -124,6 +124,29 @@
     "guardian": "الوصي",
     "guardian_assignment_created": "تم إنشاء مهمة الوصي",
     "guardian_assignments": "مهام الوصي",
+    "support": {
+      "title": "الإجراءات المعدة في انتظار الموافقة",
+      "intro": "قام أحد المساعدين بإعداد هذه الأسئلة ولم يقم العضو المدعوم بالرد بعد. إذا وافق العضو على واحدة دون اتصال بالإنترنت - عبر الهاتف أو شخصيًا أو على الورق - فقم بتسجيلها هنا. يتم تخزين السجل كموافقة دون اتصال بالإنترنت يتم الحصول عليها من قبل الموظفين، وليس كنقرة من العضو، ويتم إخطار العضو دائمًا بأنه تم تسجيله باسمه.",
+      "col_what": "ما تم إعداده",
+      "col_supported": "عضو مدعوم",
+      "col_prepared_by": "أُعدت بواسطة",
+      "type_listing_create": "قائمة جديدة",
+      "type_credit_transfer": "تحويل رصيد الوقت",
+      "none_pending": "لا شيء ينتظر الجواب.",
+      "attest_button": "سجل الموافقة دون اتصال",
+      "attest_title": "تسجيل الموافقة دون اتصال بالإنترنت",
+      "attest_intro": "أنت تسجل أن {{name}} وافق على {{what}} — الممنوح لك خارج النظام الأساسي. وهذا سوف ينفذ على الفور.",
+      "channel_label": "كيف تم منح الموافقة؟",
+      "channel_phone": "عبر الهاتف",
+      "channel_in_person": "شخصياً",
+      "channel_paper": "على الورق",
+      "witness_label": "الشاهد (اختياري)",
+      "witness_hint": "من سمع أو رأى الموافقة إن وجد.",
+      "attest_notice": "يتم تسجيل ذلك كموافقة دون اتصال بالإنترنت تم الحصول عليها من قبل الموظفين - يمكن تمييزها عن نقرة العضو الخاصة - وسيتم إخطار العضو بأنه تم تسجيلها باسمه.",
+      "attest_confirm_button": "سجل ونفذ",
+      "attested_toast": "مسجلة. لقد تم تنفيذ الأمر الآن وتم إخبار العضو.",
+      "attest_failed": "لا يمكن تسجيله. لم يتغير شيء."
+    },
     "help": {
       "title": "كيف تعمل الحماية هنا",
       "subtitle": "دليل للتدفقات التي تراها على لوحة المعلومات هذه - وضع العلامات، والتنشيط، واستقلالية الأعضاء، والتدقيق. قم بتوسيع أي قسم لمزيد من التفاصيل.",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "على سبيل المثال قد أحتاج إلى دعم إضافي أثناء التبادلات",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "على سبيل المثال needs_additional_support",
     "placeholder_review_notes": "ملاحظات المراجعة...",
     "placeholder_search_messages": "البحث في الرسائل...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "خيارات الحماية",
     "safeguarding_options_desc": "إنشاء وإدارة خيارات الحماية المتاحة للأعضاء",
     "save_changes": "حفظ التغييرات",
+    "status_active": "نشط",
+    "status_revoked": "ملغى",
+    "status_expired": "انتهت صلاحيتها",
     "save_failed": "فشل الحفظ",
     "severity": "خطورة",
     "tab_flagged_messages": "الرسائل التي تم وضع علامة عليها",
@@ -367,6 +394,7 @@
     "ward": "العضو المدعوم",
     "aria_deactivate_option": "إلغاء تنشيط الخيار",
     "aria_edit_option": "خيار التحرير",
+    "deactivate_confirm_question": "إلغاء التفعيل",
     "vetting_access_ni": "فحص الوصول ني",
     "vetting_dbs_basic": "فحص Dbs الأساسية",
     "vetting_dbs_enhanced": "تحسين قواعد البيانات الخاصة بالفحص",
@@ -376,10 +404,6 @@
     "vetting_other": "فحص أخرى",
     "vetting_pvg_scotland": "فحص Pvg اسكتلندا",
     "tabs_aria": "أقسام الحماية",
-    "status_active": "نشط",
-    "status_revoked": "ملغى",
-    "status_expired": "انتهت صلاحيتها",
-    "deactivate_confirm_question": "إلغاء التفعيل",
-    "placeholder_option_key": "على سبيل المثال needs_additional_support"
+    "tab_support_actions": "إجراءات الدعم"
   }
 }

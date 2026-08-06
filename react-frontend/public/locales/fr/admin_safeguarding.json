@@ -37,14 +37,14 @@
     "loading": "Chargement",
     "next": "Suivant",
     "no": "Non",
+    "ok": "OK",
     "pending": "En attente",
     "previous": "Précédent",
     "retry": "Réessayer",
     "save": "Enregistrer",
     "select_all": "Sélectionner tout",
     "select_item": "Sélectionner un article",
-    "yes": "Oui",
-    "ok": "OK"
+    "yes": "Oui"
   },
   "shared": {
     "broker_actions": "Actions des courtiers",
@@ -57,6 +57,7 @@
     "no_history_available": "Aucun historique disponible trouvé",
     "no_legal_documents_found": "Aucun document juridique trouvé",
     "no_members_found": "Aucun membre trouvé trouvé",
+    "loading": "Chargement",
     "no_data": "Aucune donnée",
     "no_data_available": "Aucune donnée disponible",
     "no_recent_broker_activity": "Aucune activité récente de courtier trouvée",
@@ -67,10 +68,9 @@
     "refresh": "Rafraîchir",
     "search": "Recherche...",
     "select_all_rows": "Sélectionner toutes les lignes",
+    "select_row": "Sélectionner la ligne {{id}}",
     "data_table": "Données",
-    "total_count": "{{count}}total",
-    "loading": "Chargement",
-    "select_row": "Sélectionner la ligne {{id}}"
+    "total_count": "{{count}}total"
   },
   "safeguarding": {
     "active": "Actif",
@@ -124,6 +124,29 @@
     "guardian": "Gardien",
     "guardian_assignment_created": "Affectation de tuteur créée",
     "guardian_assignments": "Missions de tuteur",
+    "support": {
+      "title": "Actions préparées en attente d’approbation",
+      "intro": "Un assistant les a préparés et le membre soutenu n'a pas encore répondu. Si le membre en a approuvé une hors ligne – par téléphone, en personne ou sur papier – enregistrez-la ici. L'enregistrement est stocké sous la forme d'une approbation hors ligne prise par le personnel, jamais sous la forme du propre clic du membre, et le membre est toujours informé qu'il a été enregistré à son nom.",
+      "col_what": "Ce qui a été préparé",
+      "col_supported": "Membre pris en charge",
+      "col_prepared_by": "Préparé par",
+      "type_listing_create": "Une nouvelle inscription",
+      "type_credit_transfer": "Un transfert de crédit-temps",
+      "none_pending": "Rien n'attend de réponse.",
+      "attest_button": "Enregistrer l'approbation hors ligne",
+      "attest_title": "Enregistrer une approbation hors ligne",
+      "attest_intro": "Vous enregistrez ce {{name}} approuvé {{what}} — qui vous a été remis en dehors de la plateforme. Cela l'exécutera immédiatement.",
+      "channel_label": "Comment l’approbation a-t-elle été donnée ?",
+      "channel_phone": "Par téléphone",
+      "channel_in_person": "En personne",
+      "channel_paper": "Sur papier",
+      "witness_label": "Témoin (facultatif)",
+      "witness_hint": "Qui d’autre a entendu ou vu l’approbation, le cas échéant.",
+      "attest_notice": "Ceci est enregistré comme une approbation hors ligne prise par le personnel – distincte du propre clic du membre – et le membre sera informé qu'elle a été enregistrée en son nom.",
+      "attest_confirm_button": "Enregistrer et réaliser",
+      "attested_toast": "Enregistré. Cela a maintenant été fait et le député en a été informé.",
+      "attest_failed": "Impossible de l'enregistrer. Rien n'a été changé."
+    },
     "help": {
       "title": "Comment fonctionne la sauvegarde ici",
       "subtitle": "Un guide des flux que vous voyez sur ce tableau de bord - signalement, activations, autonomie des membres, audit. Développez n’importe quelle section pour plus de détails.",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "par ex. Je pourrais avoir besoin d'un soutien supplémentaire lors des échanges",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "par ex. needs_additional_support",
     "placeholder_review_notes": "Notes de révision...",
     "placeholder_search_messages": "Rechercher des messages...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "Options de sauvegarde",
     "safeguarding_options_desc": "Créer et gérer les options de sauvegarde disponibles pour les membres",
     "save_changes": "Enregistrer les modifications",
+    "status_active": "Actif",
+    "status_revoked": "Révoqué",
+    "status_expired": "Expiré",
     "save_failed": "Échec de l'enregistrement",
     "severity": "Gravité",
     "tab_flagged_messages": "Messages signalés",
@@ -367,6 +394,7 @@
     "ward": "Membre accompagné",
     "aria_deactivate_option": "Désactiver l'option",
     "aria_edit_option": "Modifier l'option",
+    "deactivate_confirm_question": "Désactiver",
     "vetting_access_ni": "Accès au contrôle Ni",
     "vetting_dbs_basic": "Vérification des bases de données de base",
     "vetting_dbs_enhanced": "Vérification des bases de données améliorées",
@@ -376,10 +404,6 @@
     "vetting_other": "Vérification des autres",
     "vetting_pvg_scotland": "Vérification du Pvg Ecosse",
     "tabs_aria": "Sections de sauvegarde",
-    "status_active": "Actif",
-    "status_revoked": "Révoqué",
-    "status_expired": "Expiré",
-    "deactivate_confirm_question": "Désactiver",
-    "placeholder_option_key": "par ex. needs_additional_support"
+    "tab_support_actions": "Actions d’accompagnement"
   }
 }

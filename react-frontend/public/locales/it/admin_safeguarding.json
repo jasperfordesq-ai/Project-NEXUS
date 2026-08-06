@@ -37,14 +37,14 @@
     "loading": "Caricamento",
     "next": "Avanti",
     "no": "No",
+    "ok": "OK",
     "pending": "In sospeso",
     "previous": "Precedente",
     "retry": "Riprova",
     "save": "Salva",
     "select_all": "Seleziona tutto",
     "select_item": "Seleziona elemento",
-    "yes": "Sì",
-    "ok": "OK"
+    "yes": "Sì"
   },
   "shared": {
     "broker_actions": "Azioni del broker",
@@ -57,6 +57,7 @@
     "no_history_available": "Nessuna cronologia disponibile trovata",
     "no_legal_documents_found": "Nessun documento legale trovato trovato",
     "no_members_found": "Nessun membro trovato trovato",
+    "loading": "Caricamento",
     "no_data": "Nessun dato",
     "no_data_available": "Nessun dato disponibile",
     "no_recent_broker_activity": "Nessuna attività recente del broker trovata",
@@ -67,10 +68,9 @@
     "refresh": "Aggiorna",
     "search": "Ricerca...",
     "select_all_rows": "Seleziona tutte le righe",
+    "select_row": "Seleziona riga {{id}}",
     "data_table": "Dati",
-    "total_count": "{{count}}totale",
-    "loading": "Caricamento",
-    "select_row": "Seleziona riga {{id}}"
+    "total_count": "{{count}}totale"
   },
   "safeguarding": {
     "active": "Attivo",
@@ -124,6 +124,29 @@
     "guardian": "Guardiano",
     "guardian_assignment_created": "Incarico tutore creato",
     "guardian_assignments": "Incarichi di guardiano",
+    "support": {
+      "title": "Azioni preparate in attesa di approvazione",
+      "intro": "Un aiutante li ha preparati e il membro supportato non ha ancora risposto. Se il membro ne ha approvato uno offline (per telefono, di persona o su carta), registralo qui. Il record viene archiviato come approvazione offline ottenuta dallo staff, mai come clic del membro, e al membro viene sempre notificato che è stato registrato a suo nome.",
+      "col_what": "Cosa è stato preparato",
+      "col_supported": "Membro supportato",
+      "col_prepared_by": "Preparato da",
+      "type_listing_create": "Una nuova inserzione",
+      "type_credit_transfer": "Un trasferimento di credito a tempo",
+      "none_pending": "Niente è in attesa di una risposta.",
+      "attest_button": "Registra l'approvazione offline",
+      "attest_title": "Registra un'approvazione offline",
+      "attest_intro": "Stai registrando ciò che {{name}} ha approvato {{what}}, che ti è stato fornito al di fuori della piattaforma. Questo lo eseguirà immediatamente.",
+      "channel_label": "Come è stata data l'approvazione?",
+      "channel_phone": "Per telefono",
+      "channel_in_person": "Di persona",
+      "channel_paper": "Su carta",
+      "witness_label": "Testimone (facoltativo)",
+      "witness_hint": "Chi altro ha sentito o visto l'approvazione, se qualcuno.",
+      "attest_notice": "Questa viene registrata come un'approvazione offline ottenuta dallo staff (distinguibile dal clic del membro) e al membro verrà notificato che è stata registrata a suo nome.",
+      "attest_confirm_button": "Registra ed esegui",
+      "attested_toast": "Registrato. Ora è stato eseguito e il membro è stato informato.",
+      "attest_failed": "Impossibile registrarlo. Niente è stato cambiato."
+    },
     "help": {
       "title": "Come funziona la salvaguardia qui",
       "subtitle": "Una guida ai flussi che vedi in questa dashboard: segnalazioni, attivazioni, autonomia dei membri, audit. Espandi qualsiasi sezione per i dettagli.",
@@ -331,6 +354,7 @@
     "placeholder_display_label": "ad es. Potrei aver bisogno di ulteriore supporto durante gli scambi",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "ad es. needs_additional_support",
     "placeholder_review_notes": "Note di revisione...",
     "placeholder_search_messages": "Cerca messaggi...",
     "placeholder_ward_email": "member@example.com",
@@ -347,6 +371,9 @@
     "safeguarding_options": "Opzioni di salvaguardia",
     "safeguarding_options_desc": "Creare e gestire le opzioni di protezione disponibili per i membri",
     "save_changes": "Salva modifiche",
+    "status_active": "Attivo",
+    "status_revoked": "Revocato",
+    "status_expired": "Scaduto",
     "save_failed": "Salvataggio non riuscito",
     "severity": "Gravità",
     "tab_flagged_messages": "Messaggi contrassegnati",
@@ -367,6 +394,7 @@
     "ward": "Membro assistito",
     "aria_deactivate_option": "Disattiva opzione",
     "aria_edit_option": "Modifica opzione",
+    "deactivate_confirm_question": "Disattiva",
     "vetting_access_ni": "Controllo dell'accesso Ni",
     "vetting_dbs_basic": "Controllo Dbs Base",
     "vetting_dbs_enhanced": "Controllo Dbs migliorato",
@@ -376,10 +404,6 @@
     "vetting_other": "Controllo Altro",
     "vetting_pvg_scotland": "Controllo Pvg Scozia",
     "tabs_aria": "Sezioni di salvaguardia",
-    "status_active": "Attivo",
-    "status_revoked": "Revocato",
-    "status_expired": "Scaduto",
-    "deactivate_confirm_question": "Disattiva",
-    "placeholder_option_key": "ad es. needs_additional_support"
+    "tab_support_actions": "Azioni di supporto"
   }
 }

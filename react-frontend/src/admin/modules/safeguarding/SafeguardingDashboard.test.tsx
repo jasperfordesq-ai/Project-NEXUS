@@ -179,10 +179,21 @@ const makeMemberPreference = (overrides = {}) => ({
 const makeApiOk = (data: unknown) => ({ success: true, data });
 const makeApiErr = () => ({ success: false, error: 'server error' });
 
+const makeSupportAction = () => ({
+  id: 71,
+  action_type: 'credit_transfer' as const,
+  payload_summary: { amount: 3 },
+  supported_name: 'Molly Member',
+  supporter_name: 'Sam Supporter',
+  created_at: new Date().toISOString(),
+  expires_at: new Date(Date.now() + 86400000).toISOString(),
+});
+
 function setupSuccess() {
   mockApi.get.mockImplementation((url: string) => {
     if (url.includes('dashboard')) return Promise.resolve(makeApiOk(makeStats()));
     if (url.includes('flagged-messages')) return Promise.resolve(makeApiOk([makeFlag()]));
+    if (url.includes('support-actions')) return Promise.resolve(makeApiOk({ actions: [makeSupportAction()] }));
     if (url.includes('assignments')) return Promise.resolve(makeApiOk([makeAssignment()]));
     if (url.includes('member-preferences')) return Promise.resolve(makeApiOk([]));
     return Promise.resolve(makeApiOk(null));
@@ -457,6 +468,47 @@ describe('SafeguardingDashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('safeguarding-help')).toBeInTheDocument();
+    });
+  });
+
+  // ── Support actions tab (co-decide, guardian redesign phase 4) ──
+
+  it('lists pending support actions with both parties on the Support Actions tab', async () => {
+    const { SafeguardingDashboard } = await import('./SafeguardingDashboard');
+    render(<SafeguardingDashboard />);
+
+    // Wait on the tab bar, not the flagged tab's content — the active tab is
+    // URL-driven and a previous test's ?tab= persists under BrowserRouter.
+    fireEvent.click(await screen.findByRole('tab', { name: /Support Actions/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Molly Member')).toBeInTheDocument();
+      expect(screen.getByText('Sam Supporter')).toBeInTheDocument();
+      expect(screen.getByText(/A time-credit transfer/)).toBeInTheDocument();
+    });
+  });
+
+  it('records an offline approval through the attest modal', async () => {
+    mockApi.post.mockResolvedValue({ success: true, data: { status: 'confirmed' } });
+    const { SafeguardingDashboard } = await import('./SafeguardingDashboard');
+    render(<SafeguardingDashboard />);
+
+    fireEvent.click(await screen.findByRole('tab', { name: /Support Actions/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /Record offline approval/ }));
+
+    // The modal states the honesty rule before anything is submitted: the
+    // record is distinguishable from the member's own click, and the member
+    // will be notified it was recorded in their name.
+    expect(await screen.findByText(/member will be notified/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Witness (optional)'), { target: { value: 'Nora Neighbour' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Record and carry out' }));
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/safeguarding/support-actions/71/attest', {
+        channel: 'phone',
+        witness: 'Nora Neighbour',
+      });
     });
   });
 });

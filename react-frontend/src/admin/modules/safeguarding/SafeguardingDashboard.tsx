@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Button, Spinner, Chip, Textarea, Input, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@/components/ui';
+import { Card, CardBody, CardHeader, Button, Spinner, Chip, Textarea, Input, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Select, SelectItem } from '@/components/ui';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ import UserPlus from 'lucide-react/icons/user-plus';
 import UserMinus from 'lucide-react/icons/user-minus';
 import Clock from 'lucide-react/icons/clock';
 import Flag from 'lucide-react/icons/flag';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
@@ -105,6 +106,26 @@ interface MemberSafeguardingEntry {
   is_declination_only: boolean;
 }
 
+/**
+ * A live co-decide action awaiting the supported member's answer — from
+ * GET /v2/admin/safeguarding/support-actions. Staff see these so that when a
+ * member confirms OFFLINE (phone / in person / paper), the confirmation can
+ * be recorded here. The raw payload is deliberately not exposed; only the
+ * safe summary travels.
+ */
+interface SupportActionRow {
+  id: number;
+  action_type: 'listing_create' | 'credit_transfer';
+  payload_summary: { title?: string | null; amount?: number | null };
+  supported_name: string | null;
+  supporter_name: string | null;
+  created_at: string | null;
+  expires_at: string | null;
+}
+
+const ATTEST_CHANNELS = ['phone', 'in_person', 'paper'] as const;
+type AttestChannel = (typeof ATTEST_CHANNELS)[number];
+
 interface SafeguardingDashboardProps {
   routeBase?: string;
 }
@@ -135,7 +156,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
   // and browser back/forward works intuitively. Valid tab keys are the three
   // sections rendered below.
   const rawTab = searchParams.get('tab');
-  const activeTab = rawTab === 'assignments' || rawTab === 'guardians' || rawTab === 'preferences'
+  const activeTab = rawTab === 'assignments' || rawTab === 'guardians' || rawTab === 'preferences' || rawTab === 'support'
     ? (rawTab === 'guardians' ? 'assignments' : rawTab)
     : 'flagged';
   const dashboardPath = useCallback(
@@ -180,15 +201,24 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
   const [guardianEmail, setGuardianEmail] = useState('');
   const [creating, setCreating] = useState(false);
 
+  // Support actions (co-decide queue) + the attest-offline modal
+  const [supportActions, setSupportActions] = useState<SupportActionRow[]>([]);
+  const attestModal = useDisclosure();
+  const [attestTarget, setAttestTarget] = useState<SupportActionRow | null>(null);
+  const [attestChannel, setAttestChannel] = useState<AttestChannel>('phone');
+  const [attestWitness, setAttestWitness] = useState('');
+  const [attesting, setAttesting] = useState(false);
+
   // ─── Load data ───
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsRes, flagsRes, assignmentsRes, prefsRes] = await Promise.all([
+      const [statsRes, flagsRes, assignmentsRes, prefsRes, supportRes] = await Promise.all([
         api.get('/v2/admin/safeguarding/dashboard'),
         api.get('/v2/admin/safeguarding/flagged-messages'),
         api.get('/v2/admin/safeguarding/assignments'),
         api.get<MemberSafeguardingEntry[]>('/v2/admin/safeguarding/member-preferences'),
+        api.get<{ actions: SupportActionRow[] }>('/v2/admin/safeguarding/support-actions'),
       ]);
 
       if (statsRes.success) {
@@ -214,6 +244,13 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         const payload = prefsRes.data;
         setMemberPreferences(Array.isArray(payload) ? payload : []);
       }
+
+      if (supportRes.success) {
+        const payload = supportRes.data;
+        setSupportActions(
+          Array.isArray(payload) ? payload : payload?.actions ?? []
+        );
+      }
     } catch (err) {
       logError('SafeguardingDashboard.load', err);
       toast.error(t('safeguarding.failed_to_load_safeguarding_data'));
@@ -223,6 +260,35 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
 
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // ─── Attest an offline confirmation (co-decide) ───
+  // The member approved by phone / in person / on paper; staff record it
+  // here. The record is stored as 'attested_offline' — deliberately
+  // distinguishable from the member's own click — and the member is notified
+  // that it was recorded in their name.
+  const handleAttest = useCallback(async () => {
+    if (!attestTarget) return;
+    setAttesting(true);
+    try {
+      const body: Record<string, string> = { channel: attestChannel };
+      if (attestWitness.trim() !== '') body.witness = attestWitness.trim();
+      const res = await api.post(`/v2/admin/safeguarding/support-actions/${attestTarget.id}/attest`, body);
+      if (res.success) {
+        toast.success(t('safeguarding.support.attested_toast'));
+        setAttestTarget(null);
+        setAttestWitness('');
+        attestModal.onClose();
+        await loadData();
+      } else {
+        toast.error(res.error || t('safeguarding.support.attest_failed'));
+      }
+    } catch (err) {
+      logError('SafeguardingDashboard.attest', err);
+      toast.error(t('safeguarding.support.attest_failed'));
+    } finally {
+      setAttesting(false);
+    }
+  }, [attestTarget, attestChannel, attestWitness, attestModal, loadData, toast, t]);
 
   // ─── Review flagged message ───
   const handleReview = useCallback(async () => {
@@ -486,6 +552,15 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
             </span>
           }
         />
+        <Tab
+          key="support"
+          title={
+            <span className="flex items-center gap-2">
+              <ClipboardCheck size={16} />
+              {t('safeguarding.tab_support_actions')}
+            </span>
+          }
+        />
       </Tabs>
 
       {/* Flagged Messages Tab */}
@@ -739,6 +814,70 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         </Card>
       )}
 
+      {/* Support Actions (co-decide) Tab */}
+      {activeTab === 'support' && (
+        <Card>
+          <CardHeader className="flex flex-col items-start gap-1">
+            <h3 className="text-lg font-semibold">{t('safeguarding.support.title')}</h3>
+            {/* What this queue is, and the honesty rule for recording offline
+                approvals, stated where staff will act on it. */}
+            <p className="text-sm text-muted">{t('safeguarding.support.intro')}</p>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label={t('safeguarding.support.title')} removeWrapper>
+              <TableHeader>
+                <TableColumn>{t('safeguarding.support.col_what')}</TableColumn>
+                <TableColumn>{t('safeguarding.support.col_supported')}</TableColumn>
+                <TableColumn>{t('safeguarding.support.col_prepared_by')}</TableColumn>
+                <TableColumn>{t('safeguarding.col_created')}</TableColumn>
+                <TableColumn>{t('safeguarding.col_expires')}</TableColumn>
+                <TableColumn>{t('safeguarding.col_actions')}</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent={t('safeguarding.support.none_pending')}>
+                {supportActions.map((action) => (
+                  <TableRow key={action.id}>
+                    <TableCell>
+                      <span className="text-sm">
+                        {t(`safeguarding.support.type_${action.action_type}`)}
+                        {action.payload_summary.title ? ` — ${action.payload_summary.title}` : ''}
+                        {action.payload_summary.amount != null ? ` — ${action.payload_summary.amount}` : ''}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{action.supported_name}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">{action.supporter_name}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted">{action.created_at ? formatRelativeTime(action.created_at) : ''}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted">{action.expires_at ? new Date(action.expires_at).toLocaleDateString() : ''}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        startContent={<ClipboardCheck size={14} />}
+                        onPress={() => {
+                          setAttestTarget(action);
+                          setAttestChannel('phone');
+                          setAttestWitness('');
+                          attestModal.onOpen();
+                        }}
+                      >
+                        {t('safeguarding.support.attest_button')}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      )}
+
       {/* Collapsible guidance panel — title always visible, body in accordion sections */}
       <SafeguardingHelp />
 
@@ -860,6 +999,66 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
                   onPress={handleCreateAssignment}
                 >
                   {t('safeguarding.create_assignment')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/*
+        Attest an offline confirmation. The channel vocabulary is closed
+        (phone / in person / paper) and the witness is optional. The copy
+        carries the two honesty rules: this record is distinguishable from
+        the member's own click, and the member will be told it was recorded
+        in their name.
+      */}
+      <Modal isOpen={attestModal.isOpen} onOpenChange={attestModal.onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex items-center gap-2">
+                <ClipboardCheck size={20} />
+                {t('safeguarding.support.attest_title')}
+              </ModalHeader>
+              <ModalBody className="gap-4">
+                {attestTarget && (
+                  <p className="text-sm text-muted">
+                    {t('safeguarding.support.attest_intro', {
+                      what: t(`safeguarding.support.type_${attestTarget.action_type}`),
+                      name: attestTarget.supported_name ?? '',
+                    })}
+                  </p>
+                )}
+                <Select
+                  label={t('safeguarding.support.channel_label')}
+                  selectedKeys={[attestChannel]}
+                  onSelectionChange={(keys) => {
+                    const value = Array.from(keys)[0] as AttestChannel | undefined;
+                    if (value && (ATTEST_CHANNELS as readonly string[]).includes(value)) setAttestChannel(value);
+                  }}
+                >
+                  {ATTEST_CHANNELS.map((channel) => (
+                    <SelectItem key={channel} id={channel}>
+                      {t(`safeguarding.support.channel_${channel}`)}
+                    </SelectItem>
+                  ))}
+                </Select>
+                <Input
+                  label={t('safeguarding.support.witness_label')}
+                  description={t('safeguarding.support.witness_hint')}
+                  value={attestWitness}
+                  onValueChange={setAttestWitness}
+                  maxLength={160}
+                />
+                <p className="text-xs text-muted">
+                  {t('safeguarding.support.attest_notice')}
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="tertiary" onPress={onClose}>{t('safeguarding.cancel')}</Button>
+                <Button isLoading={attesting} onPress={handleAttest}>
+                  {t('safeguarding.support.attest_confirm_button')}
                 </Button>
               </ModalFooter>
             </>

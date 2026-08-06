@@ -37,14 +37,14 @@
     "loading": "Laden",
     "next": "Volgende",
     "no": "Nee",
+    "ok": "OK",
     "pending": "In behandeling",
     "previous": "Vorige",
     "retry": "Opnieuw proberen",
     "save": "Opslaan",
     "select_all": "Selecteer Alles",
     "select_item": "Selecteer Artikel",
-    "yes": "Ja",
-    "ok": "OK"
+    "yes": "Ja"
   },
   "shared": {
     "broker_actions": "Makelaarsacties",
@@ -57,6 +57,7 @@
     "no_history_available": "Geen geschiedenis beschikbaar gevonden",
     "no_legal_documents_found": "Geen juridische documenten gevonden gevonden",
     "no_members_found": "Geen leden gevonden gevonden",
+    "loading": "Laden",
     "no_data": "Geen gegevens",
     "no_data_available": "Geen gegevens beschikbaar",
     "no_recent_broker_activity": "Geen recente makelaarsactiviteit gevonden",
@@ -67,10 +68,9 @@
     "refresh": "Vernieuwen",
     "search": "Zoekopdracht...",
     "select_all_rows": "Selecteer alle rijen",
+    "select_row": "Selecteer rij {{id}}",
     "data_table": "Gegevens",
-    "total_count": "{{count}}totaal",
-    "loading": "Laden",
-    "select_row": "Selecteer rij {{id}}"
+    "total_count": "{{count}}totaal"
   },
   "safeguarding": {
     "active": "Actief",
@@ -96,6 +96,7 @@
     "col_sender": "Afzender",
     "col_severity": "Ernst",
     "col_status": "Status",
+    "col_triggers": "Triggers",
     "col_ward": "Ondersteund lid",
     "create_assignment": "Opdracht maken",
     "create_failed": "Maken mislukt",
@@ -123,6 +124,29 @@
     "guardian": "Bewaker",
     "guardian_assignment_created": "Guardian-opdracht gemaakt",
     "guardian_assignments": "Guardian-opdrachten",
+    "support": {
+      "title": "Acties voorbereid die wachten op goedkeuring",
+      "intro": "Een helper heeft deze voorbereid en het ondersteunde lid heeft nog niet geantwoord. Als het lid er een offline heeft goedgekeurd (via de telefoon, persoonlijk of op papier), noteer dit dan hier. De record wordt opgeslagen als een offline goedkeuring van het personeel, nooit als de eigen klik van het lid, en het lid krijgt altijd een melding dat het op zijn of haar naam is opgenomen.",
+      "col_what": "Wat werd voorbereid",
+      "col_supported": "Ondersteund lid",
+      "col_prepared_by": "Bereid door",
+      "type_listing_create": "Een nieuwe lijst",
+      "type_credit_transfer": "Een tijdskredietoverdracht",
+      "none_pending": "Niets wacht op een antwoord.",
+      "attest_button": "Offline goedkeuring vastleggen",
+      "attest_title": "Registreer een offline goedkeuring",
+      "attest_intro": "Je registreert dat {{name}} {{what}} heeft goedgekeurd en aan jou is gegeven buiten het platform. Deze zal het onmiddellijk uitvoeren.",
+      "channel_label": "Hoe werd de goedkeuring gegeven?",
+      "channel_phone": "Telefonisch",
+      "channel_in_person": "In persoon",
+      "channel_paper": "Op papier",
+      "witness_label": "Getuige (optioneel)",
+      "witness_hint": "Wie heeft de goedkeuring nog meer gehoord of gezien?",
+      "attest_notice": "Dit wordt geregistreerd als een offline goedkeuring door het personeel (te onderscheiden van de eigen klik van het lid) en het lid krijgt een melding dat het op zijn of haar naam is opgenomen.",
+      "attest_confirm_button": "Registreren en uitvoeren",
+      "attested_toast": "Opgenomen. Het is inmiddels uitgevoerd en het lid is op de hoogte gesteld.",
+      "attest_failed": "Kon het niet opnemen. Er werd niets veranderd."
+    },
     "help": {
       "title": "Hoe beveiliging hier werkt",
       "subtitle": "Een gids voor de stromen die u op dit dashboard ziet: markeren, activeringen, autonomie van leden, audit. Vouw een sectie uit voor meer informatie.",
@@ -164,6 +188,7 @@
         "intro_prefix": "Een beveiligingsoptie (gedefinieerd per huurder in",
         "safeguarding_options": "Beveiligingsopties",
         "intro_suffix": ") bevat een JSON-triggerblok. Wanneer een lid de optie selecteert, worden de relevante triggers geactiveerd:",
+        "col_effect": "Effect",
         "col_trigger_key": "Trigger-sleutel",
         "effects": {
           "notify_admin_on_selection": "Je krijgt een real-time melding zodra de optie is aangevinkt.",
@@ -174,8 +199,7 @@
           "vetting_type_required": "Specificeert welke doorlichting een contacterend lid moet hebben, bijvoorbeeld garda_vetting."
         },
         "table_aria": "Triggereffecten beschermen",
-        "merge_note": "Wanneer een lid meerdere opties selecteert, wordt OR-samenvoeging geactiveerd: de meest beschermende combinatie wint. Als u één optie intrekt, worden sommige beveiligingen opgeheven, maar blijven andere actief. Het systeem evalueert elke keer opnieuw.",
-        "col_effect": "Effect"
+        "merge_note": "Wanneer een lid meerdere opties selecteert, wordt OR-samenvoeging geactiveerd: de meest beschermende combinatie wint. Als u één optie intrekt, worden sommige beveiligingen opgeheven, maar blijven andere actief. Het systeem evalueert elke keer opnieuw."
       },
       "vetting": {
         "aria": "Poorten doorlichten",
@@ -330,6 +354,7 @@
     "placeholder_display_label": "bijv. Het kan zijn dat ik extra ondersteuning nodig heb tijdens uitwisselingen",
     "placeholder_guardian_email": "guardian@example.com",
     "placeholder_help_url": "https://...",
+    "placeholder_option_key": "bijv. needs_additional_support",
     "placeholder_review_notes": "Beoordelingsopmerkingen...",
     "placeholder_search_messages": "Berichten zoeken...",
     "placeholder_ward_email": "member@example.com",
@@ -346,6 +371,9 @@
     "safeguarding_options": "Beveiligingsopties",
     "safeguarding_options_desc": "Creëer en beheer beveiligingsopties die beschikbaar zijn voor leden",
     "save_changes": "Wijzigingen opslaan",
+    "status_active": "Actief",
+    "status_revoked": "Ingetrokken",
+    "status_expired": "Verlopen",
     "save_failed": "Opslaan mislukt",
     "severity": "Ernst",
     "tab_flagged_messages": "Gemarkeerde berichten",
@@ -366,6 +394,7 @@
     "ward": "Ondersteund lid",
     "aria_deactivate_option": "Optie deactiveren",
     "aria_edit_option": "Optie bewerken",
+    "deactivate_confirm_question": "Deactiveren",
     "vetting_access_ni": "Toegang tot doorlichting Ni",
     "vetting_dbs_basic": "Dbs Basic doorlichten",
     "vetting_dbs_enhanced": "Controle van Dbs verbeterd",
@@ -375,11 +404,6 @@
     "vetting_other": "Controle anders",
     "vetting_pvg_scotland": "Controle Pvg Schotland",
     "tabs_aria": "Beveiliging van secties",
-    "status_active": "Actief",
-    "status_revoked": "Ingetrokken",
-    "status_expired": "Verlopen",
-    "deactivate_confirm_question": "Deactiveren",
-    "placeholder_option_key": "bijv. needs_additional_support",
-    "col_triggers": "Triggers"
+    "tab_support_actions": "Ondersteuningsacties"
   }
 }
