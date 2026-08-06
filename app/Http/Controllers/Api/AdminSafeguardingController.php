@@ -1366,6 +1366,83 @@ class AdminSafeguardingController extends BaseApiController
         ]);
     }
 
+    /**
+     * Evidence-content fields the authority-attestation endpoints REFUSE
+     * outright — same principle as the vetting surface: the platform records
+     * that staff attest to having sighted formal authority; it must never
+     * become a store of capacity orders, powers of attorney, or their
+     * identifying details.
+     */
+    private const AUTHORITY_PROHIBITED_INPUT_FIELDS = [
+        'document', 'file', 'document_url', 'upload', 'attachment',
+        'reference_number', 'certificate_number', 'order_number', 'case_number',
+        'court_name', 'issue_date', 'expiry_date', 'renewal_date',
+    ];
+
+    /**
+     * GET /v2/admin/safeguarding/authority-attestations — every active
+     * relationship in the tenant carrying act-alone (represent) power, with
+     * the authority attestations recorded against it.
+     */
+    public function authorityAttestations(): JsonResponse
+    {
+        $this->requireSafeguardingStaff('view');
+
+        return $this->respondWithData([
+            'relationships' => app(\App\Services\SupportAuthorityAttestationService::class)->listRepresentRelationships(),
+        ]);
+    }
+
+    /**
+     * POST /v2/admin/safeguarding/authority-attestations — attest that the
+     * formal authority behind a relationship has been SIGHTED. Refuses
+     * evidence content outright; requires the explicit acknowledgement.
+     */
+    public function attestAuthority(): JsonResponse
+    {
+        $staffUserId = $this->requireSafeguardingStaff('manage');
+
+        $data = $this->getAllInput();
+
+        foreach (self::AUTHORITY_PROHIBITED_INPUT_FIELDS as $field) {
+            if (array_key_exists($field, $data)) {
+                return $this->respondWithError('VALIDATION_ERROR', __('api.authority_evidence_refused'), $field, 422);
+            }
+        }
+
+        $service = app(\App\Services\SupportAuthorityAttestationService::class);
+        $result = $service->attest(
+            $staffUserId,
+            (int) ($data['relationship_id'] ?? 0),
+            is_string($data['authority_type'] ?? null) ? $data['authority_type'] : '',
+            (bool) ($data['acknowledged_sighted'] ?? false),
+            is_string($data['scope_summary'] ?? null) ? $data['scope_summary'] : null,
+            is_string($data['private_notes'] ?? null) ? $data['private_notes'] : null,
+        );
+
+        if ($result === null) {
+            return $this->respondWithErrors($service->getErrors(), 422);
+        }
+
+        return $this->respondWithData($result);
+    }
+
+    /** POST /v2/admin/safeguarding/authority-attestations/{id}/revoke — closed reason vocabulary. */
+    public function revokeAuthorityAttestation(int $id): JsonResponse
+    {
+        $staffUserId = $this->requireSafeguardingStaff('manage');
+
+        $data = $this->getAllInput();
+        $reasonCode = is_string($data['reason_code'] ?? null) ? $data['reason_code'] : '';
+
+        $service = app(\App\Services\SupportAuthorityAttestationService::class);
+        if (! $service->revoke($staffUserId, $id, $reasonCode)) {
+            return $this->respondWithErrors($service->getErrors(), 422);
+        }
+
+        return $this->respondWithData(['status' => 'revoked']);
+    }
+
     private function requireSafeguardingStaff(string $level = 'view'): int
     {
         $userId = $this->requireAuth();

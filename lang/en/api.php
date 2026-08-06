@@ -714,6 +714,11 @@ return [
     'support_action_not_found'             => 'This request was not found or has already been answered',
     'support_action_expired'               => 'This request has expired',
     'support_action_invalid_channel' => 'Choose how the approval was given: by phone, in person, or on paper',
+    'authority_invalid_type' => 'Choose a recognised authority type',
+    'authority_ack_required' => 'You must confirm you have sighted the authority',
+    'authority_invalid_reason' => 'Choose a revocation reason from the list',
+    'authority_relationship_not_found' => 'Relationship not found, or not active',
+    'authority_evidence_refused' => 'Do not enter document details. Record only that you have sighted the authority',
 
     // ============================================
     // ADMIN — LEGAL DOCS

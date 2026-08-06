@@ -17520,6 +17520,69 @@ CREATE TABLE `super_admin_audit_log` (
   KEY `idx_actor_tenant` (`actor_tenant_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Audit trail for Super Admin Panel hierarchy changes';
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `support_authority_attestation_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `support_authority_attestation_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `attestation_id` bigint(20) unsigned NOT NULL,
+  `relationship_id` int(11) NOT NULL,
+  `supported_user_id` int(11) NOT NULL,
+  `event_type` varchar(32) NOT NULL,
+  `decision_before` varchar(20) DEFAULT NULL,
+  `decision_after` varchar(20) NOT NULL,
+  `reason_code` varchar(64) DEFAULT NULL,
+  `actor_user_id` int(11) DEFAULT NULL,
+  `policy_version` varchar(64) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_saa_events_attestation` (`tenant_id`,`attestation_id`,`id`),
+  KEY `idx_saa_events_member` (`tenant_id`,`supported_user_id`,`created_at`),
+  KEY `fk_saa_events_attestation` (`attestation_id`),
+  CONSTRAINT `fk_saa_events_attestation` FOREIGN KEY (`attestation_id`) REFERENCES `support_authority_attestations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_saa_events_type` CHECK (`event_type` in ('attested','re_attested','revoked'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_saa_events_no_update` BEFORE UPDATE ON `support_authority_attestation_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'support_authority_attestation_events_immutable' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_saa_events_no_delete` BEFORE DELETE ON `support_authority_attestation_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'support_authority_attestation_events_immutable' */;;
+DROP TABLE IF EXISTS `support_authority_attestations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `support_authority_attestations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `relationship_id` int(11) NOT NULL COMMENT 'The account_relationships row this authority claim is about',
+  `supported_user_id` int(11) NOT NULL COMMENT 'Denormalised for member-history queries, like vetting user_id',
+  `authority_type` varchar(40) NOT NULL COMMENT 'dmr_court_order | power_of_attorney | edm_assistant_agreement | co_decision_agreement',
+  `acknowledged_sighted` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Staff explicitly acknowledged they sighted the authority; never inferred',
+  `scope_summary_encrypted` text DEFAULT NULL COMMENT 'What the authority covers, in staff words - encrypted at rest',
+  `private_notes_encrypted` text DEFAULT NULL,
+  `decision` varchar(20) NOT NULL DEFAULT 'active' COMMENT 'active | revoked',
+  `attested_by` int(11) DEFAULT NULL COMMENT 'Staff member who attested; NULL only after account deletion',
+  `attested_at` datetime DEFAULT NULL,
+  `revoked_by` int(11) DEFAULT NULL,
+  `revoked_at` datetime DEFAULT NULL,
+  `revocation_reason_code` varchar(64) DEFAULT NULL COMMENT 'Closed vocabulary - see SupportAuthorityAttestationService::REVOCATION_REASON_CODES',
+  `policy_version` varchar(64) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_support_authority_scope` (`tenant_id`,`relationship_id`,`authority_type`),
+  KEY `idx_support_authority_member` (`tenant_id`,`supported_user_id`,`decision`),
+  KEY `fk_saa_relationship` (`relationship_id`),
+  KEY `fk_saa_supported_user` (`supported_user_id`),
+  KEY `fk_saa_attested_by` (`attested_by`),
+  KEY `fk_saa_revoked_by` (`revoked_by`),
+  KEY `support_authority_attestations_tenant_id_index` (`tenant_id`),
+  CONSTRAINT `fk_saa_attested_by` FOREIGN KEY (`attested_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_saa_relationship` FOREIGN KEY (`relationship_id`) REFERENCES `account_relationships` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_saa_revoked_by` FOREIGN KEY (`revoked_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_saa_supported_user` FOREIGN KEY (`supported_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_saa_authority_type` CHECK (`authority_type` in ('dmr_court_order','power_of_attorney','edm_assistant_agreement','co_decision_agreement')),
+  CONSTRAINT `chk_saa_decision` CHECK (`decision` in ('active','revoked'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `support_pending_actions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
