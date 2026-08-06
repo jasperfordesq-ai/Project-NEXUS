@@ -46,6 +46,14 @@
                         'href' => route('govuk-alpha.settings.guardians', ['tenantSlug' => $tenantSlug]),
                     ];
                 }
+                // Co-decide support actions — same page-title-as-label reasoning
+                // as the guardians entry above.
+                if (\Illuminate\Support\Facades\Route::has('govuk-alpha.settings.support-actions')) {
+                    $settingsTabs[] = [
+                        'label' => __('govuk_alpha_settings.support_actions.title'),
+                        'href' => route('govuk-alpha.settings.support-actions', ['tenantSlug' => $tenantSlug]),
+                    ];
+                }
                 if (\Illuminate\Support\Facades\Route::has('govuk-alpha.settings.appearance')) {
                     $settingsTabs[] = [
                         'label' => __('govuk_alpha_settings.nav.appearance'),

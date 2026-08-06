@@ -55,6 +55,21 @@ Route::post('/settings/guardians/respond', [AlphaController::class, 'settingsRes
     ->middleware('throttle:nexus-route-10-per-1m')
     ->name('settings.guardians.respond');
 
+// Co-decide support actions (guardian redesign phase 3/4 parity).
+//
+// 🔴 Parity with the React approval queue. A supporter prepares a listing or
+// transfer; the supported member answers here — approve, decline (reason
+// optional, never required), or, on the supporter side, withdraw. One POST for
+// all answers: the action is a form field, so the page needs plain submit
+// buttons and no JavaScript. Members who never sign in are covered by the
+// single-use email link; this page is for those who do.
+Route::get('/settings/support-actions', [AlphaController::class, 'settingsSupportActions'])
+    ->name('settings.support-actions');
+
+Route::post('/settings/support-actions/respond', [AlphaController::class, 'settingsRespondToSupportAction'])
+    ->middleware('throttle:nexus-route-10-per-1m')
+    ->name('settings.support-actions.respond');
+
 // Appearance / theme.
 Route::get('/settings/appearance', [AlphaController::class, 'settingsAppearance'])
     ->name('settings.appearance');

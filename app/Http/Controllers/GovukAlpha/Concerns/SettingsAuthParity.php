@@ -13,6 +13,7 @@ use App\Services\Enterprise\GdprService;
 use App\Services\GuardianArrangementService;
 use App\Services\InsuranceCertificateService;
 use App\Services\SubAccountService;
+use App\Services\SupportPendingActionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -246,6 +247,95 @@ trait SettingsAuthParity
     private function settingsGuardianRedirect(string $tenantSlug, string $status): RedirectResponse
     {
         return redirect()->route('govuk-alpha.settings.guardians', [
+            'tenantSlug' => $tenantSlug,
+            'status' => $status,
+        ]);
+    }
+
+    /**
+     * Co-decide support actions, both sides (guardian redesign parity).
+     *
+     * Approval queue for the supported member (a helper prepared something;
+     * nothing happens unless it is approved here, from the email link, or in
+     * the React app) plus the supporter's own prepared actions with a
+     * withdraw option. HTML-first: every answer is a plain form POST.
+     */
+    public function settingsSupportActions(Request $request, string $tenantSlug): Response|RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $service = app(SupportPendingActionService::class);
+
+        try {
+            $incoming = $service->listForSupported($userId);
+            $outgoing = $service->listForSupporter($userId);
+        } catch (\Throwable $e) {
+            report($e);
+            $incoming = [];
+            $outgoing = [];
+        }
+
+        return $this->view('accessible-frontend::settings-support-actions', [
+            'title' => __('govuk_alpha_settings.support_actions.title'),
+            'tenantSlug' => $tenantSlug,
+            'activeNav' => 'account',
+            'incoming' => $incoming,
+            'outgoing' => $outgoing,
+            'status' => self::asStr($request->query('status')) ?: null,
+        ]);
+    }
+
+    /**
+     * Record the member's answer to a prepared action: approve or decline
+     * (supported member), or withdraw (the supporter's own preparation). One
+     * handler, action as a form field — plain submit buttons, no JavaScript.
+     * The decline reason is OPTIONAL and never required.
+     */
+    public function settingsRespondToSupportAction(Request $request, string $tenantSlug): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $actionId = (int) $request->input('action_id');
+        $answer = self::asStr($request->input('answer'));
+        $reason = self::asStr($request->input('reason')) ?: null;
+
+        if ($actionId <= 0 || ! in_array($answer, ['approve', 'decline', 'withdraw'], true)) {
+            return $this->settingsSupportActionRedirect($tenantSlug, 'support-failed');
+        }
+
+        $service = app(SupportPendingActionService::class);
+
+        try {
+            $status = match ($answer) {
+                'approve' => $service->confirmInApp($userId, $actionId) !== null
+                    ? 'support-approved'
+                    : 'support-failed',
+                'decline' => $service->decline($userId, $actionId, $reason)
+                    ? 'support-declined'
+                    : 'support-not-found',
+                'withdraw' => $service->cancel($userId, $actionId)
+                    ? 'support-withdrawn'
+                    : 'support-not-found',
+            };
+        } catch (\Throwable $e) {
+            report($e);
+            $status = 'support-failed';
+        }
+
+        return $this->settingsSupportActionRedirect($tenantSlug, $status);
+    }
+
+    private function settingsSupportActionRedirect(string $tenantSlug, string $status): RedirectResponse
+    {
+        return redirect()->route('govuk-alpha.settings.support-actions', [
             'tenantSlug' => $tenantSlug,
             'status' => $status,
         ]);
