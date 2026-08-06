@@ -1,4 +1,4 @@
-import { Card, CardBody, CardHeader, Button, Spinner, Chip, Textarea, Input, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Select, SelectItem } from '@/components/ui';
+import { Card, CardBody, CardHeader, Button, Spinner, Chip, Textarea, Input, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Avatar, Tabs, Tab, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Select, SelectItem, Checkbox } from '@/components/ui';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -126,6 +126,35 @@ interface SupportActionRow {
 const ATTEST_CHANNELS = ['phone', 'in_person', 'paper'] as const;
 type AttestChannel = (typeof ATTEST_CHANNELS)[number];
 
+/**
+ * Legal-basis attestation (guardian redesign phase 6). Staff record that they
+ * SIGHTED the formal authority behind act-alone power. Closed vocabularies
+ * mirror SupportAuthorityAttestationService — free text cannot invent an
+ * authority type or a revocation reason.
+ */
+const AUTHORITY_TYPES = ['dmr_court_order', 'power_of_attorney', 'edm_assistant_agreement', 'co_decision_agreement'] as const;
+type AuthorityType = (typeof AUTHORITY_TYPES)[number];
+const REVOCATION_REASONS = ['authority_ended', 'superseded', 'entered_in_error', 'expired', 'other_documented'] as const;
+type RevocationReason = (typeof REVOCATION_REASONS)[number];
+
+interface AuthorityAttestation {
+  id: number;
+  authority_type: AuthorityType;
+  decision: 'active' | 'revoked';
+  scope_summary: string | null;
+  attested_at: string | null;
+  revoked_at: string | null;
+  revocation_reason_code: string | null;
+}
+
+interface AuthorityRelationship {
+  relationship_id: number;
+  supporter_name: string | null;
+  supported_name: string | null;
+  relationship_type: string;
+  attestations: AuthorityAttestation[];
+}
+
 interface SafeguardingDashboardProps {
   routeBase?: string;
 }
@@ -201,6 +230,18 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
   const [guardianEmail, setGuardianEmail] = useState('');
   const [creating, setCreating] = useState(false);
 
+  // Authority records (act-alone relationships) + attest / revoke modals
+  const [authorityRels, setAuthorityRels] = useState<AuthorityRelationship[]>([]);
+  const authorityModal = useDisclosure();
+  const [authorityTarget, setAuthorityTarget] = useState<AuthorityRelationship | null>(null);
+  const [authorityType, setAuthorityType] = useState<AuthorityType>('power_of_attorney');
+  const [authorityAcknowledged, setAuthorityAcknowledged] = useState(false);
+  const [authorityScope, setAuthorityScope] = useState('');
+  const [authoritySubmitting, setAuthoritySubmitting] = useState(false);
+  const revokeAuthorityModal = useDisclosure();
+  const [revokeAuthorityTarget, setRevokeAuthorityTarget] = useState<AuthorityAttestation | null>(null);
+  const [revokeAuthorityReason, setRevokeAuthorityReason] = useState<RevocationReason>('authority_ended');
+
   // Support actions (co-decide queue) + the attest-offline modal
   const [supportActions, setSupportActions] = useState<SupportActionRow[]>([]);
   const attestModal = useDisclosure();
@@ -213,12 +254,13 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsRes, flagsRes, assignmentsRes, prefsRes, supportRes] = await Promise.all([
+      const [statsRes, flagsRes, assignmentsRes, prefsRes, supportRes, authorityRes] = await Promise.all([
         api.get('/v2/admin/safeguarding/dashboard'),
         api.get('/v2/admin/safeguarding/flagged-messages'),
         api.get('/v2/admin/safeguarding/assignments'),
         api.get<MemberSafeguardingEntry[]>('/v2/admin/safeguarding/member-preferences'),
         api.get<{ actions: SupportActionRow[] }>('/v2/admin/safeguarding/support-actions'),
+        api.get<{ relationships: AuthorityRelationship[] }>('/v2/admin/safeguarding/authority-attestations'),
       ]);
 
       if (statsRes.success) {
@@ -249,6 +291,13 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         const payload = supportRes.data;
         setSupportActions(
           Array.isArray(payload) ? payload : payload?.actions ?? []
+        );
+      }
+
+      if (authorityRes.success) {
+        const payload = authorityRes.data;
+        setAuthorityRels(
+          Array.isArray(payload) ? payload : payload?.relationships ?? []
         );
       }
     } catch (err) {
@@ -289,6 +338,60 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
       setAttesting(false);
     }
   }, [attestTarget, attestChannel, attestWitness, attestModal, loadData, toast, t]);
+
+  // ─── Attest / revoke a legal-basis record (act-alone relationships) ───
+  const handleAttestAuthority = useCallback(async () => {
+    if (!authorityTarget || !authorityAcknowledged) return;
+    setAuthoritySubmitting(true);
+    try {
+      const body: Record<string, unknown> = {
+        relationship_id: authorityTarget.relationship_id,
+        authority_type: authorityType,
+        acknowledged_sighted: true,
+      };
+      if (authorityScope.trim() !== '') body.scope_summary = authorityScope.trim();
+      const res = await api.post('/v2/admin/safeguarding/authority-attestations', body);
+      if (res.success) {
+        toast.success(t('safeguarding.authority.attested_toast'));
+        setAuthorityTarget(null);
+        setAuthorityScope('');
+        setAuthorityAcknowledged(false);
+        authorityModal.onClose();
+        await loadData();
+      } else {
+        toast.error(res.error || t('safeguarding.authority.attest_failed'));
+      }
+    } catch (err) {
+      logError('SafeguardingDashboard.attestAuthority', err);
+      toast.error(t('safeguarding.authority.attest_failed'));
+    } finally {
+      setAuthoritySubmitting(false);
+    }
+  }, [authorityTarget, authorityAcknowledged, authorityType, authorityScope, authorityModal, loadData, toast, t]);
+
+  const handleRevokeAuthority = useCallback(async () => {
+    if (!revokeAuthorityTarget) return;
+    setAuthoritySubmitting(true);
+    try {
+      const res = await api.post(
+        `/v2/admin/safeguarding/authority-attestations/${revokeAuthorityTarget.id}/revoke`,
+        { reason_code: revokeAuthorityReason },
+      );
+      if (res.success) {
+        toast.success(t('safeguarding.authority.revoked_toast'));
+        setRevokeAuthorityTarget(null);
+        revokeAuthorityModal.onClose();
+        await loadData();
+      } else {
+        toast.error(res.error || t('safeguarding.authority.attest_failed'));
+      }
+    } catch (err) {
+      logError('SafeguardingDashboard.revokeAuthority', err);
+      toast.error(t('safeguarding.authority.attest_failed'));
+    } finally {
+      setAuthoritySubmitting(false);
+    }
+  }, [revokeAuthorityTarget, revokeAuthorityReason, revokeAuthorityModal, loadData, toast, t]);
 
   // ─── Review flagged message ───
   const handleReview = useCallback(async () => {
@@ -885,6 +988,77 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         </Card>
       )}
 
+      {/* Authority records — act-alone relationships and the formal authority
+          sighted behind them. A record, not authorisation: nothing grants
+          power because of it. Rendered under the same Support Actions tab. */}
+      {activeTab === 'support' && (
+        <Card>
+          <CardHeader className="flex flex-col items-start gap-1">
+            <h3 className="text-lg font-semibold">{t('safeguarding.authority.title')}</h3>
+            <p className="text-sm text-muted">{t('safeguarding.authority.intro')}</p>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label={t('safeguarding.authority.title')} removeWrapper>
+              <TableHeader>
+                <TableColumn>{t('safeguarding.support.col_supported')}</TableColumn>
+                <TableColumn>{t('safeguarding.authority.col_supporter')}</TableColumn>
+                <TableColumn>{t('safeguarding.authority.col_records')}</TableColumn>
+                <TableColumn>{t('safeguarding.col_actions')}</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent={t('safeguarding.authority.none')}>
+                {authorityRels.map((rel) => (
+                  <TableRow key={rel.relationship_id}>
+                    <TableCell><span className="text-sm">{rel.supported_name}</span></TableCell>
+                    <TableCell><span className="text-sm">{rel.supporter_name}</span></TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {rel.attestations.length === 0 && (
+                          <Chip size="sm" variant="soft" color="warning">
+                            {t('safeguarding.authority.none_recorded')}
+                          </Chip>
+                        )}
+                        {rel.attestations.map((attestation) => (
+                          <Chip
+                            key={attestation.id}
+                            size="sm"
+                            variant="soft"
+                            color={attestation.decision === 'active' ? 'success' : 'default'}
+                            onClose={attestation.decision === 'active' ? () => {
+                              setRevokeAuthorityTarget(attestation);
+                              setRevokeAuthorityReason('authority_ended');
+                              revokeAuthorityModal.onOpen();
+                            } : undefined}
+                          >
+                            {t(`safeguarding.authority.type_${attestation.authority_type}`)}
+                            {attestation.decision === 'revoked' ? ` — ${t('safeguarding.authority.revoked_chip')}` : ''}
+                          </Chip>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        startContent={<ShieldCheck size={14} />}
+                        onPress={() => {
+                          setAuthorityTarget(rel);
+                          setAuthorityType('power_of_attorney');
+                          setAuthorityAcknowledged(false);
+                          setAuthorityScope('');
+                          authorityModal.onOpen();
+                        }}
+                      >
+                        {t('safeguarding.authority.attest_button')}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      )}
+
       {/* Collapsible guidance panel — title always visible, body in accordion sections */}
       <SafeguardingHelp />
 
@@ -1066,6 +1240,106 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
                 <Button variant="tertiary" onPress={onClose}>{t('safeguarding.cancel')}</Button>
                 <Button isLoading={attesting} onPress={handleAttest}>
                   {t('safeguarding.support.attest_confirm_button')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/*
+        Record that formal authority was SIGHTED. Evidence is refused by
+        design — no document numbers, no dates, no uploads — and the explicit
+        acknowledgement checkbox is the substance of the attestation.
+      */}
+      <Modal isOpen={authorityModal.isOpen} onOpenChange={authorityModal.onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex items-center gap-2">
+                <ShieldCheck size={20} />
+                {t('safeguarding.authority.attest_title')}
+              </ModalHeader>
+              <ModalBody className="gap-4">
+                {authorityTarget && (
+                  <p className="text-sm text-muted">
+                    {t('safeguarding.authority.attest_intro', {
+                      supporter: authorityTarget.supporter_name ?? '',
+                      supported: authorityTarget.supported_name ?? '',
+                    })}
+                  </p>
+                )}
+                <Select
+                  label={t('safeguarding.authority.type_label')}
+                  selectedKeys={[authorityType]}
+                  onSelectionChange={(keys) => {
+                    const value = Array.from(keys)[0] as AuthorityType | undefined;
+                    if (value && (AUTHORITY_TYPES as readonly string[]).includes(value)) setAuthorityType(value);
+                  }}
+                >
+                  {AUTHORITY_TYPES.map((type) => (
+                    <SelectItem key={type} id={type}>
+                      {t(`safeguarding.authority.type_${type}`)}
+                    </SelectItem>
+                  ))}
+                </Select>
+                <Textarea
+                  label={t('safeguarding.authority.scope_label')}
+                  description={t('safeguarding.authority.scope_hint')}
+                  value={authorityScope}
+                  onValueChange={setAuthorityScope}
+                  maxLength={2000}
+                  minRows={2}
+                  maxRows={4}
+                />
+                {/* No document fields exist on purpose, and the copy says so. */}
+                <p className="text-xs text-muted">{t('safeguarding.authority.no_evidence_notice')}</p>
+                <Checkbox isSelected={authorityAcknowledged} onValueChange={setAuthorityAcknowledged}>
+                  {t('safeguarding.authority.ack_label')}
+                </Checkbox>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="tertiary" onPress={onClose}>{t('safeguarding.cancel')}</Button>
+                <Button
+                  isLoading={authoritySubmitting}
+                  isDisabled={!authorityAcknowledged}
+                  onPress={handleAttestAuthority}
+                >
+                  {t('safeguarding.authority.attest_confirm_button')}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Revoke an authority record — closed reason vocabulary only. */}
+      <Modal isOpen={revokeAuthorityModal.isOpen} onOpenChange={revokeAuthorityModal.onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>{t('safeguarding.authority.revoke_title')}</ModalHeader>
+              <ModalBody className="gap-4">
+                <p className="text-sm text-muted">{t('safeguarding.authority.revoke_intro')}</p>
+                <Select
+                  label={t('safeguarding.authority.revoke_reason_label')}
+                  selectedKeys={[revokeAuthorityReason]}
+                  onSelectionChange={(keys) => {
+                    const value = Array.from(keys)[0] as RevocationReason | undefined;
+                    if (value && (REVOCATION_REASONS as readonly string[]).includes(value)) setRevokeAuthorityReason(value);
+                  }}
+                >
+                  {REVOCATION_REASONS.map((reason) => (
+                    <SelectItem key={reason} id={reason}>
+                      {t(`safeguarding.authority.reason_${reason}`)}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="tertiary" onPress={onClose}>{t('safeguarding.cancel')}</Button>
+                <Button color="danger" isLoading={authoritySubmitting} onPress={handleRevokeAuthority}>
+                  {t('safeguarding.authority.revoke_confirm_button')}
                 </Button>
               </ModalFooter>
             </>

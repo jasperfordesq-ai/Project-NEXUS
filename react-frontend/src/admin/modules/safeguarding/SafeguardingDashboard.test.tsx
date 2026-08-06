@@ -189,10 +189,19 @@ const makeSupportAction = () => ({
   expires_at: new Date(Date.now() + 86400000).toISOString(),
 });
 
+const makeAuthorityRelationship = () => ({
+  relationship_id: 33,
+  supporter_name: 'Sam Supporter',
+  supported_name: 'Molly Member',
+  relationship_type: 'carer',
+  attestations: [],
+});
+
 function setupSuccess() {
   mockApi.get.mockImplementation((url: string) => {
     if (url.includes('dashboard')) return Promise.resolve(makeApiOk(makeStats()));
     if (url.includes('flagged-messages')) return Promise.resolve(makeApiOk([makeFlag()]));
+    if (url.includes('authority-attestations')) return Promise.resolve(makeApiOk({ relationships: [makeAuthorityRelationship()] }));
     if (url.includes('support-actions')) return Promise.resolve(makeApiOk({ actions: [makeSupportAction()] }));
     if (url.includes('assignments')) return Promise.resolve(makeApiOk([makeAssignment()]));
     if (url.includes('member-preferences')) return Promise.resolve(makeApiOk([]));
@@ -517,8 +526,10 @@ describe('SafeguardingDashboard', () => {
     fireEvent.click(await screen.findByRole('tab', { name: /Support Actions/ }));
 
     await waitFor(() => {
-      expect(screen.getByText('Molly Member')).toBeInTheDocument();
-      expect(screen.getByText('Sam Supporter')).toBeInTheDocument();
+      // Both parties appear in the pending queue AND the authority card on
+      // the same tab, so assert presence, not uniqueness.
+      expect(screen.getAllByText('Molly Member').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Sam Supporter').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText(/A time-credit transfer/)).toBeInTheDocument();
     });
   });
@@ -543,6 +554,36 @@ describe('SafeguardingDashboard', () => {
       expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/safeguarding/support-actions/71/attest', {
         channel: 'phone',
         witness: 'Nora Neighbour',
+      });
+    });
+  });
+
+  // ── Authority records (legal-basis attestation, phase 6) ──
+
+  it('cannot record an authority sighting without the explicit acknowledgement', async () => {
+    mockApi.post.mockResolvedValue({ success: true, data: { id: 1 } });
+    const { SafeguardingDashboard } = await import('./SafeguardingDashboard');
+    render(<SafeguardingDashboard />);
+
+    fireEvent.click(await screen.findByRole('tab', { name: /Support Actions/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /Record authority sighted/ }));
+
+    // The evidence-refusal rule is stated in the modal itself…
+    expect(await screen.findByText(/must never become a store of court orders/i)).toBeInTheDocument();
+
+    // …and the submit is disabled until the sighted-acknowledgement is ticked.
+    const submit = screen.getByRole('button', { name: 'Record it' });
+    expect(submit).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /personally sighted/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Record it' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Record it' }));
+
+    await waitFor(() => {
+      expect(mockApi.post).toHaveBeenCalledWith('/v2/admin/safeguarding/authority-attestations', {
+        relationship_id: 33,
+        authority_type: 'power_of_attorney',
+        acknowledged_sighted: true,
       });
     });
   });
