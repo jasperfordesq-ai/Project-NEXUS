@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 اكتمل التبادل!",
     "exchange_cancelled": "تم إلغاء التبادل",
     "exchange_disputed": "⚠️ نزاع تبادل - مراجعة الوسيط مطلوبة",
+    "sub_account_request": "طلب شخص ما إدارة حسابك",
+    "sub_account_approved": "تم قبول طلبك للحساب المرتبط",
     "default": "إشعار من Project NEXUS"
   },
   "exchange_dispute": {

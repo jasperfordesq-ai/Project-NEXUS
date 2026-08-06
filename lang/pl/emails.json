@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 Wymiana zakończona!",
     "exchange_cancelled": "Wymiana odwołana",
     "exchange_disputed": "⚠️ Spór wymiany — wymagana weryfikacja przez brokera",
+    "sub_account_request": "Ktoś poprosił o zarządzanie Twoim kontem",
+    "sub_account_approved": "Twoja prośba o połączone konto została zatwierdzona",
     "default": "Powiadomienie z Project NEXUS"
   },
   "exchange_dispute": {

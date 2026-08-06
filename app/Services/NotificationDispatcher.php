@@ -209,6 +209,13 @@ class NotificationDispatcher
             // push type, so with the default 'off' digest it reached nobody by email
             // OR push. Marking it instant delivers both (push uses the generic title).
             'vol_waitlist_spot',
+            // Someone asking to manage your account, and the answer to that
+            // request. Both are direct, consequential and action-required: the
+            // recipient of the request is being asked to let another member post
+            // listings and spend credits on their behalf. Neither may wait for a
+            // digest the member has not opted into.
+            'sub_account_request',
+            'sub_account_approved',
         ];
         if (! $policyMuted && in_array($activityType, $criticalInstantTypes, true)) {
             $frequency = 'instant';
@@ -2721,6 +2728,120 @@ HTML;
         {$reasonHtml}
         <div style="text-align: center; margin-top: 24px;">
             <a href="{$frontendUrl}{$basePath}/verify-identity" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600;">{$cta}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    // =========================================================================
+    // LINKED ACCOUNT (SUB-ACCOUNT) EMAIL BUILDERS
+    // =========================================================================
+
+    /**
+     * Build HTML email for "someone wants to manage your account".
+     *
+     * Deliberately plain and slightly cautionary rather than celebratory: the
+     * recipient is being asked to grant another member the ability to act for
+     * them, and the honest framing is "you decide", not "good news". The button
+     * carries ?tab=linked-accounts so it lands on the tab holding the request.
+     *
+     * @param string $requesterName  Full name of the member making the request.
+     * @param string $relationshipType One of SubAccountService::RELATIONSHIP_TYPES.
+     */
+    public static function buildSubAccountRequestEmail(string $requesterName, string $relationshipType): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $requesterHtml = htmlspecialchars($requesterName, ENT_QUOTES, 'UTF-8');
+
+        $typeLabel = htmlspecialchars(
+            __('emails_notifications.sub_account.type_' . SubAccountService::normalizeRelationshipType($relationshipType)),
+            ENT_QUOTES,
+            'UTF-8',
+        );
+
+        $heading = __('emails_notifications.sub_account.request_heading');
+        $tenantLabel = __('emails_notifications.sub_account.tenant_label', ['community' => $tenantName]);
+        $body = __('emails_notifications.sub_account.request_body', ['name' => $requesterHtml]);
+        $labelRequestedBy = __('emails_notifications.sub_account.label_requested_by');
+        $labelAs = __('emails_notifications.sub_account.label_relationship');
+        $whatItMeans = __('emails_notifications.sub_account.request_what_it_means');
+        $noAction = __('emails_notifications.sub_account.request_no_action');
+        $btnReview = __('emails_notifications.sub_account.btn_review_request');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelRequestedBy}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0 0 12px;">{$requesterHtml}</p>
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelAs}</p>
+            <p style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0;">{$typeLabel}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$whatItMeans}
+        </p>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$noAction}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}/settings?tab=linked-accounts" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnReview}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Build HTML email telling the requester their linked-account request was
+     * approved.
+     *
+     * @param string $approverName Full name of the member who approved it.
+     */
+    public static function buildSubAccountApprovedEmail(string $approverName): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $approverHtml = htmlspecialchars($approverName, ENT_QUOTES, 'UTF-8');
+
+        $heading = __('emails_notifications.sub_account.approved_heading');
+        $tenantLabel = __('emails_notifications.sub_account.tenant_label', ['community' => $tenantName]);
+        $body = __('emails_notifications.sub_account.approved_body', ['name' => $approverHtml]);
+        $labelMember = __('emails_notifications.sub_account.label_member');
+        $whatNext = __('emails_notifications.sub_account.approved_what_next');
+        $btnView = __('emails_notifications.sub_account.btn_view_linked_accounts');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelMember}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">{$approverHtml}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$whatNext}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}/settings?tab=linked-accounts" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnView}</a>
         </div>
     </div>
 </div>

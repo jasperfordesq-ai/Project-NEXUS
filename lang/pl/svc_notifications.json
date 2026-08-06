@@ -94,7 +94,8 @@
     "reaction": "{{name}} zareagował/a {{emoji}} na Twoją historię"
   },
   "sub_account": {
-    "management_request": "{{name}} poprosił/a o zarządzanie Twoim kontem jako {{type}}"
+    "management_request": "{{name}} poprosił/a o zarządzanie Twoim kontem jako {{type}}",
+    "request_approved": "{{name}} zatwierdził(a) Twoją prośbę o zarządzanie kontem"
   },
   "totp": {
     "rate_limited": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {{minutes}} minut."

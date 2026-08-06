@@ -121,5 +121,24 @@
     "application_received_note": "Déan athbhreithniú ar a n-iarratas agus ceadaigh nó diúltaigh ó do dheais eagraíochta.",
     "btn_review_application": "Déan Athbhreithniú ar an Iarratas"
   },
-  "default_notification": "Fógra: {{type}}"
+  "default_notification": "Fógra: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Cuntais Nasctha",
+    "request_heading": "Iarratas ar do chuntas a bhainistiú",
+    "request_body": "D'iarr {{name}} a bheith nasctha le do chuntas chun cabhrú leat do bhanc ama a úsáid.",
+    "label_requested_by": "Iarrtha ag",
+    "label_relationship": "Gaol",
+    "label_member": "Ball",
+    "type_family": "Ball den teaghlach",
+    "type_guardian": "Caomhnóir",
+    "type_carer": "Cúramóir",
+    "type_organization": "Eagraíocht",
+    "request_what_it_means": "Má ghlacann tú leis, ní féidir leo ach an méid a cheadaíonn tú a fheiceáil agus a dhéanamh. Roghnaíonn tú na ceadanna, agus is féidir leat iad a athrú nó an nasc a bhaint ag am ar bith.",
+    "request_no_action": "Ní athraíonn aon rud go dtí go nglacann tú leis. Mura raibh tú ag súil leis seo, is féidir leat neamhaird a dhéanamh air.",
+    "btn_review_request": "Déan athbhreithniú ar an iarratas",
+    "approved_heading": "Ceadaíodh d'iarratas",
+    "approved_body": "Cheadaigh {{name}} d'iarratas a bheith nasctha lena gcuntas.",
+    "approved_what_next": "Is féidir leat an nasc agus na ceadanna a tugadh duit a fheiceáil ar leathanach na gcuntas nasctha.",
+    "btn_view_linked_accounts": "Féach ar chuntais nasctha"
+  }
 }

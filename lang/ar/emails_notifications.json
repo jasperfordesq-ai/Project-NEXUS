@@ -121,5 +121,24 @@
     "application_received_note": "راجع طلبه وافقه أو ارفضه من لوحة تحكم منظمتك.",
     "btn_review_application": "مراجعة الطلب"
   },
-  "default_notification": "إشعار: {{type}}"
+  "default_notification": "إشعار: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · الحسابات المرتبطة",
+    "request_heading": "طلب لإدارة حسابك",
+    "request_body": "طلب {{name}} الارتباط بحسابك لمساعدتك في استخدام بنك الوقت.",
+    "label_requested_by": "مقدم الطلب",
+    "label_relationship": "صفة العلاقة",
+    "label_member": "عضو",
+    "type_family": "أحد أفراد الأسرة",
+    "type_guardian": "وصي",
+    "type_carer": "مقدم رعاية",
+    "type_organization": "مؤسسة",
+    "request_what_it_means": "إذا قبلت، فلن يتمكن هذا الشخص من رؤية أو فعل سوى ما تسمح به. أنت من يحدد الأذونات، ويمكنك تغييرها أو إزالة الارتباط في أي وقت.",
+    "request_no_action": "لا يتغير شيء حتى توافق. وإذا لم تكن تتوقع هذا الطلب، فيمكنك تجاهله.",
+    "btn_review_request": "مراجعة الطلب",
+    "approved_heading": "تم قبول طلبك",
+    "approved_body": "قبل {{name}} طلبك للارتباط بحسابه.",
+    "approved_what_next": "يمكنك الاطلاع على الارتباط والأذونات الممنوحة لك في صفحة الحسابات المرتبطة.",
+    "btn_view_linked_accounts": "عرض الحسابات المرتبطة"
+  }
 }

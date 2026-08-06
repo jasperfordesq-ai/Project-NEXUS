@@ -94,7 +94,8 @@
     "reaction": "D'fhreagair {{name}} {{emoji}} ar do scéal"
   },
   "sub_account": {
-    "management_request": "D'iarr {{name}} do chuntas a bhainistiú mar {{type}}"
+    "management_request": "D'iarr {{name}} do chuntas a bhainistiú mar {{type}}",
+    "request_approved": "Cheadaigh {{name}} d'iarratas chun a gcuntas a bhainistiú"
   },
   "totp": {
     "rate_limited": "An iomarca iarrachtaí teipthe. Bain triail as arís i gceann {{minutes}} nóiméad."

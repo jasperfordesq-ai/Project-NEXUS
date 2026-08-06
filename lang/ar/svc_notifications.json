@@ -94,7 +94,8 @@
     "reaction": "تفاعل {{name}} بـ {{emoji}} على قصتك"
   },
   "sub_account": {
-    "management_request": "طلب {{name}} إدارة حسابك بصفة {{type}}"
+    "management_request": "طلب {{name}} إدارة حسابك بصفة {{type}}",
+    "request_approved": "قبل {{name}} طلبك لإدارة الحساب"
   },
   "totp": {
     "rate_limited": "محاولات فاشلة كثيرة جداً. يرجى المحاولة مجدداً بعد {{minutes}} دقيقة."

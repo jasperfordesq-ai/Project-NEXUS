@@ -121,5 +121,24 @@
     "application_received_note": "Prüfen Sie die Bewerbung und genehmigen oder lehnen Sie sie über Ihr Organisations-Dashboard ab.",
     "btn_review_application": "Bewerbung prüfen"
   },
-  "default_notification": "Benachrichtigung: {{type}}"
+  "default_notification": "Benachrichtigung: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Verknüpfte Konten",
+    "request_heading": "Anfrage zur Verwaltung Ihres Kontos",
+    "request_body": "{{name}} möchte mit Ihrem Konto verknüpft werden, um Ihnen bei der Nutzung Ihrer Zeitbank zu helfen.",
+    "label_requested_by": "Angefragt von",
+    "label_relationship": "Beziehung",
+    "label_member": "Mitglied",
+    "type_family": "Familienmitglied",
+    "type_guardian": "Erziehungsberechtigte Person",
+    "type_carer": "Betreuungsperson",
+    "type_organization": "Organisation",
+    "request_what_it_means": "Wenn Sie zustimmen, kann diese Person nur das sehen und tun, was Sie erlauben. Sie legen die Berechtigungen fest und können sie jederzeit ändern oder die Verknüpfung aufheben.",
+    "request_no_action": "Bis Sie zustimmen, ändert sich nichts. Wenn Sie diese Anfrage nicht erwartet haben, können Sie sie ignorieren.",
+    "btn_review_request": "Anfrage prüfen",
+    "approved_heading": "Ihre Anfrage wurde genehmigt",
+    "approved_body": "{{name}} hat Ihre Anfrage zur Verknüpfung mit dem Konto genehmigt.",
+    "approved_what_next": "Die Verknüpfung und die Ihnen erteilten Berechtigungen finden Sie auf der Seite „Verknüpfte Konten“.",
+    "btn_view_linked_accounts": "Verknüpfte Konten ansehen"
+  }
 }

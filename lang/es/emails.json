@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 ¡Intercambio completado!",
     "exchange_cancelled": "Intercambio cancelado",
     "exchange_disputed": "⚠️ Disputa de intercambio — Revisión por mediador necesaria",
+    "sub_account_request": "Alguien ha pedido gestionar tu cuenta",
+    "sub_account_approved": "Tu solicitud de cuenta vinculada fue aprobada",
     "default": "Notificación de Project NEXUS"
   },
   "exchange_dispute": {

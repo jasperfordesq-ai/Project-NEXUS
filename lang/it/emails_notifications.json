@@ -121,5 +121,24 @@
     "application_received_note": "Esamina la candidatura e approva o rifiuta dal dashboard della tua organizzazione.",
     "btn_review_application": "Esamina Candidatura"
   },
-  "default_notification": "Notifica: {{type}}"
+  "default_notification": "Notifica: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Account collegati",
+    "request_heading": "Richiesta di gestione del tuo account",
+    "request_body": "{{name}} ha chiesto di essere collegato al tuo account per aiutarti a usare la tua banca del tempo.",
+    "label_requested_by": "Richiesta da",
+    "label_relationship": "Relazione",
+    "label_member": "Membro",
+    "type_family": "Familiare",
+    "type_guardian": "Tutore",
+    "type_carer": "Assistente",
+    "type_organization": "Organizzazione",
+    "request_what_it_means": "Se accetti, questa persona potrà vedere e fare solo ciò che consenti. Sei tu a scegliere le autorizzazioni e puoi modificarle o rimuovere il collegamento in qualsiasi momento.",
+    "request_no_action": "Nulla cambia fino a quando non accetti. Se non ti aspettavi questa richiesta, puoi ignorarla.",
+    "btn_review_request": "Esamina la richiesta",
+    "approved_heading": "La tua richiesta è stata approvata",
+    "approved_body": "{{name}} ha approvato la tua richiesta di collegamento al suo account.",
+    "approved_what_next": "Puoi vedere il collegamento e le autorizzazioni che ti sono state concesse nella pagina degli account collegati.",
+    "btn_view_linked_accounts": "Vedi account collegati"
+  }
 }

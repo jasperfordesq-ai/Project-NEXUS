@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 Uitwisseling voltooid!",
     "exchange_cancelled": "Uitwisseling geannuleerd",
     "exchange_disputed": "⚠️ Uitwisselingsgeschil — beoordeling door bemiddelaar vereist",
+    "sub_account_request": "Iemand wil je account beheren",
+    "sub_account_approved": "Je verzoek voor een gekoppeld account is goedgekeurd",
     "default": "Melding van Project NEXUS"
   },
   "exchange_dispute": {

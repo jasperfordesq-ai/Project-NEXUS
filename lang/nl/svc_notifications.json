@@ -94,7 +94,8 @@
     "reaction": "{{name}} heeft gereageerd met {{emoji}} op uw verhaal"
   },
   "sub_account": {
-    "management_request": "{{name}} heeft gevraagd uw account te beheren als {{type}}"
+    "management_request": "{{name}} heeft gevraagd uw account te beheren als {{type}}",
+    "request_approved": "{{name}} heeft je verzoek om het account te beheren goedgekeurd"
   },
   "totp": {
     "rate_limited": "Te veel mislukte pogingen. Probeer het opnieuw over {{minutes}} minuten."

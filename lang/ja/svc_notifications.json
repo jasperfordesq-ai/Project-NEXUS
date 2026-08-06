@@ -94,7 +94,8 @@
     "reaction": "{{name}} さんがあなたのストーリーに {{emoji}} でリアクションしました"
   },
   "sub_account": {
-    "management_request": "{{name}} さんが {{type}} としてあなたのアカウントを管理することを申請しました"
+    "management_request": "{{name}} さんが {{type}} としてあなたのアカウントを管理することを申請しました",
+    "request_approved": "{{name}} さんがアカウント管理のリクエストを承認しました"
   },
   "totp": {
     "rate_limited": "試行回数が多すぎます。{{minutes}} 分後に再試行してください。"

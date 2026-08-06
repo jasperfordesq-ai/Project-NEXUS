@@ -94,7 +94,8 @@
     "reaction": "{{name}} hat mit {{emoji}} auf Ihre Story reagiert"
   },
   "sub_account": {
-    "management_request": "{{name}} hat beantragt, Ihr Konto als {{type}} zu verwalten"
+    "management_request": "{{name}} hat beantragt, Ihr Konto als {{type}} zu verwalten",
+    "request_approved": "{{name}} hat Ihre Anfrage zur Verwaltung des Kontos genehmigt"
   },
   "totp": {
     "rate_limited": "Zu viele fehlgeschlagene Versuche. Bitte versuchen Sie es in {{minutes}} Minuten erneut."

@@ -121,5 +121,24 @@
     "application_received_note": "Analise a candidatura e aprove ou recuse a partir do painel da sua organização.",
     "btn_review_application": "Analisar Candidatura"
   },
-  "default_notification": "Notificação: {{type}}"
+  "default_notification": "Notificação: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Contas vinculadas",
+    "request_heading": "Pedido para gerir a sua conta",
+    "request_body": "{{name}} pediu para ser vinculado à sua conta, para o ajudar a usar o seu banco de tempo.",
+    "label_requested_by": "Pedido por",
+    "label_relationship": "Relação",
+    "label_member": "Membro",
+    "type_family": "Familiar",
+    "type_guardian": "Tutor",
+    "type_carer": "Cuidador",
+    "type_organization": "Organização",
+    "request_what_it_means": "Se aceitar, esta pessoa só pode ver e fazer o que permitir. É você que escolhe as permissões e pode alterá-las ou remover a ligação em qualquer momento.",
+    "request_no_action": "Nada muda até aceitar. Se não estava à espera deste pedido, pode ignorá-lo.",
+    "btn_review_request": "Analisar o pedido",
+    "approved_heading": "O seu pedido foi aprovado",
+    "approved_body": "{{name}} aprovou o seu pedido de ligação à conta.",
+    "approved_what_next": "Pode ver a ligação e as permissões que lhe foram concedidas na página de contas vinculadas.",
+    "btn_view_linked_accounts": "Ver contas vinculadas"
+  }
 }

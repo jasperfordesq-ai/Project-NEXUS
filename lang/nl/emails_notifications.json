@@ -121,5 +121,24 @@
     "application_received_note": "Beoordeel de aanmelding en keur goed of af via uw organisatiedashboard.",
     "btn_review_application": "Aanmelding Beoordelen"
   },
-  "default_notification": "Melding: {{type}}"
+  "default_notification": "Melding: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Gekoppelde accounts",
+    "request_heading": "Verzoek om je account te beheren",
+    "request_body": "{{name}} wil aan je account worden gekoppeld om je te helpen bij het gebruik van je tijdbank.",
+    "label_requested_by": "Aangevraagd door",
+    "label_relationship": "Relatie",
+    "label_member": "Lid",
+    "type_family": "Familielid",
+    "type_guardian": "Voogd",
+    "type_carer": "Zorgverlener",
+    "type_organization": "Organisatie",
+    "request_what_it_means": "Als je akkoord gaat, kan deze persoon alleen zien en doen wat jij toestaat. Jij kiest de rechten en kunt ze altijd wijzigen of de koppeling verwijderen.",
+    "request_no_action": "Er verandert niets totdat je akkoord gaat. Als je dit verzoek niet verwachtte, kun je het negeren.",
+    "btn_review_request": "Verzoek bekijken",
+    "approved_heading": "Je verzoek is goedgekeurd",
+    "approved_body": "{{name}} heeft je verzoek om aan het account te worden gekoppeld goedgekeurd.",
+    "approved_what_next": "Je vindt de koppeling en de rechten die je hebt gekregen op de pagina met gekoppelde accounts.",
+    "btn_view_linked_accounts": "Gekoppelde accounts bekijken"
+  }
 }

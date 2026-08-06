@@ -60,6 +60,19 @@ class SubAccountService
     /** Maximum number of child accounts a parent can have */
     public const MAX_CHILDREN = 20;
 
+    /**
+     * Deep link for every linked-account notification.
+     *
+     * 🔴 The `?tab=linked-accounts` query string is load-bearing. Plain
+     * `/settings` opens the Profile tab, so a member who followed the bell
+     * notification landed on a page of ten tabs with no indication which one
+     * held the request waiting for them — reported by the owner 2026-08-06.
+     * `SETTINGS_TABS` in react-frontend/src/pages/settings/SettingsPage.tsx is
+     * the authority for this value; the accessible frontend has its own page at
+     * /{tenantSlug}/accessible/settings/linked-accounts and does not use this.
+     */
+    public const LINKED_ACCOUNTS_LINK = '/settings?tab=linked-accounts';
+
     private array $errors = [];
 
     public function __construct(
@@ -73,6 +86,16 @@ class SubAccountService
     public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    /**
+     * Clamp a relationship type to a known value so it can be used to build a
+     * translation key. Unknown values fall back to 'family' rather than
+     * producing a missing-key string in a member-facing notification.
+     */
+    public static function normalizeRelationshipType(?string $type): string
+    {
+        return in_array($type, self::RELATIONSHIP_TYPES, true) ? (string) $type : 'family';
     }
 
     /**
@@ -286,23 +309,50 @@ class SubAccountService
 
         // Notify the child user in their preferred_language so the bell is
         // readable to them rather than rendered in the parent's locale.
+        //
+        // 🔴 This goes through NotificationDispatcher, NOT Notification::create.
+        // Until 2026-08-06 it wrote the bell row directly, so the person being
+        // asked to hand over control of their account got a bell entry and
+        // NOTHING else — no email, no push — because nothing observes that
+        // table. The dispatcher is the only path that also reaches the email
+        // queue and the push fan-out. Both sub-account activity types are listed
+        // in NotificationDispatcher's $criticalInstantTypes so the email goes out
+        // immediately instead of waiting for a digest the member has not opted
+        // into (the digest default is 'off').
         try {
-            $parentName = $parent->first_name . ' ' . $parent->last_name;
+            $parentName = trim($parent->first_name . ' ' . $parent->last_name);
             $child = User::find($childUserId);
 
-            LocaleContext::withLocale($child, function () use ($childUserId, $parentName, $type) {
-                Notification::create([
-                    'tenant_id'  => TenantContext::getId(),
-                    'user_id'    => $childUserId,
-                    'type'       => 'account',
-                    'message'    => __('svc_notifications.sub_account.management_request', ['name' => $parentName, 'type' => $type]),
-                    'link'       => '/settings',
-                    'is_read'    => false,
-                    'created_at' => now(),
-                ]);
+            LocaleContext::withLocale($child, function () use ($childUserId, $parentUserId, $parentName, $type) {
+                // The bell text interpolates a HUMAN label, not the raw enum
+                // value. It used to pass $type straight through, so the German
+                // bell read "… als organization" — an untranslated code word in
+                // the middle of a translated sentence.
+                $typeLabel = __('emails_notifications.sub_account.type_' . self::normalizeRelationshipType($type));
+
+                NotificationDispatcher::dispatch(
+                    $childUserId,
+                    'global',
+                    0,
+                    'sub_account_request',
+                    __('svc_notifications.sub_account.management_request', ['name' => $parentName, 'type' => $typeLabel]),
+                    self::LINKED_ACCOUNTS_LINK,
+                    NotificationDispatcher::buildSubAccountRequestEmail($parentName, $type),
+                    // 🔴 No actor id on purpose. Passing one makes the dispatcher
+                    // apply the recipient's mute list, which would silently drop
+                    // the notice — recreating the exact silent-pending-row
+                    // problem this change fixes. There is no abuse channel to
+                    // guard against: the text is fully templated, the requester
+                    // supplies no free text, and nothing happens to the account
+                    // until the recipient accepts.
+                );
             });
-        } catch (\Exception $e) {
-            // Non-critical
+        } catch (\Throwable $e) {
+            Log::warning('SubAccountService::requestRelationship notification failed', [
+                'parent_user_id' => $parentUserId,
+                'child_user_id'  => $childUserId,
+                'error'          => $e->getMessage(),
+            ]);
         }
 
         return $rel->id;
@@ -336,7 +386,7 @@ class SubAccountService
             'sub_account_approval',
         );
 
-        return $this->relationship->newQuery()
+        $approved = $this->relationship->newQuery()
             ->where('id', $relationshipId)
             ->where('child_user_id', $childUserId)
             ->where('status', 'pending')
@@ -345,6 +395,50 @@ class SubAccountService
                 'approved_at' => now(),
                 'updated_at'  => now(),
             ]) > 0;
+
+        if (! $approved) {
+            return false;
+        }
+
+        // Tell the requester their request was accepted. Until 2026-08-06 the
+        // approval was silent in every channel: the person who asked had no way
+        // to learn the answer except by revisiting the settings tab and noticing
+        // the status had changed. Rendered in the RECIPIENT's language — the
+        // approving member's locale is the active one at this point.
+        $parentUserId = (int) $pending->parent_user_id;
+
+        try {
+            $child = User::find($childUserId);
+            $parent = User::find($parentUserId);
+            $childName = $child !== null
+                ? trim($child->first_name . ' ' . $child->last_name)
+                : '';
+
+            if ($parent !== null) {
+                LocaleContext::withLocale($parent, function () use ($parentUserId, $childName) {
+                    NotificationDispatcher::dispatch(
+                        $parentUserId,
+                        'global',
+                        0,
+                        'sub_account_approved',
+                        __('svc_notifications.sub_account.request_approved', ['name' => $childName]),
+                        self::LINKED_ACCOUNTS_LINK,
+                        NotificationDispatcher::buildSubAccountApprovedEmail($childName),
+                        // No actor id — see the note on the request notification
+                        // above. The answer to a request must always arrive.
+                    );
+                });
+            }
+        } catch (\Throwable $e) {
+            Log::warning('SubAccountService::approve notification failed', [
+                'relationship_id' => $relationshipId,
+                'parent_user_id'  => $parentUserId,
+                'child_user_id'   => $childUserId,
+                'error'           => $e->getMessage(),
+            ]);
+        }
+
+        return true;
     }
 
     /**

@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 Échange terminé !",
     "exchange_cancelled": "Échange annulé",
     "exchange_disputed": "⚠️ Litige d'échange — Révision par un courtier nécessaire",
+    "sub_account_request": "Quelqu’un demande à gérer votre compte",
+    "sub_account_approved": "Votre demande de compte lié a été approuvée",
     "default": "Notification de Project NEXUS"
   },
   "exchange_dispute": {

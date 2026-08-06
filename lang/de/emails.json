@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 Tausch abgeschlossen!",
     "exchange_cancelled": "Tausch abgesagt",
     "exchange_disputed": "⚠️ Tauschstreit — Broker-Prüfung erforderlich",
+    "sub_account_request": "Jemand möchte Ihr Konto verwalten",
+    "sub_account_approved": "Ihre Anfrage für ein verknüpftes Konto wurde genehmigt",
     "default": "Benachrichtigung von Project NEXUS"
   },
   "exchange_dispute": {

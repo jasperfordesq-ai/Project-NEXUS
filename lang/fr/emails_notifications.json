@@ -121,5 +121,24 @@
     "application_received_note": "Examinez la candidature et approuvez-la ou refusez-la depuis le tableau de bord de votre organisation.",
     "btn_review_application": "Examiner la candidature"
   },
-  "default_notification": "Notification : {{type}}"
+  "default_notification": "Notification : {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Comptes liés",
+    "request_heading": "Demande de gestion de votre compte",
+    "request_body": "{{name}} demande à être lié à votre compte afin de vous aider à utiliser votre banque de temps.",
+    "label_requested_by": "Demande de",
+    "label_relationship": "Relation",
+    "label_member": "Membre",
+    "type_family": "Membre de la famille",
+    "type_guardian": "Tuteur ou tutrice",
+    "type_carer": "Aidant ou aidante",
+    "type_organization": "Organisation",
+    "request_what_it_means": "Si vous acceptez, cette personne ne pourra voir et faire que ce que vous autorisez. Vous choisissez les autorisations et pouvez les modifier ou supprimer le lien à tout moment.",
+    "request_no_action": "Rien ne change avant votre acceptation. Si vous n’attendiez pas cette demande, vous pouvez l’ignorer.",
+    "btn_review_request": "Examiner la demande",
+    "approved_heading": "Votre demande a été approuvée",
+    "approved_body": "{{name}} a approuvé votre demande de liaison à son compte.",
+    "approved_what_next": "Vous pouvez consulter le lien et les autorisations qui vous ont été accordées sur la page des comptes liés.",
+    "btn_view_linked_accounts": "Voir les comptes liés"
+  }
 }

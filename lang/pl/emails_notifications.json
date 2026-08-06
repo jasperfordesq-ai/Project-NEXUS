@@ -121,5 +121,24 @@
     "application_received_note": "Przejrzyj zgłoszenie i zatwierdź lub odrzuć je z poziomu panelu Twojej organizacji.",
     "btn_review_application": "Przejrzyj Zgłoszenie"
   },
-  "default_notification": "Powiadomienie: {{type}}"
+  "default_notification": "Powiadomienie: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Połączone konta",
+    "request_heading": "Prośba o zarządzanie Twoim kontem",
+    "request_body": "{{name}} poprosił(a) o połączenie z Twoim kontem, aby pomóc Ci korzystać z banku czasu.",
+    "label_requested_by": "Prośba od",
+    "label_relationship": "Relacja",
+    "label_member": "Członek",
+    "type_family": "Członek rodziny",
+    "type_guardian": "Opiekun prawny",
+    "type_carer": "Opiekun",
+    "type_organization": "Organizacja",
+    "request_what_it_means": "Jeśli się zgodzisz, ta osoba będzie mogła widzieć i robić tylko to, na co jej pozwolisz. Ty wybierasz uprawnienia i możesz je w każdej chwili zmienić lub usunąć połączenie.",
+    "request_no_action": "Nic się nie zmieni, dopóki się nie zgodzisz. Jeśli nie oczekiwałeś(-aś) tej prośby, możesz ją zignorować.",
+    "btn_review_request": "Sprawdź prośbę",
+    "approved_heading": "Twoja prośba została zatwierdzona",
+    "approved_body": "{{name}} zatwierdził(a) Twoją prośbę o połączenie z kontem.",
+    "approved_what_next": "Połączenie i przyznane Ci uprawnienia znajdziesz na stronie połączonych kont.",
+    "btn_view_linked_accounts": "Zobacz połączone konta"
+  }
 }

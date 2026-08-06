@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 交換完了！",
     "exchange_cancelled": "交換キャンセル",
     "exchange_disputed": "⚠️ 交換紛争 — ブローカーのレビューが必要です",
+    "sub_account_request": "アカウントの管理をリクエストされました",
+    "sub_account_approved": "リンクされたアカウントのリクエストが承認されました",
     "default": "Project NEXUS からの通知"
   },
   "exchange_dispute": {

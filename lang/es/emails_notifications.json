@@ -121,5 +121,24 @@
     "application_received_note": "Revise la solicitud y apruebe o rechace desde el panel de su organización.",
     "btn_review_application": "Revisar Solicitud"
   },
-  "default_notification": "Notificación: {{type}}"
+  "default_notification": "Notificación: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Cuentas vinculadas",
+    "request_heading": "Solicitud para gestionar tu cuenta",
+    "request_body": "{{name}} ha pedido vincularse a tu cuenta para ayudarte a usar tu banco de tiempo.",
+    "label_requested_by": "Solicitado por",
+    "label_relationship": "Relación",
+    "label_member": "Miembro",
+    "type_family": "Familiar",
+    "type_guardian": "Tutor o tutora",
+    "type_carer": "Persona cuidadora",
+    "type_organization": "Organización",
+    "request_what_it_means": "Si aceptas, esta persona solo podrá ver y hacer lo que tú permitas. Tú eliges los permisos y puedes cambiarlos o quitar el vínculo en cualquier momento.",
+    "request_no_action": "Nada cambia hasta que aceptes. Si no esperabas esta solicitud, puedes ignorarla.",
+    "btn_review_request": "Revisar la solicitud",
+    "approved_heading": "Tu solicitud fue aprobada",
+    "approved_body": "{{name}} aprobó tu solicitud de vincularte a su cuenta.",
+    "approved_what_next": "Puedes ver el vínculo y los permisos que te han concedido en la página de cuentas vinculadas.",
+    "btn_view_linked_accounts": "Ver cuentas vinculadas"
+  }
 }

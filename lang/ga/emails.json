@@ -464,6 +464,8 @@
     "exchange_completed": "🎉 Idirmhalartú Críochnaithe!",
     "exchange_cancelled": "Idirmhalartú Curtha ar Ceal",
     "exchange_disputed": "⚠️ Conspóid Idirmhalartaithe - Athbhreithniú Bróicéara ag Teastáil",
+    "sub_account_request": "D'iarr duine éigin do chuntas a bhainistiú",
+    "sub_account_approved": "Ceadaíodh d'iarratas ar chuntas nasctha",
     "default": "Fógra ó Project NEXUS"
   },
   "exchange_dispute": {

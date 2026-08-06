@@ -121,5 +121,24 @@
     "application_received_note": "Review their application and approve or decline from your organisation dashboard.",
     "btn_review_application": "Review Application"
   },
-  "default_notification": "Notification: {{type}}"
+  "default_notification": "Notification: {{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · Linked accounts",
+    "request_heading": "A request to manage your account",
+    "request_body": "{{name}} has asked to be linked to your account so they can help you use your timebank.",
+    "label_requested_by": "Requested by",
+    "label_relationship": "Relationship",
+    "label_member": "Member",
+    "type_family": "Family member",
+    "type_guardian": "Guardian",
+    "type_carer": "Carer",
+    "type_organization": "Organisation",
+    "request_what_it_means": "If you accept, they can see and do only what you allow. You choose the permissions, and you can change them or remove the link at any time.",
+    "request_no_action": "Nothing changes until you accept. If you were not expecting this, you can safely ignore it.",
+    "btn_review_request": "Review the request",
+    "approved_heading": "Your request was approved",
+    "approved_body": "{{name}} approved your request to be linked to their account.",
+    "approved_what_next": "You can see the link and the permissions you have been given on your linked accounts page.",
+    "btn_view_linked_accounts": "View linked accounts"
+  }
 }

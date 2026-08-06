@@ -474,6 +474,8 @@
     "exchange_completed": "🎉 Exchange Completed!",
     "exchange_cancelled": "Exchange Cancelled",
     "exchange_disputed": "⚠️ Exchange Dispute - Broker Review Needed",
+    "sub_account_request": "Someone has asked to manage your account",
+    "sub_account_approved": "Your linked account request was approved",
     "default": "Notification from Project NEXUS"
   },
   "exchange_dispute": {

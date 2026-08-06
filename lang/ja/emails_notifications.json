@@ -121,5 +121,24 @@
     "application_received_note": "申請を確認し、組織のダッシュボードから承認または却下してください。",
     "btn_review_application": "申請を確認する"
   },
-  "default_notification": "通知：{{type}}"
+  "default_notification": "通知：{{type}}",
+  "sub_account": {
+    "tenant_label": "{{community}} · リンクされたアカウント",
+    "request_heading": "アカウント管理のリクエスト",
+    "request_body": "{{name}} さんが、タイムバンクの利用をお手伝いするために、あなたのアカウントとのリンクをリクエストしています。",
+    "label_requested_by": "リクエスト者",
+    "label_relationship": "関係",
+    "label_member": "メンバー",
+    "type_family": "家族",
+    "type_guardian": "保護者",
+    "type_carer": "介護者",
+    "type_organization": "組織",
+    "request_what_it_means": "承認すると、この方はあなたが許可した範囲のことだけを見たり行ったりできます。権限はあなたが選び、いつでも変更したりリンクを解除したりできます。",
+    "request_no_action": "承認するまで何も変わりません。心当たりのないリクエストであれば、そのままにしておいて問題ありません。",
+    "btn_review_request": "リクエストを確認する",
+    "approved_heading": "リクエストが承認されました",
+    "approved_body": "{{name}} さんが、アカウントとのリンクのリクエストを承認しました。",
+    "approved_what_next": "リンクと付与された権限は、リンクされたアカウントのページで確認できます。",
+    "btn_view_linked_accounts": "リンクされたアカウントを表示"
+  }
 }

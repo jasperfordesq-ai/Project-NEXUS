@@ -94,7 +94,8 @@
     "reaction": "{{name}} a réagi {{emoji}} à votre story"
   },
   "sub_account": {
-    "management_request": "{{name}} a demandé à gérer votre compte en tant que {{type}}"
+    "management_request": "{{name}} a demandé à gérer votre compte en tant que {{type}}",
+    "request_approved": "{{name}} a approuvé votre demande de gestion de son compte"
   },
   "totp": {
     "rate_limited": "Trop de tentatives échouées. Veuillez réessayer dans {{minutes}} minutes."

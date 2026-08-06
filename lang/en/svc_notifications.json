@@ -96,7 +96,8 @@
     "reaction": "{{name}} reacted {{emoji}} to your story"
   },
   "sub_account": {
-    "management_request": "{{name}} has requested to manage your account as a {{type}}"
+    "management_request": "{{name}} has requested to manage your account as a {{type}}",
+    "request_approved": "{{name}} approved your request to manage their account"
   },
   "totp": {
     "rate_limited": "Too many failed attempts. Please try again in {{minutes}} minutes."
