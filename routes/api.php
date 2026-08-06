@@ -3021,6 +3021,23 @@ Route::post('/v2/admin/super/users/{id}/move-and-promote', [\App\Http\Controller
 Route::post('/v2/admin/super/bulk/move-users', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkMoveUsers']);
 Route::post('/v2/admin/super/bulk/update-tenants', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkUpdateTenants']);
 
+/*
+ * DEACTIVATE a tenant. Reversible — it sets is_active = 0, and the reactivate
+ * endpoint above is its mirror. Admitted here on 2026-08-06 so the super-admin
+ * of a network can retire one of its own communities without the platform owner
+ * doing it for them; until then they could reactivate a community but not
+ * deactivate one, which was an accident of tiering rather than a decision.
+ *
+ * 🔴 Guarded by canManageTenant(), which — unlike canAccessTenant() — refuses
+ * the caller's OWN tenant. A branch admin may retire a community BENEATH them,
+ * never the one they operate from. The service refuses the master tenant and
+ * any tenant that still has active children.
+ *
+ * The irreversible PURGE stays in tier B and is god-only. Deactivation can be
+ * undone; deletion of the data cannot.
+ */
+Route::delete('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantDelete']);
+
 Route::get('/v2/admin/super/audit', [\App\Http\Controllers\Api\AdminSuperController::class, 'audit']);
 
 // Per-tenant federation feature toggles — scoped by canAccessTenant. The
@@ -3052,15 +3069,19 @@ Route::put('/v2/admin/super/federation/tenant/{id}/features', [\App\Http\Control
 |    could set another branch billing plan. They need that check adding before
 |    they could ever move to tier A.
 |
-| Tenant DELETE and PURGE are deliberately kept here even though they do scope
-| themselves. They are irreversible, and a branch admin building a network needs
-| create/update/move rather than the ability to destroy a whole community. Move
-| them to tier A only as a conscious decision.
+| Tenant PURGE stays here. It is irreversible: it destroys the data rather than
+| flagging the community inactive.
+|
+| 🔴 Tenant DELETE moved to tier A on 2026-08-06 (owner's decision). That was a
+| conscious change, and it is defensible only because "delete" here DEACTIVATES
+| — is_active = 0, mirrored by the reactivate endpoint a branch admin already
+| had. It is guarded by canManageTenant(), so a branch admin can retire a
+| community beneath them but never the one they operate from. Do not read that
+| move as a precedent for the purge below.
 */
 Route::middleware(['auth:sanctum', 'super-admin'])->group(function () {
 
-// Irreversible tenant destruction — scoped, but master-only by choice (above).
-Route::delete('/v2/admin/super/tenants/{id}', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantDelete']);
+// Irreversible tenant destruction — god-only, and staying that way.
 Route::get('/v2/admin/super/tenants/{id}/purge-preview', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurgePreview']);
 Route::post('/v2/admin/super/tenants/{id}/purge', [\App\Http\Controllers\Api\AdminSuperController::class, 'tenantPurge']);
 

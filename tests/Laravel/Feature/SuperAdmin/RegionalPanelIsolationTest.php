@@ -604,6 +604,69 @@ class RegionalPanelIsolationTest extends TestCase
             ->assertStatus(403);
     }
 
+    // ── Deactivating a community (tier A since 2026-08-06) ──────────────────
+    //
+    // "Delete" here DEACTIVATES: is_active = 0, reversible via the reactivate
+    // endpoint. It was moved to tier A on the owner's decision so the
+    // super-admin of a network can retire one of its own communities. The
+    // boundary that makes that safe is canManageTenant(), which — unlike
+    // canAccessTenant() — refuses the caller's OWN tenant. All four cases below
+    // are pinned because relaxing any one of them is a plausible "tidy-up".
+
+    public function test_a_regional_admin_can_deactivate_a_community_beneath_it(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiDelete("/v2/admin/super/tenants/{$this->childId}")
+            ->assertStatus(200);
+
+        $this->assertSame(
+            0,
+            (int) DB::table('tenants')->where('id', $this->childId)->value('is_active'),
+            'the branch beneath the hub should now be inactive'
+        );
+    }
+
+    public function test_a_regional_admin_cannot_deactivate_its_own_community(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiDelete("/v2/admin/super/tenants/{$this->hubId}")
+            ->assertStatus(403);
+
+        $this->assertSame(
+            1,
+            (int) DB::table('tenants')->where('id', $this->hubId)->value('is_active'),
+            'deactivating the community you operate from would lock you and everyone in it out'
+        );
+    }
+
+    public function test_a_regional_admin_cannot_deactivate_a_sibling_branch(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiDelete("/v2/admin/super/tenants/{$this->siblingChildId}")
+            ->assertStatus(403);
+
+        $this->assertSame(
+            1,
+            (int) DB::table('tenants')->where('id', $this->siblingChildId)->value('is_active')
+        );
+    }
+
+    public function test_a_regional_admin_cannot_deactivate_the_master_tenant(): void
+    {
+        $this->actAsRegional();
+
+        $this->apiDelete('/v2/admin/super/tenants/1')->assertStatus(403);
+
+        $this->assertSame(
+            1,
+            (int) DB::table('tenants')->where('id', 1)->value('is_active'),
+            'the master tenant must never be deactivable from a branch'
+        );
+    }
+
     public function test_a_regional_admin_cannot_impersonate(): void
     {
         $member = User::factory()->forTenant($this->childId)->create();

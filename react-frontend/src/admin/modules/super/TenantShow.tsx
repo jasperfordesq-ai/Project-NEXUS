@@ -80,8 +80,9 @@ export function TenantShow() {
   const navigate = useNavigate();
   const { user } = useAuth();
   // Permanent purge is god-only — mirrors requireGod() (is_god flag) on the server.
-  const userRecord = user as { is_god?: boolean; role?: string } | null;
+  const userRecord = user as { is_god?: boolean; role?: string; tenant_id?: number } | null;
   const isGod = userRecord?.is_god === true || userRecord?.role === 'god';
+  const viewerTenantId = userRecord?.tenant_id ?? null;
 
   const [loading, setLoading] = useState(true);
   const [tenant, setTenant] = useState<SuperAdminTenantDetail | null>(null);
@@ -948,19 +949,36 @@ export function TenantShow() {
                 </div>
               </CardHeader>
               <CardBody className="pt-3">
-                <Button
-                  variant={tenant.is_active ? 'danger-soft' : 'secondary'}
-                  className={tenant.is_active ? undefined : 'text-success'}
-                  fullWidth
-                  isDisabled={actionLoading}
-                  startContent={<Power aria-hidden="true" size={16} />}
-                  onPress={handleToggleActive}
-                >
-                  {tenant.is_active ? t('super.deactivate_tenant') : t('super.reactivate_tenant')}
-                </Button>
-                {tenant.is_active && (
-                  <p className="text-xs text-muted mt-2">
-                    {t('super.deactivate_warning')}
+                {/*
+                  * 🔴 Mirrors `SuperPanelAccess::canManageTenant()`: nobody below
+                  * god may deactivate the community they operate from. Doing so
+                  * would lock the person pressing the button — and everyone else
+                  * in that community — out of the platform, so the server refuses
+                  * it with a 403, and a button that can only produce a refusal is
+                  * worse than no button. Reactivation is unaffected, since a
+                  * community you are signed in to is by definition already active.
+                  */}
+                {(isGod || tenant.id !== viewerTenantId) ? (
+                  <>
+                    <Button
+                      variant={tenant.is_active ? 'danger-soft' : 'secondary'}
+                      className={tenant.is_active ? undefined : 'text-success'}
+                      fullWidth
+                      isDisabled={actionLoading}
+                      startContent={<Power aria-hidden="true" size={16} />}
+                      onPress={handleToggleActive}
+                    >
+                      {tenant.is_active ? t('super.deactivate_tenant') : t('super.reactivate_tenant')}
+                    </Button>
+                    {tenant.is_active && (
+                      <p className="text-xs text-muted mt-2">
+                        {t('super.deactivate_warning')}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-muted" data-testid="own-tenant-deactivate-notice">
+                    {t('super.cannot_deactivate_own_tenant')}
                   </p>
                 )}
 

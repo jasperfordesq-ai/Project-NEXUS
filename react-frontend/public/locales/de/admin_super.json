@@ -402,6 +402,7 @@
     "deactivate": "Deaktivieren",
     "deactivate_tenant": "Mieter deaktivieren",
     "deactivate_warning": "Warnung deaktivieren",
+    "cannot_deactivate_own_tenant": "Sie können Ihre eigene Community nicht deaktivieren. Bitten Sie den Plattformbesitzer, diese Community für Sie einzustellen.",
     "purge_tenant": "Mieter endgültig löschen",
     "purge_requires_deactivation": "Deaktivieren Sie diesen Mieter, bevor er endgültig gelöscht werden kann.",
     "purge_warning": "Löscht diesen Mieter und alle zugehörigen Daten endgültig. Dies kann nicht rückgängig gemacht werden.",

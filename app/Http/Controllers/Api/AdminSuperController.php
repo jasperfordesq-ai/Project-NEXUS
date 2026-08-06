@@ -436,15 +436,32 @@ class AdminSuperController extends BaseApiController
     /**
      * DELETE /api/v2/super-admin/tenants/{id}
      *
-     * DEACTIVATES a tenant (is_active = 0) — a reversible action any super-admin
-     * may perform. Permanent, irreversible removal is the separate god-only purge
-     * endpoint below; there is no "hard delete via query param" any more.
+     * DEACTIVATES a tenant (is_active = 0) — a reversible action. Permanent,
+     * irreversible removal is the separate god-only purge endpoint below; there
+     * is no "hard delete via query param" any more.
+     *
+     * 🔴 Guarded by canManageTenant(), NOT canAccessTenant(). The difference is
+     * the whole point of admitting branch admins here (2026-08-06, owner's
+     * decision: "tenant super admins should be able to do this for their
+     * children"):
+     *
+     *   - canAccessTenant() includes the caller's OWN tenant, because reading
+     *     your own community is exactly what the panel is for.
+     *   - canManageTenant() excludes it unless the caller is god, and confines a
+     *     regional caller to descendants.
+     *
+     * Deactivating the community you are operating from locks you and everyone
+     * in it out of the platform, so "not your own root" is a real guard and not
+     * a formality. The service adds the rest: the master tenant can never be
+     * deactivated, and neither can a tenant that still has ACTIVE children —
+     * they must be deactivated or moved first, so a whole network cannot be
+     * taken down by one call.
      */
     public function tenantDelete(int $id): JsonResponse
     {
         $this->requireSuperAdmin();
 
-        if (!SuperPanelAccess::canAccessTenant($id)) {
+        if (!SuperPanelAccess::canManageTenant($id)) {
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_tenant'), null, 403);
         }
 

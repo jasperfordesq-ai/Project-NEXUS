@@ -402,6 +402,7 @@
     "deactivate": "非アクティブ化",
     "deactivate_tenant": "テナントの非アクティブ化",
     "deactivate_warning": "警告を無効にする",
+    "cannot_deactivate_own_tenant": "自分のコミュニティを非アクティブ化することはできません。プラットフォーム所有者にこのコミュニティを廃止するよう依頼してください。",
     "purge_tenant": "テナントを完全に削除",
     "purge_requires_deactivation": "このテナントを完全に削除する前に、非アクティブ化してください。",
     "purge_warning": "このテナントとそのすべてのデータを完全に削除します。この操作は元に戻せません。",

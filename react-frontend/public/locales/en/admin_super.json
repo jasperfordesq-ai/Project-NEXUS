@@ -402,6 +402,7 @@
     "deactivate": "Deactivate",
     "deactivate_tenant": "Deactivate Tenant",
     "deactivate_warning": "Deactivate Warning",
+    "cannot_deactivate_own_tenant": "You cannot deactivate your own community. Ask the platform owner to retire this community for you.",
     "purge_tenant": "Permanently Delete Tenant",
     "purge_requires_deactivation": "Deactivate this tenant before it can be permanently deleted.",
     "purge_warning": "Permanently deletes this tenant and all of its data. This cannot be undone.",

@@ -402,6 +402,7 @@
     "deactivate": "Díghníomhachtaigh",
     "deactivate_tenant": "Tionónta a dhíghníomhachtú",
     "deactivate_warning": "Díghníomhachtaigh Rabhadh",
+    "cannot_deactivate_own_tenant": "Ní féidir leat do phobal féin a dhíghníomhachtú. Iarr ar úinéir an ardáin an pobal seo a scor duit.",
     "purge_tenant": "Scrios an tionónta go buan",
     "purge_requires_deactivation": "Díghníomhachtaigh an tionónta seo sula féidir é a scriosadh go buan.",
     "purge_warning": "Scriosann sé seo an tionónta seo agus a shonraí go léir go buan. Ní féidir é seo a chur ar ceal.",

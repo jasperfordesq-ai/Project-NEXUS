@@ -32,9 +32,26 @@ const mockToast = vi.hoisted(() => ({
 const mockNavigate = vi.hoisted(() => vi.fn());
 
 // ── Module mocks ─────────────────────────────────────────────────────────────
+// Swapped per test: the danger zone depends on WHO is looking, not only on
+// which community is being looked at.
+const { mockUser } = vi.hoisted(() => ({
+  mockUser: { current: null as Record<string, unknown> | null },
+}));
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useToast: () => mockToast,
+    useAuth: () => ({
+      user: mockUser.current as never,
+      isAuthenticated: mockUser.current !== null,
+      login: vi.fn(),
+      logout: vi.fn(),
+      register: vi.fn(),
+      updateUser: vi.fn(),
+      refreshUser: vi.fn(),
+      status: 'idle' as const,
+      error: null,
+    }),
     useTenant: () => ({
       tenant: { id: 1, name: 'Root', slug: 'root' },
       tenantPath: (p: string) => `/root${p}`,
@@ -186,6 +203,9 @@ const makeTenant = (overrides: Record<string, unknown> = {}) => ({
 describe('TenantShow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default viewer: a platform super-admin whose own community is NOT the one
+    // on screen (fixture id 5), so the danger zone behaves as it always did.
+    mockUser.current = { id: 1, tenant_id: 1, is_super_admin: true, super_panel_level: 'master' };
     mockAdminSuper.getTenant.mockResolvedValue({ success: true, data: makeTenant() });
     mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: [] });
     mockAdminSuper.deleteTenant.mockResolvedValue({ success: true });
@@ -411,5 +431,55 @@ describe('TenantShow', () => {
     fireEvent.click(hubSwitch);
     expect(mockAdminSuper.toggleHub).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Disable Hub capability?' })).not.toBeInTheDocument();
+  });
+
+  /*
+   * 🔴 Deactivation was opened to branch super-admins on 2026-08-06, guarded on
+   * the server by `SuperPanelAccess::canManageTenant()` — which refuses the
+   * caller's OWN community. These pin the button to that same rule, so the panel
+   * never offers a control the API would answer 403 to, and never hides one it
+   * would allow.
+   */
+  describe('deactivation is offered only where the server permits it', () => {
+    const findDeactivate = () =>
+      screen.getAllByRole('button').find((b) => b.textContent?.includes('Deactivate Tenant'));
+
+    it('hides it, with a reason, when this is the viewer own community', async () => {
+      mockUser.current = { id: 9, tenant_id: 5, is_tenant_super_admin: true, super_panel_level: 'regional' };
+      const { TenantShow } = await import('./TenantShow');
+      render(<TenantShow />);
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Test Community').length).toBeGreaterThan(0);
+      });
+
+      expect(findDeactivate()).toBeUndefined();
+      expect(screen.getByTestId('own-tenant-deactivate-notice')).toBeInTheDocument();
+    });
+
+    it('offers it to a branch super-admin viewing a community beneath them', async () => {
+      mockUser.current = { id: 9, tenant_id: 8, is_tenant_super_admin: true, super_panel_level: 'regional' };
+      const { TenantShow } = await import('./TenantShow');
+      render(<TenantShow />);
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Test Community').length).toBeGreaterThan(0);
+      });
+
+      expect(findDeactivate()).toBeDefined();
+      expect(screen.queryByTestId('own-tenant-deactivate-notice')).not.toBeInTheDocument();
+    });
+
+    it('still offers it to god on their own community, matching the server carve-out', async () => {
+      mockUser.current = { id: 1, tenant_id: 5, is_god: true, role: 'god' };
+      const { TenantShow } = await import('./TenantShow');
+      render(<TenantShow />);
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Test Community').length).toBeGreaterThan(0);
+      });
+
+      expect(findDeactivate()).toBeDefined();
+    });
   });
 });

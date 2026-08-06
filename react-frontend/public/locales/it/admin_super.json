@@ -402,6 +402,7 @@
     "deactivate": "Disattivare",
     "deactivate_tenant": "Disattiva inquilino",
     "deactivate_warning": "Disattiva avviso",
+    "cannot_deactivate_own_tenant": "Non puoi disattivare la tua community. Chiedi al proprietario della piattaforma di ritirare questa community per te.",
     "purge_tenant": "Elimina definitivamente l'inquilino",
     "purge_requires_deactivation": "Disattiva questo inquilino prima di poterlo eliminare definitivamente.",
     "purge_warning": "Elimina definitivamente questo inquilino e tutti i suoi dati. Questa azione non può essere annullata.",

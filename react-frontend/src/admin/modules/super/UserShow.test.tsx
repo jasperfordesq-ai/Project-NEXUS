@@ -92,10 +92,18 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
+// Swapped per test so the impersonation gate can be checked as both a platform
+// owner and the super-admin of a branch community.
+const { mockViewer } = vi.hoisted(() => ({
+  mockViewer: {
+    current: { id: 1, name: 'Super Admin', role: 'super_admin', is_super_admin: true } as Record<string, unknown>,
+  },
+}));
+
 vi.mock('@/contexts', () =>
   createMockContexts({
     useAuth: () => ({
-      user: { id: 1, name: 'Super Admin', role: 'super_admin', is_super_admin: true },
+      user: mockViewer.current as never,
       isAuthenticated: true,
       login: vi.fn(),
       logout: vi.fn(),
@@ -158,6 +166,8 @@ const makeTenants = () => [
 describe('UserShow', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    // Reset the viewer, or a test that swaps it leaks into the next one.
+    mockViewer.current = { id: 1, name: 'Super Admin', role: 'super_admin', is_super_admin: true };
     mockAdminSuper.getUser.mockResolvedValue({ success: true, data: makeUser() });
     mockAdminSuper.listTenants.mockResolvedValue({ success: true, data: makeTenants() });
   });
@@ -360,6 +370,80 @@ describe('UserShow', () => {
       // balance is 5 hours — "5 super.hours" or similar label
       const balanceEls = screen.getAllByText(/5/);
       expect(balanceEls.length).toBeGreaterThan(0);
+    });
+  });
+
+  /*
+   * 🔴 The impersonation button must track the SERVER's rule, not "is a platform
+   * administrator".
+   *
+   * `POST /v2/admin/super/users/{id}/impersonate` is tier A: it admits the
+   * super-admin of a branch and confines them with canAccessTenant() on the
+   * target's tenant. Gating the button on `is_super_admin` alone made the client
+   * stricter than the endpoint, so a network administrator could not reach a
+   * power they hold — the defect James Ryan needs working. These pin both
+   * directions: offered to a branch admin, and still withheld where the server
+   * would refuse.
+   */
+  describe('impersonation button follows the server rule', () => {
+    const findImpersonate = () =>
+      screen.getAllByRole('button').find((b) => /impersonate/i.test(b.textContent ?? ''));
+
+    it('is offered to the super-admin of a branch community', async () => {
+      mockViewer.current = {
+        id: 9, name: 'Rhona Regional', role: 'admin',
+        is_tenant_super_admin: true, super_panel_level: 'regional',
+      };
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findImpersonate()).toBeDefined();
+    });
+
+    it('is withheld when the target is a platform administrator', async () => {
+      mockAdminSuper.getUser.mockResolvedValue({
+        success: true,
+        data: makeUser({ is_super_admin: true }),
+      });
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findImpersonate()).toBeUndefined();
+    });
+
+    it('is withheld when the target is not an active account', async () => {
+      mockAdminSuper.getUser.mockResolvedValue({
+        success: true,
+        data: makeUser({ status: 'suspended' }),
+      });
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findImpersonate()).toBeUndefined();
+    });
+
+    it('is withheld when the target is yourself', async () => {
+      mockViewer.current = {
+        id: 42, name: 'Alice Smith', role: 'admin',
+        is_tenant_super_admin: true, super_panel_level: 'regional',
+      };
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findImpersonate()).toBeUndefined();
+    });
+
+    it('is withheld from someone with no super-panel access at all', async () => {
+      mockViewer.current = { id: 9, name: 'Plain Admin', role: 'admin' };
+      const { UserShow } = await import('./UserShow');
+      render(<UserShow />);
+
+      await waitFor(() => expect(screen.getAllByText('Alice Smith').length).toBeGreaterThan(0));
+      expect(findImpersonate()).toBeUndefined();
     });
   });
 });

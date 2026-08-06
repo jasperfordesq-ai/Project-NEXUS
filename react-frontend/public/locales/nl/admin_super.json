@@ -402,6 +402,7 @@
     "deactivate": "Deactiveren",
     "deactivate_tenant": "Deactiveer huurder",
     "deactivate_warning": "Deactiveer Waarschuwing",
+    "cannot_deactivate_own_tenant": "Je kunt je eigen community niet deactiveren. Vraag de platformeigenaar om deze community voor je te beëindigen.",
     "purge_tenant": "Huurder permanent verwijderen",
     "purge_requires_deactivation": "Deactiveer deze huurder voordat deze permanent kan worden verwijderd.",
     "purge_warning": "Verwijdert deze huurder en alle bijbehorende gegevens permanent. Dit kan niet ongedaan worden gemaakt.",

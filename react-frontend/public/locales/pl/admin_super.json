@@ -402,6 +402,7 @@
     "deactivate": "Dezaktywować",
     "deactivate_tenant": "Dezaktywuj najemcę",
     "deactivate_warning": "Dezaktywuj ostrzeżenie",
+    "cannot_deactivate_own_tenant": "Nie możesz dezaktywować własnej społeczności. Poproś właściciela platformy o wycofanie tej społeczności w Twoim imieniu.",
     "purge_tenant": "Trwale usuń najemcę",
     "purge_requires_deactivation": "Dezaktywuj tego najemcę, zanim będzie można go trwale usunąć.",
     "purge_warning": "Trwale usuwa tego najemcę i wszystkie jego dane. Tej operacji nie można cofnąć.",

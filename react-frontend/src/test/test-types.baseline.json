@@ -590,9 +590,6 @@
     "src/admin/modules/super/TenantHierarchy.test.tsx": {
       "TS2345": 5
     },
-    "src/admin/modules/super/UserShow.test.tsx": {
-      "TS2322": 1
-    },
     "src/admin/modules/system/ActivityLog.test.tsx": {
       "TS2345": 1
     },
@@ -2221,7 +2218,7 @@
     }
   },
   "totals": {
-    "fileCount": 650,
-    "errorCount": 1937
+    "fileCount": 649,
+    "errorCount": 1936
   }
 }

@@ -22,6 +22,7 @@ import UserCog from 'lucide-react/icons/user-cog';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
+import { canAccessSuperPanel } from '@/lib/access';
 import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -61,10 +62,6 @@ export function UserShow() {
   const toast = useToast();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  const currentUserRecord = currentUser as Record<string, unknown> | null;
-  const isCurrentSuperAdmin =
-    (currentUser?.role as string) === 'super_admin' ||
-    currentUserRecord?.is_super_admin === true;
 
   // Impersonation modal state
   const [impersonateModalOpen, setImpersonateModalOpen] = useState(false);
@@ -73,6 +70,45 @@ export function UserShow() {
   const [user, setUser] = useState<SuperAdminUserDetail | null>(null);
   const [tenants, setTenants] = useState<SuperAdminTenant[]>([]);
   const [loading, setLoading] = useState(true);
+
+  /*
+   * 🔴 The impersonation button is gated on what the SERVER will actually do,
+   * not on being a platform administrator.
+   *
+   * `POST /v2/admin/super/users/{id}/impersonate` is tier A: it admits the
+   * super-admin of a branch community and scopes them with
+   * `SuperPanelAccess::canAccessTenant()` on the TARGET's tenant. Verified by
+   * hand on 2026-08-06 as a regional super-admin: a member of their own branch
+   * is allowed, a member of an unrelated community is 403, the platform owner
+   * is 403, and themselves is 422.
+   *
+   * Gating the button on `is_super_admin` alone made the client STRICTER than
+   * the endpoint, so a network administrator could not reach a power they are
+   * entitled to. A client gate must never be stricter than its server — the
+   * server is the authority, and a hidden-but-permitted action is simply
+   * invisible with nothing to explain it.
+   *
+   * The conditions below mirror the server's own refusals, so the button is not
+   * offered where it would answer 403 or 422:
+   *   - never a platform administrator (impersonation is not peer escalation)
+   *   - never yourself
+   *   - only an active account
+   * The subtree rule is deliberately NOT duplicated here: only the server can
+   * evaluate it, and a guess would either hide a legitimate action or offer an
+   * illegitimate one.
+   */
+  const targetIsPlatformAdmin =
+    user?.is_super_admin === true ||
+    (user as { is_god?: boolean } | null)?.is_god === true ||
+    ((user?.role as string | undefined) ?? '') === 'super_admin' ||
+    ((user?.role as string | undefined) ?? '') === 'god';
+
+  const canImpersonate =
+    canAccessSuperPanel(currentUser) &&
+    user !== null &&
+    !targetIsPlatformAdmin &&
+    user.id !== currentUser?.id &&
+    user.status === 'active';
 
   // Confirm modal state
   const [confirmAction, setConfirmAction] = useState<ConfirmActionType | null>(null);
@@ -561,7 +597,7 @@ export function UserShow() {
                 >
                   {t('super.edit_user')}
                 </Button>
-                {isCurrentSuperAdmin && (
+                {canImpersonate && (
                   <Button
                     variant="secondary"
                     className="text-warning"
