@@ -101,6 +101,19 @@ final class SupportTiers
     }
 
     /**
+     * What a legacy boolean permission key actually requires, as
+     * [capability, minimum tier] — or null for keys that confer nothing at any
+     * tier (`can_view_messages`, unknown keys). This is the single translation
+     * point for callers that still speak in boolean key names.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    public static function legacyRequirement(string $legacyKey): ?array
+    {
+        return self::LEGACY_MAP[$legacyKey] ?? null;
+    }
+
+    /**
      * Every capability at `none` — the starting point for a new relationship
      * until the supported member agrees to something.
      *

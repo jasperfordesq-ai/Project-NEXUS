@@ -226,12 +226,47 @@ class SubAccountControllerTest extends TestCase
             ->andThrow(new SafeguardingPolicyException('SAFEGUARDING_POLICY_UNAVAILABLE', 'Policy unavailable'));
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
+        // can_transact is a REAL expansion (credits none -> represent). The
+        // payload used to be can_view_messages, but under the tier model that
+        // key grants nothing, so enabling it is no longer an expansion at all —
+        // see test_enabling_view_messages_is_inert below.
         $response = $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
-            'permissions' => ['can_view_messages' => true],
+            'permissions' => ['can_transact' => true],
         ]);
 
         $response->assertStatus(503)->assertJsonPath('errors.0.code', 'SAFEGUARDING_POLICY_UNAVAILABLE');
         $this->assertSame($permissions, $this->relationshipPermissions($relationshipId));
+    }
+
+    public function test_enabling_view_messages_is_inert(): void
+    {
+        // can_view_messages confers no capability at any tier. Requesting it
+        // must not consult the contact policy (nothing is being expanded) and
+        // must never be stored as true — a historical row that carried it is
+        // normalised to false on the next write.
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create();
+        $relationshipId = $this->createActiveRelationship($parent, $child, [
+            'can_view_activity' => true,
+            'can_manage_listings' => false,
+            'can_transact' => false,
+            'can_view_messages' => false,
+        ]);
+
+        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
+        $policy->shouldNotReceive('assertLocalContactAllowed');
+        $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
+
+        $response = $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+            'permissions' => ['can_view_messages' => true],
+        ]);
+
+        $response->assertStatus(200);
+        $stored = $this->relationshipPermissions($relationshipId);
+        $this->assertFalse($stored['can_view_messages']);
+        // The other grants survive the write untouched.
+        $this->assertTrue($stored['can_view_activity']);
+        $this->assertFalse($stored['can_transact']);
     }
 
     public function test_permission_removal_remains_available_without_a_contact_gate(): void

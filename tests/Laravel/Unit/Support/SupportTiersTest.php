@@ -227,6 +227,22 @@ final class SupportTiersTest extends TestCase
         ], $projected);
     }
 
+    // ── legacyRequirement(): the boolean-vocabulary translation point ─────
+
+    public function test_legacy_requirement_maps_the_three_real_permissions(): void
+    {
+        $this->assertSame(['activity', SupportTiers::ASSIST], SupportTiers::legacyRequirement('can_view_activity'));
+        $this->assertSame(['listings', SupportTiers::REPRESENT], SupportTiers::legacyRequirement('can_manage_listings'));
+        $this->assertSame(['credits', SupportTiers::REPRESENT], SupportTiers::legacyRequirement('can_transact'));
+    }
+
+    public function test_legacy_requirement_is_null_for_messages_and_unknown_keys(): void
+    {
+        $this->assertNull(SupportTiers::legacyRequirement('can_view_messages'));
+        $this->assertNull(SupportTiers::legacyRequirement('tiers'));
+        $this->assertNull(SupportTiers::legacyRequirement('can_do_anything'));
+    }
+
     // ── capForStaff(): the broker ceiling ─────────────────────────────────
 
     public function test_staff_cap_clamps_represent_to_co_decide_and_leaves_lower_tiers_alone(): void

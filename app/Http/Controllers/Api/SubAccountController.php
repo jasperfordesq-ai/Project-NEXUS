@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use App\Core\TenantContext;
 use App\Exceptions\SafeguardingPolicyException;
 use App\Models\User;
+use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Http\JsonResponse;
 use App\Services\SubAccountService;
 
@@ -130,7 +131,15 @@ class SubAccountController extends BaseApiController
             $permissions = array_intersect_key($data, array_flip($allowedKeys));
         }
 
+        // Boolean shorthand keys, plus the explicit `tiers` object from the
+        // three-tier model. The service sanitises tier values; unknown keys of
+        // either vocabulary are dropped here.
+        $rawTiers = $permissions['tiers'] ?? ($data['tiers'] ?? null);
         $permissions = array_intersect_key($permissions, array_flip(array_keys(SubAccountService::DEFAULT_PERMISSIONS)));
+        $tiers = SupportTiers::sanitizeTiers($rawTiers);
+        if ($tiers !== []) {
+            $permissions['tiers'] = $tiers;
+        }
 
         if (empty($permissions)) {
             return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'permissions']), 'permissions', 400);

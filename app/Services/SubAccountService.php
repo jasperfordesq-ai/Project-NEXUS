@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Core\TenantContext;
 use App\I18n\LocaleContext;
 use App\Models\AccountRelationship;
+use App\Support\Safeguarding\SupportTiers;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,12 +29,18 @@ class SubAccountService
      * 🔴 THREE of these are enforced. `can_view_messages` is NOT, and is no
      * longer offered by either frontend (2026-08-05).
      *
-     * | key                 | enforced | where                        |
-     * |---------------------|----------|------------------------------|
-     * | can_view_activity   | yes      | getChildActivitySummary()    |
-     * | can_manage_listings | yes      | createListingForChild()      |
-     * | can_transact        | yes      | transferForChild()           |
-     * | can_view_messages   | NO       | nothing reads it, anywhere   |
+     * Since phase 2 of the guardian redesign these booleans are SHORTHAND over
+     * the three-tier model in {@see \App\Support\Safeguarding\SupportTiers}
+     * (assist / co_decide / represent, per capability). Enforcement translates
+     * each key to its capability + minimum tier; rows written by
+     * updatePermissions() store both representations, kept in sync.
+     *
+     * | key                 | enforced as          | where                        |
+     * |---------------------|----------------------|------------------------------|
+     * | can_view_activity   | activity ≥ assist    | getChildActivitySummary()    |
+     * | can_manage_listings | listings ≥ represent | createListingForChild()      |
+     * | can_transact        | credits ≥ represent  | transferForChild()           |
+     * | can_view_messages   | NOTHING, at any tier | hasPermission() hard-false   |
      *
      * It stays in this list only so historical rows that already stored it
      * continue to parse, and because the permissions endpoint still accepts it
@@ -473,6 +480,23 @@ class SubAccountService
 
     /**
      * Update permissions for a relationship (parent only).
+     *
+     * Accepts both grant vocabularies and stores one canonical shape:
+     *
+     * - Legacy boolean keys (`can_view_activity`…) — what both frontends still
+     *   send. A boolean is applied only when it CHANGES what that boolean has
+     *   always meant, so a client re-sending an unchanged `true` cannot
+     *   silently coarsen a finer-grained tier (e.g. a stored `co_decide`
+     *   projects to `false`; re-sending `false` is a no-op, not a downgrade).
+     * - An explicit `tiers` object (`{"listings": "co_decide"}`), which wins
+     *   over the boolean shorthand. Unknown capabilities and invalid tier
+     *   values are dropped by sanitisation — absent means unchanged, never
+     *   reset.
+     *
+     * The stored row is always `toLegacyBooleans(tiers) + ['tiers' => tiers]`,
+     * so every pre-tier reader keeps working and the two representations can
+     * never disagree. Shrinking any tier remains a safe unilateral exit;
+     * RAISING any tier re-asserts the safeguarding contact policy first.
      */
     public function updatePermissions(int $parentUserId, int $relationshipId, array $permissions): bool
     {
@@ -491,12 +515,32 @@ class SubAccountService
         }
 
         $currentPermissions = is_array($existing->permissions) ? $existing->permissions : [];
-        $mergedPermissions = array_merge($currentPermissions, $permissions);
+        $beforeTiers = SupportTiers::resolve($currentPermissions);
+        $afterTiers = $beforeTiers;
 
-        // Permission removal remains a safe exit. Any expansion can expose new
-        // activity, message, listing, or transaction capabilities, so re-check
-        // the relationship before writing it.
-        if ($this->permissionsExpand($currentPermissions, $permissions)) {
+        // Boolean shorthand: apply only actual changes (see docblock).
+        $projected = SupportTiers::toLegacyBooleans($beforeTiers);
+        foreach ($permissions as $legacyKey => $enabled) {
+            $requirement = SupportTiers::legacyRequirement((string) $legacyKey);
+            if ($requirement === null) {
+                continue; // can_view_messages, 'tiers', unknown keys
+            }
+            [$capability, $grantedTier] = $requirement;
+            if ((bool) $enabled === ($projected[$legacyKey] ?? false)) {
+                continue;
+            }
+            $afterTiers[$capability] = $enabled ? $grantedTier : SupportTiers::NONE;
+        }
+
+        // Explicit tier grants win over the boolean shorthand.
+        foreach (SupportTiers::sanitizeTiers($permissions['tiers'] ?? null) as $capability => $tier) {
+            $afterTiers[$capability] = $tier;
+        }
+
+        // Shrinking remains a safe exit. Raising any tier can expose new
+        // activity, listing, or transaction capabilities, so re-check the
+        // relationship against the safeguarding contact policy before writing.
+        if (SupportTiers::isExpansion($beforeTiers, $afterTiers)) {
             $this->assertRelationshipContactsAllowed(
                 $parentUserId,
                 (int) $existing->child_user_id,
@@ -504,13 +548,28 @@ class SubAccountService
             );
         }
 
-        $existing->update(['permissions' => $mergedPermissions]);
+        $existing->update([
+            'permissions' => SupportTiers::toLegacyBooleans($afterTiers) + ['tiers' => $afterTiers],
+        ]);
 
         return true;
     }
 
     /**
      * Check if a parent has a specific permission for a child.
+     *
+     * Since the three-tier model (phase 2 of the guardian redesign), the
+     * boolean key is translated to its capability + minimum tier and checked
+     * against the relationship's resolved tiers. For rows that predate tiers
+     * the resolution derives from the stored booleans, so behaviour for the
+     * three real permissions is unchanged. Two deliberate deltas:
+     *
+     * - `can_view_messages` now returns false even when an old row stored it
+     *   true. It never had a caller and confers no capability at any tier.
+     * - A `co_decide` grant does NOT satisfy these checks: the boolean keys
+     *   mean "may act alone" (or "may view", for activity), and every caller
+     *   of this method performs an immediate action or read. The co-decide
+     *   prepare-and-confirm path (phase 3) will have its own gate.
      */
     public function hasPermission(int $parentUserId, int $childUserId, string $permission): bool
     {
@@ -525,8 +584,40 @@ class SubAccountService
             return false;
         }
 
-        $perms = is_array($row->permissions) ? $row->permissions : [];
-        return ! empty($perms[$permission]);
+        $requirement = SupportTiers::legacyRequirement($permission);
+        if ($requirement === null) {
+            return false;
+        }
+
+        [$capability, $requiredTier] = $requirement;
+        $tiers = SupportTiers::resolve(is_array($row->permissions) ? $row->permissions : []);
+
+        return SupportTiers::atLeast($tiers, $capability, $requiredTier);
+    }
+
+    /**
+     * The resolved support tiers a parent holds for a child, for callers that
+     * need finer grain than the boolean shorthand (the phase-3 confirm loop
+     * gates on `co_decide` through this). Null when no active relationship
+     * exists — deliberately distinct from "a relationship with nothing
+     * granted".
+     *
+     * @return array<string, string>|null capability => tier
+     */
+    public function resolvedTiers(int $parentUserId, int $childUserId): ?array
+    {
+        /** @var AccountRelationship|null $row */
+        $row = $this->relationship->newQuery()
+            ->where('parent_user_id', $parentUserId)
+            ->where('child_user_id', $childUserId)
+            ->where('status', 'active')
+            ->first();
+
+        if (! $row) {
+            return null;
+        }
+
+        return SupportTiers::resolve(is_array($row->permissions) ? $row->permissions : []);
     }
 
     /**
@@ -721,15 +812,4 @@ class SubAccountService
         );
     }
 
-    /** @param array<string, mixed> $current @param array<string, mixed> $requested */
-    private function permissionsExpand(array $current, array $requested): bool
-    {
-        foreach ($requested as $permission => $enabled) {
-            if ((bool) $enabled && ! (bool) ($current[$permission] ?? false)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
