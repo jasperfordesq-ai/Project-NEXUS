@@ -122,3 +122,47 @@ export function updateSubAccountPermissions(
 export function revokeSubAccount(relationshipId: number): Promise<unknown> {
   return api.delete<unknown>(`${API_V2}/users/me/sub-accounts/${relationshipId}`);
 }
+
+export interface SubAccountActivityHours {
+  hours_given?: number;
+  hours_received?: number;
+  net_balance?: number;
+}
+
+export interface SubAccountActivityConnections {
+  total_connections?: number;
+  groups_joined?: number;
+}
+
+export interface SubAccountActivityEngagement {
+  posts_count?: number;
+}
+
+export interface SubAccountActivityTimelineItem {
+  id: number;
+  activity_type: string;
+  description?: string | null;
+  created_at: string;
+}
+
+/**
+ * Payload of GET /v2/users/me/sub-accounts/{childId}/activity
+ * (MemberActivityService::getDashboardData, permission-gated server-side).
+ * Every field optional on purpose — the server may add sections, and a
+ * missing one must render as absent, not crash the screen.
+ */
+export interface SubAccountActivitySummary {
+  hours_summary?: SubAccountActivityHours;
+  connection_stats?: SubAccountActivityConnections;
+  engagement?: SubAccountActivityEngagement;
+  timeline?: SubAccountActivityTimelineItem[];
+}
+
+/** Read-only activity summary for a member this user supports. 403 when the
+ *  grant is off or withdrawn — the caller must show that plainly. */
+export async function getSubAccountActivity(childUserId: number): Promise<SubAccountActivitySummary> {
+  const response = await api.get<ApiEnvelope<SubAccountActivitySummary>>(
+    `${API_V2}/users/me/sub-accounts/${childUserId}/activity`,
+  );
+  return unwrap(response, {});
+}

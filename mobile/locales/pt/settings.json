@@ -242,6 +242,31 @@
       "can_transact": "Transfer credits",
       "can_view_messages": "View messages"
     },
-    "permissionToggle": "Toggle {{permission}} for {{name}}"
+    "permissionToggle": "Toggle {{permission}} for {{name}}",
+    "activity": {
+      "show": "Ver a sua atividade",
+      "hide": "Ocultar a sua atividade",
+      "toggleAria": "Ver a atividade de {{name}}",
+      "explainer": "Um resumo do que {{name}} tem feito no banco de tempo. Pode ver isto porque essa pessoa o permitiu. Esta secção apenas mostra.",
+      "loadFailed": "Não foi possível carregar a atividade. A permissão pode ter sido alterada.",
+      "hoursHeading": "Créditos de tempo",
+      "hoursGiven": "Horas dadas",
+      "hoursReceived": "Horas recebidas",
+      "netBalance": "Saldo líquido",
+      "communityHeading": "Comunidade",
+      "connections": "Ligações",
+      "groups": "Grupos",
+      "posts": "Publicações (30 dias)",
+      "timelineHeading": "Atividade recente",
+      "timelineEmpty": "Nada recente para mostrar.",
+      "types": {
+        "post": "Publicou",
+        "comment": "Comentou",
+        "connection": "Nova ligação",
+        "gave_hours": "Deu horas",
+        "received_hours": "Recebeu horas",
+        "other": "Atividade"
+      }
+    }
   }
 }

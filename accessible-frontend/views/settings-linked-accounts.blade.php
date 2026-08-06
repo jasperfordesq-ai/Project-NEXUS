@@ -11,6 +11,7 @@
             'link-email-invalid', 'link-user-not-found', 'link-self', 'link-exists',
             'link-max', 'link-failed', 'appearance-invalid', 'appearance-failed',
             'link-vetting-required', 'link-contact-restricted', 'link-safeguarding-unavailable',
+            'activity-denied',
         ];
         $safeguardingErrorStates = [
             'link-vetting-required', 'link-contact-restricted', 'link-safeguarding-unavailable',
@@ -143,6 +144,16 @@
                                         {{ $cIsPending ? __('govuk_alpha_settings.linked.status_pending') : __('govuk_alpha_settings.linked.status_active') }}
                                     </strong>
                                 </p>
+
+                                {{-- Read-only activity view — offered only when the grant is on
+                                     AND the link is active (never show what does not work). --}}
+                                @if (!$cIsPending && !empty($c['can_see_activity']) && (int) ($c['user_id'] ?? 0) > 0)
+                                    <p class="govuk-body govuk-!-margin-bottom-2">
+                                        <a class="govuk-link" href="{{ route('govuk-alpha.settings.linked-accounts.activity', ['tenantSlug' => $tenantSlug, 'childId' => (int) $c['user_id']]) }}">
+                                            {{ __('govuk_alpha_settings.linked.activity_link') }}<span class="govuk-visually-hidden"> {{ $cName }}</span>
+                                        </a>
+                                    </p>
+                                @endif
 
                                 @if ($cId > 0)
                                     <form method="post" action="{{ route('govuk-alpha.settings.linked-accounts.permissions', ['tenantSlug' => $tenantSlug]) }}">

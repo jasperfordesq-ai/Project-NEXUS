@@ -269,6 +269,101 @@ class SettingsAuthParityTest extends TestCase
     }
 
     // =====================================================================
+    //  Activity view (React SupportActivityModal parity)
+    // =====================================================================
+
+    private function seedActivityRelationship(User $me, User $child, array $permissions, string $status = 'active'): int
+    {
+        return (int) DB::table('account_relationships')->insertGetId([
+            'parent_user_id' => $me->id, 'child_user_id' => $child->id, 'tenant_id' => $this->testTenantId,
+            'relationship_type' => 'family', 'permissions' => json_encode($permissions),
+            'status' => $status, 'approved_at' => $status === 'active' ? now() : null,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
+    public function test_linked_account_activity_requires_authentication(): void
+    {
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/activity/123");
+
+        $response->assertRedirect("/{$this->testTenantSlug}/accessible/login?status=auth-required");
+    }
+
+    public function test_linked_account_activity_renders_for_an_active_grant(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Viewed', 'last_name' => 'Member', 'name' => 'Viewed Member',
+        ]);
+        $this->seedActivityRelationship($me, $child, ['can_view_activity' => true]);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/activity/{$child->id}");
+
+        $response->assertOk();
+        $response->assertSee(__('govuk_alpha_settings.linked.activity_title', ['name' => 'Viewed Member']));
+        $response->assertSee(__('govuk_alpha_settings.linked.activity_hours_heading'));
+        $response->assertSee(__('govuk_alpha_settings.linked.activity_timeline_heading'));
+    }
+
+    public function test_activity_link_is_offered_only_when_the_grant_is_on(): void
+    {
+        $me = $this->authenticatedUser();
+        $granted = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Granted', 'last_name' => 'Child', 'name' => 'Granted Child',
+        ]);
+        $ungranted = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Ungranted', 'last_name' => 'Child', 'name' => 'Ungranted Child',
+        ]);
+        $this->seedActivityRelationship($me, $granted, ['can_view_activity' => true]);
+        $this->seedActivityRelationship($me, $ungranted, ['can_view_activity' => false]);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts");
+
+        $response->assertOk();
+        // Exactly ONE activity link: for the granted child, none for the other.
+        $response->assertSee("linked-accounts/activity/{$granted->id}");
+        $response->assertDontSee("linked-accounts/activity/{$ungranted->id}");
+    }
+
+    public function test_activity_for_a_stranger_redirects_with_plain_denial(): void
+    {
+        $this->authenticatedUser();
+        $stranger = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/activity/{$stranger->id}");
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=activity-denied', (string) $response->headers->get('Location'));
+    }
+
+    public function test_activity_with_the_grant_off_redirects_with_plain_denial(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $this->seedActivityRelationship($me, $child, ['can_view_activity' => false]);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/activity/{$child->id}");
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=activity-denied', (string) $response->headers->get('Location'));
+    }
+
+    public function test_activity_for_a_pending_relationship_redirects_with_plain_denial(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $this->seedActivityRelationship($me, $child, ['can_view_activity' => true], 'pending');
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/activity/{$child->id}");
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=activity-denied', (string) $response->headers->get('Location'));
+    }
+
+    // =====================================================================
     //  Appearance / theme
     // =====================================================================
 

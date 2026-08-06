@@ -17,8 +17,10 @@ use Illuminate\Support\Facades\Route;
  * React settings tabs the audit flagged as missing:
  *   - Linked / sub-account management (React LinkedAccountsTab)
  *   - Appearance / theme (React AppearanceSettings)
- * No wildcard route params here (the relationship/theme ids are form fields),
- * so ordering is not a concern, but static segments are still grouped together.
+ * Mutation ids travel as form fields, not route params. The one wildcard route
+ * (`activity/{childId}`, digits-only GET) shares no prefix ambiguity with the
+ * static POSTs, so ordering is still not a concern; static segments stay
+ * grouped together.
  */
 
 // Linked / sub-account management.
@@ -40,6 +42,15 @@ Route::post('/settings/linked-accounts/permissions', [AlphaController::class, 's
 Route::post('/settings/linked-accounts/revoke', [AlphaController::class, 'settingsRevokeLinkedAccount'])
     ->middleware('throttle:nexus-route-20-per-1m')
     ->name('settings.linked-accounts.revoke');
+
+// Read-only activity summary for a supported member (React SupportActivityModal
+// parity). {childId} is the supported member's USER id, not the relationship id
+// — it feeds SubAccountService::getChildActivitySummary, which re-checks the
+// grant on every request. Rate-limited like the other reads of member data.
+Route::get('/settings/linked-accounts/activity/{childId}', [AlphaController::class, 'settingsLinkedAccountActivity'])
+    ->middleware('throttle:nexus-route-20-per-1m')
+    ->where('childId', '[0-9]+')
+    ->name('settings.linked-accounts.activity');
 
 // Guardian arrangements (member side).
 //

@@ -12,6 +12,7 @@ const mockRequestSubAccount = jest.fn();
 const mockApproveSubAccount = jest.fn();
 const mockRevokeSubAccount = jest.fn();
 const mockUpdateSubAccountPermissions = jest.fn();
+const mockGetSubAccountActivity = jest.fn();
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -52,6 +53,24 @@ jest.mock('react-i18next', () => ({
         'linkedAccounts.permissions.can_manage_listings': 'Manage listings',
         'linkedAccounts.permissions.can_transact': 'Transfer credits',
         'linkedAccounts.permissions.can_view_messages': 'View messages',
+        'linkedAccounts.activity.show': 'See their activity',
+        'linkedAccounts.activity.hide': 'Hide their activity',
+        'linkedAccounts.activity.toggleAria': `See the activity of ${String(opts?.name ?? '')}`,
+        'linkedAccounts.activity.explainer': `A summary of what ${String(opts?.name ?? '')} has been doing.`,
+        'linkedAccounts.activity.loadFailed': 'Their activity could not be loaded. The permission may have been changed.',
+        'linkedAccounts.activity.hoursHeading': 'Time credits',
+        'linkedAccounts.activity.hoursGiven': 'Hours given',
+        'linkedAccounts.activity.hoursReceived': 'Hours received',
+        'linkedAccounts.activity.netBalance': 'Net balance',
+        'linkedAccounts.activity.communityHeading': 'Community',
+        'linkedAccounts.activity.connections': 'Connections',
+        'linkedAccounts.activity.groups': 'Groups joined',
+        'linkedAccounts.activity.posts': 'Posts (30 days)',
+        'linkedAccounts.activity.timelineHeading': 'Recent activity',
+        'linkedAccounts.activity.timelineEmpty': 'Nothing recent to show.',
+        'linkedAccounts.activity.types.post': 'Posted',
+        'linkedAccounts.activity.types.gave_hours': 'Gave hours',
+        'linkedAccounts.activity.types.other': 'Activity',
       };
       return map[key] ?? String(opts?.defaultValue ?? key);
     },
@@ -81,6 +100,7 @@ jest.mock('@/lib/api/settings', () => ({
   approveSubAccount: (...args: unknown[]) => mockApproveSubAccount(...args),
   getManagedSubAccounts: jest.fn(),
   getManagerSubAccounts: jest.fn(),
+  getSubAccountActivity: (...args: unknown[]) => mockGetSubAccountActivity(...args),
   requestSubAccount: (...args: unknown[]) => mockRequestSubAccount(...args),
   revokeSubAccount: (...args: unknown[]) => mockRevokeSubAccount(...args),
   updateSubAccountPermissions: (...args: unknown[]) => mockUpdateSubAccountPermissions(...args),
@@ -94,6 +114,15 @@ beforeEach(() => {
   mockApproveSubAccount.mockReset().mockResolvedValue({});
   mockRevokeSubAccount.mockReset().mockResolvedValue({});
   mockUpdateSubAccountPermissions.mockReset().mockResolvedValue({});
+  mockGetSubAccountActivity.mockReset().mockResolvedValue({
+    hours_summary: { hours_given: 7.5, hours_received: 2, net_balance: -5.5 },
+    connection_stats: { total_connections: 3, groups_joined: 1 },
+    engagement: { posts_count: 4 },
+    timeline: [
+      { id: 1, activity_type: 'gave_hours', description: '2 hour(s)', created_at: '2026-08-01T10:00:00Z' },
+      { id: 2, activity_type: 'brand_new_type', description: 'Mystery item', created_at: '2026-08-02T10:00:00Z' },
+    ],
+  });
   mockUseApi.mockReset().mockReturnValue({
     data: {
       managed: [{
@@ -158,5 +187,72 @@ describe('SettingsLinkedAccountsRoute', () => {
 
     fireEvent.press(getAllByText('Remove')[0]);
     await waitFor(() => expect(mockRevokeSubAccount).toHaveBeenCalledWith(11));
+  });
+
+  // 🔴 The messages switch saved successfully and did nothing — no backend
+  // code consults can_view_messages. Web and accessible removed it 2026-08-05;
+  // mobile kept offering it until 2026-08-06. It must not come back without
+  // the counterparty notice existing.
+  it('does not offer the unenforced View messages permission', () => {
+    const { queryByText } = render(<SettingsLinkedAccountsRoute />);
+
+    expect(queryByText('View messages')).toBeNull();
+  });
+
+  describe('activity view', () => {
+    it('expands, loads the activity endpoint, and renders the summary read-only', async () => {
+      const { getByText, findByText, queryByText } = render(<SettingsLinkedAccountsRoute />);
+
+      // Nothing fetched until the member asks to see it.
+      expect(mockGetSubAccountActivity).not.toHaveBeenCalled();
+
+      fireEvent.press(getByText('See their activity'));
+
+      await waitFor(() => expect(mockGetSubAccountActivity).toHaveBeenCalledWith(5));
+      expect(await findByText('Hours given')).toBeTruthy();
+      expect(getByText('7.5')).toBeTruthy();
+      expect(getByText('2 hour(s)')).toBeTruthy();
+      // Unknown server vocabulary renders the generic label, never the code.
+      expect(getByText('Activity')).toBeTruthy();
+      expect(queryByText('brand_new_type')).toBeNull();
+      // Read-only: no prepare/act affordances exist in this section.
+      expect(queryByText('Do it now')).toBeNull();
+    });
+
+    it('offers no activity section when the grant is off', () => {
+      mockUseApi.mockReturnValue({
+        data: {
+          managed: [{
+            relationship_id: 21,
+            relationship_type: 'family',
+            permissions: { can_view_activity: false },
+            status: 'active',
+            created_at: '2026-01-01T00:00:00Z',
+            user_id: 7,
+            first_name: 'No',
+            last_name: 'Grant',
+            avatar_url: null,
+            email: 'nogrant@example.com',
+          }],
+          managers: [],
+        },
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+      });
+
+      const { queryByText } = render(<SettingsLinkedAccountsRoute />);
+
+      expect(queryByText('See their activity')).toBeNull();
+    });
+
+    it('says plainly when the activity can no longer be loaded', async () => {
+      mockGetSubAccountActivity.mockRejectedValue(new Error('403'));
+
+      const { getByText, findByText } = render(<SettingsLinkedAccountsRoute />);
+      fireEvent.press(getByText('See their activity'));
+
+      expect(await findByText('Their activity could not be loaded. The permission may have been changed.')).toBeTruthy();
+    });
   });
 });

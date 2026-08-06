@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,18 +23,29 @@ import {
   approveSubAccount,
   getManagedSubAccounts,
   getManagerSubAccounts,
+  getSubAccountActivity,
   requestSubAccount,
   revokeSubAccount,
   updateSubAccountPermissions,
+  type SubAccountActivitySummary,
   type SubAccountPermission,
   type SubAccountRelationship,
 } from '@/lib/api/settings';
 
+/**
+ * The permissions actually OFFERED — i.e. the ones the backend enforces.
+ *
+ * 🔴 `can_view_messages` is deliberately absent, matching the React and
+ * accessible frontends (removed there 2026-08-05). It was a switch that saved
+ * successfully and did nothing: no code anywhere consults it, so a family
+ * could be told a carer can read a dependent's conversations when no such
+ * thing happens. Do not re-add it without the counterparty notice existing —
+ * the other person in a conversation never agreed to it being shared.
+ */
 const PERMISSIONS: SubAccountPermission[] = [
   'can_view_activity',
   'can_manage_listings',
   'can_transact',
-  'can_view_messages',
 ];
 
 function displayName(item: SubAccountRelationship, fallback: string) {
@@ -277,6 +288,13 @@ function RelationshipSection({
                     </View>
                   ) : null}
 
+                  {/* Read-only activity view (React SupportActivityModal parity).
+                      Offered only when the grant is on AND the link is active —
+                      never show what does not work. Seeing is all it does. */}
+                  {canManagePermissions && item.status === 'active' && Boolean(item.permissions?.can_view_activity) ? (
+                    <ActivitySection childUserId={item.user_id} name={name} />
+                  ) : null}
+
                   <View className="flex-row gap-2">
                     {canApprove && item.status === 'pending' ? (
                       <HeroButton className="flex-1" size="sm" variant="secondary" onPress={() => onApprove(item)} isDisabled={isBusy}>
@@ -294,5 +312,126 @@ function RelationshipSection({
         )}
       </HeroCard.Body>
     </HeroCard>
+  );
+}
+
+const ACTIVITY_TIMELINE_LIMIT = 10;
+
+/** Timeline vocabulary the client knows; anything else renders the generic
+ *  label rather than leaking the server code into member-facing text. */
+const KNOWN_ACTIVITY_TYPES = new Set(['post', 'comment', 'connection', 'gave_hours', 'received_hours']);
+
+/**
+ * Read-only activity summary for one supported member, fetched when the
+ * member expands it. Deliberately offers NO actions: seeing is the `assist`
+ * tier; preparing and acting are different tiers with their own screens.
+ */
+function ActivitySection({ childUserId, name }: { childUserId: number; name: string }) {
+  const { t } = useTranslation('settings');
+  const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
+  const [summary, setSummary] = useState<SubAccountActivitySummary | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (!expanded || summary !== null) return;
+    let cancelled = false;
+    setIsLoading(true);
+    setFailed(false);
+    getSubAccountActivity(childUserId)
+      .then((data) => { if (!cancelled) setSummary(data); })
+      .catch(() => { if (!cancelled) setFailed(true); })
+      .finally(() => { if (!cancelled) setIsLoading(false); });
+    return () => { cancelled = true; };
+  }, [expanded, summary, childUserId]);
+
+  const hours = summary?.hours_summary;
+  const connections = summary?.connection_stats;
+  const engagement = summary?.engagement;
+  const timeline = (summary?.timeline ?? []).slice(0, ACTIVITY_TIMELINE_LIMIT);
+
+  const statRow = (label: string, value: number | string | undefined) => (
+    <View className="flex-row items-center justify-between">
+      <Text className="text-xs" style={{ color: theme.textSecondary }}>{label}</Text>
+      <Text className="text-sm font-semibold" style={{ color: theme.text }}>{value ?? 0}</Text>
+    </View>
+  );
+
+  return (
+    <View className="gap-2">
+      <HeroButton
+        size="sm"
+        variant="secondary"
+        onPress={() => setExpanded((prev) => !prev)}
+        accessibilityLabel={t('linkedAccounts.activity.toggleAria', { name })}
+      >
+        <HeroButton.Label>
+          {expanded ? t('linkedAccounts.activity.hide') : t('linkedAccounts.activity.show')}
+        </HeroButton.Label>
+      </HeroButton>
+
+      {expanded ? (
+        <View className="gap-3">
+          <Text className="text-xs leading-4" style={{ color: theme.textSecondary }}>
+            {t('linkedAccounts.activity.explainer', { name })}
+          </Text>
+
+          {isLoading ? (
+            <View className="items-center py-3"><Spinner size="sm" /></View>
+          ) : failed ? (
+            <Text className="text-xs" style={{ color: theme.textSecondary }}>
+              {t('linkedAccounts.activity.loadFailed')}
+            </Text>
+          ) : summary ? (
+            <>
+              <View className="gap-1.5">
+                <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
+                  {t('linkedAccounts.activity.hoursHeading')}
+                </Text>
+                {statRow(t('linkedAccounts.activity.hoursGiven'), hours?.hours_given)}
+                {statRow(t('linkedAccounts.activity.hoursReceived'), hours?.hours_received)}
+                {statRow(t('linkedAccounts.activity.netBalance'), hours?.net_balance)}
+              </View>
+
+              <View className="gap-1.5">
+                <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
+                  {t('linkedAccounts.activity.communityHeading')}
+                </Text>
+                {statRow(t('linkedAccounts.activity.connections'), connections?.total_connections)}
+                {statRow(t('linkedAccounts.activity.groups'), connections?.groups_joined)}
+                {statRow(t('linkedAccounts.activity.posts'), engagement?.posts_count)}
+              </View>
+
+              <View className="gap-1.5">
+                <Text className="text-xs font-semibold uppercase" style={{ color: theme.textSecondary }}>
+                  {t('linkedAccounts.activity.timelineHeading')}
+                </Text>
+                {timeline.length === 0 ? (
+                  <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                    {t('linkedAccounts.activity.timelineEmpty')}
+                  </Text>
+                ) : (
+                  timeline.map((item) => (
+                    <View key={`${item.activity_type}-${item.id}-${item.created_at}`} className="gap-0.5">
+                      <Text className="text-xs font-medium" style={{ color: theme.textSecondary }}>
+                        {KNOWN_ACTIVITY_TYPES.has(item.activity_type)
+                          ? t(`linkedAccounts.activity.types.${item.activity_type}`)
+                          : t('linkedAccounts.activity.types.other')}
+                      </Text>
+                      {item.description ? (
+                        <Text className="text-sm" style={{ color: theme.text }} numberOfLines={3}>
+                          {item.description}
+                        </Text>
+                      ) : null}
+                    </View>
+                  ))
+                )}
+              </View>
+            </>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
   );
 }

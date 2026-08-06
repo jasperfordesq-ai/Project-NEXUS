@@ -242,6 +242,31 @@
       "can_transact": "Transfer credits",
       "can_view_messages": "View messages"
     },
-    "permissionToggle": "Toggle {{permission}} for {{name}}"
+    "permissionToggle": "Toggle {{permission}} for {{name}}",
+    "activity": {
+      "show": "Voir son activité",
+      "hide": "Masquer son activité",
+      "toggleAria": "Voir l’activité de {{name}}",
+      "explainer": "Un résumé de ce que {{name}} a fait sur la banque de temps. Vous pouvez le voir parce que cette personne l’a autorisé. Cette section ne fait qu’afficher.",
+      "loadFailed": "Impossible de charger son activité. L’autorisation a peut-être été modifiée.",
+      "hoursHeading": "Crédits de temps",
+      "hoursGiven": "Heures données",
+      "hoursReceived": "Heures reçues",
+      "netBalance": "Solde net",
+      "communityHeading": "Communauté",
+      "connections": "Relations",
+      "groups": "Groupes rejoints",
+      "posts": "Publications (30 jours)",
+      "timelineHeading": "Activité récente",
+      "timelineEmpty": "Rien de récent à afficher.",
+      "types": {
+        "post": "Publication",
+        "comment": "Commentaire",
+        "connection": "Nouvelle relation",
+        "gave_hours": "Heures données",
+        "received_hours": "Heures reçues",
+        "other": "Activité"
+      }
+    }
   }
 }

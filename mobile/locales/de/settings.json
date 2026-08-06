@@ -242,6 +242,31 @@
       "can_transact": "Transfer credits",
       "can_view_messages": "View messages"
     },
-    "permissionToggle": "Toggle {{permission}} for {{name}}"
+    "permissionToggle": "Toggle {{permission}} for {{name}}",
+    "activity": {
+      "show": "Deren Aktivität ansehen",
+      "hide": "Aktivität ausblenden",
+      "toggleAria": "Aktivität von {{name}} ansehen",
+      "explainer": "Eine Übersicht darüber, was {{name}} in der Zeitbank gemacht hat. Sie können das sehen, weil diese Person es erlaubt hat. Dieser Bereich zeigt nur an — mehr nicht.",
+      "loadFailed": "Die Aktivität konnte nicht geladen werden. Möglicherweise wurde die Berechtigung geändert.",
+      "hoursHeading": "Zeitguthaben",
+      "hoursGiven": "Gegebene Stunden",
+      "hoursReceived": "Erhaltene Stunden",
+      "netBalance": "Saldo",
+      "communityHeading": "Gemeinschaft",
+      "connections": "Kontakte",
+      "groups": "Beigetretene Gruppen",
+      "posts": "Beiträge (30 Tage)",
+      "timelineHeading": "Letzte Aktivität",
+      "timelineEmpty": "Nichts Aktuelles vorhanden.",
+      "types": {
+        "post": "Beitrag veröffentlicht",
+        "comment": "Kommentiert",
+        "connection": "Neuer Kontakt",
+        "gave_hours": "Stunden gegeben",
+        "received_hours": "Stunden erhalten",
+        "other": "Aktivität"
+      }
+    }
   }
 }

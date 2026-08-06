@@ -242,6 +242,31 @@
       "can_transact": "Transfer credits",
       "can_view_messages": "View messages"
     },
-    "permissionToggle": "Toggle {{permission}} for {{name}}"
+    "permissionToggle": "Toggle {{permission}} for {{name}}",
+    "activity": {
+      "show": "Féach ar a ngníomhaíocht",
+      "hide": "Folaigh a ngníomhaíocht",
+      "toggleAria": "Féach ar ghníomhaíocht {{name}}",
+      "explainer": "Achoimre ar a bhfuil déanta ag {{name}} ar an mbanc ama. Is féidir leat é seo a fheiceáil toisc gur cheadaigh siad é. Ní dhéanann an chuid seo ach taispeáint.",
+      "loadFailed": "Níorbh fhéidir a ngníomhaíocht a lódáil. Seans gur athraíodh an cead.",
+      "hoursHeading": "Creidmheasanna ama",
+      "hoursGiven": "Uaireanta tugtha",
+      "hoursReceived": "Uaireanta faighte",
+      "netBalance": "Glaniarmhéid",
+      "communityHeading": "Pobal",
+      "connections": "Naisc",
+      "groups": "Grúpaí",
+      "posts": "Postálacha (30 lá)",
+      "timelineHeading": "Gníomhaíocht le déanaí",
+      "timelineEmpty": "Níl aon rud le déanaí le taispeáint.",
+      "types": {
+        "post": "Postáilte",
+        "comment": "Trácht déanta",
+        "connection": "Nasc nua",
+        "gave_hours": "Uaireanta tugtha",
+        "received_hours": "Uaireanta faighte",
+        "other": "Gníomhaíocht"
+      }
+    }
   }
 }

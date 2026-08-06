@@ -242,6 +242,31 @@
       "can_transact": "Transfer credits",
       "can_view_messages": "View messages"
     },
-    "permissionToggle": "Toggle {{permission}} for {{name}}"
+    "permissionToggle": "Toggle {{permission}} for {{name}}",
+    "activity": {
+      "show": "See their activity",
+      "hide": "Hide their activity",
+      "toggleAria": "See the activity of {{name}}",
+      "explainer": "A summary of what {{name}} has been doing on the timebank. You can see this because they allowed it. Seeing is all this section does.",
+      "loadFailed": "Their activity could not be loaded. The permission may have been changed.",
+      "hoursHeading": "Time credits",
+      "hoursGiven": "Hours given",
+      "hoursReceived": "Hours received",
+      "netBalance": "Net balance",
+      "communityHeading": "Community",
+      "connections": "Connections",
+      "groups": "Groups joined",
+      "posts": "Posts (30 days)",
+      "timelineHeading": "Recent activity",
+      "timelineEmpty": "Nothing recent to show.",
+      "types": {
+        "post": "Posted",
+        "comment": "Commented",
+        "connection": "New connection",
+        "gave_hours": "Gave hours",
+        "received_hours": "Received hours",
+        "other": "Activity"
+      }
+    }
   }
 }

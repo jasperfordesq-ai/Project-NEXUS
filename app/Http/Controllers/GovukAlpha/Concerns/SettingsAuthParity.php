@@ -151,6 +151,66 @@ trait SettingsAuthParity
     }
 
     /**
+     * Read-only activity summary for a member this user supports — parity with
+     * the React SupportActivityModal.
+     *
+     * "View their activity" is the one linked-account permission that defaults
+     * to ON, and for a long time no frontend had a screen behind it. When the
+     * React modal was built (2026-08-06) this frontend was initially left
+     * without one — the same wrong-way-round outcome the guardian pages fixed:
+     * the people most likely to be supported members, or their carers, are the
+     * people most likely to use this frontend.
+     *
+     * Enforcement is SubAccountService::getChildActivitySummary — the identical
+     * code path the React modal's endpoint uses — so what each frontend may
+     * show cannot drift. A null summary (no active relationship, grant off,
+     * safeguarding restriction) redirects back with a plain explanation rather
+     * than rendering an empty dashboard.
+     */
+    public function settingsLinkedAccountActivity(Request $request, string $tenantSlug, string $childId): Response|RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $service = app(SubAccountService::class);
+        $childUserId = (int) $childId;
+
+        // Resolve the display name from this user's own children list — which
+        // also means a childId belonging to someone else never yields a name.
+        $childName = null;
+        try {
+            foreach ($this->settingsNormaliseRelationships($service->getChildAccounts($userId)) as $child) {
+                if ($child['user_id'] === $childUserId) {
+                    $childName = $child['name'];
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        $summary = $childUserId > 0 ? $service->getChildActivitySummary($userId, $childUserId) : null;
+
+        if ($summary === null || $childName === null) {
+            return redirect()->route('govuk-alpha.settings.linked-accounts', [
+                'tenantSlug' => $tenantSlug,
+                'status' => 'activity-denied',
+            ]);
+        }
+
+        return $this->view('accessible-frontend::settings-linked-account-activity', [
+            'title' => __('govuk_alpha_settings.linked.activity_title', ['name' => $childName]),
+            'tenantSlug' => $tenantSlug,
+            'activeNav' => 'account',
+            'childName' => $childName,
+            'summary' => $summary,
+        ]);
+    }
+
+    /**
      * Guardian arrangements — the accessible frontend's equivalent of the React
      * safeguarding tab's "Guardian arrangements" section.
      *
@@ -370,6 +430,12 @@ trait SettingsAuthParity
                 $permissionsFlags[$key] = (bool) ($perms[$key] ?? false);
             }
 
+            // Whether the activity view may be offered for this row. Resolved
+            // through SupportTiers (explicit tiers win, legacy booleans are the
+            // floor) so this page and the React card agree on when the link
+            // exists — never show what does not work.
+            $activityVisible = \App\Support\Safeguarding\SupportTiers::resolve($perms)['activity'] !== 'none';
+
             $out[] = [
                 'relationship_id' => (int) ($row['relationship_id'] ?? 0),
                 'user_id' => (int) ($row['user_id'] ?? 0),
@@ -379,6 +445,7 @@ trait SettingsAuthParity
                 'relationship_type' => (string) ($row['relationship_type'] ?? 'family'),
                 'status' => (string) ($row['status'] ?? 'pending'),
                 'permissions' => $permissionsFlags,
+                'can_see_activity' => $activityVisible,
             ];
         }
 
