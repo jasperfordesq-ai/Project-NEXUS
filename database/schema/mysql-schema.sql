@@ -49,15 +49,49 @@ CREATE TABLE `account_relationships` (
   `relationship_type` varchar(50) NOT NULL DEFAULT 'family' COMMENT 'family, guardian, carer, organization',
   `permissions` text DEFAULT NULL COMMENT 'JSON: {can_view_activity, can_manage_listings, can_transact}',
   `status` enum('active','pending','revoked') NOT NULL DEFAULT 'pending',
+  `proposed_by_user_id` int(11) DEFAULT NULL COMMENT 'Staff member who proposed this relationship; NULL = member-initiated',
+  `staff_notes` varchar(500) DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
+  `declined_at` datetime DEFAULT NULL,
+  `withdrawn_at` datetime DEFAULT NULL,
+  `response_reason` varchar(500) DEFAULT NULL COMMENT 'The answering member''s own words - optional, never mandatory',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_relationship` (`parent_user_id`,`child_user_id`,`tenant_id`),
   KEY `idx_parent` (`parent_user_id`,`tenant_id`),
   KEY `idx_child` (`child_user_id`,`tenant_id`),
-  KEY `idx_tenant_status` (`tenant_id`,`status`)
+  KEY `idx_tenant_status` (`tenant_id`,`status`),
+  KEY `fk_ar_proposed_by` (`proposed_by_user_id`),
+  CONSTRAINT `fk_ar_proposed_by` FOREIGN KEY (`proposed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `account_relationship_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `account_relationship_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `relationship_id` int(11) NOT NULL,
+  `parent_user_id` int(11) NOT NULL,
+  `child_user_id` int(11) NOT NULL,
+  `action` varchar(24) NOT NULL,
+  `actor_role` varchar(16) NOT NULL,
+  `actor_user_id` int(11) DEFAULT NULL,
+  `reason` varchar(500) DEFAULT NULL,
+  `details` longtext DEFAULT NULL COMMENT 'JSON, e.g. tier before/after on permissions_changed',
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_ar_events_relationship` (`tenant_id`,`relationship_id`,`id`),
+  KEY `idx_ar_events_child` (`tenant_id`,`child_user_id`,`created_at`),
+  CONSTRAINT `chk_ar_events_action` CHECK (`action` in ('requested','proposed','approved','declined','withdrawn','revoked','permissions_changed')),
+  CONSTRAINT `chk_ar_events_actor` CHECK (`actor_role` in ('member','staff','system'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ar_events_no_update` BEFORE UPDATE ON `account_relationship_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'account_relationship_events_immutable' */;;
+/*!50003 CREATE*/ /*!50003 TRIGGER `trg_ar_events_no_delete` BEFORE DELETE ON `account_relationship_events` FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'account_relationship_events_immutable' */;;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `achievement_analytics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

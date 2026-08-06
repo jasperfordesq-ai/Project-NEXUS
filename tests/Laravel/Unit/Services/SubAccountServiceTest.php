@@ -85,9 +85,11 @@ class SubAccountServiceTest extends TestCase
 
     public function test_revoke_returns_false_when_not_found(): void
     {
+        // revoke() now fetches the row first (the immutable event trail needs
+        // the parties), so a missing row returns false before any update.
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
-        $mockQuery->shouldReceive('update')->andReturn(0);
+        $mockQuery->shouldReceive('first')->andReturnNull();
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
 
         $result = $this->service->revoke(999, 1);

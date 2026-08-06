@@ -13,6 +13,7 @@ use App\Support\Safeguarding\SupportTiers;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -362,6 +363,8 @@ class SubAccountService
             ]);
         }
 
+        $this->relationshipEvent($rel, 'requested', 'member', $parentUserId);
+
         return $rel->id;
     }
 
@@ -406,6 +409,8 @@ class SubAccountService
         if (! $approved) {
             return false;
         }
+
+        $this->relationshipEvent($pending, 'approved', 'member', $childUserId);
 
         // Tell the requester their request was accepted. Until 2026-08-06 the
         // approval was silent in every channel: the person who asked had no way
@@ -461,13 +466,28 @@ class SubAccountService
      */
     public function revoke(int $relationshipId, int $userId): bool
     {
-        return $this->relationship->newQuery()
+        /** @var AccountRelationship|null $row */
+        $row = $this->relationship->newQuery()
             ->where('id', $relationshipId)
             ->where(fn (Builder $q) => $q->where('parent_user_id', $userId)->orWhere('child_user_id', $userId))
+            ->first();
+
+        if (! $row) {
+            return false;
+        }
+
+        $revoked = $this->relationship->newQuery()
+            ->where('id', $relationshipId)
             ->update([
                 'status'     => 'revoked',
                 'updated_at' => now(),
             ]) > 0;
+
+        if ($revoked) {
+            $this->relationshipEvent($row, 'revoked', 'member', $userId);
+        }
+
+        return $revoked;
     }
 
     /**
@@ -551,6 +571,13 @@ class SubAccountService
         $existing->update([
             'permissions' => SupportTiers::toLegacyBooleans($afterTiers) + ['tiers' => $afterTiers],
         ]);
+
+        if ($afterTiers !== $beforeTiers) {
+            $this->relationshipEvent($existing, 'permissions_changed', 'member', $parentUserId, null, [
+                'tiers_before' => $beforeTiers,
+                'tiers_after' => $afterTiers,
+            ]);
+        }
 
         return true;
     }
@@ -780,6 +807,48 @@ class SubAccountService
         } catch (\Throwable $e) {
             Log::warning('Failed to notify dependent of linked-account proxy action', [
                 'child_user_id' => $childUserId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Append to the relationship's immutable trail (account_relationship_events,
+     * DB-trigger enforced). A grant of real power over another member's
+     * listings and credits deserves at least the audit rigor of the
+     * record-only assignments table. Never fails the member action — but
+     * never passes silently either.
+     *
+     * @param AccountRelationship|object $rel Needs id/tenant_id/parent_user_id/child_user_id.
+     * @param array<string, mixed>|null $details
+     */
+    private function relationshipEvent(
+        object $rel,
+        string $action,
+        string $actorRole,
+        ?int $actorUserId,
+        ?string $reason = null,
+        ?array $details = null,
+    ): void {
+        try {
+            DB::table('account_relationship_events')->insert([
+                'tenant_id' => (int) ($rel->tenant_id ?? TenantContext::getId()),
+                'relationship_id' => (int) $rel->id,
+                'parent_user_id' => (int) $rel->parent_user_id,
+                'child_user_id' => (int) $rel->child_user_id,
+                'action' => $action,
+                'actor_role' => $actorRole,
+                'actor_user_id' => $actorUserId,
+                'reason' => $reason,
+                'details' => $details !== null ? json_encode($details) : null,
+                'ip_address' => request()?->ip(),
+                'user_agent' => mb_substr((string) request()?->userAgent(), 0, 255),
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to write account relationship event', [
+                'relationship_id' => $rel->id ?? null,
+                'action' => $action,
                 'error' => $e->getMessage(),
             ]);
         }
