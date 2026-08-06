@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Exchange history, messages, feed posts, group memberships, event records, reviews and volunteering hours deliberately stay in the community where they happened: each involves another member or that community's own record, and dragging them along would corrupt the books on both sides. The move dialogs state precisely what moves and what stays, in all eleven languages.
 
+### Changed
+
+- **The word "ward" is retired from every screen. The platform now says "supported member".** Wardship was abolished in Ireland by the Assisted Decision-Making (Capacity) Act 2015 (commenced 2023; the last wardship cases must be discharged by October 2027), so the term is legally obsolete — and it describes a person by their dependency rather than as a member. The broker and admin safeguarding dashboards (table columns, the "Consented Wards" statistic, the assignment form labels, the built-in help text) and three API error messages now use "supported member" phrasing, translated in all eleven languages. Database columns and code identifiers are unchanged — this is what people read, not how the system stores it. First step of the approved guardian-module redesign.
+
 ### Fixed
 
 - **The "Create Guardian Assignment" form claimed the guardian could read the member's messages. That was never true.** The help text under the guardian email field on the broker safeguarding dashboard said "The guardian can view messages sent to and from this member" — but a guardian assignment is a written record for safeguarding staff and grants no access of any kind, and nobody on the platform can read another member's messages (that carer permission was deliberately removed on 2026-08-05 because it would expose the other person in the conversation, who never agreed). The danger ran one way: a broker could believe monitoring was in place and skip a protective step they would otherwise have taken. The text now says what the record actually is — a note for safeguarding staff that gives the guardian no access to the member's messages or account — in all eleven languages.

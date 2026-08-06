@@ -707,9 +707,9 @@ return [
     // ============================================
     // ADMIN — SAFEGUARDING
     // ============================================
-    'ward_guardian_emails_required'        => 'Both ward and guardian emails are required',
+    'ward_guardian_emails_required'        => 'Both the supported member\'s and the guardian\'s emails are required',
     'no_active_member_found'               => 'No active member found with email: :email',
-    'ward_not_found_in_tenant'             => 'Ward user not found in this tenant',
+    'ward_not_found_in_tenant'             => 'Supported member not found in this community',
 
     // ============================================
     // ADMIN — LEGAL DOCS
@@ -1207,7 +1207,7 @@ return [
     'safeguarding_tables_not_created'      => 'Safeguarding tables have not been created yet.',
     'safeguarding_message_not_found_or_reviewed' => 'Message not found or already reviewed.',
     'guardian_not_found_in_tenant'         => 'Guardian user not found in this tenant',
-    'ward_guardian_same_person'            => 'Ward and guardian cannot be the same person',
+    'ward_guardian_same_person'            => 'The supported member and the guardian cannot be the same person',
     'safeguarding_assignment_not_found_or_revoked' => 'Assignment not found or already revoked.',
     'no_active_member_found'               => 'No active member found with email: :email',
     'marketplace_listing_not_found'        => 'Marketplace listing not found.',
