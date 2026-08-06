@@ -820,5 +820,29 @@
   "twofa_backup_remaining_few": "{{count}} رموز النسخ الاحتياطي المتبقية",
   "twofa_backup_remaining_many": "{{count}} رموز النسخ الاحتياطي المتبقية",
   "twofa_backup_remaining_two": "{{count}} رموز النسخ الاحتياطي المتبقية",
-  "twofa_backup_remaining_zero": "{{count}} رموز النسخ الاحتياطي المتبقية"
+  "twofa_backup_remaining_zero": "{{count}} رموز النسخ الاحتياطي المتبقية",
+  "support_activity": {
+    "view_button": "الاطلاع على النشاط",
+    "title": "نشاط {{name}}",
+    "explainer": "ملخص لما قام به {{name}} في بنك الوقت. يمكنك رؤية هذا لأنه سمح بذلك. هذه الصفحة للعرض فقط.",
+    "loading": "جارٍ تحميل النشاط",
+    "load_failed": "تعذر تحميل النشاط. ربما تم تغيير الإذن.",
+    "close": "إغلاق",
+    "hours_heading": "أرصدة الوقت",
+    "hours_given": "الساعات المقدمة",
+    "hours_received": "الساعات المستلمة",
+    "net_balance": "الرصيد الصافي",
+    "community_heading": "المجتمع",
+    "connections": "جهات الاتصال",
+    "groups": "المجموعات",
+    "posts_30_days": "المنشورات (30 يومًا)",
+    "timeline_heading": "النشاط الأخير",
+    "timeline_empty": "لا يوجد نشاط حديث لعرضه.",
+    "type_post": "نشر منشورًا",
+    "type_comment": "علّق",
+    "type_connection": "اتصال جديد",
+    "type_gave_hours": "قدّم ساعات",
+    "type_received_hours": "استلم ساعات",
+    "type_other": "نشاط"
+  }
 }

@@ -808,5 +808,29 @@
   "twofa_backup_remaining_other": "{{count}} códigos de backup restantes",
   "biometric_all_removed_many": "Chave(s) {{count}} removida(s).",
   "biometric_enabled_many": "Chave(s) {{count}} registrada(s)",
-  "twofa_backup_remaining_many": "{{count}} códigos de backup restantes"
+  "twofa_backup_remaining_many": "{{count}} códigos de backup restantes",
+  "support_activity": {
+    "view_button": "Ver a sua atividade",
+    "title": "Atividade de {{name}}",
+    "explainer": "Um resumo do que {{name}} tem feito no banco de tempo. Pode ver isto porque essa pessoa o permitiu. Esta página apenas mostra.",
+    "loading": "A carregar atividade",
+    "load_failed": "Não foi possível carregar a atividade. A permissão pode ter sido alterada.",
+    "close": "Fechar",
+    "hours_heading": "Créditos de tempo",
+    "hours_given": "Horas dadas",
+    "hours_received": "Horas recebidas",
+    "net_balance": "Saldo líquido",
+    "community_heading": "Comunidade",
+    "connections": "Ligações",
+    "groups": "Grupos",
+    "posts_30_days": "Publicações (30 dias)",
+    "timeline_heading": "Atividade recente",
+    "timeline_empty": "Nada recente para mostrar.",
+    "type_post": "Publicou",
+    "type_comment": "Comentou",
+    "type_connection": "Nova ligação",
+    "type_gave_hours": "Deu horas",
+    "type_received_hours": "Recebeu horas",
+    "type_other": "Atividade"
+  }
 }

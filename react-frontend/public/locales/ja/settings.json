@@ -804,5 +804,29 @@
   "biometric_enabled_one": "{{count}} パスキーが登録されました",
   "biometric_enabled_other": "{{count}} パスキーが登録されました",
   "twofa_backup_remaining_one": "{{count}} 個のバックアップ コードが残っています",
-  "twofa_backup_remaining_other": "{{count}} バックアップコードが残っています"
+  "twofa_backup_remaining_other": "{{count}} バックアップコードが残っています",
+  "support_activity": {
+    "view_button": "アクティビティを確認",
+    "title": "{{name}} さんのアクティビティ",
+    "explainer": "{{name}} さんがタイムバンクで行ったことの概要です。本人が許可しているため閲覧できます。このページは表示のみを行います。",
+    "loading": "アクティビティを読み込み中",
+    "load_failed": "アクティビティを読み込めませんでした。権限が変更された可能性があります。",
+    "close": "閉じる",
+    "hours_heading": "タイムクレジット",
+    "hours_given": "提供した時間",
+    "hours_received": "受け取った時間",
+    "net_balance": "差引残高",
+    "community_heading": "コミュニティ",
+    "connections": "つながり",
+    "groups": "参加グループ",
+    "posts_30_days": "投稿（30日間）",
+    "timeline_heading": "最近のアクティビティ",
+    "timeline_empty": "最近のアクティビティはありません。",
+    "type_post": "投稿",
+    "type_comment": "コメント",
+    "type_connection": "新しいつながり",
+    "type_gave_hours": "時間を提供",
+    "type_received_hours": "時間を受領",
+    "type_other": "アクティビティ"
+  }
 }

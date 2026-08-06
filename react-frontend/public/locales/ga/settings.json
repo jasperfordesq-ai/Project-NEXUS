@@ -816,5 +816,29 @@
   "biometric_enabled_two": "{{count}} pas-eochair cláraithe",
   "twofa_backup_remaining_few": "{{count}} cód cúltaca fágtha",
   "twofa_backup_remaining_many": "{{count}} cód cúltaca fágtha",
-  "twofa_backup_remaining_two": "{{count}} cód cúltaca fágtha"
+  "twofa_backup_remaining_two": "{{count}} cód cúltaca fágtha",
+  "support_activity": {
+    "view_button": "Féach ar a ngníomhaíocht",
+    "title": "Gníomhaíocht do {{name}}",
+    "explainer": "Achoimre ar a bhfuil déanta ag {{name}} ar an mbanc ama. Is féidir leat é seo a fheiceáil toisc gur cheadaigh siad é. Ní dhéanann an leathanach seo ach taispeáint.",
+    "loading": "Gníomhaíocht á lódáil",
+    "load_failed": "Níorbh fhéidir a ngníomhaíocht a lódáil. Seans gur athraíodh an cead.",
+    "close": "Dún",
+    "hours_heading": "Creidmheasanna ama",
+    "hours_given": "Uaireanta tugtha",
+    "hours_received": "Uaireanta faighte",
+    "net_balance": "Glaniarmhéid",
+    "community_heading": "Pobal",
+    "connections": "Naisc",
+    "groups": "Grúpaí a ndeachthas isteach iontu",
+    "posts_30_days": "Postálacha (30 lá)",
+    "timeline_heading": "Gníomhaíocht le déanaí",
+    "timeline_empty": "Níl aon rud le déanaí le taispeáint.",
+    "type_post": "Postáilte",
+    "type_comment": "Trácht déanta",
+    "type_connection": "Nasc nua",
+    "type_gave_hours": "Uaireanta tugtha",
+    "type_received_hours": "Uaireanta faighte",
+    "type_other": "Gníomhaíocht"
+  }
 }

@@ -804,5 +804,29 @@
   "biometric_enabled_one": "{{count}} passkey(s) registered",
   "biometric_enabled_other": "{{count}} passkey(s) registered",
   "twofa_backup_remaining_one": "{{count}} backup codes remaining",
-  "twofa_backup_remaining_other": "{{count}} backup codes remaining"
+  "twofa_backup_remaining_other": "{{count}} backup codes remaining",
+  "support_activity": {
+    "view_button": "See their activity",
+    "title": "Activity for {{name}}",
+    "explainer": "A summary of what {{name}} has been doing on the timebank. You can see this because they allowed it. Seeing is all this page does.",
+    "loading": "Loading activity",
+    "load_failed": "Their activity could not be loaded. The permission may have been changed.",
+    "close": "Close",
+    "hours_heading": "Time credits",
+    "hours_given": "Hours given",
+    "hours_received": "Hours received",
+    "net_balance": "Net balance",
+    "community_heading": "Community",
+    "connections": "Connections",
+    "groups": "Groups joined",
+    "posts_30_days": "Posts (30 days)",
+    "timeline_heading": "Recent activity",
+    "timeline_empty": "Nothing recent to show.",
+    "type_post": "Posted",
+    "type_comment": "Commented",
+    "type_connection": "New connection",
+    "type_gave_hours": "Gave hours",
+    "type_received_hours": "Received hours",
+    "type_other": "Activity"
+  }
 }

@@ -804,5 +804,29 @@
   "biometric_enabled_one": "{{count}}-Passschlüssel registriert",
   "biometric_enabled_other": "{{count}}-Passschlüssel registriert",
   "twofa_backup_remaining_one": "{{count}} Backup-Codes übrig",
-  "twofa_backup_remaining_other": "{{count}} Backup-Codes übrig"
+  "twofa_backup_remaining_other": "{{count}} Backup-Codes übrig",
+  "support_activity": {
+    "view_button": "Deren Aktivität ansehen",
+    "title": "Aktivität von {{name}}",
+    "explainer": "Eine Übersicht darüber, was {{name}} in der Zeitbank gemacht hat. Sie können das sehen, weil diese Person es erlaubt hat. Diese Seite zeigt nur an — mehr nicht.",
+    "loading": "Aktivität wird geladen",
+    "load_failed": "Die Aktivität konnte nicht geladen werden. Möglicherweise wurde die Berechtigung geändert.",
+    "close": "Schließen",
+    "hours_heading": "Zeitguthaben",
+    "hours_given": "Gegebene Stunden",
+    "hours_received": "Erhaltene Stunden",
+    "net_balance": "Saldo",
+    "community_heading": "Gemeinschaft",
+    "connections": "Kontakte",
+    "groups": "Beigetretene Gruppen",
+    "posts_30_days": "Beiträge (30 Tage)",
+    "timeline_heading": "Letzte Aktivität",
+    "timeline_empty": "Nichts Aktuelles vorhanden.",
+    "type_post": "Beitrag veröffentlicht",
+    "type_comment": "Kommentiert",
+    "type_connection": "Neuer Kontakt",
+    "type_gave_hours": "Stunden gegeben",
+    "type_received_hours": "Stunden erhalten",
+    "type_other": "Aktivität"
+  }
 }

@@ -812,5 +812,29 @@
   "biometric_enabled_few": "Zarejestrowano klucz(e) {{count}}",
   "biometric_enabled_many": "Zarejestrowano klucz(e) {{count}}",
   "twofa_backup_remaining_few": "{{count}} kody zapasowe pozostałe",
-  "twofa_backup_remaining_many": "{{count}} kody zapasowe pozostałe"
+  "twofa_backup_remaining_many": "{{count}} kody zapasowe pozostałe",
+  "support_activity": {
+    "view_button": "Podgląd aktywności",
+    "title": "Aktywność: {{name}}",
+    "explainer": "Podsumowanie tego, co {{name}} robi w banku czasu. Widzisz to, ponieważ ta osoba na to pozwoliła. Ta strona tylko pokazuje informacje.",
+    "loading": "Wczytywanie aktywności",
+    "load_failed": "Nie udało się wczytać aktywności. Uprawnienie mogło zostać zmienione.",
+    "close": "Zamknij",
+    "hours_heading": "Kredyty czasowe",
+    "hours_given": "Godziny przekazane",
+    "hours_received": "Godziny otrzymane",
+    "net_balance": "Saldo netto",
+    "community_heading": "Społeczność",
+    "connections": "Kontakty",
+    "groups": "Grupy",
+    "posts_30_days": "Wpisy (30 dni)",
+    "timeline_heading": "Ostatnia aktywność",
+    "timeline_empty": "Brak ostatniej aktywności.",
+    "type_post": "Opublikowano wpis",
+    "type_comment": "Skomentowano",
+    "type_connection": "Nowy kontakt",
+    "type_gave_hours": "Przekazano godziny",
+    "type_received_hours": "Otrzymano godziny",
+    "type_other": "Aktywność"
+  }
 }

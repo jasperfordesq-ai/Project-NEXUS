@@ -808,5 +808,29 @@
   "twofa_backup_remaining_other": "{{count}} codici di backup rimanenti",
   "biometric_all_removed_many": "Rimosse {{count}} passkey.",
   "biometric_enabled_many": "{{count}} passkey registrate",
-  "twofa_backup_remaining_many": "{{count}} codici di backup rimanenti"
+  "twofa_backup_remaining_many": "{{count}} codici di backup rimanenti",
+  "support_activity": {
+    "view_button": "Vedi la sua attività",
+    "title": "Attività di {{name}}",
+    "explainer": "Un riepilogo di ciò che {{name}} ha fatto nella banca del tempo. Puoi vederlo perché questa persona lo ha consentito. Questa pagina mostra soltanto.",
+    "loading": "Caricamento attività",
+    "load_failed": "Impossibile caricare la sua attività. Il permesso potrebbe essere stato modificato.",
+    "close": "Chiudi",
+    "hours_heading": "Crediti di tempo",
+    "hours_given": "Ore date",
+    "hours_received": "Ore ricevute",
+    "net_balance": "Saldo netto",
+    "community_heading": "Comunità",
+    "connections": "Collegamenti",
+    "groups": "Gruppi a cui partecipa",
+    "posts_30_days": "Post (30 giorni)",
+    "timeline_heading": "Attività recente",
+    "timeline_empty": "Niente di recente da mostrare.",
+    "type_post": "Post pubblicato",
+    "type_comment": "Commento",
+    "type_connection": "Nuovo collegamento",
+    "type_gave_hours": "Ore date",
+    "type_received_hours": "Ore ricevute",
+    "type_other": "Attività"
+  }
 }

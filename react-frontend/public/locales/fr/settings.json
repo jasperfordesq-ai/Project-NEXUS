@@ -808,5 +808,29 @@
   "twofa_backup_remaining_other": "{{count}} codes de secours restants",
   "biometric_all_removed_many": "Suppression des clés d'accès {{count}}.",
   "biometric_enabled_many": "{{count}} clés d'accès enregistrées",
-  "twofa_backup_remaining_many": "{{count}} codes de secours restants"
+  "twofa_backup_remaining_many": "{{count}} codes de secours restants",
+  "support_activity": {
+    "view_button": "Voir son activité",
+    "title": "Activité de {{name}}",
+    "explainer": "Un résumé de ce que {{name}} a fait sur la banque de temps. Vous pouvez le voir parce que cette personne l’a autorisé. Cette page ne fait qu’afficher.",
+    "loading": "Chargement de l’activité",
+    "load_failed": "Impossible de charger son activité. L’autorisation a peut-être été modifiée.",
+    "close": "Fermer",
+    "hours_heading": "Crédits de temps",
+    "hours_given": "Heures données",
+    "hours_received": "Heures reçues",
+    "net_balance": "Solde net",
+    "community_heading": "Communauté",
+    "connections": "Relations",
+    "groups": "Groupes rejoints",
+    "posts_30_days": "Publications (30 jours)",
+    "timeline_heading": "Activité récente",
+    "timeline_empty": "Rien de récent à afficher.",
+    "type_post": "Publication",
+    "type_comment": "Commentaire",
+    "type_connection": "Nouvelle relation",
+    "type_gave_hours": "Heures données",
+    "type_received_hours": "Heures reçues",
+    "type_other": "Activité"
+  }
 }

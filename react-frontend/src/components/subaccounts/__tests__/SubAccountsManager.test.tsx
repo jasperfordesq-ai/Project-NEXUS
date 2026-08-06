@@ -335,4 +335,58 @@ describe('SubAccountsManager', () => {
       expect(screen.getByText('Retry')).toBeInTheDocument();
     });
   });
+
+  describe('View activity gating', () => {
+    // "Never show what does not work": the button must track the activity
+    // tier, not merely the relationship being active.
+    it('offers View activity when the activity grant is on', async () => {
+      mockLoad();
+
+      render(<SubAccountsManager />);
+
+      await screen.findByText('Child One');
+      expect(screen.getByRole('button', { name: 'See their activity' })).toBeInTheDocument();
+    });
+
+    it('offers no View activity button when the activity grant is off', async () => {
+      mockLoad(
+        [
+          {
+            ...mockManagedAccounts[0]!,
+            permissions: {
+              can_view_activity: false,
+              can_manage_listings: false,
+              can_transact: false,
+              can_view_messages: false,
+            },
+          },
+        ],
+        [],
+      );
+
+      render(<SubAccountsManager />);
+
+      await screen.findByText('Child One');
+      expect(screen.queryByRole('button', { name: 'See their activity' })).not.toBeInTheDocument();
+    });
+
+    it('opens the activity modal and loads the child activity endpoint', async () => {
+      mockLoad();
+      // The modal's fetch is the third api.get call (after children + parents).
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { timeline: [], hours_summary: { hours_given: 1, hours_received: 0, transactions_given: 1, transactions_received: 0, net_balance: -1 } },
+      });
+
+      render(<SubAccountsManager />);
+
+      await screen.findByText('Child One');
+      fireEvent.click(screen.getByRole('button', { name: 'See their activity' }));
+
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith('/v2/users/me/sub-accounts/10/activity');
+      });
+      expect(await screen.findByText('Activity for Child One')).toBeInTheDocument();
+    });
+  });
 });

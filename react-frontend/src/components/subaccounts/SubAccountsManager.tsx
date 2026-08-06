@@ -28,6 +28,7 @@ import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
 import { SupportPrepareModal, type PrepareActionType } from './SupportPrepareModal';
+import { SupportActivityModal } from './SupportActivityModal';
 
 type RelationshipStatus = 'active' | 'pending' | 'revoked' | 'rejected';
 type PermissionKey = 'can_view_activity' | 'can_manage_listings' | 'can_transact' | 'can_view_messages';
@@ -203,6 +204,12 @@ export function SubAccountsManager() {
     supportedUserId: number;
     supportedName: string;
     tier: 'co_decide' | 'represent';
+  } | null>(null);
+  // Read-only activity view — the `assist` tier's one capability. Kept apart
+  // from `preparing`: seeing and doing are different tiers by design.
+  const [viewingActivity, setViewingActivity] = useState<{
+    supportedUserId: number;
+    supportedName: string;
   } | null>(null);
 
   const tRef = useRef(t);
@@ -478,8 +485,20 @@ export function SubAccountsManager() {
                   one), represent acts immediately. The modal states which
                   before any field is filled in.
                 */}
-                {(account.tiers.listings !== 'none' && account.tiers.listings !== 'assist') || (account.tiers.credits !== 'none' && account.tiers.credits !== 'assist') ? (
+                {account.tiers.activity !== 'none' || (account.tiers.listings !== 'none' && account.tiers.listings !== 'assist') || (account.tiers.credits !== 'none' && account.tiers.credits !== 'assist') ? (
                   <div className="flex flex-wrap items-center gap-2">
+                    {account.tiers.activity !== 'none' && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onPress={() => setViewingActivity({
+                          supportedUserId: account.user_id,
+                          supportedName: name,
+                        })}
+                      >
+                        {t('support_activity.view_button')}
+                      </Button>
+                    )}
                     {account.tiers.listings !== 'none' && account.tiers.listings !== 'assist' && (
                       <Button
                         size="sm"
@@ -750,6 +769,15 @@ export function SubAccountsManager() {
           supportedUserId={preparing.supportedUserId}
           supportedName={preparing.supportedName}
           tier={preparing.tier}
+        />
+      )}
+
+      {viewingActivity && (
+        <SupportActivityModal
+          isOpen
+          onOpenChange={(open) => { if (!open) setViewingActivity(null); }}
+          supportedUserId={viewingActivity.supportedUserId}
+          supportedName={viewingActivity.supportedName}
         />
       )}
     </div>

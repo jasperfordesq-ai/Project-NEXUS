@@ -804,5 +804,29 @@
   "biometric_enabled_one": "{{count}} passkey geregistreerd",
   "biometric_enabled_other": "{{count}} passkeys geregistreerd",
   "twofa_backup_remaining_one": "{{count}} back-upcodes over",
-  "twofa_backup_remaining_other": "{{count}} back-upcodes over"
+  "twofa_backup_remaining_other": "{{count}} back-upcodes over",
+  "support_activity": {
+    "view_button": "Hun activiteit bekijken",
+    "title": "Activiteit van {{name}}",
+    "explainer": "Een overzicht van wat {{name}} op de tijdbank heeft gedaan. Je kunt dit zien omdat diegene dat heeft toegestaan. Deze pagina toont alleen.",
+    "loading": "Activiteit laden",
+    "load_failed": "De activiteit kon niet worden geladen. Mogelijk is de toestemming gewijzigd.",
+    "close": "Sluiten",
+    "hours_heading": "Tijdcredits",
+    "hours_given": "Gegeven uren",
+    "hours_received": "Ontvangen uren",
+    "net_balance": "Nettosaldo",
+    "community_heading": "Gemeenschap",
+    "connections": "Connecties",
+    "groups": "Groepen",
+    "posts_30_days": "Berichten (30 dagen)",
+    "timeline_heading": "Recente activiteit",
+    "timeline_empty": "Niets recents om te tonen.",
+    "type_post": "Bericht geplaatst",
+    "type_comment": "Gereageerd",
+    "type_connection": "Nieuwe connectie",
+    "type_gave_hours": "Uren gegeven",
+    "type_received_hours": "Uren ontvangen",
+    "type_other": "Activiteit"
+  }
 }
