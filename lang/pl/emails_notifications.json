@@ -140,5 +140,22 @@
     "approved_body": "{{name}} zatwierdził(a) Twoją prośbę o połączenie z kontem.",
     "approved_what_next": "Połączenie i przyznane Ci uprawnienia znajdziesz na stronie połączonych kont.",
     "btn_view_linked_accounts": "Zobacz połączone konta"
+  },
+  "support_action": {
+    "pending_heading": "Coś czeka na Twoją akceptację",
+    "pending_body": "Firma {{name}} przygotowała {{what}} w Twoim imieniu. Stanie się tak tylko wtedy, gdy to zatwierdzisz.",
+    "label_prepared": "Co zostało przygotowane",
+    "pending_nothing_without_you": "Nic nie dzieje się bez Twojej zgody. Możesz je zatwierdzić jednym kliknięciem poniżej lub na stronie Połączone konta.",
+    "pending_decline_is_fine": "Możesz także odmówić. Odmowa jest zawsze w porządku i nigdy nie musisz podawać powodu.",
+    "pending_expires": "Jeśli nic nie zrobisz, to żądanie po prostu wygaśnie {{date}}.",
+    "btn_review_and_answer": "Przejrzyj i odpowiedz",
+    "confirmed_heading": "Zatwierdzony",
+    "confirmed_body": "{{name}} zatwierdzono {{what}}, które przygotowałeś. Zostało to teraz dokonane w ich imieniu i zapisane jako dokonane przez ciebie.",
+    "declined_heading": "Odrzucony",
+    "declined_body": "{{name}} odrzuciłeś {{what}}, które przygotowałeś. Nic nie zostało przeprowadzone.",
+    "expired_heading": "Żądanie wygasło",
+    "expired_body": "Odpowiedź na {{what}}, którą przygotowałeś na {{name}}, nie została udzielona na czas i wygasła. Nic nie zostało przeprowadzone.",
+    "type_listing_create": "nowe zestawienie",
+    "type_credit_transfer": "przelew kredytowy w terminie"
   }
 }

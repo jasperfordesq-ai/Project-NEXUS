@@ -140,5 +140,22 @@
     "approved_body": "{{name}} a approuvé votre demande de liaison à son compte.",
     "approved_what_next": "Vous pouvez consulter le lien et les autorisations qui vous ont été accordées sur la page des comptes liés.",
     "btn_view_linked_accounts": "Voir les comptes liés"
+  },
+  "support_action": {
+    "pending_heading": "Quelque chose attend votre approbation",
+    "pending_body": "{{name}} a préparé {{what}} en votre nom. Cela n’arrivera que si vous l’approuvez.",
+    "label_prepared": "Ce qui a été préparé",
+    "pending_nothing_without_you": "Rien ne se passe sans votre accord. Vous pouvez l'approuver en un clic ci-dessous, ou depuis votre page Comptes liés.",
+    "pending_decline_is_fine": "Vous pouvez également le refuser. Il est toujours acceptable de refuser et vous n’avez jamais à donner de raison.",
+    "pending_expires": "Si vous ne faites rien, cette demande expire simplement le {{date}}.",
+    "btn_review_and_answer": "Révision et réponse",
+    "confirmed_heading": "Approuvé",
+    "confirmed_body": "{{name}} a approuvé {{what}} que vous avez préparé. Cela a maintenant été réalisé en leur nom, enregistré comme étant fait par vous.",
+    "declined_heading": "Refusé",
+    "declined_body": "{{name}} a refusé {{what}} que vous aviez préparé. Rien n'a été réalisé.",
+    "expired_heading": "Demande expirée",
+    "expired_body": "{{what}} que vous avez préparé pour {{name}} n'a pas reçu de réponse à temps et a expiré. Rien n'a été réalisé.",
+    "type_listing_create": "une nouvelle annonce",
+    "type_credit_transfer": "un transfert de crédit-temps"
   }
 }

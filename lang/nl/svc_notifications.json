@@ -167,5 +167,13 @@
     "fallback_group": "een groep"
   },
   "vetting_renewal": "Herbeoordeling beschermingscertificering voor :name vereist",
-  "vetting_expired": "Beschermingscertificering van :name verlopen; beschermd contact geblokkeerd"
+  "vetting_expired": "Beschermingscertificering van :name verlopen; beschermd contact geblokkeerd",
+  "support_action": {
+    "pending": "{{name}} heeft {{what}} voorbereid zodat u deze kunt goedkeuren",
+    "confirmed": "{{name}} heeft {{what}} goedgekeurd die jij hebt voorbereid",
+    "declined": "{{name}} heeft {{what}} je voorbereid",
+    "expired": "{{what}} waarop je je had voorbereid {{name}} is verlopen zonder antwoord",
+    "type_listing_create": "een nieuwe lijst",
+    "type_credit_transfer": "een tijdskredietoverdracht"
+  }
 }

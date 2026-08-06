@@ -140,5 +140,22 @@
     "approved_body": "{{name}} approved your request to be linked to their account.",
     "approved_what_next": "You can see the link and the permissions you have been given on your linked accounts page.",
     "btn_view_linked_accounts": "View linked accounts"
+  },
+  "support_action": {
+    "pending_heading": "Something is waiting for your approval",
+    "pending_body": "{{name}} has prepared {{what}} on your behalf. It will only happen if you approve it.",
+    "label_prepared": "What was prepared",
+    "pending_nothing_without_you": "Nothing happens without your say-so. You can approve it with one click below, or from your Linked accounts page.",
+    "pending_decline_is_fine": "You can also decline it. Declining is always okay, and you never have to give a reason.",
+    "pending_expires": "If you do nothing, this request simply expires on {{date}}.",
+    "btn_review_and_answer": "Review and answer",
+    "confirmed_heading": "Approved",
+    "confirmed_body": "{{name}} approved {{what}} you prepared. It has now been carried out in their name, recorded as done by you.",
+    "declined_heading": "Declined",
+    "declined_body": "{{name}} declined {{what}} you prepared. Nothing was carried out.",
+    "expired_heading": "Request expired",
+    "expired_body": "{{what}} you prepared for {{name}} was not answered in time and has expired. Nothing was carried out.",
+    "type_listing_create": "a new listing",
+    "type_credit_transfer": "a time-credit transfer"
   }
 }

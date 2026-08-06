@@ -167,5 +167,13 @@
     "fallback_group": "grúpa"
   },
   "vetting_renewal": "Athbhreithni? deimhnithe cosanta dlite do :name",
-  "vetting_expired": "Deimhni? cosanta :name imithe in ?ag; teagmh?il chosanta bactha"
+  "vetting_expired": "Deimhni? cosanta :name imithe in ?ag; teagmh?il chosanta bactha",
+  "support_action": {
+    "pending": "{{name}} ullmhaithe {{what}} chun tú a cheadú",
+    "confirmed": "{{name}} ceadaithe {{what}} a d’ullmhaigh tú",
+    "declined": "Dhiúltaigh {{name}} {{what}} a d’ullmhaigh tú",
+    "expired": "{{what}} a d’ullmhaigh tú do {{name}} imithe in éag gan freagra",
+    "type_listing_create": "liostú nua",
+    "type_credit_transfer": "aistriú creidmheasa ama"
+  }
 }

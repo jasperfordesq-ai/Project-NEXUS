@@ -140,5 +140,22 @@
     "approved_body": "{{name}} aprovou o seu pedido de ligação à conta.",
     "approved_what_next": "Pode ver a ligação e as permissões que lhe foram concedidas na página de contas vinculadas.",
     "btn_view_linked_accounts": "Ver contas vinculadas"
+  },
+  "support_action": {
+    "pending_heading": "Algo está aguardando sua aprovação",
+    "pending_body": "{{name}} preparou {{what}} em seu nome. Isso só acontecerá se você aprovar.",
+    "label_prepared": "O que foi preparado",
+    "pending_nothing_without_you": "Nada acontece sem a sua permissão. Você pode aprová-lo com um clique abaixo ou na página de contas vinculadas.",
+    "pending_decline_is_fine": "Você também pode recusar. Recusar é sempre bom e você nunca precisa dar um motivo.",
+    "pending_expires": "Se você não fizer nada, esta solicitação simplesmente expirará em {{date}}.",
+    "btn_review_and_answer": "Revise e responda",
+    "confirmed_heading": "Aprovado",
+    "confirmed_body": "{{name}} aprovou {{what}} que você preparou. Agora foi realizado em nome deles, registrado como feito por você.",
+    "declined_heading": "Recusado",
+    "declined_body": "{{name}} recusou {{what}} que você preparou. Nada foi realizado.",
+    "expired_heading": "Solicitação expirada",
+    "expired_body": "{{what}} que você preparou para {{name}} não foi respondido a tempo e expirou. Nada foi realizado.",
+    "type_listing_create": "uma nova listagem",
+    "type_credit_transfer": "uma transferência de crédito de tempo"
   }
 }

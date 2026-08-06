@@ -44,6 +44,7 @@ class EmailTriggerAuditService
             ['module' => 'groups', 'event' => 'group_approved_or_rejected', 'category' => 'group_approval', 'critical' => true, 'source_table' => 'email_log'],
             ['module' => 'connections', 'event' => 'request_or_response', 'category' => 'connection', 'critical' => true, 'source_table' => 'notifications'],
             ['module' => 'sub_accounts', 'event' => 'linked_account_request_or_approval', 'category' => 'sub_account', 'critical' => true, 'source_table' => 'notification_queue'],
+            ['module' => 'sub_accounts', 'event' => 'support_action_prepared_or_answered', 'category' => 'support_action', 'critical' => true, 'source_table' => 'notification_queue'],
             ['module' => 'messages', 'event' => 'direct_or_voice_message', 'category' => 'message', 'critical' => true, 'source_table' => 'notification_queue'],
             ['module' => 'listings', 'event' => 'approval_expiry_saved_search', 'category' => 'listing', 'critical' => true, 'source_table' => 'notification_queue'],
             ['module' => 'listings', 'event' => 'listing_expiry_reminder_source', 'category' => 'listing_expiry', 'critical' => true, 'source_table' => 'listing_expiry_reminders_sent'],

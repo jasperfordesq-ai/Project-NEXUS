@@ -51,6 +51,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping()
             ->name('safeguarding-clear-expired-monitoring');
 
+        // Co-decide support actions (guardian redesign phase 3): unanswered
+        // prepared actions expire after 14 days rather than lingering; the
+        // supporter is notified so an expiry is never silent.
+        $schedule->command('support-actions:expire')
+            ->daily()
+            ->withoutOverlapping()
+            ->name('support-actions-expire');
+
         // SLO watch (docs/SLO.md): evaluate the exchange-completion success rate
         // daily and alert (log → Sentry → Slack) + exit non-zero when breached,
         // so a money-path regression is VISIBLE before users complain.

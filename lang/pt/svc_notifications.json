@@ -167,5 +167,13 @@
     "fallback_group": "um grupo"
   },
   "vetting_renewal": "Revis?o da certifica??o de prote??o pendente para :name",
-  "vetting_expired": "Certifica??o de prote??o de :name expirada; contacto protegido bloqueado"
+  "vetting_expired": "Certifica??o de prote??o de :name expirada; contacto protegido bloqueado",
+  "support_action": {
+    "pending": "{{name}} preparou {{what}} para você aprovar",
+    "confirmed": "{{name}} aprovou {{what}} que você preparou",
+    "declined": "{{name}} recusou {{what}} você preparou",
+    "expired": "{{what}} que você preparou para {{name}} expirou sem resposta",
+    "type_listing_create": "uma nova listagem",
+    "type_credit_transfer": "uma transferência de crédito de tempo"
+  }
 }

@@ -140,5 +140,22 @@
     "approved_body": "{{name}} さんが、アカウントとのリンクのリクエストを承認しました。",
     "approved_what_next": "リンクと付与された権限は、リンクされたアカウントのページで確認できます。",
     "btn_view_linked_accounts": "リンクされたアカウントを表示"
+  },
+  "support_action": {
+    "pending_heading": "あなたの承認を待っているものがあります",
+    "pending_body": "{{name}} があなたの代わりに {{what}} を準備しました。あなたがそれを承認した場合にのみそれが起こります。",
+    "label_prepared": "用意されたもの",
+    "pending_nothing_without_you": "あなたが言わなければ何も起こりません。以下でワンクリックするか、リンクされたアカウントのページから承認できます。",
+    "pending_decline_is_fine": "お断りすることも可能です。断るのはいつでも大丈夫で、理由を言う必要はありません。",
+    "pending_expires": "何もしなければ、このリクエストは {{date}} に期限切れになります。",
+    "btn_review_and_answer": "検討して回答する",
+    "confirmed_heading": "承認された",
+    "confirmed_body": "{{name}} は準備した {{what}} を承認しました。それは今、彼らの名前で実行され、あなたが行ったように記録されています。",
+    "declined_heading": "拒否されました",
+    "declined_body": "{{name}} は準備した {{what}} を拒否しました。何も実行されませんでした。",
+    "expired_heading": "リクエストの有効期限が切れました",
+    "expired_body": "{{name}} 用に準備した {{what}} は時間内に応答されなかったため、有効期限が切れました。何も実行されませんでした。",
+    "type_listing_create": "新しいリスト",
+    "type_credit_transfer": "タイムクレジット転送"
   }
 }

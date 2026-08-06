@@ -216,6 +216,16 @@ class NotificationDispatcher
             // digest the member has not opted into.
             'sub_account_request',
             'sub_account_approved',
+            // Co-decide support actions (guardian redesign phase 3). The
+            // pending notification carries the single-use confirm link — for a
+            // member who rarely logs in, the email IS the flow. The answers
+            // matter to the supporter who is waiting to know whether to help
+            // differently. None of these may sit in a digest the member never
+            // opted into.
+            'support_action_pending',
+            'support_action_confirmed',
+            'support_action_declined',
+            'support_action_expired',
         ];
         if (! $policyMuted && in_array($activityType, $criticalInstantTypes, true)) {
             $frequency = 'instant';
@@ -2842,6 +2852,106 @@ HTML;
         </p>
         <div style="text-align: center; margin-top: 24px;">
             <a href="{$frontendUrl}{$basePath}/settings?tab=linked-accounts" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnView}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Email to the SUPPORTED MEMBER: a supporter prepared something and it
+     * waits for their answer. Carries the single-use confirm link (raw token,
+     * never stored) — for a member who rarely logs in, this email IS the flow.
+     * Refusing is stated as an equal option, and no reason is ever required.
+     */
+    public static function buildSupportActionPendingEmail(string $supporterName, \App\Models\SupportPendingAction $action, string $token): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $supporterHtml = htmlspecialchars($supporterName, ENT_QUOTES, 'UTF-8');
+        $typeLabel = htmlspecialchars(__('emails_notifications.support_action.type_' . $action->action_type), ENT_QUOTES, 'UTF-8');
+        $expires = htmlspecialchars((string) $action->expires_at?->translatedFormat('j F Y'), ENT_QUOTES, 'UTF-8');
+        $tokenUrl = $frontendUrl . $basePath . '/support-actions/confirm/' . rawurlencode($token);
+
+        $heading = __('emails_notifications.support_action.pending_heading');
+        $tenantLabel = __('emails_notifications.sub_account.tenant_label', ['community' => $tenantName]);
+        $body = __('emails_notifications.support_action.pending_body', ['name' => $supporterHtml, 'what' => $typeLabel]);
+        $labelWhat = __('emails_notifications.support_action.label_prepared');
+        $nothingHappens = __('emails_notifications.support_action.pending_nothing_without_you');
+        $declineOk = __('emails_notifications.support_action.pending_decline_is_fine');
+        $expiryNote = __('emails_notifications.support_action.pending_expires', ['date' => $expires]);
+        $btnReview = __('emails_notifications.support_action.btn_review_and_answer');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelWhat}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">{$typeLabel}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$nothingHappens}
+        </p>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$declineOk}
+        </p>
+        <p style="color: #64748b; font-size: 13px; line-height: 1.6;">
+            {$expiryNote}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$tokenUrl}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnReview}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Email to the SUPPORTER: how the supported member answered (confirmed /
+     * declined / the action expired unanswered). Any decline reason travels in
+     * the bell + list views, not this email — a reason typed for staff eyes
+     * should not be replayed to the person it refuses.
+     */
+    public static function buildSupportActionAnswerEmail(string $supportedName, \App\Models\SupportPendingAction $action, string $outcomeKey): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $supportedHtml = htmlspecialchars($supportedName, ENT_QUOTES, 'UTF-8');
+        $typeLabel = htmlspecialchars(__('emails_notifications.support_action.type_' . $action->action_type), ENT_QUOTES, 'UTF-8');
+
+        $isConfirmed = $outcomeKey === 'confirmed';
+        $gradient = $isConfirmed
+            ? 'background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669);'
+            : 'background-color: #64748b; background-image: linear-gradient(135deg, #64748b, #475569);';
+
+        $heading = __('emails_notifications.support_action.' . $outcomeKey . '_heading');
+        $tenantLabel = __('emails_notifications.sub_account.tenant_label', ['community' => $tenantName]);
+        $body = __('emails_notifications.support_action.' . $outcomeKey . '_body', ['name' => $supportedHtml, 'what' => $typeLabel]);
+        $btnView = __('emails_notifications.sub_account.btn_view_linked_accounts');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="{$gradient} padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}/settings?tab=linked-accounts" style="display: inline-block; {$gradient} color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnView}</a>
         </div>
     </div>
 </div>

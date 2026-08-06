@@ -140,5 +140,22 @@
     "approved_body": "{{name}} aprobó tu solicitud de vincularte a su cuenta.",
     "approved_what_next": "Puedes ver el vínculo y los permisos que te han concedido en la página de cuentas vinculadas.",
     "btn_view_linked_accounts": "Ver cuentas vinculadas"
+  },
+  "support_action": {
+    "pending_heading": "Algo está esperando tu aprobación.",
+    "pending_body": "{{name}} ha preparado {{what}} en tu nombre. Sólo sucederá si lo apruebas.",
+    "label_prepared": "lo que se preparó",
+    "pending_nothing_without_you": "Nada sucede sin tu permiso. Puede aprobarlo con un clic a continuación o desde su página de cuentas vinculadas.",
+    "pending_decline_is_fine": "También puedes rechazarlo. Rechazar siempre está bien y nunca es necesario dar una razón.",
+    "pending_expires": "Si no hace nada, esta solicitud simplemente caduca el {{date}}.",
+    "btn_review_and_answer": "Revisar y responder",
+    "confirmed_heading": "Aprobado",
+    "confirmed_body": "{{name}} aprobó {{what}} que preparaste. Ahora se ha llevado a cabo en su nombre, registrado como hecho por usted.",
+    "declined_heading": "Rechazado",
+    "declined_body": "{{name}} rechazó {{what}} que preparaste. No se llevó a cabo nada.",
+    "expired_heading": "Solicitud caducada",
+    "expired_body": "{{what}} que preparaste para {{name}} no recibió respuesta a tiempo y ha caducado. No se llevó a cabo nada.",
+    "type_listing_create": "un nuevo listado",
+    "type_credit_transfer": "una transferencia de tiempo-crédito"
   }
 }

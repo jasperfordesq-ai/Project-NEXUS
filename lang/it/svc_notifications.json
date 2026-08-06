@@ -167,5 +167,13 @@
     "fallback_group": "un gruppo"
   },
   "vetting_renewal": "Revisione della certificazione di tutela in scadenza per :name",
-  "vetting_expired": "Certificazione di tutela di :name scaduta; contatto protetto bloccato"
+  "vetting_expired": "Certificazione di tutela di :name scaduta; contatto protetto bloccato",
+  "support_action": {
+    "pending": "{{name}} ha preparato {{what}} per la tua approvazione",
+    "confirmed": "{{name}} ha approvato {{what}} la tua preparazione",
+    "declined": "{{name}} ha rifiutato {{what}} che hai preparato",
+    "expired": "{{what}} che ti preparavi per {{name}} è scaduto senza risposta",
+    "type_listing_create": "una nuova inserzione",
+    "type_credit_transfer": "un trasferimento di credito a tempo"
+  }
 }

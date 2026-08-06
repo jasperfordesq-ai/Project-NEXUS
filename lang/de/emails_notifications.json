@@ -140,5 +140,22 @@
     "approved_body": "{{name}} hat Ihre Anfrage zur Verknüpfung mit dem Konto genehmigt.",
     "approved_what_next": "Die Verknüpfung und die Ihnen erteilten Berechtigungen finden Sie auf der Seite „Verknüpfte Konten“.",
     "btn_view_linked_accounts": "Verknüpfte Konten ansehen"
+  },
+  "support_action": {
+    "pending_heading": "Etwas wartet auf Ihre Zustimmung",
+    "pending_body": "{{name}} hat {{what}} in Ihrem Namen vorbereitet. Dies geschieht nur, wenn Sie es genehmigen.",
+    "label_prepared": "Was wurde vorbereitet",
+    "pending_nothing_without_you": "Ohne Ihre Zustimmung passiert nichts. Sie können es mit einem Klick unten oder auf der Seite „Verknüpfte Konten“ genehmigen.",
+    "pending_decline_is_fine": "Sie können es auch ablehnen. Eine Ablehnung ist immer in Ordnung und Sie müssen nie einen Grund angeben.",
+    "pending_expires": "Wenn Sie nichts unternehmen, läuft diese Anfrage einfach am {{date}} ab.",
+    "btn_review_and_answer": "Überprüfen und antworten",
+    "confirmed_heading": "Genehmigt",
+    "confirmed_body": "{{name}} genehmigt {{what}}, das Sie vorbereitet haben. Es wurde nun in ihrem Namen durchgeführt und als von Ihnen durchgeführt registriert.",
+    "declined_heading": "Abgelehnt",
+    "declined_body": "{{name}} hat {{what}}, das Sie vorbereitet haben, abgelehnt. Es wurde nichts durchgeführt.",
+    "expired_heading": "Anfrage abgelaufen",
+    "expired_body": "{{what}}, das Sie für {{name}} vorbereitet haben, wurde nicht rechtzeitig beantwortet und ist abgelaufen. Es wurde nichts durchgeführt.",
+    "type_listing_create": "ein neuer Eintrag",
+    "type_credit_transfer": "eine Zeitguthabenübertragung"
   }
 }

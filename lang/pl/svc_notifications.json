@@ -167,5 +167,13 @@
     "fallback_group": "grupa"
   },
   "vetting_renewal": "Wymagany przegl?d certyfikacji ochronnej dla :name",
-  "vetting_expired": "Certyfikacja ochronna dla :name wygas?a; chroniony kontakt zablokowany"
+  "vetting_expired": "Certyfikacja ochronna dla :name wygas?a; chroniony kontakt zablokowany",
+  "support_action": {
+    "pending": "{{name}} przygotował {{what}} do zatwierdzenia",
+    "confirmed": "{{name}} zatwierdzono {{what}}, które przygotowałeś",
+    "declined": "{{name}} odrzuciłeś {{what}}, które przygotowałeś",
+    "expired": "{{what}}, które przygotowałeś na {{name}}, wygasło bez odpowiedzi",
+    "type_listing_create": "nowe zestawienie",
+    "type_credit_transfer": "przelew kredytowy w terminie"
+  }
 }

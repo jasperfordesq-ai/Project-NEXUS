@@ -871,6 +871,21 @@ Route::get('/v2/users/me/sub-accounts/{childId}/activity', [\App\Http\Controller
 // Each records the acting carer on the row it writes and audits to org_audit_log.
 Route::post('/v2/users/me/sub-accounts/{childId}/listings', [\App\Http\Controllers\Api\SubAccountController::class, 'createListingForChild'])->middleware('onboarding-required');
 Route::post('/v2/users/me/sub-accounts/{childId}/transfer', [\App\Http\Controllers\Api\SubAccountController::class, 'transferForChild'])->middleware('onboarding-required');
+// Co-decide confirm loop (guardian redesign phase 3). The two direct routes
+// above require the `represent` tier (act alone); a `co_decide` supporter
+// instead PREPARES an action here, and it executes only when the supported
+// member confirms — in-app below, or via the public token routes further down.
+Route::post('/v2/users/me/support-actions', [\App\Http\Controllers\Api\SupportActionController::class, 'prepare'])->middleware('onboarding-required');
+Route::get('/v2/users/me/support-actions', [\App\Http\Controllers\Api\SupportActionController::class, 'index']);
+Route::post('/v2/users/me/support-actions/{id}/confirm', [\App\Http\Controllers\Api\SupportActionController::class, 'confirm'])->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
+Route::post('/v2/users/me/support-actions/{id}/decline', [\App\Http\Controllers\Api\SupportActionController::class, 'decline'])->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
+Route::delete('/v2/users/me/support-actions/{id}', [\App\Http\Controllers\Api\SupportActionController::class, 'cancel'])->whereNumber('id');
+// Support-action token confirm: the emailed single-use link, usable without a
+// login. GET is a read-only lookup; the actual confirmation is POST-only so
+// unauthenticated prefetches (mail scanners) can never flip state — the same
+// split as the volunteering guardian-consent verify routes.
+Route::get('/v2/support-actions/confirm/{token}', [\App\Http\Controllers\Api\SupportActionController::class, 'showByToken'])->withoutMiddleware('auth:sanctum');
+Route::post('/v2/support-actions/confirm/{token}', [\App\Http\Controllers\Api\SupportActionController::class, 'confirmByToken'])->withoutMiddleware('auth:sanctum')->middleware('throttle:nexus-route-10-per-1m');
 
 // ============================================
 // MIGRATED ROUTES — Social (Wallet, Feed, Notifications, Reviews, Search, Polls)

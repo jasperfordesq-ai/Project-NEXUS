@@ -710,6 +710,9 @@ return [
     'ward_guardian_emails_required'        => 'Both the supported member\'s and the guardian\'s emails are required',
     'no_active_member_found'               => 'No active member found with email: :email',
     'ward_not_found_in_tenant'             => 'Supported member not found in this community',
+    'support_action_unknown_type'          => 'Unknown support action type',
+    'support_action_not_found'             => 'This request was not found or has already been answered',
+    'support_action_expired'               => 'This request has expired',
 
     // ============================================
     // ADMIN — LEGAL DOCS

@@ -167,5 +167,13 @@
     "fallback_group": "eine Gruppe"
   },
   "vetting_renewal": "?berpr?fung der Schutzbescheinigung f?r :name f?llig",
-  "vetting_expired": "Schutzbescheinigung f?r :name abgelaufen; gesch?tzter Kontakt gesperrt"
+  "vetting_expired": "Schutzbescheinigung f?r :name abgelaufen; gesch?tzter Kontakt gesperrt",
+  "support_action": {
+    "pending": "{{name}} hat {{what}} für Ihre Genehmigung vorbereitet",
+    "confirmed": "{{name}} genehmigt {{what}}, das Sie vorbereitet haben",
+    "declined": "{{name}} hat {{what}}, das Sie vorbereitet haben, abgelehnt",
+    "expired": "{{what}}, das Sie für {{name}} vorbereitet haben, ist ohne Antwort abgelaufen",
+    "type_listing_create": "ein neuer Eintrag",
+    "type_credit_transfer": "eine Zeitguthabenübertragung"
+  }
 }

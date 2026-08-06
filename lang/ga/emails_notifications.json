@@ -140,5 +140,22 @@
     "approved_body": "Cheadaigh {{name}} d'iarratas a bheith nasctha lena gcuntas.",
     "approved_what_next": "Is féidir leat an nasc agus na ceadanna a tugadh duit a fheiceáil ar leathanach na gcuntas nasctha.",
     "btn_view_linked_accounts": "Féach ar chuntais nasctha"
+  },
+  "support_action": {
+    "pending_heading": "Tá rud éigin ag fanacht le do cheadú",
+    "pending_body": "d’ullmhaigh {{name}} {{what}} ar do shon. Ní tharlóidh sé ach amháin má cheadaíonn tú é.",
+    "label_prepared": "Cad a ullmhaíodh",
+    "pending_nothing_without_you": "Ní tharlaíonn tada gan do thuairim a rá. Is féidir leat é a cheadú le cliceáil amháin thíos, nó ó do leathanach Cuntais Nasctha.",
+    "pending_decline_is_fine": "Is féidir leat é a dhiúltú freisin. Bíonn an laghdú ceart i gcónaí, agus ní gá duit cúis a thabhairt riamh.",
+    "pending_expires": "Mura ndéanann tú faic, téann an t-iarratas seo in éag ar {{date}}.",
+    "btn_review_and_answer": "Athbhreithniú agus freagra",
+    "confirmed_heading": "Ceadaithe",
+    "confirmed_body": "{{name}} ceadaithe {{what}} a d’ullmhaigh tú. Tá sé curtha i gcrích anois ina n-ainm, taifeadta mar a rinne tú.",
+    "declined_heading": "Diúltaithe",
+    "declined_body": "Dhiúltaigh {{name}} {{what}} a d’ullmhaigh tú. Ní dhearnadh tada.",
+    "expired_heading": "Iarratas imithe in éag",
+    "expired_body": "Níor freagraíodh {{what}} a d’ullmhaigh tú do {{name}} in am agus tá sé imithe in éag. Ní dhearnadh tada.",
+    "type_listing_create": "liostú nua",
+    "type_credit_transfer": "aistriú creidmheasa ama"
   }
 }

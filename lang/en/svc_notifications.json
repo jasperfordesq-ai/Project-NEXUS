@@ -167,5 +167,13 @@
     "preview": ":sender · :group: :preview",
     "fallback_sender": "Someone",
     "fallback_group": "a group"
+  },
+  "support_action": {
+    "pending": "{{name}} prepared {{what}} for you to approve",
+    "confirmed": "{{name}} approved {{what}} you prepared",
+    "declined": "{{name}} declined {{what}} you prepared",
+    "expired": "{{what}} you prepared for {{name}} expired without an answer",
+    "type_listing_create": "a new listing",
+    "type_credit_transfer": "a time-credit transfer"
   }
 }

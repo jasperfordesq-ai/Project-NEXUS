@@ -140,5 +140,22 @@
     "approved_body": "{{name}} ha approvato la tua richiesta di collegamento al suo account.",
     "approved_what_next": "Puoi vedere il collegamento e le autorizzazioni che ti sono state concesse nella pagina degli account collegati.",
     "btn_view_linked_accounts": "Vedi account collegati"
+  },
+  "support_action": {
+    "pending_heading": "Qualcosa sta aspettando la tua approvazione",
+    "pending_body": "{{name}} ha preparato {{what}} per tuo conto. Accadrà solo se lo approverai.",
+    "label_prepared": "Cosa è stato preparato",
+    "pending_nothing_without_you": "Non succede nulla senza il tuo consenso. Puoi approvarlo con un clic qui sotto o dalla pagina dei tuoi account collegati.",
+    "pending_decline_is_fine": "Puoi anche rifiutarlo. Rifiutare va sempre bene e non devi mai fornire una motivazione.",
+    "pending_expires": "Se non fai nulla, questa richiesta scade semplicemente il {{date}}.",
+    "btn_review_and_answer": "Rivedi e rispondi",
+    "confirmed_heading": "Approvato",
+    "confirmed_body": "{{name}} ha approvato {{what}} la tua preparazione. Ora è stato compiuto a loro nome, registrato come fatto da te.",
+    "declined_heading": "Rifiutato",
+    "declined_body": "{{name}} ha rifiutato {{what}} che hai preparato. Non è stato effettuato nulla.",
+    "expired_heading": "Richiesta scaduta",
+    "expired_body": "{{what}} che hai preparato per {{name}} non ha ricevuto risposta in tempo ed è scaduto. Non è stato effettuato nulla.",
+    "type_listing_create": "una nuova inserzione",
+    "type_credit_transfer": "un trasferimento di credito a tempo"
   }
 }

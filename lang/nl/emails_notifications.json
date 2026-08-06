@@ -140,5 +140,22 @@
     "approved_body": "{{name}} heeft je verzoek om aan het account te worden gekoppeld goedgekeurd.",
     "approved_what_next": "Je vindt de koppeling en de rechten die je hebt gekregen op de pagina met gekoppelde accounts.",
     "btn_view_linked_accounts": "Gekoppelde accounts bekijken"
+  },
+  "support_action": {
+    "pending_heading": "Er wacht iets op uw goedkeuring",
+    "pending_body": "{{name}} heeft namens jou {{what}} voorbereid. Het gebeurt alleen als u het goedkeurt.",
+    "label_prepared": "Wat werd voorbereid",
+    "pending_nothing_without_you": "Er gebeurt niets zonder uw toestemming. U kunt het met één klik hieronder goedkeuren, of vanaf uw pagina Gekoppelde accounts.",
+    "pending_decline_is_fine": "Je kunt het ook weigeren. Weigeren is altijd oké en je hoeft nooit een reden op te geven.",
+    "pending_expires": "Als u niets doet, vervalt dit verzoek eenvoudigweg op {{date}}.",
+    "btn_review_and_answer": "Beoordeel en beantwoord",
+    "confirmed_heading": "Goedgekeurd",
+    "confirmed_body": "{{name}} heeft {{what}} goedgekeurd die jij hebt voorbereid. Het is nu in hun naam uitgevoerd, vastgelegd zoals door u gedaan.",
+    "declined_heading": "Afgewezen",
+    "declined_body": "{{name}} heeft {{what}} je voorbereid. Er werd niets uitgevoerd.",
+    "expired_heading": "Verzoek verlopen",
+    "expired_body": "{{what}} waarvoor je je hebt voorbereid {{name}} is niet op tijd beantwoord en is verlopen. Er werd niets uitgevoerd.",
+    "type_listing_create": "een nieuwe lijst",
+    "type_credit_transfer": "een tijdskredietoverdracht"
   }
 }

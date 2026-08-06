@@ -17520,6 +17520,45 @@ CREATE TABLE `super_admin_audit_log` (
   KEY `idx_actor_tenant` (`actor_tenant_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Audit trail for Super Admin Panel hierarchy changes';
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `support_pending_actions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `support_pending_actions` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL,
+  `relationship_id` int(11) NOT NULL COMMENT 'The account_relationships row this action was prepared under',
+  `supported_user_id` int(11) NOT NULL COMMENT 'The member the action belongs to; owner of the listing/credits',
+  `supporter_user_id` int(11) NOT NULL COMMENT 'Who prepared it; becomes acting_user_id on execution',
+  `action_type` varchar(40) NOT NULL COMMENT 'listing_create | credit_transfer',
+  `payload` longtext NOT NULL COMMENT 'JSON: the prepared action exactly as the member-facing endpoint would receive it',
+  `status` varchar(20) NOT NULL DEFAULT 'pending' COMMENT 'pending | confirmed | declined | expired | cancelled',
+  `token_hash` varchar(64) NOT NULL COMMENT 'SHA-256 of the single-use email confirmation token; token itself is never stored',
+  `token_consumed_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NOT NULL COMMENT 'Unconfirmed actions expire rather than lingering',
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `declined_at` timestamp NULL DEFAULT NULL,
+  `cancelled_at` timestamp NULL DEFAULT NULL,
+  `confirmed_via` varchar(20) DEFAULT NULL COMMENT 'in_app | email_token | attested_offline (phase 4)',
+  `decline_reason` text DEFAULT NULL COMMENT 'Optional, NEVER required - requiring a reason is pressure to consent',
+  `response_ip` varchar(45) DEFAULT NULL,
+  `response_user_agent` varchar(255) DEFAULT NULL,
+  `result_id` int(11) DEFAULT NULL COMMENT 'listing id / transaction id once executed',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `support_pending_actions_token_hash_unique` (`token_hash`),
+  KEY `idx_spa_supported_status` (`tenant_id`,`supported_user_id`,`status`),
+  KEY `idx_spa_supporter_status` (`tenant_id`,`supporter_user_id`,`status`),
+  KEY `idx_spa_expiry_sweep` (`status`,`expires_at`),
+  KEY `fk_spa_relationship` (`relationship_id`),
+  KEY `fk_spa_supported_user` (`supported_user_id`),
+  KEY `fk_spa_supporter_user` (`supporter_user_id`),
+  KEY `support_pending_actions_tenant_id_index` (`tenant_id`),
+  CONSTRAINT `fk_spa_relationship` FOREIGN KEY (`relationship_id`) REFERENCES `account_relationships` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_spa_supported_user` FOREIGN KEY (`supported_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_spa_supporter_user` FOREIGN KEY (`supporter_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `support_reports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
