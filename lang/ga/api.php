@@ -293,6 +293,7 @@ return [
     'support_action_unknown_type' => 'Cineál gnímh tacaíochta anaithnid',
     'support_action_not_found' => 'Ní bhfuarthas an t-iarratas seo nó freagraíodh cheana é',
     'support_action_expired' => 'Tá an t-iarratas seo imithe in éag',
+    'support_action_invalid_channel' => 'Roghnaigh conas a tugadh an ceadú: ar an nguthán, go pearsanta, nó ar pháipéar',
     'both_versions_required' => 'Tá paraiméadair v1 agus v2 araon ag teastáil',
     'versions_not_found' => 'Leagan amháin nó an dá leagan nár aimsíodh',
     'version_number_required' => 'Tá uimhir an leagain ag teastáil',

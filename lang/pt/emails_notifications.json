@@ -156,6 +156,8 @@
     "expired_heading": "Solicitação expirada",
     "expired_body": "{{what}} que você preparou para {{name}} não foi respondido a tempo e expirou. Nada foi realizado.",
     "type_listing_create": "uma nova listagem",
-    "type_credit_transfer": "uma transferência de crédito de tempo"
+    "type_credit_transfer": "uma transferência de crédito de tempo",
+    "attested_heading": "Foi registada uma aprovação offline",
+    "attested_body": "{{name}} registou que aprovou {{what}} offline. Já foi realizado em seu nome. Se isto não estiver certo, contacte de imediato a equipa da sua comunidade."
   }
 }

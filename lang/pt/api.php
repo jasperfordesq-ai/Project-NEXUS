@@ -293,6 +293,7 @@ return [
     'support_action_unknown_type' => 'Tipo de ação de suporte desconhecido',
     'support_action_not_found' => 'Esta solicitação não foi encontrada ou já foi respondida',
     'support_action_expired' => 'Esta solicitação expirou',
+    'support_action_invalid_channel' => 'Escolha como a aprovação foi dada: por telefone, presencialmente ou em papel',
     'both_versions_required' => 'Os parâmetros v1 e v2 são obrigatórios',
     'versions_not_found' => 'Uma ou ambas as versões não encontradas',
     'version_number_required' => 'O número da versão é obrigatório',

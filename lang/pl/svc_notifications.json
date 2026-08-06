@@ -174,6 +174,10 @@
     "declined": "{{name}} odrzuciłeś {{what}}, które przygotowałeś",
     "expired": "{{what}}, które przygotowałeś na {{name}}, wygasło bez odpowiedzi",
     "type_listing_create": "nowe zestawienie",
-    "type_credit_transfer": "przelew kredytowy w terminie"
+    "type_credit_transfer": "przelew kredytowy w terminie",
+    "attested": "{{name}} odnotował(a) Twoją zgodę na {{what}}, udzieloną {{channel}}. Zostało to już wykonane",
+    "channel_phone": "przez telefon",
+    "channel_in_person": "osobiście",
+    "channel_paper": "na papierze"
   }
 }

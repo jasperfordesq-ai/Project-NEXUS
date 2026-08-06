@@ -305,6 +305,7 @@ return [
     'support_action_unknown_type' => 'Nieznany typ akcji wsparcia',
     'support_action_not_found' => 'To żądanie nie zostało znalezione lub już udzielono na nie odpowiedzi',
     'support_action_expired' => 'To żądanie wygasło',
+    'support_action_invalid_channel' => 'Wybierz, jak udzielono zgody: przez telefon, osobiście lub na papierze',
     'both_versions_required' => 'Wymagane są oba parametry v1 i v2',
     'versions_not_found' => 'Nie znaleziono jednej lub obu wersji',
     'version_number_required' => 'Numer wersji jest wymagany',

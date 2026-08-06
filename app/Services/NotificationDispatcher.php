@@ -226,6 +226,10 @@ class NotificationDispatcher
             'support_action_confirmed',
             'support_action_declined',
             'support_action_expired',
+            // A staff member recorded the member's OFFLINE confirmation. The
+            // member must learn this happened in their name — if the record is
+            // wrong, this notice is how they find out.
+            'support_action_attested',
         ];
         if (! $policyMuted && in_array($activityType, $criticalInstantTypes, true)) {
             $frequency = 'instant';

@@ -305,6 +305,7 @@ return [
     'support_action_unknown_type' => 'Onbekend type ondersteuningsactie',
     'support_action_not_found' => 'Dit verzoek is niet gevonden of is al beantwoord',
     'support_action_expired' => 'Dit verzoek is verlopen',
+    'support_action_invalid_channel' => 'Kies hoe de goedkeuring is gegeven: telefonisch, in persoon of op papier',
     'both_versions_required' => 'Zowel v1- als v2-parameters zijn vereist',
     'versions_not_found' => 'Eén of beide versies niet gevonden',
     'version_number_required' => 'Versienummer is vereist',

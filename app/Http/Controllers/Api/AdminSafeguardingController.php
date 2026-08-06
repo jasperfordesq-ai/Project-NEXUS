@@ -1323,6 +1323,49 @@ class AdminSafeguardingController extends BaseApiController
     // HELPERS
     // ============================================
 
+    /**
+     * GET /v2/admin/safeguarding/support-actions — live pending co-decide
+     * actions in this tenant, so staff can see what awaits an answer and,
+     * where the member confirmed offline, record it.
+     */
+    public function supportActions(): JsonResponse
+    {
+        $this->requireSafeguardingStaff('view');
+
+        return $this->respondWithData([
+            'actions' => app(\App\Services\SupportPendingActionService::class)->listPendingForTenant(),
+        ]);
+    }
+
+    /**
+     * POST /v2/admin/safeguarding/support-actions/{id}/attest — record that
+     * the supported member confirmed a prepared action OFFLINE (phone, in
+     * person, or on paper), naming the channel and any witness. This is the
+     * co-decide path for members who never use the platform directly. The
+     * member is notified that the confirmation was recorded in their name.
+     */
+    public function attestSupportAction(int $id): JsonResponse
+    {
+        $staffUserId = $this->requireSafeguardingStaff('manage');
+
+        $data = $this->getAllInput();
+        $channel = is_string($data['channel'] ?? null) ? $data['channel'] : '';
+        $witness = is_string($data['witness'] ?? null) ? $data['witness'] : null;
+
+        $service = app(\App\Services\SupportPendingActionService::class);
+        $result = $service->confirmAttested($staffUserId, $id, $channel, $witness);
+
+        if ($result === null) {
+            return $this->respondWithErrors($service->getErrors(), 422);
+        }
+
+        return $this->respondWithData([
+            'status' => 'confirmed',
+            'confirmed_via' => 'attested_offline',
+            'result_id' => $result['result_id'],
+        ]);
+    }
+
     private function requireSafeguardingStaff(string $level = 'view'): int
     {
         $userId = $this->requireAuth();

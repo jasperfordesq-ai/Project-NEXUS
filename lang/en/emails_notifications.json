@@ -156,6 +156,8 @@
     "expired_heading": "Request expired",
     "expired_body": "{{what}} you prepared for {{name}} was not answered in time and has expired. Nothing was carried out.",
     "type_listing_create": "a new listing",
-    "type_credit_transfer": "a time-credit transfer"
+    "type_credit_transfer": "a time-credit transfer",
+    "attested_heading": "An offline approval was recorded",
+    "attested_body": "{{name}} recorded that you approved {{what}} offline. It has now been carried out in your name. If this is not right, contact your community team straight away."
   }
 }

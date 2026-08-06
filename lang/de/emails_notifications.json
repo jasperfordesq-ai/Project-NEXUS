@@ -156,6 +156,8 @@
     "expired_heading": "Anfrage abgelaufen",
     "expired_body": "{{what}}, das Sie für {{name}} vorbereitet haben, wurde nicht rechtzeitig beantwortet und ist abgelaufen. Es wurde nichts durchgeführt.",
     "type_listing_create": "ein neuer Eintrag",
-    "type_credit_transfer": "eine Zeitguthabenübertragung"
+    "type_credit_transfer": "eine Zeitguthabenübertragung",
+    "attested_heading": "Eine Offline-Zustimmung wurde festgehalten",
+    "attested_body": "{{name}} hat festgehalten, dass Sie {{what}} offline genehmigt haben. Es wurde nun in Ihrem Namen ausgeführt. Falls das nicht stimmt, wenden Sie sich sofort an Ihr Community-Team."
   }
 }

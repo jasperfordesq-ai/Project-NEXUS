@@ -156,6 +156,8 @@
     "expired_heading": "Solicitud caducada",
     "expired_body": "{{what}} que preparaste para {{name}} no recibió respuesta a tiempo y ha caducado. No se llevó a cabo nada.",
     "type_listing_create": "un nuevo listado",
-    "type_credit_transfer": "una transferencia de tiempo-crédito"
+    "type_credit_transfer": "una transferencia de tiempo-crédito",
+    "attested_heading": "Se registró una aprobación fuera de línea",
+    "attested_body": "{{name}} registró que usted aprobó {{what}} fuera de línea. Ya se ha realizado en su nombre. Si esto no es correcto, contacte de inmediato con el equipo de su comunidad."
   }
 }

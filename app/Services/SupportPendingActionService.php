@@ -153,6 +153,43 @@ class SupportPendingActionService
         );
     }
 
+    /** Channels an offline confirmation can be attested through. */
+    public const ATTEST_CHANNELS = ['phone', 'in_person', 'paper'];
+
+    /**
+     * A staff member records that the supported member confirmed OFFLINE — by
+     * phone, in person, or on paper (guardian redesign, phase 4). This is the
+     * path for members who will never click a link or open the app.
+     *
+     * Deliberately weaker evidence than the member's own click, and recorded
+     * as such rather than dressed up: `confirmed_via` says 'attested_offline'
+     * and the row names the attesting staff member, the channel, and the
+     * witness. The supported member is notified that an offline confirmation
+     * was recorded in their name — an attestation they never learn about is
+     * substitution, not consent.
+     *
+     * AUTHORISATION IS THE CALLER'S JOB: the route sits behind the
+     * broker-or-admin gate. This method only enforces the channel vocabulary
+     * and the same locked pending-only confirm path as every other channel.
+     *
+     * @return array{result_id: int|null}|null
+     */
+    public function confirmAttested(int $staffUserId, int $actionId, string $channel, ?string $witness = null): ?array
+    {
+        if (! in_array($channel, self::ATTEST_CHANNELS, true)) {
+            $this->errors = [['code' => 'VALIDATION_ERROR', 'message' => __('api.support_action_invalid_channel')]];
+            return null;
+        }
+
+        $witness = ($witness !== null && trim($witness) !== '') ? mb_substr(trim($witness), 0, 160) : null;
+
+        return $this->confirm(
+            fn ($q) => $q->where('id', $actionId),
+            'attested_offline',
+            ['attested_by_user_id' => $staffUserId, 'attested_channel' => $channel, 'attested_witness' => $witness],
+        );
+    }
+
     /**
      * Read-only token lookup for the confirmation page. Deliberately separate
      * from confirmation so following the link changes nothing.
@@ -265,6 +302,30 @@ class SupportPendingActionService
             ->all();
     }
 
+    /**
+     * Every live pending action in the tenant, for the broker safeguarding
+     * panel — staff need to see what awaits an answer before they can attest
+     * an offline confirmation. Tenant scope comes from the model's global
+     * scope; both parties' names are included.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function listPendingForTenant(): array
+    {
+        return $this->pendingAction->newQuery()
+            ->with([
+                'supporterUser:id,first_name,last_name',
+                'supportedUser:id,first_name,last_name',
+            ])
+            ->where('status', SupportPendingAction::STATUS_PENDING)
+            ->where('expires_at', '>', now())
+            ->orderBy('created_at')
+            ->limit(100)
+            ->get()
+            ->map(fn (SupportPendingAction $a) => $this->present($a))
+            ->all();
+    }
+
     public function pendingCountForSupported(int $supportedUserId): int
     {
         return $this->pendingAction->newQuery()
@@ -317,14 +378,15 @@ class SupportPendingActionService
      * member can retry — a confirmed-but-not-executed state must not exist.
      *
      * @param callable $scope Narrow the query to the authorised row.
+     * @param array<string, mixed>|null $attested attested_by_user_id / channel / witness for offline attestation
      * @return array{result_id: int|null}|null
      */
-    private function confirm(callable $scope, string $via): ?array
+    private function confirm(callable $scope, string $via, ?array $attested = null): ?array
     {
         $this->errors = [];
 
         try {
-            return DB::transaction(function () use ($scope, $via): array {
+            return DB::transaction(function () use ($scope, $via, $attested): array {
                 $query = $this->pendingAction->newQuery();
                 if ($via === 'email_token') {
                     // Token arrives with no session, so no tenant context to
@@ -346,7 +408,7 @@ class SupportPendingActionService
                     throw new \RuntimeException(__('api.support_action_expired'));
                 }
 
-                return TenantContext::runForTenant((int) $action->tenant_id, function () use ($action, $via): array {
+                return TenantContext::runForTenant((int) $action->tenant_id, function () use ($action, $via, $attested): array {
                     // Use-time safeguarding re-check: a restriction that landed
                     // after preparation wins.
                     $this->assertContactsAllowed(
@@ -364,6 +426,11 @@ class SupportPendingActionService
                     if ($via === 'email_token') {
                         $action->token_consumed_at = now();
                     }
+                    if ($attested !== null) {
+                        $action->attested_by_user_id = $attested['attested_by_user_id'] ?? null;
+                        $action->attested_channel = $attested['attested_channel'] ?? null;
+                        $action->attested_witness = $attested['attested_witness'] ?? null;
+                    }
                     $action->response_ip = request()?->ip();
                     $action->response_user_agent = mb_substr((string) request()?->userAgent(), 0, 255);
                     $action->save();
@@ -373,8 +440,14 @@ class SupportPendingActionService
                         'action_type' => $action->action_type,
                         'confirmed_via' => $via,
                         'result_id' => $resultId,
-                    ]);
+                    ] + ($attested ?? []));
                     $this->notifySupporterOfAnswer($action, true);
+                    if ($attested !== null) {
+                        // The member must learn an offline confirmation was
+                        // recorded in their name — silence here would turn an
+                        // attestation into substitution.
+                        $this->notifySupportedOfAttestation($action);
+                    }
 
                     return ['result_id' => $resultId];
                 });
@@ -432,6 +505,13 @@ class SupportPendingActionService
             'supported_user_id' => (int) $a->supported_user_id,
             'other_party_name' => $other ? trim($other->first_name . ' ' . $other->last_name) : null,
             'other_party_avatar_url' => $other->avatar_url ?? null,
+            // Both names, for views (the broker panel) that show both sides.
+            'supporter_name' => $a->relationLoaded('supporterUser') && $a->supporterUser
+                ? trim($a->supporterUser->first_name . ' ' . $a->supporterUser->last_name)
+                : null,
+            'supported_name' => $a->relationLoaded('supportedUser') && $a->supportedUser
+                ? trim($a->supportedUser->first_name . ' ' . $a->supportedUser->last_name)
+                : null,
             'created_at' => $a->created_at?->toIso8601String(),
             'expires_at' => $a->expires_at?->toIso8601String(),
             'confirmed_via' => $a->confirmed_via,
@@ -522,6 +602,43 @@ class SupportPendingActionService
             });
         } catch (\Throwable $e) {
             Log::warning('Failed to notify supported member of pending support action', [
+                'action_id' => $action->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Tell the SUPPORTED MEMBER that a staff member recorded their offline
+     * confirmation — bell + email + push, in their language. If the record is
+     * wrong, this notice is how they find out and can raise it.
+     */
+    private function notifySupportedOfAttestation(SupportPendingAction $action): void
+    {
+        try {
+            $attester = $action->attested_by_user_id !== null ? User::find($action->attested_by_user_id) : null;
+            $supported = User::find($action->supported_user_id);
+            $attesterName = $attester ? trim($attester->first_name . ' ' . $attester->last_name) : '';
+
+            LocaleContext::withLocale($supported, function () use ($action, $attesterName): void {
+                NotificationDispatcher::dispatch(
+                    (int) $action->supported_user_id,
+                    'global',
+                    0,
+                    'support_action_attested',
+                    __('svc_notifications.support_action.attested', [
+                        'name' => $attesterName,
+                        'what' => __('svc_notifications.support_action.type_' . $action->action_type),
+                        'channel' => __('svc_notifications.support_action.channel_' . (string) $action->attested_channel),
+                    ]),
+                    SubAccountService::LINKED_ACCOUNTS_LINK,
+                    NotificationDispatcher::buildSupportActionAnswerEmail($attesterName, $action, 'attested'),
+                    false,
+                    // No actor id — see notifySupportedOfPending().
+                );
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify supported member of attested confirmation', [
                 'action_id' => $action->id,
                 'error' => $e->getMessage(),
             ]);

@@ -156,6 +156,8 @@
     "expired_heading": "Żądanie wygasło",
     "expired_body": "Odpowiedź na {{what}}, którą przygotowałeś na {{name}}, nie została udzielona na czas i wygasła. Nic nie zostało przeprowadzone.",
     "type_listing_create": "nowe zestawienie",
-    "type_credit_transfer": "przelew kredytowy w terminie"
+    "type_credit_transfer": "przelew kredytowy w terminie",
+    "attested_heading": "Odnotowano zgodę udzieloną offline",
+    "attested_body": "{{name}} odnotował(a), że zatwierdziłeś(-aś) {{what}} offline. Zostało to wykonane w Twoim imieniu. Jeśli to nieprawda, natychmiast skontaktuj się z zespołem swojej społeczności."
   }
 }

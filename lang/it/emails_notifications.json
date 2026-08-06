@@ -156,6 +156,8 @@
     "expired_heading": "Richiesta scaduta",
     "expired_body": "{{what}} che hai preparato per {{name}} non ha ricevuto risposta in tempo ed è scaduto. Non è stato effettuato nulla.",
     "type_listing_create": "una nuova inserzione",
-    "type_credit_transfer": "un trasferimento di credito a tempo"
+    "type_credit_transfer": "un trasferimento di credito a tempo",
+    "attested_heading": "È stata registrata un'approvazione offline",
+    "attested_body": "{{name}} ha registrato che hai approvato {{what}} offline. È stato eseguito a tuo nome. Se non è corretto, contatta subito il team della tua comunità."
   }
 }

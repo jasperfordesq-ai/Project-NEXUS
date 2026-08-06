@@ -713,6 +713,7 @@ return [
     'support_action_unknown_type'          => 'Unknown support action type',
     'support_action_not_found'             => 'This request was not found or has already been answered',
     'support_action_expired'               => 'This request has expired',
+    'support_action_invalid_channel' => 'Choose how the approval was given: by phone, in person, or on paper',
 
     // ============================================
     // ADMIN — LEGAL DOCS

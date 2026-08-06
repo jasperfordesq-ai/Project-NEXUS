@@ -156,6 +156,8 @@
     "expired_heading": "リクエストの有効期限が切れました",
     "expired_body": "{{name}} 用に準備した {{what}} は時間内に応答されなかったため、有効期限が切れました。何も実行されませんでした。",
     "type_listing_create": "新しいリスト",
-    "type_credit_transfer": "タイムクレジット転送"
+    "type_credit_transfer": "タイムクレジット転送",
+    "attested_heading": "オフラインでの承認が記録されました",
+    "attested_body": "{{name}}が、あなたが{{what}}をオフラインで承認したことを記録しました。あなたの名義で実行されました。心当たりがない場合は、すぐにコミュニティのチームにご連絡ください。"
   }
 }

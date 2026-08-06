@@ -156,6 +156,8 @@
     "expired_heading": "Iarratas imithe in éag",
     "expired_body": "Níor freagraíodh {{what}} a d’ullmhaigh tú do {{name}} in am agus tá sé imithe in éag. Ní dhearnadh tada.",
     "type_listing_create": "liostú nua",
-    "type_credit_transfer": "aistriú creidmheasa ama"
+    "type_credit_transfer": "aistriú creidmheasa ama",
+    "attested_heading": "Taifeadadh ceadú as líne",
+    "attested_body": "Thaifead {{name}} gur cheadaigh tú {{what}} as líne. Tá sé curtha i gcrích i d'ainm anois. Mura bhfuil sé seo ceart, déan teagmháil le foireann do phobail láithreach."
   }
 }

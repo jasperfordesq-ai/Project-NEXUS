@@ -293,6 +293,7 @@ return [
     'support_action_unknown_type' => 'Type d\'action d\'assistance inconnu',
     'support_action_not_found' => 'Cette demande n\'a pas été trouvée ou a déjà reçu une réponse',
     'support_action_expired' => 'Cette demande a expiré',
+    'support_action_invalid_channel' => 'Choisissez comment l\'accord a été donné : par téléphone, en personne ou sur papier',
     'both_versions_required' => 'Les paramètres v1 et v2 sont requis',
     'versions_not_found' => 'Une ou les deux versions introuvables',
     'version_number_required' => 'Le numéro de version est requis',

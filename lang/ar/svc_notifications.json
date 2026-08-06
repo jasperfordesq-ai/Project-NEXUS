@@ -174,6 +174,10 @@
     "declined": "{{name}} رفض {{what}} الذي قمت بإعداده",
     "expired": "انتهت صلاحية {{what}} الذي أعددته لـ {{name}} بدون إجابة",
     "type_listing_create": "قائمة جديدة",
-    "type_credit_transfer": "تحويل رصيد الوقت"
+    "type_credit_transfer": "تحويل رصيد الوقت",
+    "attested": "سجّل {{name}} موافقتك على {{what}}، المُعطاة {{channel}}. وقد تم التنفيذ الآن",
+    "channel_phone": "عبر الهاتف",
+    "channel_in_person": "شخصياً",
+    "channel_paper": "على الورق"
   }
 }

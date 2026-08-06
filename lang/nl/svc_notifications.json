@@ -174,6 +174,10 @@
     "declined": "{{name}} heeft {{what}} je voorbereid",
     "expired": "{{what}} waarop je je had voorbereid {{name}} is verlopen zonder antwoord",
     "type_listing_create": "een nieuwe lijst",
-    "type_credit_transfer": "een tijdskredietoverdracht"
+    "type_credit_transfer": "een tijdskredietoverdracht",
+    "attested": "{{name}} heeft uw goedkeuring van {{what}} vastgelegd, gegeven {{channel}}. Het is nu uitgevoerd",
+    "channel_phone": "telefonisch",
+    "channel_in_person": "in persoon",
+    "channel_paper": "op papier"
   }
 }

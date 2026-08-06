@@ -156,6 +156,8 @@
     "expired_heading": "Demande expirée",
     "expired_body": "{{what}} que vous avez préparé pour {{name}} n'a pas reçu de réponse à temps et a expiré. Rien n'a été réalisé.",
     "type_listing_create": "une nouvelle annonce",
-    "type_credit_transfer": "un transfert de crédit-temps"
+    "type_credit_transfer": "un transfert de crédit-temps",
+    "attested_heading": "Un accord hors ligne a été consigné",
+    "attested_body": "{{name}} a consigné que vous avez approuvé {{what}} hors ligne. Cela a été effectué en votre nom. Si ce n'est pas exact, contactez immédiatement l'équipe de votre communauté."
   }
 }

@@ -156,6 +156,8 @@
     "expired_heading": "Verzoek verlopen",
     "expired_body": "{{what}} waarvoor je je hebt voorbereid {{name}} is niet op tijd beantwoord en is verlopen. Er werd niets uitgevoerd.",
     "type_listing_create": "een nieuwe lijst",
-    "type_credit_transfer": "een tijdskredietoverdracht"
+    "type_credit_transfer": "een tijdskredietoverdracht",
+    "attested_heading": "Een offline goedkeuring is vastgelegd",
+    "attested_body": "{{name}} heeft vastgelegd dat u {{what}} offline heeft goedgekeurd. Het is nu namens u uitgevoerd. Klopt dit niet, neem dan direct contact op met uw communityteam."
   }
 }

@@ -2925,6 +2925,10 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::post('/v2/admin/safeguarding/assignments', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'createAssignment']);
     Route::delete('/v2/admin/safeguarding/assignments/{id}', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'deleteAssignment']);
     Route::get('/v2/admin/safeguarding/member-preferences', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'memberPreferences']);
+    // Co-decide support actions: the tenant's pending queue, and offline
+    // attestation for members who confirmed by phone / in person / on paper.
+    Route::get('/v2/admin/safeguarding/support-actions', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'supportActions']);
+    Route::post('/v2/admin/safeguarding/support-actions/{id}/attest', [\App\Http\Controllers\Api\AdminSafeguardingController::class, 'attestSupportAction'])->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
 });
 
 // Tier 2a — tenant-level safeguarding declaration (Tusla / Children First Act 2015)

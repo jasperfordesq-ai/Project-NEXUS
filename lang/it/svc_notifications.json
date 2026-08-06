@@ -174,6 +174,10 @@
     "declined": "{{name}} ha rifiutato {{what}} che hai preparato",
     "expired": "{{what}} che ti preparavi per {{name}} è scaduto senza risposta",
     "type_listing_create": "una nuova inserzione",
-    "type_credit_transfer": "un trasferimento di credito a tempo"
+    "type_credit_transfer": "un trasferimento di credito a tempo",
+    "attested": "{{name}} ha registrato la tua approvazione di {{what}}, data {{channel}}. Ora è stato fatto",
+    "channel_phone": "per telefono",
+    "channel_in_person": "di persona",
+    "channel_paper": "su carta"
   }
 }

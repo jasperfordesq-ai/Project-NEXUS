@@ -305,6 +305,7 @@ return [
     'support_action_unknown_type' => 'نوع إجراء الدعم غير معروف',
     'support_action_not_found' => 'لم يتم العثور على هذا الطلب أو تم الرد عليه بالفعل',
     'support_action_expired' => 'انتهت صلاحية هذا الطلب',
+    'support_action_invalid_channel' => 'اختر كيف أُعطيت الموافقة: عبر الهاتف، أو شخصياً، أو على الورق',
     'both_versions_required' => 'كلا المعلمتين v1 وv2 مطلوبتان',
     'versions_not_found' => 'لم يتم العثور على أحد الإصدارين أو كليهما',
     'version_number_required' => 'رقم الإصدار مطلوب',

@@ -17539,6 +17539,9 @@ CREATE TABLE `support_pending_actions` (
   `declined_at` timestamp NULL DEFAULT NULL,
   `cancelled_at` timestamp NULL DEFAULT NULL,
   `confirmed_via` varchar(20) DEFAULT NULL COMMENT 'in_app | email_token | attested_offline (phase 4)',
+  `attested_by_user_id` int(11) DEFAULT NULL COMMENT 'Staff member who recorded an offline confirmation; NULL for in_app/email_token',
+  `attested_channel` varchar(20) DEFAULT NULL COMMENT 'phone | in_person | paper',
+  `attested_witness` varchar(160) DEFAULT NULL COMMENT 'Who witnessed the confirmation, as stated by the attesting staff member',
   `decline_reason` text DEFAULT NULL COMMENT 'Optional, NEVER required - requiring a reason is pressure to consent',
   `response_ip` varchar(45) DEFAULT NULL,
   `response_user_agent` varchar(255) DEFAULT NULL,
@@ -17554,6 +17557,8 @@ CREATE TABLE `support_pending_actions` (
   KEY `fk_spa_supported_user` (`supported_user_id`),
   KEY `fk_spa_supporter_user` (`supporter_user_id`),
   KEY `support_pending_actions_tenant_id_index` (`tenant_id`),
+  KEY `fk_spa_attested_by` (`attested_by_user_id`),
+  CONSTRAINT `fk_spa_attested_by` FOREIGN KEY (`attested_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_spa_relationship` FOREIGN KEY (`relationship_id`) REFERENCES `account_relationships` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_spa_supported_user` FOREIGN KEY (`supported_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_spa_supporter_user` FOREIGN KEY (`supporter_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE

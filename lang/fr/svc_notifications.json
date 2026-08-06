@@ -174,6 +174,10 @@
     "declined": "{{name}} a refusé {{what}} vous avez préparé",
     "expired": "{{what}} que vous avez préparé pour {{name}} a expiré sans réponse",
     "type_listing_create": "une nouvelle annonce",
-    "type_credit_transfer": "un transfert de crédit-temps"
+    "type_credit_transfer": "un transfert de crédit-temps",
+    "attested": "{{name}} a consigné votre accord pour {{what}}, donné {{channel}}. C'est maintenant fait",
+    "channel_phone": "par téléphone",
+    "channel_in_person": "en personne",
+    "channel_paper": "sur papier"
   }
 }
