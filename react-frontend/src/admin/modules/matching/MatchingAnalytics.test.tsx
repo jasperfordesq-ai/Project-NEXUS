@@ -92,9 +92,80 @@ const EMPTY_STATS_RESPONSE = {
   },
 };
 
+/**
+ * What Laravel actually returns for a tenant with no cached matches — captured
+ * from the container on tenant 2. The fixtures above use canonical UI names and
+ * `{}` for the count maps, which no backend produces: the service emits
+ * analytics-service names, list-shaped distributions, and `[]` for every empty
+ * string-keyed map (PHP's `json_encode` cannot distinguish an empty map from an
+ * empty list). Rejecting that shape blanked the page with "Failed to load".
+ */
+const LIVE_EMPTY_TENANT_RESPONSE = {
+  success: true,
+  data: {
+    overview: {
+      total_cached_matches: 0,
+      total_matches_month: 0,
+      average_score: 0,
+      average_distance_km: 0,
+      match_type_breakdown: [],
+      active_users_with_matches: 0,
+      hot_matches: 0,
+    },
+    score_distribution: [
+      { range: '0-20', count: 0 },
+      { range: '21-40', count: 0 },
+      { range: '41-60', count: 0 },
+      { range: '61-80', count: 0 },
+      { range: '81-100', count: 0 },
+    ],
+    distance_distribution: [
+      { range: '0-5km', count: 0 },
+      { range: '5-15km', count: 0 },
+      { range: '15-30km', count: 0 },
+      { range: '30-50km', count: 0 },
+      { range: '50+km', count: 0 },
+    ],
+    broker_approval_enabled: true,
+    pending_approvals: 0,
+    approved_count: 0,
+    rejected_count: 0,
+    approval_rate: 0,
+    gate_impact: {
+      degraded_users_count: 4,
+      active_users_count: 4,
+      listings_without_coords: 1,
+      remote_listings_count: 0,
+      active_listings_count: 1,
+      dismiss_reasons: [],
+      algorithm_version_mix: [],
+    },
+    pillar_averages: { sample_size: 0, pillars: [] },
+  },
+};
+
 describe('MatchingAnalytics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('renders the live Laravel envelope for a tenant with no matches yet', async () => {
+    mockAdminMatching.getMatchingStats.mockResolvedValue(LIVE_EMPTY_TENANT_RESPONSE);
+    render(<MatchingAnalytics />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/score distribution/i)).toBeInTheDocument();
+    });
+
+    // The page must render its analytics, not the error state.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByText(/failed to load/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/distance distribution/i)).toBeInTheDocument();
+    // gate_impact parsed despite its empty `[]` count maps: its degraded-member
+    // count only renders when the whole envelope survived validation.
+    expect(screen.getByText(/location data readiness/i)).toBeInTheDocument();
+    expect(screen.getByText(/degraded members/i)).toBeInTheDocument();
+    expect(screen.getByText(/of 4 active users/i)).toBeInTheDocument();
   });
 
   it('shows loading spinner while fetching', () => {

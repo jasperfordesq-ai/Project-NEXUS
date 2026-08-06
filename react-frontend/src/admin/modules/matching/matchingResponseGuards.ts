@@ -24,6 +24,20 @@ function isNumberRecord(value: unknown): value is Record<string, number> {
   );
 }
 
+/**
+ * Read a string-keyed count map.
+ *
+ * PHP has no distinct empty-map literal, so an empty string-keyed array is
+ * serialized by `json_encode` as `[]`, not `{}` — every one of these maps
+ * arrives as an array on a tenant with no data yet. Treat that (and only that)
+ * empty-array form as an empty map; a populated array is still a contract
+ * violation and is rejected.
+ */
+function parseNumberRecord(value: unknown): Record<string, number> | null {
+  if (Array.isArray(value)) return value.length === 0 ? {} : null;
+  return isNumberRecord(value) ? value : null;
+}
+
 function parseDistribution(value: unknown): Record<string, number> | null {
   if (isNumberRecord(value)) return value;
   if (!Array.isArray(value)) return null;
@@ -56,35 +70,44 @@ function readFiniteNumber(
   return undefined;
 }
 
-function isGateImpact(value: unknown): value is MatchingGateImpactStats {
+function parseGateImpact(value: unknown): MatchingGateImpactStats | null {
   if (typeof value !== "object" || value === null || Array.isArray(value))
-    return false;
+    return null;
   const impact = value as Record<string, unknown>;
-  return (
-    [
-      "degraded_users_count",
-      "active_users_count",
-      "listings_without_coords",
-      "remote_listings_count",
-      "active_listings_count",
-    ].every((key) => isFiniteNumber(impact[key])) &&
-    isNumberRecord(impact.dismiss_reasons) &&
-    isNumberRecord(impact.algorithm_version_mix)
-  );
+  const counts = [
+    "degraded_users_count",
+    "active_users_count",
+    "listings_without_coords",
+    "remote_listings_count",
+    "active_listings_count",
+  ] as const;
+  if (!counts.every((key) => isFiniteNumber(impact[key]))) return null;
+
+  const dismissReasons = parseNumberRecord(impact.dismiss_reasons);
+  const algorithmVersionMix = parseNumberRecord(impact.algorithm_version_mix);
+  if (dismissReasons === null || algorithmVersionMix === null) return null;
+
+  return {
+    degraded_users_count: impact.degraded_users_count as number,
+    active_users_count: impact.active_users_count as number,
+    listings_without_coords: impact.listings_without_coords as number,
+    remote_listings_count: impact.remote_listings_count as number,
+    active_listings_count: impact.active_listings_count as number,
+    dismiss_reasons: dismissReasons,
+    algorithm_version_mix: algorithmVersionMix,
+  };
 }
 
-function isPillarAverages(value: unknown): value is MatchingPillarAverages {
+function parsePillarAverages(value: unknown): MatchingPillarAverages | null {
   if (typeof value !== "object" || value === null || Array.isArray(value))
-    return false;
+    return null;
   const averages = value as Record<string, unknown>;
-  if (!isFiniteNumber(averages.sample_size)) return false;
-  if (
-    typeof averages.pillars !== "object" ||
-    averages.pillars === null ||
-    Array.isArray(averages.pillars)
-  )
-    return false;
-  return Object.values(averages.pillars).every(isFiniteNumber);
+  if (!isFiniteNumber(averages.sample_size)) return null;
+
+  const pillars = parseNumberRecord(averages.pillars);
+  if (pillars === null) return null;
+
+  return { sample_size: averages.sample_size, pillars };
 }
 
 /**
@@ -176,14 +199,13 @@ export function parseMatchingStatsResponse(
     !isFiniteNumber(rejectedCount) ||
     !isFiniteNumber(approvalRate)
   ) return null;
-  const gateImpact = stats.gate_impact;
-  const pillarAverages = stats.pillar_averages;
-  if (gateImpact !== undefined && !isGateImpact(gateImpact)) return null;
-  if (
-    pillarAverages !== undefined &&
-    !isPillarAverages(pillarAverages)
-  )
-    return null;
+  const gateImpact =
+    stats.gate_impact === undefined ? undefined : parseGateImpact(stats.gate_impact);
+  const pillarAverages =
+    stats.pillar_averages === undefined
+      ? undefined
+      : parsePillarAverages(stats.pillar_averages);
+  if (gateImpact === null || pillarAverages === null) return null;
 
   const normalizedOverview: MatchingOverviewStats = {
     total_matches_month: totalMatchesMonth,
