@@ -3111,8 +3111,9 @@ Route::post('/v2/admin/super/federation/partnerships/{id}/suspend', [\App\Http\C
 Route::post('/v2/admin/super/federation/partnerships/{id}/reactivate', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationReactivatePartnership']);
 Route::post('/v2/admin/super/federation/partnerships/{id}/terminate', [\App\Http\Controllers\Api\AdminSuperController::class, 'federationTerminatePartnership']);
 
-// Impersonate and super-admin promotion — requires super-admin (moved from admin group)
-Route::post('/v2/admin/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminUsersController::class, 'impersonate']);
+// Super-admin promotion stays platform-only: minting a super-admin is how a
+// single community's compromise becomes the installation's.
+// 🔴 Impersonation moved OUT of this group on 2026-08-06 — see below.
 Route::put('/v2/admin/users/{id}/super-admin', [\App\Http\Controllers\Api\AdminUsersController::class, 'setSuperAdmin']);
 Route::put('/v2/admin/users/{id}/global-super-admin', [\App\Http\Controllers\Api\AdminUsersController::class, 'setGlobalSuperAdmin']);
 
@@ -3141,6 +3142,37 @@ Route::post('/v2/super-admin/provisioning-requests/{id}/reject', [\App\Http\Cont
 Route::post('/v2/super-admin/provisioning-requests/{id}/retry', [\App\Http\Controllers\Api\SuperAdmin\TenantProvisioningController::class, 'retry'])->whereNumber('id');
 
 }); // End Route::middleware(['auth:sanctum', 'super-admin'])
+
+/*
+|--------------------------------------------------------------------------
+| Super-admin of a single community
+|--------------------------------------------------------------------------
+|
+| Platform super-admins AND the super-admin of a community, acting WITHIN that
+| community. Not 'admin' (too wide — an ordinary community administrator should
+| not sign in as a member) and not 'super-admin' (too narrow — it refuses
+| is_tenant_super_admin, which is the whole population this serves). Not
+| 'super-panel' either: that additionally demands the community be able to have
+| sub-communities, which is irrelevant to acting inside one.
+|
+| 🔴 Admission only. Everything here MUST scope its own target.
+| AdminUsersController::impersonate() does: the target must belong to the
+| caller's tenant (404 otherwise), must not be the caller (422), and must sit at
+| a strictly LOWER security tier — so a tenant super-admin reaches a member but
+| never a peer administrator, and the tiers are re-checked under a row lock so a
+| concurrent promotion cannot widen a permitted impersonation. Every use is
+| written to the activity log and the audit log.
+|
+| Reported 2026-08-05 by the owner: pressing "View as this member" as the
+| super-admin of hOUR Timebank returned 403 for every target, including plain
+| members of that same community, because this route sat in the platform-only
+| group above.
+*/
+Route::middleware(['auth:sanctum', 'tenant-super-admin'])->group(function () {
+
+Route::post('/v2/admin/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminUsersController::class, 'impersonate']);
+
+}); // End Route::middleware(['auth:sanctum', 'tenant-super-admin'])
 
 // ============================================
 // National KISS Foundation Dashboard — Sanctum auth only

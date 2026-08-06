@@ -141,3 +141,54 @@ export function isRegionalSuperPanelUser(user: UserLike): boolean {
 export function hasPartnerPanelAccess(user: UserLike): boolean {
   return hasAdminPanelAccess(user);
 }
+
+/**
+ * Security tier, mirroring `AdminUsersController::securityTier()` in PHP.
+ *
+ * 🔴 Keep the two in step. This exists so the admin UI can predict whether an
+ * action against another account will be permitted, and hide it when it will
+ * not. It is a MIRROR, never the decision: the server re-evaluates both tiers
+ * under a row lock at the moment of the mutation, so a concurrent promotion
+ * cannot turn a permitted action into a privileged one.
+ *
+ *   4  god
+ *   3  platform super-admin
+ *   2  administrator, or the super-admin of a community
+ *   1  broker / coordinator
+ *   0  member
+ */
+export function adminSecurityTier(user: UserLike): number {
+  const role = userRole(user);
+  const flag = (name: string): boolean =>
+    (user as Record<string, unknown> | null | undefined)?.[name] === true;
+
+  if (role === 'god' || flag('is_god')) return 4;
+  if (role === 'super_admin' || flag('is_super_admin')) return 3;
+  if (
+    role === 'admin' ||
+    role === 'tenant_admin' ||
+    flag('is_admin') ||
+    flag('is_tenant_super_admin')
+  ) {
+    return 2;
+  }
+  if (role === 'broker' || role === 'coordinator') return 1;
+  return 0;
+}
+
+/**
+ * Will the server let `actor` impersonate `target`?
+ *
+ * Mirrors `securityActorCanManageTarget()`: god may reach anyone, everyone else
+ * needs a STRICTLY higher tier — so the super-admin of a community can view a
+ * member as themselves, but not a fellow administrator. Borrowing a peer's
+ * authority is exactly what impersonation must not become.
+ *
+ * The caller must ALSO hold a super-admin capacity (`isSuperAdminUser`), which
+ * is what the route's gate checks; this function only answers the tier half.
+ */
+export function canImpersonateTarget(actor: UserLike, target: UserLike): boolean {
+  const actorTier = adminSecurityTier(actor);
+  if (actorTier >= 4) return true;
+  return actorTier > adminSecurityTier(target);
+}

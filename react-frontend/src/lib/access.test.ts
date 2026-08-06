@@ -12,6 +12,8 @@ import {
   canAccessSuperPanel,
   isPlatformSuperAdminUser,
   isRegionalSuperPanelUser,
+  adminSecurityTier,
+  canImpersonateTarget,
   superPanelLevel,
   isSuperAdminUser,
 } from './access';
@@ -218,5 +220,69 @@ describe('superPanelLevel / canAccessSuperPanel', () => {
     // Not inferred from flags — see above.
     expect(isRegionalSuperPanelUser({ is_tenant_super_admin: true })).toBe(false);
     expect(isRegionalSuperPanelUser(null)).toBe(false);
+  });
+});
+
+/*
+ * 🔴 These mirror `AdminUsersController::securityTier()` and
+ * `securityActorCanManageTarget()` in PHP. If the PHP changes and these do not,
+ * the admin UI starts offering actions the server refuses (a button that can
+ * only fail) or hiding ones it permits (a power nobody can find). The second is
+ * how the super-admin of a community ended up unable to view a member as
+ * themselves, reported 2026-08-05.
+ */
+describe('adminSecurityTier', () => {
+  it('ranks the five tiers the way the server does', () => {
+    expect(adminSecurityTier({ role: 'god' })).toBe(4);
+    expect(adminSecurityTier({ is_god: true })).toBe(4);
+    expect(adminSecurityTier({ role: 'super_admin' })).toBe(3);
+    expect(adminSecurityTier({ is_super_admin: true })).toBe(3);
+    expect(adminSecurityTier({ role: 'admin' })).toBe(2);
+    expect(adminSecurityTier({ is_tenant_super_admin: true })).toBe(2);
+    expect(adminSecurityTier({ role: 'broker' })).toBe(1);
+    expect(adminSecurityTier({ role: 'coordinator' })).toBe(1);
+    expect(adminSecurityTier({ role: 'member' })).toBe(0);
+    expect(adminSecurityTier(null)).toBe(0);
+  });
+
+  it('treats the super-admin of a community as an administrator, not a platform admin', () => {
+    // The distinction that matters: tier 2, so they outrank members but are not
+    // above a fellow administrator, and are nowhere near platform level.
+    expect(adminSecurityTier({ is_tenant_super_admin: true })).toBeLessThan(
+      adminSecurityTier({ is_super_admin: true }),
+    );
+  });
+});
+
+describe('canImpersonateTarget', () => {
+  const tenantSuper = { is_tenant_super_admin: true, role: 'admin' };
+
+  it('lets the super-admin of a community view one of its members', () => {
+    expect(canImpersonateTarget(tenantSuper, { role: 'member' })).toBe(true);
+  });
+
+  it('refuses a peer administrator', () => {
+    expect(canImpersonateTarget(tenantSuper, { role: 'admin' })).toBe(false);
+    expect(canImpersonateTarget(tenantSuper, { is_tenant_super_admin: true })).toBe(false);
+  });
+
+  it('refuses anyone above the actor', () => {
+    expect(canImpersonateTarget(tenantSuper, { is_super_admin: true })).toBe(false);
+    expect(canImpersonateTarget(tenantSuper, { is_god: true })).toBe(false);
+    expect(canImpersonateTarget({ is_super_admin: true }, { is_god: true })).toBe(false);
+  });
+
+  it('lets a broker be impersonated by an administrator but not by another broker', () => {
+    expect(canImpersonateTarget(tenantSuper, { role: 'broker' })).toBe(true);
+    expect(canImpersonateTarget({ role: 'broker' }, { role: 'coordinator' })).toBe(false);
+  });
+
+  it('gives god a way past every tier, matching the server carve-out', () => {
+    expect(canImpersonateTarget({ is_god: true }, { is_god: true })).toBe(true);
+    expect(canImpersonateTarget({ is_god: true }, { is_super_admin: true })).toBe(true);
+  });
+
+  it('refuses a plain member outright', () => {
+    expect(canImpersonateTarget({ role: 'member' }, { role: 'member' })).toBe(false);
   });
 });

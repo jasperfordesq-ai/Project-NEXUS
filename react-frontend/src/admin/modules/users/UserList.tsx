@@ -31,6 +31,7 @@ import AlertCircle from 'lucide-react/icons/circle-alert';
 import Trash2 from 'lucide-react/icons/trash-2';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts';
+import { canImpersonateTarget } from '@/lib/access';
 import { useTenant,
   useToast } from '@/contexts';
 import { formatNumber, resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
@@ -186,7 +187,19 @@ interface UserActionsMenuProps {
   user: AdminUser;
   t: (key: string, options?: Record<string, unknown>) => string;
   isSuperAdmin: boolean;
-  currentUser: { id?: number } | null;
+  /*
+   * The identity flags are needed, not just the id: the impersonation entry is
+   * decided by comparing the viewer's security tier with the target's, mirroring
+   * the server. Typing this as `{ id?: number }` hid those fields.
+   */
+  currentUser: {
+    id?: number;
+    role?: string;
+    is_god?: boolean;
+    is_super_admin?: boolean;
+    is_tenant_super_admin?: boolean;
+    is_admin?: boolean;
+  } | null;
   navigate: (path: string) => void;
   tenantPath: (path: string) => string;
   setConfirmAction: React.Dispatch<React.SetStateAction<UserConfirmAction | null>>;
@@ -215,8 +228,17 @@ function UserActionsMenu({ user, t, isSuperAdmin, currentUser, navigate, tenantP
     items.push({ key: 'reset2fa', label: t('users.action_reset_2fa'), icon: <KeyRound size={14} aria-hidden="true" /> });
   }
   items.push({ key: 'permissions', label: t('users.action_permissions'), icon: <Shield size={14} aria-hidden="true" /> });
-  // Super admins can impersonate other users (but not other super admins)
-  if (isSuperAdmin && !user.is_super_admin && user.id !== currentUser?.id) {
+  /*
+   * Offered only where the server will actually permit it.
+   *
+   * `isSuperAdmin` is the gate half (platform super-admin, god, or the
+   * super-admin of this community — the same predicate as the route's
+   * middleware). `canImpersonateTarget` is the tier half: a strictly higher tier
+   * is required, so a peer administrator is not a target. Before 2026-08-06 this
+   * checked only `!user.is_super_admin`, so pressing it on a fellow
+   * administrator produced "Impersonate Failed" with nothing to explain it.
+   */
+  if (isSuperAdmin && canImpersonateTarget(currentUser, user) && user.id !== currentUser?.id) {
     items.push({ key: 'impersonate', label: t('users.action_impersonate'), icon: <LogIn size={14} aria-hidden="true" /> });
   }
   // Delete (only if not current user)

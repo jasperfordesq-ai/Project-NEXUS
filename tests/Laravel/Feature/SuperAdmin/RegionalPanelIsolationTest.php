@@ -667,10 +667,77 @@ class RegionalPanelIsolationTest extends TestCase
         );
     }
 
-    public function test_a_regional_admin_cannot_impersonate(): void
+    /**
+     * The TENANT-scoped impersonation endpoint reaches the caller's OWN community
+     * only. A member of a community BENEATH them is not reachable through it —
+     * that is what the super-panel endpoint (tested below) is for.
+     *
+     * 🔴 This test asserted 403 until 2026-08-06, when the route was moved off
+     * `EnsureIsSuperAdmin` — a gate that deliberately refuses
+     * `is_tenant_super_admin` and therefore refused the super-admin of a
+     * community trying to view one of their OWN members as themselves (reported
+     * by the owner with a screenshot: "Impersonate Failed", 403, on hOUR
+     * Timebank). The refusal here is now the controller's tenant scope, not the
+     * gate, and 404 rather than 403 is the correct answer: from this endpoint's
+     * point of view a user in another community does not exist.
+     */
+    public function test_the_tenant_endpoint_does_not_reach_into_a_community_beneath_them(): void
     {
         $member = User::factory()->forTenant($this->childId)->create();
         $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/users/{$member->id}/impersonate", [])->assertStatus(404);
+    }
+
+    public function test_a_regional_admin_can_impersonate_a_member_of_its_own_community(): void
+    {
+        // The reported case. The actor is the super-admin of the hub; the target
+        // is an ordinary member of that same hub.
+        $member = User::factory()->forTenant($this->hubId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $response = $this->apiPost("/v2/admin/users/{$member->id}/impersonate", []);
+
+        $response->assertStatus(200);
+        $this->assertNotEmpty($response->json('data.token'));
+        $this->assertSame($this->hubId, (int) $response->json('data.tenant_id'));
+    }
+
+    public function test_a_regional_admin_cannot_impersonate_a_peer_administrator(): void
+    {
+        // Tier rule, not tenant scope: same community, but an administrator is
+        // not below a tenant super-admin, and impersonation must never be a way
+        // to borrow a peer's authority.
+        $peer = User::factory()->forTenant($this->hubId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/users/{$peer->id}/impersonate", [])->assertStatus(403);
+    }
+
+    public function test_an_ordinary_admin_still_cannot_impersonate_anyone(): void
+    {
+        // The new gate must be wider than EnsureIsSuperAdmin but NOT as wide as
+        // 'admin'. An ordinary community administrator holds no super-admin
+        // capacity and must still be refused at the door.
+        $plainAdmin = User::factory()->forTenant($this->hubId)->admin()->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        DB::table('users')->where('id', $plainAdmin->id)->update([
+            'is_tenant_super_admin' => 0, 'is_super_admin' => 0, 'is_god' => 0,
+        ]);
+        $plainAdmin->refresh();
+
+        $member = User::factory()->forTenant($this->hubId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+
+        SuperPanelAccess::reset();
+        $this->withTenant($this->hubId);
+        Sanctum::actingAs($plainAdmin);
 
         $this->apiPost("/v2/admin/users/{$member->id}/impersonate", [])->assertStatus(403);
     }

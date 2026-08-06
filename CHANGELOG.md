@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **"View as this member" was refused to the super-admin of a timebank, for every member of their own timebank.** Reported with a screenshot: pressing it on the admin Users page produced "Impersonate Failed" and nothing else. The cause was the permission gate on that address. There are two gates in the platform — one for ordinary administrators, one for the owner of the whole installation — and this sat behind the second, which is written to *deliberately* refuse the super-admin of an individual timebank. That is the right rule for the pages it normally guards, which act across every timebank on the installation. It is the wrong rule for signing in as one of your own members, which never leaves your timebank.
+
+  A third gate now sits between the two: super-admin of *something*, whether the installation or your own timebank. It deliberately does not require the timebank to have others beneath it, because helping your own member has nothing to do with hierarchy — the timebank-with-branches rule would have excluded every ordinary timebank for a reason that does not apply to them. An ordinary administrator is still refused; only super-admins pass.
+
+  What the platform already checked, and still does: the member must belong to your timebank, cannot be you, and must sit *below* you — so a super-admin can view a member as themselves, but not a fellow administrator. Borrowing a colleague's authority is exactly what this must never become. Those ranks are re-checked at the last moment under a database lock, so somebody being promoted mid-action cannot widen it. Every use is written to two logs.
+
+  One related annoyance fixed at the same time: the Users list offered the option on fellow administrators, where it could only ever fail. It is now shown only where it will work.
+
 - **A network administrator can now retire one of their own timebanks, and step into a member's account to help them.** Both were things the platform intended to allow and did not, and both were asked for directly.
 
   **Retiring a timebank.** "Delete" here means *deactivate* — the timebank is switched off and can be switched back on; permanently destroying the data is a separate action that remains with the platform owner alone. Until now a network administrator could switch one of their timebanks back *on* but not *off*, which was an oversight rather than a decision. They can now switch off any timebank beneath them, but **not the one they themselves operate from** — doing that would lock them, and everyone in that timebank, out of the platform. The platform refuses it, and the button is no longer shown there; a short line explains why and who to ask. The existing protections stay: the master timebank can never be switched off, and neither can one that still has active timebanks beneath it, which must be dealt with first.

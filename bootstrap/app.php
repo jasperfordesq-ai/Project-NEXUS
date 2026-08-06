@@ -597,6 +597,12 @@ $app = Application::configure(basePath: dirname(__DIR__))
             // of a tenant that has children, the latter confined to their own subtree.
             // 🔴 Only for endpoints that already scope themselves — see the class docblock.
             'super-panel' => \App\Http\Middleware\EnsureSuperPanelAccess::class,
+            // Super-admin of SOMETHING — the platform, or the caller's own community.
+            // Wider than 'super-admin' (which refuses is_tenant_super_admin) and
+            // narrower than 'admin'. Unlike 'super-panel' it does NOT require the
+            // community to have children, because the routes behind it act within a
+            // single community. Admission only: the route must still scope its target.
+            'tenant-super-admin' => \App\Http\Middleware\EnsureIsTenantSuperAdmin::class,
             'federation.api' => \App\Http\Middleware\FederationApiAuth::class,
             'federation.external' => \App\Http\Middleware\EnsureExternalFederationEnabled::class,
             'partner.api' => \App\Http\Middleware\PartnerApiAuth::class,
