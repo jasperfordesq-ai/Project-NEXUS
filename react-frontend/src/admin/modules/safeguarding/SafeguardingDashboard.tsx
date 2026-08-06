@@ -332,6 +332,13 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         setGuardianEmail('');
         assignModal.onClose();
         loadData();
+      } else {
+        // 🔴 api.ts never throws, so without this branch a refusal (email
+        // matching no member, guardian == supported member, duplicate
+        // arrangement) produced NO feedback at all — the modal just sat
+        // there. Surface the API's own message ("Supported member not found
+        // in this community", …) so staff know what to fix.
+        toast.error(res.error || t('safeguarding.failed_to_create_assignment'));
       }
     } catch (err) {
       logError('SafeguardingDashboard.createAssignment', err);

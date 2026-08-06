@@ -402,6 +402,41 @@ describe('SafeguardingDashboard', () => {
     }
   });
 
+  /**
+   * 🔴 api.ts never throws, so a refusal arrives as {success:false} and the
+   * catch block is dead code. Without an explicit else branch, a broker whose
+   * typed email matched no member got NO feedback at all — the modal just sat
+   * there (owner-reported, 2026-08-06). The API's own message must surface.
+   */
+  it('shows the API error when create-assignment is refused', async () => {
+    mockApi.post.mockResolvedValue({
+      success: false,
+      error: 'Supported member not found in this community',
+    });
+    const { SafeguardingDashboard } = await import('./SafeguardingDashboard');
+    render(<SafeguardingDashboard />);
+
+    await waitFor(() => screen.getAllByTestId('stat-card'));
+
+    const newBtn = screen.getAllByRole('button').find((b) => b.textContent?.toLowerCase().includes('assignment'));
+    if (newBtn) fireEvent.click(newBtn);
+    await waitFor(() => document.querySelector('[role="dialog"]'));
+
+    const inputs = document.querySelectorAll('[role="dialog"] input');
+    if (inputs[0]) fireEvent.change(inputs[0], { target: { value: 'nobody@example.com' } });
+    if (inputs[1]) fireEvent.change(inputs[1], { target: { value: 'guardian@example.com' } });
+
+    const confirmBtn = screen.getAllByRole('button').find((b) =>
+      b.textContent?.toLowerCase().includes('create')
+    );
+    expect(confirmBtn).toBeDefined();
+    fireEvent.click(confirmBtn as HTMLElement);
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('Supported member not found in this community');
+    });
+  });
+
   it('switches to Preferences tab and shows empty state message when no prefs', async () => {
     const { SafeguardingDashboard } = await import('./SafeguardingDashboard');
     render(<SafeguardingDashboard />);
