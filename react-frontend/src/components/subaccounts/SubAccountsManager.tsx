@@ -27,6 +27,7 @@ import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
 import { resolveAvatarUrl } from '@/lib/helpers';
+import { SupportPrepareModal, type PrepareActionType } from './SupportPrepareModal';
 
 type RelationshipStatus = 'active' | 'pending' | 'revoked' | 'rejected';
 type PermissionKey = 'can_view_activity' | 'can_manage_listings' | 'can_transact' | 'can_view_messages';
@@ -195,6 +196,14 @@ export function SubAccountsManager() {
   const [addEmail, setAddEmail] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [busyRelationshipId, setBusyRelationshipId] = useState<number | null>(null);
+  // Prepare-on-behalf modal (guardian redesign phase 4): which action, for
+  // whom, and at which tier the supporter holds the capability.
+  const [preparing, setPreparing] = useState<{
+    actionType: PrepareActionType;
+    supportedUserId: number;
+    supportedName: string;
+    tier: 'co_decide' | 'represent';
+  } | null>(null);
 
   const tRef = useRef(t);
   tRef.current = t;
@@ -464,6 +473,44 @@ export function SubAccountsManager() {
                   {t('sub_accounts.tiers.co_decide_explainer')}
                 </p>
                 {/*
+                  Acting on the grant. Offered only when a tier actually
+                  permits it — co_decide prepares (the member approves each
+                  one), represent acts immediately. The modal states which
+                  before any field is filled in.
+                */}
+                {(account.tiers.listings !== 'none' && account.tiers.listings !== 'assist') || (account.tiers.credits !== 'none' && account.tiers.credits !== 'assist') ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {account.tiers.listings !== 'none' && account.tiers.listings !== 'assist' && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onPress={() => setPreparing({
+                          actionType: 'listing_create',
+                          supportedUserId: account.user_id,
+                          supportedName: name,
+                          tier: account.tiers.listings as 'co_decide' | 'represent',
+                        })}
+                      >
+                        {t('support_actions.prepare_listing_button')}
+                      </Button>
+                    )}
+                    {account.tiers.credits !== 'none' && account.tiers.credits !== 'assist' && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onPress={() => setPreparing({
+                          actionType: 'credit_transfer',
+                          supportedUserId: account.user_id,
+                          supportedName: name,
+                          tier: account.tiers.credits as 'co_decide' | 'represent',
+                        })}
+                      >
+                        {t('support_actions.prepare_transfer_button')}
+                      </Button>
+                    )}
+                  </div>
+                ) : null}
+                {/*
                   Stated explicitly rather than left as an absence. A family that
                   previously switched "View messages" on needs to know it never
                   did anything and is not being offered — silently dropping the
@@ -694,6 +741,17 @@ export function SubAccountsManager() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {preparing && (
+        <SupportPrepareModal
+          isOpen
+          onOpenChange={(open) => { if (!open) setPreparing(null); }}
+          actionType={preparing.actionType}
+          supportedUserId={preparing.supportedUserId}
+          supportedName={preparing.supportedName}
+          tier={preparing.tier}
+        />
+      )}
     </div>
   );
 }
