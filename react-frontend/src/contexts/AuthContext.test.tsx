@@ -69,12 +69,20 @@ function TestAuthDisplay() {
 
 // Test component for auth actions
 function TestAuthActions() {
-  const { login, logout, verify2FA, register, cancel2FA, clearError, status, error } = useAuth();
+  const { login, logout, verify2FA, register, cancel2FA, clearError, status, error, user: authUser } = useAuth();
 
   return (
     <div>
       <div data-testid="status">{status}</div>
       <div data-testid="error">{error || 'none'}</div>
+      {/*
+        Server-DERIVED field: only GET /v2/users/me computes it, so it is the
+        canary for whether the context hydrated the full profile after login
+        rather than keeping the minimal user record the login response carries.
+      */}
+      <div data-testid="super-panel-level">
+        {(authUser as { super_panel_level?: string } | null)?.super_panel_level ?? 'absent'}
+      </div>
       <button
         onClick={() => login({ email: 'test@example.com', password: 'password' })}
       >
@@ -191,6 +199,10 @@ describe('AuthContext', () => {
           user: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
         },
       });
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+      });
 
       render(
         <AuthProvider>
@@ -210,6 +222,94 @@ describe('AuthContext', () => {
 
       expect(tokenManager.setAccessToken).toHaveBeenCalledWith('access-token');
       expect(tokenManager.setRefreshToken).toHaveBeenCalledWith('refresh-token');
+    });
+
+    /*
+     * 🔴 Regression, reported 2026-08-05: the super-admin of a branch community
+     * saw no super-panel entry in the admin sidebar after logging in, and it
+     * appeared only after a full page refresh.
+     *
+     * Cause: the login response carries a MINIMAL user record with no
+     * `super_panel_level`, and `superPanelLevel()` reads an absent field as a
+     * pre-field payload and falls back to the platform flags — which resolve a
+     * branch super-admin to 'none'. The refresh "fixed" it because checkAuth()
+     * re-hydrates from /me. Assert the hydration, not the sidebar: this context
+     * is where the thin record used to survive the whole session.
+     */
+    it('hydrates the full profile from /me after login, not just the login payload', async () => {
+      const user = userEvent.setup();
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: true,
+        data: {
+          access_token: 'access-token',
+          refresh_token: 'refresh-token',
+          // No super_panel_level here — exactly what the login endpoint returns.
+          user: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 2 },
+        },
+      });
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: {
+          id: 1,
+          first_name: 'John',
+          last_name: 'Doe',
+          tenant_id: 2,
+          super_panel_level: 'regional',
+        },
+      });
+
+      render(
+        <AuthProvider>
+          <TestAuthActions />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('idle');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Login' }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+      });
+
+      expect(api.get).toHaveBeenCalledWith('/v2/users/me');
+      expect(screen.getByTestId('super-panel-level')).toHaveTextContent('regional');
+    });
+
+    it('keeps the session when the post-login profile fetch fails', async () => {
+      const user = userEvent.setup();
+      vi.mocked(tokenManager.hasAccessToken).mockReturnValue(false);
+      vi.mocked(api.post).mockResolvedValueOnce({
+        success: true,
+        data: {
+          access_token: 'access-token',
+          refresh_token: 'refresh-token',
+          user: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 2 },
+        },
+      });
+      // api.ts never throws — a failure arrives as success: false.
+      vi.mocked(api.get).mockResolvedValueOnce({ success: false, error: 'boom' });
+
+      render(
+        <AuthProvider>
+          <TestAuthActions />
+        </AuthProvider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('idle');
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Login' }));
+
+      // Authenticated on the minimal record rather than dropped to an error.
+      await waitFor(() => {
+        expect(screen.getByTestId('status')).toHaveTextContent('authenticated');
+      });
+      expect(screen.getByTestId('super-panel-level')).toHaveTextContent('absent');
     });
 
     it('handles login requiring 2FA', async () => {
@@ -296,6 +396,10 @@ describe('AuthContext', () => {
             user: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
           },
         });
+      vi.mocked(api.get).mockResolvedValueOnce({
+        success: true,
+        data: { id: 1, first_name: 'John', last_name: 'Doe', tenant_id: 1 },
+      });
 
       render(
         <AuthProvider>

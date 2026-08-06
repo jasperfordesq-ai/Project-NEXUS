@@ -24,7 +24,7 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import { api, tokenManager, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT } from '@/lib/api';
+import { api, tokenManager, isImpersonatedTab, SESSION_EXPIRED_EVENT, SESSION_EXPIRING_EVENT } from '@/lib/api';
 import { logError, logWarn } from '@/lib/logger';
 import i18n from '@/i18n';
 import { validateResponseIfPresent } from '@/lib/api-validation';
@@ -273,6 +273,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Login
   // ─────────────────────────────────────────────────────────────────────────
 
+  /*
+   * 🔴 The login and 2FA responses carry a MINIMAL user record. Fields the server
+   * DERIVES rather than stores are computed only by GET /v2/users/me, so they are
+   * absent from it.
+   *
+   * `super_panel_level` is the one that bit: `superPanelLevel()` treats an absent
+   * field as a pre-field payload and falls back to the platform flags, which
+   * resolves the super-admin of a branch community to 'none'. The super-panel
+   * entry was therefore missing for the whole session and only appeared after a
+   * full page load, because that re-runs checkAuth() against /me. Reported
+   * 2026-08-05: "every time I log in fresh the link is not in the sidebar, only
+   * after a page refresh it appears."
+   *
+   * So hydrate from /me here, exactly as the biometric path already does, and
+   * fall back to the minimal record if the call fails — a working session with a
+   * thinner user object beats no session. api.ts does not throw, so a failed
+   * fetch surfaces as `success: false` rather than as an exception.
+   */
+  const hydrateUserProfile = useCallback(async (fallback: User): Promise<User> => {
+    const profileRes = await api.get<User>('/v2/users/me');
+    return profileRes?.success && profileRes.data ? profileRes.data : fallback;
+  }, []);
+
   const login = useCallback(async (credentials: LoginRequest): Promise<LoginResult> => {
     setState((prev) => ({ ...prev, status: 'loading', error: null }));
 
@@ -365,7 +388,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     wasAuthenticated.current = true;
     setState({
-      user: loginData.user,
+      user: await hydrateUserProfile(loginData.user),
       status: 'authenticated',
       error: null,
       twoFactorToken: null,
@@ -373,7 +396,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     return { success: true, requires2FA: false };
-  }, [scheduleSessionWarning]);
+  }, [scheduleSessionWarning, hydrateUserProfile]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Biometric / WebAuthn Login
@@ -562,7 +585,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     wasAuthenticated.current = true;
     setState({
-      user: data.user,
+      user: await hydrateUserProfile(data.user),
       status: 'authenticated',
       error: null,
       twoFactorToken: null,
@@ -570,7 +593,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     return true;
-  }, [state.twoFactorToken, scheduleSessionWarning]);
+  }, [state.twoFactorToken, scheduleSessionWarning, hydrateUserProfile]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Cancel 2FA (go back to login)
@@ -781,6 +804,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
+      // An impersonated tab keeps its session in sessionStorage and must not
+      // follow the admin tab's localStorage logout — otherwise the admin signing
+      // out (or their token rotating) tears down the impersonated session too.
+      if (isImpersonatedTab()) return;
       // localStorage 'storage' event only fires in OTHER tabs (not the one that made the change).
       // When access token is removed (logout in another tab), clear state here too.
       if (event.key === 'nexus_access_token' && event.newValue === null && state.status === 'authenticated') {
