@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 import { api } from '@/lib/api';
 
 vi.mock('@/lib/api', () => ({
@@ -209,17 +210,20 @@ describe('SubAccountsManager', () => {
     });
   });
 
-  it('shows permission toggles for active managed accounts', async () => {
+  it('shows the activity switch and a tier picker per capability for active managed accounts', async () => {
     mockLoad();
 
     render(<SubAccountsManager />);
 
     await waitFor(() => {
       expect(screen.getByText('Permissions')).toBeInTheDocument();
-      // The three permissions the backend actually enforces.
+      // Activity stays a see/don't-see switch…
       expect(screen.getByText('View activity')).toBeInTheDocument();
-      expect(screen.getByText('Manage listings')).toBeInTheDocument();
-      expect(screen.getByText('Make transactions')).toBeInTheDocument();
+      // …listings and credits are three-level tier pickers (guardian redesign).
+      expect(screen.getByLabelText('Support level for Their listings of Child One')).toBeInTheDocument();
+      expect(screen.getByLabelText('Support level for Their time credits of Child One')).toBeInTheDocument();
+      // The middle tier is explained in plain words next to the controls.
+      expect(screen.getByText(/nothing happens until the account owner approves/i)).toBeInTheDocument();
     });
   });
 
@@ -250,18 +254,41 @@ describe('SubAccountsManager', () => {
     expect(screen.getByText(/Carers cannot read messages/i)).toBeInTheDocument();
   });
 
-  it('sends nested permission updates to the backend', async () => {
+  it('sends the boolean shorthand when the activity switch changes', async () => {
     mockLoad();
     vi.mocked(api.put).mockResolvedValueOnce({ success: true, data: [] });
 
     render(<SubAccountsManager />);
 
-    const switchControl = await screen.findByLabelText('Toggle Manage listings permission for Child One');
+    // Child One has can_view_activity: true in the fixture; toggling sends false.
+    const switchControl = await screen.findByLabelText('Toggle View activity permission for Child One');
     fireEvent.click(switchControl);
 
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/1/permissions', {
-        permissions: { can_manage_listings: true },
+        permissions: { can_view_activity: false },
+      });
+    });
+  });
+
+  it('sends an explicit tiers object when a tier is picked', async () => {
+    mockLoad();
+    vi.mocked(api.put).mockResolvedValueOnce({ success: true, data: [] });
+    const user = userEvent.setup();
+
+    render(<SubAccountsManager />);
+
+    // Open the listings tier picker and choose the co-decide level. React
+    // Aria opens on a real pointer sequence, so this needs userEvent, not
+    // fireEvent.click.
+    const trigger = await screen.findByLabelText('Support level for Their listings of Child One');
+    await user.click(trigger);
+    const option = await screen.findByRole('option', { name: /Prepare only/ });
+    await user.click(option);
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/1/permissions', {
+        permissions: { tiers: { listings: 'co_decide' } },
       });
     });
   });

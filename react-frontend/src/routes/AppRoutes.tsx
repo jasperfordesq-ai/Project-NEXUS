@@ -181,6 +181,7 @@ const MatchPreferencesPage = lazyWithRetry(() => import('@/pages/matches/MatchPr
 const ReviewsPage = lazyWithRetry(() => import('@/pages/reviews/ReviewsPage'));
 const NewsletterUnsubscribePage = lazyWithRetry(() => import('@/pages/newsletter/NewsletterUnsubscribePage'));
 const EventGuardianConsentPage = lazyWithRetry(() => import('@/pages/events/EventGuardianConsentPage'));
+const SupportActionConfirmPage = lazyWithRetry(() => import('@/pages/subaccounts/SupportActionConfirmPage'));
 const AiChatPage = lazyWithRetry(() => import('@/pages/chat/AiChatPage'));
 const ConnectionsPage = lazyWithRetry(() => import('@/pages/connections/ConnectionsPage'));
 const SkillsBrowsePage = lazyWithRetry(() => import('@/pages/skills/SkillsBrowsePage'));
@@ -348,6 +349,11 @@ export function AppRoutes() {
         {/* Newsletter unsubscribe â€” public, no auth, token-based */}
         <Route path="newsletter/unsubscribe" element={<ErrorBoundary><NewsletterUnsubscribePage /></ErrorBoundary>} />
         <Route path="events/:id/guardian-consent" element={<ErrorBoundary><EventGuardianConsentPage /></ErrorBoundary>} />
+        {/* Co-decide confirm link. Registered in BOTH route sets deliberately:
+            the email audience is a MEMBER, who may well be signed in when they
+            click it — with the route only on the public side, a signed-in
+            member landed on a 404 (found by browser verification 2026-08-06). */}
+        <Route path="support-actions/confirm/:token" element={<ErrorBoundary><SupportActionConfirmPage /></ErrorBoundary>} />
 
         {/* Shared public routes use one path/auth/feature policy in both registries. */}
         {renderSharedPublicFeatureRoutes()}

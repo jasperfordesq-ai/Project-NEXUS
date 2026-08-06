@@ -1,4 +1,4 @@
-import { useDisclosure, Button, Chip, Spinner, Input, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Switch } from '@/components/ui';
+import { useDisclosure, Button, Chip, Spinner, Input, Modal, ModalContent, ModalHeader, ModalHeading, ModalBody, ModalFooter, Avatar, Switch, Select, SelectItem } from '@/components/ui';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -31,10 +31,29 @@ import { resolveAvatarUrl } from '@/lib/helpers';
 type RelationshipStatus = 'active' | 'pending' | 'revoked' | 'rejected';
 type PermissionKey = 'can_view_activity' | 'can_manage_listings' | 'can_transact' | 'can_view_messages';
 
+/**
+ * Support tiers (guardian redesign): per-capability levels mirroring the
+ * Assisted Decision-Making (Capacity) Act 2015. The backend authority is
+ * App\Support\Safeguarding\SupportTiers — the derivation in parseTiers()
+ * below MUST match its resolve() (tiers object wins, legacy booleans are the
+ * floor, corrupted values degrade to less power).
+ */
+type SupportTier = 'none' | 'assist' | 'co_decide' | 'represent';
+type TierCapability = 'activity' | 'listings' | 'credits';
+
+/** The tiers a member can grant for listings/credits. `assist` is not offered
+ *  here: there is no draft-only UI yet, so offering "see only" for listings
+ *  would present a state that does nothing (rule: never show what does not
+ *  work). */
+const GRANTABLE_ACTION_TIERS: SupportTier[] = ['none', 'co_decide', 'represent'];
+
 interface AccountRelationshipRow {
   relationship_id: number;
   relationship_type: string;
-  permissions: Partial<Record<PermissionKey, boolean>> | string | null;
+  permissions:
+    | (Partial<Record<PermissionKey, boolean>> & { tiers?: Partial<Record<TierCapability, SupportTier>> })
+    | string
+    | null;
   status: RelationshipStatus;
   approved_at?: string | null;
   created_at: string;
@@ -47,6 +66,7 @@ interface AccountRelationshipRow {
 
 interface NormalizedRelationship extends Omit<AccountRelationshipRow, 'permissions'> {
   permissions: Record<PermissionKey, boolean>;
+  tiers: Record<TierCapability, SupportTier>;
 }
 
 /**
@@ -108,10 +128,49 @@ function parsePermissions(
   }, { ...DEFAULT_PERMISSIONS });
 }
 
+const TIER_RANK: Record<SupportTier, number> = { none: 0, assist: 1, co_decide: 2, represent: 3 };
+
+function isSupportTier(value: unknown): value is SupportTier {
+  return typeof value === 'string' && value in TIER_RANK;
+}
+
+/**
+ * Mirror of the backend's SupportTiers::resolve(): explicit tiers win per
+ * capability, legacy booleans are the floor, anything unrecognised degrades
+ * toward LESS power.
+ */
+function parseTiers(permissions: AccountRelationshipRow['permissions']): Record<TierCapability, SupportTier> {
+  let parsed = permissions;
+  if (typeof parsed === 'string') {
+    try {
+      parsed = JSON.parse(parsed) as Exclude<AccountRelationshipRow['permissions'], string>;
+    } catch {
+      parsed = null;
+    }
+  }
+
+  const resolved: Record<TierCapability, SupportTier> = {
+    activity: parsed && !Array.isArray(parsed) && parsed.can_view_activity ? 'assist' : 'none',
+    listings: parsed && !Array.isArray(parsed) && parsed.can_manage_listings ? 'represent' : 'none',
+    credits: parsed && !Array.isArray(parsed) && parsed.can_transact ? 'represent' : 'none',
+  };
+
+  const tiers = parsed && !Array.isArray(parsed) ? parsed.tiers : undefined;
+  if (tiers && typeof tiers === 'object') {
+    for (const capability of ['activity', 'listings', 'credits'] as TierCapability[]) {
+      const value = tiers[capability];
+      if (isSupportTier(value)) resolved[capability] = value;
+    }
+  }
+
+  return resolved;
+}
+
 function normalizeRelationship(row: AccountRelationshipRow): NormalizedRelationship {
   return {
     ...row,
     permissions: parsePermissions(row.permissions),
+    tiers: parseTiers(row.permissions),
   };
 }
 
@@ -229,6 +288,44 @@ export function SubAccountsManager() {
     }
   };
 
+  /**
+   * Change one capability's support tier. Sends the explicit `tiers` object —
+   * the endpoint keeps the legacy booleans in sync server-side, so no boolean
+   * needs to travel with it. Raising a tier re-triggers the safeguarding
+   * contact re-check on the backend; a refusal arrives as an error here and
+   * the optimistic update is rolled back.
+   */
+  const handleTierChange = async (
+    relationshipId: number,
+    capability: TierCapability,
+    tier: SupportTier,
+  ) => {
+    const previousAccounts = managedAccounts;
+
+    setManagedAccounts((prev) =>
+      prev.map((account) =>
+        account.relationship_id === relationshipId
+          ? { ...account, tiers: { ...account.tiers, [capability]: tier } }
+          : account,
+      ),
+    );
+
+    try {
+      const response = await api.put(`/v2/users/me/sub-accounts/${relationshipId}/permissions`, {
+        permissions: { tiers: { [capability]: tier } },
+      });
+
+      if (!response.success) {
+        setManagedAccounts(previousAccounts);
+        toastRef.current.error(response.error || tRef.current('toasts.subaccount_permission_failed'));
+      }
+    } catch (err) {
+      setManagedAccounts(previousAccounts);
+      logError('Failed to update support tier', err);
+      toastRef.current.error(tRef.current('toasts.subaccount_permission_failed'));
+    }
+  };
+
   const handleRemove = async (relationshipId: number) => {
     try {
       setBusyRelationshipId(relationshipId);
@@ -315,25 +412,57 @@ export function SubAccountsManager() {
                   <Shield className="w-3 h-3" aria-hidden="true" />
                   {t('sub_accounts.permissions_label')}
                 </p>
+                {/*
+                  Three-tier support model (guardian redesign). Activity is a
+                  simple see/don't-see switch. Listings and credits offer three
+                  levels: Off, "Prepare only" (co_decide — the supporter
+                  prepares, THIS member approves each one before it happens),
+                  and "Act alone" (represent — fully logged and attributed).
+                  The old on/off switches mapped to Off/Act alone only; the
+                  middle level is the Act's co-decision-maker arrangement and
+                  the right default for most families.
+                */}
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <span className="text-xs text-theme-muted">{t('sub_accounts.permissions.can_view_activity')}</span>
+                  <Switch
+                    size="sm"
+                    className="shrink-0"
+                    isSelected={account.tiers.activity !== 'none'}
+                    onValueChange={(value) =>
+                      handlePermissionChange(account.relationship_id, 'can_view_activity', value)
+                    }
+                    aria-label={t('sub_accounts.permission_aria', { permission: t('sub_accounts.permissions.can_view_activity'), name })}
+                  />
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {PERMISSION_KEYS.map((permission) => {
-                    const label = t(`sub_accounts.permissions.${permission}`);
+                  {(['listings', 'credits'] as const).map((capability) => {
+                    const label = t(`sub_accounts.tiers.capability_${capability}`);
                     return (
-                      <div key={permission} className="flex min-w-0 items-center justify-between gap-3">
-                        <span className="text-xs text-theme-muted">{label}</span>
-                        <Switch
-                          size="sm"
-                          className="shrink-0"
-                          isSelected={account.permissions[permission]}
-                          onValueChange={(value) =>
-                            handlePermissionChange(account.relationship_id, permission, value)
+                      <Select
+                        key={capability}
+                        size="sm"
+                        label={label}
+                        selectedKeys={[account.tiers[capability]]}
+                        onSelectionChange={(keys) => {
+                          const value = Array.from(keys)[0] as string | undefined;
+                          if (isSupportTier(value) && value !== account.tiers[capability]) {
+                            handleTierChange(account.relationship_id, capability, value);
                           }
-                          aria-label={t('sub_accounts.permission_aria', { permission: label, name })}
-                        />
-                      </div>
+                        }}
+                        aria-label={t('sub_accounts.tiers.tier_aria', { capability: label, name })}
+                      >
+                        {GRANTABLE_ACTION_TIERS.map((tier) => (
+                          <SelectItem key={tier} id={tier}>
+                            {t(`sub_accounts.tiers.option_${tier}`)}
+                          </SelectItem>
+                        ))}
+                      </Select>
                     );
                   })}
                 </div>
+                <p className="text-xs text-theme-muted">
+                  {t('sub_accounts.tiers.co_decide_explainer')}
+                </p>
                 {/*
                   Stated explicitly rather than left as an absence. A family that
                   previously switched "View messages" on needs to know it never

@@ -32,6 +32,7 @@ const CaringCommunityPage = lazyWithRetry(() => import('@/pages/caring-community
 const InviteRedemptionPage = lazyWithRetry(() => import('@/pages/caring-community/InviteRedemptionPage'));
 const NewsletterUnsubscribePage = lazyWithRetry(() => import('@/pages/newsletter/NewsletterUnsubscribePage'));
 const EventGuardianConsentPage = lazyWithRetry(() => import('@/pages/events/EventGuardianConsentPage'));
+const SupportActionConfirmPage = lazyWithRetry(() => import('@/pages/subaccounts/SupportActionConfirmPage'));
 const PublicEventsListPage = lazyWithRetry(() => import('@/pages/events/PublicEventsListPage'));
 const PublicEventDetailPage = lazyWithRetry(() => import('@/pages/events/PublicEventDetailPage'));
 const NotFoundPage = lazyWithRetry(() => import('@/pages/errors/NotFoundPage'));
@@ -125,6 +126,9 @@ export function PublicAppRoutes() {
         <Route path="partner-analytics/dashboard" element={<ErrorBoundary><PartnerDashboardPage /></ErrorBoundary>} />
         <Route path="newsletter/unsubscribe" element={<ErrorBoundary><NewsletterUnsubscribePage /></ErrorBoundary>} />
         <Route path="events/:id/guardian-consent" element={<ErrorBoundary><EventGuardianConsentPage /></ErrorBoundary>} />
+        {/* Single-use token from the co-decide confirm email — identity-free,
+            usable without a login (that is the point of the flow). */}
+        <Route path="support-actions/confirm/:token" element={<ErrorBoundary><SupportActionConfirmPage /></ErrorBoundary>} />
         {renderSharedPublicFeatureRoutes()}
         <Route path="partner" element={<ErrorBoundary><TenantSlugGate slug="hour-timebank"><PartnerPage /></TenantSlugGate></ErrorBoundary>} />
         <Route path="social-prescribing" element={<ErrorBoundary><TenantSlugGate slug="hour-timebank"><SocialPrescribingPage /></TenantSlugGate></ErrorBoundary>} />

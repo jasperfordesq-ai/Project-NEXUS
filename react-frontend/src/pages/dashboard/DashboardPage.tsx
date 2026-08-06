@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { GuardianConsentPrompt } from '@/components/safeguarding/GuardianConsentPrompt';
+import { SupportActionPrompt } from '@/components/subaccounts/SupportActionPrompt';
 import { Progress } from '@/components/ui/Progress';
 import { Skeleton } from '@/components/ui/Skeleton';
 /**
@@ -374,6 +375,13 @@ export function DashboardPage() {
         */}
         <motion.div variants={itemVariants}>
           <GuardianConsentPrompt />
+        </motion.div>
+
+        {/* A co-decide action a supporter prepared, waiting for this member's
+            answer. Same discoverability reasoning as the guardian prompt
+            above; renders nothing when nothing is pending. */}
+        <motion.div variants={itemVariants}>
+          <SupportActionPrompt />
         </motion.div>
 
         {/* Onboarding Banner */}

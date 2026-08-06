@@ -5,6 +5,7 @@
 
 import { GlassCard } from '@/components/ui/GlassCard';
 import { SubAccountsManager } from '@/components/subaccounts/SubAccountsManager';
+import { SupportActionsPanel } from '@/components/subaccounts/SupportActionsPanel';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
@@ -13,6 +14,10 @@ import { SubAccountsManager } from '@/components/subaccounts/SubAccountsManager'
 export function LinkedAccountsTab() {
   return (
     <div className="space-y-6">
+      {/* Co-decide actions waiting for an answer render FIRST — a pending
+          decision about this member's own listings/credits outranks admin of
+          the relationships themselves. Renders nothing when nothing pends. */}
+      <SupportActionsPanel />
       <GlassCard className="p-6">
         <SubAccountsManager />
       </GlassCard>
