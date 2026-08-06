@@ -280,6 +280,62 @@ class PerformanceRecorderTest extends TestCase
     }
 
     /**
+     * ...and neither must a broken LOGGER.
+     *
+     * The test above proves a failed write is swallowed. It was not enough: the
+     * `Log::warning` inside that same catch block was itself unprotected, so when
+     * the logger was broken the catch block became the thing it exists to
+     * prevent.
+     *
+     * That happened for real on 2026-08-06. CI exported an EMPTY log channel (an
+     * unquoted `null` in the workflow YAML, where the two sibling steps quote
+     * it), so every `Log::` call raised
+     * `InvalidArgumentException: Log [] is not defined`. The throw escaped this
+     * recorder into whatever request was in flight — an exchange-dispute
+     * resolution — whose own error handler then failed the same way, returning
+     * 500 and recording nothing about the original cause. One shard went red and
+     * the stack trace pointed at a controller that had nothing to do with it.
+     *
+     * A monitor with no safe failure mode is worse than no monitor.
+     */
+    public function test_a_broken_log_channel_cannot_escape_the_recorder(): void
+    {
+        $this->enableRecording();
+        TenantContext::setById($this->testTenantId);
+
+        /*
+         * 🔴 Reset the once-per-process flag, or this test proves nothing.
+         *
+         * `PerformanceRecorder::$loggedFailure` is static and the whole suite
+         * shares one process, so the earlier failure test above has already set
+         * it. Without this reset the logging branch is never entered, no throw
+         * can happen, and the test passes whether or not the fix is present —
+         * confirmed by removing the fix and watching it still pass.
+         */
+        $flag = new \ReflectionProperty(PerformanceRecorder::class, 'loggedFailure');
+        $flag->setAccessible(true);
+        $flag->setValue(null, false);
+
+        // Force the recording to fail, exactly as the test above does...
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS performance_request_hourly');
+        $recorder = $this->startedRecorder();
+        DB::statement('CREATE TEMPORARY TABLE performance_request_hourly (nonsense INT)');
+
+        // ...and force the attempt to LOG that failure to fail too.
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->andThrow(new \InvalidArgumentException('Log [] is not defined'));
+
+        $this->flush($recorder);
+
+        $this->assertTrue(
+            true,
+            'flush() must return even when the write fails AND the logger is broken.'
+        );
+
+        DB::statement('DROP TEMPORARY TABLE IF EXISTS performance_request_hourly');
+    }
+
+    /**
      * End-to-end through the real query event, not through recordQuery() by hand.
      *
      * Everything else here calls recordQuery() directly, which proves the maths

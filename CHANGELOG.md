@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **The new performance monitor could turn an unrelated request into a server error, if logging was misconfigured.** The monitor is written so that its own failures never reach the person using the site — it records the problem and gives up quietly. But the act of *recording* the problem was itself unprotected, so if the log itself was broken, the very code meant to contain the failure became the failure. It then surfaced in whichever request happened to be in flight — in the case that exposed this, someone resolving a disputed exchange got a server error, and that page's own error handling broke the same way, so nothing about the real cause was ever written down.
+
+  A monitor with no safe way to fail is worse than no monitor, so writing the record is now protected too. That is the end of the line: if the log cannot be written, there is nowhere left to report to, and the request carries on unaffected.
+
+  Found because it happened: an automated test run had its log setting written in a way that produced an empty value, which made every attempt to write a log fail. That setting has been corrected — two neighbouring settings in the same file were already correct and this one was not — and the monitor no longer depends on it being right.
+
 ## [1.5.9] - 2026-08-06
 
 ### Changed

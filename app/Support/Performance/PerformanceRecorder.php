@@ -241,9 +241,29 @@ final class PerformanceRecorder
             // so a missing table or a permissions problem is discoverable.
             if (! self::$loggedFailure) {
                 self::$loggedFailure = true;
-                Log::warning('Performance recording failed; further failures in this process are not logged', [
-                    'error' => $exception->getMessage(),
-                ]);
+
+                /*
+                 * 🔴 The LOGGING must not propagate either, or this catch block
+                 * becomes the very thing it exists to prevent.
+                 *
+                 * `Log::` throws when the log channel is misconfigured — an empty
+                 * `logging.default` raises `InvalidArgumentException: Log [] is
+                 * not defined`. That escaped this catch on 2026-08-06 and turned
+                 * an in-flight request into a 500 inside an unrelated controller,
+                 * whose own error handler then failed the same way; the original
+                 * cause was never recorded. A monitor that can break a request
+                 * when the logger is broken has no safe failure mode at all.
+                 *
+                 * Swallowing here is deliberate and is the end of the line: there
+                 * is nowhere left to report to.
+                 */
+                try {
+                    Log::warning('Performance recording failed; further failures in this process are not logged', [
+                        'error' => $exception->getMessage(),
+                    ]);
+                } catch (\Throwable) {
+                    // Logger unavailable. Nothing further to do — see above.
+                }
             }
         } finally {
             $this->flushing = false;

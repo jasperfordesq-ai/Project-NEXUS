@@ -270,7 +270,16 @@ jobs:
           CACHE_DRIVER: array
           SESSION_DRIVER: array
           QUEUE_CONNECTION: sync
-          LOG_CHANNEL: null
+          # 🔴 MUST stay quoted. Unquoted, YAML parses `null` as the null value
+          # and GitHub exports the variable as an EMPTY STRING, so
+          # `env('LOG_CHANNEL', 'stack')` resolves to '' and `config('logging.default')`
+          # becomes ''. Every `Log::` call in the suite then throws
+          # `InvalidArgumentException: Log [] is not defined`, which lands inside
+          # whichever request is in flight and turns it into a 500. That is what
+          # reddened shard 2 on 2026-08-06 (AdminBrokerControllerTest, a 500 from
+          # a catch block whose own logging threw). The two sibling steps in this
+          # file quote it; this one did not.
+          LOG_CHANNEL: "null"
 
   # ─────────────────────────────────────────────────────────────────
   # Stage 1b: PHP Static Analysis & guards — syntax, schema-skip budget,
