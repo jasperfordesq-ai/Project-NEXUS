@@ -65,7 +65,13 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // component by its own path, so the stub never installed. Retargeting the mocks
 // at the real paths cleared 40 of them in one pass. The other two are fixed for
 // that defect but held back by a second, i18n-dependent text assertion.
-const BASELINE = 54;
+// Then 54 -> 53: PerformanceDashboard.test.tsx fixed and removed (13/13 with
+// --retry=0). Its one failing assertion expected '800ms' where Intl unit
+// formatting emits '800 ms'. Kept quarantined, it also hid a live crash: the
+// page reads /v2/metrics/summary, which answers with the event-counter payload,
+// so summary.memory_spikes.length threw in the browser while every test passed
+// against a mocked payload no endpoint produces.
+const BASELINE = 53;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 

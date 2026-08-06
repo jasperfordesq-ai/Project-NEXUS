@@ -37,14 +37,14 @@
     "loading": "Ag lódáil",
     "next": "Ar aghaidh",
     "no": "Níl",
+    "ok": "OK",
     "pending": "Ar feitheamh",
     "previous": "Roimhe Seo",
     "retry": "Bain triail eile as",
     "save": "Sábháil",
     "select_all": "Roghnaigh Uile",
     "select_item": "Roghnaigh Mír",
-    "yes": "Tá",
-    "ok": "OK"
+    "yes": "Tá"
   },
   "shared": {
     "broker_actions": "Gníomhartha Bróicéara",
@@ -57,6 +57,7 @@
     "no_history_available": "Níor aimsíodh aon stair le fáil",
     "no_legal_documents_found": "Níor aimsíodh aon doiciméad dlíthiúil",
     "no_members_found": "Níor aimsíodh aon bhall",
+    "loading": "Luchtú",
     "no_data": "Gan sonraí",
     "no_data_available": "Níl aon sonraí ar fáil",
     "no_recent_broker_activity": "Níor aimsíodh aon ghníomhaíocht bróicéir le déanaí",
@@ -67,10 +68,9 @@
     "refresh": "Athnuaigh",
     "search": "Cuardach...",
     "select_all_rows": "Roghnaigh gach sraith",
+    "select_row": "Roghnaigh sraith {{id}}",
     "data_table": "Sonraí",
-    "total_count": "{{count}}iomlán",
-    "loading": "Luchtú",
-    "select_row": "Roghnaigh sraith {{id}}"
+    "total_count": "{{count}}iomlán"
   },
   "performance": {
     "label_performance_metrics": "Méadrachtaí Feidhmíochta",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1 Uair",
     "filter_24_hours": "24 Uair",
     "filter_7_days": "7 Lá",
+    "called_from_value": "Glaoite ó {{location}}",
     "label_memory_spikes": "Spící Cuimhne",
+    "load_failed_body": "Níorbh fhéidir an tuairisc feidhmíochta a lódáil. Fadhb í seo agus an tuairisc á léamh, ní fadhb le do shuíomh. Bain triail as Athnuaigh, agus má leanann sé ar aghaidh ba cheart do riarthóir an ardáin logaí an fhreastalaí a sheiceáil.",
+    "load_failed_title": "Níorbh fhéidir an tuairisc feidhmíochta a lódáil",
+    "peak_memory_value": "Buaic {{memory}}",
+    "query_count_value": "Ceisteanna: {{queries}}",
     "label_n_plus_one_warnings": "Rabhaidh N Móide a hAon",
     "label_slow_queries": "Ceisteanna Mall",
     "label_total_requests": "Iarratais Iomlán",
+    "n_plus_one_body": "Aithníodh patrúin fiosrúcháin N+1 féideartha. Déan athbhreithniú ar an iarratas mall agus ar shonraí na fiosrúchán maidir le luchtú caidrimh arís agus arís eile.",
     "n_plus_one_title": "N Móide a hAon",
     "no_memory_spikes": "Níor aimsíodh aon spící cuimhne",
     "no_slow_queries": "Níor aimsíodh aon fhiosrúchán mall",
     "no_slow_requests": "Níor aimsíodh aon iarratas mall",
     "no_volume_data": "Níor aimsíodh aon sonraí toirte",
+    "page_description": "Métricí feidhmíochta an bhunachar sonraí, an iarratais, agus an chuimhne don tréimhse roghnaithe.",
     "peak_memory": "Buaic-chuimhne",
     "query_count": "Comhaireamh Iarratas",
     "refresh": "Athnuaigh",
@@ -95,8 +102,12 @@
     "tab_request_volume": "Imleabhar Iarratas",
     "tab_slow_queries": "Ceisteanna Mall",
     "tab_slow_requests": "Iarratais Mhall",
-    "warning_unknown": "Rabhadh feidhmíochta",
-    "n_plus_one_body": "Aithníodh patrúin fiosrúcháin N+1 féideartha. Déan athbhreithniú ar an iarratas mall agus ar shonraí na fiosrúchán maidir le luchtú caidrimh arís agus arís eile.",
-    "page_description": "Métricí feidhmíochta an bhunachar sonraí, an iarratais, agus an chuimhne don tréimhse roghnaithe."
+    "unavailable_body": "Níl an t-ardán ag bailiú sonraí iarratais, fiosrúcháin nó próifílithe cuimhne, mar sin níl aon fhigiúirí feidhmíochta le taispeáint. Níl aon rud briste ar do shuíomh.",
+    "unavailable_title": "Níl sonraí feidhmíochta á mbailiú",
+    "warning_high_memory": "Úsáidte go leor cuimhne",
+    "warning_many_queries": "Déanta go leor ceisteanna bunachar sonraí",
+    "warning_n_plus_one": "Arís agus arís eile an cheist chéanna go minic",
+    "warning_slow_request": "Mall chun freagra a thabhairt",
+    "warning_unknown": "Rabhadh feidhmíochta"
   }
 }

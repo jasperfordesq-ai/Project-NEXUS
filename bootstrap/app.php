@@ -118,6 +118,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
             ->runInBackground()
             ->name('backup-verify');
 
+        // Performance sample retention. Diagnostic data about the platform's own
+        // speed, not a business record — see config/performance.php. Without
+        // this the samples tables grow for ever.
+        $schedule->command('performance:prune')
+            ->dailyAt('03:15')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->name('performance-prune');
+
         // Tenant data retention disposal (IT-Data-03) — off-peak nightly pass
         $schedule->command('retention:enforce')
             ->dailyAt('03:30')
@@ -571,7 +580,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CheckMaintenanceMode::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SeoRedirectMiddleware::class,
-        ], append: ['throttle:api']);
+        ], append: [
+            'throttle:api',
+            // Terminable: writes the request's performance sample AFTER the
+            // response has been sent, so it costs the user nothing. Position in
+            // the stack is irrelevant — timing comes from LARAVEL_START.
+            \App\Http\Middleware\RecordPerformanceSample::class,
+        ]);
 
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,

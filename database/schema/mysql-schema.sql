@@ -15553,6 +15553,65 @@ CREATE TABLE `peer_endorsements` (
   KEY `idx_pe_endorsed` (`endorsed_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `performance_query_samples`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `performance_query_samples` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL DEFAULT 0,
+  `request_sample_id` bigint(20) unsigned DEFAULT NULL,
+  `duration_ms` decimal(12,2) NOT NULL,
+  `sql_text` varchar(1000) NOT NULL,
+  `caller_class` varchar(191) DEFAULT NULL,
+  `caller_function` varchar(191) DEFAULT NULL,
+  `caller_file` varchar(191) DEFAULT NULL,
+  `caller_line` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_perf_query_tenant_time` (`tenant_id`,`created_at`),
+  KEY `idx_perf_query_slowest` (`tenant_id`,`duration_ms`),
+  KEY `idx_perf_query_prune` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `performance_request_hourly`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `performance_request_hourly` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL DEFAULT 0,
+  `bucket_hour` datetime NOT NULL,
+  `request_count` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_perf_hourly_bucket` (`tenant_id`,`bucket_hour`),
+  KEY `idx_perf_hourly_prune` (`bucket_hour`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `performance_request_samples`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `performance_request_samples` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tenant_id` int(11) NOT NULL DEFAULT 0,
+  `user_id` int(11) DEFAULT NULL,
+  `method` varchar(8) NOT NULL,
+  `endpoint` varchar(191) NOT NULL,
+  `status_code` smallint(6) DEFAULT NULL,
+  `duration_ms` decimal(12,2) NOT NULL,
+  `query_count` int(11) NOT NULL DEFAULT 0,
+  `memory_mb` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `peak_memory_mb` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `n_plus_one_count` int(11) NOT NULL DEFAULT 0,
+  `max_repeated_query_count` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_perf_req_tenant_time` (`tenant_id`,`created_at`),
+  KEY `idx_perf_req_slowest` (`tenant_id`,`duration_ms`),
+  KEY `idx_perf_req_memory` (`tenant_id`,`peak_memory_mb`),
+  KEY `idx_perf_req_prune` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `permission_audit_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;

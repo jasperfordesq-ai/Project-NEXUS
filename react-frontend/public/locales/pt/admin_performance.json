@@ -37,14 +37,14 @@
     "loading": "Carregando",
     "next": "Próximo",
     "no": "Não",
+    "ok": "OK",
     "pending": "Pendente",
     "previous": "Anterior",
     "retry": "Tentar novamente",
     "save": "Salvar",
     "select_all": "Selecionar tudo",
     "select_item": "Selecione o item",
-    "yes": "Sim",
-    "ok": "OK"
+    "yes": "Sim"
   },
   "shared": {
     "broker_actions": "Ações do corretor",
@@ -57,6 +57,7 @@
     "no_history_available": "Nenhum histórico disponível encontrado",
     "no_legal_documents_found": "Nenhum documento legal encontrado foi encontrado",
     "no_members_found": "Nenhum membro encontrado encontrado",
+    "loading": "Carregando",
     "no_data": "Sem dados",
     "no_data_available": "Não há dados disponíveis",
     "no_recent_broker_activity": "Nenhuma atividade recente do corretor encontrada",
@@ -67,10 +68,9 @@
     "refresh": "Atualizar",
     "search": "Procurar...",
     "select_all_rows": "Selecione todas as linhas",
+    "select_row": "Selecionar linha {{id}}",
     "data_table": "Dados",
-    "total_count": "{{count}}total",
-    "loading": "Carregando",
-    "select_row": "Selecionar linha {{id}}"
+    "total_count": "{{count}}total"
   },
   "performance": {
     "label_performance_metrics": "Métricas de desempenho",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1 hora",
     "filter_24_hours": "24 horas",
     "filter_7_days": "7 dias",
+    "called_from_value": "Chamado de {{location}}",
     "label_memory_spikes": "Picos de memória",
+    "load_failed_body": "Não foi possível carregar o relatório de desempenho. Este é um problema ao ler o relatório, não um problema com o seu site. Tente atualizar e, se isso continuar acontecendo, o administrador da plataforma deverá verificar os logs do servidor.",
+    "load_failed_title": "Não foi possível carregar o relatório de desempenho",
+    "peak_memory_value": "Pico {{memory}}",
+    "query_count_value": "Consultas: {{queries}}",
     "label_n_plus_one_warnings": "Avisos N mais um",
     "label_slow_queries": "Consultas lentas",
     "label_total_requests": "Total de solicitações",
+    "n_plus_one_body": "Padrões potenciais de consulta N+1 foram detectados. Revise a solicitação lenta e os detalhes da consulta para carregamento repetido de relacionamento.",
     "n_plus_one_title": "N mais um",
     "no_memory_spikes": "Nenhum pico de memória encontrado",
     "no_slow_queries": "Nenhuma consulta lenta encontrada",
     "no_slow_requests": "Nenhuma solicitação lenta encontrada",
     "no_volume_data": "Nenhum dado de volume encontrado",
+    "page_description": "Métricas de desempenho de banco de dados, solicitações e memória para o período selecionado.",
     "peak_memory": "Memória de pico",
     "query_count": "Contagem de consultas",
     "refresh": "Atualizar",
@@ -95,8 +102,12 @@
     "tab_request_volume": "Volume de solicitações",
     "tab_slow_queries": "Consultas lentas",
     "tab_slow_requests": "Solicitações lentas",
-    "warning_unknown": "Aviso de desempenho",
-    "n_plus_one_body": "Padrões potenciais de consulta N+1 foram detectados. Revise a solicitação lenta e os detalhes da consulta para carregamento repetido de relacionamento.",
-    "page_description": "Métricas de desempenho de banco de dados, solicitações e memória para o período selecionado."
+    "unavailable_body": "A plataforma não está coletando dados de solicitação, consulta ou perfil de memória, portanto, não há números de desempenho para mostrar. Nada está quebrado em seu site.",
+    "unavailable_title": "Os dados de desempenho não estão sendo coletados",
+    "warning_high_memory": "Usei muita memória",
+    "warning_many_queries": "Fiz muitas consultas ao banco de dados",
+    "warning_n_plus_one": "Repetiu a mesma consulta muitas vezes",
+    "warning_slow_request": "Lento para responder",
+    "warning_unknown": "Aviso de desempenho"
   }
 }

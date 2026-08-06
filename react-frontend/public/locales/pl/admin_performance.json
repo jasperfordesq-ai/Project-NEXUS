@@ -37,14 +37,14 @@
     "loading": "Ładowanie",
     "next": "Następny",
     "no": "Nie",
+    "ok": "OK",
     "pending": "Oczekujące",
     "previous": "Poprzedni",
     "retry": "Spróbuj ponownie",
     "save": "Zapisz",
     "select_all": "Wybierz wszystko",
     "select_item": "Wybierz element",
-    "yes": "Tak",
-    "ok": "OK"
+    "yes": "Tak"
   },
   "shared": {
     "broker_actions": "Działania brokera",
@@ -57,6 +57,7 @@
     "no_history_available": "Nie znaleziono dostępnej historii",
     "no_legal_documents_found": "Nie znaleziono żadnych dokumentów prawnych",
     "no_members_found": "Nie znaleziono żadnych członków",
+    "loading": "Ładowanie",
     "no_data": "Brak danych",
     "no_data_available": "Brak dostępnych danych",
     "no_recent_broker_activity": "Nie znaleziono ostatniej aktywności brokera",
@@ -67,10 +68,9 @@
     "refresh": "Odświeżać",
     "search": "Szukaj...",
     "select_all_rows": "Wybierz wszystkie wiersze",
+    "select_row": "Wybierz wiersz {{id}}",
     "data_table": "Dane",
-    "total_count": "Łącznie{{count}}",
-    "loading": "Ładowanie",
-    "select_row": "Wybierz wiersz {{id}}"
+    "total_count": "Łącznie{{count}}"
   },
   "performance": {
     "label_performance_metrics": "Metryki wydajności",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1 godzina",
     "filter_24_hours": "24 godziny",
     "filter_7_days": "7 dni",
+    "called_from_value": "Zadzwoniono z {{location}}",
     "label_memory_spikes": "Skoki pamięci",
+    "load_failed_body": "Nie można załadować raportu wydajności. Jest to problem z odczytaniem raportu, a nie problem z Twoją witryną. Spróbuj odświeżyć, a jeśli to się powtórzy, administrator platformy powinien sprawdzić logi serwera.",
+    "load_failed_title": "Nie udało się wczytać raportu skuteczności",
+    "peak_memory_value": "Szczyt {{memory}}",
+    "query_count_value": "Zapytania: {{queries}}",
     "label_n_plus_one_warnings": "N Plus Jeden Ostrzeżenia",
     "label_slow_queries": "Powolne zapytania",
     "label_total_requests": "Łączna liczba żądań",
+    "n_plus_one_body": "Wykryto potencjalne wzorce zapytań N+1. Sprawdź szczegóły wolnego żądania i zapytania pod kątem powtarzającego się ładowania relacji.",
     "n_plus_one_title": "N Plus Jeden",
     "no_memory_spikes": "Nie znaleziono skoków pamięci",
     "no_slow_queries": "Nie znaleziono wolnych zapytań",
     "no_slow_requests": "Nie znaleziono wolnych żądań",
     "no_volume_data": "Nie znaleziono danych o wolumenie",
+    "page_description": "Metryki wydajności bazy danych, żądań i pamięci dla wybranego okresu.",
     "peak_memory": "Szczytowa pamięć",
     "query_count": "Liczba zapytań",
     "refresh": "Odświeżać",
@@ -95,8 +102,12 @@
     "tab_request_volume": "Zapytaj o objętość",
     "tab_slow_queries": "Powolne zapytania",
     "tab_slow_requests": "Powolne żądania",
-    "warning_unknown": "Ostrzeżenie o wydajności",
-    "n_plus_one_body": "Wykryto potencjalne wzorce zapytań N+1. Sprawdź szczegóły wolnego żądania i zapytania pod kątem powtarzającego się ładowania relacji.",
-    "page_description": "Metryki wydajności bazy danych, żądań i pamięci dla wybranego okresu."
+    "unavailable_body": "Platforma nie zbiera danych dotyczących żądań, zapytań ani profilowania pamięci, więc nie ma żadnych danych dotyczących wydajności, które można by pokazać. Na Twojej stronie nic nie jest uszkodzone.",
+    "unavailable_title": "Dane dotyczące wydajności nie są gromadzone",
+    "warning_high_memory": "Używał dużo pamięci",
+    "warning_many_queries": "Wykonałem wiele zapytań do bazy danych",
+    "warning_n_plus_one": "Wielokrotnie powtarzane to samo zapytanie",
+    "warning_slow_request": "Powolna reakcja",
+    "warning_unknown": "Ostrzeżenie o wydajności"
   }
 }

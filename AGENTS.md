@@ -481,6 +481,38 @@ code in the repo.
 - A relationship record is never authorisation. Nothing is implicit — add an
   explicit check.
 
+### 🔴 Request performance recording — two endpoints, easily confused
+
+`/admin/performance` reads **`/v2/admin/performance/summary`**
+(`AdminPerformanceController` → `PerformanceInsightsService`). It read
+`/v2/metrics/summary` until 2026-08-05 and crashed on the first missing key:
+that route is `MetricsController`, an unrelated **event counter** returning
+`period` / `total_events` / `events_by_type`. Do not point the page back at it,
+and do not bolt profiling keys onto `MetricsService` — they answer different
+questions. The shape is pinned from both ends by
+`tests/Laravel/Feature/Performance/PerformanceSummaryContractTest.php`; rename a
+key there and you must rename it in `PerformanceDashboard.tsx` in the same commit.
+
+Recording is `App\Http\Middleware\RecordPerformanceSample` (terminable — all work
+happens **after** the response is sent) plus `App\Support\Performance\PerformanceRecorder`
+(query listener attached in `AppServiceProvider::boot`). Config and thresholds:
+`config/performance.php`.
+
+- Every request increments **one hourly counter row**; a detail row is written
+  only when the request is slow / memory-hungry / query-heavy / repeating a
+  query. Totals and the volume chart are therefore exact, not sampled. Do not
+  "simplify" this into a row per request.
+- 🔴 Only the query **template** is stored (`QueryExecuted::$sql`, placeholder
+  form). Never interpolate bindings — that would put member data in a
+  diagnostics table. A test enforces it.
+- The master switch is **platform-wide by design**, not per tenant: reading a
+  per-tenant setting on every request would cost a query on the hottest path.
+- Recording failures are swallowed and logged once per process. That is the
+  narrow, allowed case of the `catch (\Throwable)` rule above — nothing returns a
+  success-shaped value to a caller.
+- `performance:prune` (nightly, 03:15) enforces retention. Without it the tables
+  grow for ever.
+
 ---
 
 ## Validation Commands

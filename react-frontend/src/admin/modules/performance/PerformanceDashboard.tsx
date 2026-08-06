@@ -50,6 +50,35 @@ interface PerformanceSummary {
   total_slow_queries: number;
 }
 
+/**
+ * 🔴 Nothing about the shape above is guaranteed at runtime, and this page has
+ * already been broken once by assuming otherwise: it used to read
+ * /v2/metrics/summary — the unrelated event-counter endpoint — and crashed on
+ * the first key that endpoint does not return. The guard stays even now that
+ * /v2/admin/performance/summary exists and is contract-tested, because a
+ * dashboard of zeroes reads as "your site is fast" and that must never be
+ * something the page can invent.
+ */
+const isPerformancePayload = (value: unknown): value is Partial<PerformanceSummary> => {
+  if (!value || typeof value !== 'object') return false;
+
+  const candidate = value as Partial<PerformanceSummary>;
+
+  return Array.isArray(candidate.slowest_requests)
+    || Array.isArray(candidate.slowest_queries)
+    || Array.isArray(candidate.memory_spikes);
+};
+
+const normalizeSummary = (raw: Partial<PerformanceSummary>): PerformanceSummary => ({
+  slowest_requests: Array.isArray(raw.slowest_requests) ? raw.slowest_requests : [],
+  slowest_queries: Array.isArray(raw.slowest_queries) ? raw.slowest_queries : [],
+  memory_spikes: Array.isArray(raw.memory_spikes) ? raw.memory_spikes : [],
+  request_volume: raw.request_volume && typeof raw.request_volume === 'object' ? raw.request_volume : {},
+  n_plus_one_warnings: Number(raw.n_plus_one_warnings ?? 0) || 0,
+  total_requests: Number(raw.total_requests ?? 0) || 0,
+  total_slow_queries: Number(raw.total_slow_queries ?? 0) || 0,
+});
+
 const formatDuration = (ms: number) => {
   if (ms < 1000) {
     return formatNumber(ms, {
@@ -85,11 +114,30 @@ const formatTimestamp = (timestamp: string) => {
   return new Date(timestamp).toLocaleString(getFormattingLocale());
 };
 
+/**
+ * "GroupService::members (GroupService.php:214)" — the file is shortened to its
+ * basename because the stored path is absolute inside the container and the
+ * leading directories are the same for every row.
+ */
+const formatCaller = (caller: NonNullable<PerformanceSummary['slowest_queries'][number]['caller']>) => {
+  const symbol = [caller.class, caller.function].filter(Boolean).join('::');
+  const basename = caller.file ? caller.file.split('/').pop() : '';
+  const location = basename && caller.line ? `${basename}:${caller.line}` : basename;
+
+  if (symbol && location) return `${symbol} (${location})`;
+
+  return symbol || location || '';
+};
+
 export default function PerformanceDashboard() {
   const { t } = useTranslation('admin_performance');
   usePageTitle(t('performance.page_title'));
 
   const [summary, setSummary] = useState<PerformanceSummary | null>(null);
+  // 'ok' — real figures. 'recording_off' — the platform is not recording, so
+  // there is nothing to show and nothing is wrong. 'load_failed' — the request
+  // itself did not answer usefully. Three genuinely different things to say.
+  const [status, setStatus] = useState<'ok' | 'recording_off' | 'load_failed'>('ok');
   const [loading, setLoading] = useState(true);
   const [hours, setHours] = useState(24);
   const [selectedTab, setSelectedTab] = useState('requests');
@@ -97,12 +145,19 @@ export default function PerformanceDashboard() {
   const loadSummary = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get<PerformanceSummary>(`/v2/metrics/summary?hours=${hours}`);
-      if (response.data) {
-        setSummary(response.data);
+      const response = await api.get<unknown>(`/v2/admin/performance/summary?hours=${hours}`);
+
+      if (response.success && isPerformancePayload(response.data)) {
+        setSummary(normalizeSummary(response.data));
+        setStatus(response.meta?.recording_enabled === false ? 'recording_off' : 'ok');
+      } else {
+        setSummary(null);
+        setStatus('load_failed');
       }
     } catch (error) {
       console.error('Failed to load performance summary:', error);
+      setSummary(null);
+      setStatus('load_failed');
     } finally {
       setLoading(false);
     }
@@ -189,7 +244,9 @@ export default function PerformanceDashboard() {
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted">
                   <span>{formatTimestamp(request.timestamp)}</span>
-                  <span>{t('performance.query_count')}</span>
+                  <span>
+                    {t('performance.query_count_value', { queries: formatNumber(request.query_count) })}
+                  </span>
                   <span>{formatMemory(request.memory_mb)}</span>
                 </div>
                 {request.warnings && request.warnings.length > 0 && (
@@ -240,7 +297,7 @@ export default function PerformanceDashboard() {
                 </code>
                 {query.caller && (
                   <div className="mt-2 text-xs text-muted">
-                    {t('performance.called_from')}
+                    {t('performance.called_from_value', { location: formatCaller(query.caller) })}
                   </div>
                 )}
               </div>
@@ -279,7 +336,9 @@ export default function PerformanceDashboard() {
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted">
                   <span>{formatTimestamp(spike.timestamp)}</span>
-                  <span>{t('performance.peak_memory')}</span>
+                  <span>
+                    {t('performance.peak_memory_value', { memory: formatMemory(spike.peak_memory_mb) })}
+                  </span>
                 </div>
               </div>
               <Chip color="default" variant="soft" size="lg">
@@ -385,28 +444,50 @@ export default function PerformanceDashboard() {
         </div>
       </div>
 
-      {renderStats()}
+      {status !== 'ok' && (
+        <Card className="p-6 border-l-4 border-warning">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-warning mt-0.5" aria-hidden="true" />
+            <div>
+              <h2 className="font-semibold mb-1">
+                {status === 'recording_off'
+                  ? t('performance.unavailable_title')
+                  : t('performance.load_failed_title')}
+              </h2>
+              <p className="text-sm text-muted">
+                {status === 'recording_off'
+                  ? t('performance.unavailable_body')
+                  : t('performance.load_failed_body')}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
-      <Card className="p-6">
-        <Tabs
-          selectedKey={selectedTab}
-          onSelectionChange={(key) => setSelectedTab(key as string)}
-          aria-label={t('performance.label_performance_metrics')}
-        >
-          <Tab key="requests" title={t('performance.tab_slow_requests')}>
-            <div className="py-4">{renderSlowRequests()}</div>
-          </Tab>
-          <Tab key="queries" title={t('performance.tab_slow_queries')}>
-            <div className="py-4">{renderSlowQueries()}</div>
-          </Tab>
-          <Tab key="memory" title={t('performance.tab_memory_spikes')}>
-            <div className="py-4">{renderMemorySpikes()}</div>
-          </Tab>
-          <Tab key="volume" title={t('performance.tab_request_volume')}>
-            <div className="py-4">{renderVolumeChart()}</div>
-          </Tab>
-        </Tabs>
-      </Card>
+      {status === 'ok' && renderStats()}
+
+      {status === 'ok' && (
+        <Card className="p-6">
+          <Tabs
+            selectedKey={selectedTab}
+            onSelectionChange={(key) => setSelectedTab(key as string)}
+            aria-label={t('performance.label_performance_metrics')}
+          >
+            <Tab key="requests" title={t('performance.tab_slow_requests')}>
+              <div className="py-4">{renderSlowRequests()}</div>
+            </Tab>
+            <Tab key="queries" title={t('performance.tab_slow_queries')}>
+              <div className="py-4">{renderSlowQueries()}</div>
+            </Tab>
+            <Tab key="memory" title={t('performance.tab_memory_spikes')}>
+              <div className="py-4">{renderMemorySpikes()}</div>
+            </Tab>
+            <Tab key="volume" title={t('performance.tab_request_volume')}>
+              <div className="py-4">{renderVolumeChart()}</div>
+            </Tab>
+          </Tabs>
+        </Card>
+      )}
 
       {summary && summary.n_plus_one_warnings > 0 && (
         <Card className="p-4 mt-6 border-l-4 border-warning">

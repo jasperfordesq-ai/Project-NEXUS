@@ -250,6 +250,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        // Shared by the query listener (registered in boot) and the terminable
+        // middleware that writes the sample, so both see the same request.
+        $this->app->singleton(\App\Support\Performance\PerformanceRecorder::class);
+
         // --- Existing services ---
 
         $this->app->singleton(ListingService::class, function ($app) {
@@ -1038,6 +1042,18 @@ class AppServiceProvider extends ServiceProvider
             app(\App\Services\PlatformCapabilityService::class)->applyToConfig();
         } catch (\Throwable $exception) {
             \Illuminate\Support\Facades\Log::warning('Platform capability overrides not applied', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+
+        // Request performance recording (feeds /admin/performance). Attached
+        // here, before routing, so tenant resolution and authentication queries
+        // are counted — they are part of what the request cost. No-ops when
+        // config('performance.enabled') is false or in console/queue processes.
+        try {
+            app(\App\Support\Performance\PerformanceRecorder::class)->listen();
+        } catch (\Throwable $exception) {
+            \Illuminate\Support\Facades\Log::warning('Performance recorder not attached', [
                 'error' => $exception->getMessage(),
             ]);
         }

@@ -79,7 +79,12 @@
     "filter_1_hour": "1 Hour",
     "filter_24_hours": "24 Hours",
     "filter_7_days": "7 Days",
+    "called_from_value": "Called from {{location}}",
     "label_memory_spikes": "Memory Spikes",
+    "load_failed_body": "The performance report could not be loaded. This is a problem reading the report, not a problem with your site. Try Refresh, and if it keeps happening the platform administrator should check the server logs.",
+    "load_failed_title": "Could not load the performance report",
+    "peak_memory_value": "Peak {{memory}}",
+    "query_count_value": "Queries: {{queries}}",
     "label_n_plus_one_warnings": "N Plus One Warnings",
     "label_slow_queries": "Slow Queries",
     "label_total_requests": "Total Requests",
@@ -97,6 +102,12 @@
     "tab_request_volume": "Request Volume",
     "tab_slow_queries": "Slow Queries",
     "tab_slow_requests": "Slow Requests",
+    "unavailable_body": "The platform is not collecting request, query, or memory profiling data, so there are no performance figures to show. Nothing is broken on your site.",
+    "unavailable_title": "Performance data is not being collected",
+    "warning_high_memory": "Used a lot of memory",
+    "warning_many_queries": "Made a lot of database queries",
+    "warning_n_plus_one": "Repeated the same query many times",
+    "warning_slow_request": "Slow to respond",
     "warning_unknown": "Performance warning"
   }
 }

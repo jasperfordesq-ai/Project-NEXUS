@@ -37,14 +37,14 @@
     "loading": "読み込み中",
     "next": "次へ",
     "no": "いいえ",
+    "ok": "OK",
     "pending": "保留中",
     "previous": "前へ",
     "retry": "再試行",
     "save": "保存",
     "select_all": "すべて選択",
     "select_item": "項目の選択",
-    "yes": "はい",
-    "ok": "OK"
+    "yes": "はい"
   },
   "shared": {
     "broker_actions": "ブローカーのアクション",
@@ -57,6 +57,7 @@
     "no_history_available": "利用可能な履歴が見つかりません",
     "no_legal_documents_found": "法的文書が見つかりませんでした",
     "no_members_found": "メンバーが見つかりませんでした",
+    "loading": "読み込み中",
     "no_data": "データなし",
     "no_data_available": "利用可能なデータがありません",
     "no_recent_broker_activity": "最近のブローカー活動は見つかりませんでした",
@@ -67,10 +68,9 @@
     "refresh": "リフレッシュ",
     "search": "検索...",
     "select_all_rows": "すべての行を選択",
+    "select_row": "行を選択 {{id}}",
     "data_table": "データ",
-    "total_count": "{{count}}合計",
-    "loading": "読み込み中",
-    "select_row": "行を選択 {{id}}"
+    "total_count": "{{count}}合計"
   },
   "performance": {
     "label_performance_metrics": "パフォーマンス指標",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1時間",
     "filter_24_hours": "24時間",
     "filter_7_days": "7日間",
+    "called_from_value": "{{location}} から呼び出されました",
     "label_memory_spikes": "メモリスパイク",
+    "load_failed_body": "パフォーマンス レポートをロードできませんでした。これはレポートの読み方の問題であり、サイトの問題ではありません。更新を試してください。更新が続く場合は、プラットフォーム管理者がサーバー ログを確認する必要があります。",
+    "load_failed_title": "パフォーマンスレポートをロードできませんでした",
+    "peak_memory_value": "ピーク {{memory}}",
+    "query_count_value": "クエリ: {{queries}}",
     "label_n_plus_one_warnings": "Nプラスワンの警告",
     "label_slow_queries": "遅いクエリ",
     "label_total_requests": "総リクエスト数",
+    "n_plus_one_body": "潜在的なN+1クエリパターンが検出されました。遅いリクエストとリレーションシップの繰り返し読み込みの詳細を確認してください。",
     "n_plus_one_title": "エヌプラスワン",
     "no_memory_spikes": "メモリスパイクは見つかりませんでした",
     "no_slow_queries": "遅いクエリは見つかりませんでした",
     "no_slow_requests": "遅いリクエストは見つかりませんでした",
     "no_volume_data": "ボリュームデータが見つかりません",
+    "page_description": "選択した期間のデータベース、リクエスト、およびメモリのパフォーマンス指標。",
     "peak_memory": "ピークメモリ",
     "query_count": "クエリ数",
     "refresh": "リフレッシュ",
@@ -95,8 +102,12 @@
     "tab_request_volume": "リクエスト量",
     "tab_slow_queries": "遅いクエリ",
     "tab_slow_requests": "遅いリクエスト",
-    "warning_unknown": "パフォーマンス警告",
-    "n_plus_one_body": "潜在的なN+1クエリパターンが検出されました。遅いリクエストとリレーションシップの繰り返し読み込みの詳細を確認してください。",
-    "page_description": "選択した期間のデータベース、リクエスト、およびメモリのパフォーマンス指標。"
+    "unavailable_body": "プラットフォームはリクエスト、クエリ、メモリ プロファイリング データを収集していないため、表示できるパフォーマンス数値はありません。あなたのサイトでは何も壊れていません。",
+    "unavailable_title": "パフォーマンスデータが収集されていない",
+    "warning_high_memory": "大量のメモリを使用した",
+    "warning_many_queries": "大量のデータベースクエリを実行した",
+    "warning_n_plus_one": "同じクエリを何度も繰り返した",
+    "warning_slow_request": "反応が遅い",
+    "warning_unknown": "パフォーマンス警告"
   }
 }

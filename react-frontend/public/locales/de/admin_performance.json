@@ -37,14 +37,14 @@
     "loading": "Laden",
     "next": "Als nächstes",
     "no": "Nein",
+    "ok": "OK",
     "pending": "Ausstehend",
     "previous": "Zurück",
     "retry": "Versuchen Sie es noch einmal",
     "save": "Speichern",
     "select_all": "Wählen Sie „Alle“ aus",
     "select_item": "Wählen Sie Artikel aus",
-    "yes": "Ja",
-    "ok": "OK"
+    "yes": "Ja"
   },
   "shared": {
     "broker_actions": "Makleraktionen",
@@ -57,6 +57,7 @@
     "no_history_available": "Keine verfügbare Historie gefunden",
     "no_legal_documents_found": "Es wurden keine Rechtsdokumente gefunden",
     "no_members_found": "Keine Mitglieder gefunden",
+    "loading": "Lädt",
     "no_data": "Keine Daten",
     "no_data_available": "Keine Daten verfügbar",
     "no_recent_broker_activity": "Keine aktuelle Brokeraktivität gefunden",
@@ -67,10 +68,9 @@
     "refresh": "Aktualisieren",
     "search": "Suchen...",
     "select_all_rows": "Wählen Sie alle Zeilen aus",
+    "select_row": "Zeile auswählen {{id}}",
     "data_table": "Daten",
-    "total_count": "{{count}}insgesamt",
-    "loading": "Lädt",
-    "select_row": "Zeile auswählen {{id}}"
+    "total_count": "{{count}}insgesamt"
   },
   "performance": {
     "label_performance_metrics": "Leistungskennzahlen",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1 Stunde",
     "filter_24_hours": "24 Stunden",
     "filter_7_days": "7 Tage",
+    "called_from_value": "Von {{location}} aufgerufen",
     "label_memory_spikes": "Gedächtnisspitzen",
+    "load_failed_body": "Der Leistungsbericht konnte nicht geladen werden. Dies ist ein Problem beim Lesen des Berichts und kein Problem Ihrer Website. Versuchen Sie es mit Aktualisieren. Wenn das Problem weiterhin auftritt, sollte der Plattformadministrator die Serverprotokolle überprüfen.",
+    "load_failed_title": "Der Leistungsbericht konnte nicht geladen werden",
+    "peak_memory_value": "Spitze {{memory}}",
+    "query_count_value": "Abfragen: {{queries}}",
     "label_n_plus_one_warnings": "N Plus Eins-Warnungen",
     "label_slow_queries": "Langsame Abfragen",
     "label_total_requests": "Gesamtzahl der Anfragen",
+    "n_plus_one_body": "Potenzielle N+1-Abfragemuster wurden erkannt. Überprüfen Sie die langsame Anfrage und die Abfragedetails auf wiederholtes Laden von Beziehungen.",
     "n_plus_one_title": "N plus eins",
     "no_memory_spikes": "Es wurden keine Speicherspitzen gefunden",
     "no_slow_queries": "Keine langsamen Abfragen gefunden",
     "no_slow_requests": "Keine langsamen Anfragen gefunden",
     "no_volume_data": "Keine Volumendaten gefunden",
+    "page_description": "Datenbank-, Anfrage- und Speicherleistungsmetriken für den ausgewählten Zeitraum.",
     "peak_memory": "Spitzengedächtnis",
     "query_count": "Anzahl der Abfragen",
     "refresh": "Aktualisieren",
@@ -95,8 +102,12 @@
     "tab_request_volume": "Volumen anfordern",
     "tab_slow_queries": "Langsame Abfragen",
     "tab_slow_requests": "Langsame Anfragen",
-    "warning_unknown": "Leistungswarnung",
-    "n_plus_one_body": "Potenzielle N+1-Abfragemuster wurden erkannt. Überprüfen Sie die langsame Anfrage und die Abfragedetails auf wiederholtes Laden von Beziehungen.",
-    "page_description": "Datenbank-, Anfrage- und Speicherleistungsmetriken für den ausgewählten Zeitraum."
+    "unavailable_body": "Die Plattform erfasst keine Anforderungs-, Abfrage- oder Speicherprofilierungsdaten, sodass keine Leistungszahlen angezeigt werden können. Auf Ihrer Website ist nichts kaputt.",
+    "unavailable_title": "Leistungsdaten werden nicht erfasst",
+    "warning_high_memory": "Habe viel Speicher verbraucht",
+    "warning_many_queries": "Habe viele Datenbankabfragen durchgeführt",
+    "warning_n_plus_one": "Habe die gleiche Abfrage viele Male wiederholt",
+    "warning_slow_request": "Reagiert langsam",
+    "warning_unknown": "Leistungswarnung"
   }
 }

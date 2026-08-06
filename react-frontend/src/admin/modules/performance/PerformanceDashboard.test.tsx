@@ -85,8 +85,9 @@ describe('PerformanceDashboard', () => {
       expect(screen.getByText('/api/users')).toBeInTheDocument();
     });
     expect(screen.getByText('GET')).toBeInTheDocument();
-    // Duration formatted: 800ms
-    expect(screen.getByText('800ms')).toBeInTheDocument();
+    // Intl unit formatting puts a space before the unit ("800 ms"), and the
+    // separator can vary by locale — match on the digits plus unit only.
+    expect(screen.getByText(/800\s*ms/)).toBeInTheDocument();
   });
 
   it('shows N+1 warning banner when n_plus_one_warnings > 0', async () => {
@@ -169,6 +170,81 @@ describe('PerformanceDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('/api/export')).toBeInTheDocument();
     });
+  });
+
+  it('reads the admin performance endpoint, not the event-counter one', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: true, data: makeStats() });
+    render(<PerformanceDashboard />);
+
+    await waitFor(() => expect(vi.mocked(api.get)).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(api.get)).toHaveBeenCalledWith(
+      expect.stringContaining('/v2/admin/performance/summary'),
+    );
+    // The old address returned a completely different report and crashed the page.
+    expect(vi.mocked(api.get)).not.toHaveBeenCalledWith(
+      expect.stringContaining('/v2/metrics/summary'),
+    );
+  });
+
+  it('says recording is off, rather than showing zeroes, when the server reports it off', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: makeStats({ total_requests: 0, total_slow_queries: 0 }),
+      meta: { recording_enabled: false, per_page: 0, has_more: false },
+    });
+    render(<PerformanceDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/not being collected/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('tab', { name: /slow.requests/i })).not.toBeInTheDocument();
+  });
+
+  // Regression: the page used to read /v2/metrics/summary, the event-counter
+  // endpoint. It answers 200 with this shape, which has none of the profiling
+  // keys this page reads. Before the shape guard, summary.memory_spikes.length
+  // threw and the admin error boundary replaced the whole page.
+  it('does not crash when the endpoint returns the event-counter payload', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: {
+        period: 'week',
+        total_events: 12,
+        events_by_type: { login: 12 },
+        start: '2024-01-01T00:00:00.000Z',
+        end: '2024-01-08T00:00:00.000Z',
+      },
+    });
+    render(<PerformanceDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/could not load/i)).toBeInTheDocument();
+    });
+    // No stat cards, and specifically no fabricated zeroes.
+    expect(screen.queryByRole('tab', { name: /slow.requests/i })).not.toBeInTheDocument();
+  });
+
+  it('reports a load failure when the request fails', async () => {
+    vi.mocked(api.get).mockResolvedValue({ success: false, error: 'Forbidden' });
+    render(<PerformanceDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/could not load/i)).toBeInTheDocument();
+    });
+  });
+
+  it('tolerates a partial payload without crashing', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      success: true,
+      data: { slowest_requests: [] },
+    });
+    render(<PerformanceDashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /slow.requests/i })).toBeInTheDocument();
+    });
+    // memory_spikes was absent; the card must still render a count.
+    expect(screen.getAllByText('0').length).toBeGreaterThan(0);
   });
 
   it('renders request volume bars when present', async () => {

@@ -37,14 +37,14 @@
     "loading": "Laden",
     "next": "Volgende",
     "no": "Nee",
+    "ok": "OK",
     "pending": "In behandeling",
     "previous": "Vorige",
     "retry": "Opnieuw proberen",
     "save": "Opslaan",
     "select_all": "Selecteer Alles",
     "select_item": "Selecteer Artikel",
-    "yes": "Ja",
-    "ok": "OK"
+    "yes": "Ja"
   },
   "shared": {
     "broker_actions": "Makelaarsacties",
@@ -57,6 +57,7 @@
     "no_history_available": "Geen geschiedenis beschikbaar gevonden",
     "no_legal_documents_found": "Geen juridische documenten gevonden gevonden",
     "no_members_found": "Geen leden gevonden gevonden",
+    "loading": "Laden",
     "no_data": "Geen gegevens",
     "no_data_available": "Geen gegevens beschikbaar",
     "no_recent_broker_activity": "Geen recente makelaarsactiviteit gevonden",
@@ -67,10 +68,9 @@
     "refresh": "Vernieuwen",
     "search": "Zoekopdracht...",
     "select_all_rows": "Selecteer alle rijen",
+    "select_row": "Selecteer rij {{id}}",
     "data_table": "Gegevens",
-    "total_count": "{{count}}totaal",
-    "loading": "Laden",
-    "select_row": "Selecteer rij {{id}}"
+    "total_count": "{{count}}totaal"
   },
   "performance": {
     "label_performance_metrics": "Prestatiestatistieken",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1 uur",
     "filter_24_hours": "24 uur",
     "filter_7_days": "7 dagen",
+    "called_from_value": "Gebeld vanaf {{location}}",
     "label_memory_spikes": "Geheugenpieken",
+    "load_failed_body": "Het prestatierapport kan niet worden geladen. Dit is een probleem bij het lezen van het rapport, geen probleem met uw site. Probeer Refresh, en als dit blijft gebeuren, moet de platformbeheerder de serverlogboeken controleren.",
+    "load_failed_title": "Kan het prestatierapport niet laden",
+    "peak_memory_value": "Piek {{memory}}",
+    "query_count_value": "Zoekopdrachten: {{queries}}",
     "label_n_plus_one_warnings": "N Plus One-waarschuwingen",
     "label_slow_queries": "Langzame vragen",
     "label_total_requests": "Totaal aantal verzoeken",
+    "n_plus_one_body": "Potentiële N+1 querypatronen zijn gedetecteerd. Bekijk het langzame verzoek en de querydetails voor herhaald relatiën laden.",
     "n_plus_one_title": "N plus één",
     "no_memory_spikes": "Geen geheugenpieken gevonden",
     "no_slow_queries": "Geen langzame zoekopdrachten gevonden",
     "no_slow_requests": "Geen langzame verzoeken gevonden",
     "no_volume_data": "Geen volumegegevens gevonden",
+    "page_description": "Database-, aanvraag- en geheugensprestatiemaatstaven voor de geselecteerde periode.",
     "peak_memory": "Piekgeheugen",
     "query_count": "Aantal zoekopdrachten",
     "refresh": "Vernieuwen",
@@ -95,8 +102,12 @@
     "tab_request_volume": "Vraagvolume aan",
     "tab_slow_queries": "Langzame vragen",
     "tab_slow_requests": "Langzame verzoeken",
-    "warning_unknown": "Prestatie waarschuwing",
-    "n_plus_one_body": "Potentiële N+1 querypatronen zijn gedetecteerd. Bekijk het langzame verzoek en de querydetails voor herhaald relatiën laden.",
-    "page_description": "Database-, aanvraag- en geheugensprestatiemaatstaven voor de geselecteerde periode."
+    "unavailable_body": "Het platform verzamelt geen verzoek-, query- of geheugenprofileringsgegevens, dus er zijn geen prestatiecijfers te tonen. Er is niets kapot op uw site.",
+    "unavailable_title": "Er worden geen prestatiegegevens verzameld",
+    "warning_high_memory": "Heeft veel geheugen gebruikt",
+    "warning_many_queries": "Veel databasequery's gemaakt",
+    "warning_n_plus_one": "Herhaalde dezelfde vraag vele malen",
+    "warning_slow_request": "Traag om te reageren",
+    "warning_unknown": "Prestatie waarschuwing"
   }
 }

@@ -37,14 +37,14 @@
     "loading": "تحميل",
     "next": "التالي",
     "no": "لا",
+    "ok": "OK",
     "pending": "قيد الانتظار",
     "previous": "سابق",
     "retry": "أعد المحاولة",
     "save": "يحفظ",
     "select_all": "حدد الكل",
     "select_item": "حدد العنصر",
-    "yes": "نعم",
-    "ok": "OK"
+    "yes": "نعم"
   },
   "shared": {
     "broker_actions": "إجراءات الوسيط",
@@ -57,6 +57,7 @@
     "no_history_available": "لم يتم العثور على أي سجل متاح",
     "no_legal_documents_found": "لم يتم العثور على وثائق قانونية",
     "no_members_found": "لم يتم العثور على أعضاء وجدت",
+    "loading": "جارٍ التحميل",
     "no_data": "لا توجد بيانات",
     "no_data_available": "لا توجد بيانات متاحة",
     "no_recent_broker_activity": "لم يتم العثور على أي نشاط وسيط حديث",
@@ -67,10 +68,9 @@
     "refresh": "ينعش",
     "search": "يبحث...",
     "select_all_rows": "حدد كافة الصفوف",
+    "select_row": "اختر الصف {{id}}",
     "data_table": "بيانات",
-    "total_count": "إجمالي{{count}}",
-    "loading": "جارٍ التحميل",
-    "select_row": "اختر الصف {{id}}"
+    "total_count": "إجمالي{{count}}"
   },
   "performance": {
     "label_performance_metrics": "مقاييس الأداء",
@@ -79,15 +79,22 @@
     "filter_1_hour": "1 ساعة",
     "filter_24_hours": "24 ساعة",
     "filter_7_days": "7 أيام",
+    "called_from_value": "تم الاتصال به من {{location}}",
     "label_memory_spikes": "مسامير الذاكرة",
+    "load_failed_body": "تعذر تحميل تقرير الأداء. هذه مشكلة في قراءة التقرير وليست مشكلة في موقعك. حاول التحديث، وإذا استمر حدوث ذلك، فيجب على مسؤول النظام الأساسي التحقق من سجلات الخادم.",
+    "load_failed_title": "تعذر تحميل تقرير الأداء",
+    "peak_memory_value": "الذروة {{memory}}",
+    "query_count_value": "الاستعلامات: {{queries}}",
     "label_n_plus_one_warnings": "تحذيرات N Plus One",
     "label_slow_queries": "الاستعلامات البطيئة",
     "label_total_requests": "إجمالي الطلبات",
+    "n_plus_one_body": "تم الكشف عن أنماط استعلام محتملة N+1. راجع الطلب البطيء وتفاصيل الاستعلام لتحميل العلاقات المكررة.",
     "n_plus_one_title": "ن بلس واحد",
     "no_memory_spikes": "لم يتم العثور على ارتفاعات في الذاكرة",
     "no_slow_queries": "لم يتم العثور على استعلامات بطيئة",
     "no_slow_requests": "لم يتم العثور على طلبات بطيئة",
     "no_volume_data": "لم يتم العثور على بيانات الحجم",
+    "page_description": "مؤشرات أداء قاعدة البيانات والطلبات والذاكرة للفترة المحددة.",
     "peak_memory": "ذاكرة الذروة",
     "query_count": "عدد الاستعلامات",
     "refresh": "ينعش",
@@ -95,8 +102,12 @@
     "tab_request_volume": "حجم الطلب",
     "tab_slow_queries": "الاستعلامات البطيئة",
     "tab_slow_requests": "الطلبات البطيئة",
-    "warning_unknown": "تحذير أداء",
-    "n_plus_one_body": "تم الكشف عن أنماط استعلام محتملة N+1. راجع الطلب البطيء وتفاصيل الاستعلام لتحميل العلاقات المكررة.",
-    "page_description": "مؤشرات أداء قاعدة البيانات والطلبات والذاكرة للفترة المحددة."
+    "unavailable_body": "لا يقوم النظام الأساسي بجمع بيانات الطلب أو الاستعلام أو ملفات تعريف الذاكرة، لذلك لا توجد أرقام أداء لعرضها. لم يتم كسر أي شيء على موقعك.",
+    "unavailable_title": "لا يتم جمع بيانات الأداء",
+    "warning_high_memory": "تستخدم الكثير من الذاكرة",
+    "warning_many_queries": "قدمت الكثير من الاستعلامات في قاعدة البيانات",
+    "warning_n_plus_one": "كرر نفس الاستعلام عدة مرات",
+    "warning_slow_request": "بطيء في الاستجابة",
+    "warning_unknown": "تحذير أداء"
   }
 }
