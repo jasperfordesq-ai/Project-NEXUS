@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A member's offers and requests now move with them when they are moved to another community — and no ghosts are left behind.** Until now only the account itself moved. The member's listings stayed live in the old community, showing "Unknown" as the author; anyone who tried to message or pay that author got "Recipient not found", and a request sent against such a listing sat stuck forever because its owner could never see it. This is exactly the "scattered stuff" problem reported when members were moved in the past, and it was reproduced end-to-end on a running server before being fixed.
+
+  What now travels with the member, in the same all-or-nothing operation as the account itself: their offers and requests (each one's category is matched by name into the new community, or marked uncategorised if there is no equivalent), their skills, and their interests. The search index is refreshed for both communities, which also fixes a separate bug where a moved member kept appearing in the old community's member search. Any open exchange requests that involve the member but carry no credits yet are closed, and the other member gets a notification in their own language explaining why.
+
+  Two situations now stop a move with a clear explanation instead of quietly breaking things. If the member is the only owner of a group, the move asks the administrator to hand the group to someone else first — otherwise the group would become permanently unmanageable. If the member has an exchange that is underway, awaiting confirmation, or in dispute, the move waits until it is finished — cancelling it would destroy real work, and completing it after a move could not pay out correctly.
+
+  Three related faults found during this work are also fixed, because they can be triggered by members moved before this change existed. Completing an exchange with a vanished counterparty used to take the payer's credits and give them to no one — it now refuses loudly and no credits move. Requesting a listing whose owner has left the community now says exactly that, instead of creating a request nobody can answer. And a volunteer's impact certificate — the kind shared with employers — now keeps verifying after its holder moves community; previously the check silently began returning nothing.
+
+  Exchange history, messages, feed posts, group memberships, event records, reviews and volunteering hours deliberately stay in the community where they happened: each involves another member or that community's own record, and dragging them along would corrupt the books on both sides. The move dialogs state precisely what moves and what stays, in all eleven languages.
+
 ### Fixed
 
 - **Moving a member to another community failed for almost every real member, with a blank "server error".** An audit of the super-admin "Move to Different Tenant" feature found it worked in tests but not in practice. The reason: when someone signs in, the platform keeps a record of that sign-in session, and a database safety rule ties those records to the member's *current* community. Moving the member breaks that tie, so the database refused the move — for anyone who had ever signed in. Test accounts never sign in, which is exactly why every automated test passed while the real thing failed. The move now clears those session records first (they are already cancelled at that moment — moving a member signs them out everywhere, which is deliberate and unchanged), so the move goes through.

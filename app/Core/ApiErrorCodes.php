@@ -168,6 +168,12 @@ class ApiErrorCodes
     /** Tenant move refused: DB records (composite FK to users(id, tenant_id)) pin the user to their tenant */
     public const USER_MOVE_HISTORY_LOCKED = 'USER_MOVE_HISTORY_LOCKED';
 
+    /** Tenant move refused: user solely owns groups; ownership must be transferred first */
+    public const USER_MOVE_GROUP_OWNERSHIP_REQUIRED = 'USER_MOVE_GROUP_OWNERSHIP_REQUIRED';
+
+    /** Tenant move refused: user has exchanges in progress / awaiting confirmation / disputed */
+    public const USER_MOVE_EXCHANGES_IN_FLIGHT = 'USER_MOVE_EXCHANGES_IN_FLIGHT';
+
     /** Resource has been deleted */
     public const RESOURCE_DELETED = 'RESOURCE_DELETED';
 
@@ -284,7 +290,9 @@ class ApiErrorCodes
             self::USER_MOVE_PASSKEY_RECOVERY_REQUIRED,
             self::USER_MOVE_EMAIL_CONFLICT,
             self::USER_MOVE_USERNAME_CONFLICT,
-            self::USER_MOVE_HISTORY_LOCKED => 409,
+            self::USER_MOVE_HISTORY_LOCKED,
+            self::USER_MOVE_GROUP_OWNERSHIP_REQUIRED,
+            self::USER_MOVE_EXCHANGES_IN_FLIGHT => 409,
 
             // 410 Gone
             self::RESOURCE_DELETED => 410,

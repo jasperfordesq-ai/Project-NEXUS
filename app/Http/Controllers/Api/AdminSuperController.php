@@ -113,7 +113,7 @@ class AdminSuperController extends BaseApiController
         }
     }
 
-    /** @param array{success:bool,moved:int,failed:array<string>} $moveResult */
+    /** @param array{success:bool,moved:int,failed:array<string>,pinned?:array<string,int>,details?:array<string,mixed>} $moveResult */
     private function respondWithUserMoveFailure(array $moveResult): JsonResponse
     {
         if (self::moveRequiresPasskeyRecovery($moveResult)) {
@@ -165,6 +165,22 @@ class AdminSuperController extends BaseApiController
             ]], 409);
         }
 
+        if (in_array('group_ownership_transfer_required', $failed, true)) {
+            return $this->respondWithErrors([[
+                'code' => ApiErrorCodes::USER_MOVE_GROUP_OWNERSHIP_REQUIRED,
+                'message' => __('api.super_move_user_group_ownership_required'),
+                'details' => ['groups' => $moveResult['details']['groups'] ?? []],
+            ]], 409);
+        }
+
+        if (in_array('exchanges_in_flight', $failed, true)) {
+            return $this->respondWithErrors([[
+                'code' => ApiErrorCodes::USER_MOVE_EXCHANGES_IN_FLIGHT,
+                'message' => __('api.super_move_user_exchanges_in_flight'),
+                'details' => ['exchange_count' => $moveResult['details']['exchange_count'] ?? 0],
+            ]], 409);
+        }
+
         return $this->respondWithError(
             ApiErrorCodes::SERVER_INTERNAL_ERROR,
             __('api.super_move_user_failed'),
@@ -194,6 +210,8 @@ class AdminSuperController extends BaseApiController
             in_array('email_conflict', $failed, true) => ApiErrorCodes::USER_MOVE_EMAIL_CONFLICT,
             in_array('username_conflict', $failed, true) => ApiErrorCodes::USER_MOVE_USERNAME_CONFLICT,
             in_array('tenant_records_pin_user', $failed, true) => ApiErrorCodes::USER_MOVE_HISTORY_LOCKED,
+            in_array('group_ownership_transfer_required', $failed, true) => ApiErrorCodes::USER_MOVE_GROUP_OWNERSHIP_REQUIRED,
+            in_array('exchanges_in_flight', $failed, true) => ApiErrorCodes::USER_MOVE_EXCHANGES_IN_FLIGHT,
             in_array('already_in_tenant', $failed, true) => 'USER_ALREADY_IN_TARGET_TENANT',
             default => 'USER_MOVE_FAILED',
         };
@@ -1158,6 +1176,7 @@ class AdminSuperController extends BaseApiController
             'new_tenant_id' => $newTenantId,
             'records_moved' => $moveResult['moved'],
             'tables_failed' => $moveResult['failed'],
+            'content_moved' => $moveResult['content'],
         ]);
     }
 

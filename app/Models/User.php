@@ -516,38 +516,35 @@ class User extends Authenticatable
     }
 
     /**
-     * Move a user to a different tenant (updates users.tenant_id).
+     * Move a user to a different tenant.
      *
-     * Returns the result shape the super-admin move endpoints consume.
-     * NB: only the users row moves — the user's content stays in the old
-     * tenant (a full content migration has never been implemented).
+     * Moves the users row plus the member's solely-owned content — listings
+     * (categories remapped), skills, interests — atomically, via
+     * UserTenantContentMover. Open exchange requests carrying no money yet are
+     * auto-cancelled with counterparty notification. Relational history stays
+     * in the origin tenant BY DESIGN: transactions, messages, feed posts,
+     * group memberships, event records, reviews, connections, volunteering
+     * hours all involve other members or origin-tenant entities.
      *
-     * 🔴 The money consequence of that, spelled out because it is not obvious and
-     * no test covers it: `users.balance` is a column on `users`, so it moves WITH
-     * the member, while every `transactions` row keeps the OLD tenant_id and
-     * Transaction is tenant-scoped. The member therefore arrives in the
-     * destination tenant with a real balance and an EMPTY history (zero earned,
-     * zero spent, zero transactions per WalletService::getBalance()), while the
-     * origin tenant keeps that history attributed to a member who is no longer
-     * there. Nothing recomputes balance from the ledger, and there is no repair
-     * tooling. Callers must not present this as "transfer a member between
-     * timebanks" — it reassigns an account.
+     * 🔴 Money: `users.balance` is a column on `users`, so it moves WITH the
+     * member, while every `transactions` row keeps the OLD tenant_id. The
+     * member arrives with a real balance and an empty ledger; the origin
+     * tenant keeps the history. Exchanges already carrying value
+     * (in_progress / pending_confirmation / disputed) BLOCK the move.
      *
-     * `moved` is the affected-row count of the single UPDATE (0 or 1). `failed`
-     * carries precondition codes, not a list of tables:
-     * - 'already_in_tenant'         destination equals the current tenant
-     * - 'email_conflict'            destination already has this email
-     *                               (unique_email_tenant would reject the UPDATE)
-     * - 'username_conflict'         destination already has this username
-     *                               (idx_tenant_username would reject the UPDATE)
-     * - 'passkey_recovery_required' passkey-only account, see below
-     * - 'tenant_records_pin_user'   the user has rows in tables whose composite
-     *                               FK references users(id, tenant_id) — MariaDB
-     *                               RESTRICTs the parent UPDATE, so the move is
-     *                               impossible while those records exist. The
-     *                               blocking tables are returned in 'pinned'.
+     * `moved` is the affected-row count of the users UPDATE (0 or 1).
+     * `failed` carries precondition codes, with specifics in `details`:
+     * - 'already_in_tenant'                  destination equals current tenant
+     * - 'email_conflict' / 'username_conflict'  destination identity collision
+     * - 'passkey_recovery_required'          passkey-only account, see below
+     * - 'tenant_records_pin_user'            composite-FK rows (events
+     *   subsystem) RESTRICT the users UPDATE; blocking tables in 'pinned'
+     * - 'group_ownership_transfer_required'  solely-owned groups (names in
+     *   details.groups) — transfer ownership first
+     * - 'exchanges_in_flight'                exchanges with work/money at stake
+     *   (count in details.exchange_count) — finish them first
      *
-     * @return array{success: bool, moved: int, failed: array<string>, pinned: array<string, int>}
+     * @return array{success: bool, moved: int, failed: array<string>, pinned: array<string, int>, details: array<string, mixed>, content: array<string, int>}
      */
     public static function moveTenant(int $userId, int $newTenantId): array
     {
@@ -565,6 +562,8 @@ class User extends Authenticatable
             if ((int) $user->tenant_id === $newTenantId) {
                 return ['affected' => 0, 'failed' => ['already_in_tenant']];
             }
+
+            $oldTenantId = (int) $user->tenant_id;
 
             // users carries UNIQUE (email, tenant_id) and UNIQUE (tenant_id,
             // username). Without these pre-checks a collision in the destination
@@ -597,11 +596,37 @@ class User extends Authenticatable
                 return ['affected' => 0, 'failed' => ['tenant_records_pin_user'], 'pinned' => $pinned];
             }
 
+            // A group with no other owner would become permanently
+            // unmanageable — every canModify/canManage check compares against
+            // groups.owner_id, and the departed owner can never satisfy it
+            // again. Transfer ownership first (AdminGroupsController exposes
+            // GroupLifecycleService::transferOwnership), then move.
+            $soloGroups = \App\Services\UserTenantContentMover::soloOwnedGroups($userId, $oldTenantId);
+            if ($soloGroups !== []) {
+                return [
+                    'affected' => 0,
+                    'failed' => ['group_ownership_transfer_required'],
+                    'details' => ['groups' => array_values($soloGroups)],
+                ];
+            }
+
+            // Exchanges with work done or money contested can neither be
+            // auto-cancelled (value would be destroyed) nor completed after
+            // the move (balance updates are tenant-scoped and would debit one
+            // side while crediting nobody). They must be finished first.
+            $inFlight = \App\Services\UserTenantContentMover::inFlightExchangeCount($userId, $oldTenantId);
+            if ($inFlight > 0) {
+                return [
+                    'affected' => 0,
+                    'failed' => ['exchanges_in_flight'],
+                    'details' => ['exchange_count' => $inFlight],
+                ];
+            }
+
             // A passkey is cryptographically scoped to the tenant's RP ID and
             // must never follow an account into a different tenant. Delete all
             // credentials for this user before changing the referenced tenant;
             // the transaction restores them if the move itself fails.
-            $oldTenantId = (int) $user->tenant_id;
             $passkeyCount = DB::table('webauthn_credentials')
                 ->where('user_id', $userId)
                 ->where('tenant_id', $oldTenantId)
@@ -646,16 +671,49 @@ class User extends Authenticatable
                 ->where('id', $userId)
                 ->update(['tenant_id' => $newTenantId]);
 
-            return ['affected' => $affected, 'failed' => []];
+            // Solely-owned content follows the member in the SAME transaction:
+            // listings (categories remapped into the destination taxonomy),
+            // skills, interests; open no-money-yet exchange requests are
+            // cancelled with history rows. See UserTenantContentMover.
+            $content = \App\Services\UserTenantContentMover::moveContentWithinTransaction(
+                $userId,
+                $oldTenantId,
+                $newTenantId
+            );
+
+            return [
+                'affected' => $affected,
+                'failed' => [],
+                'content' => $content['counts'],
+                'moved_listing_ids' => $content['moved_listing_ids'],
+                'notices' => $content['cancelled_exchange_notices'],
+                'old_tenant_id' => $oldTenantId,
+            ];
         });
 
         $affected = (int) $outcome['affected'];
+
+        // Post-commit side effects: Meilisearch tenant separation is a filter
+        // on a shared index, and the raw UPDATEs above fire no Eloquent
+        // observers — reindex explicitly or the member (and their listings)
+        // keep appearing in the OLD tenant's search. Counterparties of
+        // auto-cancelled exchanges are notified in their own locale.
+        if ($affected > 0) {
+            \App\Services\UserTenantContentMover::afterMoveCommitted(
+                $userId,
+                (int) ($outcome['old_tenant_id'] ?? 0),
+                $outcome['moved_listing_ids'] ?? [],
+                $outcome['notices'] ?? []
+            );
+        }
 
         return [
             'success' => $affected > 0,
             'moved'   => (int) $affected,
             'failed'  => $outcome['failed'],
             'pinned'  => $outcome['pinned'] ?? [],
+            'details' => $outcome['details'] ?? [],
+            'content' => $outcome['content'] ?? [],
         ];
     }
 

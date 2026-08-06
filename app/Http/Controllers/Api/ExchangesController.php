@@ -169,15 +169,24 @@ class ExchangesController extends BaseApiController
             return $this->respondWithError('COMPLIANCE_VIOLATION', implode(' ', $violations), null, 403);
         }
 
-        $exchangeId = $this->exchangeWorkflowService->createRequest(
-            $userId,
-            (int) $data['listing_id'],
-            [
-                'proposed_hours' => $data['proposed_hours'] ?? null,
-                'prep_time'      => $data['prep_time'] ?? null,
-                'message'        => $data['message'] ?? null,
-            ]
-        );
+        try {
+            $exchangeId = $this->exchangeWorkflowService->createRequest(
+                $userId,
+                (int) $data['listing_id'],
+                [
+                    'proposed_hours' => $data['proposed_hours'] ?? null,
+                    'prep_time'      => $data['prep_time'] ?? null,
+                    'message'        => $data['message'] ?? null,
+                ]
+            );
+        } catch (\RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'LISTING_OWNER_UNAVAILABLE')) {
+                // The owner left this community; a request would sit stuck in
+                // pending_provider forever because they can never see it.
+                return $this->respondWithError('LISTING_OWNER_UNAVAILABLE', __('api.listing_owner_unavailable'), null, 409);
+            }
+            throw $e;
+        }
 
         if (!$exchangeId) {
             return $this->respondWithError('EXCHANGE_ERROR', __('api.exchange_create_failed'), null, 400);
@@ -320,6 +329,11 @@ class ExchangesController extends BaseApiController
             // counterparty sees a clear, actionable reason.
             if (str_contains($e->getMessage(), 'INSUFFICIENT_BALANCE')) {
                 return $this->respondWithError('INSUFFICIENT_BALANCE', __('api.insufficient_balance'), null, 422);
+            }
+            if (str_contains($e->getMessage(), 'EXCHANGE_PARTY_UNAVAILABLE')) {
+                // One side moved community (or was deleted) mid-exchange; the
+                // credit transfer cannot land, so nothing was moved.
+                return $this->respondWithError('EXCHANGE_PARTY_UNAVAILABLE', __('api.exchange_party_unavailable'), null, 409);
             }
             throw $e;
         }

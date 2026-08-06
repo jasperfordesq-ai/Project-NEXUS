@@ -111,6 +111,14 @@ class ExchangeWorkflowService
             return null;
         }
 
+        // The user relation is tenant-scoped, so a null here with a real
+        // user_id means the owner is no longer a member of this tenant
+        // (moved or deleted). A request created anyway would sit stuck in
+        // pending_provider forever — the provider can never see it.
+        if ($listing->user === null) {
+            throw new \RuntimeException('LISTING_OWNER_UNAVAILABLE');
+        }
+
         $providerId = (int) $listing->user_id;
 
         if ($requesterId === $providerId) {
@@ -1192,8 +1200,16 @@ class ExchangeWorkflowService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$payer || (float) $payer->balance < $hours) {
-                Log::warning("Exchange #{$exchangeId}: payer #{$payerId} has insufficient balance (" . ($payer->balance ?? 0) . " < {$hours})");
+            if (!$payer) {
+                // Payer invisible to a tenant-scoped lookup = they moved tenant
+                // or were deleted. Say so, rather than reporting a misleading
+                // "insufficient balance" for an account that may be in credit.
+                Log::error("Exchange #{$exchangeId}: payer #{$payerId} not found in tenant {$tenantId} — refusing to move credits");
+                throw new \RuntimeException('EXCHANGE_PARTY_UNAVAILABLE');
+            }
+
+            if ((float) $payer->balance < $hours) {
+                Log::warning("Exchange #{$exchangeId}: payer #{$payerId} has insufficient balance ({$payer->balance} < {$hours})");
                 // Typed signal so the confirm endpoint returns a clear 4xx instead
                 // of a generic 500. The surrounding DB::transaction rolls back, so
                 // no credits move and the counterparty's confirmation is preserved.
@@ -1201,16 +1217,30 @@ class ExchangeWorkflowService
             }
 
             // Lock payee row too for consistency
-            DB::table('users')
+            $payee = DB::table('users')
                 ->where('id', $payeeId)
                 ->where('tenant_id', $tenantId)
                 ->lockForUpdate()
                 ->first();
 
-            DB::table('users')->where('id', $payerId)->where('tenant_id', $tenantId)
+            // A party who moved tenant (or was deleted) is invisible to these
+            // tenant-scoped updates. Without this check the payer was debited
+            // while the increment below matched zero rows — credits silently
+            // destroyed. Fail loudly instead; the transaction rolls back.
+            if (!$payee) {
+                Log::error("Exchange #{$exchangeId}: payee #{$payeeId} not found in tenant {$tenantId} — refusing to move credits");
+                throw new \RuntimeException('EXCHANGE_PARTY_UNAVAILABLE');
+            }
+
+            $debited = DB::table('users')->where('id', $payerId)->where('tenant_id', $tenantId)
                 ->decrement('balance', $hours);
-            DB::table('users')->where('id', $payeeId)->where('tenant_id', $tenantId)
+            $credited = DB::table('users')->where('id', $payeeId)->where('tenant_id', $tenantId)
                 ->increment('balance', $hours);
+
+            if ($debited !== 1 || $credited !== 1) {
+                Log::error("Exchange #{$exchangeId}: balance update matched {$debited} payer row(s) / {$credited} payee row(s) — rolling back");
+                throw new \RuntimeException('EXCHANGE_PARTY_UNAVAILABLE');
+            }
 
             $transactionId = DB::table('transactions')->insertGetId([
                 'tenant_id' => $tenantId,
@@ -1226,10 +1256,13 @@ class ExchangeWorkflowService
 
             return $transactionId;
         } catch (\Exception $e) {
-            // Let the typed insufficient-balance signal propagate (so the confirm
-            // endpoint can return a 4xx); only generic/unexpected failures degrade
+            // Let the typed signals propagate (so the confirm endpoint can
+            // return a clear 4xx); only generic/unexpected failures degrade
             // to a null return.
-            if ($e instanceof \RuntimeException && $e->getMessage() === 'INSUFFICIENT_BALANCE') {
+            if (
+                $e instanceof \RuntimeException
+                && in_array($e->getMessage(), ['INSUFFICIENT_BALANCE', 'EXCHANGE_PARTY_UNAVAILABLE'], true)
+            ) {
                 throw $e;
             }
             Log::error("Failed to create transaction for exchange $exchangeId: " . $e->getMessage());

@@ -206,11 +206,13 @@ class VolunteerCertificateService
             return null;
         }
 
+        // Join on user id ONLY — deliberately not pairing tenant_id. The
+        // certificate row stays scoped to its issuing tenant (below), but the
+        // holder's name must still resolve after they move to another
+        // community, or every certificate they ever shared with an employer
+        // silently stops verifying.
         $query = DB::table('vol_certificates as vc')
-            ->join('users as u', function ($join) {
-                $join->on('vc.user_id', '=', 'u.id')
-                     ->on('vc.tenant_id', '=', 'u.tenant_id');
-            })
+            ->join('users as u', 'vc.user_id', '=', 'u.id')
             ->where('vc.verification_code', $code)
             ->select(
                 'vc.id',

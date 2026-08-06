@@ -26,6 +26,16 @@ class UserMoveTenantTest extends TestCase
 {
     use DatabaseTransactions;
 
+    /** The content-counts block a move returns when the member owns no content. */
+    private const EMPTY_CONTENT = [
+        'listings_moved' => 0,
+        'listings_uncategorised' => 0,
+        'exchange_requests_closed' => 0,
+        'skills_moved' => 0,
+        'interests_moved' => 0,
+        'interests_dropped' => 0,
+    ];
+
     // ==========================================
     // Method Existence & Signature Tests
     // ==========================================
@@ -115,7 +125,7 @@ class UserMoveTenantTest extends TestCase
 
         $result = User::moveTenant((int) $user->id, 999);
 
-        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => []], $result);
+        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => [], 'details' => [], 'content' => self::EMPTY_CONTENT], $result);
         $this->assertDatabaseHas('users', ['id' => $user->id, 'tenant_id' => 999]);
         $this->assertDatabaseMissing('webauthn_credentials', [
             'user_id' => $user->id,
@@ -163,6 +173,8 @@ class UserMoveTenantTest extends TestCase
             'moved' => 0,
             'failed' => ['passkey_recovery_required'],
             'pinned' => [],
+            'details' => [],
+            'content' => [],
         ], $result);
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -186,7 +198,7 @@ class UserMoveTenantTest extends TestCase
 
         $result = User::moveTenant((int) $user->id, 999);
 
-        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => []], $result);
+        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => [], 'details' => [], 'content' => self::EMPTY_CONTENT], $result);
         $this->assertNull($tokenService->validateToken($accessToken));
         $this->assertDatabaseMissing('personal_access_tokens', [
             'tokenable_type' => User::class,
@@ -210,7 +222,7 @@ class UserMoveTenantTest extends TestCase
 
         $result = User::moveTenant((int) $user->id, 999);
 
-        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => []], $result);
+        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => [], 'details' => [], 'content' => self::EMPTY_CONTENT], $result);
         $this->assertDatabaseHas('users', ['id' => $user->id, 'tenant_id' => 999]);
         $this->assertDatabaseMissing('refresh_token_sessions', ['user_id' => $user->id]);
     }
@@ -227,6 +239,8 @@ class UserMoveTenantTest extends TestCase
             'moved' => 0,
             'failed' => ['email_conflict'],
             'pinned' => [],
+            'details' => [],
+            'content' => [],
         ], $result);
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -249,6 +263,8 @@ class UserMoveTenantTest extends TestCase
             'moved' => 0,
             'failed' => ['username_conflict'],
             'pinned' => [],
+            'details' => [],
+            'content' => [],
         ], $result);
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -267,6 +283,8 @@ class UserMoveTenantTest extends TestCase
             'moved' => 0,
             'failed' => ['already_in_tenant'],
             'pinned' => [],
+            'details' => [],
+            'content' => [],
         ], $result);
     }
 
@@ -311,6 +329,162 @@ class UserMoveTenantTest extends TestCase
             'id' => $user->id,
             'tenant_id' => $this->testTenantId,
         ]);
+    }
+
+    // ==========================================
+    // Content follows the member (owner-approved plan, 2026-08-06)
+    // ==========================================
+
+    public function testMoveCarriesListingsAndRemapsCategories(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+
+        $oldCat = DB::table('categories')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'name' => 'Gardening',
+            'slug' => 'move-test-gardening', 'type' => 'listing',
+        ]);
+        $newCat = DB::table('categories')->insertGetId([
+            'tenant_id' => 999, 'name' => 'Gardening',
+            'slug' => 'move-test-gardening', 'type' => 'listing',
+        ]);
+        $orphanCat = DB::table('categories')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'name' => 'Only Here',
+            'slug' => 'move-test-only-here', 'type' => 'listing',
+        ]);
+
+        $matched = DB::table('listings')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'user_id' => $user->id,
+            'category_id' => $oldCat, 'title' => 'Hedge trimming',
+            'description' => 't', 'type' => 'offer', 'status' => 'active',
+        ]);
+        $unmatched = DB::table('listings')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'user_id' => $user->id,
+            'category_id' => $orphanCat, 'title' => 'Piano lessons',
+            'description' => 't', 'type' => 'offer', 'status' => 'active',
+        ]);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertTrue($result['success']);
+        $this->assertSame(2, $result['content']['listings_moved']);
+        $this->assertSame(1, $result['content']['listings_uncategorised']);
+        $this->assertDatabaseHas('listings', ['id' => $matched, 'tenant_id' => 999, 'category_id' => $newCat]);
+        $this->assertDatabaseHas('listings', ['id' => $unmatched, 'tenant_id' => 999, 'category_id' => null]);
+    }
+
+    public function testMoveCancelsOpenExchangesAndNotifiesCounterparty(): void
+    {
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = DB::table('listings')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'user_id' => $provider->id,
+            'title' => 'Dog walking', 'description' => 't', 'type' => 'offer', 'status' => 'active',
+        ]);
+        $exchangeId = DB::table('exchange_requests')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 1, 'status' => 'pending_provider',
+        ]);
+
+        $result = User::moveTenant((int) $provider->id, 999);
+
+        $this->assertTrue($result['success']);
+        $this->assertSame(1, $result['content']['exchange_requests_closed']);
+        $this->assertDatabaseHas('exchange_requests', ['id' => $exchangeId, 'status' => 'cancelled']);
+        $this->assertDatabaseHas('exchange_history', [
+            'exchange_id' => $exchangeId,
+            'action' => 'cancelled_member_moved_tenant',
+            'new_status' => 'cancelled',
+        ]);
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $requester->id,
+            'tenant_id' => $this->testTenantId,
+        ]);
+    }
+
+    public function testMoveBlocksWhenUserSolelyOwnsAGroup(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        $groupId = DB::table('groups')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'owner_id' => $user->id,
+            'name' => 'Move-test Knitting Circle', 'status' => 'active',
+        ]);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertFalse($result['success']);
+        $this->assertSame(['group_ownership_transfer_required'], $result['failed']);
+        $this->assertSame(['Move-test Knitting Circle'], $result['details']['groups']);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'tenant_id' => $this->testTenantId]);
+
+        // A second active owner releases the block.
+        $coOwner = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('group_members')->insert([
+            'tenant_id' => $this->testTenantId, 'group_id' => $groupId,
+            'user_id' => $coOwner->id, 'role' => 'owner', 'status' => 'active',
+        ]);
+
+        $retry = User::moveTenant((int) $user->id, 999);
+        $this->assertTrue($retry['success']);
+    }
+
+    public function testMoveBlocksWhenExchangeCarriesMoney(): void
+    {
+        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        $requester = User::factory()->forTenant($this->testTenantId)->create();
+        $listingId = DB::table('listings')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'user_id' => $provider->id,
+            'title' => 'Bike repair', 'description' => 't', 'type' => 'offer', 'status' => 'active',
+        ]);
+        DB::table('exchange_requests')->insert([
+            'tenant_id' => $this->testTenantId, 'listing_id' => $listingId,
+            'requester_id' => $requester->id, 'provider_id' => $provider->id,
+            'proposed_hours' => 2, 'status' => 'pending_confirmation',
+        ]);
+
+        $result = User::moveTenant((int) $provider->id, 999);
+
+        $this->assertFalse($result['success']);
+        $this->assertSame(['exchanges_in_flight'], $result['failed']);
+        $this->assertSame(1, $result['details']['exchange_count']);
+        $this->assertDatabaseHas('users', ['id' => $provider->id, 'tenant_id' => $this->testTenantId]);
+    }
+
+    public function testMoveCarriesSkillsAndRemapsInterests(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+
+        DB::table('user_skills')->insert([
+            'user_id' => $user->id, 'tenant_id' => $this->testTenantId,
+            'category_id' => null, 'skill_name' => 'Carpentry',
+        ]);
+
+        $oldCat = DB::table('categories')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'name' => 'Crafts',
+            'slug' => 'move-test-crafts', 'type' => 'listing',
+        ]);
+        $newCat = DB::table('categories')->insertGetId([
+            'tenant_id' => 999, 'name' => 'Crafts',
+            'slug' => 'move-test-crafts', 'type' => 'listing',
+        ]);
+        $loneCat = DB::table('categories')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'name' => 'Lone',
+            'slug' => 'move-test-lone', 'type' => 'listing',
+        ]);
+        DB::table('user_interests')->insert([
+            ['user_id' => $user->id, 'tenant_id' => $this->testTenantId, 'category_id' => $oldCat, 'interest_type' => 'interest'],
+            ['user_id' => $user->id, 'tenant_id' => $this->testTenantId, 'category_id' => $loneCat, 'interest_type' => 'interest'],
+        ]);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertTrue($result['success']);
+        $this->assertSame(1, $result['content']['skills_moved']);
+        $this->assertSame(1, $result['content']['interests_moved']);
+        $this->assertSame(1, $result['content']['interests_dropped']);
+        $this->assertDatabaseHas('user_skills', ['user_id' => $user->id, 'tenant_id' => 999, 'skill_name' => 'Carpentry']);
+        $this->assertDatabaseHas('user_interests', ['user_id' => $user->id, 'tenant_id' => 999, 'category_id' => $newCat]);
+        $this->assertDatabaseMissing('user_interests', ['user_id' => $user->id, 'category_id' => $loneCat]);
     }
 
     private function insertRefreshSession(int $userId, int $tenantId): void

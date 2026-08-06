@@ -453,7 +453,8 @@ class AdminSuperControllerTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.moved', true)
             ->assertJsonPath('data.old_tenant_id', $this->testTenantId)
-            ->assertJsonPath('data.new_tenant_id', 999);
+            ->assertJsonPath('data.new_tenant_id', 999)
+            ->assertJsonPath('data.content_moved.listings_moved', 0);
         // Tenant 999 is not a hub (allows_subtenants = 0), so the move must
         // also strip the tenant-super-admin flag.
         $this->assertDatabaseHas('users', [
