@@ -264,6 +264,159 @@ class TenantBillingServiceTest extends TestCase
         $this->assertSame($before + 1, $after);
     }
 
+    /**
+     * 🔴 A tenant with no materialised path must not be billed for the platform.
+     *
+     * `'' . '%'` is `'%'`, so before the 2026-08-06 fix this counted every
+     * active member on the installation as belonging to this one tenant. It is
+     * a billing figure — it drives over-limit detection, the grace period and
+     * the quoted price — so the failure mode was over-charging a community by
+     * whatever the rest of the platform weighed.
+     *
+     * The tenant here owns exactly two active members while other tenants own
+     * more, so the old behaviour fails this outright rather than by a margin.
+     */
+    public function test_getSubtreeUserCount_with_empty_path_counts_only_its_own_members(): void
+    {
+        $pathlessTenantId = 98051;
+        DB::table('tenants')->insertOrIgnore([
+            'id'                => $pathlessTenantId,
+            'name'              => 'Pathless Billing Tenant',
+            'slug'              => 'pathless-billing-' . $pathlessTenantId,
+            'is_active'         => 1,
+            'depth'             => 1,
+            'allows_subtenants' => 0,
+            'parent_id'         => 1,
+            'path'              => null,
+            'created_at'        => now(),
+            'updated_at'        => now(),
+        ]);
+        // insertOrIgnore leaves an existing row untouched; force the state under test.
+        DB::table('tenants')->where('id', $pathlessTenantId)->update(['path' => null]);
+        DB::table('users')->where('tenant_id', $pathlessTenantId)->delete();
+
+        $this->insertUser($pathlessTenantId);
+        $this->insertUser($pathlessTenantId);
+
+        /*
+         * The unrelated tenant MUST have a path of its own, or this test proves
+         * nothing. `LIKE '%'` only matches rows whose path is non-NULL, and in
+         * `nexus_test` the tenants that hold most members (1 and 2) have no
+         * path — so an earlier version of this test passed with the guard
+         * deliberately disabled. Seeding a path-having stranger is what makes
+         * the regression detectable.
+         */
+        $strangerCount = $this->seedUnrelatedTenantWithPath(98055, 3);
+
+        $count = TenantBillingService::getSubtreeUserCount($pathlessTenantId);
+
+        $this->assertSame(
+            2,
+            $count,
+            "a pathless tenant must be billed for its own members only; {$strangerCount} members "
+                . 'belong to an unrelated tenant and must not be swept in by an empty-prefix LIKE'
+        );
+    }
+
+    /**
+     * Seed a tenant that is NOT related to the tenant under test, give it a real
+     * materialised path and some active members, and return how many.
+     */
+    private function seedUnrelatedTenantWithPath(int $tenantId, int $members): int
+    {
+        DB::table('tenants')->insertOrIgnore([
+            'id'                => $tenantId,
+            'name'              => 'Unrelated Billing Tenant',
+            'slug'              => 'unrelated-billing-' . $tenantId,
+            'is_active'         => 1,
+            'depth'             => 1,
+            'allows_subtenants' => 0,
+            'parent_id'         => 1,
+            'path'              => '/1/' . $tenantId . '/',
+            'created_at'        => now(),
+            'updated_at'        => now(),
+        ]);
+        DB::table('tenants')->where('id', $tenantId)->update(['path' => '/1/' . $tenantId . '/']);
+        DB::table('users')->where('tenant_id', $tenantId)->delete();
+
+        for ($i = 0; $i < $members; $i++) {
+            $this->insertUser($tenantId);
+        }
+
+        return $members;
+    }
+
+    /** An empty string is as dangerous as NULL, and is what a failed UPDATE can leave. */
+    public function test_getSubtreeUserCount_with_blank_string_path_counts_only_its_own_members(): void
+    {
+        $blankPathTenantId = 98052;
+        DB::table('tenants')->insertOrIgnore([
+            'id'                => $blankPathTenantId,
+            'name'              => 'Blank Path Billing Tenant',
+            'slug'              => 'blank-path-billing-' . $blankPathTenantId,
+            'is_active'         => 1,
+            'depth'             => 1,
+            'allows_subtenants' => 0,
+            'parent_id'         => 1,
+            'path'              => '',
+            'created_at'        => now(),
+            'updated_at'        => now(),
+        ]);
+        DB::table('tenants')->where('id', $blankPathTenantId)->update(['path' => '']);
+        DB::table('users')->where('tenant_id', $blankPathTenantId)->delete();
+
+        $this->insertUser($blankPathTenantId);
+        $this->seedUnrelatedTenantWithPath(98056, 3);
+
+        $this->assertSame(
+            1,
+            TenantBillingService::getSubtreeUserCount($blankPathTenantId),
+            'a blank path must not sweep in an unrelated tenant that does have one'
+        );
+    }
+
+    /** The real subtree must still be counted — the guard must not over-fire. */
+    public function test_getSubtreeUserCount_still_includes_descendants_when_the_path_is_present(): void
+    {
+        $parentId = 98053;
+        $childId  = 98054;
+
+        foreach ([
+            [$parentId, '/1/' . $parentId . '/', 1],
+            [$childId,  '/1/' . $parentId . '/' . $childId . '/', 0],
+        ] as [$id, $path, $allowsSub]) {
+            DB::table('tenants')->insertOrIgnore([
+                'id'                => $id,
+                'name'              => 'Subtree Billing ' . $id,
+                'slug'              => 'subtree-billing-' . $id,
+                'is_active'         => 1,
+                'depth'             => 2,
+                'allows_subtenants' => $allowsSub,
+                'parent_id'         => $id === $childId ? $parentId : 1,
+                'path'              => $path,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]);
+            DB::table('tenants')->where('id', $id)->update(['path' => $path]);
+            DB::table('users')->where('tenant_id', $id)->delete();
+        }
+
+        $this->insertUser($parentId);
+        $this->insertUser($childId);
+        $this->insertUser($childId);
+
+        $this->assertSame(
+            3,
+            TenantBillingService::getSubtreeUserCount($parentId),
+            'a hub must still be billed for its branches'
+        );
+        $this->assertSame(
+            2,
+            TenantBillingService::getSubtreeUserCount($childId),
+            'a branch must be billed for itself, not for its parent'
+        );
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     // assignPlan — DB-backed
     // ─────────────────────────────────────────────────────────────────────

@@ -41,7 +41,48 @@ class TenantBillingService
             return 0;
         }
 
-        $path = $row->path;
+        $path = trim((string) ($row->path ?? ''));
+
+        /*
+         * 🔴 An empty materialised path must NEVER reach the LIKE.
+         *
+         * `'' . '%'` is `'%'`, which matches every tenant that has a path — so
+         * this tenant would be counted as owning the entire platform's active
+         * membership. Measured on the dev database 2026-08-06: the real subtree
+         * of tenant 2 is 5 active members; with an empty path the same query
+         * returns 29, which is every active member on the installation.
+         *
+         * That is a billing figure. It drives `max_users` over-limit detection,
+         * the grace period, and the price a community is quoted, so the failure
+         * mode is over-charging a charity by whatever the rest of the platform
+         * happens to weigh — and it grows silently as the platform grows.
+         *
+         * Without a path we cannot identify descendants at all, so count only
+         * what we can prove: this tenant's own active members. That under-counts
+         * a hub whose path is missing, which bills too little rather than far
+         * too much — recoverable, and the log line says it happened. Do not
+         * "fix" this by falling back to the LIKE.
+         *
+         * `tenants.path` is populated by a second UPDATE after the row is
+         * inserted, so a crash between the two leaves exactly this state. It is
+         * deliberately not NOT NULL for that reason — see
+         * `.local-docs-archive/hierarchical-super-admin-feasibility-2026-08-05.md`.
+         * The same empty-prefix flaw was fixed in `App\Core\SuperPanelAccess`;
+         * this was its last copy.
+         */
+        if ($path === '') {
+            Log::error('TenantBillingService: tenant has no materialised path; counting own members only', [
+                'tenant_id' => $tenantId,
+                'impact'    => 'subtree members excluded from the billing count for this tenant',
+            ]);
+
+            $ownOnly = DB::selectOne(
+                'SELECT COUNT(*) AS cnt FROM users WHERE tenant_id = ? AND status = ?',
+                [$tenantId, 'active']
+            );
+
+            return (int) ($ownOnly->cnt ?? 0);
+        }
 
         $result = DB::selectOne(
             'SELECT COUNT(*) AS cnt
