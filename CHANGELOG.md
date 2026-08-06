@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **The word "ward" is retired from every screen. The platform now says "supported member".** Wardship was abolished in Ireland by the Assisted Decision-Making (Capacity) Act 2015 (commenced 2023; the last wardship cases must be discharged by October 2027), so the term is legally obsolete — and it describes a person by their dependency rather than as a member. The broker and admin safeguarding dashboards (table columns, the "Consented Wards" statistic, the assignment form labels, the built-in help text) and three API error messages now use "supported member" phrasing, translated in all eleven languages. Database columns and code identifiers are unchanged — this is what people read, not how the system stores it. First step of the approved guardian-module redesign.
 
+### Security
+
+- **Updated the Markdown library the platform uses for formatted emails, closing six newly-published advisories.** Six vulnerabilities in `league/commonmark` were published on 6 August, four of them rated high: several ways a crafted message could tie the parser up in knots (a denial-of-service), and one that let a disguised link slip past the safety filter that is supposed to block dangerous links. The platform does not call this library directly — it arrives as part of the web framework and is used when rendering Markdown in emails — so no platform code changed. Upgraded from 2.8.2 to 2.9.0, which the framework already permitted; the security audit now reports nothing outstanding.
+
 ### Fixed
 
 - **Creating a guardian assignment with an unknown email address failed silently.** When a coordinator typed an email that matched no member (or paired someone with themselves, or repeated an existing arrangement), the platform refused correctly — but the screen showed nothing at all: no message, the dialog just sat there. The refusal's own explanation ("Supported member not found in this community", and so on) now appears, so staff know exactly what to correct. Found by the owner while testing; a regression test now fails if the message ever goes silent again.
