@@ -115,7 +115,7 @@ class UserMoveTenantTest extends TestCase
 
         $result = User::moveTenant((int) $user->id, 999);
 
-        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => []], $result);
+        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => []], $result);
         $this->assertDatabaseHas('users', ['id' => $user->id, 'tenant_id' => 999]);
         $this->assertDatabaseMissing('webauthn_credentials', [
             'user_id' => $user->id,
@@ -162,6 +162,7 @@ class UserMoveTenantTest extends TestCase
             'success' => false,
             'moved' => 0,
             'failed' => ['passkey_recovery_required'],
+            'pinned' => [],
         ], $result);
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -185,11 +186,145 @@ class UserMoveTenantTest extends TestCase
 
         $result = User::moveTenant((int) $user->id, 999);
 
-        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => []], $result);
+        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => []], $result);
         $this->assertNull($tokenService->validateToken($accessToken));
         $this->assertDatabaseMissing('personal_access_tokens', [
             'tokenable_type' => User::class,
             'tokenable_id' => $user->id,
+        ]);
+    }
+
+    /**
+     * 🔴 Regression: fk_refresh_sessions_user_tenant pairs (user_id, tenant_id)
+     * against users(id, tenant_id) and revokeAllTokensForUser() only stamps
+     * revoked_at, so before the in-transaction DELETE was added, ANY member who
+     * had ever signed in on the SPA could not be moved at all — the users UPDATE
+     * died on error 1451 and surfaced as an HTTP 500. Factory users have no
+     * sessions, which is exactly why every earlier test missed it.
+     */
+    public function testMoveSucceedsForUserWithRefreshTokenSessions(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        $this->insertRefreshSession((int) $user->id, $this->testTenantId);
+        $this->insertRefreshSession((int) $user->id, $this->testTenantId);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertSame(['success' => true, 'moved' => 1, 'failed' => [], 'pinned' => []], $result);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'tenant_id' => 999]);
+        $this->assertDatabaseMissing('refresh_token_sessions', ['user_id' => $user->id]);
+    }
+
+    public function testMoveFailsWhenDestinationHasSameEmail(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        User::factory()->forTenant(999)->create(['email' => $user->email]);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertSame([
+            'success' => false,
+            'moved' => 0,
+            'failed' => ['email_conflict'],
+            'pinned' => [],
+        ], $result);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+        ]);
+    }
+
+    public function testMoveFailsWhenDestinationHasSameUsername(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+        $username = 'move-conflict-' . bin2hex(random_bytes(6));
+        DB::table('users')->where('id', $user->id)->update(['username' => $username]);
+        $blocker = User::factory()->forTenant(999)->create();
+        DB::table('users')->where('id', $blocker->id)->update(['username' => $username]);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertSame([
+            'success' => false,
+            'moved' => 0,
+            'failed' => ['username_conflict'],
+            'pinned' => [],
+        ], $result);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+        ]);
+    }
+
+    public function testMoveToCurrentTenantReportsAlreadyInTenant(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+
+        $result = User::moveTenant((int) $user->id, $this->testTenantId);
+
+        $this->assertSame([
+            'success' => false,
+            'moved' => 0,
+            'failed' => ['already_in_tenant'],
+            'pinned' => [],
+        ], $result);
+    }
+
+    /**
+     * Dozens of events-subsystem tables carry a composite FK
+     * (actor col, tenant_id) → users(id, tenant_id) with no ON UPDATE action,
+     * so a member with rows there cannot change tenant — MariaDB RESTRICTs the
+     * parent UPDATE. moveTenant() must detect this up front and return a
+     * structured failure naming the blocking tables instead of throwing.
+     */
+    public function testMoveFailsWithStructuredReasonWhenEventRecordsPinUser(): void
+    {
+        $user = User::factory()->forTenant($this->testTenantId)->create();
+
+        $eventId = DB::table('events')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'user_id' => $user->id,
+            'title' => 'Pin regression event',
+            'description' => 'Ensures composite-FK rows block the move cleanly.',
+            'start_time' => now()->addDay(),
+            'created_at' => now(),
+        ]);
+        DB::table('event_analytics_access_audits')->insert([
+            'tenant_id' => $this->testTenantId,
+            'event_id' => $eventId,
+            'actor_user_id' => $user->id,
+            'access_scope' => 'organizer_summary',
+            'purpose_code' => 'tenant_move_regression',
+            'query_hash' => hash('sha256', 'tenant-move-regression'),
+            'result_count' => 10,
+            'suppressed_count' => 0,
+            'privacy_threshold' => 5,
+            'created_at' => now(),
+        ]);
+
+        $result = User::moveTenant((int) $user->id, 999);
+
+        $this->assertFalse($result['success']);
+        $this->assertSame(['tenant_records_pin_user'], $result['failed']);
+        $this->assertSame(['event_analytics_access_audits' => 1], $result['pinned']);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'tenant_id' => $this->testTenantId,
+        ]);
+    }
+
+    private function insertRefreshSession(int $userId, int $tenantId): void
+    {
+        DB::table('refresh_token_sessions')->insert([
+            'tenant_id' => $tenantId,
+            'user_id' => $userId,
+            'family_hash' => hash('sha256', 'family-' . bin2hex(random_bytes(8))),
+            'jti_hash' => hash('sha256', 'jti-' . bin2hex(random_bytes(8))),
+            'issued_at' => now(),
+            'expires_at' => now()->addMinutes(15),
+            'family_expires_at' => now()->addDays(30),
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 

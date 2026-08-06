@@ -427,6 +427,135 @@ class AdminSuperControllerTest extends TestCase
         ]);
     }
 
+    /**
+     * 🔴 Regression — the first end-to-end SUCCESSFUL move over HTTP.
+     *
+     * The member deliberately has refresh_token_sessions rows: their composite
+     * FK (user_id, tenant_id) → users(id, tenant_id) made the users UPDATE die
+     * with MariaDB error 1451 for any member who had ever signed in, and every
+     * earlier endpoint test covered failure paths with session-less factory
+     * users, so the 500 was invisible to the suite.
+     */
+    public function test_user_move_tenant_succeeds_for_member_with_sessions(): void
+    {
+        $admin = $this->createGlobalSuperAdmin();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('users')->where('id', $member->id)->update(['is_tenant_super_admin' => 1]);
+        $this->insertRefreshSession((int) $member->id, $this->testTenantId);
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost(
+            "/v2/admin/super/users/{$member->id}/move-tenant",
+            ['new_tenant_id' => 999]
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.moved', true)
+            ->assertJsonPath('data.old_tenant_id', $this->testTenantId)
+            ->assertJsonPath('data.new_tenant_id', 999);
+        // Tenant 999 is not a hub (allows_subtenants = 0), so the move must
+        // also strip the tenant-super-admin flag.
+        $this->assertDatabaseHas('users', [
+            'id' => $member->id,
+            'tenant_id' => 999,
+            'is_tenant_super_admin' => 0,
+        ]);
+        $this->assertDatabaseMissing('refresh_token_sessions', ['user_id' => $member->id]);
+    }
+
+    public function test_user_move_tenant_returns_conflict_for_duplicate_email(): void
+    {
+        $admin = $this->createGlobalSuperAdmin();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        User::factory()->forTenant(999)->create(['email' => $member->email]);
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost(
+            "/v2/admin/super/users/{$member->id}/move-tenant",
+            ['new_tenant_id' => 999]
+        );
+
+        $response
+            ->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'USER_MOVE_EMAIL_CONFLICT')
+            ->assertJsonPath('errors.0.message', __('api.super_move_user_email_conflict'));
+        $this->assertDatabaseHas('users', [
+            'id' => $member->id,
+            'tenant_id' => $this->testTenantId,
+        ]);
+    }
+
+    public function test_user_move_tenant_returns_404_for_missing_destination(): void
+    {
+        $admin = $this->createGlobalSuperAdmin();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($admin);
+
+        // canAccessTenant() is true for ANY id at master level, so before the
+        // explicit existence check this died on the users.tenant_id FK as a 500.
+        $response = $this->apiPost(
+            "/v2/admin/super/users/{$member->id}/move-tenant",
+            ['new_tenant_id' => 2_000_000_000]
+        );
+
+        $response
+            ->assertStatus(404)
+            ->assertJsonPath('errors.0.code', 'RESOURCE_NOT_FOUND');
+    }
+
+    public function test_user_move_tenant_returns_422_when_already_in_destination(): void
+    {
+        $admin = $this->createGlobalSuperAdmin();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost(
+            "/v2/admin/super/users/{$member->id}/move-tenant",
+            ['new_tenant_id' => $this->testTenantId]
+        );
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.message', __('api.super_move_user_already_in_tenant'));
+    }
+
+    public function test_user_move_tenant_returns_422_for_inactive_destination(): void
+    {
+        $admin = $this->createGlobalSuperAdmin();
+        $member = User::factory()->forTenant($this->testTenantId)->create();
+        DB::table('tenants')->where('id', 999)->update(['is_active' => 0]);
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiPost(
+            "/v2/admin/super/users/{$member->id}/move-tenant",
+            ['new_tenant_id' => 999]
+        );
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonPath('errors.0.message', __('api.super_move_target_tenant_inactive'));
+        $this->assertDatabaseHas('users', [
+            'id' => $member->id,
+            'tenant_id' => $this->testTenantId,
+        ]);
+    }
+
+    private function insertRefreshSession(int $userId, int $tenantId): void
+    {
+        DB::table('refresh_token_sessions')->insert([
+            'tenant_id' => $tenantId,
+            'user_id' => $userId,
+            'family_hash' => hash('sha256', 'family-' . bin2hex(random_bytes(8))),
+            'jti_hash' => hash('sha256', 'jti-' . bin2hex(random_bytes(8))),
+            'issued_at' => now(),
+            'expires_at' => now()->addMinutes(15),
+            'family_expires_at' => now()->addDays(30),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
     // ================================================================
     // AUDIT — GET /v2/admin/super/audit
     // ================================================================

@@ -112,7 +112,7 @@ export function SuperUserForm() {
       setMoveTargetTenant('');
       loadUser();
     } else {
-      toast.error(t('super.failed_to_move_user'));
+      toast.error(res?.errors?.[0]?.message || t('super.failed_to_move_user'));
     }
     setMoveLoading(false);
   };
@@ -126,7 +126,7 @@ export function SuperUserForm() {
       setPromoteTargetTenant('');
       loadUser();
     } else {
-      toast.error(t('super.failed_to_move_and_promote'));
+      toast.error(res?.errors?.[0]?.message || t('super.failed_to_move_and_promote'));
     }
     setPromoteLoading(false);
   };

@@ -174,7 +174,9 @@ export function UserShow() {
       setMoveTargetTenant('');
       loadUser();
     } else {
-      toast.error(t('super.failed_to_move_user'));
+      // The API's message says WHY (email conflict, event records pin the
+      // user, inactive destination…) — a generic toast hides an actionable reason.
+      toast.error(res?.errors?.[0]?.message || t('super.failed_to_move_user'));
     }
     setMoveLoading(false);
   };
@@ -189,7 +191,7 @@ export function UserShow() {
       setPromoteTargetTenant('');
       loadUser();
     } else {
-      toast.error(t('super.failed_to_move_and_promote'));
+      toast.error(res?.errors?.[0]?.message || t('super.failed_to_move_and_promote'));
     }
     setPromoteLoading(false);
   };

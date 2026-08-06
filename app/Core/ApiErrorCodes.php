@@ -159,6 +159,15 @@ class ApiErrorCodes
     /** Tenant move would remove a user's only usable passkey-based sign-in method */
     public const USER_MOVE_PASSKEY_RECOVERY_REQUIRED = 'USER_MOVE_PASSKEY_RECOVERY_REQUIRED';
 
+    /** Tenant move refused: destination tenant already has an account with this email */
+    public const USER_MOVE_EMAIL_CONFLICT = 'USER_MOVE_EMAIL_CONFLICT';
+
+    /** Tenant move refused: destination tenant already has an account with this username */
+    public const USER_MOVE_USERNAME_CONFLICT = 'USER_MOVE_USERNAME_CONFLICT';
+
+    /** Tenant move refused: DB records (composite FK to users(id, tenant_id)) pin the user to their tenant */
+    public const USER_MOVE_HISTORY_LOCKED = 'USER_MOVE_HISTORY_LOCKED';
+
     /** Resource has been deleted */
     public const RESOURCE_DELETED = 'RESOURCE_DELETED';
 
@@ -272,7 +281,10 @@ class ApiErrorCodes
             self::AUTH_REFRESH_SUPERSEDED,
             self::RESOURCE_ALREADY_EXISTS,
             self::RESOURCE_CONFLICT,
-            self::USER_MOVE_PASSKEY_RECOVERY_REQUIRED => 409,
+            self::USER_MOVE_PASSKEY_RECOVERY_REQUIRED,
+            self::USER_MOVE_EMAIL_CONFLICT,
+            self::USER_MOVE_USERNAME_CONFLICT,
+            self::USER_MOVE_HISTORY_LOCKED => 409,
 
             // 410 Gone
             self::RESOURCE_DELETED => 410,

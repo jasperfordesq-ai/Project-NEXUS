@@ -73,7 +73,17 @@ export function BulkOperations() {
     });
     if (res?.success) {
       const result = res.data as BulkOperationResult | undefined;
-      toast.success(t('super.bulk_users_moved_count', { count: result?.moved_count ?? result?.updated_count ?? 0 }));
+      const moved = result?.moved_count ?? result?.updated_count ?? 0;
+      const failed = result?.errors?.length ?? 0;
+      // The endpoint returns 200 even when every user failed pre-validation,
+      // so a green "moved (0)" toast here used to hide total failure.
+      if (moved > 0 && failed === 0) {
+        toast.success(t('super.bulk_users_moved_count', { count: moved }));
+      } else if (moved > 0) {
+        toast.warning(t('super.bulk_users_moved_partial', { moved, failed }));
+      } else {
+        toast.error(t('super.bulk_move_failed'));
+      }
       setSelectedUserIds(new Set());
       loadUsersForTenant(sourceTenant);
     } else {

@@ -534,21 +534,67 @@ class User extends Authenticatable
      * timebanks" — it reassigns an account.
      *
      * `moved` is the affected-row count of the single UPDATE (0 or 1). `failed`
-     * carries a passkey precondition, not a list of tables.
+     * carries precondition codes, not a list of tables:
+     * - 'already_in_tenant'         destination equals the current tenant
+     * - 'email_conflict'            destination already has this email
+     *                               (unique_email_tenant would reject the UPDATE)
+     * - 'username_conflict'         destination already has this username
+     *                               (idx_tenant_username would reject the UPDATE)
+     * - 'passkey_recovery_required' passkey-only account, see below
+     * - 'tenant_records_pin_user'   the user has rows in tables whose composite
+     *                               FK references users(id, tenant_id) — MariaDB
+     *                               RESTRICTs the parent UPDATE, so the move is
+     *                               impossible while those records exist. The
+     *                               blocking tables are returned in 'pinned'.
      *
-     * @return array{success: bool, moved: int, failed: array<string>}
+     * @return array{success: bool, moved: int, failed: array<string>, pinned: array<string, int>}
      */
     public static function moveTenant(int $userId, int $newTenantId): array
     {
         $outcome = DB::transaction(static function () use ($userId, $newTenantId): array {
             $user = DB::table('users')
                 ->where('id', $userId)
-                ->select(['tenant_id', 'password_hash'])
+                ->select(['tenant_id', 'password_hash', 'email', 'username'])
                 ->lockForUpdate()
                 ->first();
 
-            if ($user === null || (int) $user->tenant_id === $newTenantId) {
+            if ($user === null) {
                 return ['affected' => 0, 'failed' => []];
+            }
+
+            if ((int) $user->tenant_id === $newTenantId) {
+                return ['affected' => 0, 'failed' => ['already_in_tenant']];
+            }
+
+            // users carries UNIQUE (email, tenant_id) and UNIQUE (tenant_id,
+            // username). Without these pre-checks a collision in the destination
+            // surfaces as a QueryException → HTTP 500 with no usable message.
+            $emailTaken = $user->email !== null && DB::table('users')
+                ->where('tenant_id', $newTenantId)
+                ->where('email', $user->email)
+                ->exists();
+            if ($emailTaken) {
+                return ['affected' => 0, 'failed' => ['email_conflict']];
+            }
+
+            $usernameTaken = is_string($user->username) && $user->username !== ''
+                && DB::table('users')
+                    ->where('tenant_id', $newTenantId)
+                    ->where('username', $user->username)
+                    ->exists();
+            if ($usernameTaken) {
+                return ['affected' => 0, 'failed' => ['username_conflict']];
+            }
+
+            // Dozens of tables (the events subsystem's audit/consent/registration
+            // records) pair their actor column with tenant_id in a composite FK to
+            // users(id, tenant_id) with no ON UPDATE action, so any row there
+            // RESTRICTs the tenant_id UPDATE below. Detect them up front and fail
+            // with a structured reason instead of a raw FK error. The two tables
+            // this transaction clears itself are excluded.
+            $pinned = self::tenantPinnedUserRecords($userId);
+            if ($pinned !== []) {
+                return ['affected' => 0, 'failed' => ['tenant_records_pin_user'], 'pinned' => $pinned];
             }
 
             // A passkey is cryptographically scoped to the tenant's RP ID and
@@ -580,6 +626,18 @@ class User extends Authenticatable
             }
             $userModel->tokens()->delete();
 
+            // revokeAllTokensForUser() above only stamps revoked_at on these
+            // rows, but fk_refresh_sessions_user_tenant pairs (user_id,
+            // tenant_id) against users(id, tenant_id), so any remaining row —
+            // revoked or not — RESTRICTs the tenant_id UPDATE below. They are
+            // all dead sessions at this point (the global revocation JTI in
+            // revoked_tokens outlives them), so delete rather than re-home
+            // them: rewriting their tenant_id would falsify where the sessions
+            // actually happened.
+            DB::table('refresh_token_sessions')
+                ->where('user_id', $userId)
+                ->delete();
+
             DB::table('webauthn_credentials')
                 ->where('user_id', $userId)
                 ->delete();
@@ -597,6 +655,58 @@ class User extends Authenticatable
             'success' => $affected > 0,
             'moved'   => (int) $affected,
             'failed'  => $outcome['failed'],
+            'pinned'  => $outcome['pinned'] ?? [],
         ];
+    }
+
+    /**
+     * Tables holding rows that pin this user to their current tenant.
+     *
+     * A composite FK `(x_user_id, tenant_id) REFERENCES users (id, tenant_id)`
+     * guarantees the actor belongs to the same tenant as the record. MariaDB
+     * enforces it with RESTRICT on the parent UPDATE, so a user with any such
+     * row cannot change tenant. The list is read from information_schema rather
+     * than hardcoded so new composite FKs are picked up automatically.
+     *
+     * webauthn_credentials and refresh_token_sessions are excluded — moveTenant()
+     * clears both inside its transaction.
+     *
+     * @return array<string, int> table name => row count, only tables with rows
+     */
+    private static function tenantPinnedUserRecords(int $userId): array
+    {
+        static $constraints = null;
+
+        if ($constraints === null) {
+            $constraints = DB::select(
+                "SELECT kcu.TABLE_NAME AS table_name, kcu.COLUMN_NAME AS column_name
+                 FROM information_schema.KEY_COLUMN_USAGE kcu
+                 WHERE kcu.TABLE_SCHEMA = DATABASE()
+                   AND kcu.REFERENCED_TABLE_NAME = 'users'
+                   AND kcu.REFERENCED_COLUMN_NAME = 'id'
+                   AND kcu.TABLE_NAME NOT IN ('webauthn_credentials', 'refresh_token_sessions')
+                   AND EXISTS (
+                       SELECT 1
+                       FROM information_schema.KEY_COLUMN_USAGE paired
+                       WHERE paired.TABLE_SCHEMA = kcu.TABLE_SCHEMA
+                         AND paired.TABLE_NAME = kcu.TABLE_NAME
+                         AND paired.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+                         AND paired.REFERENCED_TABLE_NAME = 'users'
+                         AND paired.REFERENCED_COLUMN_NAME = 'tenant_id'
+                   )"
+            );
+        }
+
+        $pinned = [];
+        foreach ($constraints as $constraint) {
+            $count = DB::table($constraint->table_name)
+                ->where($constraint->column_name, $userId)
+                ->count();
+            if ($count > 0) {
+                $pinned[$constraint->table_name] = ($pinned[$constraint->table_name] ?? 0) + $count;
+            }
+        }
+
+        return $pinned;
     }
 }

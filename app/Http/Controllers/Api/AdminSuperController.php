@@ -125,6 +125,46 @@ class AdminSuperController extends BaseApiController
             );
         }
 
+        $failed = $moveResult['failed'] ?? [];
+
+        if (in_array('already_in_tenant', $failed, true)) {
+            return $this->respondWithError(
+                ApiErrorCodes::VALIDATION_ERROR,
+                __('api.super_move_user_already_in_tenant'),
+                'new_tenant_id',
+                422
+            );
+        }
+
+        if (in_array('email_conflict', $failed, true)) {
+            return $this->respondWithError(
+                ApiErrorCodes::USER_MOVE_EMAIL_CONFLICT,
+                __('api.super_move_user_email_conflict'),
+                null,
+                409
+            );
+        }
+
+        if (in_array('username_conflict', $failed, true)) {
+            return $this->respondWithError(
+                ApiErrorCodes::USER_MOVE_USERNAME_CONFLICT,
+                __('api.super_move_user_username_conflict'),
+                null,
+                409
+            );
+        }
+
+        if (in_array('tenant_records_pin_user', $failed, true)) {
+            // The pinned table names are developer diagnostics; the human-facing
+            // message stays generic. Surface them in details so an admin (or a
+            // support ticket) can see exactly what blocks the move.
+            return $this->respondWithErrors([[
+                'code' => ApiErrorCodes::USER_MOVE_HISTORY_LOCKED,
+                'message' => __('api.super_move_user_history_locked'),
+                'details' => ['pinned_tables' => $moveResult['pinned'] ?? []],
+            ]], 409);
+        }
+
         return $this->respondWithError(
             ApiErrorCodes::SERVER_INTERNAL_ERROR,
             __('api.super_move_user_failed'),
@@ -137,6 +177,26 @@ class AdminSuperController extends BaseApiController
     private static function moveRequiresPasskeyRecovery(array $moveResult): bool
     {
         return in_array('passkey_recovery_required', $moveResult['failed'] ?? [], true);
+    }
+
+    /**
+     * Machine code for one user's failed move, for the bulk endpoint's
+     * per-user error entries.
+     *
+     * @param array{failed?:array<string>} $moveResult
+     */
+    private static function moveFailureIssueCode(array $moveResult): string
+    {
+        $failed = $moveResult['failed'] ?? [];
+
+        return match (true) {
+            in_array('passkey_recovery_required', $failed, true) => ApiErrorCodes::USER_MOVE_PASSKEY_RECOVERY_REQUIRED,
+            in_array('email_conflict', $failed, true) => ApiErrorCodes::USER_MOVE_EMAIL_CONFLICT,
+            in_array('username_conflict', $failed, true) => ApiErrorCodes::USER_MOVE_USERNAME_CONFLICT,
+            in_array('tenant_records_pin_user', $failed, true) => ApiErrorCodes::USER_MOVE_HISTORY_LOCKED,
+            in_array('already_in_tenant', $failed, true) => 'USER_ALREADY_IN_TARGET_TENANT',
+            default => 'USER_MOVE_FAILED',
+        };
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1056,6 +1116,17 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_destination'), null, 403);
         }
 
+        // canAccessTenant() answers "may this admin touch that tenant", not "does
+        // it exist" — for a master-level admin it is true for ANY id, so without
+        // this check a typo'd destination died on the users.tenant_id FK as a 500.
+        $newTenant = Tenant::find($newTenantId);
+        if (!$newTenant) {
+            return $this->respondWithError(ApiErrorCodes::RESOURCE_NOT_FOUND, __('api.target_tenant_not_found'), null, 404);
+        }
+        if (empty($newTenant['is_active'])) {
+            return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'new_tenant_id', 422);
+        }
+
         $oldTenantId = $user['tenant_id'];
 
         $moveResult = User::moveTenant($id, $newTenantId);
@@ -1064,8 +1135,7 @@ class AdminSuperController extends BaseApiController
         }
 
         // Revoke super admin if moving to a tenant without sub-tenant capability
-        $newTenant = Tenant::find($newTenantId);
-        if ($newTenant && !$newTenant['allows_subtenants']) {
+        if (!$newTenant['allows_subtenants']) {
             DB::update("UPDATE users SET is_tenant_super_admin = 0 WHERE id = ?", [$id]);
         }
 
@@ -1108,8 +1178,9 @@ class AdminSuperController extends BaseApiController
      * member's transactions, listings, messages and group memberships keep the
      * old tenant_id, so balance travels with them while history does not. The
      * `records_moved` / `tables_failed` response fields describe that single-row
-     * update and a passkey precondition — they are not a multi-table migration
-     * report.
+     * update and its precondition codes (passkey recovery, destination
+     * email/username conflicts, composite-FK pinned records) — they are not a
+     * multi-table migration report.
      */
     public function userMoveAndPromote(int $id): JsonResponse
     {
@@ -1143,6 +1214,10 @@ class AdminSuperController extends BaseApiController
                 'target_tenant_id',
                 422
             );
+        }
+
+        if (empty($targetTenant['is_active'])) {
+            return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'target_tenant_id', 422);
         }
 
         $oldTenantId = $user['tenant_id'];
@@ -1212,6 +1287,10 @@ class AdminSuperController extends BaseApiController
             return $this->respondWithError(ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED, __('api.super_no_access_target'), null, 403);
         }
 
+        if (empty($targetTenant['is_active'])) {
+            return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_move_target_tenant_inactive'), 'target_tenant_id', 422);
+        }
+
         if ($grantSuperAdmin && !$targetTenant['allows_subtenants']) {
             return $this->respondWithError(ApiErrorCodes::VALIDATION_ERROR, __('api.super_grant_denied_not_hub_target'),
                 null,
@@ -1261,19 +1340,15 @@ class AdminSuperController extends BaseApiController
             try {
                 $moveResult = User::moveTenant($uid, $targetTenantId);
                 if (!$moveResult['success']) {
-                    if (self::moveRequiresPasskeyRecovery($moveResult)) {
-                        $issue = [
-                            'code' => ApiErrorCodes::USER_MOVE_PASSKEY_RECOVERY_REQUIRED,
-                            'params' => ['user_id' => $uid],
-                        ];
-                        $errors[] = $issue;
-                        $failures[] = [
-                            'user_id' => $uid,
-                            ...$issue,
-                        ];
-                    } else {
-                        $errors[] = ['code' => 'USER_MOVE_FAILED', 'params' => ['user_id' => $uid]];
-                    }
+                    $issue = [
+                        'code' => self::moveFailureIssueCode($moveResult),
+                        'params' => ['user_id' => $uid],
+                    ];
+                    $errors[] = $issue;
+                    $failures[] = [
+                        'user_id' => $uid,
+                        ...$issue,
+                    ];
                     continue;
                 }
 
