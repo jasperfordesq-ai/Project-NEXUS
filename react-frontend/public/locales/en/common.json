@@ -3087,5 +3087,11 @@
       "chart_opens_title_one": "{{count}} opens",
       "chart_opens_title_other": "{{count}} opens"
     }
+  },
+  "impersonation": {
+    "banner": "You are viewing this account as an administrator.",
+    "banner_named": "You are viewing {{name}}’s account as an administrator.",
+    "stop": "Stop viewing",
+    "handoff_failed": "That impersonation link has expired or was already used. Start again from the admin panel."
   }
 }

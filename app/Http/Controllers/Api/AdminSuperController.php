@@ -923,6 +923,96 @@ class AdminSuperController extends BaseApiController
     }
 
     /** POST /api/v2/super-admin/users/{id}/move-tenant */
+    /**
+     * POST /api/v2/admin/super/users/{id}/impersonate
+     *
+     * Cross-tenant impersonation proof for the super-admin panel.
+     *
+     * The tenant-scoped /v2/admin/users/{id}/impersonate endpoint refuses any
+     * target outside the current tenant, which made it useless from a panel
+     * whose whole purpose is browsing other communities. Access here is bounded
+     * by SuperPanelAccess instead: a regional (hub) super admin stays inside its
+     * own subtree, master level sees everything.
+     */
+    public function userImpersonate(int $id): JsonResponse
+    {
+        $adminId = $this->requireSuperAdmin();
+
+        // Super-admin: cross-tenant by design — tenant scope enforced via SuperPanelAccess::canAccessTenant() below
+        $user = User::findById($id, false);
+
+        if (!$user) {
+            return $this->respondWithError(ApiErrorCodes::RESOURCE_NOT_FOUND, __('api.user_not_found'), null, 404);
+        }
+
+        $targetTenantId = (int) $user['tenant_id'];
+        if (!SuperPanelAccess::canAccessTenant($targetTenantId)) {
+            return $this->respondWithError(
+                ApiErrorCodes::SUPER_PANEL_ACCESS_DENIED,
+                __('api.super_no_access_user_source_tenant'),
+                null,
+                403
+            );
+        }
+
+        if ($id === $adminId) {
+            return $this->respondWithError(
+                ApiErrorCodes::VALIDATION_ERROR,
+                __('api.cannot_impersonate_self'),
+                null,
+                422
+            );
+        }
+
+        // A platform administrator is never an impersonation target, whatever
+        // the actor's own level. Impersonation must not become privilege
+        // escalation between peers.
+        if (!empty($user['is_super_admin']) || !empty($user['is_god'])
+            || in_array($user['role'] ?? '', ['super_admin', 'god'], true)) {
+            return $this->respondWithError(
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                __('api.insufficient_permissions'),
+                null,
+                403
+            );
+        }
+
+        if (($user['status'] ?? '') !== 'active') {
+            return $this->respondWithError(
+                ApiErrorCodes::VALIDATION_ERROR,
+                __('api.impersonation_target_unavailable'),
+                null,
+                422
+            );
+        }
+
+        $tokenService = app(\App\Services\TokenService::class);
+        $token = $tokenService->generateImpersonationToken($id, $targetTenantId, $adminId);
+
+        $tenantSlug = DB::table('tenants')->where('id', $targetTenantId)->value('slug');
+
+        $userName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')) ?: $user['email'];
+
+        // Audited through the same path as the tenant-scoped endpoint rather than
+        // superAdminAuditService: 'user_impersonated' is not a member of the
+        // super_admin_audit_log.action_type enum, so that write would succeed and
+        // silently store an empty action.
+        \App\Models\ActivityLog::log(
+            $adminId,
+            'admin_impersonate',
+            "Impersonated user #{$id} ({$user['email']}) in tenant #{$targetTenantId}"
+        );
+        app(\App\Services\AuditLogService::class)->logUserImpersonated($adminId, $id, $user['email']);
+
+        return $this->respondWithData([
+            'token' => $token,
+            'user_id' => $id,
+            'user_name' => $userName,
+            'tenant_id' => $targetTenantId,
+            'tenant_slug' => $tenantSlug,
+        ]);
+    }
+
     public function userMoveTenant(int $id): JsonResponse
     {
         $userId = $this->requireSuperAdmin();

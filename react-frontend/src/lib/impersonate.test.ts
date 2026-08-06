@@ -4,16 +4,52 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { sendImpersonationToken, listenForImpersonationToken } from './impersonate';
+import { sendImpersonationToken, listenForImpersonationToken, endImpersonation } from './impersonate';
 
-// ── Mock @/lib/api (tokenManager only) ──────────────────────────────────────
+// ── Mock @/lib/api ──────────────────────────────────────────────────────────
 vi.mock('@/lib/api', () => ({
+  API_BASE: '/api',
+  IMPERSONATION_FLAG_KEY: 'nexus_impersonation_active',
+  IMPERSONATION_CONTEXT_KEY: 'nexus_impersonation_context',
+  isImpersonatedTab: vi.fn(() => false),
   tokenManager: {
     setAccessToken: vi.fn(),
+    getAccessToken: vi.fn(() => 'impersonated-access-token'),
+    setTenantId: vi.fn(),
+    setTenantSlug: vi.fn(),
+    clearAll: vi.fn(),
   },
 }));
 
 import { tokenManager } from '@/lib/api';
+
+/**
+ * Let the exchange's promise chain settle. The handoff is now asynchronous —
+ * receiving the proof kicks off POST /v2/auth/impersonate/exchange, and nothing
+ * observable happens until that resolves.
+ */
+async function flushExchange(): Promise<void> {
+  for (let i = 0; i < 6; i++) {
+    await Promise.resolve();
+  }
+}
+
+/** Successful exchange response, as the endpoint shapes it. */
+function mockExchangeOk(accessToken = 'real-access-token') {
+  return vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      success: true,
+      access_token: accessToken,
+      impersonation: {
+        user_id: 42,
+        user_name: 'Sam Member',
+        admin_id: 7,
+        admin_name: 'Ada Admin',
+      },
+    }),
+  });
+}
 
 // ── BroadcastChannel mock ────────────────────────────────────────────────────
 // jsdom does not implement BroadcastChannel; we provide a minimal in-memory stub
@@ -86,6 +122,12 @@ beforeEach(() => {
   vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
   clearHash();
   vi.mocked(tokenManager.setAccessToken).mockClear();
+  vi.mocked(tokenManager.setTenantId).mockClear();
+  vi.mocked(tokenManager.setTenantSlug).mockClear();
+  vi.mocked(tokenManager.clearAll).mockClear();
+  sessionStorage.clear();
+  // Default: the exchange succeeds. Individual tests override.
+  vi.stubGlobal('fetch', mockExchangeOk());
 });
 
 afterEach(() => {
@@ -131,6 +173,26 @@ describe('sendImpersonationToken', () => {
       type: 'token',
       token: 'jwt-abc',
       sessionId: 'test-session-uuid-1234',
+      tenantId: null,
+      tenantSlug: null,
+    });
+  });
+
+  it('forwards the target tenant so the new tab can address the exchange', () => {
+    sendImpersonationToken('jwt-abc', 'https://example.com/target', {
+      tenantId: 5,
+      tenantSlug: 'other-community',
+    });
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+
+    bc._simulateMessage({ type: 'ready', sessionId: 'test-session-uuid-1234' });
+
+    expect(bc.postMessage).toHaveBeenCalledWith({
+      type: 'token',
+      token: 'jwt-abc',
+      sessionId: 'test-session-uuid-1234',
+      tenantId: 5,
+      tenantSlug: 'other-community',
     });
   });
 
@@ -263,7 +325,11 @@ describe('listenForImpersonationToken', () => {
     });
   });
 
-  it('calls tokenManager.setAccessToken and onReceived when matching token message arrives', () => {
+  it('EXCHANGES the proof rather than using it as a credential', async () => {
+    // 🔴 The regression this file previously encoded: it asserted the raw proof
+    // was stored as the access token. That is precisely what did not work — the
+    // proof is type "impersonation" and the auth middleware only accepts type
+    // "access", so every request 401'd. The proof must be exchanged.
     setHash('#impersonate=my-session-id');
     const onReceived = vi.fn();
     listenForImpersonationToken(onReceived);
@@ -271,15 +337,129 @@ describe('listenForImpersonationToken', () => {
     const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
     bc._simulateMessage({
       type: 'token',
-      token: 'the-impersonation-jwt',
+      token: 'the-impersonation-proof',
       sessionId: 'my-session-id',
+      tenantId: 5,
+      tenantSlug: 'other-community',
     });
+    await flushExchange();
 
-    expect(tokenManager.setAccessToken).toHaveBeenCalledWith('the-impersonation-jwt');
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/v2/auth/impersonate/exchange',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ token: 'the-impersonation-proof' }),
+      }),
+    );
+    // The token that gets stored is the exchanged one, never the proof.
+    expect(tokenManager.setAccessToken).toHaveBeenCalledWith('real-access-token');
+    expect(tokenManager.setAccessToken).not.toHaveBeenCalledWith('the-impersonation-proof');
     expect(onReceived).toHaveBeenCalledTimes(1);
   });
 
-  it('calls clearImpersonationHash (replaceState) when token is received', () => {
+  it('marks the tab as impersonating BEFORE storing the exchanged token', async () => {
+    // Ordering matters: the flag is what routes token writes into this tab's
+    // sessionStorage instead of the shared localStorage holding the admin's own
+    // session.
+    setHash('#impersonate=my-session-id');
+    let flagWhenTokenStored: string | null = null;
+    vi.mocked(tokenManager.setAccessToken).mockImplementation(() => {
+      flagWhenTokenStored = sessionStorage.getItem('nexus_impersonation_active');
+    });
+
+    listenForImpersonationToken(vi.fn());
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({ type: 'token', token: 'proof', sessionId: 'my-session-id' });
+    await flushExchange();
+
+    expect(flagWhenTokenStored).toBe('1');
+  });
+
+  it('seeds the target tenant so the exchange resolves the right community', async () => {
+    setHash('#impersonate=my-session-id');
+    listenForImpersonationToken(vi.fn());
+
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({
+      type: 'token',
+      token: 'proof',
+      sessionId: 'my-session-id',
+      tenantId: 5,
+      tenantSlug: 'other-community',
+    });
+    await flushExchange();
+
+    expect(tokenManager.setTenantId).toHaveBeenCalledWith(5);
+    expect(tokenManager.setTenantSlug).toHaveBeenCalledWith('other-community');
+    const init = (vi.mocked(fetch).mock.calls[0]?.[1] ?? {}) as RequestInit;
+    expect(init.headers).toMatchObject({
+      'X-Tenant-ID': '5',
+      'X-Tenant-Slug': 'other-community',
+    });
+  });
+
+  it('sends no Authorization header — the admin token must not ride along', async () => {
+    setHash('#impersonate=my-session-id');
+    listenForImpersonationToken(vi.fn());
+
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({ type: 'token', token: 'proof', sessionId: 'my-session-id' });
+    await flushExchange();
+
+    const init = (vi.mocked(fetch).mock.calls[0]?.[1] ?? {}) as RequestInit;
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+
+  it('reports failure and clears the flag when the exchange is refused', async () => {
+    // Expired or already-spent proof. Leaving the tab silently unchanged is what
+    // made this read as "the button did nothing".
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ success: false }),
+    }));
+    setHash('#impersonate=my-session-id');
+    const onReceived = vi.fn();
+    const onFailed = vi.fn();
+    listenForImpersonationToken(onReceived, onFailed);
+
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({ type: 'token', token: 'stale-proof', sessionId: 'my-session-id' });
+    await flushExchange();
+
+    expect(onReceived).not.toHaveBeenCalled();
+    expect(onFailed).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
+  });
+
+  it('reports failure when the exchange request itself throws', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    setHash('#impersonate=my-session-id');
+    const onFailed = vi.fn();
+    listenForImpersonationToken(vi.fn(), onFailed);
+
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({ type: 'token', token: 'proof', sessionId: 'my-session-id' });
+    await flushExchange();
+
+    expect(onFailed).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
+  });
+
+  it('stores the impersonation context so the banner can render', async () => {
+    setHash('#impersonate=my-session-id');
+    listenForImpersonationToken(vi.fn());
+
+    const bc = bcInstances[0] as unknown as MockBCInstance & MockBroadcastChannel;
+    bc._simulateMessage({ type: 'token', token: 'proof', sessionId: 'my-session-id' });
+    await flushExchange();
+
+    const stored = JSON.parse(sessionStorage.getItem('nexus_impersonation_context') ?? '{}');
+    expect(stored.userId).toBe(42);
+    expect(stored.userName).toBe('Sam Member');
+    expect(stored.adminName).toBe('Ada Admin');
+  });
+
+  it('calls clearImpersonationHash (replaceState) when token is received', async () => {
     setHash('#impersonate=my-session-id');
     const onReceived = vi.fn();
     listenForImpersonationToken(onReceived);
@@ -290,6 +470,7 @@ describe('listenForImpersonationToken', () => {
       token: 'the-jwt',
       sessionId: 'my-session-id',
     });
+    await flushExchange();
 
     expect(window.history.replaceState).toHaveBeenCalled();
   });
@@ -365,7 +546,7 @@ describe('listenForImpersonationToken', () => {
     expect(onReceived).not.toHaveBeenCalled();
   });
 
-  it('does not call onReceived more than once even if two matching messages arrive', () => {
+  it('does not call onReceived more than once even if two matching messages arrive', async () => {
     setHash('#impersonate=my-session-id');
     const onReceived = vi.fn();
     listenForImpersonationToken(onReceived);
@@ -375,8 +556,11 @@ describe('listenForImpersonationToken', () => {
     bc._simulateMessage(msg);
     // Channel is closed now; second message arrives on the (already closed) handler
     bc._simulateMessage(msg);
+    await flushExchange();
 
     expect(onReceived).toHaveBeenCalledTimes(1);
+    // The proof is single-use, so it must be spent exactly once.
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('auto-closes the channel after 30 s without receiving a token', () => {
@@ -428,5 +612,42 @@ describe('listenForImpersonationToken', () => {
       type: 'ready',
       sessionId: 'hello world',
     });
+  });
+});
+
+// ── endImpersonation ─────────────────────────────────────────────────────────
+
+describe('endImpersonation', () => {
+  it('revokes the session server-side and clears this tab', async () => {
+    sessionStorage.setItem('nexus_impersonation_active', '1');
+    sessionStorage.setItem('nexus_impersonation_context', '{"userId":42}');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }));
+
+    await endImpersonation();
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/v2/auth/impersonate/end',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer impersonated-access-token',
+        }),
+      }),
+    );
+    expect(tokenManager.clearAll).toHaveBeenCalled();
+    expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
+    expect(sessionStorage.getItem('nexus_impersonation_context')).toBeNull();
+  });
+
+  it('still clears the tab when revocation fails', async () => {
+    // The admin pressed "stop viewing" — that must always take effect locally,
+    // even offline. The token expires on its own inside the access window.
+    sessionStorage.setItem('nexus_impersonation_active', '1');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+
+    await endImpersonation();
+
+    expect(tokenManager.clearAll).toHaveBeenCalled();
+    expect(sessionStorage.getItem('nexus_impersonation_active')).toBeNull();
   });
 });

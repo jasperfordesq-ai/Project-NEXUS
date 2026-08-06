@@ -209,6 +209,24 @@ class TokenService
             return null;
         }
 
+        // An impersonated session can be ended early ("stop impersonating")
+        // without revoking the target member's own sessions, so its per-session
+        // jti is checked here rather than through the global cutoff.
+        $sessionJti = $payload['impersonation_jti'] ?? null;
+        if (is_string($sessionJti) && $sessionJti !== '') {
+            try {
+                $revoked = DB::selectOne("SELECT id FROM revoked_tokens WHERE jti = ?", [$sessionJti]);
+            } catch (\Exception $e) {
+                // A revocation lookup that cannot run must not silently widen
+                // access; fail closed for impersonated sessions only.
+                Log::error('[TokenService] Impersonation revocation check failed: ' . $e->getMessage());
+                return null;
+            }
+            if ($revoked) {
+                return null;
+            }
+        }
+
         return $payload;
     }
 
@@ -782,6 +800,70 @@ class TokenService
             'impersonated_by' => $adminId,
             'jti' => bin2hex(random_bytes(16)),
         ], self::IMPERSONATION_TOKEN_EXPIRY);
+    }
+
+    /**
+     * Mint the actual signed-in session for an impersonated user.
+     *
+     * The short-lived handoff proof from generateImpersonationToken() is NOT a
+     * credential: validateToken() only accepts `type: access`, so presenting the
+     * proof as a bearer token authenticates nothing. This method is the missing
+     * half — it exchanges a consumed proof for a real access token that carries
+     * the impersonation provenance in its own claims.
+     *
+     * Deliberately returns no refresh token. An impersonated session must not
+     * mint a multi-day refresh family against somebody else's account; it ends
+     * when the access token expires and the admin can re-impersonate.
+     *
+     * @return array{token: string, session_jti: string, expires_in: int}
+     */
+    public function generateImpersonationSessionToken(int $userId, int $tenantId, int $adminId): array
+    {
+        $sessionJti = bin2hex(random_bytes(16));
+
+        $token = $this->generateToken($userId, $tenantId, [
+            'impersonated_by' => $adminId,
+            'impersonation_jti' => $sessionJti,
+        ]);
+
+        return [
+            'token' => $token,
+            'session_jti' => $sessionJti,
+            'expires_in' => $this->getAccessTokenExpiry(),
+        ];
+    }
+
+    /**
+     * Revoke a single impersonated session without touching the target user's
+     * own sessions.
+     *
+     * "Stop impersonating" must never behave like a logout-everywhere for the
+     * member being impersonated, so this records only the per-session jti minted
+     * by generateImpersonationSessionToken().
+     */
+    public function revokeImpersonationSession(string $accessToken): bool
+    {
+        $payload = $this->validateSignedToken($accessToken);
+        if ($payload === null) {
+            return false;
+        }
+
+        $sessionJti = $payload['impersonation_jti'] ?? null;
+        if (!is_string($sessionJti) || $sessionJti === '') {
+            return false;
+        }
+
+        try {
+            DB::insert(
+                "INSERT IGNORE INTO revoked_tokens (user_id, jti, expires_at) VALUES (?, ?, FROM_UNIXTIME(?))",
+                [(int) ($payload['user_id'] ?? 0), $sessionJti, (int) ($payload['exp'] ?? time())]
+            );
+        } catch (\Exception $e) {
+            Log::error('[TokenService] Failed to revoke impersonation session: ' . $e->getMessage());
+            return false;
+        }
+
+        return true;
     }
 
     /**

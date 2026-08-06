@@ -3125,6 +3125,12 @@
       "chart_opens_title_many": "{{count}} s'ouvre"
     }
   },
+  "impersonation": {
+    "banner": "Vous consultez ce compte en tant qu'administrateur.",
+    "banner_named": "Vous consultez le compte de {{name}} en tant qu'administrateur.",
+    "stop": "Arrêter de visionner",
+    "handoff_failed": "Ce lien d'usurpation d'identité a expiré ou a déjà été utilisé. Recommencez depuis le panneau d'administration."
+  },
   "hours_display_many": "{{count}} heures",
   "hours_short_many": "{{count}} h",
   "time_credits_short_many": "{{count}}h de crédits",

@@ -2631,6 +2631,18 @@ export const adminSuper = {
   revokeGlobalSuperAdmin: (userId: number) =>
     api.post<{ success: boolean }>(`/v2/admin/super/users/${userId}/revoke-global-super-admin`),
 
+  /**
+   * Cross-tenant impersonation proof.
+   *
+   * Distinct from `adminUsers.impersonate`, which is tenant-scoped and returns
+   * 404 for any user outside the caller's current community — useless from the
+   * super panel, which browses every community it has access to.
+   */
+  impersonate: (userId: number) =>
+    api.post<{ token: string; user_id: number; user_name: string; tenant_id: number; tenant_slug: string | null }>(
+      `/v2/admin/super/users/${userId}/impersonate`
+    ),
+
   moveUserTenant: (userId: number, newTenantId: number) =>
     api.post<{ success: boolean }>(`/v2/admin/super/users/${userId}/move-tenant`, { new_tenant_id: newTenantId }),
 

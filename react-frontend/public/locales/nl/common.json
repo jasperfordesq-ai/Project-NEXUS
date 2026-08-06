@@ -3087,5 +3087,11 @@
       "chart_opens_title_one": "{{count}} wordt geopend",
       "chart_opens_title_other": "{{count}} wordt geopend"
     }
+  },
+  "impersonation": {
+    "banner": "U bekijkt dit account als beheerder.",
+    "banner_named": "Je bekijkt het account van {{name}} als beheerder.",
+    "stop": "Stop met kijken",
+    "handoff_failed": "Die imitatielink is verlopen of werd al gebruikt. Begin opnieuw vanuit het beheerdersdashboard."
   }
 }

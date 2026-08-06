@@ -76,10 +76,82 @@ function installQueuedWebLocks() {
 describe('tokenManager', () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  /**
+   * 🔴 Per-tab isolation for impersonated sessions.
+   *
+   * localStorage is shared by every tab on the origin. Writing an impersonated
+   * session there overwrites the admin's own credentials, and a 401 in the
+   * impersonated tab then recovers using the ADMIN's refresh token — silently
+   * turning the "member" tab back into an admin session. That is the failure
+   * these tests exist to prevent.
+   */
+  describe('impersonated-tab isolation', () => {
+    it('writes the session to sessionStorage, leaving the admin session intact', () => {
+      tokenManager.setAccessToken('admin-token');
+      tokenManager.setRefreshToken('admin-refresh');
+
+      sessionStorage.setItem('nexus_impersonation_active', '1');
+      tokenManager.setAccessToken('member-token');
+
+      expect(tokenManager.getAccessToken()).toBe('member-token');
+      expect(localStorage.getItem('nexus_access_token')).toBe('admin-token');
+      expect(localStorage.getItem('nexus_refresh_token')).toBe('admin-refresh');
+    });
+
+    it('exposes no refresh token, so a 401 cannot revive the admin session', () => {
+      tokenManager.setRefreshToken('admin-refresh');
+
+      sessionStorage.setItem('nexus_impersonation_active', '1');
+
+      expect(tokenManager.getRefreshToken()).toBeNull();
+      expect(tokenManager.hasRefreshToken()).toBe(false);
+    });
+
+    it('clearAll in an impersonated tab does not sign the admin out', () => {
+      tokenManager.setAccessToken('admin-token');
+      tokenManager.setRefreshToken('admin-refresh');
+      tokenManager.setTenantId('2');
+
+      sessionStorage.setItem('nexus_impersonation_active', '1');
+      tokenManager.setAccessToken('member-token');
+      tokenManager.clearAll();
+
+      expect(tokenManager.getAccessToken()).toBeNull();
+      expect(localStorage.getItem('nexus_access_token')).toBe('admin-token');
+      expect(localStorage.getItem('nexus_refresh_token')).toBe('admin-refresh');
+      expect(localStorage.getItem('nexus_tenant_id')).toBe('2');
+    });
+
+    it('keeps tenant context per-tab so the two tabs can be in different communities', () => {
+      tokenManager.setTenantId('2');
+      tokenManager.setTenantSlug('admin-community');
+
+      sessionStorage.setItem('nexus_impersonation_active', '1');
+      tokenManager.setTenantId('5');
+      tokenManager.setTenantSlug('member-community');
+
+      expect(tokenManager.getTenantId()).toBe('5');
+      expect(tokenManager.getTenantSlug()).toBe('member-community');
+      expect(localStorage.getItem('nexus_tenant_id')).toBe('2');
+      expect(localStorage.getItem('nexus_tenant_slug')).toBe('admin-community');
+    });
+
+    it('reverts to shared storage once the flag is gone', () => {
+      tokenManager.setAccessToken('admin-token');
+      sessionStorage.setItem('nexus_impersonation_active', '1');
+      tokenManager.setAccessToken('member-token');
+      sessionStorage.removeItem('nexus_impersonation_active');
+
+      expect(tokenManager.getAccessToken()).toBe('admin-token');
+    });
   });
 
   describe('access token', () => {

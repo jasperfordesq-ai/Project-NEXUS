@@ -22,8 +22,7 @@ import UserCog from 'lucide-react/icons/user-cog';
 import { usePageTitle } from '@/hooks';
 import { useAuth, useTenant, useToast } from '@/contexts';
 import { resolveAvatarUrl, getFormattingLocale } from '@/lib/helpers';
-import { safeLocalStorageSet } from '@/lib/safeStorage';
-import { adminSuper, adminUsers } from '../../api/adminApi';
+import { adminSuper } from '../../api/adminApi';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import type { SuperAdminUserDetail, SuperAdminTenant } from '../../api/types';
@@ -163,14 +162,26 @@ export function UserShow() {
     if (!user) return;
     setImpersonateLoading(true);
     try {
-      const res = await adminUsers.impersonate(user.id);
+      // Super-panel targets are routinely in another community, so this uses the
+      // cross-tenant endpoint. The tenant-scoped adminUsers.impersonate returns
+      // 404 "user not found" for exactly those users.
+      const res = await adminSuper.impersonate(user.id);
       if (res?.success && res.data?.token) {
         toast.success(t('super.impersonation_started'));
-        // Store token & navigate to member dashboard. The backend returns a
-        // short-lived token scoped to the target user.
-        safeLocalStorageSet('impersonation_token', res.data.token);
+        // Hand the proof to a NEW tab on the target community's URL and let it
+        // exchange the proof for a real session there. Storing the proof locally
+        // and navigating this tab cannot work: the proof is not a credential,
+        // and this tab must stay signed in as the admin.
+        const tenantSlug = res.data.tenant_slug || '';
+        const targetUrl = tenantSlug
+          ? `${window.location.origin}/${tenantSlug}/dashboard`
+          : `${window.location.origin}${tenantPath('/dashboard')}`;
+        const { sendImpersonationToken } = await import('@/lib/impersonate');
+        sendImpersonationToken(res.data.token, targetUrl, {
+          tenantId: res.data.tenant_id ?? null,
+          tenantSlug: tenantSlug || null,
+        });
         setImpersonateModalOpen(false);
-        navigate(tenantPath('/dashboard'));
       } else {
         // admin-i18n-ignore: localized server message — the impersonation
         // controller's refusals are __() keys.

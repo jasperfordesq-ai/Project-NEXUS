@@ -284,6 +284,10 @@ export interface PaginationMeta {
   };
   // Gamification API returns available badge types in meta
   available_types?: string[];
+  // Admin performance summary states whether recording is switched on, so an
+  // empty report can say WHY it is empty instead of implying the platform is fast
+  recording_enabled?: boolean;
+  retention_days?: number;
   // Messages API returns conversation details in meta
   conversation?: {
     id: number;
@@ -337,26 +341,68 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
 // Token Management
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Impersonated sessions live in sessionStorage, which is per-tab; every other
+ * session lives in localStorage, which is shared by every tab on the origin.
+ *
+ * That split is the whole reason impersonation can work at all. Writing an
+ * impersonated session into localStorage overwrites the admin's own credentials
+ * in their original tab, and — worse — a 401 in the impersonated tab then
+ * recovers using the ADMIN's refresh token, quietly turning the "member" tab
+ * back into an admin session. Keeping the two in separate stores means neither
+ * tab can see or clobber the other.
+ */
+export const IMPERSONATION_FLAG_KEY = 'nexus_impersonation_active';
+export const IMPERSONATION_CONTEXT_KEY = 'nexus_impersonation_context';
+
+export function isImpersonatedTab(): boolean {
+  try {
+    return sessionStorage.getItem(IMPERSONATION_FLAG_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** The auth store for THIS tab: per-tab while impersonating, shared otherwise. */
+function authStore(): Storage {
+  return isImpersonatedTab() ? sessionStorage : localStorage;
+}
+
+function authStoreSet(key: string, value: string): void {
+  if (isImpersonatedTab()) {
+    try {
+      sessionStorage.setItem(key, value);
+    } catch {
+      // Quota/private-mode failures must not throw mid-request.
+    }
+    return;
+  }
+  safeLocalStorageSet(key, value);
+}
+
 export const tokenManager = {
   getAccessToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return authStore().getItem(TOKEN_KEY);
   },
 
   setAccessToken(token: string): void {
-    safeLocalStorageSet(TOKEN_KEY, token);
+    authStoreSet(TOKEN_KEY, token);
   },
 
   getRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    // An impersonated session is deliberately issued without a refresh token,
+    // so this returns null there and a 401 ends the session instead of
+    // reviving the admin's.
+    return authStore().getItem(REFRESH_TOKEN_KEY);
   },
 
   setRefreshToken(token: string): void {
-    safeLocalStorageSet(REFRESH_TOKEN_KEY, token);
+    authStoreSet(REFRESH_TOKEN_KEY, token);
   },
 
   getTenantId(): string | null {
-    // First check localStorage (set during login or tenant bootstrap)
-    const storedTenantId = localStorage.getItem(TENANT_ID_KEY);
+    // First check storage (set during login or tenant bootstrap)
+    const storedTenantId = authStore().getItem(TENANT_ID_KEY);
     if (storedTenantId) {
       return storedTenantId;
     }
@@ -365,36 +411,38 @@ export const tokenManager = {
   },
 
   setTenantId(id: string | number): void {
-    safeLocalStorageSet(TENANT_ID_KEY, String(id));
+    authStoreSet(TENANT_ID_KEY, String(id));
   },
 
   getTenantSlug(): string | null {
-    return localStorage.getItem(TENANT_SLUG_KEY);
+    return authStore().getItem(TENANT_SLUG_KEY);
   },
 
   setTenantSlug(slug: string): void {
-    safeLocalStorageSet(TENANT_SLUG_KEY, slug);
+    authStoreSet(TENANT_SLUG_KEY, slug);
   },
 
   clearTokens(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    const store = authStore();
+    store.removeItem(TOKEN_KEY);
+    store.removeItem(REFRESH_TOKEN_KEY);
   },
 
   clearAll(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    localStorage.removeItem(TENANT_ID_KEY);
-    localStorage.removeItem(TENANT_SLUG_KEY);
+    const store = authStore();
+    store.removeItem(TOKEN_KEY);
+    store.removeItem(REFRESH_TOKEN_KEY);
+    store.removeItem(TENANT_ID_KEY);
+    store.removeItem(TENANT_SLUG_KEY);
     // Preserve trusted device token across logouts — it's meant to persist for 30 days
   },
 
   hasAccessToken(): boolean {
-    return !!localStorage.getItem(TOKEN_KEY);
+    return !!authStore().getItem(TOKEN_KEY);
   },
 
   hasRefreshToken(): boolean {
-    return !!localStorage.getItem(REFRESH_TOKEN_KEY);
+    return !!authStore().getItem(REFRESH_TOKEN_KEY);
   },
 
   // CSRF Token management
@@ -447,6 +495,10 @@ export class ApiClient {
     // Listen for cross-tab token updates
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', (e) => {
+        // An impersonated tab's credentials live in sessionStorage; localStorage
+        // events belong to the admin's own session and must not steer it.
+        if (isImpersonatedTab()) return;
+
         if (e.key === TOKEN_KEY && this.pendingRefreshWaiters.size > 0) {
           // A value means the other tab refreshed successfully. Removal means
           // it proved that the shared session is invalid.

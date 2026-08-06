@@ -77,13 +77,16 @@ export function TenantShell({ appRoutes }: TenantShellProps) {
   } | null>(null);
   const [routeRegistryAttempt, setRouteRegistryAttempt] = useState(0);
 
-  // Listen for impersonation token handoff from admin tab via BroadcastChannel.
-  // Token is set in tokenManager (memory → localStorage, same as normal login)
-  // and page reloads to pick up the new auth state.
+  // Listen for impersonation handoff from the admin tab via BroadcastChannel.
+  // The proof is exchanged for a real access token, stored in this tab's
+  // sessionStorage (never the shared localStorage holding the admin's session),
+  // then the page reloads to pick up the member's auth state.
+  const [impersonationFailed, setImpersonationFailed] = useState(false);
   useEffect(() => {
-    return listenForImpersonationToken(() => {
-      window.location.reload();
-    });
+    return listenForImpersonationToken(
+      () => { window.location.reload(); },
+      () => { setImpersonationFailed(true); },
+    );
   }, []);
 
   // Use detectTenantFromUrl() which correctly implements TRS-001 R1–R4:
@@ -164,6 +167,7 @@ export function TenantShell({ appRoutes }: TenantShellProps) {
   return (
     <TenantProvider tenantSlug={effectiveSlug}>
       <AuthProvider>
+        {impersonationFailed && <ImpersonationHandoffFailed />}
         <TenantShellRuntime
           appRoutes={loadedRouteRegistry?.kind === desiredRouteRegistryKind ? loadedRouteRegistry.routes : null}
           isAuthRoute={isAuthRoute}
@@ -581,6 +585,23 @@ function TenantRoutes({
     <Routes>
       {nestedRouteContent}
     </Routes>
+  );
+}
+
+/**
+ * The impersonation proof is single-use and lives five minutes. When the
+ * exchange is refused the tab is left showing whoever it was already showing,
+ * which reads as "the button did nothing" — so say so explicitly.
+ */
+function ImpersonationHandoffFailed() {
+  const { t } = useTranslation('common');
+  return (
+    <div
+      role="alert"
+      className="bg-[var(--color-danger)] px-4 py-2 text-center text-sm font-medium text-white"
+    >
+      {t('impersonation.handoff_failed')}
+    </div>
   );
 }
 

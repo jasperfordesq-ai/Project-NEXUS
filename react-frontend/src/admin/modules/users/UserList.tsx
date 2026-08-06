@@ -464,7 +464,7 @@ export function UserList() {
       case 'impersonate': {
         res = await adminUsers.impersonate(user.id);
         if (res?.success && res.data) {
-          const tokenData = res.data as { token?: string; impersonation_token?: string; tenant_slug?: string };
+          const tokenData = res.data as { token?: string; impersonation_token?: string; tenant_slug?: string; tenant_id?: number };
           const token = tokenData.token || tokenData.impersonation_token;
           const targetSlug = tokenData.tenant_slug || '';
           if (token) {
@@ -475,7 +475,10 @@ export function UserList() {
               ? `${window.location.origin}/${targetSlug}/dashboard`
               : `${window.location.origin}${tenantPath('/dashboard')}`;
             const { sendImpersonationToken } = await import('@/lib/impersonate');
-            sendImpersonationToken(token, targetUrl);
+            sendImpersonationToken(token, targetUrl, {
+              tenantId: tokenData.tenant_id ?? null,
+              tenantSlug: targetSlug || null,
+            });
             toast.success(t('users.impersonate_success'));
           } else {
             toast.success(t('users.impersonate_started'));

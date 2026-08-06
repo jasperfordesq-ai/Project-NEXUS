@@ -3236,6 +3236,12 @@
       "chart_opens_title_zero": "يتم فتح {{count}}"
     }
   },
+  "impersonation": {
+    "banner": "أنت تشاهد هذا الحساب كمسؤول.",
+    "banner_named": "أنت تعرض حساب {{name}} كمسؤول.",
+    "stop": "توقف عن المشاهدة",
+    "handoff_failed": "انتهت صلاحية رابط الانتحال هذا أو تم استخدامه بالفعل. ابدأ مرة أخرى من لوحة الإدارة."
+  },
   "hours_display_few": "{{count}} ساعات",
   "hours_display_many": "{{count}} ساعات",
   "hours_display_two": "{{count}} ساعات",

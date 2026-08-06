@@ -612,6 +612,36 @@ class RegionalPanelIsolationTest extends TestCase
         $this->apiPost("/v2/admin/users/{$member->id}/impersonate", [])->assertStatus(403);
     }
 
+    public function test_a_regional_admin_cannot_impersonate_into_a_sibling_branch(): void
+    {
+        // The cross-tenant super-panel endpoint is bounded by SuperPanelAccess,
+        // not by the current tenant — so its subtree confinement needs its own
+        // pin. A proof issued here would be spendable at the exchange.
+        $siblingMember = User::factory()->forTenant($this->siblingChildId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $this->apiPost("/v2/admin/super/users/{$siblingMember->id}/impersonate", [])
+            ->assertStatus(403);
+    }
+
+    public function test_a_regional_admin_can_impersonate_inside_its_own_branch(): void
+    {
+        // The complement of the test above: confinement must not be so tight
+        // that the panel's own branch stops working.
+        $ownMember = User::factory()->forTenant($this->childId)->create([
+            'status' => 'active', 'is_approved' => true,
+        ]);
+        $this->actAsRegional();
+
+        $response = $this->apiPost("/v2/admin/super/users/{$ownMember->id}/impersonate", []);
+
+        $response->assertStatus(200);
+        $this->assertNotEmpty($response->json('data.token'));
+        $this->assertSame($this->childId, (int) $response->json('data.tenant_id'));
+    }
+
     // ── A platform super-admin keeps everything ─────────────────────────────
 
     public function test_a_platform_super_admin_still_sees_every_branch(): void

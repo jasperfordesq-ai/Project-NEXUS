@@ -3087,5 +3087,11 @@
       "chart_opens_title_one": "{{count}} 開く",
       "chart_opens_title_other": "{{count}} 件の開封"
     }
+  },
+  "impersonation": {
+    "banner": "あなたはこのアカウントを管理者として表示しています。",
+    "banner_named": "あなたは {{name}} のアカウントを管理者として表示しています。",
+    "stop": "閲覧をやめる",
+    "handoff_failed": "その偽装リンクは期限切れか、すでに使用されています。管理パネルから再度起動してください。"
   }
 }

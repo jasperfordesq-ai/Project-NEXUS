@@ -3125,6 +3125,12 @@
       "chart_opens_title_many": "Se abre {{count}}"
     }
   },
+  "impersonation": {
+    "banner": "Estás viendo esta cuenta como administrador.",
+    "banner_named": "Estás viendo la cuenta de {{name}} como administrador.",
+    "stop": "dejar de ver",
+    "handoff_failed": "Ese enlace de suplantación ha caducado o ya se ha utilizado. Comience de nuevo desde el panel de administración."
+  },
   "hours_display_many": "{{count}} horas",
   "hours_short_many": "{{count}} h",
   "time_credits_short_many": "{{count}}h de créditos",

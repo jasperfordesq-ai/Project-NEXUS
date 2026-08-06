@@ -703,6 +703,154 @@ class AuthController extends BaseApiController
     }
 
     /**
+     * POST /api/v2/auth/impersonate/exchange
+     *
+     * Exchange a single-use impersonation proof (issued by an admin through
+     * /v2/admin/users/{id}/impersonate) for a real access token scoped to the
+     * target member.
+     *
+     * Unauthenticated by design: the caller holds no session for the target
+     * user yet, which is the entire point of the exchange. The proof itself is
+     * the credential — signed, five-minute, single-use, and consumed here.
+     */
+    public function impersonateExchange(): JsonResponse
+    {
+        $data = $this->getAllInput();
+        $proof = trim((string) ($data['token'] ?? $data['impersonation_token'] ?? ''));
+
+        if ($proof === '') {
+            return $this->authError(
+                __('api.impersonation_token_required'),
+                ApiErrorCodes::VALIDATION_ERROR,
+                422
+            );
+        }
+
+        // Single-use: this consumes the proof, so every failure below is final
+        // and the admin must start a fresh impersonation.
+        $payload = $this->tokenService->validateImpersonationToken($proof);
+        if ($payload === null) {
+            return $this->authError(
+                __('api.impersonation_token_invalid'),
+                ApiErrorCodes::AUTH_TOKEN_EXPIRED,
+                401
+            );
+        }
+
+        $targetId = (int) ($payload['user_id'] ?? 0);
+        $tokenTenantId = (int) ($payload['tenant_id'] ?? 0);
+        $adminId = (int) ($payload['impersonated_by'] ?? 0);
+
+        // The proof is bound to one community. Refuse to spend it against a
+        // different tenant host even though the signature would still verify.
+        $resolvedTenantId = TenantContext::getId();
+        if ($resolvedTenantId && $tokenTenantId !== (int) $resolvedTenantId) {
+            return $this->authError(
+                __('api.impersonation_token_wrong_tenant'),
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                403
+            );
+        }
+
+        $target = DB::table('users')
+            ->where('id', $targetId)
+            ->where('tenant_id', $tokenTenantId)
+            ->first();
+
+        if ($target === null || ($target->status ?? '') !== 'active') {
+            return $this->authError(
+                __('api.impersonation_target_unavailable'),
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                403
+            );
+        }
+
+        // Re-check both tiers at spend time. The proof was authorised up to five
+        // minutes ago; a promotion in between must not become a route into a
+        // platform-administrator session.
+        if (!empty($target->is_super_admin) || !empty($target->is_god)
+            || in_array($target->role ?? '', ['super_admin', 'god'], true)) {
+            return $this->authError(
+                __('api.impersonation_target_unavailable'),
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                403
+            );
+        }
+
+        $admin = DB::table('users')->where('id', $adminId)->first();
+        if ($admin === null || ($admin->status ?? '') !== 'active'
+            || !\App\Support\Authorization\AdminTier::allows($admin)) {
+            return $this->authError(
+                __('api.impersonation_actor_unavailable'),
+                ApiErrorCodes::AUTH_INSUFFICIENT_PERMISSIONS,
+                403
+            );
+        }
+
+        $session = $this->tokenService->generateImpersonationSessionToken(
+            $targetId,
+            $tokenTenantId,
+            $adminId
+        );
+
+        \Illuminate\Support\Facades\Log::info('[Auth] Impersonation session started', [
+            'admin_id' => $adminId,
+            'target_user_id' => $targetId,
+            'tenant_id' => $tokenTenantId,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'access_token' => $session['token'],
+            'token' => $session['token'],
+            'token_type' => 'Bearer',
+            'expires_in' => $session['expires_in'],
+            // Deliberately absent: refresh_token. See
+            // TokenService::generateImpersonationSessionToken().
+            'impersonation' => [
+                'active' => true,
+                'user_id' => $targetId,
+                'user_name' => trim((string) ($target->first_name ?? '') . ' ' . (string) ($target->last_name ?? '')),
+                'tenant_id' => $tokenTenantId,
+                'admin_id' => $adminId,
+                'admin_name' => trim((string) ($admin->first_name ?? '') . ' ' . (string) ($admin->last_name ?? '')),
+                'expires_in' => $session['expires_in'],
+            ],
+        ]);
+    }
+
+    /**
+     * POST /api/v2/auth/impersonate/end
+     *
+     * Ends the calling impersonated session only. The member's own sessions are
+     * untouched — this is not a logout-everywhere.
+     */
+    public function impersonateEnd(Request $request): JsonResponse
+    {
+        $header = (string) $request->header('Authorization', '');
+        $token = str_starts_with($header, 'Bearer ') ? substr($header, 7) : (string) $request->cookie('auth_token');
+
+        if ($token === '') {
+            return $this->authError(
+                __('api.impersonation_session_not_found'),
+                ApiErrorCodes::VALIDATION_ERROR,
+                422
+            );
+        }
+
+        $revoked = $this->tokenService->revokeImpersonationSession($token);
+        if (!$revoked) {
+            return $this->authError(
+                __('api.impersonation_session_not_found'),
+                ApiErrorCodes::VALIDATION_ERROR,
+                422
+            );
+        }
+
+        return $this->respondWithData(['ended' => true]);
+    }
+
+    /**
      * POST /api/auth/heartbeat
      */
     public function heartbeat(): JsonResponse

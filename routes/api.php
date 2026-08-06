@@ -1810,6 +1810,12 @@ Route::withoutMiddleware('admin')->middleware('broker-or-admin')->group(function
     Route::delete('/v2/admin/safeguarding/options/{id}', [\App\Http\Controllers\Api\AdminSafeguardingOptionsController::class, 'destroy'])->middleware('throttle:nexus-route-60-per-1m');
 });
 
+// ── Admin: Performance (request timings, slow queries, memory) ──────────────
+// Read-only. Tenant-scoped inside PerformanceInsightsService. Recorded by
+// App\Http\Middleware\RecordPerformanceSample; this path is on
+// config('performance.ignore_paths') so the report never measures itself.
+Route::get('/v2/admin/performance/summary', [\App\Http\Controllers\Api\AdminPerformanceController::class, 'summary']);
+
 Route::get('/v2/admin/system/cron-jobs', [\App\Http\Controllers\Api\AdminConfigController::class, 'getCronJobs']);
 Route::post('/v2/admin/system/cron-jobs/{id}/run', [\App\Http\Controllers\Api\AdminConfigController::class, 'runCronJob']);
 Route::get('/v2/admin/system/cron-jobs/logs', [\App\Http\Controllers\Api\AdminCronController::class, 'getLogs']);
@@ -3009,6 +3015,7 @@ Route::put('/v2/admin/super/users/{id}', [\App\Http\Controllers\Api\AdminSuperCo
 // The GLOBAL equivalents are platform-level and stay in tier B.
 Route::post('/v2/admin/super/users/{id}/grant-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userGrantSuperAdmin']);
 Route::post('/v2/admin/super/users/{id}/revoke-super-admin', [\App\Http\Controllers\Api\AdminSuperController::class, 'userRevokeSuperAdmin']);
+Route::post('/v2/admin/super/users/{id}/impersonate', [\App\Http\Controllers\Api\AdminSuperController::class, 'userImpersonate']);
 Route::post('/v2/admin/super/users/{id}/move-tenant', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveTenant']);
 Route::post('/v2/admin/super/users/{id}/move-and-promote', [\App\Http\Controllers\Api\AdminSuperController::class, 'userMoveAndPromote']);
 Route::post('/v2/admin/super/bulk/move-users', [\App\Http\Controllers\Api\AdminSuperController::class, 'bulkMoveUsers']);
@@ -3202,6 +3209,18 @@ Route::middleware('throttle:nexus-route-30-per-1m')->group(function () {
     Route::post('/auth/validate-token', [\App\Http\Controllers\Api\AuthController::class, 'validateToken']);
     Route::get('/auth/validate-token', [\App\Http\Controllers\Api\AuthController::class, 'validateToken']);
 });
+// Impersonation session handoff.
+//
+// The exchange endpoint is deliberately unauthenticated: the new tab holds no
+// session for the target member yet, and the single-use five-minute proof issued
+// by an admin IS the credential. Throttled hard because it is a public endpoint
+// that mints sessions.
+Route::post('/v2/auth/impersonate/exchange', [\App\Http\Controllers\Api\AuthController::class, 'impersonateExchange'])
+    ->middleware('throttle:nexus-route-10-per-1m');
+// Ending an impersonated session requires that session's own token.
+Route::post('/v2/auth/impersonate/end', [\App\Http\Controllers\Api\AuthController::class, 'impersonateEnd'])
+    ->middleware(['auth:sanctum', 'throttle:nexus-route-30-per-1m']);
+
 // CSRF tokens are high-frequency, rate-limit more generously (60 req/min per IP)
 Route::middleware('throttle:nexus-route-60-per-1m')->group(function () {
     Route::get('/auth/csrf-token', [\App\Http\Controllers\Api\AuthController::class, 'getCsrfToken']);

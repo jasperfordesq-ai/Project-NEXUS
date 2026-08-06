@@ -26,6 +26,7 @@ import { SessionTimeoutWarning } from '@/components/feedback/SessionTimeoutWarni
 import { AppUpdateModal } from '@/components/feedback/AppUpdateModal';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { SeoHead } from '@/components/seo/SeoHead';
+import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner';
 import { useApiErrorHandler } from '@/hooks/useApiErrorHandler';
 import { useHeaderScroll } from '@/hooks/useHeaderScroll';
 import { useAppUpdate } from '@/hooks/useAppUpdate';
@@ -160,6 +161,9 @@ export function Layout({
       >
         {t('accessibility.skip_to_content')}
       </a>
+
+      {/* Impersonation notice + exit — renders only in an impersonated tab */}
+      <ImpersonationBanner />
 
       {/* Offline indicator */}
       <OfflineIndicator />

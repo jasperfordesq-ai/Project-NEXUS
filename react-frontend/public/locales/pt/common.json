@@ -3125,6 +3125,12 @@
       "chart_opens_title_many": "{{count}} abre"
     }
   },
+  "impersonation": {
+    "banner": "Você está visualizando esta conta como administrador.",
+    "banner_named": "Você está visualizando a conta de {{name}} como administrador.",
+    "stop": "Pare de ver",
+    "handoff_failed": "Esse link de representação expirou ou já foi usado. Comece novamente no painel de administração."
+  },
   "hours_display_many": "{{count}} horas",
   "hours_short_many": "{{count}} h",
   "time_credits_short_many": "{{count}}h de créditos",

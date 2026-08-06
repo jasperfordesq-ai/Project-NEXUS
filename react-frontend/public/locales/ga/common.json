@@ -3199,6 +3199,12 @@
       "chart_opens_title_two": "Osclaíonn {{count}}"
     }
   },
+  "impersonation": {
+    "banner": "Tá tú ag féachaint ar an gcuntas seo mar riarthóir.",
+    "banner_named": "Tá tú ag féachaint ar chuntas {{name}} mar riarthóir.",
+    "stop": "Stop ag breathnú",
+    "handoff_failed": "Tá an nasc pearsanaithe sin imithe in éag nó baineadh úsáid as cheana féin. Tosaigh arís ón bpainéal riaracháin."
+  },
   "hours_display_few": "{{count}} uair",
   "hours_display_many": "{{count}} uair",
   "hours_display_two": "{{count}} uair",

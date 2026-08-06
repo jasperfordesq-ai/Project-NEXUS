@@ -304,6 +304,7 @@ export function UserEdit() {
         const data = res.data as Record<string, unknown>;
         const token = (data.access_token as string) || (data.token as string);
         const tenantSlug = (data.tenant_slug as string) || '';
+        const tenantId = (data.tenant_id as number | undefined) ?? null;
         if (token) {
           // Open the new tab on the IMPERSONATED user's tenant URL — without
           // this, the new tab inherits the admin's slug from localStorage and
@@ -312,7 +313,7 @@ export function UserEdit() {
             ? `${window.location.origin}/${tenantSlug}/`
             : `${window.location.origin}/`;
           const { sendImpersonationToken } = await import('@/lib/impersonate');
-          sendImpersonationToken(token, targetUrl);
+          sendImpersonationToken(token, targetUrl, { tenantId, tenantSlug });
           toast.success(t('toasts.impersonate_success'));
         }
       } else {

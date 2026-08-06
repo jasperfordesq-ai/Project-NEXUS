@@ -3162,6 +3162,12 @@
       "chart_opens_title_many": "Otwiera się {{count}}"
     }
   },
+  "impersonation": {
+    "banner": "Przeglądasz to konto jako administrator.",
+    "banner_named": "Oglądasz konto {{name}} jako administrator.",
+    "stop": "Przestań oglądać",
+    "handoff_failed": "Link do podszywania się wygasł lub był już używany. Zacznij od nowa z panelu administracyjnego."
+  },
   "hours_display_few": "{{count}} godzin",
   "hours_display_many": "{{count}} godzin",
   "hours_short_few": "{{count}} g",
