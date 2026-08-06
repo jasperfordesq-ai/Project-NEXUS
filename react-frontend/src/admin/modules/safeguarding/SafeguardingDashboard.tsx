@@ -25,7 +25,7 @@ import { usePageTitle } from '@/hooks';
 import { useToast } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { formatRelativeTime } from '@/lib/helpers';
+import { formatRelativeTime, getFormattingLocale } from '@/lib/helpers';
 import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { SafeguardingHelp } from './SafeguardingHelp';
@@ -963,7 +963,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
                       <span className="text-sm text-muted">{action.created_at ? formatRelativeTime(action.created_at) : ''}</span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted">{action.expires_at ? new Date(action.expires_at).toLocaleDateString() : ''}</span>
+                      <span className="text-sm text-muted">{action.expires_at ? new Date(action.expires_at).toLocaleDateString(getFormattingLocale()) : ''}</span>
                     </TableCell>
                     <TableCell>
                       <Button

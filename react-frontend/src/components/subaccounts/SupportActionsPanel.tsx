@@ -34,6 +34,7 @@ import ClipboardCheck from 'lucide-react/icons/clipboard-check';
 import HandHeart from 'lucide-react/icons/hand-heart';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { api } from '@/lib/api';
+import { getFormattingLocale } from '@/lib/helpers';
 import { logError } from '@/lib/logger';
 import { useToast } from '@/contexts';
 
@@ -66,7 +67,7 @@ function summarise(action: SupportAction, typeLabel: string): string {
 }
 
 export function SupportActionsPanel() {
-  const { t, i18n } = useTranslation('settings');
+  const { t } = useTranslation('settings');
   const toast = useToast();
 
   const [incoming, setIncoming] = useState<SupportAction[]>([]);
@@ -166,7 +167,7 @@ export function SupportActionsPanel() {
   if (incoming.length === 0 && outgoing.length === 0) return null;
 
   const formatDate = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleDateString(i18n.language) : '';
+    iso ? new Date(iso).toLocaleDateString(getFormattingLocale()) : '';
 
   return (
     <GlassCard className="p-4 sm:p-6 space-y-6">
