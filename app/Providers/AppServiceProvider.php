@@ -1408,7 +1408,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // Release = the deployed COMMIT, not the version. app.version (e.g.
-        // 1.5.8) spans many deploys, so a version-based release cannot answer
+        // 1.5.x) spans many deploys, so a version-based release cannot answer
         // "which deploy introduced this error". SecurityHeaders::buildCommit()
         // is the same derivation that stamps the X-Build response header
         // (.build-version file → BUILD_COMMIT env → git), so the release on a

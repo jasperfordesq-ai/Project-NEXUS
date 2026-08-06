@@ -2375,7 +2375,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Voortgang niveau {{level}}: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "Algemeen beschikbaar (v1.5.8)",
+  "release_stage": "Algemeen beschikbaar (v1.5.9)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "Stem het kleurenschema, accent en dichtheid af.",

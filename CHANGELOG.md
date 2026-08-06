@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.9] - 2026-08-06
+
 ### Changed
 
 - **"View as this member" was refused to the super-admin of a timebank, for every member of their own timebank.** Reported with a screenshot: pressing it on the admin Users page produced "Impersonate Failed" and nothing else. The cause was the permission gate on that address. There are two gates in the platform — one for ordinary administrators, one for the owner of the whole installation — and this sat behind the second, which is written to *deliberately* refuse the super-admin of an individual timebank. That is the right rule for the pages it normally guards, which act across every timebank on the installation. It is the wrong rule for signing in as one of your own members, which never leaves your timebank.
@@ -2896,7 +2898,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.8...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.9...HEAD
+[1.5.9]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.8...v1.5.9
 [1.5.8]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.6...v1.5.7
 [1.5.6]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.5...v1.5.6
