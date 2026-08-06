@@ -97,24 +97,6 @@ parameters:
 			path: app/Http/Middleware/SecurityHeaders.php
 
 		-
-			message: '#^Call to static method endRequest\(\) on an unknown class App\\Services\\PerformanceMonitorService\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Middleware/PerformanceMonitoringMiddleware.php
-
-		-
-			message: '#^Call to static method isEnabled\(\) on an unknown class App\\Services\\PerformanceMonitorService\.$#'
-			identifier: class.notFound
-			count: 2
-			path: app/Middleware/PerformanceMonitoringMiddleware.php
-
-		-
-			message: '#^Call to static method startRequest\(\) on an unknown class App\\Services\\PerformanceMonitorService\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Middleware/PerformanceMonitoringMiddleware.php
-
-		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 4
