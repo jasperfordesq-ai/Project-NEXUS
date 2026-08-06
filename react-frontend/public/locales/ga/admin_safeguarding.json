@@ -108,7 +108,7 @@
     "deactivation_failed": "Theip ar an Díghníomhachtú",
     "declined": "Diúltaithe",
     "declined_none_apply": "Diúltaithe - níl feidhm ag aon cheann",
-    "desc_guardian_monitors_messages": "Is féidir leis an gcaomhnóir teachtaireachtaí a sheoltar chuig agus uaidh a fheiceáil",
+    "desc_guardian_monitors_messages": "Taifead don fhoireann chosanta é seo. Ní thugann sé rochtain ar bith don chaomhnóir ar theachtaireachtaí ná ar chuntas an bhaill seo.",
     "desc_help_url": "Nasc le doiciméid chabhrach don rogha cosanta seo",
     "desc_option_key": "Aitheantóir uathúil don rogha cosanta seo",
     "desc_required_vetting_type": "An cineál grinnfhiosrúcháin a theastaíonn sular féidir an rogha cosanta seo a shannadh",

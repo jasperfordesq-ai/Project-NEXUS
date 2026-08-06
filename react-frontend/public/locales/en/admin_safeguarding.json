@@ -108,7 +108,7 @@
     "deactivation_failed": "Deactivation Failed",
     "declined": "Declined",
     "declined_none_apply": "Declined - none apply",
-    "desc_guardian_monitors_messages": "The guardian can view messages sent to and from this member",
+    "desc_guardian_monitors_messages": "This is a record for safeguarding staff. It does not give the guardian any access to this member's messages or account.",
     "desc_help_url": "A link to help documentation for this safeguarding option",
     "desc_option_key": "A unique identifier for this safeguarding option",
     "desc_required_vetting_type": "The vetting type required before this safeguarding option can be assigned",

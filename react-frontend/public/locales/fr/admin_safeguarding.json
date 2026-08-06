@@ -108,7 +108,7 @@
     "deactivation_failed": "Échec de la désactivation",
     "declined": "Refusé",
     "declined_none_apply": "Refusé – aucun ne s'applique",
-    "desc_guardian_monitors_messages": "Le tuteur peut voir les messages envoyés vers et depuis ce membre",
+    "desc_guardian_monitors_messages": "Ceci est un enregistrement destiné au personnel de protection. Il ne donne au tuteur aucun accès aux messages ni au compte de ce membre.",
     "desc_help_url": "Un lien vers la documentation d'aide pour cette option de sauvegarde",
     "desc_option_key": "Un identifiant unique pour cette option de sauvegarde",
     "desc_required_vetting_type": "Le type de vérification requis avant que cette option de sauvegarde puisse être attribuée",

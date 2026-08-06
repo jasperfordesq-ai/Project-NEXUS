@@ -108,7 +108,7 @@
     "deactivation_failed": "非アクティブ化に失敗しました",
     "declined": "拒否されました",
     "declined_none_apply": "拒否されました - どれも当てはまりません",
-    "desc_guardian_monitors_messages": "保護者はこのメンバーとの間で送受信されたメッセージを閲覧できます",
+    "desc_guardian_monitors_messages": "これはセーフガーディング担当スタッフ向けの記録です。保護者にこのメンバーのメッセージやアカウントへのアクセス権を与えるものではありません。",
     "desc_help_url": "この保護オプションのヘルプドキュメントへのリンク",
     "desc_option_key": "この保護オプションの一意の識別子",
     "desc_required_vetting_type": "この保護オプションを割り当てる前に必要な検査タイプ",

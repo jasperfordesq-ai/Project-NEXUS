@@ -108,7 +108,7 @@
     "deactivation_failed": "Falha na desativação",
     "declined": "Recusado",
     "declined_none_apply": "Recusado - nenhum se aplica",
-    "desc_guardian_monitors_messages": "O responsável pode ver as mensagens enviadas para e deste membro",
+    "desc_guardian_monitors_messages": "Este é um registo para a equipa de salvaguarda. Não dá ao responsável qualquer acesso às mensagens ou à conta deste membro.",
     "desc_help_url": "Um link para documentação de ajuda para esta opção de proteção",
     "desc_option_key": "Um identificador exclusivo para esta opção de proteção",
     "desc_required_vetting_type": "O tipo de verificação necessário antes que esta opção de proteção possa ser atribuída",

@@ -108,7 +108,7 @@
     "deactivation_failed": "فشل التعطيل",
     "declined": "انخفض",
     "declined_none_apply": "تم الرفض - لا ينطبق أي شيء",
-    "desc_guardian_monitors_messages": "يمكن للوصي عرض الرسائل المرسلة من وإلى هذا العضو",
+    "desc_guardian_monitors_messages": "هذا سجل مخصص لموظفي الحماية. وهو لا يمنح الوصي أي صلاحية للاطلاع على رسائل هذا العضو أو حسابه.",
     "desc_help_url": "رابط للمساعدة في التوثيق الخاص بخيار الحماية هذا",
     "desc_option_key": "معرف فريد لخيار الحماية هذا",
     "desc_required_vetting_type": "نوع الفحص المطلوب قبل تعيين خيار الحماية هذا",

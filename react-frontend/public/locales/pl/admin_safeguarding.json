@@ -108,7 +108,7 @@
     "deactivation_failed": "Dezaktywacja nie powiodła się",
     "declined": "Odrzucono",
     "declined_none_apply": "Odrzucono – żadna nie ma zastosowania",
-    "desc_guardian_monitors_messages": "Opiekun może przeglądać wiadomości wysłane do i od tego członka",
+    "desc_guardian_monitors_messages": "To jest zapis dla personelu ds. ochrony. Nie daje opiekunowi żadnego dostępu do wiadomości ani konta tego członka.",
     "desc_help_url": "Link do dokumentacji pomocy dotyczącej tej opcji zabezpieczenia",
     "desc_option_key": "Unikalny identyfikator tej opcji zabezpieczenia",
     "desc_required_vetting_type": "Rodzaj weryfikacji wymagany przed przypisaniem tej opcji zabezpieczenia",

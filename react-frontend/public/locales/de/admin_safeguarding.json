@@ -108,7 +108,7 @@
     "deactivation_failed": "Deaktivierung fehlgeschlagen",
     "declined": "Abgelehnt",
     "declined_none_apply": "Abgelehnt – keine zutreffend",
-    "desc_guardian_monitors_messages": "Der Vormund kann die an und von diesem Mitglied gesendeten Nachrichten einsehen",
+    "desc_guardian_monitors_messages": "Dies ist ein Vermerk für Schutzverantwortliche. Der Vormund erhält dadurch keinen Zugriff auf die Nachrichten oder das Konto dieses Mitglieds.",
     "desc_help_url": "Ein Link zur Hilfedokumentation für diese Schutzoption",
     "desc_option_key": "Eine eindeutige Kennung für diese Schutzoption",
     "desc_required_vetting_type": "Der Überprüfungstyp, der erforderlich ist, bevor diese Schutzoption zugewiesen werden kann",

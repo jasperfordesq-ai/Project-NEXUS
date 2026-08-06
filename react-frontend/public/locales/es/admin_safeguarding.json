@@ -108,7 +108,7 @@
     "deactivation_failed": "Error de desactivación",
     "declined": "Rechazado",
     "declined_none_apply": "Rechazado: no se aplica ninguno",
-    "desc_guardian_monitors_messages": "El tutor puede ver los mensajes enviados hacia y desde este miembro.",
+    "desc_guardian_monitors_messages": "Este es un registro para el personal de protección. No otorga al tutor ningún acceso a los mensajes ni a la cuenta de este miembro.",
     "desc_help_url": "Un enlace a la documentación de ayuda para esta opción de protección.",
     "desc_option_key": "Un identificador único para esta opción de protección.",
     "desc_required_vetting_type": "El tipo de verificación requerido antes de que se pueda asignar esta opción de protección",

@@ -108,7 +108,7 @@
     "deactivation_failed": "Disattivazione non riuscita",
     "declined": "Rifiutato",
     "declined_none_apply": "Rifiutato: nessuno applicabile",
-    "desc_guardian_monitors_messages": "Il tutore può visualizzare i messaggi inviati a e da questo membro",
+    "desc_guardian_monitors_messages": "Questa è una registrazione per il personale di tutela. Non concede al tutore alcun accesso ai messaggi o all'account di questo membro.",
     "desc_help_url": "Un collegamento alla documentazione di supporto per questa opzione di protezione",
     "desc_option_key": "Un identificatore univoco per questa opzione di salvaguardia",
     "desc_required_vetting_type": "Il tipo di controllo richiesto prima che questa opzione di salvaguardia possa essere assegnata",

@@ -107,7 +107,7 @@
     "deactivation_failed": "Deactivering mislukt",
     "declined": "Geweigerd",
     "declined_none_apply": "Geweigerd - geen van toepassing",
-    "desc_guardian_monitors_messages": "De voogd kan berichten bekijken die naar en van dit lid zijn verzonden",
+    "desc_guardian_monitors_messages": "Dit is een registratie voor veiligheidsmedewerkers. De voogd krijgt hiermee geen toegang tot de berichten of het account van dit lid.",
     "desc_help_url": "Een link naar helpdocumentatie voor deze beveiligingsoptie",
     "desc_option_key": "Een unieke identificatie voor deze beveiligingsoptie",
     "desc_required_vetting_type": "Het doorlichtingstype dat vereist is voordat deze beveiligingsoptie kan worden toegewezen",
