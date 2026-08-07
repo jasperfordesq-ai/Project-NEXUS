@@ -266,6 +266,7 @@
         "received_hours": "Recibió horas",
         "other": "Actividad"
       }
-    }
+    },
+    "staffRecordedNote": "{{name}} eligió estos niveles. Sólo ellos pueden cambiarlos, desde sus propios entornos de salvaguardia."
   }
 }

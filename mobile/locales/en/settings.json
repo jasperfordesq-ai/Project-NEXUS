@@ -266,6 +266,7 @@
         "received_hours": "Received hours",
         "other": "Activity"
       }
-    }
+    },
+    "staffRecordedNote": "{{name}} chose these levels. Only they can change them, from their own safeguarding settings."
   }
 }

@@ -682,7 +682,16 @@
       "never_viewed": "Dotąd nie przeglądano",
       "withdraw_button": "Zablokuj wgląd w moje wiadomości",
       "view_button": "Przeglądaj wiadomości"
-    }
+    },
+    "types": {
+      "family": "Członek rodziny",
+      "guardian": "Opiekun",
+      "carer": "Opiekun",
+      "organization": "Organizacja"
+    },
+    "type_label": "Relacja",
+    "requested_at": "Poproszono {{time}}",
+    "cancel_request": "Anuluj prośbę"
   },
   "support_actions": {
     "waiting_title": "Czekam na Twoją zgodę",

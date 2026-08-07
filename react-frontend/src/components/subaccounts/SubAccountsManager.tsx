@@ -214,6 +214,7 @@ export function SubAccountsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addEmail, setAddEmail] = useState('');
+  const [addType, setAddType] = useState('family');
   const [isAdding, setIsAdding] = useState(false);
   const [busyRelationshipId, setBusyRelationshipId] = useState<number | null>(null);
   // Prepare-on-behalf modal (guardian redesign phase 4): which action, for
@@ -274,11 +275,15 @@ export function SubAccountsManager() {
 
     try {
       setIsAdding(true);
-      const response = await api.post('/v2/users/me/sub-accounts', { email });
+      const response = await api.post('/v2/users/me/sub-accounts', {
+        email,
+        relationship_type: addType,
+      });
 
       if (response.success) {
         toastRef.current.success(tRef.current('toasts.subaccount_request_sent'));
         setAddEmail('');
+        setAddType('family');
         onClose();
         await loadSubAccounts();
       } else {
@@ -459,6 +464,12 @@ export function SubAccountsManager() {
               <Chip size="sm" variant="flat" color={status.color} startContent={status.icon}>
                 {status.label}
               </Chip>
+              {/* The relationship type was always fetched and never shown (audit
+                  B1) — yet it's the first thing a member scanning several cards
+                  needs: which of these is the guardian, which the organisation. */}
+              <Chip size="sm" variant="flat" color="default">
+                {t(`sub_accounts.types.${account.relationship_type}`, { defaultValue: account.relationship_type })}
+              </Chip>
             </div>
             <p className="text-xs text-theme-subtle break-all">{account.email}</p>
 
@@ -591,6 +602,35 @@ export function SubAccountsManager() {
             )}
 
             {/*
+              MEMBER side (people who manage you): read-only chips of what this
+              supporter can actually do. The parsed tiers were fetched and then
+              discarded here (audit B3) — the person with the most at stake saw
+              the least. Same chip pattern as the staff-recorded block above.
+            */}
+            {!options.canManagePermissions && account.status === 'active' && (
+              <div className="mt-3 space-y-1">
+                <p className="text-xs font-medium text-theme-muted flex items-center gap-1">
+                  <Shield className="w-3 h-3" aria-hidden="true" />
+                  {t('sub_accounts.permissions_label')}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  <Chip size="sm" variant="flat" color={account.tiers.activity === 'none' ? 'default' : 'success'}>
+                    {t('sub_accounts.permissions.can_view_activity')}
+                  </Chip>
+                  {/* Member-perspective labels ("Your listings… you approve"),
+                      NOT the supporter-side sub_accounts.tiers.* keys — those
+                      read wrong-way-round here, the exact trap the accessible
+                      guardians page documented. */}
+                  {(['listings', 'credits'] as const).map((capability) => (
+                    <Chip key={capability} size="sm" variant="flat" color={account.tiers[capability] === 'none' ? 'default' : 'success'}>
+                      {`${t(`safeguarding.guardians.tiers_capability_${capability}`)}: ${t(`safeguarding.guardians.tiers_option_${account.tiers[capability]}`)}`}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/*
               MEMBER side (people who manage you): the message-access
               disclosure is theirs to see and end. States who can view, when
               they last looked (the immutable audit made member-visible), and
@@ -684,33 +724,57 @@ export function SubAccountsManager() {
             )}
 
             {account.status === 'pending' && (
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {options.canApprove ? (
-                  <>
-                    <Button
-                      size="sm"
-                      color="success"
-                      variant="flat"
-                      isLoading={isBusy}
-                      onPress={() => handleApprove(account.relationship_id)}
-                    >
-                      {t('sub_accounts.approve')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      color="danger"
-                      variant="flat"
-                      isDisabled={isBusy}
-                      onPress={() => handleRemove(account.relationship_id)}
-                    >
-                      {t('sub_accounts.decline')}
-                    </Button>
-                  </>
-                ) : (
-                  <p className="text-xs text-theme-muted">
-                    {t(options.pendingMessageKey)}
+              <div className="mt-4 space-y-2">
+                {/* How long has this been sitting? (audit B4 — a pending row
+                    gave no clue whether it was an hour or a month old). */}
+                {account.created_at && (
+                  <p className="text-xs text-theme-subtle flex items-center gap-1">
+                    <Clock className="w-3 h-3" aria-hidden="true" />
+                    {t('sub_accounts.requested_at', { time: formatRelativeTime(account.created_at) })}
                   </p>
                 )}
+                <div className="flex flex-wrap items-center gap-2">
+                  {options.canApprove ? (
+                    <>
+                      <Button
+                        size="sm"
+                        color="success"
+                        variant="flat"
+                        isLoading={isBusy}
+                        onPress={() => handleApprove(account.relationship_id)}
+                      >
+                        {t('sub_accounts.approve')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        color="danger"
+                        variant="flat"
+                        isDisabled={isBusy}
+                        onPress={() => handleRemove(account.relationship_id)}
+                      >
+                        {t('sub_accounts.decline')}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-theme-muted">
+                        {t(options.pendingMessageKey)}
+                      </p>
+                      {/* A labelled cancel, not just the unlabelled trash icon
+                          (audit B4) — and busy-guarded so a double press can't
+                          fire the DELETE twice. */}
+                      <Button
+                        size="sm"
+                        color="danger"
+                        variant="flat"
+                        isLoading={isBusy}
+                        onPress={() => handleRemove(account.relationship_id)}
+                      >
+                        {t('sub_accounts.cancel_request')}
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -720,7 +784,9 @@ export function SubAccountsManager() {
             size="sm"
             variant="light"
             color="danger"
-            isLoading={isBusy && account.status !== 'pending'}
+            // isLoading also disables — the old `!== 'pending'` carve-out left
+            // pending rows spinnerless AND double-clickable (audit B4).
+            isLoading={isBusy}
             onPress={() => handleRemove(account.relationship_id)}
             aria-label={t('sub_accounts.remove_aria', { name })}
           >
@@ -886,6 +952,23 @@ export function SubAccountsManager() {
               }}
               autoFocus
             />
+            {/* The API always accepted a relationship type; only the accessible
+                frontend ever offered it (audit B2). Same four values. */}
+            <Select
+              label={t('sub_accounts.type_label')}
+              selectedKeys={[addType]}
+              onSelectionChange={(keys) => {
+                const value = Array.from(keys)[0] as string | undefined;
+                if (value) setAddType(value);
+              }}
+              className="mt-3"
+            >
+              {(['family', 'guardian', 'carer', 'organization'] as const).map((type) => (
+                <SelectItem key={type} id={type}>
+                  {t(`sub_accounts.types.${type}`)}
+                </SelectItem>
+              ))}
+            </Select>
           </ModalBody>
           <ModalFooter>
             <Button variant="flat" onPress={onClose} className="text-theme-muted">

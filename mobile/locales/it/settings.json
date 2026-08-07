@@ -266,6 +266,7 @@
         "received_hours": "Ore ricevute",
         "other": "Attività"
       }
-    }
+    },
+    "staffRecordedNote": "{{name}} ha scelto questi livelli. Solo loro possono cambiarli, dalle proprie impostazioni di salvaguardia."
   }
 }

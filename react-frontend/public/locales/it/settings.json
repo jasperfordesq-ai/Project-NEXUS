@@ -682,7 +682,16 @@
       "never_viewed": "Mai visualizzato finora",
       "withdraw_button": "Impedisci la visualizzazione dei miei messaggi",
       "view_button": "Vedi messaggi"
-    }
+    },
+    "types": {
+      "family": "Membro della famiglia",
+      "guardian": "Custode",
+      "carer": "Badante",
+      "organization": "Organizzazione"
+    },
+    "type_label": "Relazione",
+    "requested_at": "Richiesto {{time}}",
+    "cancel_request": "Annulla la richiesta"
   },
   "support_actions": {
     "waiting_title": "In attesa della tua approvazione",

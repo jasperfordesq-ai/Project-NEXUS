@@ -266,6 +266,7 @@
         "received_hours": "Heures reçues",
         "other": "Activité"
       }
-    }
+    },
+    "staffRecordedNote": "{{name}} a choisi ces niveaux. Eux seuls peuvent les modifier, depuis leurs propres paramètres de sauvegarde."
   }
 }

@@ -682,7 +682,16 @@
       "never_viewed": "Jamais consulté pour l’instant",
       "withdraw_button": "Cesser la consultation de mes messages",
       "view_button": "Voir les messages"
-    }
+    },
+    "types": {
+      "family": "Membre de la famille",
+      "guardian": "Tuteur",
+      "carer": "Soignant",
+      "organization": "Organisation"
+    },
+    "type_label": "Relation",
+    "requested_at": "Demandé {{time}}",
+    "cancel_request": "Annuler la demande"
   },
   "support_actions": {
     "waiting_title": "En attente de votre approbation",

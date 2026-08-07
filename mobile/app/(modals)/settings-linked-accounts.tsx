@@ -296,7 +296,20 @@ function RelationshipSection({
                     </Chip>
                   </View>
 
-                  {canManagePermissions && item.status === 'active' ? (
+                  {/* Coordinator-recorded arrangement: the LEVELS belong to the
+                      supported member (their safeguarding screen), so the
+                      supporter gets a read-only note, never toggles — the web
+                      card behaves the same way (audit A7). */}
+                  {canManagePermissions && item.status === 'active' && item.staff_recorded ? (
+                    <View className="gap-2">
+                      <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('linkedAccounts.permissionsTitle')}</Text>
+                      <Text className="text-xs" style={{ color: theme.textSecondary }}>
+                        {t('linkedAccounts.staffRecordedNote', { name })}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {canManagePermissions && item.status === 'active' && !item.staff_recorded ? (
                     <View className="gap-2">
                       <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('linkedAccounts.permissionsTitle')}</Text>
                       {PERMISSIONS.map((permission) => {

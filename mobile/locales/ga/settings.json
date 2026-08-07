@@ -266,6 +266,7 @@
         "received_hours": "Uaireanta faighte",
         "other": "Gníomhaíocht"
       }
-    }
+    },
+    "staffRecordedNote": "Roghnaigh {{name}} na leibhéil seo. Ní féidir ach leo iad a athrú, óna suíomhanna cosanta féin."
   }
 }

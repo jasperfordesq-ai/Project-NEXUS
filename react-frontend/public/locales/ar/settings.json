@@ -682,7 +682,16 @@
       "never_viewed": "لم يُطَّلع عليها حتى الآن",
       "withdraw_button": "إيقاف الاطلاع على رسائلي",
       "view_button": "عرض الرسائل"
-    }
+    },
+    "types": {
+      "family": "فرد من العائلة",
+      "guardian": "الوصي",
+      "carer": "مقدم الرعاية",
+      "organization": "منظمة"
+    },
+    "type_label": "علاقة",
+    "requested_at": "طُلب {{time}}",
+    "cancel_request": "إلغاء الطلب"
   },
   "support_actions": {
     "waiting_title": "في انتظار موافقتك",

@@ -682,7 +682,16 @@
       "never_viewed": "Tot nu toe nooit bekeken",
       "withdraw_button": "Stop het meekijken met mijn berichten",
       "view_button": "Berichten bekijken"
-    }
+    },
+    "types": {
+      "family": "Familielid",
+      "guardian": "Voogd",
+      "carer": "Verzorger",
+      "organization": "Organisatie"
+    },
+    "type_label": "Relatie",
+    "requested_at": "Aangevraagd {{time}}",
+    "cancel_request": "Verzoek annuleren"
   },
   "support_actions": {
     "waiting_title": "Wachten op uw goedkeuring",

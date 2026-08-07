@@ -682,7 +682,16 @@
       "never_viewed": "Bisher nie eingesehen",
       "withdraw_button": "Einsicht in meine Nachrichten beenden",
       "view_button": "Nachrichten ansehen"
-    }
+    },
+    "types": {
+      "family": "Familienmitglied",
+      "guardian": "Wächter",
+      "carer": "Betreuer",
+      "organization": "Organisation"
+    },
+    "type_label": "Beziehung",
+    "requested_at": "Angefragt {{time}}",
+    "cancel_request": "Anfrage zurückziehen"
   },
   "support_actions": {
     "waiting_title": "Warten auf Ihre Zustimmung",

@@ -61,6 +61,18 @@
             <h1 class="govuk-heading-xl">{{ __('govuk_alpha_settings.linked.title') }}</h1>
             <p class="govuk-body-l">{{ __('govuk_alpha_settings.linked.description') }}</p>
 
+            {{-- The approval queue is where prepared listings/transfers and
+                 message-access asks land — reachable from here, not only from
+                 the settings hub (B7). Page-title-as-label, same reasoning as
+                 the settings tiles. --}}
+            @if (\Illuminate\Support\Facades\Route::has('govuk-alpha.settings.support-actions'))
+                <p class="govuk-body">
+                    <a class="govuk-link" href="{{ route('govuk-alpha.settings.support-actions', ['tenantSlug' => $tenantSlug]) }}">
+                        {{ __('govuk_alpha_settings.support_actions.title') }}
+                    </a>
+                </p>
+            @endif
+
             {{-- Accounts that manage me (parents) — approve incoming first --}}
             <section aria-labelledby="parents-heading" id="parents">
                 <h2 class="govuk-heading-l" id="parents-heading">{{ __('govuk_alpha_settings.linked.parents_heading') }}</h2>

@@ -682,7 +682,16 @@
       "never_viewed": "Nunca visto hasta ahora",
       "withdraw_button": "Impedir que vea mis mensajes",
       "view_button": "Ver mensajes"
-    }
+    },
+    "types": {
+      "family": "Miembro de la familia",
+      "guardian": "Guardián",
+      "carer": "Cuidador",
+      "organization": "Organización"
+    },
+    "type_label": "Relación",
+    "requested_at": "Solicitado {{time}}",
+    "cancel_request": "Cancelar la solicitud"
   },
   "support_actions": {
     "waiting_title": "Esperando su aprobación",

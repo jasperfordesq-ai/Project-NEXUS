@@ -266,6 +266,7 @@
         "received_hours": "Stunden erhalten",
         "other": "Aktivität"
       }
-    }
+    },
+    "staffRecordedNote": "{{name}} hat diese Ebenen ausgewählt. Nur sie können sie über ihre eigenen Schutzeinstellungen ändern."
   }
 }

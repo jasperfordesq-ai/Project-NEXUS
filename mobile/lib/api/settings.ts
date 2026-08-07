@@ -70,6 +70,9 @@ export interface SubAccountRelationship {
   last_name?: string | null;
   avatar_url?: string | null;
   email: string;
+  /** Coordinator-recorded arrangement: levels are the MEMBER's to set, never
+   *  the supporter's — render read-only, never toggles. */
+  staff_recorded?: boolean;
 }
 
 function unwrap<T>(response: ApiEnvelope<T>, fallback: T): T {

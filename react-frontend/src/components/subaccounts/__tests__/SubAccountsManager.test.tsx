@@ -364,7 +364,53 @@ describe('SubAccountsManager', () => {
     });
   });
 
-  it('posts email only when adding a linked account request', async () => {
+  /** B1+B3 (2026-08-07): every card names the relationship type, and the
+   *  MEMBER side shows what each supporter can do — worded the member's way
+   *  round ("Your listings"), never the supporter's ("Their listings"). */
+  it('shows the relationship type and member-perspective capability chips', async () => {
+    mockLoad([], [{
+      ...mockManagerAccounts[0]!,
+      status: 'active' as const,
+      relationship_type: 'carer',
+      permissions: {
+        can_view_activity: true,
+        can_manage_listings: false,
+        can_transact: false,
+        tiers: { activity: 'assist', listings: 'co_decide', credits: 'none' },
+      },
+    }]);
+
+    render(<SubAccountsManager />);
+
+    expect(await screen.findByText('Carer')).toBeInTheDocument();
+    expect(screen.getByText('Your listings: Prepare only — you approve each one')).toBeInTheDocument();
+    expect(screen.getByText('Your time credits: Nothing')).toBeInTheDocument();
+    expect(screen.queryByText(/Their listings/)).not.toBeInTheDocument();
+  });
+
+  /** B4 (2026-08-07): a pending request the member sent shows its age and a
+   *  labelled cancel — not only the unlabelled trash icon. */
+  it('offers a labelled cancel and the request age on a pending child row', async () => {
+    mockLoad([mockManagedAccounts[1]!], []);
+    // No extra get mocks: remove filters state locally, it does NOT reload —
+    // and beforeEach only CLEARS mocks, so an unconsumed
+    // mockResolvedValueOnce would leak into whichever test runs next.
+    vi.mocked(api.delete).mockResolvedValueOnce({ success: true, data: [] });
+
+    render(<SubAccountsManager />);
+
+    expect(await screen.findByText(/Requested/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel request' }));
+
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith('/v2/users/me/sub-accounts/2');
+    });
+  });
+
+  /** Updated pin (B2, 2026-08-07): the add flow now sends the relationship
+   *  type as well — 'family' unless the member picks another. It must still
+   *  NEVER send permissions the server doesn't enforce. */
+  it('posts email and relationship type when adding a linked account request', async () => {
     mockLoad([], []);
     vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: [] });
     vi.mocked(api.get)
@@ -381,8 +427,11 @@ describe('SubAccountsManager', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/v2/users/me/sub-accounts', {
         email: 'child@example.com',
+        relationship_type: 'family',
       });
     });
+    // Drain the post-add reload (see the cancel test for why).
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(4));
   });
 
   it('shows error state on API failure', async () => {

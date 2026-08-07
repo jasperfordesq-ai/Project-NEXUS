@@ -682,7 +682,16 @@
       "never_viewed": "Níor féachadh air fós",
       "withdraw_button": "Stop iad ó mo theachtaireachtaí a fheiceáil",
       "view_button": "Féach ar theachtaireachtaí"
-    }
+    },
+    "types": {
+      "family": "Duine den teaghlach",
+      "guardian": "Caomhnóir",
+      "carer": "Cúramóir",
+      "organization": "Eagraíocht"
+    },
+    "type_label": "Gaol",
+    "requested_at": "Iarrtha {{time}}",
+    "cancel_request": "Cealaigh an t-iarratas"
   },
   "support_actions": {
     "waiting_title": "Ag fanacht le do cheadú",

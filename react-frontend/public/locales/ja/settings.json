@@ -682,7 +682,16 @@
       "never_viewed": "まだ閲覧されていません",
       "withdraw_button": "メッセージの閲覧を停止する",
       "view_button": "メッセージを見る"
-    }
+    },
+    "types": {
+      "family": "家族会員",
+      "guardian": "ガーディアン",
+      "carer": "介護者",
+      "organization": "組織"
+    },
+    "type_label": "関係",
+    "requested_at": "{{time}} にリクエスト",
+    "cancel_request": "リクエストを取り消す"
   },
   "support_actions": {
     "waiting_title": "あなたの承認を待っています",

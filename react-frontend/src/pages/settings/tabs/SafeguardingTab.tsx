@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/Modal';
+import { Select, SelectItem } from '@/components/ui/Select';
 import { Spinner } from '@/components/ui/Spinner';
 import { Textarea } from '@/components/ui/Textarea';
 import { useDisclosure } from '@/components/ui/useDisclosure';
@@ -695,35 +696,30 @@ export function SafeguardingTab() {
                               const current = guardian.tiers?.[capability] ?? 'none';
 
                               return (
-                                <label key={capability} className="flex flex-col gap-1 text-xs text-theme-muted">
-                                  {label}
-                                  {/*
-                                    A plain <select>: this screen is reached by
-                                    the people least well served by custom
-                                    widgets, and the native control is the most
-                                    reliable thing on any device or assistive
-                                    technology.
-                                  */}
-                                  <select
-                                    className="rounded-lg border border-theme-default bg-theme-elevated px-3 py-2 text-sm text-theme-primary"
-                                    value={current}
-                                    disabled={tierBusyId !== null}
-                                    aria-label={t('safeguarding.guardians.tiers_aria', {
-                                      capability: label,
-                                      name: guardian.guardian_name,
-                                    })}
-                                    onChange={(e) => {
-                                      const next = e.target.value as SupportTier;
-                                      if (next !== current) handleTierChange(guardian.id, capability, next);
-                                    }}
-                                  >
-                                    {GRANTABLE_ACTION_TIERS.map((tier) => (
-                                      <option key={tier} value={tier}>
-                                        {t(`safeguarding.guardians.tiers_option_${tier}`)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </label>
+                                // HeroUI Select (React Aria) — same control the
+                                // linked-accounts card uses for these levels, so
+                                // both screens look and behave identically (B6).
+                                <Select
+                                  key={capability}
+                                  size="sm"
+                                  label={label}
+                                  selectedKeys={[current]}
+                                  isDisabled={tierBusyId !== null}
+                                  aria-label={t('safeguarding.guardians.tiers_aria', {
+                                    capability: label,
+                                    name: guardian.guardian_name,
+                                  })}
+                                  onSelectionChange={(keys) => {
+                                    const next = Array.from(keys)[0] as SupportTier | undefined;
+                                    if (next && next !== current) handleTierChange(guardian.id, capability, next);
+                                  }}
+                                >
+                                  {GRANTABLE_ACTION_TIERS.map((tier) => (
+                                    <SelectItem key={tier} id={tier}>
+                                      {t(`safeguarding.guardians.tiers_option_${tier}`)}
+                                    </SelectItem>
+                                  ))}
+                                </Select>
                               );
                             })}
                           </div>
