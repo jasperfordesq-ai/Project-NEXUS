@@ -241,6 +241,70 @@ class MessageAccessConsentTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  The counterparty notice (C3): symmetric, never says whose supporter
+    // ------------------------------------------------------------------
+
+    private function grantThroughTheLoop(User $supporter, User $supported): int
+    {
+        Sanctum::actingAs($supporter, ['*']);
+        $relationshipId = $this->seedRelationship($supporter, $supported);
+        $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+            'permissions' => ['tiers' => ['messages' => 'assist']],
+        ])->assertOk();
+        $actionId = (int) DB::table('support_pending_actions')
+            ->where('relationship_id', $relationshipId)
+            ->where('action_type', SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
+            ->value('id');
+        Sanctum::actingAs($supported, ['*']);
+        $this->apiPost("/v2/users/me/support-actions/{$actionId}/confirm")->assertOk();
+
+        return $relationshipId;
+    }
+
+    public function test_notice_is_symmetric_and_own_flag_marks_only_the_granting_member(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $counterparty = $this->member();
+        $this->grantThroughTheLoop($supporter, $supported);
+
+        // The supported member sees the notice AND their own-shared reminder.
+        Sanctum::actingAs($supported, ['*']);
+        $mine = $this->apiGet("/v2/messages/restriction-status?partner_id={$counterparty->id}")->assertOk()->json('data');
+        $this->assertTrue($mine['supporter_view_notice_required']);
+        $this->assertTrue($mine['own_messages_shared']);
+
+        // The counterparty sees the SAME notice boolean, but not the own flag —
+        // the payload never says whose supporter it is.
+        Sanctum::actingAs($counterparty, ['*']);
+        $theirs = $this->apiGet("/v2/messages/restriction-status?partner_id={$supported->id}")->assertOk()->json('data');
+        $this->assertTrue($theirs['supporter_view_notice_required']);
+        $this->assertFalse($theirs['own_messages_shared']);
+    }
+
+    public function test_notice_is_absent_for_unrelated_pairs_and_dies_with_withdrawal(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $counterparty = $this->member();
+        $strangerA = $this->member();
+        $relationshipId = $this->grantThroughTheLoop($supporter, $supported);
+
+        // A pair with no grant on either side: no notice.
+        Sanctum::actingAs($strangerA, ['*']);
+        $none = $this->apiGet("/v2/messages/restriction-status?partner_id={$counterparty->id}")->assertOk()->json('data');
+        $this->assertFalse($none['supporter_view_notice_required']);
+
+        // Withdrawal turns the notice off for both parties immediately.
+        Sanctum::actingAs($supported, ['*']);
+        $this->apiPost("/v2/users/me/parent-accounts/{$relationshipId}/message-access/withdraw")->assertOk();
+
+        $after = $this->apiGet("/v2/messages/restriction-status?partner_id={$counterparty->id}")->assertOk()->json('data');
+        $this->assertFalse($after['supporter_view_notice_required']);
+        $this->assertFalse($after['own_messages_shared']);
+    }
+
+    // ------------------------------------------------------------------
     //  The traps that must stay closed forever
     // ------------------------------------------------------------------
 

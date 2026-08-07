@@ -266,7 +266,20 @@ class MessagesController extends BaseApiController
     // ================================================================
 
     /**
-     * GET /api/v2/messages/restriction-status
+     * GET /api/v2/messages/restriction-status?partner_id={id}
+     *
+     * With `partner_id`, the payload additionally carries the supporter-view
+     * disclosure flags for THIS conversation pair:
+     *
+     * - `supporter_view_notice_required` — true when EITHER participant has an
+     *   active consented message-access grant. Deliberately symmetric: the
+     *   payload is identical for both parties, so it never says WHOSE
+     *   supporter it is. The frontend folds it into the same cause-agnostic
+     *   banner as the broker review notice, which blunts the residual
+     *   inference further (a counterparty cannot distinguish broker review
+     *   from supporter access).
+     * - `own_messages_shared` — true only for the member who granted access,
+     *   driving their own persistent reminder. Their own fact; not a leak.
      */
     public function restrictionStatus(): JsonResponse
     {
@@ -274,6 +287,11 @@ class MessagesController extends BaseApiController
         $this->rateLimit('messages_restriction_status', 30, 60);
 
         $status = $this->brokerMessageVisibilityService->getUserRestrictionStatus($userId);
+
+        $partnerId = (int) request()->query('partner_id', 0);
+        if ($partnerId > 0) {
+            $status += \App\Services\SubAccountService::messageAccessNoticeFlags($userId, $partnerId);
+        }
 
         return $this->respondWithData($status);
     }

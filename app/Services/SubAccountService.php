@@ -766,6 +766,56 @@ class SubAccountService
     }
 
     /**
+     * The conversation-pair disclosure flags for the counterparty notice.
+     *
+     * One indexed lookup on the message_access_granted_at mirror column
+     * (idx_ar_msg_access_child), per conversation-page open — this is why the
+     * mirror exists; a JSON_EXTRACT over `permissions` could not use an index.
+     * `status = 'active'` is required: a revoked relationship's stale mirror
+     * (belt) must never keep the notice alive.
+     *
+     * Symmetry is the privacy property: both participants receive the same
+     * boolean, so the payload never identifies whose supporter it is. The
+     * residual inference ("I have no supporter, so it must be them") is
+     * irreducible for any pair-scoped notice and was accepted by the owner —
+     * the counterparty's right to know outweighs it, and the frontend blurs
+     * it further by folding this into the broker-review banner.
+     *
+     * Fail direction: on error return the notice as REQUIRED. The viewer
+     * endpoints are the enforcement; this is disclosure, and a fetch error
+     * must never hide it while access may be live.
+     *
+     * @return array{supporter_view_notice_required: bool, own_messages_shared: bool}
+     */
+    public static function messageAccessNoticeFlags(int $userId, int $partnerId): array
+    {
+        try {
+            $sharedChildIds = DB::table('account_relationships')
+                ->where('tenant_id', TenantContext::getId())
+                ->where('status', 'active')
+                ->whereNotNull('message_access_granted_at')
+                ->whereIn('child_user_id', [$userId, $partnerId])
+                ->pluck('child_user_id')
+                ->map(static fn ($id) => (int) $id)
+                ->all();
+
+            return [
+                'supporter_view_notice_required' => $sharedChildIds !== [],
+                'own_messages_shared' => in_array($userId, $sharedChildIds, true),
+            ];
+        } catch (\Throwable $e) {
+            Log::warning('messageAccessNoticeFlags failed — failing open toward showing the notice', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'supporter_view_notice_required' => true,
+                'own_messages_shared' => false,
+            ];
+        }
+    }
+
+    /**
      * Raise the `messages` tier to `assist` after the supported member's
      * consent — the ONLY code path allowed to raise it.
      *
