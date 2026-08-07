@@ -74,6 +74,8 @@ class SubAccountServiceTest extends TestCase
     {
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
+        // Phase 5: member paths exclude staff-proposed rows via whereNull().
+        $mockQuery->shouldReceive('whereNull')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturnNull();
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
 
@@ -89,6 +91,8 @@ class SubAccountServiceTest extends TestCase
         // the parties), so a missing row returns false before any update.
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
+        // Phase 5: member paths exclude staff-proposed rows via whereNull().
+        $mockQuery->shouldReceive('whereNull')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturnNull();
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
 
@@ -102,6 +106,8 @@ class SubAccountServiceTest extends TestCase
     {
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
+        // Phase 5: member paths exclude staff-proposed rows via whereNull().
+        $mockQuery->shouldReceive('whereNull')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturnNull();
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
 
@@ -115,6 +121,8 @@ class SubAccountServiceTest extends TestCase
     {
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
+        // Phase 5: member paths exclude staff-proposed rows via whereNull().
+        $mockQuery->shouldReceive('whereNull')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturnNull();
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
 
@@ -129,6 +137,8 @@ class SubAccountServiceTest extends TestCase
     {
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
+        // Phase 5: member paths exclude staff-proposed rows via whereNull().
+        $mockQuery->shouldReceive('whereNull')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturnNull();
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
 
@@ -154,6 +164,8 @@ class SubAccountServiceTest extends TestCase
     {
         $mockQuery = Mockery::mock();
         $mockQuery->shouldReceive('where')->andReturnSelf();
+        // Phase 5: member paths exclude staff-proposed rows via whereNull().
+        $mockQuery->shouldReceive('whereNull')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturn($row);
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
     }

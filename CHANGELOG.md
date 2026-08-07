@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Closed a newly published security advisory in the mobile app's build tooling.** A YAML-parsing library used during mobile development and testing (never on members' phones) had a freshly disclosed flaw that could let a crafted file tie up a build machine. Both copies are now on the fixed version.
+
 - **Creating a guardian assignment with an unknown email address failed silently.** When a coordinator typed an email that matched no member (or paired someone with themselves, or repeated an existing arrangement), the platform refused correctly — but the screen showed nothing at all: no message, the dialog just sat there. The refusal's own explanation ("Supported member not found in this community", and so on) now appears, so staff know exactly what to correct. Found by the owner while testing; a regression test now fails if the message ever goes silent again.
 
 - **The mobile app stopped offering the "View messages" switch that never did anything.** The web and accessible frontends removed it on 5 August because no code anywhere checks that permission — it saved successfully and did nothing, so a family could believe a carer could read a dependent's messages when no such thing happened. The mobile app kept offering it until now. A test now pins that it cannot quietly return.

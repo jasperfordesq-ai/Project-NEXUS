@@ -329,6 +329,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         attestModal.onClose();
         await loadData();
       } else {
+        // admin-i18n-ignore: localized server message — AdminSafeguardingController
         toast.error(res.error || t('safeguarding.support.attest_failed'));
       }
     } catch (err) {
@@ -359,6 +360,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         authorityModal.onClose();
         await loadData();
       } else {
+        // admin-i18n-ignore: localized server message — AdminSafeguardingController
         toast.error(res.error || t('safeguarding.authority.attest_failed'));
       }
     } catch (err) {
@@ -383,6 +385,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         revokeAuthorityModal.onClose();
         await loadData();
       } else {
+        // admin-i18n-ignore: localized server message — AdminSafeguardingController
         toast.error(res.error || t('safeguarding.authority.attest_failed'));
       }
     } catch (err) {
@@ -441,6 +444,7 @@ export function SafeguardingDashboard({ routeBase = '/admin/safeguarding' }: Saf
         // arrangement) produced NO feedback at all — the modal just sat
         // there. Surface the API's own message ("Supported member not found
         // in this community", …) so staff know what to fix.
+        // admin-i18n-ignore: localized server message — AdminSafeguardingController
         toast.error(res.error || t('safeguarding.failed_to_create_assignment'));
       }
     } catch (err) {
