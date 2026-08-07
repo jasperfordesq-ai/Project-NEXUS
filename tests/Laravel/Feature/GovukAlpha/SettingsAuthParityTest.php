@@ -229,10 +229,14 @@ class SettingsAuthParityTest extends TestCase
             'status' => 'active', 'approved_at' => now(), 'created_at' => now(), 'updated_at' => now(),
         ]);
 
+        // Listings/credits now travel as EXPLICIT tiers from this page — the
+        // boolean checkboxes were an escalation hazard (a co_decide grant
+        // rendered unticked, and re-saving the form promoted it to represent).
         $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/permissions", [
             'relationship_id' => $relationshipId,
             'perm_can_view_activity' => '1',
-            'perm_can_manage_listings' => '1',
+            'tier_listings' => 'represent',
+            'tier_credits' => 'none',
         ]);
 
         $response->assertRedirect();
@@ -241,6 +245,47 @@ class SettingsAuthParityTest extends TestCase
         $row = DB::table('account_relationships')->where('id', $relationshipId)->first();
         $perms = json_decode((string) ($row->permissions ?? '{}'), true) ?: [];
         $this->assertTrue((bool) ($perms['can_manage_listings'] ?? false));
+        $this->assertSame('represent', $perms['tiers']['listings'] ?? null);
+    }
+
+    /**
+     * 🔴 Pins the escalation fix at the page level: saving the form with a
+     * co_decide grant selected keeps co_decide. Before the tier selects, this
+     * page's checkboxes could only express on/off, and a re-save converted
+     * "prepare only" into act-alone authority.
+     */
+    public function test_settings_linked_accounts_form_preserves_a_co_decide_grant(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+
+        $relationshipId = DB::table('account_relationships')->insertGetId([
+            'parent_user_id' => $me->id, 'child_user_id' => $child->id, 'tenant_id' => $this->testTenantId,
+            'relationship_type' => 'family',
+            'permissions' => json_encode([
+                'can_view_activity' => true, 'can_manage_listings' => false, 'can_transact' => false,
+                'tiers' => ['activity' => 'assist', 'listings' => 'co_decide', 'credits' => 'none'],
+            ]),
+            'status' => 'active', 'approved_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // The page renders the CURRENT tier selected; a straight re-save posts
+        // it back unchanged.
+        $page = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts");
+        $page->assertOk();
+        $page->assertSee('tier_listings', false);
+
+        $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/permissions", [
+            'relationship_id' => $relationshipId,
+            'perm_can_view_activity' => '1',
+            'tier_listings' => 'co_decide',
+            'tier_credits' => 'none',
+        ]);
+
+        $response->assertRedirect();
+        $row = DB::table('account_relationships')->where('id', $relationshipId)->first();
+        $perms = json_decode((string) ($row->permissions ?? '{}'), true) ?: [];
+        $this->assertSame('co_decide', $perms['tiers']['listings'] ?? null, 'Re-saving the form escalated a prepare-only grant.');
     }
 
     public function test_settings_linked_accounts_revoke_removes_relationship(): void

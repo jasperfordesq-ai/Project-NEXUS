@@ -25,11 +25,14 @@ import {
   getManagerSubAccounts,
   getSubAccountActivity,
   requestSubAccount,
+  resolveSupportTiers,
   revokeSubAccount,
-  updateSubAccountPermissions,
+  updateSubAccountTiers,
   type SubAccountActivitySummary,
   type SubAccountPermission,
   type SubAccountRelationship,
+  type SupportTier,
+  type SupportTierCapability,
 } from '@/lib/api/settings';
 
 /**
@@ -120,12 +123,36 @@ function SettingsLinkedAccountsScreen() {
     }
   }
 
+  /**
+   * 🔴 Tier-aware toggles — reads AND writes go through the tier vocabulary.
+   *
+   * The old handler flipped the legacy boolean. That was a live escalation
+   * hazard: `co_decide` ("prepare only") projects to boolean `false`, so this
+   * screen rendered a real prepare-only grant as an OFF toggle, and "turning
+   * it on" posted a boolean the backend mapped to full act-alone power.
+   *
+   * Now: the toggle's on/off state comes from the resolved tier (any level ≠
+   * none shows as on), and changes post explicit tiers — `co_decide` when
+   * enabling listings/credits (the recommended family level; act-alone can be
+   * chosen on the web's three-level control), `assist` for activity, `none`
+   * when disabling. This screen can therefore never escalate anything.
+   */
   async function togglePermission(item: SubAccountRelationship, permission: SubAccountPermission) {
+    const capability: SupportTierCapability | null =
+      permission === 'can_view_activity' ? 'activity'
+      : permission === 'can_manage_listings' ? 'listings'
+      : permission === 'can_transact' ? 'credits'
+      : null;
+    if (!capability) return;
+
+    const currentTier = resolveSupportTiers(item.permissions)[capability];
+    const nextTier: SupportTier = currentTier !== 'none'
+      ? 'none'
+      : (capability === 'activity' ? 'assist' : 'co_decide');
+
     try {
       setBusyId(item.relationship_id);
-      await updateSubAccountPermissions(item.relationship_id, {
-        [permission]: !Boolean(item.permissions?.[permission]),
-      });
+      await updateSubAccountTiers(item.relationship_id, { [capability]: nextTier });
       query.refresh();
     } catch {
       showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.permissionFailed'), variant: 'danger' });
@@ -272,26 +299,37 @@ function RelationshipSection({
                   {canManagePermissions && item.status === 'active' ? (
                     <View className="gap-2">
                       <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('linkedAccounts.permissionsTitle')}</Text>
-                      {PERMISSIONS.map((permission) => (
-                        <Toggle
-                          key={permission}
-                          label={t(`linkedAccounts.permissions.${permission}`)}
-                          accessibilityLabel={t('linkedAccounts.permissionToggle', {
-                            permission: t(`linkedAccounts.permissions.${permission}`),
-                            name,
-                          })}
-                          value={Boolean(item.permissions?.[permission])}
-                          onValueChange={() => onTogglePermission(item, permission)}
-                          disabled={isBusy}
-                        />
-                      ))}
+                      {PERMISSIONS.map((permission) => {
+                        // 🔴 On/off must come from the resolved TIER, not the
+                        // legacy boolean: a co_decide ("prepare only") grant
+                        // projects to boolean false, and rendering it as off
+                        // is what made this screen an escalation hazard.
+                        const tiers = resolveSupportTiers(item.permissions);
+                        const capability =
+                          permission === 'can_view_activity' ? 'activity'
+                          : permission === 'can_manage_listings' ? 'listings'
+                          : 'credits';
+                        return (
+                          <Toggle
+                            key={permission}
+                            label={t(`linkedAccounts.permissions.${permission}`)}
+                            accessibilityLabel={t('linkedAccounts.permissionToggle', {
+                              permission: t(`linkedAccounts.permissions.${permission}`),
+                              name,
+                            })}
+                            value={tiers[capability] !== 'none'}
+                            onValueChange={() => onTogglePermission(item, permission)}
+                            disabled={isBusy}
+                          />
+                        );
+                      })}
                     </View>
                   ) : null}
 
                   {/* Read-only activity view (React SupportActivityModal parity).
                       Offered only when the grant is on AND the link is active —
                       never show what does not work. Seeing is all it does. */}
-                  {canManagePermissions && item.status === 'active' && Boolean(item.permissions?.can_view_activity) ? (
+                  {canManagePermissions && item.status === 'active' && resolveSupportTiers(item.permissions).activity !== 'none' ? (
                     <ActivitySection childUserId={item.user_id} name={name} />
                   ) : null}
 

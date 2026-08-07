@@ -544,7 +544,112 @@ class SubAccountControllerTest extends TestCase
         ])->assertStatus(403);
     }
 
-    /** @return array<string, bool> */
+    // ------------------------------------------------------------------
+    //  Boolean writes must never escalate a deliberate tier
+    // ------------------------------------------------------------------
+
+    private function seedActiveRelationshipWithTiers(int $parentId, int $childId, array $tiers): int
+    {
+        return (int) DB::table('account_relationships')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'parent_user_id' => $parentId,
+            'child_user_id' => $childId,
+            'relationship_type' => 'family',
+            'permissions' => json_encode([
+                'can_view_activity' => ($tiers['activity'] ?? 'none') !== 'none',
+                // toLegacyBooleans projection: co_decide → false. That lossy
+                // projection is exactly what the escalation guard exists for.
+                'can_manage_listings' => ($tiers['listings'] ?? 'none') === 'represent',
+                'can_transact' => ($tiers['credits'] ?? 'none') === 'represent',
+                'can_view_messages' => false,
+                'tiers' => $tiers,
+            ]),
+            'status' => 'active',
+            'approved_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * 🔴 The live safety bug this pins: a boolean-only client (the mobile app,
+     * any legacy caller) renders a co_decide grant as an OFF toggle, so members
+     * "turning it on" re-posted `can_manage_listings: true` — which used to
+     * replace prepare-only with full act-alone authority. Boolean true must
+     * mean "on", never "maximum power": an existing deliberate level survives.
+     */
+    public function test_boolean_true_does_not_escalate_a_co_decide_grant(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $relationshipId = $this->seedActiveRelationshipWithTiers($parent->id, $child->id, [
+            'activity' => 'assist', 'listings' => 'co_decide', 'credits' => 'none',
+        ]);
+
+        $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+            'permissions' => ['can_manage_listings' => true],
+        ])->assertOk();
+
+        $stored = $this->relationshipPermissions($relationshipId);
+        $this->assertSame('co_decide', $stored['tiers']['listings'] ?? null, 'Boolean true silently escalated co_decide to represent.');
+        $this->assertFalse((bool) ($stored['can_manage_listings'] ?? true), 'The legacy boolean projection of co_decide must stay false.');
+    }
+
+    public function test_boolean_false_still_switches_a_capability_off(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $relationshipId = $this->seedActiveRelationshipWithTiers($parent->id, $child->id, [
+            'activity' => 'assist', 'listings' => 'represent', 'credits' => 'co_decide',
+        ]);
+
+        $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+            'permissions' => ['can_manage_listings' => false],
+        ])->assertOk();
+
+        $stored = $this->relationshipPermissions($relationshipId);
+        $this->assertSame('none', $stored['tiers']['listings'] ?? null, 'Switching off must always be honoured.');
+        // The untouched capability keeps its deliberate middle level.
+        $this->assertSame('co_decide', $stored['tiers']['credits'] ?? null);
+    }
+
+    public function test_boolean_true_from_none_still_grants_the_legacy_tier(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $relationshipId = $this->seedActiveRelationshipWithTiers($parent->id, $child->id, [
+            'activity' => 'assist', 'listings' => 'none', 'credits' => 'none',
+        ]);
+
+        $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+            'permissions' => ['can_transact' => true],
+        ])->assertOk();
+
+        $stored = $this->relationshipPermissions($relationshipId);
+        // From none, a legacy boolean client's "on" keeps its historical
+        // meaning (represent) — there is no deliberate level to protect.
+        $this->assertSame('represent', $stored['tiers']['credits'] ?? null);
+    }
+
+    public function test_explicit_tiers_still_move_freely_in_both_directions(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $relationshipId = $this->seedActiveRelationshipWithTiers($parent->id, $child->id, [
+            'activity' => 'assist', 'listings' => 'co_decide', 'credits' => 'none',
+        ]);
+
+        // The guard is for the lossy boolean shorthand only: a client speaking
+        // the tier vocabulary states its level explicitly and is honoured.
+        $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+            'permissions' => ['tiers' => ['listings' => 'represent']],
+        ])->assertOk();
+
+        $stored = $this->relationshipPermissions($relationshipId);
+        $this->assertSame('represent', $stored['tiers']['listings'] ?? null);
+    }
+
+    /** @return array<string, mixed> */
     private function relationshipPermissions(int $relationshipId): array
     {
         $permissions = DB::table('account_relationships')

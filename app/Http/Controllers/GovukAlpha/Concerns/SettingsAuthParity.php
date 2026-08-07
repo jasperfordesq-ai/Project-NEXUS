@@ -145,6 +145,9 @@ trait SettingsAuthParity
             'parents' => $parents,
             'linkTypes' => self::SETTINGS_LINK_TYPES,
             'permissionKeys' => self::SETTINGS_LINK_PERMISSIONS,
+            // Listings/credits are edited as explicit tiers on this page (the
+            // boolean checkboxes were an escalation hazard — see the blade).
+            'grantableActionTiers' => ['none', 'co_decide', 'represent'],
             'maxChildren' => SubAccountService::MAX_CHILDREN,
             'status' => self::asStr($request->query('status')) ?: null,
         ]);
@@ -491,6 +494,9 @@ trait SettingsAuthParity
                 'status' => (string) ($row['status'] ?? 'pending'),
                 'permissions' => $permissionsFlags,
                 'can_see_activity' => $activityVisible,
+                // Resolved per-capability tiers, so the edit form can show the
+                // ACTUAL level (a co_decide grant must not render as "off").
+                'tiers' => \App\Support\Safeguarding\SupportTiers::resolve($perms),
             ];
         }
 
@@ -620,9 +626,24 @@ trait SettingsAuthParity
                 ->withFragment('children');
         }
 
-        $permissions = [];
-        foreach (self::SETTINGS_LINK_PERMISSIONS as $key) {
-            $permissions[$key] = $request->boolean('perm_' . $key);
+        // Activity travels as its boolean; listings/credits travel as EXPLICIT
+        // tiers. The page renders selects for those two precisely because the
+        // boolean projection of co_decide is "off" — posting booleans from
+        // this form was the escalation path (off-looking checkbox re-ticked →
+        // represent). Unknown select values are dropped by sanitizeTiers()
+        // server-side; only offer what the page offered.
+        $permissions = [
+            'can_view_activity' => $request->boolean('perm_can_view_activity'),
+        ];
+        $tiers = [];
+        foreach (['listings', 'credits'] as $capability) {
+            $tier = self::asStr($request->input('tier_' . $capability));
+            if (in_array($tier, ['none', 'co_decide', 'represent'], true)) {
+                $tiers[$capability] = $tier;
+            }
+        }
+        if ($tiers !== []) {
+            $permissions['tiers'] = $tiers;
         }
 
         try {

@@ -161,14 +161,41 @@
                                         <input type="hidden" name="relationship_id" value="{{ $cId }}">
                                         <fieldset class="govuk-fieldset govuk-!-margin-bottom-2">
                                             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ __('govuk_alpha_settings.linked.permissions_heading') }}</legend>
+                                            {{-- Activity stays a plain see/don't-see checkbox. --}}
                                             <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                @foreach ($permissionKeys as $permKey)
-                                                    <div class="govuk-checkboxes__item">
-                                                        <input class="govuk-checkboxes__input" id="perm_{{ $cId }}_{{ $permKey }}" name="perm_{{ $permKey }}" type="checkbox" value="1" @checked($cPerms[$permKey] ?? false)>
-                                                        <label class="govuk-label govuk-checkboxes__label" for="perm_{{ $cId }}_{{ $permKey }}">{{ __('govuk_alpha_settings.linked.permissions.' . $permKey) }}</label>
-                                                    </div>
-                                                @endforeach
+                                                <div class="govuk-checkboxes__item">
+                                                    <input class="govuk-checkboxes__input" id="perm_{{ $cId }}_can_view_activity" name="perm_can_view_activity" type="checkbox" value="1" @checked($cPerms['can_view_activity'] ?? false)>
+                                                    <label class="govuk-label govuk-checkboxes__label" for="perm_{{ $cId }}_can_view_activity">{{ __('govuk_alpha_settings.linked.permissions.can_view_activity') }}</label>
+                                                </div>
                                             </div>
+                                            {{--
+                                                Listings and credits are THREE-level choices, not on/off.
+                                                🔴 The old checkboxes were a live escalation hazard: a
+                                                "Prepare only" (co_decide) grant projects to an UNTICKED
+                                                box, so saving the form re-posted it as false→true, which
+                                                the boolean shorthand used to promote to full act-alone
+                                                power. Selects state the level explicitly; the backend
+                                                additionally refuses boolean-driven escalation now, but
+                                                this page must not misrepresent the grant in the first
+                                                place. Keys are page-local: the guardians page speaks from
+                                                the SUPPORTED MEMBER's side ("Your listings… you approve"),
+                                                this page from the SUPPORTER's ("Their listings… they
+                                                approve") — reusing those keys read wrong-way-round.
+                                            --}}
+                                            @foreach (['listings', 'credits'] as $capability)
+                                                <div class="govuk-form-group govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                                                    <label class="govuk-label" for="tier_{{ $cId }}_{{ $capability }}">
+                                                        {{ __('govuk_alpha_settings.linked.tiers_capability_' . $capability) }}
+                                                    </label>
+                                                    <select class="govuk-select" id="tier_{{ $cId }}_{{ $capability }}" name="tier_{{ $capability }}">
+                                                        @foreach ($grantableActionTiers ?? ['none', 'co_decide', 'represent'] as $tierOption)
+                                                            <option value="{{ $tierOption }}" @if ($tierOption === ($c['tiers'][$capability] ?? 'none')) selected @endif>
+                                                                {{ __('govuk_alpha_settings.linked.tiers_option_' . $tierOption) }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            @endforeach
                                         </fieldset>
                                         <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ __('govuk_alpha_settings.linked.save_permissions') }}<span class="govuk-visually-hidden"> {{ $cName }}</span></button>
                                     </form>

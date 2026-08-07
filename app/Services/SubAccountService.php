@@ -591,6 +591,20 @@ class SubAccountService
             if ((bool) $enabled === ($projected[$legacyKey] ?? false)) {
                 continue;
             }
+
+            // 🔴 Boolean `true` means "on", never "maximum power". A boolean-only
+            // client (the mobile app, any legacy caller) renders a `co_decide`
+            // grant as an OFF toggle, because toLegacyBooleans projects
+            // co_decide → false. Without this guard, a member "turning on" what
+            // looked like an off switch replaced their prepare-only arrangement
+            // with act-alone authority — a silent escalation of the exact power
+            // the middle tier exists to withhold. If the capability already
+            // holds ANY deliberate level, boolean true keeps it. `false` still
+            // means none: switching off is always honoured.
+            if ($enabled && $beforeTiers[$capability] !== SupportTiers::NONE) {
+                continue;
+            }
+
             $afterTiers[$capability] = $enabled ? $grantedTier : SupportTiers::NONE;
         }
 

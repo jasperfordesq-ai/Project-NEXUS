@@ -46,10 +46,22 @@ export type SubAccountPermission =
   | 'can_transact'
   | 'can_view_messages';
 
+/**
+ * Per-capability support levels (guardian redesign). Mirrors the backend
+ * SupportTiers vocabulary. 🔴 The legacy booleans are LOSSY: `co_decide`
+ * ("prepare only") projects to `false`, so a boolean-driven toggle renders a
+ * real grant as OFF and re-posting it as `true` used to escalate the grant to
+ * full act-alone power. Read state from `tiers`, write explicit tiers.
+ */
+export type SupportTier = 'none' | 'assist' | 'co_decide' | 'represent';
+export type SupportTierCapability = 'activity' | 'listings' | 'credits';
+
 export interface SubAccountRelationship {
   relationship_id: number;
   relationship_type: string;
-  permissions: Partial<Record<SubAccountPermission, boolean>>;
+  permissions: Partial<Record<SubAccountPermission, boolean>> & {
+    tiers?: Partial<Record<SupportTierCapability, SupportTier>>;
+  };
   status: SubAccountStatus;
   approved_at?: string | null;
   created_at: string;
@@ -117,6 +129,49 @@ export function updateSubAccountPermissions(
   permissions: Partial<Record<SubAccountPermission, boolean>>,
 ): Promise<unknown> {
   return api.put<unknown>(`${API_V2}/users/me/sub-accounts/${relationshipId}/permissions`, { permissions });
+}
+
+/**
+ * Change one capability's support level by EXPLICIT tier.
+ *
+ * 🔴 Always prefer this over updateSubAccountPermissions for listings/credits:
+ * posting a boolean cannot express "prepare only", so a boolean write from a
+ * screen that rendered a co_decide grant as an off toggle used to convert it
+ * into act-alone authority. The endpoint keeps the legacy booleans in sync
+ * server-side.
+ */
+export function updateSubAccountTiers(
+  relationshipId: number,
+  tiers: Partial<Record<SupportTierCapability, SupportTier>>,
+): Promise<unknown> {
+  return api.put<unknown>(`${API_V2}/users/me/sub-accounts/${relationshipId}/permissions`, {
+    permissions: { tiers },
+  });
+}
+
+/**
+ * Resolve the effective tier per capability, mirroring the backend
+ * SupportTiers::resolve(): explicit tiers win, legacy booleans are the floor,
+ * anything unrecognised degrades toward LESS power.
+ */
+export function resolveSupportTiers(
+  permissions: SubAccountRelationship['permissions'] | null | undefined,
+): Record<SupportTierCapability, SupportTier> {
+  const resolved: Record<SupportTierCapability, SupportTier> = {
+    activity: permissions?.can_view_activity ? 'assist' : 'none',
+    listings: permissions?.can_manage_listings ? 'represent' : 'none',
+    credits: permissions?.can_transact ? 'represent' : 'none',
+  };
+  const tiers = permissions?.tiers;
+  if (tiers && typeof tiers === 'object') {
+    for (const capability of ['activity', 'listings', 'credits'] as const) {
+      const value = tiers[capability];
+      if (value === 'none' || value === 'assist' || value === 'co_decide' || value === 'represent') {
+        resolved[capability] = value;
+      }
+    }
+  }
+  return resolved;
 }
 
 export function revokeSubAccount(relationshipId: number): Promise<unknown> {
