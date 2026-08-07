@@ -394,7 +394,18 @@
       "ward_state_pending": "Waiting for their answer",
       "ward_state_consented": "They agreed",
       "ward_state_declined": "They did not agree",
-      "ward_state_withdrawn": "They withdrew their agreement"
+      "ward_state_withdrawn": "They withdrew their agreement",
+      "tiers_title": "What they may do for you",
+      "tiers_intro": "You have agreed to this arrangement. You can also choose whether {{name}} may help with your listings or your time credits. This is entirely your choice, and you can change or remove it at any time.",
+      "tiers_capability_listings": "Your listings",
+      "tiers_capability_credits": "Your time credits",
+      "tiers_option_none": "Nothing",
+      "tiers_option_co_decide": "Prepare only — you approve each one",
+      "tiers_option_represent": "Do it on their own",
+      "tiers_aria": "What {{name}} may do about {{capability}}",
+      "tiers_explainer": "\"Prepare only\" means they set something up and nothing happens until you say yes. \"Do it on their own\" means it happens straight away, recorded as done by them on your behalf.",
+      "tiers_toast": "Saved.",
+      "tiers_error": "Could not save that. Nothing was changed."
     },
     "guardians_prompt": {
       "message": "Someone has been recorded as responsible for supporting you. Your answer is needed.",
@@ -637,7 +648,8 @@
       "option_co_decide": "Prepare only — they approve each one",
       "option_represent": "Act alone — fully recorded",
       "tier_aria": "Support level for {{capability}} of {{name}}",
-      "co_decide_explainer": "\"Prepare only\" means the helper sets things up and nothing happens until the account owner approves it — by one tap here, or from a link in their email. It is the recommended level for most families."
+      "co_decide_explainer": "\"Prepare only\" means the helper sets things up and nothing happens until the account owner approves it — by one tap here, or from a link in their email. It is the recommended level for most families.",
+      "set_by_member": "{{name}} chose these levels. Only they can change them, from their own safeguarding settings."
     },
     "approve": "Approve",
     "decline": "Decline",

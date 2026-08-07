@@ -300,6 +300,8 @@ return [
     'authority_relationship_not_found' => 'Níor aimsíodh an caidreamh, nó níl sé gníomhach',
     'authority_evidence_refused' => 'Ná hiontráil sonraí doiciméid. Ná taifead ach go bhfaca tú an t-údarás',
     'safeguarding_pair_already_linked' => 'Tá an bheirt bhall seo nasctha cheana féin. Cuir deireadh leis an nasc atá ann sula dtaifeadfaidh tú socrú nua',
+    'safeguarding_guardian_tiers_invalid' => 'Níorbh fhéidir na ceadanna a roghnaigh tú a shábháil. Roghnaigh ceann de na leibhéil atá ar fáil',
+    'safeguarding_guardian_tiers_changed_notification' => 'D\'athraigh {{name}} a bhfuil cead agat a dhéanamh dóibh',
     'both_versions_required' => 'Tá paraiméadair v1 agus v2 araon ag teastáil',
     'versions_not_found' => 'Leagan amháin nó an dá leagan nár aimsíodh',
     'version_number_required' => 'Tá uimhir an leagain ag teastáil',

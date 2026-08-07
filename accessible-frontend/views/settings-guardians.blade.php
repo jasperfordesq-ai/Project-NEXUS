@@ -23,8 +23,12 @@
         $guardians = $guardians ?? [];
         $wards = $wards ?? [];
 
-        $successStates = ['guardian-consented', 'guardian-declined', 'guardian-withdrawn'];
-        $errorStates = ['guardian-not-found', 'guardian-not-allowed', 'guardian-failed'];
+        $successStates = ['guardian-consented', 'guardian-declined', 'guardian-withdrawn', 'guardian-tiers-saved'];
+        $errorStates = ['guardian-not-found', 'guardian-not-allowed', 'guardian-failed', 'guardian-tiers-failed'];
+
+        // Levels the supported member may grant. `assist` is deliberately not
+        // offered: there is no draft-only screen behind it.
+        $grantableTiers = ['none', 'co_decide', 'represent'];
 
         // Which answers each position allows. Mirrors
         // GuardianArrangementService::ALLOWED_FROM so the page never offers an
@@ -40,6 +44,8 @@
             'guardian-consented' => 'status_consented',
             'guardian-declined' => 'status_declined',
             'guardian-withdrawn' => 'status_withdrawn',
+            'guardian-tiers-saved' => 'status_tiers_saved',
+            'guardian-tiers-failed' => 'status_tiers_failed',
             'guardian-not-found' => 'status_not_found',
             'guardian-not-allowed' => 'status_not_allowed',
             'guardian-failed' => 'status_failed',
@@ -132,6 +138,47 @@
                                         {{ $state === 'pending' ? __('govuk_alpha_settings.guardians.agree_button') : __('govuk_alpha_settings.guardians.agree_again_button') }}
                                     </button>
                                 </form>
+                            @endif
+
+                            {{--
+                                What this guardian may DO — the supported
+                                member's decision, and the only place it can be
+                                made. Offered only once they have agreed: a
+                                grant must never stand in for the consent.
+                                One capability per form, so a plain select and
+                                a submit button are all that is needed.
+                            --}}
+                            @if ($state === 'consented')
+                                <h3 class="govuk-heading-s govuk-!-margin-top-4">{{ __('govuk_alpha_settings.guardians.tiers_title') }}</h3>
+                                <p class="govuk-body-s">{{ __('govuk_alpha_settings.guardians.tiers_intro', ['name' => $guardian['guardian_name'] ?: __('govuk_alpha_settings.common.unknown_member')]) }}</p>
+
+                                @foreach (['listings', 'credits'] as $capability)
+                                    @php
+                                        $currentTier = $guardian['tiers'][$capability] ?? 'none';
+                                    @endphp
+                                    <form method="post" action="{{ route('govuk-alpha.settings.guardians.permissions', ['tenantSlug' => $tenantSlug]) }}" class="govuk-!-margin-bottom-3">
+                                        @csrf
+                                        <input type="hidden" name="assignment_id" value="{{ $gid }}">
+                                        <input type="hidden" name="capability" value="{{ $capability }}">
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="tier_{{ $capability }}_{{ $gid }}">
+                                                {{ __('govuk_alpha_settings.guardians.tiers_capability_' . $capability) }}
+                                            </label>
+                                            <select class="govuk-select" id="tier_{{ $capability }}_{{ $gid }}" name="tier">
+                                                @foreach ($grantableTiers as $tierOption)
+                                                    <option value="{{ $tierOption }}" @if ($tierOption === $currentTier) selected @endif>
+                                                        {{ __('govuk_alpha_settings.guardians.tiers_option_' . $tierOption) }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+                                            {{ __('govuk_alpha_settings.guardians.tiers_save_button') }}
+                                        </button>
+                                    </form>
+                                @endforeach
+
+                                <p class="govuk-body-s">{{ __('govuk_alpha_settings.guardians.tiers_explainer') }}</p>
                             @endif
 
                             @foreach (['declined', 'withdrawn'] as $negative)

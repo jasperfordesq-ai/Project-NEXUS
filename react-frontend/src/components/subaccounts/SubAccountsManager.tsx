@@ -64,6 +64,13 @@ interface AccountRelationshipRow {
   last_name?: string | null;
   avatar_url?: string | null;
   email: string;
+  /**
+   * A coordinator-recorded guardian arrangement, surfaced here only because
+   * the supported member granted a real level on it. The levels are THEIRS to
+   * set — this screen shows what was granted and lets it be used, and must
+   * never offer to change it. See GuardianArrangementService::setTiers().
+   */
+  staff_recorded?: boolean;
 }
 
 interface NormalizedRelationship extends Omit<AccountRelationshipRow, 'permissions'> {
@@ -422,7 +429,33 @@ export function SubAccountsManager() {
             </div>
             <p className="text-xs text-theme-subtle break-all">{account.email}</p>
 
-            {options.canManagePermissions && account.status === 'active' && (
+            {/*
+              A coordinator-recorded arrangement the supported member has
+              granted a level on. It appears here so the guardian can USE it —
+              the prepare buttons below — but the levels themselves are the
+              member's to set, on their own safeguarding screen, so no control
+              to change them is offered and the card says why.
+            */}
+            {options.canManagePermissions && account.status === 'active' && account.staff_recorded && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-medium text-theme-muted flex items-center gap-1">
+                  <Shield className="w-3 h-3" aria-hidden="true" />
+                  {t('sub_accounts.permissions_label')}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {(['listings', 'credits'] as const).map((capability) => (
+                    <Chip key={capability} size="sm" variant="flat" color={account.tiers[capability] === 'none' ? 'default' : 'success'}>
+                      {`${t(`sub_accounts.tiers.capability_${capability}`)}: ${t(`sub_accounts.tiers.option_${account.tiers[capability]}`)}`}
+                    </Chip>
+                  ))}
+                </div>
+                <p className="text-xs text-theme-muted">
+                  {t('sub_accounts.tiers.set_by_member', { name })}
+                </p>
+              </div>
+            )}
+
+            {options.canManagePermissions && account.status === 'active' && !account.staff_recorded && (
               <div className="mt-4 space-y-3">
                 <p className="text-xs font-medium text-theme-muted flex items-center gap-1">
                   <Shield className="w-3 h-3" aria-hidden="true" />
@@ -480,56 +513,6 @@ export function SubAccountsManager() {
                   {t('sub_accounts.tiers.co_decide_explainer')}
                 </p>
                 {/*
-                  Acting on the grant. Offered only when a tier actually
-                  permits it — co_decide prepares (the member approves each
-                  one), represent acts immediately. The modal states which
-                  before any field is filled in.
-                */}
-                {account.tiers.activity !== 'none' || (account.tiers.listings !== 'none' && account.tiers.listings !== 'assist') || (account.tiers.credits !== 'none' && account.tiers.credits !== 'assist') ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {account.tiers.activity !== 'none' && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onPress={() => setViewingActivity({
-                          supportedUserId: account.user_id,
-                          supportedName: name,
-                        })}
-                      >
-                        {t('support_activity.view_button')}
-                      </Button>
-                    )}
-                    {account.tiers.listings !== 'none' && account.tiers.listings !== 'assist' && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onPress={() => setPreparing({
-                          actionType: 'listing_create',
-                          supportedUserId: account.user_id,
-                          supportedName: name,
-                          tier: account.tiers.listings as 'co_decide' | 'represent',
-                        })}
-                      >
-                        {t('support_actions.prepare_listing_button')}
-                      </Button>
-                    )}
-                    {account.tiers.credits !== 'none' && account.tiers.credits !== 'assist' && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onPress={() => setPreparing({
-                          actionType: 'credit_transfer',
-                          supportedUserId: account.user_id,
-                          supportedName: name,
-                          tier: account.tiers.credits as 'co_decide' | 'represent',
-                        })}
-                      >
-                        {t('support_actions.prepare_transfer_button')}
-                      </Button>
-                    )}
-                  </div>
-                ) : null}
-                {/*
                   Stated explicitly rather than left as an absence. A family that
                   previously switched "View messages" on needs to know it never
                   did anything and is not being offered — silently dropping the
@@ -538,6 +521,62 @@ export function SubAccountsManager() {
                 <p className="text-xs text-theme-muted">
                   {t('sub_accounts.messages_not_offered')}
                 </p>
+              </div>
+            )}
+
+            {/*
+              Acting on the grant. Deliberately OUTSIDE the two blocks above so
+              it serves both: a member-created link, and a coordinator-recorded
+              arrangement the supported member has granted a level on. Offered
+              only when a level actually permits it — co_decide prepares (the
+              member approves each one), represent acts immediately. The modal
+              states which before any field is filled in.
+            */}
+            {options.canManagePermissions && account.status === 'active'
+              && (account.tiers.activity !== 'none'
+                || (account.tiers.listings !== 'none' && account.tiers.listings !== 'assist')
+                || (account.tiers.credits !== 'none' && account.tiers.credits !== 'assist')) && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {account.tiers.activity !== 'none' && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => setViewingActivity({
+                      supportedUserId: account.user_id,
+                      supportedName: name,
+                    })}
+                  >
+                    {t('support_activity.view_button')}
+                  </Button>
+                )}
+                {account.tiers.listings !== 'none' && account.tiers.listings !== 'assist' && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => setPreparing({
+                      actionType: 'listing_create',
+                      supportedUserId: account.user_id,
+                      supportedName: name,
+                      tier: account.tiers.listings as 'co_decide' | 'represent',
+                    })}
+                  >
+                    {t('support_actions.prepare_listing_button')}
+                  </Button>
+                )}
+                {account.tiers.credits !== 'none' && account.tiers.credits !== 'assist' && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => setPreparing({
+                      actionType: 'credit_transfer',
+                      supportedUserId: account.user_id,
+                      supportedName: name,
+                      tier: account.tiers.credits as 'co_decide' | 'represent',
+                    })}
+                  >
+                    {t('support_actions.prepare_transfer_button')}
+                  </Button>
+                )}
               </div>
             )}
 

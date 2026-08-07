@@ -312,6 +312,8 @@ return [
     'authority_relationship_not_found' => 'Nie znaleziono relacji lub jest nieaktywna',
     'authority_evidence_refused' => 'Nie wprowadzaj danych dokumentu. Odnotuj jedynie, że widziałeś(-aś) umocowanie',
     'safeguarding_pair_already_linked' => 'Ci dwaj członkowie są już połączeni. Zakończ istniejące połączenie przed zapisaniem nowego ustalenia',
+    'safeguarding_guardian_tiers_invalid' => 'Nie udało się zapisać wybranych uprawnień. Wybierz jeden z oferowanych poziomów',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} zmienił(a) zakres tego, co możesz dla niego/niej robić',
     'both_versions_required' => 'Wymagane są oba parametry v1 i v2',
     'versions_not_found' => 'Nie znaleziono jednej lub obu wersji',
     'version_number_required' => 'Numer wersji jest wymagany',

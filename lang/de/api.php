@@ -300,6 +300,8 @@ return [
     'authority_relationship_not_found' => 'Beziehung nicht gefunden oder nicht aktiv',
     'authority_evidence_refused' => 'Geben Sie keine Dokumentdetails ein. Halten Sie nur fest, dass Sie die Vollmacht eingesehen haben',
     'safeguarding_pair_already_linked' => 'Diese beiden Mitglieder sind bereits verknüpft. Beenden Sie die bestehende Verknüpfung, bevor Sie eine neue Vereinbarung festhalten',
+    'safeguarding_guardian_tiers_invalid' => 'Die gewählten Berechtigungen konnten nicht gespeichert werden. Wählen Sie eine der angebotenen Stufen',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} hat geändert, was Sie für sie tun dürfen',
     'both_versions_required' => 'Sowohl v1- als auch v2-Parameter sind erforderlich',
     'versions_not_found' => 'Eine oder beide Versionen wurden nicht gefunden',
     'version_number_required' => 'Versionsnummer ist erforderlich',

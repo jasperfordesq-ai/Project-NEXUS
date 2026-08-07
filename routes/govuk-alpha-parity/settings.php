@@ -66,6 +66,14 @@ Route::post('/settings/guardians/respond', [AlphaController::class, 'settingsRes
     ->middleware('throttle:nexus-route-10-per-1m')
     ->name('settings.guardians.respond');
 
+// The supported member sets what their guardian may DO. Only they can reach
+// it: the guardian-driven linked-accounts path refuses staff-recorded
+// arrangements, so without this the levels were unreachable for any recorded
+// pair. One capability per submit — plain select, plain button, no JavaScript.
+Route::post('/settings/guardians/permissions', [AlphaController::class, 'settingsUpdateGuardianPermissions'])
+    ->middleware('throttle:nexus-route-10-per-1m')
+    ->name('settings.guardians.permissions');
+
 // Co-decide support actions (guardian redesign phase 3/4 parity).
 //
 // 🔴 Parity with the React approval queue. A supporter prepares a listing or

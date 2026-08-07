@@ -313,6 +313,51 @@ trait SettingsAuthParity
     }
 
     /**
+     * The supported member sets what their guardian may actually do.
+     *
+     * Parity with the React safeguarding tab. Only the supported member can
+     * reach this — the guardian-driven linked-accounts path refuses
+     * staff-recorded arrangements outright, and without this the levels were
+     * unreachable for any pair a coordinator had recorded. One capability per
+     * submit so the page needs a plain select and a submit button, no
+     * JavaScript.
+     */
+    public function settingsUpdateGuardianPermissions(Request $request, string $tenantSlug): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $assignmentId = (int) $request->input('assignment_id');
+        $capability = self::asStr($request->input('capability'));
+        $tier = self::asStr($request->input('tier'));
+
+        if ($assignmentId <= 0 || $capability === '' || $tier === '') {
+            return $this->settingsGuardianRedirect($tenantSlug, 'guardian-tiers-failed');
+        }
+
+        try {
+            $result = app(GuardianArrangementService::class)->setTiers(
+                $userId,
+                TenantContext::getId(),
+                $assignmentId,
+                [$capability => $tier],
+            );
+            $status = $result['ok'] ? 'guardian-tiers-saved' : 'guardian-tiers-failed';
+        } catch (SafeguardingPolicyException $e) {
+            report($e);
+            $status = 'guardian-tiers-failed';
+        } catch (\Throwable $e) {
+            report($e);
+            $status = 'guardian-tiers-failed';
+        }
+
+        return $this->settingsGuardianRedirect($tenantSlug, $status);
+    }
+
+    /**
      * Co-decide support actions, both sides (guardian redesign parity).
      *
      * Approval queue for the supported member (a helper prepared something;

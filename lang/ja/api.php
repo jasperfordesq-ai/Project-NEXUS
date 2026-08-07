@@ -312,6 +312,8 @@ return [
     'authority_relationship_not_found' => '関係が見つからないか、有効ではありません',
     'authority_evidence_refused' => '書類の詳細は入力しないでください。権限を確認したことのみを記録します',
     'safeguarding_pair_already_linked' => 'この2人のメンバーはすでにリンクされています。新しい取り決めを記録する前に、既存のリンクを終了してください',
+    'safeguarding_guardian_tiers_invalid' => '選択した権限を保存できませんでした。提示されたレベルから選んでください',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}}さんが、あなたが代わりにできることを変更しました',
     'both_versions_required' => 'v1 パラメータと v2 パラメータの両方が必要です',
     'versions_not_found' => '一方または両方のバージョンが見つかりません',
     'version_number_required' => 'バージョン番号は必須です',

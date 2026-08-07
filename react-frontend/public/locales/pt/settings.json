@@ -394,7 +394,18 @@
       "ward_state_pending": "Esperando pela resposta deles",
       "ward_state_consented": "Eles concordaram",
       "ward_state_declined": "Eles não concordaram",
-      "ward_state_withdrawn": "Eles retiraram o acordo"
+      "ward_state_withdrawn": "Eles retiraram o acordo",
+      "tiers_title": "O que eles podem fazer por você",
+      "tiers_intro": "Você concordou com este acordo. Você também pode escolher se {{name}} pode ajudar com suas listagens ou com seus créditos de tempo. A escolha é inteiramente sua e você pode alterá-la ou removê-la a qualquer momento.",
+      "tiers_capability_listings": "Suas listagens",
+      "tiers_capability_credits": "Seus créditos de tempo",
+      "tiers_option_co_decide": "Prepare apenas - você aprova cada um",
+      "tiers_option_represent": "Faça isso por conta própria",
+      "tiers_aria": "O que {{name}} pode fazer sobre {{capability}}",
+      "tiers_explainer": "“Apenas preparar” significa que eles armaram algo e nada acontece até que você diga sim. \"Faça por conta própria\" significa que acontece imediatamente, registrado como feito por eles em seu nome.",
+      "tiers_error": "Não foi possível salvar isso. Nada foi alterado.",
+      "tiers_option_none": "Nada",
+      "tiers_toast": "Guardado."
     },
     "guardians_prompt": {
       "message": "Alguém foi registrado como responsável por apoiá-lo. Sua resposta é necessária.",
@@ -637,7 +648,8 @@
       "option_co_decide": "Apenas preparar — a pessoa aprova cada ação",
       "option_represent": "Agir sozinho — tudo registado",
       "tier_aria": "Nível de suporte para {{capability}} de {{name}}",
-      "co_decide_explainer": "\"Apenas preparar\" significa que o ajudante configura as coisas e nada acontece até que o proprietário da conta aprove - com um toque aqui ou em um link no e-mail. É o nível recomendado para a maioria das famílias."
+      "co_decide_explainer": "\"Apenas preparar\" significa que o ajudante configura as coisas e nada acontece até que o proprietário da conta aprove - com um toque aqui ou em um link no e-mail. É o nível recomendado para a maioria das famílias.",
+      "set_by_member": "{{name}} escolheu esses níveis. Só eles podem alterá-los, a partir das suas próprias configurações de salvaguarda."
     },
     "approve": "Aprovar",
     "decline": "Recusar",
@@ -711,18 +723,18 @@
     "done_directly_toast": "Feito. Eles foram informados",
     "recipient_label": "Para quem é?",
     "recipient_hint": "Digite um nome para pesquisar",
-    "listing_type_label": "Oferta ou pedido?",
-    "listing_type_offer": "Uma oferta – algo que eles podem fazer pelos outros",
-    "listing_type_request": "Um pedido - algo em que eles precisam de ajuda",
-    "hours_label": "Horas estimadas",
-    "submit_prepare": "Envie para aprovação",
-    "submit_direct": "Faça isso agora",
     "recipient_searching": "A pesquisar",
     "recipient_change": "Alterar",
     "amount_label": "Horas",
     "description_label": "Descrição",
     "listing_title_label": "Título",
+    "listing_type_label": "Oferta ou pedido?",
+    "listing_type_offer": "Uma oferta – algo que eles podem fazer pelos outros",
+    "listing_type_request": "Um pedido - algo em que eles precisam de ajuda",
     "category_label": "Categoria",
+    "hours_label": "Horas estimadas",
+    "submit_prepare": "Envie para aprovação",
+    "submit_direct": "Faça isso agora",
     "validation_recipient": "Escolha a quem se destinam as horas.",
     "validation_amount": "Indique quantas horas enviar.",
     "validation_balance": "Isso é mais do que tem. O saldo é de {{balance}} horas.",
@@ -814,9 +826,6 @@
   "biometric_enabled_other": "Chave(s) {{count}} registrada(s)",
   "twofa_backup_remaining_one": "{{count}} códigos de backup restantes",
   "twofa_backup_remaining_other": "{{count}} códigos de backup restantes",
-  "biometric_all_removed_many": "Chave(s) {{count}} removida(s).",
-  "biometric_enabled_many": "Chave(s) {{count}} registrada(s)",
-  "twofa_backup_remaining_many": "{{count}} códigos de backup restantes",
   "support_activity": {
     "view_button": "Ver a sua atividade",
     "title": "Atividade de {{name}}",
@@ -840,5 +849,8 @@
     "type_gave_hours": "Deu horas",
     "type_received_hours": "Recebeu horas",
     "type_other": "Atividade"
-  }
+  },
+  "biometric_all_removed_many": "Chave(s) {{count}} removida(s).",
+  "biometric_enabled_many": "Chave(s) {{count}} registrada(s)",
+  "twofa_backup_remaining_many": "{{count}} códigos de backup restantes"
 }

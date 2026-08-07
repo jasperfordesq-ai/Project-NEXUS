@@ -11,6 +11,7 @@ namespace App\Services;
 use App\I18n\LocaleContext;
 use App\Models\Notification;
 use App\Models\User;
+use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -295,6 +296,109 @@ class GuardianArrangementService
     }
 
     /**
+     * The supported member grants (or changes, or removes) what their guardian
+     * may actually do — the tiers from SupportTiers.
+     *
+     * 🔴 Why this exists, and why it lives HERE rather than on
+     * SubAccountService::updatePermissions().
+     *
+     * Phase 5 folded staff-recorded arrangements into account_relationships and
+     * then, correctly, refused to let anyone change their tiers through the
+     * linked-accounts path: that path is driven by the PARENT of the
+     * relationship, i.e. the guardian, and a guardian granting themselves
+     * powers over the person they support is precisely the thing this whole
+     * module exists to prevent. But no other route was provided, and one row
+     * per pair means the member could not create an ordinary linked account
+     * with that guardian either. The result was a dead end — the tiers became
+     * permanently unreachable for any pair a coordinator had recorded (found
+     * by the owner on 2026-08-07, on the only such pair in production).
+     *
+     * The fix is not to relax the guardian's block. It is to give the decision
+     * to the person it belongs to. Every guard here follows from that:
+     *
+     * - Scoped to `child_user_id = $wardId`: only the SUPPORTED member may
+     *   call this. The guardian gets NOT_FOUND, exactly as they do for
+     *   consent.
+     * - Only on an arrangement they have AGREED to (`status = 'active'`).
+     *   Granting powers under an arrangement you have refused, withdrawn from,
+     *   or not yet answered would let a grant stand in for the consent.
+     * - Raising any tier re-asserts the safeguarding contact policy in both
+     *   directions, at grant time, exactly as the linked-accounts path does.
+     *   Lowering never does — withdrawing power must always be a safe exit.
+     *
+     * @param  array<string,string>  $tiers  capability => tier; absent keys unchanged
+     * @return array{ok:bool,code:?string,tiers:?array<string,string>}
+     */
+    public function setTiers(int $wardId, int $tenantId, int $arrangementId, array $tiers): array
+    {
+        $clean = SupportTiers::sanitizeTiers($tiers);
+        if ($clean === []) {
+            return ['ok' => false, 'code' => 'VALIDATION_ERROR', 'tiers' => null];
+        }
+
+        return DB::transaction(function () use ($wardId, $tenantId, $arrangementId, $clean): array {
+            $row = DB::table('account_relationships')
+                ->where('id', $arrangementId)
+                ->where('tenant_id', $tenantId)
+                ->where('child_user_id', $wardId)
+                ->whereNotNull('proposed_by_user_id')
+                ->where('status', 'active')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $row) {
+                return ['ok' => false, 'code' => 'NOT_FOUND', 'tiers' => null];
+            }
+
+            $permissions = json_decode((string) $row->permissions, true);
+            $before = SupportTiers::resolve(is_array($permissions) ? $permissions : []);
+            $after = $before;
+            foreach ($clean as $capability => $tier) {
+                $after[$capability] = $tier;
+            }
+
+            if ($after === $before) {
+                // Nothing changed: succeed without writing a no-op history row.
+                return ['ok' => true, 'code' => null, 'tiers' => $after];
+            }
+
+            if (SupportTiers::isExpansion($before, $after)) {
+                // May throw SafeguardingPolicyException — the controller maps it.
+                $policy = app(SafeguardingInteractionPolicy::class);
+                $policy->assertLocalContactAllowed((int) $row->parent_user_id, $wardId, $tenantId, 'guardian_tier_grant');
+                $policy->assertLocalContactAllowed($wardId, (int) $row->parent_user_id, $tenantId, 'guardian_tier_grant');
+            }
+
+            DB::table('account_relationships')
+                ->where('id', $arrangementId)
+                ->update([
+                    'permissions' => json_encode(
+                        SupportTiers::toLegacyBooleans($after) + ['tiers' => $after],
+                    ),
+                    'updated_at' => now(),
+                ]);
+
+            $this->event(
+                $tenantId,
+                $arrangementId,
+                (int) $row->parent_user_id,
+                $wardId,
+                'permissions_changed',
+                'member',
+                $wardId,
+                null,
+                null,
+                null,
+                ['tiers_before' => $before, 'tiers_after' => $after],
+            );
+
+            $this->notifyGuardianOfTierChange($tenantId, (int) $row->parent_user_id, $wardId);
+
+            return ['ok' => true, 'code' => null, 'tiers' => $after];
+        }, 3);
+    }
+
+    /**
      * The arrangements recorded against a member, for their settings screen.
      *
      * @return list<array<string,mixed>>
@@ -310,22 +414,29 @@ class GuardianArrangementService
             ->orderByDesc('ar.created_at')
             ->select([
                 'ar.id', 'ar.status', 'ar.created_at', 'ar.approved_at', 'ar.declined_at',
-                'ar.withdrawn_at', 'ar.response_reason', 'ar.staff_notes',
+                'ar.withdrawn_at', 'ar.response_reason', 'ar.staff_notes', 'ar.permissions',
                 'g.first_name', 'g.last_name',
             ])
             ->get()
-            ->map(fn ($r) => [
-                'id'                   => (int) $r->id,
-                'guardian_name'        => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
-                'assigned_at'          => $r->created_at,
-                'consent_given_at'     => $r->approved_at,
-                'consent_declined_at'  => $r->declined_at,
-                'consent_withdrawn_at' => $r->withdrawn_at,
-                'ward_response_reason' => $r->response_reason,
-                'state'                => self::stateOf($r),
-                'consent_given'        => $r->approved_at !== null,
-                'notes'                => $r->staff_notes,
-            ])
+            ->map(function ($r) {
+                $permissions = json_decode((string) $r->permissions, true);
+
+                return [
+                    'id'                   => (int) $r->id,
+                    'guardian_name'        => trim(($r->first_name ?? '') . ' ' . ($r->last_name ?? '')),
+                    'assigned_at'          => $r->created_at,
+                    'consent_given_at'     => $r->approved_at,
+                    'consent_declined_at'  => $r->declined_at,
+                    'consent_withdrawn_at' => $r->withdrawn_at,
+                    'ward_response_reason' => $r->response_reason,
+                    'state'                => self::stateOf($r),
+                    'consent_given'        => $r->approved_at !== null,
+                    'notes'                => $r->staff_notes,
+                    // What this guardian may actually DO, which only the
+                    // supported member can set (see setTiers()).
+                    'tiers'                => SupportTiers::resolve(is_array($permissions) ? $permissions : []),
+                ];
+            })
             ->all();
     }
 
@@ -464,6 +575,7 @@ class GuardianArrangementService
         ?string $reason = null,
         ?string $ip = null,
         ?string $userAgent = null,
+        ?array $details = null,
     ): void {
         DB::table('account_relationship_events')->insert([
             'tenant_id'       => $tenantId,
@@ -474,10 +586,45 @@ class GuardianArrangementService
             'actor_role'      => $actorRole,
             'actor_user_id'   => $actorUserId,
             'reason'          => $reason,
+            'details'         => $details !== null ? json_encode($details) : null,
             'ip_address'      => $ip ?? request()?->ip(),
             'user_agent'      => mb_substr((string) ($userAgent ?? request()?->userAgent() ?? ''), 0, 255) ?: null,
             'created_at'      => now(),
         ]);
+    }
+
+    /**
+     * Tell the guardian what they may now do. A change to someone's powers
+     * that they only discover by trying is a poor way to run a support
+     * relationship — and if the member did not mean to grant it, the notice
+     * is how it comes to light. Rendered in the guardian's own language.
+     */
+    private function notifyGuardianOfTierChange(int $tenantId, int $guardianUserId, int $wardId): void
+    {
+        try {
+            $guardian = User::where('id', $guardianUserId)->where('tenant_id', $tenantId)->first();
+            if (! $guardian) {
+                return;
+            }
+
+            $ward = User::where('id', $wardId)->where('tenant_id', $tenantId)->first();
+            $wardName = $ward?->name ?: __('api_controllers_1.admin_safeguarding.a_member');
+
+            LocaleContext::withLocale($guardian, function () use ($tenantId, $guardianUserId, $wardName): void {
+                Notification::create([
+                    'tenant_id' => $tenantId,
+                    'user_id'   => $guardianUserId,
+                    'type'      => 'safeguarding_assignment',
+                    'message'   => __('api.safeguarding_guardian_tiers_changed_notification', ['name' => $wardName]),
+                    'link'      => SubAccountService::LINKED_ACCOUNTS_LINK,
+                    'is_read'   => false,
+                ]);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('[GuardianArrangement] tier-change notification failed: ' . $e->getMessage(), [
+                'guardian_user_id' => $guardianUserId,
+            ]);
+        }
     }
 
     /**

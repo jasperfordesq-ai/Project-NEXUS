@@ -289,6 +289,66 @@ class SafeguardingMemberController extends BaseApiController
      * One path so the transition rules, the append-only audit write and the staff
      * notification cannot drift between agree, refuse and withdraw.
      */
+    /**
+     * POST /v2/safeguarding/guardian-permissions
+     *
+     * The supported member sets what their guardian may actually do on an
+     * arrangement they have AGREED to. Only they can call this — the guardian
+     * gets the same 404 they get for consent, because a guardian granting
+     * themselves powers is the thing the module exists to prevent.
+     *
+     * Before this existed the tiers were unreachable for any pair a
+     * coordinator had recorded: the linked-accounts path refuses staff-created
+     * rows, and one-row-per-pair blocked making an ordinary link instead.
+     */
+    public function updateGuardianPermissions(Request $request): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $tenantId = TenantContext::getId();
+
+        $assignmentId = $request->input('assignment_id');
+        if (!is_numeric($assignmentId)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.resource_not_found'), 'assignment_id', 422);
+        }
+
+        $tiers = $request->input('tiers');
+        if (!is_array($tiers)) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.safeguarding_guardian_tiers_invalid'), 'tiers', 422);
+        }
+
+        try {
+            $result = app(\App\Services\GuardianArrangementService::class)->setTiers(
+                $userId,
+                $tenantId,
+                (int) $assignmentId,
+                $tiers,
+            );
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        }
+
+        if (!$result['ok']) {
+            // 404 for "not yours, or not an arrangement you have agreed to" —
+            // deliberately indistinguishable, so this cannot probe others'.
+            if ($result['code'] === 'NOT_FOUND') {
+                return $this->respondWithError('NOT_FOUND', __('api.resource_not_found'), null, 404);
+            }
+            return $this->respondWithError('VALIDATION_ERROR', __('api.safeguarding_guardian_tiers_invalid'), 'tiers', 422);
+        }
+
+        try {
+            \App\Models\ActivityLog::log(
+                $userId,
+                'safeguarding_guardian_tiers_set',
+                "Supported member set guardian permissions on arrangement #{$assignmentId}"
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[SafeguardingMember] Failed to log guardian tier change: ' . $e->getMessage());
+        }
+
+        return $this->respondWithData(['tiers' => $result['tiers']]);
+    }
+
     private function recordWardResponse(Request $request, string $action): JsonResponse
     {
         $userId = $this->requireAuth();

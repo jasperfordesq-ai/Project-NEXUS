@@ -720,6 +720,8 @@ return [
     'authority_relationship_not_found' => 'Relationship not found, or not active',
     'authority_evidence_refused' => 'Do not enter document details. Record only that you have sighted the authority',
     'safeguarding_pair_already_linked' => 'These two members are already linked. End the existing link before recording a new arrangement',
+    'safeguarding_guardian_tiers_invalid' => 'The permissions you chose could not be saved. Choose one of the offered levels',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} changed what you may do for them',
 
     // ============================================
     // ADMIN — LEGAL DOCS

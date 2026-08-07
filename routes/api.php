@@ -2972,6 +2972,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/v2/safeguarding/consent-to-guardian', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'consentToGuardian'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/decline-guardian', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'declineGuardian'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/withdraw-guardian-consent', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'withdrawGuardianConsent'])->middleware('throttle:nexus-route-10-per-1m');
+    // The SUPPORTED member decides what their guardian may actually do. This is
+    // the only route to the tiers on a staff-recorded arrangement — the
+    // linked-accounts path refuses those rows precisely so a guardian cannot
+    // grant themselves powers over the person they support.
+    Route::post('/v2/safeguarding/guardian-permissions', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'updateGuardianPermissions'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/confirm-policy-review', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'confirmPolicyReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/vetting-review-request', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'requestVettingReview'])->middleware('throttle:nexus-route-10-per-1m');
     Route::post('/v2/safeguarding/revoke', [\App\Http\Controllers\Api\SafeguardingMemberController::class, 'revoke']);

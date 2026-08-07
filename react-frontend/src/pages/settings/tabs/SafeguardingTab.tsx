@@ -77,6 +77,23 @@ interface MyPreferencesResponse {
  */
 type ArrangementState = 'pending' | 'consented' | 'declined' | 'withdrawn';
 
+/**
+ * What a guardian may actually DO. Mirrors App\Support\Safeguarding\SupportTiers.
+ *
+ * 🔴 Only the supported member sets these, and only here. The linked-accounts
+ * screen — which the GUARDIAN drives — refuses staff-recorded arrangements
+ * outright, because a guardian granting themselves powers over the person they
+ * support is the thing this module exists to prevent. Until this section
+ * existed the tiers were unreachable for any pair a coordinator had recorded.
+ */
+type SupportTier = 'none' | 'assist' | 'co_decide' | 'represent';
+type TierCapability = 'activity' | 'listings' | 'credits';
+
+/** `assist` is not offered for actions: there is no draft-only screen behind
+ *  it, and offering a level that does nothing is the fault this whole module
+ *  has been correcting. */
+const GRANTABLE_ACTION_TIERS: SupportTier[] = ['none', 'co_decide', 'represent'];
+
 interface MyGuardian {
   id: number;
   guardian_name: string;
@@ -88,6 +105,7 @@ interface MyGuardian {
   state: ArrangementState;
   consent_given: boolean;
   notes: string | null;
+  tiers?: Partial<Record<TierCapability, SupportTier>>;
 }
 
 /**
@@ -200,6 +218,7 @@ export function SafeguardingTab() {
   const [guardians, setGuardians] = useState<MyGuardian[]>([]);
   const [wards, setWards] = useState<MyWard[]>([]);
   const [consentingId, setConsentingId] = useState<number | null>(null);
+  const [tierBusyId, setTierBusyId] = useState<number | null>(null);
   // Refusing and withdrawing go through a confirm step with an OPTIONAL reason.
   // Agreeing does not: adding friction to consent is fine, adding it to refusal
   // would be a nudge toward agreeing.
@@ -323,6 +342,38 @@ export function SafeguardingTab() {
       setConsentingId(null);
     }
   }, [consentingId, loadPreferences, t, toast]);
+
+  /**
+   * The supported member changes what this guardian may do. Sends only the
+   * capability that changed; the server merges, so an absent key means
+   * "leave as it was" rather than "reset".
+   */
+  const handleTierChange = useCallback(async (
+    assignmentId: number,
+    capability: TierCapability,
+    tier: SupportTier,
+  ) => {
+    if (tierBusyId !== null) return;
+    setTierBusyId(assignmentId);
+    try {
+      const res = await api.post('/v2/safeguarding/guardian-permissions', {
+        assignment_id: assignmentId,
+        tiers: { [capability]: tier },
+      });
+      if (!res.success) {
+        // 🔴 api.ts never throws — without this the failure reads as success.
+        toast.error(res.error || t('safeguarding.guardians.tiers_error'));
+        return;
+      }
+      await loadPreferences();
+      toast.success(t('safeguarding.guardians.tiers_toast'));
+    } catch (error) {
+      logError('Guardian tier change failed', error);
+      toast.error(t('safeguarding.guardians.tiers_error'));
+    } finally {
+      setTierBusyId(null);
+    }
+  }, [tierBusyId, loadPreferences, t, toast]);
 
   /** Refusing and withdrawing confirm first, and offer an optional reason. */
   const openResponseModal = useCallback((guardian: MyGuardian, action: 'decline' | 'withdraw') => {
@@ -614,6 +665,74 @@ export function SafeguardingTab() {
                           )}
                         </div>
                       </div>
+
+                      {/*
+                        🔴 What this guardian may actually DO — and the only
+                        place in the platform it can be set. The linked-accounts
+                        screen is driven by the guardian, so it refuses these
+                        arrangements outright; without this section the levels
+                        were unreachable for every pair a coordinator recorded.
+
+                        Offered only once the member has AGREED: granting powers
+                        under an arrangement you have refused, withdrawn from, or
+                        not yet answered would let the grant stand in for the
+                        consent. The backend enforces the same rule.
+                      */}
+                      {guardian.state === 'consented' && (
+                        <div className="mt-4 space-y-3 border-t border-theme-default pt-4">
+                          <div>
+                            <p className="text-sm font-medium text-theme-primary">
+                              {t('safeguarding.guardians.tiers_title')}
+                            </p>
+                            <p className="text-xs text-theme-muted">
+                              {t('safeguarding.guardians.tiers_intro', { name: guardian.guardian_name })}
+                            </p>
+                          </div>
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {(['listings', 'credits'] as const).map((capability) => {
+                              const label = t(`safeguarding.guardians.tiers_capability_${capability}`);
+                              const current = guardian.tiers?.[capability] ?? 'none';
+
+                              return (
+                                <label key={capability} className="flex flex-col gap-1 text-xs text-theme-muted">
+                                  {label}
+                                  {/*
+                                    A plain <select>: this screen is reached by
+                                    the people least well served by custom
+                                    widgets, and the native control is the most
+                                    reliable thing on any device or assistive
+                                    technology.
+                                  */}
+                                  <select
+                                    className="rounded-lg border border-theme-default bg-theme-elevated px-3 py-2 text-sm text-theme-primary"
+                                    value={current}
+                                    disabled={tierBusyId !== null}
+                                    aria-label={t('safeguarding.guardians.tiers_aria', {
+                                      capability: label,
+                                      name: guardian.guardian_name,
+                                    })}
+                                    onChange={(e) => {
+                                      const next = e.target.value as SupportTier;
+                                      if (next !== current) handleTierChange(guardian.id, capability, next);
+                                    }}
+                                  >
+                                    {GRANTABLE_ACTION_TIERS.map((tier) => (
+                                      <option key={tier} value={tier}>
+                                        {t(`safeguarding.guardians.tiers_option_${tier}`)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                              );
+                            })}
+                          </div>
+
+                          <p className="text-xs text-theme-muted">
+                            {t('safeguarding.guardians.tiers_explainer')}
+                          </p>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

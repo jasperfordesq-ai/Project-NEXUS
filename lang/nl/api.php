@@ -312,6 +312,8 @@ return [
     'authority_relationship_not_found' => 'Relatie niet gevonden of niet actief',
     'authority_evidence_refused' => 'Voer geen documentgegevens in. Leg alleen vast dat u de machtiging heeft ingezien',
     'safeguarding_pair_already_linked' => 'Deze twee leden zijn al gekoppeld. Beëindig de bestaande koppeling voordat u een nieuwe regeling vastlegt',
+    'safeguarding_guardian_tiers_invalid' => 'De gekozen rechten konden niet worden opgeslagen. Kies een van de aangeboden niveaus',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} heeft gewijzigd wat u voor hen mag doen',
     'both_versions_required' => 'Zowel v1- als v2-parameters zijn vereist',
     'versions_not_found' => 'Eén of beide versies niet gevonden',
     'version_number_required' => 'Versienummer is vereist',

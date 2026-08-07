@@ -300,6 +300,8 @@ return [
     'authority_relationship_not_found' => 'Relación no encontrada o no activa',
     'authority_evidence_refused' => 'No introduzca detalles del documento. Registre únicamente que ha visto la autoridad',
     'safeguarding_pair_already_linked' => 'Estos dos miembros ya están vinculados. Finalice el vínculo existente antes de registrar un nuevo acuerdo',
+    'safeguarding_guardian_tiers_invalid' => 'No se han podido guardar los permisos elegidos. Elija uno de los niveles ofrecidos',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} ha cambiado lo que usted puede hacer por esta persona',
     'both_versions_required' => 'Se requieren los parámetros v1 y v2',
     'versions_not_found' => 'Una o ambas versiones no encontradas',
     'version_number_required' => 'Se requiere el número de versión',

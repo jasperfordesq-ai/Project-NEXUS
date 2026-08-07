@@ -144,13 +144,12 @@ class SubAccountService
             ->join('users as u', 'account_relationships.child_user_id', '=', 'u.id')
             ->where('account_relationships.parent_user_id', $parentUserId)
             ->whereIn('account_relationships.status', ['active', 'pending'])
-            // Staff-proposed arrangements belong to the safeguarding screens.
-            ->whereNull('account_relationships.proposed_by_user_id')
             ->select(
                 'account_relationships.id as relationship_id',
                 'account_relationships.relationship_type',
                 'account_relationships.permissions',
                 'account_relationships.status',
+                'account_relationships.proposed_by_user_id',
                 'account_relationships.approved_at',
                 'account_relationships.created_at',
                 'u.id as user_id',
@@ -162,6 +161,28 @@ class SubAccountService
             ->orderByDesc('account_relationships.created_at')
             ->get()
             ->map(fn ($r) => $r->toArray())
+            // Staff-recorded arrangements belong to the safeguarding screens —
+            // EXCEPT once the supported member has granted a real tier on one
+            // (GuardianArrangementService::setTiers). Then the guardian needs
+            // somewhere to USE it, and this is the screen that prepares
+            // listings and transfers. Those rows carry `staff_recorded` so the
+            // UI shows the grant read-only: the guardian may act on it, and
+            // may never re-grant it to themselves.
+            ->filter(function (array $row): bool {
+                if (($row['proposed_by_user_id'] ?? null) === null) {
+                    return true;
+                }
+                $tiers = SupportTiers::resolve($row['permissions'] ?? []);
+
+                return $tiers !== SupportTiers::noneGranted();
+            })
+            ->map(function (array $row): array {
+                $row['staff_recorded'] = ($row['proposed_by_user_id'] ?? null) !== null;
+                unset($row['proposed_by_user_id']);
+
+                return $row;
+            })
+            ->values()
             ->all();
     }
 

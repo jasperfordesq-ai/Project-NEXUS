@@ -300,6 +300,8 @@ return [
     'authority_relationship_not_found' => 'Relation introuvable ou inactive',
     'authority_evidence_refused' => 'N’entrez aucun détail de document. Consignez seulement que vous avez vu l’autorité',
     'safeguarding_pair_already_linked' => 'Ces deux membres sont déjà liés. Mettez fin au lien existant avant d’enregistrer un nouvel arrangement',
+    'safeguarding_guardian_tiers_invalid' => 'Les autorisations choisies n’ont pas pu être enregistrées. Choisissez l’un des niveaux proposés',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} a modifié ce que vous pouvez faire pour cette personne',
     'both_versions_required' => 'Les paramètres v1 et v2 sont requis',
     'versions_not_found' => 'Une ou les deux versions introuvables',
     'version_number_required' => 'Le numéro de version est requis',

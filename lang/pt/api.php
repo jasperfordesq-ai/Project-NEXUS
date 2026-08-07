@@ -300,6 +300,8 @@ return [
     'authority_relationship_not_found' => 'Relação não encontrada ou não ativa',
     'authority_evidence_refused' => 'Não introduza detalhes do documento. Registe apenas que viu a autoridade',
     'safeguarding_pair_already_linked' => 'Estes dois membros já estão ligados. Termine a ligação existente antes de registar um novo acordo',
+    'safeguarding_guardian_tiers_invalid' => 'Não foi possível guardar as permissões escolhidas. Escolha um dos níveis apresentados',
+    'safeguarding_guardian_tiers_changed_notification' => '{{name}} alterou o que pode fazer por esta pessoa',
     'both_versions_required' => 'Os parâmetros v1 e v2 são obrigatórios',
     'versions_not_found' => 'Uma ou ambas as versões não encontradas',
     'version_number_required' => 'O número da versão é obrigatório',

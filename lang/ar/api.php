@@ -312,6 +312,8 @@ return [
     'authority_relationship_not_found' => 'لم يتم العثور على العلاقة أو أنها غير نشطة',
     'authority_evidence_refused' => 'لا تُدخل تفاصيل المستند. سجّل فقط أنك اطلعت على التفويض',
     'safeguarding_pair_already_linked' => 'هذان العضوان مرتبطان بالفعل. أنهِ الارتباط الحالي قبل تسجيل ترتيب جديد',
+    'safeguarding_guardian_tiers_invalid' => 'تعذّر حفظ الصلاحيات التي اخترتها. اختر أحد المستويات المتاحة',
+    'safeguarding_guardian_tiers_changed_notification' => 'غيّر {{name}} ما يمكنك فعله نيابة عنه',
     'both_versions_required' => 'كلا المعلمتين v1 وv2 مطلوبتان',
     'versions_not_found' => 'لم يتم العثور على أحد الإصدارين أو كليهما',
     'version_number_required' => 'رقم الإصدار مطلوب',

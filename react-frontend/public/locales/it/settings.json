@@ -394,7 +394,18 @@
       "ward_state_pending": "In attesa della loro risposta",
       "ward_state_consented": "Erano d'accordo",
       "ward_state_declined": "Non erano d'accordo",
-      "ward_state_withdrawn": "Hanno ritirato il loro accordo"
+      "ward_state_withdrawn": "Hanno ritirato il loro accordo",
+      "tiers_title": "Cosa potrebbero fare per te",
+      "tiers_intro": "Hai accettato questo accordo. Puoi anche scegliere se {{name}} può aiutarti con le tue inserzioni o con i tuoi crediti temporali. Questa è interamente una tua scelta e puoi modificarla o rimuoverla in qualsiasi momento.",
+      "tiers_capability_listings": "Le tue inserzioni",
+      "tiers_capability_credits": "I tuoi crediti di tempo",
+      "tiers_option_co_decide": "Prepara solo: approvi ciascuno di essi",
+      "tiers_option_represent": "Fallo da soli",
+      "tiers_aria": "Cosa può fare {{name}} riguardo a {{capability}}",
+      "tiers_explainer": "\"Solo preparazione\" significa che impostano qualcosa e non succede nulla finché non dici di sì. \"Fallo da soli\" significa che avviene immediatamente, registrato come fatto da loro per tuo conto.",
+      "tiers_error": "Impossibile salvarlo. Niente è stato cambiato.",
+      "tiers_option_none": "Niente",
+      "tiers_toast": "Salvato."
     },
     "guardians_prompt": {
       "message": "Qualcuno è stato registrato come responsabile del tuo supporto. È necessaria la tua risposta.",
@@ -637,7 +648,8 @@
       "option_co_decide": "Solo preparare — la persona approva ogni azione",
       "option_represent": "Agire da solo — tutto registrato",
       "tier_aria": "Livello di supporto per {{capability}} pari a {{name}}",
-      "co_decide_explainer": "\"Solo preparazione\" significa che l'assistente imposta le cose e non succede nulla finché il proprietario dell'account non lo approva, toccandolo qui o tramite un collegamento nell'e-mail. È il livello consigliato per la maggior parte delle famiglie."
+      "co_decide_explainer": "\"Solo preparazione\" significa che l'assistente imposta le cose e non succede nulla finché il proprietario dell'account non lo approva, toccandolo qui o tramite un collegamento nell'e-mail. È il livello consigliato per la maggior parte delle famiglie.",
+      "set_by_member": "{{name}} ha scelto questi livelli. Solo loro possono cambiarli, dalle proprie impostazioni di salvaguardia."
     },
     "approve": "Approva",
     "decline": "Rifiuta",
@@ -711,18 +723,18 @@
     "done_directly_toast": "Fatto. Gli è stato detto",
     "recipient_label": "Per chi è?",
     "recipient_hint": "Digita un nome da cercare",
-    "listing_type_label": "Offerta o richiesta?",
-    "listing_type_offer": "Un'offerta: qualcosa che possono fare per gli altri",
-    "listing_type_request": "Una richiesta: qualcosa per cui hanno bisogno di aiuto",
-    "hours_label": "Ore stimate",
-    "submit_prepare": "Invia per la loro approvazione",
-    "submit_direct": "Fallo adesso",
     "recipient_searching": "Ricerca in corso",
     "recipient_change": "Cambia",
     "amount_label": "Ore",
     "description_label": "Descrizione",
     "listing_title_label": "Titolo",
+    "listing_type_label": "Offerta o richiesta?",
+    "listing_type_offer": "Un'offerta: qualcosa che possono fare per gli altri",
+    "listing_type_request": "Una richiesta: qualcosa per cui hanno bisogno di aiuto",
     "category_label": "Categoria",
+    "hours_label": "Ore stimate",
+    "submit_prepare": "Invia per la loro approvazione",
+    "submit_direct": "Fallo adesso",
     "validation_recipient": "Scegli a chi sono destinate le ore.",
     "validation_amount": "Indica quante ore inviare.",
     "validation_balance": "È più di quanto abbia. Il suo saldo è di {{balance}} ore.",
@@ -814,9 +826,6 @@
   "biometric_enabled_other": "{{count}} passkey registrate",
   "twofa_backup_remaining_one": "{{count}} codici di backup rimanenti",
   "twofa_backup_remaining_other": "{{count}} codici di backup rimanenti",
-  "biometric_all_removed_many": "Rimosse {{count}} passkey.",
-  "biometric_enabled_many": "{{count}} passkey registrate",
-  "twofa_backup_remaining_many": "{{count}} codici di backup rimanenti",
   "support_activity": {
     "view_button": "Vedi la sua attività",
     "title": "Attività di {{name}}",
@@ -840,5 +849,8 @@
     "type_gave_hours": "Ore date",
     "type_received_hours": "Ore ricevute",
     "type_other": "Attività"
-  }
+  },
+  "biometric_all_removed_many": "Rimosse {{count}} passkey.",
+  "biometric_enabled_many": "{{count}} passkey registrate",
+  "twofa_backup_remaining_many": "{{count}} codici di backup rimanenti"
 }

@@ -394,7 +394,18 @@
       "ward_state_pending": "Esperando su respuesta",
       "ward_state_consented": "estuvieron de acuerdo",
       "ward_state_declined": "ellos no estuvieron de acuerdo",
-      "ward_state_withdrawn": "Retiraron su acuerdo"
+      "ward_state_withdrawn": "Retiraron su acuerdo",
+      "tiers_title": "Qué pueden hacer por ti",
+      "tiers_intro": "Usted ha aceptado este acuerdo. También puedes elegir si {{name}} puede ayudarte con tus listados o con tus créditos de tiempo. Esta es totalmente tu elección y puedes cambiarla o eliminarla en cualquier momento.",
+      "tiers_capability_listings": "Tus anuncios",
+      "tiers_capability_credits": "Tus créditos de tiempo",
+      "tiers_option_co_decide": "Solo prepárate: tú apruebas cada uno",
+      "tiers_option_represent": "Hazlo por su cuenta",
+      "tiers_aria": "¿Qué puede hacer {{name}} con respecto a {{capability}}?",
+      "tiers_explainer": "\"Preparar sólo\" significa que prepararon algo y no pasa nada hasta que usted dice que sí. \"Hacerlo por su cuenta\" significa que sucede de inmediato, registrado como hecho por ellos en su nombre.",
+      "tiers_error": "No se pudo salvar eso. No se cambió nada.",
+      "tiers_option_none": "Nada",
+      "tiers_toast": "Guardado."
     },
     "guardians_prompt": {
       "message": "Alguien ha sido registrado como responsable de apoyarte. Se necesita tu respuesta.",
@@ -637,7 +648,8 @@
       "option_co_decide": "Solo preparar — la persona aprueba cada acción",
       "option_represent": "Actuar por su cuenta — todo queda registrado",
       "tier_aria": "Nivel de soporte para {{capability}} de {{name}}",
-      "co_decide_explainer": "\"Solo preparar\" significa que el ayudante configura las cosas y no sucede nada hasta que el propietario de la cuenta lo apruebe, con un toque aquí o desde un enlace en su correo electrónico. Es el nivel recomendado para la mayoría de familias."
+      "co_decide_explainer": "\"Solo preparar\" significa que el ayudante configura las cosas y no sucede nada hasta que el propietario de la cuenta lo apruebe, con un toque aquí o desde un enlace en su correo electrónico. Es el nivel recomendado para la mayoría de familias.",
+      "set_by_member": "{{name}} eligió estos niveles. Sólo ellos pueden cambiarlos, desde sus propios entornos de salvaguardia."
     },
     "approve": "Aprobar",
     "decline": "Rechazar",
@@ -711,18 +723,18 @@
     "done_directly_toast": "Hecho. les han dicho",
     "recipient_label": "¿Para quién es?",
     "recipient_hint": "Escribe un nombre para buscar",
-    "listing_type_label": "¿Oferta o solicitud?",
-    "listing_type_offer": "Una oferta: algo que pueden hacer por los demás.",
-    "listing_type_request": "Una solicitud: algo con lo que necesitan ayuda",
-    "hours_label": "Horas estimadas",
-    "submit_prepare": "Enviar para su aprobación",
-    "submit_direct": "hazlo ahora",
     "recipient_searching": "Buscando",
     "recipient_change": "Cambiar",
     "amount_label": "Horas",
     "description_label": "Descripción",
     "listing_title_label": "Título",
+    "listing_type_label": "¿Oferta o solicitud?",
+    "listing_type_offer": "Una oferta: algo que pueden hacer por los demás.",
+    "listing_type_request": "Una solicitud: algo con lo que necesitan ayuda",
     "category_label": "Categoría",
+    "hours_label": "Horas estimadas",
+    "submit_prepare": "Enviar para su aprobación",
+    "submit_direct": "hazlo ahora",
     "validation_recipient": "Elige a quién van dirigidas las horas.",
     "validation_amount": "Indica cuántas horas enviar.",
     "validation_balance": "Eso es más de lo que tiene. Su saldo es de {{balance}} horas.",
@@ -814,9 +826,6 @@
   "biometric_enabled_other": "Claves de acceso {{count}} registradas",
   "twofa_backup_remaining_one": "{{count}} códigos de respaldo restantes",
   "twofa_backup_remaining_other": "{{count}} códigos de respaldo restantes",
-  "biometric_all_removed_many": "Se eliminaron las claves de acceso {{count}}.",
-  "biometric_enabled_many": "Claves de acceso {{count}} registradas",
-  "twofa_backup_remaining_many": "{{count}} códigos de respaldo restantes",
   "support_activity": {
     "view_button": "Ver su actividad",
     "title": "Actividad de {{name}}",
@@ -840,5 +849,8 @@
     "type_gave_hours": "Dio horas",
     "type_received_hours": "Recibió horas",
     "type_other": "Actividad"
-  }
+  },
+  "biometric_all_removed_many": "Se eliminaron las claves de acceso {{count}}.",
+  "biometric_enabled_many": "Claves de acceso {{count}} registradas",
+  "twofa_backup_remaining_many": "{{count}} códigos de respaldo restantes"
 }
