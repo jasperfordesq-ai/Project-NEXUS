@@ -57,7 +57,10 @@ class SafeguardingService
         $this->errors = [];
 
         if ($guardianUserId === $wardUserId) {
-            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => 'Guardian and ward cannot be the same person'];
+            // Existing translated keys — added when the broker dashboard began
+            // surfacing these refusals verbatim. "Ward" is retired wording; the
+            // key's English already says "supported member".
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.ward_guardian_same_person')];
             return ['success' => false, 'errors' => $this->errors];
         }
 
@@ -66,11 +69,11 @@ class SafeguardingService
         $wardExists = User::where('id', $wardUserId)->where('tenant_id', TenantContext::getId())->where('status', 'active')->exists();
 
         if (!$guardianExists) {
-            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => 'Guardian user not found'];
+            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.guardian_not_found_in_tenant')];
             return ['success' => false, 'errors' => $this->errors];
         }
         if (!$wardExists) {
-            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => 'Ward user not found'];
+            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.ward_not_found_in_tenant')];
             return ['success' => false, 'errors' => $this->errors];
         }
 
