@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ 交換紛争 — ブローカーのレビューが必要です",
     "sub_account_request": "アカウントの管理をリクエストされました",
     "sub_account_approved": "リンクされたアカウントのリクエストが承認されました",
+    "sub_account_proxy_listing": "あなたの名前でリストが投稿されました",
+    "sub_account_proxy_transfer": "あなたのアカウントからタイムクレジットが送られました",
+    "sub_account_permissions_expanded": "サポーターがあなたのアカウントでできることが増えました",
     "default": "Project NEXUS からの通知"
   },
   "exchange_dispute": {

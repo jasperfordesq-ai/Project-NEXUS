@@ -139,7 +139,15 @@
     "approved_heading": "Tu solicitud fue aprobada",
     "approved_body": "{{name}} aprobó tu solicitud de vincularte a su cuenta.",
     "approved_what_next": "Puedes ver el vínculo y los permisos que te han concedido en la página de cuentas vinculadas.",
-    "btn_view_linked_accounts": "Ver cuentas vinculadas"
+    "btn_view_linked_accounts": "Ver cuentas vinculadas",
+    "proxy_listing_heading": "Se publicó un anuncio en tu nombre",
+    "proxy_listing_body": "{{name}}, a quien permitiste gestionar tus anuncios, ha publicado un anuncio en tu nombre.",
+    "proxy_transfer_heading": "Se enviaron créditos de tiempo desde tu cuenta",
+    "proxy_transfer_body": "{{name}}, a quien permitiste enviar créditos de tiempo por ti, ha enviado créditos desde tu saldo.",
+    "label_acted_by": "Realizado por",
+    "proxy_recorded_note": "Cada acción hecha en tu nombre queda registrada. Si no lo esperabas, puedes cambiar lo que esta persona puede hacer — o quitar el vínculo — en tus ajustes en cualquier momento.",
+    "btn_view_listing": "Ver el anuncio",
+    "btn_view_wallet": "Ver tu monedero"
   },
   "support_action": {
     "pending_heading": "Algo está esperando tu aprobación.",

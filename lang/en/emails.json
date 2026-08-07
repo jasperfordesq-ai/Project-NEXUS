@@ -476,6 +476,9 @@
     "exchange_disputed": "⚠️ Exchange Dispute - Broker Review Needed",
     "sub_account_request": "Someone has asked to manage your account",
     "sub_account_approved": "Your linked account request was approved",
+    "sub_account_proxy_listing": "A listing was posted in your name",
+    "sub_account_proxy_transfer": "Time credits were sent from your account",
+    "sub_account_permissions_expanded": "A helper can now do more on your account",
     "default": "Notification from Project NEXUS"
   },
   "exchange_dispute": {

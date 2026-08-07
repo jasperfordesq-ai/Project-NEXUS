@@ -216,6 +216,15 @@ class NotificationDispatcher
             // digest the member has not opted into.
             'sub_account_request',
             'sub_account_approved',
+            // A carer ACTED: posted a listing in the member's name or spent
+            // credits from their balance. Money leaving your account is never
+            // digest material — the disclosure must arrive when the act does.
+            'sub_account_proxy_listing',
+            'sub_account_proxy_transfer',
+            // A supporter's power over the member's account GREW. The member
+            // must hear that when it happens, not in a digest they never
+            // opted into. (Shrinks stay bell-level news.)
+            'sub_account_permissions_expanded',
             // Co-decide support actions (guardian redesign phase 3). The
             // pending notification carries the single-use confirm link — for a
             // member who rarely logs in, the email IS the flow. The answers
@@ -2856,6 +2865,98 @@ HTML;
         </p>
         <div style="text-align: center; margin-top: 24px;">
             <a href="{$frontendUrl}{$basePath}/settings?tab=linked-accounts" style="display: inline-block; background-color: #22c55e; background-image: linear-gradient(135deg, #22c55e, #059669); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnView}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Email to the member whose account a carer just ACTED on (represent
+     * tier): a listing was posted in their name. Names the carer — "someone
+     * who manages your account" withheld the one fact the member would act
+     * on — and links straight to the listing so the disclosure is checkable.
+     */
+    public static function buildSubAccountProxyListingEmail(string $actorName, string $listingLink): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $actorHtml = htmlspecialchars($actorName, ENT_QUOTES, 'UTF-8');
+        $linkPath = htmlspecialchars($listingLink, ENT_QUOTES, 'UTF-8');
+
+        $heading = __('emails_notifications.sub_account.proxy_listing_heading');
+        $tenantLabel = __('emails_notifications.sub_account.tenant_label', ['community' => $tenantName]);
+        $body = __('emails_notifications.sub_account.proxy_listing_body', ['name' => $actorHtml]);
+        $labelActor = __('emails_notifications.sub_account.label_acted_by');
+        $recordedNote = __('emails_notifications.sub_account.proxy_recorded_note');
+        $btnView = __('emails_notifications.sub_account.btn_view_listing');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelActor}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">{$actorHtml}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$recordedNote}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}{$linkPath}" style="display: inline-block; background-color: #6366f1; background-image: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnView}</a>
+        </div>
+    </div>
+</div>
+HTML;
+    }
+
+    /**
+     * Email to the member whose balance a carer just spent from (represent
+     * tier). Amber header on purpose: money left the account, and the member
+     * did not press the button — attention-worthy, not celebratory.
+     */
+    public static function buildSubAccountProxyTransferEmail(string $actorName): string
+    {
+        $tenant = TenantContext::get();
+        $tenantName = htmlspecialchars($tenant['name'] ?? 'Community', ENT_QUOTES, 'UTF-8');
+        $basePath = TenantContext::getSlugPrefix();
+        $frontendUrl = TenantContext::getFrontendUrl();
+        $actorHtml = htmlspecialchars($actorName, ENT_QUOTES, 'UTF-8');
+
+        $heading = __('emails_notifications.sub_account.proxy_transfer_heading');
+        $tenantLabel = __('emails_notifications.sub_account.tenant_label', ['community' => $tenantName]);
+        $body = __('emails_notifications.sub_account.proxy_transfer_body', ['name' => $actorHtml]);
+        $labelActor = __('emails_notifications.sub_account.label_acted_by');
+        $recordedNote = __('emails_notifications.sub_account.proxy_recorded_note');
+        $btnWallet = __('emails_notifications.sub_account.btn_view_wallet');
+
+        return <<<HTML
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background-color: #f59e0b; background-image: linear-gradient(135deg, #f59e0b, #d97706); padding: 32px 24px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">{$heading}</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">{$tenantLabel}</p>
+    </div>
+    <div style="background: #f8fafc; padding: 32px 24px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            {$body}
+        </p>
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+            <p style="color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px;">{$labelActor}</p>
+            <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0;">{$actorHtml}</p>
+        </div>
+        <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            {$recordedNote}
+        </p>
+        <div style="text-align: center; margin-top: 24px;">
+            <a href="{$frontendUrl}{$basePath}/wallet" style="display: inline-block; background-color: #f59e0b; background-image: linear-gradient(135deg, #f59e0b, #d97706); color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 600; font-size: 16px;">{$btnWallet}</a>
         </div>
     </div>
 </div>

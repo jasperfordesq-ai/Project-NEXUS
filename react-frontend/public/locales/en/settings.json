@@ -742,7 +742,9 @@
     "their_balance": "{{name}}'s balance: {{balance}} hours",
     "amount_max_hint": "Up to {{max}} hours at a time.",
     "photo_after_approval": "A photo cannot be added yet — it can be added once they approve this.",
-    "photo_upload_failed": "The listing was posted, but the photo could not be added."
+    "photo_upload_failed": "The listing was posted, but the photo could not be added.",
+    "load_failed": "Your approvals could not be loaded. Something may be waiting for your answer.",
+    "retry": "Try again"
   },
   "appearance_prefs": {
     "title": "Appearance Preferences",

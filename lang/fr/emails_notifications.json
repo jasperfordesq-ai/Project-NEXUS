@@ -139,7 +139,15 @@
     "approved_heading": "Votre demande a été approuvée",
     "approved_body": "{{name}} a approuvé votre demande de liaison à son compte.",
     "approved_what_next": "Vous pouvez consulter le lien et les autorisations qui vous ont été accordées sur la page des comptes liés.",
-    "btn_view_linked_accounts": "Voir les comptes liés"
+    "btn_view_linked_accounts": "Voir les comptes liés",
+    "proxy_listing_heading": "Une annonce a été publiée en votre nom",
+    "proxy_listing_body": "{{name}}, que vous avez autorisé à gérer vos annonces, a publié une annonce en votre nom.",
+    "proxy_transfer_heading": "Des crédits de temps ont été envoyés depuis votre compte",
+    "proxy_transfer_body": "{{name}}, que vous avez autorisé à envoyer des crédits de temps pour vous, a envoyé des crédits depuis votre solde.",
+    "label_acted_by": "Fait par",
+    "proxy_recorded_note": "Chaque action effectuée en votre nom est enregistrée. Si vous ne vous y attendiez pas, vous pouvez à tout moment modifier ce que cette personne peut faire — ou supprimer le lien — dans vos réglages.",
+    "btn_view_listing": "Voir l’annonce",
+    "btn_view_wallet": "Voir votre portefeuille"
   },
   "support_action": {
     "pending_heading": "Quelque chose attend votre approbation",

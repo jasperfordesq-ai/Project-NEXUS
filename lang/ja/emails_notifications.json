@@ -139,7 +139,15 @@
     "approved_heading": "リクエストが承認されました",
     "approved_body": "{{name}} さんが、アカウントとのリンクのリクエストを承認しました。",
     "approved_what_next": "リンクと付与された権限は、リンクされたアカウントのページで確認できます。",
-    "btn_view_linked_accounts": "リンクされたアカウントを表示"
+    "btn_view_linked_accounts": "リンクされたアカウントを表示",
+    "proxy_listing_heading": "あなたの名前でリストが投稿されました",
+    "proxy_listing_body": "リストの管理を許可した {{name}} さんが、あなたの代わりにリストを投稿しました。",
+    "proxy_transfer_heading": "あなたのアカウントからタイムクレジットが送られました",
+    "proxy_transfer_body": "タイムクレジットの送信を許可した {{name}} さんが、あなたの残高からクレジットを送りました。",
+    "label_acted_by": "実行者",
+    "proxy_recorded_note": "あなたの代わりに行われた操作はすべて記録されます。心当たりがない場合は、いつでも設定でこの人ができることを変更したり、リンクを解除したりできます。",
+    "btn_view_listing": "リストを見る",
+    "btn_view_wallet": "ウォレットを見る"
   },
   "support_action": {
     "pending_heading": "あなたの承認を待っているものがあります",

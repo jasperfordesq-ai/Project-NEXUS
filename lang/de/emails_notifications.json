@@ -139,7 +139,15 @@
     "approved_heading": "Ihre Anfrage wurde genehmigt",
     "approved_body": "{{name}} hat Ihre Anfrage zur Verknüpfung mit dem Konto genehmigt.",
     "approved_what_next": "Die Verknüpfung und die Ihnen erteilten Berechtigungen finden Sie auf der Seite „Verknüpfte Konten“.",
-    "btn_view_linked_accounts": "Verknüpfte Konten ansehen"
+    "btn_view_linked_accounts": "Verknüpfte Konten ansehen",
+    "proxy_listing_heading": "Ein Eintrag wurde in Ihrem Namen veröffentlicht",
+    "proxy_listing_body": "{{name}}, dem Sie die Verwaltung Ihrer Einträge erlaubt haben, hat einen Eintrag in Ihrem Namen veröffentlicht.",
+    "proxy_transfer_heading": "Zeitguthaben wurde von Ihrem Konto gesendet",
+    "proxy_transfer_body": "{{name}}, dem Sie das Senden von Zeitguthaben erlaubt haben, hat Guthaben von Ihrem Konto gesendet.",
+    "label_acted_by": "Ausgeführt von",
+    "proxy_recorded_note": "Jede Handlung in Ihrem Namen wird aufgezeichnet. Wenn Sie das nicht erwartet haben, können Sie jederzeit in Ihren Einstellungen ändern, was diese Person tun darf — oder die Verknüpfung entfernen.",
+    "btn_view_listing": "Eintrag ansehen",
+    "btn_view_wallet": "Guthaben ansehen"
   },
   "support_action": {
     "pending_heading": "Etwas wartet auf Ihre Zustimmung",

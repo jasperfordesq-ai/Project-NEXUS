@@ -27,7 +27,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalHeading,
-  Spinner,
   TextArea,
 } from '@/components/ui';
 import ClipboardCheck from 'lucide-react/icons/clipboard-check';
@@ -73,6 +72,7 @@ export function SupportActionsPanel() {
   const [incoming, setIncoming] = useState<SupportAction[]>([]);
   const [outgoing, setOutgoing] = useState<SupportAction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   // Declining confirms first, with an OPTIONAL reason — never required.
   const [declining, setDeclining] = useState<SupportAction | null>(null);
@@ -84,16 +84,22 @@ export function SupportActionsPanel() {
   tRef.current = t;
 
   const load = useCallback(async () => {
+    setLoadFailed(false);
     try {
       const [mine, prepared] = await Promise.all([
         api.get<{ actions: SupportAction[]; pending_count: number }>('/v2/users/me/support-actions'),
         api.get<{ actions: SupportAction[] }>('/v2/users/me/support-actions?role=supporter'),
       ]);
-      // 🔴 api.ts never throws — success must be checked explicitly.
+      // 🔴 api.ts never throws — success must be checked explicitly. And a
+      // failed fetch must NOT render as "nothing pending": a member with a
+      // real transfer awaiting their approval would see an empty page and
+      // reasonably conclude there is nothing to answer (audit finding A5).
       if (mine.success && mine.data) setIncoming(mine.data.actions ?? []);
       if (prepared.success && prepared.data) setOutgoing(prepared.data.actions ?? []);
+      if (!mine.success || !prepared.success) setLoadFailed(true);
     } catch (error) {
       logError('Failed to load support actions', error);
+      setLoadFailed(true);
     } finally {
       setLoading(false);
     }
@@ -162,8 +168,25 @@ export function SupportActionsPanel() {
   }, [load]);
 
   // The panel earns its screen space only when there is something to show —
-  // most members have no support relationships at all.
+  // most members have no support relationships at all. But silence is only
+  // acceptable when we KNOW there is nothing: while loading nothing renders
+  // (brief, and the settings tab has its own spinner), while a failed load
+  // must say so rather than impersonate an empty queue.
   if (loading) return null;
+  if (loadFailed) {
+    return (
+      <GlassCard className="p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-theme-muted" data-testid="support-actions-load-failed">
+            {t('support_actions.load_failed')}
+          </p>
+          <Button size="sm" variant="secondary" onPress={() => { setLoading(true); void load(); }}>
+            {t('support_actions.retry')}
+          </Button>
+        </div>
+      </GlassCard>
+    );
+  }
   if (incoming.length === 0 && outgoing.length === 0) return null;
 
   const formatDate = (iso: string | null) =>
@@ -264,8 +287,6 @@ export function SupportActionsPanel() {
           </ul>
         </section>
       )}
-
-      {loading && <Spinner aria-label={t('support_actions.waiting_title')} className="mx-auto" />}
 
       {/*
         Declining confirms first, with an OPTIONAL reason.

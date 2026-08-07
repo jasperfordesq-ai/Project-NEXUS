@@ -742,7 +742,9 @@
     "their_balance": "Saldo van {{name}}: {{balance}} uur",
     "amount_max_hint": "Tot {{max}} uur per keer.",
     "photo_after_approval": "Een foto kan nog niet worden toegevoegd — dat kan zodra diegene akkoord gaat.",
-    "photo_upload_failed": "De advertentie is geplaatst, maar de foto kon niet worden toegevoegd."
+    "photo_upload_failed": "De advertentie is geplaatst, maar de foto kon niet worden toegevoegd.",
+    "load_failed": "Je goedkeuringen konden niet worden geladen. Mogelijk wacht er iets op je antwoord.",
+    "retry": "Opnieuw proberen"
   },
   "appearance_prefs": {
     "title": "Uiterlijk Voorkeuren",

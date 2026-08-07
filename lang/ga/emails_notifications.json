@@ -139,7 +139,15 @@
     "approved_heading": "Ceadaíodh d'iarratas",
     "approved_body": "Cheadaigh {{name}} d'iarratas a bheith nasctha lena gcuntas.",
     "approved_what_next": "Is féidir leat an nasc agus na ceadanna a tugadh duit a fheiceáil ar leathanach na gcuntas nasctha.",
-    "btn_view_linked_accounts": "Féach ar chuntais nasctha"
+    "btn_view_linked_accounts": "Féach ar chuntais nasctha",
+    "proxy_listing_heading": "Postáladh liosta i d’ainm",
+    "proxy_listing_body": "Phostáil {{name}}, ar thug tú cead dó/di do liostaí a bhainistiú, liosta ar do shon.",
+    "proxy_transfer_heading": "Seoladh creidmheasanna ama ó do chuntas",
+    "proxy_transfer_body": "Sheol {{name}}, ar thug tú cead dó/di creidmheasanna ama a sheoladh ar do shon, creidmheasanna ó d’iarmhéid.",
+    "label_acted_by": "Déanta ag",
+    "proxy_recorded_note": "Déantar taifead ar gach gníomh a dhéantar ar do shon. Mura raibh tú ag súil leis seo, is féidir leat a athrú cad is féidir leis an duine seo a dhéanamh — nó an nasc a bhaint — i do shocruithe am ar bith.",
+    "btn_view_listing": "Féach ar an liosta",
+    "btn_view_wallet": "Féach ar do sparán"
   },
   "support_action": {
     "pending_heading": "Tá rud éigin ag fanacht le do cheadú",

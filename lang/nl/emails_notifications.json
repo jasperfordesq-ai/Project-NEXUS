@@ -139,7 +139,15 @@
     "approved_heading": "Je verzoek is goedgekeurd",
     "approved_body": "{{name}} heeft je verzoek om aan het account te worden gekoppeld goedgekeurd.",
     "approved_what_next": "Je vindt de koppeling en de rechten die je hebt gekregen op de pagina met gekoppelde accounts.",
-    "btn_view_linked_accounts": "Gekoppelde accounts bekijken"
+    "btn_view_linked_accounts": "Gekoppelde accounts bekijken",
+    "proxy_listing_heading": "Er is een advertentie uit jouw naam geplaatst",
+    "proxy_listing_body": "{{name}}, die je toestemming gaf om je advertenties te beheren, heeft een advertentie uit jouw naam geplaatst.",
+    "proxy_transfer_heading": "Er zijn tijdcredits vanaf je account verstuurd",
+    "proxy_transfer_body": "{{name}}, die je toestemming gaf om tijdcredits voor je te versturen, heeft credits van je saldo verstuurd.",
+    "label_acted_by": "Gedaan door",
+    "proxy_recorded_note": "Elke handeling uit jouw naam wordt vastgelegd. Verwachtte je dit niet, dan kun je op elk moment in je instellingen aanpassen wat deze persoon mag doen — of de koppeling verwijderen.",
+    "btn_view_listing": "Advertentie bekijken",
+    "btn_view_wallet": "Je portemonnee bekijken"
   },
   "support_action": {
     "pending_heading": "Er wacht iets op uw goedkeuring",

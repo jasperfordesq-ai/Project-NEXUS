@@ -523,6 +523,38 @@ class SubAccountService
 
         if ($revoked) {
             $this->relationshipEvent($row, 'revoked', 'member', $userId);
+
+            // Tell the OTHER party. Until 2026-08-07 revocation was silent in
+            // every channel — the other member learned by absence, which for a
+            // supported member could mean their helper quietly vanished, and
+            // for a helper that their access ended without a word. Standard
+            // (non-instant) delivery: informative, not action-required.
+            $otherUserId = (int) ($userId === (int) $row->parent_user_id
+                ? $row->child_user_id
+                : $row->parent_user_id);
+
+            try {
+                $actor = User::find($userId);
+                $other = User::find($otherUserId);
+                $actorName = $actor !== null ? trim($actor->first_name . ' ' . $actor->last_name) : '';
+
+                LocaleContext::withLocale($other, function () use ($otherUserId, $actorName) {
+                    NotificationDispatcher::dispatch(
+                        $otherUserId,
+                        'global',
+                        0,
+                        'sub_account_revoked',
+                        __('svc_notifications.sub_account.link_revoked_bell', ['name' => $actorName]),
+                        self::LINKED_ACCOUNTS_LINK,
+                        null,
+                    );
+                });
+            } catch (\Throwable $e) {
+                Log::warning('SubAccountService::revoke notification failed', [
+                    'relationship_id' => $relationshipId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return $revoked;
@@ -633,6 +665,38 @@ class SubAccountService
                 'tiers_before' => $beforeTiers,
                 'tiers_after' => $afterTiers,
             ]);
+
+            // Tell the supported member their supporter's levels changed. The
+            // guardian path has always done this (GuardianArrangementService
+            // notifies on tier changes); the member-link path was silent —
+            // asymmetric, and the member is the one the levels are ABOUT. An
+            // expansion goes instant (someone's power over your account grew);
+            // a shrink is informative bell-level news.
+            try {
+                $parent = User::find($parentUserId);
+                $child = User::find((int) $existing->child_user_id);
+                $parentName = $parent !== null ? trim($parent->first_name . ' ' . $parent->last_name) : '';
+                $expanded = SupportTiers::isExpansion($beforeTiers, $afterTiers);
+
+                LocaleContext::withLocale($child, function () use ($existing, $parentName, $expanded) {
+                    NotificationDispatcher::dispatch(
+                        (int) $existing->child_user_id,
+                        'global',
+                        0,
+                        $expanded ? 'sub_account_permissions_expanded' : 'sub_account_permissions_changed',
+                        __($expanded
+                            ? 'svc_notifications.sub_account.permissions_expanded_bell'
+                            : 'svc_notifications.sub_account.permissions_changed_bell', ['name' => $parentName]),
+                        self::LINKED_ACCOUNTS_LINK,
+                        null,
+                    );
+                });
+            } catch (\Throwable $e) {
+                Log::warning('SubAccountService::updatePermissions notification failed', [
+                    'relationship_id' => $relationshipId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return true;
@@ -823,8 +887,10 @@ class SubAccountService
         // in their name. A proxy action the owner never learns about is not
         // consent, it is substitution.
         $this->notifyChildOfProxyAction(
+            $parentUserId,
             $childUserId,
-            'api_controllers_2.sub_account.listing_created_notice',
+            'sub_account_proxy_listing',
+            'svc_notifications.sub_account.proxy_listing_bell',
             '/listings/' . $listing->id,
         );
 
@@ -945,8 +1011,10 @@ class SubAccountService
         ]);
 
         $this->notifyChildOfProxyAction(
+            $parentUserId,
             $childUserId,
-            'api_controllers_2.sub_account.transfer_notice',
+            'sub_account_proxy_transfer',
+            'svc_notifications.sub_account.proxy_transfer_bell',
             '/wallet',
         );
 
@@ -983,17 +1051,52 @@ class SubAccountService
         }
     }
 
-    /** Tell the dependent, in their own language, that a carer acted for them. */
-    private function notifyChildOfProxyAction(int $childUserId, string $messageKey, string $link): void
-    {
+    /**
+     * Tell the dependent, in their own language, that a carer acted for them —
+     * bell, EMAIL and push, and naming the carer.
+     *
+     * 🔴 Until 2026-08-07 this wrote the bell row directly, so someone could
+     * spend a member's credits or post in their name and the member received
+     * no email and no push — the identical defect the request/approval
+     * notifications had before 2026-08-06, on a strictly more consequential
+     * event. Both proxy types are in NotificationDispatcher's
+     * $criticalInstantTypes: money leaving your account is not digest
+     * material. And the carer is NAMED — "someone who manages your account"
+     * withheld the one fact the member would act on.
+     *
+     * No actor id is passed to the dispatcher on purpose: an actor id applies
+     * the recipient's mute list, and a member must never be able to mute the
+     * disclosure that their own account was acted on.
+     */
+    private function notifyChildOfProxyAction(
+        int $parentUserId,
+        int $childUserId,
+        string $activityType,
+        string $bellKey,
+        string $link,
+    ): void {
         try {
+            $parent = User::find($parentUserId);
             $child = User::find($childUserId);
-            LocaleContext::withLocale($child, function () use ($childUserId, $messageKey, $link) {
-                Notification::createNotification($childUserId, __($messageKey), $link, 'system');
+            $parentName = $parent !== null ? trim($parent->first_name . ' ' . $parent->last_name) : '';
+
+            LocaleContext::withLocale($child, function () use ($childUserId, $activityType, $bellKey, $link, $parentName) {
+                NotificationDispatcher::dispatch(
+                    $childUserId,
+                    'global',
+                    0,
+                    $activityType,
+                    __($bellKey, ['name' => $parentName]),
+                    $link,
+                    $activityType === 'sub_account_proxy_transfer'
+                        ? NotificationDispatcher::buildSubAccountProxyTransferEmail($parentName)
+                        : NotificationDispatcher::buildSubAccountProxyListingEmail($parentName, $link),
+                );
             });
         } catch (\Throwable $e) {
             Log::warning('Failed to notify dependent of linked-account proxy action', [
                 'child_user_id' => $childUserId,
+                'activity_type' => $activityType,
                 'error' => $e->getMessage(),
             ]);
         }

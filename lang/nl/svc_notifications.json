@@ -95,7 +95,12 @@
   },
   "sub_account": {
     "management_request": "{{name}} heeft gevraagd uw account te beheren als {{type}}",
-    "request_approved": "{{name}} heeft je verzoek om het account te beheren goedgekeurd"
+    "request_approved": "{{name}} heeft je verzoek om het account te beheren goedgekeurd",
+    "proxy_listing_bell": "{{name}} heeft een advertentie voor je geplaatst",
+    "proxy_transfer_bell": "{{name}} heeft tijdcredits van je saldo verstuurd",
+    "link_revoked_bell": "{{name}} heeft je accountkoppeling beëindigd",
+    "permissions_expanded_bell": "{{name}} kan nu meer op je account doen — bekijk de toegekende niveaus",
+    "permissions_changed_bell": "De toegangsniveaus van je koppeling met {{name}} zijn gewijzigd"
   },
   "totp": {
     "rate_limited": "Te veel mislukte pogingen. Probeer het opnieuw over {{minutes}} minuten."
@@ -178,6 +183,8 @@
     "attested": "{{name}} heeft uw goedkeuring van {{what}} vastgelegd, gegeven {{channel}}. Het is nu uitgevoerd",
     "channel_phone": "telefonisch",
     "channel_in_person": "in persoon",
-    "channel_paper": "op papier"
+    "channel_paper": "op papier",
+    "withdrawn_bell": "{{name}} heeft {{what}} ingetrokken — er wacht niets meer op je antwoord",
+    "lapsed_bell": "Het verzoek van {{name}} ({{what}}) is onbeantwoord verlopen"
   }
 }

@@ -95,7 +95,12 @@
   },
   "sub_account": {
     "management_request": "طلب {{name}} إدارة حسابك بصفة {{type}}",
-    "request_approved": "قبل {{name}} طلبك لإدارة الحساب"
+    "request_approved": "قبل {{name}} طلبك لإدارة الحساب",
+    "proxy_listing_bell": "نشر {{name}} إعلانًا نيابةً عنك",
+    "proxy_transfer_bell": "أرسل {{name}} أرصدة وقت من رصيدك",
+    "link_revoked_bell": "أنهى {{name}} ارتباط حسابك",
+    "permissions_expanded_bell": "أصبح بإمكان {{name}} فعل المزيد في حسابك — راجع المستويات التي منحتها",
+    "permissions_changed_bell": "تغيّرت مستويات الوصول في ارتباطك مع {{name}}"
   },
   "totp": {
     "rate_limited": "محاولات فاشلة كثيرة جداً. يرجى المحاولة مجدداً بعد {{minutes}} دقيقة."
@@ -178,6 +183,8 @@
     "attested": "سجّل {{name}} موافقتك على {{what}}، المُعطاة {{channel}}. وقد تم التنفيذ الآن",
     "channel_phone": "عبر الهاتف",
     "channel_in_person": "شخصياً",
-    "channel_paper": "على الورق"
+    "channel_paper": "على الورق",
+    "withdrawn_bell": "سحب {{name}} {{what}} — لم يعد هناك ما ينتظر ردك",
+    "lapsed_bell": "انتهت صلاحية طلب {{name}} ({{what}}) دون رد"
   }
 }

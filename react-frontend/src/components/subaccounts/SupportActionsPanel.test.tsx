@@ -53,6 +53,41 @@ describe('SupportActionsPanel', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  /**
+   * 🔴 A failed fetch must never impersonate an empty queue: a member with a
+   * real transfer awaiting their approval would see nothing and reasonably
+   * conclude there is nothing to answer (audit finding A5).
+   */
+  it('says the load failed instead of rendering an empty queue', async () => {
+    mockedGet.mockResolvedValue({ success: false, error: 'boom' } as never);
+
+    render(<SupportActionsPanel />);
+
+    expect(await screen.findByTestId('support-actions-load-failed')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+
+  it('retry reloads and recovers to the real queue', async () => {
+    mockedGet.mockResolvedValueOnce({ success: false } as never)
+      .mockResolvedValueOnce({ success: false } as never)
+      .mockResolvedValue({
+        success: true,
+        data: { actions: [{
+          id: 5, action_type: 'credit_transfer', status: 'pending',
+          payload_summary: { amount: 2 }, other_party_name: 'Helper Person',
+          created_at: '2026-08-01T10:00:00Z', expires_at: null,
+        }], pending_count: 1 },
+      } as never);
+
+    render(<SupportActionsPanel />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Try again' }));
+
+    // Both lists resolve from the same mock, so the name appears in each.
+    expect((await screen.findAllByText(/Helper Person/)).length).toBeGreaterThan(0);
+    expect(screen.queryByTestId('support-actions-load-failed')).not.toBeInTheDocument();
+  });
+
   it('lists a pending action with who prepared it', async () => {
     mockLists([pendingIncoming]);
 

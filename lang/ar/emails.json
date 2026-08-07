@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ نزاع تبادل - مراجعة الوسيط مطلوبة",
     "sub_account_request": "طلب شخص ما إدارة حسابك",
     "sub_account_approved": "تم قبول طلبك للحساب المرتبط",
+    "sub_account_proxy_listing": "تم نشر إعلان باسمك",
+    "sub_account_proxy_transfer": "تم إرسال أرصدة وقت من حسابك",
+    "sub_account_permissions_expanded": "أصبح بإمكان أحد المساعدين فعل المزيد في حسابك",
     "default": "إشعار من Project NEXUS"
   },
   "exchange_dispute": {

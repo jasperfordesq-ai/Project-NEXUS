@@ -742,7 +742,9 @@
     "their_balance": "Guthaben von {{name}}: {{balance}} Stunden",
     "amount_max_hint": "Bis zu {{max}} Stunden auf einmal.",
     "photo_after_approval": "Ein Foto kann noch nicht hinzugefügt werden — das geht, sobald die Person zugestimmt hat.",
-    "photo_upload_failed": "Die Anzeige wurde veröffentlicht, das Foto konnte jedoch nicht hinzugefügt werden."
+    "photo_upload_failed": "Die Anzeige wurde veröffentlicht, das Foto konnte jedoch nicht hinzugefügt werden.",
+    "load_failed": "Ihre Freigaben konnten nicht geladen werden. Möglicherweise wartet etwas auf Ihre Antwort.",
+    "retry": "Erneut versuchen"
   },
   "appearance_prefs": {
     "title": "Darstellungseinstellungen",

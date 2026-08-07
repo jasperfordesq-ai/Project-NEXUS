@@ -742,7 +742,9 @@
     "their_balance": "Saldo: {{name}} — {{balance}} godz.",
     "amount_max_hint": "Do {{max}} godz. jednorazowo.",
     "photo_after_approval": "Nie można jeszcze dodać zdjęcia — będzie to możliwe po zatwierdzeniu.",
-    "photo_upload_failed": "Ogłoszenie zostało opublikowane, ale nie udało się dodać zdjęcia."
+    "photo_upload_failed": "Ogłoszenie zostało opublikowane, ale nie udało się dodać zdjęcia.",
+    "load_failed": "Nie udało się wczytać Twoich zatwierdzeń. Coś może czekać na Twoją odpowiedź.",
+    "retry": "Spróbuj ponownie"
   },
   "appearance_prefs": {
     "title": "Preferencje wyglądu",

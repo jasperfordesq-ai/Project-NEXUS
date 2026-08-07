@@ -742,7 +742,9 @@
     "their_balance": "Iarmhéid {{name}}: {{balance}} uair an chloig",
     "amount_max_hint": "Suas le {{max}} uair an chloig ag an am.",
     "photo_after_approval": "Ní féidir grianghraf a chur leis go fóill — is féidir é a chur leis chomh luath agus a cheadaíonn siad é seo.",
-    "photo_upload_failed": "Postáladh an liosta, ach níorbh fhéidir an grianghraf a chur leis."
+    "photo_upload_failed": "Postáladh an liosta, ach níorbh fhéidir an grianghraf a chur leis.",
+    "load_failed": "Níorbh fhéidir do cheaduithe a lódáil. Seans go bhfuil rud éigin ag fanacht ar do fhreagra.",
+    "retry": "Bain triail eile as"
   },
   "appearance_prefs": {
     "title": "Roghanna Cuma",

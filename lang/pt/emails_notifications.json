@@ -139,7 +139,15 @@
     "approved_heading": "O seu pedido foi aprovado",
     "approved_body": "{{name}} aprovou o seu pedido de ligação à conta.",
     "approved_what_next": "Pode ver a ligação e as permissões que lhe foram concedidas na página de contas vinculadas.",
-    "btn_view_linked_accounts": "Ver contas vinculadas"
+    "btn_view_linked_accounts": "Ver contas vinculadas",
+    "proxy_listing_heading": "Foi publicado um anúncio em seu nome",
+    "proxy_listing_body": "{{name}}, a quem permitiu gerir os seus anúncios, publicou um anúncio em seu nome.",
+    "proxy_transfer_heading": "Foram enviados créditos de tempo da sua conta",
+    "proxy_transfer_body": "{{name}}, a quem permitiu enviar créditos de tempo por si, enviou créditos do seu saldo.",
+    "label_acted_by": "Feito por",
+    "proxy_recorded_note": "Todas as ações feitas em seu nome ficam registadas. Se não estava à espera disto, pode alterar o que esta pessoa pode fazer — ou remover a ligação — nas suas definições, em qualquer momento.",
+    "btn_view_listing": "Ver o anúncio",
+    "btn_view_wallet": "Ver a sua carteira"
   },
   "support_action": {
     "pending_heading": "Algo está aguardando sua aprovação",

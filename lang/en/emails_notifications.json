@@ -139,7 +139,15 @@
     "approved_heading": "Your request was approved",
     "approved_body": "{{name}} approved your request to be linked to their account.",
     "approved_what_next": "You can see the link and the permissions you have been given on your linked accounts page.",
-    "btn_view_linked_accounts": "View linked accounts"
+    "btn_view_linked_accounts": "View linked accounts",
+    "proxy_listing_heading": "A listing was posted in your name",
+    "proxy_listing_body": "{{name}}, who you allowed to manage your listings, has posted a listing on your behalf.",
+    "proxy_transfer_heading": "Time credits were sent from your account",
+    "proxy_transfer_body": "{{name}}, who you allowed to send time credits for you, has sent credits from your balance.",
+    "label_acted_by": "Done by",
+    "proxy_recorded_note": "Every action taken on your behalf is recorded. If you did not expect this, you can change what this person may do — or remove the link — in your settings at any time.",
+    "btn_view_listing": "View the listing",
+    "btn_view_wallet": "View your wallet"
   },
   "support_action": {
     "pending_heading": "Something is waiting for your approval",

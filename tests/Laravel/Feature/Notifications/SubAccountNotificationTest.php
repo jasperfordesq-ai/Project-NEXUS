@@ -228,12 +228,111 @@ class SubAccountNotificationTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  Proxy actions (represent tier) — the member must learn by EMAIL too
+    // ------------------------------------------------------------------
+
+    private function ensureCategory(): int
+    {
+        $existing = DB::table('categories')->where('tenant_id', $this->testTenantId)->value('id');
+        if ($existing) {
+            return (int) $existing;
+        }
+
+        return (int) DB::table('categories')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'name' => 'Notification test category',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * 🔴 Until 2026-08-07 a carer could post in the member's name and the
+     * member got a bell row only — no email, no push, and no NAME. Someone
+     * else acting on your account is the event this whole feature's
+     * accountability story hangs on: it must reach the member on every
+     * channel, immediately, naming who did it.
+     */
+    public function test_proxy_listing_notifies_the_member_by_instant_email_naming_the_carer(): void
+    {
+        $carer = $this->actingUser();
+        $member = $this->otherUser();
+        DB::table('account_relationships')->insert([
+            'tenant_id' => $this->testTenantId,
+            'parent_user_id' => $carer->id,
+            'child_user_id' => $member->id,
+            'relationship_type' => 'carer',
+            'permissions' => json_encode(['can_view_activity' => true, 'can_manage_listings' => true]),
+            'status' => 'active',
+            'approved_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$member->id}/listings", [
+            'title' => 'Posted on their behalf',
+            'description' => 'A listing created by the carer through the proxy endpoint.',
+            'type' => 'offer',
+            'category_id' => $this->ensureCategory(),
+            'hours_estimate' => 1,
+        ])->assertStatus(201);
+
+        $carerName = trim($carer->first_name . ' ' . $carer->last_name);
+
+        $bell = $this->bellFor($member->id, 'sub_account_proxy_listing');
+        $this->assertNotNull($bell, 'The member must get a bell entry for a proxy listing.');
+        $this->assertStringContainsString($carerName, (string) $bell->message, 'The bell must NAME the carer.');
+
+        $queued = $this->queueRowFor($member->id, 'sub_account_proxy_listing');
+        $this->assertNotNull($queued, 'No email queue row — the member would never learn by email.');
+        $this->assertSame('instant', $queued->frequency, 'A proxy action must not wait for a digest.');
+        $this->assertNotEmpty($queued->email_body);
+        $this->assertStringContainsString($carerName, (string) $queued->email_body, 'The email must NAME the carer.');
+        $this->assertStringNotContainsString('emails_notifications.', (string) $queued->email_body);
+    }
+
+    public function test_proxy_transfer_notifies_the_member_by_instant_email_naming_the_carer(): void
+    {
+        $carer = $this->actingUser();
+        $member = $this->otherUser();
+        $recipient = $this->otherUser();
+        DB::table('users')->where('id', $member->id)->update(['balance' => 10]);
+        DB::table('account_relationships')->insert([
+            'tenant_id' => $this->testTenantId,
+            'parent_user_id' => $carer->id,
+            'child_user_id' => $member->id,
+            'relationship_type' => 'carer',
+            'permissions' => json_encode(['can_view_activity' => true, 'can_transact' => true]),
+            'status' => 'active',
+            'approved_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$member->id}/transfer", [
+            'recipient' => $recipient->id,
+            'amount' => 2,
+        ])->assertOk();
+
+        $carerName = trim($carer->first_name . ' ' . $carer->last_name);
+
+        $bell = $this->bellFor($member->id, 'sub_account_proxy_transfer');
+        $this->assertNotNull($bell, 'The member must get a bell entry when their credits are spent.');
+        $this->assertStringContainsString($carerName, (string) $bell->message);
+
+        $queued = $this->queueRowFor($member->id, 'sub_account_proxy_transfer');
+        $this->assertNotNull($queued, 'Money left the account with no email — the exact defect this pins.');
+        $this->assertSame('instant', $queued->frequency);
+        $this->assertStringContainsString($carerName, (string) $queued->email_body);
+    }
+
+    // ------------------------------------------------------------------
     //  Delivery plumbing the email depends on
     // ------------------------------------------------------------------
 
     public function test_both_activity_types_have_their_own_email_subject(): void
     {
-        foreach (['sub_account_request', 'sub_account_approved'] as $activityType) {
+        foreach (['sub_account_request', 'sub_account_approved', 'sub_account_proxy_listing', 'sub_account_proxy_transfer'] as $activityType) {
             $key = "emails.notification_subject.{$activityType}";
             $subject = __($key);
 

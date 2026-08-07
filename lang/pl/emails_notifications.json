@@ -139,7 +139,15 @@
     "approved_heading": "Twoja prośba została zatwierdzona",
     "approved_body": "{{name}} zatwierdził(a) Twoją prośbę o połączenie z kontem.",
     "approved_what_next": "Połączenie i przyznane Ci uprawnienia znajdziesz na stronie połączonych kont.",
-    "btn_view_linked_accounts": "Zobacz połączone konta"
+    "btn_view_linked_accounts": "Zobacz połączone konta",
+    "proxy_listing_heading": "Opublikowano ogłoszenie w Twoim imieniu",
+    "proxy_listing_body": "{{name}}, komu pozwolono zarządzać Twoimi ogłoszeniami, opublikował(a) ogłoszenie w Twoim imieniu.",
+    "proxy_transfer_heading": "Wysłano kredyty czasowe z Twojego konta",
+    "proxy_transfer_body": "{{name}}, komu pozwolono wysyłać kredyty czasowe w Twoim imieniu, wysłał(a) kredyty z Twojego salda.",
+    "label_acted_by": "Wykonane przez",
+    "proxy_recorded_note": "Każde działanie w Twoim imieniu jest rejestrowane. Jeśli się tego nie spodziewałeś(-aś), możesz w każdej chwili zmienić w ustawieniach, co ta osoba może robić — lub usunąć połączenie.",
+    "btn_view_listing": "Zobacz ogłoszenie",
+    "btn_view_wallet": "Zobacz portfel"
   },
   "support_action": {
     "pending_heading": "Coś czeka na Twoją akceptację",

@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ Spór wymiany — wymagana weryfikacja przez brokera",
     "sub_account_request": "Ktoś poprosił o zarządzanie Twoim kontem",
     "sub_account_approved": "Twoja prośba o połączone konto została zatwierdzona",
+    "sub_account_proxy_listing": "Opublikowano ogłoszenie w Twoim imieniu",
+    "sub_account_proxy_transfer": "Wysłano kredyty czasowe z Twojego konta",
+    "sub_account_permissions_expanded": "Osoba pomagająca może teraz robić więcej na Twoim koncie",
     "default": "Powiadomienie z Project NEXUS"
   },
   "exchange_dispute": {

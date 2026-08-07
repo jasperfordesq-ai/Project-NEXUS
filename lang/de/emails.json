@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ Tauschstreit — Broker-Prüfung erforderlich",
     "sub_account_request": "Jemand möchte Ihr Konto verwalten",
     "sub_account_approved": "Ihre Anfrage für ein verknüpftes Konto wurde genehmigt",
+    "sub_account_proxy_listing": "Ein Eintrag wurde in Ihrem Namen veröffentlicht",
+    "sub_account_proxy_transfer": "Zeitguthaben wurde von Ihrem Konto gesendet",
+    "sub_account_permissions_expanded": "Eine Hilfsperson kann jetzt mehr auf Ihrem Konto tun",
     "default": "Benachrichtigung von Project NEXUS"
   },
   "exchange_dispute": {

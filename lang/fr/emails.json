@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ Litige d'échange — Révision par un courtier nécessaire",
     "sub_account_request": "Quelqu’un demande à gérer votre compte",
     "sub_account_approved": "Votre demande de compte lié a été approuvée",
+    "sub_account_proxy_listing": "Une annonce a été publiée en votre nom",
+    "sub_account_proxy_transfer": "Des crédits de temps ont été envoyés depuis votre compte",
+    "sub_account_permissions_expanded": "Une personne aidante peut désormais faire davantage sur votre compte",
     "default": "Notification de Project NEXUS"
   },
   "exchange_dispute": {

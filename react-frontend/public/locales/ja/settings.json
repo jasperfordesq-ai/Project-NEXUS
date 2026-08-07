@@ -742,7 +742,9 @@
     "their_balance": "{{name}} さんの残高：{{balance}} 時間",
     "amount_max_hint": "一度に最大 {{max}} 時間まで。",
     "photo_after_approval": "写真はまだ追加できません。承認後に追加できます。",
-    "photo_upload_failed": "出品は投稿されましたが、写真を追加できませんでした。"
+    "photo_upload_failed": "出品は投稿されましたが、写真を追加できませんでした。",
+    "load_failed": "承認リストを読み込めませんでした。あなたの回答を待っているものがあるかもしれません。",
+    "retry": "再試行"
   },
   "appearance_prefs": {
     "title": "外観の設定",

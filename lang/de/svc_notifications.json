@@ -95,7 +95,12 @@
   },
   "sub_account": {
     "management_request": "{{name}} hat beantragt, Ihr Konto als {{type}} zu verwalten",
-    "request_approved": "{{name}} hat Ihre Anfrage zur Verwaltung des Kontos genehmigt"
+    "request_approved": "{{name}} hat Ihre Anfrage zur Verwaltung des Kontos genehmigt",
+    "proxy_listing_bell": "{{name}} hat einen Eintrag für Sie veröffentlicht",
+    "proxy_transfer_bell": "{{name}} hat Zeitguthaben von Ihrem Guthaben gesendet",
+    "link_revoked_bell": "{{name}} hat Ihre Kontoverknüpfung beendet",
+    "permissions_expanded_bell": "{{name}} kann jetzt mehr auf Ihrem Konto tun — prüfen Sie die erteilten Stufen",
+    "permissions_changed_bell": "Die Zugriffsstufen Ihrer Verknüpfung mit {{name}} wurden geändert"
   },
   "totp": {
     "rate_limited": "Zu viele fehlgeschlagene Versuche. Bitte versuchen Sie es in {{minutes}} Minuten erneut."
@@ -178,6 +183,8 @@
     "attested": "{{name}} hat Ihre Zustimmung zu {{what}} festgehalten, erteilt {{channel}}. Es wurde nun ausgeführt",
     "channel_phone": "telefonisch",
     "channel_in_person": "persönlich",
-    "channel_paper": "auf Papier"
+    "channel_paper": "auf Papier",
+    "withdrawn_bell": "{{name}} hat {{what}} zurückgezogen — es wartet nichts mehr auf Ihre Antwort",
+    "lapsed_bell": "Die Anfrage von {{name}} ({{what}}) ist unbeantwortet abgelaufen"
   }
 }

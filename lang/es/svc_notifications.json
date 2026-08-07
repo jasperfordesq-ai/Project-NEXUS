@@ -95,7 +95,12 @@
   },
   "sub_account": {
     "management_request": "{{name}} ha solicitado gestionar su cuenta como {{type}}",
-    "request_approved": "{{name}} aprobó tu solicitud para gestionar su cuenta"
+    "request_approved": "{{name}} aprobó tu solicitud para gestionar su cuenta",
+    "proxy_listing_bell": "{{name}} publicó un anuncio por ti",
+    "proxy_transfer_bell": "{{name}} envió créditos de tiempo desde tu saldo",
+    "link_revoked_bell": "{{name}} finalizó el vínculo de tu cuenta",
+    "permissions_expanded_bell": "{{name}} ahora puede hacer más en tu cuenta — revisa los niveles concedidos",
+    "permissions_changed_bell": "Los niveles de acceso de tu vínculo con {{name}} cambiaron"
   },
   "totp": {
     "rate_limited": "Demasiados intentos fallidos. Por favor intente de nuevo en {{minutes}} minutos."
@@ -178,6 +183,8 @@
     "attested": "{{name}} registró su aprobación de {{what}}, dada {{channel}}. Ya se ha hecho",
     "channel_phone": "por teléfono",
     "channel_in_person": "en persona",
-    "channel_paper": "en papel"
+    "channel_paper": "en papel",
+    "withdrawn_bell": "{{name}} retiró {{what}} — ya no hay nada esperando tu respuesta",
+    "lapsed_bell": "La solicitud de {{name}} ({{what}}) caducó sin respuesta"
   }
 }

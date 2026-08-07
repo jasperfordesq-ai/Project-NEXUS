@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ Conspóid Idirmhalartaithe - Athbhreithniú Bróicéara ag Teastáil",
     "sub_account_request": "D'iarr duine éigin do chuntas a bhainistiú",
     "sub_account_approved": "Ceadaíodh d'iarratas ar chuntas nasctha",
+    "sub_account_proxy_listing": "Postáladh liosta i d’ainm",
+    "sub_account_proxy_transfer": "Seoladh creidmheasanna ama ó do chuntas",
+    "sub_account_permissions_expanded": "Is féidir le cúntóir níos mó a dhéanamh ar do chuntas anois",
     "default": "Fógra ó Project NEXUS"
   },
   "exchange_dispute": {

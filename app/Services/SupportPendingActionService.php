@@ -252,9 +252,15 @@ class SupportPendingActionService
     {
         $this->errors = [];
 
-        $updated = $this->pendingAction->newQuery()
+        /** @var SupportPendingAction|null $action */
+        $action = $this->pendingAction->newQuery()
             ->where('id', $actionId)
             ->where('supporter_user_id', $supporterUserId)
+            ->where('status', SupportPendingAction::STATUS_PENDING)
+            ->first();
+
+        $updated = $action !== null && $this->pendingAction->newQuery()
+            ->where('id', $actionId)
             ->where('status', SupportPendingAction::STATUS_PENDING)
             ->update([
                 'status' => SupportPendingAction::STATUS_CANCELLED,
@@ -264,9 +270,77 @@ class SupportPendingActionService
 
         if (! $updated) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.support_action_not_found')];
+            return false;
         }
 
-        return $updated;
+        // The member was told something awaits their answer (bell + email with
+        // a confirm link). Withdrawing silently left that prompt pointing at
+        // nothing — a member could click a dead link, or worse, sit on a
+        // decision that no longer exists. Bell-level: nothing is required of
+        // them any more.
+        $this->notifySupportedOfWithdrawal($action);
+
+        return true;
+    }
+
+    /** Tell the supported member an unanswered action lapsed (bell-level). */
+    private function notifySupportedOfExpiry(SupportPendingAction $action): void
+    {
+        try {
+            $supporter = User::find($action->supporter_user_id);
+            $supported = User::find($action->supported_user_id);
+            $supporterName = $supporter ? trim($supporter->first_name . ' ' . $supporter->last_name) : '';
+
+            LocaleContext::withLocale($supported, function () use ($action, $supporterName): void {
+                NotificationDispatcher::dispatch(
+                    (int) $action->supported_user_id,
+                    'global',
+                    0,
+                    'support_action_lapsed',
+                    __('svc_notifications.support_action.lapsed_bell', [
+                        'name' => $supporterName,
+                        'what' => __('svc_notifications.support_action.type_' . $action->action_type),
+                    ]),
+                    SubAccountService::LINKED_ACCOUNTS_LINK,
+                    null,
+                );
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify supported member of expired support action', [
+                'action_id' => $action->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /** Tell the supported member the prepared action was withdrawn. */
+    private function notifySupportedOfWithdrawal(SupportPendingAction $action): void
+    {
+        try {
+            $supporter = User::find($action->supporter_user_id);
+            $supported = User::find($action->supported_user_id);
+            $supporterName = $supporter ? trim($supporter->first_name . ' ' . $supporter->last_name) : '';
+
+            LocaleContext::withLocale($supported, function () use ($action, $supporterName): void {
+                NotificationDispatcher::dispatch(
+                    (int) $action->supported_user_id,
+                    'global',
+                    0,
+                    'support_action_withdrawn',
+                    __('svc_notifications.support_action.withdrawn_bell', [
+                        'name' => $supporterName,
+                        'what' => __('svc_notifications.support_action.type_' . $action->action_type),
+                    ]),
+                    SubAccountService::LINKED_ACCOUNTS_LINK,
+                    null,
+                );
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify supported member of withdrawn support action', [
+                'action_id' => $action->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -358,6 +432,11 @@ class SupportPendingActionService
                     try {
                         TenantContext::runForTenant((int) $action->tenant_id, function () use ($action): void {
                             $this->notifySupporterOfAnswer($action, null);
+                            // The docblock has always promised BOTH parties are
+                            // notified; until 2026-08-07 only the supporter was.
+                            // The member's bell/email still said something
+                            // awaited their answer — tell them it lapsed.
+                            $this->notifySupportedOfExpiry($action);
                         });
                     } catch (\Throwable $e) {
                         Log::warning('Failed to notify supporter of expired support action', [

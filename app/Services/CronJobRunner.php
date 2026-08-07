@@ -1060,12 +1060,20 @@ class CronJobRunner
             'exchange_update',
             'exchange_completed' => 'exchange',
 
-            // Linked / sub-account relationship requests and approvals. Needs an
+            // Linked / sub-account relationship requests, approvals, and proxy
+            // actions (a carer posted or spent for the member). Needs an
             // explicit category so these appear as their own line in the email
             // trigger audit rather than being lumped into 'notification_queue' —
             // see EmailTriggerAuditService::eventMatrix().
             'sub_account_request',
-            'sub_account_approved' => 'sub_account',
+            'sub_account_approved',
+            'sub_account_proxy_listing',
+            'sub_account_proxy_transfer',
+            'sub_account_permissions_expanded',
+            'sub_account_permissions_changed',
+            'sub_account_revoked',
+            'support_action_withdrawn',
+            'support_action_lapsed' => 'sub_account',
 
             default => 'notification_queue',
         };

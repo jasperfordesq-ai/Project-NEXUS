@@ -139,7 +139,15 @@
     "approved_heading": "La tua richiesta è stata approvata",
     "approved_body": "{{name}} ha approvato la tua richiesta di collegamento al suo account.",
     "approved_what_next": "Puoi vedere il collegamento e le autorizzazioni che ti sono state concesse nella pagina degli account collegati.",
-    "btn_view_linked_accounts": "Vedi account collegati"
+    "btn_view_linked_accounts": "Vedi account collegati",
+    "proxy_listing_heading": "Un annuncio è stato pubblicato a tuo nome",
+    "proxy_listing_body": "{{name}}, che hai autorizzato a gestire i tuoi annunci, ha pubblicato un annuncio per tuo conto.",
+    "proxy_transfer_heading": "Sono stati inviati crediti di tempo dal tuo account",
+    "proxy_transfer_body": "{{name}}, che hai autorizzato a inviare crediti di tempo per te, ha inviato crediti dal tuo saldo.",
+    "label_acted_by": "Eseguito da",
+    "proxy_recorded_note": "Ogni azione compiuta per tuo conto viene registrata. Se non te lo aspettavi, puoi cambiare in qualsiasi momento ciò che questa persona può fare — o rimuovere il collegamento — nelle impostazioni.",
+    "btn_view_listing": "Vedi l’annuncio",
+    "btn_view_wallet": "Vedi il tuo portafoglio"
   },
   "support_action": {
     "pending_heading": "Qualcosa sta aspettando la tua approvazione",

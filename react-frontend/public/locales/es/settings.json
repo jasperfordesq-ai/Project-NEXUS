@@ -742,7 +742,9 @@
     "their_balance": "Saldo de {{name}}: {{balance}} horas",
     "amount_max_hint": "Hasta {{max}} horas cada vez.",
     "photo_after_approval": "Todavía no se puede añadir una foto: se podrá cuando lo apruebe.",
-    "photo_upload_failed": "El anuncio se publicó, pero no se pudo añadir la foto."
+    "photo_upload_failed": "El anuncio se publicó, pero no se pudo añadir la foto.",
+    "load_failed": "No se pudieron cargar tus aprobaciones. Puede que algo espere tu respuesta.",
+    "retry": "Reintentar"
   },
   "appearance_prefs": {
     "title": "Preferencias de apariencia",

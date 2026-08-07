@@ -95,7 +95,12 @@
   },
   "sub_account": {
     "management_request": "D'iarr {{name}} do chuntas a bhainistiú mar {{type}}",
-    "request_approved": "Cheadaigh {{name}} d'iarratas chun a gcuntas a bhainistiú"
+    "request_approved": "Cheadaigh {{name}} d'iarratas chun a gcuntas a bhainistiú",
+    "proxy_listing_bell": "Phostáil {{name}} liosta duit",
+    "proxy_transfer_bell": "Sheol {{name}} creidmheasanna ama ó d’iarmhéid",
+    "link_revoked_bell": "Chuir {{name}} deireadh le nasc do chuntais",
+    "permissions_expanded_bell": "Is féidir le {{name}} níos mó a dhéanamh ar do chuntas anois — athbhreithnigh na leibhéil a cheadaigh tú",
+    "permissions_changed_bell": "Athraíodh na leibhéil rochtana ar do nasc le {{name}}"
   },
   "totp": {
     "rate_limited": "An iomarca iarrachtaí teipthe. Bain triail as arís i gceann {{minutes}} nóiméad."
@@ -178,6 +183,8 @@
     "attested": "Thaifead {{name}} do cheadú ar {{what}}, tugtha {{channel}}. Tá sé déanta anois",
     "channel_phone": "ar an nguthán",
     "channel_in_person": "go pearsanta",
-    "channel_paper": "ar pháipéar"
+    "channel_paper": "ar pháipéar",
+    "withdrawn_bell": "Tharraing {{name}} siar {{what}} — ní gá duit freagra a thabhairt a thuilleadh",
+    "lapsed_bell": "Chuaigh an t-iarratas ó {{name}} ({{what}}) in éag gan freagra"
   }
 }

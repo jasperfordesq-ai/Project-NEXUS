@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ Controversia sullo scambio — Revisione broker necessaria",
     "sub_account_request": "Qualcuno ha chiesto di gestire il tuo account",
     "sub_account_approved": "La tua richiesta di account collegato è stata approvata",
+    "sub_account_proxy_listing": "Un annuncio è stato pubblicato a tuo nome",
+    "sub_account_proxy_transfer": "Sono stati inviati crediti di tempo dal tuo account",
+    "sub_account_permissions_expanded": "Una persona di supporto ora può fare di più sul tuo account",
     "default": "Notifica da Project NEXUS"
   },
   "exchange_dispute": {

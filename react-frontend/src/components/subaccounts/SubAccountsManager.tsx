@@ -280,36 +280,9 @@ export function SubAccountsManager() {
     }
   };
 
-  const handlePermissionChange = async (
-    relationshipId: number,
-    permission: PermissionKey,
-    value: boolean,
-  ) => {
-    const previousAccounts = managedAccounts;
-
-    setManagedAccounts((prev) =>
-      prev.map((account) =>
-        account.relationship_id === relationshipId
-          ? { ...account, permissions: { ...account.permissions, [permission]: value } }
-          : account,
-      ),
-    );
-
-    try {
-      const response = await api.put(`/v2/users/me/sub-accounts/${relationshipId}/permissions`, {
-        permissions: { [permission]: value },
-      });
-
-      if (!response.success) {
-        setManagedAccounts(previousAccounts);
-        toastRef.current.error(response.error || tRef.current('toasts.subaccount_permission_failed'));
-      }
-    } catch (err) {
-      setManagedAccounts(previousAccounts);
-      logError('Failed to update permission', err);
-      toastRef.current.error(tRef.current('toasts.subaccount_permission_failed'));
-    }
-  };
+  // (The boolean handlePermissionChange is gone: every control now speaks the
+  // tier vocabulary. Booleans were both lossy — co_decide projects to false —
+  // and mismatched with rendering, which reads account.tiers.)
 
   /**
    * Change one capability's support tier. Sends the explicit `tiers` object —
@@ -443,6 +416,13 @@ export function SubAccountsManager() {
                   {t('sub_accounts.permissions_label')}
                 </p>
                 <div className="flex flex-wrap gap-1">
+                  {/* Activity is see/don't-see (assist or none) — the chip's
+                      colour carries the state, matching the switch it mirrors.
+                      Without it, the View-activity button below could appear
+                      with no chip explaining a level exists (audit A7). */}
+                  <Chip size="sm" variant="flat" color={account.tiers.activity === 'none' ? 'default' : 'success'}>
+                    {t('sub_accounts.permissions.can_view_activity')}
+                  </Chip>
                   {(['listings', 'credits'] as const).map((capability) => (
                     <Chip key={capability} size="sm" variant="flat" color={account.tiers[capability] === 'none' ? 'default' : 'success'}>
                       {`${t(`sub_accounts.tiers.capability_${capability}`)}: ${t(`sub_accounts.tiers.option_${account.tiers[capability]}`)}`}
@@ -477,8 +457,12 @@ export function SubAccountsManager() {
                     size="sm"
                     className="shrink-0"
                     isSelected={account.tiers.activity !== 'none'}
+                    // Must go through the TIER handler: this switch renders from
+                    // account.tiers, and handlePermissionChange only mutated
+                    // account.permissions — so the switch never visibly moved
+                    // until a full reload (audit finding A2).
                     onValueChange={(value) =>
-                      handlePermissionChange(account.relationship_id, 'can_view_activity', value)
+                      handleTierChange(account.relationship_id, 'activity', value ? 'assist' : 'none')
                     }
                     aria-label={t('sub_accounts.permission_aria', { permission: t('sub_accounts.permissions.can_view_activity'), name })}
                   />

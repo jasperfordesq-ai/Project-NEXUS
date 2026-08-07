@@ -466,6 +466,9 @@
     "exchange_disputed": "⚠️ Uitwisselingsgeschil — beoordeling door bemiddelaar vereist",
     "sub_account_request": "Iemand wil je account beheren",
     "sub_account_approved": "Je verzoek voor een gekoppeld account is goedgekeurd",
+    "sub_account_proxy_listing": "Er is een advertentie uit jouw naam geplaatst",
+    "sub_account_proxy_transfer": "Er zijn tijdcredits vanaf je account verstuurd",
+    "sub_account_permissions_expanded": "Een helper kan nu meer op je account doen",
     "default": "Melding van Project NEXUS"
   },
   "exchange_dispute": {

@@ -254,21 +254,28 @@ describe('SubAccountsManager', () => {
     expect(screen.getByText(/Carers cannot read messages/i)).toBeInTheDocument();
   });
 
-  it('sends the boolean shorthand when the activity switch changes', async () => {
+  it('sends an explicit activity tier when the switch changes — and the switch visibly moves', async () => {
     mockLoad();
     vi.mocked(api.put).mockResolvedValueOnce({ success: true, data: [] });
 
     render(<SubAccountsManager />);
 
-    // Child One has can_view_activity: true in the fixture; toggling sends false.
+    // Child One has activity on in the fixture; toggling sends tier none.
+    // The tier vocabulary (not the boolean shorthand) is what this control
+    // speaks now: it RENDERS from account.tiers, and the old boolean handler
+    // only mutated account.permissions — so the switch never visibly moved
+    // until a reload (audit finding A2).
     const switchControl = await screen.findByLabelText('Toggle View activity permission for Child One');
+    expect(switchControl).toBeChecked();
     fireEvent.click(switchControl);
 
     await waitFor(() => {
       expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/1/permissions', {
-        permissions: { can_view_activity: false },
+        permissions: { tiers: { activity: 'none' } },
       });
     });
+    // The optimistic update reaches what the render reads.
+    expect(switchControl).not.toBeChecked();
   });
 
   it('sends an explicit tiers object when a tier is picked', async () => {

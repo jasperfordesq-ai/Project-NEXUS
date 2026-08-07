@@ -95,7 +95,12 @@
   },
   "sub_account": {
     "management_request": "{{name}} ha richiesto di gestire il suo account come {{type}}",
-    "request_approved": "{{name}} ha approvato la tua richiesta di gestire il suo account"
+    "request_approved": "{{name}} ha approvato la tua richiesta di gestire il suo account",
+    "proxy_listing_bell": "{{name}} ha pubblicato un annuncio per te",
+    "proxy_transfer_bell": "{{name}} ha inviato crediti di tempo dal tuo saldo",
+    "link_revoked_bell": "{{name}} ha terminato il collegamento del tuo account",
+    "permissions_expanded_bell": "{{name}} ora può fare di più sul tuo account — controlla i livelli concessi",
+    "permissions_changed_bell": "I livelli di accesso del tuo collegamento con {{name}} sono cambiati"
   },
   "totp": {
     "rate_limited": "Troppi tentativi falliti. Riprovi tra {{minutes}} minuti."
@@ -178,6 +183,8 @@
     "attested": "{{name}} ha registrato la tua approvazione di {{what}}, data {{channel}}. Ora è stato fatto",
     "channel_phone": "per telefono",
     "channel_in_person": "di persona",
-    "channel_paper": "su carta"
+    "channel_paper": "su carta",
+    "withdrawn_bell": "{{name}} ha ritirato {{what}} — non c’è più nulla in attesa della tua risposta",
+    "lapsed_bell": "La richiesta di {{name}} ({{what}}) è scaduta senza risposta"
   }
 }
