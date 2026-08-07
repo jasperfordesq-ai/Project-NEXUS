@@ -51,7 +51,20 @@ for f in "${pending_files[@]}"; do
 done
 
 DANGEROUS_PHP_PATTERNS='->drop(Column|ConstrainedForeignId|Morphs|NullableMorphs|Timestamps|TimestampsTz|SoftDeletes|SoftDeletesTz|RememberToken)\(|->rename(Column|Index)\(|->change\(\)|Schema::drop(IfExists)?\(|Schema::rename\(|->renameTo\(|->drop(Foreign|Primary|Unique|Index)\('
-RAW_DESTRUCTIVE_SQL_PATTERNS='DB::(statement|unprepared|affectingStatement)\([^;]*(ALTER[[:space:]]+TABLE[^;]*(DROP|RENAME|CHANGE|MODIFY)|DROP[[:space:]]+TABLE|TRUNCATE[[:space:]]+TABLE|RENAME[[:space:]]+TABLE)'
+# 🔴 The DDL keywords are word-bounded (\b). Without the boundaries these match
+# the SUBSTRING inside ordinary identifiers and string literals, so an entirely
+# additive statement is reported as destructive. Real case, 2026-08-07: a
+# deploy was blocked by
+#   ALTER TABLE `account_relationship_events`
+#     ADD CONSTRAINT `chk_ar_events_action` CHECK (`action` IN (…,'permissions_changed'))
+# because "permissions_chang(e)" contains CHANGE — the reported match text
+# literally ended mid-word. Any CHECK vocabulary containing dropped / renamed /
+# modified / changed hits the same trap.
+# The boundaries do NOT weaken the gate: ALTER…DROP/RENAME/CHANGE/MODIFY,
+# DROP TABLE, TRUNCATE TABLE and RENAME TABLE are all still caught, in any case
+# and with backtick-quoted identifiers. Verified against nine real destructive
+# forms plus the false-positive cases before this line was changed.
+RAW_DESTRUCTIVE_SQL_PATTERNS='DB::(statement|unprepared|affectingStatement)\([^;]*(ALTER[[:space:]]+TABLE[^;]*\b(DROP|RENAME|CHANGE|MODIFY)\b|\bDROP[[:space:]]+TABLE\b|\bTRUNCATE[[:space:]]+TABLE\b|\bRENAME[[:space:]]+TABLE\b)'
 NON_NULL_WITHOUT_DEFAULT='->(string|char|text|mediumText|longText|integer|tinyInteger|smallInteger|mediumInteger|bigInteger|unsignedInteger|unsignedTinyInteger|unsignedSmallInteger|unsignedMediumInteger|unsignedBigInteger|float|double|decimal|boolean|date|dateTime|dateTimeTz|time|timeTz|timestamp|timestampTz|year|json|jsonb|uuid|ulid|foreignId|foreignIdFor|foreignUuid|foreignUlid|ipAddress|macAddress|enum|set|binary|morphs|uuidMorphs|ulidMorphs)\([^)]*\)(?!.*->nullable\(\))(?!.*->default\()'
 PRETEND_DESTRUCTIVE_SQL='alter[[:space:]]+table.*[[:space:]](drop|rename|change|modify)[[:space:]]|drop[[:space:]]+table|truncate[[:space:]]+table|rename[[:space:]]+table'
 PRETEND_NON_NULL_ADD='alter[[:space:]]+table.*[[:space:]]add(?!.*\bdefault\b).*[[:space:]]not[[:space:]]+null'
