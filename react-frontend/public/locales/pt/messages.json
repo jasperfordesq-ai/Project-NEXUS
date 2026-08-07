@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "Ir para as mensagens mais recentes ({{count}} novas)",
   "date_today": "Hoje",
   "date_yesterday": "Ontem",
-  "safeguarding_notice": "Esta conversa pode ser revista por um coordenador para fins de proteção.",
+  "safeguarding_notice": "As mensagens desta conversa podem ser revistas por uma pessoa coordenadora por motivos de proteção, ou visíveis a alguém de confiança que apoia um dos participantes.",
   "safeguarding_notice_compact": "Conversa protegida",
   "aria_dismiss_safeguarding": "Dispensar aviso de proteção",
   "regarding_context": "Relativamente a este(a) {{type}}:",
@@ -272,5 +272,7 @@
   "selected_members_one": "Selecionados ({{count}})",
   "selected_members_other": "Selecionados ({{count}})",
   "aria_conversation_unread_many": "Conversa com {{name}}, {{count}} por ler",
-  "selected_members_many": "Selecionados ({{count}})"
+  "selected_members_many": "Selecionados ({{count}})",
+  "own_messages_shared_reminder": "Alguém que escolheu como apoio pode ver as suas mensagens.",
+  "own_messages_shared_manage": "Gerir"
 }

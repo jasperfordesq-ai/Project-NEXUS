@@ -182,6 +182,7 @@ const ReviewsPage = lazyWithRetry(() => import('@/pages/reviews/ReviewsPage'));
 const NewsletterUnsubscribePage = lazyWithRetry(() => import('@/pages/newsletter/NewsletterUnsubscribePage'));
 const EventGuardianConsentPage = lazyWithRetry(() => import('@/pages/events/EventGuardianConsentPage'));
 const SupportActionConfirmPage = lazyWithRetry(() => import('@/pages/subaccounts/SupportActionConfirmPage'));
+const SupportedMessagesPage = lazyWithRetry(() => import('@/pages/subaccounts/SupportedMessagesPage'));
 const AiChatPage = lazyWithRetry(() => import('@/pages/chat/AiChatPage'));
 const ConnectionsPage = lazyWithRetry(() => import('@/pages/connections/ConnectionsPage'));
 const SkillsBrowsePage = lazyWithRetry(() => import('@/pages/skills/SkillsBrowsePage'));
@@ -1064,6 +1065,23 @@ export function AppRoutes() {
             <FeatureGate module="settings" redirect="/dashboard">
               <FeatureErrorBoundary featureName="Settings">
                 <SettingsPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          {/* Read-only supporter view of a supported member's messages
+              (consent-gated server-side; the page adds the purpose front
+              door). Gated on the messages module like the member's own inbox. */}
+          <Route path="linked-accounts/:childId/messages" element={
+            <FeatureGate module="messages" redirect="/dashboard">
+              <FeatureErrorBoundary featureName="Messages">
+                <SupportedMessagesPage />
+              </FeatureErrorBoundary>
+            </FeatureGate>
+          } />
+          <Route path="linked-accounts/:childId/messages/:partnerId" element={
+            <FeatureGate module="messages" redirect="/dashboard">
+              <FeatureErrorBoundary featureName="Messages">
+                <SupportedMessagesPage />
               </FeatureErrorBoundary>
             </FeatureGate>
           } />

@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "最新のメッセージへ移動（新着{{count}}件）",
   "date_today": "今日",
   "date_yesterday": "昨日",
-  "safeguarding_notice": "この会話は、安全確保のためにコーディネーターによってレビューされる場合があります。",
+  "safeguarding_notice": "この会話のメッセージは、保護の目的でコーディネーターが確認する場合や、参加者が支援を信頼して任せている人が閲覧できる場合があります。",
   "safeguarding_notice_compact": "保護された会話",
   "aria_dismiss_safeguarding": "安全確保通知を閉じる",
   "regarding_context": "{{type}}に関して:",
@@ -270,5 +270,7 @@
   "aria_conversation_unread_one": "{{name}}、{{count}} との会話が未読",
   "aria_conversation_unread_other": "会話 {{name}} と {{count}} は未読です",
   "selected_members_one": "選択済み ({{count}})",
-  "selected_members_other": "選択済み ({{count}})"
+  "selected_members_other": "選択済み ({{count}})",
+  "own_messages_shared_reminder": "あなたがサポーターとして選んだ人が、あなたのメッセージを閲覧できます。",
+  "own_messages_shared_manage": "管理する"
 }

@@ -413,12 +413,18 @@ export function ConversationPage() {
   const [isRequestingCoordinator, setIsRequestingCoordinator] = useState(false);
   const [coordinatorRequestSent, setCoordinatorRequestSent] = useState(false);
 
-  // Broker messaging restriction state
+  // Broker messaging restriction state (+ supporter-view disclosure flags)
   const [messagingRestriction, setMessagingRestriction] = useState<{
     messaging_disabled: boolean;
     under_monitoring: boolean;
     restriction_reason: string | null;
     review_notice_required?: boolean;
+    /** True when EITHER participant has an active consented message-access
+     *  grant — symmetric on purpose, so it never says whose supporter it is.
+     *  Folded into the same banner as the broker notice below. */
+    supporter_view_notice_required?: boolean;
+    /** True only when THIS user's own messages are shared with a supporter. */
+    own_messages_shared?: boolean;
   } | null>(null);
 
   // ── Translation hint banner (dismissed per-user, scoped to tenant) ──
@@ -945,21 +951,24 @@ export function ConversationPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- messages.length is sufficient; including messages ref causes double-fire
   }, [conversation?.messages?.length, targetId, user?.id]);
 
-  // Fetch messaging restriction status (broker monitoring)
+  // Fetch messaging restriction status (broker monitoring + supporter-view
+  // disclosure for THIS pair — partner_id makes the response pair-aware).
   const refreshRestrictionStatus = useCallback(() => {
     api.get<{
       messaging_disabled: boolean;
       under_monitoring: boolean;
       restriction_reason: string | null;
       review_notice_required?: boolean;
+      supporter_view_notice_required?: boolean;
+      own_messages_shared?: boolean;
     }>(
-      '/v2/messages/restriction-status'
+      targetId ? `/v2/messages/restriction-status?partner_id=${targetId}` : '/v2/messages/restriction-status'
     ).then((res) => {
       if (isMountedRef.current && res.success && res.data) {
         setMessagingRestriction(res.data);
       }
     }).catch(() => { /* non-critical */ });
-  }, []);
+  }, [targetId]);
 
   useEffect(() => {
     refreshRestrictionStatus();
@@ -2244,11 +2253,17 @@ export function ConversationPage() {
         </GlassCard>
       )}
 
-      {/* Safeguarding / Broker Monitoring Notice. Phones get a one-line pill
-          that opens the full wording in a popover (a bottom sheet at that
-          width) so the notice stays visible without spending two text lines;
-          sm: and up keep the dismissible full banner. */}
-      {!isSafeguardingDismissed && messagingRestriction?.review_notice_required !== false && (
+      {/* Safeguarding / visibility notice. ONE banner, ONE cause-agnostic
+          wording, for BOTH causes — broker review and supporter message
+          access. Deliberate: distinct wording per cause would let a
+          counterparty infer which applies, and therefore who has a
+          supporter. Phones get a one-line pill that opens the full wording
+          in a popover; sm: and up keep the dismissible full banner.
+          Fail direction: review_notice_required defaults toward showing
+          (!== false); the supporter flag adds, never subtracts. */}
+      {!isSafeguardingDismissed
+        && (messagingRestriction?.review_notice_required !== false
+          || messagingRestriction?.supporter_view_notice_required === true) && (
         <>
           <div className="flex shrink-0 items-center justify-center sm:hidden">
             <div className="flex items-center gap-0.5 rounded-full bg-amber-500/10 pr-1">
@@ -2304,6 +2319,18 @@ export function ConversationPage() {
             </Button>
           </div>
         </>
+      )}
+
+      {/* The member's OWN reminder: their supporter can see this conversation.
+          Their own fact, quiet and persistent (not dismissible with the
+          banner), linking to where they can withdraw with one press. */}
+      {messagingRestriction?.own_messages_shared === true && (
+        <p className="shrink-0 text-center text-xs text-theme-muted" data-testid="own-messages-shared-reminder">
+          {t('own_messages_shared_reminder')}{' '}
+          <Link to={tenantPath('/settings?tab=linked-accounts')} className="underline">
+            {t('own_messages_shared_manage')}
+          </Link>
+        </p>
       )}
 
       {safeguardingBlockNotice && (

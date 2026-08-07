@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Ver actividad",
       "can_manage_listings": "Administrar listados",
-      "can_transact": "Realizar transacciones",
-      "can_view_messages": "Ver mensajes"
+      "can_transact": "Realizar transacciones"
     },
     "permission_aria": "Alternar el permiso {{permission}} para {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Error al añadir la cuenta vinculada",
     "remove_failed": "Error al eliminar",
     "approve_failed": "Error al aprobar",
-    "messages_not_offered": "Los cuidadores no pueden leer mensajes. Esa opción se eliminó porque nunca funcionó y la otra persona en una conversación no aceptó que se compartiera.",
-    "scope_note": "Estos son enlaces que usted mismo configura y la otra persona aprueba. Los arreglos registrados por sus coordinadores se muestran por separado, en su configuración de protección."
+    "scope_note": "Estos son enlaces que usted mismo configura y la otra persona aprueba. Los arreglos registrados por sus coordinadores se muestran por separado, en su configuración de protección.",
+    "messages": {
+      "label": "Sus mensajes",
+      "state_active": "Dijo que sí — puedes ver",
+      "state_pending": "Esperando la aprobación de {{name}}",
+      "request_button": "Pedir ver sus mensajes",
+      "explainer": "La visualización solo empieza con el sí de {{name}}, cada visualización queda registrada donde puede verlo, y puede retirar el acceso en cualquier momento.",
+      "request_sent_toast": "Se le ha preguntado — no pasa nada hasta que apruebe",
+      "withdrawn_toast": "Acceso a los mensajes retirado",
+      "member_reminder": "{{name}} puede ver tus mensajes — tú lo aceptaste.",
+      "last_viewed": "Última visualización {{time}}",
+      "never_viewed": "Nunca visto hasta ahora",
+      "withdraw_button": "Impedir que vea mis mensajes",
+      "view_button": "Ver mensajes"
+    }
   },
   "support_actions": {
     "waiting_title": "Esperando su aprobación",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Todavía no se puede añadir una foto: se podrá cuando lo apruebe.",
     "photo_upload_failed": "El anuncio se publicó, pero no se pudo añadir la foto.",
     "load_failed": "No se pudieron cargar tus aprobaciones. Puede que algo espere tu respuesta.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "type_message_access_grant": "permiso para ver tus mensajes"
   },
   "appearance_prefs": {
     "title": "Preferencias de apariencia",
@@ -854,5 +867,28 @@
   },
   "biometric_all_removed_many": "Se eliminaron las claves de acceso {{count}}.",
   "biometric_enabled_many": "Claves de acceso {{count}} registradas",
-  "twofa_backup_remaining_many": "{{count}} códigos de respaldo restantes"
+  "twofa_backup_remaining_many": "{{count}} códigos de respaldo restantes",
+  "supported_messages": {
+    "page_title": "Sus mensajes",
+    "read_only_banner": "Solo lectura. No puedes enviar nada y nada se marca como leído. Cada visita aquí queda registrada, y la persona ve cuándo miraste por última vez.",
+    "purpose_title": "¿Por qué necesitas mirar?",
+    "purpose_explainer": "Tu motivo queda registrado permanentemente y no puede editarse ni borrarse. Ayuda a que todos confíen en cómo se usa este acceso.",
+    "purpose_reason_label": "Motivo",
+    "reason_wellbeing": "Comprobar que está bien",
+    "reason_safety": "Una preocupación de seguridad",
+    "reason_helping_reply": "Ayudarle a leer o responder",
+    "reason_other": "Otra cosa",
+    "purpose_detail_label": "Añade unas palabras (opcional)",
+    "purpose_cancel": "Volver",
+    "purpose_submit": "Continuar",
+    "back_to_conversations": "Todas las conversaciones",
+    "loading": "Cargando",
+    "denied": "Ya no puedes ver estos mensajes. Puede que el permiso haya sido retirado.",
+    "empty_list": "No hay conversaciones que mostrar.",
+    "empty_thread": "No hay mensajes en esta conversación.",
+    "list_aria": "Sus conversaciones",
+    "thread_aria": "Conversación con {{name}}",
+    "from_member": "La persona",
+    "voice_message": "Mensaje de voz"
+  }
 }

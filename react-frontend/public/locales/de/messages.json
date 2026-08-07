@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "Zu den neuesten Nachrichten springen ({{count}} neu)",
   "date_today": "Heute",
   "date_yesterday": "Gestern",
-  "safeguarding_notice": "Dieses Gespräch kann zu Schutzzwecken von einer Koordinationsperson überprüft werden.",
+  "safeguarding_notice": "Nachrichten in dieser Unterhaltung können zum Schutz von einer Koordinationsperson geprüft werden oder für eine Vertrauensperson eines Beteiligten sichtbar sein.",
   "safeguarding_notice_compact": "Geschütztes Gespräch",
   "aria_dismiss_safeguarding": "Schutzhinweis ausblenden",
   "regarding_context": "Bezüglich dieses {{type}}:",
@@ -270,5 +270,7 @@
   "aria_conversation_unread_one": "Gespräch mit {{name}}, {{count}} ungelesen",
   "aria_conversation_unread_other": "Gespräch mit {{name}}, {{count}} ungelesen",
   "selected_members_one": "Ausgewählt ({{count}})",
-  "selected_members_other": "Ausgewählt ({{count}})"
+  "selected_members_other": "Ausgewählt ({{count}})",
+  "own_messages_shared_reminder": "Eine von Ihnen gewählte Unterstützungsperson kann Ihre Nachrichten einsehen.",
+  "own_messages_shared_manage": "Verwalten"
 }

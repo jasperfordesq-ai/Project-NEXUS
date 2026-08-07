@@ -41,9 +41,22 @@ class SubAccountController extends BaseApiController
     {
         $userId = $this->requireAuth();
 
-        $parents = $this->subAccountService->getParentAccounts($userId);
+        $parents = $this->normalizeRelationships($this->subAccountService->getParentAccounts($userId));
 
-        return $this->respondWithData($this->normalizeRelationships($parents));
+        // Member-visible accountability: on rows where a supporter can view
+        // this member's messages, say when they last looked (from the
+        // immutable audit). Parents lists are tiny (≤ MAX_CHILDREN the other
+        // way round, usually 0-2 rows), so per-row stats are fine here.
+        $viewService = app(\App\Services\SupporterMessageViewService::class);
+        foreach ($parents as &$parent) {
+            if (($parent['message_access'] ?? 'none') === 'active') {
+                $stats = $viewService->viewStatsForMember($userId, (int) $parent['relationship_id']);
+                $parent['message_view_last_at'] = $stats['last_viewed_at'];
+            }
+        }
+        unset($parent);
+
+        return $this->respondWithData($parents);
     }
 
     /** POST /api/v2/users/me/sub-accounts */
@@ -414,6 +427,19 @@ class SubAccountController extends BaseApiController
 
     private function normalizeRelationships(array $relationships): array
     {
+        // One query for every row's open message-access ask, not one per row.
+        $relationshipIds = array_values(array_filter(array_map(
+            static fn ($r) => (int) ($r['relationship_id'] ?? 0),
+            $relationships,
+        )));
+        $pendingAskIds = $relationshipIds === [] ? [] : \Illuminate\Support\Facades\DB::table('support_pending_actions')
+            ->whereIn('relationship_id', $relationshipIds)
+            ->where('action_type', \App\Models\SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
+            ->where('status', \App\Models\SupportPendingAction::STATUS_PENDING)
+            ->pluck('relationship_id')
+            ->map(static fn ($id) => (int) $id)
+            ->all();
+
         foreach ($relationships as &$relationship) {
             if (is_string($relationship['permissions'] ?? null)) {
                 $decoded = json_decode($relationship['permissions'], true);
@@ -421,6 +447,15 @@ class SubAccountController extends BaseApiController
             } elseif (!is_array($relationship['permissions'] ?? null)) {
                 $relationship['permissions'] = [];
             }
+
+            // The UI's three-state messages control: none | pending | active.
+            // Derived server-side so both sides of the card agree with the
+            // consent machinery rather than re-deriving it from raw tiers.
+            $tiers = \App\Support\Safeguarding\SupportTiers::resolve($relationship['permissions']);
+            $relationship['message_access'] = $tiers['messages'] !== \App\Support\Safeguarding\SupportTiers::NONE
+                ? 'active'
+                : (in_array((int) ($relationship['relationship_id'] ?? 0), $pendingAskIds, true) ? 'pending' : 'none');
+            $relationship['message_access_granted_at'] = $relationship['message_access_granted_at'] ?? null;
         }
         unset($relationship);
 

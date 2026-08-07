@@ -532,7 +532,7 @@ class TenantContext
             'courses', 'podcasts', 'coupons', 'clubs', 'me', 'municipality-calendar',
             'advertise', 'join',
             'caring', 'caring-community', 'proposals', 'newsletter', 'onboarding',
-            'support-actions',
+            'support-actions', 'linked-accounts',
             // Public info pages
             'home', 'about', 'contact', 'faq', 'help', 'legal', 'terms', 'privacy',
             'platform', 'accessibility', 'cookies', 'community-guidelines', 'acceptable-use',

@@ -134,7 +134,10 @@ const mockManagerAccounts = [
   },
 ];
 
-function mockLoad(children = mockManagedAccounts, parents = mockManagerAccounts) {
+function mockLoad(
+  children: Array<Record<string, unknown>> = mockManagedAccounts,
+  parents: Array<Record<string, unknown>> = mockManagerAccounts,
+) {
   vi.mocked(api.get)
     .mockResolvedValueOnce({ success: true, data: children })
     .mockResolvedValueOnce({ success: true, data: parents });
@@ -236,7 +239,13 @@ describe('SubAccountsManager', () => {
    * read a dependent's messages exposes the other party to that conversation,
    * who never agreed. It needs the counterparty notice first.
    */
-  it('does not offer a messages permission, and says so', async () => {
+  /**
+   * Reversed pin (2026-08-07, owner decision): message access EXISTS now —
+   * but never as a switch. The control is a consent REQUEST: no toggle, no
+   * direct grant, three server-derived states. What must never return is the
+   * old fire-and-forget "View messages" permission toggle.
+   */
+  it('offers messages as a consent request, never as a switch', async () => {
     mockLoad();
 
     render(<SubAccountsManager />);
@@ -245,13 +254,57 @@ describe('SubAccountsManager', () => {
       expect(screen.getByText('Permissions')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText('View messages')).not.toBeInTheDocument();
+    // The old toggle stays gone…
     expect(
       screen.queryByLabelText('Toggle View messages permission for Child One'),
     ).not.toBeInTheDocument();
-    // Stated, not silently dropped — a family that had switched it on needs to
-    // know it never did anything.
-    expect(screen.getByText(/Carers cannot read messages/i)).toBeInTheDocument();
+    // …and the ask-first control is what exists instead (fixture rows carry
+    // no message_access, i.e. state 'none' → the request button).
+    expect(screen.getByRole('button', { name: 'Ask to view their messages' })).toBeInTheDocument();
+  });
+
+  it('requesting message access sends the tier ask and shows pending on reload', async () => {
+    mockLoad();
+    vi.mocked(api.put).mockResolvedValueOnce({ success: true, data: [] });
+    // The post-request reload returns the server-derived pending state.
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: [{ ...mockManagedAccounts[0]!, message_access: 'pending' }] })
+      .mockResolvedValueOnce({ success: true, data: [] });
+
+    render(<SubAccountsManager />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Ask to view their messages' }));
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/1/permissions', {
+        permissions: { tiers: { messages: 'assist' } },
+      });
+    });
+    expect(await screen.findByText(/Waiting for Child One to approve/)).toBeInTheDocument();
+  });
+
+  it('the member side shows the disclosure and a working withdraw', async () => {
+    mockLoad([], [{
+      ...mockManagerAccounts[0]!,
+      status: 'active' as const,
+      message_access: 'active',
+      message_view_last_at: null,
+    }]);
+    vi.mocked(api.post).mockResolvedValueOnce({ success: true, data: { message_access: 'none' } });
+    vi.mocked(api.get)
+      .mockResolvedValueOnce({ success: true, data: [] })
+      .mockResolvedValueOnce({ success: true, data: [{ ...mockManagerAccounts[0]!, status: 'active' as const }] });
+
+    render(<SubAccountsManager />);
+
+    expect(await screen.findByText(/Parent One can view your messages/)).toBeInTheDocument();
+    expect(screen.getByText('Never viewed so far')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Stop them viewing my messages' }));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/v2/users/me/parent-accounts/3/message-access/withdraw');
+    });
   });
 
   it('sends an explicit activity tier when the switch changes — and the switch visibly moves', async () => {

@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "Téigh go dtí na teachtaireachtaí is déanaí ({{count}} nua)",
   "date_today": "Inniu",
   "date_yesterday": "Inné",
-  "safeguarding_notice": "D'fhéadfadh comhordaitheoir an comhrá seo a athbhreithniú ar mhaithe le cosaint.",
+  "safeguarding_notice": "Féadfaidh comhordaitheoir teachtaireachtaí sa chomhrá seo a athbhreithniú ar mhaithe le cosaint, nó féadfaidh duine a bhfuil muinín ag rannpháirtí as chun tacú leo iad a fheiceáil.",
   "safeguarding_notice_compact": "Comhrá cosanta",
   "aria_dismiss_safeguarding": "Díbir fógra cosanta",
   "regarding_context": "Maidir leis an {{type}} seo:",
@@ -276,5 +276,7 @@
   "aria_conversation_unread_two": "Comhrá le {{name}}, {{count}} neamhléite",
   "selected_members_few": "Roghnaithe ({{count}})",
   "selected_members_many": "Roghnaithe ({{count}})",
-  "selected_members_two": "Roghnaithe ({{count}})"
+  "selected_members_two": "Roghnaithe ({{count}})",
+  "own_messages_shared_reminder": "Is féidir le duine a roghnaigh tú mar thacadóir do theachtaireachtaí a fheiceáil.",
+  "own_messages_shared_manage": "Bainistigh é seo"
 }

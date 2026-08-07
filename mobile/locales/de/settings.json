@@ -239,8 +239,7 @@
     "permissions": {
       "can_view_activity": "View activity",
       "can_manage_listings": "Manage listings",
-      "can_transact": "Transfer credits",
-      "can_view_messages": "View messages"
+      "can_transact": "Transfer credits"
     },
     "permissionToggle": "Toggle {{permission}} for {{name}}",
     "activity": {

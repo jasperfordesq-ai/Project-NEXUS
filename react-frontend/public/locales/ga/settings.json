@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Féach ar ghníomhaíocht",
       "can_manage_listings": "Bainistigh liostaí",
-      "can_transact": "Déan idirbhearta",
-      "can_view_messages": "Féach ar theachtaireachtaí"
+      "can_transact": "Déan idirbhearta"
     },
     "permission_aria": "Scoránaigh cead {{permission}} do {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Theip ar chuntas nasctha a chur leis",
     "remove_failed": "Theip ar bhaint",
     "approve_failed": "Theip ar cheadú",
-    "messages_not_offered": "Ní féidir le cúramóirí teachtaireachtaí a léamh. Baineadh an rogha sin toisc nár oibrigh sé riamh, agus níor aontaigh an duine eile i gcomhrá go ndéanfaí é a roinnt.",
-    "scope_note": "Is naisc iad seo a bhunaíonn tú féin agus a cheadaíonn an duine eile. Taispeántar na socruithe a thaifeadann do chomhordaitheoirí ar leithligh, faoi do shocruithe cosanta."
+    "scope_note": "Is naisc iad seo a bhunaíonn tú féin agus a cheadaíonn an duine eile. Taispeántar na socruithe a thaifeadann do chomhordaitheoirí ar leithligh, faoi do shocruithe cosanta.",
+    "messages": {
+      "label": "A gcuid teachtaireachtaí",
+      "state_active": "Dúirt siad tá — is féidir leat féachaint",
+      "state_pending": "Ag fanacht ar {{name}} é a cheadú",
+      "request_button": "Iarr féachaint ar a gcuid teachtaireachtaí",
+      "explainer": "Ní thosaíonn féachaint riamh ach le tá {{name}} féin, déantar taifead ar gach féachaint áit ar féidir leo é a fheiceáil, agus is féidir leo é a tharraingt siar am ar bith.",
+      "request_sent_toast": "Iarradh orthu — ní tharlaíonn aon rud go dtí go gceadaíonn siad é",
+      "withdrawn_toast": "Rochtain ar theachtaireachtaí tarraingthe siar",
+      "member_reminder": "Is féidir le {{name}} do theachtaireachtaí a fheiceáil — d’aontaigh tú leis seo.",
+      "last_viewed": "Féachadh air go deireanach {{time}}",
+      "never_viewed": "Níor féachadh air fós",
+      "withdraw_button": "Stop iad ó mo theachtaireachtaí a fheiceáil",
+      "view_button": "Féach ar theachtaireachtaí"
+    }
   },
   "support_actions": {
     "waiting_title": "Ag fanacht le do cheadú",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Ní féidir grianghraf a chur leis go fóill — is féidir é a chur leis chomh luath agus a cheadaíonn siad é seo.",
     "photo_upload_failed": "Postáladh an liosta, ach níorbh fhéidir an grianghraf a chur leis.",
     "load_failed": "Níorbh fhéidir do cheaduithe a lódáil. Seans go bhfuil rud éigin ag fanacht ar do fhreagra.",
-    "retry": "Bain triail eile as"
+    "retry": "Bain triail eile as",
+    "type_message_access_grant": "cead do theachtaireachtaí a fheiceáil"
   },
   "appearance_prefs": {
     "title": "Roghanna Cuma",
@@ -862,5 +875,28 @@
   "biometric_enabled_two": "{{count}} pas-eochair cláraithe",
   "twofa_backup_remaining_few": "{{count}} cód cúltaca fágtha",
   "twofa_backup_remaining_many": "{{count}} cód cúltaca fágtha",
-  "twofa_backup_remaining_two": "{{count}} cód cúltaca fágtha"
+  "twofa_backup_remaining_two": "{{count}} cód cúltaca fágtha",
+  "supported_messages": {
+    "page_title": "A gcuid teachtaireachtaí",
+    "read_only_banner": "Léamh amháin. Ní féidir leat seoladh, agus ní mharcáiltear aon rud mar léite. Déantar taifead ar gach cuairt anseo, agus feiceann siad cathain a d’fhéach tú go deireanach.",
+    "purpose_title": "Cén fáth a gcaithfidh tú féachaint?",
+    "purpose_explainer": "Déantar taifead buan ar do chúis nach féidir a chur in eagar ná a scriosadh. Cuidíonn sé le gach duine muinín a bheith acu as an rochtain seo.",
+    "purpose_reason_label": "Cúis",
+    "reason_wellbeing": "Ag seiceáil an bhfuil siad ceart go leor",
+    "reason_safety": "Imní sábháilteachta",
+    "reason_helping_reply": "Ag cabhrú leo léamh nó freagra a thabhairt",
+    "reason_other": "Rud éigin eile",
+    "purpose_detail_label": "Cuir cúpla focal leis (roghnach)",
+    "purpose_cancel": "Ar ais",
+    "purpose_submit": "Lean ar aghaidh",
+    "back_to_conversations": "Gach comhrá",
+    "loading": "Á lódáil",
+    "denied": "Ní féidir leat na teachtaireachtaí seo a fheiceáil a thuilleadh. Seans gur tarraingíodh siar an cead.",
+    "empty_list": "Níl aon chomhráite le taispeáint.",
+    "empty_thread": "Níl aon teachtaireachtaí sa chomhrá seo.",
+    "list_aria": "A gcuid comhráite",
+    "thread_aria": "Comhrá le {{name}}",
+    "from_member": "Iadsan",
+    "voice_message": "Teachtaireacht ghutha"
+  }
 }

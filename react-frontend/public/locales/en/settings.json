@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "View activity",
       "can_manage_listings": "Manage listings",
-      "can_transact": "Make transactions",
-      "can_view_messages": "View messages"
+      "can_transact": "Make transactions"
     },
     "permission_aria": "Toggle {{permission}} permission for {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Failed to add linked account",
     "remove_failed": "Failed to remove",
     "approve_failed": "Failed to approve",
-    "messages_not_offered": "Carers cannot read messages. That option was removed because it never worked, and the other person in a conversation has not agreed to it being shared.",
-    "scope_note": "These are links you set up yourself and the other person approves. Arrangements recorded by your coordinators are shown separately, under your safeguarding settings."
+    "scope_note": "These are links you set up yourself and the other person approves. Arrangements recorded by your coordinators are shown separately, under your safeguarding settings.",
+    "messages": {
+      "label": "Their messages",
+      "state_active": "They said yes — you can view",
+      "state_pending": "Waiting for {{name}} to approve",
+      "request_button": "Ask to view their messages",
+      "explainer": "Viewing only ever starts with {{name}}’s own yes, every viewing is recorded where they can see it, and they can withdraw at any time.",
+      "request_sent_toast": "They’ve been asked — nothing happens until they approve",
+      "withdrawn_toast": "Message access withdrawn",
+      "member_reminder": "{{name}} can view your messages — you agreed to this.",
+      "last_viewed": "Last viewed {{time}}",
+      "never_viewed": "Never viewed so far",
+      "withdraw_button": "Stop them viewing my messages",
+      "view_button": "View messages"
+    }
   },
   "support_actions": {
     "waiting_title": "Waiting for your approval",
@@ -744,7 +756,8 @@
     "photo_after_approval": "A photo cannot be added yet — it can be added once they approve this.",
     "photo_upload_failed": "The listing was posted, but the photo could not be added.",
     "load_failed": "Your approvals could not be loaded. Something may be waiting for your answer.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "type_message_access_grant": "permission to view your messages"
   },
   "appearance_prefs": {
     "title": "Appearance Preferences",
@@ -850,5 +863,28 @@
     "type_gave_hours": "Gave hours",
     "type_received_hours": "Received hours",
     "type_other": "Activity"
+  },
+  "supported_messages": {
+    "page_title": "Their messages",
+    "read_only_banner": "Read-only. You cannot send, and nothing is marked as read. Every visit here is recorded, and they can see when you last looked.",
+    "purpose_title": "Why do you need to look?",
+    "purpose_explainer": "Your reason is recorded permanently and cannot be edited or deleted. It helps everyone trust how this access is used.",
+    "purpose_reason_label": "Reason",
+    "reason_wellbeing": "Checking they’re okay",
+    "reason_safety": "A safety concern",
+    "reason_helping_reply": "Helping them read or reply",
+    "reason_other": "Something else",
+    "purpose_detail_label": "Add a few words (optional)",
+    "purpose_cancel": "Go back",
+    "purpose_submit": "Continue",
+    "back_to_conversations": "All conversations",
+    "loading": "Loading",
+    "denied": "You can no longer view these messages. The permission may have been withdrawn.",
+    "empty_list": "No conversations to show.",
+    "empty_thread": "No messages in this conversation.",
+    "list_aria": "Their conversations",
+    "thread_aria": "Conversation with {{name}}",
+    "from_member": "Them",
+    "voice_message": "Voice message"
   }
 }

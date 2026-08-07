@@ -220,6 +220,13 @@ class SupporterMessageViewTest extends TestCase
         $conversations = $response->json('data.conversations');
         $this->assertNotEmpty($conversations);
         foreach ($conversations as $conversation) {
+            // 🔴 Shape pin: each entry must be a flat conversation row, not the
+            // paging envelope's items list. Without this, assertArrayNotHasKey
+            // passes vacuously on a nested list (integer keys only) — which is
+            // exactly how the envelope bug shipped past this test the first time.
+            $this->assertArrayHasKey('partner_id', $conversation,
+                'Each conversation must be a flat row with partner metadata.');
+            $this->assertArrayHasKey('last_message', $conversation);
             $this->assertArrayNotHasKey('unread_count', $conversation,
                 'Read-state is the member\'s private metadata.');
         }

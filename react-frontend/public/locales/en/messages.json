@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "Scroll to latest messages ({{count}} new)",
   "date_today": "Today",
   "date_yesterday": "Yesterday",
-  "safeguarding_notice": "This conversation may be reviewed by a coordinator for safeguarding purposes.",
+  "safeguarding_notice": "Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.",
   "safeguarding_notice_compact": "Safeguarded conversation",
   "aria_dismiss_safeguarding": "Dismiss safeguarding notice",
   "regarding_context": "Regarding this {{type}}:",
@@ -272,5 +272,7 @@
   "aria_conversation_unread_one": "Conversation with {{name}}, {{count}} unread",
   "aria_conversation_unread_other": "Conversation with {{name}}, {{count}} unread",
   "selected_members_one": "Selected ({{count}})",
-  "selected_members_other": "Selected ({{count}})"
+  "selected_members_other": "Selected ({{count}})",
+  "own_messages_shared_reminder": "Someone you chose as a supporter can view your messages.",
+  "own_messages_shared_manage": "Manage this"
 }

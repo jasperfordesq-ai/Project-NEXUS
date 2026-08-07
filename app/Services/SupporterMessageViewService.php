@@ -62,14 +62,15 @@ class SupporterMessageViewService
 
         $this->audit($supporterUserId, $supportedUserId, null, 'list', $purpose);
 
-        $conversations = MessageService::getConversations($supportedUserId, $filters);
+        // getConversations returns a paging envelope: ['items' => rows, 'cursor', 'has_more'].
+        $payload = MessageService::getConversations($supportedUserId, $filters);
 
-        // getConversations can yield non-array entries (e.g. a partner row
-        // that failed hydration maps to null) — drop them rather than crash.
+        // Rows can contain non-array entries (e.g. a partner row that failed
+        // hydration maps to null) — drop them rather than crash.
         return array_values(array_map(static function (array $conversation): array {
             unset($conversation['unread_count']);
             return $conversation;
-        }, array_filter($conversations, 'is_array')));
+        }, array_filter($payload['items'] ?? [], 'is_array')));
     }
 
     /**
@@ -118,7 +119,11 @@ class SupporterMessageViewService
             ->first();
 
         return [
-            'last_viewed_at' => $row?->last_viewed_at,
+            // Raw DATETIME has no timezone marker; browsers parse it as local
+            // time and misreport the age. Emit ISO-8601 UTC instead.
+            'last_viewed_at' => $row?->last_viewed_at
+                ? \Illuminate\Support\Carbon::parse($row->last_viewed_at, 'UTC')->toIso8601String()
+                : null,
             'view_count_30d' => (int) ($row?->recent ?? 0),
         ];
     }

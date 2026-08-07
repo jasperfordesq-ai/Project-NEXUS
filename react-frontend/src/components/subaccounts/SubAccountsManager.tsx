@@ -22,11 +22,12 @@ import CheckCircle from 'lucide-react/icons/circle-check-big';
 import Clock from 'lucide-react/icons/clock';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/feedback';
-import { useToast } from '@/contexts';
+import { useToast, useTenant } from '@/contexts';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
-import { resolveAvatarUrl } from '@/lib/helpers';
+import { resolveAvatarUrl, formatRelativeTime } from '@/lib/helpers';
 import { SupportPrepareModal, type PrepareActionType } from './SupportPrepareModal';
 import { SupportActivityModal } from './SupportActivityModal';
 
@@ -71,6 +72,15 @@ interface AccountRelationshipRow {
    * never offer to change it. See GuardianArrangementService::setTiers().
    */
   staff_recorded?: boolean;
+  /**
+   * Consent-gated message access, derived SERVER-side (tier + open ask) so
+   * this card can never disagree with the consent machinery:
+   * none → pending (asked, awaiting their yes) → active.
+   */
+  message_access?: 'none' | 'pending' | 'active';
+  message_access_granted_at?: string | null;
+  /** Member side only: when their supporter last looked (accountability). */
+  message_view_last_at?: string | null;
 }
 
 interface NormalizedRelationship extends Omit<AccountRelationshipRow, 'permissions'> {
@@ -196,6 +206,8 @@ export function SubAccountsManager() {
   const toast = useToast();
   const { t } = useTranslation('settings');
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
+  const { tenantPath } = useTenant();
 
   const [managedAccounts, setManagedAccounts] = useState<NormalizedRelationship[]>([]);
   const [managerAccounts, setManagerAccounts] = useState<NormalizedRelationship[]>([]);
@@ -283,6 +295,54 @@ export function SubAccountsManager() {
   // (The boolean handlePermissionChange is gone: every control now speaks the
   // tier vocabulary. Booleans were both lossy — co_decide projects to false —
   // and mismatched with rendering, which reads account.tiers.)
+
+  /**
+   * Ask for message access. This does NOT grant anything: the backend
+   * intercepts the tier request, keeps the tier at none, and creates the
+   * pending consent the member answers. A full reload (not an optimistic
+   * flip) picks up the server-derived 'pending' state.
+   */
+  const handleRequestMessageAccess = async (relationshipId: number) => {
+    try {
+      setBusyRelationshipId(relationshipId);
+      const response = await api.put(`/v2/users/me/sub-accounts/${relationshipId}/permissions`, {
+        permissions: { tiers: { messages: 'assist' } },
+      });
+
+      if (response.success) {
+        toastRef.current.success(tRef.current('sub_accounts.messages.request_sent_toast'));
+        await loadSubAccounts();
+      } else {
+        toastRef.current.error(response.error || tRef.current('toasts.subaccount_permission_failed'));
+      }
+    } catch (err) {
+      logError('Failed to request message access', err);
+      toastRef.current.error(tRef.current('toasts.subaccount_permission_failed'));
+    } finally {
+      setBusyRelationshipId(null);
+    }
+  };
+
+  /** The MEMBER side: withdraw a supporter's message access — one press,
+   *  effective immediately, no reason asked. */
+  const handleWithdrawMessageAccess = async (relationshipId: number) => {
+    try {
+      setBusyRelationshipId(relationshipId);
+      const response = await api.post(`/v2/users/me/parent-accounts/${relationshipId}/message-access/withdraw`);
+
+      if (response.success) {
+        toastRef.current.success(tRef.current('sub_accounts.messages.withdrawn_toast'));
+        await loadSubAccounts();
+      } else {
+        toastRef.current.error(response.error || tRef.current('toasts.subaccount_permission_failed'));
+      }
+    } catch (err) {
+      logError('Failed to withdraw message access', err);
+      toastRef.current.error(tRef.current('toasts.subaccount_permission_failed'));
+    } finally {
+      setBusyRelationshipId(null);
+    }
+  };
 
   /**
    * Change one capability's support tier. Sends the explicit `tiers` object —
@@ -497,14 +557,64 @@ export function SubAccountsManager() {
                   {t('sub_accounts.tiers.co_decide_explainer')}
                 </p>
                 {/*
-                  Stated explicitly rather than left as an absence. A family that
-                  previously switched "View messages" on needs to know it never
-                  did anything and is not being offered — silently dropping the
-                  control would leave them believing it was still in force.
+                  Message access (owner decision 2026-08-07, reversing the old
+                  omission) — CONSENT-GATED, three states, never a plain
+                  switch: requesting it only ASKS the member (in-app + email
+                  one-click); their yes activates it; they can withdraw at any
+                  time; re-enabling always needs a fresh yes.
                 */}
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs text-theme-muted">{t('sub_accounts.messages.label')}</span>
+                  {account.message_access === 'active' ? (
+                    <Chip size="sm" variant="flat" color="success">
+                      {t('sub_accounts.messages.state_active')}
+                    </Chip>
+                  ) : account.message_access === 'pending' ? (
+                    <Chip size="sm" variant="flat" color="warning" startContent={<Clock className="w-3 h-3" />}>
+                      {t('sub_accounts.messages.state_pending', { name })}
+                    </Chip>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      isDisabled={busyRelationshipId === account.relationship_id}
+                      onPress={() => handleRequestMessageAccess(account.relationship_id)}
+                    >
+                      {t('sub_accounts.messages.request_button')}
+                    </Button>
+                  )}
+                </div>
                 <p className="text-xs text-theme-muted">
-                  {t('sub_accounts.messages_not_offered')}
+                  {t('sub_accounts.messages.explainer', { name })}
                 </p>
+              </div>
+            )}
+
+            {/*
+              MEMBER side (people who manage you): the message-access
+              disclosure is theirs to see and end. States who can view, when
+              they last looked (the immutable audit made member-visible), and
+              offers the one-press withdrawal — no reason ever asked.
+            */}
+            {!options.canManagePermissions && account.status === 'active' && account.message_access === 'active' && (
+              <div className="mt-3 space-y-1 rounded-lg border border-theme-default bg-theme-elevated/40 p-3">
+                <p className="text-xs text-theme-primary">
+                  {t('sub_accounts.messages.member_reminder', { name })}
+                </p>
+                <p className="text-xs text-theme-muted">
+                  {account.message_view_last_at
+                    ? t('sub_accounts.messages.last_viewed', { time: formatRelativeTime(account.message_view_last_at) })
+                    : t('sub_accounts.messages.never_viewed')}
+                </p>
+                <Button
+                  size="sm"
+                  color="danger"
+                  variant="flat"
+                  isLoading={busyRelationshipId === account.relationship_id}
+                  onPress={() => handleWithdrawMessageAccess(account.relationship_id)}
+                >
+                  {t('sub_accounts.messages.withdraw_button')}
+                </Button>
               </div>
             )}
 
@@ -521,6 +631,15 @@ export function SubAccountsManager() {
                 || (account.tiers.listings !== 'none' && account.tiers.listings !== 'assist')
                 || (account.tiers.credits !== 'none' && account.tiers.credits !== 'assist')) && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                {account.message_access === 'active' && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => navigate(tenantPath(`/linked-accounts/${account.user_id}/messages`))}
+                  >
+                    {t('sub_accounts.messages.view_button')}
+                  </Button>
+                )}
                 {account.tiers.activity !== 'none' && (
                   <Button
                     size="sm"

@@ -41,7 +41,7 @@ type ActionStatus = 'pending' | 'confirmed' | 'declined' | 'expired' | 'cancelle
 
 interface SupportAction {
   id: number;
-  action_type: 'listing_create' | 'credit_transfer';
+  action_type: 'listing_create' | 'credit_transfer' | 'message_access_grant';
   status: ActionStatus;
   payload_summary: { title?: string | null; amount?: number | null };
   other_party_name: string | null;

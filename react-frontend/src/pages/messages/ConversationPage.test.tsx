@@ -286,8 +286,9 @@ describe('ConversationPage', () => {
   });
 
   it('hides the generic review notice only when broker visibility is explicitly disabled', async () => {
+    // The status fetch is pair-aware now (?partner_id=), so match by prefix.
     mockApi.get.mockImplementation((url: string) => {
-      if (url === '/v2/messages/restriction-status') {
+      if (url.startsWith('/v2/messages/restriction-status')) {
         return Promise.resolve({
           success: true,
           data: {
@@ -295,6 +296,7 @@ describe('ConversationPage', () => {
             under_monitoring: false,
             restriction_reason: null,
             review_notice_required: false,
+            supporter_view_notice_required: false,
           },
         });
       }
@@ -306,6 +308,38 @@ describe('ConversationPage', () => {
 
     await waitFor(() => expect(screen.getByText('Hello Bob!')).toBeDefined());
     await waitFor(() => expect(screen.queryByText('safeguarding_notice')).toBeNull());
+  });
+
+  /**
+   * The merged banner: supporter message access shows the SAME notice even
+   * when broker review is explicitly off — one wording for both causes, so a
+   * counterparty can never tell which applies (and therefore who has a
+   * supporter). The member's own-shared reminder renders alongside.
+   */
+  it('shows the merged notice for supporter access even when broker review is off', async () => {
+    mockApi.get.mockImplementation((url: string) => {
+      if (url.startsWith('/v2/messages/restriction-status')) {
+        return Promise.resolve({
+          success: true,
+          data: {
+            messaging_disabled: false,
+            under_monitoring: false,
+            restriction_reason: null,
+            review_notice_required: false,
+            supporter_view_notice_required: true,
+            own_messages_shared: true,
+          },
+        });
+      }
+      return Promise.resolve(mockConversationResponse);
+    });
+    mockApi.put.mockResolvedValue({ success: true });
+
+    render(<ConversationPage />);
+
+    await waitFor(() => expect(screen.getByText('Hello Bob!')).toBeDefined());
+    await waitFor(() => expect(screen.getAllByText('safeguarding_notice').length).toBeGreaterThan(0));
+    expect(screen.getByTestId('own-messages-shared-reminder')).toBeInTheDocument();
   });
 
   it('keeps the generic review notice when policy status cannot be loaded', async () => {

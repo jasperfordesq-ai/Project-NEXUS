@@ -51302,6 +51302,8 @@ export default interface Resources {
     "new_message": "New Message",
     "offline_status": "Offline",
     "online_status": "Online",
+    "own_messages_shared_manage": "Manage this",
+    "own_messages_shared_reminder": "Someone you chose as a supporter can view your messages.",
     "page_meta": {
       "conversation": {
         "title": "Conversation"
@@ -51329,7 +51331,7 @@ export default interface Resources {
       "dismiss": "Dismiss safeguarding notice",
       "title": "Coordinator arrangement needed"
     },
-    "safeguarding_notice": "This conversation may be reviewed by a coordinator for safeguarding purposes.",
+    "safeguarding_notice": "Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.",
     "safeguarding_notice_compact": "Safeguarded conversation",
     "safeguarding_policy_unavailable": {
       "action": "Check again",
@@ -54298,7 +54300,20 @@ export default interface Resources {
       "managers_description": "Review account management requests and active delegates for your own account.",
       "managers_empty": "No one else can manage your account.",
       "managers_title": "People who can manage your account",
-      "messages_not_offered": "Carers cannot read messages. That option was removed because it never worked, and the other person in a conversation has not agreed to it being shared.",
+      "messages": {
+        "explainer": "Viewing only ever starts with {{name}}’s own yes, every viewing is recorded where they can see it, and they can withdraw at any time.",
+        "label": "Their messages",
+        "last_viewed": "Last viewed {{time}}",
+        "member_reminder": "{{name}} can view your messages — you agreed to this.",
+        "never_viewed": "Never viewed so far",
+        "request_button": "Ask to view their messages",
+        "request_sent_toast": "They’ve been asked — nothing happens until they approve",
+        "state_active": "They said yes — you can view",
+        "state_pending": "Waiting for {{name}} to approve",
+        "view_button": "View messages",
+        "withdraw_button": "Stop them viewing my messages",
+        "withdrawn_toast": "Message access withdrawn"
+      },
       "modal_description": "Enter the email address of the person you want to link. They will receive a notification to approve the request.",
       "modal_title": "Add Linked Account",
       "name_label": "Name (optional)",
@@ -54309,8 +54324,7 @@ export default interface Resources {
       "permissions": {
         "can_manage_listings": "Manage listings",
         "can_transact": "Make transactions",
-        "can_view_activity": "View activity",
-        "can_view_messages": "View messages"
+        "can_view_activity": "View activity"
       },
       "permissions_label": "Permissions",
       "remove_aria": "Remove {{name}}",
@@ -54403,6 +54417,7 @@ export default interface Resources {
       "their_balance": "{{name}}'s balance: {{balance}} hours",
       "type_credit_transfer": "A time-credit transfer",
       "type_listing_create": "A new listing",
+      "type_message_access_grant": "permission to view your messages",
       "validation_amount": "Enter how many hours to send.",
       "validation_balance": "That is more than they have. Their balance is {{balance}} hours.",
       "validation_max": "The most that can be sent at once is {{max}} hours.",
@@ -54433,6 +54448,29 @@ export default interface Resources {
       "type_post": "Posted",
       "type_received_hours": "Received hours",
       "view_button": "See their activity"
+    },
+    "supported_messages": {
+      "back_to_conversations": "All conversations",
+      "denied": "You can no longer view these messages. The permission may have been withdrawn.",
+      "empty_list": "No conversations to show.",
+      "empty_thread": "No messages in this conversation.",
+      "from_member": "Them",
+      "list_aria": "Their conversations",
+      "loading": "Loading",
+      "page_title": "Their messages",
+      "purpose_cancel": "Go back",
+      "purpose_detail_label": "Add a few words (optional)",
+      "purpose_explainer": "Your reason is recorded permanently and cannot be edited or deleted. It helps everyone trust how this access is used.",
+      "purpose_reason_label": "Reason",
+      "purpose_submit": "Continue",
+      "purpose_title": "Why do you need to look?",
+      "read_only_banner": "Read-only. You cannot send, and nothing is marked as read. Every visit here is recorded, and they can see when you last looked.",
+      "reason_helping_reply": "Helping them read or reply",
+      "reason_other": "Something else",
+      "reason_safety": "A safety concern",
+      "reason_wellbeing": "Checking they’re okay",
+      "thread_aria": "Conversation with {{name}}",
+      "voice_message": "Voice message"
     },
     "tabs": {
       "availability": "Availability",

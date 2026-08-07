@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Zobacz aktywność",
       "can_manage_listings": "Zarządzaj listami",
-      "can_transact": "Dokonuj transakcji",
-      "can_view_messages": "Wyświetl wiadomości"
+      "can_transact": "Dokonuj transakcji"
     },
     "permission_aria": "Przełącz uprawnienia {{permission}} dla {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Nie udało się dodać połączonego konta",
     "remove_failed": "Nie udało się usunąć",
     "approve_failed": "Nie udało się zatwierdzić",
-    "messages_not_offered": "Opiekunowie nie mogą czytać wiadomości. Ta opcja została usunięta, ponieważ nigdy nie działała, a druga osoba w rozmowie nie wyraziła zgody na jej udostępnienie.",
-    "scope_note": "Są to linki, które sam konfigurujesz, a druga osoba zatwierdza. Ustalenia zarejestrowane przez Twoich koordynatorów są wyświetlane osobno, w ustawieniach zabezpieczeń."
+    "scope_note": "Są to linki, które sam konfigurujesz, a druga osoba zatwierdza. Ustalenia zarejestrowane przez Twoich koordynatorów są wyświetlane osobno, w ustawieniach zabezpieczeń.",
+    "messages": {
+      "label": "Ich wiadomości",
+      "state_active": "Zgoda wyrażona — możesz przeglądać",
+      "state_pending": "Oczekiwanie na zgodę: {{name}}",
+      "request_button": "Poproś o wgląd w wiadomości",
+      "explainer": "Wgląd zaczyna się wyłącznie od zgody {{name}}, każde przeglądanie jest rejestrowane tam, gdzie ta osoba może to zobaczyć, i może cofnąć dostęp w każdej chwili.",
+      "request_sent_toast": "Prośba wysłana — nic się nie dzieje bez zgody",
+      "withdrawn_toast": "Dostęp do wiadomości cofnięty",
+      "member_reminder": "{{name}} może przeglądać Twoje wiadomości — wyraziłeś(-aś) na to zgodę.",
+      "last_viewed": "Ostatnio przeglądane {{time}}",
+      "never_viewed": "Dotąd nie przeglądano",
+      "withdraw_button": "Zablokuj wgląd w moje wiadomości",
+      "view_button": "Przeglądaj wiadomości"
+    }
   },
   "support_actions": {
     "waiting_title": "Czekam na Twoją zgodę",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Nie można jeszcze dodać zdjęcia — będzie to możliwe po zatwierdzeniu.",
     "photo_upload_failed": "Ogłoszenie zostało opublikowane, ale nie udało się dodać zdjęcia.",
     "load_failed": "Nie udało się wczytać Twoich zatwierdzeń. Coś może czekać na Twoją odpowiedź.",
-    "retry": "Spróbuj ponownie"
+    "retry": "Spróbuj ponownie",
+    "type_message_access_grant": "pozwolenie na wgląd w Twoje wiadomości"
   },
   "appearance_prefs": {
     "title": "Preferencje wyglądu",
@@ -858,5 +871,28 @@
   "biometric_enabled_few": "Zarejestrowano klucz(e) {{count}}",
   "biometric_enabled_many": "Zarejestrowano klucz(e) {{count}}",
   "twofa_backup_remaining_few": "{{count}} kody zapasowe pozostałe",
-  "twofa_backup_remaining_many": "{{count}} kody zapasowe pozostałe"
+  "twofa_backup_remaining_many": "{{count}} kody zapasowe pozostałe",
+  "supported_messages": {
+    "page_title": "Ich wiadomości",
+    "read_only_banner": "Tylko odczyt. Nie możesz nic wysłać, a nic nie jest oznaczane jako przeczytane. Każda wizyta tutaj jest rejestrowana, a ta osoba widzi, kiedy ostatnio zaglądałeś(-aś).",
+    "purpose_title": "Dlaczego musisz zajrzeć?",
+    "purpose_explainer": "Twój powód jest zapisywany na stałe i nie można go edytować ani usunąć. Dzięki temu wszyscy mogą ufać, jak ten dostęp jest używany.",
+    "purpose_reason_label": "Powód",
+    "reason_wellbeing": "Sprawdzenie, czy wszystko w porządku",
+    "reason_safety": "Obawa o bezpieczeństwo",
+    "reason_helping_reply": "Pomoc w czytaniu lub odpowiadaniu",
+    "reason_other": "Coś innego",
+    "purpose_detail_label": "Dodaj kilka słów (opcjonalnie)",
+    "purpose_cancel": "Wstecz",
+    "purpose_submit": "Kontynuuj",
+    "back_to_conversations": "Wszystkie rozmowy",
+    "loading": "Wczytywanie",
+    "denied": "Nie możesz już przeglądać tych wiadomości. Pozwolenie mogło zostać cofnięte.",
+    "empty_list": "Brak rozmów do wyświetlenia.",
+    "empty_thread": "Brak wiadomości w tej rozmowie.",
+    "list_aria": "Ich rozmowy",
+    "thread_aria": "Rozmowa z {{name}}",
+    "from_member": "Ta osoba",
+    "voice_message": "Wiadomość głosowa"
+  }
 }

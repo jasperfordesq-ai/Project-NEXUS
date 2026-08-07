@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Afficher l'activité",
       "can_manage_listings": "Gérer les annonces",
-      "can_transact": "Effectuer des transactions",
-      "can_view_messages": "Afficher les messages"
+      "can_transact": "Effectuer des transactions"
     },
     "permission_aria": "Activer/désactiver l'autorisation {{permission}} pour {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Impossible d'ajouter le compte lié",
     "remove_failed": "Échec de la suppression",
     "approve_failed": "Échec de l'approbation",
-    "messages_not_offered": "Les soignants ne peuvent pas lire les messages. Cette option a été supprimée car elle n’a jamais fonctionné et l’autre personne participant à une conversation n’a pas accepté qu’elle soit partagée.",
-    "scope_note": "Ce sont des liens que vous créez vous-même et que l’autre personne approuve. Les arrangements enregistrés par vos coordinateurs sont affichés séparément, sous vos paramètres de sauvegarde."
+    "scope_note": "Ce sont des liens que vous créez vous-même et que l’autre personne approuve. Les arrangements enregistrés par vos coordinateurs sont affichés séparément, sous vos paramètres de sauvegarde.",
+    "messages": {
+      "label": "Ses messages",
+      "state_active": "Accord donné — vous pouvez consulter",
+      "state_pending": "En attente de l’accord de {{name}}",
+      "request_button": "Demander à voir ses messages",
+      "explainer": "La consultation ne commence qu’avec le oui de {{name}}, chaque consultation est enregistrée là où la personne peut le voir, et elle peut retirer l’accès à tout moment.",
+      "request_sent_toast": "La personne a été sollicitée — rien ne se passe sans son accord",
+      "withdrawn_toast": "Accès aux messages retiré",
+      "member_reminder": "{{name}} peut voir vos messages — vous l’avez accepté.",
+      "last_viewed": "Dernière consultation {{time}}",
+      "never_viewed": "Jamais consulté pour l’instant",
+      "withdraw_button": "Cesser la consultation de mes messages",
+      "view_button": "Voir les messages"
+    }
   },
   "support_actions": {
     "waiting_title": "En attente de votre approbation",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Une photo ne peut pas encore être ajoutée — ce sera possible une fois la personne d’accord.",
     "photo_upload_failed": "L’annonce a été publiée, mais la photo n’a pas pu être ajoutée.",
     "load_failed": "Impossible de charger vos approbations. Quelque chose attend peut-être votre réponse.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "type_message_access_grant": "l’autorisation de voir vos messages"
   },
   "appearance_prefs": {
     "title": "Préférences d'apparence",
@@ -854,5 +867,28 @@
   },
   "biometric_all_removed_many": "Suppression des clés d'accès {{count}}.",
   "biometric_enabled_many": "{{count}} clés d'accès enregistrées",
-  "twofa_backup_remaining_many": "{{count}} codes de secours restants"
+  "twofa_backup_remaining_many": "{{count}} codes de secours restants",
+  "supported_messages": {
+    "page_title": "Ses messages",
+    "read_only_banner": "Lecture seule. Vous ne pouvez rien envoyer et rien n’est marqué comme lu. Chaque visite ici est enregistrée, et la personne voit quand vous avez regardé pour la dernière fois.",
+    "purpose_title": "Pourquoi devez-vous regarder ?",
+    "purpose_explainer": "Votre raison est enregistrée de façon permanente et ne peut être ni modifiée ni supprimée. Cela aide chacun à faire confiance à cet accès.",
+    "purpose_reason_label": "Raison",
+    "reason_wellbeing": "Vérifier que tout va bien",
+    "reason_safety": "Une préoccupation de sécurité",
+    "reason_helping_reply": "L’aider à lire ou à répondre",
+    "reason_other": "Autre chose",
+    "purpose_detail_label": "Ajouter quelques mots (facultatif)",
+    "purpose_cancel": "Retour",
+    "purpose_submit": "Continuer",
+    "back_to_conversations": "Toutes les conversations",
+    "loading": "Chargement",
+    "denied": "Vous ne pouvez plus voir ces messages. L’autorisation a peut-être été retirée.",
+    "empty_list": "Aucune conversation à afficher.",
+    "empty_thread": "Aucun message dans cette conversation.",
+    "list_aria": "Ses conversations",
+    "thread_aria": "Conversation avec {{name}}",
+    "from_member": "La personne",
+    "voice_message": "Message vocal"
+  }
 }

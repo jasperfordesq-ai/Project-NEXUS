@@ -37,7 +37,7 @@ import { useTenant } from '@/contexts';
 type State = 'loading' | 'confirm' | 'submitting' | 'success' | 'unavailable' | 'error';
 
 interface TokenLookup {
-  action_type: 'listing_create' | 'credit_transfer';
+  action_type: 'listing_create' | 'credit_transfer' | 'message_access_grant';
   status: string;
   supporter_name: string | null;
   expires_at: string | null;

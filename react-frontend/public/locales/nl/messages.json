@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "Naar de nieuwste berichten ({{count}} nieuw)",
   "date_today": "Vandaag",
   "date_yesterday": "Gisteren",
-  "safeguarding_notice": "Dit gesprek kan door een coördinator worden beoordeeld voor veiligheidsdoeleinden.",
+  "safeguarding_notice": "Berichten in dit gesprek kunnen door een coördinator worden bekeken voor veiligheid, of zichtbaar zijn voor iemand die een deelnemer vertrouwt als ondersteuning.",
   "safeguarding_notice_compact": "Veilig gesprek",
   "aria_dismiss_safeguarding": "Veiligheidsmelding negeren",
   "regarding_context": "Betreffende deze {{type}}:",
@@ -270,5 +270,7 @@
   "aria_conversation_unread_one": "Gesprek met {{name}}, {{count}} ongelezen",
   "aria_conversation_unread_other": "Gesprek met {{name}}, {{count}} ongelezen",
   "selected_members_one": "Geselecteerd ({{count}})",
-  "selected_members_other": "Geselecteerd ({{count}})"
+  "selected_members_other": "Geselecteerd ({{count}})",
+  "own_messages_shared_reminder": "Iemand die je als ondersteuner koos kan je berichten bekijken.",
+  "own_messages_shared_manage": "Beheren"
 }

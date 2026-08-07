@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Aktivität anzeigen",
       "can_manage_listings": "Einträge verwalten",
-      "can_transact": "Machen Sie Transaktionen",
-      "can_view_messages": "Nachrichten anzeigen"
+      "can_transact": "Machen Sie Transaktionen"
     },
     "permission_aria": "Schalten Sie die {{permission}}-Berechtigung für {{name}} um",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Verknüpftes Konto konnte nicht hinzugefügt werden",
     "remove_failed": "Entfernen fehlgeschlagen",
     "approve_failed": "Genehmigung fehlgeschlagen",
-    "messages_not_offered": "Betreuer können keine Nachrichten lesen. Diese Option wurde entfernt, da sie nie funktionierte und die andere Person in einer Konversation der Weitergabe nicht zugestimmt hat.",
-    "scope_note": "Dabei handelt es sich um Links, die Sie selbst einrichten und denen die andere Person zustimmt. Von Ihren Koordinatoren erfasste Vereinbarungen werden in Ihren Schutzeinstellungen separat angezeigt."
+    "scope_note": "Dabei handelt es sich um Links, die Sie selbst einrichten und denen die andere Person zustimmt. Von Ihren Koordinatoren erfasste Vereinbarungen werden in Ihren Schutzeinstellungen separat angezeigt.",
+    "messages": {
+      "label": "Ihre Nachrichten",
+      "state_active": "Zugestimmt — Sie können einsehen",
+      "state_pending": "Wartet auf die Zustimmung von {{name}}",
+      "request_button": "Um Einsicht in die Nachrichten bitten",
+      "explainer": "Einsicht beginnt nur mit dem eigenen Ja von {{name}}, jede Einsicht wird dort aufgezeichnet, wo die Person es sehen kann, und sie kann jederzeit widerrufen.",
+      "request_sent_toast": "Die Person wurde gefragt — nichts passiert ohne ihre Zustimmung",
+      "withdrawn_toast": "Nachrichtenzugriff widerrufen",
+      "member_reminder": "{{name}} kann Ihre Nachrichten einsehen — Sie haben dem zugestimmt.",
+      "last_viewed": "Zuletzt eingesehen {{time}}",
+      "never_viewed": "Bisher nie eingesehen",
+      "withdraw_button": "Einsicht in meine Nachrichten beenden",
+      "view_button": "Nachrichten ansehen"
+    }
   },
   "support_actions": {
     "waiting_title": "Warten auf Ihre Zustimmung",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Ein Foto kann noch nicht hinzugefügt werden — das geht, sobald die Person zugestimmt hat.",
     "photo_upload_failed": "Die Anzeige wurde veröffentlicht, das Foto konnte jedoch nicht hinzugefügt werden.",
     "load_failed": "Ihre Freigaben konnten nicht geladen werden. Möglicherweise wartet etwas auf Ihre Antwort.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "type_message_access_grant": "die Erlaubnis, Ihre Nachrichten zu sehen"
   },
   "appearance_prefs": {
     "title": "Darstellungseinstellungen",
@@ -850,5 +863,28 @@
     "type_gave_hours": "Stunden gegeben",
     "type_received_hours": "Stunden erhalten",
     "type_other": "Aktivität"
+  },
+  "supported_messages": {
+    "page_title": "Ihre Nachrichten",
+    "read_only_banner": "Nur Lesen. Sie können nichts senden, und nichts wird als gelesen markiert. Jeder Besuch hier wird aufgezeichnet, und die Person sieht, wann Sie zuletzt geschaut haben.",
+    "purpose_title": "Warum müssen Sie nachsehen?",
+    "purpose_explainer": "Ihr Grund wird dauerhaft aufgezeichnet und kann weder bearbeitet noch gelöscht werden. Das schafft Vertrauen in die Nutzung dieses Zugriffs.",
+    "purpose_reason_label": "Grund",
+    "reason_wellbeing": "Nachsehen, ob es der Person gut geht",
+    "reason_safety": "Ein Sicherheitsanliegen",
+    "reason_helping_reply": "Beim Lesen oder Antworten helfen",
+    "reason_other": "Etwas anderes",
+    "purpose_detail_label": "Ein paar Worte ergänzen (optional)",
+    "purpose_cancel": "Zurück",
+    "purpose_submit": "Weiter",
+    "back_to_conversations": "Alle Unterhaltungen",
+    "loading": "Wird geladen",
+    "denied": "Sie können diese Nachrichten nicht mehr einsehen. Die Erlaubnis wurde möglicherweise widerrufen.",
+    "empty_list": "Keine Unterhaltungen vorhanden.",
+    "empty_thread": "Keine Nachrichten in dieser Unterhaltung.",
+    "list_aria": "Ihre Unterhaltungen",
+    "thread_aria": "Unterhaltung mit {{name}}",
+    "from_member": "Die Person",
+    "voice_message": "Sprachnachricht"
   }
 }

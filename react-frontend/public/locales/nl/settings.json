@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Activiteit bekijken",
       "can_manage_listings": "Beheer vermeldingen",
-      "can_transact": "Transacties uitvoeren",
-      "can_view_messages": "Bekijk berichten"
+      "can_transact": "Transacties uitvoeren"
     },
     "permission_aria": "Schakel de toestemming {{permission}} in voor {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Kon gekoppeld account niet toevoegen",
     "remove_failed": "Kon niet verwijderen",
     "approve_failed": "Kon niet goedkeuren",
-    "messages_not_offered": "Verzorgers kunnen geen berichten lezen. Die optie is verwijderd omdat deze nooit heeft gewerkt en de andere persoon in een gesprek er niet mee heeft ingestemd dat deze wordt gedeeld.",
-    "scope_note": "Dit zijn links die je zelf hebt opgezet en waar de ander mee akkoord gaat. Afspraken vastgelegd door uw coördinatoren worden afzonderlijk weergegeven, onder uw beveiligingsinstellingen."
+    "scope_note": "Dit zijn links die je zelf hebt opgezet en waar de ander mee akkoord gaat. Afspraken vastgelegd door uw coördinatoren worden afzonderlijk weergegeven, onder uw beveiligingsinstellingen.",
+    "messages": {
+      "label": "Hun berichten",
+      "state_active": "Ja gezegd — je kunt meekijken",
+      "state_pending": "Wacht op goedkeuring van {{name}}",
+      "request_button": "Vragen om hun berichten te bekijken",
+      "explainer": "Meekijken begint alleen met het eigen ja van {{name}}, elke inzage wordt vastgelegd waar diegene het kan zien, en het kan op elk moment worden ingetrokken.",
+      "request_sent_toast": "De vraag is gesteld — er gebeurt niets tot diegene akkoord gaat",
+      "withdrawn_toast": "Berichttoegang ingetrokken",
+      "member_reminder": "{{name}} kan je berichten bekijken — je hebt hiermee ingestemd.",
+      "last_viewed": "Laatst bekeken {{time}}",
+      "never_viewed": "Tot nu toe nooit bekeken",
+      "withdraw_button": "Stop het meekijken met mijn berichten",
+      "view_button": "Berichten bekijken"
+    }
   },
   "support_actions": {
     "waiting_title": "Wachten op uw goedkeuring",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Een foto kan nog niet worden toegevoegd — dat kan zodra diegene akkoord gaat.",
     "photo_upload_failed": "De advertentie is geplaatst, maar de foto kon niet worden toegevoegd.",
     "load_failed": "Je goedkeuringen konden niet worden geladen. Mogelijk wacht er iets op je antwoord.",
-    "retry": "Opnieuw proberen"
+    "retry": "Opnieuw proberen",
+    "type_message_access_grant": "toestemming om je berichten te bekijken"
   },
   "appearance_prefs": {
     "title": "Uiterlijk Voorkeuren",
@@ -850,5 +863,28 @@
     "type_gave_hours": "Uren gegeven",
     "type_received_hours": "Uren ontvangen",
     "type_other": "Activiteit"
+  },
+  "supported_messages": {
+    "page_title": "Hun berichten",
+    "read_only_banner": "Alleen-lezen. Je kunt niets versturen en niets wordt als gelezen gemarkeerd. Elk bezoek hier wordt vastgelegd, en diegene ziet wanneer je voor het laatst keek.",
+    "purpose_title": "Waarom moet je kijken?",
+    "purpose_explainer": "Je reden wordt permanent vastgelegd en kan niet worden bewerkt of verwijderd. Zo kan iedereen vertrouwen op hoe deze toegang wordt gebruikt.",
+    "purpose_reason_label": "Reden",
+    "reason_wellbeing": "Kijken of alles goed gaat",
+    "reason_safety": "Een veiligheidszorg",
+    "reason_helping_reply": "Helpen met lezen of antwoorden",
+    "reason_other": "Iets anders",
+    "purpose_detail_label": "Voeg een paar woorden toe (optioneel)",
+    "purpose_cancel": "Terug",
+    "purpose_submit": "Doorgaan",
+    "back_to_conversations": "Alle gesprekken",
+    "loading": "Laden",
+    "denied": "Je kunt deze berichten niet meer bekijken. De toestemming is mogelijk ingetrokken.",
+    "empty_list": "Geen gesprekken om te tonen.",
+    "empty_thread": "Geen berichten in dit gesprek.",
+    "list_aria": "Hun gesprekken",
+    "thread_aria": "Gesprek met {{name}}",
+    "from_member": "Diegene",
+    "voice_message": "Spraakbericht"
   }
 }

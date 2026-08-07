@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "アクティビティの表示",
       "can_manage_listings": "リスティングの管理",
-      "can_transact": "取引を行う",
-      "can_view_messages": "メッセージを表示する"
+      "can_transact": "取引を行う"
     },
     "permission_aria": "Toggle {{name}} に対する {{permission}} 権限",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "リンクされたアカウントの追加に失敗しました",
     "remove_failed": "削除に失敗しました",
     "approve_failed": "承認に失敗しました",
-    "messages_not_offered": "介護者はメッセージを読むことができません。このオプションは機能せず、会話の相手も共有に同意していないため、削除されました。",
-    "scope_note": "これらはあなたが自分で設定し、他の人が承認したリンクです。コーディネーターによって記録された手配は、保護設定の下に個別に表示されます。"
+    "scope_note": "これらはあなたが自分で設定し、他の人が承認したリンクです。コーディネーターによって記録された手配は、保護設定の下に個別に表示されます。",
+    "messages": {
+      "label": "相手のメッセージ",
+      "state_active": "承認済み — 閲覧できます",
+      "state_pending": "{{name}} さんの承認待ち",
+      "request_button": "メッセージの閲覧を申請",
+      "explainer": "閲覧は {{name}} さん本人の同意があって初めて始まります。閲覧はすべて本人が確認できる形で記録され、いつでも取り消せます。",
+      "request_sent_toast": "申請しました — 承認されるまで何も起こりません",
+      "withdrawn_toast": "メッセージへのアクセスを取り消しました",
+      "member_reminder": "{{name}} さんはあなたのメッセージを閲覧できます — あなたが同意しました。",
+      "last_viewed": "最終閲覧 {{time}}",
+      "never_viewed": "まだ閲覧されていません",
+      "withdraw_button": "メッセージの閲覧を停止する",
+      "view_button": "メッセージを見る"
+    }
   },
   "support_actions": {
     "waiting_title": "あなたの承認を待っています",
@@ -744,7 +756,8 @@
     "photo_after_approval": "写真はまだ追加できません。承認後に追加できます。",
     "photo_upload_failed": "出品は投稿されましたが、写真を追加できませんでした。",
     "load_failed": "承認リストを読み込めませんでした。あなたの回答を待っているものがあるかもしれません。",
-    "retry": "再試行"
+    "retry": "再試行",
+    "type_message_access_grant": "あなたのメッセージを見る許可"
   },
   "appearance_prefs": {
     "title": "外観の設定",
@@ -850,5 +863,28 @@
     "type_gave_hours": "時間を提供",
     "type_received_hours": "時間を受領",
     "type_other": "アクティビティ"
+  },
+  "supported_messages": {
+    "page_title": "相手のメッセージ",
+    "read_only_banner": "閲覧専用です。送信はできず、既読にもなりません。ここでの閲覧はすべて記録され、相手はあなたが最後に見た日時を確認できます。",
+    "purpose_title": "なぜ確認が必要ですか？",
+    "purpose_explainer": "理由は永久に記録され、編集も削除もできません。このアクセスが信頼して使われるためのものです。",
+    "purpose_reason_label": "理由",
+    "reason_wellbeing": "無事の確認",
+    "reason_safety": "安全上の心配",
+    "reason_helping_reply": "読み書きの手伝い",
+    "reason_other": "その他",
+    "purpose_detail_label": "ひとこと添える（任意）",
+    "purpose_cancel": "戻る",
+    "purpose_submit": "続行",
+    "back_to_conversations": "すべての会話",
+    "loading": "読み込み中",
+    "denied": "これらのメッセージは閲覧できなくなりました。許可が取り消された可能性があります。",
+    "empty_list": "表示する会話はありません。",
+    "empty_thread": "この会話にメッセージはありません。",
+    "list_aria": "相手の会話",
+    "thread_aria": "{{name}} さんとの会話",
+    "from_member": "本人",
+    "voice_message": "音声メッセージ"
   }
 }

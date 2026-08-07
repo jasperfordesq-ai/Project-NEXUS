@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "الانتقال إلى أحدث الرسائل ({{count}} جديدة)",
   "date_today": "اليوم",
   "date_yesterday": "أمس",
-  "safeguarding_notice": "قد يتم مراجعة هذه المحادثة من قبل منسق لأغراض الحماية.",
+  "safeguarding_notice": "قد تُراجع رسائل هذه المحادثة من قِبل منسق لأغراض الحماية، أو تكون مرئية لشخص يثق به أحد المشاركين لدعمه.",
   "safeguarding_notice_compact": "محادثة محمية",
   "aria_dismiss_safeguarding": "تجاهل إشعار الحماية",
   "regarding_context": "بخصوص هذا {{type}}:",
@@ -278,5 +278,7 @@
   "selected_members_few": "المحدد ({{count}})",
   "selected_members_many": "المحدد ({{count}})",
   "selected_members_two": "المحدد ({{count}})",
-  "selected_members_zero": "المحدد ({{count}})"
+  "selected_members_zero": "المحدد ({{count}})",
+  "own_messages_shared_reminder": "يمكن لشخص اخترته كداعم الاطلاع على رسائلك.",
+  "own_messages_shared_manage": "إدارة"
 }

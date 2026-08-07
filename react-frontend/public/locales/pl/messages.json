@@ -54,7 +54,7 @@
   "aria_scroll_to_bottom_unread": "Przejdź do najnowszych wiadomości ({{count}} nowych)",
   "date_today": "Dzisiaj",
   "date_yesterday": "Wczoraj",
-  "safeguarding_notice": "Ta rozmowa może być przeglądana przez koordynatora w celach ochrony.",
+  "safeguarding_notice": "Wiadomości w tej rozmowie mogą być przeglądane przez koordynatora w celach ochrony lub widoczne dla zaufanej osoby wspierającej jednego z uczestników.",
   "safeguarding_notice_compact": "Zabezpieczona rozmowa",
   "aria_dismiss_safeguarding": "Odrzuć powiadomienie o ochronie",
   "regarding_context": "W odniesieniu do {{type}}:",
@@ -274,5 +274,7 @@
   "aria_conversation_unread_few": "Rozmowa z {{name}}, {{count}} nieprzeczytana",
   "aria_conversation_unread_many": "Rozmowa z {{name}}, {{count}} nieprzeczytana",
   "selected_members_few": "Wybrani ({{count}})",
-  "selected_members_many": "Wybrani ({{count}})"
+  "selected_members_many": "Wybrani ({{count}})",
+  "own_messages_shared_reminder": "Osoba, którą wybrałeś(-aś) jako wsparcie, może przeglądać Twoje wiadomości.",
+  "own_messages_shared_manage": "Zarządzaj"
 }

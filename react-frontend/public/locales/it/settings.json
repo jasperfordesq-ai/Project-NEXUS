@@ -637,8 +637,7 @@
     "permissions": {
       "can_view_activity": "Visualizza attività",
       "can_manage_listings": "Gestisci le inserzioni",
-      "can_transact": "Effettua transazioni",
-      "can_view_messages": "Visualizza i messaggi"
+      "can_transact": "Effettua transazioni"
     },
     "permission_aria": "Attiva/disattiva l'autorizzazione {{permission}} per {{name}}",
     "tiers": {
@@ -669,8 +668,21 @@
     "add_failed": "Impossibile aggiungere l'account collegato",
     "remove_failed": "Rimozione fallita",
     "approve_failed": "Approvazione fallita",
-    "messages_not_offered": "Gli assistenti non possono leggere i messaggi. Questa opzione è stata rimossa perché non ha mai funzionato e l'altra persona nella conversazione non ha acconsentito alla sua condivisione.",
-    "scope_note": "Questi sono i collegamenti che imposti tu stesso e che l'altra persona approva. Le disposizioni registrate dai tuoi coordinatori vengono visualizzate separatamente, nelle impostazioni di protezione."
+    "scope_note": "Questi sono i collegamenti che imposti tu stesso e che l'altra persona approva. Le disposizioni registrate dai tuoi coordinatori vengono visualizzate separatamente, nelle impostazioni di protezione.",
+    "messages": {
+      "label": "I suoi messaggi",
+      "state_active": "Ha detto sì — puoi visualizzare",
+      "state_pending": "In attesa dell’approvazione di {{name}}",
+      "request_button": "Chiedi di vedere i suoi messaggi",
+      "explainer": "La visualizzazione inizia solo con il sì di {{name}}, ogni visualizzazione viene registrata dove può vederla, e può ritirare l’accesso in qualsiasi momento.",
+      "request_sent_toast": "È stata inviata la richiesta — non succede nulla finché non approva",
+      "withdrawn_toast": "Accesso ai messaggi ritirato",
+      "member_reminder": "{{name}} può vedere i tuoi messaggi — hai dato il consenso.",
+      "last_viewed": "Ultima visualizzazione {{time}}",
+      "never_viewed": "Mai visualizzato finora",
+      "withdraw_button": "Impedisci la visualizzazione dei miei messaggi",
+      "view_button": "Vedi messaggi"
+    }
   },
   "support_actions": {
     "waiting_title": "In attesa della tua approvazione",
@@ -744,7 +756,8 @@
     "photo_after_approval": "Non è ancora possibile aggiungere una foto — si potrà fare quando avrà approvato.",
     "photo_upload_failed": "L’annuncio è stato pubblicato, ma non è stato possibile aggiungere la foto.",
     "load_failed": "Impossibile caricare le tue approvazioni. Qualcosa potrebbe essere in attesa della tua risposta.",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "type_message_access_grant": "il permesso di vedere i tuoi messaggi"
   },
   "appearance_prefs": {
     "title": "Preferenze aspetto",
@@ -854,5 +867,28 @@
   },
   "biometric_all_removed_many": "Rimosse {{count}} passkey.",
   "biometric_enabled_many": "{{count}} passkey registrate",
-  "twofa_backup_remaining_many": "{{count}} codici di backup rimanenti"
+  "twofa_backup_remaining_many": "{{count}} codici di backup rimanenti",
+  "supported_messages": {
+    "page_title": "I suoi messaggi",
+    "read_only_banner": "Sola lettura. Non puoi inviare nulla e niente viene segnato come letto. Ogni visita qui viene registrata, e la persona vede quando hai guardato l’ultima volta.",
+    "purpose_title": "Perché devi guardare?",
+    "purpose_explainer": "La tua motivazione viene registrata in modo permanente e non può essere modificata né eliminata. Aiuta tutti a fidarsi di come viene usato questo accesso.",
+    "purpose_reason_label": "Motivo",
+    "reason_wellbeing": "Controllare che stia bene",
+    "reason_safety": "Una preoccupazione di sicurezza",
+    "reason_helping_reply": "Aiutarla a leggere o rispondere",
+    "reason_other": "Altro",
+    "purpose_detail_label": "Aggiungi qualche parola (facoltativo)",
+    "purpose_cancel": "Indietro",
+    "purpose_submit": "Continua",
+    "back_to_conversations": "Tutte le conversazioni",
+    "loading": "Caricamento",
+    "denied": "Non puoi più vedere questi messaggi. Il permesso potrebbe essere stato ritirato.",
+    "empty_list": "Nessuna conversazione da mostrare.",
+    "empty_thread": "Nessun messaggio in questa conversazione.",
+    "list_aria": "Le sue conversazioni",
+    "thread_aria": "Conversazione con {{name}}",
+    "from_member": "La persona",
+    "voice_message": "Messaggio vocale"
+  }
 }
