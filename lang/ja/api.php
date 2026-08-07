@@ -305,6 +305,7 @@ return [
     'support_action_unknown_type' => '不明なサポート アクション タイプ',
     'support_action_message_access_already_granted' => 'この方はすでにメッセージへのアクセスを承認しています',
     'support_action_message_access_already_pending' => 'メッセージアクセスのリクエストはすでに回答待ちです',
+    'supporter_message_view_purpose_required' => 'これらのメッセージを見る必要がある理由を簡単に記入してください — 閲覧はすべて記録されます',
     'support_action_not_found' => 'このリクエストは見つからないか、すでに回答されています',
     'support_action_expired' => 'このリクエストは期限切れです',
     'support_action_invalid_channel' => '承認の方法を選択してください：電話、対面、または書面',

@@ -293,6 +293,7 @@ return [
     'support_action_unknown_type' => 'Tipo de ação de suporte desconhecido',
     'support_action_message_access_already_granted' => 'Esta pessoa já aprovou o acesso às mensagens',
     'support_action_message_access_already_pending' => 'Já existe um pedido de acesso às mensagens à espera da resposta',
+    'supporter_message_view_purpose_required' => 'Diga brevemente porque precisa de ver estas mensagens — cada visualização fica registada',
     'support_action_not_found' => 'Esta solicitação não foi encontrada ou já foi respondida',
     'support_action_expired' => 'Esta solicitação expirou',
     'support_action_invalid_channel' => 'Escolha como a aprovação foi dada: por telefone, presencialmente ou em papel',

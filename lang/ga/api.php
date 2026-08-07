@@ -293,6 +293,7 @@ return [
     'support_action_unknown_type' => 'Cineál gnímh tacaíochta anaithnid',
     'support_action_message_access_already_granted' => 'Tá rochtain ar theachtaireachtaí ceadaithe ag an duine seo cheana',
     'support_action_message_access_already_pending' => 'Tá iarratas ar rochtain teachtaireachtaí ag fanacht ar a bhfreagra cheana',
+    'supporter_message_view_purpose_required' => 'Abair go hachomair cén fáth a bhfuil ort na teachtaireachtaí seo a fheiceáil — déantar taifead ar gach amharc',
     'support_action_not_found' => 'Ní bhfuarthas an t-iarratas seo nó freagraíodh cheana é',
     'support_action_expired' => 'Tá an t-iarratas seo imithe in éag',
     'support_action_invalid_channel' => 'Roghnaigh conas a tugadh an ceadú: ar an nguthán, go pearsanta, nó ar pháipéar',

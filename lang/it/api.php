@@ -293,6 +293,7 @@ return [
     'support_action_unknown_type' => 'Tipo di azione di supporto sconosciuto',
     'support_action_message_access_already_granted' => 'Questa persona ha già approvato l’accesso ai messaggi',
     'support_action_message_access_already_pending' => 'Una richiesta di accesso ai messaggi è già in attesa della sua risposta',
+    'supporter_message_view_purpose_required' => 'Indica brevemente perché devi vedere questi messaggi — ogni visualizzazione viene registrata',
     'support_action_not_found' => 'Questa richiesta non è stata trovata o ha già ricevuto risposta',
     'support_action_expired' => 'Questa richiesta è scaduta',
     'support_action_invalid_channel' => 'Scegli come è stata data l\'approvazione: per telefono, di persona o su carta',

@@ -877,6 +877,11 @@ Route::get('/v2/users/me/sub-accounts/{childId}/wallet', [\App\Http\Controllers\
 // The SUPPORTED member withdraws a supporter's message access — any time, no
 // reason. Shrink-only, so no safeguarding gate; re-enabling needs fresh consent.
 Route::post('/v2/users/me/parent-accounts/{id}/message-access/withdraw', [\App\Http\Controllers\Api\SubAccountController::class, 'withdrawMessageAccess'])->whereNumber('id');
+// Read-only supporter view of the member's messages (consent-gated,
+// safeguarding-rechecked, immutably audited, requires ?purpose=). GET only —
+// there deliberately exists NO write route under this prefix.
+Route::get('/v2/users/me/sub-accounts/{childId}/messages', [\App\Http\Controllers\Api\SubAccountController::class, 'listChildMessages'])->whereNumber('childId');
+Route::get('/v2/users/me/sub-accounts/{childId}/messages/{partnerId}', [\App\Http\Controllers\Api\SubAccountController::class, 'showChildThread'])->whereNumber('childId')->whereNumber('partnerId');
 // Photo for a listing just posted on someone's behalf. Separate from
 // /v2/listings/{id}/image because that route's canModify() check admits only
 // the owner or an admin — a carer is refused. See the controller for why.

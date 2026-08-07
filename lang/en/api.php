@@ -713,6 +713,7 @@ return [
     'support_action_unknown_type'          => 'Unknown support action type',
     'support_action_message_access_already_granted' => 'This person has already approved message access',
     'support_action_message_access_already_pending' => 'A message-access request is already waiting for their answer',
+    'supporter_message_view_purpose_required' => 'Say briefly why you need to view these messages — every viewing is recorded',
     'support_action_not_found'             => 'This request was not found or has already been answered',
     'support_action_expired'               => 'This request has expired',
     'support_action_invalid_channel' => 'Choose how the approval was given: by phone, in person, or on paper',

@@ -305,6 +305,7 @@ return [
     'support_action_unknown_type' => 'Nieznany typ akcji wsparcia',
     'support_action_message_access_already_granted' => 'Ta osoba już zatwierdziła dostęp do wiadomości',
     'support_action_message_access_already_pending' => 'Prośba o dostęp do wiadomości już czeka na odpowiedź',
+    'supporter_message_view_purpose_required' => 'Napisz krótko, dlaczego musisz zobaczyć te wiadomości — każde wyświetlenie jest rejestrowane',
     'support_action_not_found' => 'To żądanie nie zostało znalezione lub już udzielono na nie odpowiedzi',
     'support_action_expired' => 'To żądanie wygasło',
     'support_action_invalid_channel' => 'Wybierz, jak udzielono zgody: przez telefon, osobiście lub na papierze',

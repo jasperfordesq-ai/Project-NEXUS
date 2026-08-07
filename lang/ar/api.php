@@ -305,6 +305,7 @@ return [
     'support_action_unknown_type' => 'نوع إجراء الدعم غير معروف',
     'support_action_message_access_already_granted' => 'وافق هذا الشخص بالفعل على الوصول إلى الرسائل',
     'support_action_message_access_already_pending' => 'هناك طلب وصول إلى الرسائل بانتظار الرد بالفعل',
+    'supporter_message_view_purpose_required' => 'اذكر بإيجاز سبب حاجتك للاطلاع على هذه الرسائل — يُسجَّل كل اطلاع',
     'support_action_not_found' => 'لم يتم العثور على هذا الطلب أو تم الرد عليه بالفعل',
     'support_action_expired' => 'انتهت صلاحية هذا الطلب',
     'support_action_invalid_channel' => 'اختر كيف أُعطيت الموافقة: عبر الهاتف، أو شخصياً، أو على الورق',

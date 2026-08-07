@@ -347,6 +347,71 @@ class SubAccountController extends BaseApiController
         return $this->respondWithData(['image_url' => $imageUrl]);
     }
 
+    /**
+     * GET /api/v2/users/me/sub-accounts/{childId}/messages
+     * GET /api/v2/users/me/sub-accounts/{childId}/messages/{partnerId}
+     *
+     * A supporter's READ-ONLY window onto the supported member's messages —
+     * consent-gated (messages tier ≥ assist), safeguarding-rechecked per read,
+     * federated threads excluded, nothing marked read, and every request
+     * immutably audited with the ?purpose= the supporter must supply.
+     */
+    public function listChildMessages($childId): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_msg_view', 30, 60);
+
+        $service = app(\App\Services\SupporterMessageViewService::class);
+        $result = $service->listConversations(
+            $userId,
+            (int) $childId,
+            (string) request()->query('purpose', ''),
+            ['archived' => request()->boolean('archived')],
+        );
+
+        if ($result === null) {
+            return $this->respondWithErrors($service->getErrors(), $this->messageViewStatus($service));
+        }
+
+        return $this->respondWithData(['conversations' => $result]);
+    }
+
+    public function showChildThread($childId, $partnerId): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_msg_view', 30, 60);
+
+        $service = app(\App\Services\SupporterMessageViewService::class);
+        $filters = array_filter([
+            'cursor' => request()->query('cursor'),
+            'direction' => request()->query('direction'),
+            'limit' => request()->query('limit'),
+        ], static fn ($v) => $v !== null);
+
+        $result = $service->viewThread(
+            $userId,
+            (int) $childId,
+            (int) $partnerId,
+            (string) request()->query('purpose', ''),
+            $filters,
+        );
+
+        if ($result === null) {
+            return $this->respondWithErrors($service->getErrors(), $this->messageViewStatus($service));
+        }
+
+        return $this->respondWithData($result);
+    }
+
+    private function messageViewStatus(\App\Services\SupporterMessageViewService $service): int
+    {
+        return match ($service->getErrors()[0]['code'] ?? '') {
+            'FORBIDDEN' => 403,
+            'NOT_FOUND' => 404,
+            default => 422,
+        };
+    }
+
     private function normalizeRelationships(array $relationships): array
     {
         foreach ($relationships as &$relationship) {
