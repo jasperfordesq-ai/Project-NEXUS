@@ -100,7 +100,8 @@
     "proxy_transfer_bell": "{{name}} ha inviato crediti di tempo dal tuo saldo",
     "link_revoked_bell": "{{name}} ha terminato il collegamento del tuo account",
     "permissions_expanded_bell": "{{name}} ora può fare di più sul tuo account — controlla i livelli concessi",
-    "permissions_changed_bell": "I livelli di accesso del tuo collegamento con {{name}} sono cambiati"
+    "permissions_changed_bell": "I livelli di accesso del tuo collegamento con {{name}} sono cambiati",
+    "message_access_revoked_bell": "{{name}} ha ritirato il tuo accesso ai suoi messaggi"
   },
   "totp": {
     "rate_limited": "Troppi tentativi falliti. Riprovi tra {{minutes}} minuti."
@@ -185,6 +186,7 @@
     "channel_in_person": "di persona",
     "channel_paper": "su carta",
     "withdrawn_bell": "{{name}} ha ritirato {{what}} — non c’è più nulla in attesa della tua risposta",
-    "lapsed_bell": "La richiesta di {{name}} ({{what}}) è scaduta senza risposta"
+    "lapsed_bell": "La richiesta di {{name}} ({{what}}) è scaduta senza risposta",
+    "type_message_access_grant": "il permesso di vedere i tuoi messaggi"
   }
 }

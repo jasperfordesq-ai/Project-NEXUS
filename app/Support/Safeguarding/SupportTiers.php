@@ -40,14 +40,26 @@ namespace App\Support\Safeguarding;
  *
  * ## Deliberate boundaries
  *
- * - `can_view_messages` maps to NO capability at ANY tier. A conversation
- *   belongs to two people; the counterparty never agreed to a reader. See the
- *   DEFAULT_PERMISSIONS docblock in SubAccountService for the history.
+ * - `messages` (owner decision 2026-08-07, reversing the earlier omission) is
+ *   grantable at `assist` ONLY — see-only, no co_decide/represent semantics —
+ *   and is TIER-OBJECT-ONLY: it takes effect exclusively through
+ *   SubAccountService::applyConsentedMessageAccess() after the supported
+ *   member's explicit consent (a support_pending_actions confirm), never from
+ *   a supporter's own write. Counterparties in the member's conversations see
+ *   a generic notice, and every supporter read is immutably audited.
+ * - 🔴 The legacy `can_view_messages` boolean stays permanently DEAD: no
+ *   LEGACY_MAP entry, and {@see toLegacyBooleans()} hard-writes it false.
+ *   Historical rows stored `can_view_messages: true` from the years the
+ *   switch saved-and-did-nothing; a legacy mapping would retroactively grant
+ *   real access nobody consented to. See DEFAULT_PERMISSIONS in
+ *   SubAccountService for the history.
  * - `co_decide` confers no direct action until the confirm loop (phase 3)
  *   exists. {@see atLeast()} treats each tier exactly; callers that perform an
  *   immediate action must require `represent`, never `co_decide`.
- * - Staff (brokers) are capped at `co_decide` — owner decision 2026-08-06.
- *   {@see MAX_STAFF_TIER}.
+ * - Staff (brokers) are capped at `co_decide` — owner decision 2026-08-06 —
+ *   and may not hold `messages` at all: staff message oversight is the
+ *   broker-copy mechanism, not this. {@see MAX_STAFF_TIER};
+ *   GuardianArrangementService::setTiers drops `messages` keys.
  */
 final class SupportTiers
 {
@@ -60,10 +72,22 @@ final class SupportTiers
     public const TIERS = [self::NONE, self::ASSIST, self::CO_DECIDE, self::REPRESENT];
 
     /**
-     * Capabilities a tier can be granted for. Messages are deliberately not a
-     * capability — see the class docblock.
+     * Capabilities a tier can be granted for. `messages` joined 2026-08-07
+     * (owner decision) with hard boundaries: `assist` only, consent-gated,
+     * never derived from the dead legacy boolean — see the class docblock.
      */
-    public const CAPABILITIES = ['activity', 'listings', 'credits'];
+    public const CAPABILITIES = ['activity', 'listings', 'credits', 'messages'];
+
+    /**
+     * Per-capability tier ceilings. `messages` has no co_decide/represent
+     * semantics — reading someone's conversations is see-only by definition,
+     * and anything above `assist` here would imply powers that do not exist.
+     * {@see sanitizeTiers()} DROPS (not clamps) values above the ceiling:
+     * silently clamping would record a different grant than was requested.
+     *
+     * @var array<string, string>
+     */
+    public const MAX_TIER_BY_CAPABILITY = ['messages' => self::ASSIST];
 
     /**
      * The highest tier a staff member (broker/coordinator) may ever hold for a
@@ -165,9 +189,19 @@ final class SupportTiers
         if (is_array($tiers)) {
             foreach (self::CAPABILITIES as $capability) {
                 $value = $tiers[$capability] ?? null;
-                if (is_string($value) && self::isValidTier($value)) {
-                    $resolved[$capability] = $value;
+                if (! is_string($value) || ! self::isValidTier($value)) {
+                    continue;
                 }
+                // A STORED value above the capability's ceiling is corruption
+                // (nothing legitimate writes one): degrade toward LESS power —
+                // ignore it entirely rather than clamp, same rule as an
+                // unknown tier string. Matters most for `messages`, where an
+                // out-of-range value would otherwise read as real access.
+                $ceiling = self::MAX_TIER_BY_CAPABILITY[$capability] ?? null;
+                if ($ceiling !== null && self::rank($value) > self::rank($ceiling)) {
+                    continue;
+                }
+                $resolved[$capability] = $value;
             }
         }
 
@@ -209,9 +243,16 @@ final class SupportTiers
         $clean = [];
         foreach (self::CAPABILITIES as $capability) {
             $value = $input[$capability] ?? null;
-            if (is_string($value) && self::isValidTier($value)) {
-                $clean[$capability] = $value;
+            if (! is_string($value) || ! self::isValidTier($value)) {
+                continue;
             }
+            // Above a capability's ceiling → DROPPED, not clamped: a clamp
+            // would record a different grant than the caller requested.
+            $ceiling = self::MAX_TIER_BY_CAPABILITY[$capability] ?? null;
+            if ($ceiling !== null && self::rank($value) > self::rank($ceiling)) {
+                continue;
+            }
+            $clean[$capability] = $value;
         }
 
         return $clean;
@@ -244,7 +285,12 @@ final class SupportTiers
      * listings/credits therefore projects to FALSE — the legacy booleans mean
      * "may act alone", and a co-decider may not.
      *
-     * `can_view_messages` is always false. Always.
+     * `can_view_messages` is always false. Always — INCLUDING now that a real
+     * `messages` capability exists. The boolean is the fossil of a switch that
+     * saved-and-did-nothing for years; letting it go true would make every
+     * pre-tier reader (and any historical-row comparison) believe the old
+     * switch had been working all along. The `messages` tier lives ONLY in
+     * the tiers object.
      *
      * @return array<string, bool>
      */
@@ -273,6 +319,12 @@ final class SupportTiers
         $ceiling = self::rank(self::MAX_STAFF_TIER);
         $capped = [];
         foreach ($tiers as $capability => $tier) {
+            // Staff may not hold `messages` at any tier: staff oversight of
+            // conversations is the broker-copy mechanism with its own audit
+            // trail, not the supporter grant. Dropped entirely, not clamped.
+            if ($capability === 'messages') {
+                continue;
+            }
             $capped[$capability] = is_string($tier) && self::rank($tier) > $ceiling
                 ? self::MAX_STAFF_TIER
                 : $tier;

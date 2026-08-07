@@ -100,7 +100,8 @@
     "proxy_transfer_bell": "{{name}} さんがあなたの残高からタイムクレジットを送りました",
     "link_revoked_bell": "{{name}} さんがアカウントのリンクを終了しました",
     "permissions_expanded_bell": "{{name}} さんがあなたのアカウントでできることが増えました — 許可したレベルを確認してください",
-    "permissions_changed_bell": "{{name}} さんとのリンクのアクセスレベルが変更されました"
+    "permissions_changed_bell": "{{name}} さんとのリンクのアクセスレベルが変更されました",
+    "message_access_revoked_bell": "{{name}} さんがメッセージへのアクセスを取り消しました"
   },
   "totp": {
     "rate_limited": "試行回数が多すぎます。{{minutes}} 分後に再試行してください。"
@@ -185,6 +186,7 @@
     "channel_in_person": "対面",
     "channel_paper": "書面",
     "withdrawn_bell": "{{name}} さんが{{what}}を取り下げました — 回答は不要になりました",
-    "lapsed_bell": "{{name}} さんからのリクエスト（{{what}}）は未回答のまま期限切れになりました"
+    "lapsed_bell": "{{name}} さんからのリクエスト（{{what}}）は未回答のまま期限切れになりました",
+    "type_message_access_grant": "あなたのメッセージを見る許可"
   }
 }

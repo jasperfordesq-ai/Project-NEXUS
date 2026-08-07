@@ -20,6 +20,10 @@ class AccountRelationship extends Model
     protected $fillable = [
         'tenant_id', 'parent_user_id', 'child_user_id',
         'relationship_type', 'permissions', 'status', 'approved_at',
+        // Notice-mirror of an active consented message-access grant. Written
+        // only by applyConsentedMessageAccess / cleared on withdrawal+revoke;
+        // never read for authorization (the tiers object is the authority).
+        'message_access_granted_at',
     ];
 
     protected $casts = [

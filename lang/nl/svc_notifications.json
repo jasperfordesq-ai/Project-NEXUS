@@ -100,7 +100,8 @@
     "proxy_transfer_bell": "{{name}} heeft tijdcredits van je saldo verstuurd",
     "link_revoked_bell": "{{name}} heeft je accountkoppeling beëindigd",
     "permissions_expanded_bell": "{{name}} kan nu meer op je account doen — bekijk de toegekende niveaus",
-    "permissions_changed_bell": "De toegangsniveaus van je koppeling met {{name}} zijn gewijzigd"
+    "permissions_changed_bell": "De toegangsniveaus van je koppeling met {{name}} zijn gewijzigd",
+    "message_access_revoked_bell": "{{name}} heeft je toegang tot hun berichten ingetrokken"
   },
   "totp": {
     "rate_limited": "Te veel mislukte pogingen. Probeer het opnieuw over {{minutes}} minuten."
@@ -185,6 +186,7 @@
     "channel_in_person": "in persoon",
     "channel_paper": "op papier",
     "withdrawn_bell": "{{name}} heeft {{what}} ingetrokken — er wacht niets meer op je antwoord",
-    "lapsed_bell": "Het verzoek van {{name}} ({{what}}) is onbeantwoord verlopen"
+    "lapsed_bell": "Het verzoek van {{name}} ({{what}}) is onbeantwoord verlopen",
+    "type_message_access_grant": "toestemming om je berichten te bekijken"
   }
 }

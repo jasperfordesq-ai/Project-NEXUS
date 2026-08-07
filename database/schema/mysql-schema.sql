@@ -52,6 +52,7 @@ CREATE TABLE `account_relationships` (
   `proposed_by_user_id` int(11) DEFAULT NULL COMMENT 'Staff member who proposed this relationship; NULL = member-initiated',
   `staff_notes` varchar(500) DEFAULT NULL,
   `approved_at` timestamp NULL DEFAULT NULL,
+  `message_access_granted_at` timestamp NULL DEFAULT NULL,
   `declined_at` datetime DEFAULT NULL,
   `withdrawn_at` datetime DEFAULT NULL,
   `response_reason` varchar(500) DEFAULT NULL COMMENT 'The answering member''s own words - optional, never mandatory',
@@ -62,6 +63,7 @@ CREATE TABLE `account_relationships` (
   KEY `idx_parent` (`parent_user_id`,`tenant_id`),
   KEY `idx_child` (`child_user_id`,`tenant_id`),
   KEY `idx_tenant_status` (`tenant_id`,`status`),
+  KEY `idx_ar_msg_access_child` (`tenant_id`,`child_user_id`,`message_access_granted_at`),
   KEY `fk_ar_proposed_by` (`proposed_by_user_id`),
   CONSTRAINT `fk_ar_proposed_by` FOREIGN KEY (`proposed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

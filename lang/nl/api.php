@@ -303,6 +303,8 @@ return [
     'no_active_member_found' => 'Geen actief lid gevonden met e-mailadres: :email',
     'ward_not_found_in_tenant' => 'Ondersteund lid niet gevonden in deze community',
     'support_action_unknown_type' => 'Onbekend type ondersteuningsactie',
+    'support_action_message_access_already_granted' => 'Deze persoon heeft berichttoegang al goedgekeurd',
+    'support_action_message_access_already_pending' => 'Er wacht al een berichttoegangsverzoek op hun antwoord',
     'support_action_not_found' => 'Dit verzoek is niet gevonden of is al beantwoord',
     'support_action_expired' => 'Dit verzoek is verlopen',
     'support_action_invalid_channel' => 'Kies hoe de goedkeuring is gegeven: telefonisch, in persoon of op papier',

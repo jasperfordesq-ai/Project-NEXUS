@@ -268,6 +268,9 @@ class SubAccountServiceTest extends TestCase
             'activity' => SupportTiers::ASSIST,
             'listings' => SupportTiers::NONE,
             'credits' => SupportTiers::NONE,
+            // The consent-gated capability (2026-08-07). Every write carries
+            // all four keys; only applyConsentedMessageAccess can raise this.
+            'messages' => SupportTiers::NONE,
         ], $p['tiers']);
     }
 

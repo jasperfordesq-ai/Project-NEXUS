@@ -303,6 +303,8 @@ return [
     'no_active_member_found' => 'メールアドレス: :email のアクティブなメンバーが見つかりませんでした',
     'ward_not_found_in_tenant' => 'このコミュニティに支援対象メンバーが見つかりません',
     'support_action_unknown_type' => '不明なサポート アクション タイプ',
+    'support_action_message_access_already_granted' => 'この方はすでにメッセージへのアクセスを承認しています',
+    'support_action_message_access_already_pending' => 'メッセージアクセスのリクエストはすでに回答待ちです',
     'support_action_not_found' => 'このリクエストは見つからないか、すでに回答されています',
     'support_action_expired' => 'このリクエストは期限切れです',
     'support_action_invalid_channel' => '承認の方法を選択してください：電話、対面、または書面',

@@ -28,11 +28,21 @@ class SupportPendingAction extends Model
 
     public const TYPE_LISTING_CREATE = 'listing_create';
     public const TYPE_CREDIT_TRANSFER = 'credit_transfer';
+    /**
+     * Consent request: the supporter asked to VIEW the member's messages.
+     * Unlike the two action types above, confirming this does not execute a
+     * one-off act — it raises the relationship's `messages` tier to `assist`
+     * (SubAccountService::applyConsentedMessageAccess, the only code path
+     * allowed to). The confirmed row IS the durable consent record
+     * (confirmed_via, IP, UA, timestamp).
+     */
+    public const TYPE_MESSAGE_ACCESS_GRANT = 'message_access_grant';
 
     /** action_type => the SupportTiers capability it exercises */
     public const TYPE_CAPABILITIES = [
         self::TYPE_LISTING_CREATE => 'listings',
         self::TYPE_CREDIT_TRANSFER => 'credits',
+        self::TYPE_MESSAGE_ACCESS_GRANT => 'messages',
     ];
 
     protected $table = 'support_pending_actions';

@@ -88,7 +88,29 @@ class SupportPendingActionService
         }
 
         $tiers = SupportTiers::resolve(is_array($relationship->permissions) ? $relationship->permissions : []);
-        if (! SupportTiers::atLeast($tiers, $capability, SupportTiers::CO_DECIDE)) {
+
+        if ($actionType === SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT) {
+            // A consent REQUEST, not an action: the supporter holds `none` for
+            // messages by definition at request time — the request itself is
+            // what is being consented to. Requiring a tier here would make the
+            // grant unreachable. Guards that DO apply: an already-active grant
+            // needs no request, and one open request per relationship — a
+            // second "ask again" while one is pending would let a supporter
+            // spam the member's bell and inbox.
+            if (SupportTiers::atLeast($tiers, 'messages', SupportTiers::ASSIST)) {
+                $this->errors[] = ['code' => 'ALREADY_GRANTED', 'message' => __('api.support_action_message_access_already_granted')];
+                return null;
+            }
+            $open = $this->pendingAction->newQuery()
+                ->where('relationship_id', (int) $relationship->id)
+                ->where('action_type', SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
+                ->where('status', SupportPendingAction::STATUS_PENDING)
+                ->exists();
+            if ($open) {
+                $this->errors[] = ['code' => 'ALREADY_PENDING', 'message' => __('api.support_action_message_access_already_pending')];
+                return null;
+            }
+        } elseif (! SupportTiers::atLeast($tiers, $capability, SupportTiers::CO_DECIDE)) {
             $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api_controllers_2.sub_account.no_permission')];
             return null;
         }
@@ -281,6 +303,24 @@ class SupportPendingActionService
         $this->notifySupportedOfWithdrawal($action);
 
         return true;
+    }
+
+    /**
+     * Cancel any open message-access consent requests on a relationship —
+     * called when the tier is removed, withdrawn, or the relationship ends,
+     * so a dead ask can never be answered into a live grant.
+     */
+    public function cancelOpenMessageAccessRequests(int $relationshipId): int
+    {
+        return $this->pendingAction->newQuery()
+            ->where('relationship_id', $relationshipId)
+            ->where('action_type', SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
+            ->where('status', SupportPendingAction::STATUS_PENDING)
+            ->update([
+                'status' => SupportPendingAction::STATUS_CANCELLED,
+                'cancelled_at' => now(),
+                'updated_at' => now(),
+            ]);
     }
 
     /** Tell the supported member an unanswered action lapsed (bell-level). */
@@ -563,6 +603,15 @@ class SupportPendingActionService
                 );
 
                 return isset($txn['id']) ? (int) $txn['id'] : null;
+
+            case SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT:
+                // Not a one-off act: confirming raises the relationship's
+                // `messages` tier to `assist`. applyConsentedMessageAccess is
+                // the ONLY code path allowed to do that; it throws on failure
+                // so the confirm rolls back with it.
+                app(SubAccountService::class)->applyConsentedMessageAccess((int) $action->relationship_id);
+
+                return null;
         }
 
         throw new \RuntimeException(__('api.support_action_unknown_type'));
@@ -617,6 +666,8 @@ class SupportPendingActionService
                 'amount' => isset($payload['amount']) ? (float) $payload['amount'] : null,
                 'recipient_id' => isset($payload['recipient_id']) ? (int) $payload['recipient_id'] : null,
             ],
+            // A consent request carries no payload — the ask IS the content.
+            SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT => ['capability' => 'messages'],
             default => [],
         };
     }

@@ -101,12 +101,20 @@ final class SupportTiersTest extends TestCase
 
     public function test_unknown_capability_in_tiers_object_is_ignored(): void
     {
+        // `messages` is a real capability since 2026-08-07 — but a STORED
+        // value above its assist ceiling is corruption and must degrade to
+        // NONE, never to real access. 'wallet' remains genuinely unknown.
         $tiers = SupportTiers::resolve([
             'tiers' => ['messages' => SupportTiers::REPRESENT, 'wallet' => SupportTiers::ASSIST],
         ]);
 
         $this->assertSame(SupportTiers::noneGranted(), $tiers);
-        $this->assertArrayNotHasKey('messages', $tiers);
+        $this->assertSame(SupportTiers::NONE, $tiers['messages']);
+        $this->assertArrayNotHasKey('wallet', $tiers);
+
+        // A legitimate stored assist grant DOES resolve.
+        $granted = SupportTiers::resolve(['tiers' => ['messages' => SupportTiers::ASSIST]]);
+        $this->assertSame(SupportTiers::ASSIST, $granted['messages']);
     }
 
     // ── atLeast(): the act-alone boundary ─────────────────────────────────
@@ -125,8 +133,10 @@ final class SupportTiersTest extends TestCase
     {
         $all = array_fill_keys(SupportTiers::CAPABILITIES, SupportTiers::REPRESENT);
 
-        $this->assertFalse(SupportTiers::atLeast($all, 'messages', SupportTiers::ASSIST));
+        $this->assertFalse(SupportTiers::atLeast($all, 'wallet', SupportTiers::ASSIST));
         $this->assertFalse(SupportTiers::atLeast($all, 'listings', 'superuser'));
+        // `messages` is a real capability now: a held assist satisfies assist.
+        $this->assertTrue(SupportTiers::atLeast(['messages' => SupportTiers::ASSIST], 'messages', SupportTiers::ASSIST));
     }
 
     public function test_at_least_treats_missing_or_non_string_held_tier_as_none(): void
@@ -141,12 +151,15 @@ final class SupportTiersTest extends TestCase
     {
         $clean = SupportTiers::sanitizeTiers([
             'listings' => SupportTiers::CO_DECIDE,
-            'credits' => 'superuser',          // invalid tier → dropped
-            'messages' => SupportTiers::ASSIST, // unknown capability → dropped
-            'activity' => 7,                    // non-string → dropped
+            'credits' => 'superuser',            // invalid tier → dropped
+            'messages' => SupportTiers::ASSIST,  // real capability since 2026-08-07
+            'wallet' => SupportTiers::ASSIST,    // unknown capability → dropped
+            'activity' => 7,                     // non-string → dropped
         ]);
 
-        $this->assertSame(['listings' => SupportTiers::CO_DECIDE], $clean);
+        $this->assertSame(['listings' => SupportTiers::CO_DECIDE, 'messages' => SupportTiers::ASSIST], $clean);
+        // Above the messages ceiling → DROPPED, not clamped.
+        $this->assertSame([], SupportTiers::sanitizeTiers(['messages' => SupportTiers::REPRESENT]));
         $this->assertSame([], SupportTiers::sanitizeTiers('garbage'));
         $this->assertSame([], SupportTiers::sanitizeTiers(null));
     }

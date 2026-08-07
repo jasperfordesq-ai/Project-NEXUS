@@ -155,7 +155,7 @@ class SubAccountControllerTest extends TestCase
         $response = $this->apiPost('/v2/users/me/sub-accounts', [
             'child_user_id' => $child->id,
             'relationship_type' => 'guardian',
-            'permissions' => ['can_view_messages' => true],
+            'permissions' => ['can_view_messages' => true, 'can_view_activity' => true],
         ]);
 
         $response->assertCreated();
@@ -167,7 +167,14 @@ class SubAccountControllerTest extends TestCase
         $this->assertNotNull($relationship);
         $this->assertSame('pending', $relationship->status);
         $permissions = json_decode((string) $relationship->permissions, true);
-        $this->assertTrue((bool) ($permissions['can_view_messages'] ?? false));
+        // 🔴 Reversed pin (2026-08-07): the create endpoint STRIPS the dead
+        // boolean now — the stored value is the DEFAULT_PERMISSIONS false,
+        // never the caller's true. It persisted verbatim for years — harmless
+        // while nothing read it, but with a real consent-gated `messages`
+        // capability, any stored `true` is a standing invitation for a future
+        // bug to honour it. The requested REAL permission still travels.
+        $this->assertFalse((bool) ($permissions['can_view_messages'] ?? false));
+        $this->assertTrue((bool) ($permissions['can_view_activity'] ?? false));
     }
 
     public function test_approval_rechecks_stored_requested_permissions_and_denial_leaves_pending(): void

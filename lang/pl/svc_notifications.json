@@ -100,7 +100,8 @@
     "proxy_transfer_bell": "{{name}} wysłał(a) kredyty czasowe z Twojego salda",
     "link_revoked_bell": "{{name}} zakończył(a) połączenie Twojego konta",
     "permissions_expanded_bell": "{{name}} może teraz robić więcej na Twoim koncie — sprawdź przyznane poziomy",
-    "permissions_changed_bell": "Poziomy dostępu w Twoim połączeniu z {{name}} uległy zmianie"
+    "permissions_changed_bell": "Poziomy dostępu w Twoim połączeniu z {{name}} uległy zmianie",
+    "message_access_revoked_bell": "{{name}} wycofał(a) Twój dostęp do swoich wiadomości"
   },
   "totp": {
     "rate_limited": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {{minutes}} minut."
@@ -185,6 +186,7 @@
     "channel_in_person": "osobiście",
     "channel_paper": "na papierze",
     "withdrawn_bell": "{{name}} wycofał(a) {{what}} — nic już nie czeka na Twoją odpowiedź",
-    "lapsed_bell": "Prośba od {{name}} ({{what}}) wygasła bez odpowiedzi"
+    "lapsed_bell": "Prośba od {{name}} ({{what}}) wygasła bez odpowiedzi",
+    "type_message_access_grant": "pozwolenie na wgląd w Twoje wiadomości"
   }
 }

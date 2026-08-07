@@ -59,7 +59,15 @@ class SubAccountController extends BaseApiController
             : (is_string($data['child_email'] ?? null) ? trim((string) $data['child_email']) : '');
         $relationshipType = is_string($data['relationship_type'] ?? null) ? $data['relationship_type'] : 'family';
         $permissions = is_array($data['permissions'] ?? null) ? $data['permissions'] : [];
-        $permissions = array_intersect_key($permissions, array_flip(array_keys(SubAccountService::DEFAULT_PERMISSIONS)));
+        // 🔴 Filter against the ENFORCED keys, not DEFAULT_PERMISSIONS: the
+        // latter still carries `can_view_messages` for historical-row parsing,
+        // and filtering against it persisted the dead boolean verbatim on
+        // create for years. Message access is consent-gated and tier-object
+        // only — it can never be requested at creation time.
+        $permissions = array_intersect_key(
+            $permissions,
+            array_flip(['can_view_activity', 'can_manage_listings', 'can_transact']),
+        );
 
         if ($childUserId <= 0) {
             if ($email === '') {
@@ -248,6 +256,28 @@ class SubAccountController extends BaseApiController
         }
 
         return $this->respondWithData($txn);
+    }
+
+    /**
+     * POST /api/v2/users/me/parent-accounts/{id}/message-access/withdraw
+     *
+     * The SUPPORTED member withdraws a supporter's message access — any time,
+     * effective immediately, no reason required. {id} is the relationship id
+     * (this caller is the child_user_id side, so the sub-accounts/{childId}
+     * convention does not fit).
+     */
+    public function withdrawMessageAccess($id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_msg_withdraw', 10, 60);
+
+        $ok = $this->subAccountService->withdrawMessageAccess($userId, (int) $id);
+
+        if (! $ok) {
+            return $this->respondWithErrors($this->subAccountService->getErrors(), 404);
+        }
+
+        return $this->respondWithData(['message_access' => 'none']);
     }
 
     /**

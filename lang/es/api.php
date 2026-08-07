@@ -291,6 +291,8 @@ return [
     'no_active_member_found' => 'No se encontró ningún miembro activo con correo electrónico: :email',
     'ward_not_found_in_tenant' => 'Miembro apoyado no encontrado en esta comunidad',
     'support_action_unknown_type' => 'Tipo de acción de soporte desconocido',
+    'support_action_message_access_already_granted' => 'Esta persona ya aprobó el acceso a los mensajes',
+    'support_action_message_access_already_pending' => 'Ya hay una solicitud de acceso a los mensajes esperando su respuesta',
     'support_action_not_found' => 'Esta solicitud no fue encontrada o ya ha sido respondida',
     'support_action_expired' => 'Esta solicitud ha caducado',
     'support_action_invalid_channel' => 'Elija cómo se dio la aprobación: por teléfono, en persona o en papel',

@@ -303,6 +303,8 @@ return [
     'no_active_member_found' => 'لم يتم العثور على عضو نشط لديه البريد الإلكتروني: :email',
     'ward_not_found_in_tenant' => 'لم يتم العثور على العضو المدعوم في هذا المجتمع',
     'support_action_unknown_type' => 'نوع إجراء الدعم غير معروف',
+    'support_action_message_access_already_granted' => 'وافق هذا الشخص بالفعل على الوصول إلى الرسائل',
+    'support_action_message_access_already_pending' => 'هناك طلب وصول إلى الرسائل بانتظار الرد بالفعل',
     'support_action_not_found' => 'لم يتم العثور على هذا الطلب أو تم الرد عليه بالفعل',
     'support_action_expired' => 'انتهت صلاحية هذا الطلب',
     'support_action_invalid_channel' => 'اختر كيف أُعطيت الموافقة: عبر الهاتف، أو شخصياً، أو على الورق',

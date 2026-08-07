@@ -291,6 +291,8 @@ return [
     'no_active_member_found' => 'Aucun membre actif trouvé avec l\'e-mail : :email',
     'ward_not_found_in_tenant' => 'Membre accompagné introuvable dans cette communauté',
     'support_action_unknown_type' => 'Type d\'action d\'assistance inconnu',
+    'support_action_message_access_already_granted' => 'Cette personne a déjà approuvé l’accès aux messages',
+    'support_action_message_access_already_pending' => 'Une demande d’accès aux messages attend déjà sa réponse',
     'support_action_not_found' => 'Cette demande n\'a pas été trouvée ou a déjà reçu une réponse',
     'support_action_expired' => 'Cette demande a expiré',
     'support_action_invalid_channel' => 'Choisissez comment l\'accord a été donné : par téléphone, en personne ou sur papier',

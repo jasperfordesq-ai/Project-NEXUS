@@ -291,6 +291,8 @@ return [
     'no_active_member_found' => 'Kein aktives Mitglied mit E-Mail gefunden: :email',
     'ward_not_found_in_tenant' => 'Unterstütztes Mitglied wurde in dieser Community nicht gefunden',
     'support_action_unknown_type' => 'Unbekannter Support-Aktionstyp',
+    'support_action_message_access_already_granted' => 'Diese Person hat den Nachrichtenzugriff bereits genehmigt',
+    'support_action_message_access_already_pending' => 'Eine Nachrichtenzugriffs-Anfrage wartet bereits auf ihre Antwort',
     'support_action_not_found' => 'Diese Anfrage wurde nicht gefunden oder wurde bereits beantwortet',
     'support_action_expired' => 'Diese Anfrage ist abgelaufen',
     'support_action_invalid_channel' => 'Wählen Sie, wie die Zustimmung erteilt wurde: telefonisch, persönlich oder auf Papier',

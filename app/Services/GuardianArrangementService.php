@@ -332,6 +332,12 @@ class GuardianArrangementService
     public function setTiers(int $wardId, int $tenantId, int $arrangementId, array $tiers): array
     {
         $clean = SupportTiers::sanitizeTiers($tiers);
+        // Staff-recorded guardians may not hold `messages` at any tier: staff
+        // oversight of conversations is the broker-copy mechanism with its own
+        // audit, and the member-consent grant flow belongs to member-created
+        // links only. Dropped silently — the capability is never offered on
+        // this page, so a value here is a crafted request, not a UI state.
+        unset($clean['messages']);
         if ($clean === []) {
             return ['ok' => false, 'code' => 'VALIDATION_ERROR', 'tiers' => null];
         }

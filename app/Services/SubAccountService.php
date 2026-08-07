@@ -27,36 +27,37 @@ class SubAccountService
     public const RELATIONSHIP_TYPES = ['family', 'guardian', 'carer', 'organization'];
 
     /**
-     * 🔴 THREE of these are enforced. `can_view_messages` is NOT, and is no
-     * longer offered by either frontend (2026-08-05).
+     * 🔴 THREE booleans are enforced. `can_view_messages` is permanently dead
+     * — but since 2026-08-07 a REAL `messages` capability exists in the tier
+     * vocabulary, deliberately disconnected from the boolean.
      *
      * Since phase 2 of the guardian redesign these booleans are SHORTHAND over
-     * the three-tier model in {@see \App\Support\Safeguarding\SupportTiers}
+     * the tier model in {@see \App\Support\Safeguarding\SupportTiers}
      * (assist / co_decide / represent, per capability). Enforcement translates
      * each key to its capability + minimum tier; rows written by
      * updatePermissions() store both representations, kept in sync.
      *
-     * | key                 | enforced as          | where                        |
+     * | key / capability    | enforced as          | where                        |
      * |---------------------|----------------------|------------------------------|
      * | can_view_activity   | activity ≥ assist    | getChildActivitySummary()    |
      * | can_manage_listings | listings ≥ represent | createListingForChild()      |
      * | can_transact        | credits ≥ represent  | transferForChild()           |
+     * | messages (tier)     | messages ≥ assist    | SupporterMessageViewService  |
      * | can_view_messages   | NOTHING, at any tier | hasPermission() hard-false   |
      *
-     * It stays in this list only so historical rows that already stored it
-     * continue to parse, and because the permissions endpoint still accepts it
-     * for backward compatibility. Both UIs deliberately stopped rendering it:
-     * they showed a switch labelled "View their messages" that saved
-     * successfully and did nothing, so a family could be told a carer could read
-     * a dependent's conversations. The `account_relationships.permissions`
-     * column comment lists only the first three — the fourth reached the UIs and
-     * never the schema.
+     * The `messages` capability (owner decision 2026-08-07) is CONSENT-GATED
+     * and tier-object-only: a supporter's request creates a pending
+     * support_pending_actions row; only the supported member's confirmation
+     * raises the tier (applyConsentedMessageAccess — the single write path).
+     * Counterparties see a generic notice on the conversation, every read is
+     * immutably audited with a purpose, and the member can withdraw at any
+     * time (withdrawMessageAccess). Re-enabling always needs fresh consent.
      *
-     * Do NOT wire it up without building the counterparty notice first. Letting
-     * a carer read a dependent's messages exposes the OTHER party to that
-     * conversation, who never agreed to it. The established pattern is to notify
-     * — see BrokerMessageVisibilityService::getUserRestrictionStatus()'s
-     * `review_notice_required`.
+     * `can_view_messages` stays in this list only so historical rows parse.
+     * It is the fossil of a switch that saved-and-did-nothing for years; it
+     * must NEVER map to the real capability, or every family that once ticked
+     * it would be retroactively granted access nobody consented to. The
+     * create endpoint stopped accepting it on 2026-08-07.
      */
     public const DEFAULT_PERMISSIONS = [
         'can_view_activity'   => true,
@@ -519,9 +520,13 @@ class SubAccountService
             ->update([
                 'status'     => 'revoked',
                 'updated_at' => now(),
+                // Message access dies with the relationship: clear the notice
+                // mirror and kill any unanswered consent ask below.
+                'message_access_granted_at' => null,
             ]) > 0;
 
         if ($revoked) {
+            app(SupportPendingActionService::class)->cancelOpenMessageAccessRequests($relationshipId);
             $this->relationshipEvent($row, 'revoked', 'member', $userId);
 
             // Tell the OTHER party. Until 2026-08-07 revocation was silent in
@@ -641,7 +646,55 @@ class SubAccountService
         }
 
         // Explicit tier grants win over the boolean shorthand.
-        foreach (SupportTiers::sanitizeTiers($permissions['tiers'] ?? null) as $capability => $tier) {
+        $requestedTiers = SupportTiers::sanitizeTiers($permissions['tiers'] ?? null);
+
+        // 🔴 `messages` is consent-gated and is INTERCEPTED here, never
+        // written directly by the supporter's own request:
+        //
+        //   supporter asks assist  → tier stays none; a pending consent action
+        //                            is created for the member to answer
+        //                            (in-app or emailed one-click link).
+        //   member confirms        → applyConsentedMessageAccess() — the only
+        //                            code path allowed to raise this tier.
+        //   supporter sets none    → honoured immediately (shrink is always a
+        //                            safe exit) + mirror cleared + any open
+        //                            request cancelled.
+        //
+        // Turning it on again after ANY exit creates a fresh consent — the
+        // owner's decision is approval each time it is switched on.
+        $messageAccessOutcome = null;
+        if (array_key_exists('messages', $requestedTiers)) {
+            $requestedMessages = $requestedTiers['messages'];
+            unset($requestedTiers['messages']);
+
+            if ($requestedMessages === SupportTiers::NONE && $beforeTiers['messages'] !== SupportTiers::NONE) {
+                $afterTiers['messages'] = SupportTiers::NONE;
+                $messageAccessOutcome = 'removed';
+            } elseif ($requestedMessages === SupportTiers::ASSIST && $beforeTiers['messages'] === SupportTiers::NONE) {
+                // ONE resolved instance: app() returns a fresh (non-singleton)
+                // service per call, so getErrors() on a second resolution
+                // reads a different object's empty error bag.
+                $pendingService = app(SupportPendingActionService::class);
+                $prepared = $pendingService->prepare(
+                    $parentUserId,
+                    (int) $existing->child_user_id,
+                    \App\Models\SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT,
+                    [],
+                );
+                // ALREADY_PENDING is idempotent success from the caller's view;
+                // real refusals (safeguarding, already granted) propagate.
+                if ($prepared === null) {
+                    $codes = array_column($pendingService->getErrors(), 'code');
+                    if (! in_array('ALREADY_PENDING', $codes, true)) {
+                        $this->errors = $pendingService->getErrors();
+                        return false;
+                    }
+                }
+                $messageAccessOutcome = 'pending';
+            }
+        }
+
+        foreach ($requestedTiers as $capability => $tier) {
             $afterTiers[$capability] = $tier;
         }
 
@@ -656,9 +709,19 @@ class SubAccountService
             );
         }
 
-        $existing->update([
+        $update = [
             'permissions' => SupportTiers::toLegacyBooleans($afterTiers) + ['tiers' => $afterTiers],
-        ]);
+        ];
+        if ($messageAccessOutcome === 'removed') {
+            // Mirror column exists solely for the counterparty-notice query;
+            // it must never outlive the tier it mirrors.
+            $update['message_access_granted_at'] = null;
+        }
+        $existing->update($update);
+
+        if ($messageAccessOutcome === 'removed') {
+            app(SupportPendingActionService::class)->cancelOpenMessageAccessRequests((int) $existing->id);
+        }
 
         if ($afterTiers !== $beforeTiers) {
             $this->relationshipEvent($existing, 'permissions_changed', 'member', $parentUserId, null, [
@@ -693,6 +756,111 @@ class SubAccountService
                 });
             } catch (\Throwable $e) {
                 Log::warning('SubAccountService::updatePermissions notification failed', [
+                    'relationship_id' => $relationshipId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Raise the `messages` tier to `assist` after the supported member's
+     * consent — the ONLY code path allowed to raise it.
+     *
+     * Called by SupportPendingActionService::execute() inside the confirm
+     * transaction (in-app, email token, or attested offline). Throws on any
+     * failure so the confirm rolls back with it: a consent that did not
+     * actually take effect must not read as answered.
+     */
+    public function applyConsentedMessageAccess(int $relationshipId): void
+    {
+        /** @var AccountRelationship|null $row */
+        $row = $this->relationship->newQuery()
+            ->where('id', $relationshipId)
+            ->where('status', 'active')
+            ->lockForUpdate()
+            ->first();
+
+        if (! $row) {
+            throw new \RuntimeException(__('api.subaccount_relationship_not_found'));
+        }
+
+        $tiers = SupportTiers::resolve(is_array($row->permissions) ? $row->permissions : []);
+        $tiers['messages'] = SupportTiers::ASSIST;
+
+        $row->update([
+            'permissions' => SupportTiers::toLegacyBooleans($tiers) + ['tiers' => $tiers],
+            'message_access_granted_at' => now(),
+        ]);
+
+        $this->relationshipEvent($row, 'permissions_changed', 'member', (int) $row->child_user_id, null, [
+            'tiers_after' => $tiers,
+            'via' => 'message_access_consent',
+        ]);
+    }
+
+    /**
+     * The supported member withdraws message access — any time, no reason,
+     * effective immediately. Shrink-only, so no safeguarding re-check; a safe
+     * unilateral exit is the point. Re-enabling always requires fresh consent.
+     */
+    public function withdrawMessageAccess(int $memberUserId, int $relationshipId): bool
+    {
+        $this->errors = [];
+
+        /** @var AccountRelationship|null $row */
+        $row = $this->relationship->newQuery()
+            ->where('id', $relationshipId)
+            ->where('child_user_id', $memberUserId)
+            ->where('status', 'active')
+            ->first();
+
+        if (! $row) {
+            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.subaccount_relationship_not_found')];
+            return false;
+        }
+
+        $tiers = SupportTiers::resolve(is_array($row->permissions) ? $row->permissions : []);
+        $hadAccess = $tiers['messages'] !== SupportTiers::NONE;
+        $tiers['messages'] = SupportTiers::NONE;
+
+        $row->update([
+            'permissions' => SupportTiers::toLegacyBooleans($tiers) + ['tiers' => $tiers],
+            'message_access_granted_at' => null,
+        ]);
+
+        // An unanswered request dies with the withdrawal too — "no" to active
+        // access is obviously also "no" to a pending ask.
+        app(SupportPendingActionService::class)->cancelOpenMessageAccessRequests($relationshipId);
+
+        if ($hadAccess) {
+            $this->relationshipEvent($row, 'permissions_changed', 'member', $memberUserId, null, [
+                'tiers_after' => $tiers,
+                'via' => 'message_access_withdrawn',
+            ]);
+
+            // The supporter must hear their access ended — but the withdrawal
+            // needs no justification and the notice carries none.
+            try {
+                $member = User::find($memberUserId);
+                $supporter = User::find((int) $row->parent_user_id);
+                $memberName = $member !== null ? trim($member->first_name . ' ' . $member->last_name) : '';
+
+                LocaleContext::withLocale($supporter, function () use ($row, $memberName) {
+                    NotificationDispatcher::dispatch(
+                        (int) $row->parent_user_id,
+                        'global',
+                        0,
+                        'sub_account_message_access_revoked',
+                        __('svc_notifications.sub_account.message_access_revoked_bell', ['name' => $memberName]),
+                        self::LINKED_ACCOUNTS_LINK,
+                        null,
+                    );
+                });
+            } catch (\Throwable $e) {
+                Log::warning('SubAccountService::withdrawMessageAccess notification failed', [
                     'relationship_id' => $relationshipId,
                     'error' => $e->getMessage(),
                 ]);

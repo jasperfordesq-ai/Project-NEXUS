@@ -102,7 +102,8 @@
     "proxy_transfer_bell": "{{name}} sent time credits from your balance",
     "link_revoked_bell": "{{name}} ended your account link",
     "permissions_expanded_bell": "{{name}} can now do more on your account — review the levels you granted",
-    "permissions_changed_bell": "The access levels on your link with {{name}} changed"
+    "permissions_changed_bell": "The access levels on your link with {{name}} changed",
+    "message_access_revoked_bell": "{{name}} withdrew your access to their messages"
   },
   "totp": {
     "rate_limited": "Too many failed attempts. Please try again in {{minutes}} minutes."
@@ -185,6 +186,7 @@
     "channel_in_person": "in person",
     "channel_paper": "on paper",
     "withdrawn_bell": "{{name}} withdrew {{what}} — nothing needs your answer any more",
-    "lapsed_bell": "The request from {{name}} ({{what}}) expired unanswered"
+    "lapsed_bell": "The request from {{name}} ({{what}}) expired unanswered",
+    "type_message_access_grant": "permission to view your messages"
   }
 }

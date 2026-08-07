@@ -100,7 +100,8 @@
     "proxy_transfer_bell": "{{name}} hat Zeitguthaben von Ihrem Guthaben gesendet",
     "link_revoked_bell": "{{name}} hat Ihre Kontoverknüpfung beendet",
     "permissions_expanded_bell": "{{name}} kann jetzt mehr auf Ihrem Konto tun — prüfen Sie die erteilten Stufen",
-    "permissions_changed_bell": "Die Zugriffsstufen Ihrer Verknüpfung mit {{name}} wurden geändert"
+    "permissions_changed_bell": "Die Zugriffsstufen Ihrer Verknüpfung mit {{name}} wurden geändert",
+    "message_access_revoked_bell": "{{name}} hat Ihren Zugriff auf ihre Nachrichten zurückgezogen"
   },
   "totp": {
     "rate_limited": "Zu viele fehlgeschlagene Versuche. Bitte versuchen Sie es in {{minutes}} Minuten erneut."
@@ -185,6 +186,7 @@
     "channel_in_person": "persönlich",
     "channel_paper": "auf Papier",
     "withdrawn_bell": "{{name}} hat {{what}} zurückgezogen — es wartet nichts mehr auf Ihre Antwort",
-    "lapsed_bell": "Die Anfrage von {{name}} ({{what}}) ist unbeantwortet abgelaufen"
+    "lapsed_bell": "Die Anfrage von {{name}} ({{what}}) ist unbeantwortet abgelaufen",
+    "type_message_access_grant": "die Erlaubnis, Ihre Nachrichten zu sehen"
   }
 }

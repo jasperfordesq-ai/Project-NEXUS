@@ -100,7 +100,8 @@
     "proxy_transfer_bell": "Sheol {{name}} creidmheasanna ama ó d’iarmhéid",
     "link_revoked_bell": "Chuir {{name}} deireadh le nasc do chuntais",
     "permissions_expanded_bell": "Is féidir le {{name}} níos mó a dhéanamh ar do chuntas anois — athbhreithnigh na leibhéil a cheadaigh tú",
-    "permissions_changed_bell": "Athraíodh na leibhéil rochtana ar do nasc le {{name}}"
+    "permissions_changed_bell": "Athraíodh na leibhéil rochtana ar do nasc le {{name}}",
+    "message_access_revoked_bell": "Tharraing {{name}} siar do rochtain ar a gcuid teachtaireachtaí"
   },
   "totp": {
     "rate_limited": "An iomarca iarrachtaí teipthe. Bain triail as arís i gceann {{minutes}} nóiméad."
@@ -185,6 +186,7 @@
     "channel_in_person": "go pearsanta",
     "channel_paper": "ar pháipéar",
     "withdrawn_bell": "Tharraing {{name}} siar {{what}} — ní gá duit freagra a thabhairt a thuilleadh",
-    "lapsed_bell": "Chuaigh an t-iarratas ó {{name}} ({{what}}) in éag gan freagra"
+    "lapsed_bell": "Chuaigh an t-iarratas ó {{name}} ({{what}}) in éag gan freagra",
+    "type_message_access_grant": "cead do theachtaireachtaí a fheiceáil"
   }
 }
