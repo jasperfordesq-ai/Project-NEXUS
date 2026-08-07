@@ -25,6 +25,11 @@ class AccountRelationshipTest extends TestCase
         $expected = [
             'tenant_id', 'parent_user_id', 'child_user_id',
             'relationship_type', 'permissions', 'status', 'approved_at',
+            // Added 2026-08-07 with consent-gated message access. It MUST be
+            // fillable: it is written via update() alongside the tiers, and
+            // while it was missing here Eloquent silently dropped it, leaving
+            // the counterparty-notice mirror null on a live grant.
+            'message_access_granted_at',
         ];
         $this->assertEquals($expected, $model->getFillable());
     }

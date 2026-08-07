@@ -133,6 +133,11 @@ vi.mock('@/components/ui/useDisclosure', settingsUiMock);
 // The tabs import UI components by direct path, so a barrel-only override is
 // dead for them. SafeguardingTab and ProfileTab both take Textarea this way.
 vi.mock('@/components/ui/Textarea', settingsUiMock);
+// Same reason: SafeguardingTab's support-level pickers became HeroUI Selects
+// (2026-08-07) imported by direct path, which killed the barrel Select and
+// SelectItem overrides here. Mock the direct path rather than switching the
+// source to a barrel import — that would fight the file's own convention.
+vi.mock('@/components/ui/Select', settingsUiMock);
 
 // ── Mock lucide-react icons ───────────────────────────────────────────────────
 vi.mock('lucide-react', () => {
