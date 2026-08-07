@@ -175,29 +175,55 @@ A member-to-member relationship, self-service, distinct from all of the above.
 - Cross-checked against the safeguarding contact policy in **both** directions at
   request time, at approval time, and again whenever permissions are *expanded*.
 - Carries a permission set: `can_view_activity`, `can_manage_listings`,
-  `can_transact`, `can_view_messages`.
+  `can_transact`, `can_view_messages` (the last is dead — see below).
 
-**Enforcement status (updated 2026-08-04).** Three of the four are now real:
+**Enforcement status (updated 2026-08-07).** Three booleans are real, and message
+viewing now exists as a consent-gated **tier**, never as the fourth boolean:
 
-| Permission | Enforced? | Where |
+| Capability | Enforced? | Where |
 |---|---|---|
 | `can_view_activity` | ✅ | `SubAccountService::getChildActivitySummary()` |
 | `can_manage_listings` | ✅ | `SubAccountService::createListingForChild()` → `POST /v2/users/me/sub-accounts/{childId}/listings` |
 | `can_transact` | ✅ | `SubAccountService::transferForChild()` → `POST /v2/users/me/sub-accounts/{childId}/transfer` |
-| `can_view_messages` | ❌ **not enforced, and no longer offered** | see below |
+| `tiers.messages` (assist, ceiling) | ✅ | `SupporterMessageViewService` → `GET /v2/users/me/sub-accounts/{childId}/messages[/{partnerId}]` |
+| `can_view_messages` (boolean) | ❌ **dead forever, by design** | see below |
 
-**Update 2026-08-05: `can_view_messages` is no longer presented to members.** It
-was removed from `SubAccountsManager.tsx`'s `PERMISSION_KEYS` and from
-`SettingsAuthParity::SETTINGS_LINK_PERMISSIONS`, which also stops the accessible
-frontend accepting it on save (that constant drives display *and* all three write
-paths). Both screens now state explicitly that carers cannot read messages,
-rather than the control silently disappearing — a family that had switched it on
-needs to know it never did anything. The permissions endpoint still accepts the
-key for backward compatibility, and it remains in
-`SubAccountService::DEFAULT_PERMISSIONS` so historical rows parse; a table there
-records which keys are real. Note the
-`account_relationships.permissions` column comment lists only the three enforced
-keys — evidence the fourth reached both UIs and never the schema.
+**Update 2026-08-07: message viewing is built — as consent, not as a switch.**
+The owner reversed the earlier omission, and the build answers the
+counterparty-exposure objection recorded below rather than waiving it:
+
+- **Consent state machine.** A supporter setting `tiers.messages = assist` grants
+  nothing: `SubAccountService::updatePermissions()` intercepts it into a
+  `support_pending_actions` row (`action_type = 'message_access_grant'`). Only the
+  supported member's own yes — in-app, single-use email token, or staff-attested —
+  runs `applyConsentedMessageAccess()`, the sole code path allowed to raise the
+  tier. Decline needs no reason; doing nothing expires it; withdrawal
+  (`POST /v2/users/me/parent-accounts/{id}/message-access/withdraw`) is instant and
+  re-enabling always requires fresh consent.
+- **Read-only viewer with an immutable audit.** `SupporterMessageViewService`
+  fetches *as the member* (their deletes/archives apply), never marks anything
+  read, strips unread counts, excludes federated conversations, re-checks the
+  safeguarding contact policy per read, and requires a stated purpose which is
+  written to `supporter_message_view_audits` — DB triggers refuse UPDATE/DELETE —
+  **before** any data returns. The member sees "last viewed" from that audit.
+- **Counterparty notice.** `SubAccountService::messageAccessNoticeFlags()` feeds
+  `GET /v2/messages/restriction-status?partner_id=` two symmetric flags; every
+  frontend folds them into ONE cause-agnostic banner with broker review, so a
+  reader can never tell whose supporter (or whether a coordinator) is involved.
+  The member gets their own standing reminder in conversations.
+- **Ceiling.** `SupportTiers::MAX_TIER_BY_CAPABILITY` caps messages at `assist`
+  (view-only); higher stored values are dropped in `sanitizeTiers()` AND degrade
+  to `none` in `resolve()`. Staff `setTiers()` strips the capability entirely —
+  coordinators and brokers can never hold it.
+
+The **boolean stays dead forever**: `SupportTiers` has no `LEGACY_MAP` entry for
+it, `toLegacyBooleans()` hard-writes it `false`, and the create endpoint strips
+it — so a historical `can_view_messages: true` row (families ticked a checkbox
+that never did anything) can never silently activate the real capability. It
+remains in `SubAccountService::DEFAULT_PERMISSIONS` only so historical rows
+parse. Regression pins: `tests/Laravel/Feature/Safeguarding/SupporterMessageViewTest.php`
+(the retroactive-grant trap, unread-leak, immutability, purpose-required) and
+`tests/Laravel/Unit/Support/SupportTiersTest.php` (ceiling, staff strip).
 
 Until 2026-08-04 **only `can_view_activity` was enforced** — `hasPermission()` had a
 single caller in the whole codebase, while all four toggles were presented to users
@@ -220,13 +246,14 @@ Two rules the proxy endpoints follow, and that anything added here must follow t
 - The safeguarding contact policy is re-asserted **at use time**, not only at grant
   time, and a `pending` relationship confers nothing.
 
-> 🔴 **`can_view_messages` is not enforced and is no longer offered.** Letting a
-> carer read a dependent's conversations exposes the *other* party, who never
-> agreed to it. The platform's established answer for staff oversight is to
-> notify — see `BrokerMessageVisibilityService::getUserRestrictionStatus()`'s
-> `review_notice_required`. Until the equivalent notice exists for carers, do not
-> wire this permission up, and do not re-add it to either frontend's permission
-> list "for consistency" with the type or the constant.
+> 🔴 **The `can_view_messages` boolean must never be wired up — the tier is the
+> only path.** The objection that once kept viewing unbuilt (a carer reading a
+> dependent's conversations exposes the *other* party, who never agreed) is now
+> answered by the notice + consent + audit build above, not waived. What remains
+> permanent is the shape: viewing is granted only through the consent machinery
+> (`message_access_grant`), only at the `assist` ceiling, and never via the
+> boolean or a plain permission checkbox in any frontend. Do not re-add the key
+> to any permission list "for consistency" with the type or the constant.
 
 ---
 

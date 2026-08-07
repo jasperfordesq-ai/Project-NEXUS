@@ -113,6 +113,31 @@
         </div>
     @endif
 
+    {{-- ONE cause-agnostic visibility notice for broker review AND supporter
+         message access, folded together so a reader can never tell which
+         applies or to whom (parity: React ConversationPage). Fail-open: only
+         an explicit false review flag with no supporter flag hides it. --}}
+    @php
+        $visibilityNoticeRequired = (($restriction['review_notice_required'] ?? null) !== false)
+            || (($restriction['supporter_view_notice_required'] ?? false) === true);
+    @endphp
+    @if ($visibilityNoticeRequired)
+        <div class="govuk-inset-text">
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ __('govuk_alpha.messages.visibility_notice') }}</p>
+        </div>
+    @endif
+
+    {{-- The member's OWN standing reminder that a supporter they chose can
+         view their messages, with the way back to manage or withdraw it. --}}
+    @if (!empty($restriction['own_messages_shared']))
+        <div class="govuk-inset-text">
+            <p class="govuk-body govuk-!-margin-bottom-0">
+                {{ __('govuk_alpha.messages.own_messages_shared_reminder') }}
+                <a class="govuk-link" href="{{ route('govuk-alpha.settings.linked-accounts', ['tenantSlug' => $tenantSlug]) }}#parents">{{ __('govuk_alpha.messages.own_messages_shared_manage') }}</a>
+            </p>
+        </div>
+    @endif
+
     @if (empty($messages))
         <div class="govuk-inset-text"><p class="govuk-body">{{ __('govuk_alpha.messages.empty') }}</p></div>
     @else

@@ -428,17 +428,10 @@ class SubAccountController extends BaseApiController
     private function normalizeRelationships(array $relationships): array
     {
         // One query for every row's open message-access ask, not one per row.
-        $relationshipIds = array_values(array_filter(array_map(
+        $pendingAskIds = \App\Services\SubAccountService::pendingMessageAskRelationshipIds(array_map(
             static fn ($r) => (int) ($r['relationship_id'] ?? 0),
             $relationships,
-        )));
-        $pendingAskIds = $relationshipIds === [] ? [] : \Illuminate\Support\Facades\DB::table('support_pending_actions')
-            ->whereIn('relationship_id', $relationshipIds)
-            ->where('action_type', \App\Models\SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
-            ->where('status', \App\Models\SupportPendingAction::STATUS_PENDING)
-            ->pluck('relationship_id')
-            ->map(static fn ($id) => (int) $id)
-            ->all();
+        ));
 
         foreach ($relationships as &$relationship) {
             if (is_string($relationship['permissions'] ?? null)) {

@@ -6,12 +6,15 @@
 
 @section('content')
     @php
-        $successStates = ['link-requested', 'link-approved', 'link-revoked', 'link-permissions-saved'];
+        $successStates = [
+            'link-requested', 'link-approved', 'link-revoked', 'link-permissions-saved',
+            'message-access-requested', 'message-access-withdrawn',
+        ];
         $errorStates = [
             'link-email-invalid', 'link-user-not-found', 'link-self', 'link-exists',
             'link-max', 'link-failed', 'appearance-invalid', 'appearance-failed',
             'link-vetting-required', 'link-contact-restricted', 'link-safeguarding-unavailable',
-            'activity-denied',
+            'activity-denied', 'message-view-denied',
         ];
         $safeguardingErrorStates = [
             'link-vetting-required', 'link-contact-restricted', 'link-safeguarding-unavailable',
@@ -88,6 +91,27 @@
                                         {{ $isPending ? __('govuk_alpha_settings.linked.status_pending') : __('govuk_alpha_settings.linked.status_active') }}
                                     </strong>
                                 </p>
+                                {{-- Message-access disclosure — the member's own view of a
+                                     grant THEY made: who can view, when they last looked
+                                     (from the immutable audit), and a one-press withdraw.
+                                     Nothing renders unless access is actually active. --}}
+                                @if (($p['message_access'] ?? 'none') === 'active' && (int) ($p['relationship_id'] ?? 0) > 0)
+                                    <div class="govuk-inset-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                                        <p class="govuk-body govuk-!-margin-bottom-1">{{ __('govuk_alpha_settings.linked_messages.member_disclosure', ['name' => $pName]) }}</p>
+                                        <p class="govuk-body-s govuk-!-margin-bottom-2">
+                                            @if (!empty($p['message_view_last_at']))
+                                                {{ __('govuk_alpha_settings.linked_messages.member_last_viewed', ['date' => \Illuminate\Support\Carbon::parse($p['message_view_last_at'])->translatedFormat('j F Y, g:ia')]) }}
+                                            @else
+                                                {{ __('govuk_alpha_settings.linked_messages.member_never_viewed') }}
+                                            @endif
+                                        </p>
+                                        <form method="post" action="{{ route('govuk-alpha.settings.linked-accounts.message-access.withdraw', ['tenantSlug' => $tenantSlug]) }}">
+                                            @csrf
+                                            <input type="hidden" name="relationship_id" value="{{ (int) $p['relationship_id'] }}">
+                                            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ __('govuk_alpha_settings.linked_messages.member_withdraw_button') }}<span class="govuk-visually-hidden"> {{ $pName }}</span></button>
+                                        </form>
+                                    </div>
+                                @endif
                                 <div class="nexus-alpha-actions">
                                     @if ($isPending && (int) ($p['relationship_id'] ?? 0) > 0)
                                         <form method="post" action="{{ route('govuk-alpha.settings.linked-accounts.approve', ['tenantSlug' => $tenantSlug]) }}" class="govuk-!-display-inline-block govuk-!-margin-right-2">
@@ -199,6 +223,42 @@
                                         </fieldset>
                                         <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ __('govuk_alpha_settings.linked.save_permissions') }}<span class="govuk-visually-hidden"> {{ $cName }}</span></button>
                                     </form>
+
+                                    {{-- Messages: NEVER a checkbox or select. Three server-derived
+                                         states — ask (a consent request the member answers),
+                                         waiting, or on since a date with a link to the read-only
+                                         viewer. The backend converts the ask into a pending
+                                         consent action; only the member's own yes activates it. --}}
+                                    @if (!$cIsPending)
+                                        @php
+                                            $cMsgAccess = $c['message_access'] ?? 'none';
+                                        @endphp
+                                        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ __('govuk_alpha_settings.linked_messages.capability_heading') }}</h3>
+                                        @if ($cMsgAccess === 'active')
+                                            <p class="govuk-body-s govuk-!-margin-bottom-1">
+                                                <strong class="govuk-tag govuk-tag--green">{{ __('govuk_alpha_settings.linked_messages.state_active') }}</strong>
+                                                @if (!empty($c['message_access_granted_at']))
+                                                    {{ __('govuk_alpha_settings.linked_messages.state_active_since', ['date' => \Illuminate\Support\Carbon::parse($c['message_access_granted_at'])->translatedFormat('j F Y')]) }}
+                                                @endif
+                                            </p>
+                                            <p class="govuk-body govuk-!-margin-bottom-2">
+                                                <a class="govuk-link" href="{{ route('govuk-alpha.settings.linked-accounts.messages', ['tenantSlug' => $tenantSlug, 'childId' => (int) $c['user_id']]) }}">
+                                                    {{ __('govuk_alpha_settings.linked_messages.view_link') }}<span class="govuk-visually-hidden"> {{ $cName }}</span>
+                                                </a>
+                                            </p>
+                                        @elseif ($cMsgAccess === 'pending')
+                                            <p class="govuk-body-s govuk-!-margin-bottom-2">
+                                                <strong class="govuk-tag govuk-tag--yellow">{{ __('govuk_alpha_settings.linked_messages.state_pending', ['name' => $cName]) }}</strong>
+                                            </p>
+                                        @else
+                                            <form method="post" action="{{ route('govuk-alpha.settings.linked-accounts.message-access.request', ['tenantSlug' => $tenantSlug]) }}" class="govuk-!-margin-bottom-2">
+                                                @csrf
+                                                <input type="hidden" name="relationship_id" value="{{ $cId }}">
+                                                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ __('govuk_alpha_settings.linked_messages.request_button') }}<span class="govuk-visually-hidden"> {{ $cName }}</span></button>
+                                            </form>
+                                        @endif
+                                        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ __('govuk_alpha_settings.linked_messages.explainer', ['name' => $cName]) }}</p>
+                                    @endif
 
                                     <div class="govuk-warning-text govuk-!-margin-bottom-2">
                                         <span class="govuk-warning-text__icon" aria-hidden="true">!</span>

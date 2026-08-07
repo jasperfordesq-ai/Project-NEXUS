@@ -818,6 +818,33 @@ class SubAccountService
     }
 
     /**
+     * Which of the given relationships have an OPEN message-access ask.
+     *
+     * One batched query, shared by every surface that renders the three-state
+     * messages control (React via SubAccountController::normalizeRelationships,
+     * the accessible frontend via SettingsAuthParity) — the pending state must
+     * come from the consent machinery itself, never be re-derived per surface.
+     *
+     * @param  array<int, int>  $relationshipIds
+     * @return array<int, int> the subset with a pending ask
+     */
+    public static function pendingMessageAskRelationshipIds(array $relationshipIds): array
+    {
+        $relationshipIds = array_values(array_filter(array_map('intval', $relationshipIds)));
+        if ($relationshipIds === []) {
+            return [];
+        }
+
+        return DB::table('support_pending_actions')
+            ->whereIn('relationship_id', $relationshipIds)
+            ->where('action_type', \App\Models\SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
+            ->where('status', \App\Models\SupportPendingAction::STATUS_PENDING)
+            ->pluck('relationship_id')
+            ->map(static fn ($id) => (int) $id)
+            ->all();
+    }
+
+    /**
      * Raise the `messages` tier to `assist` after the supported member's
      * consent — the ONLY code path allowed to raise it.
      *

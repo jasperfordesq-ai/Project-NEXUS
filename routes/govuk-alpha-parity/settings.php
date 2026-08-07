@@ -52,6 +52,41 @@ Route::get('/settings/linked-accounts/activity/{childId}', [AlphaController::cla
     ->where('childId', '[0-9]+')
     ->name('settings.linked-accounts.activity');
 
+// Message access (consent-gated read-only viewing) — React parity.
+//
+// The supporter ASKS (backend converts the tier write into a pending consent
+// action; only the supported member's yes activates it); the member WITHDRAWS
+// with one press. Both are plain POSTs with the relationship id as a form
+// field. The viewer GETs are deliberately read-only routes: there is NO write
+// route under this prefix, matching the API's shape.
+Route::post('/settings/linked-accounts/message-access/request', [AlphaController::class, 'settingsRequestMessageAccess'])
+    ->middleware('throttle:nexus-route-10-per-1m')
+    ->name('settings.linked-accounts.message-access.request');
+
+Route::post('/settings/linked-accounts/message-access/withdraw', [AlphaController::class, 'settingsWithdrawMessageAccess'])
+    ->middleware('throttle:nexus-route-10-per-1m')
+    ->name('settings.linked-accounts.message-access.withdraw');
+
+// The no-JS purpose capture: POST stores the reason in the SESSION (30-minute
+// TTL — never the query string, where it would land in logs and history), then
+// redirects to the viewer. A viewer GET without a live session purpose renders
+// the purpose form instead of any messages.
+Route::post('/settings/linked-accounts/messages/{childId}/purpose', [AlphaController::class, 'settingsLinkedAccountMessagesPurpose'])
+    ->middleware('throttle:nexus-route-20-per-1m')
+    ->where('childId', '[0-9]+')
+    ->name('settings.linked-accounts.messages.purpose');
+
+Route::get('/settings/linked-accounts/messages/{childId}', [AlphaController::class, 'settingsLinkedAccountMessages'])
+    ->middleware('throttle:nexus-route-30-per-1m')
+    ->where('childId', '[0-9]+')
+    ->name('settings.linked-accounts.messages');
+
+Route::get('/settings/linked-accounts/messages/{childId}/{partnerId}', [AlphaController::class, 'settingsLinkedAccountThread'])
+    ->middleware('throttle:nexus-route-30-per-1m')
+    ->where('childId', '[0-9]+')
+    ->where('partnerId', '[0-9]+')
+    ->name('settings.linked-accounts.messages.thread');
+
 // Guardian arrangements (member side).
 //
 // 🔴 Parity with the React safeguarding tab. Without these the accessible

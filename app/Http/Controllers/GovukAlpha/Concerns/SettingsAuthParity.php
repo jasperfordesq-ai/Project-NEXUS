@@ -69,26 +69,32 @@ trait SettingsAuthParity
      * The sub-account permissions actually OFFERED — i.e. the ones the backend
      * enforces (SubAccountService::hasPermission is consulted for each).
      *
-     * 🔴 `can_view_messages` is deliberately absent. It was rendered here as a
-     * fourth checkbox labelled "View their messages" and nothing in the backend
-     * ever checked it, so a family could tick it, see it save, and reasonably
-     * believe a carer could read a dependent's conversations. In a safeguarding
-     * feature that is worse than the capability being absent. The
-     * `account_relationships.permissions` column comment lists only three keys,
-     * which is corroboration it was never designed — it reached both UIs and
-     * never the schema.
-     *
-     * It is not merely unbuilt: letting a carer read a dependent's messages
-     * exposes the OTHER party, who never agreed. The platform's established
-     * answer is to notify (see BrokerMessageVisibilityService's
-     * `review_notice_required`). Until that notice exists for carers, do not
-     * re-add this key.
+     * 🔴 `can_view_messages` is STILL deliberately absent, and now permanently.
+     * Message viewing exists since 2026-08-07 (owner decision), but as the
+     * `messages` TIER driven by the consent machinery — never as this boolean.
+     * The boolean's history is why: it was rendered as a fourth checkbox that
+     * nothing enforced, so a family could tick it, see it save, and reasonably
+     * believe a carer could read a dependent's conversations. Historical
+     * boolean-true rows must never activate the real capability, so
+     * SupportTiers has no LEGACY_MAP entry for it and toLegacyBooleans()
+     * hard-writes it false. The counterparty-exposure objection recorded here
+     * is answered, not waived: `messageAccessNoticeFlags` drives a notice to
+     * everyone messaging the supported member, the member consents explicitly
+     * per enablement, and every read is immutably audited with a purpose.
+     * The page renders the messages control from `message_access` (three
+     * states), not from a permission checkbox — do not add the key here.
      */
     private const SETTINGS_LINK_PERMISSIONS = [
         'can_view_activity',
         'can_manage_listings',
         'can_transact',
     ];
+
+    /** Purpose reasons offered by the message-viewer purpose form (React parity). */
+    private const SETTINGS_MSG_VIEW_REASONS = ['wellbeing', 'safety', 'helping_reply', 'other'];
+
+    /** How long a captured viewing purpose lives in the session, in minutes. */
+    private const SETTINGS_MSG_VIEW_PURPOSE_TTL_MINUTES = 30;
 
     /**
      * GDPR data-subject request types offered here. These are the types
@@ -131,6 +137,18 @@ trait SettingsAuthParity
         try {
             $children = $this->settingsNormaliseRelationships($service->getChildAccounts($userId));
             $parents = $this->settingsNormaliseRelationships($service->getParentAccounts($userId));
+
+            // Accountability the member can check: when a supporter can view
+            // this member's messages, show when they last looked (from the
+            // immutable view audit — same enrichment the React API does).
+            $viewService = app(\App\Services\SupporterMessageViewService::class);
+            foreach ($parents as &$parent) {
+                if (($parent['message_access'] ?? 'none') === 'active') {
+                    $stats = $viewService->viewStatsForMember($userId, (int) $parent['relationship_id']);
+                    $parent['message_view_last_at'] = $stats['last_viewed_at'];
+                }
+            }
+            unset($parent);
         } catch (\Throwable $e) {
             report($e);
             $children = [];
@@ -211,6 +229,247 @@ trait SettingsAuthParity
             'childName' => $childName,
             'summary' => $summary,
         ]);
+    }
+
+    // =====================================================================
+    //  Message access (consent-gated read-only viewing) — React parity
+    // =====================================================================
+
+    /**
+     * The supporter ASKS to view the supported member's messages. Nothing is
+     * granted here: SubAccountService::updatePermissions intercepts the
+     * messages tier into a pending consent action, and only the supported
+     * member's own yes (in-app, or the emailed one-tap link) activates it.
+     * Asking again while an ask is open is a no-op, not a nag.
+     */
+    public function settingsRequestMessageAccess(Request $request, string $tenantSlug): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $relationshipId = (int) $request->input('relationship_id');
+        $status = 'link-failed';
+        if ($relationshipId > 0) {
+            try {
+                $ok = app(SubAccountService::class)->updatePermissions($userId, $relationshipId, [
+                    'tiers' => ['messages' => \App\Support\Safeguarding\SupportTiers::ASSIST],
+                ]);
+                $status = $ok ? 'message-access-requested' : 'link-failed';
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return redirect()
+            ->route('govuk-alpha.settings.linked-accounts', ['tenantSlug' => $tenantSlug, 'status' => $status])
+            ->withFragment('children');
+    }
+
+    /**
+     * The supported MEMBER withdraws a supporter's message access — one press,
+     * effective immediately, no reason asked. Re-enabling always needs a fresh
+     * consent, which is why there is no "undo" here.
+     */
+    public function settingsWithdrawMessageAccess(Request $request, string $tenantSlug): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $relationshipId = (int) $request->input('relationship_id');
+        $ok = false;
+        if ($relationshipId > 0) {
+            try {
+                $ok = app(SubAccountService::class)->withdrawMessageAccess($userId, $relationshipId);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return redirect()
+            ->route('govuk-alpha.settings.linked-accounts', [
+                'tenantSlug' => $tenantSlug,
+                'status' => $ok ? 'message-access-withdrawn' : 'link-failed',
+            ])
+            ->withFragment('parents');
+    }
+
+    /**
+     * Captures WHY the supporter is looking, before anything is fetched — the
+     * no-JS equivalent of the React purpose dialog. The purpose lives in the
+     * SESSION (30-minute TTL), never in the query string: URLs land in server
+     * logs, browser history and shared screenshots, and the purpose can quote
+     * a safeguarding concern about a named person.
+     */
+    public function settingsLinkedAccountMessagesPurpose(Request $request, string $tenantSlug, string $childId): RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        $reason = self::asStr($request->input('reason'));
+        if (! in_array($reason, self::SETTINGS_MSG_VIEW_REASONS, true)) {
+            $reason = 'wellbeing';
+        }
+        $detail = trim(self::asStr($request->input('detail')));
+
+        $purpose = __('govuk_alpha_settings.linked_messages.reason_' . $reason);
+        if ($detail !== '') {
+            $purpose .= ' — ' . mb_substr($detail, 0, 300);
+        }
+
+        session([
+            $this->settingsMsgViewPurposeSessionKey((int) $childId) => [
+                'purpose' => $purpose,
+                'expires' => now()->addMinutes(self::SETTINGS_MSG_VIEW_PURPOSE_TTL_MINUTES)->getTimestamp(),
+            ],
+        ]);
+
+        $partnerId = (int) $request->input('partner_id');
+
+        return $partnerId > 0
+            ? redirect()->route('govuk-alpha.settings.linked-accounts.messages.thread', [
+                'tenantSlug' => $tenantSlug, 'childId' => (int) $childId, 'partnerId' => $partnerId,
+            ])
+            : redirect()->route('govuk-alpha.settings.linked-accounts.messages', [
+                'tenantSlug' => $tenantSlug, 'childId' => (int) $childId,
+            ]);
+    }
+
+    /**
+     * Read-only conversation LIST for a supported member — React
+     * SupportedMessagesPage parity. Without a live session purpose the purpose
+     * form renders instead; with one, SupporterMessageViewService enforces the
+     * grant, re-checks safeguarding, writes the immutable audit row (purpose
+     * included) BEFORE returning data, and strips the member's unread counts.
+     */
+    public function settingsLinkedAccountMessages(Request $request, string $tenantSlug, string $childId): Response|RedirectResponse
+    {
+        return $this->settingsRenderSupportedMessages($request, $tenantSlug, (int) $childId, null);
+    }
+
+    /** Read-only THREAD view — same gate, same audit, one partner. */
+    public function settingsLinkedAccountThread(Request $request, string $tenantSlug, string $childId, string $partnerId): Response|RedirectResponse
+    {
+        return $this->settingsRenderSupportedMessages($request, $tenantSlug, (int) $childId, (int) $partnerId);
+    }
+
+    /** Shared render path for the supported-messages list and thread pages. */
+    private function settingsRenderSupportedMessages(Request $request, string $tenantSlug, int $childUserId, ?int $partnerUserId): Response|RedirectResponse
+    {
+        $this->assertTenantSlug($tenantSlug);
+        abort_unless(TenantContext::hasModule('messages'), 403);
+
+        $userId = $this->currentUserId();
+        if ($userId === null) {
+            return redirect()->route('govuk-alpha.login', ['tenantSlug' => $tenantSlug, 'status' => 'auth-required']);
+        }
+
+        // Resolve the member's display name from this user's own children list
+        // — a childId belonging to someone else never yields a name, and the
+        // service refuses it below anyway.
+        $childName = null;
+        try {
+            foreach ($this->settingsNormaliseRelationships(app(SubAccountService::class)->getChildAccounts($userId)) as $child) {
+                if ($child['user_id'] === $childUserId) {
+                    $childName = $child['name'];
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        if ($childUserId <= 0 || $childName === null) {
+            return redirect()->route('govuk-alpha.settings.linked-accounts', [
+                'tenantSlug' => $tenantSlug,
+                'status' => 'message-view-denied',
+            ]);
+        }
+
+        // No live purpose in the session → the purpose form IS the page.
+        $purpose = $this->settingsMsgViewPurpose($childUserId);
+        if ($purpose === null) {
+            return $this->view('accessible-frontend::settings-linked-account-messages-purpose', [
+                'title' => __('govuk_alpha_settings.linked_messages.purpose_title'),
+                'tenantSlug' => $tenantSlug,
+                'activeNav' => 'account',
+                'childUserId' => $childUserId,
+                'childName' => $childName,
+                'partnerId' => $partnerUserId,
+                'reasons' => self::SETTINGS_MSG_VIEW_REASONS,
+            ]);
+        }
+
+        $service = app(\App\Services\SupporterMessageViewService::class);
+
+        if ($partnerUserId === null) {
+            $conversations = $service->listConversations($userId, $childUserId, $purpose);
+            if ($conversations === null) {
+                return redirect()->route('govuk-alpha.settings.linked-accounts', [
+                    'tenantSlug' => $tenantSlug,
+                    'status' => 'message-view-denied',
+                ]);
+            }
+
+            return $this->view('accessible-frontend::settings-linked-account-messages', [
+                'title' => __('govuk_alpha_settings.linked_messages.title', ['name' => $childName]),
+                'tenantSlug' => $tenantSlug,
+                'activeNav' => 'account',
+                'childUserId' => $childUserId,
+                'childName' => $childName,
+                'conversations' => $conversations,
+            ]);
+        }
+
+        $payload = $service->viewThread($userId, $childUserId, $partnerUserId, $purpose);
+        if ($payload === null) {
+            return redirect()->route('govuk-alpha.settings.linked-accounts', [
+                'tenantSlug' => $tenantSlug,
+                'status' => 'message-view-denied',
+            ]);
+        }
+
+        return $this->view('accessible-frontend::settings-linked-account-message-thread', [
+            'title' => __('govuk_alpha_settings.linked_messages.thread_title', ['name' => $childName]),
+            'tenantSlug' => $tenantSlug,
+            'activeNav' => 'account',
+            'childUserId' => $childUserId,
+            'childName' => $childName,
+            'partnerId' => $partnerUserId,
+            'messages' => array_reverse($payload['items'] ?? []),
+        ]);
+    }
+
+    /** Session key for a captured viewing purpose, scoped per supported member. */
+    private function settingsMsgViewPurposeSessionKey(int $childUserId): string
+    {
+        return 'alpha_msg_view_purpose_' . $childUserId;
+    }
+
+    /** The live session purpose for this member, or null when absent/expired. */
+    private function settingsMsgViewPurpose(int $childUserId): ?string
+    {
+        $stored = session($this->settingsMsgViewPurposeSessionKey($childUserId));
+        if (! is_array($stored)) {
+            return null;
+        }
+        $purpose = trim((string) ($stored['purpose'] ?? ''));
+        $expires = (int) ($stored['expires'] ?? 0);
+        if ($purpose === '' || $expires < now()->getTimestamp()) {
+            session()->forget($this->settingsMsgViewPurposeSessionKey($childUserId));
+
+            return null;
+        }
+
+        return $purpose;
     }
 
     /**
@@ -459,6 +718,13 @@ trait SettingsAuthParity
      */
     private function settingsNormaliseRelationships(array $rows): array
     {
+        // One batched query for the rows' open message-access asks — the
+        // 'pending' leg of the three-state messages control.
+        $pendingAskIds = SubAccountService::pendingMessageAskRelationshipIds(array_map(
+            static fn ($row) => (int) ($row['relationship_id'] ?? 0),
+            $rows,
+        ));
+
         $out = [];
         foreach ($rows as $row) {
             $perms = $row['permissions'] ?? [];
@@ -484,8 +750,11 @@ trait SettingsAuthParity
             // exists — never show what does not work.
             $activityVisible = \App\Support\Safeguarding\SupportTiers::resolve($perms)['activity'] !== 'none';
 
+            $resolvedTiers = \App\Support\Safeguarding\SupportTiers::resolve($perms);
+            $relationshipId = (int) ($row['relationship_id'] ?? 0);
+
             $out[] = [
-                'relationship_id' => (int) ($row['relationship_id'] ?? 0),
+                'relationship_id' => $relationshipId,
                 'user_id' => (int) ($row['user_id'] ?? 0),
                 'name' => $name !== '' ? $name : (string) ($row['email'] ?? ''),
                 'email' => (string) ($row['email'] ?? ''),
@@ -496,7 +765,13 @@ trait SettingsAuthParity
                 'can_see_activity' => $activityVisible,
                 // Resolved per-capability tiers, so the edit form can show the
                 // ACTUAL level (a co_decide grant must not render as "off").
-                'tiers' => \App\Support\Safeguarding\SupportTiers::resolve($perms),
+                'tiers' => $resolvedTiers,
+                // Three-state messages control, derived the same way the React
+                // API does it: an active tier wins, else an open ask = pending.
+                'message_access' => $resolvedTiers['messages'] !== \App\Support\Safeguarding\SupportTiers::NONE
+                    ? 'active'
+                    : (in_array($relationshipId, $pendingAskIds, true) ? 'pending' : 'none'),
+                'message_access_granted_at' => $row['message_access_granted_at'] ?? null,
             ];
         }
 

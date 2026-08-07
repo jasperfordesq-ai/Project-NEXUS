@@ -9960,7 +9960,15 @@ class AlphaController extends Controller
             'status' => self::asStr($request->query('status')) ?: null,
             'currentUserId' => $currentUserId,
             'directMessagingEnabled' => BrokerControlConfigService::isDirectMessagingEnabled(),
-            'restriction' => app(\App\Services\BrokerMessageVisibilityService::class)->getUserRestrictionStatus($currentUserId),
+            // Broker restriction status merged with the pair-scoped supporter
+            // message-access flags: `supporter_view_notice_required` is
+            // symmetric (never says whose supporter it is) and drives the same
+            // cause-agnostic banner the React ConversationPage shows;
+            // `own_messages_shared` drives this member's own reminder.
+            'restriction' => array_merge(
+                app(\App\Services\BrokerMessageVisibilityService::class)->getUserRestrictionStatus($currentUserId),
+                \App\Services\SubAccountService::messageAccessNoticeFlags($currentUserId, $userId),
+            ),
         ]);
     }
 

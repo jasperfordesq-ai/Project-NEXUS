@@ -409,6 +409,237 @@ class SettingsAuthParityTest extends TestCase
     }
 
     // =====================================================================
+    //  Message access (consent-gated read-only viewing) — React parity
+    // =====================================================================
+
+    /** An ACTIVE consented grant: messages tier assist + the mirror column set. */
+    private function seedMessageGrant(User $supporter, User $supported): int
+    {
+        $id = $this->seedActivityRelationship($supporter, $supported, [
+            'can_view_activity' => true,
+            'can_view_messages' => false, // the boolean stays dead even while the TIER grants
+            'tiers' => ['activity' => 'assist', 'listings' => 'none', 'credits' => 'none', 'messages' => 'assist'],
+        ]);
+        DB::table('account_relationships')->where('id', $id)->update(['message_access_granted_at' => now()]);
+
+        return $id;
+    }
+
+    /** A live session purpose, exactly as the purpose POST would store it. */
+    private function withMsgViewPurpose(int $childUserId, string $purpose = 'Test wellbeing check'): static
+    {
+        return $this->withSession([
+            'alpha_msg_view_purpose_' . $childUserId => [
+                'purpose' => $purpose,
+                'expires' => now()->addMinutes(10)->getTimestamp(),
+            ],
+        ]);
+    }
+
+    public function test_message_access_request_creates_a_pending_ask_not_a_grant(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $relationshipId = $this->seedActivityRelationship($me, $child, ['can_view_activity' => true]);
+
+        $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/message-access/request", [
+            'relationship_id' => $relationshipId,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=message-access-requested', (string) $response->headers->get('Location'));
+        // The ask exists; the grant does NOT — only the member's yes raises it.
+        $this->assertDatabaseHas('support_pending_actions', [
+            'relationship_id' => $relationshipId,
+            'action_type' => 'message_access_grant',
+            'status' => 'pending',
+        ]);
+        $row = DB::table('account_relationships')->where('id', $relationshipId)->first();
+        $this->assertNull($row->message_access_granted_at);
+        $tiers = \App\Support\Safeguarding\SupportTiers::resolve(json_decode((string) $row->permissions, true) ?: []);
+        $this->assertSame('none', $tiers['messages']);
+    }
+
+    public function test_messages_control_renders_all_three_states(): void
+    {
+        $me = $this->authenticatedUser();
+        $askable = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $pending = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $granted = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Granted', 'last_name' => 'Member', 'name' => 'Granted Member',
+        ]);
+        $this->seedActivityRelationship($me, $askable, ['can_view_activity' => true]);
+        $pendingRelId = $this->seedActivityRelationship($me, $pending, ['can_view_activity' => true]);
+        DB::table('support_pending_actions')->insert([
+            'tenant_id' => $this->testTenantId, 'relationship_id' => $pendingRelId,
+            'supporter_user_id' => $me->id, 'supported_user_id' => $pending->id,
+            'action_type' => 'message_access_grant', 'status' => 'pending',
+            'payload' => json_encode(['capability' => 'messages']),
+            'token_hash' => hash('sha256', 'test-token-' . $pendingRelId),
+            'expires_at' => now()->addDays(14), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $this->seedMessageGrant($me, $granted);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts");
+
+        $response->assertOk();
+        $response->assertSee(__('govuk_alpha_settings.linked_messages.request_button'));
+        $response->assertSee(__('govuk_alpha_settings.linked_messages.state_pending', ['name' => $pending->name]));
+        $response->assertSee("linked-accounts/messages/{$granted->id}");
+    }
+
+    public function test_member_sees_disclosure_and_can_withdraw(): void
+    {
+        $supporter = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Helping', 'last_name' => 'Hand', 'name' => 'Helping Hand',
+        ]);
+        $me = $this->authenticatedUser();
+        $relationshipId = $this->seedMessageGrant($supporter, $me);
+
+        $page = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts");
+        $page->assertOk();
+        $page->assertSee(__('govuk_alpha_settings.linked_messages.member_disclosure', ['name' => 'Helping Hand']));
+        $page->assertSee(__('govuk_alpha_settings.linked_messages.member_withdraw_button'));
+
+        $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/message-access/withdraw", [
+            'relationship_id' => $relationshipId,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=message-access-withdrawn', (string) $response->headers->get('Location'));
+        $row = DB::table('account_relationships')->where('id', $relationshipId)->first();
+        $this->assertNull($row->message_access_granted_at);
+        $tiers = \App\Support\Safeguarding\SupportTiers::resolve(json_decode((string) $row->permissions, true) ?: []);
+        $this->assertSame('none', $tiers['messages']);
+    }
+
+    /** 🔴 The purpose form is the front door: no session purpose, no messages. */
+    public function test_viewer_without_a_session_purpose_renders_the_purpose_form(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Supported', 'last_name' => 'One', 'name' => 'Supported One',
+        ]);
+        $this->seedMessageGrant($me, $child);
+        $partner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        DB::table('messages')->insert([
+            'tenant_id' => $this->testTenantId, 'sender_id' => $partner->id,
+            'receiver_id' => $child->id, 'body' => 'Must not leak before a purpose', 'is_read' => 0,
+            'created_at' => now(),
+        ]);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/messages/{$child->id}");
+
+        $response->assertOk();
+        $response->assertSee(__('govuk_alpha_settings.linked_messages.purpose_title'));
+        $response->assertDontSee('Must not leak before a purpose');
+        // And no audit row was written — nothing was viewed.
+        $this->assertDatabaseMissing('supporter_message_view_audits', ['supported_user_id' => $child->id]);
+    }
+
+    public function test_viewer_with_a_purpose_lists_read_only_and_audits(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Supported', 'last_name' => 'Two', 'name' => 'Supported Two',
+        ]);
+        $this->seedMessageGrant($me, $child);
+        $partner = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true,
+            'first_name' => 'Partner', 'last_name' => 'Person', 'name' => 'Partner Person',
+        ]);
+        DB::table('messages')->insert([
+            'tenant_id' => $this->testTenantId, 'sender_id' => $partner->id,
+            'receiver_id' => $child->id, 'body' => 'Visible with a purpose', 'is_read' => 0,
+            'created_at' => now(),
+        ]);
+
+        $list = $this->withMsgViewPurpose($child->id)
+            ->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/messages/{$child->id}");
+        $list->assertOk();
+        $list->assertSee(__('govuk_alpha_settings.linked_messages.read_only_banner'));
+        $list->assertSee("linked-accounts/messages/{$child->id}/{$partner->id}");
+
+        $thread = $this->withMsgViewPurpose($child->id)
+            ->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/messages/{$child->id}/{$partner->id}");
+        $thread->assertOk();
+        $thread->assertSee('Visible with a purpose');
+        // Read-only is structural: the page contains no input of any kind.
+        $this->assertStringNotContainsString('<textarea', $thread->getContent());
+        $this->assertStringNotContainsString('type="text"', $thread->getContent());
+
+        // Both visits were audited, purpose included, before rendering.
+        $this->assertDatabaseHas('supporter_message_view_audits', [
+            'supporter_user_id' => $me->id, 'supported_user_id' => $child->id,
+            'action' => 'list', 'purpose' => 'Test wellbeing check',
+        ]);
+        $this->assertDatabaseHas('supporter_message_view_audits', [
+            'supporter_user_id' => $me->id, 'supported_user_id' => $child->id,
+            'partner_user_id' => $partner->id, 'action' => 'read',
+        ]);
+        // And the member's unread state shows no trace of the visit.
+        $this->assertDatabaseHas('messages', ['receiver_id' => $child->id, 'is_read' => 0]);
+    }
+
+    public function test_viewer_without_a_grant_is_denied_even_with_a_purpose(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        // Relationship exists, but messages tier was never consented.
+        $this->seedActivityRelationship($me, $child, ['can_view_activity' => true]);
+
+        $response = $this->withMsgViewPurpose($child->id)
+            ->get("/{$this->testTenantSlug}/accessible/settings/linked-accounts/messages/{$child->id}");
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=message-view-denied', (string) $response->headers->get('Location'));
+    }
+
+    public function test_purpose_post_stores_session_and_redirects_to_the_viewer(): void
+    {
+        $me = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $this->seedMessageGrant($me, $child);
+
+        $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/messages/{$child->id}/purpose", [
+            'reason' => 'safety',
+            'detail' => 'Named concern',
+        ]);
+
+        $response->assertRedirect("/{$this->testTenantSlug}/accessible/settings/linked-accounts/messages/{$child->id}");
+        $stored = session('alpha_msg_view_purpose_' . $child->id);
+        $this->assertIsArray($stored);
+        $this->assertStringContainsString(__('govuk_alpha_settings.linked_messages.reason_safety'), $stored['purpose']);
+        $this->assertStringContainsString('Named concern', $stored['purpose']);
+    }
+
+    public function test_conversation_shows_the_merged_notice_and_the_members_own_reminder(): void
+    {
+        $supporter = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $me = $this->authenticatedUser();
+        $partner = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $this->seedMessageGrant($supporter, $me);
+        DB::table('messages')->insert([
+            'tenant_id' => $this->testTenantId, 'sender_id' => $partner->id,
+            'receiver_id' => $me->id, 'body' => 'Hello there', 'is_read' => 0,
+            'created_at' => now(),
+        ]);
+
+        $response = $this->get("/{$this->testTenantSlug}/accessible/messages/{$partner->id}");
+
+        $response->assertOk();
+        // ONE cause-agnostic notice…
+        $response->assertSee(__('govuk_alpha.messages.visibility_notice'));
+        // …and the member's own standing reminder with the way to manage it.
+        $response->assertSee(__('govuk_alpha.messages.own_messages_shared_reminder'));
+        $response->assertSee(__('govuk_alpha.messages.own_messages_shared_manage'));
+    }
+
+    // =====================================================================
     //  Appearance / theme
     // =====================================================================
 
