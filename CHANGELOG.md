@@ -71,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- **Closed a newly-published high-severity advisory in a small text-matching library used by our build and test tooling.** `brace-expansion` — a helper that expands patterns like `file.{js,ts}`, pulled in indirectly by the test-coverage tool, the code linter and the performance checker — had a vulnerability published against it (CVE-2026-69152, rated 7.5). No platform code changed and nothing our members use was affected: the library is a development-only dependency and never reaches the shipped website, which was confirmed by checking the production dependency tree separately (it contains no copy of it at all). Every copy across the project was moved to a patched release — 1.1.16 to 1.1.18, 2.1.2 to 2.1.4, 5.0.8 to 5.0.9 — all small patch updates already permitted by the existing version rules, so nothing else moved with them.
+
 - **Updated the Markdown library the platform uses for formatted emails, closing six newly-published advisories.** Six vulnerabilities in `league/commonmark` were published on 6 August, four of them rated high: several ways a crafted message could tie the parser up in knots (a denial-of-service), and one that let a disguised link slip past the safety filter that is supposed to block dangerous links. The platform does not call this library directly — it arrives as part of the web framework and is used when rendering Markdown in emails — so no platform code changed. Upgraded from 2.8.2 to 2.9.0, which the framework already permitted; the security audit now reports nothing outstanding.
 
 ### Fixed
