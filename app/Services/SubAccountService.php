@@ -115,6 +115,11 @@ class SubAccountService
             ->with('childUser:id,first_name,last_name,email,avatar_url')
             ->where('parent_user_id', $parentUserId)
             ->where('status', 'active')
+            // Staff-proposed guardian arrangements (phase 5) live in this
+            // table too but belong to the SAFEGUARDING screens, not the
+            // linked-accounts ones — showing them here would double-display
+            // and blur who created what.
+            ->whereNull('proposed_by_user_id')
             ->orderByDesc('created_at')
             ->get()
             ->map(function (AccountRelationship $rel) {
@@ -139,6 +144,8 @@ class SubAccountService
             ->join('users as u', 'account_relationships.child_user_id', '=', 'u.id')
             ->where('account_relationships.parent_user_id', $parentUserId)
             ->whereIn('account_relationships.status', ['active', 'pending'])
+            // Staff-proposed arrangements belong to the safeguarding screens.
+            ->whereNull('account_relationships.proposed_by_user_id')
             ->select(
                 'account_relationships.id as relationship_id',
                 'account_relationships.relationship_type',
@@ -167,6 +174,8 @@ class SubAccountService
             ->join('users as u', 'account_relationships.parent_user_id', '=', 'u.id')
             ->where('account_relationships.child_user_id', $childUserId)
             ->whereIn('account_relationships.status', ['active', 'pending'])
+            // Staff-proposed arrangements belong to the safeguarding screens.
+            ->whereNull('account_relationships.proposed_by_user_id')
             ->select(
                 'account_relationships.id as relationship_id',
                 'account_relationships.relationship_type',
@@ -380,6 +389,10 @@ class SubAccountService
             ->where('id', $relationshipId)
             ->where('child_user_id', $childUserId)
             ->where('status', 'pending')
+            // Staff-proposed arrangements are answered through the safeguarding
+            // respond flow (GuardianArrangementService) — approving one here
+            // would bypass its transition table, events and staff notification.
+            ->whereNull('proposed_by_user_id')
             ->first();
 
         if (! $pending) {
@@ -470,6 +483,10 @@ class SubAccountService
         $row = $this->relationship->newQuery()
             ->where('id', $relationshipId)
             ->where(fn (Builder $q) => $q->where('parent_user_id', $userId)->orWhere('child_user_id', $userId))
+            // Staff-proposed arrangements end through the safeguarding flows:
+            // the member withdraws via GuardianArrangementService::respond,
+            // staff revoke via the admin endpoint.
+            ->whereNull('proposed_by_user_id')
             ->first();
 
         if (! $row) {
@@ -527,6 +544,10 @@ class SubAccountService
             ->where('id', $relationshipId)
             ->where('parent_user_id', $parentUserId)
             ->where('status', 'active')
+            // A guardian must not grant THEMSELVES tiers on a staff-proposed
+            // arrangement — those stay tier 0 until a deliberate product
+            // decision gives the supported member a grant flow for them.
+            ->whereNull('proposed_by_user_id')
             ->first();
 
         if (! $existing) {

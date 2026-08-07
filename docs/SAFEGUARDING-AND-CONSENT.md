@@ -22,24 +22,40 @@ easy to mistake for each other.
 
 ---
 
-## Guardian relationships — three separate systems
+## Guardian relationships
 
-> 🔴 **"Guardian" means two unrelated things, and both are user-facing.** Staff
-> record guardian arrangements in `safeguarding_assignments`, which grant
-> **nothing**. Separately, a member can create an `account_relationships` link and
-> choose `guardian` as its `relationship_type`, and that one **can** grant real
-> abilities (listings, transfers). There is no foreign key between the two tables
-> and no file in the codebase touches both — verified 2026-08-05. Nothing on
-> screen distinguished them until the same date, when both surfaces gained an
-> explicit note saying which is which and where the other lives. Keep that
-> distinction in any new copy: conflating them is a safeguarding error, not a
-> wording preference.
+> 🔴 **UPDATE 2026-08-07 (guardian redesign, phase 5): the two "guardian"
+> systems are ONE system now.** Staff-recorded guardian arrangements live in
+> `account_relationships`, marked by `proposed_by_user_id NOT NULL`, at
+> tier 0 — `SupportTiers::resolve()` of their empty grant is `none` on every
+> capability, so an arrangement still grants **nothing**. The historical
+> warning below is preserved because its lesson still applies to copy: an
+> arrangement (a record) and a tier grant (a power) are different things even
+> inside one table, and conflating them in wording is a safeguarding error.
+>
+> `safeguarding_assignments` is now a **read-only archive**. Its rows were
+> copied into `account_relationships` by
+> `2026_08_07_000001_migrate_safeguarding_assignments_to_relationships`
+> (pair conflicts skipped and logged), and its trigger-protected event trail
+> was deliberately never rewritten. Nothing writes to either archive table;
+> the only remaining writer of the OLD table is the superseded
+> `SafeguardingService::recordConsent()`, which still has no callers.
 
-### 1. `safeguarding_assignments` — guardian ↔ ward pairs
+### 1. Staff-recorded guardian arrangements (in `account_relationships`)
 
-The general-purpose safeguarding relationship. Columns: `guardian_user_id`,
-`ward_user_id`, `assigned_by`, `assigned_at`, `consent_given_at`, `revoked_at`,
-`notes`, unique per `(guardian, ward, tenant)`.
+The general-purpose safeguarding relationship: guardian = `parent_user_id`,
+supported member = `child_user_id`, `proposed_by_user_id` = the staff member,
+`staff_notes`, tier-0 permissions, unique per `(guardian, member, tenant)`.
+State model (`GuardianArrangementService::stateOf()`): `pending` awaiting the
+member; `active` = consented (`approved_at`); `pending + declined_at` =
+refused; `pending + withdrawn_at` = withdrawn — a member's "no" is
+deliberately NOT `status='revoked'`, which is the staff exit. Every
+transition appends to `account_relationship_events` (append-only,
+DB-trigger enforced). Staff-proposed rows are **excluded from every
+linked-accounts surface and mutation path** (`SubAccountService` filters
+`whereNull('proposed_by_user_id')` in listing, approve, revoke and
+updatePermissions) — they are seen and answered only through the
+safeguarding screens, and a guardian cannot grant themselves tiers on one.
 
 - **Created by staff, not by members.** `POST /v2/admin/safeguarding/assignments`,
   gated by `AdminSafeguardingController::requireSafeguardingStaff('manage')`, which

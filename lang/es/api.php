@@ -299,6 +299,7 @@ return [
     'authority_invalid_reason' => 'Elija un motivo de revocación de la lista',
     'authority_relationship_not_found' => 'Relación no encontrada o no activa',
     'authority_evidence_refused' => 'No introduzca detalles del documento. Registre únicamente que ha visto la autoridad',
+    'safeguarding_pair_already_linked' => 'Estos dos miembros ya están vinculados. Finalice el vínculo existente antes de registrar un nuevo acuerdo',
     'both_versions_required' => 'Se requieren los parámetros v1 y v2',
     'versions_not_found' => 'Una o ambas versiones no encontradas',
     'version_number_required' => 'Se requiere el número de versión',

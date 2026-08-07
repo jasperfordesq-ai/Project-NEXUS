@@ -15,20 +15,17 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
 /**
- * 🔴 `safeguarding_assignments.consent_given_at` had NO WRITER.
+ * 🔴 The member's consent to a guardian arrangement must be real, recorded,
+ * and the member's ALONE.
  *
- * The only method that sets it — SafeguardingService::recordConsent() — had zero
- * callers anywhere in the codebase, so the column could never be populated. That
- * made the admin dashboard's "consented wards" figure
- * (AdminSafeguardingController, `whereNotNull('consent_given_at')`) structurally
- * always zero, while the assignment itself was created and both parties emailed.
+ * History this file guards against: the original consent column
+ * (`safeguarding_assignments.consent_given_at`) shipped with NO writer, so
+ * the admin "consented" figure was structurally always zero while both
+ * parties were emailed about arrangements the member could not even see.
  *
- * The ward also had no way to SEE the assignment: the notification deep-links to
- * `/settings?tab=safeguarding`, and that tab only ever fetched preferences and
- * vetting status.
- *
- * These tests cover both halves, and the authorisation boundary that matters most:
- * consent belongs to the WARD and nobody else.
+ * Phase 5: arrangements live in `account_relationships` (staff-proposed,
+ * tier 0 — they grant nothing), and consent is `status='active'` +
+ * `approved_at`. Same guarantees, walked through the same endpoints.
  */
 class GuardianConsentRecordingTest extends TestCase
 {
@@ -47,16 +44,29 @@ class GuardianConsentRecordingTest extends TestCase
         ]);
         $staff = User::factory()->forTenant($tenantId)->admin()->create();
 
-        $assignmentId = (int) DB::table('safeguarding_assignments')->insertGetId([
-            'guardian_user_id' => $guardian->id,
-            'ward_user_id'     => $ward->id,
-            'tenant_id'        => $tenantId,
-            'assigned_by'      => $staff->id,
-            'assigned_at'      => now(),
-            'notes'            => 'Created by staff during onboarding.',
+        $assignmentId = (int) DB::table('account_relationships')->insertGetId([
+            'tenant_id'           => $tenantId,
+            'parent_user_id'      => $guardian->id,
+            'child_user_id'       => $ward->id,
+            'relationship_type'   => 'guardian',
+            'permissions'         => json_encode([
+                'can_view_activity' => false, 'can_manage_listings' => false,
+                'can_transact' => false, 'can_view_messages' => false,
+                'tiers' => ['activity' => 'none', 'listings' => 'none', 'credits' => 'none'],
+            ]),
+            'status'              => 'pending',
+            'proposed_by_user_id' => $staff->id,
+            'staff_notes'         => 'Created by staff during onboarding.',
+            'created_at'          => now(),
+            'updated_at'          => now(),
         ]);
 
         return [$guardian, $ward, $assignmentId];
+    }
+
+    private function consentGivenAt(int $assignmentId): ?string
+    {
+        return DB::table('account_relationships')->where('id', $assignmentId)->value('approved_at');
     }
 
     public function test_ward_can_see_the_guardian_assigned_to_them(): void
@@ -78,14 +88,10 @@ class GuardianConsentRecordingTest extends TestCase
 
     public function test_ward_consent_is_actually_recorded(): void
     {
-        // The regression this whole file exists for: before the endpoint below
-        // existed, consent_given_at could never be written by anything.
         [, $ward, $assignmentId] = $this->makeAssignment();
         Sanctum::actingAs($ward);
 
-        $this->assertNull(
-            DB::table('safeguarding_assignments')->where('id', $assignmentId)->value('consent_given_at')
-        );
+        $this->assertNull($this->consentGivenAt($assignmentId));
 
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
             ->assertStatus(200)
@@ -93,8 +99,12 @@ class GuardianConsentRecordingTest extends TestCase
             ->assertJsonPath('data.already_given', false);
 
         $this->assertNotNull(
-            DB::table('safeguarding_assignments')->where('id', $assignmentId)->value('consent_given_at'),
-            'The ward consenting must populate consent_given_at.'
+            $this->consentGivenAt($assignmentId),
+            'The ward consenting must record the agreement.'
+        );
+        $this->assertSame(
+            'active',
+            DB::table('account_relationships')->where('id', $assignmentId)->value('status'),
         );
     }
 
@@ -105,7 +115,7 @@ class GuardianConsentRecordingTest extends TestCase
 
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
             ->assertStatus(200);
-        $first = DB::table('safeguarding_assignments')->where('id', $assignmentId)->value('consent_given_at');
+        $first = $this->consentGivenAt($assignmentId);
 
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
             ->assertStatus(200)
@@ -113,14 +123,14 @@ class GuardianConsentRecordingTest extends TestCase
 
         $this->assertSame(
             $first,
-            DB::table('safeguarding_assignments')->where('id', $assignmentId)->value('consent_given_at'),
+            $this->consentGivenAt($assignmentId),
             'A second consent must not move the original timestamp.'
         );
     }
 
     public function test_the_guardian_cannot_consent_on_the_wards_behalf(): void
     {
-        // The entire purpose of the column is the WARD's consent. A guardian
+        // The entire purpose of the record is the WARD's consent. A guardian
         // consenting for them would make the record worthless.
         [$guardian, , $assignmentId] = $this->makeAssignment();
         Sanctum::actingAs($guardian);
@@ -128,9 +138,7 @@ class GuardianConsentRecordingTest extends TestCase
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
             ->assertStatus(404);
 
-        $this->assertNull(
-            DB::table('safeguarding_assignments')->where('id', $assignmentId)->value('consent_given_at')
-        );
+        $this->assertNull($this->consentGivenAt($assignmentId));
     }
 
     public function test_an_unrelated_member_cannot_consent(): void
@@ -144,16 +152,14 @@ class GuardianConsentRecordingTest extends TestCase
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
             ->assertStatus(404);
 
-        $this->assertNull(
-            DB::table('safeguarding_assignments')->where('id', $assignmentId)->value('consent_given_at')
-        );
+        $this->assertNull($this->consentGivenAt($assignmentId));
     }
 
     public function test_a_revoked_assignment_cannot_be_consented_to(): void
     {
         [, $ward, $assignmentId] = $this->makeAssignment();
-        DB::table('safeguarding_assignments')->where('id', $assignmentId)
-            ->update(['revoked_at' => now()]);
+        DB::table('account_relationships')->where('id', $assignmentId)
+            ->update(['status' => 'revoked']);
         Sanctum::actingAs($ward);
 
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
@@ -165,18 +171,15 @@ class GuardianConsentRecordingTest extends TestCase
 
     public function test_the_consented_wards_count_can_now_be_non_zero(): void
     {
-        // The admin KPI that was structurally always zero.
+        // The admin KPI that was once structurally always zero.
         [, $ward, $assignmentId] = $this->makeAssignment();
         Sanctum::actingAs($ward);
 
         $this->apiPost('/v2/safeguarding/consent-to-guardian', ['assignment_id' => $assignmentId])
             ->assertStatus(200);
 
-        $consented = DB::table('safeguarding_assignments')
-            ->where('tenant_id', $this->testTenantId)
-            ->whereNull('revoked_at')
-            ->whereNotNull('consent_given_at')
-            ->count();
+        $consented = app(\App\Services\GuardianArrangementService::class)
+            ->consentedCount($this->testTenantId);
 
         $this->assertGreaterThan(0, $consented, 'The consented-wards count must be able to reach a non-zero value.');
     }

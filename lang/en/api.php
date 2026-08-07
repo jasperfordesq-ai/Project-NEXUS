@@ -719,6 +719,7 @@ return [
     'authority_invalid_reason' => 'Choose a revocation reason from the list',
     'authority_relationship_not_found' => 'Relationship not found, or not active',
     'authority_evidence_refused' => 'Do not enter document details. Record only that you have sighted the authority',
+    'safeguarding_pair_already_linked' => 'These two members are already linked. End the existing link before recording a new arrangement',
 
     // ============================================
     // ADMIN — LEGAL DOCS

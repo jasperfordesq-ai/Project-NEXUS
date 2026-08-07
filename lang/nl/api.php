@@ -311,6 +311,7 @@ return [
     'authority_invalid_reason' => 'Kies een intrekkingsreden uit de lijst',
     'authority_relationship_not_found' => 'Relatie niet gevonden of niet actief',
     'authority_evidence_refused' => 'Voer geen documentgegevens in. Leg alleen vast dat u de machtiging heeft ingezien',
+    'safeguarding_pair_already_linked' => 'Deze twee leden zijn al gekoppeld. Beëindig de bestaande koppeling voordat u een nieuwe regeling vastlegt',
     'both_versions_required' => 'Zowel v1- als v2-parameters zijn vereist',
     'versions_not_found' => 'Eén of beide versies niet gevonden',
     'version_number_required' => 'Versienummer is vereist',

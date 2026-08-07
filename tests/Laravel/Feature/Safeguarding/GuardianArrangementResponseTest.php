@@ -33,7 +33,14 @@ class GuardianArrangementResponseTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @return array{0:User,1:User,2:int} [guardian, ward, assignmentId] */
+    /**
+     * Seed a staff-proposed arrangement in its phase-5 home:
+     * account_relationships, at tier 0, marked by proposed_by_user_id.
+     * The old-name overrides (consent_given_at / consent_declined_at /
+     * revoked_at) are translated so the test bodies read unchanged.
+     *
+     * @return array{0:User,1:User,2:int} [guardian, ward, assignmentId]
+     */
     private function makeAssignment(array $overrides = []): array
     {
         $tenantId = $this->testTenantId;
@@ -46,27 +53,55 @@ class GuardianArrangementResponseTest extends TestCase
         ]);
         $staff = User::factory()->forTenant($tenantId)->admin()->create();
 
-        $assignmentId = (int) DB::table('safeguarding_assignments')->insertGetId(array_merge([
-            'guardian_user_id' => $guardian->id,
-            'ward_user_id'     => $ward->id,
-            'tenant_id'        => $tenantId,
-            'assigned_by'      => $staff->id,
-            'assigned_at'      => now(),
-        ], $overrides));
+        $status = 'pending';
+        if (($overrides['revoked_at'] ?? null) !== null) {
+            $status = 'revoked';
+        } elseif (($overrides['consent_given_at'] ?? null) !== null) {
+            $status = 'active';
+        }
+
+        $assignmentId = (int) DB::table('account_relationships')->insertGetId([
+            'tenant_id'           => $tenantId,
+            'parent_user_id'      => $guardian->id,
+            'child_user_id'       => $ward->id,
+            'relationship_type'   => 'guardian',
+            'permissions'         => json_encode([
+                'can_view_activity' => false, 'can_manage_listings' => false,
+                'can_transact' => false, 'can_view_messages' => false,
+                'tiers' => ['activity' => 'none', 'listings' => 'none', 'credits' => 'none'],
+            ]),
+            'status'              => $status,
+            'proposed_by_user_id' => $staff->id,
+            'staff_notes'         => $overrides['notes'] ?? null,
+            'approved_at'         => $overrides['consent_given_at'] ?? null,
+            'declined_at'         => $overrides['consent_declined_at'] ?? null,
+            'withdrawn_at'        => $overrides['consent_withdrawn_at'] ?? null,
+            'created_at'          => now(),
+            'updated_at'          => now(),
+        ]);
 
         return [$guardian, $ward, $assignmentId];
     }
 
+    /** The row, with the old column names aliased so assertions read unchanged. */
     private function row(int $id): object
     {
-        return DB::table('safeguarding_assignments')->where('id', $id)->first();
+        $r = DB::table('account_relationships')->where('id', $id)->first();
+
+        return (object) [
+            'consent_given_at'     => $r->approved_at,
+            'consent_declined_at'  => $r->declined_at,
+            'consent_withdrawn_at' => $r->withdrawn_at,
+            'ward_response_reason' => $r->response_reason,
+            'status'               => $r->status,
+        ];
     }
 
     /** @return list<object> */
     private function events(int $assignmentId): array
     {
-        return DB::table('safeguarding_assignment_events')
-            ->where('assignment_id', $assignmentId)
+        return DB::table('account_relationship_events')
+            ->where('relationship_id', $assignmentId)
             ->orderBy('id')
             ->get()
             ->all();
@@ -212,13 +247,15 @@ class GuardianArrangementResponseTest extends TestCase
 
         $events = $this->events($id);
         $this->assertCount(3, $events, 'Each real change must append exactly one row.');
+        // Phase 5: the trail lives in account_relationship_events, whose
+        // vocabulary spells agreement 'approved'.
         $this->assertSame(
-            ['consented', 'withdrawn', 'consented'],
+            ['approved', 'withdrawn', 'approved'],
             array_map(static fn ($e) => $e->action, $events),
             'The trail must preserve the order of what actually happened.'
         );
         foreach ($events as $event) {
-            $this->assertSame('ward', $event->actor_role);
+            $this->assertSame('member', $event->actor_role);
             $this->assertSame((int) $ward->id, (int) $event->actor_user_id, 'Every row must name who acted.');
         }
     }
@@ -234,14 +271,14 @@ class GuardianArrangementResponseTest extends TestCase
         $eventId = $this->events($id)[0]->id;
 
         try {
-            DB::table('safeguarding_assignment_events')->where('id', $eventId)->update(['action' => 'consented']);
+            DB::table('account_relationship_events')->where('id', $eventId)->update(['action' => 'approved']);
             $this->fail('Updating an audit row must be refused by the database.');
         } catch (\Throwable $e) {
             $this->assertStringContainsString('immutable', $e->getMessage());
         }
 
         try {
-            DB::table('safeguarding_assignment_events')->where('id', $eventId)->delete();
+            DB::table('account_relationship_events')->where('id', $eventId)->delete();
             $this->fail('Deleting an audit row must be refused by the database.');
         } catch (\Throwable $e) {
             $this->assertStringContainsString('immutable', $e->getMessage());

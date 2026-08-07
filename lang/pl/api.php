@@ -311,6 +311,7 @@ return [
     'authority_invalid_reason' => 'Wybierz powód odwołania z listy',
     'authority_relationship_not_found' => 'Nie znaleziono relacji lub jest nieaktywna',
     'authority_evidence_refused' => 'Nie wprowadzaj danych dokumentu. Odnotuj jedynie, że widziałeś(-aś) umocowanie',
+    'safeguarding_pair_already_linked' => 'Ci dwaj członkowie są już połączeni. Zakończ istniejące połączenie przed zapisaniem nowego ustalenia',
     'both_versions_required' => 'Wymagane są oba parametry v1 i v2',
     'versions_not_found' => 'Nie znaleziono jednej lub obu wersji',
     'version_number_required' => 'Numer wersji jest wymagany',

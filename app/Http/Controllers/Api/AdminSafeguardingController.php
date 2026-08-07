@@ -12,6 +12,7 @@ use App\I18n\LocaleContext;
 use App\Models\TenantSafeguardingOption;
 use App\Models\UserSafeguardingPreference;
 use App\Services\EmailDispatchService;
+use App\Services\GuardianArrangementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -52,12 +53,10 @@ class AdminSafeguardingController extends BaseApiController
         $totalFlagsThisMonth = 0;
         $criticalFlags = 0;
 
-        // Active safeguarding assignments (not revoked, consent given)
+        // Live guardian arrangements (phase 5: stored as staff-proposed rows in
+        // account_relationships; safeguarding_assignments is a read-only archive)
         try {
-            $activeAssignments = (int) DB::table('safeguarding_assignments')
-                ->where('tenant_id', $tenantId)
-                ->whereNull('revoked_at')
-                ->count();
+            $activeAssignments = app(GuardianArrangementService::class)->activeCount($tenantId);
         } catch (\Illuminate\Database\QueryException $e) {
             if (!$this->isTableNotFound($e)) {
                 throw $e;
@@ -76,13 +75,9 @@ class AdminSafeguardingController extends BaseApiController
             }
         }
 
-        // Consented wards (assignments where the ward has given consent)
+        // Arrangements the member has agreed to
         try {
-            $consentedWards = (int) DB::table('safeguarding_assignments')
-                ->where('tenant_id', $tenantId)
-                ->whereNull('revoked_at')
-                ->whereNotNull('consent_given_at')
-                ->count();
+            $consentedWards = app(GuardianArrangementService::class)->consentedCount($tenantId);
         } catch (\Illuminate\Database\QueryException $e) {
             if (!$this->isTableNotFound($e)) {
                 throw $e;
@@ -245,54 +240,11 @@ class AdminSafeguardingController extends BaseApiController
         $tenantId = $this->getTenantId();
 
         try {
-            $assignments = DB::table('safeguarding_assignments as sa')
-                ->join('users as ward', 'sa.ward_user_id', '=', 'ward.id')
-                ->join('users as guardian', 'sa.guardian_user_id', '=', 'guardian.id')
-                ->where('sa.tenant_id', $tenantId)
-                ->select([
-                    'sa.id',
-                    'sa.ward_user_id',
-                    DB::raw("COALESCE(ward.name, CONCAT(COALESCE(ward.first_name, ''), ' ', COALESCE(ward.last_name, ''))) as ward_name"),
-                    'ward.avatar_url as ward_avatar',
-                    'sa.guardian_user_id',
-                    DB::raw("COALESCE(guardian.name, CONCAT(COALESCE(guardian.first_name, ''), ' ', COALESCE(guardian.last_name, ''))) as guardian_name"),
-                    'guardian.avatar_url as guardian_avatar',
-                    'sa.consent_given_at',
-                    'sa.revoked_at',
-                    'sa.assigned_at',
-                    'sa.notes',
-                ])
-                ->orderByDesc('sa.assigned_at')
-                ->get()
-                ->map(function ($row) {
-                    $status = 'pending';
-                    if ($row->revoked_at !== null) {
-                        $status = 'revoked';
-                    } elseif ($row->consent_given_at !== null) {
-                        $status = 'active';
-                    }
-
-                    return [
-                        'id' => (int) $row->id,
-                        'ward' => [
-                            'id' => (int) $row->ward_user_id,
-                            'name' => trim($row->ward_name ?? ''),
-                            'avatar_url' => $row->ward_avatar,
-                        ],
-                        'guardian' => [
-                            'id' => (int) $row->guardian_user_id,
-                            'name' => trim($row->guardian_name ?? ''),
-                            'avatar_url' => $row->guardian_avatar,
-                        ],
-                        'status' => $status,
-                        'consent_given' => $row->consent_given_at !== null,
-                        'created_at' => $row->assigned_at,
-                        'expires_at' => null,
-                    ];
-                })
-                ->toArray();
-
-            return $this->respondWithData($assignments);
+            // Phase 5: arrangements live in account_relationships; the service
+            // produces the exact shape this endpoint has always returned.
+            return $this->respondWithData(
+                app(GuardianArrangementService::class)->listForStaff($tenantId)
+            );
         } catch (\Illuminate\Database\QueryException $e) {
             if ($this->isTableNotFound($e) || str_contains($e->getMessage(), 'Column not found')) {
                 return $this->respondWithData([]);
@@ -435,14 +387,25 @@ class AdminSafeguardingController extends BaseApiController
         $notes = $request->input('notes', '');
 
         try {
-            $id = DB::table('safeguarding_assignments')->insertGetId([
-                'tenant_id' => $tenantId,
-                'ward_user_id' => $wardId,
-                'guardian_user_id' => $guardianId,
-                'assigned_by' => $adminId,
-                'assigned_at' => now(),
-                'notes' => $notes ?: null,
-            ]);
+            // Phase 5: the arrangement is a staff-proposed, tier-0 row in
+            // account_relationships — the same system the member answers in.
+            // It grants nothing; only the member's later tier grants can.
+            $proposal = app(GuardianArrangementService::class)->propose(
+                $adminId,
+                $tenantId,
+                (int) $guardianId,
+                (int) $wardId,
+                is_string($notes) ? $notes : null,
+            );
+
+            if (! $proposal['ok']) {
+                // The pair already has a live link (member-created or staff-
+                // proposed). One row per pair, and a staff record must never
+                // silently merge into a member-granted one.
+                return $this->respondWithError('VALIDATION_ERROR', __('api.safeguarding_pair_already_linked'), null, 422);
+            }
+
+            $id = (int) $proposal['id'];
 
             // Audit log
             DB::table('activity_log')->insert([
@@ -569,12 +532,11 @@ class AdminSafeguardingController extends BaseApiController
         $tenantId = $this->getTenantId();
 
         try {
-            // Fetch the assignment before revoking so we can notify both parties
-            $assignment = DB::table('safeguarding_assignments')
-                ->where('id', $id)
-                ->where('tenant_id', $tenantId)
-                ->whereNull('revoked_at')
-                ->first();
+            // Phase 5: revoke the staff-proposed relationship row. The service
+            // returns the parties (aliased guardian_user_id / ward_user_id) so
+            // the notification code below stays unchanged, and writes the
+            // 'revoked' event to the append-only trail.
+            $assignment = app(GuardianArrangementService::class)->staffRevoke($adminId, $tenantId, $id);
 
             if (!$assignment) {
                 return $this->respondWithError(
@@ -584,11 +546,6 @@ class AdminSafeguardingController extends BaseApiController
                     404
                 );
             }
-
-            DB::table('safeguarding_assignments')
-                ->where('id', $id)
-                ->where('tenant_id', $tenantId)
-                ->update(['revoked_at' => now()]);
 
             // Audit log the revocation
             DB::table('activity_log')->insert([
@@ -1017,27 +974,35 @@ class AdminSafeguardingController extends BaseApiController
             }
         }
 
-        // 3) safeguarding_assignments where member is ward or guardian
+        // 3) Guardian arrangements where the member is the subject or the
+        // guardian. Phase 5: these are staff-proposed rows in
+        // account_relationships (migrated history included — rows carried
+        // their original assigned_at across as created_at). The retired
+        // safeguarding_assignments table is a read-only archive and is no
+        // longer consulted here; the rare rows the migration skipped (pair
+        // conflicts) remain visible in it directly.
         try {
-            $assignments = DB::table('safeguarding_assignments as sa')
-                ->leftJoin('users as ward', 'ward.id', '=', 'sa.ward_user_id')
-                ->leftJoin('users as guardian', 'guardian.id', '=', 'sa.guardian_user_id')
+            $assignments = DB::table('account_relationships as sa')
+                ->leftJoin('users as ward', 'ward.id', '=', 'sa.child_user_id')
+                ->leftJoin('users as guardian', 'guardian.id', '=', 'sa.parent_user_id')
                 ->where('sa.tenant_id', $tenantId)
+                ->whereNotNull('sa.proposed_by_user_id')
                 ->where(function ($q) use ($userId) {
-                    $q->where('sa.ward_user_id', $userId)->orWhere('sa.guardian_user_id', $userId);
+                    $q->where('sa.child_user_id', $userId)->orWhere('sa.parent_user_id', $userId);
                 })
                 ->select([
                     'sa.id',
-                    'sa.ward_user_id',
-                    'sa.guardian_user_id',
-                    'sa.consent_given_at',
-                    'sa.revoked_at',
-                    'sa.assigned_at',
-                    'sa.notes',
+                    'sa.child_user_id as ward_user_id',
+                    'sa.parent_user_id as guardian_user_id',
+                    'sa.approved_at as consent_given_at',
+                    'sa.status',
+                    'sa.updated_at',
+                    'sa.created_at as assigned_at',
+                    'sa.staff_notes as notes',
                     DB::raw("COALESCE(ward.name, CONCAT(COALESCE(ward.first_name, ''), ' ', COALESCE(ward.last_name, ''))) as ward_name"),
                     DB::raw("COALESCE(guardian.name, CONCAT(COALESCE(guardian.first_name, ''), ' ', COALESCE(guardian.last_name, ''))) as guardian_name"),
                 ])
-                ->orderByDesc('sa.assigned_at')
+                ->orderByDesc('sa.created_at')
                 ->get();
 
             foreach ($assignments as $row) {
@@ -1055,9 +1020,11 @@ class AdminSafeguardingController extends BaseApiController
                         'notes' => $row->notes,
                     ],
                 ];
-                if ($row->revoked_at) {
+                if ($row->status === 'revoked') {
                     $events[] = [
-                        'occurred_at' => $row->revoked_at,
+                        // The row keeps no dedicated revoked timestamp;
+                        // updated_at is the moment of the status change.
+                        'occurred_at' => $row->updated_at,
                         'event' => 'assignment_revoked',
                         'actor_name' => null,
                         'details' => [

@@ -299,6 +299,7 @@ return [
     'authority_invalid_reason' => 'Escolha um motivo de revogação da lista',
     'authority_relationship_not_found' => 'Relação não encontrada ou não ativa',
     'authority_evidence_refused' => 'Não introduza detalhes do documento. Registe apenas que viu a autoridade',
+    'safeguarding_pair_already_linked' => 'Estes dois membros já estão ligados. Termine a ligação existente antes de registar um novo acordo',
     'both_versions_required' => 'Os parâmetros v1 e v2 são obrigatórios',
     'versions_not_found' => 'Uma ou ambas as versões não encontradas',
     'version_number_required' => 'O número da versão é obrigatório',
