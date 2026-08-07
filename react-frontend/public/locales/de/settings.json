@@ -722,7 +722,15 @@
     "amount_label": "Stunden",
     "description_label": "Beschreibung",
     "listing_title_label": "Titel",
-    "category_label": "Kategorie"
+    "category_label": "Kategorie",
+    "validation_recipient": "Wählen Sie aus, für wen die Stunden bestimmt sind.",
+    "validation_amount": "Geben Sie an, wie viele Stunden gesendet werden sollen.",
+    "validation_balance": "Das ist mehr, als vorhanden ist. Das Guthaben beträgt {{balance}} Stunden.",
+    "validation_max": "Es können höchstens {{max}} Stunden auf einmal gesendet werden.",
+    "their_balance": "Guthaben von {{name}}: {{balance}} Stunden",
+    "amount_max_hint": "Bis zu {{max}} Stunden auf einmal.",
+    "photo_after_approval": "Ein Foto kann noch nicht hinzugefügt werden — das geht, sobald die Person zugestimmt hat.",
+    "photo_upload_failed": "Die Anzeige wurde veröffentlicht, das Foto konnte jedoch nicht hinzugefügt werden."
   },
   "appearance_prefs": {
     "title": "Darstellungseinstellungen",

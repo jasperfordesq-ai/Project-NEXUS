@@ -165,6 +165,50 @@ export interface ListingFormProps {
   onSubmitStateChange?: (state: ListingFormSubmitState) => void;
   /** Hide the footer buttons (mobile overlay renders its own submit). */
   hideFooter?: boolean;
+  /**
+   * Redirects the save somewhere other than the member's own listings.
+   *
+   * Exists so a supporter acting for someone else gets THIS form — every
+   * field, the same validation, the same AI description helper — rather than
+   * a hand-rolled subset that drifts out of date each time this one gains a
+   * field. See SupportPrepareModal.
+   *
+   * 🔴 When set, the form does NOT perform the owner-scoped follow-up calls
+   * (`PUT /v2/listings/:id/tags`, image upload). Those endpoints check
+   * ListingService::canModify(), which admits the owner or an admin and
+   * nobody else — a carer is refused. Tags and the image are handed to the
+   * adapter instead, which is responsible for routing them through a path
+   * that carries the supporter's authority.
+   *
+   * Returning `{ success: false }` leaves the form state intact exactly as a
+   * rejected save does, so the supporter does not lose their typing.
+   */
+  submitAdapter?: (
+    payload: ListingSubmitPayload,
+    extras: { skillTags: string[]; imageFile: File | null },
+  ) => Promise<ListingSubmitResult>;
+  /** Overrides the success toast (e.g. "sent for their approval"). */
+  successMessage?: string;
+}
+
+/** The listing fields POST /v2/listings accepts, after description enrichment. */
+export interface ListingSubmitPayload {
+  title: string;
+  description: string;
+  type: string;
+  location: string;
+  latitude?: number;
+  longitude?: number;
+  category_id?: number;
+  hours_estimate: number;
+  service_type: string;
+}
+
+export interface ListingSubmitResult {
+  success: boolean;
+  id?: number;
+  error?: string;
+  errors?: ApiErrorDetail[];
 }
 
 export function ListingForm({
@@ -178,6 +222,8 @@ export function ListingForm({
   onValuesChange,
   onSubmitStateChange,
   hideFooter = false,
+  submitAdapter,
+  successMessage,
 }: ListingFormProps) {
   const { t } = useTranslation('listings');
   const navigate = useNavigate();
@@ -440,6 +486,23 @@ export function ListingForm({
           detail || (Object.keys(fieldErrors).length > 0 ? undefined : t('form.save_error_subtitle')),
         );
       };
+
+      // Acting for someone else: the adapter owns the destination, and the
+      // owner-scoped tag/image follow-ups below cannot run under a carer's
+      // authority, so they travel with it instead.
+      if (submitAdapter) {
+        const result = await submitAdapter(payload, {
+          skillTags: formData.skill_tags,
+          imageFile,
+        });
+        if (!result.success) {
+          handleSaveFailure(result);
+          return;
+        }
+        toast.success(successMessage ?? t('form.create_success'));
+        onSuccess?.(result.id);
+        return;
+      }
 
       let savedId = listingId;
       if (isEditing) {

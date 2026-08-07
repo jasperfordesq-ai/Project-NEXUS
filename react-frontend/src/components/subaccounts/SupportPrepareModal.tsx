@@ -15,8 +15,21 @@
  * - represent  → the direct proxy endpoint. It happens immediately, executed
  *   through the member's own code path, attributed to the supporter.
  *
- * The recipient picker reuses the wallet transfer search endpoint so the
- * same tenant-scoped member pool applies.
+ * 🔴 This renders the REAL forms, not simplified copies of them.
+ *
+ * It originally carried five hand-rolled listing fields (title, type,
+ * category, hours, description) against a real form with fourteen — no
+ * location, no photo, no skills, no service type, no accessibility notes.
+ * A supporter posting on someone's behalf was therefore forced to produce a
+ * worse listing than the member could have posted themselves, which is
+ * backwards: the people who need a supporter are the least able to go back
+ * and fill in the gaps afterwards.
+ *
+ * Listing uses `ListingForm` (the same component behind the create page and
+ * the composer) with a submitAdapter that redirects the save. Transfer
+ * mirrors TransferModal's rules — the SUPPORTED member's balance and the
+ * tenant transfer cap, not the supporter's. Adding a field to either original
+ * now reaches this screen for free.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -34,9 +47,12 @@ import {
   SelectItem,
   Spinner,
   TextArea,
+  Avatar,
 } from '@/components/ui';
+import { ListingForm, type ListingSubmitPayload, type ListingSubmitResult } from '@/components/listings/ListingForm';
 import { api } from '@/lib/api';
 import { logError } from '@/lib/logger';
+import { resolveAvatarUrl } from '@/lib/helpers';
 import { useToast } from '@/contexts';
 
 export type PrepareActionType = 'listing_create' | 'credit_transfer';
@@ -46,11 +62,7 @@ interface RecipientResult {
   first_name: string;
   last_name: string;
   username?: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
+  avatar_url?: string | null;
 }
 
 interface SupportPrepareModalProps {
@@ -73,7 +85,7 @@ export function SupportPrepareModal({
   tier,
   onDone,
 }: SupportPrepareModalProps) {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation(['settings', 'common']);
   const toast = useToast();
 
   const [submitting, setSubmitting] = useState(false);
@@ -84,16 +96,15 @@ export function SupportPrepareModal({
   const [searching, setSearching] = useState(false);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  // Listing fields
-  const [title, setTitle] = useState('');
-  const [listingType, setListingType] = useState<'offer' | 'request'>('offer');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [hours, setHours] = useState('1');
+  // The SUPPORTED member's wallet, not the supporter's — spending their
+  // balance against the supporter's would misreport what is available.
+  const [balance, setBalance] = useState<number | null>(null);
+  const [maxTransfer, setMaxTransfer] = useState<number | null>(null);
+  const [loadingWallet, setLoadingWallet] = useState(false);
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset per open, and fetch listing categories when needed.
+  // Reset per open; load the wallet context the transfer form needs.
   useEffect(() => {
     if (!isOpen) return;
     setRecipient(null);
@@ -101,26 +112,35 @@ export function SupportPrepareModal({
     setRecipientResults([]);
     setAmount('');
     setDescription('');
-    setTitle('');
-    setListingType('offer');
-    setCategoryId(null);
-    setHours('1');
 
-    if (actionType === 'listing_create') {
-      (async () => {
-        try {
-          const res = await api.get<Category[] | { categories?: Category[] }>('/v2/categories?type=listing');
-          if (res.success && res.data) {
-            const list = Array.isArray(res.data) ? res.data : (res.data.categories ?? []);
-            setCategories(list);
-            if (list.length > 0) setCategoryId(list[0]!.id);
-          }
-        } catch (error) {
-          logError('Failed to load listing categories', error);
+    if (actionType !== 'credit_transfer') return;
+
+    let cancelled = false;
+    setLoadingWallet(true);
+    (async () => {
+      try {
+        const [walletRes, configRes] = await Promise.all([
+          api.get<{ balance?: number }>(`/v2/users/me/sub-accounts/${supportedUserId}/wallet`),
+          api.get<{ max_transfer?: number }>('/v2/wallet/config'),
+        ]);
+        if (cancelled) return;
+        if (walletRes.success && typeof walletRes.data?.balance === 'number') {
+          setBalance(walletRes.data.balance);
         }
-      })();
-    }
-  }, [isOpen, actionType]);
+        if (configRes.success && typeof configRes.data?.max_transfer === 'number') {
+          setMaxTransfer(configRes.data.max_transfer);
+        }
+      } catch (error) {
+        // A missing balance must not block the form — the server enforces the
+        // real limits on submit regardless of what this screen managed to read.
+        logError('Failed to load supported member wallet context', error);
+      } finally {
+        if (!cancelled) setLoadingWallet(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isOpen, actionType, supportedUserId]);
 
   const searchRecipients = useCallback(async (query: string) => {
     if (query.length < 2) {
@@ -146,45 +166,43 @@ export function SupportPrepareModal({
     searchTimeout.current = setTimeout(() => void searchRecipients(value), 300);
   };
 
-  const payload = (): Record<string, unknown> | null => {
-    if (actionType === 'credit_transfer') {
-      const parsed = Number.parseFloat(amount);
-      if (!recipient || !Number.isFinite(parsed) || parsed <= 0) return null;
-      return {
-        recipient: recipient.id,
-        amount: parsed,
-        ...(description.trim() !== '' ? { description: description.trim() } : {}),
-      };
+  /** Same validation order as TransferModal, against the SUPPORTED member's
+   *  balance and the tenant cap. */
+  const transferValidationError = (): string | null => {
+    if (!recipient) return t('support_actions.validation_recipient');
+    const parsed = Number.parseFloat(amount);
+    if (!Number.isFinite(parsed) || parsed <= 0) return t('support_actions.validation_amount');
+    if (balance !== null && parsed > balance) {
+      return t('support_actions.validation_balance', { balance });
     }
-    if (title.trim() === '' || description.trim() === '' || categoryId === null) return null;
-    const parsedHours = Number.parseFloat(hours);
-    return {
-      title: title.trim(),
-      description: description.trim(),
-      type: listingType,
-      category_id: categoryId,
-      hours_estimate: Number.isFinite(parsedHours) && parsedHours > 0 ? parsedHours : 1,
-    };
+    if (maxTransfer !== null && parsed > maxTransfer) {
+      return t('support_actions.validation_max', { max: maxTransfer });
+    }
+    return null;
   };
 
-  const submit = async () => {
-    const body = payload();
-    if (body === null) {
-      toast.error(t('support_actions.prepare_incomplete'));
+  const submitTransfer = async () => {
+    const invalid = transferValidationError();
+    if (invalid) {
+      toast.error(invalid);
       return;
     }
+
+    const body: Record<string, unknown> = {
+      recipient: recipient!.id,
+      amount: Number.parseFloat(amount),
+      ...(description.trim() !== '' ? { description: description.trim() } : {}),
+    };
 
     setSubmitting(true);
     try {
       const res = tier === 'co_decide'
         ? await api.post('/v2/users/me/support-actions', {
             supported_user_id: supportedUserId,
-            action_type: actionType,
+            action_type: 'credit_transfer',
             payload: body,
           })
-        : actionType === 'credit_transfer'
-          ? await api.post(`/v2/users/me/sub-accounts/${supportedUserId}/transfer`, body)
-          : await api.post(`/v2/users/me/sub-accounts/${supportedUserId}/listings`, body);
+        : await api.post(`/v2/users/me/sub-accounts/${supportedUserId}/transfer`, body);
 
       if (res.success) {
         toast.success(tier === 'co_decide'
@@ -203,12 +221,75 @@ export function SupportPrepareModal({
     }
   };
 
+  /**
+   * Where ListingForm's save goes when a supporter is acting.
+   *
+   * co_decide stores the whole payload — skill tags included — so approval
+   * recreates exactly what was prepared. represent posts it straight through
+   * the proxy endpoint.
+   *
+   * 🔴 A photo cannot travel on the co_decide path: nothing exists to attach
+   * it to until the member approves, and holding an uploaded file against an
+   * unapproved action would store someone's image with no listing to own it.
+   * The form says so rather than silently dropping it.
+   */
+  const listingSubmitAdapter = async (
+    payload: ListingSubmitPayload,
+    extras: { skillTags: string[]; imageFile: File | null },
+  ): Promise<ListingSubmitResult> => {
+    const body = {
+      ...payload,
+      ...(extras.skillTags.length > 0 ? { skill_tags: extras.skillTags } : {}),
+    };
+
+    if (tier === 'co_decide') {
+      if (extras.imageFile) toast.warning(t('support_actions.photo_after_approval'));
+      const res = await api.post('/v2/users/me/support-actions', {
+        supported_user_id: supportedUserId,
+        action_type: 'listing_create',
+        payload: body,
+      });
+      return { success: res.success, error: res.error, errors: res.errors };
+    }
+
+    const res = await api.post<{ id: number }>(
+      `/v2/users/me/sub-accounts/${supportedUserId}/listings`,
+      body,
+    );
+    if (!res.success) {
+      return { success: false, error: res.error, errors: res.errors };
+    }
+
+    const newId = res.data?.id;
+    if (extras.imageFile && newId) {
+      try {
+        await api.upload(
+          `/v2/users/me/sub-accounts/${supportedUserId}/listings/${newId}/image`,
+          extras.imageFile,
+          'image',
+        );
+      } catch (imgErr) {
+        // The listing exists and is theirs; only the photo failed. Warn rather
+        // than reporting the whole action as failed.
+        logError('Failed to upload proxy listing image', imgErr);
+        toast.warning(t('support_actions.photo_upload_failed'));
+      }
+    }
+    return { success: true, id: newId };
+  };
+
   const heading = actionType === 'credit_transfer'
     ? t('support_actions.prepare_transfer_title', { name: supportedName })
     : t('support_actions.prepare_listing_title', { name: supportedName });
 
+  const explainer = tier === 'co_decide'
+    ? t('support_actions.prepare_explainer_co_decide', { name: supportedName })
+    : t('support_actions.prepare_explainer_represent', { name: supportedName });
+
+  const isListing = actionType === 'listing_create';
+
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size={isListing ? '3xl' : 'lg'}>
       <ModalContent>
         {(onClose) => (
           <>
@@ -217,18 +298,43 @@ export function SupportPrepareModal({
             </ModalHeader>
             <ModalBody>
               {/* What submitting will actually do, stated before any field. */}
-              <p className="text-sm text-theme-muted">
-                {tier === 'co_decide'
-                  ? t('support_actions.prepare_explainer_co_decide', { name: supportedName })
-                  : t('support_actions.prepare_explainer_represent', { name: supportedName })}
-              </p>
+              <p className="text-sm text-theme-muted">{explainer}</p>
 
-              {actionType === 'credit_transfer' ? (
+              {isListing ? (
+                <ListingForm
+                  variant="sheet"
+                  submitAdapter={listingSubmitAdapter}
+                  successMessage={tier === 'co_decide'
+                    ? t('support_actions.prepared_toast', { name: supportedName })
+                    : t('support_actions.done_directly_toast')}
+                  onSuccess={() => {
+                    onOpenChange(false);
+                    onDone?.();
+                  }}
+                  onCancel={onClose}
+                />
+              ) : (
                 <div className="space-y-3">
+                  {loadingWallet ? (
+                    <Spinner size="sm" aria-label={t('common:loading')} />
+                  ) : balance !== null ? (
+                    <p className="text-sm text-theme-muted">
+                      {t('support_actions.their_balance', { name: supportedName, balance })}
+                    </p>
+                  ) : null}
+
                   {recipient ? (
                     <div className="flex items-center justify-between gap-3 rounded-lg border border-theme-default p-3">
-                      <span className="text-sm font-medium text-theme-primary">
-                        {`${recipient.first_name} ${recipient.last_name}`.trim()}
+                      <span className="flex items-center gap-2">
+                        <Avatar
+                          aria-hidden="true"
+                          src={resolveAvatarUrl(recipient.avatar_url)}
+                          name={`${recipient.first_name} ${recipient.last_name}`.trim()}
+                          size="sm"
+                        />
+                        <span className="text-sm font-medium text-theme-primary">
+                          {`${recipient.first_name} ${recipient.last_name}`.trim()}
+                        </span>
                       </span>
                       <Button size="sm" variant="tertiary" onPress={() => setRecipient(null)}>
                         {t('support_actions.recipient_change')}
@@ -257,7 +363,15 @@ export function SupportPrepareModal({
                                   setRecipientQuery('');
                                 }}
                               >
-                                {`${user.first_name} ${user.last_name}`.trim()}
+                                <span className="flex items-center gap-2">
+                                  <Avatar
+                                    aria-hidden="true"
+                                    src={resolveAvatarUrl(user.avatar_url)}
+                                    name={`${user.first_name} ${user.last_name}`.trim()}
+                                    size="sm"
+                                  />
+                                  {`${user.first_name} ${user.last_name}`.trim()}
+                                </span>
                               </Button>
                             </li>
                           ))}
@@ -265,14 +379,19 @@ export function SupportPrepareModal({
                       )}
                     </div>
                   )}
+
                   <Input
                     label={t('support_actions.amount_label')}
+                    description={maxTransfer !== null
+                      ? t('support_actions.amount_max_hint', { max: maxTransfer })
+                      : undefined}
                     type="number"
                     min={0.25}
                     step={0.25}
                     value={amount}
                     onValueChange={setAmount}
                   />
+
                   <TextArea
                     label={t('support_actions.description_label')}
                     value={description}
@@ -282,70 +401,23 @@ export function SupportPrepareModal({
                     maxRows={4}
                   />
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <Input
-                    label={t('support_actions.listing_title_label')}
-                    value={title}
-                    onValueChange={setTitle}
-                    maxLength={150}
-                  />
-                  <Select
-                    label={t('support_actions.listing_type_label')}
-                    selectedKeys={[listingType]}
-                    onSelectionChange={(keys) => {
-                      const value = Array.from(keys)[0];
-                      if (value === 'offer' || value === 'request') setListingType(value);
-                    }}
-                  >
-                    <SelectItem key="offer" id="offer">{t('support_actions.listing_type_offer')}</SelectItem>
-                    <SelectItem key="request" id="request">{t('support_actions.listing_type_request')}</SelectItem>
-                  </Select>
-                  {categories.length > 0 && (
-                    <Select
-                      label={t('support_actions.category_label')}
-                      selectedKeys={categoryId !== null ? [String(categoryId)] : []}
-                      onSelectionChange={(keys) => {
-                        const value = Number.parseInt(String(Array.from(keys)[0] ?? ''), 10);
-                        if (Number.isFinite(value)) setCategoryId(value);
-                      }}
-                    >
-                      {categories.map((category) => (
-                        <SelectItem key={String(category.id)} id={String(category.id)}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  )}
-                  <Input
-                    label={t('support_actions.hours_label')}
-                    type="number"
-                    min={0.25}
-                    step={0.25}
-                    value={hours}
-                    onValueChange={setHours}
-                  />
-                  <TextArea
-                    label={t('support_actions.description_label')}
-                    value={description}
-                    onValueChange={setDescription}
-                    maxLength={2000}
-                    minRows={3}
-                    maxRows={6}
-                  />
-                </div>
               )}
             </ModalBody>
-            <ModalFooter>
-              <Button variant="tertiary" onPress={onClose} isDisabled={submitting}>
-                {t('cancel', { ns: 'common' })}
-              </Button>
-              <Button color="primary" onPress={() => void submit()} isLoading={submitting}>
-                {tier === 'co_decide'
-                  ? t('support_actions.submit_prepare')
-                  : t('support_actions.submit_direct')}
-              </Button>
-            </ModalFooter>
+
+            {/* The listing form renders its own footer; only the transfer
+                branch needs buttons here. */}
+            {!isListing && (
+              <ModalFooter>
+                <Button variant="tertiary" onPress={onClose} isDisabled={submitting}>
+                  {t('cancel', { ns: 'common' })}
+                </Button>
+                <Button color="primary" onPress={() => void submitTransfer()} isLoading={submitting}>
+                  {tier === 'co_decide'
+                    ? t('support_actions.submit_prepare')
+                    : t('support_actions.submit_direct')}
+                </Button>
+              </ModalFooter>
+            )}
           </>
         )}
       </ModalContent>

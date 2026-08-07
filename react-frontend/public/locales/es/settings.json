@@ -722,7 +722,15 @@
     "amount_label": "Horas",
     "description_label": "Descripción",
     "listing_title_label": "Título",
-    "category_label": "Categoría"
+    "category_label": "Categoría",
+    "validation_recipient": "Elige a quién van dirigidas las horas.",
+    "validation_amount": "Indica cuántas horas enviar.",
+    "validation_balance": "Eso es más de lo que tiene. Su saldo es de {{balance}} horas.",
+    "validation_max": "Lo máximo que se puede enviar de una vez son {{max}} horas.",
+    "their_balance": "Saldo de {{name}}: {{balance}} horas",
+    "amount_max_hint": "Hasta {{max}} horas cada vez.",
+    "photo_after_approval": "Todavía no se puede añadir una foto: se podrá cuando lo apruebe.",
+    "photo_upload_failed": "El anuncio se publicó, pero no se pudo añadir la foto."
   },
   "appearance_prefs": {
     "title": "Preferencias de apariencia",

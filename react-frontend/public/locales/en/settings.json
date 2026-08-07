@@ -722,7 +722,15 @@
     "category_label": "Category",
     "hours_label": "Estimated hours",
     "submit_prepare": "Send for their approval",
-    "submit_direct": "Do it now"
+    "submit_direct": "Do it now",
+    "validation_recipient": "Choose who the hours are for.",
+    "validation_amount": "Enter how many hours to send.",
+    "validation_balance": "That is more than they have. Their balance is {{balance}} hours.",
+    "validation_max": "The most that can be sent at once is {{max}} hours.",
+    "their_balance": "{{name}}'s balance: {{balance}} hours",
+    "amount_max_hint": "Up to {{max}} hours at a time.",
+    "photo_after_approval": "A photo cannot be added yet — it can be added once they approve this.",
+    "photo_upload_failed": "The listing was posted, but the photo could not be added."
   },
   "appearance_prefs": {
     "title": "Appearance Preferences",

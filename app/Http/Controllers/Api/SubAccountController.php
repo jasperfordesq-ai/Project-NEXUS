@@ -250,6 +250,73 @@ class SubAccountController extends BaseApiController
         return $this->respondWithData($txn);
     }
 
+    /**
+     * GET /api/v2/users/me/sub-accounts/{childId}/wallet
+     *
+     * The supported member's balance, for a supporter who holds `can_transact`.
+     * The prepare screen validates the amount against this the way the member's
+     * own transfer dialog validates against theirs — without it the supporter
+     * types blind and only learns the balance from a server refusal.
+     */
+    public function getChildWallet($childId): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_wallet', 30, 60);
+
+        $summary = $this->subAccountService->getChildWalletSummary($userId, (int) $childId);
+
+        if ($summary === null) {
+            $errors = $this->subAccountService->getErrors();
+            $status = (($errors[0]['code'] ?? '') === 'FORBIDDEN') ? 403 : 404;
+            return $this->respondWithErrors($errors, $status);
+        }
+
+        return $this->respondWithData($summary);
+    }
+
+    /**
+     * POST /api/v2/users/me/sub-accounts/{childId}/listings/{listingId}/image
+     *
+     * Attach a photo to a listing a supporter just posted for someone.
+     *
+     * 🔴 Why this exists rather than reusing POST /v2/listings/{id}/image: that
+     * route checks ListingService::canModify(), which admits the owner or an
+     * admin and refuses a carer. Without this route the supporter could fill in
+     * every field of the listing form except the photo, and the upload would
+     * fail with a bare 403 after the listing had already been created.
+     *
+     * Authority is re-established here (active relationship + can_manage_listings
+     * + the safeguarding contact policy, via the service) and the listing is
+     * verified to belong to that supported member, so a valid relationship
+     * cannot be used to attach an image to somebody else's listing.
+     */
+    public function uploadListingImageForChild($childId, $listingId): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $this->rateLimit('sub_account_listing_image', 10, 60);
+
+        $imageUrl = $this->subAccountService->attachListingImageForChild(
+            $userId,
+            (int) $childId,
+            (int) $listingId,
+            request()->file('image'),
+        );
+
+        if ($imageUrl === null) {
+            $errors = $this->subAccountService->getErrors();
+            $code = $errors[0]['code'] ?? '';
+            $status = match ($code) {
+                'FORBIDDEN' => 403,
+                'NOT_FOUND' => 404,
+                'UPLOAD_FAILED' => 500,
+                default => 422,
+            };
+            return $this->respondWithErrors($errors, $status);
+        }
+
+        return $this->respondWithData(['image_url' => $imageUrl]);
+    }
+
     private function normalizeRelationships(array $relationships): array
     {
         foreach ($relationships as &$relationship) {

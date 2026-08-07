@@ -722,7 +722,15 @@
     "amount_label": "時間",
     "description_label": "説明",
     "listing_title_label": "タイトル",
-    "category_label": "カテゴリー"
+    "category_label": "カテゴリー",
+    "validation_recipient": "時間を誰に送るか選んでください。",
+    "validation_amount": "送る時間数を入力してください。",
+    "validation_balance": "残高を超えています。相手の残高は {{balance}} 時間です。",
+    "validation_max": "一度に送れるのは最大 {{max}} 時間です。",
+    "their_balance": "{{name}} さんの残高：{{balance}} 時間",
+    "amount_max_hint": "一度に最大 {{max}} 時間まで。",
+    "photo_after_approval": "写真はまだ追加できません。承認後に追加できます。",
+    "photo_upload_failed": "出品は投稿されましたが、写真を追加できませんでした。"
   },
   "appearance_prefs": {
     "title": "外観の設定",

@@ -722,7 +722,15 @@
     "amount_label": "Uren",
     "description_label": "Beschrijving",
     "listing_title_label": "Titel",
-    "category_label": "Categorie"
+    "category_label": "Categorie",
+    "validation_recipient": "Kies voor wie de uren zijn.",
+    "validation_amount": "Geef aan hoeveel uren je wilt sturen.",
+    "validation_balance": "Dat is meer dan er is. Het saldo is {{balance}} uur.",
+    "validation_max": "Er kan maximaal {{max}} uur tegelijk worden gestuurd.",
+    "their_balance": "Saldo van {{name}}: {{balance}} uur",
+    "amount_max_hint": "Tot {{max}} uur per keer.",
+    "photo_after_approval": "Een foto kan nog niet worden toegevoegd — dat kan zodra diegene akkoord gaat.",
+    "photo_upload_failed": "De advertentie is geplaatst, maar de foto kon niet worden toegevoegd."
   },
   "appearance_prefs": {
     "title": "Uiterlijk Voorkeuren",

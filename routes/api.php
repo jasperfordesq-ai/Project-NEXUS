@@ -871,6 +871,13 @@ Route::get('/v2/users/me/sub-accounts/{childId}/activity', [\App\Http\Controller
 // Each records the acting carer on the row it writes and audits to org_audit_log.
 Route::post('/v2/users/me/sub-accounts/{childId}/listings', [\App\Http\Controllers\Api\SubAccountController::class, 'createListingForChild'])->middleware('onboarding-required');
 Route::post('/v2/users/me/sub-accounts/{childId}/transfer', [\App\Http\Controllers\Api\SubAccountController::class, 'transferForChild'])->middleware('onboarding-required');
+// The supported member's balance, so the prepare screen can validate an amount
+// the way the member's own transfer dialog does. Gated on can_transact.
+Route::get('/v2/users/me/sub-accounts/{childId}/wallet', [\App\Http\Controllers\Api\SubAccountController::class, 'getChildWallet']);
+// Photo for a listing just posted on someone's behalf. Separate from
+// /v2/listings/{id}/image because that route's canModify() check admits only
+// the owner or an admin — a carer is refused. See the controller for why.
+Route::post('/v2/users/me/sub-accounts/{childId}/listings/{listingId}/image', [\App\Http\Controllers\Api\SubAccountController::class, 'uploadListingImageForChild'])->middleware('onboarding-required');
 // Co-decide confirm loop (guardian redesign phase 3). The two direct routes
 // above require the `represent` tier (act alone); a `co_decide` supporter
 // instead PREPARES an action here, and it executes only when the supported

@@ -722,7 +722,15 @@
     "amount_label": "Godziny",
     "description_label": "Opis",
     "listing_title_label": "Tytuł",
-    "category_label": "Kategoria"
+    "category_label": "Kategoria",
+    "validation_recipient": "Wybierz, dla kogo są te godziny.",
+    "validation_amount": "Podaj, ile godzin wysłać.",
+    "validation_balance": "To więcej, niż ta osoba posiada. Jej saldo to {{balance}} godz.",
+    "validation_max": "Jednorazowo można wysłać maksymalnie {{max}} godz.",
+    "their_balance": "Saldo: {{name}} — {{balance}} godz.",
+    "amount_max_hint": "Do {{max}} godz. jednorazowo.",
+    "photo_after_approval": "Nie można jeszcze dodać zdjęcia — będzie to możliwe po zatwierdzeniu.",
+    "photo_upload_failed": "Ogłoszenie zostało opublikowane, ale nie udało się dodać zdjęcia."
   },
   "appearance_prefs": {
     "title": "Preferencje wyglądu",

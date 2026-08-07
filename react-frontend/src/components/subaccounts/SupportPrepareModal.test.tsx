@@ -96,4 +96,68 @@ describe('SupportPrepareModal', () => {
 
     await waitFor(() => expect(mockedPost).not.toHaveBeenCalled());
   });
+
+  /**
+   * 🔴 The balance being checked is the SUPPORTED member's, not the
+   * supporter's. Reading the supporter's wallet would let a helper with a
+   * healthy balance overspend a dependent's empty one, and the refusal would
+   * only arrive from the server after they had filled the form in.
+   */
+  it("validates the amount against the supported member's balance, not the supporter's", async () => {
+    mockedGet.mockImplementation((url: string) => {
+      if (url.includes('/sub-accounts/42/wallet')) {
+        return Promise.resolve({ success: true, data: { balance: 3 } } as never);
+      }
+      if (url.includes('/wallet/config')) {
+        return Promise.resolve({ success: true, data: { max_transfer: 1000 } } as never);
+      }
+      return Promise.resolve({
+        success: true,
+        data: { users: [{ id: 7, first_name: 'Rita', last_name: 'Recipient' }] },
+      } as never);
+    });
+
+    renderTransfer('represent');
+
+    await waitFor(() => expect(mockedGet).toHaveBeenCalledWith('/v2/users/me/sub-accounts/42/wallet'));
+
+    fireEvent.change(screen.getByLabelText('Who is it for?'), { target: { value: 'Rita' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Rita Recipient' }));
+    fireEvent.change(screen.getByLabelText('Hours'), { target: { value: '9' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Do it now' }));
+
+    // Over their balance — refused on screen, and nothing is sent.
+    await waitFor(() => expect(mockedPost).not.toHaveBeenCalled());
+  });
+
+  it('sends when the amount is within their balance', async () => {
+    mockedGet.mockImplementation((url: string) => {
+      if (url.includes('/sub-accounts/42/wallet')) {
+        return Promise.resolve({ success: true, data: { balance: 20 } } as never);
+      }
+      if (url.includes('/wallet/config')) {
+        return Promise.resolve({ success: true, data: { max_transfer: 1000 } } as never);
+      }
+      return Promise.resolve({
+        success: true,
+        data: { users: [{ id: 7, first_name: 'Rita', last_name: 'Recipient' }] },
+      } as never);
+    });
+    mockedPost.mockResolvedValue({ success: true, data: {} } as never);
+
+    renderTransfer('represent');
+    await waitFor(() => expect(mockedGet).toHaveBeenCalledWith('/v2/users/me/sub-accounts/42/wallet'));
+
+    fireEvent.change(screen.getByLabelText('Who is it for?'), { target: { value: 'Rita' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Rita Recipient' }));
+    fireEvent.change(screen.getByLabelText('Hours'), { target: { value: '9' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Do it now' }));
+
+    await waitFor(() => {
+      expect(mockedPost).toHaveBeenCalledWith('/v2/users/me/sub-accounts/42/transfer', {
+        recipient: 7,
+        amount: 9,
+      });
+    });
+  });
 });

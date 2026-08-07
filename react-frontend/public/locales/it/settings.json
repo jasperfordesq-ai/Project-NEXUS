@@ -722,7 +722,15 @@
     "amount_label": "Ore",
     "description_label": "Descrizione",
     "listing_title_label": "Titolo",
-    "category_label": "Categoria"
+    "category_label": "Categoria",
+    "validation_recipient": "Scegli a chi sono destinate le ore.",
+    "validation_amount": "Indica quante ore inviare.",
+    "validation_balance": "È più di quanto abbia. Il suo saldo è di {{balance}} ore.",
+    "validation_max": "Il massimo inviabile in una volta è {{max}} ore.",
+    "their_balance": "Saldo di {{name}}: {{balance}} ore",
+    "amount_max_hint": "Fino a {{max}} ore alla volta.",
+    "photo_after_approval": "Non è ancora possibile aggiungere una foto — si potrà fare quando avrà approvato.",
+    "photo_upload_failed": "L’annuncio è stato pubblicato, ma non è stato possibile aggiungere la foto."
   },
   "appearance_prefs": {
     "title": "Preferenze aspetto",

@@ -722,7 +722,15 @@
     "amount_label": "ساعات",
     "description_label": "الوصف",
     "listing_title_label": "العنوان",
-    "category_label": "الفئة"
+    "category_label": "الفئة",
+    "validation_recipient": "اختر لمن هذه الساعات.",
+    "validation_amount": "أدخل عدد الساعات المراد إرسالها.",
+    "validation_balance": "هذا أكثر مما لديه. رصيده {{balance}} ساعة.",
+    "validation_max": "الحد الأقصى للإرسال دفعة واحدة هو {{max}} ساعة.",
+    "their_balance": "رصيد {{name}}: {{balance}} ساعة",
+    "amount_max_hint": "حتى {{max}} ساعة في المرة الواحدة.",
+    "photo_after_approval": "لا يمكن إضافة صورة بعد — يمكن إضافتها بمجرد الموافقة.",
+    "photo_upload_failed": "تم نشر الإعلان، لكن تعذّرت إضافة الصورة."
   },
   "appearance_prefs": {
     "title": "تفضيلات المظهر",

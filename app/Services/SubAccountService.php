@@ -682,6 +682,41 @@ class SubAccountService
     }
 
     /**
+     * The supported member's spendable balance, for a supporter who may spend it.
+     *
+     * Gated on `can_transact`, NOT on `can_view_activity`: the balance is only
+     * needed to decide how much can be sent, so the permission that grants it
+     * is the one that permits sending. A supporter who may only look at
+     * activity has no business reading the wallet.
+     *
+     * The prepare screen validates against this the way the member's own
+     * transfer dialog validates against theirs; WalletService::transfer()
+     * re-checks server-side regardless, so a stale figure here can only produce
+     * a clear refusal, never an overdraft.
+     *
+     * @return array{balance: float}|null
+     */
+    public function getChildWalletSummary(int $parentUserId, int $childUserId): ?array
+    {
+        if (! $this->hasPermission($parentUserId, $childUserId, 'can_transact')) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api_controllers_2.sub_account.no_permission')];
+            return null;
+        }
+
+        $balance = User::query()
+            ->where('id', $childUserId)
+            ->where('tenant_id', TenantContext::getId())
+            ->value('balance');
+
+        if ($balance === null) {
+            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.user_not_found')];
+            return null;
+        }
+
+        return ['balance' => (float) $balance];
+    }
+
+    /**
      * Post a listing on a dependent's behalf (`can_manage_listings`).
      *
      * The listing BELONGS to the dependent — it is their offer, and any exchange
@@ -723,6 +758,28 @@ class SubAccountService
             return null;
         }
 
+        // Skill tags are part of the listing form, but the member-facing route
+        // that saves them (PUT /v2/listings/{id}/tags) checks
+        // ListingService::canModify(), which admits the owner or an admin and
+        // refuses a carer. Applying them HERE keeps them inside the operation
+        // whose authority was already established above, rather than widening
+        // that ownership check for everyone. A tag failure must not undo a
+        // listing that exists: log and carry on, exactly as the member's own
+        // form does.
+        $skillTags = $data['skill_tags'] ?? null;
+        if (is_array($skillTags) && $skillTags !== []) {
+            try {
+                app(ListingSkillTagService::class)->setTags((int) $listing->id, $skillTags);
+            } catch (\Throwable $e) {
+                Log::warning('Failed to apply skill tags to proxy listing', [
+                    'listing_id' => $listing->id,
+                    'parent_user_id' => $parentUserId,
+                    'child_user_id' => $childUserId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_listing_created', [
             'listing_id' => $listing->id,
         ]);
@@ -737,6 +794,80 @@ class SubAccountService
         );
 
         return (int) $listing->id;
+    }
+
+    /**
+     * Attach a photo to a listing posted for a supported member.
+     *
+     * Mirrors ListingsController::uploadImage's validation exactly (same mime
+     * allow-list, same ImageUploader call) so a supporter's upload is neither
+     * more nor less permissive than the member's own. The extra check is
+     * ownership: the listing must belong to THIS supported member, so an active
+     * relationship cannot be turned into a way to alter arbitrary listings.
+     *
+     * @return string|null The stored image URL, or null with $this->errors set.
+     */
+    public function attachListingImageForChild(
+        int $parentUserId,
+        int $childUserId,
+        int $listingId,
+        mixed $file,
+    ): ?string {
+        $this->errors = [];
+
+        if (! $this->hasPermission($parentUserId, $childUserId, 'can_manage_listings')) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => __('api_controllers_2.sub_account.no_permission')];
+            return null;
+        }
+
+        try {
+            $this->assertRelationshipContactsAllowed($parentUserId, $childUserId, 'subaccount_manage_listings');
+        } catch (\Throwable $e) {
+            $this->errors[] = ['code' => 'FORBIDDEN', 'message' => $e->getMessage()];
+            return null;
+        }
+
+        $listing = ListingService::getById($listingId);
+        if (! $listing || (int) ($listing['user_id'] ?? 0) !== $childUserId) {
+            $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.listing_not_found')];
+            return null;
+        }
+
+        if (! $file || ! $file->isValid()) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.listing_no_image_uploaded')];
+            return null;
+        }
+
+        if (! in_array($file->getMimeType(), ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.listing_image_invalid_type')];
+            return null;
+        }
+
+        try {
+            $imageUrl = \App\Core\ImageUploader::upload([
+                'name'     => $file->getClientOriginalName(),
+                'type'     => $file->getMimeType(),
+                'tmp_name' => $file->getRealPath(),
+                'error'    => UPLOAD_ERR_OK,
+                'size'     => $file->getSize(),
+            ]);
+
+            ListingService::update($listingId, ['image_url' => $imageUrl]);
+        } catch (\Throwable $e) {
+            Log::error('Proxy listing image upload failed', [
+                'listing_id' => $listingId,
+                'parent_user_id' => $parentUserId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->errors[] = ['code' => 'UPLOAD_FAILED', 'message' => __('api.listing_image_upload_failed')];
+            return null;
+        }
+
+        $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_listing_image_added', [
+            'listing_id' => $listingId,
+        ]);
+
+        return $imageUrl;
     }
 
     /**

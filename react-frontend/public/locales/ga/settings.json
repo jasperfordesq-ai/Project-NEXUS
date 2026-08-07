@@ -722,7 +722,15 @@
     "amount_label": "Uaireanta",
     "description_label": "Cur síos",
     "listing_title_label": "Teideal",
-    "category_label": "Catagóir"
+    "category_label": "Catagóir",
+    "validation_recipient": "Roghnaigh cé dó na huaireanta.",
+    "validation_amount": "Cuir isteach cé mhéad uair le seoladh.",
+    "validation_balance": "Tá sin níos mó ná mar atá acu. Is é {{balance}} uair an chloig a n-iarmhéid.",
+    "validation_max": "Is é {{max}} uair an chloig an méid is mó is féidir a sheoladh ag an am céanna.",
+    "their_balance": "Iarmhéid {{name}}: {{balance}} uair an chloig",
+    "amount_max_hint": "Suas le {{max}} uair an chloig ag an am.",
+    "photo_after_approval": "Ní féidir grianghraf a chur leis go fóill — is féidir é a chur leis chomh luath agus a cheadaíonn siad é seo.",
+    "photo_upload_failed": "Postáladh an liosta, ach níorbh fhéidir an grianghraf a chur leis."
   },
   "appearance_prefs": {
     "title": "Roghanna Cuma",
