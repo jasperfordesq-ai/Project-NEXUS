@@ -41,8 +41,40 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist
 
+      # Composer Audit is the only gate deliberately left unguarded: nothing
+      # independent runs before it, so there is nothing that could mask it. (If
+      # composer install fails, it skips — auditing an absent vendor tree would
+      # report noise, and the job still goes red.) Everything after it carries
+      # the guard described below.
       - name: Composer Audit
         run: composer audit --locked --no-interaction
+
+      # ── 🔴 INVARIANT: every independent gate in this job carries !cancelled() ──
+      #
+      # Actions skips the rest of a job's steps once one fails. These gates are
+      # INDEPENDENT of each other — a secret in the tree has nothing to do with
+      # an npm advisory — so without a guard the FIRST red gate hides every
+      # later one, and each fix reveals the next in a queue nobody knew existed.
+      #
+      # That is not hypothetical. In run 31258870996 a single Trivy finding
+      # skipped four blocking gates: TruffleHog, the PHP security checker, the
+      # npm-audit gate and OWASP Dependency Check. The npm-audit gate had been
+      # failing on its own advisories the whole time, invisibly, and only
+      # surfaced on 2026-08-08 once the Trivy finding was fixed. A committed,
+      # verified secret would have been missed the same way.
+      #
+      # !cancelled() rather than always(): this workflow sets
+      # cancel-in-progress, so pushes routinely supersede an in-flight scan, and
+      # always() would keep grinding through OWASP Dependency Check and npm ci
+      # on a run whose result is already discarded. !cancelled() runs on success
+      # AND failure but still stops on cancellation.
+      #
+      # This does NOT weaken any gate. A step-level `if` decides whether the
+      # step RUNS; a step that runs and exits non-zero still fails the job.
+      # `continue-on-error` is the setting that would mask failures, and it is
+      # deliberately NOT used anywhere in this workflow.
+      #
+      # 🔴 A new blocking gate added to this job MUST carry the same guard.
 
       # ── Trivy filesystem scan ─────────────────────────────────────
       # The TABLE step is the blocking gate (exit-code 1) because Trivy
@@ -50,6 +82,7 @@ jobs:
       # The SARIF step is non-blocking (exit-code 0) and uploads results
       # to the GitHub Security tab for visibility.
       - name: Run Trivy Vulnerability Scanner (Table)
+        if: ${{ !cancelled() }}
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
@@ -115,6 +148,7 @@ jobs:
       # ── TruffleHog secret detection ──────────────────────────────
       # Blocks if verified secrets are found in the repository.
       - name: Check for Hardcoded Secrets
+        if: ${{ !cancelled() }}
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
@@ -123,6 +157,7 @@ jobs:
       # ── PHP dependency vulnerability check ───────────────────────
       # Blocks if any known vulnerabilities exist in composer.lock.
       - name: PHP Security Checker
+        if: ${{ !cancelled() }}
         run: |
           composer require --dev enlightn/security-checker
           vendor/bin/security-checker security:check composer.lock
@@ -140,6 +175,7 @@ jobs:
       # Analyzer.
       # OSS Index requires credentials not available in CI — disabled.
       - name: Install Node Dependencies (for dependency analysis)
+        if: ${{ !cancelled() }}
         run: |
           npm ci --ignore-scripts
           npm --prefix react-frontend ci --ignore-scripts
@@ -157,6 +193,7 @@ jobs:
       # for advisories with no in-range fix (e.g. a fix that only exists behind
       # a breaking major of an on-hold app). Review exceptions quarterly.
       - name: NPM Audit (production deps — blocking)
+        if: ${{ !cancelled() }}
         run: |
           node scripts/npm-audit-gate.mjs
           node scripts/npm-audit-gate.mjs --prefix react-frontend
@@ -164,6 +201,7 @@ jobs:
           node scripts/npm-audit-gate.mjs --prefix mobile --package-lock-only
 
       - name: OWASP Dependency Check
+        if: ${{ !cancelled() }}
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: 'nexus'
