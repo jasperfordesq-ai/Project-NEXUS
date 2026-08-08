@@ -94,6 +94,8 @@ export function SupportedMessagesPage() {
   const [reasonText, setReasonText] = useState('');
 
   const [conversations, setConversations] = useState<ConversationRow[] | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [messages, setMessages] = useState<MessageRow[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [deniedMessage, setDeniedMessage] = useState<string | null>(null);
@@ -116,11 +118,13 @@ export function SupportedMessagesPage() {
           setDeniedMessage(res.error || t('supported_messages.denied'));
         }
       } else {
-        const res = await api.get<{ conversations: ConversationRow[] }>(
+        const res = await api.get<{ conversations: ConversationRow[]; cursor?: string | null; has_more?: boolean }>(
           `/v2/users/me/sub-accounts/${childId}/messages?${purposeQuery}`,
         );
         if (res.success && res.data) {
           setConversations(res.data.conversations ?? []);
+          setNextCursor(res.data.cursor ?? null);
+          setHasMore(Boolean(res.data.has_more));
         } else {
           setDeniedMessage(res.error || t('supported_messages.denied'));
         }
@@ -132,6 +136,28 @@ export function SupportedMessagesPage() {
       setLoading(false);
     }
   }, [childId, partnerId, inThread, purpose, t]);
+
+  const loadMoreConversations = async () => {
+    if (!nextCursor || loading) return;
+    setLoading(true);
+    try {
+      const res = await api.get<{ conversations: ConversationRow[]; cursor?: string | null; has_more?: boolean }>(
+        `/v2/users/me/sub-accounts/${childId}/messages?purpose=${encodeURIComponent(purpose)}&cursor=${encodeURIComponent(nextCursor)}`,
+      );
+      if (res.success && res.data) {
+        setConversations((current) => [...(current ?? []), ...(res.data?.conversations ?? [])]);
+        setNextCursor(res.data.cursor ?? null);
+        setHasMore(Boolean(res.data.has_more));
+      } else {
+        setDeniedMessage(res.error || t('supported_messages.denied'));
+      }
+    } catch (error) {
+      logError('Failed to load more supported member conversations', error);
+      setDeniedMessage(t('supported_messages.denied'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     void load();
@@ -234,41 +260,39 @@ export function SupportedMessagesPage() {
             conversations.length === 0 ? (
               <p className="text-sm text-theme-muted">{t('supported_messages.empty_list')}</p>
             ) : (
-              <ul className="space-y-2" aria-label={t('supported_messages.list_aria')}>
-                {conversations.map((conversation, index) => {
-                  const partnerUserId = conversation.partner_id ?? conversation.other_user?.id;
-                  const partner = conversation.other_user;
-                  const name = partner?.name
-                    ?? `${partner?.first_name ?? ''} ${partner?.last_name ?? ''}`.trim();
-                  const preview = conversation.last_message?.body;
-                  const previewAt = conversation.last_message?.created_at ?? conversation.created_at;
-                  return (
-                    <li key={`${partnerUserId}-${index}`}>
-                      <Button
-                        variant="tertiary"
-                        className="w-full justify-start text-left"
-                        onPress={() => partnerUserId
-                          && navigate(tenantPath(`/linked-accounts/${childId}/messages/${partnerUserId}`))}
-                      >
-                        <span className="flex w-full min-w-0 items-center gap-3">
-                          <Avatar aria-hidden="true" src={resolveAvatarUrl(partner?.avatar_url)} name={name} size="sm" />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium text-theme-primary">{name}</span>
-                            {preview && (
-                              <span className="block truncate text-xs text-theme-muted">{preview}</span>
-                            )}
-                          </span>
-                          {previewAt && (
-                            <span className="shrink-0 text-xs text-theme-subtle">
-                              {formatRelativeTime(previewAt)}
+              <>
+                <ul className="space-y-2" aria-label={t('supported_messages.list_aria')}>
+                  {conversations.map((conversation, index) => {
+                    const partnerUserId = conversation.partner_id ?? conversation.other_user?.id;
+                    const partner = conversation.other_user;
+                    const name = partner?.name
+                      ?? `${partner?.first_name ?? ''} ${partner?.last_name ?? ''}`.trim();
+                    const preview = conversation.last_message?.body;
+                    const previewAt = conversation.last_message?.created_at ?? conversation.created_at;
+                    return (
+                      <li key={`${partnerUserId}-${index}`}>
+                        <Button variant="tertiary" className="w-full justify-start text-left" onPress={() => partnerUserId && navigate(tenantPath(`/linked-accounts/${childId}/messages/${partnerUserId}`))}>
+                          <span className="flex w-full min-w-0 items-center gap-3">
+                            <Avatar aria-hidden="true" src={resolveAvatarUrl(partner?.avatar_url)} name={name} size="sm" />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm font-medium text-theme-primary">{name}</span>
+                              {preview && <span className="block truncate text-xs text-theme-muted">{preview}</span>}
                             </span>
-                          )}
-                        </span>
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
+                            {previewAt && <span className="shrink-0 text-xs text-theme-subtle">{formatRelativeTime(previewAt)}</span>}
+                          </span>
+                        </Button>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {hasMore && nextCursor && (
+                  <div className="flex justify-center pt-3">
+                    <Button variant="secondary" onPress={() => void loadMoreConversations()}>
+                      {t('common:members.load_more')}
+                    </Button>
+                  </div>
+                )}
+              </>
             )
           )}
 

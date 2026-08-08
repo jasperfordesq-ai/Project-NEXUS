@@ -103,6 +103,40 @@
                                         {{ $isPending ? __('govuk_alpha_settings.linked.status_pending') : __('govuk_alpha_settings.linked.status_active') }}
                                     </strong>
                                 </p>
+                                @if ((int) ($p['relationship_id'] ?? 0) > 0)
+                                    <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-2">
+                                        @foreach (['activity', 'listings', 'credits'] as $capability)
+                                            <div class="govuk-summary-list__row">
+                                                <dt class="govuk-summary-list__key">{{ __('govuk_alpha_settings.linked.tiers_capability_' . $capability) }}</dt>
+                                                <dd class="govuk-summary-list__value">{{ __('govuk_alpha_settings.linked.tiers_option_' . ($p['tiers'][$capability] ?? 'none')) }}</dd>
+                                            </div>
+                                        @endforeach
+                                    </dl>
+                                @endif
+                                @if (!$isPending && empty($p['staff_recorded']) && (int) ($p['relationship_id'] ?? 0) > 0)
+                                    <form method="post" action="{{ route('govuk-alpha.settings.linked-accounts.permissions', ['tenantSlug' => $tenantSlug]) }}" class="govuk-!-margin-bottom-3">
+                                        @csrf
+                                        <input type="hidden" name="relationship_id" value="{{ (int) $p['relationship_id'] }}">
+                                        <input type="hidden" name="as_supported_member" value="1">
+                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                                            <div class="govuk-checkboxes__item">
+                                                <input class="govuk-checkboxes__input" id="member_activity_{{ (int) $p['relationship_id'] }}" name="perm_can_view_activity" type="checkbox" value="1" @checked(($p['tiers']['activity'] ?? 'none') !== 'none')>
+                                                <label class="govuk-label govuk-checkboxes__label" for="member_activity_{{ (int) $p['relationship_id'] }}">{{ __('govuk_alpha_settings.linked.permissions.can_view_activity') }}</label>
+                                            </div>
+                                        </div>
+                                        @foreach (['listings', 'credits'] as $capability)
+                                            <div class="govuk-form-group govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                                                <label class="govuk-label" for="member_tier_{{ (int) $p['relationship_id'] }}_{{ $capability }}">{{ __('govuk_alpha_settings.linked.tiers_capability_' . $capability) }}</label>
+                                                <select class="govuk-select" id="member_tier_{{ (int) $p['relationship_id'] }}_{{ $capability }}" name="tier_{{ $capability }}">
+                                                    @foreach ($grantableActionTiers ?? ['none', 'co_decide', 'represent'] as $tierOption)
+                                                        <option value="{{ $tierOption }}" @selected($tierOption === ($p['tiers'][$capability] ?? 'none'))>{{ __('govuk_alpha_settings.linked.tiers_option_' . $tierOption) }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endforeach
+                                        <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ __('govuk_alpha_settings.linked.save_permissions') }}</button>
+                                    </form>
+                                @endif
                                 {{-- Message-access disclosure — the member's own view of a
                                      grant THEY made: who can view, when they last looked
                                      (from the immutable audit), and a one-press withdraw.
@@ -191,19 +225,21 @@
                                     </p>
                                 @endif
 
-                                @if ($cId > 0)
+                                @if ($cId > 0 && !$cIsPending)
                                     <form method="post" action="{{ route('govuk-alpha.settings.linked-accounts.permissions', ['tenantSlug' => $tenantSlug]) }}">
                                         @csrf
                                         <input type="hidden" name="relationship_id" value="{{ $cId }}">
                                         <fieldset class="govuk-fieldset govuk-!-margin-bottom-2">
                                             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ __('govuk_alpha_settings.linked.permissions_heading') }}</legend>
                                             {{-- Activity stays a plain see/don't-see checkbox. --}}
+                                            @if (($c['tiers']['activity'] ?? 'none') !== 'none')
                                             <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
                                                 <div class="govuk-checkboxes__item">
                                                     <input class="govuk-checkboxes__input" id="perm_{{ $cId }}_can_view_activity" name="perm_can_view_activity" type="checkbox" value="1" @checked($cPerms['can_view_activity'] ?? false)>
                                                     <label class="govuk-label govuk-checkboxes__label" for="perm_{{ $cId }}_can_view_activity">{{ __('govuk_alpha_settings.linked.permissions.can_view_activity') }}</label>
                                                 </div>
                                             </div>
+                                            @endif
                                             {{--
                                                 Listings and credits are THREE-level choices, not on/off.
                                                 🔴 The old checkboxes were a live escalation hazard: a
@@ -224,7 +260,9 @@
                                                         {{ __('govuk_alpha_settings.linked.tiers_capability_' . $capability) }}
                                                     </label>
                                                     <select class="govuk-select" id="tier_{{ $cId }}_{{ $capability }}" name="tier_{{ $capability }}">
-                                                        @foreach ($grantableActionTiers ?? ['none', 'co_decide', 'represent'] as $tierOption)
+                                                        @php $currentRank = array_search($c['tiers'][$capability] ?? 'none', ['none', 'assist', 'co_decide', 'represent'], true); @endphp
+                                                        @foreach (($grantableActionTiers ?? ['none', 'co_decide', 'represent']) as $tierOption)
+                                                            @continue(array_search($tierOption, ['none', 'assist', 'co_decide', 'represent'], true) > $currentRank)
                                                             <option value="{{ $tierOption }}" @if ($tierOption === ($c['tiers'][$capability] ?? 'none')) selected @endif>
                                                                 {{ __('govuk_alpha_settings.linked.tiers_option_' . $tierOption) }}
                                                             </option>

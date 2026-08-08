@@ -52,7 +52,7 @@ class SupporterMessageViewService
      * The supported member's conversation list, as they see it (minus their
      * private unread counts). Null with errors on refusal.
      *
-     * @return array<int, array<string, mixed>>|null
+     * @return array{items: array<int, array<string, mixed>>, cursor: string|null, has_more: bool}|null
      */
     public function listConversations(int $supporterUserId, int $supportedUserId, string $purpose, array $filters = []): ?array
     {
@@ -67,10 +67,16 @@ class SupporterMessageViewService
 
         // Rows can contain non-array entries (e.g. a partner row that failed
         // hydration maps to null) — drop them rather than crash.
-        return array_values(array_map(static function (array $conversation): array {
+        $payload['items'] = array_values(array_map(static function (array $conversation): array {
             unset($conversation['unread_count']);
             return $conversation;
         }, array_filter($payload['items'] ?? [], 'is_array')));
+
+        return [
+            'items' => $payload['items'],
+            'cursor' => is_string($payload['cursor'] ?? null) ? $payload['cursor'] : null,
+            'has_more' => (bool) ($payload['has_more'] ?? false),
+        ];
     }
 
     /**

@@ -13,6 +13,7 @@ const mockApproveSubAccount = jest.fn();
 const mockRevokeSubAccount = jest.fn();
 const mockUpdateSubAccountPermissions = jest.fn();
 const mockUpdateSubAccountTiers = jest.fn();
+const mockUpdateManagerSubAccountTiers = jest.fn();
 const mockGetSubAccountActivity = jest.fn();
 
 jest.mock('react-i18next', () => ({
@@ -54,6 +55,13 @@ jest.mock('react-i18next', () => ({
         'linkedAccounts.permissions.can_manage_listings': 'Manage listings',
         'linkedAccounts.permissions.can_transact': 'Transfer credits',
         'linkedAccounts.permissions.can_view_messages': 'View messages',
+        'linkedAccounts.tiers.activity': 'Activity',
+        'linkedAccounts.tiers.listings': 'Listings',
+        'linkedAccounts.tiers.credits': 'Credits',
+        'linkedAccounts.tiers.none': 'None',
+        'linkedAccounts.tiers.assist': 'View only',
+        'linkedAccounts.tiers.co_decide': 'Prepare; you approve each action',
+        'linkedAccounts.tiers.represent': 'Act independently',
         'linkedAccounts.activity.show': 'See their activity',
         'linkedAccounts.activity.hide': 'Hide their activity',
         'linkedAccounts.activity.toggleAria': `See the activity of ${String(opts?.name ?? '')}`,
@@ -106,6 +114,7 @@ jest.mock('@/lib/api/settings', () => ({
   revokeSubAccount: (...args: unknown[]) => mockRevokeSubAccount(...args),
   updateSubAccountPermissions: (...args: unknown[]) => mockUpdateSubAccountPermissions(...args),
   updateSubAccountTiers: (...args: unknown[]) => mockUpdateSubAccountTiers(...args),
+  updateManagerSubAccountTiers: (...args: unknown[]) => mockUpdateManagerSubAccountTiers(...args),
   // The real resolver is pure — use it, so the tests exercise the actual
   // tier derivation rather than a parallel reimplementation.
   resolveSupportTiers: jest.requireActual('@/lib/api/settings').resolveSupportTiers,
@@ -120,6 +129,7 @@ beforeEach(() => {
   mockRevokeSubAccount.mockReset().mockResolvedValue({});
   mockUpdateSubAccountPermissions.mockReset().mockResolvedValue({});
   mockUpdateSubAccountTiers.mockReset().mockResolvedValue({});
+  mockUpdateManagerSubAccountTiers.mockReset().mockResolvedValue({});
   mockGetSubAccountActivity.mockReset().mockResolvedValue({
     hours_summary: { hours_given: 7.5, hours_received: 2, net_balance: -5.5 },
     connection_stats: { total_connections: 3, groups_joined: 1 },
@@ -187,8 +197,8 @@ describe('SettingsLinkedAccountsRoute', () => {
 
     // Enabling from OFF grants the recommended middle level (prepare only) as
     // an EXPLICIT tier — never a boolean, which the backend maps to act-alone.
-    fireEvent(getByLabelText('Toggle Transfer credits for Alex Managed'), 'selectedChange', true);
-    await waitFor(() => expect(mockUpdateSubAccountTiers).toHaveBeenCalledWith(11, { credits: 'co_decide' }));
+    fireEvent(getByLabelText('Toggle View activity for Alex Managed'), 'selectedChange', false);
+    await waitFor(() => expect(mockUpdateSubAccountTiers).toHaveBeenCalledWith(11, { activity: 'none' }));
     expect(mockUpdateSubAccountPermissions).not.toHaveBeenCalled();
 
     fireEvent.press(getByText('Approve'));
@@ -215,7 +225,7 @@ describe('SettingsLinkedAccountsRoute', () => {
    * power. The toggle must render ON for any granted level, and switching it
    * must speak tiers, never booleans.
    */
-  it('renders a co_decide grant as ON and never escalates it', async () => {
+  it('shows exact co_decide authority but offers no non-functional mobile action control', async () => {
     mockUseApi.mockReturnValue({
       data: {
         managed: [{
@@ -242,16 +252,15 @@ describe('SettingsLinkedAccountsRoute', () => {
       refresh: mockRefresh,
     });
 
-    const { getByLabelText } = render(<SettingsLinkedAccountsRoute />);
+    const { queryByLabelText, toJSON } = render(<SettingsLinkedAccountsRoute />);
 
-    const listingsToggle = getByLabelText('Toggle Manage listings for Prepared Person');
+    expect(JSON.stringify(toJSON())).toContain('Prepare; you approve each action');
+    const listingsToggle = queryByLabelText('Toggle Manage listings for Prepared Person');
     // Renders ON despite the false boolean — the tier is the truth.
-    expect(listingsToggle.props.accessibilityState?.checked ?? listingsToggle.props.value).toBeTruthy();
+    expect(listingsToggle).toBeNull();
 
     // Toggling it sends an explicit tier change to OFF — no boolean write,
     // and nothing that could read as a grant of a higher level.
-    fireEvent(listingsToggle, 'selectedChange', false);
-    await waitFor(() => expect(mockUpdateSubAccountTiers).toHaveBeenCalledWith(31, { listings: 'none' }));
     expect(mockUpdateSubAccountPermissions).not.toHaveBeenCalled();
     const everSentRepresent = mockUpdateSubAccountTiers.mock.calls.some(
       ([, tiers]) => Object.values(tiers as Record<string, string>).includes('represent'),

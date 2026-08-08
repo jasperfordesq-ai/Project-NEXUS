@@ -181,6 +181,28 @@ class SubAccountController extends BaseApiController
         return $this->respondWithData($this->normalizeRelationships($children));
     }
 
+    /** PUT /api/v2/users/me/parent-accounts/{id}/permissions — supported member only. */
+    public function updateMemberPermissions(int $id): JsonResponse
+    {
+        $userId = $this->requireAuth();
+        $data = $this->getAllInput();
+        $tiers = SupportTiers::sanitizeTiers($data['tiers'] ?? ($data['permissions']['tiers'] ?? null));
+        if ($tiers === []) {
+            return $this->respondWithError('VALIDATION_ERROR', __('api.missing_required_field', ['field' => 'tiers']), 'tiers', 400);
+        }
+
+        try {
+            $success = $this->subAccountService->updatePermissionsByMember($userId, $id, $tiers);
+        } catch (SafeguardingPolicyException $e) {
+            return $this->safeguardingPolicyError($e);
+        }
+        if (! $success) {
+            return $this->respondWithErrors($this->subAccountService->getErrors(), 404);
+        }
+
+        return $this->respondWithData($this->normalizeRelationships($this->subAccountService->getParentAccounts($userId)));
+    }
+
     /** DELETE /api/v2/users/me/sub-accounts/{id} */
     public function revokeRelationship(int $id): JsonResponse
     {
@@ -379,14 +401,22 @@ class SubAccountController extends BaseApiController
             $userId,
             (int) $childId,
             (string) request()->query('purpose', ''),
-            ['archived' => request()->boolean('archived')],
+            array_filter([
+                'archived' => request()->boolean('archived'),
+                'cursor' => request()->query('cursor'),
+                'limit' => request()->query('limit'),
+            ], static fn ($value) => $value !== null),
         );
 
         if ($result === null) {
             return $this->respondWithErrors($service->getErrors(), $this->messageViewStatus($service));
         }
 
-        return $this->respondWithData(['conversations' => $result]);
+        return $this->respondWithData([
+            'conversations' => $result['items'],
+            'cursor' => $result['cursor'],
+            'has_more' => $result['has_more'],
+        ]);
     }
 
     public function showChildThread($childId, $partnerId): JsonResponse

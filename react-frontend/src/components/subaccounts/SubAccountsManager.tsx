@@ -387,6 +387,31 @@ export function SubAccountsManager() {
     }
   };
 
+  const handleMemberTierChange = async (
+    relationshipId: number,
+    capability: TierCapability,
+    tier: SupportTier,
+  ) => {
+    const previousAccounts = managerAccounts;
+    setManagerAccounts((prev) => prev.map((account) => account.relationship_id === relationshipId
+      ? { ...account, tiers: { ...account.tiers, [capability]: tier } }
+      : account));
+
+    try {
+      const response = await api.put(`/v2/users/me/parent-accounts/${relationshipId}/permissions`, {
+        permissions: { tiers: { [capability]: tier } },
+      });
+      if (!response.success) {
+        setManagerAccounts(previousAccounts);
+        toastRef.current.error(response.error || tRef.current('toasts.subaccount_permission_failed'));
+      }
+    } catch (err) {
+      setManagerAccounts(previousAccounts);
+      logError('Failed to approve support tier', err);
+      toastRef.current.error(tRef.current('toasts.subaccount_permission_failed'));
+    }
+  };
+
   const handleRemove = async (relationshipId: number) => {
     try {
       setBusyRelationshipId(relationshipId);
@@ -524,19 +549,17 @@ export function SubAccountsManager() {
                 */}
                 <div className="flex min-w-0 items-center justify-between gap-3">
                   <span className="text-xs text-theme-muted">{t('sub_accounts.permissions.can_view_activity')}</span>
-                  <Switch
+                  {account.tiers.activity !== 'none' && <Switch
                     size="sm"
                     className="shrink-0"
-                    isSelected={account.tiers.activity !== 'none'}
+                    isSelected
                     // Must go through the TIER handler: this switch renders from
                     // account.tiers, and handlePermissionChange only mutated
                     // account.permissions — so the switch never visibly moved
                     // until a full reload (audit finding A2).
-                    onValueChange={(value) =>
-                      handleTierChange(account.relationship_id, 'activity', value ? 'assist' : 'none')
-                    }
+                    onValueChange={() => handleTierChange(account.relationship_id, 'activity', 'none')}
                     aria-label={t('sub_accounts.permission_aria', { permission: t('sub_accounts.permissions.can_view_activity'), name })}
-                  />
+                  />}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {(['listings', 'credits'] as const).map((capability) => {
@@ -555,7 +578,7 @@ export function SubAccountsManager() {
                         }}
                         aria-label={t('sub_accounts.tiers.tier_aria', { capability: label, name })}
                       >
-                        {GRANTABLE_ACTION_TIERS.map((tier) => (
+                        {GRANTABLE_ACTION_TIERS.filter((tier) => TIER_RANK[tier] <= TIER_RANK[account.tiers[capability]]).map((tier) => (
                           <SelectItem key={tier} id={tier}>
                             {t(`sub_accounts.tiers.option_${tier}`)}
                           </SelectItem>
@@ -607,7 +630,7 @@ export function SubAccountsManager() {
               discarded here (audit B3) — the person with the most at stake saw
               the least. Same chip pattern as the staff-recorded block above.
             */}
-            {!options.canManagePermissions && account.status === 'active' && (
+            {!options.canManagePermissions && (account.status === 'active' || account.status === 'pending') && (
               <div className="mt-3 space-y-1">
                 <p className="text-xs font-medium text-theme-muted flex items-center gap-1">
                   <Shield className="w-3 h-3" aria-hidden="true" />
@@ -627,6 +650,37 @@ export function SubAccountsManager() {
                     </Chip>
                   ))}
                 </div>
+                {account.status === 'active' && !account.staff_recorded && (
+                  <div className="mt-3 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-theme-muted">{t('sub_accounts.permissions.can_view_activity')}</span>
+                      <Switch
+                        size="sm"
+                        isSelected={account.tiers.activity !== 'none'}
+                        onValueChange={(value) => handleMemberTierChange(account.relationship_id, 'activity', value ? 'assist' : 'none')}
+                        aria-label={t('sub_accounts.permission_aria', { permission: t('sub_accounts.permissions.can_view_activity'), name })}
+                      />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(['listings', 'credits'] as const).map((capability) => (
+                        <Select
+                          key={capability}
+                          size="sm"
+                          label={t(`safeguarding.guardians.tiers_capability_${capability}`)}
+                          selectedKeys={[account.tiers[capability]]}
+                          onSelectionChange={(keys) => {
+                            const value = Array.from(keys)[0] as string | undefined;
+                            if (isSupportTier(value)) handleMemberTierChange(account.relationship_id, capability, value);
+                          }}
+                        >
+                          {GRANTABLE_ACTION_TIERS.map((tier) => (
+                            <SelectItem key={tier} id={tier}>{t(`sub_accounts.tiers.option_${tier}`)}</SelectItem>
+                          ))}
+                        </Select>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

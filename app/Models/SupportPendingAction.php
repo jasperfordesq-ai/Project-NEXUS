@@ -50,10 +50,12 @@ class SupportPendingAction extends Model
     protected $fillable = [
         'tenant_id', 'relationship_id', 'supported_user_id', 'supporter_user_id',
         'action_type', 'payload', 'status', 'token_hash', 'expires_at',
+        'pending_message_relationship_id',
     ];
 
     protected $casts = [
         'relationship_id' => 'integer',
+        'pending_message_relationship_id' => 'integer',
         'supported_user_id' => 'integer',
         'supporter_user_id' => 'integer',
         'payload' => 'array',

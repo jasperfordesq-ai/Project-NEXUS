@@ -528,7 +528,7 @@ class SubAccountService
             ]) > 0;
 
         if ($revoked) {
-            app(SupportPendingActionService::class)->cancelOpenMessageAccessRequests($relationshipId);
+            app(SupportPendingActionService::class)->cancelOpenForRelationship($relationshipId, null, 'relationship_revoked');
             $this->relationshipEvent($row, 'revoked', 'member', $userId);
 
             // Tell the OTHER party. Until 2026-08-07 revocation was silent in
@@ -650,6 +650,22 @@ class SubAccountService
         // Explicit tier grants win over the boolean shorthand.
         $requestedTiers = SupportTiers::sanitizeTiers($permissions['tiers'] ?? null);
 
+        // The supporter may relinquish authority, but may never grant or
+        // expand it for themselves. Expansions belong to the supported member
+        // and travel through updatePermissionsByMember(). Message access is a
+        // request-only exception handled below; confirming it is still the
+        // member's act.
+        $supporterRequested = $afterTiers;
+        foreach ($requestedTiers as $capability => $tier) {
+            if ($capability !== 'messages') {
+                $supporterRequested[$capability] = $tier;
+            }
+        }
+        if (SupportTiers::isExpansion($beforeTiers, $supporterRequested)) {
+            $this->errors[] = ['code' => 'MEMBER_APPROVAL_REQUIRED', 'message' => __('api_controllers_2.sub_account.no_permission')];
+            return false;
+        }
+
         // 🔴 `messages` is consent-gated and is INTERCEPTED here, never
         // written directly by the supporter's own request:
         //
@@ -700,17 +716,6 @@ class SubAccountService
             $afterTiers[$capability] = $tier;
         }
 
-        // Shrinking remains a safe exit. Raising any tier can expose new
-        // activity, listing, or transaction capabilities, so re-check the
-        // relationship against the safeguarding contact policy before writing.
-        if (SupportTiers::isExpansion($beforeTiers, $afterTiers)) {
-            $this->assertRelationshipContactsAllowed(
-                $parentUserId,
-                (int) $existing->child_user_id,
-                'sub_account_permission_expansion',
-            );
-        }
-
         $update = [
             'permissions' => SupportTiers::toLegacyBooleans($afterTiers) + ['tiers' => $afterTiers],
         ];
@@ -720,6 +725,17 @@ class SubAccountService
             $update['message_access_granted_at'] = null;
         }
         $existing->update($update);
+
+        foreach (['listings', 'credits'] as $capability) {
+            if (SupportTiers::atLeast($beforeTiers, $capability, SupportTiers::CO_DECIDE)
+                && ! SupportTiers::atLeast($afterTiers, $capability, SupportTiers::CO_DECIDE)) {
+                app(SupportPendingActionService::class)->cancelOpenForRelationship(
+                    (int) $existing->id,
+                    $capability,
+                    'supporter_relinquished_tier',
+                );
+            }
+        }
 
         if ($messageAccessOutcome === 'removed') {
             app(SupportPendingActionService::class)->cancelOpenMessageAccessRequests((int) $existing->id);
@@ -765,6 +781,71 @@ class SubAccountService
         }
 
         return true;
+    }
+
+    /**
+     * The supported member is the only party who may grant or expand powers on
+     * an ordinary linked-account relationship. Unknown/absent tiers are left
+     * unchanged; message access remains on its dedicated consent workflow.
+     */
+    public function updatePermissionsByMember(int $memberUserId, int $relationshipId, array $tiers): bool
+    {
+        $this->errors = [];
+        $clean = SupportTiers::sanitizeTiers($tiers);
+        unset($clean['messages']);
+        if ($clean === []) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => __('api.missing_required_field', ['field' => 'tiers'])];
+            return false;
+        }
+
+        return DB::transaction(function () use ($memberUserId, $relationshipId, $clean): bool {
+            /** @var AccountRelationship|null $row */
+            $row = $this->relationship->newQuery()
+                ->where('id', $relationshipId)
+                ->where('child_user_id', $memberUserId)
+                ->where('status', 'active')
+                ->whereNull('proposed_by_user_id')
+                ->lockForUpdate()
+                ->first();
+            if (! $row) {
+                $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.subaccount_relationship_not_found')];
+                return false;
+            }
+
+            $before = SupportTiers::resolve(is_array($row->permissions) ? $row->permissions : []);
+            $after = $before;
+            foreach ($clean as $capability => $tier) {
+                $after[$capability] = $tier;
+            }
+            if ($after === $before) {
+                return true;
+            }
+            if (SupportTiers::isExpansion($before, $after)) {
+                $this->assertRelationshipContactsAllowed(
+                    (int) $row->parent_user_id,
+                    $memberUserId,
+                    'sub_account_member_permission_grant',
+                );
+            }
+
+            $row->update(['permissions' => SupportTiers::toLegacyBooleans($after) + ['tiers' => $after]]);
+            foreach (['listings', 'credits'] as $capability) {
+                if (SupportTiers::atLeast($before, $capability, SupportTiers::CO_DECIDE)
+                    && ! SupportTiers::atLeast($after, $capability, SupportTiers::CO_DECIDE)) {
+                    app(SupportPendingActionService::class)->cancelOpenForRelationship(
+                        (int) $row->id,
+                        $capability,
+                        'member_downgraded_tier',
+                    );
+                }
+            }
+            $this->relationshipEvent($row, 'permissions_changed', 'member', $memberUserId, null, [
+                'tiers_before' => $before,
+                'tiers_after' => $after,
+            ]);
+
+            return true;
+        }, 3);
     }
 
     /**
@@ -1098,11 +1179,8 @@ class SubAccountService
         }
 
         try {
-            $listing = ListingService::create($childUserId, $data, $parentUserId);
-        } catch (\Throwable $e) {
-            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()];
-            return null;
-        }
+            $listing = DB::transaction(function () use ($childUserId, $data, $parentUserId) {
+                $listing = ListingService::create($childUserId, $data, $parentUserId);
 
         // Skill tags are part of the listing form, but the member-facing route
         // that saves them (PUT /v2/listings/{id}/tags) checks
@@ -1112,23 +1190,30 @@ class SubAccountService
         // that ownership check for everyone. A tag failure must not undo a
         // listing that exists: log and carry on, exactly as the member's own
         // form does.
-        $skillTags = $data['skill_tags'] ?? null;
-        if (is_array($skillTags) && $skillTags !== []) {
-            try {
-                app(ListingSkillTagService::class)->setTags((int) $listing->id, $skillTags);
-            } catch (\Throwable $e) {
-                Log::warning('Failed to apply skill tags to proxy listing', [
-                    'listing_id' => $listing->id,
-                    'parent_user_id' => $parentUserId,
-                    'child_user_id' => $childUserId,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
+                $skillTags = $data['skill_tags'] ?? null;
+                if (is_array($skillTags) && $skillTags !== []) {
+                    try {
+                        app(ListingSkillTagService::class)->setTags((int) $listing->id, $skillTags);
+                    } catch (\Throwable $e) {
+                        Log::warning('Failed to apply skill tags to proxy listing', [
+                            'listing_id' => $listing->id,
+                            'parent_user_id' => $parentUserId,
+                            'child_user_id' => $childUserId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
 
-        $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_listing_created', [
-            'listing_id' => $listing->id,
-        ]);
+                $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_listing_created', [
+                    'listing_id' => $listing->id,
+                ]);
+
+                return $listing;
+            });
+        } catch (\Throwable $e) {
+            $this->errors[] = ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()];
+            return null;
+        }
 
         // The dependent is told, in their own language, that something was posted
         // in their name. A proxy action the owner never learns about is not
@@ -1244,18 +1329,21 @@ class SubAccountService
         }
 
         try {
-            // Sender is the DEPENDENT (it is their balance); the carer is recorded
-            // as the acting user on the ledger row.
-            $txn = app(WalletService::class)->transfer($childUserId, $data, $parentUserId);
+            $txn = DB::transaction(function () use ($childUserId, $data, $parentUserId): array {
+                // Sender is the DEPENDENT; the supporter is the acting user.
+                $txn = app(WalletService::class)->transfer($childUserId, $data, $parentUserId);
+
+                $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_transfer_sent', [
+                    'transaction_id' => $txn['id'] ?? null,
+                    'amount' => $data['amount'] ?? null,
+                ]);
+
+                return $txn;
+            });
         } catch (\Throwable $e) {
             $this->errors[] = ['code' => 'TRANSFER_FAILED', 'message' => $e->getMessage()];
             return null;
         }
-
-        $this->auditProxyAction($parentUserId, $childUserId, 'subaccount_transfer_sent', [
-            'transaction_id' => $txn['id'] ?? null,
-            'amount' => $data['amount'] ?? null,
-        ]);
 
         $this->notifyChildOfProxyAction(
             $parentUserId,
@@ -1277,25 +1365,16 @@ class SubAccountService
      */
     private function auditProxyAction(int $parentUserId, int $childUserId, string $action, array $details): void
     {
-        try {
-            app(AuditLogService::class)->logAction(
-                TenantContext::getId(),
-                $action,
-                $parentUserId,
-                $details,
-                null,
-                $childUserId,
-            );
-        } catch (\Throwable $e) {
-            // Never fail the member-facing action on an audit hiccup, but do not
-            // let it pass silently either.
-            Log::error('Failed to audit linked-account proxy action', [
-                'action' => $action,
-                'parent_user_id' => $parentUserId,
-                'child_user_id' => $childUserId,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        // Consequential proxy actions are fail-closed: callers execute this
+        // write in the same transaction as the listing/ledger mutation.
+        app(AuditLogService::class)->logAction(
+            TenantContext::getId(),
+            $action,
+            $parentUserId,
+            $details,
+            null,
+            $childUserId,
+        );
     }
 
     /**

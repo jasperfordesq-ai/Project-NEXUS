@@ -411,8 +411,11 @@ trait SettingsAuthParity
         $service = app(\App\Services\SupporterMessageViewService::class);
 
         if ($partnerUserId === null) {
-            $conversations = $service->listConversations($userId, $childUserId, $purpose);
-            if ($conversations === null) {
+            $conversationPage = $service->listConversations($userId, $childUserId, $purpose, [
+                'cursor' => $request->query('cursor'),
+                'limit' => 20,
+            ]);
+            if ($conversationPage === null) {
                 return redirect()->route('govuk-alpha.settings.linked-accounts', [
                     'tenantSlug' => $tenantSlug,
                     'status' => 'message-view-denied',
@@ -425,7 +428,9 @@ trait SettingsAuthParity
                 'activeNav' => 'account',
                 'childUserId' => $childUserId,
                 'childName' => $childName,
-                'conversations' => $conversations,
+                'conversations' => $conversationPage['items'],
+                'nextCursor' => $conversationPage['cursor'],
+                'hasMore' => $conversationPage['has_more'],
             ]);
         }
 
@@ -922,7 +927,13 @@ trait SettingsAuthParity
         }
 
         try {
-            $ok = app(SubAccountService::class)->updatePermissions($userId, $relationshipId, $permissions);
+            $service = app(SubAccountService::class);
+            $ok = $request->boolean('as_supported_member')
+                ? $service->updatePermissionsByMember($userId, $relationshipId, [
+                    'activity' => $request->boolean('perm_can_view_activity') ? 'assist' : 'none',
+                    ...$tiers,
+                ])
+                : $service->updatePermissions($userId, $relationshipId, $permissions);
             $status = $ok ? 'link-permissions-saved' : 'link-failed';
         } catch (SafeguardingPolicyException $e) {
             return redirect()
@@ -939,7 +950,7 @@ trait SettingsAuthParity
 
         return redirect()
             ->route('govuk-alpha.settings.linked-accounts', ['tenantSlug' => $tenantSlug, 'status' => $status])
-            ->withFragment('children');
+            ->withFragment($request->boolean('as_supported_member') ? 'parents' : 'children');
     }
 
     /** Revoke (remove) a linked relationship — works for both parent and child rows. Mirrors SubAccountController::revokeRelationship. */

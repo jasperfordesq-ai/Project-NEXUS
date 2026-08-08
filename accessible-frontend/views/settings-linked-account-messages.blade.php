@@ -59,6 +59,15 @@
                         @endif
                     @endforeach
                 </ul>
+                @if (($hasMore ?? false) && !empty($nextCursor))
+                    <nav class="govuk-pagination" aria-label="{{ __('govuk_alpha.fed2.connections.pagination_next') }}">
+                        <div class="govuk-pagination__next">
+                            <a class="govuk-link govuk-pagination__link" rel="next" href="{{ route('govuk-alpha.settings.linked-accounts.messages', ['tenantSlug' => $tenantSlug, 'childId' => $childUserId, 'cursor' => $nextCursor]) }}">
+                                <span class="govuk-pagination__link-title">{{ __('govuk_alpha.fed2.connections.pagination_next') }}</span>
+                            </a>
+                        </div>
+                    </nav>
+                @endif
             @endif
         </div>
     </div>

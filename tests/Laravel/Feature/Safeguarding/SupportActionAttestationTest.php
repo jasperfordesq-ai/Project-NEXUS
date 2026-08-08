@@ -75,14 +75,35 @@ class SupportActionAttestationTest extends TestCase
         return [$supporter, $supported, $actionId];
     }
 
-    private function actingBroker(): User
+    private function actingBroker(bool $grantManage = true): User
     {
         $broker = User::factory()->forTenant($this->testTenantId)->create([
             'role' => 'broker', 'status' => 'active', 'is_approved' => true,
         ]);
+        if ($grantManage) {
+            $permissionId = DB::table('permissions')->where('name', 'safeguarding.manage')->value('id');
+            DB::table('user_permissions')->insert([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $broker->id,
+                'permission_id' => $permissionId,
+                'granted' => 1,
+                'granted_at' => now(),
+            ]);
+        }
         Sanctum::actingAs($broker, ['*']);
 
         return $broker;
+    }
+
+    public function test_broker_without_safeguarding_manage_cannot_attest(): void
+    {
+        [, , $actionId] = $this->seedPendingTransfer();
+        $this->actingBroker(false);
+
+        $this->apiPost("/v2/admin/safeguarding/support-actions/{$actionId}/attest", [
+            'channel' => 'phone',
+        ])->assertStatus(403);
+        $this->assertSame('pending', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
     }
 
     public function test_an_ordinary_member_cannot_reach_the_attest_endpoint(): void
@@ -130,6 +151,24 @@ class SupportActionAttestationTest extends TestCase
 
         // The member is told an offline confirmation was recorded in their name.
         $this->assertDatabaseHas('notifications', ['user_id' => $supported->id]);
+    }
+
+    public function test_offline_attestation_fails_after_authority_is_downgraded(): void
+    {
+        [, $supported, $actionId] = $this->seedPendingTransfer();
+        $this->actingBroker();
+
+        $relationshipId = DB::table('support_pending_actions')->where('id', $actionId)->value('relationship_id');
+        DB::table('account_relationships')->where('id', $relationshipId)->update([
+            'permissions' => json_encode(['tiers' => ['activity' => 'none', 'listings' => 'none', 'credits' => 'none']]),
+        ]);
+
+        $this->apiPost("/v2/admin/safeguarding/support-actions/{$actionId}/attest", [
+            'channel' => 'phone',
+        ])->assertStatus(422);
+
+        $this->assertSame('cancelled', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $supported->id)->value('balance'));
     }
 
     public function test_an_unknown_channel_is_refused_and_nothing_executes(): void

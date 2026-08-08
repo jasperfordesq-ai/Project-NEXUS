@@ -197,7 +197,18 @@ class GuardianArrangementService
 
             DB::table('account_relationships')
                 ->where('id', $arrangementId)
-                ->update(['status' => 'revoked', 'updated_at' => now()]);
+                ->update([
+                    'status' => 'revoked',
+                    'permissions' => json_encode(self::TIER_ZERO_PERMISSIONS),
+                    'message_access_granted_at' => null,
+                    'updated_at' => now(),
+                ]);
+
+            app(SupportPendingActionService::class)->cancelOpenForRelationship(
+                $arrangementId,
+                null,
+                'guardian_arrangement_revoked',
+            );
 
             $this->event($tenantId, $arrangementId, (int) $row->parent_user_id, (int) $row->child_user_id, 'revoked', 'staff', $staffUserId);
 
@@ -260,6 +271,7 @@ class GuardianArrangementService
             }
 
             $now = now();
+            $endingConsent = in_array($action, [self::ACTION_DECLINED, self::ACTION_WITHDRAWN], true);
             DB::table('account_relationships')
                 ->where('id', $assignmentId)
                 ->update([
@@ -268,8 +280,20 @@ class GuardianArrangementService
                     'declined_at'     => $action === self::ACTION_DECLINED ? $now : null,
                     'withdrawn_at'    => $action === self::ACTION_WITHDRAWN ? $now : null,
                     'response_reason' => $reason,
+                    ...($endingConsent ? [
+                        'permissions' => json_encode(self::TIER_ZERO_PERMISSIONS),
+                        'message_access_granted_at' => null,
+                    ] : []),
                     'updated_at'      => $now,
                 ]);
+
+            if ($endingConsent) {
+                app(SupportPendingActionService::class)->cancelOpenForRelationship(
+                    $assignmentId,
+                    null,
+                    $action === self::ACTION_WITHDRAWN ? 'guardian_consent_withdrawn' : 'guardian_consent_declined',
+                );
+            }
 
             $this->event(
                 $tenantId,

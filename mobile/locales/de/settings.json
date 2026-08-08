@@ -241,6 +241,7 @@
       "can_manage_listings": "Manage listings",
       "can_transact": "Transfer credits"
     },
+    "tiers": { "activity": "Aktivität", "listings": "Angebote", "credits": "Zeitguthaben", "none": "Keine", "assist": "Nur ansehen", "co_decide": "Vorbereiten; Sie genehmigen jede Aktion", "represent": "Selbstständig handeln" },
     "permissionToggle": "Toggle {{permission}} for {{name}}",
     "activity": {
       "show": "Deren Aktivität ansehen",

@@ -232,6 +232,27 @@ class SupporterMessageViewTest extends TestCase
         }
     }
 
+    public function test_conversation_cursor_paginates_beyond_twenty_rows(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $this->seedGrantedRelationship($supporter, $supported);
+
+        for ($i = 0; $i < 21; $i++) {
+            $partner = $this->member();
+            $this->seedMessage($partner->id, $supported->id, "Conversation {$i}");
+        }
+
+        Sanctum::actingAs($supporter, ['*']);
+        $first = $this->apiGet("/v2/users/me/sub-accounts/{$supported->id}/messages?purpose=check&limit=20");
+        $first->assertOk()->assertJsonCount(20, 'data.conversations')->assertJsonPath('data.has_more', true);
+
+        $cursor = $first->json('data.cursor');
+        $this->assertNotEmpty($cursor);
+        $second = $this->apiGet("/v2/users/me/sub-accounts/{$supported->id}/messages?purpose=check&limit=20&cursor=" . urlencode((string) $cursor));
+        $second->assertOk()->assertJsonCount(1, 'data.conversations')->assertJsonPath('data.has_more', false);
+    }
+
     public function test_a_safeguarding_restriction_beats_an_active_grant(): void
     {
         $supporter = $this->member();

@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Models\SupportPendingAction;
 use App\Support\Safeguarding\SupportTiers;
+use App\Services\SupportPendingActionService;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -204,6 +205,7 @@ class SupportActionControllerTest extends TestCase
         $this->apiPost("/v2/users/me/support-actions/{$actionId}/confirm")->assertStatus(422);
         $this->assertEquals(10.0, (float) DB::table('users')->where('id', $supported->id)->value('balance'));
         $this->assertSame('pending', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+
     }
 
     // ------------------------------------------------------------------
@@ -320,6 +322,14 @@ class SupportActionControllerTest extends TestCase
         $this->apiPost("/v2/users/me/support-actions/{$actionId}/confirm")->assertStatus(422);
         $this->assertEquals(10.0, (float) DB::table('users')->where('id', $supported->id)->value('balance'));
         $this->assertSame('pending', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+        $this->assertSame(1, app(SupportPendingActionService::class)->expireStale());
+        $this->assertSame('expired', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+        $this->assertDatabaseHas('org_audit_log', [
+            'tenant_id' => $this->testTenantId,
+            'action' => 'support_action_expired',
+            'user_id' => $supporter->id,
+            'target_user_id' => $supported->id,
+        ]);
     }
 
     // ------------------------------------------------------------------
@@ -428,6 +438,51 @@ class SupportActionControllerTest extends TestCase
         ]);
 
         $this->apiDelete("/v2/users/me/support-actions/{$actionId}")->assertStatus(200);
+        $this->assertSame('cancelled', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+        $this->assertDatabaseHas('org_audit_log', [
+            'action' => 'support_action_cancelled',
+            'target_user_id' => $supported->id,
+        ]);
+    }
+
+    public function test_revoked_relationship_cancels_and_refuses_pending_confirmation(): void
+    {
+        $supporter = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $supported = $this->actingUser(['balance' => 10.0]);
+        $recipient = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'balance' => 0.0]);
+        $relationshipId = $this->relationshipWithTiers($supporter, $supported, ['credits' => SupportTiers::CO_DECIDE]);
+        $actionId = (int) DB::table('support_pending_actions')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'relationship_id' => $relationshipId,
+            'supported_user_id' => $supported->id, 'supporter_user_id' => $supporter->id,
+            'action_type' => 'credit_transfer', 'payload' => json_encode(['recipient' => $recipient->id, 'amount' => 3]),
+            'status' => 'pending', 'token_hash' => hash('sha256', uniqid('revoked-', true)),
+            'expires_at' => now()->addDays(14), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('account_relationships')->where('id', $relationshipId)->update(['status' => 'revoked']);
+
+        $this->apiPost("/v2/users/me/support-actions/{$actionId}/confirm")->assertStatus(422);
+        $this->assertSame('cancelled', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $supported->id)->value('balance'));
+    }
+
+    public function test_token_confirmation_refuses_after_tier_downgrade(): void
+    {
+        $supporter = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $supported = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true, 'balance' => 10.0]);
+        $relationshipId = $this->relationshipWithTiers($supporter, $supported, ['credits' => SupportTiers::CO_DECIDE]);
+        $token = bin2hex(random_bytes(32));
+        $actionId = (int) DB::table('support_pending_actions')->insertGetId([
+            'tenant_id' => $this->testTenantId, 'relationship_id' => $relationshipId,
+            'supported_user_id' => $supported->id, 'supporter_user_id' => $supporter->id,
+            'action_type' => 'credit_transfer', 'payload' => json_encode(['recipient' => 1, 'amount' => 3]),
+            'status' => 'pending', 'token_hash' => hash('sha256', $token),
+            'expires_at' => now()->addDays(14), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        DB::table('account_relationships')->where('id', $relationshipId)->update([
+            'permissions' => json_encode(['tiers' => ['credits' => SupportTiers::ASSIST]]),
+        ]);
+
+        $this->apiPost("/v2/support-actions/confirm/{$token}")->assertStatus(422);
         $this->assertSame('cancelled', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
     }
 }

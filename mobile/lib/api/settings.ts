@@ -152,6 +152,15 @@ export function updateSubAccountTiers(
   });
 }
 
+export function updateManagerSubAccountTiers(
+  relationshipId: number,
+  tiers: Partial<Record<SupportTierCapability, SupportTier>>,
+): Promise<unknown> {
+  return api.put<unknown>(`${API_V2}/users/me/parent-accounts/${relationshipId}/permissions`, {
+    permissions: { tiers },
+  });
+}
+
 /**
  * Resolve the effective tier per capability, mirroring the backend
  * SupportTiers::resolve(): explicit tiers win, legacy booleans are the floor,

@@ -98,7 +98,7 @@
                                 <div class="govuk-summary-list__row">
                                     <dt class="govuk-summary-list__key">{{ __('govuk_alpha_settings.guardians.date_added') }}</dt>
                                     <dd class="govuk-summary-list__value">
-                                        {{ !empty($guardian['assigned_at']) ? \Illuminate\Support\Carbon::parse($guardian['assigned_at'])->format('j F Y') : '—' }}
+                                        {{ !empty($guardian['assigned_at']) ? \Illuminate\Support\Carbon::parse($guardian['assigned_at'])->locale(app()->getLocale())->translatedFormat('j F Y') : '—' }}
                                     </dd>
                                 </div>
                                 <div class="govuk-summary-list__row">
