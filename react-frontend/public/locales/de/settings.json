@@ -405,7 +405,15 @@
       "tiers_explainer": "„Nur vorbereiten“ bedeutet, dass etwas vorbereitet wird und nichts passiert, bis Sie „Ja“ sagen. „Machen Sie es selbst“ bedeutet, dass es sofort geschieht und aufgezeichnet wird, dass es von ihnen in Ihrem Namen durchgeführt wurde.",
       "tiers_error": "Das konnte nicht gespeichert werden. Es wurde nichts geändert.",
       "tiers_option_none": "Nichts",
-      "tiers_toast": "Gespeichert."
+      "tiers_toast": "Gespeichert.",
+      "step_one_label": "Schritt 1 von 2",
+      "admin_managed_label": "Von der Administration verwaltete Vorsorgevereinbarung",
+      "why_visible_title": "Warum wird mir das angezeigt?",
+      "why_visible_body": "Eine Administratorin oder ein Administrator hat diese Vorsorgevereinbarung erfasst. Sie können sie hier prüfen und entscheiden, ob Sie zustimmen. Wenden Sie sich bei Fragen zu diesem Eintrag an Ihre Organisation.",
+      "no_account_support_yet": "Noch keine Kontounterstützung gewährt.",
+      "member_controlled_label": "Vom Mitglied gesteuerte Kontounterstützung",
+      "step_two_label": "Schritt 2 von 2",
+      "current_access_label": "Aktuelle Kontounterstützung"
     },
     "guardians_prompt": {
       "message": "Es wurde festgestellt, dass jemand für Ihre Unterstützung verantwortlich ist. Ihre Antwort wird benötigt.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Beziehung",
     "requested_at": "Angefragt {{time}}",
-    "cancel_request": "Anfrage zurückziehen"
+    "cancel_request": "Anfrage zurückziehen",
+    "outcome_you_control": "Sie entscheiden, wobei {{name}} helfen darf. Sie können diese Unterstützung jederzeit ändern oder beenden.",
+    "outcome_they_control": "{{name}} hat entschieden, wobei Sie helfen dürfen. Sie können nur die vereinbarte Unterstützung leisten.",
+    "current_access_label": "Aktuelle Kontounterstützung",
+    "current_access_activity_their": "Aktivität dieser Person",
+    "current_access_activity_your": "Ihre Aktivität",
+    "current_access_none": "Kein Zugriff",
+    "current_access_view": "Nur ansehen",
+    "staff_recorded_label": "Vom Personal erfasste Vorsorgevereinbarung",
+    "active_support_chosen_by": "Aktive Kontounterstützung, ausgewählt von {{name}}",
+    "remove_modal_title": "{{name}} entfernen?",
+    "remove_modal_body": "{{name}} verliert die gesamte auf dieser Karte angezeigte Kontounterstützung.",
+    "remove_modal_cancel": "Unterstützung beibehalten",
+    "remove_modal_confirm": "Unterstützung entfernen"
   },
   "support_actions": {
     "waiting_title": "Warten auf Ihre Zustimmung",

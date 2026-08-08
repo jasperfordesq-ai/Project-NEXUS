@@ -405,7 +405,15 @@
       "tiers_explainer": "\"Alleen voorbereiden\" betekent dat ze iets regelen en dat er niets gebeurt totdat u ja zegt. \"Doe het zelf\" betekent dat het meteen gebeurt, geregistreerd zoals door hen namens u gedaan.",
       "tiers_error": "Kon dat niet redden. Er werd niets veranderd.",
       "tiers_option_none": "Niets",
-      "tiers_toast": "Opgeslagen."
+      "tiers_toast": "Opgeslagen.",
+      "step_one_label": "Stap 1 van 2",
+      "admin_managed_label": "Door de beheerder beheerde beschermingsregeling",
+      "why_visible_title": "Waarom zie ik dit?",
+      "why_visible_body": "Een beheerder heeft deze beschermingsregeling vastgelegd. U kunt deze hier bekijken en kiezen of u ermee instemt. Neem bij vragen over de registratie contact op met uw organisatie.",
+      "no_account_support_yet": "Er is nog geen accountondersteuning toegekend.",
+      "member_controlled_label": "Accountondersteuning onder beheer van het lid",
+      "step_two_label": "Stap 2 van 2",
+      "current_access_label": "Huidige accountondersteuning"
     },
     "guardians_prompt": {
       "message": "Er is iemand geregistreerd die verantwoordelijk is voor de ondersteuning van u. Jouw antwoord is nodig.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Relatie",
     "requested_at": "Aangevraagd {{time}}",
-    "cancel_request": "Verzoek annuleren"
+    "cancel_request": "Verzoek annuleren",
+    "outcome_you_control": "U bepaalt waarmee {{name}} mag helpen. U kunt deze ondersteuning op elk moment wijzigen of beëindigen.",
+    "outcome_they_control": "{{name}} heeft bepaald waarmee u mag helpen. U kunt alleen de ondersteuning bieden waarmee diegene heeft ingestemd.",
+    "current_access_label": "Huidige accountondersteuning",
+    "current_access_activity_their": "Activiteit van diegene",
+    "current_access_activity_your": "Uw activiteit",
+    "current_access_none": "Geen toegang",
+    "current_access_view": "Alleen bekijken",
+    "staff_recorded_label": "Door medewerkers vastgelegde voogdijregeling",
+    "active_support_chosen_by": "Actieve accountondersteuning gekozen door {{name}}",
+    "remove_modal_title": "{{name}} verwijderen?",
+    "remove_modal_body": "{{name}} verliest alle accountondersteuning die op deze kaart wordt weergegeven.",
+    "remove_modal_cancel": "Ondersteuning behouden",
+    "remove_modal_confirm": "Ondersteuning verwijderen"
   },
   "support_actions": {
     "waiting_title": "Wachten op uw goedkeuring",

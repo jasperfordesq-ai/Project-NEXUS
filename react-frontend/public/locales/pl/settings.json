@@ -405,7 +405,15 @@
       "tiers_explainer": "„Tylko przygotuj” oznacza, że ​​coś przygotowują i nic się nie dzieje, dopóki nie powiesz „tak”. „Zrób to samodzielnie” oznacza, że ​​dzieje się to od razu i jest rejestrowane jako wykonane przez nich w Twoim imieniu.",
       "tiers_error": "Nie udało się tego zapisać. Nic nie zostało zmienione.",
       "tiers_option_none": "Nic",
-      "tiers_toast": "Zapisano."
+      "tiers_toast": "Zapisano.",
+      "step_one_label": "Krok 1 z 2",
+      "admin_managed_label": "Ustalenie dotyczące ochrony zarządzane przez administratora",
+      "why_visible_title": "Dlaczego to widzę?",
+      "why_visible_body": "Administrator zarejestrował to ustalenie dotyczące ochrony. Możesz je tutaj przejrzeć i zdecydować, czy wyrażasz zgodę. Jeśli masz pytania dotyczące tego wpisu, skontaktuj się ze swoją organizacją.",
+      "no_account_support_yet": "Nie przyznano jeszcze żadnego wsparcia do konta.",
+      "member_controlled_label": "Wsparcie do konta kontrolowane przez członka",
+      "step_two_label": "Krok 2 z 2",
+      "current_access_label": "Aktualne wsparcie do konta"
     },
     "guardians_prompt": {
       "message": "Ktoś został zapisany jako odpowiedzialny za wspieranie Cię. Twoja odpowiedź jest potrzebna.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Relacja",
     "requested_at": "Poproszono {{time}}",
-    "cancel_request": "Anuluj prośbę"
+    "cancel_request": "Anuluj prośbę",
+    "outcome_you_control": "Ty decydujesz, w czym {{name}} może Ci pomagać. Możesz w każdej chwili zmienić lub usunąć to wsparcie.",
+    "outcome_they_control": "Zakres Twojej pomocy został wybrany przez {{name}}. Możesz udzielać wyłącznie uzgodnionego wsparcia.",
+    "current_access_label": "Aktualne wsparcie do konta",
+    "current_access_activity_their": "Aktywność tej osoby",
+    "current_access_activity_your": "Twoja aktywność",
+    "current_access_none": "Brak dostępu",
+    "current_access_view": "Tylko podgląd",
+    "staff_recorded_label": "Ustalenie dotyczące opiekuna zarejestrowane przez personel",
+    "active_support_chosen_by": "Aktywne wsparcie do konta wybrane przez {{name}}",
+    "remove_modal_title": "Usunąć {{name}}?",
+    "remove_modal_body": "{{name}} utraci całe wsparcie do konta pokazane na tej karcie.",
+    "remove_modal_cancel": "Zachowaj wsparcie",
+    "remove_modal_confirm": "Usuń wsparcie"
   },
   "support_actions": {
     "waiting_title": "Czekam na Twoją zgodę",

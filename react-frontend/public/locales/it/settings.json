@@ -405,7 +405,15 @@
       "tiers_explainer": "\"Solo preparazione\" significa che impostano qualcosa e non succede nulla finché non dici di sì. \"Fallo da soli\" significa che avviene immediatamente, registrato come fatto da loro per tuo conto.",
       "tiers_error": "Impossibile salvarlo. Niente è stato cambiato.",
       "tiers_option_none": "Niente",
-      "tiers_toast": "Salvato."
+      "tiers_toast": "Salvato.",
+      "step_one_label": "Passaggio 1 di 2",
+      "admin_managed_label": "Accordo di tutela gestito dall’amministrazione",
+      "why_visible_title": "Perché vedo questo?",
+      "why_visible_body": "Un amministratore ha registrato questo accordo di tutela. Puoi esaminarlo qui e scegliere se accettarlo. Rivolgiti alla tua organizzazione se hai domande sulla registrazione.",
+      "no_account_support_yet": "Non è ancora stato concesso alcun supporto per l’account.",
+      "member_controlled_label": "Supporto dell’account controllato dal membro",
+      "step_two_label": "Passaggio 2 di 2",
+      "current_access_label": "Supporto attuale per l’account"
     },
     "guardians_prompt": {
       "message": "Qualcuno è stato registrato come responsabile del tuo supporto. È necessaria la tua risposta.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Relazione",
     "requested_at": "Richiesto {{time}}",
-    "cancel_request": "Annulla la richiesta"
+    "cancel_request": "Annulla la richiesta",
+    "outcome_you_control": "Scegli tu in che modo {{name}} può aiutarti. Puoi modificare o rimuovere questo supporto in qualsiasi momento.",
+    "outcome_they_control": "{{name}} ha scelto il tipo di aiuto che puoi offrire. Puoi fornire solo il supporto approvato.",
+    "current_access_label": "Supporto attuale per l’account",
+    "current_access_activity_their": "La sua attività",
+    "current_access_activity_your": "La tua attività",
+    "current_access_none": "Nessun accesso",
+    "current_access_view": "Sola visualizzazione",
+    "staff_recorded_label": "Accordo di tutela registrato dal personale",
+    "active_support_chosen_by": "Supporto attivo per l’account scelto da {{name}}",
+    "remove_modal_title": "Rimuovere {{name}}?",
+    "remove_modal_body": "{{name}} perderà tutto il supporto per l’account mostrato in questa scheda.",
+    "remove_modal_cancel": "Mantieni il supporto",
+    "remove_modal_confirm": "Rimuovi il supporto"
   },
   "support_actions": {
     "waiting_title": "In attesa della tua approvazione",

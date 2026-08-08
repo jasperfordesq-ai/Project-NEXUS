@@ -405,7 +405,15 @@
       "tiers_explainer": "« Préparer uniquement » signifie qu'ils ont mis en place quelque chose et que rien ne se passe jusqu'à ce que vous disiez oui. « Faites-le eux-mêmes » signifie que cela se produit immédiatement, enregistré comme étant fait par eux en votre nom.",
       "tiers_error": "Je n'ai pas pu sauvegarder ça. Rien n'a été changé.",
       "tiers_option_none": "Rien",
-      "tiers_toast": "Enregistré."
+      "tiers_toast": "Enregistré.",
+      "step_one_label": "Étape 1 sur 2",
+      "admin_managed_label": "Disposition de protection gérée par l’administration",
+      "why_visible_title": "Pourquoi est-ce affiché ?",
+      "why_visible_body": "Un membre de l’administration a enregistré cette disposition de protection. Vous pouvez l’examiner ici et décider de l’accepter ou non. Adressez-vous à votre organisation si vous avez des questions sur cet enregistrement.",
+      "no_account_support_yet": "Aucune aide sur le compte n’a encore été accordée.",
+      "member_controlled_label": "Aide sur le compte contrôlée par le membre",
+      "step_two_label": "Étape 2 sur 2",
+      "current_access_label": "Aide actuelle sur le compte"
     },
     "guardians_prompt": {
       "message": "Une personne a été enregistrée comme responsable de votre soutien. Votre réponse est nécessaire.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Relation",
     "requested_at": "Demandé {{time}}",
-    "cancel_request": "Annuler la demande"
+    "cancel_request": "Annuler la demande",
+    "outcome_you_control": "Vous choisissez ce que {{name}} peut vous aider à faire. Vous pouvez modifier ou supprimer cette aide à tout moment.",
+    "outcome_they_control": "{{name}} a choisi l’aide que vous pouvez apporter. Vous ne pouvez fournir que l’aide acceptée.",
+    "current_access_label": "Aide actuelle sur le compte",
+    "current_access_activity_their": "Son activité",
+    "current_access_activity_your": "Votre activité",
+    "current_access_none": "Aucun accès",
+    "current_access_view": "Consultation uniquement",
+    "staff_recorded_label": "Disposition de tutelle enregistrée par le personnel",
+    "active_support_chosen_by": "Aide active sur le compte choisie par {{name}}",
+    "remove_modal_title": "Supprimer {{name}} ?",
+    "remove_modal_body": "{{name}} perdra toute l’aide sur le compte affichée sur cette carte.",
+    "remove_modal_cancel": "Conserver l’aide",
+    "remove_modal_confirm": "Supprimer l’aide"
   },
   "support_actions": {
     "waiting_title": "En attente de votre approbation",

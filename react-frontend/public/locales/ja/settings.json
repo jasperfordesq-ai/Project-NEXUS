@@ -405,7 +405,15 @@
       "tiers_explainer": "「準備のみ」とは、彼らが何かを準備し、あなたが「はい」と言うまで何も起こらないことを意味します。 「自分たちで行う」とは、それがすぐに行われ、あなたの代わりに彼らが行ったものとして記録されることを意味します。",
       "tiers_error": "それを保存できませんでした。何も変わりませんでした。",
       "tiers_option_none": "なし",
-      "tiers_toast": "保存しました。"
+      "tiers_toast": "保存しました。",
+      "step_one_label": "ステップ1/2",
+      "admin_managed_label": "管理者が管理するセーフガーディングの取り決め",
+      "why_visible_title": "なぜこれが表示されているのですか？",
+      "why_visible_body": "管理者がこのセーフガーディングの取り決めを記録しました。ここで内容を確認し、同意するかどうかを選べます。この記録について質問がある場合は、所属する団体にお問い合わせください。",
+      "no_account_support_yet": "アカウントへのサポートはまだ許可されていません。",
+      "member_controlled_label": "メンバーが管理するアカウントサポート",
+      "step_two_label": "ステップ2/2",
+      "current_access_label": "現在のアカウントサポート"
     },
     "guardians_prompt": {
       "message": "誰かがあなたをサポートする責任があると記録されています。あなたの答えが必要です。",
@@ -691,7 +699,20 @@
     },
     "type_label": "関係",
     "requested_at": "{{time}} にリクエスト",
-    "cancel_request": "リクエストを取り消す"
+    "cancel_request": "リクエストを取り消す",
+    "outcome_you_control": "{{name}}さんがどのような支援を行えるかは、あなたが決めます。この支援はいつでも変更または削除できます。",
+    "outcome_they_control": "{{name}}さんは、あなたがどのような支援を行えるかを選びました。同意された支援だけを行えます。",
+    "current_access_label": "現在のアカウントサポート",
+    "current_access_activity_their": "相手のアクティビティ",
+    "current_access_activity_your": "あなたのアクティビティ",
+    "current_access_none": "アクセスなし",
+    "current_access_view": "閲覧のみ",
+    "staff_recorded_label": "スタッフが記録した後見人の取り決め",
+    "active_support_chosen_by": "{{name}}さんが選択した有効なアカウントサポート",
+    "remove_modal_title": "{{name}}さんを削除しますか？",
+    "remove_modal_body": "{{name}}さんは、このカードに表示されているすべてのアカウントサポートを利用できなくなります。",
+    "remove_modal_cancel": "サポートを維持",
+    "remove_modal_confirm": "サポートを削除"
   },
   "support_actions": {
     "waiting_title": "あなたの承認を待っています",

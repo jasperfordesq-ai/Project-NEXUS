@@ -405,7 +405,15 @@
       "tiers_explainer": "Ciallaíonn \"ullmhaigh ach\" go socraíonn siad rud éigin agus ní tharlaíonn aon rud go dtí go ndeir tú tá. Ciallaíonn \"Déan é astu féin\" go dtarlaíonn sé láithreach, taifeadta mar a rinne siad thar do cheann.",
       "tiers_error": "Níorbh fhéidir é sin a shábháil. Níor athraíodh aon rud.",
       "tiers_option_none": "Faic",
-      "tiers_toast": "Sábháilte."
+      "tiers_toast": "Sábháilte.",
+      "step_one_label": "Céim 1 de 2",
+      "admin_managed_label": "Socrú cosanta arna bhainistiú ag an riarthóir",
+      "why_visible_title": "Cén fáth a bhfuil sé seo á fheiceáil agam?",
+      "why_visible_body": "Thaifead riarthóir an socrú cosanta seo. Is féidir leat é a athbhreithniú anseo agus roghnú an n-aontaíonn tú leis. Cuir ceist ar d’eagraíocht má tá ceisteanna agat faoin taifead.",
+      "no_account_support_yet": "Níor deonaíodh aon tacaíocht cuntais go fóill.",
+      "member_controlled_label": "Tacaíocht cuntais faoi rialú an bhaill",
+      "step_two_label": "Céim 2 de 2",
+      "current_access_label": "Tacaíocht reatha cuntais"
     },
     "guardians_prompt": {
       "message": "Taifeadadh go bhfuil duine éigin freagrach as tacaíocht a thabhairt duit. Tá do fhreagra ag teastáil.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Gaol",
     "requested_at": "Iarrtha {{time}}",
-    "cancel_request": "Cealaigh an t-iarratas"
+    "cancel_request": "Cealaigh an t-iarratas",
+    "outcome_you_control": "Roghnaíonn tusa an chabhair is féidir le {{name}} a thabhairt duit. Is féidir leat an tacaíocht seo a athrú nó a bhaint am ar bith.",
+    "outcome_they_control": "Roghnaigh {{name}} an chabhair is féidir leat a thabhairt. Ní féidir leat ach an tacaíocht ar aontaíodh léi a sholáthar.",
+    "current_access_label": "Tacaíocht reatha cuntais",
+    "current_access_activity_their": "A gcuid gníomhaíochta",
+    "current_access_activity_your": "Do ghníomhaíocht",
+    "current_access_none": "Gan rochtain",
+    "current_access_view": "Amharc amháin",
+    "staff_recorded_label": "Socrú caomhnóra arna thaifeadadh ag an bhfoireann",
+    "active_support_chosen_by": "Tacaíocht ghníomhach cuntais roghnaithe ag {{name}}",
+    "remove_modal_title": "Bain {{name}}?",
+    "remove_modal_body": "Caillfidh {{name}} an tacaíocht cuntais uile atá léirithe ar an gcárta seo.",
+    "remove_modal_cancel": "Coinnigh an tacaíocht",
+    "remove_modal_confirm": "Bain an tacaíocht"
   },
   "support_actions": {
     "waiting_title": "Ag fanacht le do cheadú",

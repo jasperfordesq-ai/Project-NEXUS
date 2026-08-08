@@ -405,7 +405,15 @@
       "tiers_explainer": "\"Preparar sólo\" significa que prepararon algo y no pasa nada hasta que usted dice que sí. \"Hacerlo por su cuenta\" significa que sucede de inmediato, registrado como hecho por ellos en su nombre.",
       "tiers_error": "No se pudo salvar eso. No se cambió nada.",
       "tiers_option_none": "Nada",
-      "tiers_toast": "Guardado."
+      "tiers_toast": "Guardado.",
+      "step_one_label": "Paso 1 de 2",
+      "admin_managed_label": "Acuerdo de protección gestionado por la administración",
+      "why_visible_title": "¿Por qué veo esto?",
+      "why_visible_body": "Una persona administradora registró este acuerdo de protección. Puedes revisarlo aquí y decidir si estás de acuerdo. Si tienes preguntas sobre el registro, consulta con tu organización.",
+      "no_account_support_yet": "Aún no se ha concedido ayuda para la cuenta.",
+      "member_controlled_label": "Ayuda para la cuenta controlada por el miembro",
+      "step_two_label": "Paso 2 de 2",
+      "current_access_label": "Ayuda actual para la cuenta"
     },
     "guardians_prompt": {
       "message": "Alguien ha sido registrado como responsable de apoyarte. Se necesita tu respuesta.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Relación",
     "requested_at": "Solicitado {{time}}",
-    "cancel_request": "Cancelar la solicitud"
+    "cancel_request": "Cancelar la solicitud",
+    "outcome_you_control": "Tú decides en qué puede ayudarte {{name}}. Puedes cambiar o eliminar esta ayuda en cualquier momento.",
+    "outcome_they_control": "{{name}} decidió en qué puedes ayudarle. Solo puedes prestar la ayuda que haya aceptado.",
+    "current_access_label": "Ayuda actual para la cuenta",
+    "current_access_activity_their": "Su actividad",
+    "current_access_activity_your": "Tu actividad",
+    "current_access_none": "Sin acceso",
+    "current_access_view": "Solo lectura",
+    "staff_recorded_label": "Acuerdo de tutela registrado por el personal",
+    "active_support_chosen_by": "Ayuda activa para la cuenta elegida por {{name}}",
+    "remove_modal_title": "¿Eliminar a {{name}}?",
+    "remove_modal_body": "{{name}} perderá toda la ayuda para la cuenta que se muestra en esta tarjeta.",
+    "remove_modal_cancel": "Mantener la ayuda",
+    "remove_modal_confirm": "Eliminar la ayuda"
   },
   "support_actions": {
     "waiting_title": "Esperando su aprobación",

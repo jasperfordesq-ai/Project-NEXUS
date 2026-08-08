@@ -405,7 +405,15 @@
       "tiers_explainer": "\"التحضير فقط\" يعني أنهم قاموا بإعداد شيء ما ولن يحدث شيء حتى تقول نعم. \"افعل ذلك بمفردهم\" يعني أن ذلك يحدث على الفور، ويتم تسجيله على أنه تم القيام به نيابةً عنك.",
       "tiers_error": "لا يمكن حفظ ذلك. لم يتغير شيء.",
       "tiers_option_none": "لا شيء",
-      "tiers_toast": "تم الحفظ."
+      "tiers_toast": "تم الحفظ.",
+      "step_one_label": "الخطوة 1 من 2",
+      "admin_managed_label": "ترتيب الحماية الذي تديره الإدارة",
+      "why_visible_title": "لماذا أرى هذا؟",
+      "why_visible_body": "سجّل أحد المسؤولين ترتيب الحماية هذا. يمكنك مراجعته هنا واختيار ما إذا كنت توافق عليه. تواصل مع مؤسستك إذا كانت لديك أسئلة حول السجل.",
+      "no_account_support_yet": "لم يتم منح أي دعم للحساب حتى الآن.",
+      "member_controlled_label": "دعم الحساب الذي يتحكم فيه العضو",
+      "step_two_label": "الخطوة 2 من 2",
+      "current_access_label": "دعم الحساب الحالي"
     },
     "guardians_prompt": {
       "message": "تم تسجيل شخص ما كمسؤول عن دعمك. هناك حاجة لإجابتك.",
@@ -691,7 +699,20 @@
     },
     "type_label": "علاقة",
     "requested_at": "طُلب {{time}}",
-    "cancel_request": "إلغاء الطلب"
+    "cancel_request": "إلغاء الطلب",
+    "outcome_you_control": "أنت تختار الأمور التي يمكن لـ {{name}} مساعدتك فيها. يمكنك تغيير هذا الدعم أو إزالته في أي وقت.",
+    "outcome_they_control": "اختار {{name}} نوع المساعدة التي يمكنك تقديمها. لا يمكنك سوى تقديم الدعم المتفق عليه.",
+    "current_access_label": "دعم الحساب الحالي",
+    "current_access_activity_their": "نشاط هذا الشخص",
+    "current_access_activity_your": "نشاطك",
+    "current_access_none": "لا وصول",
+    "current_access_view": "عرض فقط",
+    "staff_recorded_label": "ترتيب الوصاية المسجل من قبل الموظفين",
+    "active_support_chosen_by": "دعم الحساب النشط الذي اختاره {{name}}",
+    "remove_modal_title": "إزالة {{name}}؟",
+    "remove_modal_body": "سيفقد {{name}} كل دعم الحساب الموضح في هذه البطاقة.",
+    "remove_modal_cancel": "الإبقاء على الدعم",
+    "remove_modal_confirm": "إزالة الدعم"
   },
   "support_actions": {
     "waiting_title": "في انتظار موافقتك",

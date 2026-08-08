@@ -405,7 +405,15 @@
       "tiers_explainer": "“Apenas preparar” significa que eles armaram algo e nada acontece até que você diga sim. \"Faça por conta própria\" significa que acontece imediatamente, registrado como feito por eles em seu nome.",
       "tiers_error": "Não foi possível salvar isso. Nada foi alterado.",
       "tiers_option_none": "Nada",
-      "tiers_toast": "Guardado."
+      "tiers_toast": "Guardado.",
+      "step_one_label": "Etapa 1 de 2",
+      "admin_managed_label": "Acordo de proteção gerido pela administração",
+      "why_visible_title": "Por que estou vendo isto?",
+      "why_visible_body": "Um administrador registrou este acordo de proteção. Você pode revisá-lo aqui e escolher se concorda. Fale com a sua organização se tiver dúvidas sobre o registro.",
+      "no_account_support_yet": "Ainda não foi concedido nenhum suporte à conta.",
+      "member_controlled_label": "Suporte à conta controlado pelo membro",
+      "step_two_label": "Etapa 2 de 2",
+      "current_access_label": "Suporte atual à conta"
     },
     "guardians_prompt": {
       "message": "Alguém foi registrado como responsável por apoiá-lo. Sua resposta é necessária.",
@@ -691,7 +699,20 @@
     },
     "type_label": "Relação",
     "requested_at": "Pedido {{time}}",
-    "cancel_request": "Cancelar o pedido"
+    "cancel_request": "Cancelar o pedido",
+    "outcome_you_control": "Você escolhe em que {{name}} pode ajudar. Você pode alterar ou remover este suporte a qualquer momento.",
+    "outcome_they_control": "{{name}} escolheu em que você pode ajudar. Você só pode prestar o suporte com o qual essa pessoa concordou.",
+    "current_access_label": "Suporte atual à conta",
+    "current_access_activity_their": "Atividade dessa pessoa",
+    "current_access_activity_your": "Sua atividade",
+    "current_access_none": "Sem acesso",
+    "current_access_view": "Somente visualização",
+    "staff_recorded_label": "Acordo de tutela registrado pela equipe",
+    "active_support_chosen_by": "Suporte ativo à conta escolhido por {{name}}",
+    "remove_modal_title": "Remover {{name}}?",
+    "remove_modal_body": "{{name}} perderá todo o suporte à conta mostrado neste cartão.",
+    "remove_modal_cancel": "Manter o suporte",
+    "remove_modal_confirm": "Remover o suporte"
   },
   "support_actions": {
     "waiting_title": "Aguardando sua aprovação",
