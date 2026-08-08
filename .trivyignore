@@ -148,3 +148,23 @@ GHSA-96hv-2xvq-fx4p
 # entry when upstream releases a 1.x/2.x backport or the tooling moves to 5.x.
 # (added 2026-07-25)
 CVE-2026-14257
+
+# ── image-size 1.2.1 DoS (HIGH ×2) — no fixed release exists at all ──────────
+# CVE-2025-71329 (crafted image buffer with zero-valued size) and CVE-2025-71330
+# (crafted ICNS buffer). Trivy reports NO fixed version for either — 1.2.1 is
+# the last release of the 1.x line (published 2025-04-02, the same day upstream
+# moved on to 2.0.2), and 2.x is not marked fixed either, so bumping resolves
+# nothing.
+#
+# Reachability: mobile/package-lock.json only, and only via metro — the Expo /
+# React-Native DEV bundler (metro 0.83.x under @expo/metro and
+# @react-native/community-cli-plugin). metro reads image dimensions while
+# building the JS bundle on a developer machine or a CI runner; it does not ship
+# in the compiled APK/IPA and does not run on any server. The images it reads
+# are the repo's own committed assets, not untrusted input. Same class as the
+# undici/ws dev-bundler block above.
+#
+# Remove this entry when upstream publishes a fixed image-size that metro picks
+# up. (added 2026-08-08)
+CVE-2025-71329
+CVE-2025-71330
