@@ -65,13 +65,13 @@ class AccountRelationshipEventsTest extends TestCase
         Sanctum::actingAs($child, ['*']);
         $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/approve")->assertStatus(200);
 
-        // … change a tier (as the parent) …
-        Sanctum::actingAs($parent, ['*']);
-        $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
+        // … grant a tier (as the supported member) …
+        $this->apiPut("/v2/users/me/parent-accounts/{$relationshipId}/permissions", [
             'permissions' => ['tiers' => ['credits' => SupportTiers::CO_DECIDE]],
         ])->assertStatus(200);
 
         // … and revoke.
+        Sanctum::actingAs($parent, ['*']);
         $this->apiDelete("/v2/users/me/sub-accounts/{$relationshipId}")->assertStatus(200);
 
         $events = $this->events($relationshipId);
