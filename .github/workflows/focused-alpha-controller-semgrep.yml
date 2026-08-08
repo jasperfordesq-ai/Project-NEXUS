@@ -1,0 +1,54 @@
+name: Focused AlphaController Semgrep
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan AlphaController
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Semgrep 1.172.0
+        run: pip install --disable-pip-version-check semgrep==1.172.0
+
+      - name: Run focused scan
+        id: semgrep
+        shell: bash
+        run: |
+          set +e
+          semgrep scan \
+            --config p/php \
+            --config p/security-audit \
+            --config p/secrets \
+            --timeout 300 \
+            --max-target-bytes 0 \
+            --json-output focused-semgrep.json \
+            --sarif-output focused-semgrep.sarif \
+            app/Http/Controllers/GovukAlpha/AlphaController.php
+          scan_exit=$?
+          set -e
+          printf '%s\n' "$scan_exit" > focused-semgrep-exit-code.txt
+
+      - name: Confirm rule evaluation completed
+        run: |
+          jq '{findings: (.results | length), errors: (.errors | length), skipped_rules: (.skipped_rules | length)}' focused-semgrep.json
+          jq -e '(.errors | length) == 0' focused-semgrep.json
+
+      - name: Upload focused scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: focused-alpha-controller-semgrep
+          path: |
+            focused-semgrep.json
+            focused-semgrep.sarif
+            focused-semgrep-exit-code.txt
+          if-no-files-found: error
+          retention-days: 7
