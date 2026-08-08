@@ -60,7 +60,8 @@ services:
       - nexus-php-logs:/var/log
       # Laravel writable directories
       - nexus-php-storage:/var/www/html/storage
-      - nexus-php-bootstrap-cache:/var/www/html/bootstrap/cache
+      # Per-container, never shared — see the volumes: note below.
+      - nexus-php-bootstrap-cache-app:/var/www/html/bootstrap/cache
     env_file:
       - .env
     environment:
@@ -274,7 +275,8 @@ services:
       # (safeguarding emails, notifications) resolve __() keys correctly.
       - ./lang:/var/www/html/lang:ro
       - nexus-php-storage:/var/www/html/storage
-      - nexus-php-bootstrap-cache:/var/www/html/bootstrap/cache
+      # Per-container, never shared — see the volumes: note below.
+      - nexus-php-bootstrap-cache-queue:/var/www/html/bootstrap/cache
     env_file:
       - .env
     environment:
@@ -332,7 +334,8 @@ services:
       - ./composer.json:/var/www/html/composer.json:ro
       - ./lang:/var/www/html/lang:ro
       - nexus-php-storage:/var/www/html/storage
-      - nexus-php-bootstrap-cache:/var/www/html/bootstrap/cache
+      # Per-container, never shared — see the volumes: note below.
+      - nexus-php-bootstrap-cache-scheduler:/var/www/html/bootstrap/cache
     env_file:
       - .env
     environment:
@@ -382,7 +385,24 @@ volumes:
     name: nexus-php-logs
   nexus-php-storage:
     name: nexus-php-storage
-  nexus-php-bootstrap-cache:
-    name: nexus-php-bootstrap-cache
+  # bootstrap/cache is PER-CONTAINER and must never be shared between app,
+  # queue and scheduler. Sharing it caused a TOCTOU: the queue's and
+  # scheduler's startup `artisan optimize` deletes routes-v7.php to rebuild it,
+  # while another container's artisan has already passed the routesAreCached()
+  # check and is about to require() it — producing multi-minute bursts of
+  # "Failed to open stream" fatals (Sentry NEXUS-PHP-10).
+  #
+  # compose.bluegreen.yml fixed this in 3799007da by dropping the mount
+  # entirely, which it can do because it bind-mounts no source and uses the
+  # image-baked cache. This file CANNOT: it bind-mounts ./bootstrap read-only,
+  # so with no volume here bootstrap/cache would be read-only, `optimize` would
+  # fail at startup, and the `&&` would stop Horizon and the scheduler booting
+  # at all. Hence one writable volume per service instead. Do not re-merge.
+  nexus-php-bootstrap-cache-app:
+    name: nexus-php-bootstrap-cache-app
+  nexus-php-bootstrap-cache-queue:
+    name: nexus-php-bootstrap-cache-queue
+  nexus-php-bootstrap-cache-scheduler:
+    name: nexus-php-bootstrap-cache-scheduler
   nexus-php-prerendered:
     name: nexus-php-prerendered

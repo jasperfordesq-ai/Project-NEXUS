@@ -855,6 +855,18 @@ jobs:
             echo "========================================="
           fi
 
+      # Sharing bootstrap/cache between containers is a TOCTOU: the queue's and
+      # scheduler's startup `artisan optimize` unlinks routes-v7.php to rebuild
+      # it, while another container's artisan has already passed the
+      # routesAreCached() check and is about to require() it. That produced
+      # multi-minute bursts of ~600 fatals at ~3/second in production (Sentry
+      # NEXUS-PHP-10, 5,492 events). It was fixed in compose.bluegreen.yml in
+      # 3799007da, but compose.prod.yml kept the shared volume and kept
+      # emitting the bursts for another seven weeks. Zero dependencies, so it
+      # needs no npm ci.
+      - name: "BLOCKING: bootstrap/cache is never shared between containers"
+        run: node scripts/check-compose-bootstrap-cache.mjs
+
   # ─────────────────────────────────────────────────────────────────
   # Stage 5: Migration Safety Gate
   # ─────────────────────────────────────────────────────────────────
