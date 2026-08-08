@@ -7,6 +7,20 @@
       "package": "brace-expansion",
       "reason": "brace-expansion DoS (CVE-2026-14257) is fixed only in 5.0.8; the mobile tree receives 1.1.16/2.1.2 via minimatch inside @expo/cli, npm publishes no 1.x/2.x backport as of 2026-07-25, and a forced override to 5.x is API-incompatible (v5 exports named {expand}, v1/v2 consumers require a bare function — verified to break at runtime). The only npm-offered fix is the breaking expo@57 major; the mobile app is on hold pending that migration. Glob expansion here processes repo file paths at build time, never untrusted input.",
       "added": "2026-07-25"
+    },
+    {
+      "id": "GHSA-w3rx-r6r6-pgpr",
+      "scope": "mobile",
+      "package": "image-size",
+      "reason": "image-size ICNS-parser DoS. npm reports the vulnerable range as '*' — EVERY published version is affected, so there is no version to upgrade to (1.2.1 is the last of the 1.x line, published the same day upstream moved to 2.0.2, and 2.x is not fixed either). npm's only offered 'fix' is react-native 0.72.17, flagged isSemVerMajor — a major DOWNGRADE from 0.81.5 that would break the app without fixing the flaw. Reachable only via metro, the Expo/React-Native dev bundler (@expo/metro, @react-native/community-cli-plugin): it reads image dimensions while building the JS bundle on a developer machine or CI runner, does not ship in the compiled APK/IPA, and never runs on a server. The images it parses are the repo's own committed assets, not untrusted input. Same reachability class as the undici/ws and image-size CVE entries in .trivyignore. Remove as soon as upstream publishes a fixed image-size that metro accepts.",
+      "added": "2026-08-08"
+    },
+    {
+      "id": "GHSA-5p2g-fcmc-qvqq",
+      "scope": "mobile",
+      "package": "image-size",
+      "reason": "image-size JXL/HEIF-parser DoS — same package, same vulnerable range '*', same dev-bundler-only reachability and same absent fix as GHSA-w3rx-r6r6-pgpr above; see that entry for the full reasoning. Remove both together when a fixed image-size ships.",
+      "added": "2026-08-08"
     }
   ]
 }
