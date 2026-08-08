@@ -59,14 +59,36 @@ class SupportAuthorityAttestationTest extends TestCase
         return [$supporter, $supported, $relationshipId];
     }
 
-    private function actingBroker(): User
+    private function actingBroker(bool $grantManage = true): User
     {
         $broker = User::factory()->forTenant($this->testTenantId)->create([
             'role' => 'broker', 'status' => 'active', 'is_approved' => true,
         ]);
+        if ($grantManage) {
+            $permissionId = DB::table('permissions')->where('name', 'safeguarding.manage')->value('id');
+            DB::table('user_permissions')->insert([
+                'tenant_id' => $this->testTenantId,
+                'user_id' => $broker->id,
+                'permission_id' => $permissionId,
+                'granted' => 1,
+                'granted_at' => now(),
+            ]);
+        }
         Sanctum::actingAs($broker, ['*']);
 
         return $broker;
+    }
+
+    public function test_broker_without_safeguarding_manage_cannot_attest_authority(): void
+    {
+        [, , $relationshipId] = $this->seedRepresentRelationship();
+        $this->actingBroker(false);
+
+        $this->apiPost('/v2/admin/safeguarding/authority-attestations', [
+            'relationship_id' => $relationshipId,
+            'authority_type' => 'power_of_attorney',
+            'acknowledged_sighted' => true,
+        ])->assertStatus(403);
     }
 
     public function test_an_ordinary_member_cannot_reach_the_attest_endpoint(): void

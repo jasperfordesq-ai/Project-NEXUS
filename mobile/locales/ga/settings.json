@@ -241,6 +241,7 @@
       "can_manage_listings": "Manage listings",
       "can_transact": "Transfer credits"
     },
+    "tiers": { "activity": "Gníomhaíocht", "listings": "Liostúáin", "credits": "Creidmheasanna", "none": "Ceann ar bith", "assist": "Amharc amháin", "co_decide": "Ullmhaigh; ceadaíonn tú gach gníomh", "represent": "Gníomhaigh go neamhspleách" },
     "permissionToggle": "Toggle {{permission}} for {{name}}",
     "activity": {
       "show": "Féach ar a ngníomhaíocht",

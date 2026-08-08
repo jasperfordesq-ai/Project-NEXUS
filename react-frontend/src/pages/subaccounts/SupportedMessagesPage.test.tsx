@@ -120,4 +120,26 @@ describe('SupportedMessagesPage', () => {
       'You do not have permission to do this for that account',
     );
   });
+
+  it('preserves the cursor and appends the next page of conversations', async () => {
+    sessionStorage.setItem('nexus_msg_view_purpose_42', 'Check');
+    mockedGet
+      .mockResolvedValueOnce({ success: true, data: {
+        conversations: [{ partner_id: 7, other_user: { id: 7, name: 'First Person' }, last_message: { body: 'First' } }],
+        cursor: 'next-20',
+        has_more: true,
+      } } as never)
+      .mockResolvedValueOnce({ success: true, data: {
+        conversations: [{ partner_id: 8, other_user: { id: 8, name: 'Twenty First Person' }, last_message: { body: 'Next' } }],
+        cursor: null,
+        has_more: false,
+      } } as never);
+
+    render(<SupportedMessagesPage />);
+    expect(await screen.findByText('First Person')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /load more/i }));
+
+    expect(await screen.findByText('Twenty First Person')).toBeInTheDocument();
+    expect(String(mockedGet.mock.calls[1]?.[0])).toContain('cursor=next-20');
+  });
 });

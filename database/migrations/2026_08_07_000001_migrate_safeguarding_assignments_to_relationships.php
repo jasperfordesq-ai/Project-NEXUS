@@ -65,6 +65,19 @@ return new class extends Migration
                         ->exists();
 
                     if ($exists) {
+                        // Preserve the member-approved status and tiers while
+                        // attaching staff provenance. Skipping the pair made a
+                        // current safeguarding arrangement invisible to the
+                        // live guardian workflow.
+                        DB::table('account_relationships')
+                            ->where('tenant_id', $a->tenant_id)
+                            ->where('parent_user_id', $a->guardian_user_id)
+                            ->where('child_user_id', $a->ward_user_id)
+                            ->update([
+                                'proposed_by_user_id' => $a->assigned_by,
+                                'staff_notes' => $a->notes !== null ? mb_substr((string) $a->notes, 0, 500) : null,
+                                'updated_at' => now(),
+                            ]);
                         $skipped++;
                         continue;
                     }
@@ -102,23 +115,13 @@ return new class extends Migration
 
         Log::info('Guardian arrangement migration complete', [
             'migrated' => $migrated,
-            'skipped_pair_conflicts' => $skipped,
+            'reconciled_pair_conflicts' => $skipped,
         ]);
     }
 
     public function down(): void
     {
-        // Remove only rows this migration could have created: staff-proposed,
-        // guardian-type, tier 0, with a matching archive row. The archive was
-        // never modified, so nothing else needs restoring.
-        DB::table('account_relationships as ar')
-            ->join('safeguarding_assignments as sa', function ($join): void {
-                $join->on('sa.tenant_id', '=', 'ar.tenant_id')
-                    ->on('sa.guardian_user_id', '=', 'ar.parent_user_id')
-                    ->on('sa.ward_user_id', '=', 'ar.child_user_id');
-            })
-            ->where('ar.relationship_type', 'guardian')
-            ->whereNotNull('ar.proposed_by_user_id')
-            ->delete();
+        // Intentionally non-destructive. Deleting by row shape can erase a
+        // relationship subsequently approved or edited by its member.
     }
 };

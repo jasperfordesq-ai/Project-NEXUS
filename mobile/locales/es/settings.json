@@ -241,6 +241,7 @@
       "can_manage_listings": "Manage listings",
       "can_transact": "Transfer credits"
     },
+    "tiers": { "activity": "Actividad", "listings": "Anuncios", "credits": "Créditos", "none": "Ninguno", "assist": "Solo ver", "co_decide": "Preparar; apruebas cada acción", "represent": "Actuar de forma independiente" },
     "permissionToggle": "Toggle {{permission}} for {{name}}",
     "activity": {
       "show": "Ver su actividad",

@@ -91,7 +91,7 @@
                                 @if (!empty($action['expires_at']))
                                     <div class="govuk-summary-list__row">
                                         <dt class="govuk-summary-list__key">{{ __('govuk_alpha_settings.support_actions.expires') }}</dt>
-                                        <dd class="govuk-summary-list__value">{{ \Illuminate\Support\Carbon::parse($action['expires_at'])->format('j F Y') }}</dd>
+                                        <dd class="govuk-summary-list__value">{{ \Illuminate\Support\Carbon::parse($action['expires_at'])->locale(app()->getLocale())->translatedFormat('j F Y') }}</dd>
                                     </div>
                                 @endif
                             </dl>

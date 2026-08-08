@@ -28,6 +28,7 @@ import {
   resolveSupportTiers,
   revokeSubAccount,
   updateSubAccountTiers,
+  updateManagerSubAccountTiers,
   type SubAccountActivitySummary,
   type SubAccountPermission,
   type SubAccountRelationship,
@@ -47,8 +48,6 @@ import {
  */
 const PERMISSIONS: SubAccountPermission[] = [
   'can_view_activity',
-  'can_manage_listings',
-  'can_transact',
 ];
 
 function displayName(item: SubAccountRelationship, fallback: string) {
@@ -137,7 +136,7 @@ function SettingsLinkedAccountsScreen() {
    * chosen on the web's three-level control), `assist` for activity, `none`
    * when disabling. This screen can therefore never escalate anything.
    */
-  async function togglePermission(item: SubAccountRelationship, permission: SubAccountPermission) {
+  async function togglePermission(item: SubAccountRelationship, permission: SubAccountPermission, asMember = false) {
     const capability: SupportTierCapability | null =
       permission === 'can_view_activity' ? 'activity'
       : permission === 'can_manage_listings' ? 'listings'
@@ -146,13 +145,17 @@ function SettingsLinkedAccountsScreen() {
     if (!capability) return;
 
     const currentTier = resolveSupportTiers(item.permissions)[capability];
-    const nextTier: SupportTier = currentTier !== 'none'
-      ? 'none'
-      : (capability === 'activity' ? 'assist' : 'co_decide');
+    const nextTier: SupportTier = currentTier !== 'none' ? 'none' : 'assist';
 
     try {
       setBusyId(item.relationship_id);
-      await updateSubAccountTiers(item.relationship_id, { [capability]: nextTier });
+      if (asMember) {
+        await updateManagerSubAccountTiers(item.relationship_id, { [capability]: nextTier });
+      } else {
+        // A supporter may relinquish authority here, never grant it.
+        if (currentTier === 'none') return;
+        await updateSubAccountTiers(item.relationship_id, { [capability]: nextTier });
+      }
       query.refresh();
     } catch {
       showToast({ title: t('common:errors.alertTitle'), description: t('linkedAccounts.permissionFailed'), variant: 'danger' });
@@ -261,7 +264,7 @@ function RelationshipSection({
   busyId: number | null;
   onApprove: (item: SubAccountRelationship) => void;
   onRevoke: (item: SubAccountRelationship) => void;
-  onTogglePermission: (item: SubAccountRelationship, permission: SubAccountPermission) => void;
+  onTogglePermission: (item: SubAccountRelationship, permission: SubAccountPermission, asMember?: boolean) => void;
 }) {
   const { t } = useTranslation('settings');
   const theme = useTheme();
@@ -312,7 +315,12 @@ function RelationshipSection({
                   {canManagePermissions && item.status === 'active' && !item.staff_recorded ? (
                     <View className="gap-2">
                       <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('linkedAccounts.permissionsTitle')}</Text>
-                      {PERMISSIONS.map((permission) => {
+                      {(['listings', 'credits'] as const).map((capability) => (
+                        <Text key={capability} className="text-xs" style={{ color: theme.textSecondary }}>
+                          {t(`linkedAccounts.tiers.${capability}`)}: {t(`linkedAccounts.tiers.${resolveSupportTiers(item.permissions)[capability]}`)}
+                        </Text>
+                      ))}
+                      {PERMISSIONS.filter(() => resolveSupportTiers(item.permissions).activity !== 'none').map((permission) => {
                         // 🔴 On/off must come from the resolved TIER, not the
                         // legacy boolean: a co_decide ("prepare only") grant
                         // projects to boolean false, and rendering it as off
@@ -336,6 +344,26 @@ function RelationshipSection({
                           />
                         );
                       })}
+                    </View>
+                  ) : null}
+
+                  {canApprove && (item.status === 'pending' || item.status === 'active') ? (
+                    <View className="gap-2">
+                      <Text className="text-xs font-semibold" style={{ color: theme.text }}>{t('linkedAccounts.permissionsTitle')}</Text>
+                      {(['activity', 'listings', 'credits'] as const).map((capability) => (
+                        <Text key={capability} className="text-xs" style={{ color: theme.textSecondary }}>
+                          {t(`linkedAccounts.tiers.${capability}`)}: {t(`linkedAccounts.tiers.${resolveSupportTiers(item.permissions)[capability]}`)}
+                        </Text>
+                      ))}
+                      {item.status === 'active' && !item.staff_recorded ? (
+                        <Toggle
+                          label={t('linkedAccounts.permissions.can_view_activity')}
+                          accessibilityLabel={t('linkedAccounts.permissionToggle', { permission: t('linkedAccounts.permissions.can_view_activity'), name })}
+                          value={resolveSupportTiers(item.permissions).activity !== 'none'}
+                          onValueChange={() => onTogglePermission(item, 'can_view_activity', true)}
+                          disabled={isBusy}
+                        />
+                      ) : null}
                     </View>
                   ) : null}
 

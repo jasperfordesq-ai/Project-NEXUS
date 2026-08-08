@@ -8,6 +8,7 @@ namespace Tests\Laravel\Feature\Controllers;
 
 use App\Exceptions\SafeguardingPolicyException;
 use App\Services\SafeguardingInteractionPolicy;
+use App\Services\AuditLogService;
 use Tests\Laravel\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
@@ -620,7 +621,7 @@ class SubAccountControllerTest extends TestCase
         $this->assertSame('co_decide', $stored['tiers']['credits'] ?? null);
     }
 
-    public function test_boolean_true_from_none_still_grants_the_legacy_tier(): void
+    public function test_supporter_cannot_grant_themselves_a_tier_from_none(): void
     {
         $parent = $this->authenticatedUser();
         $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
@@ -630,15 +631,15 @@ class SubAccountControllerTest extends TestCase
 
         $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
             'permissions' => ['can_transact' => true],
-        ])->assertOk();
+        ])->assertStatus(422)->assertJsonPath('errors.0.code', 'MEMBER_APPROVAL_REQUIRED');
 
         $stored = $this->relationshipPermissions($relationshipId);
         // From none, a legacy boolean client's "on" keeps its historical
         // meaning (represent) — there is no deliberate level to protect.
-        $this->assertSame('represent', $stored['tiers']['credits'] ?? null);
+        $this->assertSame('none', $stored['tiers']['credits'] ?? null);
     }
 
-    public function test_explicit_tiers_still_move_freely_in_both_directions(): void
+    public function test_only_supported_member_can_expand_explicit_tiers(): void
     {
         $parent = $this->authenticatedUser();
         $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
@@ -650,10 +651,56 @@ class SubAccountControllerTest extends TestCase
         // the tier vocabulary states its level explicitly and is honoured.
         $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
             'permissions' => ['tiers' => ['listings' => 'represent']],
+        ])->assertStatus(422)->assertJsonPath('errors.0.code', 'MEMBER_APPROVAL_REQUIRED');
+
+        Sanctum::actingAs($child, ['*']);
+        $this->apiPut("/v2/users/me/parent-accounts/{$relationshipId}/permissions", [
+            'tiers' => ['listings' => 'represent'],
         ])->assertOk();
 
         $stored = $this->relationshipPermissions($relationshipId);
         $this->assertSame('represent', $stored['tiers']['listings'] ?? null);
+    }
+
+    public function test_proxy_transfer_rolls_back_when_the_audit_record_cannot_be_written(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 10.0,
+        ]);
+        $recipient = User::factory()->forTenant($this->testTenantId)->create([
+            'status' => 'active', 'is_approved' => true, 'balance' => 0.0,
+        ]);
+        $this->createActiveRelationship($parent, $child, ['can_transact' => true]);
+
+        $audit = Mockery::mock(AuditLogService::class);
+        $audit->shouldReceive('logAction')->once()->andThrow(new \RuntimeException('audit unavailable'));
+        $this->app->instance(AuditLogService::class, $audit);
+
+        $this->apiPost("/v2/users/me/sub-accounts/{$child->id}/transfer", [
+            'recipient' => $recipient->id,
+            'amount' => 3.0,
+        ])->assertStatus(422);
+
+        $this->assertEquals(10.0, (float) DB::table('users')->where('id', $child->id)->value('balance'));
+        $this->assertEquals(0.0, (float) DB::table('users')->where('id', $recipient->id)->value('balance'));
+        $this->assertDatabaseMissing('transactions', ['sender_id' => $child->id, 'receiver_id' => $recipient->id]);
+    }
+
+    public function test_unrelated_member_cannot_change_linked_account_tiers(): void
+    {
+        $parent = $this->authenticatedUser();
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $relationshipId = $this->seedActiveRelationshipWithTiers($parent->id, $child->id, [
+            'activity' => 'none', 'listings' => 'none', 'credits' => 'none',
+        ]);
+        $stranger = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        Sanctum::actingAs($stranger, ['*']);
+
+        $this->apiPut("/v2/users/me/parent-accounts/{$relationshipId}/permissions", [
+            'tiers' => ['credits' => 'represent'],
+        ])->assertStatus(404);
+        $this->assertSame('none', $this->relationshipPermissions($relationshipId)['tiers']['credits']);
     }
 
     /** @return array<string, mixed> */

@@ -1422,7 +1422,10 @@ class AdminSafeguardingController extends BaseApiController
 
         if ($user) {
             $role = (string) ($user->role ?? 'member');
-            if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god', 'broker'], true)) {
+            // Broker/coordinator is an operational role, not a junior admin.
+            // It reaches this controller through broker-or-admin middleware,
+            // but still needs the explicit safeguarding permission below.
+            if (in_array($role, ['admin', 'tenant_admin', 'super_admin', 'god'], true)) {
                 return $userId;
             }
 

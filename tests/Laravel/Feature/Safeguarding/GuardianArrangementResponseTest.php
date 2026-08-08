@@ -144,7 +144,29 @@ class GuardianArrangementResponseTest extends TestCase
 
     public function test_a_ward_can_withdraw_agreement_they_gave(): void
     {
-        [, $ward, $id] = $this->makeAssignment(['consent_given_at' => now()]);
+        [$guardian, $ward, $id] = $this->makeAssignment(['consent_given_at' => now()]);
+        DB::table('account_relationships')->where('id', $id)->update([
+            'permissions' => json_encode([
+                'can_view_activity' => true,
+                'can_manage_listings' => true,
+                'can_transact' => true,
+                'tiers' => ['activity' => 'assist', 'listings' => 'represent', 'credits' => 'co_decide'],
+            ]),
+            'message_access_granted_at' => now(),
+        ]);
+        $actionId = DB::table('support_pending_actions')->insertGetId([
+            'tenant_id' => $this->testTenantId,
+            'relationship_id' => $id,
+            'supported_user_id' => $ward->id,
+            'supporter_user_id' => $guardian->id,
+            'action_type' => 'credit_transfer',
+            'payload' => json_encode(['amount' => 1]),
+            'status' => 'pending',
+            'token_hash' => hash('sha256', uniqid('withdraw-', true)),
+            'expires_at' => now()->addDay(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         Sanctum::actingAs($ward);
 
         $this->apiPost('/v2/safeguarding/withdraw-guardian-consent', ['assignment_id' => $id])
@@ -155,6 +177,13 @@ class GuardianArrangementResponseTest extends TestCase
         $this->assertNotNull($row->consent_withdrawn_at);
         // The row states one current position, never two at once.
         $this->assertNull($row->consent_given_at);
+        $stored = DB::table('account_relationships')->where('id', $id)->first();
+        $tiers = json_decode((string) $stored->permissions, true)['tiers'];
+        $this->assertSame('none', $tiers['activity']);
+        $this->assertSame('none', $tiers['listings']);
+        $this->assertSame('none', $tiers['credits']);
+        $this->assertNull($stored->message_access_granted_at);
+        $this->assertSame('cancelled', DB::table('support_pending_actions')->where('id', $actionId)->value('status'));
     }
 
     public function test_withdrawing_without_ever_agreeing_is_refused(): void

@@ -213,20 +213,20 @@ describe('SubAccountsManager', () => {
     });
   });
 
-  it('shows the activity switch and a tier picker per capability for active managed accounts', async () => {
+  it('shows only relinquishment controls for active managed accounts', async () => {
     mockLoad();
 
     render(<SubAccountsManager />);
 
     await waitFor(() => {
-      expect(screen.getByText('Permissions')).toBeInTheDocument();
+      expect(screen.getAllByText('Permissions').length).toBeGreaterThan(0);
       // Activity stays a see/don't-see switch…
-      expect(screen.getByText('View activity')).toBeInTheDocument();
+      expect(screen.getAllByText('View activity').length).toBeGreaterThan(0);
       // …listings and credits are three-level tier pickers (guardian redesign).
       expect(screen.getByLabelText('Support level for Their listings of Child One')).toBeInTheDocument();
       expect(screen.getByLabelText('Support level for Their time credits of Child One')).toBeInTheDocument();
       // The middle tier is explained in plain words next to the controls.
-      expect(screen.getByText(/nothing happens until the account owner approves/i)).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: /Act alone/ })).not.toBeInTheDocument();
     });
   });
 
@@ -251,7 +251,7 @@ describe('SubAccountsManager', () => {
     render(<SubAccountsManager />);
 
     await waitFor(() => {
-      expect(screen.getByText('Permissions')).toBeInTheDocument();
+      expect(screen.getAllByText('Permissions').length).toBeGreaterThan(0);
     });
 
     // The old toggle stays gone…
@@ -331,8 +331,8 @@ describe('SubAccountsManager', () => {
     expect(switchControl).not.toBeChecked();
   });
 
-  it('sends an explicit tiers object when a tier is picked', async () => {
-    mockLoad();
+  it('lets the supported member grant a tier with an explicit member-side request', async () => {
+    mockLoad([], [{ ...mockManagerAccounts[0]!, status: 'active' as const }]);
     vi.mocked(api.put).mockResolvedValueOnce({ success: true, data: [] });
     const user = userEvent.setup();
 
@@ -341,14 +341,14 @@ describe('SubAccountsManager', () => {
     // Open the listings tier picker and choose the co-decide level. React
     // Aria opens on a real pointer sequence, so this needs userEvent, not
     // fireEvent.click.
-    const trigger = await screen.findByLabelText('Support level for Their listings of Child One');
+    const trigger = await screen.findByLabelText('Your listings');
     await user.click(trigger);
-    const option = await screen.findByRole('option', { name: /Prepare only/ });
+    const option = await screen.findByRole('option', { name: /Act alone/ });
     await user.click(option);
 
     await waitFor(() => {
-      expect(api.put).toHaveBeenCalledWith('/v2/users/me/sub-accounts/1/permissions', {
-        permissions: { tiers: { listings: 'co_decide' } },
+      expect(api.put).toHaveBeenCalledWith('/v2/users/me/parent-accounts/3/permissions', {
+        permissions: { tiers: { listings: 'represent' } },
       });
     });
   });

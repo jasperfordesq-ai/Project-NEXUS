@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\Safeguarding\SupportTiers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 
 /**
  * The co_decide confirm loop (guardian redesign, phase 3).
@@ -126,22 +127,40 @@ class SupportPendingActionService
         // its hash. 32 random bytes, hex — same strength as the event flow.
         $token = bin2hex(random_bytes(32));
 
-        $action = $this->pendingAction->newQuery()->create([
-            'tenant_id' => TenantContext::getId(),
-            'relationship_id' => (int) $relationship->id,
-            'supported_user_id' => $supportedUserId,
-            'supporter_user_id' => $supporterUserId,
-            'action_type' => $actionType,
-            'payload' => $payload,
-            'status' => SupportPendingAction::STATUS_PENDING,
-            'token_hash' => hash('sha256', $token),
-            'expires_at' => now()->addDays(self::EXPIRY_DAYS),
-        ]);
-
-        $this->audit($supporterUserId, $supportedUserId, 'support_action_prepared', [
-            'action_id' => $action->id,
-            'action_type' => $actionType,
-        ]);
+        try {
+            $action = DB::transaction(function () use ($relationship, $actionType, $payload, $supportedUserId, $supporterUserId, $token) {
+                $action = $this->pendingAction->newQuery()->create([
+                    'tenant_id' => TenantContext::getId(),
+                    'relationship_id' => (int) $relationship->id,
+                    'pending_message_relationship_id' => $actionType === SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT
+                        ? (int) $relationship->id
+                        : null,
+                    'supported_user_id' => $supportedUserId,
+                    'supporter_user_id' => $supporterUserId,
+                    'action_type' => $actionType,
+                    'payload' => $payload,
+                    'status' => SupportPendingAction::STATUS_PENDING,
+                    'token_hash' => hash('sha256', $token),
+                    'expires_at' => now()->addDays(self::EXPIRY_DAYS),
+                ]);
+                $this->audit($supporterUserId, $supportedUserId, 'support_action_prepared', [
+                    'action_id' => $action->id,
+                    'action_type' => $actionType,
+                ]);
+                return $action;
+            });
+        } catch (QueryException $e) {
+            // The nullable unique key closes the exists()/insert() race for
+            // message-access requests. A concurrent winner is equivalent to
+            // the pre-flight ALREADY_PENDING result.
+            $isDuplicate = ($e->errorInfo[0] ?? null) === '23000'
+                && in_array((int) ($e->errorInfo[1] ?? 0), [1062, 19], true);
+            if ($actionType === SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT && $isDuplicate) {
+                $this->errors[] = ['code' => 'ALREADY_PENDING', 'message' => __('api.support_action_message_access_already_pending')];
+                return null;
+            }
+            throw $e;
+        }
 
         $this->notifySupportedOfPending($action, $token);
 
@@ -247,6 +266,7 @@ class SupportPendingActionService
             }
 
             $action->status = SupportPendingAction::STATUS_DECLINED;
+            $action->pending_message_relationship_id = null;
             $action->declined_at = now();
             $action->decline_reason = ($reason !== null && trim($reason) !== '') ? trim($reason) : null;
             $action->response_ip = request()?->ip();
@@ -274,23 +294,28 @@ class SupportPendingActionService
     {
         $this->errors = [];
 
-        /** @var SupportPendingAction|null $action */
-        $action = $this->pendingAction->newQuery()
-            ->where('id', $actionId)
-            ->where('supporter_user_id', $supporterUserId)
-            ->where('status', SupportPendingAction::STATUS_PENDING)
-            ->first();
+        $action = DB::transaction(function () use ($supporterUserId, $actionId): ?SupportPendingAction {
+            /** @var SupportPendingAction|null $action */
+            $action = $this->pendingAction->newQuery()
+                ->where('id', $actionId)
+                ->where('supporter_user_id', $supporterUserId)
+                ->where('status', SupportPendingAction::STATUS_PENDING)
+                ->lockForUpdate()
+                ->first();
+            if (! $action) return null;
+            $action->status = SupportPendingAction::STATUS_CANCELLED;
+            $action->pending_message_relationship_id = null;
+            $action->cancelled_at = now();
+            $action->save();
+            $this->audit((int) $action->supporter_user_id, (int) $action->supported_user_id, 'support_action_cancelled', [
+                'action_id' => (int) $action->id,
+                'action_type' => (string) $action->action_type,
+                'reason' => 'supporter_withdrew',
+            ]);
+            return $action;
+        });
 
-        $updated = $action !== null && $this->pendingAction->newQuery()
-            ->where('id', $actionId)
-            ->where('status', SupportPendingAction::STATUS_PENDING)
-            ->update([
-                'status' => SupportPendingAction::STATUS_CANCELLED,
-                'cancelled_at' => now(),
-                'updated_at' => now(),
-            ]) > 0;
-
-        if (! $updated) {
+        if (! $action) {
             $this->errors[] = ['code' => 'NOT_FOUND', 'message' => __('api.support_action_not_found')];
             return false;
         }
@@ -312,15 +337,45 @@ class SupportPendingActionService
      */
     public function cancelOpenMessageAccessRequests(int $relationshipId): int
     {
-        return $this->pendingAction->newQuery()
-            ->where('relationship_id', $relationshipId)
-            ->where('action_type', SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT)
-            ->where('status', SupportPendingAction::STATUS_PENDING)
-            ->update([
-                'status' => SupportPendingAction::STATUS_CANCELLED,
-                'cancelled_at' => now(),
-                'updated_at' => now(),
-            ]);
+        return $this->cancelOpenForRelationship($relationshipId, 'messages', 'message_access_withdrawn');
+    }
+
+    /**
+     * Cancel open work whose authority has ended. Every row is transitioned
+     * under lock and audited individually so bulk cleanup cannot erase who was
+     * waiting to do what.
+     */
+    public function cancelOpenForRelationship(int $relationshipId, ?string $capability = null, string $reason = 'authority_changed'): int
+    {
+        return DB::transaction(function () use ($relationshipId, $capability, $reason): int {
+            $query = $this->pendingAction->newQuery()
+                ->where('relationship_id', $relationshipId)
+                ->where('status', SupportPendingAction::STATUS_PENDING)
+                ->lockForUpdate();
+
+            if ($capability !== null) {
+                $types = array_keys(array_filter(
+                    SupportPendingAction::TYPE_CAPABILITIES,
+                    static fn (string $mapped): bool => $mapped === $capability,
+                ));
+                $query->whereIn('action_type', $types);
+            }
+
+            $actions = $query->get();
+            foreach ($actions as $action) {
+                $action->status = SupportPendingAction::STATUS_CANCELLED;
+                $action->pending_message_relationship_id = null;
+                $action->cancelled_at = now();
+                $action->save();
+                $this->audit((int) $action->supporter_user_id, (int) $action->supported_user_id, 'support_action_cancelled', [
+                    'action_id' => (int) $action->id,
+                    'action_type' => (string) $action->action_type,
+                    'reason' => $reason,
+                ]);
+            }
+
+            return $actions->count();
+        });
     }
 
     /** Tell the supported member an unanswered action lapsed (bell-level). */
@@ -465,11 +520,32 @@ class SupportPendingActionService
             ->chunkById(100, function ($actions) use (&$expired): void {
                 foreach ($actions as $action) {
                     /** @var SupportPendingAction $action */
-                    $action->status = SupportPendingAction::STATUS_EXPIRED;
-                    $action->save();
-                    $expired++;
-
                     try {
+                        $didExpire = TenantContext::runForTenant((int) $action->tenant_id, function () use ($action): bool {
+                            return DB::transaction(function () use ($action): bool {
+                                /** @var SupportPendingAction|null $locked */
+                                $locked = $this->pendingAction->newQuery()
+                                    ->where('id', $action->id)
+                                    ->where('status', SupportPendingAction::STATUS_PENDING)
+                                    ->lockForUpdate()
+                                    ->first();
+                                if (! $locked) {
+                                    return false;
+                                }
+                                $locked->status = SupportPendingAction::STATUS_EXPIRED;
+                                $locked->pending_message_relationship_id = null;
+                                $locked->save();
+                                $this->audit((int) $locked->supporter_user_id, (int) $locked->supported_user_id, 'support_action_expired', [
+                                    'action_id' => (int) $locked->id,
+                                    'action_type' => (string) $locked->action_type,
+                                ]);
+                                return true;
+                            });
+                        });
+                        if (! $didExpire) {
+                            continue;
+                        }
+                        $expired++;
                         TenantContext::runForTenant((int) $action->tenant_id, function () use ($action): void {
                             $this->notifySupporterOfAnswer($action, null);
                             // The docblock has always promised BOTH parties are
@@ -479,7 +555,7 @@ class SupportPendingActionService
                             $this->notifySupportedOfExpiry($action);
                         });
                     } catch (\Throwable $e) {
-                        Log::warning('Failed to notify supporter of expired support action', [
+                        Log::warning('Failed to expire or notify support action', [
                             'action_id' => $action->id,
                             'error' => $e->getMessage(),
                         ]);
@@ -505,7 +581,7 @@ class SupportPendingActionService
         $this->errors = [];
 
         try {
-            return DB::transaction(function () use ($scope, $via, $attested): array {
+            $result = DB::transaction(function () use ($scope, $via, $attested): ?array {
                 $query = $this->pendingAction->newQuery();
                 if ($via === 'email_token') {
                     // Token arrives with no session, so no tenant context to
@@ -528,6 +604,38 @@ class SupportPendingActionService
                 }
 
                 return TenantContext::runForTenant((int) $action->tenant_id, function () use ($action, $via, $attested): array {
+                    /** @var AccountRelationship|null $relationship */
+                    $relationship = AccountRelationship::query()
+                        ->where('id', (int) $action->relationship_id)
+                        ->where('tenant_id', (int) $action->tenant_id)
+                        ->where('parent_user_id', (int) $action->supporter_user_id)
+                        ->where('child_user_id', (int) $action->supported_user_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    $capability = SupportPendingAction::TYPE_CAPABILITIES[(string) $action->action_type] ?? null;
+                    $tiers = $relationship
+                        ? SupportTiers::resolve(is_array($relationship->permissions) ? $relationship->permissions : [])
+                        : [];
+                    $stillAuthorised = $relationship !== null
+                        && $relationship->status === 'active'
+                        && ($action->action_type === SupportPendingAction::TYPE_MESSAGE_ACCESS_GRANT
+                            ? (($tiers['messages'] ?? SupportTiers::NONE) === SupportTiers::NONE)
+                            : ($capability !== null && SupportTiers::atLeast($tiers, $capability, SupportTiers::CO_DECIDE)));
+
+                    if (! $stillAuthorised) {
+                        $action->status = SupportPendingAction::STATUS_CANCELLED;
+                        $action->pending_message_relationship_id = null;
+                        $action->cancelled_at = now();
+                        $action->save();
+                        $this->audit((int) $action->supporter_user_id, (int) $action->supported_user_id, 'support_action_cancelled', [
+                            'action_id' => (int) $action->id,
+                            'action_type' => (string) $action->action_type,
+                            'reason' => 'authority_no_longer_valid',
+                        ]);
+                        return ['cancelled' => true];
+                    }
+
                     // Use-time safeguarding re-check: a restriction that landed
                     // after preparation wins.
                     $this->assertContactsAllowed(
@@ -539,6 +647,7 @@ class SupportPendingActionService
                     $resultId = $this->execute($action);
 
                     $action->status = SupportPendingAction::STATUS_CONFIRMED;
+                    $action->pending_message_relationship_id = null;
                     $action->confirmed_at = now();
                     $action->confirmed_via = $via;
                     $action->result_id = $resultId;
@@ -571,6 +680,13 @@ class SupportPendingActionService
                     return ['result_id' => $resultId];
                 });
             });
+
+            if (($result['cancelled'] ?? false) === true) {
+                $this->errors[] = ['code' => 'AUTHORITY_CHANGED', 'message' => __('api_controllers_2.sub_account.no_permission')];
+                return null;
+            }
+
+            return $result;
         } catch (\Throwable $e) {
             $this->errors[] = ['code' => 'CONFIRM_FAILED', 'message' => $e->getMessage()];
             return null;
@@ -683,21 +799,14 @@ class SupportPendingActionService
 
     private function audit(int $actorUserId, int $otherUserId, string $action, array $details): void
     {
-        try {
-            app(AuditLogService::class)->logAction(
-                TenantContext::getId(),
-                $action,
-                $actorUserId,
-                $details,
-                null,
-                $otherUserId,
-            );
-        } catch (\Throwable $e) {
-            Log::error('Failed to audit support pending action', [
-                'action' => $action,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        app(AuditLogService::class)->logAction(
+            TenantContext::getId(),
+            $action,
+            $actorUserId,
+            $details,
+            null,
+            $otherUserId,
+        );
     }
 
     /**

@@ -862,6 +862,7 @@ Route::get('/v2/users/me/parent-accounts', [\App\Http\Controllers\Api\SubAccount
 Route::post('/v2/users/me/sub-accounts', [\App\Http\Controllers\Api\SubAccountController::class, 'requestRelationship']);
 Route::put('/v2/users/me/sub-accounts/{id}/approve', [\App\Http\Controllers\Api\SubAccountController::class, 'approveRelationship']);
 Route::put('/v2/users/me/sub-accounts/{id}/permissions', [\App\Http\Controllers\Api\SubAccountController::class, 'updatePermissions']);
+Route::put('/v2/users/me/parent-accounts/{id}/permissions', [\App\Http\Controllers\Api\SubAccountController::class, 'updateMemberPermissions'])->whereNumber('id');
 Route::delete('/v2/users/me/sub-accounts/{id}', [\App\Http\Controllers\Api\SubAccountController::class, 'revokeRelationship']);
 Route::get('/v2/users/me/sub-accounts/{childId}/activity', [\App\Http\Controllers\Api\SubAccountController::class, 'getChildActivity']);
 // Acting on a dependent's behalf. These two routes are the ONLY places

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Linked-account and guardian authority now stays with the supported member throughout its lifecycle.** Supporters can request help or reduce their access, but only the supported member can grant or expand activity, listing, credit, or message powers. Pending approvals show the exact requested levels on the main, accessible, and mobile interfaces. Prepared co-decide actions are cancelled when a relationship ends or its authority is reduced, and every confirmation channel rechecks the locked live relationship before acting. Guardian refusal or withdrawal clears all powers and message access. Safeguarding screens now require explicit broker permissions, supporter message lists paginate beyond 20 conversations, transition and consequential proxy-action audit records are transactional, duplicate message-access requests are prevented at database level, and historical safeguarding-assignment conflicts are reconciled without destructive rollback.
+
 ### Added
 
 - **The rule that decides who counts as an administrator is now actually tested — it never was.** One small piece of code answers "is this person an admin?" for the whole platform: every admin page and around twenty other places ask it. It had no test of any kind. That matters most for one rule it enforces deliberately: a broker or coordinator is refused administrator access *even if an old admin marker is still sitting on their account* from a previous role. Nothing was checking that rule held. There are now 38 checks covering it, and each one was proved capable of catching a real break — the rule was deliberately broken three different ways and the tests failed every time, as they should. The same treatment was given to the safeguarding decision object, where the rule being protected is that a safeguarding check which *could not be completed* must never be read as permission to make contact.
