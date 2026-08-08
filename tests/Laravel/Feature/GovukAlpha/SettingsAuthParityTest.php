@@ -218,13 +218,20 @@ class SettingsAuthParityTest extends TestCase
         ]);
     }
 
+    /**
+     * Raising a tier is the supported member's act, so this posts as the
+     * member (`as_supported_member`), which is the branch the page offers them.
+     * It used to post as the supporter, which now cannot grant upward at all —
+     * see the companion test below.
+     */
     public function test_settings_linked_accounts_update_permissions_persists(): void
     {
         $me = $this->authenticatedUser(['name' => 'Perm Me']);
-        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+        $supporter = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
 
+        // The signed-in user is the SUPPORTED member on this row.
         $relationshipId = DB::table('account_relationships')->insertGetId([
-            'parent_user_id' => $me->id, 'child_user_id' => $child->id, 'tenant_id' => $this->testTenantId,
+            'parent_user_id' => $supporter->id, 'child_user_id' => $me->id, 'tenant_id' => $this->testTenantId,
             'relationship_type' => 'family', 'permissions' => json_encode(['can_view_activity' => true]),
             'status' => 'active', 'approved_at' => now(), 'created_at' => now(), 'updated_at' => now(),
         ]);
@@ -234,6 +241,7 @@ class SettingsAuthParityTest extends TestCase
         // rendered unticked, and re-saving the form promoted it to represent).
         $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/permissions", [
             'relationship_id' => $relationshipId,
+            'as_supported_member' => '1',
             'perm_can_view_activity' => '1',
             'tier_listings' => 'represent',
             'tier_credits' => 'none',
@@ -246,6 +254,39 @@ class SettingsAuthParityTest extends TestCase
         $perms = json_decode((string) ($row->permissions ?? '{}'), true) ?: [];
         $this->assertTrue((bool) ($perms['can_manage_listings'] ?? false));
         $this->assertSame('represent', $perms['tiers']['listings'] ?? null);
+    }
+
+    /**
+     * The same form posted by the SUPPORTER cannot raise a tier: the page must
+     * report a failure and the stored permissions must be untouched. Without
+     * this, the supporter branch of the form would be an escalation path.
+     */
+    public function test_settings_linked_accounts_supporter_cannot_raise_a_tier(): void
+    {
+        $me = $this->authenticatedUser(['name' => 'Perm Supporter']);
+        $child = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active', 'is_approved' => true]);
+
+        $before = ['can_view_activity' => true];
+        $relationshipId = DB::table('account_relationships')->insertGetId([
+            'parent_user_id' => $me->id, 'child_user_id' => $child->id, 'tenant_id' => $this->testTenantId,
+            'relationship_type' => 'family', 'permissions' => json_encode($before),
+            'status' => 'active', 'approved_at' => now(), 'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $response = $this->post("/{$this->testTenantSlug}/accessible/settings/linked-accounts/permissions", [
+            'relationship_id' => $relationshipId,
+            'perm_can_view_activity' => '1',
+            'tier_listings' => 'represent',
+            'tier_credits' => 'none',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('status=link-failed', (string) $response->headers->get('Location'));
+
+        $row = DB::table('account_relationships')->where('id', $relationshipId)->first();
+        $perms = json_decode((string) ($row->permissions ?? '{}'), true) ?: [];
+        $this->assertNotSame('represent', $perms['tiers']['listings'] ?? null);
+        $this->assertFalse((bool) ($perms['can_manage_listings'] ?? false));
     }
 
     /**

@@ -227,11 +227,13 @@ class SubAccountControllerTest extends TestCase
         ];
         $relationshipId = $this->createActiveRelationship($parent, $child, $permissions);
 
+        // A supporter can no longer reach the safeguarding policy on this
+        // endpoint at all: raising their own tier is refused outright, because
+        // expansion belongs to the supported member. The policy must therefore
+        // never be consulted — if it were, a passing check would let a
+        // self-granted expansion through.
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('assertLocalContactAllowed')
-            ->once()
-            ->with($parent->id, $child->id, $this->testTenantId, 'sub_account_permission_expansion')
-            ->andThrow(new SafeguardingPolicyException('SAFEGUARDING_POLICY_UNAVAILABLE', 'Policy unavailable'));
+        $policy->shouldNotReceive('assertLocalContactAllowed');
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
         // can_transact is a REAL expansion (credits none -> represent). The
@@ -240,6 +242,39 @@ class SubAccountControllerTest extends TestCase
         // see test_enabling_view_messages_is_inert below.
         $response = $this->apiPut("/v2/users/me/sub-accounts/{$relationshipId}/permissions", [
             'permissions' => ['can_transact' => true],
+        ]);
+
+        $response->assertStatus(422)->assertJsonPath('errors.0.code', 'MEMBER_APPROVAL_REQUIRED');
+        $this->assertSame($permissions, $this->relationshipPermissions($relationshipId));
+    }
+
+    /**
+     * The 503-on-unavailable-policy guarantee that used to live on the
+     * supporter endpoint above. Expansion moved to the supported member, so
+     * this moved with it rather than being dropped: when the safeguarding
+     * policy cannot be evaluated, the grant is refused and nothing is written.
+     */
+    public function test_member_permission_grant_is_refused_when_the_safeguarding_policy_is_unavailable(): void
+    {
+        $child = $this->authenticatedUser();
+        $parent = User::factory()->forTenant($this->testTenantId)->create();
+        $permissions = [
+            'can_view_activity' => true,
+            'can_manage_listings' => false,
+            'can_transact' => false,
+            'can_view_messages' => false,
+        ];
+        $relationshipId = $this->createActiveRelationship($parent, $child, $permissions);
+
+        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
+        $policy->shouldReceive('assertLocalContactAllowed')
+            ->once()
+            ->with($parent->id, $child->id, $this->testTenantId, 'sub_account_member_permission_grant')
+            ->andThrow(new SafeguardingPolicyException('SAFEGUARDING_POLICY_UNAVAILABLE', 'Policy unavailable'));
+        $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
+
+        $response = $this->apiPut("/v2/users/me/parent-accounts/{$relationshipId}/permissions", [
+            'tiers' => ['credits' => 'represent'],
         ]);
 
         $response->assertStatus(503)->assertJsonPath('errors.0.code', 'SAFEGUARDING_POLICY_UNAVAILABLE');

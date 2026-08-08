@@ -118,6 +118,7 @@ CLAUDE.md
 !/scripts/php/dump-lang.php
 !/scripts/check-admin-breadcrumbs.mjs
 !/scripts/check-test-skip-budget.mjs
+!/scripts/report-dead-skip-guards.mjs
 !/scripts/predeploy-check.sh
 !/scripts/predeploy-ci-check.sh
 !/scripts/predeploy-ci-verify.mjs

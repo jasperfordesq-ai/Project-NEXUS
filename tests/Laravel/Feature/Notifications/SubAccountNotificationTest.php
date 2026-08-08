@@ -287,7 +287,13 @@ class SubAccountNotificationTest extends TestCase
         $this->assertNotNull($queued, 'No email queue row — the member would never learn by email.');
         $this->assertSame('instant', $queued->frequency, 'A proxy action must not wait for a digest.');
         $this->assertNotEmpty($queued->email_body);
-        $this->assertStringContainsString($carerName, (string) $queued->email_body, 'The email must NAME the carer.');
+        // e() the name: email_body is HTML, so a factory-generated name
+        // containing an apostrophe (e.g. "D'Amore") is escaped to D&#039;Amore
+        // and a raw-string search misses it. The escaped form is what the
+        // recipient actually sees, and e() leaves ordinary names untouched, so
+        // this asserts the same thing without depending on which name the
+        // factory happened to pick.
+        $this->assertStringContainsString(e($carerName), (string) $queued->email_body, 'The email must NAME the carer.');
         $this->assertStringNotContainsString('emails_notifications.', (string) $queued->email_body);
     }
 
@@ -323,7 +329,9 @@ class SubAccountNotificationTest extends TestCase
         $queued = $this->queueRowFor($member->id, 'sub_account_proxy_transfer');
         $this->assertNotNull($queued, 'Money left the account with no email — the exact defect this pins.');
         $this->assertSame('instant', $queued->frequency);
-        $this->assertStringContainsString($carerName, (string) $queued->email_body);
+        // Escaped, for the same reason as the proxy-listing assertion above:
+        // this is HTML, and an apostrophe in the name arrives as &#039;.
+        $this->assertStringContainsString(e($carerName), (string) $queued->email_body);
     }
 
     // ------------------------------------------------------------------

@@ -65,7 +65,24 @@ class SupportAuthorityAttestationTest extends TestCase
             'role' => 'broker', 'status' => 'active', 'is_approved' => true,
         ]);
         if ($grantManage) {
+            // The committed schema dump seeds only the migration tables, so
+            // `permissions` is empty in CI and this lookup returns null —
+            // which made the insert below fail on the NOT NULL column rather
+            // than granting anything. Create the row when it is absent, the
+            // same way SafeguardingEscalationDeliveryTest does.
             $permissionId = DB::table('permissions')->where('name', 'safeguarding.manage')->value('id');
+            if (!$permissionId) {
+                $permissionId = DB::table('permissions')->insertGetId([
+                    'name' => 'safeguarding.manage',
+                    'display_name' => 'Manage safeguarding',
+                    'description' => 'Manage safeguarding records and attestations',
+                    'category' => 'safeguarding',
+                    'is_dangerous' => 0,
+                    'tenant_id' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
             DB::table('user_permissions')->insert([
                 'tenant_id' => $this->testTenantId,
                 'user_id' => $broker->id,
