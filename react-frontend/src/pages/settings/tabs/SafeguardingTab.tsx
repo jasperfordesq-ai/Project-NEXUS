@@ -566,9 +566,23 @@ export function SafeguardingTab() {
               <h3 className="text-sm font-semibold text-theme-primary">
                 {t('safeguarding.guardians.title')}
               </h3>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Chip size="sm" variant="soft" color="default">
+                  {t('safeguarding.guardians.step_one_label')}
+                </Chip>
+                <Chip size="sm" variant="soft" color="default">
+                  {t('safeguarding.guardians.admin_managed_label')}
+                </Chip>
+              </div>
               <p className="mt-1 text-sm leading-6 text-theme-muted">
                 {t('safeguarding.guardians.intro')}
               </p>
+              <details className="mt-3 text-sm text-theme-muted">
+                <summary className="cursor-pointer font-medium text-theme-secondary">
+                  {t('safeguarding.guardians.why_visible_title')}
+                </summary>
+                <p className="mt-2 leading-6">{t('safeguarding.guardians.why_visible_body')}</p>
+              </details>
 
               {guardians.length === 0 ? (
                 <p className="mt-3 text-sm text-theme-muted">
@@ -667,6 +681,12 @@ export function SafeguardingTab() {
                         </div>
                       </div>
 
+                      {guardian.state !== 'consented' && (
+                        <p className="mt-3 rounded-md bg-theme-surface px-3 py-2 text-xs text-theme-muted">
+                          {t('safeguarding.guardians.no_account_support_yet')}
+                        </p>
+                      )}
+
                       {/*
                         🔴 What this guardian may actually DO — and the only
                         place in the platform it can be set. The linked-accounts
@@ -680,8 +700,16 @@ export function SafeguardingTab() {
                         consent. The backend enforces the same rule.
                       */}
                       {guardian.state === 'consented' && (
-                        <div className="mt-4 space-y-3 border-t border-theme-default pt-4">
+                        <div className="mt-4 space-y-3 rounded-lg border border-accent/30 bg-accent/5 p-4">
                           <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Chip size="sm" variant="soft" color="primary">
+                                {t('safeguarding.guardians.step_two_label')}
+                              </Chip>
+                              <Chip size="sm" variant="soft" color="primary">
+                                {t('safeguarding.guardians.member_controlled_label')}
+                              </Chip>
+                            </div>
                             <p className="text-sm font-medium text-theme-primary">
                               {t('safeguarding.guardians.tiers_title')}
                             </p>
@@ -727,6 +755,21 @@ export function SafeguardingTab() {
                           <p className="text-xs text-theme-muted">
                             {t('safeguarding.guardians.tiers_explainer')}
                           </p>
+                          <div className="rounded-md bg-theme-surface px-3 py-2 text-xs text-theme-secondary">
+                            <p className="font-semibold text-theme-primary">
+                              {t('safeguarding.guardians.current_access_label')}
+                            </p>
+                            <ul className="mt-1 space-y-1">
+                              {(['listings', 'credits'] as const).map((capability) => {
+                                const current = guardian.tiers?.[capability] ?? 'none';
+                                return (
+                                  <li key={capability}>
+                                    {`${t(`safeguarding.guardians.tiers_capability_${capability}`)}: ${t(`safeguarding.guardians.tiers_option_${current}`)}`}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
                         </div>
                       )}
                     </li>

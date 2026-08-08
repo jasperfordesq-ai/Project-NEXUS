@@ -217,6 +217,7 @@ export function SubAccountsManager() {
   const [addType, setAddType] = useState('family');
   const [isAdding, setIsAdding] = useState(false);
   const [busyRelationshipId, setBusyRelationshipId] = useState<number | null>(null);
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: number; name: string } | null>(null);
   // Prepare-on-behalf modal (guardian redesign phase 4): which action, for
   // whom, and at which tier the supporter holds the capability.
   const [preparing, setPreparing] = useState<{
@@ -421,6 +422,7 @@ export function SubAccountsManager() {
         toastRef.current.success(tRef.current('toasts.subaccount_removed'));
         setManagedAccounts((prev) => prev.filter((account) => account.relationship_id !== relationshipId));
         setManagerAccounts((prev) => prev.filter((account) => account.relationship_id !== relationshipId));
+        setPendingRemoval(null);
       } else {
         toastRef.current.error(response.error || tRef.current('sub_accounts.remove_failed'));
       }
@@ -469,6 +471,23 @@ export function SubAccountsManager() {
       icon: <AlertTriangle className="w-3 h-3" />,
     };
     const isBusy = busyRelationshipId === account.relationship_id;
+    const isMemberView = !options.canManagePermissions;
+    const activityLabel = t(isMemberView
+      ? 'sub_accounts.current_access_activity_your'
+      : 'sub_accounts.current_access_activity_their');
+    const activityValue = t(account.tiers.activity === 'none'
+      ? 'sub_accounts.current_access_none'
+      : 'sub_accounts.current_access_view');
+    const currentAccess = [
+      `${activityLabel}: ${activityValue}`,
+      ...(['listings', 'credits'] as const).map((capability) => (
+        `${t(isMemberView
+          ? `safeguarding.guardians.tiers_capability_${capability}`
+          : `sub_accounts.tiers.capability_${capability}`)}: ${t(isMemberView
+          ? `safeguarding.guardians.tiers_option_${account.tiers[capability]}`
+          : `sub_accounts.tiers.option_${account.tiers[capability]}`)}`
+      )),
+    ];
 
     return (
       <div
@@ -495,8 +514,29 @@ export function SubAccountsManager() {
               <Chip size="sm" variant="flat" color="default">
                 {t(`sub_accounts.types.${account.relationship_type}`, { defaultValue: account.relationship_type })}
               </Chip>
+              {account.staff_recorded && (
+                <Chip size="sm" variant="flat" color="warning">
+                  {t('sub_accounts.staff_recorded_label')}
+                </Chip>
+              )}
             </div>
             <p className="text-xs text-theme-subtle break-all">{account.email}</p>
+            <p className="mt-2 rounded-md bg-theme-surface px-3 py-2 text-xs text-theme-secondary">
+              {options.canManagePermissions
+                ? t('sub_accounts.outcome_they_control', { name })
+                : t('sub_accounts.outcome_you_control', { name })}
+            </p>
+
+            {account.status === 'active' && (
+              <div className="mt-3 rounded-lg border border-theme-default bg-theme-surface p-3">
+                <p className="text-xs font-semibold text-theme-primary">
+                  {t('sub_accounts.current_access_label')}
+                </p>
+                <ul className="mt-2 space-y-1 text-xs text-theme-secondary">
+                  {currentAccess.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </div>
+            )}
 
             {/*
               A coordinator-recorded arrangement the supported member has
@@ -506,25 +546,10 @@ export function SubAccountsManager() {
               to change them is offered and the card says why.
             */}
             {options.canManagePermissions && account.status === 'active' && account.staff_recorded && (
-              <div className="mt-4 space-y-2">
-                <p className="text-xs font-medium text-theme-muted flex items-center gap-1">
-                  <Shield className="w-3 h-3" aria-hidden="true" />
-                  {t('sub_accounts.permissions_label')}
+              <div className="mt-4 space-y-2 rounded-lg border border-accent/30 bg-accent/5 p-3">
+                <p className="text-xs font-semibold text-theme-primary">
+                  {t('sub_accounts.active_support_chosen_by', { name })}
                 </p>
-                <div className="flex flex-wrap gap-1">
-                  {/* Activity is see/don't-see (assist or none) — the chip's
-                      colour carries the state, matching the switch it mirrors.
-                      Without it, the View-activity button below could appear
-                      with no chip explaining a level exists (audit A7). */}
-                  <Chip size="sm" variant="flat" color={account.tiers.activity === 'none' ? 'default' : 'success'}>
-                    {t('sub_accounts.permissions.can_view_activity')}
-                  </Chip>
-                  {(['listings', 'credits'] as const).map((capability) => (
-                    <Chip key={capability} size="sm" variant="flat" color={account.tiers[capability] === 'none' ? 'default' : 'success'}>
-                      {`${t(`sub_accounts.tiers.capability_${capability}`)}: ${t(`sub_accounts.tiers.option_${account.tiers[capability]}`)}`}
-                    </Chip>
-                  ))}
-                </div>
                 <p className="text-xs text-theme-muted">
                   {t('sub_accounts.tiers.set_by_member', { name })}
                 </p>
@@ -632,24 +657,6 @@ export function SubAccountsManager() {
             */}
             {!options.canManagePermissions && (account.status === 'active' || account.status === 'pending') && (
               <div className="mt-3 space-y-1">
-                <p className="text-xs font-medium text-theme-muted flex items-center gap-1">
-                  <Shield className="w-3 h-3" aria-hidden="true" />
-                  {t('sub_accounts.permissions_label')}
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  <Chip size="sm" variant="flat" color={account.tiers.activity === 'none' ? 'default' : 'success'}>
-                    {t('sub_accounts.permissions.can_view_activity')}
-                  </Chip>
-                  {/* Member-perspective labels ("Your listings… you approve"),
-                      NOT the supporter-side sub_accounts.tiers.* keys — those
-                      read wrong-way-round here, the exact trap the accessible
-                      guardians page documented. */}
-                  {(['listings', 'credits'] as const).map((capability) => (
-                    <Chip key={capability} size="sm" variant="flat" color={account.tiers[capability] === 'none' ? 'default' : 'success'}>
-                      {`${t(`safeguarding.guardians.tiers_capability_${capability}`)}: ${t(`safeguarding.guardians.tiers_option_${account.tiers[capability]}`)}`}
-                    </Chip>
-                  ))}
-                </div>
                 {account.status === 'active' && !account.staff_recorded && (
                   <div className="mt-3 space-y-3">
                     <div className="flex items-center justify-between gap-3">
@@ -804,7 +811,7 @@ export function SubAccountsManager() {
                         color="danger"
                         variant="flat"
                         isDisabled={isBusy}
-                        onPress={() => handleRemove(account.relationship_id)}
+                        onPress={() => setPendingRemoval({ id: account.relationship_id, name })}
                       >
                         {t('sub_accounts.decline')}
                       </Button>
@@ -822,7 +829,7 @@ export function SubAccountsManager() {
                         color="danger"
                         variant="flat"
                         isLoading={isBusy}
-                        onPress={() => handleRemove(account.relationship_id)}
+                        onPress={() => setPendingRemoval({ id: account.relationship_id, name })}
                       >
                         {t('sub_accounts.cancel_request')}
                       </Button>
@@ -841,7 +848,7 @@ export function SubAccountsManager() {
             // isLoading also disables — the old `!== 'pending'` carve-out left
             // pending rows spinnerless AND double-clickable (audit B4).
             isLoading={isBusy}
-            onPress={() => handleRemove(account.relationship_id)}
+            onPress={() => setPendingRemoval({ id: account.relationship_id, name })}
             aria-label={t('sub_accounts.remove_aria', { name })}
           >
             <Trash2 className="w-4 h-4" />
@@ -1035,6 +1042,53 @@ export function SubAccountsManager() {
               isDisabled={!addEmail.trim()}
             >
               {t('sub_accounts.send_request')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={pendingRemoval !== null}
+        onClose={() => {
+          if (pendingRemoval && busyRelationshipId !== pendingRemoval.id) {
+            setPendingRemoval(null);
+          }
+        }}
+        classNames={{
+          base: 'bg-[var(--surface-dropdown)] border border-[var(--border-default)]',
+          backdrop: 'bg-black/60 backdrop-blur-sm',
+        }}
+      >
+        <ModalContent>
+          <ModalHeader className="text-theme-primary">
+            <ModalHeading>
+              {t('sub_accounts.remove_modal_title', { name: pendingRemoval?.name ?? '' })}
+            </ModalHeading>
+          </ModalHeader>
+          <ModalBody>
+            <p className="text-sm leading-6 text-theme-muted">
+              {t('sub_accounts.remove_modal_body', { name: pendingRemoval?.name ?? '' })}
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="flat"
+              onPress={() => setPendingRemoval(null)}
+              isDisabled={pendingRemoval !== null && busyRelationshipId === pendingRemoval.id}
+            >
+              {t('sub_accounts.remove_modal_cancel')}
+            </Button>
+            <Button
+              color="danger"
+              variant="solid"
+              isLoading={pendingRemoval !== null && busyRelationshipId === pendingRemoval.id}
+              onPress={() => {
+                if (pendingRemoval) {
+                  void handleRemove(pendingRemoval.id);
+                }
+              }}
+            >
+              {t('sub_accounts.remove_modal_confirm')}
             </Button>
           </ModalFooter>
         </ModalContent>

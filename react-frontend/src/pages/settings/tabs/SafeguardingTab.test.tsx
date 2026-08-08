@@ -166,6 +166,29 @@ describe('SafeguardingTab', () => {
    * An API with no UI is not a fix. These tests are the guard.
    */
   describe('guardian arrangements', () => {
+    it('visually distinguishes the admin-recorded arrangement from member-controlled account support', async () => {
+      mockLoads({}, [preference], [
+        {
+          ...guardian,
+          state: 'consented',
+          consent_given: true,
+          consent_given_at: '2026-08-02T09:00:00Z',
+          tiers: { listings: 'co_decide', credits: 'none' },
+        },
+      ]);
+      render(<SafeguardingTab />);
+
+      await waitFor(() => expect(screen.getByText('Admin-managed safeguarding arrangement')).toBeInTheDocument());
+      expect(screen.getByText('Member-controlled account support')).toBeInTheDocument();
+      expect(screen.getByText(/This records who your organisation has identified to support you/i)).toBeInTheDocument();
+      expect(screen.getByText('Choose their account support')).toBeInTheDocument();
+      expect(screen.getByText('Step 1 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Step 2 of 2')).toBeInTheDocument();
+      expect(screen.getByText('Current account support')).toBeInTheDocument();
+      expect(screen.getByText('Your listings: Prepare only — you approve each one')).toBeInTheDocument();
+      expect(screen.getByText('Your time credits: Nothing')).toBeInTheDocument();
+    });
+
     it('fetches arrangements and tells the ward when there are none', async () => {
       render(<SafeguardingTab />);
 
@@ -185,9 +208,11 @@ describe('SafeguardingTab', () => {
       await waitFor(() => expect(screen.getByText('Grace Guardian')).toBeInTheDocument());
       expect(screen.getByText('Recorded during onboarding.')).toBeInTheDocument();
       expect(screen.getByText('Waiting for your answer')).toBeInTheDocument();
+      expect(screen.getByText('No account support has been granted yet.')).toBeInTheDocument();
+      expect(screen.getByText('Why am I seeing this?')).toBeInTheDocument();
       // The record confers no capability, and the screen must say so — no
       // authorisation path anywhere consults safeguarding_assignments.
-      expect(screen.getByText(/does not allow them to create listings/i)).toBeInTheDocument();
+      expect(screen.getByText(/does not by itself allow them to create listings/i)).toBeInTheDocument();
     });
 
     it('records the ward’s agreement against the right arrangement', async () => {

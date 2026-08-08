@@ -163,8 +163,8 @@ describe('SubAccountsManager', () => {
     render(<SubAccountsManager />);
 
     await waitFor(() => {
-      expect(screen.getByText('Linked Accounts')).toBeInTheDocument();
-      expect(screen.getAllByText('Add Account').length).toBeGreaterThan(0);
+      expect(screen.getByText('People who can help with accounts')).toBeInTheDocument();
+      expect(screen.getAllByText('Add someone').length).toBeGreaterThan(0);
     });
   });
 
@@ -174,7 +174,7 @@ describe('SubAccountsManager', () => {
     render(<SubAccountsManager />);
 
     await waitFor(() => {
-      expect(screen.getByText('No linked accounts')).toBeInTheDocument();
+      expect(screen.getByText('No account support set up')).toBeInTheDocument();
     });
   });
 
@@ -365,9 +365,9 @@ describe('SubAccountsManager', () => {
   });
 
   /** B1+B3 (2026-08-07): every card names the relationship type, and the
-   *  MEMBER side shows what each supporter can do — worded the member's way
-   *  round ("Your listings"), never the supporter's ("Their listings"). */
-  it('shows the relationship type and member-perspective capability chips', async () => {
+   *  MEMBER side summarises what each supporter can do — worded the member's
+   *  way round ("Your listings"), never the supporter's ("Their listings"). */
+  it('shows the relationship type and member-perspective capability summary', async () => {
     mockLoad([], [{
       ...mockManagerAccounts[0]!,
       status: 'active' as const,
@@ -388,6 +388,45 @@ describe('SubAccountsManager', () => {
     expect(screen.queryByText(/Their listings/)).not.toBeInTheDocument();
   });
 
+  it('summarises the current access from the actual tiers', async () => {
+    mockLoad([], [{
+      ...mockManagerAccounts[0]!,
+      status: 'active' as const,
+      permissions: {
+        can_view_activity: false,
+        can_manage_listings: false,
+        can_transact: false,
+        tiers: { activity: 'none', listings: 'co_decide', credits: 'represent' },
+      },
+    }]);
+
+    render(<SubAccountsManager />);
+
+    expect(await screen.findByText('Current account support')).toBeInTheDocument();
+    expect(screen.getByText('Your activity: No access')).toBeInTheDocument();
+    expect(screen.getByText('Your listings: Prepare only — you approve each one')).toBeInTheDocument();
+    expect(screen.getByText('Your time credits: Do it on their own')).toBeInTheDocument();
+  });
+
+  it('labels staff-recorded guardian arrangements separately from active account support', async () => {
+    mockLoad([{
+      ...mockManagedAccounts[0]!,
+      staff_recorded: true,
+      relationship_type: 'guardian',
+      permissions: {
+        can_view_activity: true,
+        can_manage_listings: false,
+        can_transact: false,
+        tiers: { activity: 'assist', listings: 'co_decide', credits: 'none' },
+      },
+    }], []);
+
+    render(<SubAccountsManager />);
+
+    expect(await screen.findByText('Staff-recorded guardian arrangement')).toBeInTheDocument();
+    expect(screen.getByText('Active account support chosen by Child One')).toBeInTheDocument();
+  });
+
   /** B4 (2026-08-07): a pending request the member sent shows its age and a
    *  labelled cancel — not only the unlabelled trash icon. */
   it('offers a labelled cancel and the request age on a pending child row', async () => {
@@ -402,8 +441,26 @@ describe('SubAccountsManager', () => {
     expect(await screen.findByText(/Requested/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel request' }));
 
+    expect(await screen.findByRole('dialog', { name: 'Remove Child Two?' })).toBeInTheDocument();
+    expect(screen.getByText('Child Two will lose all account support shown on this card.')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Keep support' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Remove Child Two?' })).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('Child Two')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel request' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove support' }));
+
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/v2/users/me/sub-accounts/2');
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Remove Child Two?' })).not.toBeInTheDocument();
     });
   });
 
@@ -419,8 +476,8 @@ describe('SubAccountsManager', () => {
 
     render(<SubAccountsManager />);
 
-    await screen.findByText('No linked accounts');
-    fireEvent.click(screen.getAllByText('Add Account')[0]);
+    await screen.findByText('No account support set up');
+    fireEvent.click(screen.getAllByText('Add someone')[0]);
     fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'child@example.com' } });
     fireEvent.click(screen.getByText('Send Request'));
 

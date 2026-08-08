@@ -262,7 +262,7 @@ describe('SubAccountsManager', () => {
     });
   });
 
-  it('calls DELETE endpoint when remove button clicked', async () => {
+  it('requires confirmation before calling the DELETE endpoint', async () => {
     mockApi.delete.mockResolvedValue({ success: true });
     mockApi.get
       .mockResolvedValueOnce({ success: true, data: [makeAccount({ relationship_id: 3 })] })
@@ -280,6 +280,10 @@ describe('SubAccountsManager', () => {
     );
     expect(removeBtn).toBeDefined();
     fireEvent.click(removeBtn!);
+
+    expect(await screen.findByRole('dialog', { name: 'Remove Bob Smith?' })).toBeInTheDocument();
+    expect(mockApi.delete).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove support' }));
 
     await waitFor(() => {
       expect(mockApi.delete).toHaveBeenCalledWith('/v2/users/me/sub-accounts/3');
