@@ -26,10 +26,6 @@ class ResidencyVerificationServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('member_residency_verifications')) {
-            $this->markTestSkipped('member_residency_verifications table not present.');
-        }
-
         TenantContext::setById(self::TENANT_A);
     }
 

@@ -27,10 +27,6 @@ class CaringHourGiftServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_hour_gifts')) {
-            $this->markTestSkipped('caring_hour_gifts table not present.');
-        }
-
         // Queue::fake() prevents the sync queue from firing Queue::before() hooks
         // (registered in AppServiceProvider) that call TenantContext::reset().
         // Without this, User::factory()->create() → UserObserver → SyncUserSearchIndexJob

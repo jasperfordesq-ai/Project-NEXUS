@@ -27,10 +27,6 @@ class EmergencyAlertServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts table not present.');
-        }
-
         TenantContext::setById(self::TENANT_A);
     }
 

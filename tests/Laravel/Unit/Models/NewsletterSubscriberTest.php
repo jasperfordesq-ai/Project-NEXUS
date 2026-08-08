@@ -64,10 +64,6 @@ class NewsletterSubscriberTest extends TestCase
 
     public function test_member_sync_requires_newsletter_opt_in(): void
     {
-        if (!Schema::hasColumn('users', 'newsletter_opt_in')) {
-            $this->markTestSkipped('newsletter_opt_in column is not available in this test schema.');
-        }
-
         $this->withTenant(999);
 
         $optedIn = User::factory()->forTenant($this->testTenantId)->create([

@@ -24,9 +24,6 @@ class CaringInviteCodeServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_invite_codes')) {
-            $this->markTestSkipped('caring_invite_codes table not present.');
-        }
         TenantContext::setById($this->testTenantId);
     }
 

@@ -23,9 +23,6 @@ class CaringCommunityRolePresetServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('roles') || !Schema::hasTable('permissions') || !Schema::hasTable('role_permissions')) {
-            $this->markTestSkipped('RBAC tables (roles/permissions/role_permissions) not present.');
-        }
         TenantContext::setById($this->testTenantId);
     }
 

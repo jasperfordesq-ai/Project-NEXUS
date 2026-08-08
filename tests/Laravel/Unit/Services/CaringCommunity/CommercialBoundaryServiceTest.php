@@ -40,10 +40,6 @@ class CommercialBoundaryServiceTest extends TestCase
         parent::setUp();
         Queue::fake();
 
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-
         TenantContext::setById($this->tenantId);
 
         // Start every test with a clean slate for this tenant's boundary setting.

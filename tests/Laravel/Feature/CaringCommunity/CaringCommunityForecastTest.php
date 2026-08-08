@@ -124,10 +124,6 @@ class CaringCommunityForecastTest extends TestCase
         $this->setCaringCommunityFeature(true);
         TenantContext::setById($this->testTenantId);
 
-        if (!Schema::hasColumn('vol_logs', 'support_recipient_id')) {
-            $this->markTestSkipped('vol_logs.support_recipient_id not present.');
-        }
-
         $supporter = User::factory()->forTenant($this->testTenantId)->create();
         $recipient = User::factory()->forTenant($this->testTenantId)->create();
 

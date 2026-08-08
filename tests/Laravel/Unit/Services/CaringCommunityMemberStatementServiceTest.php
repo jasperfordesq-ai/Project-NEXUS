@@ -69,9 +69,6 @@ class CaringCommunityMemberStatementServiceTest extends TestCase
 
     public function test_summary_correctly_aggregates_approved_and_pending_hours(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
         $user = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0]);
 
         DB::table('vol_logs')->insert([
@@ -94,9 +91,6 @@ class CaringCommunityMemberStatementServiceTest extends TestCase
 
     public function test_social_value_estimate_is_hours_times_chf_rate(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
         $user = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0]);
 
         // Wipe workflow policy settings so the default CHF rate (35) is used.
@@ -183,9 +177,6 @@ class CaringCommunityMemberStatementServiceTest extends TestCase
 
     public function test_support_logs_outside_period_are_excluded(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
         $user = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0]);
 
         DB::table('vol_logs')->insert([
@@ -204,9 +195,6 @@ class CaringCommunityMemberStatementServiceTest extends TestCase
 
     public function test_csv_produces_header_row_and_one_row_per_activity(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
         $user = User::factory()->forTenant($this->testTenantId)->create(['balance' => 0]);
 
         DB::table('vol_logs')->insert([

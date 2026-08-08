@@ -34,10 +34,6 @@ class HelpRequestSlaDashboardTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_help_requests table missing — run migrations first.');
-        }
-
         $this->setCaringCommunityFeature($this->testTenantId, true);
 
         // Wipe any seed data so each test sees an empty tenant.

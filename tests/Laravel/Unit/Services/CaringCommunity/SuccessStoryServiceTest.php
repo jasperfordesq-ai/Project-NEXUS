@@ -27,10 +27,6 @@ class SuccessStoryServiceTest extends TestCase
         parent::setUp();
         Queue::fake();
 
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-
         TenantContext::setById($this->tenantId);
 
         // Clean up any leftover stories for our tenant from a prior test run.
@@ -369,10 +365,6 @@ class SuccessStoryServiceTest extends TestCase
 
     public function test_refresh_live_metrics_municipal_roi_returns_hourly_rate(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         // Regression: fetchMunicipalRoiMetric() previously queried the non-existent
         // `recipient_user_id` column on `caring_support_relationships` (the real column
         // is `recipient_id`), which raised SQLSTATE[42S22] for ANY municipal_roi metric
@@ -392,10 +384,6 @@ class SuccessStoryServiceTest extends TestCase
 
     public function test_refresh_live_metrics_municipal_roi_computes_formal_care_offset(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         // Regression: same root cause as the test above — the `recipient_id` column fix
         // lets the caring_support_relationships distinct-count run, so the formal-care
         // offset can be computed from approved volunteer hours.

@@ -41,10 +41,6 @@ class CaringSubRegionServiceTest extends TestCase
 
         Queue::fake();
 
-        if (! Schema::hasTable('caring_sub_regions')) {
-            $this->markTestSkipped('caring_sub_regions table not present.');
-        }
-
         TenantContext::setById(self::TENANT_ID);
     }
 

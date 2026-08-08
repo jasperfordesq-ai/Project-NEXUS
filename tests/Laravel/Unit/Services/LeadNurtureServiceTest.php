@@ -19,10 +19,6 @@ class LeadNurtureServiceTest extends TestCase
 
     public function test_csv_export_sanitizes_spreadsheet_formula_values(): void
     {
-        if (!Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table is not present.');
-        }
-
         $service = new LeadNurtureService();
 
         $capture = $service->capture($this->testTenantId, [

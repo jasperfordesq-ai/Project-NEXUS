@@ -28,10 +28,6 @@ class PaperOnboardingIntakeServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_paper_onboarding_intakes')) {
-            $this->markTestSkipped('caring_paper_onboarding_intakes table not present.');
-        }
-
         Queue::fake();
         TenantContext::setById($this->testTenantId);
 

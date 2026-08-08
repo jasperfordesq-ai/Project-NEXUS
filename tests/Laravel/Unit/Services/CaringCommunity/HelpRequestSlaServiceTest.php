@@ -47,14 +47,6 @@ class HelpRequestSlaServiceTest extends TestCase
         parent::setUp();
         Queue::fake();
 
-        if (!Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_help_requests table not present.');
-        }
-
-        if (!Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-
         // Remove any pre-existing policy overrides so tests start from defaults.
         DB::table('tenant_settings')
             ->where('tenant_id', $this->testTenantId)

@@ -30,9 +30,6 @@ class PrerenderServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if (! Schema::hasTable('prerender_jobs')) {
-            $this->markTestSkipped('prerender_jobs table not present.');
-        }
         // Several tests assert the exact FIFO/priority order of freshly enqueued
         // jobs (claimNextJob returns the oldest eligible row). A stray queued row
         // committed by an earlier non-transactional run would always be claimed
@@ -850,9 +847,6 @@ HTML;
 
     public function test_circuit_breaker_trips_after_threshold(): void
     {
-        if (! Schema::hasTable('prerender_audit_log')) {
-            $this->markTestSkipped('prerender_audit_log table not present.');
-        }
         $service = new PrerenderService();
         $service->resetBreaker();
         $this->assertNull($service->breakerTrippedUntil(), 'breaker should start closed');
@@ -917,9 +911,6 @@ HTML;
 
     public function test_audit_redacts_secret_keys(): void
     {
-        if (! Schema::hasTable('prerender_audit_log')) {
-            $this->markTestSkipped('prerender_audit_log table not present.');
-        }
         $service = new PrerenderService();
         $service->audit(
             'test_secret', 1, null, null, 'ok',

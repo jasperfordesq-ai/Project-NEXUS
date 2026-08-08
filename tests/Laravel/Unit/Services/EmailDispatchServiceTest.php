@@ -230,10 +230,6 @@ class EmailDispatchServiceTest extends TestCase
      */
     public function test_sendRaw_returns_false_for_suppressed_address(): void
     {
-        if (!DB::getSchemaBuilder()->hasTable('email_suppression')) {
-            $this->markTestSkipped('email_suppression table not present in this environment');
-        }
-
         $email = $this->uniqueEmail('suppressed');
 
         DB::table('email_suppression')->insertOrIgnore([
@@ -346,10 +342,6 @@ class EmailDispatchServiceTest extends TestCase
      */
     public function test_idempotency_key_recorded_in_email_log(): void
     {
-        if (!DB::getSchemaBuilder()->hasColumn('email_log', 'idempotency_key')) {
-            $this->markTestSkipped('email_log.idempotency_key column not present');
-        }
-
         [, $email] = $this->insertUser();
         $ikey = 'test-ikey-' . uniqid('', true);
 
@@ -376,10 +368,6 @@ class EmailDispatchServiceTest extends TestCase
      */
     public function test_dispatch_id_recorded_in_email_log(): void
     {
-        if (!DB::getSchemaBuilder()->hasColumn('email_log', 'dispatch_id')) {
-            $this->markTestSkipped('email_log.dispatch_id column not present');
-        }
-
         [, $email] = $this->insertUser();
         $dispatchId = 'disp-' . uniqid('', true);
 
@@ -406,10 +394,6 @@ class EmailDispatchServiceTest extends TestCase
      */
     public function test_source_field_defaults_to_sendRaw_in_email_log(): void
     {
-        if (!DB::getSchemaBuilder()->hasColumn('email_log', 'source')) {
-            $this->markTestSkipped('email_log.source column not present');
-        }
-
         [, $email] = $this->insertUser();
 
         EmailDispatchService::sendRaw(

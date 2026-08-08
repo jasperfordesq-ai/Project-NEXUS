@@ -24,10 +24,6 @@ class KpiBaselineServiceTest extends TestCase
         parent::setUp();
         Queue::fake();
 
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         if (!Schema::hasTable('users')) {
             $this->markTestSkipped('users table not present.');
         }

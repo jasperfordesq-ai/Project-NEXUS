@@ -156,10 +156,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_set_tenant_cadence_persists_daily_and_round_trips(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $result = $this->service()->setTenantCadence(self::TENANT_ID, 'daily');
 
         $this->assertArrayHasKey('cadence', $result);
@@ -170,10 +166,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_set_tenant_cadence_normalises_weekly_to_monthly(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $result = $this->service()->setTenantCadence(self::TENANT_ID, 'weekly');
 
         $this->assertArrayHasKey('cadence', $result);
@@ -193,10 +185,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_get_user_prefs_returns_defaults_when_no_row(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $userId = $this->insertUser();
         $prefs  = $this->service()->getUserPrefs(self::TENANT_ID, $userId);
 
@@ -209,10 +197,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_set_user_prefs_persists_cadence_and_opt_out_sources(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $userId = $this->insertUser();
 
         $result = $this->service()->setUserPrefs(self::TENANT_ID, $userId, [
@@ -233,10 +217,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_set_user_prefs_filters_invalid_opt_out_sources(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $userId = $this->insertUser();
 
         $result = $this->service()->setUserPrefs(self::TENANT_ID, $userId, [
@@ -261,10 +241,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_set_user_prefs_sets_enabled_false_when_cadence_is_off(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $userId = $this->insertUser();
 
         $result = $this->service()->setUserPrefs(self::TENANT_ID, $userId, [
@@ -276,10 +252,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_set_user_prefs_persists_preferred_sub_region_id(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $userId = $this->insertUser();
 
         $result = $this->service()->setUserPrefs(self::TENANT_ID, $userId, [
@@ -309,10 +281,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_mark_sent_now_records_last_sent_at_and_get_returns_it(): void
     {
-        if (! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings not present.');
-        }
-
         $userId = $this->insertUser();
         $before = time();
 
@@ -335,10 +303,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_claim_delivery_succeeds_for_fresh_window(): void
     {
-        if (! Schema::hasTable('civic_digest_delivery_claims')) {
-            $this->markTestSkipped('civic_digest_delivery_claims not present.');
-        }
-
         $userId    = $this->insertUser();
         $windowKey = '2026-01';
 
@@ -358,10 +322,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_claim_delivery_is_idempotent_for_same_window(): void
     {
-        if (! Schema::hasTable('civic_digest_delivery_claims')) {
-            $this->markTestSkipped('civic_digest_delivery_claims not present.');
-        }
-
         $userId    = $this->insertUser();
         $windowKey = '2026-02';
 
@@ -377,10 +337,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_release_delivery_claim_removes_unclaimed_row(): void
     {
-        if (! Schema::hasTable('civic_digest_delivery_claims')) {
-            $this->markTestSkipped('civic_digest_delivery_claims not present.');
-        }
-
         $userId    = $this->insertUser();
         $windowKey = '2026-03';
 
@@ -400,10 +356,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_mark_delivery_sent_updates_status_to_sent(): void
     {
-        if (! Schema::hasTable('civic_digest_delivery_claims')) {
-            $this->markTestSkipped('civic_digest_delivery_claims not present.');
-        }
-
         $userId    = $this->insertUser();
         $windowKey = '2026-04';
 
@@ -432,10 +384,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_mark_delivery_suppressed_updates_status_to_suppressed(): void
     {
-        if (! Schema::hasTable('civic_digest_delivery_claims')) {
-            $this->markTestSkipped('civic_digest_delivery_claims not present.');
-        }
-
         $userId    = $this->insertUser();
         $windowKey = '2026-05';
 
@@ -461,10 +409,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_release_stale_delivery_claims_returns_zero_for_fresh_rows(): void
     {
-        if (! Schema::hasTable('civic_digest_delivery_claims')) {
-            $this->markTestSkipped('civic_digest_delivery_claims not present.');
-        }
-
         $userId    = $this->insertUser();
         $windowKey = '2026-06-fresh';
 
@@ -491,10 +435,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_for_member_includes_active_safety_alerts(): void
     {
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('caring_emergency_alerts')->insertOrIgnore([
@@ -602,10 +542,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_items_have_required_keys(): void
     {
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('caring_emergency_alerts')->insertOrIgnore([
@@ -637,10 +573,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_respects_limit_parameter(): void
     {
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts not present.');
-        }
-
         $userId = $this->insertUser();
 
         // Seed 5 alerts
@@ -667,10 +599,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_includes_active_projects_in_progress(): void
     {
-        if (! Schema::hasTable('caring_project_announcements')) {
-            $this->markTestSkipped('caring_project_announcements not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('caring_project_announcements')->insertOrIgnore([
@@ -698,10 +626,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_includes_approved_marketplace_listings(): void
     {
-        if (! Schema::hasTable('marketplace_listings')) {
-            $this->markTestSkipped('marketplace_listings not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('marketplace_listings')->insertOrIgnore([
@@ -725,10 +649,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_is_tenant_scoped(): void
     {
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts not present.');
-        }
-
         $OTHER_TENANT = 99701;
         DB::table('tenants')->updateOrInsert(
             ['id' => $OTHER_TENANT],
@@ -781,10 +701,6 @@ class CivicDigestServiceTest extends TestCase
 
     public function test_digest_excludes_expired_safety_alerts(): void
     {
-        if (! Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('caring_emergency_alerts')->insertOrIgnore([

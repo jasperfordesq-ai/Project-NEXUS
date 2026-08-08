@@ -705,10 +705,6 @@ class MessagesControllerTest extends TestCase
 
     public function test_unread_count_excludes_federated_messages_from_direct_messages_badge(): void
     {
-        if (!Schema::hasTable('federation_messages')) {
-            $this->markTestSkipped('federation_messages table is not available in this test database.');
-        }
-
         $recipient = $this->authenticatedUser();
         $directSender = User::factory()->forTenant($this->testTenantId)->create(['status' => 'active']);
 

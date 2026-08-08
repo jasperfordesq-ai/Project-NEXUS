@@ -46,10 +46,6 @@ class MunicipalRoiHardeningTest extends TestCase
 
         $this->tenantId = $this->testTenantId;
 
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table missing — run migrations first.');
-        }
-
         $this->setCaringCommunityFeature(true);
         TenantContext::setById($this->tenantId);
 
@@ -172,10 +168,6 @@ class MunicipalRoiHardeningTest extends TestCase
 
     public function test_substitution_coefficient_weights_hours(): void
     {
-        if (!Schema::hasColumn('categories', 'substitution_coefficient')) {
-            $this->markTestSkipped('substitution_coefficient column missing — run the migration first.');
-        }
-
         Carbon::setTestNow('2026-05-01 12:00:00');
 
         $admin = $this->makeAdmin();

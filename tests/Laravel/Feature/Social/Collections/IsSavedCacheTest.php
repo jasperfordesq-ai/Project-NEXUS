@@ -24,10 +24,6 @@ class IsSavedCacheTest extends TestCase
 
     public function test_is_saved_bulk_returns_correct_flags(): void
     {
-        if (!Schema::hasTable('saved_items')) {
-            $this->markTestSkipped('saved_items schema not present.');
-        }
-
         $user = User::factory()->forTenant($this->testTenantId)->create();
         // User-created listeners reset TenantContext in console mode — re-pin.
         \App\Core\TenantContext::setById($this->testTenantId);

@@ -24,10 +24,6 @@ class PilotDisclosurePackServiceTest extends TestCase
         parent::setUp();
         Queue::fake();
 
-        if (!Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-
         // Remove any pre-existing disclosure pack row for the test tenant.
         DB::table('tenant_settings')
             ->where('tenant_id', $this->testTenantId)

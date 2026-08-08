@@ -93,10 +93,6 @@ class ForecastDepthMetricsTest extends TestCase
         );
 
         $this->bootTenant();
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table missing.');
-        }
-
         // Helper A: active 70 days ago, no recent activity → lapsed
         // Helper B: active 70 days ago AND 5 days ago → still active
         $helperA = User::factory()->forTenant($this->testTenantId)->create();

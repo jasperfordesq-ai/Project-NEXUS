@@ -40,10 +40,6 @@ class CareProviderDirectoryServiceTest extends TestCase
 
         Queue::fake();
 
-        if (! Schema::hasTable('caring_care_providers')) {
-            $this->markTestSkipped('caring_care_providers table not present.');
-        }
-
         \App\Core\TenantContext::setById(self::TENANT_ID);
     }
 

@@ -24,9 +24,6 @@ class CaringSupportRelationshipServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_support_relationships')) {
-            $this->markTestSkipped('caring_support_relationships table not present.');
-        }
         TenantContext::setById($this->testTenantId);
     }
 
@@ -193,9 +190,6 @@ class CaringSupportRelationshipServiceTest extends TestCase
 
     public function test_log_hours_rejects_inactive_relationship(): void
     {
-        if (!Schema::hasColumn('vol_logs', 'caring_support_relationship_id')) {
-            $this->markTestSkipped('vol_logs.caring_support_relationship_id not present.');
-        }
         $supporter = User::factory()->forTenant($this->testTenantId)->create();
         $recipient = User::factory()->forTenant($this->testTenantId)->create();
         $coord = User::factory()->forTenant($this->testTenantId)->admin()->create();
@@ -217,9 +211,6 @@ class CaringSupportRelationshipServiceTest extends TestCase
 
     public function test_log_hours_rejects_future_dates_and_zero_hours(): void
     {
-        if (!Schema::hasColumn('vol_logs', 'caring_support_relationship_id')) {
-            $this->markTestSkipped('vol_logs.caring_support_relationship_id not present.');
-        }
         $supporter = User::factory()->forTenant($this->testTenantId)->create();
         $recipient = User::factory()->forTenant($this->testTenantId)->create();
         $coord = User::factory()->forTenant($this->testTenantId)->admin()->create();
@@ -246,9 +237,6 @@ class CaringSupportRelationshipServiceTest extends TestCase
 
     public function test_log_hours_blocks_duplicate_same_date_entries(): void
     {
-        if (!Schema::hasColumn('vol_logs', 'caring_support_relationship_id')) {
-            $this->markTestSkipped('vol_logs.caring_support_relationship_id not present.');
-        }
         $supporter = User::factory()->forTenant($this->testTenantId)->create();
         $recipient = User::factory()->forTenant($this->testTenantId)->create();
         $coord = User::factory()->forTenant($this->testTenantId)->admin()->create();
@@ -277,10 +265,6 @@ class CaringSupportRelationshipServiceTest extends TestCase
 
     public function test_log_hours_mints_even_when_org_auto_pay_disabled_and_balance_low(): void
     {
-        if (!Schema::hasColumn('vol_logs', 'caring_support_relationship_id')) {
-            $this->markTestSkipped('vol_logs.caring_support_relationship_id not present.');
-        }
-
         // Regression: an auto-approved caring log ALWAYS mints time credits — never
         // gated by the org's auto_pay_enabled flag or wallet balance. The org wallet
         // is debited unconditionally and allowed to go negative, mirroring

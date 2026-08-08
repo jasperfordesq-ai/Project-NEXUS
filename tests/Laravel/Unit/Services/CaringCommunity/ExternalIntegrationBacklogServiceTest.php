@@ -24,10 +24,6 @@ class ExternalIntegrationBacklogServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-
         Queue::fake();
         TenantContext::setById($this->testTenantId);
 

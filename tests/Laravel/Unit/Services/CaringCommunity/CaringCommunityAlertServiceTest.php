@@ -153,10 +153,6 @@ class CaringCommunityAlertServiceTest extends TestCase
     public function test_activeAlerts_every_item_has_required_keys(): void
     {
         // Seed an overdue-review vol_log so at least one alert fires
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $userId = $this->insertUser();
         // Old pending log (> 7 days) to trigger overdue_reviews
         $this->insertVolLog($userId, 'pending', now()->subDays(10)->format('Y-m-d'), null, null, now()->subDays(10)->toDateTimeString());
@@ -195,10 +191,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_overdue_reviews_alert_fires_when_pending_log_is_past_sla(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $userId = $this->insertUser();
         // Insert a pending log created 10 days ago (default SLA = 7 days)
         $this->insertVolLog($userId, 'pending', now()->subDays(10)->format('Y-m-d'), null, null, now()->subDays(10)->toDateTimeString());
@@ -210,10 +202,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_overdue_reviews_alert_absent_when_no_overdue_pending_logs(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         // Insert a pending log created only 2 days ago (within default 7-day SLA)
         $userId = $this->insertUser();
         $this->insertVolLog($userId, 'pending', now()->subDays(2)->format('Y-m-d'), null, null, now()->subDays(2)->toDateTimeString());
@@ -228,10 +216,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_overdue_reviews_uses_policy_sla_days(): void
     {
-        if (! Schema::hasTable('vol_logs') || ! Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('vol_logs or tenant_settings table not present.');
-        }
-
         // Set a strict SLA of 1 day via policy
         DB::table('tenant_settings')->updateOrInsert(
             ['tenant_id' => self::TENANT_ID, 'setting_key' => 'caring_community.workflow.review_sla_days'],
@@ -250,10 +234,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_inactive_members_alert_fires_for_member_active_6mo_but_not_last_30_days(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $userId = $this->insertUser();
 
         // Log from 90 days ago (within 6 months) — satisfies the "was active" criteria
@@ -268,10 +248,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_inactive_members_alert_absent_when_user_logged_recently(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         // A user with a very recent log (5 days ago) should NOT be counted as inactive.
         // We verify this by checking that a user who only has a recent log is excluded.
         // Since the alert is additive we can't guarantee it's zero globally, but we
@@ -305,10 +281,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_overdue_check_ins_alert_fires_for_active_relationship_past_due(): void
     {
-        if (! Schema::hasTable('caring_support_relationships')) {
-            $this->markTestSkipped('caring_support_relationships table not present.');
-        }
-
         $supporter = $this->insertUser();
         $recipient = $this->insertUser();
 
@@ -331,10 +303,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_overdue_check_ins_alert_absent_when_check_in_is_in_future(): void
     {
-        if (! Schema::hasTable('caring_support_relationships')) {
-            $this->markTestSkipped('caring_support_relationships table not present.');
-        }
-
         $supporter = $this->insertUser();
         $recipient = $this->insertUser();
 
@@ -437,10 +405,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_coordinators_overloaded_alert_fires_when_coordinator_has_more_than_10_pending(): void
     {
-        if (! Schema::hasTable('vol_logs') || ! Schema::hasColumn('vol_logs', 'assigned_to')) {
-            $this->markTestSkipped('vol_logs.assigned_to column not present.');
-        }
-
         $coordinator = $this->insertUser();
 
         // Insert 11 pending logs assigned to the same coordinator
@@ -509,10 +473,6 @@ class CaringCommunityAlertServiceTest extends TestCase
 
     public function test_all_returned_alerts_have_valid_severity(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         // Seed data to produce at least one alert
         $userId = $this->insertUser();
         $this->insertVolLog($userId, 'pending', now()->subDays(10)->format('Y-m-d'), null, null, now()->subDays(10)->toDateTimeString());

@@ -298,10 +298,6 @@ class HourTransferTest extends TestCase
 
     public function test_accept_remote_transfer_is_idempotent_and_credits_once(): void
     {
-        if (!Schema::hasTable('caring_hour_transfers')) {
-            $this->markTestSkipped('caring_hour_transfers table missing.');
-        }
-
         $email = 'inbound.' . uniqid() . '@example.com';
         $destinationUser = $this->makeUser($this->destinationTenantId, $email, 2);
         $sourceSlug = 'remote-source-' . substr(uniqid(), -6);

@@ -26,9 +26,6 @@ class HourEstateServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('caring_hour_estates')) {
-            $this->markTestSkipped('caring_hour_estates table not present.');
-        }
         TenantContext::setById($this->testTenantId);
     }
 

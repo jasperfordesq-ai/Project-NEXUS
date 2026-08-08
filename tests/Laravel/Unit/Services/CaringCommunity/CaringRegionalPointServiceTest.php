@@ -545,10 +545,6 @@ class CaringRegionalPointServiceTest extends TestCase
 
     public function test_getMarketplaceSellerSettings_returns_defaults_for_unknown_seller(): void
     {
-        if (!Schema::hasTable('marketplace_seller_regional_point_settings')) {
-            $this->markTestSkipped('marketplace_seller_regional_point_settings table not present.');
-        }
-
         $sellerId = $this->insertUser();
         $defaults = $this->service()->getMarketplaceSellerSettings($sellerId);
 
@@ -560,10 +556,6 @@ class CaringRegionalPointServiceTest extends TestCase
 
     public function test_updateMarketplaceSellerSettings_persists_and_returns_settings(): void
     {
-        if (!Schema::hasTable('marketplace_seller_regional_point_settings')) {
-            $this->markTestSkipped('marketplace_seller_regional_point_settings table not present.');
-        }
-
         $sellerId = $this->insertUser();
 
         $result = $this->service()->updateMarketplaceSellerSettings($sellerId, true, 5.0, 30);
@@ -585,10 +577,6 @@ class CaringRegionalPointServiceTest extends TestCase
 
     public function test_updateMarketplaceSellerSettings_rejects_invalid_discount_pct(): void
     {
-        if (!Schema::hasTable('marketplace_seller_regional_point_settings')) {
-            $this->markTestSkipped('marketplace_seller_regional_point_settings table not present.');
-        }
-
         $sellerId = $this->insertUser();
 
         $this->expectException(InvalidArgumentException::class);
@@ -617,10 +605,6 @@ class CaringRegionalPointServiceTest extends TestCase
 
     public function test_calculateMarketplaceDiscount_returns_invalid_order_total_for_zero(): void
     {
-        if (!Schema::hasTable('marketplace_seller_regional_point_settings')) {
-            $this->markTestSkipped('marketplace_seller_regional_point_settings table not present.');
-        }
-
         $memberId = $this->insertUser();
         $sellerId = $this->insertUser();
 

@@ -198,10 +198,6 @@ class PilotLaunchReadinessTest extends TestCase
 
     public function test_pilot_scoreboard_section_advances_after_pre_pilot_baseline_captured(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present in test DB.');
-        }
-
         $admin = $this->makeAdmin($this->testTenantId);
 
         $service = app(PilotLaunchReadinessService::class);

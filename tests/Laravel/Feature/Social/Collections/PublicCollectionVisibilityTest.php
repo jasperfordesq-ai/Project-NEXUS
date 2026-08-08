@@ -23,10 +23,6 @@ class PublicCollectionVisibilityTest extends TestCase
 
     public function test_public_only_filter_excludes_private(): void
     {
-        if (!Schema::hasTable('saved_collections')) {
-            $this->markTestSkipped('saved_collections schema not present.');
-        }
-
         $user = User::factory()->forTenant($this->testTenantId)->create();
         $svc = new SavedCollectionService();
         $svc->createCollection($user->id, 'Private', null, false);

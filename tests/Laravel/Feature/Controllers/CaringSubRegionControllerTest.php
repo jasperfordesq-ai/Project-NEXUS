@@ -42,9 +42,6 @@ class CaringSubRegionControllerTest extends TestCase
             $this->markTestSkipped('Caring sub-region tables are not present in the test database.');
         }
 
-        if (! Schema::hasColumn('caring_care_providers', 'sub_region_id')) {
-            $this->markTestSkipped('Care provider sub_region_id column is not present in the test database.');
-        }
     }
 
     public function test_admin_can_create_sub_region_and_member_can_list_active_regions(): void

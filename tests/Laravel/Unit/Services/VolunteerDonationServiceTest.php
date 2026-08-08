@@ -210,10 +210,6 @@ class VolunteerDonationServiceTest extends TestCase
 
     public function test_getDonations_filters_by_community_project_id(): void
     {
-        if (!Schema::hasColumn('vol_donations', 'community_project_id')) {
-            $this->markTestSkipped('vol_donations.community_project_id column not present');
-        }
-
         $userId = random_int(10_000_000, 99_999_999);
         $projectId = random_int(10_000_000, 99_999_999);
 

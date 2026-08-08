@@ -67,10 +67,6 @@ class InterGenerationalMatchingTest extends TestCase
 
     public function test_tandem_score_boosted_for_intergenerational_pairs(): void
     {
-        if (!Schema::hasColumn('users', 'date_of_birth')) {
-            $this->markTestSkipped('users.date_of_birth column not present in test schema');
-        }
-
         $young = $this->makeUserWithDob('young.' . uniqid() . '@x.test', '2000-01-01');
         $elder = $this->makeUserWithDob('elder.' . uniqid() . '@x.test', '1940-01-01');
 
@@ -101,10 +97,6 @@ class InterGenerationalMatchingTest extends TestCase
 
     public function test_intergenerational_tandem_count_metric(): void
     {
-        if (!Schema::hasColumn('users', 'date_of_birth')) {
-            $this->markTestSkipped('users.date_of_birth column not present in test schema');
-        }
-
         $supporter = $this->makeUserWithDob('sup.' . uniqid() . '@x.test', '1945-01-01');
         $recipient = $this->makeUserWithDob('rec.' . uniqid() . '@x.test', '2005-01-01');
 

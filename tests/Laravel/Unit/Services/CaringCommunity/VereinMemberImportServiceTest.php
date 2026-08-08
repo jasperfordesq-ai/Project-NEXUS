@@ -28,10 +28,6 @@ class VereinMemberImportServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('vol_organizations') || !Schema::hasTable('org_members')) {
-            $this->markTestSkipped('vol_organizations / org_members tables not present.');
-        }
-
         Queue::fake();
         TenantContext::setById($this->testTenantId);
 

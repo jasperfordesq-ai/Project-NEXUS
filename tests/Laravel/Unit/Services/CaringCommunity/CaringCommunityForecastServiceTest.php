@@ -53,10 +53,6 @@ class CaringCommunityForecastServiceTest extends TestCase
 
         Queue::fake();
 
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         // Insert a throwaway tenant row so FK constraints are satisfied.
         // Note: tenants table has no 'status' column.
         DB::table('tenants')->insertOrIgnore([
@@ -376,10 +372,6 @@ class CaringCommunityForecastServiceTest extends TestCase
 
     public function test_forecastRecipients_counts_distinct_support_recipients(): void
     {
-        if (! Schema::hasColumn('vol_logs', 'support_recipient_id')) {
-            $this->markTestSkipped('support_recipient_id column not present on vol_logs.');
-        }
-
         $helper     = $this->insertUser();
         $recipient1 = $this->insertUser();
         $recipient2 = $this->insertUser();
@@ -398,10 +390,6 @@ class CaringCommunityForecastServiceTest extends TestCase
 
     public function test_forecastRecipients_excludes_null_recipient_rows(): void
     {
-        if (! Schema::hasColumn('vol_logs', 'support_recipient_id')) {
-            $this->markTestSkipped('support_recipient_id column not present on vol_logs.');
-        }
-
         $helper = $this->insertUser();
 
         // Log without a recipient (support_recipient_id = NULL) — should not count
@@ -435,10 +423,6 @@ class CaringCommunityForecastServiceTest extends TestCase
 
     public function test_subRegionDemand_returns_empty_when_no_sub_regions(): void
     {
-        if (! Schema::hasTable('caring_sub_regions') || ! Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_sub_regions or caring_help_requests table not present.');
-        }
-
         $result = $this->service()->subRegionDemand();
 
         $this->assertSame(['short' => 30, 'long' => 90], $result['window_days']);
@@ -448,10 +432,6 @@ class CaringCommunityForecastServiceTest extends TestCase
 
     public function test_subRegionDemand_flags_under_supplied_region(): void
     {
-        if (! Schema::hasTable('caring_sub_regions') || ! Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_sub_regions or caring_help_requests table not present.');
-        }
-
         $slug = 'test-region-' . uniqid('', true);
 
         DB::table('caring_sub_regions')->insert([
@@ -501,10 +481,6 @@ class CaringCommunityForecastServiceTest extends TestCase
 
     public function test_subRegionDemand_does_not_flag_zero_demand_region(): void
     {
-        if (! Schema::hasTable('caring_sub_regions') || ! Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_sub_regions or caring_help_requests table not present.');
-        }
-
         $slug = 'zero-demand-' . uniqid('', true);
 
         DB::table('caring_sub_regions')->insert([

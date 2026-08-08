@@ -92,10 +92,6 @@ class TrustTierServiceTest extends TestCase
 
     public function test_compute_tier_member_when_one_hour_logged(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not available.');
-        }
-
         $service = new TrustTierService();
         $userId = $this->makeUser(self::TENANT_A, 'tt2.' . uniqid() . '@example.com');
 
@@ -137,10 +133,6 @@ class TrustTierServiceTest extends TestCase
 
     public function test_compute_tier_does_not_count_other_tenants_hours(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not available.');
-        }
-
         $service = new TrustTierService();
         $userId = $this->makeUser(self::TENANT_A, 'ttz.' . uniqid() . '@example.com');
 

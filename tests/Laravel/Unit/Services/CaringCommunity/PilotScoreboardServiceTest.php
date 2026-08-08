@@ -126,10 +126,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_cost_offset_chf_is_approved_hours_times_35_times_2(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $userId = $this->insertUser();
 
         // Insert 4.0 approved hours in the 90-day window.
@@ -159,10 +155,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_approved_hours_ignores_pending_and_declined_logs(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('vol_logs')->insert([
@@ -181,10 +173,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_active_members_counts_users_with_approved_logs_in_window(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $u1 = $this->insertUser();
         $u2 = $this->insertUser();
 
@@ -202,10 +190,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_active_members_excludes_logs_outside_90_day_window(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $userId = $this->insertUser();
 
         DB::table('vol_logs')->insert([
@@ -228,10 +212,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_recurring_relationships_counts_active_support_relationships(): void
     {
-        if (!Schema::hasTable('caring_support_relationships')) {
-            $this->markTestSkipped('caring_support_relationships table not present.');
-        }
-
         $u1 = $this->insertUser();
         $u2 = $this->insertUser();
 
@@ -286,10 +266,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_first_response_hours_computes_median_correctly(): void
     {
-        if (!Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_help_requests table not present.');
-        }
-
         $userId = $this->insertUser();
 
         // Request resolved in 2 h and request resolved in 4 h → median = 3 h
@@ -324,10 +300,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_first_response_hours_ignores_still_pending_requests(): void
     {
-        if (!Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_help_requests table not present.');
-        }
-
         $userId = $this->insertUser();
 
         // A still-pending request must not contribute to the median.
@@ -360,10 +332,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_coordinator_workload_divides_pending_requests_by_admin_count(): void
     {
-        if (!Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_help_requests table not present.');
-        }
-
         // Insert 1 admin (acts as coordinator fallback) and 3 pending requests.
         $adminId = $this->insertUser('admin');
         $memberId = $this->insertUser('member');
@@ -456,10 +424,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_capture_pre_pilot_baseline_persists_with_canonical_label(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
 
         $result = $this->service()->capturePrePilotBaseline($this->tid, $adminId, 'Pre-pilot notes');
@@ -474,10 +438,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_capture_baseline_quarterly_stores_non_pre_pilot_flag(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
 
         $result = $this->service()->captureBaseline($this->tid, 'Q1-2026', $adminId, null);
@@ -488,10 +448,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_capture_baseline_envelope_contains_pilot_scoreboard_kind(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
 
         $result = $this->service()->captureBaseline($this->tid, 'Test Label', $adminId, null);
@@ -519,10 +475,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_list_baselines_returns_pilot_scoreboard_rows_only(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
 
         // Insert a genuine scoreboard baseline via the service.
@@ -549,10 +501,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_list_baselines_scoped_to_tenant(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
         $this->service()->captureBaseline($this->tid, 'My Entry', $adminId, null);
 
@@ -593,10 +541,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_scoreboard_comparison_populated_after_pre_pilot_baseline_captured(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
         $this->service()->capturePrePilotBaseline($this->tid, $adminId, null);
 
@@ -622,10 +566,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_scoreboard_quarterly_review_next_due_is_3_months_after_baseline(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
         $this->service()->capturePrePilotBaseline($this->tid, $adminId, null);
 
@@ -641,14 +581,6 @@ class PilotScoreboardServiceTest extends TestCase
 
     public function test_compare_metrics_delta_and_pct_change_math(): void
     {
-        if (!Schema::hasTable('caring_kpi_baselines')) {
-            $this->markTestSkipped('caring_kpi_baselines table not present.');
-        }
-
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $adminId = $this->insertUser('admin');
 
         // Baseline with zero approved hours.

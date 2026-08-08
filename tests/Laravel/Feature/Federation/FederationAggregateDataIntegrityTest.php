@@ -49,10 +49,6 @@ final class FederationAggregateDataIntegrityTest extends TestCase
 
     public function test_total_approved_hours_reflects_real_approved_logs_only(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not available.');
-        }
-
         $today = '2099-03-10';
         $periodFrom = '2099-03-01';
         $periodTo = '2099-03-31';
@@ -77,10 +73,6 @@ final class FederationAggregateDataIntegrityTest extends TestCase
 
     public function test_member_bracket_excludes_banned_and_suspended_users(): void
     {
-        if (!Schema::hasTable('users') || !Schema::hasColumn('users', 'status')) {
-            $this->markTestSkipped('users.status column not available.');
-        }
-
         // Snapshot existing active members for our tenant first.
         $baselineActive = (int) DB::selectOne(
             "SELECT COUNT(*) AS cnt FROM users WHERE tenant_id = ? AND status = 'active'",
@@ -107,10 +99,6 @@ final class FederationAggregateDataIntegrityTest extends TestCase
 
     public function test_partner_orgs_count_excludes_pending_and_rejected(): void
     {
-        if (!Schema::hasTable('vol_organizations')) {
-            $this->markTestSkipped('vol_organizations table not available.');
-        }
-
         $baseline = (int) DB::selectOne(
             "SELECT COUNT(*) AS cnt FROM vol_organizations
               WHERE tenant_id = ? AND status IN ('approved','active')",

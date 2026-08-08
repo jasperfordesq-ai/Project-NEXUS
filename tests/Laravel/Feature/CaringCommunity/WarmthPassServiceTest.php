@@ -26,10 +26,6 @@ class WarmthPassServiceTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasColumn('users', 'trust_tier')) {
-            $this->markTestSkipped('users.trust_tier column not present.');
-        }
-
         TenantContext::setById(self::TENANT_A);
     }
 
@@ -91,10 +87,6 @@ class WarmthPassServiceTest extends TestCase
 
     public function test_pass_counts_only_own_tenant_hours(): void
     {
-        if (!Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs not present.');
-        }
-
         $service = new WarmthPassService();
         $userId = $this->makeUser(self::TENANT_A, 'wp4.' . uniqid() . '@example.com', ['trust_tier' => 2]);
 

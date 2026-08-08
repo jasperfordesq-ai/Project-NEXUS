@@ -24,10 +24,6 @@ class OperatingPolicyServiceTest extends TestCase
         parent::setUp();
         Queue::fake();
 
-        if (!Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-
         // Clean any pre-existing policy rows for our test tenant to ensure isolation.
         DB::table('tenant_settings')
             ->where('tenant_id', $this->testTenantId)

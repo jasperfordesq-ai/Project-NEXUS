@@ -180,9 +180,6 @@ class StripeWebhookControllerTest extends TestCase
      */
     public function test_idempotency_row_survives_invalid_signature_retry(): void
     {
-        if (!Schema::hasTable('stripe_webhook_events') || !Schema::hasColumn('stripe_webhook_events', 'status')) {
-            $this->markTestSkipped('stripe_webhook_events table/columns not in test schema');
-        }
         $eventId = 'evt_idem_' . uniqid();
         DB::table('stripe_webhook_events')->insert([
             'event_id' => $eventId,
@@ -238,9 +235,6 @@ class StripeWebhookControllerTest extends TestCase
      */
     public function test_idempotency_table_structure_when_present(): void
     {
-        if (!Schema::hasTable('stripe_webhook_events')) {
-            $this->markTestSkipped('stripe_webhook_events table not in test schema');
-        }
         $this->assertTrue(Schema::hasColumn('stripe_webhook_events', 'event_id'));
         // Note: test schema may lag behind the latest Laravel migration.
         // Only assert event_id is present — that's the core idempotency key.

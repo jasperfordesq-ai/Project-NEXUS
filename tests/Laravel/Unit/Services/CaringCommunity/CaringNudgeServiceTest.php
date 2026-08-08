@@ -288,10 +288,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_dispatchDue_dry_run_does_not_write_nudge_rows(): void
     {
-        if (!Schema::hasTable('caring_smart_nudges') || !Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_smart_nudges or caring_help_requests table not present.');
-        }
-
         $this->enableNudges($this->thisTenant);
 
         // Create an admin coordinator to receive the nudge.
@@ -342,10 +338,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_helperAtRisk_candidate_emitted_for_lapsed_helper(): void
     {
-        if (!Schema::hasTable('vol_logs') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('vol_logs or caring_smart_nudges table not present.');
-        }
-
         $helper = $this->insertUser('member');
 
         // Active in the prior window (60 days before the 21-day lapse cutoff).
@@ -368,10 +360,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_helperAtRisk_candidate_not_emitted_when_still_active(): void
     {
-        if (!Schema::hasTable('vol_logs') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('vol_logs or caring_smart_nudges table not present.');
-        }
-
         $helper = $this->insertUser('member');
 
         // Active both in prior window AND recently (within 21 days) → NOT at risk.
@@ -391,10 +379,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_unfulfilledHelpRequest_candidate_emitted_for_old_pending_request(): void
     {
-        if (!Schema::hasTable('caring_help_requests') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('caring_help_requests or caring_smart_nudges table not present.');
-        }
-
         // Need a coordinator so coordinatorTargets() returns a non-empty list.
         $admin = $this->insertUser('admin');
 
@@ -425,10 +409,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_unfulfilledHelpRequest_candidate_not_emitted_for_fresh_pending_request(): void
     {
-        if (!Schema::hasTable('caring_help_requests') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('caring_help_requests or caring_smart_nudges table not present.');
-        }
-
         $admin     = $this->insertUser('admin');
         $requester = $this->insertUser('member');
 
@@ -453,10 +433,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_unfulfilledHelpRequest_candidate_not_emitted_when_no_coordinators(): void
     {
-        if (!Schema::hasTable('caring_help_requests') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('caring_help_requests or caring_smart_nudges table not present.');
-        }
-
         // No admin/coordinator user in this tenant.
         $requester = $this->insertUser('member');
 
@@ -484,10 +460,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_helperAtRisk_candidate_suppressed_by_cooldown(): void
     {
-        if (!Schema::hasTable('vol_logs') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('vol_logs or caring_smart_nudges table not present.');
-        }
-
         $helper = $this->insertUser('member');
         $this->insertVolLog($helper, now()->subDays(40)->format('Y-m-d'), 'approved');
 
@@ -503,10 +475,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_helperAtRisk_candidate_not_suppressed_when_cooldown_expired(): void
     {
-        if (!Schema::hasTable('vol_logs') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('vol_logs or caring_smart_nudges table not present.');
-        }
-
         $helper = $this->insertUser('member');
         $this->insertVolLog($helper, now()->subDays(40)->format('Y-m-d'), 'approved');
 
@@ -526,10 +494,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_helperAtRisk_candidate_suppressed_for_opted_out_member(): void
     {
-        if (!Schema::hasTable('vol_logs') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('vol_logs or caring_smart_nudges table not present.');
-        }
-
         // User with caring_smart_nudges opted OUT (false).
         $helper = $this->insertUser(
             role: 'member',
@@ -546,10 +510,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_helperAtRisk_candidate_included_when_opted_in(): void
     {
-        if (!Schema::hasTable('vol_logs') || !Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('vol_logs or caring_smart_nudges table not present.');
-        }
-
         // Explicit opt-in.
         $helper = $this->insertUser(
             role: 'member',
@@ -570,10 +530,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_lowCoverageSubregion_returns_empty_when_forecastService_is_null(): void
     {
-        if (!Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('caring_smart_nudges table not present.');
-        }
-
         // Service constructed without a forecastService (null).
         $svc        = $this->makeService([], null);
         $candidates = $svc->previewCandidates($this->thisTenant);
@@ -588,10 +544,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_dispatchDue_persists_nudge_row_and_increments_sent(): void
     {
-        if (!Schema::hasTable('caring_smart_nudges') || !Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_smart_nudges or caring_help_requests table not present.');
-        }
-
         $this->enableNudges($this->thisTenant);
 
         $admin     = $this->insertUser('admin');
@@ -633,10 +585,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_dispatchDue_respects_daily_limit(): void
     {
-        if (!Schema::hasTable('caring_smart_nudges') || !Schema::hasTable('caring_help_requests')) {
-            $this->markTestSkipped('caring_smart_nudges or caring_help_requests table not present.');
-        }
-
         $this->enableNudges($this->thisTenant);
 
         // Set daily_limit=1 so at most one nudge fires.
@@ -693,10 +641,6 @@ class CaringNudgeServiceTest extends TestCase
 
     public function test_analytics_recent_nudges_reflect_inserted_rows(): void
     {
-        if (!Schema::hasTable('caring_smart_nudges')) {
-            $this->markTestSkipped('caring_smart_nudges table not present.');
-        }
-
         $targetUser  = $this->insertUser('member');
         $relatedUser = $this->insertUser('member');
 

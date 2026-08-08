@@ -37,13 +37,6 @@ class MunicipalCopilotPublishTest extends TestCase
     {
         parent::setUp();
 
-        if (!Schema::hasTable('tenant_settings')) {
-            $this->markTestSkipped('tenant_settings table not present.');
-        }
-        if (!Schema::hasTable('caring_emergency_alerts')) {
-            $this->markTestSkipped('caring_emergency_alerts table not present.');
-        }
-
         TenantContext::setById(self::TENANT);
 
         // Never let the copilot reach OpenAI from tests — force the offline stub.

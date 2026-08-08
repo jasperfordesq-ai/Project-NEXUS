@@ -38,10 +38,6 @@ class NationalKissDashboardTest extends TestCase
 
         Cache::flush();
 
-        if (! Schema::hasColumn('tenants', 'tenant_category')) {
-            $this->markTestSkipped('tenant_category column missing — run migrations first.');
-        }
-
         DB::table('tenants')
             ->where('tenant_category', 'kiss_cooperative')
             ->update(['tenant_category' => 'community']);

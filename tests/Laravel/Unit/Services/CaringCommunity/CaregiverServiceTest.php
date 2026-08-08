@@ -40,10 +40,6 @@ class CaregiverServiceTest extends TestCase
 
         Queue::fake();
 
-        if (! Schema::hasTable('caring_caregiver_links')) {
-            $this->markTestSkipped('caring_caregiver_links table not present.');
-        }
-
         \App\Core\TenantContext::setById(self::TENANT_ID);
     }
 
@@ -342,10 +338,6 @@ class CaregiverServiceTest extends TestCase
 
     public function test_check_burnout_risk_high_when_hours_exceed_threshold(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $caregiver = $this->insertUser();
 
         // Insert 25 hours in the last 7 days (threshold = 20)
@@ -367,10 +359,6 @@ class CaregiverServiceTest extends TestCase
 
     public function test_check_burnout_risk_moderate_when_hours_between_50_and_100_percent(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $caregiver = $this->insertUser();
 
         // 12 hours = 60% of threshold (20) → moderate
@@ -391,10 +379,6 @@ class CaregiverServiceTest extends TestCase
 
     public function test_check_burnout_risk_ignores_logs_older_than_7_days(): void
     {
-        if (! Schema::hasTable('vol_logs')) {
-            $this->markTestSkipped('vol_logs table not present.');
-        }
-
         $caregiver = $this->insertUser();
 
         // 30 hours but 8 days ago — must not count

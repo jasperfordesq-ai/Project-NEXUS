@@ -26,10 +26,6 @@ class SaveItemIdempotentTest extends TestCase
 
     public function test_double_save_is_idempotent(): void
     {
-        if (!Schema::hasTable('saved_collections') || !Schema::hasTable('saved_items')) {
-            $this->markTestSkipped('saved_collections schema not present.');
-        }
-
         $user = User::factory()->forTenant($this->testTenantId)->create();
         // User-created listeners reset TenantContext in console mode — re-pin.
         \App\Core\TenantContext::setById($this->testTenantId);
