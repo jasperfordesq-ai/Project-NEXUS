@@ -166,6 +166,8 @@ class SubAccountServiceTest extends TestCase
         $mockQuery->shouldReceive('where')->andReturnSelf();
         // Phase 5: member paths exclude staff-proposed rows via whereNull().
         $mockQuery->shouldReceive('whereNull')->andReturnSelf();
+        // updatePermissionsByMember() locks the row before deciding.
+        $mockQuery->shouldReceive('lockForUpdate')->andReturnSelf();
         $mockQuery->shouldReceive('first')->andReturn($row);
         $this->mockRelationship->shouldReceive('newQuery')->andReturn($mockQuery);
     }
@@ -297,17 +299,28 @@ class SubAccountServiceTest extends TestCase
         );
     }
 
-    public function test_updatePermissions_raising_a_tier_reasserts_the_contact_policy_both_ways(): void
+    /**
+     * Expansion is the supported member's act, so the both-ways contact check
+     * lives on updatePermissionsByMember(). This previously exercised
+     * updatePermissions(), which can no longer reach the policy at all — a
+     * supporter raising their own tier is refused before it is consulted (see
+     * the test below). Retargeted rather than deleted: the property being
+     * pinned — raising a tier re-asserts contact in BOTH directions — is a
+     * safeguarding guarantee and still needs cover.
+     */
+    public function test_member_raising_a_tier_reasserts_the_contact_policy_both_ways(): void
     {
         $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
         $policy->shouldReceive('assertLocalContactAllowed')->twice();
         $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
 
         $row = $this->relationshipRow(SubAccountService::DEFAULT_PERMISSIONS);
+        $row->parent_user_id = 1;
         $this->mockQueryReturning($row);
 
-        $this->assertTrue($this->service->updatePermissions(1, 10, [
-            'tiers' => ['credits' => SupportTiers::CO_DECIDE],
+        // The member is the child on the row; only they may grant upward.
+        $this->assertTrue($this->service->updatePermissionsByMember(2, 10, [
+            'credits' => SupportTiers::CO_DECIDE,
         ]));
 
         // co_decide on credits is stored as the tier, but projects to
@@ -316,5 +329,28 @@ class SubAccountServiceTest extends TestCase
         $this->assertIsArray($p);
         $this->assertSame(SupportTiers::CO_DECIDE, $p['tiers']['credits']);
         $this->assertFalse($p['can_transact']);
+    }
+
+    /**
+     * The rule that made the retarget above necessary: a supporter may shrink
+     * their own authority but never raise it. The refusal must come BEFORE the
+     * contact policy is consulted — the policy is not the thing saying no here,
+     * so a passing safeguarding check must not let an expansion through.
+     */
+    public function test_updatePermissions_refuses_a_supporter_raising_their_own_tier(): void
+    {
+        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
+        $policy->shouldNotReceive('assertLocalContactAllowed');
+        $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
+
+        $row = $this->relationshipRow(SubAccountService::DEFAULT_PERMISSIONS);
+        $row->parent_user_id = 1;
+        $this->mockQueryReturning($row);
+
+        $this->assertFalse($this->service->updatePermissions(1, 10, [
+            'tiers' => ['credits' => SupportTiers::CO_DECIDE],
+        ]));
+        $this->assertSame('MEMBER_APPROVAL_REQUIRED', $this->service->getErrors()[0]['code']);
+        $this->assertNull($row->updatedWith, 'a refused expansion must write nothing');
     }
 }
