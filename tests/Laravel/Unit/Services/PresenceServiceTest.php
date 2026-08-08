@@ -40,6 +40,25 @@ class PresenceServiceTest extends TestCase
     }
 
     /**
+     * Skip only when Redis genuinely cannot be reached.
+     *
+     * These tests used to wrap their whole body in `catch (\Throwable)` and
+     * skip on anything at all. PHPUnit's assertion failures are Throwables, so
+     * that also swallowed every real failure: the tests could report "Redis
+     * required for this test" but could never actually fail. Checking the
+     * precondition up front keeps the honest environment skip and lets
+     * assertion failures surface as failures.
+     */
+    private function requireRedis(): void
+    {
+        try {
+            Redis::ping();
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('Redis unavailable: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Insert a presence row directly into the DB.
      */
     private function seedPresence(int $userId, array $overrides = []): void
@@ -184,22 +203,20 @@ class PresenceServiceTest extends TestCase
         $userId = 12347;
         $this->seedPresence($userId, ['status' => 'dnd']);
 
+        $this->requireRedis();
+
         // Seed Redis with DND so heartbeat sees it
-        try {
-            $redisKey = "nexus:presence:{$this->testTenantId}:{$userId}";
-            Redis::setex($redisKey, 300, json_encode([
-                'user_id' => $userId,
-                'tenant_id' => $this->testTenantId,
-                'status' => 'dnd',
-                'custom_status' => null,
-                'status_emoji' => null,
-                'last_activity_at' => now()->toDateTimeString(),
-                'last_seen_at' => now()->toDateTimeString(),
-                'hide_presence' => false,
-            ]));
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        $redisKey = "nexus:presence:{$this->testTenantId}:{$userId}";
+        Redis::setex($redisKey, 300, json_encode([
+            'user_id' => $userId,
+            'tenant_id' => $this->testTenantId,
+            'status' => 'dnd',
+            'custom_status' => null,
+            'status_emoji' => null,
+            'last_activity_at' => now()->toDateTimeString(),
+            'last_seen_at' => now()->toDateTimeString(),
+            'hide_presence' => false,
+        ]));
 
         PresenceService::heartbeat($userId);
 
@@ -216,35 +233,31 @@ class PresenceServiceTest extends TestCase
     {
         $userId = 12348;
 
-        try {
-            PresenceService::heartbeat($userId);
+        $this->requireRedis();
 
-            $redisKey = "nexus:presence:{$this->testTenantId}:{$userId}";
-            $data = Redis::get($redisKey);
+        PresenceService::heartbeat($userId);
 
-            $this->assertNotNull($data);
-            $decoded = json_decode($data, true);
-            $this->assertEquals($userId, $decoded['user_id']);
-            $this->assertEquals($this->testTenantId, $decoded['tenant_id']);
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        $redisKey = "nexus:presence:{$this->testTenantId}:{$userId}";
+        $data = Redis::get($redisKey);
+
+        $this->assertNotNull($data);
+        $decoded = json_decode($data, true);
+        $this->assertEquals($userId, $decoded['user_id']);
+        $this->assertEquals($this->testTenantId, $decoded['tenant_id']);
     }
 
     public function test_heartbeat_adds_user_to_online_set(): void
     {
         $userId = 12349;
 
-        try {
-            PresenceService::heartbeat($userId);
+        $this->requireRedis();
 
-            $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
-            $isMember = Redis::sismember($onlineSetKey, $userId);
+        PresenceService::heartbeat($userId);
 
-            $this->assertTrue((bool) $isMember);
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
+        $isMember = Redis::sismember($onlineSetKey, $userId);
+
+        $this->assertTrue((bool) $isMember);
     }
 
     // ------------------------------------------------------------------
@@ -567,33 +580,29 @@ class PresenceServiceTest extends TestCase
     {
         $userId = 12376;
 
-        try {
-            // First set online
-            PresenceService::setStatus($userId, 'online');
+        $this->requireRedis();
 
-            $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
-            $this->assertTrue((bool) Redis::sismember($onlineSetKey, $userId));
+        // First set online
+        PresenceService::setStatus($userId, 'online');
 
-            // Now set offline
-            PresenceService::setStatus($userId, 'offline');
-            $this->assertFalse((bool) Redis::sismember($onlineSetKey, $userId));
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
+        $this->assertTrue((bool) Redis::sismember($onlineSetKey, $userId));
+
+        // Now set offline
+        PresenceService::setStatus($userId, 'offline');
+        $this->assertFalse((bool) Redis::sismember($onlineSetKey, $userId));
     }
 
     public function test_setStatus_keeps_dnd_in_online_set(): void
     {
         $userId = 12377;
 
-        try {
-            PresenceService::setStatus($userId, 'dnd');
+        $this->requireRedis();
 
-            $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
-            $this->assertTrue((bool) Redis::sismember($onlineSetKey, $userId));
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        PresenceService::setStatus($userId, 'dnd');
+
+        $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
+        $this->assertTrue((bool) Redis::sismember($onlineSetKey, $userId));
     }
 
     // ------------------------------------------------------------------
@@ -647,23 +656,21 @@ class PresenceServiceTest extends TestCase
     {
         $userId = 12383;
 
-        try {
-            // Seed Redis with existing presence
-            $redisKey = "nexus:presence:{$this->testTenantId}:{$userId}";
-            Redis::setex($redisKey, 300, json_encode([
-                'user_id' => $userId,
-                'tenant_id' => $this->testTenantId,
-                'status' => 'online',
-                'hide_presence' => false,
-            ]));
+        $this->requireRedis();
 
-            PresenceService::setPrivacy($userId, true);
+        // Seed Redis with existing presence
+        $redisKey = "nexus:presence:{$this->testTenantId}:{$userId}";
+        Redis::setex($redisKey, 300, json_encode([
+            'user_id' => $userId,
+            'tenant_id' => $this->testTenantId,
+            'status' => 'online',
+            'hide_presence' => false,
+        ]));
 
-            $data = json_decode(Redis::get($redisKey), true);
-            $this->assertTrue($data['hide_presence']);
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        PresenceService::setPrivacy($userId, true);
+
+        $data = json_decode(Redis::get($redisKey), true);
+        $this->assertTrue($data['hide_presence']);
     }
 
     // ------------------------------------------------------------------
@@ -748,18 +755,16 @@ class PresenceServiceTest extends TestCase
 
     public function test_getOnlineCount_uses_redis_set_when_available(): void
     {
-        try {
-            $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
-            Redis::del($onlineSetKey);
-            Redis::sadd($onlineSetKey, 1, 2, 3);
-            Redis::expire($onlineSetKey, 300);
+        $this->requireRedis();
 
-            $count = PresenceService::getOnlineCount($this->testTenantId);
+        $onlineSetKey = "nexus:presence:online:{$this->testTenantId}";
+        Redis::del($onlineSetKey);
+        Redis::sadd($onlineSetKey, 1, 2, 3);
+        Redis::expire($onlineSetKey, 300);
 
-            $this->assertEquals(3, $count);
-        } catch (\Throwable) {
-            $this->markTestSkipped('Redis required for this test');
-        }
+        $count = PresenceService::getOnlineCount($this->testTenantId);
+
+        $this->assertEquals(3, $count);
     }
 
     // ------------------------------------------------------------------

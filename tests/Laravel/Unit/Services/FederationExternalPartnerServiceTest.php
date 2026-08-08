@@ -66,29 +66,38 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
         parent::tearDownAfterClass();
     }
 
+    /**
+     * A base_url the SSRF guard accepts without any DNS lookup.
+     *
+     * OutboundUrlGuard::isSafeHttpUrl() resolves hostnames via dns_get_record()
+     * and rejects the URL when nothing resolves — so any invented hostname
+     * fails, and in this container nothing resolves at all. An IP literal skips
+     * resolution entirely (resolveHost() returns the literal), so the address
+     * below is deterministic everywhere. 203.0.113.0/24 is TEST-NET-3, reserved
+     * by RFC 5737 for documentation and never routable, and PHP's
+     * FILTER_FLAG_NO_RES_RANGE does not treat it as reserved — so the guard
+     * sees it as public. Uniqueness comes from the path, not the host.
+     */
+    private static function testBaseUrl(string $suffix): string
+    {
+        return "https://203.0.113.10/partner-{$suffix}";
+    }
+
     // ==========================================
     // getAll Tests
     // ==========================================
 
     public function testGetAllReturnsArray(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getAll(self::$staticTenantId);
-            $this->assertIsArray($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist: ' . $e->getMessage());
-        }
+        $result = FederationExternalPartnerService::getAll(self::$staticTenantId);
+        $this->assertIsArray($result);
     }
 
     public function testGetAllWithNonExistentTenantReturnsEmptyArray(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getAll(999999);
-            $this->assertIsArray($result);
-            $this->assertEmpty($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $result = FederationExternalPartnerService::getAll(999999);
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
     }
 
     // ==========================================
@@ -97,22 +106,14 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testGetByIdReturnsNullForNonExistentPartner(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getById(999999, self::$staticTenantId);
-            $this->assertNull($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $result = FederationExternalPartnerService::getById(999999, self::$staticTenantId);
+        $this->assertNull($result);
     }
 
     public function testGetByIdReturnsNullForWrongTenant(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getById(1, 999999);
-            $this->assertNull($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $result = FederationExternalPartnerService::getById(1, 999999);
+        $this->assertNull($result);
     }
 
     // ==========================================
@@ -122,77 +123,68 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
     public function testCreateAndDeletePartner(): void
     {
         $timestamp = time();
-        $baseUrl = "https://test-partner-{$timestamp}.example.com";
+        $baseUrl = self::testBaseUrl("create-delete-{$timestamp}");
 
-        try {
-            // Create
-            $result = FederationExternalPartnerService::create(
-                [
-                    'name' => "Test Partner {$timestamp}",
-                    'description' => 'A test external partner',
-                    'base_url' => $baseUrl,
-                    'api_path' => '/api/v1/federation',
-                    'api_key' => 'test-api-key-12345',
-                    'auth_method' => 'api_key',
-                ],
-                self::$staticTenantId,
-                self::$testUserId
-            );
+        // Create
+        $result = FederationExternalPartnerService::create(
+            [
+                'name' => "Test Partner {$timestamp}",
+                'description' => 'A test external partner',
+                'base_url' => $baseUrl,
+                'api_path' => '/api/v1/federation',
+                'api_key' => 'test-api-key-12345',
+                'auth_method' => 'api_key',
+            ],
+            self::$staticTenantId,
+            self::$testUserId
+        );
 
-            $this->assertIsArray($result);
-            $this->assertTrue($result['success']);
-            $this->assertArrayHasKey('id', $result);
+        $this->assertIsArray($result);
+        $this->assertTrue($result['success'], 'create() failed: ' . ($result['error'] ?? 'no error given'));
+        $this->assertArrayHasKey('id', $result);
 
-            $partnerId = (int) $result['id'];
-            self::$createdPartnerId = $partnerId;
+        $partnerId = (int) $result['id'];
+        self::$createdPartnerId = $partnerId;
 
-            // urlExists should be true now
-            $exists = FederationExternalPartnerService::urlExists($baseUrl, self::$staticTenantId);
-            $this->assertTrue($exists);
+        // urlExists should be true now
+        $exists = FederationExternalPartnerService::urlExists($baseUrl, self::$staticTenantId);
+        $this->assertTrue($exists);
 
-            // urlExists with excludeId should be false
-            $existsExcluded = FederationExternalPartnerService::urlExists($baseUrl, self::$staticTenantId, $partnerId);
-            $this->assertFalse($existsExcluded);
+        // urlExists with excludeId should be false
+        $existsExcluded = FederationExternalPartnerService::urlExists($baseUrl, self::$staticTenantId, $partnerId);
+        $this->assertFalse($existsExcluded);
 
-            // getById should work
-            $partner = FederationExternalPartnerService::getById($partnerId, self::$staticTenantId);
-            $this->assertNotNull($partner);
-            $this->assertEquals("Test Partner {$timestamp}", $partner['name']);
+        // getById should work
+        $partner = FederationExternalPartnerService::getById($partnerId, self::$staticTenantId);
+        $this->assertNotNull($partner);
+        $this->assertEquals("Test Partner {$timestamp}", $partner['name']);
 
-            // Delete
-            $deleteResult = FederationExternalPartnerService::delete($partnerId, self::$staticTenantId, self::$testUserId);
-            $this->assertTrue($deleteResult['success']);
-            self::$createdPartnerId = null;
+        // Delete
+        $deleteResult = FederationExternalPartnerService::delete($partnerId, self::$staticTenantId, self::$testUserId);
+        $this->assertTrue($deleteResult['success']);
+        self::$createdPartnerId = null;
 
-            // Verify deleted
-            $deleted = FederationExternalPartnerService::getById($partnerId, self::$staticTenantId);
-            $this->assertNull($deleted);
-
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist: ' . $e->getMessage());
-        }
+        // Verify deleted
+        $deleted = FederationExternalPartnerService::getById($partnerId, self::$staticTenantId);
+        $this->assertNull($deleted);
     }
 
     public function testCreateDuplicateUrlFails(): void
     {
         $timestamp = time();
-        $baseUrl = "https://duplicate-test-{$timestamp}.example.com";
+        $baseUrl = self::testBaseUrl("duplicate-{$timestamp}");
+
+        // Create first
+        $result1 = FederationExternalPartnerService::create(
+            ['name' => 'First Partner', 'base_url' => $baseUrl],
+            self::$staticTenantId,
+            self::$testUserId
+        );
+
+        $this->assertTrue($result1['success'], 'create() failed: ' . ($result1['error'] ?? 'no error given'));
+        $firstId = (int) $result1['id'];
 
         try {
-            // Create first
-            $result1 = FederationExternalPartnerService::create(
-                ['name' => 'First Partner', 'base_url' => $baseUrl],
-                self::$staticTenantId,
-                self::$testUserId
-            );
-
-            if (!$result1['success']) {
-                $this->markTestSkipped('Could not create first partner');
-                return;
-            }
-
-            $firstId = (int) $result1['id'];
-
             // Try duplicate
             $result2 = FederationExternalPartnerService::create(
                 ['name' => 'Duplicate Partner', 'base_url' => $baseUrl],
@@ -201,14 +193,45 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
             );
 
             $this->assertFalse($result2['success']);
-            $this->assertStringContainsString('already exists', $result2['error']);
-
-            // Clean up
+            // create() reports a duplicate base_url with this key — asserted
+            // exactly so a change of message is a deliberate decision, not drift.
+            $this->assertSame(__('api.external_partner_update_failed'), $result2['error']);
+        } finally {
+            // Clean up whether or not the assertions above held.
             FederationExternalPartnerService::delete($firstId, self::$staticTenantId, self::$testUserId);
-
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
         }
+    }
+
+    /**
+     * The SSRF guard resolves the host and rejects anything that does not
+     * resolve to a public IP — so a made-up hostname can NEVER be stored, in
+     * any environment. This is asserted rather than assumed because two tests
+     * here previously invented `https://test-partner-<ts>.example.com`, whose
+     * subdomain does not exist, and then swallowed the resulting failure as
+     * "federation_external_partners table may not exist".
+     */
+    public function testCreateRejectsHostThatDoesNotResolve(): void
+    {
+        $result = FederationExternalPartnerService::create(
+            ['name' => 'Unresolvable', 'base_url' => 'https://test-partner-' . time() . '.example.com'],
+            self::$staticTenantId,
+            self::$testUserId
+        );
+
+        $this->assertFalse($result['success']);
+        $this->assertSame(__('api.url_no_private_ip'), $result['error']);
+    }
+
+    public function testCreateRejectsPrivateAddress(): void
+    {
+        $result = FederationExternalPartnerService::create(
+            ['name' => 'Private', 'base_url' => 'https://192.168.1.1/federation'],
+            self::$staticTenantId,
+            self::$testUserId
+        );
+
+        $this->assertFalse($result['success']);
+        $this->assertSame(__('api.url_no_private_ip'), $result['error']);
     }
 
     // ==========================================
@@ -217,19 +240,15 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testUpdateNonExistentPartnerFails(): void
     {
-        try {
-            $result = FederationExternalPartnerService::update(
-                999999,
-                ['name' => 'Updated', 'base_url' => 'https://updated.example.com'],
-                self::$staticTenantId,
-                self::$testUserId
-            );
+        $result = FederationExternalPartnerService::update(
+            999999,
+            ['name' => 'Updated', 'base_url' => self::testBaseUrl('updated')],
+            self::$staticTenantId,
+            self::$testUserId
+        );
 
-            $this->assertFalse($result['success']);
-            $this->assertEquals(__('api.external_partner_not_found'), $result['error']);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $this->assertFalse($result['success']);
+        $this->assertEquals(__('api.external_partner_not_found'), $result['error']);
     }
 
     // ==========================================
@@ -238,18 +257,14 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testUpdateStatusNonExistentPartnerFails(): void
     {
-        try {
-            $result = FederationExternalPartnerService::updateStatus(
-                999999,
-                'active',
-                self::$staticTenantId,
-                self::$testUserId
-            );
+        $result = FederationExternalPartnerService::updateStatus(
+            999999,
+            'active',
+            self::$staticTenantId,
+            self::$testUserId
+        );
 
-            $this->assertFalse($result['success']);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $this->assertFalse($result['success']);
     }
 
     // ==========================================
@@ -258,12 +273,8 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testGetActivePartnersReturnsArray(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getActivePartners(self::$staticTenantId);
-            $this->assertIsArray($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $result = FederationExternalPartnerService::getActivePartners(self::$staticTenantId);
+        $this->assertIsArray($result);
     }
 
     // ==========================================
@@ -272,12 +283,8 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testGetActivePartnersForListingsReturnsArray(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getActivePartnersForListings(self::$staticTenantId);
-            $this->assertIsArray($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $result = FederationExternalPartnerService::getActivePartnersForListings(self::$staticTenantId);
+        $this->assertIsArray($result);
     }
 
     // ==========================================
@@ -286,12 +293,8 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testGetLogsReturnsArray(): void
     {
-        try {
-            $result = FederationExternalPartnerService::getLogs(999999, 2);
-            $this->assertIsArray($result);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partner_logs table may not exist');
-        }
+        $result = FederationExternalPartnerService::getLogs(999999, 2);
+        $this->assertIsArray($result);
     }
 
     // ==========================================
@@ -356,11 +359,7 @@ class FederationExternalPartnerServiceTest extends \Tests\Laravel\TestCase
 
     public function testDeleteNonExistentPartnerFails(): void
     {
-        try {
-            $result = FederationExternalPartnerService::delete(999999, self::$staticTenantId, self::$testUserId);
-            $this->assertFalse($result['success']);
-        } catch (\Exception $e) {
-            $this->markTestSkipped('federation_external_partners table may not exist');
-        }
+        $result = FederationExternalPartnerService::delete(999999, self::$staticTenantId, self::$testUserId);
+        $this->assertFalse($result['success']);
     }
 }
