@@ -49,10 +49,10 @@ jobs:
         shell: pwsh
         run: ./scripts/verify-platform-contracts.ps1 -SkipDotNet -SkipReact -SkipWebUk
 
-  aspnet:
-    name: ASP.NET build and tests
+  aspnet-build:
+    name: ASP.NET build
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -60,8 +60,58 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Build
         run: dotnet build aspnet-backend/Nexus.sln --configuration Release
-      - name: Test
-        run: dotnet test aspnet-backend/Nexus.sln --configuration Release --no-build
+
+  aspnet-api-tests:
+    name: ASP.NET API tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Test Nexus.Api.Tests (40-minute hard limit)
+        run: >-
+          timeout --signal=INT --kill-after=60s 40m
+          dotnet test aspnet-backend/tests/Nexus.Api.Tests/Nexus.Api.Tests.csproj
+          --configuration Release
+          --blame-hang
+          --blame-hang-timeout 5m
+          --logger "trx;LogFileName=nexus-api-tests.trx"
+          --results-directory "${{ github.workspace }}/aspnet-test-results/api"
+      - name: Upload API test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspnet-api-test-results
+          path: aspnet-test-results/api
+          if-no-files-found: warn
+
+  aspnet-messaging-tests:
+    name: ASP.NET Messaging tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Test Nexus.Messaging.Tests (10-minute hard limit)
+        run: >-
+          timeout --signal=INT --kill-after=60s 10m
+          dotnet test aspnet-backend/tests/Nexus.Messaging.Tests/Nexus.Messaging.Tests.csproj
+          --configuration Release
+          --blame-hang
+          --blame-hang-timeout 2m
+          --logger "trx;LogFileName=nexus-messaging-tests.trx"
+          --results-directory "${{ github.workspace }}/aspnet-test-results/messaging"
+      - name: Upload Messaging test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspnet-messaging-test-results
+          path: aspnet-test-results/messaging
+          if-no-files-found: warn
 
   react-contracts:
     name: React backend guardrails
