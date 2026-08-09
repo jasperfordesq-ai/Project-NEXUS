@@ -149,7 +149,6 @@ CLAUDE.md
 !/scripts/fill-i18n-gaps.mjs
 
 # ─── Deploy & Production Config ───────────────────────────────────────────────
-compose.prod.yml
 .deployignore
 
 # ─── Docker Config (local dev, contains credentials) ──────────────────────────

@@ -229,14 +229,25 @@ fi
 
 # Execute deployment based on mode
 case "$MODE" in
-    quick)
-        run_phase "$DEPLOY_SCRIPTS/phases/build-quick.sh"
-        ;;
-    full)
-        run_phase "$DEPLOY_SCRIPTS/phases/build-full.sh"
-        ;;
-    rollback)
-        run_phase "$DEPLOY_SCRIPTS/phases/rollback.sh"
+    # ── Legacy single-color build/rollback REMOVED 2026-08-09 ──────────────
+    # These three modes ran build-quick.sh / build-full.sh / rollback.sh, each
+    # of which began by copying compose.prod.yml over compose.yml to recreate
+    # the legacy `nexus-php-*` containers under maintenance mode. That stack
+    # has not run in production since 2026-05 (verified via `docker ps`: only
+    # nexus-blue-* / nexus-green-* exist, and nexus-php-queue exited 3 months
+    # ago), so compose.prod.yml and those three phase scripts were deleted.
+    #
+    # Reaching here means blue-green delegation above did NOT fire — either
+    # the Apache routes file is missing or bluegreen-deploy.sh is absent.
+    # Refuse loudly rather than half-run a path whose compose file is gone:
+    # a partial legacy deploy against live traffic is an outage.
+    quick|full|rollback)
+        log_err "The legacy '$MODE' deploy path has been removed."
+        log_err "It depended on compose.prod.yml, which no longer exists."
+        log_info "Production deploys: sudo bash scripts/deploy/bluegreen-deploy.sh deploy --detach"
+        log_info "Production rollback: sudo bash scripts/deploy/bluegreen-deploy.sh rollback --detach"
+        log_info "If blue-green is not set up on this host: sudo bash scripts/setup-bluegreen.sh"
+        exit 1
         ;;
     *)
         log_err "Invalid mode: $MODE"

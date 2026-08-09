@@ -97,7 +97,10 @@ function isReleaseRelevant(file) {
     || file === 'package-lock.json'
     || file === 'Dockerfile'
     || file === 'compose.yml'
-    || file === 'compose.prod.yml'
+    // Was compose.prod.yml until 2026-08-09, when the legacy single-color
+    // stack was deleted. compose.bluegreen.yml is now the production compose
+    // file, so it inherits the "changing this needs a changelog entry" rule.
+    || file === 'compose.bluegreen.yml'
   ) {
     return true;
   }

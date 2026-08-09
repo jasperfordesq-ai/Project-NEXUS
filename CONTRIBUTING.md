@@ -165,7 +165,7 @@ nexus-v1/
 ├── docs/                         # Developer documentation
 ├── scripts/                      # Build, deploy, and maintenance scripts
 ├── compose.yml                   # Docker Compose (development)
-└── compose.prod.yml              # Docker Compose (production)
+└── compose.bluegreen.yml         # Docker Compose (production, blue/green)
 ```
 
 **The React frontend (`react-frontend/`) is the primary UI.** All maintained user-facing and admin UI work belongs in React, except for the approved accessible frontend under `accessible-frontend/`. Legacy PHP views are retired; do not create new PHP views.

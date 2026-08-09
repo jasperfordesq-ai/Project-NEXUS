@@ -242,7 +242,7 @@ OOM-killed rather than finishing, which is what the old advice ("PHPStan hangs
 locally, analyse specific paths instead") was actually describing. `compose.yml`
 now gives the container 8 GB and a full run completes cleanly in ~8 min.
 
-Production limits in `compose.bluegreen.yml` / `compose.prod.yml` are
+Production limits in `compose.bluegreen.yml` are
 **deliberately unchanged** — the production VM has 16 GB total and its 2 GB cap
 is correctly sized for it.
 

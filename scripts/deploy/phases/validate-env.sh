@@ -107,11 +107,15 @@ validate_environment() {
         log_ok ".env exists"
     fi
 
-    if [ ! -f "$DEPLOY_DIR/compose.prod.yml" ]; then
-        log_err "compose.prod.yml missing"
+    # compose.bluegreen.yml is THE production compose file. This used to check
+    # for compose.prod.yml instead, which was deleted on 2026-08-09 along with
+    # the legacy single-color stack it described — that check would have failed
+    # every deploy from the moment the file went.
+    if [ ! -f "$DEPLOY_DIR/compose.bluegreen.yml" ]; then
+        log_err "compose.bluegreen.yml missing"
         VALIDATION_FAILED=1
     else
-        log_ok "compose.prod.yml exists"
+        log_ok "compose.bluegreen.yml exists"
     fi
 
     # Check if any PHP app container is running — accepts blue-green or legacy names

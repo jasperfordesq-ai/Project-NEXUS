@@ -16,7 +16,7 @@ services:
     deploy:
       resources:
         limits:
-          # PHP memory_limit is 1G; match compose.prod.yml so Apache workers,
+          # PHP memory_limit is 1G, so Apache workers,
           # OPcache, and request peaks have headroom in the active color.
           memory: 2G
         reservations:

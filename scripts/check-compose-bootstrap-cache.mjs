@@ -19,9 +19,17 @@
  *
  * In production this produced multi-minute bursts of ~600 fatals at ~3/second
  * (Sentry NEXUS-PHP-10, 5,492 events between 2026-05-16 and 2026-08-07) as
- * Horizon respawned workers that died at boot. It was fixed once in
- * compose.bluegreen.yml (3799007da) by dropping the mount entirely, but
- * compose.prod.yml kept the shared volume and kept emitting the bursts.
+ * Horizon respawned workers that died at boot. It was fixed in
+ * compose.bluegreen.yml (3799007da) by dropping the mount entirely.
+ *
+ * 🔴 Correction (2026-08-09): compose.prod.yml also shared the volume and was
+ * fixed in 80ec9f08b, but that was NOT the cause of the bursts that continued
+ * through July and August — that stack had not run in production since 2026-05,
+ * and the 2026-08-07 burst came from a blue-green container. The real trigger
+ * was the queue container crash-looping when Redis was unreachable at startup
+ * (fixed in 6bf303b99). compose.prod.yml was deleted on 2026-08-09. This guard
+ * is still worth keeping: a shared bootstrap/cache is a genuine bug, and it
+ * covers the dev and CI compose files that remain.
  *
  * The rule this enforces is therefore: no volume mounted at a container's
  * bootstrap/cache may be mounted into more than one service in the same
@@ -119,7 +127,7 @@ if (failures.length > 0) {
   console.error(
     'or drop the mount entirely if the compose file bind-mounts no source and',
   );
-  console.error('can use the image-baked cache. See the note in compose.prod.yml.');
+  console.error('can use the image-baked cache, as compose.bluegreen.yml does.');
   process.exit(1);
 }
 

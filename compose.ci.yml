@@ -3,7 +3,7 @@
 # =============================================================================
 # Used exclusively by GitHub Actions CI for E2E/API integration tests.
 #
-# Differences from compose.prod.yml:
+# Differences from compose.bluegreen.yml (the production compose file):
 #   - APP_ENV=testing, APP_DEBUG=true
 #   - QUEUE_CONNECTION=sync (jobs run inline — no separate queue worker needed)
 #   - No ports exposed to host (internal-only)

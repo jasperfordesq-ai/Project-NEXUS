@@ -37,8 +37,29 @@ class ProductionProxySecurityTest extends TestCase
         self::assertStringContainsString('127.0.0.1:${NEXUS_API_PORT:-8190}:80', $blueGreen);
         self::assertStringContainsString('127.0.0.1:${NEXUS_FRONTEND_PORT:-3100}:80', $blueGreen);
 
-        $fallback = (string) file_get_contents($this->root . DIRECTORY_SEPARATOR . 'compose.prod.yml');
-        self::assertStringContainsString('127.0.0.1:8090:80', $fallback);
-        self::assertStringContainsString('127.0.0.1:3000:80', $fallback);
+        // Origin containers must never publish on a public interface — Apache
+        // is the only thing allowed to face the internet.
+        self::assertStringNotContainsString('0.0.0.0:', $blueGreen);
+    }
+
+    /**
+     * compose.prod.yml described the legacy single-color `nexus-php-*` stack,
+     * which stopped running in production in 2026-05 (verified via `docker ps`:
+     * only the blue and green containers exist, and nexus-php-queue had exited
+     * three months before this file was deleted on 2026-08-09). It was removed
+     * along with the build/rollback phase scripts that copied it into place.
+     *
+     * This assertion exists because the file was NOT inert while it sat there:
+     * a deploy-time validation step failed if it was missing, a fallback deploy
+     * path copied it over compose.yml, and this very test read it. Bringing it
+     * back would silently restore all three. If it ever needs to return, delete
+     * this test deliberately rather than letting the file reappear unnoticed.
+     */
+    public function test_legacy_single_color_compose_file_stays_deleted(): void
+    {
+        self::assertFileDoesNotExist(
+            $this->root . DIRECTORY_SEPARATOR . 'compose.prod.yml',
+            'compose.prod.yml is the deleted legacy single-color stack — production is blue-green only.'
+        );
     }
 }

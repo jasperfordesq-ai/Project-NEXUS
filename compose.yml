@@ -8,7 +8,7 @@
 #
 # Volume / container naming convention:
 #   Local dev (this file):   `nexus-*` prefix (e.g. nexus-mysql-data)
-#   Production (compose.prod.yml): `nexus-php-*` prefix (e.g. nexus-php-uploads)
+#   Production (compose.bluegreen.yml): `nexus-php-*` prefix (e.g. nexus-php-uploads)
 # DO NOT rename existing volumes — renaming detaches Docker from the on-disk
 # data and causes silent data loss. The prefixes are intentionally distinct
 # so that dev and prod stacks can coexist on the same host without collision.
@@ -90,7 +90,7 @@ services:
       retries: 3
       start_period: 60s
     # Container memory limit — LOCAL DEVELOPMENT ONLY. Production limits live in
-    # compose.bluegreen.yml / compose.prod.yml and are deliberately NOT changed
+    # compose.bluegreen.yml and are deliberately NOT changed
     # here: the production VM has 16GB total and its 2G cap is sized for that.
     #
     # This must be above PHP memory_limit (1G, set in Dockerfile) to leave
