@@ -1,0 +1,99 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("security_2fa.back") }}</a>
+
+      {% if statusConfig and successStatus %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="tfa-success-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="tfa-success-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusConfig.message }}</p>
+          </div>
+        </div>
+      {% elif statusConfig and errorStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#{{ errorAnchor }}">{{ statusConfig.message }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-xl">{{ t("security_2fa.title") }}</h1>
+
+      {% if backupCodes.length %}
+        <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6">
+          <h2 class="govuk-panel__title">{{ t("security_2fa.now_on_title") }}</h2>
+        </div>
+        <h2 class="govuk-heading-m">{{ t("security_2fa.backup_codes_title") }}</h2>
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+            {{ t("security_2fa.backup_codes_warning") }}
+          </strong>
+        </div>
+        <ul class="govuk-list govuk-list--bullet nexus-alpha-backup-codes">
+          {% for code in backupCodes %}
+            <li><code>{{ code }}</code></li>
+          {% endfor %}
+        </ul>
+        <a class="govuk-button govuk-!-margin-top-2" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}">{{ t("security_2fa.done") }}</a>
+      {% elif enabled %}
+        <p class="govuk-body-l">{{ t("security_2fa.is_on") }}</p>
+        <p class="govuk-body">{{ backupCodesRemainingLabel }}</p>
+
+        <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("security_2fa.disable_heading") }}</h2>
+        <p class="govuk-body">{{ t("security_2fa.disable_intro") }}</p>
+        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/disable') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="password">{{ t("security_2fa.password_label") }}</label>
+            <input class="govuk-input govuk-input--width-20" id="password" name="password" type="password" autocomplete="current-password" spellcheck="false">
+          </div>
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("security_2fa.disable_button") }}</button>
+        </form>
+      {% elif setup %}
+        <p class="govuk-body-l">{{ t("security_2fa.setup_intro") }}</p>
+        <ol class="govuk-list govuk-list--number">
+          <li>{{ t("security_2fa.step_app") }}</li>
+          <li>{{ t("security_2fa.step_scan") }}</li>
+          <li>{{ t("security_2fa.step_code") }}</li>
+        </ol>
+
+        {% if setup.qr_data_uri %}
+          <img class="nexus-alpha-qr" src="{{ setup.qr_data_uri }}" alt="{{ t("security_2fa.qr_alt") }}" width="200" height="200">
+        {% endif %}
+
+        <p class="govuk-body govuk-!-margin-top-4">{{ t("security_2fa.manual_intro") }}</p>
+        <div class="govuk-inset-text">
+          <p class="govuk-body"><code class="nexus-alpha-totp-secret">{{ setup.secret }}</code></p>
+        </div>
+
+        <form id="tfa-form" method="post" action="{{ urlFor('/profile/two-factor/verify') }}" class="govuk-!-margin-top-4">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--m" for="code">{{ t("security_2fa.code_label") }}</label>
+            <div id="code-hint" class="govuk-hint">{{ t("security_2fa.code_hint") }}</div>
+            <input class="govuk-input govuk-input--width-10" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" aria-describedby="code-hint">
+          </div>
+          <button class="govuk-button" data-module="govuk-button">{{ t("security_2fa.verify_button") }}</button>
+        </form>
+      {% else %}
+        <div class="govuk-inset-text">{{ t("security_2fa.setup_unavailable") }}</div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.org_volunteers.back_link") }}</a>
+
+  <span class="govuk-caption-xl">{{ orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_volunteers.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ loadError }}</p></div>
+      </div>
+    </div>
+  {% elif not volunteers.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_volunteers.empty") }}</p>
+      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.org_volunteers.empty_hint") }}</p>
+    </div>
+  {% else %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_volunteers.table_name") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_volunteers.table_email") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_volunteering.org_volunteers.table_hours") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_volunteering.org_volunteers.table_applications") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_volunteers.table_applied_date") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for volunteer in volunteers %}
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header">
+              {% if volunteer.id %}
+                <a class="govuk-link" href="{{ urlFor('/members/' ~ volunteer.id) }}">{{ volunteer.name }}</a>
+              {% else %}
+                {{ volunteer.name }}
+              {% endif %}
+            </th>
+            <td class="govuk-table__cell">
+              {% if volunteer.email %}
+                <a class="govuk-link" href="mailto:{{ volunteer.email }}">{{ volunteer.email }}</a>
+              {% endif %}
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ volunteer.totalHoursLabel }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ volunteer.applicationsCount }}</td>
+            <td class="govuk-table__cell">{% if volunteer.appliedAtLabel %}<time datetime="{{ volunteer.appliedAtIso }}">{{ volunteer.appliedAtLabel }}</time>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if nextHref %}
+      <p class="govuk-body govuk-!-margin-top-4">
+        <a class="govuk-link" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha_volunteering.org_volunteers.load_more") }}</a>
+      </p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

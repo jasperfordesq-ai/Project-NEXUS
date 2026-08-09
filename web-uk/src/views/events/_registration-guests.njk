@@ -1,0 +1,70 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% if active and attendee.settings.guests_enabled %}
+  <h3 class="govuk-heading-m">{{ t("event_registration.accessible.add_guest") }}</h3>
+  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/registrations/' + (active.id | string) + '/guests') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="expected_registration_version" value="{{ active.registration_version }}">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="guest-name">{{ t("event_registration.accessible.guest_name") }}</label>
+      <input class="govuk-input" id="guest-name" name="display_name" type="text" required>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="guest-email">{{ t("event_registration.accessible.guest_email") }}</label>
+      <input class="govuk-input" id="guest-email" name="email" type="email">
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="guest-phone">{{ t("event_registration.accessible.guest_phone") }}</label>
+      <input class="govuk-input" id="guest-phone" name="phone" type="tel">
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="guest-ticket">{{ t("event_registration.accessible.ticket_entitlement") }}</label>
+      <input class="govuk-input govuk-input--width-10" id="guest-ticket" name="ticket_entitlement_id" type="number" min="1">
+    </div>
+    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+      <div class="govuk-checkboxes__item">
+        <input class="govuk-checkboxes__input" id="guest-consent" name="consent_accepted" type="checkbox" value="1" required>
+        <label class="govuk-label govuk-checkboxes__label" for="guest-consent">{{ t("event_registration.accessible.privacy_consent_label") }}</label>
+        <div class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.privacy_consent_text") }}</div>
+      </div>
+      <div class="govuk-checkboxes__item">
+        <input class="govuk-checkboxes__input" id="guest-notifications" name="notification_consent" type="checkbox" value="1">
+        <label class="govuk-label govuk-checkboxes__label" for="guest-notifications">{{ t("event_registration.accessible.notification_consent_label") }}</label>
+        <div class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.notification_consent_text") }}</div>
+      </div>
+    </div>
+    <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button">{{ t("event_registration.accessible.add_guest") }}</button>
+  </form>
+{% endif %}
+
+{% if attendee.guests and (attendee.guests | length) %}
+  <h3 class="govuk-heading-m">{{ t("event_registration.guests.title") }}</h3>
+  <dl class="govuk-summary-list">
+    {% for guest in attendee.guests %}
+      {% set guestName = guest.display_name or t("event_registration.guests.name_hidden") %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ guestName }}</dt>
+        <dd class="govuk-summary-list__value">{{ t("event_registration.statuses." + guest.status) }}</dd>
+        {% if guest.status == 'captured' %}
+          <dd class="govuk-summary-list__actions">
+            <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/guests/' + (guest.id | string) + '/cancel') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="expected_revision" value="{{ guest.revision }}">
+              <label class="govuk-label" for="guest-cancel-reason-{{ guest.id }}">{{ t("event_registration.guests.cancel_reason") }}</label>
+              <input class="govuk-input" id="guest-cancel-reason-{{ guest.id }}" name="reason" type="text" required>
+              <div class="govuk-checkboxes govuk-!-margin-top-3">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="guest-cancel-confirm-{{ guest.id }}" name="confirm_destructive" type="checkbox" value="1" required>
+                  <label class="govuk-label govuk-checkboxes__label" for="guest-cancel-confirm-{{ guest.id }}">{{ t("event_registration.guests.cancel_confirm_body", { name: guestName }) }}</label>
+                </div>
+              </div>
+              <button class="govuk-button govuk-button--warning govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("event_registration.guests.cancel") }}</button>
+            </form>
+          </dd>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </dl>
+{% endif %}

@@ -1,0 +1,42 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  Standalone Laravel-compatible accessible error document. It intentionally
+  avoids tenant navigation, session state, cookie controls, and application
+  JavaScript so rendering an exception cannot trigger a second failure.
+#}
+<!DOCTYPE html>
+<html lang="{{ htmlLang or 'en' }}" dir="{{ htmlDirection or 'ltr' }}" class="govuk-template">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block errorTitle %}{{ t("error_pages.generic_title") }}{% endblock %} - {{ t("service_name") }}</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="/css/main.css">
+  </head>
+  <body class="govuk-template__body">
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">{{ t("skip_to_content") }}</a>
+    <div class="govuk-width-container">
+      <main class="govuk-main-wrapper" id="main-content">
+        {% block mainContent %}{% endblock %}
+      </main>
+    </div>
+    <footer class="govuk-footer" role="contentinfo">
+      <div class="govuk-width-container">
+        <div class="govuk-footer__meta">
+          <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+            <div class="govuk-footer__meta-custom">
+              <p class="govuk-!-margin-bottom-2">{{ t("footer.licence") }}</p>
+              <p class="govuk-!-margin-bottom-2">{{ t("footer.attribution") }}</p>
+              <p class="govuk-!-margin-bottom-0">
+                <a class="govuk-footer__link" href="https://github.com/jasperfordesq-ai/nexus-v1" rel="noopener noreferrer">{{ t("footer.source") }}</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

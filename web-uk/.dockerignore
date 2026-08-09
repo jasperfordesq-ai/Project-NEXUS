@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+
+# Build artifacts
+coverage
+.nyc_output
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment files (should be passed via docker-compose)
+.env
+.env.local
+.env.*.local
+
+# Test files
+tests
+*.test.js
+jest.config.js
+
+# Documentation
+*.md
+!README.md
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

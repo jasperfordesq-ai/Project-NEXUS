@@ -1,0 +1,83 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/podcasts') }}" class="govuk-back-link">{{ t("govuk_alpha.podcasts.back") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="podcast-status-heading">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="podcast-status-heading">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>{{ status.message }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if show.artworkUrl %}
+    <img class="nexus-alpha-avatar nexus-alpha-avatar--xl govuk-!-margin-bottom-4" src="{{ show.artworkUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+  {% endif %}
+
+  <span class="govuk-caption-xl">{% if show.byLabel %}{{ show.byLabel }}{% else %}{{ tenantName }}{% endif %}</span>
+  <h1 class="govuk-heading-xl">{{ show.title }}</h1>
+
+  {% if show.description %}
+    <div class="govuk-body-l">{{ show.description | striptags | nl2br | safe }}</div>
+  {% endif %}
+
+  {% if show.rssEnabled %}
+    <p class="govuk-body-s">
+      <a class="govuk-link" href="{{ show.rssUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha.polish_commerce.podcast_rss_link") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a>
+    </p>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/podcasts/' + (show.id | string) + '/subscribe') }}" class="govuk-!-margin-bottom-6">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+      {% if isSubscribed %}{{ t("govuk_alpha.polish_commerce.podcast_unsubscribe") }}{% else %}{{ t("govuk_alpha.polish_commerce.podcast_subscribe") }}{% endif %}
+    </button>
+  </form>
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha.podcasts.episodes_title") }}</h2>
+  {% if not episodes.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.podcasts.episodes_empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for episode in episodes %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+            <a class="govuk-link" href="{{ urlFor('/podcasts/' + (show.id | string) + '/episodes/' + (episode.id | string)) }}">{{ episode.title }}</a>
+          </h3>
+          {% if episode.cardDescription %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ episode.cardDescription }}</p>
+          {% endif %}
+          {% if episode.audioUrl %}
+            <audio controls preload="none" class="nexus-alpha-audio" src="{{ episode.audioUrl }}" aria-label="{{ t('govuk_alpha.polish_commerce.podcast_episode_audio_label', { title: episode.title }) }}">
+              <a class="govuk-link" href="{{ episode.audioUrl }}">{{ t("govuk_alpha.podcasts.download_episode", { title: episode.title }) }}</a>
+            </audio>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,110 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set gamificationNavGroup = "leaderboard" %}
+  {% set gamificationActiveTab = "" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  <span class="govuk-caption-xl">{{ communityName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("leaderboard.title") }}</h1>
+  <p class="govuk-body-l">{{ t("leaderboard.description") }}</p>
+
+  {% if leaderboard.impact.hasValues %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-2">{{ t("polish_gamify.community_impact_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-4">{{ t("polish_gamify.community_impact_desc") }}</p>
+    <div class="nexus-alpha-stat-grid govuk-!-margin-bottom-6">
+      <dl class="nexus-alpha-stat">
+        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_members") }}</dt>
+        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalMembers }}</dd>
+      </dl>
+      <dl class="nexus-alpha-stat">
+        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_exchanges") }}</dt>
+        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalExchanges }}</dd>
+      </dl>
+      <dl class="nexus-alpha-stat">
+        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_hours") }}</dt>
+        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalVolunteerHours }}</dd>
+      </dl>
+      <dl class="nexus-alpha-stat">
+        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_listings") }}</dt>
+        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalListings }}</dd>
+      </dl>
+      <dl class="nexus-alpha-stat">
+        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_connections") }}</dt>
+        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalConnections }}</dd>
+      </dl>
+      <dl class="nexus-alpha-stat">
+        <dt class="govuk-body-s nexus-alpha-meta">{{ t("polish_gamify.stat_total_badges") }}</dt>
+        <dd class="govuk-heading-m govuk-!-margin-bottom-0">{{ leaderboard.impact.totalBadgesAwarded }}</dd>
+      </dl>
+    </div>
+  {% endif %}
+
+  <form method="get" action="{{ urlFor('/leaderboard') }}" data-alpha-auto-submit class="govuk-!-margin-bottom-6">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("polish_gamify.leaderboard_filter_heading") }}</h2>
+      </legend>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="type">{{ t("leaderboard.metric_label") }}</label>
+            <select class="govuk-select" id="type" name="type">
+              {% for type in leaderboard.types %}
+                <option value="{{ type.value }}"{% if type.value == leaderboard.type %} selected{% endif %}>{{ type.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="period">{{ t("leaderboard.period_label") }}</label>
+            <select class="govuk-select" id="period" name="period">
+              {% for period in leaderboard.periods %}
+                <option value="{{ period.value }}"{% if period.value == leaderboard.period %} selected{% endif %}>{{ period.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("leaderboard.apply") }}</button>
+    </fieldset>
+  </form>
+
+  {% if leaderboard.rows.length %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("leaderboard.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("leaderboard.rank_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("leaderboard.member_column") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("leaderboard.score_column") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in leaderboard.rows %}
+          <tr class="govuk-table__row {% if row.isCurrentUser %}nexus-alpha-row--active{% endif %}">
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.rank }}</td>
+            <td class="govuk-table__cell">
+              {% if row.href %}
+                <a class="govuk-link" href="{{ urlFor(row.href) }}">{{ row.name }}</a>
+              {% else %}
+                {{ row.name }}
+              {% endif %}
+              {% if row.isCurrentUser %}<strong class="govuk-tag govuk-tag--blue">{{ t("leaderboard.you") }}</strong>{% endif %}
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.scoreLabel }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("leaderboard.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,129 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <a class="govuk-back-link" href="{{ urlFor('/members/' + (memberId | string)) }}">{{ t("govuk_alpha_members.insights.back_to_profile") }}</a>
+
+      <span class="govuk-caption-l">{{ displayName }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_members.insights.heading") }}</h1>
+      <p class="govuk-body-l">
+        {% if isOwnProfile %}
+          {{ t("govuk_alpha_members.insights.intro_own") }}
+        {% else %}
+          {{ t("govuk_alpha_members.insights.intro_other", { name: displayName }) }}
+        {% endif %}
+      </p>
+
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_members.insights.nexus_score_title") }}</h2>
+      {% if nexusScore and nexusScore.scoreLabel %}
+        <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+          <p class="govuk-body govuk-!-margin-bottom-2">
+            <span class="govuk-!-font-size-48 govuk-!-font-weight-bold">{{ nexusScore.scoreLabel }}</span>
+            <span class="govuk-body">{{ t("govuk_alpha_members.insights.nexus_score_out_of") }}</span>
+          </p>
+          {% if nexusScore.tierLabel %}
+            <p class="govuk-!-margin-bottom-2">
+              <strong class="govuk-tag govuk-tag--purple">{{ nexusScore.tierLabel }}</strong>
+            </p>
+          {% endif %}
+          {% if nexusScore.percentile > 0 %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ t("govuk_alpha_members.insights.nexus_percentile", { percentile: nexusScore.percentile }) }}</p>
+            <progress class="nexus-alpha-progress" value="{{ nexusScore.percentile }}" max="100" aria-label="{{ t('govuk_alpha_members.insights.nexus_percentile_aria', { percentile: nexusScore.percentile }) }}">{{ nexusScore.percentile }}%</progress>
+          {% endif %}
+          {% if isOwnProfile %}
+            <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("govuk_alpha_members.insights.nexus_own_hint") }}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_members.insights.nexus_empty") }}</div>
+      {% endif %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_members.insights.stats_title") }}</h2>
+      <dl class="nexus-alpha-stat-grid">
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_hours_given") }}</dt>
+          <dd>{{ insightsStats.hoursGiven }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_hours_received") }}</dt>
+          <dd>{{ insightsStats.hoursReceived }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_listings") }}</dt>
+          <dd>{{ insightsStats.listingsCount }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_groups") }}</dt>
+          <dd>{{ insightsStats.groupsCount }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_events") }}</dt>
+          <dd>{{ insightsStats.eventsAttended }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_connections") }}</dt>
+          <dd>{{ insightsStats.connectionsCount }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_reviews") }}</dt>
+          <dd>{{ insightsStats.reviewsCount }}</dd>
+        </div>
+        {% if insightsStats.ratingLabel %}
+          <div class="nexus-alpha-stat">
+            <dt>{{ t("govuk_alpha_members.insights.stat_rating") }}</dt>
+            <dd>{{ insightsStats.ratingLabel }}</dd>
+          </div>
+        {% endif %}
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_level") }}</dt>
+          <dd>{{ insightsStats.level }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("govuk_alpha_members.insights.stat_xp") }}</dt>
+          <dd>{{ insightsStats.xp }}</dd>
+        </div>
+      </dl>
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_members.insights.verification_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_members.insights.verification_intro") }}</p>
+      {% if not verificationBadges or not verificationBadges.length %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_members.insights.verification_empty") }}</div>
+      {% else %}
+        <ul class="govuk-list">
+          {% for badge in verificationBadges %}
+            <li class="govuk-!-margin-bottom-2">
+              <strong class="govuk-tag govuk-tag--green">{{ badge.label }}</strong>
+              {% if badge.grantedLabel %}
+                <span class="nexus-alpha-meta">{{ t("govuk_alpha_members.insights.verified_on", { date: badge.grantedLabel }) }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_members.insights.badges_title") }}</h2>
+      {% if not earnedBadges or not earnedBadges.length %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_members.insights.badges_empty") }}</div>
+      {% else %}
+        <ul class="govuk-list nexus-alpha-actions">
+          {% for badge in earnedBadges %}
+            <li>
+              {% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}
+              <strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <p class="govuk-body govuk-!-margin-top-7">
+        <a class="govuk-link" href="{{ urlFor('/members/' + (memberId | string)) }}">{{ t("govuk_alpha_members.insights.back_to_profile") }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

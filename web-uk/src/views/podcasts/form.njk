@@ -1,0 +1,80 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/podcasts/studio') }}">{{ t("govuk_alpha_commerce.podcast_studio.back_to_studio") }}</a>
+
+  {% if status %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#title">{{ status.message }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.podcast_studio.title_create") }}</h1>
+
+  <form method="post" action="{{ urlFor(action) }}" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="title">{{ t("govuk_alpha_commerce.podcast_studio.show_title_label") }}</label>
+      <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.show_title_hint") }}</div>
+      <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ show.title }}" aria-describedby="title-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="summary">{{ t("govuk_alpha_commerce.podcast_studio.summary_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="summary-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.summary_hint") }}</div>
+      <input class="govuk-input" id="summary" name="summary" type="text" maxlength="600" value="{{ show.summary }}" aria-describedby="summary-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="slug">{{ t("govuk_alpha_commerce.podcast_studio.slug_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="slug-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.slug_hint") }}</div>
+      <input class="govuk-input" id="slug" name="slug" type="text" maxlength="200" value="{{ show.slug }}" aria-describedby="slug-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="description">{{ t("govuk_alpha_commerce.podcast_studio.description_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.description_hint") }}</div>
+      <textarea class="govuk-textarea" id="description" name="description" rows="5" aria-describedby="description-hint">{{ show.description }}</textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="category">{{ t("govuk_alpha_commerce.podcast_studio.category_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="category-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.category_hint") }}</div>
+      <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="120" value="{{ show.category }}" aria-describedby="category-hint">
+    </div>
+
+    {% include "podcasts/_show-rss-fields.njk" %}
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.podcast_studio.visibility_label") }}</legend>
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          {% for visibility in visibilities %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="{% if loop.first %}visibility{% else %}visibility-{{ visibility }}{% endif %}" name="visibility" type="radio" value="{{ visibility }}" {% if show.visibility == visibility %}checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="{% if loop.first %}visibility{% else %}visibility-{{ visibility }}{% endif %}">{{ t("govuk_alpha_commerce.podcast_studio.visibility_" + visibility) }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-button-group">
+      <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.submit_create") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/podcasts/studio') }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

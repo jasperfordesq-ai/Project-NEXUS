@@ -1,0 +1,96 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  {% if successMessage %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: t("states.success_title"),
+      text: successMessage
+    }) }}
+  {% endif %}
+
+  {% if errorMessage %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: [
+        {
+          text: errorMessage,
+          href: "#frequency-daily"
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.reminder.caption") }}: {{ goal.title }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.reminder.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_goals.reminder.intro") }}</p>
+
+  <div class="govuk-inset-text">
+    {% if reminder.enabled %}
+      <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha_goals.reminder.status_active") }}</strong></p>
+      <p class="govuk-body govuk-!-margin-bottom-1">{{ t("govuk_alpha_goals.reminder.status_active_detail", { frequency: reminder.frequencyLabel }) }}</p>
+      {% if reminder.nextReminderLabel %}
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_goals.reminder.next_reminder", { date: reminder.nextReminderLabel }) }}</p>
+      {% endif %}
+    {% else %}
+      <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha_goals.reminder.status_none") }}</strong></p>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_goals.reminder.status_none_detail") }}</p>
+    {% endif %}
+  </div>
+
+  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/reminder') }}" class="govuk-grid-row">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-grid-column-two-thirds">
+      <fieldset class="govuk-fieldset govuk-form-group">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_goals.reminder.frequency_legend") }}</legend>
+        <div class="govuk-radios" data-module="govuk-radios">
+          {% for frequency in frequencies %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="frequency-{{ frequency.value }}" name="frequency" type="radio" value="{{ frequency.value }}"{% if reminder.frequency == frequency.value %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="frequency-{{ frequency.value }}">{{ frequency.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <div class="govuk-checkboxes govuk-checkboxes--small govuk-form-group" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="enabled" name="enabled" type="checkbox" value="1"{% if not reminder.hasReminder or reminder.enabled %} checked{% endif %}>
+          <label class="govuk-label govuk-checkboxes__label" for="enabled">{{ t("govuk_alpha_goals.reminder.enabled_label") }}</label>
+        </div>
+      </div>
+
+      <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_goals.reminder.save") }}</button>
+    </div>
+  </form>
+
+  {% if reminder.hasReminder %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.error_title") }}</span>
+            {{ t("govuk_alpha_goals.reminder.remove_warning") }}
+          </strong>
+        </div>
+
+        <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/reminder/delete') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">{{ t("govuk_alpha_goals.reminder.remove") }}</button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

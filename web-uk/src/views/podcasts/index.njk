@@ -1,0 +1,94 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha.podcasts.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.podcasts.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.podcasts.description") }}</p>
+
+  {% if canAccessPodcastStudio %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/podcasts/studio') }}">{{ t("govuk_alpha_commerce.podcast_studio.title") }}</a>
+    </p>
+  {% endif %}
+
+  <form method="get" action="{{ urlFor('/podcasts') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="q">{{ t("govuk_alpha.polish_commerce.podcast_search_label") }}</label>
+          <div id="podcast-q-hint" class="govuk-hint">{{ t("govuk_alpha.polish_commerce.podcast_search_hint") }}</div>
+          <input class="govuk-input" id="q" name="q" type="search" value="{{ query }}" aria-describedby="podcast-q-hint">
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="sort">{{ t("govuk_alpha.polish_commerce.podcast_sort_label") }}</label>
+          <select class="govuk-select" id="sort" name="sort">
+            <option value="newest" {% if sort == "newest" %}selected{% endif %}>{{ t("govuk_alpha.polish_commerce.podcast_sort_newest") }}</option>
+            <option value="title" {% if sort == "title" %}selected{% endif %}>{{ t("govuk_alpha.polish_commerce.podcast_sort_title") }}</option>
+            <option value="episodes" {% if sort == "episodes" %}selected{% endif %}>{{ t("govuk_alpha.polish_commerce.podcast_sort_episodes") }}</option>
+            <option value="followers" {% if sort == "followers" %}selected{% endif %}>{{ t("govuk_alpha.polish_commerce.podcast_sort_followers") }}</option>
+          </select>
+        </div>
+      </div>
+      {% if categories.length %}
+        <div class="govuk-grid-column-one-third">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="category">{{ t("govuk_alpha.polish_commerce.podcast_category_label") }}</label>
+            <select class="govuk-select" id="category" name="category">
+              <option value="">{{ t("govuk_alpha.polish_commerce.podcast_category_all") }}</option>
+              {% for item in categories %}
+                <option value="{{ item }}" {% if category == item %}selected{% endif %}>{{ item }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha.polish_commerce.podcast_search_submit") }}</button>
+  </form>
+
+  {% if not shows.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.podcasts.empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for show in shows %}
+        <article class="nexus-alpha-card">
+          {% if show.artworkUrl %}
+            <img class="nexus-alpha-avatar" src="{{ show.artworkUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+          {% endif %}
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+            <a class="govuk-link" href="{{ urlFor('/podcasts/' + (show.id | string)) }}">{{ show.title }}</a>
+          </h2>
+          {% if show.browseDescription %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ show.browseDescription }}</p>
+          {% elseif show.summary %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ show.summary }}</p>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
+            {% if show.byLabel %}{{ show.byLabel }} - {% endif %}{{ t("govuk_alpha.podcasts.episodes_count", { count: show.episodeCount }) }}
+          </p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if paginationItems.length %}
+    <nav class="govuk-pagination govuk-!-margin-top-6" aria-label="{{ t('govuk_alpha.podcasts.title') }}">
+      <ul class="govuk-pagination__list">
+        {% for item in paginationItems %}
+          <li class="govuk-pagination__item{% if item.current %} govuk-pagination__item--current{% endif %}">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(item.href) }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.number }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  {% endif %}
+{% endblock %}

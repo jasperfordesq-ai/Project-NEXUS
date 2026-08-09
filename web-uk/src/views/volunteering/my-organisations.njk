@@ -1,0 +1,110 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering?tab=organisations') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_volunteering.my_orgs.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.my_orgs.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.my_orgs.description") }}</p>
+
+  <form method="get" action="{{ urlFor('/volunteering/my-organisations') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="role">{{ t("govuk_alpha_volunteering.my_orgs.filter_legend") }}</label>
+      <select class="govuk-select" id="role" name="role">
+        <option value="">{{ t("govuk_alpha_volunteering.my_orgs.filter_all") }}</option>
+        <option value="owner"{% if roleFilter == "owner" %} selected{% endif %}>{{ t("govuk_alpha_volunteering.my_orgs.filter_owner") }}</option>
+        <option value="admin"{% if roleFilter == "admin" %} selected{% endif %}>{{ t("govuk_alpha_volunteering.my_orgs.filter_admin") }}</option>
+        <option value="member"{% if roleFilter == "member" %} selected{% endif %}>{{ t("govuk_alpha_volunteering.my_orgs.filter_member") }}</option>
+      </select>
+    </div>
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_volunteering.my_orgs.filter_apply") }}</button>
+      {% if roleFilter %}
+        <a class="govuk-link" href="{{ urlFor('/volunteering/my-organisations') }}">{{ t("govuk_alpha_volunteering.my_orgs.filter_clear") }}</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% elif not organizations.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_volunteering.my_orgs.empty") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.my_orgs.empty_cta") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for organization in organizations %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ urlFor('/organisations/' ~ organization.id) }}">{{ organization.name }}</a>
+          </h2>
+          <p class="govuk-!-margin-bottom-3">
+            <strong class="govuk-tag {{ organization.status.className }}">{{ organization.status.label }}</strong>
+          </p>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.my_orgs.role_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ organization.roleLabel }}</dd>
+            </div>
+            {% if organization.contactEmail %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.my_orgs.contact_email") }}</dt>
+                <dd class="govuk-summary-list__value">{{ organization.contactEmail }}</dd>
+              </div>
+            {% endif %}
+            {% if organization.website %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.my_orgs.website") }}</dt>
+                <dd class="govuk-summary-list__value">
+                  {% if organization.websiteHref %}
+                    <a class="govuk-link" href="{{ organization.websiteHref }}">{{ organization.website }}</a>
+                  {% else %}
+                    {{ organization.website }}
+                  {% endif %}
+                </dd>
+              </div>
+            {% endif %}
+          </dl>
+          {% if organization.description %}
+            <p class="govuk-body govuk-!-margin-top-3">{{ organization.description }}</p>
+          {% endif %}
+
+          {% if organization.canManage and organization.isApproved %}
+            <a class="govuk-button govuk-!-margin-top-2 govuk-!-margin-bottom-0" data-module="govuk-button" role="button" draggable="false" href="{{ urlFor('/volunteering/organisations/' ~ organization.id ~ '/dashboard') }}">
+              {{ t("govuk_alpha_volunteering.my_orgs.manage_dashboard") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.my_orgs.manage_dashboard_for", { name: organization.name }) }}</span>
+            </a>
+          {% elif organization.canManage %}
+            <p class="govuk-body govuk-!-margin-top-2 govuk-!-margin-bottom-1">
+              <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_volunteering.my_orgs.awaiting_approval") }}</strong>
+            </p>
+            <p class="govuk-hint govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.my_orgs.awaiting_approval_hint") }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if nextHref %}
+      <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('govuk_alpha_volunteering.my_orgs.pagination_label') }}">
+        <div class="govuk-pagination__next">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
+            <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+            <span class="govuk-visually-hidden">:</span>
+            <span class="govuk-pagination__link-label">{{ t("govuk_alpha_volunteering.my_orgs.more_label") }}</span>
+          </a>
+        </div>
+      </nav>
+    {% endif %}
+  {% endif %}
+{% endblock %}

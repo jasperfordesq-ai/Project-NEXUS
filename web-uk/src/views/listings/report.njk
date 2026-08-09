@@ -1,0 +1,61 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("actions.back") }}</a>
+
+  {% if status %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#reason-inappropriate">{{ status.message }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ listing.title or listing.name or "" }}</span>
+  <h1 class="govuk-heading-xl">{{ t("polish_listings.report_listing_title") }}</h1>
+  <p class="govuk-body-l">{{ t("polish_listings.report_listing_intro") }}</p>
+
+  <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/report') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if status %} govuk-form-group--error{% endif %}">
+      <fieldset class="govuk-fieldset"{% if status %} aria-describedby="reason-error"{% endif %}>
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("polish_listings.report_reason_label") }}</h2>
+        </legend>
+        {% if status %}
+          <p id="reason-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <div class="govuk-radios" data-module="govuk-radios" id="reason">
+          {% for reason in reasons %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="reason-{{ reason.value }}" name="reason" type="radio" value="{{ reason.value }}"{% if oldInput.reason == reason.value %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="reason-{{ reason.value }}">{{ reason.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="details">{{ t("polish_listings.report_details_label") }}</label>
+      <div id="details-hint" class="govuk-hint">{{ t("polish_listings.report_details_hint") }}</div>
+      <textarea class="govuk-textarea" id="details" name="details" rows="5" aria-describedby="details-hint" maxlength="500">{{ oldInput.details }}</textarea>
+    </div>
+
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("polish_listings.report_submit") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("actions.cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

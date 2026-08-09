@@ -1,0 +1,45 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ t("coupons.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("coupons.title") }}</h1>
+  <p class="govuk-body-l">{{ t("coupons.description") }}</p>
+
+  {% if coupons and coupons.length %}
+    <div class="nexus-alpha-card-list">
+      {% for coupon in coupons %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/coupons/' + (coupon.id | string)) }}">{{ coupon.title }}</a>
+            </h2>
+            {% if coupon.discountLabel %}
+              <strong class="govuk-tag govuk-tag--green">{{ coupon.discountLabel }}</strong>
+            {% endif %}
+          </div>
+
+          {% if coupon.description %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ coupon.description | truncate(200) }}</p>
+          {% endif %}
+
+          {% if coupon.code %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ t("coupons.code_label") }}: <strong>{{ coupon.code }}</strong></p>
+          {% endif %}
+
+          {% if coupon.validUntilText %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("coupons.valid_until", { date: coupon.validUntilText }) }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("coupons.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

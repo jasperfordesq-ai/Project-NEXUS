@@ -1,0 +1,161 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">{{ t("ideation.back") }}</a>
+
+  {% if successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="idea-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="idea-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ successMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>
+              {% if challenge.isOpenForIdeas %}<a href="#idea_title">{{ errorMessage }}</a>{% else %}{{ errorMessage }}{% endif %}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or "Community" }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ challenge.title }}</h1>
+    <span>
+      <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+      {% if challenge.is_featured %}
+        <strong class="govuk-tag govuk-tag--yellow">Featured</strong>
+      {% endif %}
+    </span>
+  </div>
+
+  {% if challenge.description %}
+    <div class="govuk-body-l">{{ challenge.description | nl2br | safe }}</div>
+  {% endif %}
+
+  {% set hasMeta = challenge.submissionDeadline or challenge.votingDeadline or challenge.maxIdeasPerUser or challenge.category or (challenge.tags and challenge.tags.length) or challenge.viewsCount > 0 or challenge.favoritesCount > 0 %}
+  {% if hasMeta %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-4">Challenge details</h2>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-4">
+      {% if challenge.category %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Category</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.category }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.submissionDeadline %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Submission deadline</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.submissionDeadline }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.votingDeadline %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Voting deadline</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.votingDeadline }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.maxIdeasPerUser %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Maximum ideas per person</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.maxIdeasPerUser }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.viewsCount > 0 %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("jobs_t2.views_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.viewsCount }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.favoritesCount > 0 %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Favourites</dt>
+          <dd class="govuk-summary-list__value">{{ challenge.favoritesCount }}</dd>
+        </div>
+      {% endif %}
+      {% if challenge.tags and challenge.tags.length %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">Tags</dt>
+          <dd class="govuk-summary-list__value">
+            {% for tag in challenge.tags %}
+              <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ tag }}</strong>
+            {% endfor %}
+          </dd>
+        </div>
+      {% endif %}
+    </dl>
+  {% endif %}
+
+  {% if challenge.prizeDescription %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("ideation.prize_label") }}</h2>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ challenge.prizeDescription }}</p>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="ideas">{{ t("ideation.ideas_title") }}</h2>
+  {% if ideas and ideas.length %}
+    <div class="nexus-alpha-card-list">
+      {% for idea in ideas %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1" id="idea-{{ idea.id }}-title">{{ idea.title }}</h3>
+            <strong class="govuk-tag govuk-tag--blue">{{ idea.voteText }}</strong>
+          </div>
+          {% if idea.description %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ idea.description | truncate(240) }}</p>
+          {% endif %}
+          {% if idea.authorName %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">Suggested by {{ idea.authorName }}</p>
+          {% endif %}
+          <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id) }}">{{ t("notifications.types.ideation") }}</a></p>
+          {% if challenge.isOpenForVotes %}
+            <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/vote') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-describedby="idea-{{ idea.id }}-title" aria-label="Vote for idea: {{ idea.title }}">Vote</button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("ideation.ideas_empty") }}</p>
+    </div>
+  {% endif %}
+
+  {% if challenge.isOpenForIdeas %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="submit">{{ t("ideation.submit_title") }}</h2>
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if status == 'idea-invalid' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label" for="idea_title">{{ t("ideation.idea_title_label") }}</label>
+        {% if status == 'idea-invalid' %}
+          <p id="idea_title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("ideation.states.idea-invalid") }}</p>
+        {% endif %}
+        <input class="govuk-input" id="idea_title" name="idea_title" type="text" maxlength="255" {% if status == 'idea-invalid' %}aria-describedby="idea_title-error"{% endif %}>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="idea_content">{{ t("ideation.idea_content_label") }}</label>
+        <textarea class="govuk-textarea" id="idea_content" name="idea_content" rows="5" maxlength="5000"></textarea>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("ideation.submit_button") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,101 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.files.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.files.title") }}</h1>
+
+  {% if statusBanner and statusBanner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: statusBanner.title,
+      text: statusBanner.message
+    }) }}
+  {% elif statusBanner and statusBanner.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ statusBanner.title }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list"><li>{{ statusBanner.message }}</li></ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <p class="govuk-body">{{ t("govuk_alpha_groups.files.intro") }}</p>
+
+  {% if not files.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.files.empty") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-table-scroll" role="region" aria-label="{{ t('govuk_alpha_groups.files.title') }}" tabindex="0">
+      <table class="govuk-table govuk-!-margin-bottom-0">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_groups.files.title") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_groups.files.col_name") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_groups.files.col_size") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_groups.files.col_uploaded_by") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_groups.files.col_date") }}</th>
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_groups.files.col_actions") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for file in files %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ file.fileName }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ file.sizeLabel }}</td>
+              <td class="govuk-table__cell">{{ file.uploaderName }}</td>
+              <td class="govuk-table__cell">{{ file.uploadedAtLabel }}</td>
+              <td class="govuk-table__cell">
+                <a class="govuk-link govuk-!-margin-right-2" href="{{ urlFor('/groups/' + (group.id | string) + '/files/' + (file.id | string) + '/download') }}" aria-label="{{ t('govuk_alpha_groups.files.download_aria', { name: file.fileName }) }}">{{ t("govuk_alpha_groups.files.download_link") }}</a>
+                {% if file.canDelete %}
+                  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/files/' + (file.id | string) + '/delete') }}" style="display:inline">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_groups.files.delete_aria', { name: file.fileName }) }}">{{ t("govuk_alpha_groups.files.delete_button") }}</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_groups.files.upload_heading") }}</h2>
+
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/files') }}" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if statusBanner and statusBanner.fieldError %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="file-input">{{ t("govuk_alpha_groups.files.file_label") }}</label>
+      <div id="file-input-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.file_hint") }}</div>
+      {% if statusBanner and statusBanner.fieldError %}
+        <p class="govuk-error-message" id="file-input-error"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
+      {% endif %}
+      <input class="govuk-file-upload{% if statusBanner and statusBanner.fieldError %} govuk-file-upload--error{% endif %}" id="file-input" name="file" type="file" aria-describedby="file-input-hint{% if statusBanner and statusBanner.fieldError %} file-input-error{% endif %}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="file-folder">{{ t("govuk_alpha_groups.files.folder_label") }}</label>
+      <div id="file-folder-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.folder_hint") }}</div>
+      <input class="govuk-input govuk-input--width-20" id="file-folder" name="folder" type="text" maxlength="100" aria-describedby="file-folder-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="file-description">{{ t("govuk_alpha_groups.files.description_label") }}</label>
+      <div id="file-description-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.description_hint") }}</div>
+      <textarea class="govuk-textarea" id="file-description" name="description" rows="2" maxlength="500" aria-describedby="file-description-hint"></textarea>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.files.submit_upload") }}</button>
+  </form>
+{% endblock %}

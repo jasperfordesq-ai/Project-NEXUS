@@ -1,0 +1,60 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.collections.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.collections.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.collections.description") }}</p>
+
+  {% set gamificationNavGroup = "achievements" %}
+  {% set gamificationActiveTab = "collections" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if collections.length %}
+    <ul class="nexus-alpha-card-list govuk-list">
+      {% for collection in collections %}
+        <li class="nexus-alpha-card govuk-!-margin-bottom-4">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ collection.name }}</h2>
+            {% if collection.completed %}
+              <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.collections.completed") }}</strong>
+            {% endif %}
+          </div>
+          {% if collection.description %}
+            <p class="govuk-body">{{ collection.description }}</p>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            {{ t("govuk_alpha_gamification.collections.progress", { earned: collection.earnedCount, total: collection.totalCount }) }}
+            {% if collection.rewardXp > 0 %}&middot; {{ t("govuk_alpha_gamification.collections.reward", { xp: collection.rewardXp }) }}{% endif %}
+            {% if collection.bonusClaimed %}&middot; <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.collections.bonus_claimed") }}</strong>{% endif %}
+          </p>
+          <progress max="100" value="{{ collection.progressPercent }}" aria-label="{{ collection.name }}: {{ collection.progressPercent }}%">{{ collection.progressPercent }}%</progress>
+
+          {% if collection.badges.length %}
+            <ul class="nexus-alpha-inline-list govuk-list govuk-!-margin-top-2">
+              {% for badge in collection.badges %}
+                <li>
+                  {% if badge.href %}
+                    <a class="govuk-link" href="{{ urlFor(badge.href) }}">{{ badge.name }}</a>
+                  {% else %}
+                    {{ badge.name }}
+                  {% endif %}
+                  <strong class="govuk-tag {% if badge.earned %}govuk-tag--green{% else %}govuk-tag--grey{% endif %}">{% if badge.earned %}{{ t("govuk_alpha_gamification.common.earned") }}{% else %}{{ t("govuk_alpha_gamification.common.locked") }}{% endif %}</strong>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.collections.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

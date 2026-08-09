@@ -1,0 +1,65 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or "Community" }}</span>
+  <h1 class="govuk-heading-xl">{{ t("ideation.ideas_title") }}</h1>
+  <p class="govuk-body-l">{{ t("ideation.description") }}</p>
+
+  <form method="get" action="{{ urlFor('/ideation') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group govuk-!-margin-bottom-4">
+      <label class="govuk-label" for="ideation-q">{{ t("polish_discovery.ideation_search_label") }}</label>
+      <input class="govuk-input govuk-input--width-30" id="ideation-q" name="q" type="search" value="{{ activeQuery }}">
+    </div>
+    <div class="govuk-form-group govuk-!-margin-bottom-4">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend">Filter by status</legend>
+        <div class="govuk-radios govuk-radios--inline govuk-radios--small" data-module="govuk-radios">
+          {% set statusOptions = [
+            { value: "", label: "All challenges", id: "all" },
+            { value: "open", label: "Open", id: "open" },
+            { value: "voting", label: "Voting", id: "voting" },
+            { value: "closed", label: "Closed", id: "closed" }
+          ] %}
+          {% for option in statusOptions %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="ideation-status-{{ option.id }}" name="status" type="radio" value="{{ option.value }}" {% if activeStatus == option.value %}checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="ideation-status-{{ option.id }}">{{ option.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+    <div class="govuk-button-group">
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">Search</button>
+      {% if activeStatus or activeQuery %}
+        <a class="govuk-link" href="{{ urlFor('/ideation') }}">Clear filters</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if challenges and challenges.length %}
+    <div class="nexus-alpha-card-list">
+      {% for challenge in challenges %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ challenge.title }}</a>
+            </h2>
+            <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+          </div>
+          {% if challenge.description %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ challenge.description | truncate(160) }}</p>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ challenge.ideasCountText }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("ideation.empty") }}</div>
+  {% endif %}
+{% endblock %}

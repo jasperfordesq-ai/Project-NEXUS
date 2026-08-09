@@ -1,0 +1,15 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% if status %}
+  <div class="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner govuk-notification-banner--success{% endif %}" data-module="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner{% endif %}" tabindex="-1">
+    <div role="alert">
+      <h2 class="{% if status.type == 'error' %}govuk-error-summary__title{% else %}govuk-notification-banner__title{% endif %}">{% if status.type == 'error' %}{{ t("govuk_alpha_commerce.common.error_title") }}{% else %}{{ t(marketplaceStatusSuccessHeadingKey or "govuk_alpha_commerce.common.notice_title") }}{% endif %}</h2>
+      <div class="{% if status.type == 'error' %}govuk-error-summary__body{% else %}govuk-notification-banner__content{% endif %}">
+        <p class="govuk-body">{{ status.message }}</p>
+      </div>
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,30 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("faq.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("faq.title") if t else title }}</h1>
+      <p class="govuk-body-l">{{ t("faq.intro") }}</p>
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="faq-accordion">
+        {% for faq in faqs %}
+          <div class="govuk-accordion__section">
+            <div class="govuk-accordion__section-header">
+              <h2 class="govuk-accordion__section-heading">
+                <span class="govuk-accordion__section-button" id="faq-heading-{{ loop.index }}">{{ faq.question }}</span>
+              </h2>
+            </div>
+            <div id="faq-content-{{ loop.index }}" class="govuk-accordion__section-content">
+              <p class="govuk-body">{{ faq.answer }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

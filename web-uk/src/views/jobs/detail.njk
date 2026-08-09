@@ -1,0 +1,155 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a href="{{ urlFor('/jobs') }}" class="govuk-back-link">{{ t("jobs.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{% if status in ["cv-invalid", "cv-too-large"] %}<a href="#cv">{{ errorMessage }}</a>{% else %}{{ errorMessage }}{% endif %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ job.posterName or tenantName or serviceName }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ job.title }}</h1>
+    <strong class="govuk-tag govuk-tag--blue">{{ t(job.typeTranslationKey) }}</strong>
+  </div>
+
+  {% if not job.isOwner %}
+    {% if job.isSaved %}
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/unsave') }}" class="govuk-!-margin-bottom-4">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="from" value="detail">
+        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t2.unsave_button") }}</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/save') }}" class="govuk-!-margin-bottom-4">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="from" value="detail">
+        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t2.save_button") }}</button>
+      </form>
+    {% endif %}
+  {% endif %}
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    {% if job.commitmentLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("jobs_t2.commitment_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ t(job.commitmentTranslationKey) }}</dd>
+      </div>
+    {% endif %}
+    {% if job.locationLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("jobs.location_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ t("jobs.remote") if job.isRemote else job.locationLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if job.salaryLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("jobs.salary_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ job.salaryLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if job.deadlineLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("jobs.deadline_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ job.deadlineLabel }}</dd>
+      </div>
+    {% endif %}
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("jobs_t2.views_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ job.viewsCount }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("jobs_t2.applications_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ job.applicationsCount }}</dd>
+    </div>
+  </dl>
+
+  {% if job.description %}
+    <h2 class="govuk-heading-l">{{ t("jobs.about_label") }}</h2>
+    <div class="govuk-body">{{ job.description | nl2br | safe }}</div>
+  {% endif %}
+
+  {% if job.skillsList.length %}
+    <h2 class="govuk-heading-m">{{ t("jobs.skills_label") }}</h2>
+    <ul class="govuk-list nexus-alpha-tag-list">
+      {% for skill in job.skillsList %}
+        <li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if jobMatch and jobMatch.required_skills and jobMatch.required_skills.length %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("jobs_t2.match_heading") }}</h2>
+    <p class="govuk-body govuk-!-font-weight-bold">{{ t("jobs_t2.match_percent", { percent: jobMatch.percentage or 0 }) }}</p>
+    <progress max="100" value="{{ jobMatch.percentage or 0 }}" aria-label="{{ t('jobs_t2.match_percent', { percent: jobMatch.percentage or 0 }) }}">{{ jobMatch.percentage or 0 }}%</progress>
+    {% if jobMatch.matched and jobMatch.matched.length %}
+      <h3 class="govuk-heading-s govuk-!-margin-top-3">{{ t("jobs_t2.match_have") }}</h3>
+      <ul class="govuk-list nexus-alpha-tag-list">
+        {% for skill in jobMatch.matched %}<li><strong class="govuk-tag govuk-tag--green">{{ skill }}</strong></li>{% endfor %}
+      </ul>
+    {% endif %}
+    {% if jobMatch.missing and jobMatch.missing.length %}
+      <h3 class="govuk-heading-s govuk-!-margin-top-3">{{ t("jobs_t2.match_missing") }}</h3>
+      <ul class="govuk-list nexus-alpha-tag-list">
+        {% for skill in jobMatch.missing %}<li><strong class="govuk-tag govuk-tag--orange">{{ skill }}</strong></li>{% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+
+  {% if job.isOwner %}
+    <div class="govuk-inset-text govuk-!-margin-top-6">{{ t("jobs_t2.owner_notice") }}</div>
+    <div class="nexus-alpha-actions govuk-!-margin-bottom-2">
+      <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("jobs_t3.manage_button") }}</a>
+      <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/edit') }}">{{ t("jobs_t3.edit_button") }}</a>
+    </div>
+    <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/renew') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("jobs_t3.renew_button") }}</button>
+    </form>
+  {% else %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="apply">{{ t("jobs.apply_title") }}</h2>
+    {% if job.hasApplied %}
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("jobs.already_applied") }}</p>
+      </div>
+    {% else %}
+      <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/apply') }}" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="cover_letter">{{ t("jobs.cover_letter_label") }}</label>
+          <textarea class="govuk-textarea" id="cover_letter" name="cover_letter" rows="5" maxlength="5000">{{ applicationValues.cover_letter or "" }}</textarea>
+        </div>
+        <div class="govuk-form-group{% if status in ["cv-invalid", "cv-too-large"] %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label" for="cv">{{ t("jobs.cv_label") }}</label>
+          <div id="cv-hint" class="govuk-hint">{{ t("jobs.cv_hint") }}</div>
+          {% if status in ["cv-invalid", "cv-too-large"] %}<p id="cv-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errorMessage }}</p>{% endif %}
+          <input class="govuk-file-upload{% if status in ["cv-invalid", "cv-too-large"] %} govuk-file-upload--error{% endif %}" id="cv" name="cv" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-describedby="cv-hint{% if status in ["cv-invalid", "cv-too-large"] %} cv-error{% endif %}">
+        </div>
+        <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("jobs.apply_button") }}</button>
+      </form>
+    {% endif %}
+  {% endif %}
+{% endblock %}

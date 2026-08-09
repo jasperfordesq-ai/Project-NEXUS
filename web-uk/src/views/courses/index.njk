@@ -1,0 +1,72 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ tenantName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("courses.title") }}</h1>
+  <p class="govuk-body-l">{{ t("courses.description") }}</p>
+
+  {% set activeTab = 'browse' %}
+  {% include "courses/_nav.njk" %}
+
+  <form method="get" action="{{ urlFor('/courses') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="q">{{ t("courses.search_label") }}</label>
+      <div id="q-hint" class="govuk-hint">Search by title.</div>
+      <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ coursesQuery }}" aria-describedby="q-hint">
+    </div>
+
+    {% if categories and categories.length %}
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="category">Category</label>
+        <select class="govuk-select" id="category" name="category">
+          <option value="">All categories</option>
+          {% for category in categories %}
+            <option value="{{ category.id }}"{% if courseCategoryId == category.id %} selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="level">Level</label>
+      <select class="govuk-select" id="level" name="level">
+        <option value="">All levels</option>
+        {% for level in levels %}
+          <option value="{{ level.value }}"{% if courseLevel == level.value %} selected{% endif %}>{{ level.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Search</button>
+  </form>
+
+  {% if not courses or not courses.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("courses.empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for course in courses %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/courses/' + (course.id | string)) }}">{{ course.title }}</a>
+            </h2>
+            <strong class="govuk-tag {{ course.costTagClass }}">{{ course.costLabel }}</strong>
+          </div>
+          {% if course.excerpt %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ course.excerpt }}</p>
+          {% endif %}
+          {% if course.levelLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">Level: {{ course.levelLabel }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/talent-search') }}">{{ t("govuk_alpha_jobs.talent.title") }}</a>
+
+  <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
+    {% if candidate.avatarUrl %}
+      <img class="nexus-alpha-avatar" src="{{ candidate.avatarUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="64" height="64">
+    {% else %}
+      <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ candidate.initial }}</span>
+    {% endif %}
+    <div>
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-1">{{ candidate.name }}</h1>
+      <p class="govuk-body-l govuk-!-margin-bottom-0">{{ candidate.headline or t("govuk_alpha_jobs.talent.headline_none") }}</p>
+    </div>
+  </div>
+
+  <p class="govuk-body-s nexus-alpha-meta">
+    {% if candidate.location %}{{ candidate.location }}{% endif %}
+    {% if candidate.lastActiveLabel %}{% if candidate.location %} &middot; {% endif %}{{ t("govuk_alpha_jobs.talent.last_active", { date: candidate.lastActiveLabel }) }}{% endif %}
+    {% if candidate.memberSinceLabel %} &middot; {{ t("govuk_alpha_jobs.talent.member_since", { date: candidate.memberSinceLabel }) }}{% endif %}
+  </p>
+
+  {% if candidate.skills.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.talent.skills_heading") }}</h2>
+    <ul class="govuk-list nexus-alpha-tag-list govuk-!-margin-bottom-6">
+      {% for skill in candidate.skills %}
+        <li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="govuk-body">{{ t("govuk_alpha_jobs.talent.no_skills") }}</p>
+  {% endif %}
+
+  {% if candidate.summary %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.talent.summary_heading") }}</h2>
+    <div class="govuk-body govuk-!-margin-bottom-6">{{ candidate.summary | nl2br | safe }}</div>
+  {% endif %}
+
+  {% if candidate.bio %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.talent.about_heading") }}</h2>
+    <div class="govuk-body govuk-!-margin-bottom-6">{{ candidate.bio | nl2br | safe }}</div>
+  {% endif %}
+{% endblock %}

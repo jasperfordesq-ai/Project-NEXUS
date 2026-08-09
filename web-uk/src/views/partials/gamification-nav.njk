@@ -1,0 +1,35 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% set group = gamificationNavGroup or "achievements" %}
+{% set active = gamificationActiveTab or "" %}
+{% if group == "leaderboard" %}
+  {% set heading = t("govuk_alpha_gamification.nav.leaderboard_heading") %}
+  {% set tabs = [
+    { key: "competitive", href: "/leaderboard/competitive", label: t("govuk_alpha_gamification.nav.competitive") },
+    { key: "seasons", href: "/leaderboard/seasons", label: t("govuk_alpha_gamification.nav.seasons") },
+    { key: "journey", href: "/leaderboard/journey", label: t("govuk_alpha_gamification.nav.journey") },
+    { key: "spotlight", href: "/leaderboard/spotlight", label: t("govuk_alpha_gamification.nav.spotlight") }
+  ] %}
+{% else %}
+  {% set heading = t("govuk_alpha_gamification.nav.heading") %}
+  {% set tabs = [
+    { key: "shop", href: "/achievements/shop", label: t("govuk_alpha_gamification.nav.shop") },
+    { key: "collections", href: "/achievements/collections", label: t("govuk_alpha_gamification.nav.collections") },
+    { key: "showcase", href: "/achievements/showcase", label: t("govuk_alpha_gamification.nav.showcase") },
+    { key: "engagement", href: "/achievements/engagement", label: t("govuk_alpha_gamification.nav.engagement") }
+  ] %}
+{% endif %}
+
+<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4" aria-label="{{ heading }}">
+  <h2 class="govuk-tabs__title">{{ heading }}</h2>
+  <ul class="govuk-tabs__list">
+    {% for tab in tabs %}
+      <li class="govuk-tabs__list-item{% if active == tab.key %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor(tab.href) }}"{% if active == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

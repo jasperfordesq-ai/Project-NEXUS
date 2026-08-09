@@ -1,0 +1,251 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/groups') }}">{{ t("actions.back_to_groups") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% set isPrivate = group.visibility != "public" %}
+  <span class="govuk-caption-xl">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ group.name }}</h1>
+    {{ govukTag({
+      text: t("groups.visibility_private") if isPrivate else t("groups.visibility_public"),
+      classes: "govuk-tag--grey" if isPrivate else "govuk-tag--green"
+    }) }}
+  </div>
+
+  {% set groupSuccessStates = ["group-joined", "group-left", "group-created", "group-updated"] %}
+  {% set groupErrorStates = ["group-failed", "group-safeguarding-restricted", "group-safeguarding-unavailable", "group-update-failed", "group-delete-failed"] %}
+  {% set groupFeedSuccessStates = ["group-posted"] %}
+  {% set groupFeedErrorStates = ["group-post-empty", "group-post-failed", "group-post-forbidden"] %}
+  {% if status in groupSuccessStates %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="grp-status">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="grp-status">{{ t("states.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("groups.states." + status) }}</p></div>
+    </div>
+  {% elif status in groupErrorStates %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{% if status == "group-safeguarding-restricted" %}{{ t("safeguarding.errors.interaction_not_allowed") }}{% elif status == "group-safeguarding-unavailable" %}{{ t("safeguarding.errors.policy_unavailable") }}{% else %}{{ t("groups.states." + status) }}{% endif %}</p></div>
+      </div>
+    </div>
+  {% elif status in groupFeedSuccessStates %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="grp-feed-status">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="grp-feed-status">{{ t("states.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("groups_t1.states." + status) }}</p></div>
+    </div>
+  {% elif status in groupFeedErrorStates %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ t("groups_t1.states." + status) }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if group.description %}
+    <p class="govuk-body-l">{{ group.description }}</p>
+  {% endif %}
+
+  <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("polish_groups.meta_visibility_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ govukTag({
+        text: t("groups.visibility_private") if isPrivate else t("groups.visibility_public"),
+        classes: "govuk-tag--grey" if isPrivate else "govuk-tag--green"
+      }) }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("polish_groups.meta_members_label") }}</dt>
+      <dd class="govuk-summary-list__value">
+        {{ displayMemberCount }}
+        {% if isAdmin %}&ensp;<a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/manage') }}">{{ t("polish_groups.meta_manage_link") }}</a>{% endif %}
+      </dd>
+    </div>
+    {% if group.location %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("polish_groups.location_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ group.location }}</dd>
+      </div>
+    {% endif %}
+    {% if group.createdAt or group.created_at %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("polish_groups.meta_created_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ group.createdAtLabel }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  <div class="govuk-!-margin-bottom-6">
+    {% if isMember %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.you_are_member") }}</p></div>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.link") }}</a></p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/notifications') }}">{{ t("govuk_alpha_groups.nav.notification_settings") }}</a></p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/files') }}">{{ t("govuk_alpha_groups.files.nav_files") }}</a></p>
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/leave') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukButton({ text: t("groups.leave"), classes: "govuk-button--warning govuk-!-margin-bottom-0" }) }}
+      </form>
+    {% elif isPending %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.pending_member") }}</p></div>
+    {% else %}
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/join') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukButton({ text: t("groups.join"), classes: "govuk-!-margin-bottom-0" }) }}
+      </form>
+    {% endif %}
+  </div>
+
+  {% if isAdmin %}
+    <div class="govuk-button-group govuk-!-margin-bottom-6">
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/edit') }}">{{ t("polish_groups.edit_link") }}</a>
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/manage') }}">{{ t("polish_groups.manage_link") }}</a>
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/invite') }}">{{ t("govuk_alpha_groups.nav.invite_members") }}</a>
+      <a class="govuk-button govuk-button--secondary" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/image') }}">{{ t("govuk_alpha_groups.nav.group_image") }}</a>
+    </div>
+  {% endif %}
+
+  {% if pinnedAnnouncements and pinnedAnnouncements.length > 0 %}
+    <h2 class="govuk-heading-l">{{ t("polish_groups.announcements_heading") }}</h2>
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+      {% for announcement in pinnedAnnouncements %}
+        <article class="nexus-alpha-card">
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            <strong class="govuk-tag govuk-tag--blue">{{ t("polish_groups.announcement_pinned_tag") }}</strong>
+          </p>
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ announcement.title }}</h3>
+          {% if announcement.content %}<p class="govuk-body">{{ announcement.content }}</p>{% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if members.length > 0 %}
+    <h2 class="govuk-heading-l">{{ t("groups.members_title") }}</h2>
+    <ul class="govuk-list">
+      {% for member in members %}
+        {% set memberName = member.name or ((member.first_name or member.firstName or "") + " " + (member.last_name or member.lastName or "")) %}
+        {% set memberId = member.user_id or member.userId or member.id %}
+        {% if memberName | trim %}
+          <li>{% if memberId %}<a class="govuk-link" href="{{ urlFor('/members/' + (memberId | string)) }}">{{ memberName | trim }}</a>{% else %}{{ memberName | trim }}{% endif %}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if subGroups and subGroups.length > 0 %}
+    <h2 class="govuk-heading-l" id="group-subgroups">{{ t("govuk_alpha_groups.subgroups.heading") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_groups.subgroups.intro") }}</p>
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+      {% for subGroup in subGroups %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-listing-row">
+            {% if subGroup.imageUrl %}
+              <div class="nexus-alpha-listing-row__media">
+                <img class="nexus-alpha-card-thumb" src="{{ subGroup.imageUrl }}" alt="" width="120" height="90" loading="lazy" decoding="async">
+              </div>
+            {% endif %}
+            <div class="nexus-alpha-listing-row__body">
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/groups/' + (subGroup.id | string)) }}">{{ subGroup.name }}</a>
+              </h3>
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+                <strong class="govuk-tag {{ 'govuk-tag--grey' if subGroup.isPrivate else 'govuk-tag--green' }}">{{ t("govuk_alpha_groups.subgroups.visibility_private") if subGroup.isPrivate else t("govuk_alpha_groups.subgroups.visibility_public") }}</strong>
+                <span aria-hidden="true"> | </span>
+                {{ tc("govuk_alpha_groups.subgroups.members_count", subGroup.memberCount, { count: subGroup.memberCount }) }}
+              </p>
+              {% if subGroup.description %}<p class="govuk-body">{{ subGroup.description | truncate(160) }}</p>{% endif %}
+              <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/groups/' + (subGroup.id | string)) }}">{{ t("govuk_alpha_groups.subgroups.view_link") }}</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l" id="group-events">{{ t("groups_t1.events_title") }}</h2>
+  <p class="govuk-body">{{ t("groups_t1.events_description") }}</p>
+  {% if not groupCanParticipate and isPrivate %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.events_members_only") }}</p></div>
+  {% elif events.length == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.events_empty") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for event in events %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-listing-row">
+            {% if event.coverImage %}
+              <div class="nexus-alpha-listing-row__media">
+                <img class="nexus-alpha-card-thumb" src="{{ event.coverImage }}" alt="" width="120" height="90" loading="lazy" decoding="async">
+              </div>
+            {% endif %}
+            <div class="nexus-alpha-listing-row__body">
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a></h3>
+              <dl class="nexus-alpha-inline-list">
+                {% if event.startsAt %}<div><dt>{{ t("groups_t1.event_starts") }}</dt><dd>{{ event.startsAt | formatBladeDateTime }}</dd></div>{% endif %}
+                <div><dt>{{ t("groups_t1.event_location") }}</dt><dd>{{ event.location or t("groups_t1.event_online") }}</dd></div>
+              </dl>
+              <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("actions.view_details") }}</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l" id="group-feed">{{ t("groups_t1.feed_title") }}</h2>
+  <p class="govuk-body">{{ t("groups_t1.feed_description") }}</p>
+  {% if not groupCanParticipate %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.feed_members_only") }}</p></div>
+  {% else %}
+    <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/feed') }}" enctype="multipart/form-data" class="govuk-!-margin-bottom-7">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="group-feed-content">{{ t("groups_t1.compose_label") }}</label>
+        <div id="group-feed-content-hint" class="govuk-hint">{{ t("groups_t1.compose_hint") }}</div>
+        <textarea class="govuk-textarea" id="group-feed-content" name="content" rows="4" aria-describedby="group-feed-content-hint"></textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="group-feed-image">{{ t("groups_t1.compose_image_label") }}</label>
+        <div id="group-feed-image-hint" class="govuk-hint">{{ t("groups_t1.compose_image_hint") }}</div>
+        <input class="govuk-file-upload" id="group-feed-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="group-feed-image-hint">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="group-feed-image-alt">{{ t("groups_t1.compose_image_alt_label") }}</label>
+        <div id="group-feed-image-alt-hint" class="govuk-hint">{{ t("groups_t1.compose_image_alt_hint") }}</div>
+        <input class="govuk-input" id="group-feed-image-alt" name="image_alt" type="text" maxlength="500" aria-describedby="group-feed-image-alt-hint">
+      </div>
+      <button class="govuk-button" data-module="govuk-button">{{ t("groups_t1.compose_submit") }}</button>
+    </form>
+
+    {% if groupFeed.length == 0 %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups_t1.feed_empty") }}</p></div>
+    {% else %}
+      <div class="nexus-alpha-card-list">
+        {% for post in groupFeed %}
+          <article class="nexus-alpha-card">
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
+              {% if post.authorAvatar %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ post.authorAvatar }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
+              {{ t("groups_t1.feed_posted_by", { name: post.authorName }) }}
+              {% if post.createdAtLabel %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("groups_t1.feed_posted_on_prefix") }}</span> <time datetime="{{ post.createdAt }}">{{ post.createdAtLabel }}</time>{% endif %}
+            </p>
+            {% for paragraph in post.contentParagraphs %}<p class="govuk-body">{{ paragraph }}</p>{% endfor %}
+            {% if post.media.length > 0 %}
+              <ul class="nexus-alpha-feed-media" data-count="{{ post.media.length }}">
+                {% for media in post.media %}
+                  <li><a href="{{ media.fullUrl }}" target="_blank" rel="noopener noreferrer"><span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span><img src="{{ media.thumbnailUrl }}" alt="{{ media.altText or t('groups_t1.image_alt', { group: group.name }) }}" class="nexus-alpha-feed-image" loading="lazy"></a></li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

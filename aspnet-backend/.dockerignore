@@ -1,0 +1,55 @@
+# =============================================================================
+# Docker Ignore - Nexus Backend
+# =============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vs
+.vscode
+.idea
+*.user
+*.suo
+
+# Build outputs
+**/bin
+**/obj
+
+# Test results
+**/TestResults
+
+# Backup files
+backups/
+uploads/
+
+# Environment files (use compose.yml environment instead)
+.env
+.env.*
+!.env.docker
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+compose.yml
+.dockerignore
+
+# Legacy PHP reference (if present)
+aspnet-migration/
+
+# Misc
+*.log
+*.tmp
+Thumbs.db
+.DS_Store
+
+# Frontend apps (built separately, node_modules not needed for API)
+apps/*/node_modules
+apps/*/dist
+apps/*/.next

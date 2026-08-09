@@ -1,0 +1,78 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+  {% set marketplaceStatusSuccessHeadingKey = "states.success_title" %}
+  {% include "marketplace/_status-banner.njk" %}
+
+  {% if orderReference %}
+    <p class="govuk-body">{{ t("govuk_alpha_commerce.slots.scan_order_ref", { id: orderReference }) }}</p>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_commerce.slots.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.slots.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.slots.description") }}</p>
+
+  <form method="post" action="{{ urlFor('/marketplace/slots/scan') }}" class="govuk-!-margin-bottom-6">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--m" for="qr_code">{{ t("govuk_alpha_commerce.slots.scan_heading") }}</label>
+      <div id="qr_code-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.scan_hint") }}</div>
+      <input class="govuk-input govuk-input--width-20" id="qr_code" name="qr_code" type="text" inputmode="text" autocomplete="off" spellcheck="false" maxlength="64" aria-describedby="qr_code-hint">
+    </div>
+    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.slots.scan_submit") }}</button>
+  </form>
+
+  <a class="govuk-button" href="#new-slot" data-module="govuk-button">{{ t("govuk_alpha_commerce.slots.new_button") }}</a>
+
+  {% if not slots.length %}
+    <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.slots.empty") }}</p>
+  {% else %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_commerce.slots.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.slots.window_label") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_commerce.slots.capacity_label") }}</th>
+          <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.view") }}</span></th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for slot in slots %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <strong>{{ slot.slotStartLabel }}</strong><br>
+              <span class="govuk-body-s nexus-alpha-meta">{{ slot.slotEndLabel }}</span>
+              <div class="govuk-!-margin-top-1">
+                {% if slot.isRecurring %}
+                  <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_commerce.slots.recurring") }}</strong>
+                {% endif %}
+                {% if not slot.isActive %}
+                  <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_commerce.slots.inactive") }}</strong>
+                {% endif %}
+              </div>
+            </td>
+            <td class="govuk-table__cell">
+              {{ t("govuk_alpha_commerce.slots.capacity_value", { booked: slot.booked, capacity: slot.capacity }) }}<br>
+              <span class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_commerce.slots.remaining_value", { count: slot.remaining }) }}</span>
+            </td>
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/marketplace/slots/' + (slot.id | string) + '/edit') }}">{{ t("govuk_alpha_commerce.slots.action_edit") }}</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="new-slot">{{ t("govuk_alpha_commerce.slots.new_button") }}</h2>
+  {% set slot = emptySlot %}
+  {% set action = "/marketplace/slots" %}
+  {% set submitLabel = t("govuk_alpha_commerce.slots.submit_create") %}
+  {% include "marketplace/_slot-form.njk" %}
+{% endblock %}

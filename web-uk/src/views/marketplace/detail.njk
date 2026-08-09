@@ -1,0 +1,75 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace') }}">{{ t("marketplace.back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ item.title }}</h1>
+  <p><strong class="govuk-tag {{ item.priceTagClass }}">{{ item.priceLabel }}</strong></p>
+
+  {% if item.images.length == 1 %}
+    <div class="nexus-alpha-detail-hero">
+      <img src="{{ item.images[0] }}" alt="{{ item.title }}" loading="lazy" decoding="async">
+    </div>
+  {% elseif item.images.length > 1 %}
+    <ul class="govuk-list nexus-alpha-image-strip govuk-!-margin-bottom-4">
+      {% for image in item.images %}
+        <li><a href="{{ image }}" target="_blank" rel="noopener noreferrer"><span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span><img src="{{ image }}" alt="{{ t('listings.gallery_image_alt', { number: loop.index, title: item.title }) }}" loading="lazy" decoding="async"></a></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if item.description %}
+    <h2 class="govuk-heading-l">{{ t("marketplace.about_label") }}</h2>
+    <div class="govuk-body">{{ item.description | nl2br | safe }}</div>
+  {% endif %}
+
+  <dl class="govuk-summary-list">
+    {% if item.condition %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("marketplace.condition_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ item.condition }}</dd>
+      </div>
+    {% endif %}
+    {% if item.location %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("marketplace.location_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ item.location }}</dd>
+      </div>
+    {% endif %}
+    {% if item.deliveryMethod %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("marketplace.delivery_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ item.deliveryMethod }}</dd>
+      </div>
+    {% endif %}
+    {% if item.sellerName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("marketplace.seller_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ item.sellerName }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if item.id and not item.isOwnItem %}
+    <div class="govuk-button-group govuk-!-margin-top-4">
+      {% if item.canBuy %}<a class="govuk-button" href="{{ urlFor('/marketplace/' + (item.id | string) + '/buy') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_buy") }}</a>{% endif %}
+      <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/marketplace/' + (item.id | string) + '/offer') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_offer") }}</a>
+      <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/save') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.nav.detail_save") }}</button>
+      </form>
+    </div>
+    {% if item.sellerId %}
+      <div class="govuk-button-group govuk-!-margin-top-4">
+        <a class="govuk-button" href="{{ urlFor('/messages/new/' + (item.sellerId | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("polish_commerce.marketplace_message_seller") }}</a>
+        <a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string) + '/report') }}">{{ t("govuk_alpha_commerce.nav.detail_report") }}</a>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

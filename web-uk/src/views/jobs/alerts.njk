@@ -1,0 +1,159 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha.jobs_t4.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.jobs_t4.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.jobs_t4.description") }}</p>
+
+  {% set jobsActiveTab = "alerts" %}
+  {% include "jobs/_nav.njk" %}
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if loadError %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">Job alerts could not be loaded. Try again.</p>
+    </div>
+  {% endif %}
+
+  <section class="govuk-!-margin-bottom-7">
+    <h2 class="govuk-heading-m">{{ t("jobs_t4.your_alerts_heading") }}</h2>
+
+    {% if alerts.length == 0 %}
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("jobs_t4.empty") }}</p>
+      </div>
+    {% else %}
+      <div class="nexus-alpha-card-list">
+        {% for alert in alerts %}
+          <article class="nexus-alpha-card">
+            <div class="nexus-alpha-module-row">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ alert.primaryCriteria }}</h3>
+              {% if alert.isActive %}
+                <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha.jobs_t4.active_tag") }}</strong>
+              {% else %}
+                <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha.jobs_t4.paused_tag") }}</strong>
+              {% endif %}
+            </div>
+
+            {% if alert.secondaryCriteria.length %}
+              <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-3">
+                {% for criterion in alert.secondaryCriteria %}
+                  <li>{{ criterion }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+
+            <div class="nexus-alpha-actions">
+              {% if alert.isActive %}
+                <form method="post" action="{{ urlFor('/jobs/alerts/' ~ alert.id ~ '/pause') }}" class="nexus-alpha-linkform">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t4.pause_button") }}</button>
+                </form>
+              {% else %}
+                <form method="post" action="{{ urlFor('/jobs/alerts/' ~ alert.id ~ '/resume') }}" class="nexus-alpha-linkform">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t4.resume_button") }}</button>
+                </form>
+              {% endif %}
+              <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+                <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha.jobs_t4.delete_button") }}</span></summary>
+                <div class="govuk-details__text">
+                  <div class="govuk-warning-text">
+                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                    <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>{{ t("govuk_alpha.jobs_t4.delete_confirm") }}</strong>
+                  </div>
+                  <form method="post" action="{{ urlFor('/jobs/alerts/' ~ alert.id ~ '/delete') }}" class="nexus-alpha-linkform">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.ux.confirm_delete_button") }}</button>
+                  </form>
+                </div>
+              </details>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+
+  <form method="post" action="{{ urlFor('/jobs/alerts') }}" class="govuk-!-margin-bottom-6">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <h2 class="govuk-heading-m">{{ t("jobs_t4.create_heading") }}</h2>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="keywords">{{ t("jobs_t4.label_keywords") }}</label>
+      <div id="keywords-hint" class="govuk-hint">{{ t("jobs_t4.hint_keywords") }}</div>
+      <input class="govuk-input govuk-!-width-two-thirds" id="keywords" name="keywords" type="text" maxlength="255" aria-describedby="keywords-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="categories">{{ t("jobs_t4.label_categories") }}</label>
+      <input class="govuk-input govuk-!-width-two-thirds" id="categories" name="categories" type="text" maxlength="1000">
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="type">{{ t("govuk_alpha.jobs_t4.label_type") }}</label>
+          <select class="govuk-select" id="type" name="type">
+            <option value="">{{ t("jobs_t4.type_any") }}</option>
+            <option value="paid">{{ t("jobs.type_paid") }}</option>
+            <option value="volunteer">{{ t("jobs.type_volunteer") }}</option>
+            <option value="timebank">{{ t("jobs.type_timebank") }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="commitment">{{ t("govuk_alpha.jobs_t4.label_commitment") }}</label>
+          <select class="govuk-select" id="commitment" name="commitment">
+            <option value="">{{ t("govuk_alpha.jobs_t4.commitment_any") }}</option>
+            <option value="full_time">{{ t("jobs_t2.commitment_full_time") }}</option>
+            <option value="part_time">{{ t("jobs_t2.commitment_part_time") }}</option>
+            <option value="flexible">{{ t("jobs_t2.commitment_flexible") }}</option>
+            <option value="one_off">{{ t("jobs_t2.commitment_one_off") }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="location">{{ t("govuk_alpha.jobs_t4.label_location") }}</label>
+          <input class="govuk-input" id="location" name="location" type="text" maxlength="255">
+        </div>
+      </div>
+    </div>
+
+    <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-4" data-module="govuk-checkboxes">
+      <div class="govuk-checkboxes__item">
+        <input type="hidden" name="is_remote_only" value="0">
+        <input class="govuk-checkboxes__input" id="is_remote_only" name="is_remote_only" type="checkbox" value="1">
+        <label class="govuk-label govuk-checkboxes__label" for="is_remote_only">{{ t("govuk_alpha.jobs_t4.label_remote_only") }}</label>
+      </div>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("jobs_t4.subscribe_button") }}</button>
+  </form>
+{% endblock %}

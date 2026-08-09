@@ -1,0 +1,62 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ communityName }}</span>
+      <h1 class="govuk-heading-xl">{{ t("kb.title") }}</h1>
+      <p class="govuk-body-l">{{ t("kb.subtitle", { name: communityName }) }}</p>
+
+      <form method="get" action="{{ urlFor('/kb') }}" class="govuk-!-margin-bottom-6">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="q">{{ t("kb.search_label") }}</label>
+          <div id="q-hint" class="govuk-hint">{{ t("kb.search_hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="q-hint">
+        </div>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("kb.search_button") }}</button>
+      </form>
+
+      <h2 class="govuk-heading-m">{{ t("kb.results_title") }}</h2>
+
+      {% if articles and articles.length %}
+        <ul class="govuk-list nexus-alpha-card-list">
+          {% for article in articles %}
+            <li class="nexus-alpha-card">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/kb/' + (article.id | string)) }}">{{ article.title }}</a>
+              </h3>
+              {% if article.contentPreview %}
+                <p class="govuk-body govuk-!-margin-bottom-1">{{ article.contentPreview }}</p>
+              {% endif %}
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
+                {% if article.categoryName %}{{ article.categoryName }} &middot; {% endif %}{{ article.viewsLabel }}
+              </p>
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if nextHref %}
+          <nav class="govuk-pagination govuk-pagination--block" role="navigation" aria-label="{{ t("kb.more_results_label") }}">
+            <div class="govuk-pagination__next">
+              <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
+                <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                  <path d="m8.107-0.0078125-1.4136 1.414 4.55 4.5488h-12.846v2h12.846l-4.55 4.5488 1.4136 1.414 6.9706-6.9627z"></path>
+                </svg>
+              </a>
+            </div>
+          </nav>
+        {% endif %}
+      {% else %}
+        <div class="govuk-inset-text">
+          {{ t("kb.no_results") if searchQuery else t("kb.empty") }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

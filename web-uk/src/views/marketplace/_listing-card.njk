@@ -1,0 +1,28 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+<article class="nexus-alpha-card">
+  <div class="nexus-alpha-listing-row">
+    {% if item.cardImage %}
+      <div class="nexus-alpha-listing-row__media">
+        <img class="nexus-alpha-card-thumb" src="{{ item.cardImage }}" alt="{{ item.title }}" width="120" height="90" loading="lazy" decoding="async">
+      </div>
+    {% endif %}
+    <div class="nexus-alpha-listing-row__body">
+      <div class="nexus-alpha-module-row">
+        <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+          <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+        </h2>
+        <strong class="govuk-tag {{ item.cardPriceTagClass }}">{{ item.cardPriceLabel }}</strong>
+      </div>
+      {% if item.summary %}
+        <p class="govuk-body govuk-!-margin-bottom-1">{{ item.summary }}</p>
+      {% endif %}
+      {% if item.location %}
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.location }}</p>
+      {% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,52 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor') }}">Back to courses you teach</a>
+
+  {% set activeTab = 'teaching' %}
+  {% include "courses/_nav.njk" %}
+
+  <span class="govuk-caption-xl">Course analytics</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ course.title }}</h1>
+  <p class="govuk-body-l">See how learners are progressing through your course.</p>
+
+  {% if analytics.total == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body">There is no enrolment data for this course yet.</p></div>
+  {% endif %}
+
+  <dl class="govuk-summary-list">
+    {% for stat in stats %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ stat.label }}</dt>
+        <dd class="govuk-summary-list__value">{{ stat.value }}</dd>
+      </div>
+    {% endfor %}
+  </dl>
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">Completions by lesson</h2>
+  <p class="govuk-body">How many learners have completed each lesson, in order. A drop is where learners tend to stop.</p>
+
+  {% if not perLesson or not perLesson.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">This course has no lessons yet, so there is nothing to chart.</p></div>
+  {% else %}
+    <table class="govuk-table">
+      <caption class="govuk-visually-hidden">Completions by lesson</caption>
+      <tbody class="govuk-table__body">
+        {% for row in perLesson %}
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header govuk-!-width-one-half">{{ row.title }}</th>
+            <td class="govuk-table__cell">
+              <progress value="{{ row.completed }}" max="{{ maxLessonCompleted }}" aria-label="{{ row.completed }} completed">{{ row.completed }}</progress>
+              <span class="govuk-body-s nexus-alpha-meta govuk-!-margin-left-2">{{ row.completed }} completed</span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

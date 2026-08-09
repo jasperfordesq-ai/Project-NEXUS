@@ -1,0 +1,63 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace') }}">{{ t("govuk_alpha_commerce.common.back_to_marketplace") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.seller.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ seller.name }}</h1>
+
+  <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+    {% if seller.avatarUrl %}
+      <img class="nexus-alpha-avatar" src="{{ seller.avatarUrl }}" alt="{{ seller.name }}" width="64" height="64" loading="lazy" decoding="async">
+    {% endif %}
+    <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+      {% if seller.verified %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.seller.verified") }}</dt>
+          <dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_commerce.seller.verified") }}</strong></dd>
+        </div>
+      {% endif %}
+      {% if seller.createdAt %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ seller.memberSinceText }}</dt>
+          <dd class="govuk-summary-list__value">{{ seller.createdAt }}</dd>
+        </div>
+      {% endif %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.seller.rating_label") }}</dt>
+        <dd class="govuk-summary-list__value">
+          {% if seller.totalRatings > 0 %}
+            <progress value="{{ seller.averageRatingLabel }}" max="5" aria-label="{{ seller.ratingText }}">{{ seller.averageRatingLabel }}</progress>
+            <span>{{ seller.ratingText }}</span>
+          {% else %}
+            {{ t("govuk_alpha_commerce.seller.no_ratings") }}
+          {% endif %}
+        </dd>
+      </div>
+      {% if seller.totalRatings > 0 and seller.totalSales > 0 %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ seller.totalSalesText }}</dt>
+          <dd class="govuk-summary-list__value">{{ seller.totalSales }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+  </div>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_commerce.seller.listings_heading") }}</h2>
+  {% if not listings.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.seller.empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for item in listings %}
+        {% include "marketplace/_listing-card.njk" %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

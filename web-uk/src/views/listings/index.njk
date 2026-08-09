@@ -1,0 +1,95 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% if status == "listing-deleted" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="listing-deleted-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listing-deleted-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("listings.edit.deleted") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("listings.caption", { community: tenant.name or tenant.slug or tenantSlug }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("listings.title") }}</h1>
+      <p class="govuk-body-l">{{ t("listings.description") }}</p>
+
+      {% if isAuthenticated %}
+        <p class="govuk-body"><a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("listings.create.title") }}</a></p>
+      {% else %}
+        <div class="govuk-inset-text"><p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/login?status=auth-required') }}">{{ t("listings.create.auth_link") }}</a></p></div>
+      {% endif %}
+
+      <form method="get" action="{{ urlFor('/listings') }}" class="govuk-!-margin-bottom-7">
+        <fieldset class="govuk-fieldset" aria-describedby="listings-filter-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("listings.filters_title") }}</h2></legend>
+          <div id="listings-filter-hint" class="govuk-hint">{{ t("listings.filters_hint") }}</div>
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <div class="govuk-form-group"><label class="govuk-label" for="q">{{ t("listings.search_label") }}</label><div id="q-hint" class="govuk-hint">{{ t("listings.search_hint") }}</div><input class="govuk-input" id="q" name="q" type="search" value="{{ filters.search }}" aria-describedby="q-hint"></div>
+            </div>
+            <div class="govuk-grid-column-one-quarter">
+              <div class="govuk-form-group"><label class="govuk-label" for="type">{{ t("listings.type_label") }}</label><select class="govuk-select" id="type" name="type"><option value="">{{ t("listings.all_types") }}</option><option value="offer"{% if filters.type == "offer" %} selected{% endif %}>{{ t("listings.offer") }}</option><option value="request"{% if filters.type == "request" %} selected{% endif %}>{{ t("listings.request") }}</option></select></div>
+            </div>
+            <div class="govuk-grid-column-one-quarter">
+              <div class="govuk-form-group"><label class="govuk-label" for="category_id">{{ t("listings.category_label") }}</label><select class="govuk-select" id="category_id" name="category_id"><option value="">{{ t("listings.all_categories") }}</option>{% for category in categories %}<option value="{{ category.id }}"{% if filters.categoryId == category.id %} selected{% endif %}>{{ category.name }}</option>{% endfor %}</select></div>
+            </div>
+          </div>
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-quarter"><div class="govuk-form-group"><label class="govuk-label" for="sort">{{ t("listings.sort_label") }}</label><select class="govuk-select" id="sort" name="sort"><option value="newest"{% if filters.sort == "newest" %} selected{% endif %}>{{ t("listings.sort_newest") }}</option><option value="recommended"{% if filters.sort == "recommended" %} selected{% endif %}>{{ t("listings.sort_recommended") }}</option></select></div></div>
+            <div class="govuk-grid-column-one-quarter"><div class="govuk-form-group"><label class="govuk-label" for="near">{{ t("near_me.label") }}</label><select class="govuk-select" id="near" name="near"{% if filters.nearNoLocation %} aria-describedby="near-hint"{% endif %}>{% for option in ["any", "5", "10", "25", "50"] %}<option value="{{ option }}"{% if filters.near == option %} selected{% endif %}>{{ t("near_me.options." + option) }}</option>{% endfor %}</select>{% if filters.nearNoLocation %}<p id="near-hint" class="govuk-hint govuk-!-margin-top-1">{{ t("near_me.no_location") }}</p>{% endif %}</div></div>
+          </div>
+          <details class="govuk-details" data-module="govuk-details"{% if filters.hours != "any" or filters.service != "any" or filters.posted != "any" %} open{% endif %}>
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("listings.advanced_filters_title") }}</span></summary>
+            <div class="govuk-details__text"><div class="govuk-grid-row">
+              <div class="govuk-grid-column-one-third"><div class="govuk-form-group"><label class="govuk-label" for="hours">{{ t("listings.hours_filter_label") }}</label><select class="govuk-select" id="hours" name="hours">{% for option in ["any", "quick", "short", "half_day", "full_day"] %}<option value="{{ option }}"{% if filters.hours == option %} selected{% endif %}>{{ t("listings.hours_filters." + option) }}</option>{% endfor %}</select></div></div>
+              <div class="govuk-grid-column-one-third"><div class="govuk-form-group"><label class="govuk-label" for="service">{{ t("listings.service_filter_label") }}</label><select class="govuk-select" id="service" name="service">{% for option in ["any", "remote", "in_person"] %}<option value="{{ option }}"{% if filters.service == option %} selected{% endif %}>{{ t("listings.service_filters." + option) }}</option>{% endfor %}</select></div></div>
+              <div class="govuk-grid-column-one-third"><div class="govuk-form-group"><label class="govuk-label" for="posted">{{ t("listings.posted_filter_label") }}</label><select class="govuk-select" id="posted" name="posted">{% for option in ["any", "1", "7", "30"] %}<option value="{{ option }}"{% if filters.posted == option %} selected{% endif %}>{{ t("listings.posted_filters." + option) }}</option>{% endfor %}</select></div></div>
+            </div></div>
+          </details>
+          <div class="govuk-button-group"><button class="govuk-button" data-module="govuk-button">{{ t("actions.search") }}</button>{% if hasFilters %}<a class="govuk-link" href="{{ urlFor('/listings') }}">{{ t("actions.clear_filters") }}</a>{% endif %}</div>
+        </fieldset>
+      </form>
+
+      <h2 class="govuk-heading-l">{{ t("listings.results_title") }}</h2>
+      <p class="govuk-body nexus-alpha-result-count" aria-live="polite">{{ tc("listings.result_count", pagination.total, { count: pagination.total }) }}</p>
+
+      {% if loadError %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("listings.error_detail") }}</p></div></div></div>
+      {% elif not listings or listings.length == 0 %}
+        <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("listings.empty") }}</p>{% if hasFilters %}<p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings') }}">{{ t("actions.clear_filters") }}</a></p>{% endif %}</div>
+      {% else %}
+        <div class="nexus-alpha-card-list">
+          {% for listing in listings %}
+            {% set listingType = "request" if listing.type == "request" else "offer" %}
+            <article class="nexus-alpha-card"><div class="nexus-alpha-listing-row">
+              {% if listing.imageUrl %}<div class="nexus-alpha-listing-row__media"><img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async"></div>{% endif %}
+              <div class="nexus-alpha-listing-row__body">
+                <strong class="govuk-tag {{ 'govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue' }}">{{ t("listings." + listingType) }}</strong>
+                {% if listing.is_featured %}<strong class="govuk-tag govuk-tag--yellow">{{ t("listings.featured") }}</strong>{% endif %}
+                {% if listing.service_type and listing.service_type != "physical_only" %}<strong class="govuk-tag govuk-tag--turquoise">{{ t("listings.service_types." + listing.service_type) }}</strong>{% endif %}
+                {% if listing.isSaved %}<strong class="govuk-tag govuk-tag--green">{{ t("polish_listings.saved_tag") }}</strong>{% endif %}
+                <h3 class="govuk-heading-m govuk-!-margin-top-2 govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3>
+                {% if listing.authorName %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("listings.posted_by", { name: listing.authorName }) }}</p>{% endif %}
+                {% if listing.description %}<p class="govuk-body">{{ listing.description | striptags | truncate(220) }}</p>{% endif %}
+                <dl class="nexus-alpha-inline-list">
+                  {% if listing.categoryName %}<div><dt>{{ t("listings.category") }}</dt><dd>{{ listing.categoryName }}</dd></div>{% endif %}
+                  {% if listing.location %}<div><dt>{{ t("listings.location") }}</dt><dd>{{ listing.location }}</dd></div>{% endif %}
+                  {% if listing.hoursEstimate %}<div><dt>{{ t("listings.hours_label") }}</dt><dd>{{ t("listings.hours", { count: listing.hoursEstimate }) }}</dd></div>{% endif %}
+                </dl>
+              </div>
+              <div class="nexus-alpha-listing-row__action"><a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("actions.view_details") }}<span class="govuk-visually-hidden">{{ t("listings.for_listing", { title: listing.title }) }}</span></a></div>
+            </div></article>
+          {% endfor %}
+        </div>
+        {% if nextHref %}{{ govukPagination({ next: { text: t("actions.load_more"), labelText: t("listings.more_results_label"), href: urlFor(nextHref) }, landmarkLabel: t("listings.pagination_label"), classes: "govuk-pagination--block govuk-!-margin-top-6" }) }}{% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

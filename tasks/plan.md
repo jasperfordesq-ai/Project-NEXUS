@@ -27,8 +27,10 @@ application.
 ### Phase 1: Safety foundation
 
 - [x] Create an isolated worktree and feature branch from current Laravel main.
-- [ ] Record the source SHAs and an explicit import allowlist.
-- [ ] Verify the allowlist contains no generated output or local secrets.
+- [x] Record source commit `f757ca96168cd294d0599a0b50cd45ac6b7fb799`
+      and the explicit import allowlist.
+- [x] Import tracked source only; exclude repository workflows, Git metadata,
+      changelog, generated build output, and local environment files.
 
 ### Checkpoint: Safety foundation
 
@@ -37,9 +39,9 @@ application.
 
 ### Phase 2: Snapshot import
 
-- [ ] Import the ASP.NET backend as `aspnet-backend/`.
-- [ ] Import Web UK as `web-uk/`.
-- [ ] Add package-local instructions and provenance without importing the old
+- [x] Import the ASP.NET backend as `aspnet-backend/`.
+- [x] Import Web UK as `web-uk/`.
+- [x] Add package-local instructions and provenance without importing the old
       changelog or repository history.
 
 ### Checkpoint: Imported applications
@@ -49,12 +51,12 @@ application.
 
 ### Phase 3: Contract workspace
 
-- [ ] Make comparison tools resolve Laravel and ASP.NET roots inside the same
+- [x] Make comparison tools resolve Laravel and ASP.NET roots inside the same
       checkout without machine-specific absolute paths.
-- [ ] Add one local contract-verification entry point.
-- [ ] Add a separate non-deploying GitHub Actions workflow for ASP.NET, Web UK,
+- [x] Add one local contract-verification entry point.
+- [x] Add a separate non-deploying GitHub Actions workflow for ASP.NET, Web UK,
       and static contract evidence.
-- [ ] Exclude imported applications from Laravel Docker build contexts.
+- [x] Exclude imported applications from Laravel Docker build contexts.
 
 ### Checkpoint: Contract workspace
 
@@ -86,4 +88,3 @@ application.
 - No movement of existing Laravel, React, Blade, or mobile files.
 - No v1.6.0 release or version bump.
 - No GitHub repository rename, archive, push, or pull request.
-

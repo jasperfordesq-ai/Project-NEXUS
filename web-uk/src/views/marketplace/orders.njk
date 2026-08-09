@@ -1,0 +1,160 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.orders_seller.caption" if isSeller else "govuk_alpha_commerce.orders_buyer.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.orders_seller.title" if isSeller else "govuk_alpha_commerce.orders_buyer.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.orders_seller.description" if isSeller else "govuk_alpha_commerce.orders_buyer.description") }}</p>
+
+  {% if status %}
+    <div class="govuk-notification-banner{% if status.type != 'error' %} govuk-notification-banner--success{% endif %}" role="region" aria-labelledby="commerce-orders-status" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="commerce-orders-status">{{ t("govuk_alpha_commerce.common.notice_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ status.message }}</p></div>
+    </div>
+  {% endif %}
+
+  <nav class="govuk-tabs govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha_commerce.orders_seller.title' if isSeller else 'govuk_alpha_commerce.orders_buyer.title') }}">
+    <ul class="govuk-tabs__list">
+      {% for tabItem in tabs %}
+        <li class="govuk-tabs__list-item{% if tabItem.active %} govuk-tabs__list-item--selected{% endif %}">
+          <a class="govuk-tabs__tab" href="{{ urlFor(tabItem.href) }}" {% if tabItem.active %}aria-current="page"{% endif %}>{{ tabItem.label }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% if not orders.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.orders.empty") }}</p>
+    </div>
+  {% else %}
+    {% for order in orders %}
+      <section class="nexus-alpha-card govuk-!-margin-bottom-6">
+        <div class="nexus-alpha-module-row">
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ order.orderNumberLabel }}</h2>
+          <strong class="govuk-tag {{ order.statusTagClass }}">{{ order.statusLabel }}</strong>
+        </div>
+        <dl class="govuk-summary-list govuk-summary-list--no-border govuk-!-margin-bottom-2">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.item_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ order.listingTitle }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.orders.total_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ order.totalLabel }}</dd>
+          </div>
+          {% if order.counterparty %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ order.counterpartyLabel }}</dt>
+              <dd class="govuk-summary-list__value">{{ order.counterparty }}</dd>
+            </div>
+          {% endif %}
+          {% if order.trackingNumber %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.orders.tracking_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ order.trackingNumber }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+
+        {% if order.canShip %}
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.orders.action_ship") }}</span></summary>
+            <div class="govuk-details__text">
+              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/ship') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="tracking_number_{{ order.id }}">{{ t("govuk_alpha_commerce.orders.ship_tracking_label") }}</label>
+                  <input class="govuk-input govuk-input--width-20" id="tracking_number_{{ order.id }}" name="tracking_number" type="text" maxlength="255">
+                </div>
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_ship") }}</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+
+        {% if order.canConfirm %}
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>
+              {{ t("govuk_alpha_commerce.orders.confirm_warning") }}
+            </strong>
+          </div>
+          <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/confirm') }}" class="govuk-!-margin-bottom-2">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_confirm") }}</button>
+          </form>
+        {% endif %}
+
+        {% if order.canPay %}
+          <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/pay') }}" class="govuk-!-margin-bottom-2">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.pay_by_card") }}</button>
+          </form>
+          <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_commerce.orders.pay_by_card_hint") }}</p>
+        {% endif %}
+
+        {% if order.canCancel %}
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.orders.action_cancel") }}</span></summary>
+            <div class="govuk-details__text">
+              <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                  <span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>
+                  {{ t("govuk_alpha_commerce.orders.cancel_warning") }}
+                </strong>
+              </div>
+              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/cancel') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="reason_{{ order.id }}">{{ t("govuk_alpha_commerce.orders.cancel_reason_label") }}</label>
+                  <input class="govuk-input" id="reason_{{ order.id }}" name="reason" type="text" maxlength="500">
+                </div>
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_cancel") }}</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+
+        {% if order.canRate %}
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.orders.action_rate") }}</span></summary>
+            <div class="govuk-details__text">
+              <form method="post" action="{{ urlFor('/marketplace/orders/' + (order.id | string) + '/rate') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.orders.rate_label") }}</legend>
+                    <div class="govuk-radios govuk-radios--inline govuk-radios--small" data-module="govuk-radios">
+                      {% for star in [5, 4, 3, 2, 1] %}
+                        <div class="govuk-radios__item">
+                          <input class="govuk-radios__input" id="rating_{{ order.id }}_{{ star }}" name="rating" type="radio" value="{{ star }}">
+                          <label class="govuk-label govuk-radios__label" for="rating_{{ order.id }}_{{ star }}">{{ t("govuk_alpha_commerce.orders.rate_stars", { count: star }) }}</label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                </div>
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="comment_{{ order.id }}">{{ t("govuk_alpha_commerce.orders.rate_comment_label") }}</label>
+                  <textarea class="govuk-textarea" id="comment_{{ order.id }}" name="comment" rows="2"></textarea>
+                </div>
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.orders.action_rate") }}</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

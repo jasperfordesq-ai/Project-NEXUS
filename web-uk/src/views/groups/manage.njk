@@ -1,0 +1,86 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("groups.back_to_group") }}</a>
+
+  <span class="govuk-caption-l">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.manage.title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.manage.description") }}</p>
+
+  {% if statusBanner and statusBanner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: statusBanner.title,
+      text: statusBanner.message
+    }) }}
+  {% elif statusBanner and statusBanner.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ statusBanner.title }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ statusBanner.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if isPrivate %}
+    <h2 class="govuk-heading-l">{{ t("groups.manage.requests_title") }}</h2>
+    {% if not pendingRequests.length %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.manage.requests_empty") }}</p></div>
+    {% else %}
+      <p class="govuk-body">{{ t("groups.manage.requests_description") }}</p>
+      <div class="nexus-alpha-card-list">
+        {% for requestItem in pendingRequests %}
+          <article class="nexus-alpha-card">
+            <div class="nexus-alpha-module-row">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-0">{{ requestItem.name }}</h3>
+            </div>
+            <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/requests/' + (requestItem.id | string)) }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="govuk-button-group govuk-!-margin-top-2">
+                <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="accept" data-module="govuk-button">{{ t("groups.manage.approve") }}</button>
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="reject" data-module="govuk-button">{{ t("groups.manage.reject") }}</button>
+              </div>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("groups.members_title") }}</h2>
+  {% if not members.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.manage.members_empty") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for member in members %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>
+            </h3>
+            <strong class="govuk-tag {{ member.roleClass }}">{{ member.roleLabel }}</strong>
+          </div>
+          {% if not member.isOwner %}
+            <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/members/' + (member.id | string)) }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="govuk-button-group govuk-!-margin-top-2">
+                {% if member.role == "admin" %}
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="demote" data-module="govuk-button">{{ t("groups.manage.demote") }}</button>
+                {% else %}
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="promote" data-module="govuk-button">{{ t("groups.manage.promote") }}</button>
+                {% endif %}
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" name="action" value="remove" data-module="govuk-button">{{ t("groups.manage.remove") }}</button>
+              </div>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

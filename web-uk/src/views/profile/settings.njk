@@ -1,0 +1,564 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/profile') }}">{{ t("actions.back_to_profile") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("profile_settings.title") }}</h1>
+      <p class="govuk-body-l">{{ t("profile_settings.description") }}</p>
+
+      <ul class="govuk-list govuk-!-margin-bottom-6">
+        {% for item in settingsLinks %}
+          <li><a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+
+      {% if statusConfig and successStatus %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="profile-settings-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="profile-settings-status-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusConfig.message }}</p>
+          </div>
+        </div>
+      {% elif statusConfig and infoStatus %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="profile-settings-info-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="profile-settings-info-title">{{ t("states.important") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusConfig.message }}</p>
+          </div>
+        </div>
+      {% elif statusConfig and errorStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#{{ errorAnchor }}">{{ statusConfig.message }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/profile/settings') }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="profile-photo-heading">{{ t("profile_settings.photo_title") }}</h2>
+          </legend>
+          {% if profile.avatar_url %}
+            <img class="govuk-!-margin-bottom-3" src="{{ profile.avatar_url }}" alt="{{ t("profile_settings.photo_current_alt") }}" width="120" height="120">
+          {% else %}
+            <p class="govuk-inset-text">{{ t("profile_settings.photo_none") }}</p>
+          {% endif %}
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="avatar">{{ t("profile_settings.photo_label") }}</label>
+            <div id="avatar-hint" class="govuk-hint">{{ t("profile_settings.photo_hint") }}</div>
+            <input class="govuk-file-upload" id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="avatar-hint">
+          </div>
+
+          {% if profile.avatar_url %}
+            <div class="govuk-checkboxes govuk-!-margin-bottom-6" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="remove_avatar" name="remove_avatar" type="checkbox" value="1">
+                <label class="govuk-label govuk-checkboxes__label" for="remove_avatar">{{ t("profile_settings.photo_remove_label") }}</label>
+              </div>
+            </div>
+          {% endif %}
+        </fieldset>
+
+        <fieldset class="govuk-fieldset govuk-!-margin-top-7">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="personal-details-heading">{{ t("profile_settings.personal_details") }}</h2>
+          </legend>
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="first_name">{{ t("profile_settings.first_name_label") }}</label>
+                <input class="govuk-input" id="first_name" name="first_name" type="text" value="{{ profile.first_name }}" autocomplete="given-name">
+              </div>
+            </div>
+            <div class="govuk-grid-column-one-half">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="last_name">{{ t("profile_settings.last_name_label") }}</label>
+                <input class="govuk-input" id="last_name" name="last_name" type="text" value="{{ profile.last_name }}" autocomplete="family-name">
+              </div>
+            </div>
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="phone">{{ t("profile_settings.phone_label") }}</label>
+            <div id="phone-hint" class="govuk-hint">{{ t("profile_settings.phone_hint") }}</div>
+            <input class="govuk-input govuk-!-width-two-thirds" id="phone" name="phone" type="tel" value="{{ profile.phone }}" autocomplete="tel" aria-describedby="phone-hint">
+          </div>
+        </fieldset>
+
+        <fieldset class="govuk-fieldset govuk-!-margin-top-7">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="public-profile-heading">{{ t("profile_settings.public_profile") }}</h2>
+          </legend>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="profile_type">{{ t("profile_settings.profile_type_label") }}</label>
+            <select class="govuk-select" id="profile_type" name="profile_type">
+              {% for option in profileTypeOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="organization_name">{{ t("profile_settings.organization_name_label") }}</label>
+            <input class="govuk-input govuk-!-width-two-thirds" id="organization_name" name="organization_name" type="text" value="{{ profile.organization_name }}">
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="tagline">{{ t("profile_settings.tagline_label") }}</label>
+            <input class="govuk-input" id="tagline" name="tagline" type="text" value="{{ profile.tagline }}" maxlength="160">
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="bio">{{ t("profile_settings.bio_label") }}</label>
+            <textarea class="govuk-textarea" id="bio" name="bio" rows="6">{{ profile.bio }}</textarea>
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="location">{{ t("profile_settings.location_label") }}</label>
+            <input class="govuk-input govuk-!-width-two-thirds" id="location" name="location" type="text" value="{{ profile.location }}" autocomplete="address-level2">
+          </div>
+        </fieldset>
+
+        <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="privacy-profile-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="privacy-heading">{{ t("profile_settings.privacy_title") }}</h2>
+          </legend>
+          <div id="privacy-profile-hint" class="govuk-hint">{{ t("profile_settings.privacy_profile_hint") }}</div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="privacy_profile">{{ t("profile_settings.privacy_profile_label") }}</label>
+            <select class="govuk-select" id="privacy_profile" name="privacy_profile">
+              {% for option in privacyOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="govuk-form-group">
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="privacy_search" name="privacy_search" type="checkbox" value="1"{% if profile.privacy_search %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="privacy_search">{{ t("profile_settings.privacy_search_label") }}</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="marketing-hint">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="marketing-heading">{{ t("profile_settings.marketing_title") }}</h2>
+          </legend>
+          <div id="marketing-hint" class="govuk-hint">{{ t("profile_settings.marketing_hint") }}</div>
+          <div class="govuk-form-group">
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="newsletter_opt_in" name="newsletter_opt_in" type="checkbox" value="1"{% if profile.newsletter_opt_in %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="newsletter_opt_in">{{ t("profile_settings.marketing_label") }}</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button" type="submit">{{ t("actions.save_changes") }}</button>
+      </form>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section id="skills" aria-labelledby="skills-heading">
+        <h2 class="govuk-heading-l" id="skills-heading">{{ t("profile_settings.skills.title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.skills.description") }}</p>
+        {% if mySkills.length %}
+          <ul class="govuk-list nexus-alpha-skill-list">
+            {% for skill in mySkills %}
+              <li>
+                <span class="govuk-!-font-weight-bold">{{ skill.skill_name }}</span>
+                {% if skill.is_offering %}<strong class="govuk-tag govuk-tag--blue">{{ t("profile.skill_offering") }}</strong>{% endif %}
+                {% if skill.is_requesting %}<strong class="govuk-tag govuk-tag--purple">{{ t("profile.skill_requesting") }}</strong>{% endif %}
+                {% if skill.endorsement_count > 0 %}<strong class="govuk-tag govuk-tag--green">{{ tc("profile.endorsement_count", skill.endorsement_count) }}</strong>{% endif %}
+                <form method="post" action="{{ urlFor('/profile/skills/remove') }}" class="govuk-!-margin-top-1">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="user_skill_id" value="{{ skill.id }}">
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.skills.remove_button") }}<span class="govuk-visually-hidden"> {{ skill.skill_name }}</span></button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.skills.none") }}</p></div>
+        {% endif %}
+
+        <form method="post" action="{{ urlFor('/profile/skills/add') }}" class="govuk-!-margin-top-4" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="skill_name">{{ t("profile_settings.skills.add_label") }}</label>
+            <div id="skill-name-hint" class="govuk-hint">{{ t("profile_settings.skills.add_hint") }}</div>
+            <input class="govuk-input govuk-!-width-two-thirds" id="skill_name" name="skill_name" type="text" maxlength="100" aria-describedby="skill-name-hint">
+          </div>
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("profile_settings.skills.type_legend") }}</legend>
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="is_offering" name="is_offering" type="checkbox" value="1" checked>
+              <label class="govuk-label govuk-checkboxes__label" for="is_offering">{{ t("profile_settings.skills.offering") }}</label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="is_requesting" name="is_requesting" type="checkbox" value="1">
+              <label class="govuk-label govuk-checkboxes__label" for="is_requesting">{{ t("profile_settings.skills.requesting") }}</label>
+            </div>
+            </div>
+          </fieldset>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.skills.add_button") }}</button>
+        </form>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section aria-labelledby="security-heading">
+        <h2 class="govuk-heading-l" id="security-heading">{{ t("profile_settings.security_title") }}</h2>
+        <h3 class="govuk-heading-m">{{ t("profile_settings.two_factor_heading") }}</h3>
+        <p class="govuk-body">{{ t("profile_settings.two_factor_intro") }}</p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/profile/two-factor') }}">{{ t("profile_settings.two_factor_link") }}</a></p>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/profile/blocked') }}">{{ t("profile_settings.blocked_link") }}</a></p>
+
+        <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("profile_settings.email_heading") }}</h3>
+        {% set newEmailError = statusConfig.message if errorStatus and errorAnchor == 'new_email' else null %}
+        {% set emailPasswordError = statusConfig.message if errorStatus and errorAnchor == 'email_current_password' else null %}
+        <form method="post" action="{{ urlFor('/profile/email') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if newEmailError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="new_email">{{ t("profile_settings.email_label") }}</label>
+            {% if newEmailError %}<p id="new_email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ newEmailError }}</p>{% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if newEmailError %} govuk-input--error{% endif %}" id="new_email" name="email" type="email" value="{{ profile.email }}" autocomplete="email"{% if newEmailError %} aria-describedby="new_email-error"{% endif %}>
+          </div>
+          <div class="govuk-form-group{% if emailPasswordError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="email_current_password">{{ t("profile_settings.confirm_password_label") }}</label>
+            <div id="email-current-password-hint" class="govuk-hint">{{ t("profile_settings.confirm_password_hint") }}</div>
+            {% if emailPasswordError %}<p id="email_current_password-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ emailPasswordError }}</p>{% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if emailPasswordError %} govuk-input--error{% endif %}" id="email_current_password" name="current_password" type="password" autocomplete="current-password" aria-describedby="email-current-password-hint{% if emailPasswordError %} email_current_password-error{% endif %}">
+          </div>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.email_submit") }}</button>
+        </form>
+
+        <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("profile_settings.password_heading") }}</h3>
+        {% set currentPasswordError = statusConfig.message if errorStatus and errorAnchor == 'current_password' else null %}
+        {% set newPasswordError = statusConfig.message if errorStatus and errorAnchor == 'new_password' else null %}
+        {% set confirmPasswordError = statusConfig.message if errorStatus and errorAnchor == 'new_password_confirmation' else null %}
+        <form method="post" action="{{ urlFor('/profile/password') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if currentPasswordError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="current_password">{{ t("profile_settings.current_password_label") }}</label>
+            {% if currentPasswordError %}<p id="current_password-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ currentPasswordError }}</p>{% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if currentPasswordError %} govuk-input--error{% endif %}" id="current_password" name="current_password" type="password" autocomplete="current-password"{% if currentPasswordError %} aria-describedby="current_password-error"{% endif %}>
+          </div>
+          <div class="govuk-form-group{% if newPasswordError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="new_password">{{ t("profile_settings.new_password_label") }}</label>
+            <div id="new-password-hint" class="govuk-hint">{{ t("profile_settings.new_password_hint") }}</div>
+            {% if newPasswordError %}<p id="new_password-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ newPasswordError }}</p>{% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if newPasswordError %} govuk-input--error{% endif %}" id="new_password" name="new_password" type="password" autocomplete="new-password" spellcheck="false" aria-describedby="new-password-hint{% if newPasswordError %} new_password-error{% endif %}">
+          </div>
+          <div class="govuk-form-group{% if confirmPasswordError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="new_password_confirmation">{{ t("profile_settings.new_password_confirm_label") }}</label>
+            {% if confirmPasswordError %}<p id="new_password_confirmation-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ confirmPasswordError }}</p>{% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if confirmPasswordError %} govuk-input--error{% endif %}" id="new_password_confirmation" name="new_password_confirmation" type="password" autocomplete="new-password" spellcheck="false"{% if confirmPasswordError %} aria-describedby="new_password_confirmation-error"{% endif %}>
+          </div>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.password_submit") }}</button>
+        </form>
+
+        <h3 class="govuk-heading-m govuk-!-margin-top-6" id="passkeys">{{ t("profile_settings.passkeys.title") }}</h3>
+        <p class="govuk-body">{{ t("profile_settings.passkeys.description") }}</p>
+        {% if passkeys.length %}
+          {% for passkey in passkeys %}
+              <div class="nexus-alpha-card govuk-!-margin-bottom-4">
+                <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ passkey.device_name }}</h3>
+                <dl class="nexus-alpha-inline-list govuk-!-margin-bottom-3">
+                  <div><dt>{{ t("profile_settings.passkeys.type") }}</dt><dd>{{ passkey.authenticator_type }}</dd></div>
+                  <div><dt>{{ t("profile_settings.passkeys.added") }}</dt><dd>{{ passkey.created_label or '—' }}</dd></div>
+                  <div><dt>{{ t("profile_settings.passkeys.last_used") }}</dt><dd>{{ passkey.last_used_label or t("profile_settings.passkeys.never") }}</dd></div>
+                </dl>
+                <form method="post" action="{{ urlFor('/profile/passkeys/rename') }}" class="govuk-!-margin-bottom-2">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="credential_id" value="{{ passkey.credential_id }}">
+                  <div class="govuk-form-group govuk-!-margin-bottom-2">
+                    <label class="govuk-label" for="rename-{{ loop.index0 }}">{{ t("profile_settings.passkeys.rename_label") }}</label>
+                    <input class="govuk-input govuk-!-width-two-thirds" id="rename-{{ loop.index0 }}" name="device_name" type="text" value="{{ passkey.device_name }}" maxlength="100">
+                  </div>
+                  <div class="govuk-form-group govuk-!-margin-bottom-2">
+                    <label class="govuk-label" for="rename-password-{{ loop.index0 }}">{{ t("profile_settings.current_password_label") }}</label>
+                    <input class="govuk-input govuk-!-width-two-thirds" id="rename-password-{{ loop.index0 }}" name="current_password" type="password" autocomplete="current-password" required>
+                  </div>
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.passkeys.rename_submit") }}</button>
+                </form>
+                <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+                  <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("profile_settings.passkeys.remove_submit") }}<span class="govuk-visually-hidden"> {{ passkey.device_name }}</span></span></summary>
+                  <div class="govuk-details__text">
+                    <div class="govuk-warning-text">
+                      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span> {{ t("ux.confirm_irreversible") }}</strong>
+                    </div>
+                    <form method="post" action="{{ urlFor('/profile/passkeys/remove') }}">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <input type="hidden" name="credential_id" value="{{ passkey.credential_id }}">
+                        <div class="govuk-form-group">
+                          <label class="govuk-label" for="remove-password-{{ loop.index0 }}">{{ t("profile_settings.current_password_label") }}</label>
+                          <input class="govuk-input govuk-!-width-two-thirds" id="remove-password-{{ loop.index0 }}" name="current_password" type="password" autocomplete="current-password" required>
+                        </div>
+                        <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.passkeys.remove_submit") }}<span class="govuk-visually-hidden"> {{ passkey.device_name }}</span></button>
+                    </form>
+                  </div>
+                </details>
+              </div>
+          {% endfor %}
+        {% else %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.passkeys.none") }}</p></div>
+        {% endif %}
+
+        <details class="govuk-details govuk-!-margin-top-4">
+          <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("profile_settings.passkeys.add_title") }}</span></summary>
+          <div class="govuk-details__text"><p class="govuk-body">{{ t("profile_settings.passkeys.add_description") }}</p></div>
+        </details>
+
+        <h3 class="govuk-heading-m govuk-!-margin-top-6" id="sessions">{{ t("profile_settings.sessions.title") }}</h3>
+        <p class="govuk-body">{{ t("profile_settings.sessions.description") }}</p>
+        {% if sessions.length %}
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("profile_settings.sessions.title") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th class="govuk-table__header" scope="col">{{ t("profile_settings.sessions.device") }}</th>
+                <th class="govuk-table__header" scope="col">{{ t("profile_settings.sessions.ip") }}</th>
+                <th class="govuk-table__header" scope="col">{{ t("profile_settings.sessions.last_active") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for session in sessions %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ session.device_label }}</td>
+                  <td class="govuk-table__cell">{{ session.ip_address }}</td>
+                  <td class="govuk-table__cell">{{ session.last_active_label }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.sessions.none") }}</p></div>
+        {% endif %}
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section aria-labelledby="language-heading">
+        <h2 class="govuk-heading-l" id="language-heading">{{ t("profile_settings.language_title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.language_description") }}</p>
+        <form method="post" action="{{ urlFor('/profile/language') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="language">{{ t("profile_settings.language_label") }}</label>
+            <select class="govuk-select" id="language" name="language">
+              {% for option in localeOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.language_submit") }}</button>
+        </form>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section id="notifications" aria-labelledby="notifications-heading">
+        <h2 class="govuk-heading-l" id="notifications-heading">{{ t("profile_settings.notifications.title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.notifications.description") }}</p>
+        <form method="post" action="{{ urlFor('/profile/notifications') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% for group in notificationGroups %}
+            <fieldset class="govuk-fieldset govuk-!-margin-top-6">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h3 class="govuk-fieldset__heading">{{ group.title }}</h3></legend>
+              <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                {% for item in group.items %}
+                  <div class="govuk-checkboxes__item">
+                    <input class="govuk-checkboxes__input" id="notif_{{ item.key }}" name="{{ item.key }}" type="checkbox" value="1"{% if notificationPrefs[item.key] %} checked{% endif %}>
+                    <label class="govuk-label govuk-checkboxes__label" for="notif_{{ item.key }}">{{ item.label }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% endfor %}
+          <div class="govuk-form-group govuk-!-margin-top-6">
+            <label class="govuk-label govuk-label--m" for="digest_frequency">{{ t("profile_settings.notifications.digest_label") }}</label>
+            <div id="digest-frequency-hint" class="govuk-hint">{{ t("profile_settings.notifications.digest_hint") }}</div>
+            <select class="govuk-select" id="digest_frequency" name="digest_frequency" aria-describedby="digest-frequency-hint">
+              {% for option in digestOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="govuk-button govuk-!-margin-top-6" data-module="govuk-button">{{ t("profile_settings.notifications.save") }}</button>
+        </form>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section id="match-preferences" aria-labelledby="match-preferences-heading">
+        <h2 class="govuk-heading-l" id="match-preferences-heading">{{ t("profile_settings.match.title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.match.description") }}</p>
+        <form method="post" action="{{ urlFor('/profile/match-preferences') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="notification_frequency">{{ t("profile_settings.match.frequency_label") }}</label>
+            <select class="govuk-select" id="notification_frequency" name="notification_frequency">
+              {% for option in matchFrequencyOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("profile_settings.match.instant_legend") }}</legend>
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="notify_hot_matches" name="notify_hot_matches" type="checkbox" value="1"{% if matchPrefs.notify_hot_matches %} checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="notify_hot_matches">{{ t("profile_settings.match.notify_hot") }}</label>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="notify_mutual_matches" name="notify_mutual_matches" type="checkbox" value="1"{% if matchPrefs.notify_mutual_matches %} checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="notify_mutual_matches">{{ t("profile_settings.match.notify_mutual") }}</label>
+            </div>
+            </div>
+          </fieldset>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.match.save") }}</button>
+        </form>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section id="personalisation" aria-labelledby="personalisation-heading">
+        <h2 class="govuk-heading-l" id="personalisation-heading">{{ t("profile_settings.personalisation.title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.personalisation.description") }}</p>
+        <form method="post" action="{{ urlFor('/profile/personalisation') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("profile_settings.personalisation.options_legend") }}</legend>
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="prefers_chronological" name="prefers_chronological" type="checkbox" value="1"{% if profile.prefers_chronological_feed %} checked{% endif %} aria-describedby="prefers_chronological-hint">
+              <label class="govuk-label govuk-checkboxes__label" for="prefers_chronological">{{ t("profile_settings.personalisation.chronological_label") }}</label>
+              <div id="prefers_chronological-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("profile_settings.personalisation.chronological_hint") }}</div>
+            </div>
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="auto_translate_ugc" name="auto_translate_ugc" type="checkbox" value="1"{% if profile.auto_translate_ugc %} checked{% endif %} aria-describedby="auto_translate_ugc-hint">
+              <label class="govuk-label govuk-checkboxes__label" for="auto_translate_ugc">{{ t("profile_settings.personalisation.auto_translate_label") }}</label>
+              <div id="auto_translate_ugc-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("profile_settings.personalisation.auto_translate_hint") }}</div>
+            </div>
+            </div>
+          </fieldset>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="auto_translate_target_locale">{{ t("profile_settings.personalisation.translate_into_label") }}</label>
+            <select class="govuk-select" id="auto_translate_target_locale" name="auto_translate_target_locale">
+              {% for option in autoTranslateLocaleOptions %}
+                <option value="{{ option.value }}"{% if option.selected %} selected{% endif %}>{{ option.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("profile_settings.personalisation.save") }}</button>
+        </form>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section id="safeguarding" aria-labelledby="safeguarding-heading">
+        <h2 class="govuk-heading-l" id="safeguarding-heading">{{ t("profile_settings.safeguarding.title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.safeguarding.description") }}</p>
+        {% if safeguardingPolicyReviewRequired %}
+          <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="safeguarding-policy-review-banner-title" id="safeguarding-policy-review">
+            <div class="govuk-notification-banner__header"><h3 class="govuk-notification-banner__title" id="safeguarding-policy-review-banner-title">{{ t("states.important") }}</h3></div>
+            <div class="govuk-notification-banner__content">
+              <h3 class="govuk-notification-banner__heading">{{ t("profile_settings.safeguarding.policy_review_title") }}</h3>
+              <p class="govuk-body">{{ t("profile_settings.safeguarding.policy_review_body") }}</p>
+              <form method="post" action="{{ urlFor('/profile/safeguarding/policy-review') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("profile_settings.safeguarding.policy_review_confirm") }}</button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="nexus-alpha-card govuk-!-margin-bottom-6" id="vetting-status">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ t("profile_settings.safeguarding.vetting.title") }}</h3>
+          {% if not vetting.available %}
+            <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.status_unavailable") }}</p>
+          {% else %}
+            <p class="govuk-body govuk-!-margin-bottom-2"><strong class="govuk-tag {{ vetting.tagClass }}">{{ vetting.statusLabel }}</strong>{% if vetting.attestationLabel %}<span class="govuk-!-margin-left-2">{{ vetting.attestationLabel }}</span>{% endif %}</p>
+            {% if vetting.decision == "confirmed" and vetting.confirmedDate %}
+              <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.confirmed_on", { date: vetting.confirmedDate }) }}</p>
+            {% elif vetting.reviewPending %}
+              <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.review_pending_body") }}</p>
+            {% elif vetting.policyAvailable %}
+              <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.not_confirmed_body") }}</p>
+            {% else %}
+              <p class="govuk-body">{{ t("profile_settings.safeguarding.vetting.policy_unavailable_body") }}</p>
+            {% endif %}
+          {% endif %}
+          <div class="govuk-inset-text">{{ t("profile_settings.safeguarding.vetting.no_documents") }}</div>
+          {% if vetting.available and vetting.decision != "confirmed" and vetting.policyAvailable %}
+            <form method="post" action="{{ urlFor('/profile/safeguarding/vetting-review') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" type="submit"{% if vetting.reviewPending %} disabled{% endif %}>{{ t("profile_settings.safeguarding.vetting." ~ ("review_requested_button" if vetting.reviewPending else "request_review_button")) }}</button>
+            </form>
+          {% endif %}
+        </div>
+        {% if safeguarding.length %}
+          {% for option in safeguarding %}
+              <div class="nexus-alpha-card govuk-!-margin-bottom-4">
+                <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ option.label }}</h3>
+                {% if option.description %}<p class="govuk-body-s nexus-alpha-meta">{{ option.description }}</p>{% endif %}
+                {% if option.activations.length %}
+                  <ul class="govuk-list govuk-list--bullet govuk-body-s">
+                    {% for activation in option.activations %}
+                      <li>{{ t("profile_settings.safeguarding.activations." ~ activation) }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+                <form method="post" action="{{ urlFor('/profile/safeguarding/revoke') }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="option_id" value="{{ option.option_id }}">
+                  <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("profile_settings.safeguarding.revoke_button") }}<span class="govuk-visually-hidden"> {{ option.label }}</span></button>
+                </form>
+              </div>
+          {% endfor %}
+        {% else %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.safeguarding.none") }}</p></div>
+        {% endif %}
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+
+      <section aria-labelledby="data-privacy-heading">
+        <h2 class="govuk-heading-l" id="data-privacy-heading">{{ t("profile_settings.data_title") }}</h2>
+        <p class="govuk-body">{{ t("profile_settings.data_description") }}</p>
+        <h3 class="govuk-heading-m" id="data-export">{{ t("profile_settings.data_export_heading") }}</h3>
+        <p class="govuk-body">{{ t("profile_settings.data_export_body") }}</p>
+        <form method="post" action="{{ urlFor('/profile/data-export') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.download_data") }}</button>
+        </form>
+        <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ t("profile_settings.delete_heading") }}</h3>
+        <p class="govuk-body">{{ t("profile_settings.delete_body") }}</p>
+        <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/profile/delete-account') }}">{{ t("actions.delete_account") }}</a>
+      </section>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{# Copyright (C) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+      <a class="govuk-back-link" href="{{ urlFor('/messages') }}">{{ t("govuk_alpha_messages.groups.back_to_messages") }}</a>
+
+      {% if groupStatus and groupStatus.type == "success" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="messages-groups-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="messages-groups-status-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ groupStatus.message }}</p>
+          </div>
+        </div>
+      {% elif groupStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ groupStatus.message }}</li></ul></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha_messages.groups.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_messages.groups.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_messages.groups.description") }}</p>
+
+      {% set messagesActive = "groups" %}
+      {% include "messages/_subnav.njk" %}
+
+      {% if not directMessagingEnabled %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="groups-disabled-title">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="groups-disabled-title">{{ t("govuk_alpha.messages.disabled_title") }}</h2></div>
+          <div class="govuk-notification-banner__content"><p class="govuk-body">{{ t("govuk_alpha.messages.disabled_detail") }}</p></div>
+        </div>
+      {% elseif restricted %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="groups-restricted-title">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="groups-restricted-title">{{ t("govuk_alpha.messages.disabled_title") }}</h2></div>
+          <div class="govuk-notification-banner__content"><p class="govuk-body">{{ t("govuk_alpha.messages.restricted_detail") }}</p></div>
+        </div>
+      {% endif %}
+
+      {% if canStart %}
+        <p class="govuk-body">
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/messages/groups/new') }}">{{ t("govuk_alpha_messages.groups.new_button") }}</a>
+        </p>
+      {% endif %}
+
+      {% if error %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ error }}</p>
+        </div>
+      {% elif groups and groups.length %}
+        <div class="nexus-alpha-card-list">
+          {% for group in groups %}
+            <article class="nexus-alpha-card">
+              <div class="nexus-alpha-card-head">
+                {% if group.avatarAssetUrl %}
+                  <img class="nexus-alpha-avatar" src="{{ group.avatarAssetUrl }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+                {% else %}
+                  <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ group.displayName | first | upper }}</span>
+                {% endif %}
+                <h2 class="govuk-heading-m govuk-!-margin-bottom-0">
+                  <a class="govuk-link" href="{{ urlFor('/messages/groups/' + (group.id | string)) }}">{{ group.displayName }}</a>
+                </h2>
+              </div>
+              <p class="govuk-hint govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                {{ tc("govuk_alpha_messages.groups.members_count", group.participant_count or group.participantCount or 0, { count: group.participant_count or group.participantCount or 0 }) }}
+              </p>
+              {% if (group.unread_count or group.unreadCount or 0) > 0 %}
+                <strong class="govuk-tag govuk-tag--blue">
+                  {{ tc("govuk_alpha_messages.groups.unread_count", group.unread_count or group.unreadCount, { count: group.unread_count or group.unreadCount }) }}
+                </strong>
+              {% endif %}
+              {% set lastMessage = group.last_message or group.lastMessage %}
+              {% if lastMessage and lastMessage.body %}
+                <p class="govuk-body govuk-!-margin-top-3">
+                  <strong>{{ t("govuk_alpha_messages.groups.last_message_label") }}:</strong>
+                  {% if lastMessage.sender_name or lastMessage.senderName %}
+                    {{ lastMessage.sender_name or lastMessage.senderName }}:
+                  {% endif %}
+                  {{ lastMessage.body | truncate(180, true, '...') }}
+                </p>
+              {% else %}
+                <p class="govuk-hint govuk-!-margin-top-3">{{ t("govuk_alpha_messages.groups.no_messages_yet") }}</p>
+              {% endif %}
+              {% set lastAt = (lastMessage.created_at or lastMessage.createdAt) if lastMessage else (group.updated_at or group.updatedAt) %}
+              {% if lastAt %}
+                <p class="govuk-hint">{{ t("govuk_alpha_messages.conversation.sent_label") }} {{ lastAt | formatBladeDateTime }}</p>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">{{ t("govuk_alpha_messages.groups.empty_title") }}</h2>
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_messages.groups.empty_body") }}</p>
+        </div>
+      {% endif %}
+{% endblock %}

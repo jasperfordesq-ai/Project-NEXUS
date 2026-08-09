@@ -1,0 +1,114 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% macro renderComment(comment, resourceId, currentUserId, csrfToken) %}
+  <li id="comment-{{ comment.id }}" class="nexus-alpha-comment">
+    <p class="nexus-alpha-meta govuk-body-s govuk-!-margin-bottom-1">
+      <strong>{{ comment.authorName }}</strong>
+      {% if comment.createdAt %} &middot; {{ comment.createdAt }}{% endif %}
+    </p>
+    <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
+
+    {% if currentUserId and comment.userId == currentUserId %}
+      <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/' + (comment.id | string) + '/delete') }}" class="govuk-!-display-inline">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t("govuk_alpha_resources.social.delete_comment_aria") }}">{{ t("govuk_alpha_resources.social.delete_comment") }}</button>
+      </form>
+    {% endif %}
+
+    {% if comment.replies and comment.replies.length %}
+      <ol class="govuk-list nexus-alpha-comments-list govuk-!-margin-top-3 govuk-!-padding-left-4">
+        {% for reply in comment.replies %}
+          {{ renderComment(reply, resourceId, currentUserId, csrfToken) }}
+        {% endfor %}
+      </ol>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/resources/library') }}">{{ t("govuk_alpha_resources.social.back_to_library") }}</a>
+
+      {% if status %}
+        {% if status.type == "success" %}
+          {{ govukNotificationBanner({
+            type: "success",
+            titleText: status.title,
+            text: status.message
+          }) }}
+        {% else %}
+          {{ govukErrorSummary({
+            titleText: status.title,
+            errorList: [{ text: status.message, href: "#" + (status.anchor or "comments") }],
+            attributes: { tabindex: "-1" }
+          }) }}
+        {% endif %}
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha_resources.social.comments_caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ resourceTitle }}</h1>
+
+      <section id="resource-reactions" class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_resources.social.reactions_heading") }}</h2>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">
+          {{ tc("govuk_alpha_resources.social.reaction_count", reactions.total, { count: formatLocaleNumber(reactions.total) }) }}
+        </p>
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("govuk_alpha_resources.social.reactions_heading") }}</legend>
+          <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-2">
+            {% for reactionType, reactionLabel in reactionLabels %}
+              {% set typeCount = reactions.counts[reactionType] or 0 %}
+              <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/react') }}" class="nexus-alpha-reaction-form">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="emoji" value="{{ reactionType }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if reactions.userReaction == reactionType %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{% if reactions.userReaction == reactionType %}true{% else %}false{% endif %}">
+                  <span aria-hidden="true">{{ reactionEmoji[reactionType] }}</span>
+                  {{ reactionLabel }}{% if typeCount > 0 %} ({{ formatLocaleNumber(typeCount) }}){% endif %}
+                  <span class="govuk-visually-hidden"> {{ t("govuk_alpha_resources.social.reaction_for_resource") }}</span>
+                </button>
+              </form>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+
+      <section id="comments">
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_resources.social.comments_heading") }} <span class="govuk-!-font-weight-regular">({{ formatLocaleNumber(commentsTotal) }})</span></h2>
+
+        {% if not comments.length %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_resources.social.comments_empty") }}</p></div>
+        {% else %}
+          <ol class="govuk-list nexus-alpha-comments-list">
+            {% for comment in comments %}
+              {{ renderComment(comment, resourceId, currentUserId, csrfToken) }}
+            {% endfor %}
+          </ol>
+        {% endif %}
+
+        <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_resources.social.add_comment_heading") }}</h3>
+        <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/add') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if status and status.anchor == 'body' %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_resources.social.comment_body_label") }}</label>
+            <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_resources.social.comment_body_hint") }}</div>
+            {% if status and status.anchor == 'body' %}
+              <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_resources.states.error_title") }}:</span> {{ status.message }}</p>
+            {% endif %}
+            <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %}"></textarea>
+          </div>
+          <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_resources.social.comment_submit") }}</button>
+        </form>
+      </section>
+    </div>
+  </div>
+{% endblock %}

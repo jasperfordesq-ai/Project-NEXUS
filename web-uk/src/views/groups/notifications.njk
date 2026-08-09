@@ -1,0 +1,82 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("govuk_alpha_groups.common.back_to_group") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_groups.notifications.caption", { group: group.name }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_groups.notifications.title") }}</h1>
+
+  {% if statusBanner and statusBanner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: statusBanner.title,
+      text: statusBanner.message
+    }) }}
+  {% elif statusBanner and statusBanner.type == "error" %}
+    {{ govukErrorSummary({
+      titleText: statusBanner.title,
+      errorList: [
+        {
+          text: statusBanner.message
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <p class="govuk-body-l">{{ t("govuk_alpha_groups.notifications.intro") }}</p>
+
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/notifications') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_groups.notifications.frequency_legend") }}</h2>
+        </legend>
+        <div class="govuk-radios" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="frequency-instant" name="frequency" type="radio" value="instant"{% if prefFrequency == "instant" %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="frequency-instant">{{ t("govuk_alpha_groups.notifications.frequency_instant") }}</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="frequency-digest" name="frequency" type="radio" value="digest"{% if prefFrequency == "digest" %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="frequency-digest">{{ t("govuk_alpha_groups.notifications.frequency_digest") }}</label>
+          </div>
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="frequency-muted" name="frequency" type="radio" value="muted"{% if prefFrequency == "muted" %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="frequency-muted">{{ t("govuk_alpha_groups.notifications.frequency_muted") }}</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="channels-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_groups.notifications.channels_legend") }}</h2>
+        </legend>
+        <div id="channels-hint" class="govuk-hint">{{ t("govuk_alpha_groups.notifications.channels_hint") }}</div>
+        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="email_enabled" name="email_enabled" type="checkbox" value="1"{% if prefEmailEnabled %} checked{% endif %}>
+            <label class="govuk-label govuk-checkboxes__label" for="email_enabled">{{ t("govuk_alpha_groups.notifications.email_label") }}</label>
+          </div>
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="push_enabled" name="push_enabled" type="checkbox" value="1"{% if prefPushEnabled %} checked{% endif %}>
+            <label class="govuk-label govuk-checkboxes__label" for="push_enabled">{{ t("govuk_alpha_groups.notifications.push_label") }}</label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.notifications.save_button") }}</button>
+  </form>
+{% endblock %}

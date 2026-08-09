@@ -1,0 +1,34 @@
+[
+  {
+    "name": "Jasper Ford",
+    "role": "Creator",
+    "type": "creator"
+  },
+  {
+    "name": "Mary Casey",
+    "role": "Co-founder",
+    "type": "founder",
+    "note": "Co-founder of hOUR Timebank CLG"
+  },
+  {
+    "name": "Steven J. Kelly",
+    "role": "Community insight, product thinking",
+    "type": "contributor"
+  },
+  {
+    "name": "Sarah Bird",
+    "role": "CEO, Timebanking UK",
+    "type": "contributor"
+  },
+  {
+    "name": "West Cork Development Partnership",
+    "role": "Research Foundation",
+    "type": "acknowledgement",
+    "note": "Commissioned the social impact study that informs this software"
+  },
+  {
+    "name": "Fergal Conlon",
+    "role": "SICAP Manager",
+    "type": "acknowledgement"
+  }
+]

@@ -1,0 +1,52 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("help.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("help.title") }}</h1>
+      <p class="govuk-body-l">{{ t("help.subtitle", { name: communityName }) }}</p>
+
+      <form method="get" action="{{ urlFor('/help') }}" class="govuk-!-margin-bottom-6">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="q">{{ t("help.search_label") }}</label>
+          <div id="q-hint" class="govuk-hint">{{ t("help.search_hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="q-hint">
+        </div>
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("help.search_button") }}</button>
+      </form>
+
+      {% if faqGroups.length == 0 %}
+        <div class="govuk-inset-text">
+          {{ t("help.no_results") if searchQuery else t("help.empty") }}
+        </div>
+      {% else %}
+        {% for group in faqGroups %}
+          <h2 class="govuk-heading-m">{{ group.category }}</h2>
+          <div class="govuk-accordion" data-module="govuk-accordion" id="help-accordion-{{ loop.index0 }}">
+            {% for faq in group.faqs %}
+              <div class="govuk-accordion__section">
+                <div class="govuk-accordion__section-header">
+                  <h3 class="govuk-accordion__section-heading">
+                    <span class="govuk-accordion__section-button" id="help-{{ loop.parent.index0 }}-{{ loop.index0 }}-heading">{{ faq.question }}</span>
+                  </h3>
+                </div>
+                <div id="help-{{ loop.parent.index0 }}-{{ loop.index0 }}-content" class="govuk-accordion__section-content">
+                  <div class="govuk-body">{{ faq.answer | safe }}</div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <h2 class="govuk-heading-m">{{ t("help.contact_cta_title") }}</h2>
+      <p class="govuk-body">{{ t("help.contact_cta_body") }}</p>
+      <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/contact') }}">{{ t("help.contact_cta_button") }}</a>
+    </div>
+  </div>
+{% endblock %}

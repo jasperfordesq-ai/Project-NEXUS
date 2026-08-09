@@ -1,0 +1,87 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("federation.partner.back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("federation.partner.caption") }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ partner.name }}</h1>
+    {% if partner.isExternal %}
+      <strong class="govuk-tag govuk-tag--blue">{{ t("federation.external_tag") }}</strong>
+    {% elif partner.levelLabel %}
+      <strong class="govuk-tag govuk-tag--purple">{{ partner.levelLabel }}</strong>
+    {% endif %}
+  </div>
+
+  {% include "federation/_nav.njk" %}
+
+  {% if partner.tagline %}
+    <h2 class="govuk-heading-l">{{ t("federation.partner.about_label") }}</h2>
+    <div class="govuk-body">{{ partner.tagline | nl2br | safe }}</div>
+  {% endif %}
+
+  <dl class="govuk-summary-list">
+    {% if partner.location %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.location_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ partner.location }}</dd>
+      </div>
+    {% endif %}
+    {% if partner.country %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.country_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ partner.country }}</dd>
+      </div>
+    {% endif %}
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("federation.members_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ partner.memberCountLabel }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("federation.listings_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ partner.listingCountLabel }}</dd>
+    </div>
+    {% if not partner.isExternal and partner.levelLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.level_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ partner.levelLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if partner.partnershipSinceLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.since_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ partner.partnershipSinceLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if partner.permissions.length %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.permissions_label") }}</dt>
+        <dd class="govuk-summary-list__value">
+          {% for permissionLabel in partner.permissionLabels %}
+            <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ permissionLabel }}</strong>
+          {% endfor %}
+        </dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  <h2 class="govuk-heading-m">{{ t("federation.partner.browse_heading") }}</h2>
+  <ul class="govuk-list">
+    {% if partner.permissions.length %}
+      {% if "profiles" in partner.permissions %}
+        <li><a class="govuk-link" href="{{ urlFor('/federation/members') }}{% if partner.isInternal %}?partner_id={{ partner.id | urlencode }}{% endif %}">{{ t("federation.partner.browse_members") }}</a></li>
+      {% endif %}
+      {% if "listings" in partner.permissions %}
+        <li><a class="govuk-link" href="{{ urlFor('/federation/listings') }}{% if partner.isInternal %}?partner_id={{ partner.id | urlencode }}{% endif %}">{{ t("federation.partner.browse_listings") }}</a></li>
+      {% endif %}
+      {% if "events" in partner.permissions %}
+        <li><a class="govuk-link" href="{{ urlFor('/federation/events') }}{% if partner.isInternal %}?partner_id={{ partner.id | urlencode }}{% endif %}">{{ t("federation.partner.browse_events") }}</a></li>
+      {% endif %}
+    {% endif %}
+  </ul>
+{% endblock %}

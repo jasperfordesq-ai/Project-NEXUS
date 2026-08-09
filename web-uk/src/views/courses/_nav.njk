@@ -1,0 +1,20 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% set active = activeTab or 'browse' %}
+<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4" aria-label="{{ t("govuk_alpha_commerce.courses_nav.heading") }}">
+  <h2 class="govuk-tabs__title">{{ t("govuk_alpha_commerce.courses_nav.heading") }}</h2>
+  <ul class="govuk-tabs__list">
+    <li class="govuk-tabs__list-item{% if active == 'browse' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/courses') }}"{% if active == 'browse' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.courses_nav.browse") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'learning' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/courses/mine') }}"{% if active == 'learning' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.courses_nav.learning") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'teaching' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/courses/instructor') }}"{% if active == 'teaching' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.courses_nav.teaching") }}</a>
+    </li>
+  </ul>
+</nav>

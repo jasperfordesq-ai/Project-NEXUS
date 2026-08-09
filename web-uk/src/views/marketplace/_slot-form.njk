@@ -1,0 +1,58 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+<form method="post" action="{{ urlFor(action) }}" novalidate>
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+      <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.slots.section_times") }}</h2>
+    </legend>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="slot_start">{{ t("govuk_alpha_commerce.slots.start_label") }}</label>
+      <div id="slot_start-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.start_hint") }}</div>
+      <input class="govuk-input govuk-input--width-20" id="slot_start" name="slot_start" type="datetime-local" value="{{ slot.slotStartInput }}" aria-describedby="slot_start-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="slot_end">{{ t("govuk_alpha_commerce.slots.end_label") }}</label>
+      <div id="slot_end-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.end_hint") }}</div>
+      <input class="govuk-input govuk-input--width-20" id="slot_end" name="slot_end" type="datetime-local" value="{{ slot.slotEndInput }}" aria-describedby="slot_end-hint">
+    </div>
+  </fieldset>
+
+  <fieldset class="govuk-fieldset govuk-!-margin-top-4">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+      <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.slots.section_options") }}</h2>
+    </legend>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="capacity">{{ t("govuk_alpha_commerce.slots.capacity_label") }}</label>
+      <div id="capacity-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.capacity_hint") }}</div>
+      <input class="govuk-input govuk-input--width-5" id="capacity" name="capacity" type="number" min="1" max="1000" value="{{ slot.capacity }}" aria-describedby="capacity-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="is_recurring" name="is_recurring" type="checkbox" value="1" aria-describedby="is_recurring-hint" {% if slot.isRecurring %}checked{% endif %}>
+          <label class="govuk-label govuk-checkboxes__label" for="is_recurring">{{ t("govuk_alpha_commerce.slots.recurring_label") }}</label>
+          <div id="is_recurring-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_commerce.slots.recurring_hint") }}</div>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="is_active" name="is_active" type="checkbox" value="1" aria-describedby="is_active-hint" {% if slot.isActive %}checked{% endif %}>
+          <label class="govuk-label govuk-checkboxes__label" for="is_active">{{ t("govuk_alpha_commerce.slots.active_label") }}</label>
+          <div id="is_active-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_commerce.slots.active_hint") }}</div>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="govuk-button-group govuk-!-margin-top-4">
+    <button class="govuk-button" data-module="govuk-button">{{ submitLabel }}</button>
+    <a class="govuk-link" href="{{ urlFor('/marketplace/slots') }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
+  </div>
+</form>

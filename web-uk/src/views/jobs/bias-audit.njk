@@ -1,0 +1,189 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs') }}">{{ t("govuk_alpha_jobs.shared.back_to_jobs") }}</a>
+
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.bias_audit.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.bias_audit.description") }}</p>
+
+  <form method="get" action="{{ urlFor('/jobs/bias-audit') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="bias-from">{{ t("govuk_alpha_jobs.bias_audit.filter_from") }}</label>
+      <input class="govuk-input govuk-input--width-10" id="bias-from" name="from" type="date" value="{{ filters.from }}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="bias-to">{{ t("govuk_alpha_jobs.bias_audit.filter_to") }}</label>
+      <input class="govuk-input govuk-input--width-10" id="bias-to" name="to" type="date" value="{{ filters.to }}">
+    </div>
+
+    {% if jobs.length %}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="bias-job">{{ t("govuk_alpha_jobs.bias_audit.filter_job") }}</label>
+        <select class="govuk-select" id="bias-job" name="job_id">
+          <option value="">{{ t("govuk_alpha_jobs.bias_audit.filter_all_jobs") }}</option>
+          {% for job in jobs %}
+            <option value="{{ job.id }}" {% if filters.jobId == job.id %}selected{% endif %}>{{ job.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_jobs.bias_audit.apply_filter") }}</button>
+  </form>
+
+  {% if not report %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.error_loading") }}</p>
+    </div>
+  {% else %}
+    {% if report.periodLabel %}
+      <p class="govuk-body">{{ report.periodLabel }}</p>
+    {% endif %}
+
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.bias_audit.total_applications") }}</dt>
+        <dd class="govuk-summary-list__value">{{ report.totalApplicationsLabel }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_jobs.bias_audit.hiring_velocity") }}</dt>
+        <dd class="govuk-summary-list__value">{% if report.hiringVelocityLabel %}{{ report.hiringVelocityLabel }}{% else %}&mdash;{% endif %}</dd>
+      </div>
+    </dl>
+
+    {% if report.totalApplications == 0 %}
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_data") }}</p>
+      </div>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.funnel_heading") }}</h2>
+    {% if report.funnelRows.length %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.funnel_caption") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.bias_audit.col_stage") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_count") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_pct_of_total") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in report.funnelRows %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ row.label }}</th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.countLabel }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.percentLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_funnel_data") }}</p>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.rejection_rates_heading") }}</h2>
+    {% if report.rejectionRows.length %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.rejection_rates_caption") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.bias_audit.col_stage") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_entered") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_rejected") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_rejection_rate") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in report.rejectionRows %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ row.label }}</th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.entered }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.rejected }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.rateLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_rejection_data") }}</p>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.time_in_stage_heading") }}</h2>
+    {% if report.timeRows.length %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.time_in_stage_caption") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.bias_audit.col_stage") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_avg_days") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in report.timeRows %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ row.label }}</th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.daysLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_time_data") }}</p>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.skills_match_heading") }}</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.skills_match_caption") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.bias_audit.col_outcome") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_count") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_proportion") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in report.outcomeRows %}
+          <tr class="govuk-table__row">
+            <th scope="row" class="govuk-table__header">{{ row.label }}</th>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.count }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.proportionLabel }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.source_effectiveness_heading") }}</h2>
+    {% if report.sourceRows.length %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.source_effectiveness_caption") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_jobs.bias_audit.col_source") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_applications") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_accepted") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_jobs.bias_audit.col_acceptance_rate") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in report.sourceRows %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header">{{ row.label }}</th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.applications }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.accepted }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.rateLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_source_data") }}</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

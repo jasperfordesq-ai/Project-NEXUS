@@ -1,0 +1,139 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/coupons') }}">{{ t("govuk_alpha_commerce.coupons.back_to_coupons") }}</a>
+  {% include "marketplace/_nav.njk" %}
+  {% if status and status.type == "success" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if formErrors.length or (status and status.type == "error") %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for message in formErrors %}<li><a href="#coupon_title">{{ message }}</a></li>{% endfor %}
+            {% if status and status.type == "error" %}<li>{{ status.message }}</li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{% if isEdit %}{{ t("govuk_alpha_commerce.coupons.title_edit") }}{% else %}{{ t("govuk_alpha_commerce.coupons.title_create") }}{% endif %}</h1>
+
+  <form method="post" action="{{ urlFor(action) }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.coupons.section_basics") }}</h2>
+      </legend>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="coupon_title">{{ t("govuk_alpha_commerce.coupons.coupon_title_label") }}</label>
+        <div id="coupon_title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.coupon_title_hint") }}</div>
+        <input class="govuk-input" id="coupon_title" name="title" type="text" maxlength="200" value="{{ coupon.title }}" aria-describedby="coupon_title-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="code">{{ t("govuk_alpha_commerce.coupons.code_form_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="code-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.code_form_hint") }}</div>
+        <input class="govuk-input govuk-input--width-20" id="code" name="code" type="text" maxlength="64" value="{{ coupon.code }}" aria-describedby="code-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="description">{{ t("govuk_alpha_commerce.coupons.coupon_description_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.coupon_description_hint") }}</div>
+        <textarea class="govuk-textarea" id="description" name="description" rows="3" aria-describedby="description-hint">{{ coupon.description }}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="govuk-fieldset govuk-!-margin-top-4">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.coupons.section_discount") }}</h2>
+      </legend>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.coupons.discount_type_label") }}</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            {% for option in discountTypes %}
+              <div class="govuk-radios__item">
+                {% set discountTypeId = "discount_type" if loop.first else "discount_type-" + option.value %}
+                <input class="govuk-radios__input" id="{{ discountTypeId }}" name="discount_type" type="radio" value="{{ option.value }}" {% if coupon.discountType == option.value %}checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="{{ discountTypeId }}">{{ option.label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="discount_value">{{ t("govuk_alpha_commerce.coupons.discount_value_label") }}</label>
+        <div id="discount_value-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.discount_value_hint") }}</div>
+        <input class="govuk-input govuk-input--width-5" id="discount_value" name="discount_value" type="text" inputmode="decimal" value="{{ coupon.discountValue }}" aria-describedby="discount_value-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="min_order_cents">{{ t("govuk_alpha_commerce.coupons.min_order_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="min_order_cents-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.min_order_hint") }}</div>
+        <input class="govuk-input govuk-input--width-10" id="min_order_cents" name="min_order_cents" type="text" inputmode="numeric" value="{{ coupon.minOrderCents }}" aria-describedby="min_order_cents-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="max_uses">{{ t("govuk_alpha_commerce.coupons.max_uses_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="max_uses-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.max_uses_hint") }}</div>
+        <input class="govuk-input govuk-input--width-5" id="max_uses" name="max_uses" type="text" inputmode="numeric" value="{{ coupon.maxUses }}" aria-describedby="max_uses-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="valid_until">{{ t("govuk_alpha_commerce.coupons.valid_until_form_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="valid_until-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.valid_until_form_hint") }}</div>
+        <input class="govuk-input govuk-input--width-10" id="valid_until" name="valid_until" type="date" value="{{ coupon.validUntil }}" aria-describedby="valid_until-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="status">{{ t("govuk_alpha_commerce.coupons.status_form_label") }}</label>
+        <select class="govuk-select" id="status" name="status">
+          {% for option in statuses %}
+            <option value="{{ option.value }}" {% if coupon.status == option.value %}selected{% endif %}>{{ option.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </fieldset>
+
+    <div class="govuk-button-group govuk-!-margin-top-4">
+      <button class="govuk-button" data-module="govuk-button">{% if isEdit %}{{ t("govuk_alpha_commerce.coupons.submit_edit") }}{% else %}{{ t("govuk_alpha_commerce.coupons.submit_create") }}{% endif %}</button>
+      <a class="govuk-link" href="{{ urlFor('/marketplace/coupons') }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
+    </div>
+  </form>
+
+  {% if isEdit and coupon.id %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.coupons.delete_heading") }}</h2>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>
+        {{ t("govuk_alpha_commerce.coupons.delete_warning") }}
+      </strong>
+    </div>
+    <form method="post" action="{{ urlFor('/marketplace/coupons/' + (coupon.id | string) + '/delete') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.coupons.action_delete") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

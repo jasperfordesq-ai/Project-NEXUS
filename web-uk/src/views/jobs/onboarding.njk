@@ -1,0 +1,50 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_jobs.onboarding.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.onboarding.title") }}</h1>
+
+  {% set jobsActiveTab = "mine" %}
+  {% include "jobs/_nav.njk" %}
+
+  {% if hasPosted %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.onboarding.returning_heading") }}</h2>
+    <p class="govuk-body-l">{{ t("govuk_alpha_jobs.onboarding.returning_body") }}</p>
+  {% else %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.onboarding.welcome_heading") }}</h2>
+    <p class="govuk-body-l">{{ t("govuk_alpha_jobs.onboarding.welcome_body") }}</p>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.onboarding.how_heading") }}</h2>
+  <ol class="govuk-list govuk-list--number govuk-!-margin-bottom-6">
+    <li>{{ t("govuk_alpha_jobs.onboarding.step_1") }}</li>
+    <li>{{ t("govuk_alpha_jobs.onboarding.step_2") }}</li>
+    <li>{{ t("govuk_alpha_jobs.onboarding.step_3") }}</li>
+  </ol>
+
+  <div class="govuk-inset-text">
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_jobs.onboarding.transparency_note") }}</p>
+  </div>
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.onboarding.tips_heading") }}</h2>
+  <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-6">
+    <li>{{ t("govuk_alpha_jobs.onboarding.tip_1") }}</li>
+    <li>{{ t("govuk_alpha_jobs.onboarding.tip_2") }}</li>
+    <li>{{ t("govuk_alpha_jobs.onboarding.tip_3") }}</li>
+    <li>{{ t("govuk_alpha_jobs.onboarding.tip_4") }}</li>
+  </ul>
+
+  <div class="nexus-alpha-actions govuk-!-margin-bottom-4">
+    <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/jobs/create') }}">{{ t("govuk_alpha_jobs.onboarding.start_button") }}</a>
+    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/jobs/mine') }}">{{ t("govuk_alpha_jobs.onboarding.view_mine_button") }}</a>
+  </div>
+
+  <p class="govuk-body">
+    <a class="govuk-link" href="{{ urlFor('/jobs') }}">{{ t("govuk_alpha_jobs.onboarding.browse_link") }}</a>
+  </p>
+{% endblock %}

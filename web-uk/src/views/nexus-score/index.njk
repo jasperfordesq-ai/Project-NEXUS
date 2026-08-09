@@ -1,0 +1,63 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ communityName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("nexus_score.title") }}</h1>
+  <p class="govuk-body-l">{{ t("nexus_score.description") }}</p>
+
+  <nav class="govuk-!-margin-bottom-6" aria-label="{{ t("nexus_score.title") }}">
+    <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("nexus_score.title") }}</h2>
+    <ul class="govuk-list">
+      <li><a class="govuk-link" href="{{ urlFor('/nexus-score/tiers') }}">{{ t("govuk_alpha_gamification.nav.tiers") }}</a></li>
+    </ul>
+  </nav>
+
+  {% if not nexusScore.hasScore %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("nexus_score.unavailable") }}</p>
+    </div>
+  {% else %}
+    <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel">
+      <h2 class="govuk-panel__title">{{ nexusScore.scoreLabel }}</h2>
+      <div class="govuk-panel__body">
+        {{ nexusScore.tierName }}
+        {% if nexusScore.percentileLabel %}<br>{{ nexusScore.percentileLabel }}{% endif %}
+      </div>
+    </div>
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("nexus_score.breakdown_title") }}</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("nexus_score.breakdown_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("nexus_score.category_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("nexus_score.score_column") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in nexusScore.breakdownRows %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ row.label }}</td>
+            <td class="govuk-table__cell">
+              <span class="govuk-!-margin-right-2">{{ row.scoreLabel }}</span>
+              <progress max="100" value="{{ row.percentage }}" aria-label="{{ row.progressLabel }}">{{ row.percentage }}%</progress>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if nexusScore.insights.length %}
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("nexus_score.insights_title") }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for insight in nexusScore.insights %}
+          <li>{{ insight }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+{% endblock %}

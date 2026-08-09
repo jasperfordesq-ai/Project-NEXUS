@@ -1,0 +1,48 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="{{ urlFor('/coupons') }}" class="govuk-back-link">{{ t("polish_commerce.coupon_detail_back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("coupons.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ coupon.title }}</h1>
+
+  {% if coupon.discountLabel %}
+    <p><strong class="govuk-tag govuk-tag--green govuk-!-margin-bottom-4">{{ coupon.discountLabel }}</strong></p>
+  {% endif %}
+
+  {% if coupon.description %}
+    <p class="govuk-body govuk-!-margin-bottom-4">{{ coupon.description | striptags | nl2br | safe }}</p>
+  {% endif %}
+
+  {% if coupon.code %}
+    <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-4">
+      <h2 class="govuk-panel__title">{{ t("polish_commerce.coupon_code_panel_title") }}</h2>
+      <div class="govuk-panel__body">
+        <strong>{{ coupon.code }}</strong>
+      </div>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("polish_commerce.coupon_redemption_heading") }}</h2>
+  <p class="govuk-body">{{ t("polish_commerce.coupon_redemption_body") }}</p>
+
+  <dl class="govuk-summary-list">
+    {% if coupon.merchantName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("coupons.merchant_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ coupon.merchantName }}</dd>
+      </div>
+    {% endif %}
+    {% if coupon.validUntilText %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("coupons.valid_until_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ coupon.validUntilText }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+{% endblock %}

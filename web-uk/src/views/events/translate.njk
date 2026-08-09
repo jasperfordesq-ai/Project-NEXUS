@@ -1,0 +1,71 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha_events.common.back_to_event") }}</a>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ event.title }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.translate.title") }}</h1>
+
+      {% if status == "translate-failed" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <p>{{ t("govuk_alpha_events.translate.failed") }}</p>
+            </div>
+          </div>
+        </div>
+      {% elif status == "translate-unavailable" %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_events.translate.unavailable") }}</p>
+        </div>
+      {% elif status == "translate-empty" %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_events.translate.empty") }}</p>
+        </div>
+      {% elif status == "translate-same" %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_events.translate.same") }}</p>
+        </div>
+      {% endif %}
+
+      <p class="govuk-body-l">{{ t("govuk_alpha_events.translate.intro") }}</p>
+
+      {% if not sourceText %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("govuk_alpha_events.translate.empty") }}</p>
+        </div>
+      {% else %}
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/translate') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="source_text" value="{{ sourceText }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="target_locale">{{ t("govuk_alpha_events.translate.language_label") }}</label>
+            <div id="target-locale-hint" class="govuk-hint">{{ t("govuk_alpha_events.translate.language_hint") }}</div>
+            <select class="govuk-select" id="target_locale" name="target_locale" aria-describedby="target-locale-hint">
+              {% for language in languages %}
+                <option value="{{ language.code }}"{% if language.selected %} selected{% endif %}>{{ language.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_events.translate.translate_button") }}</button>
+        </form>
+
+        {% if translated and status == "translate-done" %}
+          <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_events.translate.translated_heading") }}</h2>
+          <div class="govuk-inset-text"><div class="govuk-body">{{ translated }}</div></div>
+          <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_events.translate.machine_note") }}</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_events.translate.original_heading") }}</h2>
+        <div class="govuk-body">{{ sourceText }}</div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

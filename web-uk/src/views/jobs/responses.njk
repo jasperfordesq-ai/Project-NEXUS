@@ -1,0 +1,133 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_jobs.responses.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.responses.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.responses.description") }}</p>
+
+  {% set jobsActiveTab = "responses" %}
+  {% include "jobs/_nav.njk" %}
+
+  {% if successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="responses-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="responses-status">{{ t("govuk_alpha_jobs.responses.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ successMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_jobs.responses.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list"><li>{{ errorMessage }}</li></ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_jobs.responses.interviews_heading") }}</h2>
+  {% if interviews.length == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_jobs.responses.no_interviews") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+      {% for interview in interviews %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ interview.typeLabel }}</h3>
+            <strong class="govuk-tag {{ interview.tagClass }}">{{ t(interview.statusKey) }}</strong>
+          </div>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.responses.for_opportunity", { title: interview.title }) }}</p>
+          <p class="govuk-body govuk-!-margin-bottom-1">{% if interview.scheduledLabel %}{{ t("govuk_alpha_jobs.responses.scheduled_for", { date: interview.scheduledLabel }) }}{% else %}{{ t("govuk_alpha_jobs.responses.no_date") }}{% endif %}</p>
+          {% if interview.duration %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.responses.duration", { mins: interview.duration }) }}</p>
+          {% endif %}
+          {% if interview.details %}
+            <p class="govuk-body-s govuk-!-margin-bottom-2"><strong>{{ t("govuk_alpha_jobs.responses.location_label") }}:</strong> {{ interview.details }}</p>
+          {% endif %}
+          {% if interview.calendarHref %}
+            <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ interview.calendarHref }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_jobs.responses.add_to_calendar") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a></p>
+          {% endif %}
+          {% if interview.vacancyId %}
+            <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ interview.vacancyId) }}">{{ t("govuk_alpha_jobs.responses.view_opportunity") }}</a></p>
+          {% endif %}
+          {% if interview.canRespond %}
+            <form method="post" action="{{ urlFor('/jobs/interviews/' ~ interview.id ~ '/accept') }}" class="govuk-!-margin-bottom-2">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="govuk-form-group govuk-!-margin-bottom-2">
+                <label class="govuk-label govuk-label--s" for="iv-accept-note-{{ interview.id }}">{{ t("govuk_alpha_jobs.responses.note_label") }}</label>
+                <div id="iv-accept-note-{{ interview.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.responses.note_hint") }}</div>
+                <input class="govuk-input govuk-!-width-two-thirds" id="iv-accept-note-{{ interview.id }}" name="note" type="text" maxlength="1000" aria-describedby="iv-accept-note-{{ interview.id }}-hint">
+              </div>
+              <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.accept_interview") }}</button>
+            </form>
+            <form method="post" action="{{ urlFor('/jobs/interviews/' ~ interview.id ~ '/decline') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="govuk-form-group govuk-!-margin-bottom-2">
+                <label class="govuk-label govuk-label--s" for="iv-decline-note-{{ interview.id }}">{{ t("govuk_alpha_jobs.responses.note_label") }}</label>
+                <div id="iv-decline-note-{{ interview.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.responses.note_hint") }}</div>
+                <input class="govuk-input govuk-!-width-two-thirds" id="iv-decline-note-{{ interview.id }}" name="note" type="text" maxlength="1000" aria-describedby="iv-decline-note-{{ interview.id }}-hint">
+              </div>
+              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.decline_interview") }}</button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_jobs.responses.offers_heading") }}</h2>
+  {% if offers.length == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_jobs.responses.no_offers") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for offer in offers %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ offer.title }}</h3>
+            <strong class="govuk-tag {{ offer.tagClass }}">{{ t(offer.statusKey) }}</strong>
+          </div>
+          <p class="govuk-body govuk-!-margin-bottom-1">{{ offer.salaryLine }}</p>
+          {% if offer.startLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.responses.start_date", { date: offer.startLabel }) }}</p>
+          {% endif %}
+          {% if offer.expiresLabel and offer.canRespond %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.responses.expires_on", { date: offer.expiresLabel }) }}</p>
+          {% endif %}
+          {% if offer.messageText %}
+            <h4 class="govuk-heading-s govuk-!-margin-bottom-1 govuk-!-margin-top-2">{{ t("govuk_alpha_jobs.responses.message_heading") }}</h4>
+            <blockquote class="govuk-inset-text govuk-!-margin-top-0 govuk-!-margin-bottom-2"><p class="govuk-body govuk-!-margin-bottom-0">{{ offer.messageText }}</p></blockquote>
+          {% endif %}
+          {% if offer.vacancyId %}
+            <p class="govuk-body-s govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/jobs/' ~ offer.vacancyId) }}">{{ t("govuk_alpha_jobs.responses.view_opportunity") }}</a></p>
+          {% endif %}
+          {% if offer.canRespond %}
+            <div class="govuk-warning-text govuk-!-margin-bottom-2">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning") }}</span> {{ t("govuk_alpha_jobs.responses.accept_offer_warning") }}</strong>
+            </div>
+            <div class="nexus-alpha-actions">
+              <form method="post" action="{{ urlFor('/jobs/offers/' ~ offer.id ~ '/accept') }}" class="nexus-alpha-linkform">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.accept_offer") }}</button>
+              </form>
+              <form method="post" action="{{ urlFor('/jobs/offers/' ~ offer.id ~ '/reject') }}" class="nexus-alpha-linkform">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.responses.reject_offer") }}</button>
+              </form>
+            </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

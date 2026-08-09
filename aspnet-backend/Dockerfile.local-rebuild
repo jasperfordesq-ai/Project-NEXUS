@@ -1,0 +1,33 @@
+# =============================================================================
+# Temporary Dockerfile for rebuilding api when MCR is unreachable.
+# Reuses the existing local SDK + the already-pulled aspnet runtime in
+# nexus-backend-api:latest. NOT for production — use Dockerfile instead.
+# =============================================================================
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0.404-bookworm-slim AS build
+WORKDIR /src
+COPY Nexus.sln ./
+COPY src/Nexus.Api/Nexus.Api.csproj src/Nexus.Api/
+COPY src/Nexus.Contracts/Nexus.Contracts.csproj src/Nexus.Contracts/
+COPY src/Nexus.Messaging/Nexus.Messaging.csproj src/Nexus.Messaging/
+COPY tests/Nexus.Api.Tests/Nexus.Api.Tests.csproj tests/Nexus.Api.Tests/
+RUN dotnet restore
+COPY . .
+WORKDIR /src/src/Nexus.Api
+RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+
+# Use the already-built local image as the runtime base (avoids MCR pull)
+FROM nexus-backend-api:latest AS runtime
+WORKDIR /app
+USER root
+# Replace existing publish output
+RUN rm -rf /app/*.dll /app/*.json /app/runtimes /app/wwwroot 2>/dev/null || true
+COPY --from=build /app/publish /app/
+RUN chown -R appuser:appuser /app
+USER appuser
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+ENTRYPOINT ["dotnet", "Nexus.Api.dll"]

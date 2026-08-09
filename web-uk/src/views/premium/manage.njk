@@ -1,0 +1,72 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/premium') }}" class="govuk-back-link">{{ t("govuk_alpha_commerce.common.back_to_premium") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.premium_manage.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.premium_manage.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.premium_manage.description") }}</p>
+
+  {% if status %}
+    <div class="govuk-notification-banner{% if status.type == 'success' %} govuk-notification-banner--success{% endif %}" role="region" aria-labelledby="premium-status" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="premium-status">{{ t("govuk_alpha_commerce.common.notice_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.premium_manage.tier_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ subscription.tierName }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.premium_manage.status_label") }}</dt>
+      <dd class="govuk-summary-list__value"><strong class="govuk-tag {{ subscription.statusClass }}">{{ subscription.statusLabel }}</strong></dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.premium_manage.interval_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ subscription.intervalLabel }}</dd>
+    </div>
+    {% if subscription.currentPeriodEnd %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{% if subscription.canceledAt %}{{ t("govuk_alpha_commerce.premium_manage.cancels_label") }}{% else %}{{ t("govuk_alpha_commerce.premium_manage.renews_label") }}{% endif %}</dt>
+        <dd class="govuk-summary-list__value">{{ subscription.currentPeriodEnd | date }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if subscription.features and subscription.features.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.premium_manage.features_heading") }}</h2>
+    <ul class="govuk-list govuk-list--bullet">
+      {% for feature in subscription.features %}
+        <li>{{ feature }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/premium/portal') }}" class="govuk-!-margin-bottom-4">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.premium_manage.manage_billing") }}</button>
+  </form>
+
+  {% if not subscription.canceledAt %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.premium_manage.cancel_heading") }}</h2>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span> {{ t("govuk_alpha_commerce.premium_manage.cancel_warning") }}</strong>
+    </div>
+    <form method="post" action="{{ urlFor('/premium/cancel') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.premium_manage.cancel_button") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

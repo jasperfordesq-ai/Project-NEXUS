@@ -1,0 +1,94 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor(backUrl or ('/marketplace/' + (item.id | string))) }}">{{ backLabel or t("govuk_alpha_commerce.common.back_to_listing") }}</a>
+
+  {% if buyError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#{{ buyError.target }}">{{ t(buyError.messageKey) }}</a></li></ul></div>
+      </div>
+    </div>
+  {% elif status %}
+    <div class="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner govuk-notification-banner--success{% endif %}" data-module="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner{% endif %}" tabindex="-1">
+      <div role="alert">
+        <h2 class="{% if status.type == 'error' %}govuk-error-summary__title{% else %}govuk-notification-banner__title{% endif %}">{{ t("govuk_alpha_commerce.common.error_title") if status.type == 'error' else t("govuk_alpha.states.success_title") }}</h2>
+        <div class="{% if status.type == 'error' %}govuk-error-summary__body{% else %}govuk-notification-banner__content{% endif %}"><p class="govuk-body">{{ status.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.buy.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.buy.accepted_offer_title") if acceptedOfferCheckout else t("govuk_alpha_commerce.buy.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.buy.accepted_offer_description") if acceptedOfferCheckout else t("govuk_alpha_commerce.buy.description") }}</p>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.item_label") }}</dt><dd class="govuk-summary-list__value">{{ item.title }}</dd></div>
+    <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.price_label") }}</dt><dd class="govuk-summary-list__value"><strong class="govuk-tag govuk-tag--grey">{{ item.priceLabel }}</strong></dd></div>
+    {% if item.sellerName %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.buy.seller_label") }}</dt><dd class="govuk-summary-list__value">{{ item.sellerName }}</dd></div>{% endif %}
+  </dl>
+
+  {% set selectedPayment = oldInput.payment_method or ('' if item.price > 0 and item.timeCreditPrice > 0 else ('cash' if item.price > 0 else ('time_credits' if item.timeCreditPrice > 0 else 'free'))) %}
+  {% if selectedPayment == 'cash' %}
+    <div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>{{ t("govuk_alpha_commerce.buy.warning") }}</strong></div>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor(formAction or ('/marketplace/' + (item.id | string) + '/buy')) }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+
+    {% if item.price > 0 and item.timeCreditPrice > 0 %}
+      <div class="govuk-form-group{% if buyError and buyError.target == 'payment_method' %} govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset" aria-describedby="payment_method-hint{% if buyError and buyError.target == 'payment_method' %} payment_method-error{% endif %}">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.buy.payment_method_label") }}</legend>
+          <div id="payment_method-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.buy.payment_method_hint") }}</div>
+          {% if buyError and buyError.target == 'payment_method' %}<p id="payment_method-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_title") }}:</span> {{ t(buyError.messageKey) }}</p>{% endif %}
+          <div class="govuk-radios" data-module="govuk-radios">
+            <div class="govuk-radios__item"><input class="govuk-radios__input" id="payment_method" name="payment_method" type="radio" value="cash"{% if selectedPayment == 'cash' %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="payment_method">{{ t("govuk_alpha_commerce.buy.pay_with_money", { amount: item.moneyLabel }) }}</label></div>
+            <div class="govuk-radios__item"><input class="govuk-radios__input" id="payment_method-time-credits" name="payment_method" type="radio" value="time_credits"{% if selectedPayment == 'time_credits' %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="payment_method-time-credits">{{ t("govuk_alpha_commerce.buy.pay_with_time_credits", { count: item.timeCreditPrice }) }}</label></div>
+          </div>
+        </fieldset>
+      </div>
+    {% endif %}
+
+    {% if acceptedOfferCheckout %}<input type="hidden" name="listing_id" value="{{ item.id }}"><input type="hidden" name="quantity" value="1">{% else %}
+      <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="quantity">{{ t("govuk_alpha_commerce.buy.quantity_label") }}</label><input class="govuk-input govuk-input--width-5" id="quantity" name="quantity" type="number" min="1" step="1" inputmode="numeric" value="{{ oldInput.quantity or 1 }}"></div>
+    {% endif %}
+
+    <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="delivery_notes">{{ t("govuk_alpha_commerce.buy.delivery_notes_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label><div id="delivery_notes-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.buy.delivery_notes_hint") }}</div><textarea class="govuk-textarea" id="delivery_notes" name="delivery_notes" rows="3" aria-describedby="delivery_notes-hint">{{ oldInput.delivery_notes or '' }}</textarea></div>
+
+    {% if item.deliveryMethod == 'shipping' or item.deliveryMethod == 'both' %}
+      <div class="govuk-form-group{% if buyError and buyError.target == 'delivery_choice' %} govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset" aria-describedby="delivery_choice-hint{% if buyError and buyError.target == 'delivery_choice' %} delivery_choice-error{% endif %}">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.buy.delivery_option_label") }}</legend>
+          <div id="delivery_choice-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.buy.delivery_option_hint") }}</div>
+          {% if buyError and buyError.target == 'delivery_choice' %}<p id="delivery_choice-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_title") }}:</span> {{ t(buyError.messageKey) }}</p>{% endif %}
+          <div class="govuk-radios" data-module="govuk-radios">
+            {% if item.deliveryMethod == 'both' %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="delivery_choice" name="delivery_choice" type="radio" value="pickup"{% if oldInput.delivery_choice == 'pickup' %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="delivery_choice">{{ t("govuk_alpha_commerce.listing_form.delivery_pickup") }}</label></div>{% endif %}
+            {% for option in shippingOptions %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="delivery_choice-{{ option.id }}" name="delivery_choice" type="radio" value="shipping:{{ option.id }}"{% if oldInput.delivery_choice == 'shipping:' + (option.id | string) %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="delivery_choice-{{ option.id }}">{{ option.courier_name or t("govuk_alpha_commerce.listing_form.delivery_shipping") }} — {{ option.priceLabel }}</label></div>{% endfor %}
+          </div>
+        </fieldset>
+        {% if item.deliveryMethod == 'shipping' and not shippingOptions.length %}<p class="govuk-body">{{ t("govuk_alpha_commerce.buy.delivery_unavailable") }}</p>{% endif %}
+      </div>
+    {% elif item.deliveryMethod == 'pickup' %}<input type="hidden" name="delivery_choice" value="pickup">{% endif %}
+
+    {% if pickupSlots.length %}
+      <div class="govuk-form-group{% if buyError and buyError.target == 'pickup_slot_id' %} govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset" aria-describedby="pickup_slot_id-hint{% if buyError and buyError.target == 'pickup_slot_id' %} pickup_slot_id-error{% endif %}">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.buy.pickup_slot_label") }}</legend>
+          <div id="pickup_slot_id-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.buy.pickup_slot_both_hint") if item.deliveryMethod == 'both' else t("govuk_alpha_commerce.buy.pickup_slot_hint") }}</div>
+          {% if buyError and buyError.target == 'pickup_slot_id' %}<p id="pickup_slot_id-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_title") }}:</span> {{ t(buyError.messageKey) }}</p>{% endif %}
+          <div class="govuk-radios" data-module="govuk-radios">{% for slot in pickupSlots %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="pickup_slot_id{% if not loop.first %}-{{ slot.id }}{% endif %}" name="pickup_slot_id" type="radio" value="{{ slot.id }}"{% if oldInput.pickup_slot_id == (slot.id | string) %} checked{% endif %}><label class="govuk-label govuk-radios__label" for="pickup_slot_id{% if not loop.first %}-{{ slot.id }}{% endif %}">{{ t("govuk_alpha_commerce.buy.pickup_slot_option", { start: slot.startLabel, end: slot.endLabel }) }}</label><div class="govuk-hint govuk-radios__hint">{{ tc("govuk_alpha_commerce.buy.pickup_slot_remaining", slot.remaining, { count: slot.remaining }) }}</div></div>{% endfor %}</div>
+        </fieldset>
+      </div>
+    {% endif %}
+
+    <div class="govuk-button-group">{% if item.deliveryMethod != 'shipping' or shippingOptions.length %}<button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.buy.confirm") }}</button>{% endif %}<a class="govuk-link" href="{{ urlFor(cancelUrl or ('/marketplace/' + (item.id | string))) }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a></div>
+  </form>
+{% endblock %}

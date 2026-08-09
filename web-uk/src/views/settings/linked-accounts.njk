@@ -1,0 +1,182 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% macro relationshipCard(relationship, mode, permissions, csrfToken) %}
+  {% set isPending = relationship.status == "pending" %}
+  <li class="nexus-alpha-card">
+    <div class="nexus-alpha-card-head">
+      {% if relationship.avatarUrl %}
+        <img class="nexus-alpha-avatar" src="{{ relationship.avatarUrl }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+      {% else %}
+        <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ relationship.name | first | upper }}</span>
+      {% endif %}
+      <div>
+        <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-0">{{ relationship.name }}</p>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ relationship.relationshipTypeLabel }}</p>
+      </div>
+    </div>
+
+    <p class="govuk-body-s govuk-!-margin-bottom-2">
+      <strong class="govuk-tag{% if isPending %} govuk-tag--yellow{% else %} govuk-tag--green{% endif %}">
+        {% if isPending %}{{ t("govuk_alpha_settings.linked.status_pending") }}{% else %}{{ t("govuk_alpha_settings.linked.status_active") }}{% endif %}
+      </strong>
+    </p>
+
+    {% if relationship.relationshipId > 0 and mode == "parent" and isPending %}
+      <form method="post" action="{{ urlFor('/settings/linked-accounts/approve') }}" class="govuk-!-display-inline-block govuk-!-margin-right-2">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
+        <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.approve_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
+      </form>
+    {% endif %}
+
+    {% if relationship.relationshipId > 0 and mode == "child" %}
+      <form method="post" action="{{ urlFor('/settings/linked-accounts/permissions') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
+        <fieldset class="govuk-fieldset govuk-!-margin-bottom-2">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_settings.linked.permissions_heading") }}</legend>
+          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            {% for permission in permissions %}
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="perm_{{ relationship.relationshipId }}_{{ permission.value }}" name="{{ permission.field }}" type="checkbox" value="1"{% if relationship.permissions[permission.value] %} checked{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="perm_{{ relationship.relationshipId }}_{{ permission.value }}">{{ permission.label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.save_permissions") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
+      </form>
+
+      <div class="govuk-warning-text govuk-!-margin-bottom-2">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("govuk_alpha_settings.common.error_title") }}</span>
+          {{ t("govuk_alpha_settings.linked.revoke_warning") }}
+        </strong>
+      </div>
+    {% endif %}
+
+    {% if relationship.relationshipId > 0 %}
+      <form method="post" action="{{ urlFor('/settings/linked-accounts/revoke') }}" class="govuk-!-display-inline-block">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="relationship_id" value="{{ relationship.relationshipId }}">
+        <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.revoke_button") }}<span class="govuk-visually-hidden"> {{ relationship.name }}</span></button>
+      </form>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+
+      {% if statusMessage and successStatus %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="linked-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="linked-status-title">{{ t("govuk_alpha_settings.common.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusMessage }}</p>
+          </div>
+        </div>
+      {% elif statusMessage and errorStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#request">{{ statusMessage }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.linked.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_settings.linked.description") }}</p>
+
+      <section aria-labelledby="parents-heading" id="parents">
+        <h2 class="govuk-heading-l" id="parents-heading">{{ t("govuk_alpha_settings.linked.parents_heading") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.linked.parents_description") }}</p>
+        {% if not parents.length %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_settings.linked.parents_empty") }}</p></div>
+        {% else %}
+          <ul class="govuk-list nexus-alpha-card-list">
+            {% for parent in parents %}
+              {{ relationshipCard(parent, "parent", permissions, csrfToken) }}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section aria-labelledby="children-heading" id="children">
+        <h2 class="govuk-heading-l" id="children-heading">{{ t("govuk_alpha_settings.linked.children_heading") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.linked.children_description") }}</p>
+        {% if not children.length %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_settings.linked.children_empty") }}</p></div>
+        {% else %}
+          <ul class="govuk-list nexus-alpha-card-list">
+            {% for child in children %}
+              {{ relationshipCard(child, "child", permissions, csrfToken) }}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section aria-labelledby="request-heading">
+        <h2 class="govuk-heading-l" id="request-heading">{{ t("govuk_alpha_settings.linked.request_heading") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.linked.request_description") }}</p>
+        <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_settings.linked.request_max", { count: maxChildren }) }}</p>
+
+        <form method="post" action="{{ urlFor('/settings/linked-accounts/request') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          <div class="govuk-form-group{% if status == 'link-email-invalid' or status == 'link-user-not-found' %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="request">{{ t("govuk_alpha_settings.linked.email_label") }}</label>
+            <div id="request-hint" class="govuk-hint">{{ t("govuk_alpha_settings.linked.email_hint") }}</div>
+            {% if status == 'link-email-invalid' or status == 'link-user-not-found' %}
+              <p id="request-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">{{ t("govuk_alpha_settings.common.error_title") }}:</span>
+                {{ statusMessage }}
+              </p>
+            {% endif %}
+            <input class="govuk-input" id="request" name="email" type="email" spellcheck="false" autocomplete="off" aria-describedby="request-hint{% if status == 'link-email-invalid' or status == 'link-user-not-found' %} request-error{% endif %}">
+          </div>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="relationship_type">{{ t("govuk_alpha_settings.linked.type_label") }}</label>
+            <select class="govuk-select" id="relationship_type" name="relationship_type">
+              {% for type in linkTypes %}
+                <option value="{{ type.value }}"{% if type.selected %} selected{% endif %}>{{ type.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_settings.linked.permissions_heading") }}</legend>
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+              {% for permission in permissions %}
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="new_perm_{{ permission.value }}" name="{{ permission.field }}" type="checkbox" value="1"{% if permission.checkedByDefault %} checked{% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="new_perm_{{ permission.value }}">{{ permission.label }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+
+          <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_settings.linked.request_button") }}</button>
+        </form>
+      </section>
+    </div>
+  </div>
+{% endblock %}

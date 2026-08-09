@@ -1,0 +1,97 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% if statusMessage %}
+    <div class="govuk-notification-banner{% if statusMessage.type == 'success' %} govuk-notification-banner--success{% endif %}" role="region" aria-labelledby="matches-status-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="matches-status-title">{{ t("states.success_title") if statusMessage.type == "success" else t("states.error_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ statusMessage.text }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("matches.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("matches.title") }}</h1>
+  <p class="govuk-body-l">{{ t("matches.description") }}</p>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/matches/board') }}">{{ t("govuk_alpha_connections.nav.matches_board") }}</a></p>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("polish_listings.matches_total_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ stats.total }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("polish_listings.matches_avg_score_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ stats.avgScore }}%</dd>
+    </div>
+  </dl>
+
+  <nav aria-label="{{ t("polish_listings.matches_source_filter_legend") }}" class="govuk-!-margin-bottom-6">
+    <ul class="nexus-alpha-filter-nav">
+      <li><a class="govuk-link{% if activeSource == 'all' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/matches?source=all') }}"{% if activeSource == 'all' %} aria-current="true"{% endif %}>{{ t("polish_listings.matches_source_all") }}</a></li>
+      <li><a class="govuk-link{% if activeSource == 'listing' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/matches?source=listing') }}"{% if activeSource == 'listing' %} aria-current="true"{% endif %}>{{ t("polish_listings.matches_source_listing") }}</a></li>
+      <li><a class="govuk-link{% if activeSource == 'group' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/matches?source=group') }}"{% if activeSource == 'group' %} aria-current="true"{% endif %}>{{ t("polish_listings.matches_source_group") }}</a></li>
+      <li><a class="govuk-link{% if activeSource == 'volunteering' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/matches?source=volunteering') }}"{% if activeSource == 'volunteering' %} aria-current="true"{% endif %}>{{ t("polish_listings.matches_source_volunteering") }}</a></li>
+      <li><a class="govuk-link{% if activeSource == 'event' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/matches?source=event') }}"{% if activeSource == 'event' %} aria-current="true"{% endif %}>{{ t("polish_listings.matches_source_event") }}</a></li>
+    </ul>
+  </nav>
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ errorMessage }}</p></div>
+      </div>
+    </div>
+  {% elif matches.length %}
+    <div class="nexus-alpha-card-list govuk-!-margin-top-4">
+      {% for match in matches %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
+              {% if match.href %}
+                <a class="govuk-link" href="{{ urlFor(match.href) }}">{{ match.title }}</a>
+              {% else %}
+                {{ match.title }}
+              {% endif %}
+            </h2>
+            <strong class="govuk-tag govuk-tag--grey">{{ match.moduleLabel }}</strong>
+            {% if match.module == 'listing' %}
+              <strong class="govuk-tag {% if match.type == 'request' %}govuk-tag--purple{% else %}govuk-tag--blue{% endif %}">{{ match.typeLabel }}</strong>
+            {% endif %}
+          </div>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("matches.by_label", { name: match.userName }) }}{% if match.category %} - {{ match.category }}{% endif %}</p>
+          {% if match.description %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ match.description }}</p>
+          {% endif %}
+          <p class="govuk-body govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--green">{{ t("matches.match_label", { percent: match.pct }) }}</strong></p>
+          {% if match.reasons.length %}
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("matches.reasons_label") }}</h3>
+            <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-2">
+              {% for reason in match.reasons %}
+                <li>{{ reason }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if match.module == 'listing' and match.listingId %}
+            <form method="post" action="{{ urlFor('/matches/' + (match.listingId | string) + '/dismiss') }}" class="govuk-!-margin-top-2">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="reason" value="not_relevant">
+              <button class="govuk-button govuk-button--secondary govuk-!-font-size-16" data-module="govuk-button" type="submit" title="{{ t('polish_listings.matches_dismiss_hint') }}">{{ t("polish_listings.matches_dismiss_label") }}<span class="govuk-visually-hidden">{{ t("polish_listings.matches_dismiss_sr", { title: match.title }) }}</span></button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("matches.empty") }}</div>
+    <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/premium') }}" class="govuk-back-link">{{ t("polish_commerce.premium_return_back") }}</a>
+
+  {% if returnStatus == 'success' %}
+    <div class="govuk-panel govuk-panel--confirmation">
+      <h1 class="govuk-panel__title">{{ t("polish_commerce.premium_success_title") }}</h1>
+      <div class="govuk-panel__body">
+        {% if tierName %}
+          {{ t("polish_commerce.premium_success_body", { name: tierName }) }}
+        {% else %}
+          {{ t("polish_commerce.premium_unsubscribed_body") }}
+        {% endif %}
+      </div>
+    </div>
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/premium/manage') }}">{{ t("govuk_alpha_commerce.premium_manage.title") }}</a></p>
+  {% elif returnStatus == 'pending' %}
+    <h1 class="govuk-heading-l">{{ t("polish_commerce.premium_pending_title") }}</h1>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("polish_commerce.premium_pending_body") }}</p></div>
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/premium/manage') }}">{{ t("govuk_alpha_commerce.premium_manage.status_label") }}</a></p>
+  {% else %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list"><li>{{ t("polish_commerce.premium_failed_body") }}</li></ul>
+        </div>
+      </div>
+    </div>
+    <h1 class="govuk-heading-l">{{ t("polish_commerce.premium_failed_title") }}</h1>
+    <p class="govuk-body"><a class="govuk-button" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/premium') }}">{{ t("premium.title") }}</a></p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,162 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/courses') }}" class="govuk-back-link">{{ t("courses.back") }}</a>
+
+  {% if status %}
+    {% if status.key == 'enrolled' %}
+      <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-bottom-6">
+        <h2 class="govuk-panel__title">{{ t("states.success_title") }}</h2>
+        <div class="govuk-panel__body">{{ status.message }}</div>
+      </div>
+    {% elif status.type == 'success' %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="course-status">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="course-status">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>{{ status.message }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ course.authorName or tenantName }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ course.title }}</h1>
+    <strong class="govuk-tag {{ course.costTagClass }}">{{ course.costLabel }}</strong>
+  </div>
+
+  {% if course.levelLabel %}
+    <p class="govuk-body-s nexus-alpha-meta">Level: {{ course.levelLabel }}</p>
+  {% endif %}
+
+  {% if course.description %}
+    <h2 class="govuk-heading-l">{{ t("courses.about_label") }}</h2>
+    <div class="govuk-body">{{ course.description | nl2br | safe }}</div>
+  {% endif %}
+
+  {% if prerequisites and prerequisites.length %}
+    <h2 class="govuk-heading-l">Before you start</h2>
+    <ul class="govuk-list">
+      {% for prerequisite in prerequisites %}
+        <li class="govuk-!-margin-bottom-1">
+          {% if prerequisite.id %}
+            <a class="govuk-link" href="{{ urlFor('/courses/' + (prerequisite.id | string)) }}">{{ prerequisite.title }}</a>
+          {% else %}
+            {{ prerequisite.title }}
+          {% endif %}
+          {% if prerequisite.completed %}
+            <strong class="govuk-tag govuk-tag--green">Completed</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--grey">Not yet completed</strong>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if isCompleted %}
+    <h2 class="govuk-heading-l">Your certificate</h2>
+    <p class="govuk-body">
+      <a class="govuk-button govuk-button--secondary" role="button" data-module="govuk-button" href="{{ urlFor('/courses/' + (course.id | string) + '/certificate') }}" target="_blank" rel="noopener noreferrer">Download your certificate<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a>
+    </p>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="reviews">Ratings and reviews</h2>
+  {% if course.ratingCount > 0 %}
+    <p class="govuk-body-l govuk-!-margin-bottom-1">
+      <span aria-hidden="true">{{ course.ratingStars }}</span>
+      <strong>{{ course.ratingAvgLabel }}</strong> out of 5
+    </p>
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-4">Based on {{ course.ratingCount }} review{% if course.ratingCount != 1 %}s{% endif %}</p>
+  {% endif %}
+
+  {% if reviews and reviews.length %}
+    <ul class="govuk-list govuk-!-margin-bottom-6">
+      {% for review in reviews %}
+        <li class="govuk-!-margin-bottom-3">
+          <p class="govuk-body-s govuk-!-margin-bottom-1">
+            <span aria-hidden="true">{{ review.stars }}</span>
+            <span class="govuk-visually-hidden">Rated {{ review.rating }} out of 5</span>
+            <strong>{{ review.name }}</strong>{% if review.createdAtLabel %} · {{ review.createdAtLabel }}{% endif %}
+          </p>
+          {% if review.body %}
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ review.body }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif course.ratingCount == 0 %}
+    <p class="govuk-body">No reviews yet. Be the first to review this course.</p>
+  {% endif %}
+
+  {% if canReview %}
+    <h3 class="govuk-heading-m">Leave a review</h3>
+    <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/reviews') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="rating">Your rating</label>
+        <select class="govuk-select" id="rating" name="rating">
+          {% for rating in [5, 4, 3, 2, 1] %}
+            <option value="{{ rating }}">{{ rating }} out of 5</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="body">Your review (optional)</label>
+        <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="2000"></textarea>
+      </div>
+      <button class="govuk-button" data-module="govuk-button">Submit review</button>
+    </form>
+  {% endif %}
+
+  {% if sections and sections.length %}
+    <h2 class="govuk-heading-l">{{ t("courses.contents_label") }}</h2>
+    {% for section in sections %}
+      {% if section.title or section.lessons.length %}
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ section.title or "What you will learn" }}</h3>
+        {% if section.lessons and section.lessons.length %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for lesson in section.lessons %}
+              <li>{{ lesson.title }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">Join this course</h2>
+  {% if isEnrolled %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("courses.enrolled_notice") }}</p>
+    </div>
+  {% else %}
+    {% if course.creditCost > 0 %}
+      <p class="govuk-body">This course costs {{ course.creditCost }} time credits.</p>
+    {% else %}
+      <p class="govuk-body">{{ t("courses.free_notice") }}</p>
+    {% endif %}
+    <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/enrol') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("courses.enrol_button") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

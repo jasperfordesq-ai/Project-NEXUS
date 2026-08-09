@@ -1,0 +1,271 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor') }}">{{ t("govuk_alpha_commerce.instructor.back_to_dashboard") }}</a>
+
+  {% set activeTab = 'teaching' %}
+  {% include "courses/_nav.njk" %}
+
+  {% if status %}
+    {% if status.type == 'success' %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="course-form-status" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="course-form-status">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ status.message }}</p></div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ status.message }}</li></ul></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_commerce.instructor.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{% if mode == 'edit' %}{{ t("govuk_alpha_commerce.instructor.title_edit") }}{% else %}{{ t("govuk_alpha_commerce.instructor.title_create") }}{% endif %}</h1>
+
+  {% if mode == 'edit' and course.status != 'published' %}
+    <p class="govuk-body">{{ t("govuk_alpha_commerce.instructor.publish_hint") }}</p>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor(formAction) }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.instructor.section_about") }}</h2>
+      </legend>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="title">{{ t("govuk_alpha_commerce.instructor.title_label") }}</label>
+        <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.instructor.title_hint") }}</div>
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ course.title if course.id else '' }}" aria-describedby="title-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="summary">{{ t("govuk_alpha_commerce.instructor.summary_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="summary-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.instructor.summary_hint") }}</div>
+        <input class="govuk-input" id="summary" name="summary" type="text" maxlength="500" value="{{ course.summary }}" aria-describedby="summary-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="description">{{ t("govuk_alpha_commerce.instructor.description_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.instructor.description_hint") }}</div>
+        <textarea class="govuk-textarea" id="description" name="description" rows="6" aria-describedby="description-hint">{{ course.description }}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="govuk-fieldset govuk-!-margin-top-4">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.instructor.section_settings") }}</h2>
+      </legend>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.instructor.level_label") }}</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            {% for level in levels %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="{% if loop.first %}level{% else %}level-{{ level.value }}{% endif %}" name="level" type="radio" value="{{ level.value }}"{% if course.level == level.value or (not course.level and level.value == 'beginner') %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="{% if loop.first %}level{% else %}level-{{ level.value }}{% endif %}">{{ t("govuk_alpha_commerce.instructor.level_" + level.value) }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.instructor.visibility_label") }}</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            {% for visibility in visibilities %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="{% if loop.first %}visibility{% else %}visibility-{{ visibility.value }}{% endif %}" name="visibility" type="radio" value="{{ visibility.value }}"{% if course.visibility == visibility.value %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="{% if loop.first %}visibility{% else %}visibility-{{ visibility.value }}{% endif %}">{{ t("govuk_alpha_commerce.instructor.visibility_" + visibility.value) }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.instructor.enrollment_type_label") }}</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            {% for enrollment in enrollmentTypes %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="{% if loop.first %}enrollment_type{% else %}enrollment_type-{{ enrollment.value }}{% endif %}" name="enrollment_type" type="radio" value="{{ enrollment.value }}"{% if course.enrollmentType == enrollment.value %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="{% if loop.first %}enrollment_type{% else %}enrollment_type-{{ enrollment.value }}{% endif %}">{{ t("govuk_alpha_commerce.instructor.enrollment_" + enrollment.value) }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="credit_cost">{{ t("govuk_alpha_commerce.instructor.credit_cost_label") }}</label>
+        <div id="credit_cost-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.instructor.credit_cost_hint") }}</div>
+        <input class="govuk-input govuk-input--width-5" id="credit_cost" name="credit_cost" type="text" inputmode="decimal" value="{{ course.creditCost or 0 }}" aria-describedby="credit_cost-hint">
+      </div>
+
+      {% if categories and categories.length %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="category_id">{{ t("govuk_alpha_commerce.instructor.category_label") }}</label>
+          <select class="govuk-select" id="category_id" name="category_id">
+            <option value="">{{ t("govuk_alpha_commerce.instructor.category_none") }}</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}"{% if course.categoryId == category.id %} selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+    </fieldset>
+
+    <div class="govuk-button-group govuk-!-margin-top-4">
+      <button class="govuk-button" data-module="govuk-button">{% if mode == 'edit' %}{{ t("govuk_alpha_commerce.instructor.submit_edit") }}{% else %}{{ t("govuk_alpha_commerce.instructor.submit_create") }}{% endif %}</button>
+      <a class="govuk-link" href="{{ urlFor('/courses/instructor') }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
+    </div>
+  </form>
+
+  {% if mode == 'edit' and course.id > 0 %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("govuk_alpha_commerce.instructor.builder_notice_title") }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_commerce.instructor.builder_notice") }}</p>
+
+    {% if (not builderSections or not builderSections.length) and (not builderUnsectioned or not builderUnsectioned.length) %}
+      <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.builder.no_sections") }}</p>
+    {% else %}
+      {% for section in builderSections %}
+        <div class="nexus-alpha-card govuk-!-margin-bottom-4">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ section.title }}</h3>
+          {% if not section.lessons or not section.lessons.length %}
+            <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_commerce.builder.no_lessons_in_section") }}</p>
+          {% else %}
+            <ul class="govuk-list">
+              {% for lesson in section.lessons %}
+                <li class="nexus-alpha-module-row">
+                  <span>{{ lesson.title }} <span class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_commerce.builder.content_type_" + lesson.contentType) }}</span></span>
+                  <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons/' + (lesson.id | string) + '/delete') }}" class="govuk-!-display-inline">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <button class="govuk-button govuk-button--warning govuk-button--small" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.delete_lesson_button") }}</button>
+                  </form>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_commerce.builder.rename_section_button") }} / {{ t("govuk_alpha_commerce.builder.delete_section_button") }}</span></summary>
+            <div class="govuk-details__text">
+              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/update') }}" class="govuk-!-margin-bottom-3">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="rename-section-{{ section.id }}">{{ t("govuk_alpha_commerce.builder.rename_section_label") }}</label>
+                  <input class="govuk-input" id="rename-section-{{ section.id }}" name="section_title" type="text" maxlength="200" value="{{ section.title }}">
+                </div>
+                <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.rename_section_button") }}</button>
+              </form>
+              <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>{{ t("govuk_alpha_commerce.builder.delete_section_warning") }}</strong>
+              </div>
+              <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections/' + (section.id | string) + '/delete') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.delete_section_button") }}</button>
+              </form>
+            </div>
+          </details>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <h3 class="govuk-heading-s govuk-!-margin-top-4">{{ t("govuk_alpha_commerce.builder.add_section_heading") }}</h3>
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/sections') }}" class="govuk-!-margin-bottom-6">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="section_title">{{ t("govuk_alpha_commerce.builder.section_title_label") }}</label>
+        <div id="section_title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.section_title_hint") }}</div>
+        <input class="govuk-input" id="section_title" name="section_title" type="text" maxlength="200" aria-describedby="section_title-hint">
+      </div>
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.add_section_button") }}</button>
+    </form>
+
+    <h3 class="govuk-heading-s govuk-!-margin-top-4">{{ t("govuk_alpha_commerce.builder.add_lesson_heading") }}</h3>
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/lessons') }}" class="govuk-!-margin-bottom-6">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="lesson_title">{{ t("govuk_alpha_commerce.builder.lesson_title_label") }}</label>
+        <div id="lesson_title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.lesson_title_hint") }}</div>
+        <input class="govuk-input" id="lesson_title" name="lesson_title" type="text" maxlength="200" aria-describedby="lesson_title-hint">
+      </div>
+
+      {% if builderSections and builderSections.length %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--s" for="section_id">{{ t("govuk_alpha_commerce.builder.lesson_section_label") }}</label>
+          <select class="govuk-select" id="section_id" name="section_id">
+            <option value="">{{ t("govuk_alpha_commerce.builder.lesson_section_none") }}</option>
+            {% for section in builderSections %}
+              <option value="{{ section.id }}">{{ section.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="content_type">{{ t("govuk_alpha_commerce.builder.content_type_label") }}</label>
+        <select class="govuk-select" id="content_type" name="content_type">
+          {% for contentType in contentTypes %}
+            <option value="{{ contentType.value }}">{{ t("govuk_alpha_commerce.builder.content_type_" + contentType.value) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_commerce.builder.body_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.body_hint") }}</div>
+        <textarea class="govuk-textarea" id="body" name="body" rows="4" aria-describedby="body-hint"></textarea>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="media_url">{{ t("govuk_alpha_commerce.builder.media_url_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+        <div id="media_url-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.builder.media_url_hint") }}</div>
+        <input class="govuk-input" id="media_url" name="media_url" type="url" inputmode="url" aria-describedby="media_url-hint">
+      </div>
+
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_commerce.builder.add_lesson_button") }}</button>
+    </form>
+
+    <h2 class="govuk-heading-m govuk-!-margin-top-6">{% if course.status == 'published' %}{{ t("govuk_alpha_commerce.instructor.action_unpublish") }}{% else %}{{ t("govuk_alpha_commerce.instructor.action_publish") }}{% endif %}</h2>
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/' + ('unpublish' if course.status == 'published' else 'publish')) }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{% if course.status == 'published' %}{{ t("govuk_alpha_commerce.instructor.action_unpublish") }}{% else %}{{ t("govuk_alpha_commerce.instructor.action_publish") }}{% endif %}</button>
+    </form>
+
+    <div class="govuk-!-margin-top-2">
+      <a class="govuk-link" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/analytics') }}">{{ t("govuk_alpha_commerce.instructor.action_analytics") }}</a>
+    </div>
+    <div class="govuk-!-margin-top-2">
+      <a class="govuk-link" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/grading') }}">{{ t("govuk_alpha_commerce.instructor.action_grading") }}</a>
+    </div>
+
+    <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.instructor.delete_heading") }}</h2>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>
+        {{ t("govuk_alpha_commerce.instructor.delete_warning") }}
+      </strong>
+    </div>
+    <form method="post" action="{{ urlFor('/courses/instructor/' + (course.id | string) + '/delete') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.instructor.action_delete") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

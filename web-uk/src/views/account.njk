@@ -1,0 +1,33 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("account.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("account.title") }}</h1>
+  <p class="govuk-body-l">{{ t("account.description") }}</p>
+
+  <div class="nexus-alpha-card-list govuk-!-margin-top-6">
+    {% for item in accountLinks %}
+      <article class="nexus-alpha-card">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+          <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+          {% if item.badge and item.badge > 0 %}
+            <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-2">
+              {{ tc("messages.unread_count", item.badge) }}
+            </strong>
+          {% endif %}
+        </h2>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
+      </article>
+    {% endfor %}
+  </div>
+
+  <form method="post" action="{{ urlFor('/logout') }}" class="govuk-!-margin-top-8">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("account.sign_out") }}</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,76 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <a class="govuk-back-link" href="{{ urlFor('/goals') }}">{{ t("goals.back_to_goals") }}</a>
+
+      {% if successMessage %}
+        {{ govukNotificationBanner({
+          type: "success",
+          titleText: t("states.success_title"),
+          text: successMessage
+        }) }}
+      {% endif %}
+
+      {% if errorMessage %}
+        {{ govukErrorSummary({
+          titleText: t("states.error_title"),
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#discover-goals"
+            }
+          ],
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("goals.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl" id="discover-goals">{{ t("polish_gamify.goals_discover_title") }}</h1>
+      <p class="govuk-body-l">{{ t("polish_gamify.goals_discover_description") }}</p>
+
+      {% if not goals or not goals.length %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body">{{ t("polish_gamify.goals_discover_empty") }}</p>
+        </div>
+      {% else %}
+        <div class="nexus-alpha-card-list">
+          {% for goal in goals %}
+            <article class="nexus-alpha-card">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ goal.title }}</a>
+              </h2>
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.owned_by", { name: goal.ownerName }) }}</p>
+
+              {% if goal.description %}
+                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ goal.description }}</p>
+              {% endif %}
+
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.progress_label", { current: goal.currentText, target: goal.targetText }) }}</p>
+              <progress max="100" value="{{ goal.progressPercent }}" aria-label="{{ goal.progressPercent }}%">{{ goal.progressPercent }}%</progress>
+
+              <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy') }}" class="govuk-!-margin-top-2">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_gamify.goals_discover_become_buddy") }}</button>
+              </form>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if nextHref %}
+        <p class="govuk-body govuk-!-margin-top-6">
+          <a class="govuk-link" href="{{ urlFor(nextHref) }}">{{ t("actions.load_more") }}</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

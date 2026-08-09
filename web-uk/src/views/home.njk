@@ -1,0 +1,146 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if status == "signed-out" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="home-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="home-status-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("auth.signed_out") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("home.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t(homeHeadingKey) if homeHeadingKey and t else (homeHeading or "Accessible") }}</h1>
+      <p class="govuk-body-l">{{ t(homeDescriptionKey, { community: communityName }) if homeDescriptionKey else homeDescription }}</p>
+      {% if tagline %}
+        <p class="govuk-body-l govuk-!-font-weight-bold">{{ tagline }}</p>
+      {% endif %}
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ urlFor('/guide') }}">{{ t("guide.title") }}</a>
+      </p>
+
+      <div class="govuk-button-group govuk-!-margin-bottom-8">
+        {% if isAuthenticated %}
+          {{ govukButton({ text: t("home.primary_authenticated"), href: urlFor("/dashboard") }) }}
+          {{ govukButton({ text: t("home.profile_action"), href: urlFor("/profile"), classes: "govuk-button--secondary" }) }}
+        {% else %}
+          {{ govukButton({ text: t("auth.login_action"), href: urlFor("/login") }) }}
+          {{ govukButton({ text: t("home.secondary_guest"), href: urlFor("/register"), classes: "govuk-button--secondary" }) }}
+        {% endif %}
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-third">
+      <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel">
+        <h2 class="govuk-panel__title">{{ t("home.panel_title") }}</h2>
+        <div class="govuk-panel__body">{{ t("home.panel_body") }}</div>
+      </div>
+    </div>
+  </div>
+
+  {% if stats %}
+    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.members") }}</dt>
+        <dd>{{ stats.members }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.hours_exchanged") }}</dt>
+        <dd>{{ stats.hoursExchanged }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.active_listings") }}</dt>
+        <dd>{{ stats.listings }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.communities") }}</dt>
+        <dd>{{ stats.communities }}</dd>
+      </div>
+    </dl>
+  {% endif %}
+
+  {% if networkCommunities and networkCommunities.length %}
+    <section class="govuk-!-margin-bottom-8" aria-labelledby="network-communities-heading">
+      <h2 class="govuk-heading-l" id="network-communities-heading">Communities in this network</h2>
+      <p class="govuk-body">Switch to a community in {{ communityName }}.</p>
+      <div class="nexus-alpha-card-list">
+        {% for community in networkCommunities %}
+          <article class="nexus-alpha-card">
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+              <a class="govuk-link" href="{{ community.href }}">{{ community.name }}</a>
+            </h3>
+            {% if community.tagline %}
+              <p class="govuk-body govuk-!-margin-bottom-0">{{ community.tagline }}</p>
+            {% endif %}
+            {% if community.slug %}
+              <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">Community link: {{ community.slug }}</p>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <div class="govuk-inset-text">
+    {{ t("home.accessibility_note") }}
+  </div>
+
+  <h2 class="govuk-heading-l">{{ t("home.modules_title") }}</h2>
+  <p class="govuk-body">{{ t("home.modules_intro", { community: communityName }) }}</p>
+  <div class="nexus-alpha-card-list">
+    {% for module in modules %}
+      <article class="nexus-alpha-card">
+        <div class="nexus-alpha-module-row">
+          <div>
+            <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+              {% if module.linked %}
+                <a class="govuk-link" href="{{ urlFor(module.href) }}">{{ module.title }}</a>
+              {% else %}
+                {{ module.title }}
+              {% endif %}
+            </h3>
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ module.description }}</p>
+            {% if module.needsSignIn %}
+              <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("home.module_signin_hint") }}</p>
+            {% elseif not module.available %}
+              <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("home.module_unavailable_hint") }}</p>
+            {% endif %}
+          </div>
+          {% if module.available %}
+            <strong class="govuk-tag govuk-tag--green">{{ t("home.module_available") }}</strong>
+          {% elseif module.needsSignIn %}
+            <strong class="govuk-tag govuk-tag--yellow">{{ t("auth.login_action") }}</strong>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--grey">{{ t("home.module_unavailable") }}</strong>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <div class="govuk-grid-row govuk-!-margin-top-8">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("home.summary_title") }}</h2>
+      <dl class="govuk-summary-list">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("home.summary_community_key") }}</dt>
+          <dd class="govuk-summary-list__value">{{ communityName }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("home.summary_service_key") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("home.summary_service_value") }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("home.summary_account_key") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("home.summary_account_signed_in") if isAuthenticated else t("home.summary_account_signed_out") }}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+{% endblock %}

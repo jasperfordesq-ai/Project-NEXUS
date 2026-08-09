@@ -1,0 +1,46 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% set active = activeTab or 'browse' %}
+<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4" aria-label="{{ t("govuk_alpha_commerce.nav.heading") }}">
+  <h2 class="govuk-tabs__title">{{ t("govuk_alpha_commerce.nav.heading") }}</h2>
+  <ul class="govuk-tabs__list">
+    <li class="govuk-tabs__list-item{% if active == 'browse' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace') }}" {% if active == 'browse' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.browse") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'saved' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/saved') }}" {% if active == 'saved' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.saved") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'offers' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/offers') }}" {% if active == 'offers' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.offers") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'orders' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/orders') }}" {% if active == 'orders' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.orders") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'pickups' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/pickups') }}" {% if active == 'pickups' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.pickups") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'sales' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/sales') }}" {% if active == 'sales' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.sales") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'slots' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/slots') }}" {% if active == 'slots' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.slots") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'mine' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/mine') }}" {% if active == 'mine' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.mine") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'sell' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/create') }}" {% if active == 'sell' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.sell") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'onboarding' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/onboarding') }}" {% if active == 'onboarding' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.onboarding") }}</a>
+    </li>
+    {% if marketplaceCouponsEnabled %}
+      <li class="govuk-tabs__list-item{% if active == 'coupons' %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor('/marketplace/coupons') }}" {% if active == 'coupons' %}aria-current="page"{% endif %}>{{ t("govuk_alpha_commerce.nav.coupons") }}</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>

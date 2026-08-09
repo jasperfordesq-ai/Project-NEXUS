@@ -1,0 +1,210 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="hours-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="hours-success-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ status.message }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha.volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.volunteering.hours_title") }}</h1>
+
+  <div class="govuk-inset-text" role="note">
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.hours_autocredit_note") }}</p>
+  </div>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <dl class="nexus-alpha-stat-grid">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha.volunteering.approved_hours") }}</dt>
+      <dd>{{ summary.approvedHoursLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha.volunteering.pending_hours") }}</dt>
+      <dd>{{ summary.pendingHoursLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha.volunteering.this_month_hours") }}</dt>
+      <dd>{{ summary.thisMonthHoursLabel }}</dd>
+    </div>
+  </dl>
+
+  {% if nextGoal %}
+    <div class="govuk-!-margin-bottom-6">
+      <label class="govuk-visually-hidden" for="hours-goal-progress">{{ nextGoalLabel }}</label>
+      <progress id="hours-goal-progress" max="{{ nextGoal }}" value="{{ summary.approvedTotal }}">{{ summary.approvedHoursLabel }} / {{ nextGoal }}</progress>
+      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-top-1">{{ nextGoalLabel }}</p>
+    </div>
+  {% endif %}
+
+  {% if summary.byOrganization.length %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-7">{{ t("govuk_alpha.volunteering.hours_by_org_title") }}</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha.volunteering.hours_by_org_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha.volunteering.organization") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha.volunteering.approved_hours") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in summary.byOrganization %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ row.name }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.hoursLabel }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if summary.byMonth.length %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha.volunteering.hours_by_month_title") }}</h2>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha.volunteering.hours_by_month_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha.volunteering.month_label") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha.volunteering.approved_hours") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in summary.byMonth %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ row.monthLabel }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.hoursLabel }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/volunteering/hours') }}" class="govuk-!-margin-top-7">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.volunteering.log_hours_title") }}</h2>
+      </legend>
+      <div class="govuk-hint">{{ t("govuk_alpha.vol_clarity.log_hours_form_hint") }}</div>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="organization_id">{{ t("govuk_alpha.volunteering.organization_label") }}</label>
+            <div id="organization-id-hint" class="govuk-hint">{{ t("govuk_alpha.vol_clarity.log_hours_organisation_hint") }}</div>
+            <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization-id-hint" required>
+              {% for organization in organizations %}
+                <option value="{{ organization.id }}">{{ organization.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="opportunity_id">{{ t("govuk_alpha.volunteering.opportunity_label") }}</label>
+            <select class="govuk-select" id="opportunity_id" name="opportunity_id">
+              <option value="">{{ t("govuk_alpha.volunteering.no_related_opportunity") }}</option>
+              {% for application in applications %}
+                {% if application.opportunity.id %}
+                  <option value="{{ application.opportunity.id }}">{{ application.opportunity.title }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="date">{{ t("govuk_alpha.volunteering.date_label") }}</label>
+            <div id="date-hint" class="govuk-hint">{{ t("govuk_alpha.vol_clarity.log_hours_date_hint") }}</div>
+            <input class="govuk-input govuk-input--width-10" id="date" name="date" type="date" value="{{ today }}" aria-describedby="date-hint" required>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="hours">{{ t("govuk_alpha.volunteering.hours_label") }}</label>
+            <div id="log-hours-hint" class="govuk-hint">{{ t("govuk_alpha.volunteering.hours_log_hint") }}</div>
+            <input class="govuk-input govuk-input--width-5" id="hours" name="hours" type="number" min="0.25" max="24" step="0.25" aria-describedby="log-hours-hint" required>
+          </div>
+        </div>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="description">{{ t("govuk_alpha.volunteering.description_label") }}</label>
+        <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.vol_clarity.log_hours_description_hint") }}</div>
+        <textarea class="govuk-textarea" id="description" name="description" rows="5" aria-describedby="description-hint"></textarea>
+      </div>
+    </fieldset>
+    <button class="govuk-button" data-module="govuk-button"{% if not organizations.length %} disabled{% endif %}>{{ t("govuk_alpha.actions.log_hours") }}</button>
+  </form>
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("govuk_alpha.volunteering.recent_hours_title") }}</h2>
+  {% if not logs.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.volunteering.empty_hours") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.empty_hours_cta") }}</p>
+    </div>
+  {% else %}
+    <p class="govuk-body">{{ t("govuk_alpha.vol_clarity.status_trail_intro") }}</p>
+    <div class="nexus-alpha-card-list">
+      {% for log in logs %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ log.dateLabel }}</h3>
+          <p class="govuk-!-margin-bottom-2">
+            <strong class="govuk-tag {{ log.status.className }}">{{ log.status.label }}</strong>
+          </p>
+          {% if log.status.note %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ log.status.note }}</p>
+          {% endif %}
+          <dl class="nexus-alpha-inline-list">
+            <div>
+              <dt>{{ t("govuk_alpha.volunteering.hours_label") }}</dt>
+              <dd>{{ log.hoursLabel }}</dd>
+            </div>
+            {% if log.organizationName %}
+              <div>
+                <dt>{{ t("govuk_alpha.volunteering.organization") }}</dt>
+                <dd>{{ log.organizationName }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+          {% if log.description %}
+            <p class="govuk-body govuk-!-margin-top-3">{{ log.description }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

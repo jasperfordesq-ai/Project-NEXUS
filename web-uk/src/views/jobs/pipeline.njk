@@ -1,0 +1,85 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("govuk_alpha_jobs.shared.back_to_my_postings") }}</a>
+
+  <span class="govuk-caption-xl">{{ job.title or t("govuk_alpha.jobs.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.pipeline.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.pipeline.description") }}</p>
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_jobs.pipeline.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <p class="govuk-!-margin-bottom-6">
+    <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id ~ '/applications') }}">{{ t("govuk_alpha_jobs.pipeline.view_full_list") }}</a>
+  </p>
+
+  {% if not hasApplications %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.pipeline.empty") }}</p>
+    </div>
+  {% endif %}
+
+  {% for column in pipelineColumns %}
+      <section class="govuk-!-margin-bottom-6" aria-labelledby="pl-col-{{ column.stage }}">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2" id="pl-col-{{ column.stage }}">
+          {{ column.label }}
+          <span class="govuk-caption-m">{{ tc("govuk_alpha_jobs.pipeline.count_in_stage", column.count, { count: column.count }) }}</span>
+        </h2>
+
+        {% if column.applications.length == 0 %}
+          <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_jobs.shared.none_yet") }}</p>
+        {% else %}
+          <div class="nexus-alpha-card-list">
+          {% for app in column.applications %}
+            <article class="nexus-alpha-card">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ app.applicantName }}</h3>
+              {% if app.appliedOnLabel %}
+                <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_jobs.pipeline.applied_on", { date: app.appliedOnLabel }) }}</p>
+              {% endif %}
+              {% if app.cvFilename %}
+                <p class="govuk-body-s govuk-!-margin-bottom-2">
+                  <a class="govuk-link" href="{{ urlFor('/jobs/applications/' ~ app.id ~ '/cv') }}">{{ t("govuk_alpha_jobs.pipeline.download_cv") }}</a>: {{ app.cvFilename }}
+                </p>
+              {% endif %}
+
+              <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/applications/' ~ app.id ~ '/status') }}" class="govuk-!-margin-top-2">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <div class="govuk-form-group govuk-!-margin-bottom-2">
+                  <label class="govuk-label govuk-label--s" for="pl-status-{{ app.id }}">{{ t("govuk_alpha_jobs.pipeline.move_to_label") }}</label>
+                  <select class="govuk-select" id="pl-status-{{ app.id }}" name="app_status">
+                    {% for option in statusOptions %}
+                      <option value="{{ option.value }}"{% if app.status == option.value %} selected{% endif %}>{{ option.label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_jobs.pipeline.move_button") }}</button>
+              </form>
+            </article>
+          {% endfor %}
+          </div>
+        {% endif %}
+      </section>
+  {% endfor %}
+{% endblock %}

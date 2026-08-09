@@ -1,0 +1,71 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/my-organisations') }}">{{ t("govuk_alpha_volunteering.shared.back_to_my_organisations") }}</a>
+
+  <span class="govuk-caption-l">{{ dashboard.orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_dashboard.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_dashboard.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ loadError }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if not dashboard.isApproved %}
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.shared.error_title") }}</span>
+        {{ t("govuk_alpha_volunteering.org_dashboard.awaiting_approval") }}
+      </strong>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_dashboard.stats_title") }}</h2>
+  <dl class="nexus-alpha-stat-grid">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_dashboard.active_opportunities") }}</dt>
+      <dd>{{ dashboard.activeOpportunities }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_dashboard.pending_applications") }}</dt>
+      <dd>{{ dashboard.pendingApplications }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_dashboard.pending_hours") }}</dt>
+      <dd>{{ dashboard.pendingHours }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_dashboard.total_volunteers") }}</dt>
+      <dd>{{ dashboard.totalVolunteers }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_dashboard.total_approved_hours") }}</dt>
+      <dd>{{ dashboard.totalApprovedHoursLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_dashboard.wallet_balance") }}</dt>
+      <dd>{{ dashboard.walletBalanceLabel }}</dd>
+    </div>
+  </dl>
+
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_dashboard.auto_credit_note") }}</p>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_dashboard.quick_actions_title") }}</h2>
+  <ul class="govuk-list">
+    <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/manage') }}">{{ t("govuk_alpha_volunteering.org_dashboard.action_applications") }}</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/volunteers') }}">{{ t("govuk_alpha_volunteering.org_volunteers.title") }}</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/create') }}">{{ t("govuk_alpha_volunteering.org_dashboard.action_create") }}</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/settings') }}">{{ t("govuk_alpha_volunteering.org_dashboard.action_settings") }}</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/wallet') }}">{{ t("govuk_alpha_volunteering.org_dashboard.action_wallet") }}</a></li>
+  </ul>
+{% endblock %}

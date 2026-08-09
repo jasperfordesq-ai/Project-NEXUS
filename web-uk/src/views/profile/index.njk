@@ -1,0 +1,192 @@
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-quarter">
+      {% if avatarUrl %}
+        <img class="nexus-alpha-avatar nexus-alpha-avatar--xl" src="{{ avatarUrl }}" alt="{{ t('members.avatar_alt', { name: displayName }) }}" width="120" height="120">
+      {% else %}
+        <span class="nexus-alpha-avatar nexus-alpha-avatar--xl nexus-alpha-avatar--placeholder" aria-hidden="true">{{ initials }}</span>
+      {% endif %}
+    </div>
+    <div class="govuk-grid-column-three-quarters">
+      <span class="govuk-caption-l">{{ t("profile.own_caption") }}</span>
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ displayName }}</h1>
+      <div class="nexus-alpha-inline-flex-tags govuk-!-margin-bottom-2">
+        {% if identityVerified %}
+          <strong class="govuk-tag govuk-tag--green">{{ t("profile.verified") }}</strong>
+        {% endif %}
+        <strong class="govuk-tag govuk-tag--grey">{{ t("profile.profile_type_" ~ profileType) }}</strong>
+      </div>
+      {% if profile.tagline %}
+        <p class="govuk-body-l govuk-!-margin-top-2">{{ profile.tagline }}</p>
+      {% endif %}
+      <div class="govuk-button-group govuk-!-margin-top-4">
+        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/profile/settings') }}">{{ t("actions.edit_profile") }}</a>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="govuk-heading-l">{{ t("profile.activity_title") }}</h2>
+  <dl class="nexus-alpha-stat-grid">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("profile.hours_given_label") }}</dt>
+      <dd>{{ profileStats.hoursGivenLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("profile.hours_received_label") }}</dt>
+      <dd>{{ profileStats.hoursReceivedLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("profile.active_listings_label") }}</dt>
+      <dd>{{ profileStats.listingsCountLabel }}</dd>
+    </div>
+    {% if profileStats.ratingLabel %}
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("profile.rating_label") }}</dt>
+        <dd>{{ profileStats.ratingLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if profileFeatures.gamification %}
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("profile.level_label") }}</dt>
+        <dd>{{ profileStats.levelLabel }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("profile.xp_label") }}</dt>
+        <dd>{{ profileStats.xpLabel }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  <div class="govuk-grid-row govuk-!-margin-top-7">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("profile.about_title") }}</h2>
+      {% if profile.bio %}
+        <p class="govuk-body">{{ profile.bio }}</p>
+      {% else %}
+        <div class="govuk-inset-text">{{ t("profile.empty_bio") }}</div>
+      {% endif %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.skills_title") }}</h2>
+      {% if profileSkills and profileSkills.length %}
+        <ul class="govuk-list nexus-alpha-skill-list">
+          {% for skill in profileSkills %}
+            <li>
+              <span class="govuk-!-font-weight-bold">{{ skill.name }}</span>
+              {% if skill.isOffering %}<strong class="govuk-tag govuk-tag--green">{{ t("profile.skill_offering") }}</strong>{% endif %}
+              {% if skill.isRequesting %}<strong class="govuk-tag govuk-tag--blue">{{ t("profile.skill_requesting") }}</strong>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="govuk-inset-text">{{ t("profile.empty_skills") }}</div>
+      {% endif %}
+
+      {% if profileFeatures.listings %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.listings_title") }}</h2>
+        {% if profileListings and profileListings.length %}
+          <div class="nexus-alpha-card-list">
+            {% for listing in profileListings %}
+              <article class="nexus-alpha-card">
+                <strong class="govuk-tag {% if listing.type == 'request' %}govuk-tag--purple{% else %}govuk-tag--blue{% endif %}">{{ t("listings." ~ listing.type) }}</strong>
+                <h3 class="govuk-heading-m govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                  <a class="govuk-link" href="{{ urlFor('/listings/' ~ listing.id) }}">{{ listing.title }}</a>
+                </h3>
+                {% if listing.description %}<p class="govuk-body">{{ listing.description }}</p>{% endif %}
+                {% if listing.imageUrl %}
+                  <img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="govuk-inset-text">{{ t("profile.empty_listings") }}</div>
+        {% endif %}
+      {% endif %}
+
+      {% if profileFeatures.reviews %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.reviews_title") }}</h2>
+        {% if profileReviews and profileReviews.length %}
+          <div class="nexus-alpha-card-list">
+            {% for review in profileReviews %}
+              <article class="nexus-alpha-card">
+                <p class="govuk-body-s nexus-alpha-meta">
+                  {% if review.reviewerName %}{{ t("profile.review_by", { name: review.reviewerName }) }}{% else %}{{ t("profile.anonymous_review") }}{% endif %}
+                  {% if review.createdAt %}<span aria-hidden="true"> &middot; </span>{{ review.createdAt | formatDate }}{% endif %}
+                </p>
+                <p class="govuk-body govuk-!-font-weight-bold">{{ t("profile.rating_label") }}: {{ review.rating }}/5</p>
+                {% if review.comment %}<p class="govuk-body">{{ review.comment }}</p>{% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="govuk-inset-text">{{ t("profile.empty_reviews") }}</div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+      <h2 class="govuk-heading-l">{{ t("profile.summary_title") }}</h2>
+      <dl class="govuk-summary-list">
+        {% if joinedLabel %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("profile.joined_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ joinedLabel }}</dd>
+          </div>
+        {% endif %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("home.summary_community_key") }}</dt>
+          <dd class="govuk-summary-list__value">{{ communityName }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("profile.profile_type_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ t("profile.profile_type_" ~ profileType) }}</dd>
+        </div>
+        {% if profile.location %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("profile.location_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ profile.location }}</dd>
+          </div>
+        {% endif %}
+        {% if profile.email %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("profile.email_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ profile.email }}</dd>
+          </div>
+        {% endif %}
+        {% if profile.phone %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("profile.phone_label") }}</dt>
+            <dd class="govuk-summary-list__value">{{ profile.phone }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+
+      {% if profileFeatures.gamification %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.badges_title") }}</h2>
+        {% if profileBadges and profileBadges.length %}
+          <ul class="govuk-list nexus-alpha-actions">
+            {% for badge in profileBadges %}
+              <li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %} <strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="govuk-body">{{ t("dashboard.badges_empty") }}</p>
+        {% endif %}
+
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("home.summary_account_key") }}</h2>
+        <ul class="govuk-list govuk-list--spaced">
+          <li><a href="{{ urlFor('/achievements') }}" class="govuk-link">{{ t("achievements.title") }}</a></li>
+          <li><a href="{{ urlFor('/leaderboard') }}" class="govuk-link">{{ t("leaderboard.title") }}</a></li>
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

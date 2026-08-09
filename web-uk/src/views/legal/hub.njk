@@ -1,0 +1,26 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("legal.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("legal.hub_title") if t else title }}</h1>
+      <p class="govuk-body-l">{{ t("legal.hub_intro", { name: communityName }) }}</p>
+
+      <div class="nexus-alpha-card-list" aria-label="{{ t("polish_federation.legal_hub_list_label") }}">
+        {% for document in documents %}
+          <article class="nexus-alpha-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor(document.path) }}">{{ document.title }}</a>
+            </h2>
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ document.summary }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("federation.members_browse.back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("federation.members_browse.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("federation.members_browse.title") }}</h1>
+  <p class="govuk-body-l">{{ t("federation.members_browse.description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
+  <form method="get" action="{{ urlFor('/federation/members') }}" class="govuk-!-margin-bottom-6">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("federation.members_browse.filters_legend") }}</legend>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="q">{{ t("federation.members_browse.search_label") }}</label>
+        <div id="q-hint" class="govuk-hint">{{ t("federation.members_browse.search_hint") }}</div>
+        <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ filters.q }}" aria-describedby="q-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="partner_id">{{ t("federation.members_browse.community_filter_label") }}</label>
+        <select class="govuk-select" id="partner_id" name="partner_id">
+          <option value=""{% if not filters.partnerId %} selected{% endif %}>{{ t("federation.members_browse.all_communities") }}</option>
+          {% for partner in partnerOptions %}
+            <option value="{{ partner.id }}"{% if filters.partnerId == partner.id %} selected{% endif %}>{{ partner.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="skills">{{ t("federation.members_browse.skills_filter_label") }}</label>
+        <div id="skills-hint" class="govuk-hint">{{ t("federation.members_browse.skills_filter_hint") }}</div>
+        <input class="govuk-input govuk-!-width-two-thirds" id="skills" name="skills" type="text" value="{{ filters.skills }}" aria-describedby="skills-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="service_reach">{{ t("federation.members_browse.service_reach_label") }}</label>
+        <select class="govuk-select" id="service_reach" name="service_reach">
+          <option value=""{% if not filters.serviceReach %} selected{% endif %}>{{ t("federation.members_browse.reach_all") }}</option>
+          <option value="local_only"{% if filters.serviceReach == "local_only" %} selected{% endif %}>{{ t("federation.settings.reach_local_only") }}</option>
+          <option value="remote_ok"{% if filters.serviceReach == "remote_ok" %} selected{% endif %}>{{ t("federation.settings.reach_remote_ok") }}</option>
+          <option value="travel_ok"{% if filters.serviceReach == "travel_ok" %} selected{% endif %}>{{ t("federation.settings.reach_travel_ok") }}</option>
+        </select>
+      </div>
+
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("federation.members_browse.apply_filters") }}</button>
+    </fieldset>
+  </form>
+
+  {% if total !== null %}
+    <p class="govuk-body-s">{{ t("federation.members_browse.showing_count", { shown: members.length, total: total }) }}</p>
+  {% endif %}
+
+  {% if members.length %}
+    <div class="nexus-alpha-card-list">
+      {% for member in members %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(member.href) }}">{{ member.name }}</a></h2>
+
+          {% if member.tenantName %}
+            <p class="govuk-body-s govuk-!-margin-bottom-1"><strong class="govuk-tag govuk-tag--grey">{{ t("federation.members_browse.community_label") }}: {{ member.tenantName }}</strong></p>
+          {% endif %}
+
+          {% if member.bio %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ member.bio }}</p>
+          {% endif %}
+
+          {% if member.location %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("federation.location_label") }}: {{ member.location }}</p>
+          {% endif %}
+
+          {% if member.serviceReachLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("federation.members_browse.reach_label") }}: {{ member.serviceReachLabel }}</p>
+          {% endif %}
+
+          {% if member.skills.length %}
+            <p class="govuk-body-s govuk-!-margin-bottom-2 nexus-alpha-inline-list">
+              {% for skill in member.visibleSkills %}
+                <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ skill }}</strong>
+              {% endfor %}
+              {% if member.moreSkillsLabel %}<strong class="govuk-tag govuk-tag--grey">{{ member.moreSkillsLabel }}</strong>{% endif %}
+            </p>
+          {% endif %}
+
+          <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor(member.href) }}">{{ t("federation.members_browse.view_profile") }}</a></p>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if loadMoreHref %}
+      <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor(loadMoreHref) }}">{{ t("federation.members_browse.load_more") }}</a></p>
+    {% endif %}
+  {% else %}
+    {% if not partnerOptions.length %}
+      <div class="govuk-inset-text">
+        <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("federation.members_browse.no_partner_communities") }}</h2>
+        <p class="govuk-body">{{ t("federation.members_browse.no_partner_communities_description") }}</p>
+      </div>
+    {% else %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("federation.members_browse.no_members_search") if filters.q or filters.skills or filters.partnerId or filters.serviceReach else t("federation.members_browse.no_members_available") }}</p></div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

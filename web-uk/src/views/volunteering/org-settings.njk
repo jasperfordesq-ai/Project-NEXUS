@@ -1,0 +1,83 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.shared.back_to_dashboard") }}</a>
+
+  {% if status and status.type == "success" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-settings-success-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="org-settings-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+      </div>
+    </div>
+  {% elif status and status.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          {% if status.field %}
+            <ul class="govuk-list govuk-error-summary__list">
+              <li><a href="#{{ status.field }}">{{ status.message }}</a></li>
+            </ul>
+          {% else %}
+            <p>{{ status.message }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ loadError }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_settings.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_settings.description") }}</p>
+
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/settings') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if status and status.field == 'name' %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label" for="name">{{ t("govuk_alpha_volunteering.org_settings.name_label") }}</label>
+      <div id="name-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_settings.name_hint") }}</div>
+      {% if status and status.field == 'name' %}
+        <p id="name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+      {% endif %}
+      <input class="govuk-input" id="name" name="name" type="text" value="{{ organization.name }}" aria-describedby="name-hint{% if status and status.field == 'name' %} name-error{% endif %}" required>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="description">{{ t("govuk_alpha_volunteering.org_settings.description_label") }}</label>
+      <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_settings.description_hint") }}</div>
+      <textarea class="govuk-textarea" id="description" name="description" rows="5" aria-describedby="description-hint">{{ organization.description }}</textarea>
+    </div>
+
+    <div class="govuk-form-group{% if status and status.field == 'contact_email' %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label" for="contact_email">{{ t("govuk_alpha_volunteering.org_settings.contact_email_label") }}</label>
+      <div id="contact_email-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_settings.contact_email_hint") }}</div>
+      {% if status and status.field == 'contact_email' %}
+        <p id="contact_email-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+      {% endif %}
+      <input class="govuk-input" id="contact_email" name="contact_email" type="email" spellcheck="false" value="{{ organization.contactEmail }}" aria-describedby="contact_email-hint{% if status and status.field == 'contact_email' %} contact_email-error{% endif %}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="website">{{ t("govuk_alpha_volunteering.org_settings.website_label") }}</label>
+      <div id="website-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_settings.website_hint") }}</div>
+      <input class="govuk-input" id="website" name="website" type="url" spellcheck="false" value="{{ organization.website }}" aria-describedby="website-hint">
+    </div>
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_settings.save_button") }}</button>
+  </form>
+{% endblock %}

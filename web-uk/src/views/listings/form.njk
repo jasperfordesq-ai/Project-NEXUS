@@ -1,0 +1,258 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% block beforeContent %}
+  {{ super() }}
+  {% if listing %}
+    <a class="govuk-back-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("listings.edit.back") }}</a>
+  {% else %}
+    <a class="govuk-back-link" href="{{ urlFor('/listings') }}">{{ t("actions.back_to_listings") }}</a>
+  {% endif %}
+{% endblock %}
+
+{% block mainContent %}
+  {% if values %}
+    {% set currentTitle = values.title %}
+    {% set currentDescription = values.description %}
+    {% set currentType = values.type %}
+    {% set currentCategoryId = values.category_id %}
+    {% set currentHours = values.hours_estimate %}
+    {% set currentServiceType = values.service_type %}
+    {% set currentLocation = values.location %}
+    {% set currentSkillTags = values.skill_tags %}
+  {% elif listing %}
+    {% set currentTitle = listing.title %}
+    {% set currentDescription = listing.description %}
+    {% set currentType = listing.type %}
+    {% set currentCategoryId = listing.category_id or (listing.category.id if listing.category else "") %}
+    {% set currentHours = listing.hours_estimate if listing.hours_estimate is not none else listing.estimated_hours %}
+    {% set currentServiceType = listing.service_type or "physical_only" %}
+    {% set currentLocation = listing.location %}
+    {% set currentSkillTags = listing.skill_tags | join(", ") if listing.skill_tags else "" %}
+  {% else %}
+    {% set currentTitle = "" %}
+    {% set currentDescription = "" %}
+    {% set currentType = "offer" %}
+    {% set currentCategoryId = "" %}
+    {% set currentHours = "" %}
+    {% set currentServiceType = "physical_only" %}
+    {% set currentLocation = "" %}
+    {% set currentSkillTags = "" %}
+  {% endif %}
+  {% set listingFormAction = "/listings/" + (listing.id | string) + "/edit" if listing and listing.id else "/listings/new" %}
+  {% set typeItems = [
+    { value: "offer", text: t("listings.offer"), checked: currentType == "offer" },
+    { value: "request", text: t("listings.request"), checked: currentType == "request" }
+  ] %}
+  {% set categoryItems = [{ value: "", text: t("listings.create.category_none"), selected: not currentCategoryId }] %}
+  {% for category in categories %}
+    {% set categoryItems = (categoryItems.push({
+      value: category.id | string,
+      text: category.name,
+      selected: (currentCategoryId | string) == (category.id | string)
+    }), categoryItems) %}
+  {% endfor %}
+
+      {% if errors and errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("states.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      {% if setupErrorMessage %}
+        <div class="govuk-notification-banner" role="region" aria-labelledby="listing-setup-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listing-setup-title">{{ t("states.error_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ setupErrorMessage }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if status == "listing-create-failed" or status == "listing-update-failed" %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="listing-save-failed-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listing-save-failed-title">{{ t("states.error_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("listings.edit.failed" if listing else "listings.create.failed") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if status in ["ai-generated", "ai-title-required", "ai-failed", "ai-disabled"] %}
+        <div class="govuk-notification-banner{% if status == 'ai-generated' %} govuk-notification-banner--success{% endif %}" data-module="govuk-notification-banner" role="{{ 'alert' if status == 'ai-generated' else 'region' }}" aria-labelledby="ai-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="ai-status-title">{{ t("states.success_title" if status == "ai-generated" else "states.error_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_listings.ai.states." + status) }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("listings.edit.caption" if listing else "listings.create.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("listings.edit.title" if listing else "listings.create.title") }}</h1>
+      <p class="govuk-body-l">{{ t("listings.edit.description") if listing else t("listings.create.description", { community: tenantName }) }}</p>
+
+      <form method="post" action="{{ urlFor(listingFormAction) }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukRadios({
+          idPrefix: "type",
+          name: "type",
+          fieldset: {
+            legend: {
+              text: t("listings.create.intent_legend"),
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          hint: { text: t("listings.create.intent_hint") },
+          items: typeItems,
+          errorMessage: { text: fieldErrors.type } if fieldErrors.type else undefined
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: t("listings.create.title_label"),
+            classes: "govuk-label--m"
+          },
+          hint: { text: t("listings.create.title_hint") },
+          id: "title",
+          name: "title",
+          value: currentTitle,
+          attributes: { maxlength: "255" },
+          errorMessage: { text: fieldErrors.title } if fieldErrors.title else undefined
+        }) }}
+
+        {{ govukTextarea({
+          label: {
+            text: t("listings.create.description_label"),
+            classes: "govuk-label--m"
+          },
+          hint: { text: t("listings.create.description_hint") },
+          id: "description",
+          name: "description",
+          rows: 6,
+          value: currentDescription,
+          describedBy: "description-ai-hint",
+          errorMessage: { text: fieldErrors.description } if fieldErrors.description else undefined
+        }) }}
+
+        <p id="description-ai-hint" class="govuk-hint govuk-!-margin-top-2">{{ t("govuk_alpha_listings.ai.hint") }}</p>
+        {% if listing %}<input type="hidden" name="listing_id" value="{{ listing.id }}">{% endif %}
+        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-2" data-module="govuk-button" formaction="{{ urlFor('/listings/generate-description') }}" formnovalidate>
+          {{ t("govuk_alpha_listings.ai.regenerate_button" if currentDescription else "govuk_alpha_listings.ai.generate_button") }}
+        </button>
+
+        {% if categories.length %}
+          {{ govukSelect({
+          id: "category_id",
+          name: "category_id",
+          label: {
+            text: t("listings.create.category_label") + ("" if config.requireCategory else " (" + t("listings.create.optional") + ")")
+          },
+          hint: { text: t("listings.create.category_hint") },
+          items: categoryItems,
+          errorMessage: { text: fieldErrors.category_id } if fieldErrors.category_id else undefined
+          }) }}
+        {% endif %}
+
+        {{ govukInput({
+          label: {
+            text: t("listings.create.hours_label") + ("" if config.requireHours else " (" + t("listings.create.optional") + ")")
+          },
+          hint: { text: t("listings.create.hours_hint") },
+          id: "hours_estimate",
+          name: "hours_estimate",
+          type: "number",
+          classes: "govuk-input--width-5",
+          value: currentHours,
+          attributes: { min: "0.5", max: "2000", step: "0.5", inputmode: "decimal" },
+          errorMessage: { text: fieldErrors.hours_estimate } if fieldErrors.hours_estimate else undefined
+        }) }}
+
+        {% if config.enableServiceType %}
+          {{ govukRadios({
+            idPrefix: "service_type",
+            name: "service_type",
+            classes: "govuk-radios--small",
+            fieldset: {
+              legend: {
+                text: t("listings.create.service_type_legend"),
+                classes: "govuk-fieldset__legend--m"
+              }
+            },
+            items: [
+              { value: "physical_only", text: t("listings.service_types.physical_only"), checked: currentServiceType == "physical_only" },
+              { value: "remote_only", text: t("listings.service_types.remote_only"), checked: currentServiceType == "remote_only" },
+              { value: "hybrid", text: t("listings.service_types.hybrid"), checked: currentServiceType == "hybrid" },
+              { value: "location_dependent", text: t("listings.service_types.location_dependent"), checked: currentServiceType == "location_dependent" }
+            ],
+            errorMessage: { text: fieldErrors.service_type } if fieldErrors.service_type else undefined
+          }) }}
+        {% endif %}
+
+        {{ govukInput({
+          label: {
+            text: t("listings.create.location_label") + ("" if config.requireLocation else " (" + t("listings.create.optional") + ")")
+          },
+          hint: { text: t("listings.create.location_hint") },
+          id: "location",
+          name: "location",
+          value: currentLocation,
+          attributes: { maxlength: "255", autocomplete: "off" },
+          errorMessage: { text: fieldErrors.location } if fieldErrors.location else undefined
+        }) }}
+
+        <div class="govuk-form-group{% if fieldErrors.image %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label" for="image">{{ t("listings.edit.image_label" if listing else "listings.create.image_label") }}</label>
+          {% if listingImageUrl %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("listings.edit.current_image") }}</p>
+            <img src="{{ listingImageUrl }}" alt="{{ currentTitle }}" width="120" height="90" loading="lazy" decoding="async" class="nexus-alpha-card-thumb govuk-!-margin-bottom-2">
+          {% endif %}
+          <div id="image-hint" class="govuk-hint">{{ t("listings.edit.image_hint" if listing else "listings.create.image_hint") }}</div>
+          {% if fieldErrors.image %}
+            <p id="image-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.image }}</p>
+          {% endif %}
+          <input class="govuk-file-upload{% if fieldErrors.image %} govuk-file-upload--error{% endif %}" id="image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="image-hint{% if fieldErrors.image %} image-error{% endif %}">
+        </div>
+
+        {{ govukInput({
+          label: {
+            text: t("govuk_alpha_listings.create.skill_tags_label")
+            },
+            hint: { text: t("govuk_alpha_listings.create.skill_tags_hint") },
+            id: "skill_tags",
+            name: "skill_tags",
+            value: currentSkillTags,
+            attributes: { maxlength: "600" },
+            errorMessage: { text: fieldErrors.skill_tags } if fieldErrors.skill_tags else undefined
+        }) }}
+
+        {{ govukButton({ text: t("listings.edit.submit" if listing else "listings.create.submit") }) }}
+      </form>
+
+      {% if listing %}
+        <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+        <h2 class="govuk-heading-m">{{ t("listings.edit.delete_heading") }}</h2>
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+            {{ t("listings.edit.delete_warning") }}
+          </strong>
+        </div>
+        <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/delete') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {{ govukButton({ text: t("listings.edit.delete_button"), classes: "govuk-button--warning" }) }}
+        </form>
+      {% endif %}
+{% endblock %}

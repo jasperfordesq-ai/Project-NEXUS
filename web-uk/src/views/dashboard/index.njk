@@ -1,0 +1,213 @@
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% if status == "onboarding-complete" or successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="dashboard-success-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="dashboard-success-title">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ successMessage or t("onboarding.complete_banner") }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("dashboard.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("dashboard.title") }}</h1>
+  {% if firstName %}
+    <p class="govuk-body-l">{{ t("dashboard.welcome", { name: firstName }) }}</p>
+  {% else %}
+    <p class="govuk-body-l">{{ t("dashboard.description") }}</p>
+  {% endif %}
+
+  {% if not onboardingCompleted %}
+    <div class="govuk-notification-banner" role="region" aria-labelledby="dashboard-onboarding-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="dashboard-onboarding-title">{{ t("dashboard.onboarding_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("dashboard.onboarding_body") }}</p>
+        <p class="govuk-body">
+          <a class="govuk-notification-banner__link" href="{{ urlFor('/onboarding') }}">{{ t("dashboard.onboarding_link") }}</a>
+        </p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if dashboardFeatures.exchangeWorkflow and exchangeAttention and exchangeAttention.count > 0 %}
+    <div class="govuk-notification-banner" role="region" aria-labelledby="dashboard-reviews-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="dashboard-reviews-title">{{ t("dashboard.pending_reviews_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ exchangeAttention.body }}</p>
+        <p class="govuk-body">
+          <a class="govuk-notification-banner__link" href="{{ urlFor('/exchanges') }}">{{ t("dashboard.pending_reviews_link") }}</a>
+        </p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if dashboardFeatures.listings %}
+    <div class="govuk-button-group govuk-!-margin-bottom-6">
+      <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/listings/new') }}">{{ t("dashboard.new_listing") }}</a>
+    </div>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("dashboard.timebank_title") }}</h2>
+      <dl class="nexus-alpha-stat-grid">
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("dashboard.balance_label") }}</dt>
+          <dd>{{ balanceLabel }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("profile.hours_given_label") }}</dt>
+          <dd>{{ profileStats.hoursGivenLabel }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("profile.hours_received_label") }}</dt>
+          <dd>{{ profileStats.hoursReceivedLabel }}</dd>
+        </div>
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("profile.active_listings_label") }}</dt>
+          <dd>{{ profileStats.listingsCountLabel }}</dd>
+        </div>
+      </dl>
+
+      {% if gamification %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("dashboard.progress_title") }}</h2>
+        <p class="govuk-body govuk-!-margin-bottom-1">
+          <strong>{{ t("dashboard.level_label", { level: gamification.levelLabel }) }}</strong>
+          {% if gamification.levelName %}
+            <span class="nexus-alpha-meta">({{ gamification.levelName }})</span>
+          {% endif %}
+          <span aria-hidden="true"> &middot; </span>
+          <span class="nexus-alpha-meta">{{ t("dashboard.xp_label", { xp: gamification.xpLabel }) }}</span>
+        </p>
+        <progress id="xp-progress" max="100" value="{{ gamification.progressPct }}" aria-label="{{ gamification.progressLabel }}">{{ gamification.progressPct }}%</progress>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-top-1" aria-hidden="true">{{ gamification.progressLabel }}</p>
+
+        <h3 class="govuk-heading-m">{{ t("dashboard.badges_title", { count: gamification.badgesCountLabel }) }}</h3>
+        {% if badges and badges.length %}
+          <ul class="govuk-list nexus-alpha-actions">
+            {% for badge in badges %}
+              <li>
+                <strong class="govuk-tag govuk-tag--blue">{{ badge.name or badge.title }}</strong>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="govuk-body">{{ t("dashboard.badges_empty") }}</p>
+        {% endif %}
+      {% endif %}
+
+      {% if upcomingEvents and upcomingEvents.length %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("dashboard.upcoming_events_title") }}</h2>
+        <ul class="govuk-list govuk-list--spaced">
+          {% for event in upcomingEvents %}
+            <li>
+              <a class="govuk-link" href="{{ urlFor('/events/' ~ event.id) }}">{{ event.title }}</a>
+              {% if event.start or event.location %}
+                <br>
+                <span class="govuk-body-s nexus-alpha-meta">
+                  {% if event.start %}{{ event.start | formatDate }}{% endif %}
+                  {% if event.start and event.location %}<span aria-hidden="true"> &middot; </span>{% endif %}
+                  {% if event.location %}{{ event.location }}{% endif %}
+                </span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if endorsements and endorsements.length %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("dashboard.endorsements_title") }}</h2>
+        <ul class="govuk-list nexus-alpha-skill-list">
+          {% for endorsement in endorsements %}
+            <li>
+              <span class="govuk-!-font-weight-bold">{{ endorsement.skillName }}</span>
+              <strong class="govuk-tag govuk-tag--green">{{ endorsement.countLabel }}</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+      <h2 class="govuk-heading-l">{{ t("dashboard.quick_links_title") }}</h2>
+      <ul class="govuk-list govuk-list--spaced">
+        <li><a class="govuk-link" href="{{ urlFor('/profile') }}">{{ t("dashboard.view_profile") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ t("dashboard.edit_profile") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/feed') }}">{{ t("dashboard.view_feed") }}</a></li>
+        {% if dashboardFeatures.messages %}
+          <li><a class="govuk-link" href="{{ urlFor('/messages') }}">{{ t("nav.messages") }}</a></li>
+        {% endif %}
+        {% if dashboardFeatures.connections %}
+          <li><a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("nav.members") }}</a></li>
+        {% endif %}
+        {% if dashboardFeatures.listings %}
+          <li><a class="govuk-link" href="{{ urlFor('/listings') }}">{{ t("dashboard.view_listings") }}</a></li>
+        {% endif %}
+        {% if dashboardFeatures.events %}
+          <li><a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("nav.events") }}</a></li>
+        {% endif %}
+        {% if dashboardFeatures.volunteering %}
+          <li><a class="govuk-link" href="{{ urlFor('/volunteering') }}">{{ t("nav.volunteering") }}</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row govuk-!-margin-top-8">
+    <div class="govuk-grid-column-one-half">
+      <h2 class="govuk-heading-l">{{ t("dashboard.recent_feed_title") }}</h2>
+      {% if not feedItems or not feedItems.length %}
+        <div class="govuk-inset-text">{{ t("dashboard.empty_feed") }}</div>
+      {% else %}
+        <div class="nexus-alpha-card-list">
+          {% for item in feedItems %}
+            <article class="nexus-alpha-card">
+              <strong class="govuk-tag govuk-tag--grey">{{ item.typeLabel }}</strong>
+              <h3 class="govuk-heading-m govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+              </h3>
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("feed.posted_by", { name: item.authorName }) }}</p>
+              {% if item.content %}
+                <p class="govuk-body">{{ item.content }}</p>
+              {% endif %}
+              {% if item.imageUrl %}
+                <img class="nexus-alpha-card-thumb" src="{{ item.imageUrl }}" alt="{{ t('feed.image_alt', { title: item.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-one-half">
+      <h2 class="govuk-heading-l">{{ t("dashboard.recent_listings_title") }}</h2>
+      {% if not listings or not listings.length %}
+        <div class="govuk-inset-text">{{ t("dashboard.empty_listings") }}</div>
+      {% else %}
+        <div class="nexus-alpha-card-list">
+          {% for listing in listings %}
+            <article class="nexus-alpha-card">
+              <strong class="govuk-tag {% if listing.type == "request" %}govuk-tag--purple{% else %}govuk-tag--blue{% endif %}">{{ t("listings." ~ listing.type) }}</strong>
+              <h3 class="govuk-heading-m govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                <a class="govuk-link" href="{{ urlFor('/listings/' ~ listing.id) }}">{{ listing.title }}</a>
+              </h3>
+              {% if listing.description %}
+                <p class="govuk-body">{{ listing.description }}</p>
+              {% endif %}
+              {% if listing.imageUrl %}
+                <img class="nexus-alpha-card-thumb" src="{{ listing.imageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

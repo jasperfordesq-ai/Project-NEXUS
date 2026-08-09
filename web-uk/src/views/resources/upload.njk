@@ -1,0 +1,88 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/resources/library') }}">{{ t("govuk_alpha_resources.actions.back_to_library") }}</a>
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha_resources.upload.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_resources.upload.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_resources.upload.description") }}</p>
+
+      {% if status %}
+        {{ govukErrorSummary({
+          titleText: status.title,
+          errorList: [{ text: status.message, href: "#file" }],
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      {% if fieldErrors and (fieldErrors.title or fieldErrors.file) %}
+        {% set uploadErrors = [] %}
+        {% if fieldErrors.title %}
+          {% set uploadErrors = (uploadErrors.push({ text: fieldErrors.title, href: "#title" }), uploadErrors) %}
+        {% endif %}
+        {% if fieldErrors.file %}
+          {% set uploadErrors = (uploadErrors.push({ text: fieldErrors.file, href: "#file" }), uploadErrors) %}
+        {% endif %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha_resources.states.error_title"),
+          errorList: uploadErrors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/resources/upload') }}" enctype="multipart/form-data" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group{% if fieldErrors.title %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="title">{{ t("govuk_alpha_resources.upload.title_label") }}</label>
+          <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_resources.upload.title_hint") }}</div>
+          {% if fieldErrors.title %}
+            <p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_resources.states.error_title") }}:</span> {{ fieldErrors.title }}</p>
+          {% endif %}
+          <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255" value="{{ values.title or '' }}" aria-describedby="title-hint{% if fieldErrors.title %} title-error{% endif %}">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="description">{{ t("govuk_alpha_resources.upload.description_label") }}</label>
+          <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_resources.upload.description_hint") }}</div>
+          <textarea class="govuk-textarea" id="description" name="description" rows="4" aria-describedby="description-hint">{{ values.description or '' }}</textarea>
+        </div>
+
+        {% if flatCategories and flatCategories.length %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="category_id">{{ t("govuk_alpha_resources.upload.category_label") }}</label>
+            <div id="category_id-hint" class="govuk-hint">{{ t("govuk_alpha_resources.upload.category_hint") }}</div>
+            <select class="govuk-select" id="category_id" name="category_id" aria-describedby="category_id-hint">
+              <option value="">{{ t("govuk_alpha_resources.upload.category_none") }}</option>
+              {% for category in flatCategories %}
+                <option value="{{ category.id }}"{% if (values.category_id or '') == (category.id | string) %} selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+
+        <div class="govuk-form-group{% if fieldErrors.file %} govuk-form-group--error{% endif %}">
+          <label class="govuk-label govuk-label--m" for="file">{{ t("govuk_alpha_resources.upload.file_label") }}</label>
+          <div id="file-hint" class="govuk-hint">{{ t("govuk_alpha_resources.upload.file_hint", { size: maxSizeLabel, types: allowedLabel }) }}</div>
+          {% if fieldErrors.file %}
+            <p id="file-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_resources.states.error_title") }}:</span> {{ fieldErrors.file }}</p>
+          {% endif %}
+          <input class="govuk-file-upload{% if fieldErrors.file %} govuk-file-upload--error{% endif %}" id="file" name="file" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.jpg,.png,.gif,.webp" aria-describedby="file-hint{% if fieldErrors.file %} file-error{% endif %}">
+        </div>
+
+        <div class="govuk-button-group">
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_resources.upload.submit") }}</button>
+          <a class="govuk-link" href="{{ urlFor('/resources/library') }}">{{ t("govuk_alpha_resources.upload.cancel") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

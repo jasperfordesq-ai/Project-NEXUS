@@ -1,0 +1,128 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("about.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("about.title", { name: communityName }) if t else title }}</h1>
+      <p class="govuk-body-l">{{ t("about.description", { name: communityName }) }}</p>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("about.how_it_works.title") }}</h2>
+      <p class="govuk-body">{{ t("about.how_it_works.subtitle") }}</p>
+      <ol class="govuk-list govuk-list--number">
+        {% for step in steps %}
+          <li>
+            <span class="govuk-!-font-weight-bold">{{ step.title }}.</span>
+            {{ step.description }}
+          </li>
+        {% endfor %}
+      </ol>
+
+      <h2 class="govuk-heading-l">{{ t("about.values.title") }}</h2>
+      <p class="govuk-body">{{ t("about.values.subtitle", { name: communityName }) }}</p>
+      {% for value in values %}
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ value.title }}</h3>
+        <p class="govuk-body">{{ value.description }}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if stats %}
+    <h2 class="govuk-heading-l">{{ t("about.stats.title") }}</h2>
+    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.members") }}</dt>
+        <dd>{{ stats.members }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.hours_exchanged") }}</dt>
+        <dd>{{ stats.hoursExchanged }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.active_listings") }}</dt>
+        <dd>{{ stats.listings }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("about.stats.communities") }}</dt>
+        <dd>{{ stats.communities }}</dd>
+      </div>
+    </dl>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("about.credits.title") }}</h2>
+      <p class="govuk-body">{{ t("about.credits.subtitle") }}</p>
+
+      {% if contributorGroups.creator.length %}
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.creator") }}</h3>
+        <ul class="govuk-list">
+          {% for person in contributorGroups.creator %}
+            <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if contributorGroups.founder.length %}
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.founders_heading") }}</h3>
+        <ul class="govuk-list">
+          {% for person in contributorGroups.founder %}
+            <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if contributorGroups.contributor.length %}
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.contributors") }}</h3>
+        <ul class="govuk-list">
+          {% for person in contributorGroups.contributor %}
+            <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+        {% if hasResearchNote %}
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.research_heading") }}</h3>
+          <p class="govuk-body">{{ t("about.credits.research_description") }}</p>
+        {% endif %}
+      {% endif %}
+
+      {% if contributorGroups.acknowledgement.length %}
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.acknowledgements") }}</h3>
+        <ul class="govuk-list">
+          {% for person in contributorGroups.acknowledgement %}
+            <li>{{ person.name }}{% if person.role %} - {{ person.role }}{% endif %}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("about.credits.open_source") }}</h3>
+      <p class="govuk-body">{{ t("about.credits.license_text") }}</p>
+      <ul class="govuk-list">
+        <li>
+          <a class="govuk-link" href="https://github.com/jasperfordesq-ai/nexus-v1" rel="noopener noreferrer">{{ t("about.credits.v1_source") }}</a>
+        </li>
+        <li>
+          <a class="govuk-link" href="https://github.com/jasperfordesq-ai/api.project-nexus.net" rel="noopener noreferrer">{{ t("about.credits.v2_source") }}</a>
+        </li>
+      </ul>
+
+      <h2 class="govuk-heading-l">{{ t("about.cta.title") }}</h2>
+      <p class="govuk-body">{{ t("about.cta.description") }}</p>
+      <div class="govuk-button-group">
+        {% if isAuthenticated %}
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/dashboard') }}">{{ t("about.cta.dashboard") }}</a>
+        {% else %}
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/register') }}">{{ t("about.cta.join") }}</a>
+        {% endif %}
+        <a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("about.cta.contact_us") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

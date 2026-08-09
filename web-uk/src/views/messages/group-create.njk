@@ -1,0 +1,128 @@
+{# Copyright (C) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/messages/groups') }}">{{ t("govuk_alpha_messages.create.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+      {% if groupStatus and groupStatus.type == "success" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="messages-create-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="messages-create-status-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ groupStatus.message }}</p>
+          </div>
+        </div>
+      {% elif groupStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ groupStatus.message }}</li></ul></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha_messages.create.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_messages.create.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_messages.create.intro") }}</p>
+
+      {% if not directMessagingEnabled or restricted %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="create-disabled-title">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="create-disabled-title">{{ t("govuk_alpha.messages.disabled_title") }}</h2></div>
+          <div class="govuk-notification-banner__content"><p class="govuk-body">{% if restricted %}{{ t("govuk_alpha.messages.restricted_detail") }}{% else %}{{ t("govuk_alpha.messages.disabled_detail") }}{% endif %}</p></div>
+        </div>
+      {% endif %}
+
+      <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_messages.create.selected_title") }}</h2>
+        {% if selectedMembers and selectedMembers.length %}
+          <ul class="govuk-list govuk-!-margin-bottom-0">
+            <li class="govuk-!-margin-bottom-2"><strong>{{ t("govuk_alpha_messages.create.you_label") }}</strong></li>
+            {% for member in selectedMembers %}
+              <li class="govuk-!-margin-bottom-2" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+                <span>{{ member.displayName }}</span>
+                <form method="get" action="{{ urlFor('/messages/groups/new') }}" style="display:inline">
+                  {% if groupName %}
+                    <input type="hidden" name="name" value="{{ groupName }}">
+                  {% endif %}
+                  {% for remainingId in member.remainingIds %}
+                    <input type="hidden" name="members[]" value="{{ remainingId }}">
+                  {% endfor %}
+                  <button type="submit" class="govuk-link" style="background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;color:#1d70b8">{{ t("govuk_alpha_messages.create.remove_member") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_messages.create.remove_member_hidden", { name: member.displayName }) }}</span></button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_messages.create.selected_none") }}</p>
+        {% endif %}
+        {% if not canCreate %}
+          <p class="govuk-hint govuk-!-margin-top-3 govuk-!-margin-bottom-0">{{ t("govuk_alpha_messages.create.min_members_hint") }}</p>
+        {% endif %}
+      </div>
+
+      <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+        <form method="get" action="{{ urlFor('/messages/groups/new') }}">
+          {% if groupName %}
+            <input type="hidden" name="name" value="{{ groupName }}">
+          {% endif %}
+          {% for selectedId in selectedIds %}
+            <input type="hidden" name="members[]" value="{{ selectedId }}">
+          {% endfor %}
+          <div class="govuk-form-group govuk-!-margin-bottom-2">
+            <label class="govuk-label govuk-label--m" for="group-member-search">{{ t("govuk_alpha_messages.create.search_label") }}</label>
+            <div id="group-member-search-hint" class="govuk-hint">{{ t("govuk_alpha_messages.create.search_hint") }}</div>
+            <input class="govuk-input govuk-!-width-two-thirds" id="group-member-search" name="q" type="search" value="{{ query }}" aria-describedby="group-member-search-hint">
+          </div>
+          <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_messages.create.search_button") }}</button>
+        </form>
+
+        {% if query %}
+          {% if searchResults and searchResults.length %}
+            <ul class="govuk-list govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+              {% for result in searchResults %}
+                <li class="govuk-!-margin-bottom-2">
+                  <span>{{ result.displayName }}</span>
+                  <form method="get" action="{{ urlFor('/messages/groups/new') }}" class="govuk-!-display-inline">
+                    {% if groupName %}
+                      <input type="hidden" name="name" value="{{ groupName }}">
+                    {% endif %}
+                    {% for selectedId in selectedIds %}
+                      <input type="hidden" name="members[]" value="{{ selectedId }}">
+                    {% endfor %}
+                    <input type="hidden" name="members[]" value="{{ result.id }}">
+                    <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_messages.create.add_member") }}</button>
+                  </form>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0">{{ t("govuk_alpha_messages.create.search_empty") }}</p>
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <form method="post" action="{{ urlFor('/messages/groups') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% if selectedIds and selectedIds.length %}
+          {% for selectedId in selectedIds %}
+            <input type="hidden" name="member_ids[]" value="{{ selectedId }}">
+          {% endfor %}
+        {% else %}
+          <input type="hidden" name="member_ids[]" value="">
+        {% endif %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="group-name">{{ t("govuk_alpha_messages.create.name_label") }}</label>
+          <div id="group-name-hint" class="govuk-hint">{{ t("govuk_alpha_messages.create.name_hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="group-name" name="name" type="text" value="{{ groupName }}" maxlength="100" aria-describedby="group-name-hint" required>
+        </div>
+        <button class="govuk-button" data-module="govuk-button" {% if not canCreate or not canStart %}disabled aria-disabled="true"{% endif %}>{{ t("govuk_alpha_messages.create.create_button") }}</button>
+      </form>
+{% endblock %}

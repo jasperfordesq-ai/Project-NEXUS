@@ -1,0 +1,175 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="group-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="group-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>{{ status.message }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_volunteering.group_signups.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.group_signups.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.group_signups.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if not reservations.length %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.group_signups.empty") }}</div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for reservation in reservations %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ reservation.groupName }}</h2>
+          <p class="govuk-body govuk-!-margin-bottom-2">
+            <strong class="govuk-tag {{ reservation.status.className }}">{{ reservation.status.label }}</strong>
+            {% if reservation.isLeader %}
+              <strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_volunteering.group_signups.leader_tag") }}</strong>
+            {% endif %}
+          </p>
+
+          <dl class="govuk-summary-list govuk-!-margin-bottom-4">
+            {% if reservation.opportunityTitle %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.group_signups.opportunity_label") }}</dt>
+                <dd class="govuk-summary-list__value">
+                  {% if reservation.opportunityId %}
+                    <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ reservation.opportunityId) }}">{{ reservation.opportunityTitle }}</a>
+                  {% else %}
+                    {{ reservation.opportunityTitle }}
+                  {% endif %}
+                </dd>
+              </div>
+            {% endif %}
+            {% if reservation.organizationName %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.group_signups.organisation_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ reservation.organizationName }}</dd>
+              </div>
+            {% endif %}
+            {% if reservation.location %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.group_signups.location_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ reservation.location }}</dd>
+              </div>
+            {% endif %}
+            {% if reservation.shiftLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.group_signups.shift_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ reservation.shiftLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if reservation.createdAtLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.group_signups.created_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ reservation.createdAtLabel }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-2">
+            {{ t("govuk_alpha_volunteering.group_signups.members_title") }} ({{ reservation.membersCountLabel }})
+          </h3>
+          {% if not reservation.members.length %}
+            <p class="govuk-body">{{ t("govuk_alpha_volunteering.group_signups.no_members") }}</p>
+          {% else %}
+            <table class="govuk-table">
+              <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.group_signups.members_title") }}</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.group_signups.members_title") }}</th>
+                  <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.group_signups.status_label") }}</th>
+                  {% if reservation.isLeader and not reservation.isCancelled %}
+                    <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.group_signups.remove_member_button") }}</span></th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for member in reservation.members %}
+                  <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">{{ member.name or ("#" + member.id) }}</td>
+                    <td class="govuk-table__cell"><strong class="govuk-tag {{ member.status.className }}">{{ member.status.label }}</strong></td>
+                    {% if reservation.isLeader and not reservation.isCancelled %}
+                      <td class="govuk-table__cell">
+                        {% if member.id and member.status.value == "confirmed" %}
+                          <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members/' ~ member.id ~ '/remove') }}">
+                            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">
+                              {{ t("govuk_alpha_volunteering.group_signups.remove_member_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.group_signups.remove_member_for", { name: member.name or ("#" + member.id) }) }}</span>
+                            </button>
+                          </form>
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endif %}
+
+          {% if reservation.isLeader and not reservation.isCancelled %}
+            {% if reservation.canAddMembers %}
+              <h3 class="govuk-heading-s govuk-!-margin-top-4 govuk-!-margin-bottom-2">{{ t("govuk_alpha_volunteering.group_signups.add_member_title") }}</h3>
+              <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/members') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="user_id_{{ reservation.id }}">{{ t("govuk_alpha_volunteering.group_signups.add_member_label") }}</label>
+                  <div id="user_id_{{ reservation.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.group_signups.add_member_hint") }}</div>
+                  <input class="govuk-input govuk-input--width-10" id="user_id_{{ reservation.id }}" name="user_id" type="number" min="1" inputmode="numeric" aria-describedby="user_id_{{ reservation.id }}-hint">
+                </div>
+                <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_volunteering.group_signups.add_member_button") }}</button>
+              </form>
+            {% endif %}
+
+            <h3 class="govuk-heading-s govuk-!-margin-top-4 govuk-!-margin-bottom-2">{{ t("govuk_alpha_volunteering.group_signups.cancel_title") }}</h3>
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>
+                {{ t("govuk_alpha_volunteering.group_signups.cancel_warning") }}
+              </strong>
+            </div>
+            <form method="post" action="{{ urlFor('/volunteering/group-signups/' ~ reservation.id ~ '/cancel') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-button--warning" data-module="govuk-button">
+                {{ t("govuk_alpha_volunteering.group_signups.cancel_button") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_volunteering.group_signups.cancel_button_for", { group: reservation.groupName }) }}</span>
+              </button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,57 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="podcast-studio-status-heading" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="podcast-studio-status-heading">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>{{ status.message }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_commerce.podcast_studio.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.podcast_studio.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.podcast_studio.description") }}</p>
+
+  {% if canCreateShow %}
+    <a class="govuk-button" href="{{ urlFor('/podcasts/studio/new') }}" data-module="govuk-button">{{ t("govuk_alpha_commerce.podcast_studio.create_button") }}</a>
+  {% endif %}
+
+  {% if not shows.length %}
+    <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.podcast_studio.empty") }}</p>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for show in shows %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ show.title }}</h2>
+            <strong class="govuk-tag {{ show.statusTag }}">{{ show.statusLabel }}</strong>
+          </div>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ tc("govuk_alpha_commerce.podcast_studio.episode_count", show.episodeCount, { count: show.episodeCount }) }}</p>
+          <a class="govuk-link" href="{{ urlFor('/podcasts/studio/' + (show.id | string)) }}">{{ t("govuk_alpha_commerce.podcast_studio.manage_button") }}</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

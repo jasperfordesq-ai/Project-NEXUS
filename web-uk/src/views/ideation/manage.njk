@@ -1,0 +1,121 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set statusLabels = {
+    draft: "Draft",
+    open: "Open",
+    voting: "Voting",
+    evaluating: "Evaluating",
+    closed: "Closed",
+    archived: "Archived"
+  } %}
+
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ challenge.title }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Manage challenge</h1>
+    <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+  </div>
+
+  <ul class="govuk-list">
+    <li><a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id ~ '/edit') }}">Edit challenge</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id ~ '/outcome') }}">Record an outcome</a></li>
+  </ul>
+
+  <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/favorite') }}" class="govuk-!-margin-bottom-4">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">
+      {{ "Remove from favourites" if isFavorited else "Add to favourites" }}
+    </button>
+  </form>
+
+  <h2 class="govuk-heading-l">Challenge lifecycle</h2>
+  <p class="govuk-body">Choose the next state for this challenge.</p>
+  {% if transitions and transitions.length %}
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/status') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            {% for option in transitions %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="transition-{{ option }}" name="challenge_status" type="radio" value="{{ option }}"{% if loop.first %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="transition-{{ option }}">{{ statusLabels[option] }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Update status</button>
+    </form>
+  {% else %}
+    <div class="govuk-inset-text">There are no lifecycle transitions available from the current state.</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">Link to campaign</h2>
+  <p class="govuk-body">Add this challenge to a campaign so related work is grouped together.</p>
+  {% if campaigns and campaigns.length %}
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/link-campaign') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="campaign_id">Campaign</label>
+        <select class="govuk-select" id="campaign_id" name="campaign_id">
+          {% for campaign in campaigns %}
+            <option value="{{ campaign.id }}">{{ campaign.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Link campaign</button>
+    </form>
+  {% else %}
+    <div class="govuk-inset-text">No campaigns are available.</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">Duplicate</h2>
+  <p class="govuk-body">Create a copy of this challenge that can be edited before publishing.</p>
+  <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/duplicate') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Duplicate</button>
+  </form>
+
+  <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+    <summary class="govuk-details__summary">
+      <span class="govuk-details__summary-text">Delete challenge</span>
+    </summary>
+    <div class="govuk-details__text">
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">Warning</span> This deletes the challenge and its management workflow.</strong>
+      </div>
+      <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/delete') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">Delete challenge</button>
+      </form>
+    </div>
+  </details>
+{% endblock %}

@@ -1,0 +1,88 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/mine') }}">{{ t("govuk_alpha_jobs.shared.back_to_my_postings") }}</a>
+
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.talent.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_jobs.talent.description") }}</p>
+
+  <form method="get" action="{{ urlFor('/jobs/talent-search') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="talent-keywords">{{ t("govuk_alpha_jobs.talent.keywords_label") }}</label>
+      <div id="talent-keywords-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.talent.keywords_hint") }}</div>
+      <input class="govuk-input govuk-!-width-two-thirds" id="talent-keywords" name="keywords" type="text" maxlength="120" value="{{ filters.keywords }}" aria-describedby="talent-keywords-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="talent-skills">{{ t("govuk_alpha_jobs.talent.skills_label") }}</label>
+      <div id="talent-skills-hint" class="govuk-hint">{{ t("govuk_alpha_jobs.talent.skills_hint") }}</div>
+      <input class="govuk-input govuk-!-width-two-thirds" id="talent-skills" name="skills" type="text" maxlength="200" value="{{ filters.skills }}" aria-describedby="talent-skills-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="talent-location">{{ t("govuk_alpha_jobs.talent.location_label") }}</label>
+      <input class="govuk-input govuk-!-width-two-thirds" id="talent-location" name="location" type="text" maxlength="120" value="{{ filters.location }}">
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_jobs.talent.search_button") }}</button>
+    {% if hasSearched %}
+      <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/jobs/talent-search') }}">{{ t("govuk_alpha_jobs.talent.clear_button") }}</a>
+    {% endif %}
+  </form>
+
+  {% if not hasSearched %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.talent.prompt") }}</p>
+    </div>
+  {% elif candidates.length == 0 %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.talent.empty") }}</p>
+    </div>
+  {% else %}
+    <p class="govuk-body">{{ tc("govuk_alpha_jobs.talent.results_count", meta.total, { count: meta.total }) }}</p>
+
+    <div class="nexus-alpha-card-list">
+      {% for candidate in candidates %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            {% if candidate.avatarUrl %}
+              <img class="nexus-alpha-avatar" src="{{ candidate.avatarUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="48" height="48">
+            {% else %}
+              <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ candidate.initial }}</span>
+            {% endif %}
+            <div>
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/jobs/talent-search/' ~ candidate.id) }}">{{ candidate.name }}</a>
+              </h2>
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ candidate.headline }}</p>
+            </div>
+          </div>
+
+          {% if candidate.skillsPreview.length %}
+            <ul class="govuk-list nexus-alpha-tag-list govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+              {% for skill in candidate.skillsPreview %}
+                <li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
+            {% if candidate.location %}{{ candidate.location }}{% endif %}
+            {% if candidate.lastActiveLabel %} &middot; {{ t("govuk_alpha_jobs.talent.last_active", { date: candidate.lastActiveLabel }) }}{% endif %}
+          </p>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if meta.nextHref %}
+      <p class="govuk-!-margin-top-4">
+        <a class="govuk-link" href="{{ urlFor(meta.nextHref) }}">{{ t("govuk_alpha_jobs.talent.show_more") }}</a>
+      </p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

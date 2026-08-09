@@ -1,0 +1,88 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("blog.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("blog.title") }}</h1>
+      <p class="govuk-body-l">{{ t("blog.subtitle", { name: tenantName }) }}</p>
+
+      <form method="get" action="{{ urlFor('/blog') }}" class="govuk-!-margin-bottom-6">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="q">{{ t("blog.search_label") }}</label>
+          <div id="q-hint" class="govuk-hint">{{ t("blog.search_hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="q-hint">
+        </div>
+        {% if categories.length %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="category">{{ t("blog.category_label") }}</label>
+            <select class="govuk-select" id="category" name="category">
+              <option value="">{{ t("blog.all_categories") }}</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}"{% if categoryId == category.id %} selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("blog.search_button") }}</button>
+      </form>
+
+      <h2 class="govuk-heading-m">{{ t("blog.results_title") }}</h2>
+
+      {% if not posts.length %}
+        <div class="govuk-inset-text">
+          {% if searchQuery or categoryId %}{{ t("blog.no_results") }}{% else %}{{ t("blog.empty") }}{% endif %}
+        </div>
+      {% else %}
+        <ul class="govuk-list nexus-alpha-card-list">
+          {% for post in posts %}
+            <li class="nexus-alpha-card">
+              {% if post.featuredImage %}
+                <p class="govuk-!-margin-bottom-2">
+                  <img class="nexus-alpha-card-thumb" src="{{ post.featuredImage }}" alt="{{ t('blog.image_alt', { title: post.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+                </p>
+              {% endif %}
+              {% if loop.first %}
+                <strong class="govuk-tag govuk-tag--blue govuk-!-margin-bottom-2">{{ t("blog.featured_label") }}</strong>
+              {% endif %}
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/blog/' + post.slug) }}">{{ post.title }}</a>
+              </h3>
+              {% if post.excerpt %}
+                <p class="govuk-body govuk-!-margin-bottom-1">{{ post.excerpt }}</p>
+              {% endif %}
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
+                {% if post.category.name %}{{ post.category.name }} &middot; {% endif %}
+                {% if post.publishedAt %}{{ post.publishedAt | formatDate }} &middot; {% endif %}
+                {% if post.readingTime %}{{ t("blog.read_time", { count: post.readingTime }) }}{% endif %}
+              </p>
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if hasMore and nextCursor %}
+          <nav class="govuk-pagination govuk-pagination--block" role="navigation" aria-label="{{ t("blog.more_results_label") }}">
+            <div class="govuk-pagination__next">
+              {% set nextHref = '/blog?q=' + (searchQuery | urlencode) %}
+              {% if categoryId %}
+                {% set nextHref = nextHref + '&category=' + (categoryId | string) %}
+              {% endif %}
+              {% set nextHref = nextHref + '&cursor=' + (nextCursor | urlencode) %}
+              <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
+                <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                  <path d="m8.107-0.0078125-1.4136 1.414 4.55 4.5488h-12.846v2h12.846l-4.55 4.5488 1.4136 1.414 6.9706-6.9627z"></path>
+                </svg>
+              </a>
+            </div>
+          </nav>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

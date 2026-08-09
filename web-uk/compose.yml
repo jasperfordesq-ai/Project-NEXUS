@@ -1,0 +1,70 @@
+# =============================================================================
+# NEXUS UK Frontend - Docker Compose (Source of Truth)
+# =============================================================================
+# This is the primary way to run the UK frontend locally.
+#
+# Usage:
+#   docker compose up              # Development mode (default)
+#   docker compose up -d           # Development mode, detached
+#   docker compose --profile prod up  # Local production-image mode only
+#
+# Port: 5180 (host) -> 3001 (container)
+# API:  Connects to Laravel backend at http://host.docker.internal:8088
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Development service (default)
+  # ---------------------------------------------------------------------------
+  nexus-uk-frontend:
+    container_name: nexus-uk-frontend-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "5180:3001"
+    env_file:
+      - .env.docker
+    volumes:
+      # Mount source for hot reload
+      - ./src:/app/src:delegated
+      - ./public:/app/public:delegated
+      # Prevent overwriting container's node_modules
+      - /app/node_modules
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Local production-image service (use with --profile prod; not deployment)
+  # ---------------------------------------------------------------------------
+  nexus-uk-frontend-prod:
+    container_name: nexus-uk-frontend-prod
+    profiles:
+      - prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "5180:3001"
+    env_file:
+      - .env.docker
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3

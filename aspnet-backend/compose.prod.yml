@@ -1,0 +1,71 @@
+# Production-profile override definitions - operator reference only.
+#
+# DEPLOYMENT HOLD: this file is not an approved whole-stack production
+# procedure. Do not copy it into place or run a blanket `docker compose up` on
+# production. The deployed React SPA uses its explicitly authorized raw
+# `docker run` procedure, and the Web UK service below selects an uncertified
+# ASP.NET target. Before any named-component production action, obtain explicit
+# authorization and read .claude/production-containers.md.
+#
+# The service values below are retained to describe this legacy profile; this
+# warning does not change their behavior.
+
+services:
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # CORS - all production domains
+      - Cors__AllowedOrigins__0=https://platform.project-nexus.net
+      - Cors__AllowedOrigins__1=https://uk.project-nexus.net
+      - Cors__AllowedOrigins__2=https://api.project-nexus.net
+      - Cors__AllowedOrigins__3=https://admin.project-nexus.net
+      # WebAuthn / FIDO2 - production origins (HTTPS required)
+      - Fido2__ServerDomain=project-nexus.net
+      - Fido2__ServerName=Project NEXUS
+      - Fido2__Origins__0=https://platform.project-nexus.net
+      - Fido2__Origins__1=https://uk.project-nexus.net
+      - Fido2__Origins__2=https://admin.project-nexus.net
+      - Fido2__Origins__3=https://api.project-nexus.net
+      # Rate limiting - production values
+      - RateLimiting__Auth__PermitLimit=10
+      - RateLimiting__Auth__WindowSeconds=60
+      - RateLimiting__General__PermitLimit=500
+      - RateLimiting__General__WindowSeconds=60
+      - FileUpload__UploadsRoot=/app/uploads
+      # Sentry — DSN read from production .env (Sentry__Dsn). Empty = disabled.
+      - Sentry__Dsn=${Sentry__Dsn:-}
+      - Sentry__Environment=${Sentry__Environment:-production}
+      - Sentry__TracesSampleRate=${Sentry__TracesSampleRate:-0.1}
+      # Cloudflare Turnstile — secret-key verification on registration paths.
+      # Site key is public and goes to the React/UK frontends only. Empty
+      # secret disables verification (dev/CI mode).
+      - Turnstile__SecretKey=${TURNSTILE_SECRET_KEY:-}
+    volumes:
+      - nexus-backend-uploads:/app/uploads
+
+  # UK Frontend - legacy production-profile definition (no volume mounts).
+  # DEPLOYMENT HOLD: the explicit API_BASE_URL below selects the ASP.NET API,
+  # which is not yet certified for the unchanged shared accessible frontend.
+  # This service is retained to document the deployed experimental topology;
+  # it is not an approved Web UK release path. See
+  # apps/web-uk/DOCKER_CONTRACT.md and .claude/production-containers.md.
+  web-uk:
+    build:
+      context: ./apps/web-uk
+      dockerfile: Dockerfile
+      target: production
+    ports: !override
+      - "127.0.0.1:5180:3001"
+    volumes: !override []
+    env_file: !override []
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - API_BASE_URL=http://api:8080 # legacy uncertified ASP.NET override; do not deploy as Web UK certification target
+      - COOKIE_SECRET=${COOKIE_SECRET:?COOKIE_SECRET environment variable is required}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET environment variable is required}
+      - TENANT_ID=${TENANT_ID:-1}
+      # Cloudflare Turnstile — site key renders the widget; secret key verifies
+      # the token server-side before forwarding to the .NET API.
+      - TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-}
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}

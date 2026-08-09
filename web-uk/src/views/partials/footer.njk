@@ -1,0 +1,65 @@
+{# Copyright © 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  Custom Project NEXUS footer using GOV.UK typography and spacing only.
+  No crown, no GOV.UK logotype, and no official government identity claim.
+#}
+<footer class="govuk-footer" role="contentinfo">
+  <div class="govuk-width-container">
+    {% if alphaFooterColumns and alphaFooterColumns.length %}
+      <div class="govuk-footer__navigation" aria-label="{{ t("footer.nav_label") }}">
+        {% for column in alphaFooterColumns %}
+          <div class="govuk-footer__section govuk-grid-column-one-third">
+            <h2 class="govuk-footer__heading govuk-heading-m">{{ column.heading }}</h2>
+            <ul class="govuk-footer__list">
+              {% for link in column.links %}
+                <li class="govuk-footer__list-item">
+                  <a class="govuk-footer__link" href="{{ link.href }}">{{ link.label }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+      <hr class="govuk-footer__section-break">
+    {% endif %}
+
+    <div class="govuk-footer__meta">
+      <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+        <h2 class="govuk-visually-hidden">{{ t("footer.meta_label") }}</h2>
+
+        {% if tenantSlug %}
+        <ul class="govuk-footer__inline-list">
+          <li class="govuk-footer__inline-list-item">
+            <a class="govuk-footer__link" href="{{ reportProblemUrl or urlFor('/report-a-problem') }}">{{ t("report_problem.footer_link") }}</a>
+          </li>
+          <li class="govuk-footer__inline-list-item">
+            <a class="govuk-footer__link" href="{{ cookieSettingsUrl or urlFor('/cookies') }}">{{ t("cookie_settings.title") }}</a>
+          </li>
+        </ul>
+        {% endif %}
+
+        {% if isAuthenticated and tenantSlug %}
+          <ul class="govuk-footer__inline-list">
+            <li class="govuk-footer__inline-list-item">
+              <form method="post" action="{{ urlFor('/logout') }}" class="nexus-alpha-linkform">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button type="submit" class="govuk-footer__link nexus-alpha-linkbutton">{{ t("footer.sign_out") }}</button>
+              </form>
+            </li>
+          </ul>
+        {% endif %}
+
+        <div class="govuk-footer__meta-custom">
+          <p class="govuk-!-margin-bottom-2">{{ t("footer.licence") }}</p>
+          <p class="govuk-!-margin-bottom-2">{{ t("footer.attribution") }}</p>
+          <p class="govuk-!-margin-bottom-0">
+            <a class="govuk-footer__link" href="{{ sourceCodeUrl or 'https://github.com/jasperfordesq-ai/nexus-v1' }}" rel="noopener noreferrer">{{ t("footer.source") }}</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

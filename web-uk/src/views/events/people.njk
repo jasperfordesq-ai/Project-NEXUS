@@ -1,0 +1,69 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha.events.back_to_event") }}</a>
+  <span class="govuk-caption-l">{{ event.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.events.people_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.events.people_intro") }}</p>
+
+  {% if status == "people-updated" or status == "people-partial" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="people-result-title">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="people-result-title">{{ t("govuk_alpha.states.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha.events.people_updated", { updated: updated, failed: failed }) }}</p></div>
+    </div>
+  {% elif status == "people-invalid" or status == "people-failed" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert">
+      <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p>{{ t("govuk_alpha.events.people_failed") }}</p></div>
+    </div></div>
+  {% endif %}
+
+  {% if canManageAttendance %}
+    <nav class="govuk-button-group" aria-label="{{ t('govuk_alpha.events.operations_navigation') }}">
+      <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/check-in') }}">{{ t("govuk_alpha.events.check_in_title") }}</a>
+    </nav>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha.events.people_metrics_title") }}</h2>
+  <dl class="govuk-summary-list">
+    {% for metric in ["confirmed", "waitlisted", "checked_in", "checked_out", "no_show", "attended"] %}
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha.events.people_metrics." + metric) }}</dt><dd class="govuk-summary-list__value">{{ metrics[metric] or 0 }}</dd></div>
+    {% endfor %}
+  </dl>
+
+  <form method="get" action="{{ urlFor('/events/' + (event.id | string) + '/people') }}" class="govuk-!-margin-bottom-7">
+    <fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.events.people_filters_title") }}</h2></legend>
+      <div class="govuk-form-group"><label class="govuk-label" for="people-search">{{ t("govuk_alpha.events.people_search_label") }}</label><input class="govuk-input govuk-!-width-two-thirds" id="people-search" name="search" type="search" value="{{ query.search }}"></div>
+      <div class="govuk-grid-row">
+        {% for field, options in filters %}
+          <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label" for="{{ field }}">{{ t("govuk_alpha.events.people_filters." + field) }}</label>
+            <select class="govuk-select" id="{{ field }}" name="{{ field }}"><option value="">{{ t("govuk_alpha.events.people_states.all") }}</option>{% for option in options %}<option value="{{ option }}"{% if query[field] == option %} selected{% endif %}>{{ t("govuk_alpha.events.people_states." + option) }}</option>{% endfor %}</select>
+          </div></div>
+        {% endfor %}
+      </div>
+      <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha.actions.search") }}</button>
+    </fieldset>
+  </form>
+
+  <p class="govuk-body" aria-live="polite">{{ tc("govuk_alpha.events.people_result_count", total, { count: total }) }}</p>
+  {% if people.length == 0 %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha.events.people_empty") }}</div>
+  {% else %}
+    {% if canManageRegistration %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/people') }}">{% endif %}
+      {% if canManageRegistration %}<input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">{% endif %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha.events.people_table_caption') }}">
+        <table class="govuk-table"><caption class="govuk-table__caption govuk-table__caption--m">{{ t("govuk_alpha.events.people_table_caption") }}</caption><thead><tr>{% if canManageRegistration %}<th scope="col">{{ t("govuk_alpha.events.people_select") }}</th>{% endif %}<th scope="col">{{ t("govuk_alpha.events.people_member") }}</th><th scope="col">{{ t("govuk_alpha.events.people_registration") }}</th><th scope="col">{{ t("govuk_alpha.events.people_waitlist") }}</th><th scope="col">{{ t("govuk_alpha.events.people_attendance") }}</th></tr></thead>
+          <tbody>{% for person in people %}<tr>{% if canManageRegistration %}<td><div class="govuk-checkboxes govuk-checkboxes--small"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="person-{{ person.id }}" name="user_ids[]" type="checkbox" value="{{ person.id }}"><label class="govuk-label govuk-checkboxes__label" for="person-{{ person.id }}"><span class="govuk-visually-hidden">{{ t("govuk_alpha.events.people_select_member", { name: person.name or t('govuk_alpha.members.unknown_member') }) }}</span></label></div></div><input type="hidden" name="version_{{ person.id }}" value="{{ person.registrationVersion }}"></td>{% endif %}<th scope="row">{{ person.name or t("govuk_alpha.members.unknown_member") }}</th><td>{{ t("govuk_alpha.events.people_states." + person.registrationState) }}</td><td>{{ t("govuk_alpha.events.people_states." + person.waitlistState) }}{% if person.waitlistPosition %}<br><span class="govuk-hint">{{ t("govuk_alpha.events.people_queue_position", { position: person.waitlistPosition }) }}</span>{% endif %}</td><td>{{ t("govuk_alpha.events.people_states." + person.attendanceState) }}</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+      {% if canManageRegistration %}<fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.events.people_action_title") }}</h2></legend>
+        <div class="govuk-form-group"><label class="govuk-label" for="people-action">{{ t("govuk_alpha.events.people_action_label") }}</label><select class="govuk-select" id="people-action" name="action" required>{% for action in ["approve", "reject", "cancel"] %}<option value="{{ action }}">{{ t("govuk_alpha.events.people_actions." + action) }}</option>{% endfor %}</select></div>
+        <div class="govuk-form-group"><label class="govuk-label" for="people-reason">{{ t("govuk_alpha.events.people_reason_label") }}</label><div id="people-reason-hint" class="govuk-hint">{{ t("govuk_alpha.events.people_reason_hint") }}</div><textarea class="govuk-textarea" id="people-reason" name="reason" rows="3" aria-describedby="people-reason-hint"></textarea></div>
+        <div class="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="people-confirmation" name="confirmation" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="people-confirmation">{{ t("govuk_alpha.events.people_confirmation") }}</label></div></div>
+        <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button">{{ t("govuk_alpha.events.people_apply_action") }}</button>
+      </fieldset></form>{% endif %}
+  {% endif %}
+  {% if previousHref or nextHref %}<nav class="govuk-pagination" aria-label="{{ t('govuk_alpha.events.people_pagination') }}">{% if previousHref %}<div class="govuk-pagination__prev"><a class="govuk-link govuk-pagination__link" rel="prev" href="{{ urlFor(previousHref) }}">{{ t("govuk_alpha.events.people_previous") }}</a></div>{% endif %}{% if nextHref %}<div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha.events.people_next") }}</a></div>{% endif %}</nav>{% endif %}
+{% endblock %}

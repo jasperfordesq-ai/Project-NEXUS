@@ -1,0 +1,59 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">Back to all challenges</a>
+
+  <span class="govuk-caption-xl">{{ tenantName }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Browse by tag</h1>
+  <p class="govuk-body-l">Find challenges by their most popular tags.</p>
+
+  {% if not tags.length %}
+    <div class="govuk-inset-text">No tags have been added to any challenges yet.</div>
+  {% else %}
+    <h2 class="govuk-heading-m">Popular tags</h2>
+    <ul class="govuk-list nexus-alpha-inline-list">
+      {% for tag in tags %}
+        <li>
+          <a class="govuk-link{% if selectedTag and tag.name | lower == selectedTag | lower %} govuk-!-font-weight-bold{% endif %}" href="{{ urlFor('/ideation/tags?tag=' ~ (tag.name | urlencode)) }}">
+            {{ tag.name }} ({{ tag.countText }})
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if selectedTag %}
+    <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+    <div class="nexus-alpha-module-row">
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Challenges tagged "{{ selectedTag }}"</h2>
+      <a class="govuk-link" href="{{ urlFor('/ideation/tags') }}">Clear tag</a>
+    </div>
+
+    {% if not matches.length %}
+      <div class="govuk-inset-text">No challenges are tagged "{{ selectedTag }}" right now.</div>
+    {% else %}
+      <div class="nexus-alpha-card-list">
+        {% for challenge in matches %}
+          <article class="nexus-alpha-card">
+            <div class="nexus-alpha-module-row">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ challenge.title }}</a>
+              </h3>
+              <strong class="govuk-tag {{ challenge.statusClass }}">{{ challenge.statusLabel }}</strong>
+            </div>
+            {% if challenge.description %}
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ challenge.description }}</p>
+            {% endif %}
+            <p class="govuk-body-s nexus-alpha-actions govuk-!-margin-bottom-0">
+              <a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ t("ideation.view") }}</a>
+            </p>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

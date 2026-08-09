@@ -1,0 +1,178 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation/members') }}" class="govuk-back-link">{{ t("federation.member.back") }}</a>
+
+  {% if statusBanner %}
+    {% if statusBanner.type == "error" %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li><a href="#fed-actions">{{ statusBanner.message }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="federation-member-status-title">
+        <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="federation-member-status-title">{{ t("states.success_title") }}</h2></div>
+        <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p></div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("federation.member.caption") }}</span>
+  <div class="nexus-alpha-module-row">
+    {% if member.avatar %}
+      <img class="nexus-alpha-card-thumb" src="{{ member.avatar }}" alt="{{ member.name }}" width="80" height="80" loading="lazy" decoding="async">
+    {% endif %}
+    <div>
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ member.name }}</h1>
+      {% if member.reputationCount > 0 %}
+        <p class="govuk-body-s govuk-!-margin-bottom-1">
+          <strong class="govuk-tag {{ member.reputationTagClass }} govuk-!-margin-right-1">{{ t("fed2.reviews.reputation_label", { score: member.reputationScoreLabel }) }}</strong>
+          <span class="nexus-alpha-meta">{{ member.reputationCountLabel }}</span>
+        </p>
+      {% endif %}
+      {% if member.tenantName %}
+        <p class="govuk-body-l govuk-!-margin-bottom-0">{{ t("federation.member.community_label") }}: {{ member.tenantName }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% include "federation/_nav.njk" %}
+
+  {% if member.bio %}
+    <h2 class="govuk-heading-l">{{ t("federation.member.about_label") }}</h2>
+    <div class="govuk-body">{{ member.bio | nl2br | safe }}</div>
+  {% endif %}
+
+  <dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("federation.member.community_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ member.tenantName }}</dd>
+    </div>
+    {% if member.location %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.member.location_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ member.location }}</dd>
+      </div>
+    {% endif %}
+    {% if member.serviceReachLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.member.reach_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ member.serviceReachLabel }}</dd>
+      </div>
+    {% endif %}
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("federation.member.skills_label") }}</dt>
+      <dd class="govuk-summary-list__value">
+        {% if member.skills.length %}
+          {% for skill in member.skills %}
+            <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ skill }}</strong>
+          {% endfor %}
+        {% else %}
+          {{ t("federation.member.no_skills") }}
+        {% endif %}
+      </dd>
+    </div>
+  </dl>
+
+  <section id="fed-actions" class="govuk-!-margin-top-6" aria-labelledby="fed-actions-heading">
+    <h2 id="fed-actions-heading" class="govuk-heading-l">{{ t("fed2.member_actions.heading") }}</h2>
+
+    {% if not viewer.optedIn %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.member_actions.not_opted_in") }}</p></div>
+      <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/opt-in') }}">{{ t("fed2.member_actions.optin_link") }}</a>
+    {% else %}
+      {% if member.connectionStatus == "accepted" %}
+        <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("fed2.member_actions.connect_accepted") }}</strong></p>
+      {% elif member.connectionStatus == "pending" or member.connectionStatus == "requested" %}
+        <p class="govuk-body"><strong class="govuk-tag govuk-tag--yellow">{{ t("fed2.member_actions.connect_pending") }}</strong></p>
+      {% else %}
+        <form method="post" action="{{ urlFor('/federation/connections') }}" class="govuk-!-margin-bottom-6">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="receiver_id" value="{{ member.id }}">
+          <input type="hidden" name="receiver_tenant_id" value="{{ member.tenantId }}">
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="connect-message">{{ t("fed2.member_actions.message_label") }}</label>
+            <div id="connect-message-hint" class="govuk-hint">{{ t("fed2.member_actions.message_hint") }}</div>
+            <input class="govuk-input govuk-!-width-two-thirds" id="connect-message" name="message" type="text" maxlength="1000" aria-describedby="connect-message-hint">
+          </div>
+
+          <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("fed2.member_actions.connect") }}</button>
+        </form>
+      {% endif %}
+
+      {% if member.messagingEnabled and viewer.messagingEnabled %}
+        <form method="post" action="{{ urlFor('/federation/messages') }}" class="govuk-!-margin-bottom-6">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="receiver_id" value="{{ member.id }}">
+          <input type="hidden" name="receiver_tenant_id" value="{{ member.tenantId }}">
+
+          <h3 class="govuk-heading-m">{{ t("fed2.member_actions.message") }}</h3>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="message-subject">{{ t("polish_federation.message_subject_label") }}</label>
+            <input class="govuk-input govuk-!-width-two-thirds" id="message-subject" name="subject" type="text" maxlength="255">
+          </div>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="message-body">{{ t("messages.message_label") }}</label>
+            <textarea class="govuk-textarea" id="message-body" name="body" rows="4" maxlength="10000"></textarea>
+          </div>
+
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("fed2.member_actions.message") }}</button>
+        </form>
+      {% elif not member.messagingEnabled %}
+        <p class="govuk-body-s nexus-alpha-meta">{{ t("fed2.member_actions.messaging_off") }}</p>
+      {% endif %}
+
+      {% if member.transactionsEnabled and viewer.transactionsEnabled %}
+        <div class="govuk-button-group">
+          <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="{{ urlFor('/federation/members/' + (member.id | string) + '/transfer?tenant_id=' + (member.tenantId | string)) }}">{{ t("fed2.member_actions.transfer") }}</a>
+          <a class="govuk-link" href="{{ urlFor('/federation/members/' + (member.id | string) + '?tenant_id=' + (member.tenantId | string)) }}">{{ t("polish_federation.transfer_cancel") }}</a>
+        </div>
+      {% elif not member.transactionsEnabled %}
+        <p class="govuk-body-s nexus-alpha-meta">{{ t("fed2.member_actions.transactions_off") }}</p>
+      {% endif %}
+    {% endif %}
+  </section>
+
+  {% if member.showReviews %}
+    <section class="govuk-!-margin-top-6" aria-labelledby="fed-reviews-heading">
+    <h2 id="fed-reviews-heading" class="govuk-heading-l">{{ t("fed2.reviews.heading") }}</h2>
+    {% if reviews.length %}
+      <div class="nexus-alpha-card-list">
+        {% for review in reviews %}
+          <article class="nexus-alpha-card">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ review.reviewerName }}</h3>
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("fed2.reviews.rating_value", { rating: review.rating }) }}</p>
+            {% if review.createdAtLabel %}
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("fed2.reviews.date_label") }}: {{ review.createdAtLabel }}</p>
+            {% endif %}
+            {% if review.partnerName or review.verified %}
+              <p class="govuk-body-s govuk-!-margin-bottom-1 nexus-alpha-inline-list">
+                {% if review.partnerName %}<strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ t("fed2.reviews.from_partner", { community: review.partnerName }) }}</strong>{% endif %}
+                {% if review.verified %}<strong class="govuk-tag govuk-tag--green">{{ t("fed2.reviews.verified") }}</strong>{% endif %}
+              </p>
+            {% endif %}
+            {% if review.comment %}
+              <p class="govuk-body govuk-!-margin-bottom-0">{{ review.comment }}</p>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.reviews.empty") }}</p></div>
+    {% endif %}
+    </section>
+  {% endif %}
+{% endblock %}

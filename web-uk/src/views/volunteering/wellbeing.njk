@@ -1,0 +1,131 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="wellbeing-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="wellbeing-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ status.message }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha.volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.wellbeing.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.wellbeing.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--m" for="wellbeing-score">{{ t("govuk_alpha_volunteering.wellbeing.score_label") }}</label>
+    <p class="govuk-body govuk-!-margin-bottom-1">{{ wellbeing.score }} {{ t("govuk_alpha_volunteering.wellbeing.score_out_of") }}</p>
+    <progress id="wellbeing-score" max="100" value="{{ wellbeing.score }}" aria-label="{{ t('govuk_alpha_volunteering.wellbeing.score_label') }}">{{ wellbeing.score }}%</progress>
+  </div>
+
+  <p class="govuk-body">
+    {{ t("govuk_alpha_volunteering.wellbeing.risk_label") }}:
+    <strong class="govuk-tag {{ wellbeing.risk.className }}">{{ wellbeing.risk.label }}</strong>
+  </p>
+
+  <dl class="nexus-alpha-stat-grid">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.wellbeing.hours_week") }}</dt>
+      <dd>{{ wellbeing.hoursThisWeekLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.wellbeing.hours_month") }}</dt>
+      <dd>{{ wellbeing.hoursThisMonthLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.wellbeing.streak_days") }}</dt>
+      <dd>{{ wellbeing.streakDays }}</dd>
+    </div>
+  </dl>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.warnings_title") }}</h2>
+  {% if wellbeing.warnings.length %}
+    <ul class="govuk-list govuk-list--bullet">
+      {% for warning in wellbeing.warnings %}
+        <li>{{ warning }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.no_warnings") }}</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.checkin_title") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.wellbeing.checkin_hint") }}</p>
+  <form method="post" action="{{ urlFor('/volunteering/wellbeing/checkin') }}" class="govuk-!-margin-bottom-8">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.wellbeing.mood_label") }}</legend>
+      <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+        {% for mood in wellbeing.moodOptions %}
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mood-{{ mood.value }}" name="mood" type="radio" value="{{ mood.value }}"{% if mood.checked %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="mood-{{ mood.value }}">{{ mood.label }}</label>
+          </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <div class="govuk-form-group govuk-!-margin-top-4">
+      <label class="govuk-label" for="note">{{ t("govuk_alpha_volunteering.wellbeing.note_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
+      <div id="note-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.wellbeing.note_hint") }}</div>
+      <textarea class="govuk-textarea" id="note" name="note" rows="3" maxlength="500" aria-describedby="note-hint"></textarea>
+    </div>
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.wellbeing.checkin_button") }}</button>
+  </form>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.recent_title") }}</h2>
+  {% if wellbeing.recentCheckins.length %}
+    <table class="govuk-table">
+      <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.wellbeing.recent_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.wellbeing.recent_when") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.wellbeing.recent_mood") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.wellbeing.note_label") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for checkin in wellbeing.recentCheckins %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ checkin.createdAtLabel or "—" }}</td>
+            <td class="govuk-table__cell">{{ checkin.moodLabel }}</td>
+            <td class="govuk-table__cell">{{ checkin.note }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.recent_empty") }}</div>
+  {% endif %}
+{% endblock %}

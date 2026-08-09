@@ -1,0 +1,64 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  {% if successMessage %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: t("states.success_title"),
+      text: successMessage
+    }) }}
+  {% endif %}
+
+  {% if errorMessage %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: [
+        {
+          text: errorMessage,
+          href: "#type-nudge"
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.buddy.caption") }}: {{ goal.title }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.buddy.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_goals.buddy.intro") }}</p>
+
+  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy-actions') }}" class="govuk-grid-row">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-grid-column-two-thirds">
+      <fieldset class="govuk-fieldset govuk-form-group">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_goals.buddy.type_legend") }}</legend>
+        <div class="govuk-radios" data-module="govuk-radios">
+          {% for type in buddyTypes %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="type-{{ type.value }}" name="type" type="radio" value="{{ type.value }}" aria-describedby="type-{{ type.value }}-hint"{% if loop.first %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="type-{{ type.value }}">{{ type.label }}</label>
+              <div id="type-{{ type.value }}-hint" class="govuk-hint govuk-radios__hint">{{ type.hint }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="message">{{ t("govuk_alpha_goals.buddy.message_label") }}</label>
+        <div id="message-hint" class="govuk-hint">{{ t("govuk_alpha_goals.buddy.message_help") }}</div>
+        <textarea class="govuk-textarea" id="message" name="message" rows="3" maxlength="1000" aria-describedby="message-hint"></textarea>
+      </div>
+
+      <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_goals.buddy.submit") }}</button>
+    </div>
+  </form>
+{% endblock %}

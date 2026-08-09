@@ -1,0 +1,28 @@
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("footer.columns.legal.privacy") }}</h1>
+
+      <p class="govuk-body">This privacy policy explains how Project NEXUS Community collects, uses and protects your personal information.</p>
+
+      <h2 class="govuk-heading-l">What data we collect</h2>
+      <p class="govuk-body">We collect:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>your email address when you sign in</li>
+        <li>information about how you use this service</li>
+      </ul>
+
+      <h2 class="govuk-heading-l">How we use your data</h2>
+      <p class="govuk-body">We use your data to:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>provide access to the service</li>
+        <li>improve the service</li>
+      </ul>
+
+      <h2 class="govuk-heading-l">Contact</h2>
+      <p class="govuk-body">If you have questions about this privacy policy, <a href="{{ urlFor('/contact') }}" class="govuk-link">{{ t("legal.fallback.contact_link") }}</a>.</p>
+    </div>
+  </div>
+{% endblock %}

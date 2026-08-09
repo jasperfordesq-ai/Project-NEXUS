@@ -1,0 +1,181 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set opportunityTitle = opportunity.title or t("govuk_alpha.volunteering.detail_title") %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="opportunity-status-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="opportunity-status-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p>{{ status.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("govuk_alpha.volunteering.detail_title") }}</span>
+      <h1 class="govuk-heading-xl">{{ opportunityTitle }}</h1>
+      {% if opportunity.is_remote %}
+        <strong class="govuk-tag govuk-tag--turquoise">{{ t("govuk_alpha.volunteering.remote") }}</strong>
+      {% endif %}
+      {% if opportunity.description %}
+        <div class="govuk-body govuk-!-margin-top-5">{{ opportunity.description | nl2br | safe }}</div>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+      <div class="govuk-inset-text">
+        {% if opportunity.organization.logo_url %}
+          <img class="nexus-alpha-org-logo govuk-!-margin-bottom-2" src="{{ opportunity.organization.logo_url }}" alt="{{ t('govuk_alpha.volunteering.org_logo_alt', { name: opportunity.organisationName or t('govuk_alpha.volunteering.organization') }) }}" width="96" height="96" loading="lazy" decoding="async">
+        {% endif %}
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ opportunity.organisationName or t("govuk_alpha.volunteering.organization") }}</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha.polish_gamify.vol_about_heading") }}</h2>
+  <dl class="govuk-summary-list">
+    {% if opportunity.organisationName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha.volunteering.organization") }}</dt>
+        <dd class="govuk-summary-list__value">{{ opportunity.organisationName }}</dd>
+      </div>
+    {% endif %}
+    {% if opportunity.location %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha.volunteering.location") }}</dt>
+        <dd class="govuk-summary-list__value">{{ opportunity.location }}</dd>
+      </div>
+    {% endif %}
+    {% if opportunity.categoryName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha.volunteering.category_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ opportunity.categoryName }}</dd>
+      </div>
+    {% endif %}
+    {% if opportunity.skills_needed %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha.volunteering.skills") }}</dt>
+        <dd class="govuk-summary-list__value">{{ opportunity.skills_needed }}</dd>
+      </div>
+    {% endif %}
+    {% if opportunity.start_date %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha.volunteering.start_date") }}</dt>
+        <dd class="govuk-summary-list__value">{{ opportunity.start_date | date }}</dd>
+      </div>
+    {% endif %}
+    {% if opportunity.end_date %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha.volunteering.end_date") }}</dt>
+        <dd class="govuk-summary-list__value">{{ opportunity.end_date | date }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha.volunteering.shifts_title") }}</h2>
+  {% if opportunity.shifts and opportunity.shifts.length %}
+    <div class="nexus-alpha-card-list">
+      {% for shift in opportunity.shifts %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-2">{{ shift.start_time | formatEventDate }}</h3>
+          <dl class="nexus-alpha-inline-list">
+            {% if shift.end_time %}
+              <div>
+                <dt>{{ t("govuk_alpha.events.ends") }}</dt>
+                <dd>{{ shift.end_time | formatEventDate }}</dd>
+              </div>
+            {% endif %}
+            {% if shift.capacity %}
+              <div>
+                <dt>{{ t("govuk_alpha.volunteering.shift_capacity", { count: shift.capacity }) }}</dt>
+                <dd>{{ t("govuk_alpha.volunteering.shift_spaces_left", { count: shift.spacesAvailable }) }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          {% if opportunity.isApprovedApplicant and shift.id and not shift.isPast %}
+            {% if opportunity.signedUpShiftId == shift.id %}
+              <p class="govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha.volunteering.shift_signed_up") }}</strong></p>
+              <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/cancel') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.cancel_shift") }}</button>
+              </form>
+            {% elif shift.hasSpace %}
+              <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/shifts/' ~ shift.id ~ '/signup') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha.volunteering.sign_up_shift") }}</button>
+              </form>
+            {% else %}
+              <strong class="govuk-tag govuk-tag--red">{{ t("govuk_alpha.volunteering.shift_full") }}</strong>
+            {% endif %}
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha.volunteering.no_shifts") }}</div>
+  {% endif %}
+
+  {% if authRequired %}
+    <div class="govuk-notification-banner govuk-!-margin-top-7" data-module="govuk-notification-banner" role="region" aria-labelledby="volunteering-auth-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="volunteering-auth-title">{{ t("govuk_alpha.states.auth_required") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-body">{{ t("govuk_alpha.volunteering.auth_required_detail") }}</p>
+        <div class="govuk-button-group">
+          <a class="govuk-button" href="{{ urlFor('/login') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha.nav.login") }}</a>
+          <a class="govuk-link" href="{{ urlFor('/register') }}">{{ t("govuk_alpha.nav.register") }}</a>
+        </div>
+      </div>
+    </div>
+  {% elif opportunity.hasApplied %}
+    <div class="govuk-inset-text govuk-!-margin-top-7">{{ t("govuk_alpha.volunteering.already_applied") }}</div>
+  {% else %}
+    <form method="post" action="{{ urlFor('/volunteering/opportunities/' ~ opportunityId ~ '/apply') }}" class="govuk-!-margin-top-7">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <fieldset class="govuk-fieldset" aria-describedby="apply-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.volunteering.apply_title") }}</h2>
+        </legend>
+        <div id="apply-hint" class="govuk-hint">{{ t("govuk_alpha.volunteering.apply_message_hint") }}</div>
+        {% if opportunity.shifts and opportunity.shifts.length %}
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="shift_id">{{ t("govuk_alpha.volunteering.shift_label") }}</label>
+            <select class="govuk-select" id="shift_id" name="shift_id">
+              <option value="">{{ t("govuk_alpha.volunteering.no_shift_preference") }}</option>
+              {% for shift in opportunity.shifts %}
+                <option value="{{ shift.id }}">{{ shift.start_time | formatEventDate }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="message">{{ t("govuk_alpha.volunteering.apply_message_label") }}</label>
+          <textarea class="govuk-textarea" id="message" name="message" rows="5"></textarea>
+        </div>
+      </fieldset>
+      <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha.actions.apply") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

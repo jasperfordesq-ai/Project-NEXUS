@@ -1,0 +1,169 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set isEdit = mode == "edit" %}
+  {% set backHref = isEdit and challenge.id and urlFor('/ideation/' ~ challenge.id) or urlFor('/ideation') %}
+  {% set formAction = isEdit and challenge.id and urlFor('/ideation/' ~ challenge.id ~ '/edit') or urlFor('/ideation/new') %}
+  {% set currentStatus = challenge.status or "draft" %}
+  {% set isInvalid = status == "challenge-invalid" %}
+  {% set statusOptions = ["draft", "open", "voting", "evaluating", "closed", "archived"] %}
+  {% set statusLabels = {
+    draft: "Draft",
+    open: "Open",
+    voting: "Voting",
+    evaluating: "Evaluating",
+    closed: "Closed",
+    archived: "Archived"
+  } %}
+
+  <a href="{{ backHref }}" class="govuk-back-link">{{ t("polish_federation.transfer_cancel") }}</a>
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% elseif isInvalid %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#title">Enter a challenge title.</a></li>
+            <li><a href="#description">Enter a challenge description.</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">Ideation</span>
+  <h1 class="govuk-heading-xl">{{ "Edit challenge" if isEdit else "Create challenge" }}</h1>
+  <p class="govuk-body-l">
+    {{ "Update the challenge details and lifecycle state." if isEdit else "Describe the challenge you want people to respond to." }}
+  </p>
+
+  {% if not isEdit and templates and templates.length %}
+    <details class="govuk-details" data-module="govuk-details">
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">Use a challenge template</span>
+      </summary>
+      <div class="govuk-details__text">
+        <p class="govuk-body">Templates can help you structure common community challenge formats.</p>
+        <ul class="govuk-list">
+          {% for template in templates %}
+            <li class="govuk-!-margin-bottom-1">
+              <strong>{{ template.title }}</strong>
+              {% if template.description %}
+                <span class="govuk-body-s nexus-alpha-meta"> - {{ template.description }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </details>
+  {% endif %}
+
+  <form method="post" action="{{ formAction }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if isInvalid %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label" for="title">{{ t("group_exchanges.form_title_label") }}</label>
+      <div id="title-hint" class="govuk-hint">Use a short title people can scan in the challenge list.</div>
+      {% if isInvalid %}
+        <p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a challenge title.</p>
+      {% endif %}
+      <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ challenge.title or '' }}" aria-describedby="title-hint{% if isInvalid %} title-error{% endif %}">
+    </div>
+
+    <div class="govuk-form-group{% if isInvalid %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label" for="description">Description</label>
+      <div id="description-hint" class="govuk-hint">Explain the problem, who it affects, and what good ideas should consider.</div>
+      {% if isInvalid %}
+        <p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a challenge description.</p>
+      {% endif %}
+      <textarea class="govuk-textarea" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint{% if isInvalid %} description-error{% endif %}">{{ challenge.description or '' }}</textarea>
+    </div>
+
+    {% if categories and categories.length %}
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="category_id">Category</label>
+        <select class="govuk-select" id="category_id" name="category_id">
+          <option value="">{{ t("events.no_category") }}</option>
+          {% for category in categories %}
+            <option value="{{ category.id }}"{% if challenge.categoryId == category.id %} selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="category">Category text</label>
+      <div id="category-hint" class="govuk-hint">Use this when the challenge needs a plain-text category.</div>
+      <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="100" value="{{ challenge.category or '' }}" aria-describedby="category-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="prize_description">Prize or recognition</label>
+      <textarea class="govuk-textarea" id="prize_description" name="prize_description" rows="3" maxlength="2000">{{ challenge.prizeDescription or '' }}</textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="submission_deadline">Submission deadline</label>
+      <div id="submission_deadline-hint" class="govuk-hint">Use ISO date format, for example 2026-08-31.</div>
+      <input class="govuk-input govuk-input--width-20" id="submission_deadline" name="submission_deadline" type="text" value="{{ challenge.submissionDeadline or '' }}" aria-describedby="submission_deadline-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="voting_deadline">Voting deadline</label>
+      <div id="voting_deadline-hint" class="govuk-hint">Use ISO date format, for example 2026-09-15.</div>
+      <input class="govuk-input govuk-input--width-20" id="voting_deadline" name="voting_deadline" type="text" value="{{ challenge.votingDeadline or '' }}" aria-describedby="voting_deadline-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="max_ideas_per_user">Maximum ideas per person</label>
+      <div id="max_ideas_per_user-hint" class="govuk-hint">Leave blank if there is no limit.</div>
+      <input class="govuk-input govuk-input--width-5" id="max_ideas_per_user" name="max_ideas_per_user" type="text" inputmode="numeric" value="{{ challenge.maxIdeasPerUser or '' }}" aria-describedby="max_ideas_per_user-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="cover_image">Cover image URL</label>
+      <input class="govuk-input" id="cover_image" name="cover_image" type="url" maxlength="500" value="{{ challenge.coverImage or '' }}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="tags">Tags</label>
+      <div id="tags-hint" class="govuk-hint">Separate tags with commas.</div>
+      <input class="govuk-input" id="tags" name="tags" type="text" value="{{ challenge.tagsText or '' }}" aria-describedby="tags-hint">
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          {% for option in statusOptions %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="challenge-status-{{ option }}" name="challenge_status" type="radio" value="{{ option }}"{% if currentStatus == option %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="challenge-status-{{ option }}">{{ statusLabels[option] }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-button-group">
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ "Save challenge" if isEdit else "Create challenge" }}</button>
+      <a class="govuk-link" href="{{ backHref }}">{{ t("polish_federation.transfer_cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

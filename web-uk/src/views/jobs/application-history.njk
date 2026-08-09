@@ -1,0 +1,40 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs/applications') }}">{{ t("govuk_alpha_jobs.history.back_link") }}</a>
+
+  <span class="govuk-caption-xl">{{ vacancyTitle or tenantName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_jobs.history.title") }}</h1>
+
+  {% if history.length == 0 %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_jobs.history.empty") }}</p>
+    </div>
+  {% else %}
+    <ol class="govuk-list">
+      {% for entry in history %}
+        <li class="govuk-!-margin-bottom-4">
+          <strong class="govuk-tag govuk-tag--blue">{{ entry.statusLabel }}</strong>
+          {% if entry.fromLabel %}
+            <span class="govuk-body-s nexus-alpha-meta"> - {{ entry.fromLabel }}</span>
+          {% endif %}
+
+          {% if entry.changedAtLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1 govuk-!-margin-top-1">
+              {{ entry.changedAtLabel }}{% if entry.changedByLabel %} - {{ entry.changedByLabel }}{% endif %}
+            </p>
+          {% endif %}
+
+          {% if entry.notesText %}
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ entry.notesText }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+{% endblock %}

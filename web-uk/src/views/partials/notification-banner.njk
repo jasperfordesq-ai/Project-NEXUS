@@ -1,0 +1,18 @@
+{#
+  Safe notification banner partial that properly escapes user content
+  Usage:
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+#}
+
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% if notificationMessage %}
+  {# Using titleText ensures proper escaping of user content #}
+  {{ govukNotificationBanner({
+    type: notificationType if notificationType else undefined,
+    titleText: t("states.success_title") if notificationType == "success" else "Important",
+    text: notificationMessage
+  }) }}
+{% endif %}

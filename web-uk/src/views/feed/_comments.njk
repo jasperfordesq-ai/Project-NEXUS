@@ -1,0 +1,57 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% macro commentList(comments, depth, item, requiresAuth, currentUserId, csrfToken, urlFor, t) %}
+  <ol class="govuk-list nexus-alpha-comments-list{% if depth > 0 %} nexus-alpha-comments-list--nested{% endif %}">
+    {% for comment in comments %}
+      {% set commentAuthorId = comment.author.id or comment.author_id or comment.user_id %}
+      {% set authorName = comment.author.name or comment.author_name or t("feed.unknown_author") %}
+      {% set ownComment = currentUserId and commentAuthorId == currentUserId and comment.id %}
+      <li class="nexus-alpha-comment">
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+          {% if comment.author.avatarAssetUrl %}<img class="nexus-alpha-avatar nexus-alpha-avatar--small" src="{{ comment.author.avatarAssetUrl }}" alt="" loading="lazy" decoding="async" width="32" height="32">{% endif %}
+          <strong>{{ authorName }}</strong>
+          {% if comment.created_at %}<span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("feed.comment_posted_on_prefix") }}</span><time datetime="{{ comment.created_at }}">{{ comment.created_at | formatDate }}</time>{% endif %}
+        </p>
+        <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content or comment.body }}</p>
+
+        {% if not requiresAuth and comment.id %}
+          <div class="govuk-button-group govuk-!-margin-bottom-2">
+            {% for reaction in [{ type: "like", symbol: "&#128077;" }, { type: "love", symbol: "&#10084;" }, { type: "celebrate", symbol: "&#127881;" }] %}
+              <form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/react') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="emoji" value="{{ reaction.type }}">
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if reaction.type in (comment.user_reactions or []) %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button"><span aria-hidden="true">{{ reaction.symbol | safe }}</span> {{ t("feed_t1.reaction_" + reaction.type) }}{% if comment.reactions and comment.reactions[reaction.type] %} ({{ comment.reactions[reaction.type] }}){% endif %}</button>
+              </form>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if not requiresAuth and comment.id and (depth < 4 or ownComment) %}
+          <div class="nexus-alpha-comment-actions govuk-!-margin-bottom-2">
+            {% if depth < 4 %}
+              <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+                <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("actions.reply") }}</span></summary>
+                <div class="govuk-details__text">
+                  <form method="post" action="{{ urlFor('/feed/items/' + item.type + '/' + (item.id | string) + '/comments') }}">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="parent_id" value="{{ comment.id }}">
+                    <div class="govuk-form-group"><label class="govuk-label" for="reply-{{ comment.id }}">{{ t("feed.reply_label") }}</label><textarea class="govuk-textarea" id="reply-{{ comment.id }}" name="content" rows="3" required></textarea></div>
+                    <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.reply") }}</button>
+                  </form>
+                </div>
+              </details>
+            {% endif %}
+            {% if ownComment %}
+              <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.edit_comment") }}</span></summary><div class="govuk-details__text"><form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/update') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><div class="govuk-form-group"><label class="govuk-label" for="edit-comment-{{ comment.id }}">{{ t("feed.edit_comment_label") }}</label><textarea class="govuk-textarea" id="edit-comment-{{ comment.id }}" name="content" rows="3" required>{{ comment.content or comment.body }}</textarea></div><button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("actions.save_changes") }}</button></form></div></details>
+              <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("feed.delete_comment") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("feed.delete_comment_confirm") }}</p><form method="post" action="{{ urlFor('/feed/comments/' + (comment.id | string) + '/delete') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("feed.delete_comment_button") }}</button></form></div></details>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if comment.replies and comment.replies.length %}{{ commentList(comment.replies, depth + 1, item, requiresAuth, currentUserId, csrfToken, urlFor, t) }}{% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+{% endmacro %}

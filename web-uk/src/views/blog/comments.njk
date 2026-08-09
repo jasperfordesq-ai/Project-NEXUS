@@ -1,0 +1,171 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% macro renderComment(comment, post, reactionLabels, reactionEmoji, depth) %}
+  <li id="comment-{{ comment.id }}" class="nexus-alpha-comment">
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
+      <strong>{{ comment.user.name }}</strong>{% if comment.edited %} <span class="govuk-!-font-weight-regular">({{ t("govuk_alpha_blogreviews.comments.edited") }})</span>{% endif %}{% if comment.createdAt %}
+        <span aria-hidden="true"> | </span><span class="govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.comments.posted_on_prefix") }} </span><time datetime="{{ comment.createdAt }}">{{ comment.createdAt | formatDate }}</time>{% endif %}
+    </p>
+    <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
+
+    <div class="nexus-alpha-reactions govuk-!-margin-bottom-2">
+      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">{{ tc("govuk_alpha_blogreviews.reactions.count", comment.reactionTotal, { count: comment.reactionTotal }) }}</p>
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.reactions.comment_legend") }}</legend>
+        <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-0">
+          {% for reactionType, label in reactionLabels %}
+            {% set typeCount = comment.reactions[reactionType] or 0 %}
+            <form method="post" action="{{ urlFor('/blog/comments/' + (comment.id | string) + '/react') }}" class="nexus-alpha-reaction-form">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="slug" value="{{ post.slug }}">
+              <input type="hidden" name="emoji" value="{{ reactionType }}">
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if reactionType in comment.userReactions %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{% if reactionType in comment.userReactions %}true{% else %}false{% endif %}">
+                <span aria-hidden="true">{{ reactionEmoji[reactionType] }}</span> {{ label }}{% if typeCount > 0 %} ({{ typeCount }}){% endif %}<span class="govuk-visually-hidden"> {{ t("govuk_alpha_blogreviews.reactions.for_comment") }}</span>
+              </button>
+            </form>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    {% if depth < 2 or comment.isOwn %}
+      <div class="nexus-alpha-comment-actions govuk-!-margin-bottom-2">
+        {% if depth < 2 %}
+          <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_blogreviews.comments.reply_toggle") }}</span></summary>
+            <div class="govuk-details__text">
+              <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments/add') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="reply-{{ comment.id }}">{{ t("govuk_alpha_blogreviews.comments.reply_to", { name: comment.user.name }) }}</label>
+                  <textarea class="govuk-textarea" id="reply-{{ comment.id }}" name="body" rows="3" maxlength="5000" required></textarea>
+                </div>
+                <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.reply_submit") }}</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+        {% if comment.isOwn %}
+          <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_blogreviews.comments.edit_toggle") }}</span></summary>
+            <div class="govuk-details__text">
+              <form method="post" action="{{ urlFor('/blog/comments/' + (comment.id | string) + '/update') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="slug" value="{{ post.slug }}">
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="edit-comment-{{ comment.id }}">{{ t("govuk_alpha_blogreviews.comments.edit_label") }}</label>
+                  <textarea class="govuk-textarea" id="edit-comment-{{ comment.id }}" name="content" rows="3" maxlength="5000" required>{{ comment.content }}</textarea>
+                </div>
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.edit_submit") }}</button>
+              </form>
+            </div>
+          </details>
+          <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_blogreviews.comments.delete_toggle") }}</span></summary>
+            <div class="govuk-details__text">
+              <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.states.error_prefix") }}</span>{{ t("govuk_alpha_blogreviews.comments.delete_warning") }}</strong>
+              </div>
+              <form method="post" action="{{ urlFor('/blog/comments/' + (comment.id | string) + '/delete') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="slug" value="{{ post.slug }}">
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.delete_submit") }}</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+      </div>
+    {% endif %}
+    {% if comment.replies.length and depth < 4 %}
+      <ul class="govuk-list nexus-alpha-comments-list--nested">
+        {% for reply in comment.replies %}
+          {{ renderComment(reply, post, reactionLabels, reactionEmoji, depth + 1) }}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/blog/' + post.slug) }}">{{ t("govuk_alpha_blogreviews.comments.back_to_post") }}</a>
+
+      {% if statusBanner and statusBanner.type == "success" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha_blogreviews.states.success_title") }}</h2></div>
+          <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p></div>
+        </div>
+      {% elif statusBanner and statusBanner.type == "error" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha_blogreviews.states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#body">{{ statusBanner.message }}</a></li></ul></div></div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha_blogreviews.comments.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ post.title }}</h1>
+
+      <section id="post-reactions" class="govuk-!-margin-bottom-6">
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_blogreviews.reactions.post_legend") }}</h2>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1" aria-live="polite">
+          {{ tc("govuk_alpha_blogreviews.reactions.count", reactions.total, { count: reactions.total }) }}
+        </p>
+        <div class="nexus-alpha-actions govuk-button-group govuk-!-margin-bottom-2">
+          {% for reactionType, label in reactionLabels %}
+            {% set typeCount = reactions.counts[reactionType] or 0 %}
+            <form method="post" action="{{ urlFor('/blog/' + post.slug + '/react') }}" class="nexus-alpha-reaction-form">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="emoji" value="{{ reactionType }}">
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0{% if reactions.userReaction == reactionType %} nexus-alpha-reaction--active{% endif %}" data-module="govuk-button" aria-pressed="{% if reactions.userReaction == reactionType %}true{% else %}false{% endif %}">
+                {{ label }}{% if typeCount > 0 %} ({{ typeCount }}){% endif %}
+              </button>
+            </form>
+          {% endfor %}
+        </div>
+        <ul class="govuk-list nexus-alpha-inline-list govuk-!-margin-bottom-0">
+          {% for reactionType, count in reactions.counts %}
+            {% if count > 0 %}
+              <li><a class="govuk-link" href="{{ urlFor('/blog/' + post.slug + '/likers/' + reactionType) }}">{{ t("govuk_alpha_blogreviews.reactions.view_likers") }} ({{ count }})</a></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+
+      <section id="comments">
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_blogreviews.comments.heading") }} <span class="govuk-!-font-weight-regular">({{ commentsTotal }})</span></h2>
+
+        {% if not comments.length %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("blog.comments_empty") }}</p></div>
+        {% else %}
+          <ul class="govuk-list nexus-alpha-comments-list">
+            {% for comment in comments %}
+              {{ renderComment(comment, post, reactionLabels, reactionEmoji, 0) }}
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_blogreviews.comments.add_heading") }}</h3>
+        <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments/add') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'body' %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_blogreviews.comments.body_label") }}</label>
+            <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_blogreviews.comments.body_hint") }}</div>
+            {% if statusBanner and statusBanner.anchor == 'body' %}<p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.states.error_prefix") }}</span> {{ statusBanner.message }}</p>{% endif %}
+            <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if statusBanner and statusBanner.anchor == 'body' %} body-error{% endif %}"></textarea>
+          </div>
+          <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.submit") }}</button>
+        </form>
+      </section>
+    </div>
+  </div>
+{% endblock %}

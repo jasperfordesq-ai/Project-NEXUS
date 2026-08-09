@@ -1,0 +1,98 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.insights.caption") }}: {{ goal.title }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.insights.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_goals.insights.intro") }}</p>
+
+  {% if not insights.hasInsights %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_goals.insights.load_failed") }}</p>
+    </div>
+  {% else %}
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_goals.insights.current_streak") }}</dt>
+        <dd class="govuk-summary-list__value">
+          {{ insights.streakText }}
+          <span class="govuk-!-display-block govuk-body-s nexus-alpha-meta">{{ insights.bestStreakText }}</span>
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_goals.insights.next_checkin") }}</dt>
+        <dd class="govuk-summary-list__value">
+          {% if insights.checkinDue %}
+            <strong class="govuk-tag govuk-tag--orange">{{ t("govuk_alpha_goals.insights.checkin_due") }}</strong>
+          {% else %}
+            {{ insights.nextCheckinText }}
+          {% endif %}
+          <span class="govuk-!-display-block govuk-body-s nexus-alpha-meta">{{ insights.frequencyHelper }}</span>
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_goals.insights.checkins") }}</dt>
+        <dd class="govuk-summary-list__value">
+          {{ insights.checkinsText }}
+          <span class="govuk-!-display-block govuk-body-s nexus-alpha-meta">{{ insights.lastCheckinText }}</span>
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_goals.insights.milestones") }}</dt>
+        <dd class="govuk-summary-list__value">
+          {{ insights.milestonesText }}
+          <progress class="govuk-!-display-block" max="100" value="{{ insights.milestonePercent }}" aria-label="{{ t('govuk_alpha_goals.insights.milestones_progress_aria', { percent: insights.milestonePercent }) }}">{{ insights.milestonePercent }}%</progress>
+        </dd>
+      </div>
+    </dl>
+
+    {% if insights.milestones.length %}
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_goals.insights.milestone_plan") }}</h2>
+      <ul class="govuk-list govuk-list--spaced nexus-alpha-card-list govuk-!-margin-bottom-6">
+        {% for milestone in insights.milestones %}
+          <li class="nexus-alpha-card">
+            <div class="nexus-alpha-module-row">
+              <span class="govuk-body govuk-!-margin-bottom-0">{{ milestone.title }}</span>
+              <strong class="govuk-tag {{ milestone.tagClass }}">{{ milestone.statusLabel }}</strong>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if insights.buddyNotes.length %}
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_goals.insights.recent_buddy_support") }}</h2>
+      <ul class="govuk-list nexus-alpha-card-list govuk-!-margin-bottom-6">
+        {% for note in insights.buddyNotes %}
+          <li class="nexus-alpha-card">
+            <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ note.typeLabel }}</strong></p>
+            {% if note.message %}
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ note.message }}</p>
+            {% endif %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
+              {{ note.buddyName }}{% if note.createdAtLabel %} &middot; {{ note.createdAtLabel }}{% endif %}
+            </p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+
+  <nav class="govuk-!-margin-top-4" aria-label="{{ t('govuk_alpha_goals.insights.title') }}">
+    <ul class="govuk-list">
+      {% if isOwner %}
+        <li><a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/checkin') }}">{{ t("govuk_alpha_goals.insights.log_checkin_link") }}</a></li>
+        <li><a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/reminder') }}">{{ t("govuk_alpha_goals.insights.reminder_link") }}</a></li>
+      {% endif %}
+      {% if isBuddy %}
+        <li><a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/buddy-actions') }}">{{ t("govuk_alpha_goals.insights.buddy_actions_link") }}</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endblock %}

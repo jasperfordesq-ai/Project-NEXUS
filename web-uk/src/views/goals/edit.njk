@@ -1,0 +1,88 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  {% if errorMessage %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: [
+        {
+          text: errorMessage,
+          href: "#title"
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("goals.edit_caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("goals.edit_title") }}</h1>
+
+      <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/edit') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="title">{{ t("goals.title_label") }}</label>
+          <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ goal.rawTitle }}" required>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="target_value">{{ t("goals.target_label") }}</label>
+          <div id="tv-hint" class="govuk-hint">{{ t("goals.target_hint") }}</div>
+          <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" value="{{ goal.targetValue }}" required aria-describedby="tv-hint">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="description">{{ t("goals.description_label") }}</label>
+          <textarea class="govuk-textarea" id="description" name="description" rows="3" maxlength="1000">{{ goal.rawDescription }}</textarea>
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="deadline">{{ t("goals.deadline_label") }}</label>
+          <input class="govuk-input govuk-input--width-10" id="deadline" name="deadline" type="date" value="{{ goal.deadlineValue }}">
+        </div>
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="checkin_frequency">{{ t("goals.frequency_label") }}</label>
+          <div id="freq-hint" class="govuk-hint">{{ t("goals.frequency_hint") }}</div>
+          <select class="govuk-select" id="checkin_frequency" name="checkin_frequency" aria-describedby="freq-hint">
+            {% for frequency in frequencies %}
+              <option value="{{ frequency.value }}"{% if goal.checkinFrequency == frequency.value %} selected{% endif %}>{{ frequency.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="govuk-checkboxes govuk-checkboxes--small govuk-form-group" data-module="govuk-checkboxes">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="is_public" name="is_public" type="checkbox" value="1"{% if goal.isPublic %} checked{% endif %}>
+            <label class="govuk-label govuk-checkboxes__label" for="is_public">{{ t("goals.public_label") }}</label>
+          </div>
+        </div>
+
+        <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("goals.save_button") }}</button>
+      </form>
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.delete_title") }}</h2>
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+          {{ t("goals.delete_warning") }}
+        </strong>
+      </div>
+      <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/delete') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">{{ t("goals.delete_button") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

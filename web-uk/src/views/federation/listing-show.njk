@@ -1,0 +1,80 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation/listings') }}" class="govuk-back-link">{{ t("federation.listings_browse.detail_back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("federation.listings_browse.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ listing.title }}</h1>
+
+  {% include "federation/_nav.njk" %}
+
+  <p class="govuk-body-s govuk-!-margin-bottom-3 nexus-alpha-inline-list">
+    {% if listing.type == "request" %}
+      <strong class="govuk-tag govuk-tag--purple govuk-!-margin-right-1">{{ listing.typeLabel }}</strong>
+    {% else %}
+      <strong class="govuk-tag govuk-tag--blue govuk-!-margin-right-1">{{ listing.typeLabel }}</strong>
+    {% endif %}
+    {% if listing.categoryName %}
+      <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ listing.categoryName }}</strong>
+    {% endif %}
+    {% if listing.tenantName %}
+      <strong class="govuk-tag govuk-tag--grey">{{ t("federation.listings_browse.community_label") }}: {{ listing.tenantName }}</strong>
+    {% endif %}
+  </p>
+
+  {% if listing.imageUrl %}
+    <img src="{{ listing.imageUrl }}" alt="{{ listing.title }}" loading="lazy" class="govuk-!-margin-bottom-4" style="max-width: 100%; height: auto;">
+  {% endif %}
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("federation.listings_browse.category_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ listing.categoryName or "—" }}</dd>
+    </div>
+
+    {% if listing.estimatedHours and listing.estimatedHours > 0 %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.listings_browse.hours_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ listing.estimatedHoursLabel }}</dd>
+      </div>
+    {% endif %}
+
+    {% if listing.location %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.location_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ listing.location }}</dd>
+      </div>
+    {% endif %}
+
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("federation.listings_browse.posted_by_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ listing.authorName }}</dd>
+    </div>
+
+    {% if listing.createdAt %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("federation.listings_browse.posted_on_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ listing.createdAtLabel }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if listing.description %}
+    <h2 class="govuk-heading-m">{{ t("federation.listings_browse.detail_description_heading") }}</h2>
+    <p class="govuk-body">{{ listing.description | nl2br | safe }}</p>
+  {% endif %}
+
+  {% if listing.memberHref %}
+    <div class="govuk-button-group">
+      <a class="govuk-link" href="{{ urlFor(listing.memberHref) }}">{{ t("federation.listings_browse.view_profile") }}</a>
+      {% if listing.canContact %}
+        <a class="govuk-button" href="{{ urlFor(listing.memberHref) }}" data-module="govuk-button">{{ t("federation.listings_browse.contact_author") }}</a>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

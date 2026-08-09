@@ -1,0 +1,56 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{#
+  Laravel Blade source: accessible-frontend/views/partials/cookie-banner.blade.php.
+  This is an HTML-first preparation surface only; backend consent-audit parity is
+  still tracked separately.
+#}
+{% if showAlphaCookieBanner %}
+  <div class="govuk-cookie-banner" data-nosnippet role="region" aria-label="{{ t("cookie_banner.aria_label", { service: tenantName }) }}">
+    {% if alphaCookieChoice %}
+      <div class="govuk-cookie-banner__message govuk-width-container" role="alert">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-cookie-banner__content">
+              <p class="govuk-body">
+                {% if alphaCookieChoice == 'accepted' %}
+                  {{ t("cookie_banner.confirm_accepted") }}
+                {% else %}
+                  {{ t("cookie_banner.confirm_rejected") }}
+                {% endif %}
+                <a class="govuk-link" href="{{ urlFor('/cookies') }}">{{ t("cookie_banner.confirm_change_link") }}</a>
+                {{ t("cookie_banner.confirm_change_suffix") }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="govuk-button-group">
+          <a class="govuk-link" href="{{ currentUrl }}">{{ t("cookie_banner.hide") }}</a>
+        </div>
+      </div>
+    {% else %}
+      <form method="post" action="{{ urlFor('/cookie-consent') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="return" value="{{ currentUrl }}">
+        <div class="govuk-cookie-banner__message govuk-width-container">
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+              <h2 class="govuk-cookie-banner__heading govuk-heading-m">{{ t("cookie_banner.heading", { service: tenantName }) }}</h2>
+              <div class="govuk-cookie-banner__content">
+                <p class="govuk-body">{{ t("cookie_banner.intro") }}</p>
+                <p class="govuk-body">{{ t("cookie_banner.analytics_intro") }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="govuk-button-group">
+            <button type="submit" name="cookies" value="accept" class="govuk-button" data-module="govuk-button">{{ t("cookie_banner.accept") }}</button>
+            <button type="submit" name="cookies" value="reject" class="govuk-button" data-module="govuk-button">{{ t("cookie_banner.reject") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/cookies') }}">{{ t("cookie_banner.view") }}</a>
+          </div>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}

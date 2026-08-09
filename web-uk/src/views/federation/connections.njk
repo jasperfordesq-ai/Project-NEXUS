@@ -1,0 +1,139 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set tabs = [
+  { id: "accepted", labelKey: "fed2.connections.tab_accepted", emptyKey: "fed2.connections.empty_accepted" },
+  { id: "received", labelKey: "fed2.connections.tab_received", emptyKey: "fed2.connections.empty_received" },
+  { id: "sent", labelKey: "fed2.connections.tab_sent", emptyKey: "fed2.connections.empty_sent" }
+] %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("fed2.connections.back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("fed2.connections.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("fed2.connections.title") }}</h1>
+  <p class="govuk-body-l">{{ t("fed2.connections.description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
+  {% if statusBanner %}
+    {% if statusBanner.type == "error" %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li><a href="#connections-list">{{ statusBanner.message }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="fed-connections-status">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="fed-connections-status">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if not allowed %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("fed2.connections.not_available") }}</p></div>
+  {% else %}
+  <div class="govuk-tabs" data-module="govuk-tabs">
+    <h2 class="govuk-tabs__title">{{ t("polish_federation.connections_tabs_label") }}</h2>
+    <ul class="govuk-tabs__list">
+      {% for tab in tabs %}
+        <li class="govuk-tabs__list-item{% if activeTab == tab.id %} govuk-tabs__list-item--selected{% endif %}">
+          <a class="govuk-tabs__tab" href="{{ urlFor('/federation/connections?tab=' + tab.id) }}" id="tab-{{ tab.id }}"{% if activeTab == tab.id %} aria-current="page"{% endif %}>{{ t(tab.labelKey) }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% for tab in tabs %}
+      <div class="govuk-tabs__panel{% if activeTab != tab.id %} govuk-tabs__panel--hidden{% endif %}" id="panel-{{ tab.id }}">
+        {% if activeTab == tab.id %}
+          {% if loadError %}
+            <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+              <div role="alert">
+                <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+                <div class="govuk-error-summary__body">
+                  <p class="govuk-body">{{ t("fed2.connections.load_error") }}</p>
+                  <ul class="govuk-list govuk-error-summary__list"><li><a href="{{ urlFor('/federation/connections?tab=' + tab.id) }}">{{ t("fed2.connections.try_again") }}</a></li></ul>
+                </div>
+              </div>
+            </div>
+          {% elif connections.length == 0 %}
+            <div class="govuk-inset-text"><p class="govuk-body">{{ t(tab.emptyKey) }}</p></div>
+            {% if tab.id == "accepted" %}
+              <a href="{{ urlFor('/federation/members') }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">{{ t("fed2.connections.browse_members") }}</a>
+            {% endif %}
+          {% else %}
+            <div class="nexus-alpha-card-list" id="connections-list">
+              {% for connection in connections %}
+                <article class="nexus-alpha-card">
+                  <h2 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(connection.href) }}">{{ connection.name }}</a></h2>
+                  <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+                    <strong class="govuk-tag govuk-tag--grey">{{ t("fed2.connections.community_label") }}: {{ connection.tenantName }}</strong>
+                  </p>
+
+                  {% if connection.createdAtLabel %}
+                    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("fed2.connections.created_label") }}: {{ connection.createdAtLabel }}</p>
+                  {% endif %}
+
+                  {% if connection.isSent %}
+                    <p class="govuk-body-s govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--yellow">{{ t("fed2.connections.pending_label") }}</strong></p>
+                  {% endif %}
+
+                  {% if connection.isReceived and connection.message %}
+                    <div class="govuk-inset-text govuk-!-margin-top-2 govuk-!-margin-bottom-2">
+                      <p class="govuk-body govuk-!-margin-bottom-0">
+                        <span class="govuk-visually-hidden">{{ t("fed2.connections.request_message_label") }}: </span>{{ connection.message }}
+                      </p>
+                    </div>
+                  {% endif %}
+
+                  {% if connection.isReceived %}
+                    <div class="govuk-button-group">
+                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/accept') }}">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <button type="submit" class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.accept") }}</button>
+                      </form>
+                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/reject') }}">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.reject") }}</button>
+                      </form>
+                    </div>
+                  {% elif connection.isAccepted %}
+                    <div class="govuk-button-group">
+                      <a class="govuk-link" href="{{ urlFor(connection.href) }}">{{ t("fed2.connections.message") }}</a>
+                      <form method="post" action="{{ urlFor('/federation/connections/' + (connection.id | string) + '/remove') }}">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("fed2.connections.remove") }}</button>
+                      </form>
+                    </div>
+                  {% endif %}
+                </article>
+              {% endfor %}
+            </div>
+            {% if page > 1 or hasMore %}
+              <nav class="govuk-pagination" aria-label="{{ t('fed2.connections.title') }}">
+                {% if page > 1 %}<div class="govuk-pagination__prev"><a class="govuk-link govuk-pagination__link" href="{{ urlFor('/federation/connections?tab=' + tab.id + '&page=' + ((page - 1) | string)) }}#connections-list" rel="prev"><svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path></svg><span class="govuk-pagination__link-title">{{ t("fed2.connections.pagination_previous") }}</span></a></div>{% endif %}
+                {% if hasMore %}<div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" href="{{ urlFor('/federation/connections?tab=' + tab.id + '&page=' + ((page + 1) | string)) }}#connections-list" rel="next"><span class="govuk-pagination__link-title">{{ t("fed2.connections.pagination_next") }}</span><svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg></a></div>{% endif %}
+              </nav>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/nexus-score') }}">{{ t("govuk_alpha_gamification.common.back_to_nexus_score") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.tiers.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.tiers.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.tiers.description") }}</p>
+
+  {% if not tierScore.hasScore %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.tiers.unavailable") }}</p>
+    </div>
+  {% else %}
+    <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel govuk-!-margin-bottom-6">
+      <div class="govuk-panel__body">
+        {{ tierScore.scoreLabel }}
+        {% if tierScore.currentTierLabel %}<br>{{ tierScore.currentTierLabel }}{% endif %}
+      </div>
+    </div>
+
+    <div class="govuk-inset-text">{{ tierScore.nextTierLabel }}</div>
+
+    <table class="govuk-table govuk-!-margin-top-4">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.tiers.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.tiers.tier_column") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.tiers.threshold_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.tiers.status_column") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in tierScore.rows %}
+          <tr class="govuk-table__row{% if row.isCurrent %} nexus-alpha-row--active{% endif %}">
+            <td class="govuk-table__cell">{{ row.name }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.thresholdLabel }}</td>
+            <td class="govuk-table__cell">
+              <strong class="govuk-tag {{ row.statusClass }}">{{ row.statusLabel }}</strong>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

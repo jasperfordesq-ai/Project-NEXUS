@@ -1,0 +1,181 @@
+# =============================================================================
+# Docker Compose - Nexus Backend (Isolated Stack)
+# =============================================================================
+# This is the SOURCE OF TRUTH for running the backend locally.
+#
+# ISOLATION: This stack uses its own network and volumes, completely
+# independent from any other Docker projects on this machine.
+#
+# Quick start:
+#   export JWT_SECRET="YourSecure32CharacterSecretHere!"  # or set in .env
+#   docker compose up -d
+#   docker compose logs -f api
+#
+# IMPORTANT: JWT_SECRET must be set via environment variable or .env file
+# =============================================================================
+
+name: nexus-backend
+
+services:
+  # ---------------------------------------------------------------------------
+  # API Service (ASP.NET Core 8)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-backend-api
+    ports:
+      - "5080:8080"  # Host:Container - Access at http://localhost:5080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=nexus_dev;Username=postgres;Password=postgres
+      # JWT_SECRET MUST be provided via environment variable or .env file
+      # DO NOT hardcode secrets here - the app will fail to start without this
+      - Jwt__Secret=${JWT_SECRET:?JWT_SECRET environment variable is required}
+      - Jwt__Issuer=
+      - Jwt__Audience=
+      - Cors__AllowedOrigins__0=http://localhost:5080
+      - Cors__AllowedOrigins__1=http://localhost:5273
+      - Cors__AllowedOrigins__2=http://localhost:5180
+      - Cors__AllowedOrigins__3=http://localhost:5190
+      # Rate limiting (relaxed for development)
+      - RateLimiting__Auth__PermitLimit=10
+      - RateLimiting__Auth__WindowSeconds=60
+      - RateLimiting__General__PermitLimit=200
+      - RateLimiting__General__WindowSeconds=60
+      # RabbitMQ configuration
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__Username=${RABBITMQ_USER:-guest}
+      - RabbitMq__Password=${RABBITMQ_PASS:-guest}
+      - RabbitMq__VirtualHost=/
+      - RabbitMq__ExchangeName=nexus.events
+      - RabbitMq__Enabled=true
+      # WebAuthn/Passkey (FIDO2) configuration
+      - Fido2__ServerDomain=localhost
+      - Fido2__ServerName=Project NEXUS
+      - Fido2__Origins__0=http://localhost:5080
+      - Fido2__Origins__1=http://localhost:5273
+      - Fido2__Origins__2=http://localhost:5180
+      - FileUpload__UploadsRoot=/app/uploads
+      # Sentry — DSN read from .env (Sentry__Dsn). Empty = disabled.
+      - Sentry__Dsn=${Sentry__Dsn:-}
+      - Sentry__Environment=${Sentry__Environment:-development}
+      - Sentry__TracesSampleRate=${Sentry__TracesSampleRate:-0.1}
+    volumes:
+      - nexus-backend-uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - nexus-backend-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Database (PostgreSQL 16)
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16.4-bookworm
+    container_name: nexus-backend-db
+    # DB is internal-only by default (no host port exposed)
+    # Uncomment the next two lines if you need direct DB access from host:
+    # ports:
+    #   - "5435:5432"
+    environment:
+      POSTGRES_DB: nexus_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - nexus-backend-db-data:/var/lib/postgresql/data
+    networks:
+      - nexus-backend-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexus_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Message Broker (RabbitMQ)
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: nexus-backend-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP protocol
+      - "15672:15672" # Management UI (http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    volumes:
+      - nexus-backend-rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - nexus-backend-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # UK Frontend (apps/web-uk) - GOV.UK Design System (Express/Node)
+  # Previously at htdocs/nexus-uk-frontend/
+  # ---------------------------------------------------------------------------
+  web-uk:
+    build:
+      context: ./apps/web-uk
+      dockerfile: Dockerfile
+      target: development
+    container_name: nexus-uk-frontend-dev
+    ports:
+      - "5180:3001"
+    volumes:
+      - ./apps/web-uk:/app
+      - /app/node_modules
+    env_file:
+      - ./apps/web-uk/.env.docker
+    networks:
+      - nexus-backend-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+# -----------------------------------------------------------------------------
+# Networks (isolated from other Docker projects)
+# -----------------------------------------------------------------------------
+networks:
+  nexus-backend-net:
+    name: nexus-backend-net
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Volumes (persistent, isolated)
+# -----------------------------------------------------------------------------
+volumes:
+  nexus-backend-db-data:
+    name: nexus-backend-db-data
+  nexus-backend-rabbitmq-data:
+    name: nexus-backend-rabbitmq-data
+  nexus-backend-uploads:
+    name: nexus-backend-uploads

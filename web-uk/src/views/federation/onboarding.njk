@@ -1,0 +1,273 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("govuk_alpha_federation.onboarding.back_link") }}</a>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_federation.onboarding.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_federation.onboarding.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_federation.onboarding.subtitle") }}</p>
+
+      {% include "federation/_nav.njk" %}
+
+      {% if statusBanner %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_federation.onboarding.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#fed-onboarding-form">{{ statusBanner.message }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="govuk-!-margin-bottom-6">
+        <p class="govuk-body-s govuk-!-margin-bottom-1">
+          <strong>{{ t("govuk_alpha_federation.onboarding.step_progress", { current: stepNumber, total: totalSteps }) }}</strong>
+          {% if step == "welcome" %}
+            <span class="nexus-alpha-meta">— {{ t("govuk_alpha_federation.onboarding.step_welcome") }}</span>
+          {% elif step == "privacy" %}
+            <span class="nexus-alpha-meta">— {{ t("govuk_alpha_federation.onboarding.step_privacy") }}</span>
+          {% elif step == "communication" %}
+            <span class="nexus-alpha-meta">— {{ t("govuk_alpha_federation.onboarding.step_communication") }}</span>
+          {% else %}
+            <span class="nexus-alpha-meta">— {{ t("govuk_alpha_federation.onboarding.step_confirm") }}</span>
+          {% endif %}
+        </p>
+        <progress class="nexus-alpha-progress" value="{{ progressValue }}" max="100" aria-label="{{ t('govuk_alpha_federation.onboarding.progress_aria', { current: stepNumber, total: totalSteps }) }}">{{ progressValue }}%</progress>
+      </div>
+
+      {% if step == "welcome" %}
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_federation.onboarding.welcome_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_federation.onboarding.welcome_description") }}</p>
+
+        <div class="govuk-grid-row govuk-!-margin-top-4 govuk-!-margin-bottom-4">
+          <div class="govuk-grid-column-one-third">
+            <div class="nexus-alpha-card">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_federation.onboarding.benefit_discover_title") }}</h3>
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("govuk_alpha_federation.onboarding.benefit_discover_body") }}</p>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-third">
+            <div class="nexus-alpha-card">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_federation.onboarding.benefit_meet_title") }}</h3>
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("govuk_alpha_federation.onboarding.benefit_meet_body") }}</p>
+            </div>
+          </div>
+          <div class="govuk-grid-column-one-third">
+            <div class="nexus-alpha-card">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_federation.onboarding.benefit_exchange_title") }}</h3>
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("govuk_alpha_federation.onboarding.benefit_exchange_body") }}</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="fed-onboarding-form" method="post" action="{{ urlFor('/federation/onboarding') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="step" value="welcome">
+          <div class="govuk-button-group">
+            <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_federation.onboarding.get_started") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/federation') }}">{{ t("govuk_alpha_federation.onboarding.do_this_later") }}</a>
+          </div>
+        </form>
+      {% elif step == "privacy" %}
+        <form id="fed-onboarding-form" method="post" action="{{ urlFor('/federation/onboarding') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="step" value="privacy">
+
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-4" aria-describedby="privacy-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_federation.onboarding.privacy_heading") }}</h2>
+            </legend>
+            <div id="privacy-hint" class="govuk-hint">{{ t("govuk_alpha_federation.onboarding.privacy_description") }}</div>
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="profile_visible_federated" name="profile_visible_federated" type="checkbox" value="1"{% if settings.profile_visible_federated %} checked{% endif %} aria-describedby="profile_visible_federated-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="profile_visible_federated">{{ t("govuk_alpha_federation.onboarding.toggle_profile_visible") }}</label>
+                <div id="profile_visible_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_profile_visible_desc") }}</div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="appear_in_federated_search" name="appear_in_federated_search" type="checkbox" value="1"{% if settings.appear_in_federated_search %} checked{% endif %} aria-describedby="appear_in_federated_search-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="appear_in_federated_search">{{ t("govuk_alpha_federation.onboarding.toggle_search_visible") }}</label>
+                <div id="appear_in_federated_search-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_search_visible_desc") }}</div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="show_skills_federated" name="show_skills_federated" type="checkbox" value="1"{% if settings.show_skills_federated %} checked{% endif %} aria-describedby="show_skills_federated-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="show_skills_federated">{{ t("govuk_alpha_federation.onboarding.toggle_skills_shared") }}</label>
+                <div id="show_skills_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_skills_shared_desc") }}</div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="show_location_federated" name="show_location_federated" type="checkbox" value="1"{% if settings.show_location_federated %} checked{% endif %} aria-describedby="show_location_federated-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="show_location_federated">{{ t("govuk_alpha_federation.onboarding.toggle_location_shared") }}</label>
+                <div id="show_location_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_location_shared_desc") }}</div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="show_reviews_federated" name="show_reviews_federated" type="checkbox" value="1"{% if settings.show_reviews_federated %} checked{% endif %} aria-describedby="show_reviews_federated-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="show_reviews_federated">{{ t("govuk_alpha_federation.onboarding.toggle_reviews_visible") }}</label>
+                <div id="show_reviews_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_reviews_visible_desc") }}</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="govuk-button-group">
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/federation/onboarding?step=welcome') }}">{{ t("govuk_alpha_federation.onboarding.back") }}</a>
+            <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_federation.onboarding.next") }}</button>
+          </div>
+        </form>
+      {% elif step == "communication" %}
+        <form id="fed-onboarding-form" method="post" action="{{ urlFor('/federation/onboarding') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="step" value="communication">
+
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-4" aria-describedby="communication-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_federation.onboarding.communication_heading") }}</h2>
+            </legend>
+            <div id="communication-hint" class="govuk-hint">{{ t("govuk_alpha_federation.onboarding.communication_description") }}</div>
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="messaging_enabled_federated" name="messaging_enabled_federated" type="checkbox" value="1"{% if settings.messaging_enabled_federated %} checked{% endif %} aria-describedby="messaging_enabled_federated-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="messaging_enabled_federated">{{ t("govuk_alpha_federation.onboarding.toggle_messaging") }}</label>
+                <div id="messaging_enabled_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_messaging_desc") }}</div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="transactions_enabled_federated" name="transactions_enabled_federated" type="checkbox" value="1"{% if settings.transactions_enabled_federated %} checked{% endif %} aria-describedby="transactions_enabled_federated-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="transactions_enabled_federated">{{ t("govuk_alpha_federation.onboarding.toggle_transactions") }}</label>
+                <div id="transactions_enabled_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_transactions_desc") }}</div>
+              </div>
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="email_notifications" name="email_notifications" type="checkbox" value="1"{% if settings.email_notifications %} checked{% endif %} aria-describedby="email_notifications-hint">
+                <label class="govuk-label govuk-checkboxes__label" for="email_notifications">{{ t("govuk_alpha_federation.onboarding.toggle_email_notifications") }}</label>
+                <div id="email_notifications-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_federation.onboarding.toggle_email_notifications_desc") }}</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-4" aria-describedby="reach-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_federation.onboarding.reach_heading") }}</h2>
+            </legend>
+            <div id="reach-hint" class="govuk-hint">{{ t("govuk_alpha_federation.onboarding.reach_description") }}</div>
+
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="service_reach">{{ t("govuk_alpha_federation.onboarding.reach_label") }}</label>
+              <select class="govuk-select" id="service_reach" name="service_reach">
+                <option value="local_only"{% if settings.service_reach == "local_only" %} selected{% endif %}>{{ t("govuk_alpha_federation.onboarding.reach_local_only") }}</option>
+                <option value="remote_ok"{% if settings.service_reach == "remote_ok" %} selected{% endif %}>{{ t("govuk_alpha_federation.onboarding.reach_remote_ok") }}</option>
+                <option value="travel_ok"{% if settings.service_reach == "travel_ok" %} selected{% endif %}>{{ t("govuk_alpha_federation.onboarding.reach_travel_ok") }}</option>
+              </select>
+            </div>
+
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="travel_radius_km">{{ t("govuk_alpha_federation.onboarding.travel_radius_label") }}</label>
+              <div id="travel_radius_km-hint" class="govuk-hint">{{ t("govuk_alpha_federation.onboarding.travel_radius_hint") }}</div>
+              <div class="govuk-input__wrapper">
+                <input class="govuk-input govuk-input--width-5" id="travel_radius_km" name="travel_radius_km" type="number" min="0" max="500" step="1" value="{{ settings.travel_radius_km }}" aria-describedby="travel_radius_km-hint" spellcheck="false">
+                <div class="govuk-input__suffix" aria-hidden="true">{{ t("govuk_alpha_federation.onboarding.travel_radius_suffix") }}</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="govuk-button-group">
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/federation/onboarding?step=privacy') }}">{{ t("govuk_alpha_federation.onboarding.back") }}</a>
+            <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_federation.onboarding.next") }}</button>
+          </div>
+        </form>
+      {% else %}
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_federation.onboarding.confirm_heading") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_federation.onboarding.confirm_description") }}</p>
+
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_federation.onboarding.summary_privacy") }}</h3>
+        <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+          {% set privacyRows = [
+            ["govuk_alpha_federation.onboarding.summary_profile_visible", settings.profile_visible_federated],
+            ["govuk_alpha_federation.onboarding.summary_in_search", settings.appear_in_federated_search],
+            ["govuk_alpha_federation.onboarding.summary_skills_shared", settings.show_skills_federated],
+            ["govuk_alpha_federation.onboarding.summary_location_shared", settings.show_location_federated],
+            ["govuk_alpha_federation.onboarding.summary_reviews_visible", settings.show_reviews_federated]
+          ] %}
+          {% for row in privacyRows %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(row[0]) }}</dt>
+              <dd class="govuk-summary-list__value">
+                {% if row[1] %}
+                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_federation.onboarding.summary_on") }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_federation.onboarding.summary_off") }}</strong>
+                {% endif %}
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_federation.onboarding.summary_communication") }}</h3>
+        <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+          {% set communicationRows = [
+            ["govuk_alpha_federation.onboarding.summary_messaging", settings.messaging_enabled_federated],
+            ["govuk_alpha_federation.onboarding.summary_transactions", settings.transactions_enabled_federated],
+            ["govuk_alpha_federation.onboarding.summary_email_alerts", settings.email_notifications]
+          ] %}
+          {% for row in communicationRows %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t(row[0]) }}</dt>
+              <dd class="govuk-summary-list__value">
+                {% if row[1] %}
+                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_federation.onboarding.summary_on") }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_federation.onboarding.summary_off") }}</strong>
+                {% endif %}
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_federation.onboarding.summary_reach") }}</h3>
+        <p class="govuk-body govuk-!-margin-bottom-6">{{ settings.reachSummary }}</p>
+
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_federation.onboarding.partners_heading") }}</h3>
+        {% if partners.length %}
+          <p class="govuk-body">{{ t("govuk_alpha_federation.onboarding.partners_available") }}</p>
+          <div class="nexus-alpha-card-list govuk-!-margin-bottom-4">
+            {% for partner in partners %}
+              <article class="nexus-alpha-card">
+                <h4 class="govuk-heading-s govuk-!-margin-bottom-1">{{ partner.name }}</h4>
+                {% if partner.location %}
+                  <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_federation.onboarding.partners_location_label") }}: {{ partner.location }}</p>
+                {% endif %}
+                <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_federation.onboarding.partners_members_label") }}: {{ partner.memberCountLabel }}</p>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="govuk-inset-text"><p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_federation.onboarding.partners_empty") }}</p></div>
+        {% endif %}
+
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+            {{ t("govuk_alpha_federation.onboarding.confirm_warning") }}
+          </strong>
+        </div>
+
+        <form id="fed-onboarding-form" method="post" action="{{ urlFor('/federation/onboarding') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="step" value="confirm">
+          <div class="govuk-button-group">
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/federation/onboarding?step=communication') }}">{{ t("govuk_alpha_federation.onboarding.back") }}</a>
+            <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_federation.onboarding.enable_federation") }}</button>
+            <a class="govuk-link" href="{{ urlFor('/federation') }}">{{ t("govuk_alpha_federation.onboarding.do_this_later") }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

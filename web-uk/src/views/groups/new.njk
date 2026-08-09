@@ -1,0 +1,133 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ super() }}
+  {{ govukBackLink({
+    text: t("actions.back_to_groups"),
+    href: urlFor("/groups")
+  }) }}
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-l">{{ t("groups.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.create.title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.create.description", { community: tenantName or serviceName }) }}</p>
+
+  {% if createFailed %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("polish_groups.create_failed_heading") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ t("groups.create.failed") }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errors and errors.length %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: errors,
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/groups/new') }}" enctype="multipart/form-data" novalidate data-validate-form data-validation-error-title="{{ t('states.error_title') }}" data-validation-error-prefix="{{ t('states.error_prefix') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukInput({
+          label: {
+            text: t("groups.create.name_label"),
+            classes: "govuk-label--m"
+          },
+          hint: { text: t("groups.create.name_hint") },
+          id: "name",
+          name: "name",
+          value: values.name if values else "",
+          errorMessage: {
+            text: fieldErrors.name,
+            visuallyHiddenText: t("states.error_prefix")
+          } if fieldErrors and fieldErrors.name else null,
+          attributes: {
+            "data-validate": "required maxLength:255",
+            "data-label": t("groups.create.name_label")
+          }
+        }) }}
+
+        {{ govukTextarea({
+          label: {
+            text: t("groups.create.description_label"),
+            classes: "govuk-label--m"
+          },
+          hint: {
+            text: t("groups.create.description_hint")
+          },
+          id: "description",
+          name: "description",
+          rows: 5,
+          value: values.description if values else ""
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: t("polish_groups.location_label")
+          },
+          hint: {
+            text: t("polish_groups.location_hint")
+          },
+          id: "location",
+          name: "location",
+          value: values.location if values else "",
+          classes: "govuk-!-width-two-thirds",
+          attributes: { maxlength: "255" }
+        }) }}
+
+        {{ govukRadios({
+          name: "visibility",
+          fieldset: {
+            legend: {
+              text: t("groups.create.visibility_legend"),
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          hint: { text: t("groups.create.visibility_hint") },
+          items: [
+            {
+              value: "public",
+              text: t("groups.create.visibility_public_label"),
+              checked: not values or values.visibility != 'private'
+            },
+            {
+              value: "private",
+              text: t("groups.create.visibility_private_label"),
+              checked: values.visibility == 'private' if values else false
+            }
+          ]
+        }) }}
+
+        {{ govukInput({
+          label: { text: t("groups.create.tags_label") },
+          hint: { text: t("groups.create.tags_hint") },
+          id: "tags",
+          name: "tags",
+          value: values.tags if values else "",
+          classes: "govuk-!-width-two-thirds",
+          attributes: { maxlength: "255" }
+        }) }}
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="cover">{{ t("groups.create.cover_label") }}</label>
+          <div id="cover-hint" class="govuk-hint">{{ t("groups.create.cover_hint") }}</div>
+          <input class="govuk-file-upload" id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="cover-hint">
+        </div>
+
+        {{ govukButton({ text: t("groups.create.submit") }) }}
+  </form>
+{% endblock %}

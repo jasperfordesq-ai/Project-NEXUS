@@ -1,0 +1,127 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="emergency-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="emergency-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ status.message }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.emergency.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.emergency.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if not dashboard.alerts.length %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.emergency.empty") }}</div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for alert in dashboard.alerts %}
+        <article class="nexus-alpha-card">
+          <p class="govuk-!-margin-bottom-2">
+            <strong class="govuk-tag {{ alert.priority.className }}">{{ alert.priority.label }}</strong>
+          </p>
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ alert.opportunityTitle }}</h2>
+
+          <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+            {% if alert.organizationName %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.emergency.organisation_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ alert.organizationName }}</dd>
+              </div>
+            {% endif %}
+            {% if alert.location %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.emergency.location_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ alert.location }}</dd>
+              </div>
+            {% endif %}
+            {% if alert.shiftLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.emergency.shift_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ alert.shiftLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if alert.coordinatorName %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.emergency.coordinator_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ alert.coordinatorName }}</dd>
+              </div>
+            {% endif %}
+            {% if alert.skills %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.emergency.skills_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ alert.skills }}</dd>
+              </div>
+            {% endif %}
+            {% if alert.expiresAtLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha_volunteering.emergency.expires_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ alert.expiresAtLabel }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          {% if alert.message %}
+            <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha_volunteering.emergency.message_label") }}</strong></p>
+            <div class="govuk-inset-text govuk-!-margin-top-0">{{ alert.message }}</div>
+          {% endif %}
+
+          {% if alert.myResponse == "accepted" %}
+            <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_volunteering.emergency.response_accepted") }}</strong></p>
+          {% elif alert.myResponse == "declined" %}
+            <p class="govuk-body"><strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.emergency.response_declined") }}</strong></p>
+          {% else %}
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>
+                {{ t("govuk_alpha_volunteering.emergency.accept_warning") }}
+              </strong>
+            </div>
+            <form method="post" action="{{ urlFor('/volunteering/emergency-alerts/' ~ alert.id ~ '/respond') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="govuk-button-group">
+                <button class="govuk-button govuk-!-margin-bottom-0" name="response" value="accepted" data-module="govuk-button">{{ t("govuk_alpha_volunteering.emergency.accept_button") }}</button>
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" name="response" value="declined" data-module="govuk-button">{{ t("govuk_alpha_volunteering.emergency.decline_button") }}</button>
+              </div>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+
+  {% endif %}
+{% endblock %}

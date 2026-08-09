@@ -1,0 +1,133 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("marketplace.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.marketplace_advanced.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.marketplace_advanced.description") }}</p>
+
+  <form method="get" action="{{ urlFor('/marketplace/search') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="q">{{ t("marketplace.search_label") }}</label>
+          <input class="govuk-input" id="q" name="q" type="search" value="{{ state.query }}">
+        </div>
+      </div>
+      {% if categories.length %}
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="category_id">{{ t("polish_commerce.marketplace_category_label") }}</label>
+            <select class="govuk-select" id="category_id" name="category_id">
+              <option value="">{{ t("polish_commerce.marketplace_category_all") }}</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id == state.categoryId %}selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="price_min">{{ t("govuk_alpha_commerce.marketplace_advanced.price_min") }}</label>
+          <input class="govuk-input govuk-input--width-10" id="price_min" name="price_min" type="number" min="0" step="0.01" inputmode="decimal" value="{{ state.priceMin }}">
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-half">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="price_max">{{ t("govuk_alpha_commerce.marketplace_advanced.price_max") }}</label>
+          <input class="govuk-input govuk-input--width-10" id="price_max" name="price_max" type="number" min="0" step="0.01" inputmode="decimal" value="{{ state.priceMax }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_commerce.marketplace_advanced.condition_label") }}</legend>
+        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+          {% for option in conditionOptions %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="condition-{{ option.value }}" name="condition[]" type="checkbox" value="{{ option.value }}" {% if option.value in state.selectedConditions %}checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="condition-{{ option.value }}">{{ t("govuk_alpha_commerce.marketplace_advanced.condition_" + option.value) }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="seller_type">{{ t("govuk_alpha_commerce.marketplace_advanced.seller_type_label") }}</label>
+          <select class="govuk-select" id="seller_type" name="seller_type">
+            {% for option in sellerTypeOptions %}
+              <option value="{{ option.value }}" {% if option.value == state.sellerType %}selected{% endif %}>{% if option.value %}{{ t("govuk_alpha_commerce.marketplace_advanced.seller_" + option.value) }}{% else %}{{ t("govuk_alpha_commerce.marketplace_advanced.any") }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="delivery_method">{{ t("govuk_alpha_commerce.marketplace_advanced.delivery_label") }}</label>
+          <select class="govuk-select" id="delivery_method" name="delivery_method">
+            {% for option in deliveryOptions %}
+              <option value="{{ option.value }}" {% if option.value == state.deliveryMethod %}selected{% endif %}>{% if option.value %}{{ t("govuk_alpha_commerce.marketplace_advanced.delivery_" + option.value) }}{% else %}{{ t("govuk_alpha_commerce.marketplace_advanced.any") }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="posted_within">{{ t("govuk_alpha_commerce.marketplace_advanced.posted_within_label") }}</label>
+          <select class="govuk-select" id="posted_within" name="posted_within">
+            {% for option in postedWithinOptions %}
+              <option value="{{ option.value }}" {% if option.value == state.postedWithin %}selected{% endif %}>{% if option.value %}{{ t("govuk_alpha_commerce.marketplace_advanced.posted_" + option.value) }}{% else %}{{ t("govuk_alpha_commerce.marketplace_advanced.any_time") }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="sort">{{ t("govuk_alpha_commerce.marketplace_advanced.sort_label") }}</label>
+      <select class="govuk-select" id="sort" name="sort">
+        {% for option in sortOptions %}
+          <option value="{{ option.value }}" {% if option.value == state.sort %}selected{% endif %}>{{ t("govuk_alpha_commerce.marketplace_advanced.sort_" + option.value) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.marketplace_advanced.submit") }}</button>
+    <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/marketplace') }}">{{ t("govuk_alpha_commerce.marketplace_advanced.back_to_browse") }}</a>
+  </form>
+
+  {% if not listings.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_commerce.marketplace_advanced.no_results") }}</p>
+    </div>
+  {% else %}
+    <h2 class="govuk-heading-l">{{ t("govuk_alpha_commerce.marketplace_advanced.results_heading") }}</h2>
+    <div class="nexus-alpha-card-list">
+      {% for item in listings %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ item.title }}</a></h3>
+            <strong class="govuk-tag govuk-tag--blue">{{ item.cardPriceLabel }}</strong>
+          </div>
+        {% if item.conditionLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.conditionLabel }}</p>
+        {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

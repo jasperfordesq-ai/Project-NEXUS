@@ -1,0 +1,47 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexus.Api", "src\Nexus.Api\Nexus.Api.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BE81C162-BAAF-48B7-B90D-BF3B217D5B39}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D1E2F3A4-B5C6-7890-ABCD-EF1234567891}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexus.Contracts", "src\Nexus.Contracts\Nexus.Contracts.csproj", "{47EF2738-A162-4979-AF71-2B0A87A27205}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexus.Messaging", "src\Nexus.Messaging\Nexus.Messaging.csproj", "{3EA6D7F5-1173-4DE4-AFC4-AB59D1C19ABC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexus.Api.Tests", "tests\Nexus.Api.Tests\Nexus.Api.Tests.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47EF2738-A162-4979-AF71-2B0A87A27205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47EF2738-A162-4979-AF71-2B0A87A27205}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47EF2738-A162-4979-AF71-2B0A87A27205}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47EF2738-A162-4979-AF71-2B0A87A27205}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA6D7F5-1173-4DE4-AFC4-AB59D1C19ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA6D7F5-1173-4DE4-AFC4-AB59D1C19ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA6D7F5-1173-4DE4-AFC4-AB59D1C19ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA6D7F5-1173-4DE4-AFC4-AB59D1C19ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890} = {BE81C162-BAAF-48B7-B90D-BF3B217D5B39}
+		{47EF2738-A162-4979-AF71-2B0A87A27205} = {BE81C162-BAAF-48B7-B90D-BF3B217D5B39}
+		{3EA6D7F5-1173-4DE4-AFC4-AB59D1C19ABC} = {BE81C162-BAAF-48B7-B90D-BF3B217D5B39}
+		{B2C3D4E5-F6A7-8901-BCDE-F12345678901} = {D1E2F3A4-B5C6-7890-ABCD-EF1234567891}
+	EndGlobalSection
+EndGlobal

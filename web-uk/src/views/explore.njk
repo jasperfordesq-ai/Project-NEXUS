@@ -1,0 +1,59 @@
+{# Copyright © 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("explore.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("explore.title") }}</h1>
+  <p class="govuk-body-l">
+    {{ t("explore.description") }}
+  </p>
+
+  <div class="nexus-alpha-card-list govuk-!-margin-top-6">
+    {% for item in alphaExploreLinks %}
+      <article class="nexus-alpha-card">
+        <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+          <a class="govuk-link" href="{{ item.href }}">{{ item.title }}</a>
+        </h2>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
+      </article>
+    {% endfor %}
+  </div>
+
+  {% if recentListings and recentListings.length %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("polish_discovery.explore_listings_title") }}</h2>
+    <ul class="govuk-list govuk-list--spaced govuk-!-margin-bottom-2">
+      {% for listing in recentListings %}
+        <li>
+          {% if listing.href %}
+            <a class="govuk-link" href="{{ urlFor(listing.href) }}">{{ listing.title }}</a>
+          {% else %}
+            {{ listing.title }}
+          {% endif %}
+          <strong class="govuk-tag {{ listing.tagClass }} govuk-!-margin-left-1">{{ t("listings." + listing.type) }}</strong>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/listings') }}">{{ t("polish_discovery.explore_view_all_listings") }}</a></p>
+  {% endif %}
+
+  {% if upcomingEvents and upcomingEvents.length %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("polish_discovery.explore_events_title") }}</h2>
+    <ul class="govuk-list govuk-list--spaced govuk-!-margin-bottom-2">
+      {% for event in upcomingEvents %}
+        <li>
+          {% if event.href %}
+            <a class="govuk-link" href="{{ urlFor(event.href) }}">{{ event.title }}</a>
+          {% else %}
+            {{ event.title }}
+          {% endif %}
+          {% if event.date %}<span class="govuk-body-s nexus-alpha-meta"> - {{ event.date | date }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("polish_discovery.explore_view_all_events") }}</a></p>
+  {% endif %}
+{% endblock %}
