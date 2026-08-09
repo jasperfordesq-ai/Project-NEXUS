@@ -15,6 +15,7 @@ const {
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
 
@@ -49,7 +50,7 @@ function asList(value) {
 }
 
 function trimmed(value, limit = null) {
-  const text = String(value || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  const text = htmlToPlainText(value).replace(/\s+/g, ' ').trim();
   if (limit === null || text.length <= limit) return text;
   return `${text.slice(0, Math.max(0, limit - 3)).trimEnd()}...`;
 }

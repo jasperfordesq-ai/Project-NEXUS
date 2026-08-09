@@ -42,4 +42,19 @@ function sanitizeCmsHtml(value, { allowImages = true } = {}) {
   });
 }
 
-module.exports = { sanitizeCmsHtml };
+function htmlToPlainText(value) {
+  const safeLayoutHtml = sanitizeHtml(String(value || '').replaceAll('\0', ''), {
+    allowedTags: ['p', 'br'],
+    allowedAttributes: {},
+    nonTextTags: ['style', 'script', 'textarea', 'option', 'noscript']
+  });
+
+  return safeLayoutHtml
+    .replaceAll('</p>', '\n\n')
+    .replaceAll('<p>', '')
+    .replaceAll('<br />', '\n')
+    .replaceAll('<br>', '\n')
+    .trim();
+}
+
+module.exports = { sanitizeCmsHtml, htmlToPlainText };

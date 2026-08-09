@@ -5,6 +5,7 @@
 
 const express = require('express');
 const fs = require('fs/promises');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 const {
   getGroups,
   getGroup,
@@ -460,11 +461,7 @@ function groupMembership(group) {
 }
 
 function plainParagraphs(value) {
-  const text = String(value || '')
-    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .trim();
+  const text = htmlToPlainText(value);
 
   if (!text) return [];
   return text.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);

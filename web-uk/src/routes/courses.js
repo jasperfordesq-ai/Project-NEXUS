@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { ApiError, ApiOfflineError, callCourseApi, getMyCourses } = require('../lib/api');
-const { sanitizeCmsHtml } = require('../lib/html-sanitizer');
+const { sanitizeCmsHtml, htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { asyncRoute } = require('../lib/routeHelpers');
 
@@ -241,7 +241,7 @@ function costMeta(course) {
 }
 
 function stripHtml(value) {
-  return String(value || '').replace(/<[^>]+>/g, '');
+  return htmlToPlainText(value);
 }
 
 function limitText(value, limit = 160) {

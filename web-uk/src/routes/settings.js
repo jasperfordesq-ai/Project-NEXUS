@@ -12,6 +12,7 @@ const {
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { isValidEmail } = require('../lib/inputValidator');
 
 const router = express.Router();
 
@@ -659,7 +660,7 @@ router.post('/linked-accounts/request', asyncRoute(async (req, res) => {
   if (!token) return redirectTo(res, loginRedirect());
 
   const email = trimmed(req.body.email);
-  if (email === '' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return redirectTo(res, settingsStatusRedirect('/settings/linked-accounts', 'link-email-invalid', '#request'));
   }
 

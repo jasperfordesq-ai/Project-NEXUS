@@ -32,9 +32,20 @@ function isValidEmail(email) {
   if (!email || typeof email !== 'string') {
     return false;
   }
-  // RFC 5322 compliant email regex (simplified)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email.trim());
+  const candidate = email.trim();
+  if (candidate.length > 254 || candidate.includes(' ')) return false;
+
+  const at = candidate.indexOf('@');
+  if (at <= 0 || at !== candidate.lastIndexOf('@')) return false;
+
+  const localPart = candidate.slice(0, at);
+  const domain = candidate.slice(at + 1);
+  if (localPart.length > 64 || domain.length === 0 || domain.startsWith('.') || domain.endsWith('.')) {
+    return false;
+  }
+
+  const dot = domain.lastIndexOf('.');
+  return dot > 0 && dot < domain.length - 1 && !candidate.split('').some((character) => /\s/u.test(character));
 }
 
 /**

@@ -11,6 +11,7 @@ const { createTranslator } = require('../lib/localization');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
 const fallbackTranslator = createTranslator('en');
@@ -272,7 +273,7 @@ function trimmed(value, limit = null) {
 }
 
 function stripHtml(value) {
-  return String(value || '').replace(/<[^>]+>/g, '');
+  return htmlToPlainText(value);
 }
 
 function limitText(value, limit = 160) {

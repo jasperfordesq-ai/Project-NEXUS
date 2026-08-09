@@ -8,6 +8,7 @@ const { login, register, getRegistrationInfo, getTenantBootstrap, logout, forgot
 const { setAuthCookies, clearAuthCookies } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { createTranslator } = require('../lib/localization');
+const { isValidEmail } = require('../lib/inputValidator');
 
 const router = express.Router();
 const fallbackTranslator = createTranslator('en');
@@ -786,7 +787,7 @@ async function handleForgotPasswordPost(req, res) {
   const fieldErrors = {};
 
   const normalizedEmail = String(email || '').trim();
-  if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+  if (!isValidEmail(normalizedEmail)) {
     const message = translate(req, 'auth.forgot_invalid');
     errors.push({ text: message, href: '#email' });
     fieldErrors.email = message;

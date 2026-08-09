@@ -8,6 +8,7 @@ const { callPodcastApi, ApiError } = require('../lib/api');
 const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
 
@@ -225,7 +226,7 @@ function podcastStudioAccessible(meta) {
 }
 
 function stripHtml(value) {
-  return String(value || '').replace(/<[^>]+>/g, '');
+  return htmlToPlainText(value);
 }
 
 function limitedText(value, limit) {

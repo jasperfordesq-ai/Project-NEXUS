@@ -7,6 +7,7 @@ const express = require('express');
 const { submitContact, submitSupportReport, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { validateReturnUrl } = require('../lib/urlValidator');
+const { isValidEmail } = require('../lib/inputValidator');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ function asString(value) {
 }
 
 function validEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return isValidEmail(value);
 }
 
 function consumeSessionValue(req, key) {

@@ -181,7 +181,10 @@
   function redirectToLogin() {
     var authEl = document.querySelector('[data-authenticated="true"]');
     var loginUrl = authEl ? authEl.getAttribute('data-login-url') : '';
-    window.location.href = loginUrl || '/login';
+    var safeLoginUrl = loginUrl && loginUrl.startsWith('/') && !loginUrl.startsWith('//')
+      ? loginUrl
+      : '/login';
+    window.location.href = safeLoginUrl;
   }
 
   function submitLogout() {

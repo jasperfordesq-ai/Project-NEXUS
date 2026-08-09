@@ -86,6 +86,7 @@ const { localization } = require('./middleware/localization');
 const { tenantFeatureGate } = require('./middleware/tenant-feature-gates');
 const { tenantRouting } = require('./middleware/tenant-routing');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
+const { isValidEmail } = require('./lib/inputValidator');
 const { refreshAuthSession, requireAuth } = require('./middleware/auth');
 const { assertProductionConfig } = require('./lib/production-config');
 const { createSessionStore } = require('./lib/session-store');
@@ -1312,7 +1313,7 @@ function unicodeSlice(value, maximumLength) {
 function organisationRegistrationStatus(payload, agreedTerms) {
   if (unicodeLength(payload.name) < 3) return 'org-name-invalid';
   if (unicodeLength(payload.description) < 20) return 'org-description-invalid';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.contact_email)) return 'org-email-invalid';
+  if (!isValidEmail(payload.contact_email)) return 'org-email-invalid';
   if (payload.website && !/^https?:\/\//i.test(payload.website)) return 'org-website-invalid';
   if (!agreedTerms) return 'org-terms-required';
   return '';

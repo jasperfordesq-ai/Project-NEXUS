@@ -20,6 +20,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { isValidEmail } = require('../lib/inputValidator');
 const { flagEnabled, resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { createChoiceTranslator, createTranslator, SUPPORTED_LOCALES } = require('../lib/localization');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -466,7 +467,7 @@ async function destroyRequestSession(req) {
 }
 
 function validEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return isValidEmail(value);
 }
 
 function notificationPayload(body) {

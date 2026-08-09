@@ -20,6 +20,7 @@ const {
 const { asyncRoute } = require('../lib/routeHelpers');
 const { flagEnabled } = require('../lib/accessible-shell');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 const { getRequestProfile } = require('../lib/request-profile');
 
 const router = express.Router();
@@ -173,7 +174,7 @@ function feedItemType(item, t = (key) => key) {
 }
 
 function stripTags(value) {
-  return String(value || '').replace(/<[^>]*>/g, '').trim();
+  return htmlToPlainText(value).trim();
 }
 
 function normalizeFeedItem(item, t = (key) => key) {

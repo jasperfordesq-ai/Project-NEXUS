@@ -17,6 +17,7 @@ const { withTokenRefresh } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled, resolveBackendAssetUrl } = require('../lib/accessible-shell');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
 const COMMENTABLE_FEED_TYPES = new Set([
@@ -72,11 +73,7 @@ function pluralLabel(count, singular, plural = `${singular}s`, zero = `0 ${plura
 }
 
 function plainParagraphs(value) {
-  const text = String(value || '')
-    .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .trim();
+  const text = htmlToPlainText(value);
 
   if (!text) return [];
   return text.split(/\n{2,}/).map((paragraph) => paragraph.trim()).filter(Boolean);

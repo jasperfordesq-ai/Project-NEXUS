@@ -15,6 +15,7 @@ const {
 const { asyncRoute } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
+const { htmlToPlainText } = require('../lib/html-sanitizer');
 
 const router = express.Router();
 const DOWNLOAD_HEADER_NAMES = [
@@ -1334,7 +1335,7 @@ function normalizeVolunteerOrganizationCard(row, t = null) {
     contactEmail: trimmed(organization.contact_email ?? organization.contactEmail ?? organization.email),
     website,
     websiteHref,
-    description: trimmed(String(organization.description || '').replace(/<[^>]*>/g, ''), 220),
+    description: trimmed(htmlToPlainText(organization.description), 220),
     canManage: ['owner', 'admin'].includes(roleValue),
     isApproved: ['approved', 'active'].includes(statusValue)
   };
