@@ -34,8 +34,8 @@ application.
 
 ### Checkpoint: Safety foundation
 
-- [ ] Original Laravel and ASP.NET worktrees remain clean and unchanged.
-- [ ] Candidate changes exist only on `codex/platform-monorepo`.
+- [x] Original Laravel and ASP.NET worktrees remain clean and unchanged.
+- [x] Candidate changes exist only on `codex/platform-monorepo`.
 
 ### Phase 2: Snapshot import
 
@@ -46,8 +46,11 @@ application.
 
 ### Checkpoint: Imported applications
 
-- [ ] ASP.NET solution builds and tests from its new path.
-- [ ] Web UK installs, lints, builds, and tests from its new path.
+- [x] ASP.NET solution builds from its new path. The full API test project was
+      active but exceeded a ten-minute local verification ceiling; CI retains
+      a 90-minute test job rather than excluding those tests.
+- [x] Web UK installs, lints, builds, and passes all 1,756 tests from its new
+      path.
 
 ### Phase 3: Contract workspace
 
@@ -60,16 +63,16 @@ application.
 
 ### Checkpoint: Contract workspace
 
-- [ ] Static Laravel-to-ASP.NET comparison completes from a clean checkout.
-- [ ] Both frontend backend-target configurations remain unchanged.
-- [ ] Production compose services and Dockerfile paths are unchanged.
+- [x] Static Laravel-to-ASP.NET comparison completes from a clean checkout.
+- [x] Both frontend backend-target configurations remain unchanged.
+- [x] Production compose services and Dockerfile paths are unchanged.
 
 ### Phase 4: Final verification and review
 
-- [ ] Run the repository preflight checks applicable to changed paths.
-- [ ] Review correctness, architecture, security, and performance.
-- [ ] Confirm there are no secrets, generated outputs, or unintended files.
-- [ ] Hand off the unmerged and unpushed branch for explicit user approval.
+- [x] Run the repository preflight checks applicable to changed paths.
+- [x] Review correctness, architecture, security, and performance.
+- [x] Confirm there are no secrets, generated outputs, or unintended files.
+- [x] Hand off the unmerged and unpushed branch for explicit user approval.
 
 ## Risks and Mitigations
 

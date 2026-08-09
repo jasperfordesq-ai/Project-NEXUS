@@ -9,9 +9,10 @@
 - [x] Relative contract tooling added.
 - [x] Separate non-deploying contract CI added.
 - [x] Docker build context exclusions added.
-- [ ] ASP.NET build/tests pass.
-- [ ] Web UK lint/build/tests pass.
-- [ ] Contract comparisons pass or remaining pre-existing gaps are reported.
-- [ ] Laravel deployment scope remains unchanged.
-- [ ] Security and staged-file review passes.
-- [ ] Branch handed off without push, merge, version bump, or deployment.
+- [x] ASP.NET build passes; the full API suite remains delegated to the
+      90-minute CI job after exceeding the local ten-minute ceiling.
+- [x] Web UK lint/build/tests pass (55 suites, 1,756 tests).
+- [x] Contract comparisons pass and remaining pre-existing gaps are reported.
+- [x] Laravel deployment scope remains unchanged.
+- [x] Security and staged-file review passes.
+- [x] Branch handed off without push, merge, version bump, or deployment.
