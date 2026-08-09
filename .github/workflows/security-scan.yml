@@ -147,9 +147,22 @@ jobs:
 
       # ── TruffleHog secret detection ──────────────────────────────
       # Blocks if verified secrets are found in the repository.
+      #
+      # 🔴 PINNED to a commit SHA, deliberately. This was `@main` until
+      # 2026-08-09, which meant every run pulled whatever TruffleHog shipped
+      # last. On 2026-08-09 an upstream detector build reported 522 bogus
+      # "verified secrets" (all the Lob detector) and failed the 03:45 nightly
+      # on dc57cd367 — a commit whose own push run had passed hours earlier on
+      # identical code. It self-cleared by 07:20. A secret scanner that can go
+      # red overnight without a code change trains people to ignore it, which
+      # is the one thing this gate must never do.
+      #
+      # A tag is not enough: tags can be moved by the publisher, so pin the
+      # SHA and name the version beside it. To upgrade, bump BOTH together
+      # after checking the release notes.
       - name: Check for Hardcoded Secrets
         if: ${{ !cancelled() }}
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
         with:
           path: ./
           extra_args: --only-verified
