@@ -144,12 +144,32 @@ services:
     healthcheck:
       # Master alive is NOT enough — in the 2026-06 outage every horizon:work
       # worker crashed at boot for 5 days while the master kept "healthy".
-      # min-processes=1 guarantees >=1 horizon:work process on a healthy node.
-      test: ["CMD-SHELL", "pgrep -f 'artisan horizon' > /dev/null && pgrep -f 'horizon:work' > /dev/null || exit 1"]
+      # Requiring >=1 horizon:work process is what catches that.
+      #
+      # 🔴 The patterns are bracketed ON PURPOSE. `pgrep -f` matches the FULL
+      # command line, and under CMD-SHELL the checking shell's own argv contains
+      # the pattern — so the previous unbracketed form matched ITSELF and this
+      # check could never fail. Measured 2026-08-09 in a container with zero
+      # Horizon processes: old form exit 0 (reported HEALTHY), bracketed form
+      # exit 1 (correctly UNHEALTHY). The check written after the 2026-06
+      # five-day outage had therefore never been able to detect it.
+      #
+      # `[h]orizon:work` matches a real worker's command line but not the
+      # literal text "[h]orizon:work" sitting in the checking shell's argv.
+      # Keep the brackets on BOTH halves. PID 1 also carries the whole start
+      # command as text (which contains "artisan horizon"), so the master half
+      # can match while the Redis wait loop is still running — the worker half
+      # is what makes this honest.
+      test: ["CMD-SHELL", "pgrep -f '[a]rtisan horizon' > /dev/null && pgrep -f '[h]orizon:work' > /dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 90s
+      # Was 90s, which predates the Redis readiness wait above. That wait can
+      # legitimately hold startup for ~120s before Horizon begins, so 90s would
+      # flag a correctly-waiting container as unhealthy. 240s covers the full
+      # wait plus Horizon boot. Now that the check can actually fail, this
+      # window has to be honest too.
+      start_period: 240s
 
   scheduler:
     image: nexus-php-app:${BUILD_COMMIT:-candidate}
