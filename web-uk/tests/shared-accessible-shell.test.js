@@ -7956,6 +7956,7 @@ describe('shared accessible frontend shell', () => {
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
     const longDescription = 'A detailed practical repair request '.repeat(8).trim();
+    const oneWeekAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000)).toISOString();
 
     api.callMatchesApi.mockResolvedValueOnce({
       data: {
@@ -7971,7 +7972,7 @@ describe('shared accessible frontend shell', () => {
             user_name: 'Avery Morgan',
             match_score: 0.87,
             match_reasons: ['Shared repair skills', 'Nearby', 'Same town', 'Recently active'],
-            created_at: '2026-07-05T10:00:00Z'
+            created_at: oneWeekAgo
           },
           {
             id: 33,

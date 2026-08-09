@@ -10,7 +10,7 @@ const { reservedChildSegments } = require('../src/middleware/tenant-routing');
 
 function parseLaravelReservedPaths() {
   const source = fs.readFileSync(
-    path.resolve(__dirname, '../../../../staging/app/Core/TenantContext.php'),
+    path.resolve(__dirname, '../../app/Core/TenantContext.php'),
     'utf8'
   );
   const match = source.match(/private static function getReservedPaths\(\): array[\s\S]*?return \[([\s\S]*?)\];/);
