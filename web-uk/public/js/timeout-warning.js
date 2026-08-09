@@ -179,12 +179,12 @@
   }
 
   function redirectToLogin() {
-    var authEl = document.querySelector('[data-authenticated="true"]');
-    var loginUrl = authEl ? authEl.getAttribute('data-login-url') : '';
-    var safeLoginUrl = loginUrl && loginUrl.startsWith('/') && !loginUrl.startsWith('//')
-      ? loginUrl
-      : '/login';
-    window.location.href = safeLoginUrl;
+    var loginLink = document.getElementById('session-timeout-login-link');
+    if (loginLink) {
+      loginLink.click();
+      return;
+    }
+    window.location.href = '/login';
   }
 
   function submitLogout() {

@@ -28,9 +28,9 @@ describe('session timeout source contract', () => {
   });
 
   it('uses the tenant-aware rendered login URL when session extension fails', () => {
-    expect(baseTemplate).toContain('data-login-url="{{ urlFor(\'/login\') }}"');
-    expect(timeoutSource).toContain("getAttribute('data-login-url')");
-    expect(timeoutSource).toContain("loginUrl.startsWith('/')");
-    expect(timeoutSource).toContain("!loginUrl.startsWith('//')");
+    expect(baseTemplate).toContain('id="session-timeout-login-link" href="{{ urlFor(\'/login\') }}"');
+    expect(timeoutSource).toContain("getElementById('session-timeout-login-link')");
+    expect(timeoutSource).toContain('loginLink.click();');
+    expect(timeoutSource).not.toContain("getAttribute('data-login-url')");
   });
 });

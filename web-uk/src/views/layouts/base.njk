@@ -163,9 +163,9 @@
                 <div
                   data-authenticated="true"
                   data-csrf-token="{{ csrfToken }}"
-                  data-login-url="{{ urlFor('/login') }}"
                   hidden
                 ></div>
+                <a id="session-timeout-login-link" href="{{ urlFor('/login') }}" hidden tabindex="-1" aria-hidden="true"></a>
                 <form id="session-timeout-logout-form" method="post" action="{{ urlFor('/logout') }}" hidden>
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <input type="hidden" name="timeout" value="true">

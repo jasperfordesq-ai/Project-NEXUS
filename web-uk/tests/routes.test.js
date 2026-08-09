@@ -320,7 +320,7 @@ describe('Public Routes', () => {
 
       const authenticatedPage = await agent.get('/acme/accessible/cookies');
       expect(authenticatedPage.status).toBe(200);
-      expect(authenticatedPage.text).toContain('data-login-url="/acme/accessible/login"');
+      expect(authenticatedPage.text).toContain('id="session-timeout-login-link" href="/acme/accessible/login"');
       expect(authenticatedPage.text).toContain('id="session-timeout-logout-form"');
       expect(authenticatedPage.text).toContain('method="post" action="/acme/accessible/logout"');
       expect(authenticatedPage.text).not.toContain('action="/logout"');
