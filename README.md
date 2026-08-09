@@ -118,6 +118,8 @@ The full architecture map — runtime boundaries, tenant/feature model, and cros
 | `app/`, `routes/`, `config/`, `bootstrap/` | Laravel 12 application, API routing, middleware, providers, and runtime configuration |
 | `react-frontend/` | Primary React 19 + TypeScript UI for members and current admin workflows |
 | `accessible-frontend/` | Accessibility-first, HTML-first frontend served by Laravel at `accessible.project-nexus.ie` and `/{tenantSlug}/accessible/...` |
+| `web-uk/` | Experimental shared Express/Nunjucks accessible frontend; Laravel-first and not deployed |
+| `aspnet-backend/` | Experimental ASP.NET Core/PostgreSQL backend; must match Laravel's external contracts and is not deployed |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
 | `database/`, `migrations/` | Laravel migrations, schema dump, and legacy SQL history |
@@ -300,10 +302,11 @@ React frontend contract:
 
 | Edition | Stack | Repository |
 | ------- | ----- | --------- |
-| **Laravel Edition** (this repo) | Laravel 12 + PHP 8.2+ / React 19 / MariaDB | [nexus-v1](https://github.com/jasperfordesq-ai/nexus-v1) |
-| **.NET Edition** | ASP.NET Core 8 / React 19 / PostgreSQL | [api.project-nexus.net](https://github.com/jasperfordesq-ai/api.project-nexus.net) |
+| **Laravel Edition** (production/default) | Laravel 12 + PHP 8.2+ / React 19 / MariaDB | Repository root |
+| **.NET Edition** (experimental) | ASP.NET Core 8 / PostgreSQL | [`aspnet-backend/`](aspnet-backend/README.md) |
+| **Shared Web UK frontend** (experimental) | Express / Nunjucks / GOV.UK Frontend | [`web-uk/`](web-uk/README.md) |
 
-The **Laravel Edition** (this repo) is the canonical, in-production platform and the foundation of all Project NEXUS communities. It runs on Laravel 12 + PHP 8.2+ with the production React 19 frontend. The **.NET Edition** is an experimental, development-only backend that must conform to the Laravel React API contract before it can safely use the same frontend. The portability roadmap and safety rules are documented in [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md).
+The **Laravel Edition** at the repository root is the canonical, in-production platform and the foundation of all Project NEXUS communities. It runs on Laravel 12 + PHP 8.2+ with the production React 19 frontend. The **.NET Edition** is an experimental, development-only backend in `aspnet-backend/` that must conform to Laravel's external contracts before either unchanged frontend can safely target it. The portability roadmap and safety rules are documented in [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) and [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
 
 ## Source Code
 

@@ -84,13 +84,13 @@ Anything new in this area should reuse `ReportExportService` and, critically, se
 
 The React frontend is the primary UI. It uses React 19, TypeScript, HeroUI v3, Tailwind CSS 4, Lucide icons, translation namespaces, CSS tokens, and the local motion shim. New user-facing UI belongs here unless it is specifically part of the accessible frontend.
 
-The production React frontend currently lives in this Laravel repository under `react-frontend/` and speaks the Laravel API contract by default. ASP.NET backend compatibility work must happen by making the ASP.NET API conform to that contract, not by weakening Laravel behaviour in the production frontend. See [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) for the switchable-frontend guardrails and the roadmap to move the React frontend into its own repository when contract parity is mature enough.
+The production React frontend lives under `react-frontend/` and speaks the Laravel API contract by default. The experimental ASP.NET implementation lives under `aspnet-backend/`, and the experimental shared accessible client lives under `web-uk/`. ASP.NET compatibility work must make ASP.NET conform to Laravel's externally observable contract, not weaken either frontend or introduce backend-specific branches. See [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) and [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md).
 
 The accessible frontend is a maintained second surface, not legacy PHP. It uses GOV.UK Frontend markup/classes/Sass/JS with Project NEXUS branding and attribution. Its controller and translation paths must stay isolated from the React app while preserving the same tenant, module, auth, and AGPL attribution rules.
 
 ## Backend Organization
 
-Laravel is the sole HTTP handler. Controllers should stay thin and delegate business rules to services. Services should follow existing static/service patterns, tenant scoping, and database conventions already used under `app/Services/`.
+Laravel is the sole production HTTP handler. Controllers should stay thin and delegate business rules to services. Services should follow existing static/service patterns, tenant scoping, and database conventions already used under `app/Services/`. ASP.NET remains development-only until unchanged-client contract and runtime certification is complete.
 
 New schema changes should use Laravel migrations in `database/migrations/`. The root `migrations/` directory is historical; do not add new legacy SQL migrations.
 

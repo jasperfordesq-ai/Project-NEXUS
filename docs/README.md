@@ -41,6 +41,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [LOCAL-PERFORMANCE.md](LOCAL-PERFORMANCE.md) | Getting full speed from a development machine, which concurrency knobs are machine-aware, and the container file-I/O bottleneck that CPU tuning cannot fix. |
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |
+| [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) | Repository boundaries and safe workflow for Laravel, ASP.NET, React, and Web UK contract work. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |
 | [MODULES.md](MODULES.md) | The module map: each module → its code paths and guide, including the modules that have no guide yet. |
 

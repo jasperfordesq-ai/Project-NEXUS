@@ -21,7 +21,7 @@ From the platform repository root:
 ```powershell
 dotnet build aspnet-backend/Nexus.sln --configuration Release
 dotnet test aspnet-backend/Nexus.sln --configuration Release --no-build
-pwsh -File aspnet-backend/scripts/audit-platform-parity.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/verify-platform-contracts.ps1
 ```
 
 The comparison scripts resolve Laravel from the repository root by default.
