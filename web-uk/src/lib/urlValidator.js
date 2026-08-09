@@ -74,10 +74,30 @@ function validateReturnUrl(url, fallback = '/') {
     return fallback;
   }
 
-  // Must not contain encoded characters that could bypass checks
-  // Check for encoded slashes or colons
-  const decoded = decodeURIComponent(trimmed);
-  if (decoded.startsWith('//') || decoded.includes('://')) {
+  // Decode repeatedly so encoded and double-encoded protocol-relative paths
+  // cannot become an external redirect after a browser or proxy normalizes
+  // the Location header. Malformed escapes are rejected rather than thrown.
+  let decoded = trimmed;
+  try {
+    for (let pass = 0; pass < 3; pass += 1) {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    }
+  } catch {
+    return fallback;
+  }
+
+  if (
+    !decoded.startsWith('/')
+    || decoded.startsWith('//')
+    || decoded.includes('\\')
+    || decoded.includes('://')
+    || Array.from(decoded).some((character) => {
+      const codePoint = character.codePointAt(0);
+      return codePoint <= 31 || codePoint === 127;
+    })
+  ) {
     return fallback;
   }
 

@@ -1,59 +1,107 @@
-# CodeQL high-severity triage for PR 169
+# CodeQL triage for PR 169
 
 Date: 2026-08-09
 
 Scope: draft consolidation PR `codex/platform-monorepo`
 
-Evidence: GitHub code-scanning alerts queried with `pr=169` before this remediation
+Evidence: GitHub code-scanning alerts queried with `pr=169` at commit
+`3d4a67c4e375c1bf4fef51697000c11c44feab8e`, followed by source and data-flow
+review of every alert newly attributed to the PR.
 
-## Baseline
+## Result
 
-- 150 alerts were associated with the pull request: 29 open high severity, 95 open medium severity, 23 previously dismissed high-severity alerts, and 3 previously dismissed medium-severity alerts.
-- 26 of the 29 open high-severity alerts were in the newly imported Web UK tree.
-- This triage does not waive the medium-severity findings. They remain a separate, route-by-route validation queue.
+- The replacement scan reported 105 new alerts: 10 high and 95 medium.
+- All 105 were reviewed and given an individual, evidence-bearing disposition
+  in GitHub. The PR CodeQL check changed from failure to success.
+- Three high alerts remain open on the PR query, but all three pre-date this PR:
+  two Markdown-export formatting findings in the React administration client
+  and one static source-scanner finding. They are not counted as new alerts by
+  the PR gate.
+- CodeQL and its severity threshold remain enabled and unchanged.
 
-## Remediated in this branch
-
-The following reachable runtime patterns now have regression coverage and code changes:
-
-- Eight Web UK HTML-to-text conversions no longer use incomplete tag-stripping regular expressions. They use `sanitize-html` through the shared `htmlToPlainText` helper, which drops script/style/non-text elements before producing plain text.
-- Seven email checks no longer use the polynomial regular expression identified by CodeQL. They use the shared, length-bounded `isValidEmail` parser.
-- The session-timeout client accepts its rendered tenant login URL only when it is a same-origin absolute path (`/…`, but not `//…`); otherwise it uses `/login`.
-
-Expected alert impact after the replacement scan: 16 Web UK high-severity alerts should close (8 incomplete multi-character sanitization, 7 polynomial ReDoS, 1 DOM redirect/XSS flow).
-
-## Reviewed findings that are not reachable vulnerabilities
+## High-severity findings introduced by the imported Web UK tree
 
 ### Rate limiting (3)
 
-- `web-uk/src/routes/events.js`: the flagged mutation is mounted behind the application-wide `generalLimiter` and `postOnly(formLimiter)` in `src/server.js`.
-- `web-uk/src/routes/blog.js` and `web-uk/src/routes/polls.js`: these legacy route modules are not imported or mounted by `src/server.js`. The active blog and poll modules are also mounted behind the global and form limiters.
+- `web-uk/src/routes/events.js`: the flagged mutation is mounted behind the
+  application-wide `generalLimiter` and `postOnly(formLimiter)` in
+  `src/server.js`.
+- `web-uk/src/routes/blog.js` and `web-uk/src/routes/polls.js`: these legacy
+  router modules are not imported or mounted by `src/server.js`. The active
+  blog and poll implementations are mounted behind the global and form
+  limiters.
 
-Disposition: false positive / unreachable duplicate module. Do not add a second limiter at the flagged lines.
+Disposition: false positive / unreachable duplicate module. No rate-limit
+policy or thresholds were changed.
 
 ### Token validation (3)
 
-- `web-uk/src/server.js`: `cookieParser(COOKIE_SECRET)` initializes signed-cookie verification; authentication reads `req.signedCookies.token`, not the unsigned cookie collection.
-- The other two alerts are in Jest fixtures that create deliberately simplified request objects and are not runtime code.
+- `web-uk/src/server.js`: `cookieParser(COOKIE_SECRET)` performs signed-cookie
+  verification and authentication reads `req.signedCookies.token`, not the
+  unsigned cookie collection. State-changing routes use the double-CSRF
+  middleware.
+- The other two findings are Jest fixtures with deliberately simplified
+  request objects; they are not deployed handlers.
 
-Disposition: false positive. Signed-cookie and CSRF middleware tests remain the controlling evidence.
+Disposition: runtime false positive plus two test-only findings.
 
-### Development-only scanners (5)
+### Development-only source scanners (4)
 
-- Four findings are in Web UK localization, visual-check, and ledger generator scripts. Their regular expressions parse checked-out templates/source or generated Markdown; they do not process HTTP request data or render runtime HTML.
-- `scripts/check-admin-ui-literals.mjs` similarly inspects checked-out TSX source and does not sanitize runtime input.
+The localization audit, visual-check, and API-ledger scripts inspect checked-out
+templates or source and produce local diagnostic text or Markdown. They do not
+process HTTP request data or render runtime HTML.
 
-Disposition: false positive for runtime exploitability. Keep these tools non-production and do not reuse their parsers as request sanitizers.
+Disposition: false positive for runtime exploitability. These parsers must not
+be reused as sanitizers for untrusted runtime input.
 
-### React Markdown export (2)
+## Medium-severity findings
 
-`CommercialBoundaryAdminPage.tsx` escapes pipe and newline characters while generating a downloaded Markdown report. The values are not injected into HTML and the escaping is formatting, not a security sanitizer.
+### Server-side redirects (92)
 
-Disposition: false positive for XSS/sanitization. Preserve the Markdown-only output boundary.
+- 88 alerts share the same reported taint source: a Jest onboarding fixture
+  that deliberately assigns request-derived test data to `res.locals.urlFor`.
+  Production tenant-routing middleware owns that function; the route sinks use
+  application-constructed local paths.
+- Two tenant-routing redirects construct a fixed local pathname and append only
+  the original query suffix. The request cannot select a scheme or host.
+- The cookie-consent return redirect and notification return redirect pass the
+  shared local-return guard. The guard was additionally hardened to reject
+  backslashes, encoded and double-encoded protocol-relative paths, control
+  characters, and malformed percent escapes. Focused Jest coverage exercises
+  these cases.
 
-## Remaining required work
+Disposition: 90 data-flow false positives and two guarded redirects with
+additional defense-in-depth hardening.
 
-- Let CodeQL rescan the replacement SHA and confirm the 16 expected high-severity closures.
-- Review any high alert that remains at a remediated line before classifying it.
-- Triage the 95 open medium alerts separately, beginning with the server-side redirect group; validate each redirect sink against the shared local-return URL guard rather than dismissing the group wholesale.
-- Do not merge while a newly reachable high-severity alert remains unexplained or unremediated.
+### Test cookies (2)
+
+Both alerts point to cookie-shaped Jest input used to exercise authentication
+and onboarding behavior. They do not configure or transmit production cookies.
+
+Disposition: used in tests.
+
+### Sensitive GET value (1)
+
+The flagged value is a numeric employer ID read from a route path parameter,
+not sensitive data supplied in a GET query string. It selects a public employer
+profile.
+
+Disposition: false positive.
+
+## Verification
+
+- `npm.cmd test -- --runInBand tests/url-validator.test.js tests/federation-onboarding-session.test.js`
+- Result: 2 suites passed, 18 tests passed.
+- `npm.cmd run lint`
+- Result: passed.
+- `npm.cmd test -- --runInBand`
+- Result: 58 suites passed, 1,779 tests passed.
+- GitHub CodeQL aggregate check: success after the 105 new-alert dispositions.
+- A fresh CodeQL scan is still required on the final pushed SHA to prove that
+  the committed hardening and alert fingerprints remain correctly classified.
+
+## Merge boundary
+
+Do not merge if a fresh scan introduces a new unexplained alert or if any
+runtime reachability assumption above changes. The three older branch alerts
+remain a separate remediation queue and are not waived by this PR triage.

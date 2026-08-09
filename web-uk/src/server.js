@@ -87,6 +87,7 @@ const { tenantFeatureGate } = require('./middleware/tenant-feature-gates');
 const { tenantRouting } = require('./middleware/tenant-routing');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
 const { isValidEmail } = require('./lib/inputValidator');
+const { validateReturnUrl } = require('./lib/urlValidator');
 const { refreshAuthSession, requireAuth } = require('./middleware/auth');
 const { assertProductionConfig } = require('./lib/production-config');
 const { createSessionStore } = require('./lib/session-store');
@@ -1765,11 +1766,7 @@ function postOnly(limiter) {
 }
 
 function safeLocalPath(input, fallback = '/') {
-  const value = typeof input === 'string' ? input.trim() : '';
-  if (value && value.startsWith('/') && !value.startsWith('//')) {
-    return value;
-  }
-  return fallback;
+  return validateReturnUrl(input, fallback);
 }
 
 function groupMultipartErrorRedirect(sizeStatus, invalidStatus) {
