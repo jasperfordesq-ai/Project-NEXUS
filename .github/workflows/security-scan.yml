@@ -81,9 +81,16 @@ jobs:
       # correctly handles .trivyignore suppressions in table format.
       # The SARIF step is non-blocking (exit-code 0) and uploads results
       # to the GitHub Security tab for visibility.
+      #
+      # 🔴 Every third-party action in this workflow is PINNED BY COMMIT SHA
+      # with its version named alongside — see the TruffleHog note below for
+      # the incident that motivated it. A tag is not sufficient: tags can be
+      # moved by the publisher. All four trivy-action steps must stay on the
+      # SAME pin; bump them together or the blocking table gate and the
+      # non-blocking SARIF upload can disagree about what they scanned.
       - name: Run Trivy Vulnerability Scanner (Table)
         if: ${{ !cancelled() }}
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -93,7 +100,7 @@ jobs:
           exit-code: '1'
 
       - name: Run Trivy Vulnerability Scanner (SARIF)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         # always(): the blocking table step above exits 1 on findings, which
         # would skip this step and leave the upload below erroring on a
         # missing file — exactly when the Security tab needs the results most.
@@ -213,9 +220,15 @@ jobs:
           node scripts/npm-audit-gate.mjs --prefix e2e
           node scripts/npm-audit-gate.mjs --prefix mobile --package-lock-only
 
+      # 🔴 Pinned to the CURRENT main commit, deliberately NOT to a release
+      # tag. This action's newest release is 1.1.0 from 2021, and main is 14
+      # commits and five years ahead of it — every green run this repo has ever
+      # had was against main, so pinning to 1.1.0 would be a large behaviour
+      # change dressed up as a safety improvement. This pin freezes exactly the
+      # code that is already passing. Revisit if upstream ever tags again.
       - name: OWASP Dependency Check
         if: ${{ !cancelled() }}
-        uses: dependency-check/Dependency-Check_Action@main
+        uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c # main @ 2026-08-09
         with:
           project: 'nexus'
           path: '.'
@@ -257,7 +270,7 @@ jobs:
       # The SARIF step is non-blocking (exit-code 0) and uploads results
       # to the GitHub Security tab for visibility.
       - name: Run Trivy Container Scan (Table)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: 'nexus-app:scan'
           format: 'table'
@@ -267,7 +280,7 @@ jobs:
           exit-code: '1'
 
       - name: Run Trivy Container Scan (SARIF)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         # always() + the image-exists guard pattern: the blocking table step
         # exits 1 on findings; without this the SARIF never generates and the
         # upload step errors on a missing file.
