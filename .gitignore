@@ -124,6 +124,7 @@ CLAUDE.md
 !/scripts/predeploy-ci-check.sh
 !/scripts/predeploy-ci-verify.mjs
 !/scripts/preflight.mjs
+!/scripts/verify-platform-contracts.ps1
 !/scripts/postdeploy-watch.mjs
 !/scripts/deploy.sh
 !/scripts/translate-i18n-gaps.mjs

@@ -66,6 +66,11 @@ docs/
 *.md
 !README.md
 
+# Development-only platform applications. These are verified separately and
+# must never enlarge or enter the Laravel production image build context.
+/aspnet-backend/
+/web-uk/
+
 # Database files
 *.sqlite
 *.sqlite-journal

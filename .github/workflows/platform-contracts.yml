@@ -1,0 +1,101 @@
+name: Platform contracts
+
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'routes/**'
+      - 'config/**'
+      - 'database/**'
+      - 'openapi.json'
+      - 'react-frontend/**'
+      - 'accessible-frontend/**'
+      - 'aspnet-backend/**'
+      - 'web-uk/**'
+      - 'contracts/**'
+      - 'scripts/verify-platform-contracts.ps1'
+      - '.github/workflows/platform-contracts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'routes/**'
+      - 'config/**'
+      - 'database/**'
+      - 'openapi.json'
+      - 'react-frontend/**'
+      - 'accessible-frontend/**'
+      - 'aspnet-backend/**'
+      - 'web-uk/**'
+      - 'contracts/**'
+      - 'scripts/verify-platform-contracts.ps1'
+      - '.github/workflows/platform-contracts.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-contract-inventory:
+    name: Static contract inventory
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify comparison tools and generate current inventory
+        shell: pwsh
+        run: ./scripts/verify-platform-contracts.ps1 -SkipDotNet -SkipReact -SkipWebUk
+
+  aspnet:
+    name: ASP.NET build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build
+        run: dotnet build aspnet-backend/Nexus.sln --configuration Release
+      - name: Test
+        run: dotnet test aspnet-backend/Nexus.sln --configuration Release --no-build
+
+  react-contracts:
+    name: React backend guardrails
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: react-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: react-frontend/package-lock.json
+      - run: npm ci
+      - run: npm run check:dual-backend-prep
+
+  web-uk:
+    name: Web UK checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: web-uk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web-uk/package-lock.json
+      - run: npm ci
+      - run: npm run brand:check
+      - run: npm run lint
+      - run: npm test -- --runInBand
+      - run: npm run build:css

@@ -1,3 +1,8 @@
+// Copyright (c) 2024-2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
 import { Page, request } from "@playwright/test";
 
 // Credentials loaded from e2e/.env (see .env.example for required vars)
