@@ -104,7 +104,16 @@ services:
   queue:
     image: nexus-php-app:${BUILD_COMMIT:-candidate}
     container_name: nexus-${NEXUS_COLOR:-green}-php-queue
-    command: sh -c "umask 0002; php artisan package:discover --ansi 2>/dev/null; php artisan optimize && exec php artisan horizon"
+    # Wait for Redis before starting Horizon. Redis is an external container on
+    # the shared network, so compose has no depends_on to order it — when it is
+    # not yet reachable (host reboot, VM memory wedge, container fleet
+    # auto-start) Horizon's supervisor dies with "RedisException: Connection
+    # refused", the container restarts, re-runs `optimize`, and its route:cache
+    # step unlinks routes-v7.php while the dying children still read it. That
+    # crash loop is what produced the ~600-event Sentry NEXUS-PHP-10 bursts
+    # (23/31 Jul, 1/7 Aug 2026) — the missing-routes error is collateral, not
+    # the cause. `$$` is the Compose escape for a literal `$`.
+    command: sh -c "umask 0002; n=0; until php -d default_socket_timeout=3 -r 'exit(@fsockopen($$argv[1], (int)$$argv[2])?0:1);' -- $$REDIS_HOST $$REDIS_PORT 2>/dev/null; do n=$$((n+1)); if [ $$n -ge 60 ]; then echo '[WARN] Redis unreachable after 120s - starting Horizon anyway'; break; fi; sleep 2; done; php artisan package:discover --ansi 2>/dev/null; php artisan optimize && exec php artisan horizon"
     restart: unless-stopped
     stop_grace_period: 120s
     deploy:

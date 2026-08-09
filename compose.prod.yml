@@ -248,7 +248,10 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: nexus-php-queue
-    command: sh -c "umask 0002; php artisan optimize && php artisan horizon"
+    # Wait for Redis before starting Horizon — same crash loop as the
+    # blue-green queue service; see the comment there. `$$` is the Compose
+    # escape for a literal `$`.
+    command: sh -c "umask 0002; n=0; until php -d default_socket_timeout=3 -r 'exit(@fsockopen($$argv[1], (int)$$argv[2])?0:1);' -- $$REDIS_HOST $$REDIS_PORT 2>/dev/null; do n=$$((n+1)); if [ $$n -ge 60 ]; then echo '[WARN] Redis unreachable after 120s - starting Horizon anyway'; break; fi; sleep 2; done; php artisan optimize && php artisan horizon"
     restart: unless-stopped
     stop_grace_period: 120s
     healthcheck:
