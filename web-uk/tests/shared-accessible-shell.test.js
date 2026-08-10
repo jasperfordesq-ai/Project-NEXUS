@@ -17119,7 +17119,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('href="/organisations/opportunities/77/apply"');
     expect(response.text).toContain('Apply to volunteer');
     expect(response.text).toContain('Aisha Khan');
-    expect(response.text).toContain('src="http://127.0.0.1:8088/storage/reviews/aisha.png"');
+    expect(response.text).toContain('src="http://127.0.0.1:8090/storage/reviews/aisha.png"');
     expect(response.text).toContain('Rated 5 out of 5');
     expect(response.text).toContain('Helpful and welcoming.');
     expect(response.text).not.toContain('There are no current volunteering opportunities at this organisation.');
@@ -29568,7 +29568,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Community voices');
     expect(response.text).toContain('By Aisha Khan');
     expect(response.text).toContain('4 episodes');
-    expect(response.text).toContain('src="http://127.0.0.1:8088/uploads/podcast.png"');
+    expect(response.text).toContain('src="http://127.0.0.1:8090/uploads/podcast.png"');
     expect(response.text).toContain('href="/podcasts/7"');
     expect(response.text).toContain('href="/podcasts/studio"');
     expect(response.text).toContain('<option value="Environment" selected>Environment</option>');
@@ -29673,7 +29673,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Stories from local members.');
     expect(response.text).not.toContain('&lt;strong&gt;');
     expect(response.text).toContain('RSS feed');
-    expect(response.text).toContain('href="http://127.0.0.1:8088/api/v2/podcasts/7/feed.xml"');
+    expect(response.text).toContain('href="http://127.0.0.1:8090/api/v2/podcasts/7/feed.xml"');
     expect(response.text).toContain('Subscribe to this podcast');
     expect(response.text).toContain('First update');
     expect(response.text).toContain('href="/podcasts/7/episodes/99"');
@@ -29706,7 +29706,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Episode notes for listeners.');
     expect(response.text).not.toContain('&lt;strong&gt;');
     expect(response.text).toContain('Listen to First update');
-    expect(response.text).toContain('src="http://127.0.0.1:8088/uploads/podcasts/first.mp3"');
+    expect(response.text).toContain('src="http://127.0.0.1:8090/uploads/podcasts/first.mp3"');
     expect(response.text).toContain('Read transcript');
     expect(response.text).toContain('Welcome to the first update.');
     expect(response.text).not.toContain('Laravel Blade route');
@@ -29829,14 +29829,14 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Publish your show');
     expect(response.text).toContain('Community voices');
     expect(response.text).toContain('Weekly local audio');
-    expect(response.text).toContain('http://127.0.0.1:8088/uploads/podcasts/community.jpg');
+    expect(response.text).toContain('http://127.0.0.1:8090/uploads/podcasts/community.jpg');
     expect(response.text).toContain('en-IE');
     expect(response.text).toContain('podcasts@example.test');
     expect(response.text).toContain('Episode 3');
     expect(response.text).toContain('First update');
     expect(response.text).toContain('Episode transcript');
     expect(response.text).toContain('Opening');
-    expect(response.text).toContain('http://127.0.0.1:8088/uploads/podcasts/episode.jpg');
+    expect(response.text).toContain('http://127.0.0.1:8090/uploads/podcasts/episode.jpg');
     expect(response.text).toContain('action="/podcasts/studio/42/update"');
     expect(response.text).toContain('name="episode_id" value="99"');
     expect(response.text).toMatch(/id="episode_visibility-99"[\s\S]*?<option value="inherit">Use the show setting<\/option>[\s\S]*?<option value="public">Anyone<\/option>[\s\S]*?<option value="members" selected>Members only<\/option>[\s\S]*?<option value="private">Only me<\/option>/);

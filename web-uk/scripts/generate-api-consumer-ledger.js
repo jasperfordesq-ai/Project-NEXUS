@@ -519,9 +519,22 @@ function openApiIndex(openApi) {
 
 function laravelApiRouteIndex(source) {
   const index = new Map();
+  // 🔴 ORDER MATTERS. Line comments MUST be stripped before block comments.
+  //
+  // The reverse order hid 808 of routes/api.php's 2,681 routes — 30.1% —
+  // measured 2026-08-10. routes/api.php contains ordinary `//` comments that
+  // mention wildcard paths, e.g. `// panel (/broker/moderation/*) since ...`
+  // and `// literal /reports/* analytics routes ...`. Stripping block comments
+  // first treats the `/*` inside those line comments as an opening delimiter
+  // and deletes everything up to the next `*/`, which swallowed 118,006
+  // characters of real route declarations.
+  //
+  // Nothing failed: the ledger simply reported a 70%-visible view of the API
+  // as if it were the whole thing, and every parity figure derived from it was
+  // computed against that view.
   const uncommented = String(source || '')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*(?:\/\/|#).*$/gm, '');
+    .replace(/^\s*(?:\/\/|#).*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
   const routePattern = /Route::(get|post|put|patch|delete|head|options)\(\s*(['"])(\/[^'"]*)\2/g;
   for (const match of uncommented.matchAll(routePattern)) {
     const method = match[1].toUpperCase();

@@ -76,7 +76,7 @@ describe('accessible shell tenant gating', () => {
 
   it('resolves only configured-backend tenant logo assets', () => {
     expect(resolveBackendAssetUrl('/uploads/tenants/acme/logo.png'))
-      .toBe('http://127.0.0.1:8088/uploads/tenants/acme/logo.png');
+      .toBe('http://127.0.0.1:8090/uploads/tenants/acme/logo.png');
     expect(resolveBackendAssetUrl('https://untrusted.example/logo.png')).toBe('');
   });
 
@@ -107,7 +107,7 @@ describe('accessible shell tenant gating', () => {
       }
     }, false);
 
-    expect(locals.tenantLogoUrl).toBe('http://127.0.0.1:8088/uploads/tenants/acme/dark.png');
+    expect(locals.tenantLogoUrl).toBe('http://127.0.0.1:8090/uploads/tenants/acme/dark.png');
     expect(locals.tenantLogoShape).toBe('wide');
   });
 

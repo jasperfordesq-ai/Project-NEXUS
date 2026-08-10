@@ -16,8 +16,44 @@ both frontend consumers against the same contract evidence.
 | repository root (`app/`, `routes/`, `database/`) | Laravel production backend and contract source of truth | Laravel blue/green |
 | `react-frontend/` | Canonical React client | Laravel blue/green |
 | `accessible-frontend/` | Current Laravel-rendered accessible frontend | Laravel blue/green |
-| `aspnet-backend/` | Experimental second backend | None |
-| `web-uk/` | Experimental shared accessible client | None |
+| `aspnet-backend/` | Experimental second backend | None from this repository — see below |
+| `web-uk/` | Experimental shared accessible client | None from this repository — see below |
+
+### 🔴 Both tracks ARE live in production, deployed from a repository that is now dead
+
+This table said "None" without qualification until 2026-08-10, which was simply
+wrong and led decisions astray. Verified by direct probe on 2026-08-10:
+
+- `https://api.project-nexus.net/health` → `200 {"status":"healthy"}`
+- `https://uk.project-nexus.net/health` → `200 OK`
+
+Both are served from the **former `api.project-nexus.net` repository**, deployed
+to `/opt/nexus-backend/` on the production host, behind Cloudflare and Apache.
+This repository cannot update either of them — not for a feature, not for a bug,
+**not for a security fix**.
+
+**Owner decision, 2026-08-10: the old repository and everything it deployed are
+declared DEAD.** The domain names are retained. This repository becomes the
+control panel and the map for both tracks. Nothing here deploys to those
+hostnames yet; designing that is open work, and it must not reuse the dead
+repository's deploy machinery (its deploy script was removed from here on
+2026-08-10 for mirroring the wrong directory, and its deploy workflow is
+hard-disabled upstream).
+
+🔴 Two hazards inherited from the dead deployment, recorded so they are not
+rediscovered the hard way:
+
+1. **The live ASP.NET database has no working backup.** The scheduled backup in
+   the old repository has failed **156 times out of 156 since 2026-03-08** — 155
+   days, zero successes. Root cause is trivial and total: the job runs
+   `ssh-keyscan -H` with an **empty** host variable and dies before reaching the
+   backup command. There may or may not be a separate backup on the server
+   itself; that is unverified.
+2. **The ASP.NET app migrates the database on every start.** `Program.cs` calls
+   `Database.MigrateAsync()` in every non-Testing environment. Combined with (1),
+   an ordinary `docker restart` of that container can irreversibly alter live
+   data with no recovery point — a container rollback cannot undo a forward-only
+   schema change. Do not restart or replace it before a verified backup exists.
 
 ASP.NET must reproduce Laravel's externally observable methods, paths,
 payloads, response and error shapes, authentication, tenancy, uploads,

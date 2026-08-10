@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-const DEFAULT_LARAVEL_BASE_URL = 'http://127.0.0.1:8088';
+const DEFAULT_LARAVEL_BASE_URL = 'http://127.0.0.1:8090';
 const DEFAULT_ASPNET_BASE_URL = 'http://localhost:5080';
 
 const targetStatus = {

@@ -174,10 +174,10 @@ describe('Public Routes', () => {
       expect(response.text).toContain('Use a simpler, accessible version of Acme Timebank for core community tasks.');
       expect(response.text).toContain('Neighbours helping neighbours');
       expect(response.text).toContain('class="nexus-alpha-header__logo nexus-alpha-header__logo--wide"');
-      expect(response.text).toContain('src="http://127.0.0.1:8088/uploads/tenants/acme/tenant-logo.png"');
+      expect(response.text).toContain('src="http://127.0.0.1:8090/uploads/tenants/acme/tenant-logo.png"');
       expect(response.text).toContain('alt="Acme Timebank"');
       expect(response.text).toContain('Not affiliated with GOV.UK');
-      expect(response.headers['content-security-policy']).toContain('img-src \'self\' data: http://127.0.0.1:8088');
+      expect(response.headers['content-security-policy']).toContain('img-src \'self\' data: http://127.0.0.1:8090');
       expect(response.text).toContain('Built for accessibility needs');
       expect(response.text).toContain('Members');
       expect(response.text).toContain('1,234');

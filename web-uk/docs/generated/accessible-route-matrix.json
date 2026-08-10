@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-08-10T06:38:44.020Z",
+  "generatedAt": "2026-08-10T10:17:15.994Z",
   "provenance": {
-    "generatedAt": "2026-08-10T06:38:44.020Z",
+    "generatedAt": "2026-08-10T10:17:15.994Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
-    "laravelCommitSha": "f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef",
+    "laravelCommitSha": "86024709fc762c68df6ce2253442ed2257aae49c",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef",
+    "webUkRepositoryCommitSha": "86024709fc762c68df6ce2253442ed2257aae49c",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-10T06:38:44.020Z",
+    "generatedAt": "2026-08-10T10:17:15.994Z",
     "sourceRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
     "targetRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
     "laravelRoutes": 707,

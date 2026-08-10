@@ -74,6 +74,10 @@ accessible:
   # The accessible frontend's routes are declared here, and its PHP contract
   # test asserts against them.
   - 'routes/govuk-alpha.php'
+  # 🔴 33 further route files live in routes/govuk-alpha-parity/ and woke
+  # NOTHING until 2026-08-10 — only the single govuk-alpha.php beside them was
+  # listed. Same blind-spot class as contracts/** and e2e/**.
+  - 'routes/govuk-alpha-parity/**'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 
@@ -115,6 +119,21 @@ aspnet:
 webuk:
   - 'web-uk/**'
   - 'contracts/**'
+  # 🔴 The Laravel Blade accessible frontend is Web UK's SOURCE OF TRUTH — Web UK
+  # exists to reproduce its observable behaviour. A change to Blade is therefore
+  # a change to Web UK's specification, and until 2026-08-10 it woke no Web UK
+  # check at all.
+  #
+  # That blind spot has a measured cost. During the pause Laravel shipped 18 new
+  # accessible routes (partner venues, the public What's On page, 11
+  # guardian/safeguarding settings pages). Web UK went from 1 route behind to 19
+  # behind, and nothing reported it for over a week. Same blind-spot class as
+  # contracts/** before 2026-08-03 and e2e/** before 2026-08-05.
+  - 'accessible-frontend/**'
+  - 'routes/govuk-alpha.php'
+  - 'routes/govuk-alpha-parity/**'
+  - 'app/Http/Controllers/GovukAlpha/**'
+  - 'lang/**/govuk_alpha*.php'
 
 # The Laravel-side contract inventory: what the comparison tooling reads when
 # it builds the "what does Laravel actually expose" side of the parity report.

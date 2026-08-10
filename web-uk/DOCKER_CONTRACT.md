@@ -29,7 +29,7 @@ application stack.
 | Host port | `5180` |
 | Container port | `3001` |
 | URL | http://localhost:5180 |
-| Backend API | http://host.docker.internal:8088 |
+| Backend API | http://host.docker.internal:8090 |
 | Health check | http://localhost:5180/health |
 
 ## Commands
@@ -76,8 +76,8 @@ deployment and does not establish backend-switching certification.
 
 | Environment | Target variables |
 |-------------|------------------|
-| Docker (default) | `ACCESSIBLE_BACKEND_TARGET=laravel`, `LARAVEL_BASE_URL=http://host.docker.internal:8088` |
-| Host verification tooling | `ACCESSIBLE_BACKEND_TARGET=laravel`, `LARAVEL_BASE_URL=http://127.0.0.1:8088`; safe isolated tests replace this with their own mock |
+| Docker (default) | `ACCESSIBLE_BACKEND_TARGET=laravel`, `LARAVEL_BASE_URL=http://host.docker.internal:8090` |
+| Host verification tooling | `ACCESSIBLE_BACKEND_TARGET=laravel`, `LARAVEL_BASE_URL=http://127.0.0.1:8090`; safe isolated tests replace this with their own mock |
 
 The Docker environment uses `host.docker.internal` to reach Laravel running on
 the host machine. This is configured in `.env.docker` and **should not be
@@ -138,7 +138,7 @@ When working on this project:
 
 1. **Inspect current listeners/containers** instead of assuming Docker is running
 2. **Use port 5180** for testing the UK frontend
-3. **Laravel backend is at** `http://host.docker.internal:8088` from container perspective
+3. **Laravel backend is at** `http://host.docker.internal:8090` from container perspective
 4. **Use `docker compose` commands** (not `docker-compose`)
 5. **Check container health** with `docker compose ps` or `curl http://localhost:5180/health`
 
@@ -152,7 +152,7 @@ docker ps --filter "name=nexus-uk-frontend"
 curl http://localhost:5180/health
 
 # Check Laravel backend reachable from container
-docker exec nexus-uk-frontend-dev wget -qO- http://host.docker.internal:8088
+docker exec nexus-uk-frontend-dev wget -qO- http://host.docker.internal:8090
 ```
 
 ## Troubleshooting
@@ -167,7 +167,7 @@ lsof -i :5180                 # macOS/Linux
 ```
 
 ### Backend not reachable
-1. Verify Laravel is running on port 8088
+1. Verify Laravel is running on port 8090
 2. Check `host.docker.internal` resolves: `docker exec nexus-uk-frontend-dev ping host.docker.internal`
 3. On Linux, ensure `extra_hosts` is set in compose.yml (already configured)
 

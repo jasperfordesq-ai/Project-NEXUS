@@ -749,7 +749,28 @@ sudo bash scripts/deploy/bluegreen-deploy.sh monitor           # Live monitor da
 
 **Legacy single-color containers** (may still exist on first migration): `nexus-php-app`, `nexus-react-prod`, `nexus-sales-site`, `nexus-php-queue`, `nexus-php-scheduler`.
 
-**NEVER touch:** `nexus-backend-*`, `nexus-frontend-*`, `nexus-uk-*`, `nexus-civic-*` — they belong to other projects.
+**NEVER touch:** `nexus-frontend-*`, `nexus-civic-*` — they belong to other projects.
+
+🔴 **Corrected 2026-08-10.** `nexus-backend-*` and `nexus-uk-*` were also listed
+here as "other projects". They are **not** — they are this platform's own
+experimental ASP.NET backend and Web UK frontend, live at
+`api.project-nexus.net` and `uk.project-nexus.net`, deployed from the former
+`api.project-nexus.net` repository into `/opt/nexus-backend/`. The wording made
+every agent refuse to look at the very containers it was asked about.
+
+They are still **not to be deployed, restarted or modified** — but for the real
+reasons, which an agent needs to know rather than a false ownership claim:
+
+- The owner declared that repository and its deployment **dead** on 2026-08-10.
+  The domains are kept; this repository is the control panel, and how it deploys
+  is undesigned work.
+- 🔴 The live ASP.NET database has **no successful backup since 2026-03-08**
+  (156 consecutive failures), and its app runs `Database.MigrateAsync()` on
+  every start. Restarting that container can irreversibly change live data with
+  nothing to restore from. See `docs/PLATFORM-MONOREPO.md`.
+
+Read-only inspection is fine and often necessary. Anything that writes, restarts
+or redeploys needs explicit owner authorization, as always.
 
 ---
 

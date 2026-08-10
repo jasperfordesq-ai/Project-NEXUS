@@ -9,7 +9,7 @@
 #   docker compose --profile prod up  # Local production-image mode only
 #
 # Port: 5180 (host) -> 3001 (container)
-# API:  Connects to Laravel backend at http://host.docker.internal:8088
+# API:  Connects to Laravel backend at http://host.docker.internal:8090
 # =============================================================================
 
 services:

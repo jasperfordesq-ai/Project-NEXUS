@@ -36,13 +36,13 @@ describe('paired Laravel Blade and Web UK screenshot capture', () => {
 
   it('resolves distinct surface URLs and an ignored artifact directory', () => {
     const options = resolveCaptureOptions({
-      laravelBaseUrl: 'http://127.0.0.1:8088/',
+      laravelBaseUrl: 'http://127.0.0.1:8090/',
       webBaseUrl: 'http://127.0.0.1:5180/',
       snapshotId: 'laravel-sha__web-sha',
       disposableLaravelConfirmed: true
     }, {});
 
-    expect(options.laravelBaseUrl).toBe('http://127.0.0.1:8088');
+    expect(options.laravelBaseUrl).toBe('http://127.0.0.1:8090');
     expect(options.webBaseUrl).toBe('http://127.0.0.1:5180');
     expect(options.outputDirectory).toBe(path.resolve(
       __dirname,
@@ -60,14 +60,14 @@ describe('paired Laravel Blade and Web UK screenshot capture', () => {
 
   it('fails closed until the operator confirms a disposable Laravel environment', () => {
     expect(() => resolveCaptureOptions({
-      laravelBaseUrl: 'http://127.0.0.1:8088',
+      laravelBaseUrl: 'http://127.0.0.1:8090',
       webBaseUrl: 'http://127.0.0.1:5180'
     }, {})).toThrow('Set DISPOSABLE_LARAVEL_CONFIRMED=1');
   });
 
   it('rejects legacy alpha mounts, credentials, and non-canonical routes', () => {
     expect(() => assertSafeBaseUrl(
-      'http://127.0.0.1:8088/hour-timebank/alpha',
+      'http://127.0.0.1:8090/hour-timebank/alpha',
       'LARAVEL_BLADE_BASE_URL'
     )).toThrow('must not use the legacy /alpha mount');
     expect(() => assertSafeBaseUrl('http://user:secret@example.test', 'WEB_UK_BASE_URL'))

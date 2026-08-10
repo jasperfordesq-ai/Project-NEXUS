@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-10T08:07:15.246Z",
+  "generatedAt": "2026-08-10T10:17:26.256Z",
   "provenance": {
-    "generatedAt": "2026-08-10T08:07:15.246Z",
+    "generatedAt": "2026-08-10T10:17:26.256Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
-    "laravelCommitSha": "8877fac8a731aca1a613a469b8238aaae614a93e",
+    "laravelCommitSha": "86024709fc762c68df6ce2253442ed2257aae49c",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "8877fac8a731aca1a613a469b8238aaae614a93e",
+    "webUkRepositoryCommitSha": "86024709fc762c68df6ce2253442ed2257aae49c",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -24,8 +24,8 @@
     "contracts": 668,
     "matchedOpenApi": 451,
     "missingOpenApi": 217,
-    "routeDeclaredOpenApiOmissions": 212,
-    "withoutLaravelRouteDeclaration": 5,
+    "routeDeclaredOpenApiOmissions": 217,
+    "withoutLaravelRouteDeclaration": 0,
     "dynamicUnresolved": 0,
     "stateChanging": 370,
     "withoutTests": 0,
@@ -19758,8 +19758,8 @@
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
-        "status": "missing-openapi-match",
-        "path": "",
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/safeguarding/confirm-policy-review",
         "operationId": "",
         "controllerAction": "",
         "tags": []
@@ -19798,8 +19798,8 @@
       "sideEffects": "read-only by HTTP method",
       "cleanup": "not applicable",
       "laravel": {
-        "status": "missing-openapi-match",
-        "path": "",
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/safeguarding/my-preferences",
         "operationId": "",
         "controllerAction": "",
         "tags": []
@@ -19838,8 +19838,8 @@
       "sideEffects": "read-only by HTTP method",
       "cleanup": "not applicable",
       "laravel": {
-        "status": "missing-openapi-match",
-        "path": "",
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/safeguarding/my-vetting-status",
         "operationId": "",
         "controllerAction": "",
         "tags": []
@@ -19878,8 +19878,8 @@
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
-        "status": "missing-openapi-match",
-        "path": "",
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/safeguarding/revoke",
         "operationId": "",
         "controllerAction": "",
         "tags": []
@@ -19918,8 +19918,8 @@
       "sideEffects": "state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work",
       "cleanup": "assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal",
       "laravel": {
-        "status": "missing-openapi-match",
-        "path": "",
+        "status": "route-declared-openapi-omission",
+        "path": "/api/v2/safeguarding/vetting-review-request",
         "operationId": "",
         "controllerAction": "",
         "tags": []

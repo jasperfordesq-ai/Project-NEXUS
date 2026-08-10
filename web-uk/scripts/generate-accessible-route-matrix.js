@@ -72,10 +72,14 @@ function joinRoutePath(prefix, child) {
   return normalizeRoutePath(`${cleanPrefix.replace(/\/$/, '')}/${cleanChild.replace(/^\//, '')}`);
 }
 
+// 🔴 ORDER MATTERS. Line comments MUST be stripped before block comments — see
+// the long note in generate-api-consumer-ledger.js. The reverse order lets a
+// `/*` inside an ordinary `//` comment open a block comment that eats every
+// route up to the next `*/`. On routes/api.php that hid 30.1% of all routes.
 function stripPhpComments(text) {
   return text
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^[ \t]*\/\/.*$/gm, '');
+    .replace(/^[ \t]*\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '');
 }
 
 function collectPhpStatements(text, token) {

@@ -40,6 +40,14 @@ composer.phar
 # ─── AI Assistant Config (contains sensitive project context) ─────────────────
 CLAUDE.md
 !accessible-frontend/CLAUDE.md
+# Per-track agent guides. These are the working instructions for the two
+# imported tracks, not machine-local notes, and the blanket rule above was
+# quietly excluding them: web-uk/CLAUDE.md (32 KB, the largest single piece of
+# Web UK guidance) survived only as an untracked file that one `git clean`
+# would have destroyed, and aspnet-backend/CLAUDE.md was lost entirely in the
+# 2026-08-09 move and had to be re-imported from the archive repository.
+!web-uk/CLAUDE.md
+!aspnet-backend/CLAUDE.md
 .agent/
 .claude/
 

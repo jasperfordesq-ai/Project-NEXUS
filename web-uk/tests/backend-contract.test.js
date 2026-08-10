@@ -29,7 +29,7 @@ describe('backend contract configuration', () => {
 
     expect(resolveBackendContract()).toEqual({
       target: 'laravel',
-      baseUrl: 'http://127.0.0.1:8088',
+      baseUrl: 'http://127.0.0.1:8090',
       baseUrlSource: 'laravel-base-url',
       status: 'source-of-truth'
     });
@@ -46,7 +46,7 @@ describe('backend contract configuration', () => {
     await api.login('person@example.test', 'password', 'acme');
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'http://127.0.0.1:8088/api/auth/login',
+      'http://127.0.0.1:8090/api/auth/login',
       expect.anything()
     );
   });
