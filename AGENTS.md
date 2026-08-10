@@ -363,6 +363,43 @@ For any HeroUI v2/v3 migration, component API question, or related React code ch
 
 **Commit directly to `main`.** Do not create feature branches or PRs — this is a solo project and the branch-per-change workflow adds unnecessary overhead.
 
+#### 🔴 No git worktrees. If you create one, you remove it.
+
+`C:\platforms\htdocs\staging` is the working checkout. **Do not create a git
+worktree**, and do not assume one you find is meant to be there.
+
+This is written down because it went wrong. A Codex session created
+`C:\platforms\htdocs\nexus-platform-consolidation` on a branch
+`codex/platform-monorepo`. When that work merged on 2026-08-10 the branch was
+deleted, but the folder stayed behind on disk — tens of gigabytes of
+dependencies and build output, orphaned, for the owner to find and clear up.
+No workflow step caught it, because worktrees are not part of this workflow.
+
+If a task genuinely needs one, the session that creates it removes it:
+
+```bash
+git worktree remove <path>       # NOT rm -rf: that leaves stale git metadata
+git worktree prune               # tidy any leftover registrations
+git worktree list                # verify: only the main checkout should remain
+```
+
+🔴 Three traps, all hit in practice on 2026-08-10:
+
+1. **`git worktree remove` fails on Windows while any process has that
+   directory as its working directory** — including the agent session running
+   inside it. Git still deregisters the worktree, but the folder survives and
+   `Remove-Item -Recurse -Force` then reports *"being used by another
+   process"*. Finish worktree work from the main checkout, or leave the folder
+   for the owner to delete after the session ends.
+2. **`git branch -d` compares against your LOCAL `main`.** A branch merged on
+   the remote reports "not fully merged" until you fast-forward local `main`.
+   Fast-forward first (`git merge --ff-only origin/main`) rather than reaching
+   for `-D`, which discards the check that keeps you safe.
+3. **The `nexus-php-app` container bind-mounts `C:\platforms\htdocs\staging` to
+   `/var/www/html`.** Anything `docker cp`-ed into that container lands in the
+   staging working tree, not in a container-only path. A temporary test file
+   copied in that way turned up as an untracked file in the owner's checkout.
+
 #### Local hooks — what actually runs
 
 Exactly **one** git hook is installed: `pre-commit`, copied from `scripts/git-hooks/pre-commit` by
