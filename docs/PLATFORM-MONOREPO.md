@@ -272,6 +272,59 @@ bulk of ongoing work is, in order:
 live here for contract comparison; they must never slow, gate, or complicate
 the three tracks above. The isolation that guarantees this is verified below.
 
+### 🔴 UNRESOLVED — a failing accessible-frontend test on `main` (found 2026-08-10)
+
+Not caused by this branch. Reproduced against the **staging worktree on clean
+`main` at `8ab4ec929`** — the same commit production is serving.
+
+```text
+TestsLaravelFeatureGovukAlphaSettingsAuthParityTest
+  ::test_message_access_request_creates_a_pending_ask_not_a_grant
+
+Failed asserting that '.../linked-accounts?status=link-failed#children'
+contains "status=message-access-requested"
+```
+
+45 tests in that file, 1 fails in isolation. A full accessible-frontend run
+showed **2** failures, so at least one more is order-dependent.
+
+This is the **primary** track (Blade accessible frontend) and it sits in the
+safeguarding area — a supporter requesting message access should create a
+pending consent request for the member to answer. It currently reports failure.
+
+Diagnosis so far, in `app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php:245`:
+
+```php
+$status = 'link-failed';
+try {
+    $ok = app(SubAccountService::class)->updatePermissions(...);
+    $status = $ok ? 'message-access-requested' : 'link-failed';
+} catch (Throwable $e) { report($e); }
+```
+
+🔴 This is the `catch (Throwable)` hazard documented in AGENTS.md, in its
+purest form: **three different causes collapse into the same user-visible
+"link-failed"** — the relationship not being found, a refusal from
+`SupportPendingActionService::prepare()`, and a thrown exception. The status
+alone cannot tell you which, which is why this needs a run with the error
+surfaced rather than more code reading.
+
+Candidate causes not yet separated:
+
+1. `SubAccountService::updatePermissions()` returning false at its
+   `NOT_FOUND` guard (`SubAccountService.php:613`)
+2. `prepare()` returning null with a non-`ALREADY_PENDING` refusal
+   (`SupportPendingActionService.php:85`)
+
+Both queries go through the `AccountRelationship` **model**, while the test
+seeds via raw `DB::table`. A tenant global scope on the model would produce
+exactly this, and is the first thing to check.
+
+Whether CI catches it is **unconfirmed** — the PHP shards were cancelled by a
+newer push on this branch, which is the documented "cancelled run ⇒ shards never
+ran ⇒ tick is still green" trap. Confirm against a completed run on `main`
+before concluding either way.
+
 ### Blocking nothing, but time-bound
 
 | Item | Detail | Trigger |
