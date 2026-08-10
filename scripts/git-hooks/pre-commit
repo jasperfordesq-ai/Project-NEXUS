@@ -1,7 +1,117 @@
 #!/bin/sh
 #
-# Pre-commit verify-gate (test batches)
-# -------------------------------------
+# This hook has TWO independent gates:
+#   (A) Credential scan — runs on EVERY commit, needs only git + grep.
+#   (B) Staged-PHP-test verify-gate — runs only when tests/*Test.php is staged,
+#       and needs php + phpunit + the test DB.
+# Gate (A) is first precisely because (B) exits early on most commits.
+#
+#
+# =============================================================================
+# GATE A — Credential scan
+# =============================================================================
+# Restored 2026-08-10. The former ASP.NET repository carried its own
+# hooks/pre-commit doing exactly this; the 2026-08-09 monorepo move did not
+# import hooks/, so aspnet-backend/Makefile's `install-hooks` target copied a
+# file that no longer existed and the capability was silently lost
+# platform-wide. This repo is PUBLIC — a committed key is a disclosed key.
+#
+# 🔴 Two upstream patterns are deliberately NOT carried over:
+#     'Password:\s*.+\S'  and  'password\s*[=:]\s*["\x27][^"\x27]{6,}'
+# In a Laravel monorepo those match model factories, database seeders, config
+# defaults, translation strings and test fixtures constantly. A gate that cries
+# wolf teaches people to reach for --no-verify, which would then also bypass
+# gate (B) below — the one gate AGENTS.md says must never be bypassed. That
+# class of secret is covered in CI by TruffleHog and Semgrep instead.
+#
+# Detection is on STAGED content (`git show :FILE`), not the working tree, so
+# it cannot be dodged by editing a file after `git add`.
+
+CRED_HITS=0
+
+cred_scan_file() {
+    _file="$1"
+    _content=$(git show ":$_file" 2>/dev/null) || return 0
+    [ -z "$_content" ] && return 0
+
+    # pattern<TAB>description
+    printf '%s\n' \
+"BEGIN[[:space:]]+(RSA|DSA|EC|OPENSSH)[[:space:]]+PRIVATE[[:space:]]+KEY	Private key block" \
+"AKIA[0-9A-Z]{16}	AWS access key id" \
+"sk-[a-zA-Z0-9]{20,}	API secret key (sk-… form)" \
+"ssh[[:space:]]+-i[[:space:]]+.*@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+	SSH command with a literal host IP" \
+"[Aa]zureuser@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+	Azure SSH connection string" \
+"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:8443	Admin panel URL with a literal IP" \
+    | while IFS='	' read -r _pattern _desc; do
+        [ -z "$_pattern" ] && continue
+        _matches=$(printf '%s\n' "$_content" | grep -nE "$_pattern" 2>/dev/null | head -3)
+        if [ -n "$_matches" ]; then
+            # Findings go to STDOUT as data so the caller can print the header
+            # first. Writing them straight to stderr here put the detail lines
+            # above the "BLOCKED" banner.
+            echo "  $_file — $_desc:"
+            printf '%s\n' "$_matches" | sed 's/^/      line /'
+        fi
+    done
+}
+
+for FILE in $(git diff --cached --name-only --diff-filter=ACM); do
+    case "$FILE" in
+        # Binary and generated artefacts.
+        *.dll|*.exe|*.pdf|*.png|*.jpg|*.jpeg|*.gif|*.ico|*.svg|*.woff|*.woff2|*.lock|*.map)
+            continue ;;
+        package-lock.json|composer.lock|*/package-lock.json|*/composer.lock)
+            continue ;;
+        # This hook, which necessarily contains every pattern it searches for.
+        scripts/git-hooks/*)
+            continue ;;
+        # Fixtures and prose: high false-positive density, no real secrets.
+        tests/*|*/tests/*|*Tests/*|*_test.*|*_spec.*|*.test.*|*.spec.*)
+            continue ;;
+        database/factories/*|database/seeders/*|lang/*|docs/*|docs-public/*|*/docs/*)
+            continue ;;
+    esac
+
+    FINDINGS=$(cred_scan_file "$FILE")
+    if [ -n "$FINDINGS" ]; then
+        if [ "$CRED_HITS" -eq 0 ]; then
+            echo "" >&2
+            echo "=== BLOCKED: possible credentials in staged content ===" >&2
+            echo "" >&2
+        fi
+        CRED_HITS=1
+        printf '%s\n' "$FINDINGS" >&2
+    fi
+done
+
+# Database dumps, by filename.
+for FILE in $(git diff --cached --name-only --diff-filter=ACM); do
+    case "$FILE" in
+        *_dump.sql|*_backup.sql|*.dump|*prod*.sql)
+            [ "$CRED_HITS" -eq 0 ] && echo "" >&2
+            echo "  $FILE — looks like a database dump" >&2
+            CRED_HITS=1
+            ;;
+    esac
+done
+
+if [ "$CRED_HITS" -ne 0 ]; then
+    echo "" >&2
+    echo "Commit BLOCKED. This repository is PUBLIC — remove the value, then" >&2
+    echo "rotate it if it was ever real. Move real secrets to an untracked" >&2
+    echo ".env or .secrets.local/." >&2
+    echo "" >&2
+    echo "If this is genuinely a false positive, --no-verify bypasses it — but" >&2
+    echo "note that also bypasses the staged-PHP-test gate below, which must" >&2
+    echo "never be bypassed. Prefer narrowing the exclusion list in this hook." >&2
+    echo "" >&2
+    exit 1
+fi
+
+#
+# =============================================================================
+# GATE B — Pre-commit verify-gate (test batches)
+# =============================================================================
 # Auto-generated/coverage test batches kept landing on `main` broken (failing
 # tests) or inflating schema-skip debt, turning CI red. This gate runs two
 # checks whenever PHP test files are staged:

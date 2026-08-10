@@ -177,11 +177,14 @@ endif
 # Convenience
 # ---------------------------------------------------------------------------
 
-## Install git hooks (credential scanning)
+## Install git hooks (credential scanning + staged PHP tests)
+# Delegates to the monorepo's single installer. This target used to copy
+# `hooks/pre-commit`, which the 2026-08-09 move did not import — so it failed
+# with "No such file or directory" and the credential scan was silently absent
+# platform-wide. Those upstream patterns now live in the monorepo hook itself
+# (scripts/git-hooks/pre-commit, gate A), so there is one hook, not two.
 install-hooks:
-	@cp hooks/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@echo "Git hooks installed."
+	@bash "$$(git rev-parse --show-toplevel)/scripts/git-hooks/install-hooks.sh"
 
 ## Rebuild and restart the API container
 rebuild:

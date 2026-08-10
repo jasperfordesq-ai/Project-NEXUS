@@ -5,7 +5,10 @@
 # production. The deployed React SPA uses its explicitly authorized raw
 # `docker run` procedure, and the Web UK service below selects an uncertified
 # ASP.NET target. Before any named-component production action, obtain explicit
-# authorization and read .claude/production-containers.md.
+# authorization and read the production container guide
+# (`.claude/production-containers.md`), which was not imported by the
+# 2026-08-09 move into the platform monorepo and remains in the history of the
+# former `api.project-nexus.net` repository.
 #
 # The service values below are retained to describe this legacy profile; this
 # warning does not change their behavior.
@@ -47,11 +50,17 @@ services:
   # DEPLOYMENT HOLD: the explicit API_BASE_URL below selects the ASP.NET API,
   # which is not yet certified for the unchanged shared accessible frontend.
   # This service is retained to document the deployed experimental topology;
-  # it is not an approved Web UK release path. See
-  # apps/web-uk/DOCKER_CONTRACT.md and .claude/production-containers.md.
+  # it is not an approved Web UK release path. See ../web-uk/DOCKER_CONTRACT.md
+  # and the production container guide (`.claude/production-containers.md`, not
+  # imported by the 2026-08-09 monorepo move; retained in the archive repo).
+  #
+  # 🔴 `../web-uk`, not `./apps/web-uk`: web-uk/ is a top-level SIBLING of
+  # aspnet-backend/ in the platform monorepo. compose.yml was corrected on
+  # 2026-08-10 and this file was missed, so `docker compose -f compose.yml -f
+  # compose.prod.yml` could not resolve its build context at all.
   web-uk:
     build:
-      context: ./apps/web-uk
+      context: ../web-uk
       dockerfile: Dockerfile
       target: production
     ports: !override

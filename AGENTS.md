@@ -377,7 +377,7 @@ in practice the only thing `--no-verify` can bypass is the gate below, and it mu
 
 #### 🔴 EXCEPTION — never `--no-verify` past the test verify-gate
 
-The `pre-commit` hook (`scripts/git-hooks/pre-commit`, installed via `bash scripts/git-hooks/install-hooks.sh`) runs **only the PHP test files staged in the current commit**. A failure there is, by definition, in a file *you are committing right now* — it is never "pre-existing" or "unrelated". If this gate fails, **fix the test or drop the file. Do NOT `--no-verify` past it.** This exists because automated coverage/test batches repeatedly landed broken tests on `main` and turned CI red. The `--no-verify` allowance above applies ONLY to pre-existing lint/build failures in files you did not change.
+The `pre-commit` hook (`scripts/git-hooks/pre-commit`, installed via `bash scripts/git-hooks/install-hooks.sh`) has **two gates**. Gate A is a **credential scan** that runs on every commit and needs only git+grep — it blocks private keys, AWS/`sk-` keys, literal-IP SSH strings and database dumps in staged content (restored 2026-08-10 from the upstream ASP.NET hook the monorepo move dropped; deliberately excludes the two generic password patterns, which false-positive constantly on Laravel factories/seeders). Gate B runs **only the PHP test files staged in the current commit**. A failure there is, by definition, in a file *you are committing right now* — it is never "pre-existing" or "unrelated". If this gate fails, **fix the test or drop the file. Do NOT `--no-verify` past it.** This exists because automated coverage/test batches repeatedly landed broken tests on `main` and turned CI red. The `--no-verify` allowance above applies ONLY to pre-existing lint/build failures in files you did not change.
 
 Any automated loop that generates and commits test batches MUST let this gate run (no `--no-verify`); if it commits a failing test, it has broken `main` for everyone.
 
@@ -655,7 +655,7 @@ directly 500s under test only. And config sourced from a dev `.env` — e.g.
 preconditions rather than inherit them. Reproduce by clearing the variable on the
 command line before assuming the test is fine.
 
-🔴 The `pre-commit` hook runs **only the PHP test files staged in this commit**.
+🔴 The `pre-commit` hook's second gate runs **only the PHP test files staged in this commit** (its first gate is a credential scan that runs on every commit).
 A failure there is in a file you are committing right now, so it is never
 "pre-existing" — fix it or drop the file. This is the one gate the `--no-verify`
 allowance never covers.
@@ -896,7 +896,7 @@ Prefer the checked-in wrappers for raw SQL migrations:
 
 **5 layers:** Staged-PHP-test pre-commit hook (`scripts/git-hooks/pre-commit`, installed manually via `bash scripts/git-hooks/install-hooks.sh`) → CI pipeline (stages 0–8 in `.github/workflows/ci.yml`) → PR enforcement → Zod runtime validation (dev only) → Local scripts + deploy rules.
 
-🔴 There is **no Husky and no lint-staged in this repo's root** (no `.husky/` directory, no `prepare` script, neither package in `package.json` — they exist only inside the `mobile/` subproject) and **no pre-push hook**. `scripts/pre-push-checks.sh` is a manual bundle and must not be wired into `.husky/pre-push` without an explicit instruction. Do not assume any local gate other than the staged-PHP-test pre-commit hook — CI is the authoritative net.
+🔴 There is **no Husky and no lint-staged in this repo's root** (no `.husky/` directory, no `prepare` script, neither package in `package.json` — they exist only inside the `mobile/` subproject) and **no pre-push hook**. `scripts/pre-push-checks.sh` is a manual bundle and must not be wired into `.husky/pre-push` without an explicit instruction. Do not assume any local gate other than the pre-commit hook (credential scan + staged PHP tests) — CI is the authoritative net.
 
 ### Mandatory Rules (NEVER SKIP)
 
