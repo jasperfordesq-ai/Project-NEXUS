@@ -373,12 +373,64 @@ if (allowedOrigins.Length > 0 && !app.Environment.IsProduction())
     var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    // Apply EF migrations on every non-Testing startup. Integration tests own
-    // their disposable database lifecycle and apply the migration chain in the
-    // shared test factory.
+    // =========================================================================
+    // Schema migration on startup — OPT-IN outside Development since 2026-08-10.
+    // =========================================================================
+    // Previously this ran MigrateAsync() on EVERY non-Testing start, which made
+    // starting the process a destructive database operation:
+    //
+    //   * a routine `docker restart` silently applied pending schema changes;
+    //   * a container rollback could NOT undo them — migrations are forward-only,
+    //     and at least some in this chain are deliberately irreversible, so you
+    //     end up with new schema under old code;
+    //   * two replicas starting together (a scale-up, or a blue/green pair) race
+    //     each other on the same migrations, which EF does not guard against;
+    //   * it defeats the entire point of build-the-spare-then-switch deployment,
+    //     because the spare mutates the shared database the moment it boots.
+    //
+    // Behaviour now:
+    //   Development                      -> migrate automatically (unchanged).
+    //   Testing                          -> never (tests own their lifecycle).
+    //   Anything else (incl. Production) -> only if Database:MigrateOnStartup
+    //                                       is explicitly true. Otherwise, if
+    //                                       migrations are pending, REFUSE TO
+    //                                       START and name them.
+    //
+    // 🔴 Do NOT "fix" a refusal by setting ASPNETCORE_ENVIRONMENT=Testing. That
+    // also disables the production secret checks and lets the app fall back to a
+    // JWT key derived from a string published in this PUBLIC repository, which
+    // would let anyone forge tokens. Apply the migrations deliberately instead.
     if (!app.Environment.IsEnvironment("Testing"))
     {
-        await db.Database.MigrateAsync();
+        var migrateOnStartup = app.Configuration.GetValue<bool?>("Database:MigrateOnStartup")
+                               ?? app.Environment.IsDevelopment();
+
+        if (migrateOnStartup)
+        {
+            await db.Database.MigrateAsync();
+        }
+        else
+        {
+            var pending = (await db.Database.GetPendingMigrationsAsync()).ToList();
+            if (pending.Count > 0)
+            {
+                logger.LogCritical(
+                    "Refusing to start: {Count} database migration(s) are pending and " +
+                    "Database:MigrateOnStartup is not enabled. Pending: {Pending}. " +
+                    "Apply them deliberately (with a verified backup first), then start. " +
+                    "Do NOT set ASPNETCORE_ENVIRONMENT=Testing to bypass this — it also " +
+                    "disables production secret validation.",
+                    pending.Count,
+                    string.Join(", ", pending));
+
+                throw new InvalidOperationException(
+                    $"{pending.Count} pending database migration(s) and Database:MigrateOnStartup " +
+                    $"is not enabled: {string.Join(", ", pending)}");
+            }
+
+            logger.LogInformation(
+                "Database schema is up to date; automatic migration on startup is disabled.");
+        }
     }
 
     // WARNING: TEST DATA ONLY — never runs in Production.

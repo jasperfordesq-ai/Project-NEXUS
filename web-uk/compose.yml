@@ -55,10 +55,37 @@ services:
       target: production
     ports:
       - "5180:3001"
+    # .env.docker supplies the NON-SECRET settings (port, backend URL, tenant).
+    # Its COOKIE_SECRET/SESSION_SECRET are deliberately overridden below.
     env_file:
       - .env.docker
     environment:
       - NODE_ENV=production
+      # 🔴 Required from your shell, never from a tracked file.
+      #
+      # This profile sets NODE_ENV=production while loading .env.docker, whose
+      # secrets are published in this PUBLIC repository. Before 2026-08-10 the
+      # production safety check accepted them (over 32 characters, not prefixed
+      # 'change-this'), so this profile ran a production-mode server signing
+      # cookies and sessions with keys anyone can read.
+      #
+      # The check now rejects them, and these overrides make compose refuse to
+      # render at all rather than build and crash on boot — a clearer failure,
+      # sooner. Supply real values for a local production-image check:
+      #   COOKIE_SECRET=$(openssl rand -base64 48) \
+      #   SESSION_SECRET=$(openssl rand -base64 48) \
+      #   SESSION_REDIS_URL=redis://127.0.0.1:6379/9 \
+      #   docker compose --profile prod up
+      #
+      # Defaults are deliberately INVALID placeholders rather than `:?` required
+      # variables: compose interpolates the whole file regardless of profile, so
+      # `:?` here would break the ordinary `docker compose up` dev workflow for
+      # everyone. These defaults let the file render, and the container then
+      # refuses to start with the application's own explicit error naming the
+      # variable — which is the message you actually want to read.
+      - COOKIE_SECRET=${COOKIE_SECRET:-replace-me-cookie-secret-not-set-for-prod-profile}
+      - SESSION_SECRET=${SESSION_SECRET:-replace-me-session-secret-not-set-for-prod-profile}
+      - SESSION_REDIS_URL=${SESSION_REDIS_URL:-}
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"

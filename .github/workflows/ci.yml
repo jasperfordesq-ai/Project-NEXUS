@@ -835,6 +835,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The ONLY mechanism keeping aspnet-backend/ and web-uk/ out of the live
+      # PHP image is that Dockerfile.bluegreen copies an explicit allowlist of
+      # directories rather than `COPY . .`. Nothing else in CI would notice if
+      # that were widened — one well-meant "simplify the build" edit would ship
+      # both experimental trees into production. Runs in this always-on job so a
+      # path filter can never let it sleep.
+      - name: Production image copies an allowlist, not the whole context
+        run: node scripts/check-production-image-allowlist.mjs
+
       - name: Compare PHP settings between Dockerfile and Dockerfile.prod
         run: |
           echo "========================================="

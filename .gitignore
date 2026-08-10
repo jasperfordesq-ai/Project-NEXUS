@@ -73,6 +73,7 @@ CLAUDE.md
 !/scripts/verify-admin-security.sh
 !/scripts/check-regression-patterns.sh
 !/scripts/check-dockerfile-drift.sh
+!/scripts/check-production-image-allowlist.mjs
 !/scripts/check-compose-bootstrap-cache.mjs
 !/scripts/verify-feature.sh
 !/scripts/add-spdx-headers.mjs

@@ -33,24 +33,64 @@ public class AdminParityController : ControllerBase
         if (IsUserSearch(path))
             return await SearchUsers();
 
-        return Ok(BuildReadResponse(path));
+        return NotImplemented(path, "read");
     }
 
     [HttpPost("{**path}", Order = 1000)]
-    public IActionResult Post(string path)
-        => Ok(BuildWriteResponse(path, "created"));
+    public IActionResult Post(string path) => NotImplemented(path, "create");
 
     [HttpPut("{**path}", Order = 1000)]
-    public IActionResult Put(string path)
-        => Ok(BuildWriteResponse(path, "updated"));
+    public IActionResult Put(string path) => NotImplemented(path, "update");
 
     [HttpPatch("{**path}", Order = 1000)]
-    public IActionResult Patch(string path)
-        => Ok(BuildWriteResponse(path, "patched"));
+    public IActionResult Patch(string path) => NotImplemented(path, "patch");
 
     [HttpDelete("{**path}", Order = 1000)]
-    public IActionResult Delete(string path)
-        => Ok(BuildWriteResponse(path, "deleted"));
+    public IActionResult Delete(string path) => NotImplemented(path, "delete");
+
+    /// <summary>
+    /// Honest answer for an admin route this backend has not implemented.
+    /// </summary>
+    /// <remarks>
+    /// 🔴 Changed 2026-08-10. This catch-all previously answered HTTP 200 with
+    /// <c>success = true</c> for EVERY unmatched admin write, and a fabricated
+    /// empty collection for every unmatched admin read, while doing nothing.
+    ///
+    /// Two consequences, both bad:
+    ///
+    ///   * A real administrator could click "suspend member" on an
+    ///     unimplemented endpoint, be told it succeeded, and nothing would
+    ///     happen. Every log and monitor would show a healthy 200.
+    ///   * Any parity or smoke test of the form "did it respond successfully?"
+    ///     passed across the WHOLE admin surface without proving anything. The
+    ///     contract work is measured against exactly that kind of evidence, so
+    ///     this handler could bank false progress at scale.
+    ///
+    /// 501 is the correct code: the request is understood, the functionality is
+    /// simply not implemented here. It is deliberately distinguishable from 404
+    /// (route genuinely unknown) so parity tooling can count what is missing.
+    ///
+    /// Do NOT restore a success-shaped response to make a test or a client go
+    /// green. Implement the endpoint, or let it report honestly.
+    /// </remarks>
+    private IActionResult NotImplemented(string path, string operation)
+    {
+        var normalized = NormalizePath(path);
+        var route = $"/api/admin/{normalized}";
+
+        return StatusCode(StatusCodes.Status501NotImplemented, new
+        {
+            success = false,
+            error = "not_implemented",
+            message =
+                $"The admin {operation} endpoint '{route}' is not implemented by the ASP.NET " +
+                "backend. Nothing was changed. This backend is not contract-complete against " +
+                "Laravel; use the Laravel backend for this operation.",
+            route,
+            operation,
+            parity = "v1.5-admin"
+        });
+    }
 
     private async Task<IActionResult> SearchUsers()
     {
