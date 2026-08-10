@@ -9,6 +9,8 @@ This document is the maintained architecture map for Project NEXUS. It is intent
 
 Project NEXUS is a multi-tenant community platform for timebanking and adjacent community-exchange workflows. The production system is a Laravel 12 API/backend, a React 19 primary frontend, an HTML-first accessible frontend, MariaDB, Redis, Meilisearch, Pusher, Firebase Cloud Messaging, and supporting deployment/observability tooling.
 
+The repository also contains a **complete second stack** — an ASP.NET Core 10 backend with its own PostgreSQL database and RabbitMQ broker, and an Express/Nunjucks accessible client. Both are development-only contract-comparison tracks, paused since 2026-07-15. They are drawn inside the dashed box below so the boundary is visible rather than implied.
+
 ```mermaid
 flowchart TD
     subgraph Clients
@@ -34,6 +36,19 @@ flowchart TD
         BG[Blue/green switch<br/>scripts/deploy]
     end
     BG -.atomic Apache route swap.-> API
+
+    subgraph SEC ["SECONDARY - development only, no deploy path from this repo"]
+        WU[Web UK accessible client<br/>Express + Nunjucks<br/>web-uk/]
+        ASP[ASP.NET Core 10 API<br/>aspnet-backend/]
+        PG[(PostgreSQL 16<br/>separate database)]
+        MQ[RabbitMQ 3.13]
+        ASP --> PG
+        ASP --> MQ
+        WU -->|Laravel-first by default| API
+        WU -. future, uncertified .-> ASP
+    end
+    ASP -. must reproduce .-> API
+    style SEC stroke-dasharray: 5 5
 ```
 
 ## Runtime Boundaries
@@ -47,6 +62,10 @@ flowchart TD
 | Data model | `database/migrations/`, `database/schema/mysql-schema.sql`, `migrations/` | Current Laravel migrations, schema dump, and historical SQL migration record. |
 | Public web root | `httpdocs/` | Apache entrypoints, health endpoints, version endpoint, and compatibility routing. |
 | Legacy views | `views/` | Retired PHP UI except the documented live email and module-404 exceptions. |
+| ASP.NET backend (secondary) | `aspnet-backend/` | Complete second backend: ASP.NET Core 10, EF Core, its own PostgreSQL 16 database, RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's externally observable contract. Shares no database with Laravel. |
+| Web UK client (secondary) | `web-uk/` | Complete second accessible client: Express 4, Nunjucks, GOV.UK Frontend, Node 22, own session store, 1,787 tests. Consumes the Laravel contract by default. |
+
+🔴 The two secondary surfaces are live on their own domains but have **no deploy path from this repository** — see [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) for the isolation that enforces this and why it must be preserved.
 
 ## Tenant and Feature Model
 

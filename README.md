@@ -62,34 +62,72 @@ Time banking is a community-based system where members exchange services using t
 
 ## Tech Stack
 
+Project NEXUS is a full stack in the literal sense: **two backends and three
+clients** live in this repository. They are not equal in status, and the
+difference matters more than the technology list.
+
+### Primary — this is what production runs
+
+| Layer | Technology | Served at |
+|-------|-----------|-----------|
+| **Backend API** | Laravel 12 + PHP 8.2+ | `api.project-nexus.ie` |
+| **React client** | React 19 + TypeScript + HeroUI v3 + Tailwind CSS 4 | `app.project-nexus.ie` |
+| **Accessible client** | Laravel Blade + GOV.UK Frontend Sass/JS, HTML-first | `accessible.project-nexus.ie` |
+| **Sales site** | Static commercial site | `project-nexus.ie` |
+
+The React client is **backend-switchable by configuration**, but Laravel is the
+production default and the contract source of truth.
+
+### Secondary — development-only, contract-comparison tracks
+
+| Layer | Technology | Status |
+|-------|-----------|--------|
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ | Live at `api.project-nexus.net`, but **not deployable from this repository** |
+| **Web UK client** | Express 4 + Nunjucks + GOV.UK Frontend + Node 22 | Live at `uk.project-nexus.net`, but **not deployable from this repository** |
+
+Both are a **complete stack of their own** — the ASP.NET side has its own
+database, message broker, migrations and 3,386-test suite; Web UK has its own
+server, templating, session store and 1,787-test suite. Neither shares a
+database with Laravel. Both exist so the same contracts can be compared from a
+single commit, and both are **paused** as of 2026-07-15.
+
+🔴 Their presence changes nothing about what deploys. See
+[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md) for the enforced
+isolation.
+
+### Shared infrastructure and tooling
+
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 19 + TypeScript + HeroUI + Tailwind CSS 4 |
-| **Accessible Frontend** | Laravel-rendered HTML + GOV.UK Frontend Sass/JS |
-| **Backend API** | Laravel 12 + PHP 8.2+ |
-| **Database** | MariaDB 10.11 |
-| **Cache** | Redis 7+ |
+| **Database** | MariaDB 10.11 (Laravel) · PostgreSQL 16 (ASP.NET, separate) |
+| **Cache / queue** | Redis 7+ · RabbitMQ 3.13 (ASP.NET only) |
 | **Search** | Meilisearch |
-| **CDN** | Cloudflare |
+| **CDN / edge** | Cloudflare |
 | **Real-Time** | Pusher (WebSockets) + Firebase Cloud Messaging |
+| **Mobile** | Capacitor wrapper around the React client · separate Expo / React Native client in `mobile/` |
 | **Dev Environment** | Docker-first local stack; native Vite proxies to Docker PHP |
-| **Icons** | Lucide React |
+| **Icons / charts / editor** | Lucide React · Recharts · Lexical |
 | **Animations** | CSS transitions via a local motion shim (no framer-motion) |
-| **Charts** | Recharts |
-| **Rich Text** | Lexical |
+| **Deployment** | Zero-downtime blue/green container switch behind Apache |
 
 ## Architecture
 
-Project NEXUS is a multi-tenant Laravel 12 API with two frontends (a React 19 SPA and an HTML-first accessible frontend), backed by MariaDB, Redis, and Meilisearch, and deployed with a zero-downtime blue/green container switch.
+A multi-tenant Laravel 12 API serving two production clients — a React 19 SPA
+and an HTML-first accessible frontend — backed by MariaDB, Redis and
+Meilisearch, deployed by a zero-downtime blue/green container switch.
+
+Alongside them, and deliberately fenced off, sit a second backend and a second
+accessible client used only for contract comparison.
 
 ```mermaid
 flowchart TD
     subgraph Clients
-        U[Members & admins]
-        M[Mobile PWA / native wrapper]
+        U[Members and admins]
+        M[Mobile: Capacitor PWA / Expo native]
     end
-    U -->|app.project-nexus.ie| RC[React 19 SPA]
-    U -->|accessible.project-nexus.ie| AC[Accessible HTML frontend]
+
+    U -->|app.project-nexus.ie| RC[React 19 SPA<br/>react-frontend/]
+    U -->|accessible.project-nexus.ie| AC[Blade accessible frontend<br/>accessible-frontend/]
     M --> RC
 
     RC -->|JSON / Bearer + CSRF| API[Laravel 12 API<br/>routes/api.php]
@@ -106,20 +144,49 @@ flowchart TD
     subgraph Deployment
         BG[Blue/green switch<br/>scripts/deploy]
     end
-    BG -.atomic Apache route swap.-> API
+    BG -. atomic Apache route swap .-> API
+
+    subgraph SEC ["SECONDARY - development only, NOT deployed from this repo"]
+        WU[Web UK accessible client<br/>Express + Nunjucks<br/>web-uk/]
+        ASP[ASP.NET Core 10 API<br/>aspnet-backend/]
+        PG[(PostgreSQL 16<br/>separate database)]
+        MQ[RabbitMQ 3.13]
+        ASP --> PG
+        ASP --> MQ
+        WU -->|Laravel-first by default| API
+        WU -. future, uncertified .-> ASP
+    end
+
+    ASP -. must reproduce .-> API
+
+    style SEC stroke-dasharray: 5 5
 ```
 
-The full architecture map — runtime boundaries, tenant/feature model, and cross-cutting requirements — is in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+**Reading the diagram:** everything outside the dashed box is production.
+Inside it is a parallel stack that duplicates the contract surface on purpose —
+its own API, its own database, its own message broker, its own client. The
+dashed arrows are obligations and intentions, not live traffic: ASP.NET must
+reproduce Laravel's externally observable contracts, and Web UK is built to
+switch backends by configuration alone once that is certified.
+
+🔴 Both secondary services are live on their own domains, deployed from a
+repository archived on 2026-08-10. **This repository has no deploy path to
+either**, by design.
+
+The full architecture map — runtime boundaries, tenant/feature model, and
+cross-cutting requirements — is in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+Boundaries, provenance and deployment isolation for the two secondary tracks are
+in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 
 ## Repository Topology
 
 | Path | Purpose |
 |------|---------|
-| `app/`, `routes/`, `config/`, `bootstrap/` | Laravel 12 application, API routing, middleware, providers, and runtime configuration |
-| `react-frontend/` | Primary React 19 + TypeScript UI for members and current admin workflows |
-| `accessible-frontend/` | Accessibility-first, HTML-first frontend served by Laravel at `accessible.project-nexus.ie` and `/{tenantSlug}/accessible/...` |
-| `web-uk/` | Experimental shared Express/Nunjucks accessible frontend; Laravel-first and not deployed |
-| `aspnet-backend/` | Experimental ASP.NET Core/PostgreSQL backend; must match Laravel's external contracts and is not deployed |
+| `app/`, `routes/`, `config/`, `bootstrap/` | **PRIMARY.** Laravel 12 application, API routing, middleware, providers, and runtime configuration. The contract source of truth for every client. |
+| `react-frontend/` | **PRIMARY.** React 19 + TypeScript UI for members and admin workflows. Backend-switchable by configuration; Laravel is the production default. |
+| `accessible-frontend/` | **PRIMARY.** Accessibility-first, HTML-first frontend rendered by Laravel Blade at `accessible.project-nexus.ie` and `/{tenantSlug}/accessible/...` |
+| `web-uk/` | **SECONDARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend on Node 22, with its own server, sessions and 1,787 tests. Laravel-first. Live at `uk.project-nexus.net` but **not deployable from this repository**. |
+| `aspnet-backend/` | **SECONDARY.** A complete second backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's external contracts. Live at `api.project-nexus.net` but **not deployable from this repository**. |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
 | `database/`, `migrations/` | Laravel migrations, schema dump, and legacy SQL history |
@@ -127,6 +194,17 @@ The full architecture map — runtime boundaries, tenant/feature model, and cros
 | `docs/` | Maintained public operations, platform, and governance documentation |
 | `.github/` | CI, security, contributor, release, and dependency automation |
 | `scripts/` | Build, migration, deployment, maintenance, and audit tooling |
+
+🔴 **"Not deployable from this repository" does not mean "not running."** Both
+secondary services are live on their own domains. They were deployed from a
+separate repository that was archived on 2026-08-10, and nothing here can
+update them. The earlier wording said they were "not deployed", which was
+simply wrong and misled several decisions.
+
+The two tiers are enforced, not merely described: no secondary job can block a
+production release, neither directory can enter the production image, and no
+deploy script references either. See
+[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
 
 Native mobile project artifacts are not required for the public Docker setup. The React PWA is the canonical user interface; native packaging is release-managed separately from normal local development.
 
