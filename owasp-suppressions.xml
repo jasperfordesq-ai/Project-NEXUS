@@ -459,4 +459,134 @@
     <cve>CVE-2007-6181</cve>
   </suppress>
 
+  <!--
+    ===================================================================
+    NuGet / aspnet-backend entries (added 2026-08-10)
+    ===================================================================
+    The ASP.NET backend moved into this repository on 2026-08-09 (see
+    docs/PLATFORM-MONOREPO.md). Dependency-Check began scanning its .csproj
+    files on the next run and the job has failed on every commit since. All
+    three findings below are wrong-CPE matches of the same class as the
+    phpunit/php-file-iterator and joomla/string entries above.
+
+    Cross-checked against NuGet's own package-aware audit, which is the
+    authoritative source for .NET and does not rely on CPE guessing: run
+    "dotnet list package" from aspnet-backend with the vulnerable and
+    include-transitive flags (spelled out here because an XML comment may not
+    contain a double hyphen; the literal command is in the notes below).
+
+    On 2026-08-10 that reported "no vulnerable packages" for all five projects
+    (Nexus.Api, Nexus.Contracts, Nexus.Messaging, Nexus.Api.Tests,
+    Nexus.Messaging.Tests). Re-run it before adding to this section.
+  -->
+
+  <!--
+    FALSE POSITIVE: OpenTelemetry .NET packages → CVE-2026-39883 is a Go bug.
+    CVE-2026-39883 (7.3) is PATH hijacking in the OpenTelemetry *Go* SDK
+    (open-telemetry/opentelemetry-go): it invokes the BSD `kenv` command by bare
+    name rather than absolute path, so a local attacker on BSD or Solaris can
+    shadow it. It is an incomplete fix for CVE-2026-24051 and is fixed in Go SDK
+    1.43.0.
+
+    Dependency-Check matches it here because opentelemetry-dotnet and
+    opentelemetry-go share the cpe:2.3:a:opentelemetry:opentelemetry CPE and the
+    affected Go range (1.15.0–1.42.0) happens to span our .NET package versions
+    (1.15.1 / 1.16.0). Different implementation, different language, and the
+    .NET SDK has no `kenv` code path at all — these containers are Linux, not
+    BSD/Solaris.
+
+    🔴 Scoped to this ONE CVE deliberately. Genuine opentelemetry-dotnet
+    advisories exist (CVE-2026-40182, CVE-2026-40891, CVE-2026-40894 — all
+    memory-exhaustion DoS in the OTLP exporter and propagators) and MUST keep
+    failing this gate. We are not exposed to those three: the OTLP exporter is
+    on 1.16.0, above the 1.15.2 fix and outside the 1.13.1–1.15.1 affected
+    range, and OpenTelemetry.Api resolves transitively to 1.16.0, above the
+    1.15.3 fix — verified by listing transitive packages with the dotnet CLI
+    (exact command in the section header notes above).
+  -->
+  <suppress>
+    <notes><![CDATA[
+      FP: CVE-2026-39883 is a PATH-hijacking bug in the OpenTelemetry *Go* SDK
+      (bare `kenv` invocation on BSD/Solaris, fixed in Go 1.43.0). It is matched
+      to our .NET packages only because opentelemetry-dotnet and
+      opentelemetry-go share the opentelemetry:opentelemetry CPE and the Go
+      affected range 1.15.0-1.42.0 spans our 1.15.1/1.16.0 versions. The .NET
+      SDK has no kenv code path. Scoped to this single CVE so that real
+      opentelemetry-dotnet advisories still block.
+
+      Package-aware cross-check for this whole NuGet section (CDATA, so the
+      double hyphens are legal here):
+        cd aspnet-backend
+        dotnet list package --vulnerable --include-transitive
+        dotnet list package --include-transitive
+    ]]></notes>
+    <packageUrl regex="true">^pkg:nuget/OpenTelemetry\..*$</packageUrl>
+    <vulnerabilityName>CVE-2026-39883</vulnerabilityName>
+  </suppress>
+
+  <!--
+    FALSE POSITIVE: Serilog.Sinks.File → matched to the Unix "file" command.
+    cpe:2.3:a:file_project:file:5.0.0 is the libmagic/`file` utility, not a
+    Serilog logging sink that happens to write to files. CVE-2019-18218 (7.8)
+    and CVE-2014-9653 (7.5) are both libmagic bugs.
+
+    This is exactly the phpunit/php-file-iterator case at the top of this file,
+    reaching a second package via a different ecosystem. Scoped to the two CVE
+    ids, which are specific to libmagic.
+  -->
+  <suppress>
+    <notes><![CDATA[
+      FP: Serilog.Sinks.File is a logging sink, not the Unix "file" command.
+      CVE-2019-18218 and CVE-2014-9653 affect libmagic. Same wrong-CPE class as
+      the phpunit/php-file-iterator entry above.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:nuget/Serilog\.Sinks\.File@.*$</packageUrl>
+    <vulnerabilityName>CVE-2019-18218</vulnerabilityName>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+      FP: Serilog.Sinks.File is a logging sink, not the Unix "file" command.
+      CVE-2014-9653 affects libmagic. Same wrong-CPE class as the
+      phpunit/php-file-iterator entry above.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:nuget/Serilog\.Sinks\.File@.*$</packageUrl>
+    <vulnerabilityName>CVE-2014-9653</vulnerabilityName>
+  </suppress>
+
+  <!--
+    FALSE POSITIVE: Testcontainers.PostgreSql → matched to the PostgreSQL server.
+    Testcontainers.PostgreSql 3.10.0 is a .NET *test* helper that starts a
+    throwaway PostgreSQL container. Dependency-Check fingerprints it as
+    cpe:2.3:a:postgresql:postgresql:3.10.0 (and cpe:2.3:a:www-sql_project:www-sql)
+    and hands it 26 historical PostgreSQL *server* CVEs spanning 2015–2026.
+
+    The version match is nonsense on its face: PostgreSQL has never had a 3.x
+    release. The package also never ships — it is referenced only by
+    Nexus.Api.Tests, and the actual database server version in use is determined
+    by the container image the test pulls, which is not this package's version.
+
+    🔴 KNOWN LIMITATION: this is scoped to the 26 CVE ids observed on
+    2026-08-10, following the narrow-scoping convention used throughout this
+    file. Because every future PostgreSQL server CVE will also falsely match
+    this package, this gate WILL go red again on the next one, and the fix will
+    be to extend this list after confirming the finding is the same wrong-CPE
+    match. Suppressing by <cpe> instead would be durable, but there is no
+    working <cpe> suppression in this file to copy — see the cygwin entry above,
+    which records that an exact <cpe> failed to match — so proving that form
+    would need its own CI round-trip rather than being assumed here.
+  -->
+  <suppress>
+    <notes><![CDATA[
+      FP: Testcontainers.PostgreSql is a .NET test helper that launches a
+      disposable PostgreSQL container; it is not the PostgreSQL server. OWASP
+      matches it to cpe:2.3:a:postgresql:postgresql:3.10.0 (PostgreSQL has no
+      3.x release) and applies 26 server CVEs from 2015-2026. Test-only, never
+      shipped. NuGet's own audit reports the project clean. List scoped to the
+      CVE ids observed 2026-08-10; extend it if a new PostgreSQL server CVE
+      falsely matches the same way.
+    ]]></notes>
+    <packageUrl regex="true">^pkg:nuget/Testcontainers\.PostgreSql@.*$</packageUrl>
+    <vulnerabilityName regex="true">^CVE-(2015-(0241|0242|0243|0244|3166|3167)|2016-(0768|0773|5423|5424|7048)|2017-(7484|14798)|2018-1115|2019-(10127|10128|10210|10211)|2020-(25694|25695)|2021-23214|2026-(6473|6475|6477|6479|6637))$</vulnerabilityName>
+  </suppress>
+
 </suppressions>
