@@ -531,7 +531,7 @@ focused/full tests -> PR/CI -> merge -> explicitly authorized deployment plan
 
 ## Prerequisites
 
-- .NET 8 SDK on the host
+- .NET 10 SDK on the host
 - the pinned local EF tool restored with `dotnet tool restore`
 - an explicitly named, verified disposable PostgreSQL 16.4 database for replay
 - the current source branch or isolated schema worktree

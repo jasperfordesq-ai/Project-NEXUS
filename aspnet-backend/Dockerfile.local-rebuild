@@ -4,7 +4,7 @@
 # nexus-aspnet-dev-api:latest. NOT for production — use Dockerfile instead.
 # =============================================================================
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0.404-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY Nexus.sln ./
 COPY src/Nexus.Api/Nexus.Api.csproj src/Nexus.Api/

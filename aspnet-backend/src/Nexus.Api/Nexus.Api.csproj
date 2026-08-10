@@ -1,23 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- EF Core + PostgreSQL -->
-    <PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.9" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+    <PackageReference Include="Microsoft.Bcl.Memory" Version="10.0.10" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
 
     <!-- JWT Authentication -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+    <!-- Must be >= the version JwtBearer 10.x pulls in transitively (8.19.2),
+         or NuGet fails the build with NU1605 package-downgrade. This library
+         versions independently of .NET; 8.22.0 is the latest 8.x patch. -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
 
     <!-- Health Checks -->
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
@@ -26,16 +29,20 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
 
     <!-- HTML sanitization (Laravel HtmlSanitizer contract for user content) -->
-    <PackageReference Include="HtmlSanitizer" Version="9.0.892" />
+    <!-- 9.0.892 pulled AngleSharp 0.17.1 transitively, which carries a known
+         moderate-severity advisory (GHSA-pgww-w46g-26qg). Surfaced by NuGet
+         audit, which the .NET 10 SDK runs by default. Same major version. -->
+    <PackageReference Include="HtmlSanitizer" Version="9.2.995" />
 
     <!-- Swagger / OpenAPI -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 
-    <!-- Rate Limiting -->
-    <PackageReference Include="System.Threading.RateLimiting" Version="8.0.0" />
+    <!-- Rate Limiting: provided by the ASP.NET Core 10 shared framework.
+         An explicit PackageReference here raises NU1510 ("likely
+         unnecessary") and pins a version the framework already supplies. -->
 
     <!-- HTTP Client Resilience (Polly) -->
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.10" />
     <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
 
     <!-- API Versioning -->
@@ -49,8 +56,8 @@
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.3.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
 
-    <!-- Real-time Messaging (SignalR) -->
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="8.0.11" />
+    <!-- Real-time Messaging (SignalR): provided by the ASP.NET Core 10 shared
+         framework; see the rate-limiting note above (NU1510). -->
 
     <!-- Email (MimeKit for Gmail service) -->
     <PackageReference Include="MimeKit" Version="4.15.1" />

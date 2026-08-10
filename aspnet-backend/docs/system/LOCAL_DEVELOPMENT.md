@@ -8,7 +8,7 @@ Status: **Maintained system reference - local development only**
 
 - Docker Desktop with Docker Compose
 - Git and PowerShell on the documented Windows workstation
-- .NET 8 SDK for host builds, tests, and EF tooling
+- .NET 10 SDK for host builds, tests, and EF tooling
 - Node.js only for the explicitly selected frontend/admin workspace
 
 The root Compose stack is local development infrastructure. It is not a

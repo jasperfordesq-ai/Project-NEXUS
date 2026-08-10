@@ -143,7 +143,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Build
         run: dotnet build aspnet-backend/Nexus.sln --configuration Release
 
@@ -193,7 +193,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       # The shard script runs with --no-restore --no-build so that discovery
       # and execution reuse one build; restore and build explicitly first.
       - name: Restore
@@ -232,7 +232,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Test Nexus.Messaging.Tests (10-minute hard limit)
         run: >-
           timeout --signal=INT --kill-after=60s 10m

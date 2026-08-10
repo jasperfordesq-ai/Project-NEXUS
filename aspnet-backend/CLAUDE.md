@@ -28,7 +28,7 @@ Last reviewed: 2026-07-15
 
 ## What This Project Is
 
-This repository is the experimental ASP.NET Core 8 / PostgreSQL backend for
+This repository is the experimental ASP.NET Core 10 / PostgreSQL backend for
 Project NEXUS. It is a clean .NET implementation of the canonical Laravel
 Project NEXUS platform, not a PHP migration dump.
 
@@ -236,7 +236,8 @@ being made switchable between the Laravel and ASP.NET backends.
 
 Preserve these invariants when implementing parity:
 
-- ASP.NET Core 8 backend with EF Core and PostgreSQL.
+- ASP.NET Core 10 backend with EF Core and PostgreSQL. Upgraded from .NET 8 on
+  2026-08-10, ahead of .NET 8 end of support on 2026-11-10.
 - JWT authentication, refresh-token safety, and admin policies.
 - Privileged authorization is database-backed. Rehydrate the current user role,
   tenant, activation state, and `is_admin`, `is_super_admin`,
@@ -334,7 +335,7 @@ image does not contain the .NET SDK or the repository source, so the historical
 `make migrate*` and `docker compose exec api dotnet ef` commands are not a
 supported workflow.
 
-Use the host .NET 8 SDK and an explicitly disposable PostgreSQL connection as
+Use the host .NET 10 SDK and an explicitly disposable PostgreSQL connection as
 documented in [`docs/database-migrations.md`](docs/database-migrations.md).
 
 Production migrations require explicit deployment instruction and the production

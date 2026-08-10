@@ -84,40 +84,85 @@ this repository is public.
 Alerts go to Telegram, matching `deploy-drift-watchdog.yml`, and are sent only
 when the state changes rather than on every scheduled run.
 
-## 🔴 .NET 8 reaches end of support on 2026-11-10
+## .NET 10 — upgraded in source 2026-08-10, NOT yet deployed
 
-All five ASP.NET projects target `net8.0`:
+.NET 8 support ends **2026-11-10**, and `api.project-nexus.net` is a live,
+internet-facing service, so all five ASP.NET projects were moved to **.NET 10**
+(LTS, supported to November 2028). .NET 9 was never a candidate — it was a
+standard-term release and went out of support in May 2026.
 
-```text
-src/Nexus.Api  src/Nexus.Contracts  src/Nexus.Messaging
-tests/Nexus.Api.Tests  tests/Nexus.Messaging.Tests
-```
+What changed:
 
-.NET 8 is an LTS release and its support ends **2026-11-10**. After that date
-it receives no security patches, and `api.project-nexus.net` is a live,
-internet-facing service.
+| What | From | To |
+|------|------|----|
+| `TargetFramework` × 5 projects | `net8.0` | `net10.0` |
+| ASP.NET Core / EF Core packages | `8.0.11` | `10.0.10` |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` | `8.0.11` | `10.0.3` |
+| `System.IdentityModel.Tokens.Jwt` | `8.16.0` | `8.22.0` |
+| `Microsoft.Extensions.*` | `10.0.2` | `10.0.10` |
+| Docker base images | `sdk:8.0.404` / `aspnet:8.0` | `sdk:10.0` / `aspnet:10.0` |
+| CI `setup-dotnet` × 3 jobs | `8.0.x` | `10.0.x` |
 
-**.NET 9 is not an option** — it was a standard-term release and its support
-already ended in May 2026. The target is **.NET 10** (LTS, supported to
-November 2028).
+Deliberately **not** changed, because they version independently of .NET and
+bundling them would hide unrelated risk inside a framework upgrade: Serilog,
+Sentry, Swashbuckle, Asp.Versioning, OpenTelemetry, xunit, Testcontainers,
+Microsoft.NET.Test.Sdk, coverlet, and **FluentAssertions** — note that
+FluentAssertions 8 moved to a paid commercial licence, so that bump is an
+owner decision, not a mechanical one.
 
-Scope of the move, from the current pins:
+The 165 EF migration files were **not** regenerated and did not need to be.
 
-| What | Now | Notes |
-|------|-----|-------|
-| `TargetFramework` | `net8.0` × 5 | mechanical |
-| Microsoft/System packages | `8.0.11`, `8.16.0`, `8.0.0` | 8 pinned to the 8.x line |
-| `Npgsql.EntityFrameworkCore.PostgreSQL` | `8.0.11` | provider must match EF major |
-| Docker base images | `sdk:8.0.404-bookworm-slim`, `aspnet:8.0-bookworm-slim` | 2 Dockerfiles |
-| CI `setup-dotnet` | `8.0.x` × 3 jobs | `platform-contracts.yml` |
-| EF migrations | 165 files | existing migrations keep working; they do **not** need regenerating |
-| Test coverage backing the change | 3,386 tests | the reason this is a tractable upgrade |
+Two side effects of the move worth knowing:
 
-🔴 **Ordering constraint.** Shipping this upgrade means redeploying the ASP.NET
-container, and that container runs `Database.MigrateAsync()` against the live
-database on start. There has been **no successful database backup since
-2026-03-08**. Capture a verified backup *before* any upgrade work is deployed —
-this is a hard prerequisite, not a precaution.
+- The .NET 10 SDK runs NuGet audit by default, which surfaced a moderate
+  advisory (GHSA-pgww-w46g-26qg) in `AngleSharp 0.17.1`, pulled in transitively
+  by `HtmlSanitizer 9.0.892`. Bumped to `9.2.995`; the warning is gone.
+- `System.Threading.RateLimiting` and `Microsoft.AspNetCore.SignalR.Common` are
+  part of the ASP.NET Core 10 shared framework, so their explicit
+  `PackageReference` entries were removed (NU1510).
+
+🔴 **Still outstanding: 26 `CS0618` obsolete-API warnings** from EF Core 10 —
+`IReadOnlyEntityType.GetQueryFilter()` (mostly in schema tests) and one
+`HasCheckConstraint` overload in `NexusDbContext.cs:891`. They compile and run
+today but are slated for removal in a future EF major. Fixing them is a
+separate change.
+
+🔴 **Ordering constraint for deployment.** Deploying this restarts the ASP.NET
+container, which runs `Database.MigrateAsync()` against the live database on
+start. A verified backup now exists (taken and restore-tested 2026-08-10,
+`/opt/nexus-backend/backups/aspnet-nexus_dev-20260810-140401.*`, with an
+off-server copy). There is still **no scheduled backup** for that database —
+the nightly cron on that host belongs to a different system.
+
+### 🔴 The deployed ASP.NET stack is STALE. This repository is the source of truth.
+
+Confirmed by the owner 2026-08-10 and measured the same day. Do **not** treat
+the deployed ASP.NET backend, its database, or its schema as a reference for
+anything:
+
+| | Repository (authoritative) | Deployed instance |
+|---|---|---|
+| EF migrations | **165** files | **53** applied |
+| Newest migration | `20260715184200_AddCompatibilityAuditEntriesTable` | `20260512030000_AddScheduledJobRuns` |
+| Date of newest | 2026-07-15 | 2026-05-12 |
+
+The live database is missing **112 migrations** and is roughly two months
+behind even the point at which local ASP.NET work paused. It is a stale
+artefact of a deployment that has not run in a long time.
+
+Consequences to hold on to:
+
+- The 2026-08-10 database dump is a **safety net for an accidental restart**,
+  nothing more. It is not a schema reference, not a data reference, and must
+  never be used to "correct" the repository.
+- Any future deployment of this backend applies 112 migrations in one go
+  against that database. That is a substantial, one-way operation and needs
+  planning of its own — not a side effect of shipping a framework upgrade.
+- 🔴 This applies to the **ASP.NET** track only. **Laravel production is fully
+  up to date and deploys frequently**; the two must not be reasoned about
+  together.
+- Deciding whether to update or retire the deployed ASP.NET instance is open
+  and belongs to the owner.
 
 ## Safe development commands
 
@@ -208,3 +253,62 @@ resumes — that is the trigger, not a date.
 `.markdownlint-cli2.jsonc`'s globs. Their links ARE verified, by
 `check-markdown-links.ps1` in the `Static contract inventory` job. Only
 formatting rules are unenforced, across ~74 largely historical documents.
+
+## Outstanding work register
+
+Maintained list, newest review 2026-08-10. Ordered by what would hurt most if
+forgotten. **Read the priority note directly below it first.**
+
+### 🔴 Priority context — this repository is Laravel-first
+
+Confirmed by the owner 2026-08-10. What is in production and what carries the
+bulk of ongoing work is, in order:
+
+1. **Laravel** backend/API
+2. **Blade accessible frontend** (`accessible-frontend/`)
+3. **React frontend** (`react-frontend/`)
+
+`aspnet-backend/` and `web-uk/` are **secondary and development-only**. They
+live here for contract comparison; they must never slow, gate, or complicate
+the three tracks above. The isolation that guarantees this is verified below.
+
+### Blocking nothing, but time-bound
+
+| Item | Detail | Trigger |
+|---|---|---|
+| Deployed ASP.NET is **112 migrations behind** | Repo has 165, live has 53 applied (newest live 2026-05-12). Decide: update it, or retire it. | Owner decision |
+| **No scheduled backup** for the ASP.NET database | The 2026-08-10 capture was manual. The nightly cron on that host belongs to `nexus-crm`, a different system, which is why five months of absence went unnoticed. | Before that container is ever restarted routinely |
+| **FluentAssertions 8** licence | v8 moved to a paid commercial licence. Left on 6.12.1 deliberately. | Owner decision |
+| **CodeQL C#** not enabled | The ASP.NET code gets no automated security analysis. Owner-only settings action. | Medium now; high if ASP.NET gains a production path |
+
+### Known-and-accepted debt
+
+| Item | Detail |
+|---|---|
+| 26 `CS0618` warnings | EF Core 10 deprecations — `GetQueryFilter()` (mostly schema tests) and one `HasCheckConstraint` overload at `NexusDbContext.cs:891`. Compile and run today; removed in a future EF major. |
+| Unrelated package majors held back | Serilog, Sentry, Swashbuckle, Asp.Versioning, OpenTelemetry, xunit runner, Testcontainers, Microsoft.NET.Test.Sdk, coverlet. Deliberately excluded from the .NET 10 move so a framework upgrade did not smuggle in unrelated risk. |
+| `aspnet-backend/e2e` runs nowhere | See the section above. Deferred until ASP.NET work resumes. |
+| Sibling Markdown not structure-linted | Links are checked; formatting is not. ~74 largely historical files. |
+
+### Verified isolation — why the secondary tracks cannot get in the way
+
+Re-checked 2026-08-10. If any of these stops being true, the monorepo has
+started costing the primary tracks something:
+
+- **They cannot block a production deploy.** `REQUIRED_JOBS` in
+  `scripts/predeploy-ci-verify.mjs` contains no ASP.NET or web-uk job. A red
+  sibling job cannot stop a Laravel release.
+- **They cannot enter the production image.** `Dockerfile.bluegreen` uses an
+  explicit COPY allowlist (17 instructions, none whole-context), and
+  `.dockerignore` excludes both `aspnet-backend/` and `web-uk/`. Guarded by
+  `npm run check:production-image-allowlist`.
+- **No deploy script references them.**
+- **They are cheap.** Measured on a real run: static contract inventory <1 min,
+  web-uk checks <1 min, ASP.NET build 3 min. The 20–30 minute values in
+  `platform-contracts.yml` are timeout ceilings, not durations.
+
+🔴 One residual cost, accepted knowingly: a change to `app/`, `routes/`,
+`config/` or `database/` still wakes `static-contract-inventory`, and a change
+to `accessible-frontend/` still wakes the web-uk jobs. That is intentional —
+it is how contract drift gets caught — and at under a minute each it is not
+worth removing. Revisit only if those jobs grow.
