@@ -272,27 +272,27 @@ bulk of ongoing work is, in order:
 live here for contract comparison; they must never slow, gate, or complicate
 the three tracks above. The isolation that guarantees this is verified below.
 
-### 🔴 UNRESOLVED — a failing accessible-frontend test on `main` (found 2026-08-10)
+### ✅ RESOLVED — the "failing test on main" was a stale local database
 
-Not caused by this branch. Reproduced against the **staging worktree on clean
-`main` at `8ab4ec929`** — the same commit production is serving.
+Recorded here because the wrong conclusion was reached first, and the way it
+was reached is worth not repeating.
+
+`SettingsAuthParityTest::test_message_access_request_creates_a_pending_ask_not_a_grant`
+failed locally against clean `main`. **The code was fine.** The local
+`nexus_test` database was two migrations behind:
 
 ```text
-TestsLaravelFeatureGovukAlphaSettingsAuthParityTest
-  ::test_message_access_request_creates_a_pending_ask_not_a_grant
-
-Failed asserting that '.../linked-accounts?status=link-failed#children'
-contains "status=message-access-requested"
+2026_08_08_000001_enforce_one_pending_message_access_request ..... Pending
+2026_08_08_000002_reconcile_safeguarding_assignment_conflicts .... Pending
 ```
 
-45 tests in that file, 1 fails in isolation. A full accessible-frontend run
-showed **2** failures, so at least one more is order-dependent.
+The first adds `support_pending_actions.pending_message_relationship_id`.
+Without it the insert threw `SQLSTATE[42S22] Unknown column`. After
+`php artisan migrate` on `nexus_test`: **45/45 pass**.
 
-This is the **primary** track (Blade accessible frontend) and it sits in the
-safeguarding area — a supporter requesting message access should create a
-pending consent request for the member to answer. It currently reports failure.
-
-Diagnosis so far, in `app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php:245`:
+🔴 **Why it looked like a code bug, and why that was hard to see.** Three
+separate causes collapse into one user-visible outcome in
+`app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php:245`:
 
 ```php
 $status = 'link-failed';
@@ -302,28 +302,23 @@ try {
 } catch (Throwable $e) { report($e); }
 ```
 
-🔴 This is the `catch (Throwable)` hazard documented in AGENTS.md, in its
-purest form: **three different causes collapse into the same user-visible
-"link-failed"** — the relationship not being found, a refusal from
-`SupportPendingActionService::prepare()`, and a thrown exception. The status
-alone cannot tell you which, which is why this needs a run with the error
-surfaced rather than more code reading.
+A missing column, a not-found relationship, and a safeguarding refusal are
+indistinguishable from the status alone. Worse, `report($e)` wrote **nothing**
+to `storage/logs` under the test environment, so the natural first check —
+"did it throw?" — returned a misleading "no". The only way through was a
+throwaway probe calling the service directly and printing its error bag.
 
-Candidate causes not yet separated:
+This is the `catch (Throwable)` hazard from AGENTS.md, and it cost real time.
+When a GovukAlpha settings action returns `link-failed`, **check
+`php artisan migrate:status` on `nexus_test` before reading any code.**
 
-1. `SubAccountService::updatePermissions()` returning false at its
-   `NOT_FOUND` guard (`SubAccountService.php:613`)
-2. `prepare()` returning null with a non-`ALREADY_PENDING` refusal
-   (`SupportPendingActionService.php:85`)
-
-Both queries go through the `AccountRelationship` **model**, while the test
-seeds via raw `DB::table`. A tenant global scope on the model would produce
-exactly this, and is the first thing to check.
-
-Whether CI catches it is **unconfirmed** — the PHP shards were cancelled by a
-newer push on this branch, which is the documented "cancelled run ⇒ shards never
-ran ⇒ tick is still green" trap. Confirm against a completed run on `main`
-before concluding either way.
+🔴 Genuine follow-up, separate from the above: **`database/schema/mysql-schema.sql`
+does not contain `pending_message_relationship_id`**, so the committed schema
+dump is behind those two 2026-08-08 migrations. Documented setup
+(`php artisan migrate`) loads the dump then applies newer migrations, so this
+self-heals — but the dump should be refreshed per the rule in AGENTS.md.
+Note `refresh-schema-dump.sh` churns ~400 unrelated lines, so it wants a
+deliberate hand-edited commit rather than a bulk regeneration.
 
 ### Blocking nothing, but time-bound
 

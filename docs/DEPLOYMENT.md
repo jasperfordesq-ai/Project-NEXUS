@@ -28,6 +28,8 @@ Use `--detach` for production deploys so long Docker builds do not depend on an 
 | `api.project-nexus.ie` | Laravel API and server-rendered PHP surfaces | PHP blue/green app container |
 | `accessible.project-nexus.ie` | Accessibility-first frontend | PHP blue/green app container |
 | `project-nexus.ie` | Commercial sales site | Separate sales-site deployment |
+| `api.project-nexus.net` | Experimental ASP.NET backend | 🔴 **Nothing in this repository deploys it** — see below |
+| `uk.project-nexus.net` | Experimental Web UK accessible client | 🔴 **Nothing in this repository deploys it** — see below |
 
 The accessible frontend is not a separate SPA container. It is rendered by Laravel, with source under `accessible-frontend/` and built assets under `httpdocs/build/accessible-frontend/`.
 
@@ -89,9 +91,58 @@ sudo bash scripts/maintenance.sh off
 
 The maintenance script toggles both enforcement layers: the pre-framework `.maintenance` file and the database maintenance flag. Never toggle only one layer.
 
+## 🔴 The two experimental hosts have NO deploy path from this repository
+
+`api.project-nexus.net` and `uk.project-nexus.net` are live and serving, but
+they were deployed from the former `api.project-nexus.net` repository, which
+was archived on 2026-08-10. **This repository cannot update either of them.**
+That is deliberate, not an oversight: `aspnet-backend/` and `web-uk/` are
+secondary, development-only tracks and must never ride along with a Laravel
+deploy.
+
+The isolation is enforced in three independent places, all re-verified
+2026-08-10:
+
+- `REQUIRED_JOBS` in `scripts/predeploy-ci-verify.mjs` lists no ASP.NET or
+  web-uk job, so a red sibling check cannot block a Laravel release
+- `Dockerfile.bluegreen` copies an explicit allowlist and `.dockerignore`
+  excludes both directories, so neither can enter the production image
+  (guarded by `scripts/check-production-image-allowlist.mjs`)
+- no deploy script references either directory
+
+🔴 Before any deploy path is built for the ASP.NET backend, note that its
+deployed database is **112 migrations behind** this repository (53 applied vs
+165 files). Deploying would apply all 112 at once. Since 2026-08-10 the app
+refuses to start with pending migrations rather than applying them silently,
+so this must be a deliberate, planned operation. See
+[PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md).
+
+## Monitoring and backups
+
+| What | Where it runs | Schedule | Alerts via |
+| --- | --- | --- | --- |
+| Uptime check (6 public hosts) | GitHub Actions (`uptime-check.yml`) | every 15 min | Telegram, on state **change** only |
+| Deploy drift watchdog | GitHub Actions | every 30 min | Telegram |
+| ASP.NET database backup | Production host cron | 02:40 daily | Telegram (see caveat) |
+| ASP.NET backup freshness | Production host cron | 09:00 daily | Telegram (see caveat) |
+
+🔴 **Telegram credentials live in two different places, and only one is
+populated.** `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` exist as **GitHub repo
+secrets**, which is why the Actions-based alerts work. The **production host
+has no Telegram credentials at all**, so the cron-based backup alerts currently
+reach `/var/log/nexus-aspnet-db-backup.log` only. To complete them, create
+`/opt/nexus-backend/.backup-alerts.env` on the host containing those two
+variables. The backup script reports loudly when they are absent rather than
+degrading into silent success.
+
+Scheduled GitHub workflows only run from the **default branch**, so
+`uptime-check.yml` does not fire on a timer until it is merged to `main`. It
+can be run by hand from the Actions tab meanwhile.
+
 ## Rules
 
 - Do not build React locally and upload `dist/`; production builds inside the deployed container image.
 - Do not use legacy maintenance-mode deploy paths as the normal production route.
 - Do not deploy without an explicit deployment instruction.
 - After a deploy, verify the active color, health endpoints, `X-Build` header, and that only the active color's queue and scheduler containers are running.
+- 🔴 Observed 2026-08-10: **green** was the active colour (running the queue and scheduler, serving real traffic); blue was standby with its queue and scheduler stopped. Confirm with `bluegreen-deploy.sh status` rather than assuming — this repository's notes have been stale on this before.
