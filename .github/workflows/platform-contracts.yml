@@ -2,6 +2,9 @@ name: Platform contracts
 
 on:
   pull_request:
+    # `ready_for_review` is REQUIRED: the ASP.NET test matrix skips while a PR
+    # is a draft, so marking it ready must itself re-run it.
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'app/**'
       - 'routes/**'
@@ -148,8 +151,14 @@ jobs:
   aspnet-api-tests:
     name: ASP.NET API tests (shard ${{ matrix.shard }}/6)
     needs: changes
+    # Draft PRs skip this matrix — it is the most expensive thing in the repo
+    # (~90 runner-minutes). `!= true` not `== false`: on push, schedule and
+    # dispatch there is no pull_request object, so the expression must hold when
+    # the field is absent. aspnet-build and aspnet-messaging-tests are
+    # deliberately NOT gated — they are short, and a draft should still get a
+    # compile-and-smoke signal.
     if: >-
-      needs.changes.outputs.aspnet == 'true'
+      (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
       || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 40
