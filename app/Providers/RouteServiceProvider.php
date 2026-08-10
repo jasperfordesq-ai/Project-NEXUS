@@ -49,6 +49,12 @@ class RouteServiceProvider extends ServiceProvider
      * existing ceilings without Laravel's numeric-throttle behaviour, where
      * unrelated routes for the same authenticated user share one cache key.
      *
+     * This is a catalogue of available tiers, NOT a list of tiers in use — as of
+     * 2026-08-10 'nexus-route-1-per-1m' has no `throttle:` reference anywhere.
+     * Unused tiers are retained deliberately: they make no claim about which
+     * endpoints are protected, and removing one would make a route that later
+     * names it throw at request time.
+     *
      * @var array<string, array{attempts: int, minutes: int}>
      */
     private const ROUTE_RATE_POLICIES = [
@@ -90,17 +96,30 @@ class RouteServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(10)->by(
-                $request->ip()
-            );
-        });
-
-        RateLimiter::for('uploads', function (Request $request) {
-            return Limit::perMinute(30)->by(
-                $request->user()?->id ?: $request->ip()
-            );
-        });
+        // NOTE (2026-08-10): there is deliberately no 'auth' or 'uploads' named
+        // limiter here. Both existed but no route ever referenced either name in
+        // a throttle declaration, so they protected nothing while reading as
+        // though login and uploads each had their own ceiling. Do not
+        // reintroduce either without also attaching it to a route.
+        // (Names are spelled without the throttle prefix on purpose — a test
+        // scans this tree for throttle references and requires each to resolve.)
+        //
+        // Login protection is two real layers, neither of which is a named
+        // Laravel limiter:
+        //   1. App\Core\RateLimiter — DB-backed per-email + per-IP brute-force
+        //      lockout on FAILED attempts, keyed off App\Core\ClientIp::get()
+        //      (see AuthController::login). ClientIp::get() reads the
+        //      CF-Connecting-IP / forwarded chain; $request->ip() does NOT,
+        //      because this app has no TrustProxies configuration.
+        //   2. throttle:nexus-route-30-per-1m on the route group in
+        //      routes/api.php — general request-rate/DoS ceiling.
+        //
+        // Unrelated to the above: 'auth' is also a middleware ALIAS in
+        // bootstrap/app.php (App\Http\Middleware\Authenticate). That alias is
+        // live and has nothing to do with rate limiting.
+        //
+        // Upload endpoints use the nexus-route-* policies below (and
+        // 'groups-upload' for group media).
 
         foreach (self::ROUTE_RATE_POLICIES as $name => $policy) {
             RateLimiter::for(

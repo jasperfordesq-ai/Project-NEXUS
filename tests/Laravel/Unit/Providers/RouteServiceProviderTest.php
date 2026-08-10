@@ -29,16 +29,54 @@ class RouteServiceProviderTest extends TestCase
         $this->assertNotNull($limiter, 'The "api" rate limiter should be registered');
     }
 
-    public function test_auth_rate_limiter_is_registered(): void
+    /**
+     * The 'auth' and 'uploads' limiters were removed on 2026-08-10 because no
+     * route referenced them. This asserts they stay gone, so the dead
+     * configuration cannot be reintroduced without a route to attach it to.
+     * Login protection is App\Core\RateLimiter + throttle:nexus-route-30-per-1m
+     * — see the note in RouteServiceProvider::boot().
+     */
+    public function test_unreferenced_auth_and_uploads_limiters_are_not_registered(): void
     {
-        $limiter = RateLimiter::limiter('auth');
-        $this->assertNotNull($limiter, 'The "auth" rate limiter should be registered');
+        $this->assertNull(
+            RateLimiter::limiter('auth'),
+            'The "auth" limiter is dead configuration — attach it to a route or leave it deleted.'
+        );
+        $this->assertNull(
+            RateLimiter::limiter('uploads'),
+            'The "uploads" limiter is dead configuration — attach it to a route or leave it deleted.'
+        );
     }
 
-    public function test_uploads_rate_limiter_is_registered(): void
+    /**
+     * Guards the other direction: any `throttle:<name>` a route actually
+     * declares must resolve to a registered limiter.
+     */
+    public function test_every_declared_named_limiter_is_registered(): void
     {
-        $limiter = RateLimiter::limiter('uploads');
-        $this->assertNotNull($limiter, 'The "uploads" rate limiter should be registered');
+        $roots = [base_path('routes'), app_path(), base_path('bootstrap')];
+        $declared = [];
+
+        foreach ($roots as $root) {
+            $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+            foreach ($files as $file) {
+                if (! $file->isFile() || $file->getExtension() !== 'php') {
+                    continue;
+                }
+                $source = (string) file_get_contents($file->getPathname());
+                preg_match_all('/throttle:([a-z][a-z0-9-]*)(?![a-z0-9-])/i', $source, $matches);
+                $declared = array_merge($declared, $matches[1]);
+            }
+        }
+
+        $declared = array_values(array_unique($declared));
+        $this->assertNotSame([], $declared);
+        foreach ($declared as $name) {
+            $this->assertNotNull(
+                RateLimiter::limiter($name),
+                "The {$name} limiter is referenced by a route but is not registered."
+            );
+        }
     }
 
     public function test_named_route_limiter_is_tenant_actor_and_route_specific(): void
