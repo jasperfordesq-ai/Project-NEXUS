@@ -1,0 +1,93 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_whats_on.index.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_whats_on.index.intro") }}</p>
+
+      {% if not isAuthenticated %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ t("govuk_alpha_whats_on.index.register_prompt") }}</p>
+          <a class="govuk-link" href="{{ urlFor('/login') }}">
+            {{ t("govuk_alpha_whats_on.index.sign_in_link") }}
+          </a>
+        </div>
+      {% endif %}
+
+      {# GET form with server-rendered results: the filters work with no
+         JavaScript. data-alpha-auto-submit is the optional enhancement only. #}
+      <form method="get" action="{{ urlFor('/whats-on') }}" data-alpha-auto-submit>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="whats-on-search">{{ t("govuk_alpha_whats_on.index.search_label") }}</label>
+          <input class="govuk-input govuk-!-width-two-thirds" id="whats-on-search" name="q" type="search" value="{{ search }}">
+        </div>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="whats-on-when">{{ t("govuk_alpha_whats_on.index.when_label") }}</label>
+          <select class="govuk-select" id="whats-on-when" name="when">
+            {% for option in whenOptions %}
+              <option value="{{ option }}"{% if when === option %} selected{% endif %}>{{ t("govuk_alpha_whats_on.index.when_" + option) }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          {{ t("govuk_alpha_whats_on.index.apply") }}
+        </button>
+      </form>
+
+      {% if not events.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_whats_on.index.empty") }}</p>
+      {% else %}
+        <ul class="govuk-list">
+          {% for event in events %}
+            {% set status = event.operational_status or 'scheduled' %}
+            {% set mode = event.attendance_mode or 'in_person' %}
+            <li class="govuk-!-margin-bottom-6">
+              <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/whats-on/' + event.id) }}">
+                  {{ event.title }}
+                </a>
+              </h2>
+              <p class="govuk-body govuk-!-margin-bottom-1">
+                {% if event.whenLabel %}
+                  <span>{{ event.whenLabel }}</span>
+                {% endif %}
+                {% if status === 'cancelled' %}
+                  <strong class="govuk-tag govuk-tag--red govuk-!-margin-left-2">{{ t("govuk_alpha_whats_on.index.cancelled_tag") }}</strong>
+                {% elif status === 'postponed' %}
+                  <strong class="govuk-tag govuk-tag--yellow govuk-!-margin-left-2">{{ t("govuk_alpha_whats_on.index.postponed_tag") }}</strong>
+                {% endif %}
+                {% if event.location and mode !== 'online' %}
+                  <span class="govuk-!-margin-left-2">{{ event.location }}</span>
+                {% endif %}
+                {% if mode !== 'in_person' %}
+                  <strong class="govuk-tag govuk-tag--blue govuk-!-margin-left-2">{{ t("govuk_alpha_whats_on.index.online_tag") }}</strong>
+                {% endif %}
+              </p>
+              {% if event.category and event.category.name %}
+                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ event.category.name }}</p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if nextCursor %}
+          {# Paging is a plain link, so it works without JavaScript. The search
+             term is carried only when it is a non-empty string: Blade uses an
+             explicit array_filter callback here precisely so a literal search
+             for "0" is not dropped as falsy, and the same care applies in
+             Nunjucks, where "0" is also falsy. #}
+          <a class="govuk-button govuk-button--secondary" data-module="govuk-button"
+             href="{{ urlFor('/whats-on') }}?when={{ when | urlencode }}{% if search !== '' %}&amp;q={{ search | urlencode }}{% endif %}&amp;cursor={{ nextCursor | urlencode }}">
+            {{ t("govuk_alpha_whats_on.index.more") }}
+          </a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

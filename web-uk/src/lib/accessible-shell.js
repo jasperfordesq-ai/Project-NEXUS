@@ -57,6 +57,10 @@ const navItems = [
   { key: 'listings', label: 'Listings', href: '/listings', moduleKey: 'listings' },
   { key: 'members', label: 'Members', href: '/members', featureKey: 'connections' },
   { key: 'events', label: 'Events', href: '/events', featureKey: 'events' },
+  // Anonymous visitors get the public What's On listing INSTEAD of the member
+  // events page (buildNavItems drops 'events' when this is present), matching
+  // AlphaController::alphaNavItems. Needs BOTH features, like the page itself.
+  { key: 'whats_on', label: "What's on", href: '/whats-on', anonymousOnly: true, featureKeys: ['events', 'public_events'] },
   { key: 'volunteering', label: 'Volunteering', href: '/volunteering', featureKey: 'volunteering' },
   { key: 'explore', label: 'Explore', href: '/explore', authenticatedOnly: true }
 ];
@@ -294,6 +298,8 @@ function activeNavForPath(pathname = '/') {
   if (pathname.startsWith('/feed')) return 'feed';
   if (pathname.startsWith('/listings')) return 'listings';
   if (pathname.startsWith('/members')) return 'members';
+  // Checked before '/events' for clarity only — the two prefixes cannot collide.
+  if (pathname.startsWith('/whats-on')) return 'whats_on';
   if (pathname.startsWith('/events')) return 'events';
   if (pathname.startsWith('/volunteering')) return 'volunteering';
   if (pathname.startsWith('/explore')) return 'explore';
@@ -325,17 +331,32 @@ function itemEnabledForTenant(item, tenant = {}) {
   if (item.tenantKey && !tenant[item.tenantKey]) return false;
   if (item.workflowKey && !workflowEnabled(tenant, item.workflowKey)) return false;
   if (item.moduleKey) return flagEnabled(tenant, item.moduleKey, 'modules', true);
+  // featureKeys is an AND: every named feature must be on. Used where a surface
+  // needs more than one gate (What's On needs events AND public_events).
+  if (Array.isArray(item.featureKeys)) {
+    return item.featureKeys.every((key) => flagEnabled(tenant, key, 'features', true));
+  }
   if (item.featureKey) return flagEnabled(tenant, item.featureKey, 'features', true);
   return true;
 }
 
 function buildNavItems({ isAuthenticated = false, tenant = {} } = {}) {
-  return navItems.filter((item) => {
+  const visible = navItems.filter((item) => {
     if (item.authenticatedOnly && !isAuthenticated) return false;
     if (item.anonymousOnly && isAuthenticated) return false;
     if (!itemEnabledForTenant(item, tenant)) return false;
     return true;
   });
+
+  // Parity with AlphaController::alphaNavItems — an anonymous visitor offered
+  // What's On does NOT also get the member Events link, which would send them
+  // to a sign-in redirect. Blade unsets 'events'; do the same rather than
+  // showing both.
+  if (visible.some((item) => item.key === 'whats_on')) {
+    return visible.filter((item) => item.key !== 'events');
+  }
+
+  return visible;
 }
 
 function buildFooterColumns({ tenant = {} } = {}) {

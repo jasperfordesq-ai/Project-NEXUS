@@ -33,6 +33,7 @@ const jobsRoutes = require('./routes/jobs');
 const goalsRoutes = require('./routes/goals');
 const coursesRoutes = require('./routes/courses');
 const eventsRoutes = require('./routes/events');
+const whatsOnRoutes = require('./routes/whats-on');
 const eventTemplateRoutes = require('./routes/event-templates');
 const feedRoutes = require('./routes/feed');
 const feedActionRoutes = require('./routes/feed-actions');
@@ -1734,6 +1735,10 @@ app.use('/group-exchanges', doubleCsrfProtection, postOnly(formLimiter), groupEx
 app.use('/kb', requireAuth, kbRoutes);
 app.use(supportRoutes);
 app.use(legalRoutes);
+// What's On is deliberately PUBLIC — no requireAuth. It is the logged-out event
+// advertising surface, gated inside the router on the events + public_events
+// tenant features (404 when either is off), matching the Blade controller.
+app.use('/whats-on', whatsOnRoutes);
 app.use(publicInfoRoutes);
 app.use(staticPageRoutes);
 

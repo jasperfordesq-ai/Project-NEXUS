@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-08-10T10:17:15.994Z",
+  "generatedAt": "2026-08-10T20:44:27.887Z",
   "provenance": {
-    "generatedAt": "2026-08-10T10:17:15.994Z",
-    "laravelRepositoryRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
-    "laravelCommitSha": "86024709fc762c68df6ce2253442ed2257aae49c",
+    "generatedAt": "2026-08-10T20:44:27.887Z",
+    "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
+    "laravelCommitSha": "b9e38a30340ad239ad40897c48f99c396e64fe07",
     "laravelWorkingTreeDirty": true,
-    "webUkRepositoryRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
+    "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "86024709fc762c68df6ce2253442ed2257aae49c",
+    "webUkRepositoryCommitSha": "b9e38a30340ad239ad40897c48f99c396e64fe07",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-10T10:17:15.994Z",
-    "sourceRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
-    "targetRoot": "C:\\platforms\\htdocs\\nexus-platform-consolidation",
+    "generatedAt": "2026-08-10T20:44:27.887Z",
+    "sourceRoot": "C:\\platforms\\htdocs\\staging",
+    "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 695,
-    "matchedRoutes": 688,
-    "missingRoutes": 19,
+    "webUkRoutes": 697,
+    "matchedRoutes": 690,
+    "missingRoutes": 17,
     "extraWebUkRoutes": 5,
     "ignoredInfrastructureRoutes": 3,
     "familyCounts": {
@@ -436,15 +436,15 @@
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "venues": {
-        "matched": 0,
-        "missing": 5,
+      "whats-on": {
+        "matched": 2,
+        "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
-      "whats-on": {
+      "venues": {
         "matched": 0,
-        "missing": 2,
+        "missing": 5,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       }
@@ -15286,6 +15286,48 @@
       "webUkFile": "web-uk/src/routes/wallet.js"
     },
     {
+      "method": "GET",
+      "path": "/whats-on",
+      "family": "whats-on",
+      "status": "matched",
+      "laravelRouteName": "whats-on.index",
+      "laravelHandler": "whatsOnIndex",
+      "laravelView": "whats-on",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "routes/govuk-alpha-parity/whats-on.php",
+      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/PublicEventsParity.php",
+      "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
+      "auth": "public-or-unknown",
+      "tenantScoped": "yes",
+      "gates": "feature:events; feature:public_events",
+      "apiNeeds": "",
+      "webUkPath": "/whats-on",
+      "webUkView": "whats-on/index",
+      "webUkFile": "web-uk/src/routes/whats-on.js"
+    },
+    {
+      "method": "GET",
+      "path": "/whats-on/{param}",
+      "family": "whats-on",
+      "status": "matched",
+      "laravelRouteName": "whats-on.show",
+      "laravelHandler": "whatsOnShow",
+      "laravelView": "whats-on-detail",
+      "laravelParamConstraints": [
+        "number"
+      ],
+      "laravelRouteFile": "routes/govuk-alpha-parity/whats-on.php",
+      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/PublicEventsParity.php",
+      "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
+      "auth": "public-or-unknown",
+      "tenantScoped": "yes",
+      "gates": "feature:events; feature:public_events",
+      "apiNeeds": "",
+      "webUkPath": "/whats-on/{param}",
+      "webUkView": "whats-on/detail",
+      "webUkFile": "web-uk/src/routes/whats-on.js"
+    },
+    {
       "method": "POST",
       "path": "/events/{param}/check-in/code",
       "family": "events",
@@ -15635,48 +15677,6 @@
       "auth": "auth-optional",
       "tenantScoped": "yes",
       "gates": "feature:partner_venues",
-      "apiNeeds": "",
-      "webUkPath": "",
-      "webUkView": "",
-      "webUkFile": ""
-    },
-    {
-      "method": "GET",
-      "path": "/whats-on",
-      "family": "whats-on",
-      "status": "missing",
-      "laravelRouteName": "whats-on.index",
-      "laravelHandler": "whatsOnIndex",
-      "laravelView": "whats-on",
-      "laravelParamConstraints": [],
-      "laravelRouteFile": "routes/govuk-alpha-parity/whats-on.php",
-      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/PublicEventsParity.php",
-      "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
-      "auth": "public-or-unknown",
-      "tenantScoped": "yes",
-      "gates": "feature:events; feature:public_events",
-      "apiNeeds": "",
-      "webUkPath": "",
-      "webUkView": "",
-      "webUkFile": ""
-    },
-    {
-      "method": "GET",
-      "path": "/whats-on/{param}",
-      "family": "whats-on",
-      "status": "missing",
-      "laravelRouteName": "whats-on.show",
-      "laravelHandler": "whatsOnShow",
-      "laravelView": "whats-on-detail",
-      "laravelParamConstraints": [
-        "number"
-      ],
-      "laravelRouteFile": "routes/govuk-alpha-parity/whats-on.php",
-      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/PublicEventsParity.php",
-      "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
-      "auth": "public-or-unknown",
-      "tenantScoped": "yes",
-      "gates": "feature:events; feature:public_events",
       "apiNeeds": "",
       "webUkPath": "",
       "webUkView": "",

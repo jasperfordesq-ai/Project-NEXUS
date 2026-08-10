@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-10T10:17:15.994Z
-Laravel commit SHA: `86024709fc762c68df6ce2253442ed2257aae49c`
-Web UK repository commit SHA: `86024709fc762c68df6ce2253442ed2257aae49c`
+Generated: 2026-08-10T20:44:27.887Z
+Laravel commit SHA: `b9e38a30340ad239ad40897c48f99c396e64fe07`
+Web UK repository commit SHA: `b9e38a30340ad239ad40897c48f99c396e64fe07`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,9 +12,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 695 |
-| Matched routes | 688 |
-| Missing routes | 19 |
+| web-uk routes | 697 |
+| Matched routes | 690 |
+| Missing routes | 17 |
 | Extra web-uk routes | 5 |
 | Ignored web-uk infrastructure routes | 3 |
 
@@ -92,7 +92,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | verify-email | 1 | 0 | 0 | 0 |
 | volunteering | 52 | 0 | 1 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
-| whats-on | 0 | 2 | 0 | 0 |
+| whats-on | 2 | 0 | 0 | 0 |
 
 ## Missing Laravel Routes
 
@@ -115,8 +115,6 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/venues/pass` | venues | venuesPass | venue-pass | auth-optional | feature:partner_venues |
 | POST | `/venues/checkin/{param}` | venues | venuesCheckinStore | venue-checkin | auth-optional | feature:partner_venues |
 | POST | `/venues/pass/rotate` | venues | venuesPassRotate |  | auth-optional | feature:partner_venues |
-| GET | `/whats-on` | whats-on | whatsOnIndex | whats-on | public-or-unknown | feature:events; feature:public_events |
-| GET | `/whats-on/{param}` | whats-on | whatsOnShow | whats-on-detail | public-or-unknown | feature:events; feature:public_events |
 
 ## Extra Web UK Routes
 

@@ -210,6 +210,117 @@ blocker set, route-gap set, or certification state materially changes. Put
 detailed row evidence in `BLADE_COMPONENT_PORT_AUDIT.md` in the same scoped
 commit as the implementation it describes.
 
+## 2026-08-10 Laravel Drift Baseline D1
+
+🔴 **Web UK has not regressed. Laravel moved forward while this workstream was paused.**
+Recorded as a named Laravel-drift baseline rather than a denominator change or a
+deduction, per the fixed-rubric rule above. **No banked point moves.** W1 remains
+`663/1000` and the manual-accessibility row remains `35/150`.
+
+`npm run route:matrix` regenerated at `2026-08-10T20:06:58Z` against Laravel
+`b9e38a303` (working tree carried the uncommitted `mobile-nav.js` removal):
+
+| Measure | 2026-07-15 audit | 2026-08-10 regeneration |
+|---|---:|---:|
+| Laravel accessible HTML routes | 689 | **707** |
+| Web UK routes | 695 | 695 |
+| Matched | 688 (99.85%) | 688 (**97.31%**) |
+| Missing | 1 | **19** |
+| Extra Web UK | 5 | 5 |
+| Ignored infrastructure | 3 | 3 |
+
+The matched count is **identical**. Every one of the 18 new gaps is a Blade page
+added between 1 and 7 August 2026, after the 15 July audit froze:
+
+| Family | Missing | Laravel origin |
+|---|---:|---|
+| `settings` (guardians, linked-accounts message access, support actions) | 11 | `2def7b75a` (08-05), `ecb8c307f`/`1bb9fcc11`/`786d38335` (08-06), `f0264b1ae`/`dfe7bcc67` (08-07) |
+| `venues` (whole family absent) | 5 | `b54679827` (08-01) — gated `feature:partner_venues` |
+| `whats-on` (whole family absent) | 2 | `b54679827` (08-01) — gated `feature:events; feature:public_events` |
+| `events` check-in code POST | 1 | pre-existing; Laravel exposes no safe frontend contract |
+
+🔴 The 11 `settings` routes are **safeguarding and guardian-consent flows**, not
+cosmetic pages: guardian permission grants and responses, linked-account message
+access request/withdraw, per-thread purpose capture, and the attested offline
+`co_decide` support-action confirm loop. Porting them requires the care that
+subsystem demands — read `../../docs/SAFEGUARDING-AND-CONSENT.md` first, and note
+that `dfe7bcc67` is the counterparty-notice work that `AGENTS.md` records as the
+precondition for enforcing `can_view_messages`. Do not fabricate any part of
+these contracts.
+
+The two feature-gated families only render for tenants with those features
+enabled, which affects sequencing but not the gap count.
+
+**The contract side of parity is holding.** `npm run api:ledger` at the same
+boundary is unchanged: 668 contracts, 451 OpenAPI matches, 217 omissions that
+**all** resolve to real Laravel route declarations, `withoutLaravelRouteDeclaration`
+**0**, `dynamicUnresolved` **0**, 370 state-changing, `withoutTests` **0**, and
+`withoutDirectApiHelperAssertions` **0**. So this drift is new Blade pages only —
+no existing Web UK API call has drifted from its Laravel contract.
+
+Consequence for the finish line: the three W2 gates in the queue below are
+unchanged and still frontend-owned, but **"carbon copy of the Blade accessible
+frontend" is no longer true at the route level** until these 18 pages are ported
+or explicitly deferred by the owner. That is a scope decision, not a defect.
+
+### D1 remediation — What's On ported 2026-08-10 (owner-authorized)
+
+`GET /whats-on` and `GET /whats-on/{id}` are implemented. Re-measured:
+matched **688 → 690**, missing **19 → 17**, Web UK routes **695 → 697**.
+**No score moved** — this is implementation evidence awaiting the W2 transaction.
+
+Implementation, all inside `web-uk/**`:
+
+- `src/routes/whats-on.js`, `src/views/whats-on/{index,detail}.njk`
+- `src/lib/api.js`: `getPublicEvents` / `getPublicEvent` against
+  **`/api/v2/public/events`** — deliberately unauthenticated. That endpoint serves
+  the `PublicEventProjection` allowlist, which is narrower than `/v2/events`;
+  sending a bearer token would silently switch the page to the member contract
+  and could publish a field the public projection withholds.
+- Locale keys required **no** work: `govuk_alpha_whats_on` was already in all 11
+  synced catalogs (38 namespaces, from the `51d92cfda` refresh).
+
+Contract details reproduced from `PublicEventsParity`, each easy to lose:
+
+- gate is `events` **AND** `public_events`, answering **404 not 403** — a public
+  page that admits it exists but is forbidden invites probing;
+- `when` is an allow-list (`upcoming|past|all`) that falls back to `upcoming`;
+- a rejected cursor (**422**) is retried once as a fresh first page, not an
+  error page — any other failure still surfaces;
+- detail answers the same 404 for "no such event" and "not publicly visible",
+  so the page cannot probe for private or draft events;
+- event times render in the **event's own** timezone, and an all-day event
+  prints no time at all;
+- a literal `"0"` search term survives paging (falsy in both PHP and Nunjucks).
+
+🔴 **One deliberate deviation, which fixes an upstream Blade bug.** Blade's
+`whatsOnIndex`/`whatsOnShow` pass `activeNav => 'whats-on'` (hyphen) while
+`alphaNavItems` keys the item `whats_on` (underscore), and
+`layout.blade.php:146` compares them with `===`. The What's On nav item
+therefore **never receives `aria-current="page"` in Blade**. Web UK uses the
+matching key so the current page is announced. Copying an accessibility defect
+into the accessible frontend would be perverse; the Laravel side should be
+corrected to match (a one-word change in `PublicEventsParity`).
+
+Navigation parity **was** wrong before this port and is now right: Blade gives an
+anonymous visitor What's On and `unset`s the member Events link, whereas Web UK
+was showing logged-out visitors an `/events` link that only redirects to
+sign-in. `buildNavItems` now performs the same swap, and `itemEnabledForTenant`
+gained `featureKeys` (an AND) for surfaces needing more than one gate.
+
+Verified: focused parity suite **21/21**, full Web UK suite **60 suites /
+1,808 tests** (from 59 / 1,787), ESLint **0 errors 0 warnings**, brand check
+passed, isolated accessibility gate **24/24**.
+
+**Still missing: 17.** `venues` 5, `settings` 11, `events` check-in code 1.
+🔴 `venues` carries a genuine blocker: `/venues/pass` renders its QR code
+server-side as inline SVG via the PHP `endroid/qr-code` library so the page
+works without JavaScript. Web UK has no Node equivalent and its stack table is
+deliberately tight, so adding one is an owner decision. The other four venue
+routes need no new dependency. All five member-facing venue API endpoints exist
+(`/v2/partner-venues`, `/pass`, `/pass/rotate`, `/my-visits`,
+`/visits/verify/{token}`), so the family is otherwise portable.
+
 ## Current Fixed-Rubric Re-audit
 
 The current banked baseline is Laravel

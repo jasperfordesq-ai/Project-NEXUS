@@ -1,0 +1,104 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/whats-on') }}">
+        {{ t("govuk_alpha_whats_on.show.back") }}
+      </a>
+
+      {% set status = event.operational_status or 'scheduled' %}
+      {% set mode = event.attendance_mode or 'in_person' %}
+      {% set accessibility = event.accessibility or {} %}
+
+      {% if event.category and event.category.name %}
+        <span class="govuk-caption-l">{{ event.category.name }}</span>
+      {% endif %}
+      <h1 class="govuk-heading-xl">{{ event.title }}</h1>
+
+      {% if status === 'cancelled' %}
+        <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--red">{{ t("govuk_alpha_whats_on.index.cancelled_tag") }}</strong></p>
+      {% elif status === 'postponed' %}
+        <p class="govuk-!-margin-bottom-4"><strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_whats_on.index.postponed_tag") }}</strong></p>
+      {% endif %}
+
+      <dl class="govuk-summary-list">
+        {% if startsAt %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_whats_on.show.starts") }}</dt>
+            <dd class="govuk-summary-list__value">{{ startsAt }}</dd>
+          </div>
+        {% endif %}
+        {% if endsAt %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_whats_on.show.ends") }}</dt>
+            <dd class="govuk-summary-list__value">{{ endsAt }}</dd>
+          </div>
+        {% endif %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_whats_on.show.where") }}</dt>
+          <dd class="govuk-summary-list__value">
+            {% if mode === 'online' %}
+              {{ t("govuk_alpha_whats_on.show.online") }}
+            {% elif mode === 'hybrid' %}
+              {{ event.location or t("govuk_alpha_whats_on.show.location_tba") }} — {{ t("govuk_alpha_whats_on.show.hybrid") }}
+            {% else %}
+              {{ event.location or t("govuk_alpha_whats_on.show.location_tba") }}
+            {% endif %}
+          </dd>
+        </div>
+        {% if event.organizer_name %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_whats_on.show.organiser") }}</dt>
+            <dd class="govuk-summary-list__value">{{ event.organizer_name }}</dd>
+          </div>
+        {% endif %}
+      </dl>
+
+      {% if event.description %}
+        <p class="govuk-body">{{ event.description }}</p>
+      {% endif %}
+
+      {# Venue accessibility is published deliberately: it is what a disabled
+         visitor needs in order to decide whether to attend. A row is shown only
+         when the organiser answered it — a null answer is "not stated", which
+         must not be rendered as "No". #}
+      {% set accessibilityKeys = ['step_free', 'accessible_toilet', 'hearing_loop', 'quiet_space', 'seating', 'parking'] %}
+      {% set answeredKeys = [] %}
+      {% for key in accessibilityKeys %}
+        {% if accessibility[key] !== null and accessibility[key] !== undefined %}
+          {% set answeredKeys = (answeredKeys.push(key), answeredKeys) %}
+        {% endif %}
+      {% endfor %}
+
+      {% if answeredKeys.length or accessibility.notes %}
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha_whats_on.show.accessibility_title") }}</h2>
+        <ul class="govuk-list govuk-list--bullet">
+          {% for key in answeredKeys %}
+            <li>
+              {{ t("govuk_alpha_whats_on.show.accessibility_" + key) }}:
+              {{ t("govuk_alpha_whats_on.show.yes") if accessibility[key] else t("govuk_alpha_whats_on.show.no") }}
+            </li>
+          {% endfor %}
+          {% if accessibility.notes %}
+            <li>{{ accessibility.notes }}</li>
+          {% endif %}
+        </ul>
+      {% endif %}
+
+      {% if status !== 'cancelled' %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ t("govuk_alpha_whats_on.show.register_prompt") }}</p>
+          <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/login') }}">
+            {{ t("govuk_alpha_whats_on.show.sign_in_to_register") }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

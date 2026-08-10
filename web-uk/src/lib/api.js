@@ -2655,6 +2655,26 @@ async function getEvent(token, id) {
   });
 }
 
+// What's On — the LOGGED-OUT event advertising pages. Deliberately
+// unauthenticated: /v2/public/events serves the PublicEventProjection
+// allowlist, which is a narrower field set than /v2/events. Never send a
+// bearer token here, or the page silently starts reading the member contract
+// and can show a field the public projection withholds.
+async function getPublicEvents(params = {}) {
+  const query = new URLSearchParams();
+  query.set('per_page', String(params.per_page || 20));
+  if (params.when) query.set('when', params.when);
+  const search = params.q || params.search;
+  if (search) query.set('q', search);
+  if (params.cursor) query.set('cursor', params.cursor);
+
+  return request(`/api/v2/public/events?${query.toString()}`);
+}
+
+async function getPublicEvent(id) {
+  return request(`/api/v2/public/events/${encodeURIComponent(id)}`);
+}
+
 async function createEvent(token, data) {
   return request('/api/v2/events', {
     method: 'POST',
@@ -3673,6 +3693,8 @@ module.exports = {
   getEvents,
   getMyEvents,
   getEvent,
+  getPublicEvents,
+  getPublicEvent,
   createEvent,
   updateEvent,
   cancelEvent,
