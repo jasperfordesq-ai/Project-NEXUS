@@ -312,14 +312,68 @@ Verified: focused parity suite **21/21**, full Web UK suite **60 suites /
 1,808 tests** (from 59 / 1,787), ESLint **0 errors 0 warnings**, brand check
 passed, isolated accessibility gate **24/24**.
 
-**Still missing: 17.** `venues` 5, `settings` 11, `events` check-in code 1.
-🔴 `venues` carries a genuine blocker: `/venues/pass` renders its QR code
-server-side as inline SVG via the PHP `endroid/qr-code` library so the page
-works without JavaScript. Web UK has no Node equivalent and its stack table is
-deliberately tight, so adding one is an owner decision. The other four venue
-routes need no new dependency. All five member-facing venue API endpoints exist
-(`/v2/partner-venues`, `/pass`, `/pass/rotate`, `/my-visits`,
-`/visits/verify/{token}`), so the family is otherwise portable.
+### D1 remediation — partner venues ported 2026-08-10 (owner-authorized)
+
+All five member/staff venue pages are implemented. Re-measured: matched
+**690 → 695**, missing **17 → 12**, Web UK routes **697 → 702**.
+**No score moved.**
+
+- `src/routes/venues.js`, `src/views/venues/{index,pass,checkin}.njk`
+- `src/lib/api.js`: five helpers over `/v2/partner-venues{,/pass,/pass/rotate,/my-visits,/visits/verify/{token}}`.
+  No engagement, credit or authorization logic is reimplemented — the API owns it.
+- Gate added to `FEATURE_ROUTE_GATES` as `partner_venues`, which renders **403**.
+  That differs from What's On deliberately: Blade gates every venues method with
+  `abort_unless(..., 403)`, and only the public pages answer 404.
+- Whole router behind `requireAuth`, which redirects to
+  `/login?status=auth-required` — the exact Blade target.
+- Nav item `venues`, members-only plus the feature, matching `alphaNavItems`.
+
+**New runtime dependency: `qrcode-svg` (MIT, zero dependencies, 0 audit
+findings).** The pass QR must be rendered server-side as inline SVG because the
+page has to work with no JavaScript and no external request; Blade uses
+`endroid/qr-code`'s `SvgWriter` for the same reason. Error correction is Medium
+to match. The quiet zone is expressed in **modules** here (4, the specification
+minimum) where endroid takes **pixels** (12), so the border is equivalent in
+purpose rather than identical in width. `qrcode` was rejected: it pulls a
+`yargs@^15` tree for a CLI this never uses.
+
+Contract translation that matters: the Blade page calls the service directly and
+receives **every** outcome as a status string, while the HTTP contract converts
+two of them into error codes (`invalid_pass` → 404, `forbidden` → 403). The route
+maps both back to page states. Without that mapping a staff member sees a
+generic error page instead of "this pass is not valid" or "you cannot record
+visits" — the difference between a usable message and a dead end.
+
+GET `/venues/checkin/{token}` records **nothing**, matching Blade: link-preview
+crawlers prefetch URLs, and a scanned pass must not be consumed by a prefetch.
+The visit happens only on the deliberate POST. Rotation is redirect-after-post so
+a refresh cannot rotate the pass again, and the pass token never appears as text
+on the page — it belongs in the QR, and a test asserts it is absent.
+
+🔴 **Defect found and fixed while doing this, which also affected the already-pushed
+What's On work.** `TenantFeatureConfig::FEATURE_DEFAULTS` defaults **both**
+`partner_venues` and `public_events` to `false`, and Laravel's comments are
+explicit that a community opts in to each. Web UK's `featureDefaults` map
+contained **neither key**, and `flagEnabled` falls through to its `fallback`
+argument (`true`) for an unknown key — so every tenant that had never chosen was
+treated as opted **in**. For `public_events` that means a community's events
+could have been published to the open web without it ever opting in. Both keys
+are now present and `false`, with a regression test asserting the off-by-default
+behaviour and that an explicit opt-in is still honoured. Corroboration that the
+fix is right rather than merely green: the pre-existing Blade nav-parity case in
+`accessible-shell.test.js` passes again **unchanged**. Any future Laravel feature
+default must be mirrored in that map.
+
+Verified: 31 focused parity tests (13 of them rendering the real templates,
+because the route tests stub `res.render` and would not catch a template error),
+full suite **62 suites / 1,844 tests**, ESLint clean, brand check passed,
+production `npm audit` 0 vulnerabilities, isolated accessibility gate **24/24**.
+
+**Still missing: 12.** `settings` 11, `events` check-in code 1.
+The remaining 11 `settings` routes are safeguarding and guardian-consent flows
+and deserve their own pass; read `../../docs/SAFEGUARDING-AND-CONSENT.md` first.
+The `events` check-in-code POST stays blocked upstream: Laravel exposes no safe
+frontend contract for it, and Web UK must not fabricate one.
 
 ## Current Fixed-Rubric Re-audit
 

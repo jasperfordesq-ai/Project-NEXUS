@@ -15,6 +15,9 @@ const FEATURE_ROUTE_GATES = [
   { prefix: '/exchanges', moduleKey: 'listings' },
   { prefix: '/matches', moduleKey: 'listings' },
   { prefix: '/events', featureKey: 'events' },
+  // Blade gates every venues method with abort_unless(..., 403) — a 403, unlike
+  // What's On, which is 404 because it is a public page.
+  { prefix: '/venues', featureKey: 'partner_venues' },
   { prefix: '/volunteering', featureKey: 'volunteering' },
   { prefix: '/organisations', featureKey: 'volunteering' },
   { prefix: '/members', featureKey: 'connections' },

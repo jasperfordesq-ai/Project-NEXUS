@@ -62,6 +62,9 @@ const navItems = [
   // AlphaController::alphaNavItems. Needs BOTH features, like the page itself.
   { key: 'whats_on', label: "What's on", href: '/whats-on', anonymousOnly: true, featureKeys: ['events', 'public_events'] },
   { key: 'volunteering', label: 'Volunteering', href: '/volunteering', featureKey: 'volunteering' },
+  // Members only — an anonymous visitor has no pass to show. Matches
+  // AlphaController::alphaNavItems, which requires a signed-in user here.
+  { key: 'venues', label: 'Partner venues', href: '/venues', authenticatedOnly: true, featureKey: 'partner_venues' },
   { key: 'explore', label: 'Explore', href: '/explore', authenticatedOnly: true }
 ];
 
@@ -126,6 +129,15 @@ const featureDefaults = {
   ai_chat: true,
   marketplace: false,
   merchant_coupons: false,
+  // 🔴 Both default OFF, matching TenantFeatureConfig::FEATURE_DEFAULTS, and the
+  // omission is not harmless: a key absent from this map falls through to
+  // flagEnabled's `fallback` (true), so leaving these out silently opts EVERY
+  // tenant in. `public_events` decides whether a community's events appear on
+  // the open web to people without an account, and `partner_venues` exposes a
+  // member pass surface. Laravel's comments are explicit that a community opts
+  // in to both. Any new Laravel feature default must be mirrored here.
+  partner_venues: false,
+  public_events: false,
   message_translation: true,
   member_premium: false,
   ai_agents: false,
@@ -298,6 +310,7 @@ function activeNavForPath(pathname = '/') {
   if (pathname.startsWith('/feed')) return 'feed';
   if (pathname.startsWith('/listings')) return 'listings';
   if (pathname.startsWith('/members')) return 'members';
+  if (pathname.startsWith('/venues')) return 'venues';
   // Checked before '/events' for clarity only — the two prefixes cannot collide.
   if (pathname.startsWith('/whats-on')) return 'whats_on';
   if (pathname.startsWith('/events')) return 'events';

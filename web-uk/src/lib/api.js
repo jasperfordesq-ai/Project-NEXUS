@@ -2675,6 +2675,48 @@ async function getPublicEvent(id) {
   return request(`/api/v2/public/events/${encodeURIComponent(id)}`);
 }
 
+// Partner venues. The Blade pages call PartnerVenueService /
+// PartnerVenueVisitService directly; these are the same operations over their
+// HTTP contract, so no engagement, money or authorization logic is reimplemented
+// here — the API owns all of it.
+async function getPartnerVenues(token) {
+  return request('/api/v2/partner-venues', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function getVenuePass(token) {
+  return request('/api/v2/partner-venues/pass', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function rotateVenuePass(token) {
+  return request('/api/v2/partner-venues/pass/rotate', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function getMyVenueVisits(token) {
+  return request('/api/v2/partner-venues/my-visits', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
+ * Record a visit from a scanned member pass. POST-only by design: member
+ * details are revealed only after an authorised staff account confirms the
+ * scan, so there is deliberately no GET preview to prefetch.
+ */
+async function recordVenueVisit(token, passToken, venueId) {
+  return request(`/api/v2/partner-venues/visits/verify/${encodeURIComponent(passToken)}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(venueId === null || venueId === undefined ? {} : { venue_id: venueId })
+  });
+}
+
 async function createEvent(token, data) {
   return request('/api/v2/events', {
     method: 'POST',
@@ -3695,6 +3737,12 @@ module.exports = {
   getEvent,
   getPublicEvents,
   getPublicEvent,
+  // Partner venues
+  getPartnerVenues,
+  getVenuePass,
+  rotateVenuePass,
+  getMyVenueVisits,
+  recordVenueVisit,
   createEvent,
   updateEvent,
   cancelEvent,

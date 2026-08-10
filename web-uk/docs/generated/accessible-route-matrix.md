@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-10T20:44:27.887Z
-Laravel commit SHA: `b9e38a30340ad239ad40897c48f99c396e64fe07`
-Web UK repository commit SHA: `b9e38a30340ad239ad40897c48f99c396e64fe07`
+Generated: 2026-08-10T21:16:35.277Z
+Laravel commit SHA: `4072951eada2d57454f8edb60d776a1492eea5b1`
+Web UK repository commit SHA: `4072951eada2d57454f8edb60d776a1492eea5b1`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,9 +12,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 697 |
-| Matched routes | 690 |
-| Missing routes | 17 |
+| web-uk routes | 702 |
+| Matched routes | 695 |
+| Missing routes | 12 |
 | Extra web-uk routes | 5 |
 | Ignored web-uk infrastructure routes | 3 |
 
@@ -88,7 +88,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | skills | 1 | 0 | 0 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
 | users | 3 | 0 | 0 | 0 |
-| venues | 0 | 5 | 0 | 0 |
+| venues | 5 | 0 | 0 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | volunteering | 52 | 0 | 1 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
@@ -110,11 +110,6 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | POST | `/settings/linked-accounts/message-access/withdraw` | settings | settingsWithdrawMessageAccess |  | auth-optional |  |
 | POST | `/settings/linked-accounts/messages/{param}/purpose` | settings | settingsLinkedAccountMessagesPurpose |  | auth-optional |  |
 | POST | `/settings/support-actions/respond` | settings | settingsRespondToSupportAction |  | auth-optional |  |
-| GET | `/venues` | venues | venuesIndex | venues | auth-required | feature:partner_venues |
-| GET | `/venues/checkin/{param}` | venues | venuesCheckin | venue-checkin | auth-optional | feature:partner_venues |
-| GET | `/venues/pass` | venues | venuesPass | venue-pass | auth-optional | feature:partner_venues |
-| POST | `/venues/checkin/{param}` | venues | venuesCheckinStore | venue-checkin | auth-optional | feature:partner_venues |
-| POST | `/venues/pass/rotate` | venues | venuesPassRotate |  | auth-optional | feature:partner_venues |
 
 ## Extra Web UK Routes
 

@@ -1,0 +1,87 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_venues.checkin.title") }}</h1>
+
+      {% set status = result.status if result else null %}
+
+      {% if status === 'recorded' or status === 'already_recorded_today' %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="venue-checkin-result-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="venue-checkin-result-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+              {% if status === 'recorded' %}
+                {{ t("govuk_alpha_venues.checkin.recorded", { member: result.member.name if result.member else "", venue: result.venue.name if result.venue else "" }) }}
+              {% else %}
+                {{ t("govuk_alpha_venues.checkin.already_recorded", { member: result.member.name if result.member else "" }) }}
+              {% endif %}
+            </p>
+            {% if result.visits_this_month %}
+              <p class="govuk-body">{{ t("govuk_alpha_venues.checkin.visits_this_month", { count: result.visits_this_month }) }}</p>
+            {% endif %}
+            {% for challenge in result.completed_challenges or [] %}
+              <p class="govuk-body">{{ t("govuk_alpha_venues.checkin.challenge_completed", { title: challenge.title }) }}</p>
+            {% endfor %}
+          </div>
+        </div>
+        <a class="govuk-link" href="{{ urlFor('/venues') }}">{{ t("govuk_alpha_venues.checkin.done") }}</a>
+
+      {% elif status === 'forbidden' or status === 'invalid_pass' %}
+        {# Page-level outcome, not field validation: the GOV.UK error summary
+           contract expects links back to invalid fields, which do not exist
+           here. The notification banner is the pattern for "something on this
+           page needs your attention". #}
+        {% set noticeKey = 'forbidden' if status === 'forbidden' else 'invalid' %}
+        <div class="govuk-notification-banner" role="alert" aria-labelledby="venue-checkin-notice-title" data-module="govuk-notification-banner">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="venue-checkin-notice-title">{{ t("govuk_alpha_venues.checkin." + noticeKey + "_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">{{ t("govuk_alpha_venues.checkin." + noticeKey + "_body") }}</p>
+          </div>
+        </div>
+
+      {% else %}
+        {# Initial GET (or needs_venue): nothing has been recorded. The visit
+           happens only on the deliberate POST below, so link-preview crawlers
+           that prefetch this URL record nothing. #}
+        <p class="govuk-body-l">{{ t("govuk_alpha_venues.checkin.intro") }}</p>
+
+        <form method="post" action="{{ urlFor('/venues/checkin/' + token) }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          {% if status === 'needs_venue' %}
+            <div class="govuk-form-group">
+              <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  {{ t("govuk_alpha_venues.checkin.choose_venue") }}
+                </legend>
+                <div class="govuk-radios" data-module="govuk-radios">
+                  {% for choice in venueChoices %}
+                    <div class="govuk-radios__item">
+                      <input class="govuk-radios__input" id="venue-choice-{{ choice.id }}" name="venue_id" type="radio" value="{{ choice.id }}"{% if loop.first %} checked{% endif %}>
+                      <label class="govuk-label govuk-radios__label" for="venue-choice-{{ choice.id }}">{{ choice.name }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            </div>
+          {% endif %}
+
+          <button type="submit" class="govuk-button" data-module="govuk-button">
+            {{ t("govuk_alpha_venues.checkin.confirm") }}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

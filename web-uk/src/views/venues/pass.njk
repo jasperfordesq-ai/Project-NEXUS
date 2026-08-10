@@ -1,0 +1,66 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/venues') }}">
+        {{ t("govuk_alpha_venues.pass.back") }}
+      </a>
+
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_venues.pass.title") }}</h1>
+
+      {% if rotated %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="venue-pass-rotated-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="venue-pass-rotated-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_venues.pass.rotated_notice") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      <p class="govuk-body-l">{{ t("govuk_alpha_venues.pass.intro") }}</p>
+
+      {# Server-rendered SVG: the QR works with no JavaScript and no external
+         request. The label describes the PURPOSE, never the token — the token is
+         the credential and must not be read out or printed as text. #}
+      {% if qrSvg %}
+        <figure class="govuk-!-margin-bottom-6" role="img" aria-label="{{ t('govuk_alpha_venues.pass.qr_alt') }}">
+          {{ qrSvg | safe }}
+        </figure>
+      {% endif %}
+
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_venues.pass.privacy") }}</p>
+      </div>
+
+      <form method="post" action="{{ urlFor('/venues/pass/rotate') }}" class="govuk-!-margin-bottom-6">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <p class="govuk-body">{{ t("govuk_alpha_venues.pass.rotate_hint") }}</p>
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          {{ t("govuk_alpha_venues.pass.rotate_button") }}
+        </button>
+      </form>
+
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_venues.pass.visits_title") }}</h2>
+      {% if not visits.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_venues.pass.visits_empty") }}</p>
+      {% else %}
+        <dl class="govuk-summary-list">
+          {% for visit in visits %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ visit.venue_name }}</dt>
+              <dd class="govuk-summary-list__value">{{ visit.visitedOnLabel }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

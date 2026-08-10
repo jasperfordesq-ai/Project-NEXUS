@@ -34,6 +34,7 @@ const goalsRoutes = require('./routes/goals');
 const coursesRoutes = require('./routes/courses');
 const eventsRoutes = require('./routes/events');
 const whatsOnRoutes = require('./routes/whats-on');
+const venuesRoutes = require('./routes/venues');
 const eventTemplateRoutes = require('./routes/event-templates');
 const feedRoutes = require('./routes/feed');
 const feedActionRoutes = require('./routes/feed-actions');
@@ -1739,6 +1740,10 @@ app.use(legalRoutes);
 // advertising surface, gated inside the router on the events + public_events
 // tenant features (404 when either is off), matching the Blade controller.
 app.use('/whats-on', whatsOnRoutes);
+// Partner venues are member/staff surfaces, so the whole router sits behind
+// requireAuth (which redirects to /login?status=auth-required, matching Blade).
+// The partner_venues 403 gate lives in FEATURE_ROUTE_GATES.
+app.use('/venues', requireAuth, doubleCsrfProtection, postOnly(formLimiter), venuesRoutes);
 app.use(publicInfoRoutes);
 app.use(staticPageRoutes);
 

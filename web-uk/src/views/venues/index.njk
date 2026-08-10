@@ -1,0 +1,54 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_venues.index.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_venues.index.intro") }}</p>
+
+      <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/venues/pass') }}">
+        {{ t("govuk_alpha_venues.index.my_pass") }}
+      </a>
+
+      {% if not venues.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_venues.index.empty") }}</p>
+      {% else %}
+        <ul class="govuk-list">
+          {% for venue in venues %}
+            <li class="govuk-!-margin-bottom-6">
+              <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ venue.name }}</h2>
+              {% if venue.offer_summary %}
+                <p class="govuk-body govuk-!-margin-bottom-1">{{ venue.offer_summary }}</p>
+              {% endif %}
+              {% set addressParts = [] %}
+              {% if venue.address_line %}{% set addressParts = (addressParts.push(venue.address_line), addressParts) %}{% endif %}
+              {% if venue.city %}{% set addressParts = (addressParts.push(venue.city), addressParts) %}{% endif %}
+              {% if venue.postcode %}{% set addressParts = (addressParts.push(venue.postcode), addressParts) %}{% endif %}
+              {% if addressParts.length %}
+                <p class="govuk-body-s govuk-!-margin-bottom-1">{{ addressParts | join(", ") }}</p>
+              {% endif %}
+              {% if venue.website %}
+                <p class="govuk-body-s govuk-!-margin-bottom-0">
+                  {# rel="noopener noreferrer" matches Blade: this is a third-party
+                     site the venue controls, not ours. The link text says so. #}
+                  <a class="govuk-link" href="{{ venue.website }}" rel="noopener noreferrer">
+                    {{ t("govuk_alpha_venues.index.website") }}
+                  </a>
+                </p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <div class="govuk-inset-text">
+        {{ t("govuk_alpha_venues.index.how_it_works") }}
+      </div>
+    </div>
+  </div>
+{% endblock %}
