@@ -44,7 +44,7 @@ services:
       # secret disables verification (dev/CI mode).
       - Turnstile__SecretKey=${TURNSTILE_SECRET_KEY:-}
     volumes:
-      - nexus-backend-uploads:/app/uploads
+      - nexus-aspnet-dev-uploads:/app/uploads
 
   # UK Frontend - legacy production-profile definition (no volume mounts).
   # DEPLOYMENT HOLD: the explicit API_BASE_URL below selects the ASP.NET API,

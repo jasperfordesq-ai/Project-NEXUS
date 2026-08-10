@@ -25,7 +25,7 @@ application stack.
 
 | Item | Value |
 |------|-------|
-| Container name | `nexus-uk-frontend-dev` |
+| Container name | `nexus-webuk-dev` |
 | Host port | `5180` |
 | Container port | `3001` |
 | URL | http://localhost:5180 |
@@ -146,13 +146,13 @@ When working on this project:
 
 ```bash
 # Check container is running
-docker ps --filter "name=nexus-uk-frontend"
+docker ps --filter "name=nexus-webuk"
 
 # Check frontend responds
 curl http://localhost:5180/health
 
 # Check Laravel backend reachable from container
-docker exec nexus-uk-frontend-dev wget -qO- http://host.docker.internal:8090
+docker exec nexus-webuk-dev wget -qO- http://host.docker.internal:8090
 ```
 
 ## Troubleshooting
@@ -168,13 +168,13 @@ lsof -i :5180                 # macOS/Linux
 
 ### Backend not reachable
 1. Verify Laravel is running on port 8090
-2. Check `host.docker.internal` resolves: `docker exec nexus-uk-frontend-dev ping host.docker.internal`
+2. Check `host.docker.internal` resolves: `docker exec nexus-webuk-dev ping host.docker.internal`
 3. On Linux, ensure `extra_hosts` is set in compose.yml (already configured)
 
 ### Container won't start
 ```bash
 # Check logs
-docker compose logs nexus-uk-frontend
+docker compose logs nexus-webuk
 
 # Rebuild from scratch
 docker compose down

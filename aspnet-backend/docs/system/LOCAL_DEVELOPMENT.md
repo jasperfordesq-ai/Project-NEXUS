@@ -31,7 +31,7 @@ not enabled by `Program.cs` in Production.
 
 The API applies the complete EF migration chain on every non-Testing startup.
 Development also seeds fictitious local data. Use only the isolated
-`nexus-backend-db-data` volume; never point the API or tests at Laravel's
+`nexus-aspnet-dev-db-data` volume; never point the API or tests at Laravel's
 ordinary production-derived database.
 
 Local demo identities are created only by the development seed:

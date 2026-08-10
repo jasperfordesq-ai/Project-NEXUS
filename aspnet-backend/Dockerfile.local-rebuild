@@ -1,7 +1,7 @@
 # =============================================================================
 # Temporary Dockerfile for rebuilding api when MCR is unreachable.
 # Reuses the existing local SDK + the already-pulled aspnet runtime in
-# nexus-backend-api:latest. NOT for production — use Dockerfile instead.
+# nexus-aspnet-dev-api:latest. NOT for production — use Dockerfile instead.
 # =============================================================================
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0.404-bookworm-slim AS build
@@ -17,7 +17,7 @@ WORKDIR /src/src/Nexus.Api
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 # Use the already-built local image as the runtime base (avoids MCR pull)
-FROM nexus-backend-api:latest AS runtime
+FROM nexus-aspnet-dev-api:latest AS runtime
 WORKDIR /app
 USER root
 # Replace existing publish output

@@ -12,7 +12,7 @@ set -e
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="$SCRIPT_DIR/../compose.yml"
-CONTAINER_NAME="nexus-backend-db"
+CONTAINER_NAME="nexus-aspnet-dev-db"
 DB_NAME="nexus_dev"
 DB_USER="postgres"
 BACKUP_DIR="$SCRIPT_DIR/../backups/db"

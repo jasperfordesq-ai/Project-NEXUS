@@ -23,7 +23,7 @@ endif
 # ---------------------------------------------------------------------------
 PROJECT      := src/Nexus.Api
 COMPOSE      := docker compose
-CONTAINER_DB := nexus-backend-db
+CONTAINER_DB := nexus-aspnet-dev-db
 PROD_DIR     := /opt/nexus-backend
 
 # Production SSH (set via environment variables, never hardcoded)

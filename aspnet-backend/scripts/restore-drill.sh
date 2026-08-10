@@ -24,7 +24,7 @@
 set -euo pipefail
 
 BACKUP_DIR="${BACKUP_DIR:-/opt/nexus-backend/backups}"
-SOURCE_DB_CONTAINER="${SOURCE_DB_CONTAINER:-nexus-backend-db}"
+SOURCE_DB_CONTAINER="${SOURCE_DB_CONTAINER:-nexus-aspnet-dev-db}"
 SOURCE_DB_USER="${SOURCE_DB_USER:-postgres}"
 SOURCE_DB_NAME="${SOURCE_DB_NAME:-nexus_dev}"
 DRILL_CONTAINER="${DRILL_CONTAINER:-nexus-restore-drill}"

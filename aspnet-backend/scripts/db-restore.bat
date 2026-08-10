@@ -11,7 +11,7 @@ setlocal enabledelayedexpansion
 
 REM Configuration
 set COMPOSE_FILE=%~dp0..\compose.yml
-set CONTAINER_NAME=nexus-backend-db
+set CONTAINER_NAME=nexus-aspnet-dev-db
 set DB_NAME=nexus_dev
 set DB_USER=postgres
 set BACKUP_DIR=%~dp0..\backups\db

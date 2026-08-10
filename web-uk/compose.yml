@@ -16,8 +16,8 @@ services:
   # ---------------------------------------------------------------------------
   # Development service (default)
   # ---------------------------------------------------------------------------
-  nexus-uk-frontend:
-    container_name: nexus-uk-frontend-dev
+  nexus-webuk:
+    container_name: nexus-webuk-dev
     build:
       context: .
       dockerfile: Dockerfile
@@ -45,8 +45,8 @@ services:
   # ---------------------------------------------------------------------------
   # Local production-image service (use with --profile prod; not deployment)
   # ---------------------------------------------------------------------------
-  nexus-uk-frontend-prod:
-    container_name: nexus-uk-frontend-prod
+  nexus-webuk-prod:
+    container_name: nexus-webuk-prod
     profiles:
       - prod
     build:

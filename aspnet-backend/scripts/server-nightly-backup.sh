@@ -12,7 +12,7 @@
 #
 # What gets backed up:
 #   nexus_db_YYYY-MM-DD.sql.gz       — pg_dump (--clean --if-exists) of nexus_dev
-#   nexus_uploads_YYYY-MM-DD.tar.gz  — nexus-backend-uploads volume
+#   nexus_uploads_YYYY-MM-DD.tar.gz  — nexus-aspnet-dev-uploads volume
 #
 # Retention: 7 daily backups per type. Older files are deleted automatically.
 #
@@ -23,10 +23,10 @@
 set -euo pipefail
 
 BACKUP_DIR="${BACKUP_DIR:-/opt/nexus-backend/backups}"
-DB_CONTAINER="${DB_CONTAINER:-nexus-backend-db}"
+DB_CONTAINER="${DB_CONTAINER:-nexus-aspnet-dev-db}"
 DB_NAME="${POSTGRES_DB:-nexus_dev}"
 DB_USER="${POSTGRES_USER:-postgres}"
-UPLOADS_VOLUME="${UPLOADS_VOLUME:-nexus-backend-uploads}"
+UPLOADS_VOLUME="${UPLOADS_VOLUME:-nexus-aspnet-dev-uploads}"
 KEEP_DAYS="${KEEP_DAYS:-7}"
 DATE=$(date +%Y-%m-%d)
 

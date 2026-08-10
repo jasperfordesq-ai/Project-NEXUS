@@ -232,10 +232,10 @@ the root production-container map; it is not a continuation of this local flow.
 docker compose up -d
 
 # View logs (live)
-docker compose logs -f nexus-uk-frontend
+docker compose logs -f nexus-webuk
 
 # Restart after code changes (hot reload usually handles this)
-docker compose restart nexus-uk-frontend
+docker compose restart nexus-webuk
 
 # Full rebuild (after package.json or Dockerfile changes)
 docker compose down && docker compose up --build -d
@@ -554,10 +554,10 @@ configured `ACCESSIBLE_TENANT_SLUG`, then legacy `TENANT_ID`.
 docker compose up -d
 
 # View logs
-docker compose logs -f nexus-uk-frontend
+docker compose logs -f nexus-webuk
 
 # Restart container
-docker compose restart nexus-uk-frontend
+docker compose restart nexus-webuk
 
 # Full rebuild (after package.json or Dockerfile changes)
 docker compose down && docker compose up --build -d

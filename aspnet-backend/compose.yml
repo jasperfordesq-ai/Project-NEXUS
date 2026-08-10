@@ -14,7 +14,7 @@
 # IMPORTANT: JWT_SECRET must be set via environment variable or .env file
 # =============================================================================
 
-name: nexus-backend
+name: nexus-aspnet-dev
 
 services:
   # ---------------------------------------------------------------------------
@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: nexus-backend-api
+    container_name: nexus-aspnet-dev-api
     ports:
       - "5080:8080"  # Host:Container - Access at http://localhost:5080
     environment:
@@ -64,14 +64,14 @@ services:
       - Sentry__Environment=${Sentry__Environment:-development}
       - Sentry__TracesSampleRate=${Sentry__TracesSampleRate:-0.1}
     volumes:
-      - nexus-backend-uploads:/app/uploads
+      - nexus-aspnet-dev-uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:
-      - nexus-backend-net
+      - nexus-aspnet-dev-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl --fail http://localhost:8080/health || exit 1"]
@@ -91,7 +91,7 @@ services:
   # ---------------------------------------------------------------------------
   db:
     image: postgres:16.4-bookworm
-    container_name: nexus-backend-db
+    container_name: nexus-aspnet-dev-db
     # DB is internal-only by default (no host port exposed)
     # Uncomment the next two lines if you need direct DB access from host:
     # ports:
@@ -101,9 +101,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - nexus-backend-db-data:/var/lib/postgresql/data
+      - nexus-aspnet-dev-db-data:/var/lib/postgresql/data
     networks:
-      - nexus-backend-net
+      - nexus-aspnet-dev-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d nexus_dev"]
@@ -116,7 +116,7 @@ services:
   # ---------------------------------------------------------------------------
   rabbitmq:
     image: rabbitmq:3.13-management
-    container_name: nexus-backend-rabbitmq
+    container_name: nexus-aspnet-dev-rabbitmq
     ports:
       - "5672:5672"   # AMQP protocol
       - "15672:15672" # Management UI (http://localhost:15672)
@@ -124,9 +124,9 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
     volumes:
-      - nexus-backend-rabbitmq-data:/var/lib/rabbitmq
+      - nexus-aspnet-dev-rabbitmq-data:/var/lib/rabbitmq
     networks:
-      - nexus-backend-net
+      - nexus-aspnet-dev-net
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
@@ -150,7 +150,7 @@ services:
       context: ../web-uk
       dockerfile: Dockerfile
       target: development
-    container_name: nexus-uk-frontend-dev
+    container_name: nexus-webuk-dev
     ports:
       - "5180:3001"
     volumes:
@@ -159,7 +159,7 @@ services:
     env_file:
       - ../web-uk/.env.docker
     networks:
-      - nexus-backend-net
+      - nexus-aspnet-dev-net
     restart: unless-stopped
     deploy:
       resources:
@@ -172,17 +172,17 @@ services:
 # Networks (isolated from other Docker projects)
 # -----------------------------------------------------------------------------
 networks:
-  nexus-backend-net:
-    name: nexus-backend-net
+  nexus-aspnet-dev-net:
+    name: nexus-aspnet-dev-net
     driver: bridge
 
 # -----------------------------------------------------------------------------
 # Volumes (persistent, isolated)
 # -----------------------------------------------------------------------------
 volumes:
-  nexus-backend-db-data:
-    name: nexus-backend-db-data
-  nexus-backend-rabbitmq-data:
-    name: nexus-backend-rabbitmq-data
-  nexus-backend-uploads:
-    name: nexus-backend-uploads
+  nexus-aspnet-dev-db-data:
+    name: nexus-aspnet-dev-db-data
+  nexus-aspnet-dev-rabbitmq-data:
+    name: nexus-aspnet-dev-rabbitmq-data
+  nexus-aspnet-dev-uploads:
+    name: nexus-aspnet-dev-uploads

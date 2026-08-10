@@ -1,5 +1,11 @@
 # Project NEXUS .NET Edition - Agent Guide
 
+> **Re-imported 2026-08-10.** The 2026-08-09 monorepo move did not bring this
+> file across, and the repo-wide `CLAUDE.md` ignore rule would have excluded it
+> anyway. Recovered from the archive repository with its paths corrected for the
+> monorepo layout: Laravel now lives at this repository's root rather than a
+> separate checkout, and `web-uk/` is a sibling of `aspnet-backend/`.
+
 Last reviewed: 2026-07-15
 
 > **DEVELOPMENT PAUSE:** Development paused on 15 July 2026. Read
@@ -9,11 +15,11 @@ Last reviewed: 2026-07-15
 > instruction must name the workstream.
 
 > WARNING: Before deploying or touching any production container, read
-> `.claude/production-containers.md`.
+> the production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 move; retained in the archive repository).
 >
 > The `nexus-react-frontend` container on port `5210` (image
 > `nexus-react-frontend:prod`) may still be running on the Azure host. Its
-> source, `apps/react-frontend (deleted 2026-08-09)/`, was deleted from this repository on
+> source, `apps/react-frontend/`, was deleted from this repository on
 > 2026-08-09; the image is now an orphaned snapshot that cannot be rebuilt from
 > this repo. Do not attempt to rebuild or redeploy it here. The React frontend
 > now lives in the separate staging repository and is being made switchable
@@ -26,8 +32,8 @@ This repository is the experimental ASP.NET Core 8 / PostgreSQL backend for
 Project NEXUS. It is a clean .NET implementation of the canonical Laravel
 Project NEXUS platform, not a PHP migration dump.
 
-The Laravel Edition at `C:\platforms\htdocs\staging` is the current source of
-truth for externally observable contracts. Treat it as read-only reference
+The Laravel Edition, now at the root of this same monorepo, is the current
+source of truth for externally observable contracts. Treat it as read-only reference
 material. Do not edit it, run destructive commands in it, deploy it, or touch
 its production containers from this workspace.
 
@@ -48,7 +54,7 @@ baseline; ASP.NET reproduces its consumed contracts and workflows.
 
 ## React Frontend Retirement And Contract Policy
 
-The separate React frontend in this repo, `apps/react-frontend (deleted 2026-08-09)/`, was deleted on
+The separate React frontend in this repo, `apps/react-frontend/`, was deleted on
 2026-08-09. It was a dead, out-of-date fork; keeping it only risked it being
 mistaken for live code. This repository no longer contains a React frontend, and
 one must not be reintroduced here. Its history remains reachable through git if
@@ -57,7 +63,7 @@ an old implementation detail is ever needed.
 The canonical React frontend is:
 
 ```text
-C:\platforms\htdocs\staging\react-frontend
+react-frontend/          (at the monorepo root, i.e. ../react-frontend from here)
 ```
 
 That frontend is production software. The Laravel backend is production and is
@@ -186,11 +192,11 @@ equivalent:
 
 ## Frontend Parity Targets
 
-This repository contains no React frontend. The canonical React frontend is the
-Laravel repo frontend at `C:\platforms\htdocs\staging\react-frontend`, which is
+This directory contains no React frontend. The canonical React frontend is
+`react-frontend/` at the monorepo root (`../react-frontend` from here), which is
 being made switchable between the Laravel and ASP.NET backends.
 
-- `apps/react-frontend (deleted 2026-08-09)/` was deleted on 2026-08-09. Do not recreate it. If an
+- `apps/react-frontend/` was deleted on 2026-08-09. Do not recreate it. If an
   old .NET adapter detail is needed, read it from git history rather than
   restoring the directory.
 - `../web-uk/` is the explicitly approved implementation target for the
@@ -307,7 +313,7 @@ npm --prefix ../web-uk run lint
 npm --prefix ../web-uk test -- --runInBand
 ```
 
-There are no longer any `apps/react-frontend (deleted 2026-08-09)` or `apps/admin` checks to run;
+There are no longer any `apps/react-frontend` or `apps/admin` checks to run;
 both directories were deleted. `../web-uk` is the only remaining frontend in
 this repository. For backend contract identity, require ASP.NET
 regression tests plus route/API matrix and runtime smoke tests against the
@@ -317,7 +323,6 @@ For docs-only changes, at minimum run link/path sanity checks with `rg` and
 inspect `git diff`. For maintained documentation changes, also run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-documentation-consistency.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-markdown-links.ps1
 git diff --check
 ```
