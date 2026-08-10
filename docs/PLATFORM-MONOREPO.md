@@ -84,6 +84,41 @@ this repository is public.
 Alerts go to Telegram, matching `deploy-drift-watchdog.yml`, and are sent only
 when the state changes rather than on every scheduled run.
 
+## 🔴 .NET 8 reaches end of support on 2026-11-10
+
+All five ASP.NET projects target `net8.0`:
+
+```text
+src/Nexus.Api  src/Nexus.Contracts  src/Nexus.Messaging
+tests/Nexus.Api.Tests  tests/Nexus.Messaging.Tests
+```
+
+.NET 8 is an LTS release and its support ends **2026-11-10**. After that date
+it receives no security patches, and `api.project-nexus.net` is a live,
+internet-facing service.
+
+**.NET 9 is not an option** — it was a standard-term release and its support
+already ended in May 2026. The target is **.NET 10** (LTS, supported to
+November 2028).
+
+Scope of the move, from the current pins:
+
+| What | Now | Notes |
+|------|-----|-------|
+| `TargetFramework` | `net8.0` × 5 | mechanical |
+| Microsoft/System packages | `8.0.11`, `8.16.0`, `8.0.0` | 8 pinned to the 8.x line |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` | `8.0.11` | provider must match EF major |
+| Docker base images | `sdk:8.0.404-bookworm-slim`, `aspnet:8.0-bookworm-slim` | 2 Dockerfiles |
+| CI `setup-dotnet` | `8.0.x` × 3 jobs | `platform-contracts.yml` |
+| EF migrations | 165 files | existing migrations keep working; they do **not** need regenerating |
+| Test coverage backing the change | 3,386 tests | the reason this is a tractable upgrade |
+
+🔴 **Ordering constraint.** Shipping this upgrade means redeploying the ASP.NET
+container, and that container runs `Database.MigrateAsync()` against the live
+database on start. There has been **no successful database backup since
+2026-03-08**. Capture a verified backup *before* any upgrade work is deployed —
+this is a hard prerequisite, not a precaution.
+
 ## Safe development commands
 
 ```powershell
