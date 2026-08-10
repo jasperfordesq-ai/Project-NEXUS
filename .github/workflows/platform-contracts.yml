@@ -2,6 +2,11 @@ name: Platform contracts
 
 on:
   pull_request:
+    # Restricted to main, matching ci.yml/pr-checks.yml/lighthouse.yml. Without
+    # this a PR targeting some other branch got the ~92-runner-minute contracts
+    # suite but NOT the CI pipeline — the expensive half of the pair with none
+    # of the gating half.
+    branches: [main]
     # `ready_for_review` is REQUIRED: the ASP.NET test matrix skips while a PR
     # is a draft, so marking it ready must itself re-run it.
     types: [opened, synchronize, reopened, ready_for_review]
@@ -36,12 +41,27 @@ on:
   # Forces every job on regardless of what changed — the escape hatch for
   # "check the whole platform", matching the same convention in ci.yml.
   workflow_dispatch:
+  # Weekly full sweep. Change-aware skipping means a job can stay asleep while
+  # code it depends on drifts — ci.yml added its nightly sweep for exactly this
+  # reason (the mobile contract bug, 2026-08-03, sat invisible that way), and
+  # this workflow now has the same skipping with none of that cover. It is also
+  # the compensating control for the sibling filters in .github/ci-paths.yml no
+  # longer waking on CI-config edits.
+  #
+  # WEEKLY, not nightly, deliberately: both imported workstreams have been
+  # paused since 2026-07-15 with unchanged scores, so a nightly ~120-runner-
+  # minute sweep would be paying daily for code nobody is changing. Promote to
+  # nightly when ASP.NET or Web UK work actually resumes.
+  schedule:
+    - cron: '10 4 * * 1'
 
 permissions:
   contents: read
 
 concurrency:
-  group: platform-contracts-${{ github.ref }}
+  # Scheduled runs get their own group so the weekly sweep can neither cancel
+  # nor be cancelled by a push or PR run — same reasoning as ci.yml:41.
+  group: platform-contracts-${{ github.ref }}-${{ github.event_name == 'schedule' && 'weekly' || 'ci' }}
   cancel-in-progress: true
 
 jobs:
@@ -79,6 +99,7 @@ jobs:
     if: >-
       needs.changes.outputs.contracts_inventory == 'true'
       || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -115,6 +136,7 @@ jobs:
     if: >-
       needs.changes.outputs.aspnet == 'true'
       || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -160,6 +182,7 @@ jobs:
     if: >-
       (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
       || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
@@ -202,6 +225,7 @@ jobs:
     if: >-
       needs.changes.outputs.aspnet == 'true'
       || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -232,6 +256,7 @@ jobs:
     if: >-
       needs.changes.outputs.react_contracts == 'true'
       || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -253,6 +278,7 @@ jobs:
     if: >-
       needs.changes.outputs.webuk == 'true'
       || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:

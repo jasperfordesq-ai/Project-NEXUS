@@ -92,20 +92,29 @@ accessible:
 # so every ordinary Laravel or React commit paid for a 55-minute .NET test run
 # that could not possibly be affected by the change. Do not re-add Laravel or
 # React paths here: nothing in aspnet-backend/ is built from them.
+#
+# 🔴 The four sibling filters below deliberately do NOT list this file or
+# platform-contracts.yml, unlike every filter above them. The self-reference in
+# the php/frontend/mobile/accessible/i18n filters is a SAFETY PROPERTY — if the
+# watch-lists themselves change between an ancestor commit and a deploy commit,
+# evidence inherited under the old lists must be invalidated, and
+# scripts/predeploy-ci-verify.mjs depends on that. None of that applies here:
+# these four are read only by platform-contracts.yml and appear in no
+# REQUIRED_JOBS entry, so a self-reference bought nothing and cost a full
+# ~92-runner-minute ASP.NET run on every CI-config edit. The compensating
+# control is the weekly scheduled sweep in platform-contracts.yml plus
+# workflow_dispatch; the workflow's own `on: paths:` still lists itself, so a
+# YAML error in it still surfaces at trigger time.
 aspnet:
   - 'aspnet-backend/**'
   # Shared payload shapes the ASP.NET contract tests assert against. Same
   # reasoning as contracts/** in the php/frontend/mobile filters above.
   - 'contracts/**'
   - 'openapi.json'
-  - '.github/workflows/platform-contracts.yml'
-  - '.github/ci-paths.yml'
 
 webuk:
   - 'web-uk/**'
   - 'contracts/**'
-  - '.github/workflows/platform-contracts.yml'
-  - '.github/ci-paths.yml'
 
 # The Laravel-side contract inventory: what the comparison tooling reads when
 # it builds the "what does Laravel actually expose" side of the parity report.
@@ -117,15 +126,11 @@ contracts_inventory:
   - 'openapi.json'
   - 'contracts/**'
   - 'scripts/verify-platform-contracts.ps1'
-  - '.github/workflows/platform-contracts.yml'
-  - '.github/ci-paths.yml'
 
 # The React guardrail job only inspects react-frontend/ sources.
 react_contracts:
   - 'react-frontend/**'
   - 'contracts/**'
-  - '.github/workflows/platform-contracts.yml'
-  - '.github/ci-paths.yml'
 
 i18n:
   - 'react-frontend/public/locales/**'
