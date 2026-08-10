@@ -28,8 +28,8 @@ Use `--detach` for production deploys so long Docker builds do not depend on an 
 | `api.project-nexus.ie` | Laravel API and server-rendered PHP surfaces | PHP blue/green app container |
 | `accessible.project-nexus.ie` | Accessibility-first frontend | PHP blue/green app container |
 | `project-nexus.ie` | Commercial sales site | Separate sales-site deployment |
-| `api.project-nexus.net` | Experimental ASP.NET backend | 🔴 **Nothing in this repository deploys it** — see below |
-| `uk.project-nexus.net` | Experimental Web UK accessible client | 🔴 **Nothing in this repository deploys it** — see below |
+| `api.project-nexus.net` | Experimental ASP.NET backend | ⛔ **RETIRED 2026-08-10** — container stopped, returns 503. Domain retained. |
+| `uk.project-nexus.net` | Experimental Web UK accessible client | ⛔ **RETIRED 2026-08-10** — container stopped, returns 503. Domain retained. |
 
 The accessible frontend is not a separate SPA container. It is rendered by Laravel, with source under `accessible-frontend/` and built assets under `httpdocs/build/accessible-frontend/`.
 
@@ -121,10 +121,10 @@ so this must be a deliberate, planned operation. See
 
 | What | Where it runs | Schedule | Alerts via |
 | --- | --- | --- | --- |
-| Uptime check (6 public hosts) | GitHub Actions (`uptime-check.yml`) | every 15 min | Telegram, on state **change** only |
+| Uptime check (4 production hosts) | GitHub Actions (`uptime-check.yml`) | every 15 min | Telegram, on state **change** only |
 | Deploy drift watchdog | GitHub Actions | every 30 min | Telegram |
-| ASP.NET database backup | Production host cron | 02:40 daily | Telegram (see caveat) |
-| ASP.NET backup freshness | Production host cron | 09:00 daily | Telegram (see caveat) |
+| ASP.NET database backup | Production host cron | ⛔ disabled 2026-08-10 with the retirement | — |
+| ASP.NET backup freshness | Production host cron | ⛔ disabled 2026-08-10 with the retirement | — |
 
 🔴 **Telegram credentials live in two different places, and only one is
 populated.** `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` exist as **GitHub repo

@@ -19,6 +19,52 @@ both frontend consumers against the same contract evidence.
 | `aspnet-backend/` | Experimental second backend | None from this repository — see below |
 | `web-uk/` | Experimental shared accessible client | None from this repository — see below |
 
+### ✅ RETIRED 2026-08-10 — both tracks are now STOPPED
+
+On the owner's explicit instruction, the four containers behind these two
+services were **stopped** (not removed):
+
+```text
+nexus-uk-frontend-dev   nexus-backend-api   nexus-backend-rabbitmq   nexus-backend-db
+```
+
+`api.project-nexus.net` and `uk.project-nexus.net` now return **503 by
+design**. The domains are retained.
+
+Why: neither had any traffic (zero requests in the API logs — only its own
+scheduled jobs), the data was 13 seed users, and **nothing in this repository
+could patch them** because they were deployed from the archived repository.
+.NET 8 also leaves support on 2026-11-10. Docker was additionally publishing
+the API and **RabbitMQ's management console** on all interfaces; only a
+firewall rule stood between that and the internet.
+
+🔴 A dependency found during the pre-flight, worth remembering: Web UK ran
+with `API_BASE_URL=http://api:8080`, i.e. it consumed the **ASP.NET** API, not
+Laravel. Stopping the backend alone would have broken `uk.project-nexus.net`.
+
+**Nothing was deleted.** Volumes survive (`nexus-backend-db-data` 99 MB,
+`nexus-backend-uploads` 6.8 MB, `nexus-backend-rabbitmq-data` 1.1 MB,
+`nexus-backend-llama-models` 1.9 GB), as do three verified database dumps and
+the images. A final verified backup was taken immediately before stopping.
+
+Reversal is one command:
+
+```bash
+sudo docker start nexus-backend-db nexus-backend-rabbitmq nexus-backend-api nexus-uk-frontend-dev
+```
+
+The restart policy is `unless-stopped`, so an explicit stop keeps them down
+across a host reboot — intended.
+
+The nightly backup cron was disabled at the same time (it would otherwise
+alert nightly about a container that is deliberately off). Re-enable with
+`sudo mv /etc/cron.d/nexus-aspnet-db-backup.disabled-2026-08-10 /etc/cron.d/nexus-aspnet-db-backup`.
+
+Both hosts were also removed from `scripts/uptime-targets.json`.
+
+The historical record of how they came to be live, below, is retained because
+it explains the constraints that still apply if they are ever restarted.
+
 ### 🔴 Both tracks ARE live in production, deployed from a repository that is now dead
 
 This table said "None" without qualification until 2026-08-10, which was simply

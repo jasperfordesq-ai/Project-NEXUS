@@ -82,8 +82,8 @@ production default and the contract source of truth.
 
 | Layer | Technology | Status |
 |-------|-----------|--------|
-| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ | Live at `api.project-nexus.net`, but **not deployable from this repository** |
-| **Web UK client** | Express 4 + Nunjucks + GOV.UK Frontend + Node 22 | Live at `uk.project-nexus.net`, but **not deployable from this repository** |
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ | **Retired 2026-08-10** (container stopped; domain retained) |
+| **Web UK client** | Express 4 + Nunjucks + GOV.UK Frontend + Node 22 | **Retired 2026-08-10** (container stopped; domain retained) |
 
 Both are a **complete stack of their own** — the ASP.NET side has its own
 database, message broker, migrations and 3,386-test suite; Web UK has its own
@@ -185,8 +185,8 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 | `app/`, `routes/`, `config/`, `bootstrap/` | **PRIMARY.** Laravel 12 application, API routing, middleware, providers, and runtime configuration. The contract source of truth for every client. |
 | `react-frontend/` | **PRIMARY.** React 19 + TypeScript UI for members and admin workflows. Backend-switchable by configuration; Laravel is the production default. |
 | `accessible-frontend/` | **PRIMARY.** Accessibility-first, HTML-first frontend rendered by Laravel Blade at `accessible.project-nexus.ie` and `/{tenantSlug}/accessible/...` |
-| `web-uk/` | **SECONDARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend on Node 22, with its own server, sessions and 1,787 tests. Laravel-first. Live at `uk.project-nexus.net` but **not deployable from this repository**. |
-| `aspnet-backend/` | **SECONDARY.** A complete second backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's external contracts. Live at `api.project-nexus.net` but **not deployable from this repository**. |
+| `web-uk/` | **SECONDARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend on Node 22, with its own server, sessions and 1,787 tests. Laravel-first. **Retired 2026-08-10** — container stopped, host returns 503 by design. Was never deployable from this repository. |
+| `aspnet-backend/` | **SECONDARY.** A complete second backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's external contracts. **Retired 2026-08-10** — container stopped, host returns 503 by design. Was never deployable from this repository. |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
 | `database/`, `migrations/` | Laravel migrations, schema dump, and legacy SQL history |
