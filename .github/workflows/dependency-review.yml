@@ -10,6 +10,21 @@ on:
       - 'react-frontend/package-lock.json'
       - 'composer.json'
       - 'composer.lock'
+      # Added 2026-08-10. The first four below are the monorepo siblings, whose
+      # dependency manifests woke NOTHING here after the 2026-08-09 move — the
+      # same blind-spot class .github/ci-paths.yml documents for contracts/**
+      # and e2e/**. The last two are the same omission for trees that predate
+      # the move: both have lockfiles and both were missing from this list.
+      - 'web-uk/package.json'
+      - 'web-uk/package-lock.json'
+      - 'aspnet-backend/e2e/package.json'
+      - 'aspnet-backend/e2e/package-lock.json'
+      - 'aspnet-backend/**/*.csproj'
+      - 'aspnet-backend/**/packages.lock.json'
+      - 'e2e/package.json'
+      - 'e2e/package-lock.json'
+      - 'mobile/package.json'
+      - 'mobile/package-lock.json'
 
 permissions:
   contents: read

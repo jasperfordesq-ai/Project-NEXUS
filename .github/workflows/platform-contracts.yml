@@ -250,6 +250,54 @@ jobs:
           path: aspnet-test-results/messaging
           if-no-files-found: warn
 
+  # ─────────────────────────────────────────────────────────────────
+  # Sibling image smoke builds.
+  #
+  # Neither sibling Dockerfile was built by ANY workflow until 2026-08-10:
+  # ci.yml's docker-verify builds the root Dockerfile, Dockerfile.prod and
+  # react-frontend/Dockerfile.prod; security-scan's container-scan builds the
+  # root Dockerfile only. A syntax or dependency error in either sibling image
+  # was therefore invisible.
+  #
+  # It was not hypothetical. aspnet-backend/Dockerfile could not build at all:
+  # Nexus.sln references five projects and the Dockerfile copied four, so
+  # `dotnet restore` failed with MSB3202. Fixed in the same commit that added
+  # this job. Both images were built locally before wiring this up, so it goes
+  # in green rather than red.
+  #
+  # Build only — nothing is pushed, and per docs/PLATFORM-MONOREPO.md a green
+  # build here does not authorize or certify any deployment.
+  # ─────────────────────────────────────────────────────────────────
+  aspnet-docker-build:
+    name: ASP.NET image builds
+    needs: changes
+    if: >-
+      (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build aspnet-backend image
+        run: docker build -t nexus-aspnet:ci aspnet-backend/
+
+  webuk-docker-build:
+    name: Web UK image builds
+    needs: changes
+    if: >-
+      needs.changes.outputs.webuk == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # --target production: the stage compose.prod.yml selects. The default
+      # final stage would not exercise it.
+      - name: Build web-uk production image
+        run: docker build -t nexus-webuk:ci --target production web-uk/
+
   react-contracts:
     name: React backend guardrails
     needs: changes

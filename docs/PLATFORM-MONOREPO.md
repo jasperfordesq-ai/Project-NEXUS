@@ -56,3 +56,49 @@ diagnostics.
 - A successful experimental check does not authorize or certify deployment.
 - Production deployment always requires its existing explicit authorization
   and verification process.
+
+## Known coverage gaps in the imported tracks
+
+Recorded 2026-08-10 after a full audit of what the move carried across. These
+are deliberate, not oversights — each says why, and what would change it.
+
+### C# static security analysis — needs a repository setting, not a commit
+
+The former ASP.NET repository ran CodeQL over its C# with its own workflow and
+a tuned configuration. Neither came across, and this repository uses CodeQL's
+**default setup**, whose language list is `actions`, `javascript-typescript` and
+`python`. Web UK's JavaScript is therefore covered; **`aspnet-backend/src` gets
+no static security analysis at all**.
+
+This cannot be fixed by adding a file: GitHub does not allow default setup and
+an advanced CodeQL workflow to coexist, and importing the upstream workflow
+would also move the JS/TS and Python analysis into a workflow this repository
+would then have to maintain. The upstream configuration's tuned exclusions
+mattered when CodeQL was a blocking gate; under default setup it is
+non-blocking alerting, where a noisy alert is dismissed rather than failing a
+build.
+
+**Owner action:** repository *Settings → Advanced Security → Code scanning →
+CodeQL → Edit configuration*, tick **C#**, keep the existing languages. Default
+setup analyses C# without a build step, so no build configuration is needed.
+Severity: medium while ASP.NET has no production path; high the moment it gains
+one.
+
+### `aspnet-backend/e2e` runs nowhere
+
+The imported Playwright suite (`tests/api/*`, `tests/admin-ui/*`, its own
+`playwright.config.ts` and `package.json`) is executed by no workflow.
+`.github/workflows/e2e-tests.yml` covers the root `e2e/` tree only. Dependabot
+does track its packages, so it is being updated but never run.
+
+Deferred deliberately: wiring it needs a live ASP.NET API plus a PostgreSQL
+service container, which is a substantial job for a development-only track that
+has been **paused since 2026-07-15**. Revisit when ASP.NET development actually
+resumes — that is the trigger, not a date.
+
+### Sibling Markdown is link-checked but not structure-linted
+
+`aspnet-backend/**/*.md` and `web-uk/**/*.md` are outside
+`.markdownlint-cli2.jsonc`'s globs. Their links ARE verified, by
+`check-markdown-links.ps1` in the `Static contract inventory` job. Only
+formatting rules are unenforced, across ~74 largely historical documents.

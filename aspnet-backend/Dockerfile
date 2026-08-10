@@ -15,6 +15,14 @@ COPY src/Nexus.Api/Nexus.Api.csproj src/Nexus.Api/
 COPY src/Nexus.Contracts/Nexus.Contracts.csproj src/Nexus.Contracts/
 COPY src/Nexus.Messaging/Nexus.Messaging.csproj src/Nexus.Messaging/
 COPY tests/Nexus.Api.Tests/Nexus.Api.Tests.csproj tests/Nexus.Api.Tests/
+# 🔴 Nexus.sln references FIVE projects; this list must contain all five or
+# `dotnet restore` fails on the solution with MSB3202. Nexus.Messaging.Tests was
+# added upstream in 0f983d61 without a matching COPY, so this image could not be
+# built at all — a pre-existing break, not a consequence of the 2026-08-09 move
+# (this file is byte-identical to the upstream one). Nothing in CI built this
+# image, which is why it went unnoticed; the aspnet-docker-build job added on
+# 2026-08-10 is what would now catch it.
+COPY tests/Nexus.Messaging.Tests/Nexus.Messaging.Tests.csproj tests/Nexus.Messaging.Tests/
 
 # Restore dependencies
 RUN dotnet restore

@@ -219,6 +219,11 @@ jobs:
           node scripts/npm-audit-gate.mjs --prefix react-frontend
           node scripts/npm-audit-gate.mjs --prefix e2e
           node scripts/npm-audit-gate.mjs --prefix mobile --package-lock-only
+          # web-uk arrived with the 2026-08-09 monorepo move and had no
+          # dependency gate here until 2026-08-10 — its upstream repository ran
+          # its own. --package-lock-only (as with mobile) so this job does not
+          # have to install the tree just to audit it.
+          node scripts/npm-audit-gate.mjs --prefix web-uk --package-lock-only
 
       # 🔴 Pinned to the CURRENT main commit, deliberately NOT to a release
       # tag. This action's newest release is 1.1.0 from 2021, and main is 14
