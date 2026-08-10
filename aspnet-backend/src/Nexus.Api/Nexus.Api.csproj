@@ -23,10 +23,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
 
     <!-- Health Checks -->
-    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
 
     <!-- Password Hashing (BCrypt - same as PHP) -->
-    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
 
     <!-- HTML sanitization (Laravel HtmlSanitizer contract for user content) -->
     <!-- 9.0.892 pulled AngleSharp 0.17.1 transitively, which carries a known
@@ -35,7 +35,7 @@
     <PackageReference Include="HtmlSanitizer" Version="9.2.995" />
 
     <!-- Swagger / OpenAPI -->
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
 
     <!-- Rate Limiting: provided by the ASP.NET Core 10 shared framework.
          An explicit PackageReference here raises NU1510 ("likely
@@ -46,43 +46,43 @@
     <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
 
     <!-- API Versioning -->
-    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.1" />
-    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
+    <PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
 
     <!-- Structured Logging (Serilog) -->
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.3.0" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
 
     <!-- Real-time Messaging (SignalR): provided by the ASP.NET Core 10 shared
          framework; see the rate-limiting note above (NU1510). -->
 
     <!-- Email (MimeKit for Gmail service) -->
-    <PackageReference Include="MimeKit" Version="4.15.1" />
+    <PackageReference Include="MimeKit" Version="4.17.0" />
 
     <!-- WebAuthn/Passkeys (FIDO2) -->
-    <PackageReference Include="Fido2.AspNet" Version="4.0.0" />
+    <PackageReference Include="Fido2.AspNet" Version="4.0.1" />
 
     <!-- TOTP 2FA -->
     <PackageReference Include="Otp.NET" Version="1.4.1" />
-    <PackageReference Include="NSec.Cryptography" Version="25.4.0" />
+    <PackageReference Include="NSec.Cryptography" Version="26.4.0" />
     <PackageReference Include="QRCoder" Version="1.8.0" />
 
     <!-- SendGrid Email -->
     <PackageReference Include="SendGrid" Version="9.29.3" />
 
     <!-- Sentry Error Tracking -->
-    <PackageReference Include="Sentry.AspNetCore" Version="4.12.1" />
+    <PackageReference Include="Sentry.AspNetCore" Version="6.8.0" />
 
     <!-- OpenTelemetry -->
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.16.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.16.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.16.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.16.0-beta.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.1" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.16.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.17.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.16.0-beta.1" />
   </ItemGroup>
 
