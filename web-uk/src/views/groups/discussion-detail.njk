@@ -1,0 +1,75 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.back") }}</a>
+
+  <span class="govuk-caption-l">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ discussion.title }}</h1>
+
+  {% if statusBanner and statusBanner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: statusBanner.title,
+      text: statusBanner.message
+    }) }}
+  {% elif statusBanner and statusBanner.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ statusBanner.title }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ statusBanner.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if fieldErrors.content %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#content">{{ fieldErrors.content }}</a></li></ul></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <article class="nexus-alpha-card govuk-!-margin-bottom-4">
+    {% if discussion.authorName %}
+      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+        {{ t("groups.discussions.started_by", { name: discussion.authorName }) }}{% if discussion.createdAtLabel %}<span aria-hidden="true"> · </span><time datetime="{{ discussion.createdAt }}">{{ discussion.createdAtLabel }}</time>{% endif %}
+      </p>
+    {% endif %}
+    <div class="govuk-body">{{ discussion.content | striptags | nl2br | safe }}</div>
+  </article>
+
+  <h2 class="govuk-heading-l" id="discussion-replies">{{ t("groups.discussions.replies_count", { count: messages.length }) }}</h2>
+
+  {% if not messages.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.discussions.no_replies") }}</p></div>
+  {% else %}
+    {% for message in messages %}
+      <article class="nexus-alpha-card govuk-!-margin-bottom-3">
+        {% if message.authorName %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            {{ t("polish_groups.reply_posted_by", { name: message.authorName }) }}{% if message.createdAtLabel %}<span aria-hidden="true"> · </span><time datetime="{{ message.createdAt }}">{{ message.createdAtLabel }}</time>{% endif %}
+          </p>
+        {% endif %}
+        <div class="govuk-body govuk-!-margin-bottom-0">{{ message.content | striptags | nl2br | safe }}</div>
+      </article>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string) + '/reply') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group{% if fieldErrors.content %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--m" for="content">{{ t("groups.discussions.reply_label") }}</label>
+      <div id="content-hint" class="govuk-hint">{{ t("groups.discussions.reply_hint") }}</div>
+      {% if fieldErrors.content %}<p id="content-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.content }}</p>{% endif %}
+      <textarea class="govuk-textarea{% if fieldErrors.content %} govuk-textarea--error{% endif %}" id="content" name="content" rows="4" aria-describedby="content-hint{% if fieldErrors.content %} content-error{% endif %}">{{ replyValues.content or '' }}</textarea>
+    </div>
+    <button class="govuk-button" data-module="govuk-button">{{ t("groups.discussions.reply_submit") }}</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,104 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block head %}
+  {{ super() }}
+  {% if post.metaDescription %}<meta name="description" content="{{ post.metaDescription }}">{% endif %}
+  {% if post.canonicalUrl %}<link rel="canonical" href="{{ post.canonicalUrl }}">{% endif %}
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ post.metaTitle or post.title }}">
+  {% if post.metaDescription %}<meta property="og:description" content="{{ post.metaDescription }}">{% endif %}
+  {% if post.publishedIso %}<meta property="article:published_time" content="{{ post.publishedIso }}">{% endif %}
+  {% if post.updatedIso %}<meta property="article:modified_time" content="{{ post.updatedIso }}">{% endif %}
+  <script type="application/ld+json">{{ articleStructuredData | safe }}</script>
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/blog') }}">{{ t("blog.back_to_blog") }}</a>
+
+      <span class="govuk-caption-l">{{ t("blog.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ post.title }}</h1>
+
+      <p class="govuk-body-s nexus-alpha-meta">
+        {% if post.category.name %}{{ post.category.name }} &middot; {% endif %}
+        {% if post.publishedAt %}{{ t("blog.published_label") }}: {{ post.publishedAt | formatDate }}{% endif %}
+        {% if post.readingTime %} &middot; {{ t("blog.read_time", { count: post.readingTime }) }}{% endif %}
+      </p>
+
+      {% if post.featuredImage %}
+        <div class="nexus-alpha-detail-hero">
+          <img src="{{ post.featuredImage }}" alt="{{ t('blog.image_alt', { title: post.title }) }}">
+        </div>
+      {% endif %}
+
+      <div class="legal-content govuk-body">
+        {{ post.content | safe }}
+      </div>
+
+      <div id="reactions" class="govuk-!-margin-top-4 govuk-!-margin-bottom-2">
+        {% if isAuthenticated and post.slug %}
+          <form method="post" action="{{ urlFor('/blog/' + post.slug + '/like') }}" class="govuk-!-display-inline-block">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button {% if not hasLiked %}govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button">
+              {% if hasLiked %}{{ t("blog.unlike") }}{% else %}{{ t("blog.like") }}{% endif %}
+            </button>
+          </form>
+        {% endif %}
+        <span class="govuk-body-s nexus-alpha-meta">{{ tc("blog.likes_count", likeCount, { count: likeCount }) }}</span>
+      </div>
+
+      <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+
+      <section id="comments">
+        <h2 class="govuk-heading-l">{{ t("blog.comments_heading") }} <span class="govuk-!-font-weight-regular">({{ commentsTotal }})</span></h2>
+
+        {% if post.slug %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ urlFor('/blog/' + post.slug + '/comments') }}">{{ t("govuk_alpha_blogreviews.nav.view_discussion") }}</a>
+          </p>
+        {% endif %}
+
+        {% if statusBanner and statusBanner.type == "success" %}
+          <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert">
+            <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("states.success_title") }}</h2></div>
+            <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p></div>
+          </div>
+        {% elif statusBanner and statusBanner.type == "error" %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+            <div role="alert"><h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+              <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li><a href="#body">{{ statusBanner.message }}</a></li></ul></div></div>
+          </div>
+        {% endif %}
+
+        {% if not isAuthenticated %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("blog.comments_signin") }}</p></div>
+        {% else %}
+          {% if not comments.length %}
+            <div class="govuk-inset-text"><p class="govuk-body">{{ t("blog.comments_empty") }}</p></div>
+          {% else %}
+            <ul class="govuk-list">
+              {% for comment in comments %}
+                <li id="comment-{{ comment.id }}">{{ comment.content }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments') }}" class="govuk-!-margin-top-4">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'body' %} govuk-form-group--error{% endif %}">
+              <label class="govuk-label govuk-label--s" for="body">{{ t("blog.comment_body_label") }}</label>
+              <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="5000"></textarea>
+            </div>
+            <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("blog.comment_submit") }}</button>
+          </form>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+{% endblock %}

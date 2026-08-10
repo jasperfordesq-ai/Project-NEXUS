@@ -1,0 +1,158 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <span class="govuk-caption-l">{{ t("members.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("members.title") }}</h1>
+      <p class="govuk-body-l">{{ t("members.description") }}</p>
+
+      {% if requiresAuth %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="members-auth-required-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="members-auth-required-title">{{ t("states.error_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("states.auth_required") }}</p>
+            <p class="govuk-body">{{ t("members.auth_required_detail", { community: communityName }) }}</p>
+            <div class="nexus-alpha-actions">
+              {{ govukButton({ text: t("nav.login"), href: urlFor('/login') }) }}
+              {{ govukButton({ text: t("nav.register"), href: urlFor('/register'), classes: "govuk-button--secondary" }) }}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <nav class="nexus-alpha-actions govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha_members.filters.heading') }}">
+          {% if sort == 'name' and order == 'ASC' %}
+            <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.all") }}</strong>
+          {% else %}
+            <a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("govuk_alpha_members.filters.all") }}</a>
+          {% endif %}
+          {% if sort == 'joined' and order == 'DESC' %}
+            <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.new") }}</strong>
+          {% else %}
+            <a class="govuk-link" href="{{ urlFor('/members?sort=joined&order=DESC') }}">{{ t("govuk_alpha_members.filters.new") }}</a>
+          {% endif %}
+          {% if sort == 'hours_given' and order == 'DESC' %}
+            <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.active") }}</strong>
+          {% else %}
+            <a class="govuk-link" href="{{ urlFor('/members?sort=hours_given&order=DESC') }}">{{ t("govuk_alpha_members.filters.active") }}</a>
+          {% endif %}
+          <a class="govuk-link" href="{{ urlFor('/members/discover') }}">{{ t("govuk_alpha_members.filters.recommended") }}</a>
+          <a class="govuk-link" href="{{ urlFor('/members/nearby') }}">{{ t("govuk_alpha_members.filters.near_me") }}</a>
+        </nav>
+
+        <form method="get" action="{{ urlFor('/members') }}" class="govuk-!-margin-bottom-7">
+          <fieldset class="govuk-fieldset" aria-describedby="members-filter-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+              <h2 class="govuk-fieldset__heading">{{ t("members.filters_title") }}</h2>
+            </legend>
+            <div id="members-filter-hint" class="govuk-hint">{{ t("members.filters_hint") }}</div>
+            <div class="govuk-grid-row">
+              <div class="govuk-grid-column-one-half">
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="q">{{ t("members.search_label") }}</label>
+                  <div id="member-q-hint" class="govuk-hint">{{ t("members.search_hint") }}</div>
+                  <input class="govuk-input" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="member-q-hint">
+                </div>
+              </div>
+              <div class="govuk-grid-column-one-quarter">
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="sort">{{ t("members.sort_label") }}</label>
+                  <select class="govuk-select" id="sort" name="sort">
+                    {% for option in ['name', 'joined', 'rating', 'hours_given'] %}
+                      <option value="{{ option }}"{% if sort == option %} selected{% endif %}>{{ t("members.sort." + option) }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="govuk-grid-column-one-quarter">
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="order">{{ t("members.order_label") }}</label>
+                  <select class="govuk-select" id="order" name="order">
+                    {% for option in ['ASC', 'DESC'] %}
+                      <option value="{{ option }}"{% if order == option %} selected{% endif %}>{{ t("members.order." + option) }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="nexus-alpha-actions">
+              <button class="govuk-button" data-module="govuk-button">{{ t("actions.search") }}</button>
+              {% if hasFilters %}<a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("actions.clear_filters") }}</a>{% endif %}
+            </div>
+          </fieldset>
+        </form>
+
+        <h2 class="govuk-heading-l">{{ t("members.results_title") }}</h2>
+        <p class="govuk-body nexus-alpha-result-count" aria-live="polite">{{ totalItemsLabel }}</p>
+
+        {% if errorMessage %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+              <div class="govuk-error-summary__body"><p>{{ errorMessage }}</p></div>
+            </div>
+          </div>
+        {% elif not users or not users.length %}
+          <div class="govuk-inset-text">
+            <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+            <p class="govuk-body">{{ t("members.empty") }}</p>
+            {% if hasFilters %}<p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("actions.clear_filters") }}</a></p>{% endif %}
+          </div>
+        {% else %}
+          <div class="nexus-alpha-card-list">
+            {% for member in users %}
+              <article class="nexus-alpha-card">
+                <div class="nexus-alpha-member-row">
+                  <div class="nexus-alpha-member-row__media">
+                    {% if member.avatar %}
+                      <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ member.avatar }}" alt="{{ t('members.avatar_alt', { name: member.name }) }}">
+                    {% else %}
+                      <span class="nexus-alpha-avatar nexus-alpha-avatar--large nexus-alpha-avatar--placeholder" aria-hidden="true">{{ member.initial }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="nexus-alpha-member-row__content">
+                    <div class="nexus-alpha-member-row__heading">
+                      <h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a></h3>
+                      {% if member.isVerified %}<strong class="govuk-tag govuk-tag--green">{{ t("members.verified") }}</strong>{% endif %}
+                      {% if member.levelLabel %}<strong class="govuk-tag govuk-tag--turquoise">{{ member.levelLabel }}</strong>{% endif %}
+                      {% if member.connectionLabel %}<strong class="govuk-tag {{ member.connectionTagClass }}">{{ member.connectionLabel }}</strong>{% endif %}
+                    </div>
+                    {% if member.badges and member.badges.length %}
+                      <ul class="govuk-list nexus-alpha-actions" aria-label="{{ t('polish_members.member_badges_label') }}">
+                        {% for badge in member.badges %}<li>{% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}<strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong></li>{% endfor %}
+                      </ul>
+                    {% endif %}
+                    {% if member.tagline %}<p class="govuk-body">{{ member.tagline }}</p>{% endif %}
+                    <dl class="nexus-alpha-inline-list">
+                      {% if member.location %}<div><dt>{{ t("members.location_label") }}</dt><dd>{{ member.location }}</dd></div>{% endif %}
+                      <div><dt>{{ t("members.hours_given_label") }}</dt><dd>{{ member.hoursGivenLabel }}</dd></div>
+                      <div><dt>{{ t("members.hours_received_label") }}</dt><dd>{{ member.hoursReceivedLabel }}</dd></div>
+                      {% if member.ratingLabel %}<div><dt>{{ t("members.rating_label") }}</dt><dd>{{ member.ratingLabel }}</dd></div>{% endif %}
+                    </dl>
+                  </div>
+                  <div class="nexus-alpha-member-row__action">
+                    <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ t("actions.view_profile") }}<span class="govuk-visually-hidden">{{ t("members.profile_for", { name: member.name }) }}</span></a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+          {% if nextHref %}
+            <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('members.pagination_label') }}">
+              <div class="govuk-pagination__next">
+                <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
+                  <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
+                  <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span><span class="govuk-visually-hidden">:</span><span class="govuk-pagination__link-label">{{ t("members.more_results_label") }}</span>
+                </a>
+              </div>
+            </nav>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

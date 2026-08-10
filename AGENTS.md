@@ -75,6 +75,7 @@ project-nexus/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Maintained platform architecture map and major runtime boundaries |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment guide (public-safe; secrets stay in local env files) |
 | [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) | React dual-backend guardrails: Laravel production/default, ASP.NET development-only until contract-compatible |
+| [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md) | Monorepo boundaries, provenance, deployment isolation, and contract-work commands |
 | [docs/govuk-alpha/RESEARCH.md](docs/govuk-alpha/RESEARCH.md) | GOV.UK-based accessible frontend architecture, official repos, licensing, and branding limits |
 | [LARAVEL_MIGRATION_PLAN.md](LARAVEL_MIGRATION_PLAN.md) | Historical Laravel migration record and current backend migration guidance |
 | `BACKUP.md` (local-only, gitignored) | Full backup system and private backup-remote workflow for machine transfers |
@@ -294,6 +295,10 @@ This project is **publicly released** under AGPL-3.0-or-later at <https://github
 - **Header/footer logo exception:** Tenant logos rendered in the React header/footer must use uploaded raster image assets (prefer transparent PNG; JPEG only when transparency is not required). Do **not** replace these brand logos with inline SVGs or generated SVG wrappers. SVG may still be appropriate elsewhere in the app for icons/illustration, but header/footer brand marks are the exception because light/dark logo contrast depends on real transparent raster assets.
 
 - **Laravel is the production/default backend contract.** ASP.NET compatibility work is development-only and must make ASP.NET conform to the Laravel React API rather than changing production frontend behaviour; see [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md).
+- **Repository co-location does not change deployment scope.** `aspnet-backend/`
+  and `web-uk/` are development-only and must not be added to the Laravel
+  blue/green Compose file or production deployment scripts without separate,
+  explicit authorization.
 
 See [react-frontend/CLAUDE.md](react-frontend/CLAUDE.md) for full styling rules, contexts, hooks, and component reference.
 
@@ -372,7 +377,7 @@ in practice the only thing `--no-verify` can bypass is the gate below, and it mu
 
 #### 🔴 EXCEPTION — never `--no-verify` past the test verify-gate
 
-The `pre-commit` hook (`scripts/git-hooks/pre-commit`, installed via `bash scripts/git-hooks/install-hooks.sh`) runs **only the PHP test files staged in the current commit**. A failure there is, by definition, in a file *you are committing right now* — it is never "pre-existing" or "unrelated". If this gate fails, **fix the test or drop the file. Do NOT `--no-verify` past it.** This exists because automated coverage/test batches repeatedly landed broken tests on `main` and turned CI red. The `--no-verify` allowance above applies ONLY to pre-existing lint/build failures in files you did not change.
+The `pre-commit` hook (`scripts/git-hooks/pre-commit`, installed via `bash scripts/git-hooks/install-hooks.sh`) has **two gates**. Gate A is a **credential scan** that runs on every commit and needs only git+grep — it blocks private keys, AWS/`sk-` keys, literal-IP SSH strings and database dumps in staged content (restored 2026-08-10 from the upstream ASP.NET hook the monorepo move dropped; deliberately excludes the two generic password patterns, which false-positive constantly on Laravel factories/seeders). Gate B runs **only the PHP test files staged in the current commit**. A failure there is, by definition, in a file *you are committing right now* — it is never "pre-existing" or "unrelated". If this gate fails, **fix the test or drop the file. Do NOT `--no-verify` past it.** This exists because automated coverage/test batches repeatedly landed broken tests on `main` and turned CI red. The `--no-verify` allowance above applies ONLY to pre-existing lint/build failures in files you did not change.
 
 Any automated loop that generates and commits test batches MUST let this gate run (no `--no-verify`); if it commits a failing test, it has broken `main` for everyone.
 
@@ -650,7 +655,7 @@ directly 500s under test only. And config sourced from a dev `.env` — e.g.
 preconditions rather than inherit them. Reproduce by clearing the variable on the
 command line before assuming the test is fine.
 
-🔴 The `pre-commit` hook runs **only the PHP test files staged in this commit**.
+🔴 The `pre-commit` hook's second gate runs **only the PHP test files staged in this commit** (its first gate is a credential scan that runs on every commit).
 A failure there is in a file you are committing right now, so it is never
 "pre-existing" — fix it or drop the file. This is the one gate the `--no-verify`
 allowance never covers.
@@ -744,7 +749,28 @@ sudo bash scripts/deploy/bluegreen-deploy.sh monitor           # Live monitor da
 
 **Legacy single-color containers** (may still exist on first migration): `nexus-php-app`, `nexus-react-prod`, `nexus-sales-site`, `nexus-php-queue`, `nexus-php-scheduler`.
 
-**NEVER touch:** `nexus-backend-*`, `nexus-frontend-*`, `nexus-uk-*`, `nexus-civic-*` — they belong to other projects.
+**NEVER touch:** `nexus-frontend-*`, `nexus-civic-*` — they belong to other projects.
+
+🔴 **Corrected 2026-08-10.** `nexus-backend-*` and `nexus-uk-*` were also listed
+here as "other projects". They are **not** — they are this platform's own
+experimental ASP.NET backend and Web UK frontend, live at
+`api.project-nexus.net` and `uk.project-nexus.net`, deployed from the former
+`api.project-nexus.net` repository into `/opt/nexus-backend/`. The wording made
+every agent refuse to look at the very containers it was asked about.
+
+They are still **not to be deployed, restarted or modified** — but for the real
+reasons, which an agent needs to know rather than a false ownership claim:
+
+- The owner declared that repository and its deployment **dead** on 2026-08-10.
+  The domains are kept; this repository is the control panel, and how it deploys
+  is undesigned work.
+- 🔴 The live ASP.NET database has **no successful backup since 2026-03-08**
+  (156 consecutive failures), and its app runs `Database.MigrateAsync()` on
+  every start. Restarting that container can irreversibly change live data with
+  nothing to restore from. See `docs/PLATFORM-MONOREPO.md`.
+
+Read-only inspection is fine and often necessary. Anything that writes, restarts
+or redeploys needs explicit owner authorization, as always.
 
 ---
 
@@ -891,7 +917,7 @@ Prefer the checked-in wrappers for raw SQL migrations:
 
 **5 layers:** Staged-PHP-test pre-commit hook (`scripts/git-hooks/pre-commit`, installed manually via `bash scripts/git-hooks/install-hooks.sh`) → CI pipeline (stages 0–8 in `.github/workflows/ci.yml`) → PR enforcement → Zod runtime validation (dev only) → Local scripts + deploy rules.
 
-🔴 There is **no Husky and no lint-staged in this repo's root** (no `.husky/` directory, no `prepare` script, neither package in `package.json` — they exist only inside the `mobile/` subproject) and **no pre-push hook**. `scripts/pre-push-checks.sh` is a manual bundle and must not be wired into `.husky/pre-push` without an explicit instruction. Do not assume any local gate other than the staged-PHP-test pre-commit hook — CI is the authoritative net.
+🔴 There is **no Husky and no lint-staged in this repo's root** (no `.husky/` directory, no `prepare` script, neither package in `package.json` — they exist only inside the `mobile/` subproject) and **no pre-push hook**. `scripts/pre-push-checks.sh` is a manual bundle and must not be wired into `.husky/pre-push` without an explicit instruction. Do not assume any local gate other than the pre-commit hook (credential scan + staged PHP tests) — CI is the authoritative net.
 
 ### Mandatory Rules (NEVER SKIP)
 

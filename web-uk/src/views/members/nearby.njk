@@ -1,0 +1,168 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <a class="govuk-back-link" href="{{ urlFor('/members') }}">{{ t("govuk_alpha_members.filters.directory") }}</a>
+
+      <span class="govuk-caption-l">{{ t("members.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_members.nearby.heading") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_members.nearby.description") }}</p>
+
+      <nav class="nexus-alpha-actions govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha_members.filters.heading') }}">
+        <a class="govuk-link" href="{{ urlFor('/members') }}">{{ t("govuk_alpha_members.filters.all") }}</a>
+        <a class="govuk-link" href="{{ urlFor('/members?sort=joined&order=DESC') }}">{{ t("govuk_alpha_members.filters.new") }}</a>
+        <a class="govuk-link" href="{{ urlFor('/members?sort=hours_given&order=DESC') }}">{{ t("govuk_alpha_members.filters.active") }}</a>
+        <a class="govuk-link" href="{{ urlFor('/members/discover') }}">{{ t("govuk_alpha_members.filters.recommended") }}</a>
+        <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_members.filters.near_me") }}</strong>
+      </nav>
+
+      {% if not hasLocation %}
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">{{ t("govuk_alpha_members.nearby.no_location_title") }}</h2>
+          <p class="govuk-body">{{ t("govuk_alpha_members.nearby.no_location_detail") }}</p>
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_members.nearby.edit_profile") }}</a>
+          </p>
+        </div>
+      {% else %}
+        <form method="get" action="{{ urlFor('/members/nearby') }}" class="govuk-!-margin-bottom-6">
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="q">{{ t("govuk_alpha_members.nearby.search_label") }}</label>
+                <div id="nearby-q-hint" class="govuk-hint">{{ t("govuk_alpha_members.nearby.search_hint") }}</div>
+                <input class="govuk-input" id="q" name="q" type="search" value="{{ search }}" aria-describedby="nearby-q-hint">
+              </div>
+            </div>
+            <div class="govuk-grid-column-one-quarter">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="radius">{{ t("govuk_alpha_members.nearby.radius_label") }}</label>
+                <select class="govuk-select" id="radius" name="radius">
+                  {% for option in radiusOptions %}
+                    <option value="{{ option }}"{% if radius == option %} selected{% endif %}>{{ t("near_me.options." + (option | string)) }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="nexus-alpha-actions">
+            <button class="govuk-button" data-module="govuk-button">{{ t("actions.search") }}</button>
+            {% if search or radius != 25 %}
+              <a class="govuk-link" href="{{ urlFor('/members/nearby') }}">{{ t("actions.clear_filters") }}</a>
+            {% endif %}
+          </div>
+        </form>
+
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_members.nearby.results_title") }}</h2>
+
+        {% if errorMessage %}
+          <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+            <div role="alert">
+              <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+              <div class="govuk-error-summary__body">
+                <p>{{ errorMessage }}</p>
+              </div>
+            </div>
+          </div>
+        {% elif not members or not members.length %}
+          <div class="govuk-inset-text">
+            <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+            <p class="govuk-body">{{ t("govuk_alpha_members.nearby.empty") }}</p>
+          </div>
+        {% else %}
+          <div class="nexus-alpha-card-list">
+            {% for member in members %}
+              <article class="nexus-alpha-card">
+                <div class="nexus-alpha-member-row">
+                  <div class="nexus-alpha-member-row__media">
+                    {% if member.avatar %}
+                      <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ member.avatar }}" alt="{{ t('members.avatar_alt', { name: member.name }) }}">
+                    {% else %}
+                      <span class="nexus-alpha-avatar nexus-alpha-avatar--large nexus-alpha-avatar--placeholder" aria-hidden="true">{{ member.initial }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="nexus-alpha-member-row__content">
+                    <div class="nexus-alpha-member-row__heading">
+                      <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+                        <a class="govuk-link" href="{{ urlFor('/members/' + (member.id | string)) }}">{{ member.name }}</a>
+                      </h3>
+                      {% if member.isVerified %}
+                        <strong class="govuk-tag govuk-tag--green">{{ t("members.verified") }}</strong>
+                      {% endif %}
+                      {% if member.levelLabel %}
+                        <strong class="govuk-tag govuk-tag--turquoise">{{ member.levelLabel }}</strong>
+                      {% endif %}
+                      {% if member.connectionLabel %}
+                        <strong class="govuk-tag {{ member.connectionTagClass }}">{{ member.connectionLabel }}</strong>
+                      {% endif %}
+                    </div>
+
+                    {% if member.tagline %}
+                      <p class="govuk-body">{{ member.tagline }}</p>
+                    {% endif %}
+
+                    <dl class="nexus-alpha-inline-list">
+                      {% if member.distanceLabel %}
+                        <div>
+                          <dt>{{ t("govuk_alpha_members.nearby.distance_label") }}</dt>
+                          <dd>{{ member.distanceLabel }}</dd>
+                        </div>
+                      {% endif %}
+                      {% if member.location %}
+                        <div>
+                          <dt>{{ t("members.location_label") }}</dt>
+                          <dd>{{ member.location }}</dd>
+                        </div>
+                      {% endif %}
+                      <div>
+                        <dt>{{ t("members.hours_given_label") }}</dt>
+                        <dd>{{ member.hoursGivenLabel }}</dd>
+                      </div>
+                      <div>
+                        <dt>{{ t("members.hours_received_label") }}</dt>
+                        <dd>{{ member.hoursReceivedLabel }}</dd>
+                      </div>
+                      {% if member.ratingLabel %}
+                        <div>
+                          <dt>{{ t("members.rating_label") }}</dt>
+                          <dd>{{ member.ratingLabel }}</dd>
+                        </div>
+                      {% endif %}
+                    </dl>
+                  </div>
+                  <div class="nexus-alpha-member-row__action">
+                    <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/members/' + (member.id | string)) }}">
+                      {{ t("actions.view_profile") }}
+                      <span class="govuk-visually-hidden">{{ t("members.profile_for", { name: member.name }) }}</span>
+                    </a>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+
+          {% if nextHref %}
+            <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('members.pagination_label') }}">
+              <div class="govuk-pagination__next">
+                <a class="govuk-link govuk-pagination__link" href="{{ urlFor(nextHref) }}" rel="next">
+                  <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                    <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                  </svg>
+                  <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+                  <span class="govuk-visually-hidden">:</span>
+                  <span class="govuk-pagination__link-label">{{ t("govuk_alpha_members.nearby.more_results_label") }}</span>
+                </a>
+              </div>
+            </nav>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

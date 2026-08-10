@@ -106,16 +106,27 @@ const matches = (file, globs) => globs.some((g) => minimatch(file, g, { dot: tru
 function detectAreas(files) {
   const areas = {
     php: [], frontend: [], mobile: [], docsMeta: [], workflows: [], i18n: [],
+    // The two imported tracks. Preflight knew nothing about them until
+    // 2026-08-10: a commit touching only aspnet-backend/ or web-uk/ matched no
+    // area at all, every check printed SKIP, and preflight exited 0 saying
+    // everything passed — the same silent-green shape as the empty-directory
+    // bugs found across the parity tooling. `unmatched` below is what stops
+    // that recurring for any FUTURE new top-level directory too.
+    aspnet: [], webuk: [], unmatched: [],
   };
   const DOCS_META = ['docs/**', '*.md', '.github/**', 'VERSION', 'package.json'];
   const I18N_LOCAL = ['lang/**', 'react-frontend/public/locales/**'];
   for (const f of files) {
-    if (matches(f, ciPaths.php)) areas.php.push(f);
-    if (matches(f, ciPaths.frontend)) areas.frontend.push(f);
-    if (matches(f, ciPaths.mobile)) areas.mobile.push(f);
-    if (matches(f, DOCS_META)) areas.docsMeta.push(f);
-    if (matches(f, ['.github/workflows/*.yml'])) areas.workflows.push(f);
-    if (matches(f, I18N_LOCAL)) areas.i18n.push(f);
+    let hit = false;
+    if (matches(f, ciPaths.php)) { areas.php.push(f); hit = true; }
+    if (matches(f, ciPaths.frontend)) { areas.frontend.push(f); hit = true; }
+    if (matches(f, ciPaths.mobile)) { areas.mobile.push(f); hit = true; }
+    if (matches(f, DOCS_META)) { areas.docsMeta.push(f); hit = true; }
+    if (matches(f, ['.github/workflows/*.yml'])) { areas.workflows.push(f); hit = true; }
+    if (matches(f, I18N_LOCAL)) { areas.i18n.push(f); hit = true; }
+    if (ciPaths.aspnet && matches(f, ciPaths.aspnet)) { areas.aspnet.push(f); hit = true; }
+    if (ciPaths.webuk && matches(f, ciPaths.webuk)) { areas.webuk.push(f); hit = true; }
+    if (!hit) areas.unmatched.push(f);
   }
   return areas;
 }
@@ -297,6 +308,27 @@ if (areas.i18n.length) {
 // whose labels did not exist in any language, and burned a ~35-minute round trip
 // on a check that takes two seconds locally. Both scripts read source files to
 // decide what must exist, so a source-only change can break either one.
+// --- the two imported tracks ------------------------------------------------
+// Preflight cannot meaningfully run these locally yet (no .NET toolchain
+// assumption, and web-uk's suite is a full 100s), but it MUST NOT stay silent:
+// before 2026-08-10 a commit touching only these printed nothing at all and
+// exited 0 "all checks passed".
+if (areas.aspnet.length) {
+  record('ASP.NET checks', 'UNAVAILABLE',
+    `${areas.aspnet.length} file(s) changed under aspnet-backend/ — preflight does not build .NET; platform-contracts.yml is the only thing that will check this`);
+}
+if (areas.webuk.length) {
+  record('Web UK checks', 'UNAVAILABLE',
+    `${areas.webuk.length} file(s) changed under web-uk/ (or its Blade source of truth) — run: npm --prefix web-uk run lint && npm --prefix web-uk test`);
+}
+// Anything matching NO known area at all. This is the guard that generalises:
+// a future new top-level directory cannot silently inherit a green preflight.
+if (areas.unmatched.length) {
+  const sample = areas.unmatched.slice(0, 5).join(', ');
+  record('unrecognised paths', 'UNAVAILABLE',
+    `${areas.unmatched.length} changed file(s) match no known area, so NOTHING was checked for them: ${sample}${areas.unmatched.length > 5 ? ', …' : ''}`);
+}
+
 if (areas.frontend.length || areas.i18n.length) {
   sh('admin i18n key coverage', 'node scripts/check-admin-i18n.mjs');
   sh('translation drift', 'node scripts/check-i18n-drift.mjs');
@@ -322,6 +354,14 @@ if (unavailable.length) {
   console.log('[preflight] ⚠ NOT fully checked — these could not run here:');
   for (const r of unavailable) console.log(`    - ${r.name} (${r.note})`);
   console.log('[preflight] Pushing is allowed but CI is the only thing that will run them.');
+  process.exit(2);
+}
+// "Nothing ran" is not "everything passed". Reaching here with zero PASS
+// results means preflight checked literally nothing and must say so rather
+// than printing a tick.
+if (passed.length === 0) {
+  console.log('[preflight] ⚠ NOTHING WAS CHECKED. No check matched these changes.');
+  console.log('[preflight] That is not the same as passing. CI is your only coverage for this push.');
   process.exit(2);
 }
 console.log('[preflight] ✓ all applicable local checks passed. CI remains the authoritative gate.');

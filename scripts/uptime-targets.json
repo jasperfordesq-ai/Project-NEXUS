@@ -1,0 +1,58 @@
+{
+  "_comment": [
+    "Public endpoints probed by scripts/uptime-check.mjs on a schedule.",
+    "",
+    "This replaces the availability monitoring that lived in the",
+    "jasperfordesq-ai/api.project-nexus.net repository, which was archived on",
+    "2026-08-10. Archiving a repository disables its scheduled workflows.",
+    "",
+    "🔴 The ASP.NET API (api.project-nexus.net) and Web UK frontend",
+    "(uk.project-nexus.net) were REMOVED from this list on 2026-08-10, when the",
+    "owner retired them. Their containers were stopped deliberately, so both",
+    "hosts now return 503 by design. Monitoring a service you switched off on",
+    "purpose is how a monitor teaches its owner to ignore it.",
+    "",
+    "If either is ever restarted, add it back with track 'experimental'.",
+    "",
+    "Every entry MUST be an unauthenticated GET against a public URL. Do not",
+    "add an endpoint that requires a credential, mutates state, or is not",
+    "already public - this file is committed to a PUBLIC repository."
+  ],
+  "timeoutMs": 15000,
+  "attempts": 3,
+  "retryDelayMs": 5000,
+  "targets": [
+    {
+      "name": "Sales site",
+      "url": "https://project-nexus.ie",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "React app",
+      "url": "https://app.project-nexus.ie",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "Laravel API",
+      "url": "https://api.project-nexus.ie/api/v2/health",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    },
+    {
+      "name": "Accessible frontend",
+      "url": "https://accessible.project-nexus.ie",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
+    }
+  ]
+}

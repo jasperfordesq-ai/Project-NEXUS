@@ -1,0 +1,123 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% macro episodeTextFields(ep, suffix, edit) %}
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not edit %} govuk-label--s{% endif %}" for="episode_summary{{ suffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_summary_label") }}{% if not edit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    {% if not edit %}<div id="episode_summary-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.episode_summary_hint") }}</div>{% endif %}
+    <input class="govuk-input" id="episode_summary{{ suffix }}" name="episode_summary" type="text" maxlength="600" value="{{ ep.summary }}"{% if not edit %} aria-describedby="episode_summary-hint"{% endif %}>
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not edit %} govuk-label--s{% endif %}" for="episode_description{{ suffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_description_label") }}{% if not edit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    {% if not edit %}<div id="episode_description-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.episode_description_hint") }}</div>{% endif %}
+    <textarea class="govuk-textarea" id="episode_description{{ suffix }}" name="episode_description" rows="3"{% if not edit %} aria-describedby="episode_description-hint"{% endif %}>{{ ep.description }}</textarea>
+  </div>
+{% endmacro %}
+
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="episode_title{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_title_label") }}</label>
+  {% if not episodeFieldEdit %}<div id="episode_title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.episode_title_hint") }}</div>{% endif %}
+  <input class="govuk-input" id="episode_title{{ episodeFieldSuffix }}" name="episode_title" type="text" maxlength="200" value="{{ episodeField.title }}"{% if not episodeFieldEdit %} aria-describedby="episode_title-hint"{% endif %}>
+</div>
+
+{% if not episodeFieldEdit %}
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--s" for="episode_slug">{{ t("govuk_alpha_commerce.podcast_studio.episode_slug_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+    <div id="episode_slug-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.slug_hint") }}</div>
+    <input class="govuk-input" id="episode_slug" name="episode_slug" type="text" maxlength="200" aria-describedby="episode_slug-hint">
+  </div>
+{% endif %}
+
+{% if episodeFieldEdit %}{{ episodeTextFields(episodeField, episodeFieldSuffix, true) }}{% endif %}
+
+{% for field in [
+  { name: "episode_number", label: "episode_number_label", width: "5", value: episodeField.episode_number },
+  { name: "season_number", label: "season_number_label", width: "5", value: episodeField.season_number },
+  { name: "duration_seconds", label: "duration_seconds_label", width: "10", value: episodeField.duration_seconds }
+] %}
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="{{ field.name }}{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio." + field.label) }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    {% if field.name == "episode_number" and not episodeFieldEdit %}<div id="episode_number-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.episode_number_hint") }}</div>{% endif %}
+    <input class="govuk-input govuk-input--width-{{ field.width }}" id="{{ field.name }}{{ episodeFieldSuffix }}" name="{{ field.name }}" type="text" inputmode="numeric" value="{{ field.value }}"{% if field.name == "episode_number" and not episodeFieldEdit %} aria-describedby="episode_number-hint"{% endif %}>
+  </div>
+{% endfor %}
+{% if not episodeFieldEdit %}{{ episodeTextFields(episodeField, episodeFieldSuffix, false) }}{% endif %}
+
+<div class="govuk-form-group">
+  <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="audio{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.audio_file_label") }}</label>
+  <div id="audio-hint{{ episodeFieldSuffix }}" class="govuk-hint">{% if episodeFieldEdit %}{{ t("govuk_alpha_commerce.podcast_studio.audio_replace_hint") }}{% else %}{{ t("govuk_alpha_commerce.podcast_studio.audio_file_hint") }}{% endif %}</div>
+  <input class="govuk-file-upload" id="audio{{ episodeFieldSuffix }}" name="audio" type="file" accept="audio/*" aria-describedby="audio-hint{{ episodeFieldSuffix }}">
+</div>
+
+{% if not episodeFieldEdit or episodeField.audioUrl %}
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="audio_url{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.audio_url_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    {% if not episodeFieldEdit %}<div id="audio_url-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.audio_url_hint") }}</div>{% endif %}
+    <input class="govuk-input" id="audio_url{{ episodeFieldSuffix }}" name="audio_url" type="url" inputmode="url" value="{{ episodeField.audioUrl }}"{% if not episodeFieldEdit %} aria-describedby="audio_url-hint"{% endif %}>
+  </div>
+{% endif %}
+
+{% for field in [
+  { name: "audio_mime", label: "audio_mime_label", width: "20", value: episodeField.audio_mime, mode: "text" },
+  { name: "audio_bytes", label: "audio_bytes_label", width: "10", value: episodeField.audio_bytes, mode: "numeric" }
+] %}
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="{{ field.name }}{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio." + field.label) }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    <input class="govuk-input govuk-input--width-{{ field.width }}" id="{{ field.name }}{{ episodeFieldSuffix }}" name="{{ field.name }}" type="text"{% if field.mode == "numeric" %} inputmode="numeric"{% else %} maxlength="120"{% endif %} value="{{ field.value }}">
+  </div>
+{% endfor %}
+
+<div class="govuk-form-group">
+  <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="episode_type{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_type_label") }}</label>
+  <select class="govuk-select" id="episode_type{{ episodeFieldSuffix }}" name="episode_type">
+    {% for value in ["full", "trailer", "bonus"] %}<option value="{{ value }}"{% if (episodeField.episode_type or "full") == value %} selected{% endif %}>{{ t("govuk_alpha_commerce.podcast_studio.episode_type_" + value) }}</option>{% endfor %}
+  </select>
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="episode_visibility{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_visibility_label") }}</label>
+  <select class="govuk-select" id="episode_visibility{{ episodeFieldSuffix }}" name="episode_visibility">
+    {% for value in episodeFieldVisibilities %}<option value="{{ value }}"{% if (episodeField.visibility or "inherit") == value %} selected{% endif %}>{% if value == "inherit" %}{{ t("govuk_alpha_commerce.podcast_studio.episode_visibility_inherit") }}{% else %}{{ t("govuk_alpha_commerce.podcast_studio.visibility_" + value) }}{% endif %}</option>{% endfor %}
+  </select>
+</div>
+
+<div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-4" data-module="govuk-checkboxes">
+  <div class="govuk-checkboxes__item">
+    <input class="govuk-checkboxes__input" id="episode_explicit{{ episodeFieldSuffix }}" name="episode_explicit" type="checkbox" value="1"{% if episodeField.explicit %} checked{% endif %}>
+    <label class="govuk-label govuk-checkboxes__label" for="episode_explicit{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.episode_explicit_label") }}</label>
+  </div>
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="scheduled_for{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.scheduled_for_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+  {% if not episodeFieldEdit %}<div id="scheduled_for-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.scheduled_for_hint") }}</div>{% endif %}
+  <input class="govuk-input" id="scheduled_for{{ episodeFieldSuffix }}" name="scheduled_for" type="datetime-local" value="{{ episodeField.scheduledFor }}"{% if not episodeFieldEdit %} aria-describedby="scheduled_for-hint"{% endif %}>
+</div>
+
+{% if transcriptsEnabled %}
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="transcript_language{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.transcript_language_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    <input class="govuk-input govuk-input--width-10" id="transcript_language{{ episodeFieldSuffix }}" name="transcript_language" type="text" maxlength="20" value="{{ episodeField.transcript_language }}">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="transcript{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.transcript_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    <textarea class="govuk-textarea" id="transcript{{ episodeFieldSuffix }}" name="transcript" rows="8">{{ episodeField.transcript }}</textarea>
+  </div>
+{% endif %}
+
+{% if chaptersEnabled %}
+  <div class="govuk-form-group">
+    <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="chapters_json{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.chapters_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+    <div id="chapters_json-hint{{ episodeFieldSuffix }}" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.chapters_hint") }}</div>
+    <textarea class="govuk-textarea" id="chapters_json{{ episodeFieldSuffix }}" name="chapters_json" rows="6" aria-describedby="chapters_json-hint{{ episodeFieldSuffix }}">{{ episodeField.chaptersJson }}</textarea>
+  </div>
+{% endif %}
+
+{% if episodeField.coverImageUrl %}<img src="{{ episodeField.coverImageUrl }}" alt="" width="120" height="120" class="govuk-!-margin-bottom-3">{% endif %}
+<div class="govuk-form-group">
+  <label class="govuk-label{% if not episodeFieldEdit %} govuk-label--s{% endif %}" for="cover{{ episodeFieldSuffix }}">{{ t("govuk_alpha_commerce.podcast_studio.cover_label") }}{% if not episodeFieldEdit %} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span>{% endif %}</label>
+  {% if not episodeFieldEdit %}<div id="cover-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.cover_hint") }}</div>{% endif %}
+  <input class="govuk-file-upload" id="cover{{ episodeFieldSuffix }}" name="cover" type="file" accept="image/jpeg,image/png,image/gif,image/webp"{% if not episodeFieldEdit %} aria-describedby="cover-hint"{% endif %}>
+</div>

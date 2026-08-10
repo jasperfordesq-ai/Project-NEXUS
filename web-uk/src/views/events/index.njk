@@ -1,0 +1,228 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block mainContent %}
+  {% if not moduleDisabled %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/events/calendar.ics') }}">{{ t("events.calendar_feed_download") }}</a>
+      <br><a class="govuk-link" href="{{ urlFor('/events/calendar-subscriptions') }}">{{ t("events.calendar_subscriptions_link") }}</a>
+      <br><span class="govuk-hint">{{ t("events.calendar_feed_hint") }}</span>
+    </p>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("events.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("events.title") }}</h1>
+  <p class="govuk-body-l">{{ t("events.description") }}</p>
+
+  {% if not moduleDisabled %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/events/browse') }}">{{ t("govuk_alpha_events.nav.browse_by_category") }}</a>
+      {% if canModerateEvents %}<br><a class="govuk-link" href="{{ urlFor('/events/moderation') }}">{{ t("govuk_alpha_events.moderation.queue_link") }}</a>{% endif %}
+    </p>
+  {% endif %}
+
+  {% if eventStatus == 'event-archived' or eventStatus == 'event-deleted' %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="event-archived-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="event-archived-title">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("events.archived") }}</p>
+      </div>
+    </div>
+  {% elif eventStatus == 'event-archive-failed' %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ t("events.archive_failed") }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    {% set notificationMessage = errorMessage %}
+    {% set notificationType = null %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if moduleDisabled %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="events-disabled-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="events-disabled-title">{{ t("states.error_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("states.events_disabled") }}</p>
+        <p class="govuk-body">{{ t("events.module_disabled_detail", { community: tenantName or serviceName }) }}</p>
+      </div>
+    </div>
+  {% elif isAuthenticated %}
+    <p class="govuk-body">
+      {{ govukButton({ text: t("actions.create_event"), href: urlFor("/events/new") }) }}
+    </p>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ urlFor('/login?status=auth-required') }}">{{ t("events.create_auth_link") }}</a>
+      </p>
+    </div>
+  {% endif %}
+
+  {% if not moduleDisabled %}
+  <form method="get" action="{{ urlFor('/events') }}" class="govuk-!-margin-bottom-7">
+    <fieldset class="govuk-fieldset" aria-describedby="events-filter-hint">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("events.filters_title") }}</h2>
+      </legend>
+      <div id="events-filter-hint" class="govuk-hint">{{ t("events.filters_hint") }}</div>
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="q">{{ t("events.search_label") }}</label>
+            <div id="q-hint" class="govuk-hint">{{ t("events.search_hint") }}</div>
+            <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="q-hint">
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="step_free">{{ t("event_accessibility.filters.step_free_label") }}</label>
+            <div id="step-free-hint" class="govuk-hint">{{ t("event_accessibility.filters.step_free_hint") }}</div>
+            <select class="govuk-select" id="step_free" name="step_free" aria-describedby="step-free-hint">
+              {% for option in ["any", "yes", "no", "unknown"] %}
+                <option value="{{ option }}" {% if stepFree == option %}selected{% endif %}>{{ t("event_accessibility.filters.step_free_options." + option) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-third">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="when">{{ t("events.when_label") }}</label>
+            <select class="govuk-select" id="when" name="when">
+              {% for option in ["upcoming", "past", "all"] %}
+                <option value="{{ option }}" {% if when == option %}selected{% endif %}>{{ t("events.when." + option) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-third">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="category_id">{{ t("events.category_label") }}</label>
+            <select class="govuk-select" id="category_id" name="category_id">
+              <option value="">{{ t("events.all_categories") }}</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {% if categoryId and (category.id | string) == (categoryId | string) %}selected{% endif %}>{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-third">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="near">{{ t("near_me.label") }}</label>
+            <select class="govuk-select" id="near" name="near" {% if nearNoLocation %}aria-describedby="events-near-hint"{% endif %}>
+              {% for option in ["any", "5", "10", "25", "50"] %}
+                <option value="{{ option }}" {% if near == option %}selected{% endif %}>{{ t("near_me.options." + option) }}</option>
+              {% endfor %}
+            </select>
+            {% if nearNoLocation %}
+              <p id="events-near-hint" class="govuk-hint govuk-!-margin-top-1">{{ t("near_me.no_location") }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({ text: t("actions.search") }) }}
+        {% if hasFilters %}
+          <a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("actions.clear_filters") }}</a>
+        {% endif %}
+      </div>
+    </fieldset>
+  </form>
+
+  <h2 class="govuk-heading-l">{{ t("events.results_title") }}</h2>
+  <p class="govuk-body nexus-alpha-result-count" aria-live="polite">
+    {{ tc("events.result_count", events.length, { count: events.length }) }}
+  </p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ t("events.error_detail") }}</p></div>
+      </div>
+    </div>
+  {% elif events.length == 0 %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("events.empty") }}</p>
+      {% if hasFilters %}
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("actions.clear_filters") }}</a></p>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for event in events %}
+        {% set coverImage = event.cover_image or event.coverImage %}
+        {% set categoryName = event.category.name if event.category else (event.category_name or event.categoryName) %}
+        <article
+          class="nexus-alpha-card"
+          data-events-contract-version="{{ event.contract_version or '' }}"
+          data-event-timezone="{{ event.timezone }}"
+          data-event-engagement-state="{{ event.relationship.engagement.state if event.relationship and event.relationship.engagement else '' }}"
+          data-event-registration-state="{{ event.relationship.registration.state if event.relationship and event.relationship.registration else '' }}"
+          data-event-attendance-state="{{ event.relationship.attendance.state if event.relationship and event.relationship.attendance else '' }}">
+          <div class="nexus-alpha-listing-row">
+            {% if coverImage %}
+              <div class="nexus-alpha-listing-row__media">
+                <img class="nexus-alpha-card-thumb" src="{{ coverImage }}" alt="{{ t('events.image_alt', { title: event.title }) }}" width="120" height="90" loading="lazy" decoding="async">
+              </div>
+            {% endif %}
+            <div class="nexus-alpha-listing-row__body">
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+                <a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ event.title }}</a>
+              </h3>
+              <dl class="nexus-alpha-inline-list">
+                {% if event.start_label %}<div><dt>{{ t("events.starts") }}</dt><dd>{{ event.start_label }}{% if event.all_day %} · {{ t("events.all_day") }}{% endif %}</dd></div>{% endif %}
+                {% if event.end_label %}<div><dt>{{ t("events.ends") }}</dt><dd>{{ event.end_label }}</dd></div>{% endif %}
+                <div><dt>{{ t("events.location") }}</dt><dd>{{ event.location_label or t("events.online") }}</dd></div>
+                {% if categoryName %}<div><dt>{{ t("events.category") }}</dt><dd>{{ categoryName }}</dd></div>{% endif %}
+              </dl>
+              {% if event.description %}<p class="govuk-body govuk-!-margin-top-3">{{ event.description | striptags | truncate(220) }}</p>{% endif %}
+              <p class="govuk-body-s nexus-alpha-meta">
+                {{ tc("events.attendees", event.attendee_count, { count: event.attendee_count }) }}
+                {% if event.interested_count %}<br>{{ tc("events.interested", event.interested_count, { count: event.interested_count }) }}{% endif %}
+              </p>
+              <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("actions.view_details") }}</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if pagination.hasMore and pagination.cursor %}
+      <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('events.pagination_label') }}">
+        <div class="govuk-pagination__next">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/events?when=' + when + '&near=' + near + ('&q=' + (searchQuery | urlencode) if searchQuery else '') + ('&category_id=' + categoryId if categoryId else '') + ('&step_free=' + stepFree if stepFree != 'any' else '') + '&cursor=' + (pagination.cursor | urlencode)) }}" rel="next">
+            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
+            <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span><span class="govuk-visually-hidden">:</span>
+            <span class="govuk-pagination__link-label">{{ t("events.more_results_label") }}</span>
+          </a>
+        </div>
+      </nav>
+    {% endif %}
+  {% endif %}
+  {% endif %}
+{% endblock %}

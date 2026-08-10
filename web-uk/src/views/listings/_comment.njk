@@ -1,0 +1,17 @@
+<li class="nexus-alpha-comment">
+  <p class="govuk-body govuk-!-margin-bottom-1">{{ comment.content }}</p>
+  {% set meta = [] %}
+  {% if comment.authorName %}{% set meta = meta.concat([comment.authorName]) %}{% endif %}
+  {% if comment.createdAtLabel %}{% set meta = meta.concat([comment.createdAtLabel]) %}{% endif %}
+  {% if comment.edited %}{% set meta = meta.concat([t("govuk_alpha_listings.comments.edited")]) %}{% endif %}
+  {% if meta.length %}
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ meta | join(" · ") }}</p>
+  {% endif %}
+  {% if comment.replies.length %}
+    <ul class="govuk-list nexus-alpha-comments-list--nested">
+      {% for comment in comment.replies %}
+        {% include "listings/_comment.njk" %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+</li>

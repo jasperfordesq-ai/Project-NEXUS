@@ -1,0 +1,81 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set organisationName = organisation.name or t("govuk_alpha_organisations.jobs.title") %}
+
+{% block head %}
+  {{ super() }}
+  <script type="application/ld+json">{{ organisationStructuredData | safe }}</script>
+{% endblock %}
+
+{% block mainContent %}
+  {% if organisation.id %}
+    <a class="govuk-back-link" href="{{ urlFor('/organisations/' + (organisation.id | string)) }}">{{ organisationName }}</a>
+  {% else %}
+    <a class="govuk-back-link" href="{{ urlFor('/organisations/browse') }}">{{ t("govuk_alpha_organisations.common.back_to_organisations") }}</a>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.jobs.heading", { name: organisationName }) }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_organisations.jobs.description") }}</p>
+
+  {% if jobs and jobs.length %}
+    <p class="govuk-body">
+      {% if jobs.length == 1 %}
+        {{ tc("govuk_alpha_organisations.jobs.count", jobs.length, { count: formatLocaleNumber(jobs.length) }) }}
+      {% else %}
+        {{ tc("govuk_alpha_organisations.jobs.count", jobs.length, { count: formatLocaleNumber(jobs.length) }) }}
+      {% endif %}
+    </p>
+
+    <div class="nexus-alpha-card-list">
+      {% for job in jobs %}
+        {% if job.id %}
+          <article class="nexus-alpha-card">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+              <a class="govuk-link" href="{{ urlFor('/jobs/' + (job.id | string)) }}">{{ job.title or t("govuk_alpha_organisations.jobs.title") }}</a>
+            </h2>
+
+            <dl class="nexus-alpha-inline-list nexus-alpha-meta">
+              {% if job.typeLabel %}
+                <div>
+                  <dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.jobs.term_type") }}</dt>
+                  <dd><strong class="govuk-tag {{ job.typeTagClass }}">{{ job.typeLabel }}</strong></dd>
+                </div>
+              {% endif %}
+
+              {% if job.is_remote %}
+                <div>
+                  <dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.jobs.term_location") }}</dt>
+                  <dd>{{ t("govuk_alpha_organisations.jobs.remote") }}</dd>
+                </div>
+              {% elseif job.location %}
+                <div>
+                  <dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.jobs.term_location") }}</dt>
+                  <dd>{{ job.location }}</dd>
+                </div>
+              {% endif %}
+
+              {% if job.deadline %}
+                <div>
+                  <dt class="govuk-visually-hidden">{{ t("govuk_alpha_organisations.jobs.term_deadline") }}</dt>
+                  <dd>{{ t("govuk_alpha_organisations.jobs.closes", { date: job.deadline | date }) }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+
+            <div class="nexus-alpha-actions">
+              <a class="govuk-link" href="{{ urlFor('/jobs/' + (job.id | string)) }}">{{ t("govuk_alpha_organisations.jobs.view_job") }}</a>
+            </div>
+          </article>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_organisations.jobs.empty") }}</div>
+  {% endif %}
+{% endblock %}

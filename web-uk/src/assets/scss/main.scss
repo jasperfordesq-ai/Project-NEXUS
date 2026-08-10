@@ -1,0 +1,1899 @@
+// GOV.UK Frontend - all styles
+@use "govuk/index" as *;
+
+// Project NEXUS accessible shell. This mirrors the Laravel Blade accessible
+// frontend's reusable visual layer while keeping this app on Express/Nunjucks.
+.nexus-alpha-header {
+  border-bottom: 10px solid var(--nexus-alpha-header-accent, govuk-colour("blue"));
+  background: var(--nexus-alpha-header-bg, govuk-colour("black"));
+}
+
+.nexus-alpha-header__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: govuk-spacing(3);
+  padding-top: govuk-spacing(3);
+  padding-bottom: govuk-spacing(3);
+}
+
+.nexus-alpha-header__brand,
+.nexus-alpha-header__brand:visited {
+  color: var(--nexus-alpha-header-fg, govuk-colour("white"));
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nexus-alpha-header__brand:focus {
+  color: govuk-colour("black");
+}
+
+.nexus-alpha-header__logo {
+  display: block;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  max-width: 260px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.nexus-alpha-header__logo--wide { max-height: 48px; }
+.nexus-alpha-header__logo--landscape { max-height: 64px; }
+.nexus-alpha-header__logo--square { max-height: 104px; }
+
+.nexus-alpha-header__identity {
+  min-width: 0;
+}
+
+.nexus-alpha-header__disclaimer {
+  margin: govuk-spacing(1) 0 0;
+  color: var(--nexus-alpha-header-fg, govuk-colour("white"));
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.nexus-alpha-header__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(3);
+  justify-content: flex-end;
+}
+
+.nexus-alpha-header__link,
+.nexus-alpha-header__link:visited {
+  color: var(--nexus-alpha-header-fg, govuk-colour("white"));
+  font-weight: 700;
+}
+
+.nexus-alpha-header__link:hover {
+  color: var(--nexus-alpha-header-fg-hover, govuk-colour("black", $variant: "tint-95"));
+}
+
+.nexus-alpha-header__link:focus {
+  color: govuk-colour("black");
+}
+
+.nexus-alpha-lang {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(2);
+}
+
+.nexus-alpha-lang__select {
+  width: auto;
+  min-width: 9rem;
+  margin-bottom: 0;
+}
+
+.nexus-alpha-lang__submit {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+// GOV.UK Frontend gives checkbox hints width: 100% plus inline padding. Keep
+// that padding inside the declared width so long hints cannot create a
+// horizontal scrollbar at the WCAG reflow viewport.
+.govuk-checkboxes__hint {
+  box-sizing: border-box;
+}
+
+// Explicit system colours keep form controls and footer attribution readable
+// when Windows High Contrast or another forced-colour mode is active. System
+// colour keywords follow the user's palette; forced-color-adjust is disabled
+// only for these elements so the declared foreground/background pair remains
+// atomic instead of being partially remapped by the user agent.
+@media screen and (forced-colors: active) {
+  .nexus-alpha-lang__select {
+    border-color: ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+
+  .govuk-footer__meta-custom,
+  .govuk-footer__meta-custom p {
+    background-color: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+}
+
+// GOV.UK Frontend 6 is primarily authored for left-to-right documents. These
+// shell corrections complement the logical inline properties used by the
+// application components below.
+[dir="rtl"] {
+  .nexus-alpha-header,
+  .govuk-service-navigation,
+  .govuk-footer {
+    text-align: start;
+  }
+
+  @include govuk-media-query($until: tablet) {
+    .govuk-service-navigation__item--active {
+      margin-right: -(govuk-spacing(2) + 4px);
+      margin-left: 0;
+      padding-right: govuk-spacing(2);
+      padding-left: 0;
+      border-right-width: 4px;
+      border-left-width: 0;
+    }
+  }
+
+  @include govuk-media-query($from: tablet) {
+    .govuk-service-navigation__item:not(:last-child) {
+      margin-right: 0;
+      margin-left: govuk-spacing(6);
+    }
+  }
+
+  .govuk-footer__inline-list-item {
+    margin-right: 0;
+    margin-left: govuk-spacing(3);
+  }
+}
+
+.nexus-alpha-nav-badge {
+  display: inline-block;
+  margin-inline-start: govuk-spacing(1);
+  min-width: 20px;
+  padding: 0 govuk-spacing(1);
+  border-radius: 10px;
+  background: govuk-colour("blue");
+  color: govuk-colour("white");
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+
+@include govuk-media-query($until: tablet) {
+  .nexus-alpha-header__container {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nexus-alpha-header__links {
+    justify-content: flex-start;
+  }
+
+  .nexus-alpha-lang {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.nexus-alpha-card-list {
+  border-top: 1px solid $govuk-border-colour;
+}
+
+.nexus-alpha-card {
+  padding-top: govuk-spacing(4);
+  padding-bottom: govuk-spacing(4);
+  border-bottom: 1px solid $govuk-border-colour;
+}
+
+.nexus-alpha-module-row {
+  display: flex;
+  justify-content: space-between;
+  gap: govuk-spacing(4);
+}
+
+.nexus-alpha-module-row .govuk-tag {
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+@include govuk-media-query($until: tablet) {
+  .nexus-alpha-module-row {
+    display: block;
+  }
+
+  .nexus-alpha-module-row .govuk-tag {
+    margin-top: govuk-spacing(2);
+  }
+}
+
+.nexus-alpha-meta {
+  color: $govuk-secondary-text-colour;
+}
+
+.nexus-alpha-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: govuk-spacing(3);
+  margin-bottom: govuk-spacing(6);
+}
+
+.nexus-alpha-stat {
+  padding: govuk-spacing(3);
+  border: 1px solid $govuk-border-colour;
+}
+
+.nexus-alpha-stat dt {
+  @include govuk-font($size: 16);
+  color: $govuk-secondary-text-colour;
+}
+
+.nexus-alpha-stat dd {
+  @include govuk-font($size: 36, $weight: bold);
+  margin: govuk-spacing(1) 0 0;
+}
+
+.nexus-alpha-actions,
+.nexus-alpha-skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.nexus-alpha-card-thumb {
+  display: block;
+  max-width: 120px;
+  height: auto;
+  margin-top: govuk-spacing(2);
+}
+
+.nexus-alpha-detail-hero {
+  margin: govuk-spacing(4) 0;
+}
+
+.nexus-alpha-detail-hero img {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  border: 1px solid $govuk-border-colour;
+}
+
+.nexus-alpha-thumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(3);
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.nexus-alpha-thumb-list img {
+  display: block;
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border: 1px solid $govuk-border-colour;
+}
+
+.nexus-alpha-summary {
+  display: flex;
+  gap: govuk-spacing(3);
+  align-items: flex-start;
+}
+
+.nexus-alpha-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: govuk-colour("black", $variant: "tint-95");
+  color: $govuk-text-colour;
+  font-weight: bold;
+}
+
+.nexus-alpha-avatar--small {
+  width: 32px;
+  height: 32px;
+  margin-inline-end: govuk-spacing(1);
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.nexus-alpha-avatar--large {
+  width: 64px;
+  height: 64px;
+}
+
+.nexus-alpha-share-url {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.nexus-alpha-table-scroll {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  contain: inline-size layout paint;
+  overflow: auto hidden;
+  overscroll-behavior-inline: contain;
+}
+
+.nexus-alpha-table-scroll .govuk-table {
+  min-width: 36rem;
+}
+
+.nexus-alpha-linkform {
+  display: inline;
+}
+
+.nexus-alpha-linkbutton {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+// Fix header border: put it on the full-width header element, not the container
+.govuk-header {
+  border-bottom: govuk-spacing(2) solid $govuk-brand-colour;
+}
+
+.govuk-header__container {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+// Disclaimer text in header (right side)
+.app-header__disclaimer {
+  @include govuk-font($size: 16);
+  color: govuk-colour("white");
+  opacity: 0.8;
+
+  &--desktop {
+    @include govuk-media-query($until: tablet) {
+      display: none;
+    }
+  }
+}
+
+// Mobile navigation
+.app-header__menu-button {
+  @include govuk-font($size: 16, $weight: bold);
+  display: none;
+  background-color: transparent;
+  border: 0;
+  color: govuk-colour("white");
+  cursor: pointer;
+  padding: govuk-spacing(2) govuk-spacing(3);
+  position: absolute;
+  inset-inline-end: 0;
+  top: govuk-spacing(2);
+
+  &::after {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 6px 0 6px;
+    border-color: govuk-colour("white") transparent transparent transparent;
+    margin-inline-start: govuk-spacing(1);
+    vertical-align: middle;
+  }
+
+  &--open::after {
+    border-width: 0 6px 8px 6px;
+    border-color: transparent transparent govuk-colour("white") transparent;
+  }
+
+  @include govuk-media-query($until: tablet) {
+    display: block;
+  }
+}
+
+.app-header__navigation {
+  @include govuk-media-query($until: tablet) {
+    &[aria-hidden="true"] {
+      display: none;
+    }
+
+    &[aria-hidden="false"] {
+      display: block;
+      clear: both;
+      padding-top: govuk-spacing(4);
+    }
+
+    .govuk-header__navigation-list {
+      flex-direction: column;
+    }
+
+    .govuk-header__navigation-item {
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding: govuk-spacing(2) 0;
+    }
+  }
+}
+
+// Show notification text on mobile
+.app-header__notification-text {
+  @include govuk-visually-hidden;
+
+  @include govuk-media-query($until: tablet) {
+    @include govuk-visually-hidden-focusable;
+    position: static;
+    clip: auto;
+    clip-path: none;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    white-space: normal;
+  }
+}
+
+// Adjust notification badge on mobile
+@include govuk-media-query($until: tablet) {
+  .app-header__notification-badge {
+    position: static;
+    margin-inline-start: govuk-spacing(1);
+  }
+}
+
+// Logout button styled as header link
+.app-header__logout-button {
+  @include govuk-font($size: 16);
+  background: none;
+  border: none;
+  color: govuk-colour("white");
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    text-decoration-thickness: govuk-spacing(1);
+  }
+}
+
+// Destructive link style for delete actions
+.app-link--destructive {
+  color: $govuk-error-colour;
+
+  &:hover {
+    color: govuk-shade($govuk-error-colour, 20%);
+  }
+
+  &:focus {
+    color: $govuk-focus-text-colour;
+  }
+}
+
+// Filter form alignment
+.app-filter-form {
+  .app-filter-buttons {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: govuk-spacing(3);
+  }
+}
+
+// Dashboard cards
+.app-card {
+  background: govuk-colour("white");
+  border: 1px solid $govuk-border-colour;
+  padding: govuk-spacing(4);
+  margin-bottom: govuk-spacing(4);
+}
+
+// Positive/negative text for transactions
+.app-text--positive {
+  color: govuk-colour("green");
+  font-weight: bold;
+}
+
+.app-text--negative {
+  color: $govuk-error-colour;
+  font-weight: bold;
+}
+
+// Conversation list styling
+.app-conversation-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-conversation-item {
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &--unread {
+    background-color: govuk-tint(govuk-colour("blue"), 95%);
+  }
+}
+
+.app-conversation-link {
+  display: block;
+  padding: govuk-spacing(3);
+  text-decoration: none;
+  position: relative;
+
+  &:hover {
+    background-color: govuk-colour("black", $variant: "tint-95");
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
+.app-conversation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.app-conversation-badge {
+  position: absolute;
+  top: govuk-spacing(3);
+  inset-inline-end: govuk-spacing(3);
+}
+
+// Message thread styling
+.app-messages-container {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: govuk-spacing(3);
+  background: govuk-colour("black", $variant: "tint-95");
+  border: 1px solid $govuk-border-colour;
+}
+
+.app-message {
+  background: govuk-colour("white");
+  border: 1px solid $govuk-border-colour;
+  padding: govuk-spacing(3);
+  margin-bottom: govuk-spacing(3);
+  max-width: 80%;
+
+  &--own {
+    margin-inline-start: auto;
+    background: govuk-tint(govuk-colour("blue"), 90%);
+  }
+}
+
+.app-message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-message-body {
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Notification badge in header
+.app-header__notification-item {
+  position: relative;
+}
+
+.app-header__notification-link {
+  position: relative;
+  display: inline-block;
+}
+
+.app-header__notification-icon {
+  font-size: 1.2em;
+}
+
+.app-header__notification-badge {
+  position: absolute;
+  top: -6px;
+  inset-inline-end: -8px;
+  background-color: $govuk-error-colour;
+  color: govuk-colour("white");
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+// Notification list
+.app-notification-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-notification-item {
+  border-bottom: 1px solid $govuk-border-colour;
+  padding: govuk-spacing(3) 0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &--unread {
+    background-color: govuk-tint(govuk-colour("blue"), 95%);
+    margin-inline: govuk-spacing(-3);
+    padding-inline: govuk-spacing(3);
+  }
+}
+
+.app-notification-content {
+  display: flex;
+  align-items: flex-start;
+  gap: govuk-spacing(3);
+}
+
+.app-notification-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 50%;
+}
+
+.app-notification-body {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.app-notification-badge {
+  vertical-align: middle;
+  margin-inline-start: govuk-spacing(1);
+}
+
+.app-notification-time {
+  color: $govuk-secondary-text-colour;
+}
+
+.app-notification-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.app-notification-filters {
+  display: flex;
+  align-items: center;
+}
+
+.app-link--active {
+  font-weight: bold;
+}
+
+// Link-styled button (for form submissions that look like links)
+.app-link-button {
+  @include govuk-font($size: 16);
+  background: none;
+  border: none;
+  color: $govuk-link-colour;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: $govuk-link-hover-colour;
+    text-decoration-thickness: max(3px, .1875rem, .12em);
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+
+  &--warning {
+    color: $govuk-error-colour;
+
+    &:hover {
+      color: govuk-shade($govuk-error-colour, 20%);
+    }
+  }
+}
+
+// Loading spinner
+// Loading states
+.app-loading {
+  text-align: center;
+  padding: govuk-spacing(6) 0;
+
+  &--inline {
+    display: flex;
+    align-items: center;
+    gap: govuk-spacing(2);
+    text-align: start;
+    padding: govuk-spacing(3) 0;
+  }
+}
+
+.app-loading__spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto govuk-spacing(3);
+  border: 4px solid govuk-colour("black", $variant: "tint-95");
+  border-top-color: $govuk-brand-colour;
+  border-radius: 50%;
+  animation: app-spin 1s linear infinite;
+  display: block;
+
+  .app-loading--inline & {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border-width: 3px;
+    flex-shrink: 0;
+  }
+
+  &--large {
+    width: 60px;
+    height: 60px;
+    border-width: 5px;
+  }
+}
+
+@keyframes app-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Respect user preference for reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .app-loading__spinner,
+  .app-button__spinner {
+    animation: none;
+  }
+
+  // Show static indicator instead of spinner
+  .app-loading__spinner {
+    border-top-color: $govuk-brand-colour;
+    opacity: 0.7;
+  }
+
+  .app-button__spinner {
+    border-top-color: govuk-colour("white");
+    opacity: 0.7;
+  }
+
+  // Disable all transitions for users who prefer reduced motion
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+.app-loading__text {
+  color: $govuk-secondary-text-colour;
+}
+
+// Button loading state
+.app-button--loading {
+  position: relative;
+  pointer-events: none;
+
+  .app-button__spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-inline-end: govuk-spacing(2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: govuk-colour("white");
+    border-radius: 50%;
+    animation: app-spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+
+  .app-button__text {
+    vertical-align: middle;
+  }
+}
+
+// Full page loading overlay
+.app-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-loading-overlay__content {
+  text-align: center;
+}
+
+body.app-loading-overlay--active {
+  overflow: hidden;
+}
+
+// Empty state
+.app-empty-state {
+  text-align: center;
+  padding: govuk-spacing(6) govuk-spacing(3);
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 4px;
+}
+
+.app-empty-state__icon {
+  font-size: 48px;
+  margin-bottom: govuk-spacing(3);
+}
+
+.app-empty-state__heading {
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-empty-state__message {
+  color: $govuk-secondary-text-colour;
+  max-width: 400px;
+  margin-inline: auto;
+}
+
+// Pagination component
+.app-pagination {
+  margin-top: govuk-spacing(6);
+}
+
+// Search form
+.app-search-form {
+  display: flex;
+  align-items: flex-end;
+  gap: govuk-spacing(2);
+  flex-wrap: wrap;
+
+  .govuk-form-group {
+    margin-bottom: 0;
+  }
+}
+
+.app-search-form__input {
+  max-width: 300px;
+}
+
+.app-search-form__button {
+  flex-shrink: 0;
+}
+
+// User avatar/initials
+.app-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: $govuk-brand-colour;
+  color: govuk-colour("white");
+  font-weight: bold;
+  font-size: 16px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+
+  &--small {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  &--large {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+  }
+}
+
+// Member card in table with avatar
+.app-member-cell {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(2);
+}
+
+// Header badges container
+.app-header__badges {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(1);
+}
+
+// Card grid layout for groups/events
+.app-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: govuk-spacing(4);
+}
+
+.app-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: govuk-spacing(2);
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-card__body {
+  flex-grow: 1;
+}
+
+.app-card__footer {
+  margin-top: govuk-spacing(3);
+  padding-top: govuk-spacing(3);
+  border-top: 1px solid $govuk-border-colour;
+}
+
+.app-card__description {
+  color: $govuk-secondary-text-colour;
+}
+
+.app-card--muted {
+  opacity: 0.7;
+}
+
+.app-card--clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: govuk-tint($govuk-brand-colour, 95%);
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
+.app-card--warning {
+  border-inline-start: 4px solid $govuk-error-colour;
+}
+
+// Page header with actions
+.app-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: govuk-spacing(3);
+  margin-bottom: govuk-spacing(4);
+}
+
+.app-page-header__actions {
+  flex-shrink: 0;
+}
+
+// Sub navigation
+.app-sub-nav {
+  display: flex;
+  gap: govuk-spacing(4);
+  flex-wrap: wrap;
+}
+
+// Search bar
+.app-search-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: govuk-spacing(2);
+  flex-wrap: wrap;
+
+  .govuk-form-group {
+    margin-bottom: 0;
+    flex-grow: 1;
+    max-width: 400px;
+  }
+}
+
+.app-search-bar__input {
+  width: 100%;
+}
+
+.app-search-bar__button {
+  flex-shrink: 0;
+}
+
+// Sidebar card
+.app-sidebar-card {
+  background: govuk-colour("black", $variant: "tint-95");
+  padding: govuk-spacing(4);
+}
+
+// Attendee list
+.app-attendee-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-attendee-list__item {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(2);
+  padding: govuk-spacing(2) 0;
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// RSVP buttons
+.app-rsvp-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+
+  form {
+    margin: 0;
+  }
+}
+
+// Action buttons
+.app-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+
+  form {
+    margin: 0;
+  }
+}
+
+// Date/time input
+.app-date-time-input {
+  display: flex;
+  gap: govuk-spacing(3);
+  flex-wrap: wrap;
+}
+
+.app-date-time-input__date {
+  flex-grow: 1;
+  max-width: 200px;
+}
+
+.app-date-time-input__time {
+  width: 120px;
+}
+
+// Formatted text
+.app-formatted-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+// Members preview
+.app-members-preview {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(1);
+  flex-wrap: wrap;
+}
+
+.app-members-preview__avatars {
+  display: flex;
+  margin-inline-end: govuk-spacing(1);
+
+  .app-avatar {
+    margin-inline-start: -8px;
+    border: 2px solid govuk-colour("white");
+
+    &:first-child {
+      margin-inline-start: 0;
+    }
+  }
+}
+
+// Stats row
+.app-stats-row {
+  display: flex;
+  gap: govuk-spacing(6);
+  flex-wrap: wrap;
+}
+
+.app-stat {
+  text-align: center;
+}
+
+.app-stat__value {
+  display: block;
+  font-size: 2em;
+  font-weight: bold;
+  color: $govuk-text-colour;
+}
+
+.app-stat__label {
+  color: $govuk-secondary-text-colour;
+}
+
+// Session timeout warning modal
+.app-timeout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.app-timeout-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.app-timeout-modal__container {
+  position: relative;
+  background: govuk-colour("white");
+  max-width: 500px;
+  width: 90%;
+  margin: govuk-spacing(4);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.app-timeout-modal__content {
+  padding: govuk-spacing(6);
+}
+
+// Prevent body scroll when modal is open
+body.app-timeout-modal--open {
+  overflow: hidden;
+}
+
+// Social Feed styles
+.app-feed {
+  display: flex;
+  flex-direction: column;
+  gap: govuk-spacing(4);
+}
+
+.app-post {
+  background: govuk-colour("white");
+  border: 1px solid $govuk-border-colour;
+  padding: govuk-spacing(4);
+}
+
+.app-post--pinned {
+  border-inline-start: 4px solid govuk-colour("yellow");
+}
+
+.app-post--detail {
+  margin-bottom: govuk-spacing(6);
+}
+
+.app-post__pinned-badge {
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-post__header {
+  margin-bottom: govuk-spacing(3);
+}
+
+.app-post__author {
+  display: flex;
+  align-items: flex-start;
+  gap: govuk-spacing(2);
+}
+
+.app-post__author-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-post__meta {
+  color: $govuk-secondary-text-colour;
+}
+
+.app-post__content {
+  margin-bottom: govuk-spacing(3);
+}
+
+.app-post__content--full {
+  .govuk-body {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+}
+
+.app-post__image {
+  max-width: 100%;
+  height: auto;
+  margin-top: govuk-spacing(3);
+  border: 1px solid $govuk-border-colour;
+}
+
+.app-post__image--large {
+  max-height: 500px;
+  object-fit: contain;
+}
+
+.app-post__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+  padding-top: govuk-spacing(3);
+  border-top: 1px solid $govuk-border-colour;
+}
+
+.app-post__actions {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(4);
+}
+
+.app-post__action-form {
+  display: inline;
+}
+
+.app-post__action-button {
+  color: $govuk-secondary-text-colour;
+  text-decoration: none;
+
+  &:hover {
+    color: $govuk-text-colour;
+  }
+
+  &--active {
+    color: $govuk-error-colour;
+
+    &:hover {
+      color: govuk-shade($govuk-error-colour, 20%);
+    }
+  }
+}
+
+.app-post__owner-actions {
+  display: flex;
+  gap: govuk-spacing(3);
+}
+
+// Filter row
+.app-filter-row {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+}
+
+// Comments
+.app-comments {
+  margin-top: govuk-spacing(6);
+}
+
+.app-comment-form {
+  background: govuk-colour("black", $variant: "tint-95");
+  padding: govuk-spacing(4);
+}
+
+.app-comment-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-comment {
+  padding: govuk-spacing(3) 0;
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.app-comment__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-comment__author {
+  display: flex;
+  align-items: flex-start;
+  gap: govuk-spacing(2);
+}
+
+.app-comment__author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-comment__meta {
+  color: $govuk-secondary-text-colour;
+}
+
+.app-comment__content {
+  margin-inline-start: govuk-spacing(7); // Align with text after avatar
+}
+
+.app-comment__actions {
+  flex-shrink: 0;
+}
+
+// Report link styling
+.app-report-link {
+  color: $govuk-secondary-text-colour;
+
+  &:hover,
+  &:focus {
+    color: $govuk-link-colour;
+  }
+}
+
+// Activity feed on dashboard
+.app-activity-feed {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: govuk-spacing(3);
+  padding: govuk-spacing(3) 0;
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &--unread {
+    background-color: govuk-tint(govuk-colour("blue"), 95%);
+    margin-inline: govuk-spacing(-3);
+    padding-inline: govuk-spacing(3);
+  }
+}
+
+.app-activity-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 50%;
+}
+
+.app-activity-content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.app-activity-time {
+  display: block;
+  color: $govuk-secondary-text-colour;
+  margin-top: govuk-spacing(1);
+}
+
+// Gamification styles
+.app-level-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, $govuk-brand-colour 0%, govuk-shade($govuk-brand-colour, 30%) 100%);
+  color: govuk-colour("white");
+  border-radius: 50%;
+  font-weight: bold;
+
+  &--small {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  &--medium {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+  }
+
+  &--large {
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
+  }
+
+  &--centered {
+    margin: 0 auto;
+  }
+}
+
+.app-level-badge__number {
+  line-height: 1;
+}
+
+.app-level-badge__label {
+  font-size: 10px;
+  font-weight: normal;
+  text-transform: uppercase;
+  opacity: 0.9;
+
+  .app-level-badge--small & {
+    display: none;
+  }
+
+  .app-level-badge--medium & {
+    font-size: 8px;
+  }
+}
+
+// Progress card
+.app-progress-card {
+  background-color: govuk-colour("black", $variant: "tint-95");
+  padding: govuk-spacing(4);
+  border-radius: 4px;
+}
+
+.app-progress-card__header {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(4);
+  margin-bottom: govuk-spacing(4);
+}
+
+.app-progress-card__stats {
+  flex: 1;
+}
+
+.app-progress-card__body {
+  border-top: 1px solid $govuk-border-colour;
+  padding-top: govuk-spacing(3);
+}
+
+// XP progress bar
+.app-xp-bar__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: $govuk-secondary-text-colour;
+  margin-bottom: govuk-spacing(1);
+}
+
+.app-xp-bar__track {
+  height: 8px;
+  background-color: govuk-colour("white");
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.app-xp-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, $govuk-brand-colour 0%, govuk-colour("blue") 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+// Stat cards (for gamification links)
+.app-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: govuk-spacing(4);
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 4px;
+  text-decoration: none;
+  color: $govuk-text-colour;
+  transition: background-color 0.15s ease;
+  min-height: 120px;
+
+  &:hover,
+  &:focus {
+    background-color: govuk-shade(govuk-colour("black", $variant: "tint-95"), 10%);
+    color: $govuk-link-colour;
+  }
+}
+
+.app-stat-card__value {
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-stat-card__icon {
+  font-size: 32px;
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-stat-card__label {
+  font-size: 14px;
+  color: $govuk-secondary-text-colour;
+}
+
+// XP list (history)
+.app-xp-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-xp-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: govuk-spacing(3) 0;
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.app-xp-list__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-xp-list__description {
+  display: block;
+  font-weight: bold;
+}
+
+.app-xp-list__time {
+  display: block;
+  color: $govuk-secondary-text-colour;
+  margin-top: govuk-spacing(1);
+}
+
+.app-xp-list__amount {
+  font-weight: bold;
+  white-space: nowrap;
+  margin-inline-start: govuk-spacing(2);
+
+  &--positive {
+    color: govuk-colour("green");
+  }
+
+  &--negative {
+    color: govuk-colour("red");
+  }
+}
+
+.app-xp-amount {
+  font-weight: bold;
+
+  &--positive {
+    color: govuk-colour("green");
+  }
+
+  &--negative {
+    color: govuk-colour("red");
+  }
+}
+
+// Badge grid
+.app-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: govuk-spacing(3);
+
+  &--compact {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+.app-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: govuk-spacing(3);
+  padding: govuk-spacing(3);
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 4px;
+  position: relative;
+
+  .app-badge-grid--compact & {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  &--locked {
+    opacity: 0.5;
+
+    .app-badge__icon {
+      filter: grayscale(100%);
+    }
+  }
+
+  &--earned {
+    background-color: govuk-tint(govuk-colour("green"), 90%);
+    border: 2px solid govuk-colour("green");
+  }
+}
+
+.app-badge__icon {
+  font-size: 32px;
+  flex-shrink: 0;
+
+  .app-badge-grid--compact & {
+    font-size: 40px;
+  }
+}
+
+.app-badge__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-badge__name {
+  display: block;
+  font-weight: bold;
+  margin-bottom: govuk-spacing(1);
+}
+
+.app-badge__description {
+  display: block;
+  font-size: 14px;
+  color: $govuk-secondary-text-colour;
+}
+
+.app-badge__earned-date {
+  display: block;
+  font-size: 12px;
+  color: govuk-colour("green");
+  margin-top: govuk-spacing(1);
+}
+
+.app-badge__reward {
+  display: block;
+  font-size: 12px;
+  color: $govuk-brand-colour;
+  font-weight: bold;
+  margin-top: govuk-spacing(1);
+}
+
+.app-badge__check {
+  position: absolute;
+  top: govuk-spacing(2);
+  inset-inline-end: govuk-spacing(2);
+  width: 24px;
+  height: 24px;
+  background-color: govuk-colour("green");
+  color: govuk-colour("white");
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+
+  .app-badge-grid--compact & {
+    top: govuk-spacing(1);
+    inset-inline-end: govuk-spacing(1);
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+}
+
+// Badge summary progress
+.app-badge-summary {
+  padding: govuk-spacing(3);
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 4px;
+}
+
+.app-badge-summary__bar {
+  height: 12px;
+  background-color: govuk-colour("white");
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-badge-summary__fill {
+  height: 100%;
+  background: linear-gradient(90deg, govuk-colour("green") 0%, govuk-colour("teal", $variant: "primary") 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+// Leaderboard table
+.app-leaderboard-table__rank {
+  width: 60px;
+  text-align: center;
+}
+
+.app-leaderboard-medal {
+  font-size: 24px;
+}
+
+.app-leaderboard-rank {
+  font-size: 18px;
+  font-weight: bold;
+  color: $govuk-secondary-text-colour;
+}
+
+.app-leaderboard-table__row--current {
+  background-color: govuk-tint(govuk-colour("blue"), 90%);
+}
+
+.app-leaderboard-position {
+  padding: govuk-spacing(3);
+  background-color: govuk-tint(govuk-colour("blue"), 90%);
+  border-inline-start: 4px solid $govuk-brand-colour;
+}
+
+// XP summary (for xp history page)
+.app-xp-summary {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(4);
+  padding: govuk-spacing(4);
+  background-color: govuk-colour("black", $variant: "tint-95");
+  border-radius: 4px;
+}
+
+.app-xp-summary__stats {
+  flex: 1;
+}
+
+// Dashboard level display
+.app-dashboard-level {
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(3);
+}
+
+.app-dashboard-level__stats {
+  flex: 1;
+}
+
+// Text alignment utility
+.govuk-\!-text-align-centre {
+  text-align: center;
+}
+
+// Secondary text colour
+.app-text--secondary {
+  color: $govuk-secondary-text-colour;
+}
+
+// Member level display on profile
+.app-member-level {
+  display: flex;
+  align-items: center;
+  margin-top: govuk-spacing(1);
+}
+
+// Star rating input component
+.app-star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.app-star-rating__input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.app-star-rating__label {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.app-star-rating__label:hover {
+  transform: scale(1.1);
+}
+
+.app-star-rating__star {
+  fill: #b1b4b6;
+  transition: fill 0.15s ease;
+}
+
+// Highlight stars on hover and when selected (using reverse order trick)
+.app-star-rating__input:checked ~ .app-star-rating__label .app-star-rating__star,
+.app-star-rating__label:hover .app-star-rating__star,
+.app-star-rating__label:hover ~ .app-star-rating__label .app-star-rating__star {
+  fill: #ffbf00;
+}
+
+.app-star-rating__input:focus + .app-star-rating__label {
+  outline: 3px solid $govuk-focus-colour;
+  outline-offset: 2px;
+}
+
+// Star display (read-only)
+.app-star-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.app-star-display__star {
+  fill: #b1b4b6;
+}
+
+.app-star-display__star--filled {
+  fill: #ffbf00;
+}
+
+// Reviews list
+.app-reviews-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-review {
+  padding-bottom: govuk-spacing(4);
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.app-review__header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: govuk-spacing(1);
+}
+
+// Search results styling
+.app-search-result {
+  padding: govuk-spacing(3);
+  border-inline-start: 4px solid govuk-colour("black", $variant: "tint-95");
+  background-color: govuk-colour("white");
+
+  &:hover {
+    border-inline-start-color: $govuk-brand-colour;
+    background-color: govuk-tint($govuk-brand-colour, 95%);
+  }
+}
+
+.app-search-result__description {
+  color: $govuk-secondary-text-colour;
+}
+.nexus-alpha-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &:focus {
+    outline: 3px solid govuk-colour("yellow");
+    outline-offset: 0;
+  }
+}

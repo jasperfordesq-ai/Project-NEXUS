@@ -1,0 +1,39 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/search/advanced') }}">{{ t("govuk_alpha_search.back_to_search") }}</a>
+
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_search.saved.delete_title") }}</h1>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_search.saved.delete_summary") }}</dt>
+      <dd class="govuk-summary-list__value">
+        <strong>{{ savedSearch.name }}</strong>
+        {% if savedSearch.query %}
+          <br><span class="nexus-alpha-meta">{{ savedSearch.query }}</span>
+        {% endif %}
+      </dd>
+    </div>
+  </dl>
+
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("govuk_alpha_search.states.error_title") }}</span>
+      {{ t("govuk_alpha_search.saved.delete_warning") }}
+    </strong>
+  </div>
+
+  <div class="govuk-button-group">
+    <form method="post" action="{{ urlFor('/search/saved/' + (savedSearch.id | string) + '/delete') }}" class="govuk-!-display-inline">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_search.saved.delete_confirm") }}</button>
+    </form>
+    <a class="govuk-link" href="{{ urlFor('/search/advanced') }}">{{ t("govuk_alpha_search.saved.delete_cancel") }}</a>
+  </div>
+{% endblock %}

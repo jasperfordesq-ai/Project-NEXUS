@@ -6,7 +6,7 @@
 
 return [
     'opens_new_tab' => '(新しいタブで開きます)',
-    'service_name' => 'プロジェクト NEXUS にアクセス可能',
+    'service_name' => 'Project NEXUS Accessible',
     'phase' => 'ベータ版',
     'feedback' => 'フィードバックを送信する',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20フィードバック',

@@ -1,0 +1,44 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/leaderboard') }}">{{ t("govuk_alpha_gamification.common.back_to_leaderboard") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.spotlight.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.spotlight.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.spotlight.description") }}</p>
+
+  {% set gamificationNavGroup = "leaderboard" %}
+  {% set gamificationActiveTab = "spotlight" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if not spotlightMembers.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.spotlight.empty") }}</p>
+    </div>
+  {% else %}
+    <ul class="nexus-alpha-card-list govuk-list">
+      {% for member in spotlightMembers %}
+        <li class="nexus-alpha-card govuk-!-margin-bottom-4">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ member.name }}</h2>
+          <p class="govuk-body-s nexus-alpha-meta">
+            {{ member.levelLabel }} &middot; {{ member.xpLabel }}
+            {% if member.memberSince %} &middot; {{ t("govuk_alpha_gamification.spotlight.member_since", { date: member.memberSince }) }}{% endif %}
+          </p>
+          {% if member.bio %}
+            <p class="govuk-body">{{ member.bio }}</p>
+          {% endif %}
+          {% if member.recentActivity %}
+            <p class="govuk-body-s">{{ member.recentActivity }}</p>
+          {% endif %}
+          {% if member.href %}
+            <a class="govuk-link" href="{{ urlFor(member.href) }}">{{ t("govuk_alpha_gamification.spotlight.view_profile") }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

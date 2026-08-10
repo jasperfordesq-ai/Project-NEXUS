@@ -1,0 +1,62 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/' + (map.id | string)) }}">{{ t("govuk_alpha_events.common.back_to_event") }}</a>
+
+  <span class="govuk-caption-l">{{ map.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.map.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_events.map.intro") }}</p>
+
+  {% if map.hasCoordinates %}
+    {% if map.location %}
+      <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.map.address_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ map.location }}</dd>
+        </div>
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.map.coordinates_label") }}</dt>
+          <dd class="govuk-summary-list__value">{{ map.latText }}, {{ map.lngText }}</dd>
+        </div>
+      </dl>
+    {% endif %}
+
+    <figure class="nexus-alpha-detail-hero govuk-!-margin-bottom-4">
+      <iframe
+        title="{{ t('govuk_alpha_events.map.static_map_alt', { title: map.title }) }}"
+        src="{{ map.embedUrl }}"
+        width="100%"
+        height="360"
+        style="border:1px solid #b1b4b6;max-width:100%;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </figure>
+
+    <div class="govuk-button-group">
+      <a class="govuk-link" href="{{ map.viewUrl }}" rel="noopener noreferrer" target="_blank">{{ t("govuk_alpha_events.map.view_on_map_link") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a>
+      <a class="govuk-link" href="{{ map.directionsUrl }}" rel="noopener noreferrer" target="_blank">{{ t("govuk_alpha_events.map.directions_link") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span></a>
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_events.map.no_location_heading") }}</h2>
+      {% if map.isOnline %}
+        <p class="govuk-body">{{ t("govuk_alpha_events.map.no_location_online") }}</p>
+      {% else %}
+        <p class="govuk-body">{{ t("govuk_alpha_events.map.no_location_missing") }}</p>
+        {% if map.location %}
+          <p class="govuk-body">{{ t("govuk_alpha_events.map.no_location_address") }}</p>
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.map.address_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ map.location }}</dd>
+            </div>
+          </dl>
+        {% endif %}
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock %}

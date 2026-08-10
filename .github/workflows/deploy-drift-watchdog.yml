@@ -28,7 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          # 🔴 Must be >1. The "newest deployable commit" step below walks back
+          # through history; at depth 1 only HEAD exists, the walk finds nothing
+          # and silently falls back to HEAD — reinstating the exact false-alarm
+          # behaviour this change removes, with no error to show for it.
+          # 250 covers the 200-commit bounded walk with room to spare.
+          fetch-depth: 250
 
       - name: Fetch version.php from production
         id: prod
@@ -56,12 +61,55 @@ jobs:
           echo "prod_commit=${PROD_COMMIT}" >> "$GITHUB_OUTPUT"
           echo "prod_commit_short=${PROD_COMMIT:0:8}" >> "$GITHUB_OUTPUT"
 
-      - name: Get latest commit on main
+      # 🔴 Compares against the newest DEPLOYABLE commit, not simply HEAD.
+      #
+      # Production only ever ships Laravel and React. Once the platform monorepo
+      # lands on main, a commit touching ONLY aspnet-backend/ or web-uk/ — or
+      # only documentation — leaves production legitimately behind HEAD with
+      # nothing to deploy. Comparing against bare HEAD would then raise
+      # "production is behind, run a deploy" every 10 minutes, for ever, about
+      # work that production must never receive.
+      #
+      # That matters more than the noise: this watchdog is the ONLY thing
+      # proving production runs what the code says. An alarm that cries wolf
+      # gets muted, and muting it removes the proof.
+      #
+      # So walk back from HEAD to the newest commit that changed something
+      # production actually deploys. If prod matches THAT, there is no drift.
+      - name: Get latest deployable commit on main
         id: main
         run: |
-          MAIN_COMMIT=$(git rev-parse HEAD)
-          MAIN_TS=$(git log -1 --format=%ct HEAD)
-          MAIN_SUBJECT=$(git log -1 --format=%s HEAD)
+          # Paths whose changes production actually receives. Deliberately
+          # NOT sourced from .github/ci-paths.yml: that file answers "which
+          # CHECKS should wake", which is a broader question than "what does
+          # production ship" (it includes tests/, phpunit.xml, e2e/ and so on).
+          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views accessible-frontend react-frontend artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml"
+
+          MAIN_COMMIT=""
+          # Bounded walk: 200 commits is far more than any realistic gap, and it
+          # terminates rather than scanning the whole history on a fresh clone.
+          for SHA in $(git rev-list --max-count=200 HEAD); do
+            if git show --pretty=format: --name-only "$SHA" -- $DEPLOY_PATHS | grep -q .; then
+              MAIN_COMMIT="$SHA"
+              break
+            fi
+          done
+
+          # Fall back to HEAD rather than reporting nothing. A watchdog that
+          # silently finds no commit is the failure mode this repo keeps hitting.
+          if [ -z "$MAIN_COMMIT" ]; then
+            echo "::warning::No deployable commit found in the last 200; falling back to HEAD."
+            MAIN_COMMIT=$(git rev-parse HEAD)
+          fi
+
+          HEAD_COMMIT=$(git rev-parse HEAD)
+          if [ "$MAIN_COMMIT" != "$HEAD_COMMIT" ]; then
+            SKIPPED=$(git rev-list --count "${MAIN_COMMIT}..${HEAD_COMMIT}")
+            echo "HEAD is ${HEAD_COMMIT:0:8}; newest DEPLOYABLE commit is ${MAIN_COMMIT:0:8} (${SKIPPED} non-deployable commit(s) in between - not drift)."
+          fi
+
+          MAIN_TS=$(git log -1 --format=%ct "$MAIN_COMMIT")
+          MAIN_SUBJECT=$(git log -1 --format=%s "$MAIN_COMMIT")
           echo "main_commit=${MAIN_COMMIT}" >> "$GITHUB_OUTPUT"
           echo "main_commit_short=${MAIN_COMMIT:0:8}" >> "$GITHUB_OUTPUT"
           echo "main_timestamp=${MAIN_TS}" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,82 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/leaderboard') }}">{{ t("govuk_alpha_gamification.common.back_to_leaderboard") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.journey.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.journey.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.journey.description") }}</p>
+
+  {% set gamificationNavGroup = "leaderboard" %}
+  {% set gamificationActiveTab = "journey" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if journey.isEmpty %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.journey.empty") }}</p>
+    </div>
+  {% else %}
+    {% if journey.summaryRows.length %}
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_gamification.journey.summary_heading") }}</h2>
+      <dl class="govuk-summary-list">
+        {% for row in journey.summaryRows %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ row.key }}</dt>
+            <dd class="govuk-summary-list__value">{{ row.value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    {% endif %}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.milestones_heading") }}</h2>
+    {% if journey.milestoneRows.length %}
+      <ul class="govuk-list govuk-list--bullet">
+        {% for milestone in journey.milestoneRows %}
+          <li>{{ milestone }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("govuk_alpha_gamification.journey.no_milestones") }}</p>
+      </div>
+    {% endif %}
+
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.activity_heading") }}</h2>
+    {% if journey.activityRows.length %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.journey.activity_heading") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.journey.month_column") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.journey.activity_column") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in journey.activityRows %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ row.month }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.countLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("govuk_alpha_gamification.journey.no_activity") }}</p>
+      </div>
+    {% endif %}
+
+    {% if journey.badgeRows.length %}
+      <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.badges_heading") }}</h2>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for badge in journey.badgeRows %}
+          <li>{{ badge }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endif %}
+{% endblock %}

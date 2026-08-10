@@ -1,0 +1,17 @@
+{#
+  Report link partial
+  Usage: {% include "partials/report-link.njk" %}
+
+  Required variables:
+  - reportType: 'post', 'comment', 'listing', 'user', 'group', 'event'
+  - reportId: ID of the content to report
+  - returnTo: URL to return to after reporting (optional, defaults to current page)
+#}
+{% if reportType == "listing" %}
+  {% set reportHref = urlFor("/listings/" + (reportId | string) + "/report") %}
+{% else %}
+  {% set reportHref = urlFor("/report-a-problem?return=" + (returnTo | urlencode if returnTo else "")) %}
+{% endif %}
+<a href="{{ reportHref }}" class="govuk-link govuk-body-s app-report-link">
+  {{ t("polish_listings.report_listing_caption") }}
+</a>

@@ -1,0 +1,108 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/leaderboard') }}">{{ t("govuk_alpha_gamification.common.back_to_leaderboard") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.competitive.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.competitive.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.competitive.description") }}</p>
+
+  {% set gamificationNavGroup = "leaderboard" %}
+  {% set gamificationActiveTab = "competitive" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if competitive.season.hasSeason %}
+    <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ t("govuk_alpha_gamification.competitive.season_card_title") }}{% if competitive.season.seasonName %}: {{ competitive.season.seasonName }}{% endif %}</h2>
+      <p class="govuk-body-s nexus-alpha-meta">
+        {{ competitive.season.daysRemainingLabel }} &middot; {{ competitive.season.participantsLabel }}
+      </p>
+      {% if competitive.season.hasUserData %}
+        <p class="govuk-body">{{ t("govuk_alpha_gamification.seasons.your_xp", { xp: competitive.season.xpLabel }) }}</p>
+      {% endif %}
+      <a class="govuk-link" href="{{ urlFor('/leaderboard/seasons') }}">{{ t("govuk_alpha_gamification.competitive.season_view_all") }}</a>
+    </div>
+  {% endif %}
+
+  <form method="get" action="{{ urlFor('/leaderboard/competitive') }}" data-alpha-auto-submit class="govuk-!-margin-bottom-6">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_gamification.competitive.filter_heading") }}</h2>
+      </legend>
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="type">{{ t("govuk_alpha_gamification.competitive.metric_label") }}</label>
+            <select class="govuk-select" id="type" name="type">
+              {% for type in competitive.types %}
+                <option value="{{ type.value }}"{% if type.value == competitive.type %} selected{% endif %}>{{ type.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="period">{{ t("govuk_alpha_gamification.competitive.period_label") }}</label>
+            <select class="govuk-select" id="period" name="period">
+              {% for period in competitive.periods %}
+                <option value="{{ period.value }}"{% if period.value == competitive.period %} selected{% endif %}>{{ period.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_gamification.competitive.apply") }}</button>
+    </fieldset>
+  </form>
+
+  <div class="govuk-inset-text">
+    {% if competitive.hasYourRank %}
+      {{ t("govuk_alpha_gamification.competitive.your_rank", { rank: competitive.yourRank }) }}
+    {% else %}
+      {{ t("govuk_alpha_gamification.competitive.your_rank_none") }}
+    {% endif %}
+  </div>
+
+  {% if competitive.rows.length %}
+    <p class="govuk-body-s nexus-alpha-meta">{{ competitive.countLabel }}</p>
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ competitive.type }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.competitive.rank_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.competitive.member_column") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.competitive.score_column") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in competitive.rows %}
+          <tr class="govuk-table__row {% if row.isCurrentUser %}nexus-alpha-row--active{% endif %}">
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.rank }}</td>
+            <td class="govuk-table__cell">
+              {% if row.href %}
+                <a class="govuk-link" href="{{ urlFor(row.href) }}">{{ row.name }}</a>
+              {% else %}
+                {{ row.name }}
+              {% endif %}
+              {% if row.isCurrentUser %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.common.you") }}</strong>{% endif %}
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.scoreLabel }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if competitive.hasMore %}
+      <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/leaderboard/competitive?type=' + competitive.type + '&period=' + competitive.period + '&limit=' + (competitive.nextLimit | string) + '#leaderboard-end') }}">{{ t("govuk_alpha_gamification.competitive.load_more") }}</a>
+    {% endif %}
+    <span id="leaderboard-end" tabindex="-1"></span>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.competitive.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

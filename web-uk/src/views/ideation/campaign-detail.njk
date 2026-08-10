@@ -1,0 +1,115 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set successStates = ["campaign-updated", "campaign-created", "challenge-unlinked"] %}
+  {% set errorStates = ["campaign-invalid", "campaign-failed"] %}
+  {% set campaignStatusOptions = ["draft", "active", "completed", "archived"] %}
+
+  <a href="{{ urlFor('/ideation/campaigns') }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.campaigns.title") }}</a>
+
+  {% if status in successStates %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="campaign-detail-banner">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="campaign-detail-banner">{{ t("govuk_alpha_ideation.common.success_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha_ideation.states." ~ status) }}</p></div>
+    </div>
+  {% elseif status in errorStates %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_ideation.common.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ t("govuk_alpha_ideation.states." ~ status) }}</li></ul></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_ideation.campaigns.title") }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ campaign.title }}</h1>
+    <strong class="govuk-tag {{ campaign.statusClass }}">{{ t("govuk_alpha_ideation.campaigns.status_" ~ campaign.status) }}</strong>
+  </div>
+
+  {% if campaign.creatorName %}
+    <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_ideation.campaigns.by", { name: campaign.creatorName }) }}</p>
+  {% endif %}
+
+  {% if campaign.description %}
+    <div class="govuk-body-l">{{ campaign.description | nl2br | safe }}</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="challenges">{{ t("govuk_alpha_ideation.campaigns.linked_heading") }}</h2>
+  {% if campaign.challenges and campaign.challenges.length %}
+    <div class="nexus-alpha-card-list">
+      {% for challenge in campaign.challenges %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor('/ideation/' ~ challenge.id) }}">{{ challenge.title }}</a></h3>
+          </div>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ tc("govuk_alpha.ideation.ideas_count", challenge.ideasCount, { count: challenge.ideasCount }) }}</p>
+          {% if ideationIsAdmin %}
+            <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/challenges/' ~ challenge.id ~ '/unlink') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_ideation.campaigns.unlink_aria', { title: challenge.title }) }}">{{ t("govuk_alpha_ideation.campaigns.unlink") }}</button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.campaigns.linked_empty") }}</div>
+  {% endif %}
+
+  {% if ideationIsAdmin %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="edit">{{ t("govuk_alpha_ideation.campaigns.edit_heading") }}</h2>
+    <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if status == 'campaign-invalid' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label" for="campaign_title">{{ t("govuk_alpha_ideation.campaigns.title_label") }}</label>
+        {% if status == "campaign-invalid" %}<p id="campaign_title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.common.error_prefix") }}</span> {{ t("govuk_alpha_ideation.campaigns.title_required") }}</p>{% endif %}
+        <input class="govuk-input" id="campaign_title" name="title" type="text" maxlength="255" value="{{ campaign.title }}"{% if status == "campaign-invalid" %} aria-describedby="campaign_title-error"{% endif %}>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="campaign_description">{{ t("govuk_alpha_ideation.campaigns.description_label") }}</label>
+        <textarea class="govuk-textarea" id="campaign_description" name="description" rows="4" maxlength="5000">{{ campaign.description }}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="campaign_start_date">{{ t("govuk_alpha_ideation.campaigns.start_date_label") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="campaign_start_date" name="start_date" type="text" value="{{ campaign.startDate }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="campaign_end_date">{{ t("govuk_alpha_ideation.campaigns.end_date_label") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="campaign_end_date" name="end_date" type="text" value="{{ campaign.endDate }}">
+      </div>
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_ideation.campaigns.status_label") }}</legend>
+          <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
+            {% for option in campaignStatusOptions %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="edit-campaign-status-{{ option }}" name="campaign_status" type="radio" value="{{ option }}"{% if campaign.status == option %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="edit-campaign-status-{{ option }}">{{ t("govuk_alpha_ideation.campaigns.status_" ~ option) }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_ideation.campaigns.submit_edit") }}</button>
+    </form>
+
+    <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+      <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_ideation.campaigns.delete") }}</span></summary>
+      <div class="govuk-details__text">
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.common.error_prefix") }}</span>{{ t("govuk_alpha_ideation.campaigns.delete_warning") }}</strong>
+        </div>
+        <form method="post" action="{{ urlFor('/ideation/campaigns/' ~ campaign.id ~ '/delete') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_ideation.campaigns.delete_confirm") }}</button>
+        </form>
+      </div>
+    </details>
+  {% endif %}
+{% endblock %}

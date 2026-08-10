@@ -1,0 +1,224 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% macro categoryList(categories, selectedCategory, searchQuery, reorderMode) %}
+  {% for category in categories %}
+    <li>
+      <a class="govuk-link{% if selectedCategory == category.id %} govuk-!-font-weight-bold{% endif %}"
+         {% if selectedCategory == category.id %}aria-current="true"{% endif %}
+         href="{{ urlFor('/resources/library?' + ('q=' + (searchQuery | urlencode) + '&' if searchQuery else '') + 'category_id=' + (category.id | string) + ('&reorder=1' if reorderMode else '')) }}">
+        {{ category.name }}{% if category.resourceCount > 0 %} <span class="nexus-alpha-meta">({{ formatLocaleNumber(category.resourceCount) }})</span>{% endif %}
+      </a>
+      {% if category.children and category.children.length %}
+        <ul class="govuk-list govuk-!-margin-bottom-0 govuk-!-margin-left-3">
+          {{ categoryList(category.children, selectedCategory, searchQuery, reorderMode) }}
+        </ul>
+      {% endif %}
+    </li>
+  {% endfor %}
+{% endmacro %}
+
+{% block mainContent %}
+  {% if status %}
+    {% if status.type == "success" %}
+      {{ govukNotificationBanner({
+        type: "success",
+        titleText: status.title,
+        text: status.message
+      }) }}
+    {% else %}
+      {{ govukErrorSummary({
+        titleText: status.title,
+        errorList: [{ text: status.message, href: "#q" }],
+        attributes: { tabindex: "-1" }
+      }) }}
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_resources.library.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_resources.library.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_resources.library.description") }}</p>
+
+  <div class="govuk-button-group govuk-!-margin-bottom-6">
+    <a class="govuk-button" href="{{ urlFor('/resources/upload') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_resources.actions.upload") }}</a>
+    {% if isAdmin %}
+      {% if reorderMode %}
+        <a class="govuk-link" href="{{ urlFor(reorderOffHref) }}">{{ t("govuk_alpha_resources.actions.reorder_off") }}</a>
+      {% else %}
+        <a class="govuk-link" href="{{ urlFor(reorderOnHref) }}">{{ t("govuk_alpha_resources.actions.reorder_on") }}</a>
+      {% endif %}
+    {% endif %}
+    <a class="govuk-link" href="{{ urlFor('/resources') }}">{{ t("govuk_alpha_resources.library.simple_view_link") }}</a>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-third">
+      <nav class="nexus-alpha-card" aria-label="{{ t('govuk_alpha_resources.categories.heading') }}">
+        <h2 class="govuk-heading-s">{{ t("govuk_alpha_resources.categories.heading") }}</h2>
+        {% set categories = categoryTree if categoryTree and categoryTree.length else flatCategories %}
+        {% if not categories.length %}
+          <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_resources.categories.empty") }}</p>
+        {% else %}
+          <ul class="govuk-list govuk-!-margin-bottom-0">
+            <li>
+              <a class="govuk-link{% if not selectedCategory %} govuk-!-font-weight-bold{% endif %}"
+                 {% if not selectedCategory %}aria-current="true"{% endif %}
+                 href="{{ urlFor('/resources/library' + ('?' + ('q=' + (searchQuery | urlencode) if searchQuery else '') + ('&' if searchQuery and reorderMode else '') + ('reorder=1' if reorderMode else '') if searchQuery or reorderMode else '')) }}">
+                {{ t("govuk_alpha_resources.categories.all") }}
+              </a>
+            </li>
+            {{ categoryList(categories, selectedCategory, searchQuery, reorderMode) }}
+          </ul>
+        {% endif %}
+      </nav>
+    </div>
+
+    <div class="govuk-grid-column-two-thirds">
+      <form method="get" action="{{ urlFor('/resources/library') }}" class="govuk-!-margin-bottom-6">
+        {% if selectedCategory %}
+          <input type="hidden" name="category_id" value="{{ selectedCategory }}">
+        {% endif %}
+        {% if reorderMode %}
+          <input type="hidden" name="reorder" value="1">
+        {% endif %}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="q">{{ t("govuk_alpha_resources.search.label") }}</label>
+          <div id="q-hint" class="govuk-hint">{{ t("govuk_alpha_resources.search.hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ searchQuery }}" aria-describedby="q-hint">
+        </div>
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_resources.search.submit") }}</button>
+          {% if hasFilters %}
+            <a class="govuk-link" href="{{ urlFor(clearHref) }}">{{ t("govuk_alpha_resources.search.clear") }}</a>
+          {% endif %}
+        </div>
+      </form>
+
+      <p class="govuk-body nexus-alpha-result-count" aria-live="polite">{{ resourceCountText }}</p>
+
+      {% if not resources.length %}
+        <div class="govuk-inset-text">
+          <h2 class="govuk-heading-m">{{ t("govuk_alpha_resources.empty.title") }}</h2>
+          <p class="govuk-body">{{ t("govuk_alpha_resources.empty.no_match") if hasFilters else t("govuk_alpha_resources.empty.no_resources") }}</p>
+          <h3 class="govuk-heading-s">{{ t("govuk_alpha_resources.empty.tips_title") }}</h3>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>{{ t("govuk_alpha_resources.empty.tip_guides") }}</li>
+            <li>{{ t("govuk_alpha_resources.empty.tip_templates") }}</li>
+            <li>{{ t("govuk_alpha_resources.empty.tip_files") }}</li>
+          </ul>
+        </div>
+      {% else %}
+        <div class="nexus-alpha-card-list">
+          {% for resource in resources %}
+            <article class="nexus-alpha-card" id="resource-{{ resource.id }}">
+              <div class="nexus-alpha-module-row">
+                <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ resource.title }}</h3>
+                <strong class="govuk-tag govuk-tag--grey" title="{{ resource.fileTypeLabel }}">{{ resource.fileExtension }}</strong>
+              </div>
+
+              {% if resource.category %}
+                <p class="govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--grey">{{ resource.category.name }}</strong></p>
+              {% endif %}
+
+              {% if resource.description %}
+                <p class="govuk-body govuk-!-margin-bottom-2">{{ resource.description }}</p>
+              {% endif %}
+
+              <dl class="nexus-alpha-inline-list govuk-!-margin-bottom-2">
+                {% if resource.uploaderName %}
+                  <div>
+                    <dt>{{ t("govuk_alpha_resources.card.uploaded_by", { name: "" }) }}</dt>
+                    <dd>{{ resource.uploaderName }}</dd>
+                  </div>
+                {% endif %}
+                {% if resource.fileSize %}
+                  <div>
+                    <dt>{{ t("govuk_alpha_resources.card.file_size") }}</dt>
+                    <dd>{{ resource.fileSize }}</dd>
+                  </div>
+                {% endif %}
+                {% if resource.createdAt %}
+                  <div>
+                    <dt>{{ t("govuk_alpha_resources.card.uploaded_on") }}</dt>
+                    <dd>{{ resource.createdAt }}</dd>
+                  </div>
+                {% endif %}
+                <div>
+                  <dt>{{ t("govuk_alpha_resources.card.downloads_label") }}</dt>
+                  <dd>{{ formatLocaleNumber(resource.downloads) }}</dd>
+                </div>
+              </dl>
+
+              <div class="nexus-alpha-actions">
+                {% if resource.downloadHref %}
+                  <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor(resource.downloadHref) }}" aria-label="{{ t('govuk_alpha_resources.actions.download_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.download") }}</a>
+                {% endif %}
+                {% if resource.canManage %}
+                  <a class="govuk-link" href="{{ urlFor('/resources/' + (resource.id | string) + '/delete') }}" aria-label="{{ t('govuk_alpha_resources.actions.delete_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.delete") }}</a>
+                {% endif %}
+              </div>
+
+              <div class="nexus-alpha-actions govuk-!-margin-top-2" aria-label="{{ t('govuk_alpha_resources.social.panel_label') }}">
+                <form method="post" action="{{ urlFor('/resources/' + (resource.id | string) + '/react') }}" class="nexus-alpha-reaction-form govuk-!-display-inline">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="emoji" value="like">
+                  <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_resources.social.like_aria', { title: resource.title }) }}">
+                    <span aria-hidden="true">&#128077;</span>
+                    {{ t("govuk_alpha_resources.social.like") }}{% if resource.likeCount > 0 %} ({{ formatLocaleNumber(resource.likeCount) }}){% endif %}
+                  </button>
+                </form>
+                <a class="govuk-link" href="{{ urlFor(resource.commentsHref) }}" aria-label="{{ t('govuk_alpha_resources.social.comments_link_aria', { title: resource.title }) }}">
+                  &#128172;
+                  {{ tc("govuk_alpha_resources.social.comment_count", resource.commentCount, { count: formatLocaleNumber(resource.commentCount) }) }}
+                </a>
+              </div>
+
+              {% if reorderMode and isAdmin %}
+                <div class="nexus-alpha-actions govuk-!-margin-top-2">
+                  {% if loop.index0 > 0 %}
+                    <form method="post" action="{{ urlFor('/resources/reorder') }}" class="govuk-!-display-inline">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <input type="hidden" name="resource_id" value="{{ resource.id }}">
+                      <input type="hidden" name="direction" value="up">
+                      <input type="hidden" name="q" value="{{ searchQuery }}">
+                      <input type="hidden" name="category_id" value="{{ selectedCategory or '' }}">
+                      <input type="hidden" name="reorder" value="1">
+                      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_resources.actions.move_up_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.move_up") }}</button>
+                    </form>
+                  {% endif %}
+                  {% if loop.index < resources.length %}
+                    <form method="post" action="{{ urlFor('/resources/reorder') }}" class="govuk-!-display-inline">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <input type="hidden" name="resource_id" value="{{ resource.id }}">
+                      <input type="hidden" name="direction" value="down">
+                      <input type="hidden" name="q" value="{{ searchQuery }}">
+                      <input type="hidden" name="category_id" value="{{ selectedCategory or '' }}">
+                      <input type="hidden" name="reorder" value="1">
+                      <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="{{ t('govuk_alpha_resources.actions.move_down_aria', { title: resource.title }) }}">{{ t("govuk_alpha_resources.actions.move_down") }}</button>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+
+        {% if loadMoreHref %}
+          <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('govuk_alpha_resources.actions.load_more') }}">
+            <div class="govuk-pagination__next">
+              <a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(loadMoreHref) }}">
+                <span class="govuk-pagination__link-title">{{ t("govuk_alpha_resources.actions.load_more") }}</span>
+              </a>
+            </div>
+          </nav>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

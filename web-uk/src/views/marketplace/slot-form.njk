@@ -1,0 +1,32 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/slots') }}">{{ t("govuk_alpha_commerce.slots.back_to_slots") }}</a>
+  {% include "marketplace/_nav.njk" %}
+  {% set marketplaceStatusSuccessHeadingKey = "states.success_title" %}
+  {% include "marketplace/_status-banner.njk" %}
+
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.slots.title_edit") }}</h1>
+  {% set submitLabel = t("govuk_alpha_commerce.slots.submit_edit") %}
+  {% include "marketplace/_slot-form.njk" %}
+
+  {% if slot.id %}
+    <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_commerce.slots.delete_heading") }}</h2>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.notice_title") }}</span>
+        {{ t("govuk_alpha_commerce.slots.delete_warning") }}
+      </strong>
+    </div>
+    <form method="post" action="{{ urlFor('/marketplace/slots/' + (slot.id | string) + '/delete') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("govuk_alpha_commerce.slots.action_delete") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

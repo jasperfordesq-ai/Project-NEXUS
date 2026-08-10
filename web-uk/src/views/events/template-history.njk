@@ -1,0 +1,44 @@
+{% extends "layouts/base.njk" %}
+
+{% set configuration = template.version.configuration or {} %}
+{% set templateTitle = configuration.title or template.source_event.title %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/templates?filter=' + filter + (('&cursor=' + (libraryCursor | urlencode)) if libraryCursor else '')) }}">{{ t("event_templates.back_to_library") }}</a>
+  <span class="govuk-caption-xl">{{ templateTitle }}</span>
+  <h1 class="govuk-heading-xl">{{ t("event_templates.audit_title") }}</h1>
+  <p class="govuk-body-l">{{ t("event_templates.audit_intro") }}</p>
+  <div class="govuk-inset-text">{{ t("event_templates.audit_immutable") }}</div>
+
+  {% if not audits.length %}
+    <p class="govuk-body">{{ t("event_templates.audit_empty") }}</p>
+  {% else %}
+    <ol class="govuk-list">
+      {% for audit in audits %}
+        {% set evidence = audit.evidence or {} %}
+        {% set integrityHash = evidence.snapshot_hash or evidence.effective_snapshot_hash or '' %}
+        <li class="govuk-summary-card govuk-!-margin-bottom-6">
+          <div class="govuk-summary-card__title-wrapper"><h2 class="govuk-summary-card__title">{{ t("event_templates.audit_actions." + audit.action) }}</h2></div>
+          <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.audit_recorded_at") }}</dt><dd class="govuk-summary-list__value"><time datetime="{{ audit.created_at }}">{{ audit.recordedAtLabel }}</time></dd></div>
+              <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.version") }}</dt><dd class="govuk-summary-list__value">{{ audit.template_version }}</dd></div>
+              <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.source") }}</dt><dd class="govuk-summary-list__value">{{ t("event_templates.audit_event_reference", { id: audit.source_event_id }) }}</dd></div>
+              {% if audit.materialized_event_id %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.audit_created_event") }}</dt><dd class="govuk-summary-list__value">{{ t("event_templates.audit_event_reference", { id: audit.materialized_event_id }) }}</dd></div>{% endif %}
+              {% if integrityHash %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.audit_integrity") }}</dt><dd class="govuk-summary-list__value"><code>{% for chunk in evidence.integrity_chunks %}{{ chunk }}{% if not loop.last %}<wbr>{% endif %}{% endfor %}</code></dd></div>{% endif %}
+              {% if evidence.archive_reason_recorded is defined %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.audit_archive_reason_recorded") }}</dt><dd class="govuk-summary-list__value">{{ t("event_templates.audit_yes") if evidence.archive_reason_recorded else t("event_templates.audit_no") }}</dd></div>{% endif %}
+            </dl>
+            {% if evidence.copied_fields and evidence.copied_fields.length %}<h3 class="govuk-heading-s">{{ t("event_templates.copied_title") }}</h3><ul class="govuk-list govuk-list--bullet">{% for field in evidence.copied_fields %}<li>{{ t("event_templates.fields." + field) }}</li>{% endfor %}</ul>{% endif %}
+            {% if evidence.override_fields and evidence.override_fields.length %}<h3 class="govuk-heading-s">{{ t("event_templates.audit_override_fields") }}</h3><ul class="govuk-list govuk-list--bullet">{% for field in evidence.override_fields %}<li>{{ t("event_templates.fields." + field) }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% endif %}
+
+  {% if pagination.has_more and pagination.next_cursor %}
+    <nav class="govuk-pagination govuk-pagination--block" aria-label="{{ t('event_templates.audit_pagination_label') }}">
+      <div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?cursor=' + (pagination.next_cursor | urlencode) + '&filter=' + filter + (('&library_cursor=' + (libraryCursor | urlencode)) if libraryCursor else '')) }}"><span class="govuk-pagination__link-title">{{ t("event_templates.audit_load_more") }}</span></a></div>
+    </nav>
+  {% endif %}
+{% endblock %}

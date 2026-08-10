@@ -1,0 +1,82 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% if attendee.form %}
+  <section id="registration-answers" aria-labelledby="registration-answers-heading">
+    <h3 class="govuk-heading-m" id="registration-answers-heading">{{ attendee.form.name }}</h3>
+    {% if attendee.form.description %}<p class="govuk-body">{{ attendee.form.description }}</p>{% endif %}
+
+    {% if active %}
+    {% set replayValues = answerValues or {} %}
+    {% set replayErrors = answerErrors or {} %}
+    {% if replayErrors and (replayErrors | length) %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for key, message in replayErrors %}
+              <li><a href="#answer-{{ key }}">{{ message }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/registrations/' + (active.id | string) + '/forms/' + (attendee.form.id | string) + '/submit') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+      {% for question in attendee.form.questions %}
+        {% set key = question.stable_key %}
+        {% set type = question.question_type %}
+        {% set value = replayValues[key] %}
+        {% set rules = question.validation_rules or {} %}
+        {% set conditional = question.visibility_rules %}
+        {% set required = question.is_required and not conditional %}
+        {% set selectedChoices = value if value else [] %}
+        {% set hardMax = 500 if type == "short_text" else 10000 %}
+        {% set maxLength = rules.max_length if rules.max_length and rules.max_length < hardMax else hardMax %}
+        <div class="govuk-form-group{% if replayErrors[key] %} govuk-form-group--error{% endif %}">
+          {% if type in ['single_choice', 'multiple_choice'] %}
+            <fieldset class="govuk-fieldset"{% if question.is_required %} aria-required="true"{% endif %}{% if replayErrors[key] %} aria-describedby="answer-{{ key }}-error"{% endif %}>
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ question.prompt }}</legend>
+              {% if question.help_text %}<div class="govuk-hint">{{ question.help_text }}</div>{% endif %}
+              {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
+              <div class="{{ 'govuk-radios' if type == 'single_choice' else 'govuk-checkboxes' }}" data-module="{{ 'govuk-radios' if type == 'single_choice' else 'govuk-checkboxes' }}">
+                {% for choice in question.choice_options %}
+                  <div class="{{ 'govuk-radios__item' if type == 'single_choice' else 'govuk-checkboxes__item' }}">
+                    <input class="{{ 'govuk-radios__input' if type == 'single_choice' else 'govuk-checkboxes__input' }}" id="answer-{{ key }}-{{ loop.index }}" name="answers[{{ key }}]{% if type == 'multiple_choice' %}[]{% endif %}" type="{{ 'radio' if type == 'single_choice' else 'checkbox' }}" value="{{ choice }}"{% if type == 'single_choice' and required and loop.first %} required{% endif %}{% if (type == 'single_choice' and value == choice) or (type == 'multiple_choice' and choice in selectedChoices) %} checked{% endif %}>
+                    <label class="{{ 'govuk-label govuk-radios__label' if type == 'single_choice' else 'govuk-label govuk-checkboxes__label' }}" for="answer-{{ key }}-{{ loop.index }}">{{ choice }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          {% elif type in ['consent', 'waiver'] %}
+            {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="answer-{{ key }}" name="answers[{{ key }}]" type="checkbox" value="1"{% if required %} required{% endif %}{% if value %} checked{% endif %}{% if replayErrors[key] %} aria-describedby="answer-{{ key }}-error"{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="answer-{{ key }}">{{ question.prompt }}</label>
+                {% if question.displayed_text %}<div class="govuk-hint govuk-checkboxes__hint">{{ question.displayed_text }}</div>{% endif %}
+              </div>
+            </div>
+          {% elif type == 'short_text' %}
+            <label class="govuk-label govuk-label--m" for="answer-{{ key }}">{{ question.prompt }}</label>
+            {% if question.help_text %}<div class="govuk-hint" id="answer-{{ key }}-hint">{{ question.help_text }}</div>{% endif %}
+            {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
+            <input class="govuk-input{% if replayErrors[key] %} govuk-input--error{% endif %}" id="answer-{{ key }}" name="answers[{{ key }}]" type="text" value="{{ value or '' }}"{% if required %} required{% endif %}{% if rules.min_length %} minlength="{{ rules.min_length }}"{% endif %} maxlength="{{ maxLength }}"{% if question.help_text or replayErrors[key] %} aria-describedby="{% if question.help_text %}answer-{{ key }}-hint{% endif %}{% if question.help_text and replayErrors[key] %} {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}"{% endif %}>
+          {% else %}
+            <label class="govuk-label govuk-label--m" for="answer-{{ key }}">{{ question.prompt }}</label>
+            {% if question.help_text %}<div class="govuk-hint" id="answer-{{ key }}-hint">{{ question.help_text }}</div>{% endif %}
+            {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
+            <textarea class="govuk-textarea{% if replayErrors[key] %} govuk-textarea--error{% endif %}" id="answer-{{ key }}" name="answers[{{ key }}]" rows="5"{% if required %} required{% endif %}{% if rules.min_length %} minlength="{{ rules.min_length }}"{% endif %} maxlength="{{ maxLength }}"{% if question.help_text or replayErrors[key] %} aria-describedby="{% if question.help_text %}answer-{{ key }}-hint{% endif %}{% if question.help_text and replayErrors[key] %} {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}"{% endif %}>{{ value or '' }}</textarea>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button class="govuk-button" data-module="govuk-button">{{ t("event_registration.accessible.submit_answers") }}</button>
+    </form>
+    {% else %}
+      <p class="govuk-body">{{ t("event_registration.forms.not_published") }}</p>
+    {% endif %}
+  </section>
+{% endif %}

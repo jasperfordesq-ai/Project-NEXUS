@@ -1,0 +1,127 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/goals') }}">{{ t("goals.back_to_goals") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if successStateKey %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="goal-detail-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="goal-detail-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t(successStateKey) }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errorStateKey %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="{{ errorHref }}">{{ t(errorStateKey) }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("goals.caption", { community: tenantName or serviceName }) }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ goal.title }}</h1>
+    <strong class="govuk-tag {% if goal.done %}govuk-tag--green{% else %}govuk-tag--blue{% endif %}">
+      {% if goal.done %}{{ t("goals.status_completed") }}{% else %}{{ t("goals.status_active") }}{% endif %}
+    </strong>
+  </div>
+
+  {% if goal.description %}
+    <p class="govuk-body-l">{{ goal.description }}</p>
+  {% endif %}
+
+  <p class="govuk-body govuk-!-margin-bottom-1">{{ t("goals.progress_label", { current: goal.currentText, target: goal.targetText }) }}</p>
+  <progress max="100" value="{{ goal.progressPercent }}" aria-label="{{ goal.progressPercent }}%">{{ goal.progressPercent }}%</progress>
+
+  <p class="nexus-alpha-actions govuk-!-margin-top-4">
+    {% if isOwner %}
+      <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/edit') }}">{{ t("goals.edit_goal") }}</a>
+    {% endif %}
+    {% if isOwner or isBuddy %}
+      <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/insights') }}">{{ t("govuk_alpha_goals.nav.insights") }}</a>
+    {% endif %}
+    <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/social') }}">{{ t("govuk_alpha_goals.nav.social") }}</a>
+    <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string) + '/history') }}">{{ t("govuk_alpha_goals.nav.history") }}</a>
+  </p>
+
+  {% if isOwner and not goal.done %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.update_title") }}</h2>
+    <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/progress') }}" class="govuk-!-margin-bottom-4">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="increment">{{ t("goals.increment_label") }}</label>
+        <input class="govuk-input govuk-input--width-5" id="increment" name="increment" type="number" min="0.25" step="0.25" inputmode="decimal" required>
+      </div>
+      <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.increment_button") }}</button>
+    </form>
+    <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/complete') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.mark_complete") }}</button>
+    </form>
+  {% endif %}
+
+  {% if isBuddy %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.buddy_section_title") }}</h2>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("goals.buddy_you_are_buddy") }}</p></div>
+  {% elif canBecomeBuddy %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7" id="buddy-section">{{ t("goals.become_buddy_title") }}</h2>
+    <p class="govuk-body">{{ t("goals.become_buddy_intro") }}</p>
+    <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/buddy') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("goals.become_buddy_button") }}</button>
+    </form>
+  {% elif isOwner and hasBuddy %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.buddy_section_title") }}</h2>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("goals.buddy_has_buddy") }}</p></div>
+  {% endif %}
+
+  {% if (isOwner or isBuddy) and buddyNotes and buddyNotes.length %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.buddy_notes_title") }}</h2>
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for note in buddyNotes %}
+        <li class="nexus-alpha-card">
+          <p class="govuk-body govuk-!-margin-bottom-1">{{ note.message }}</p>
+          <p class="govuk-body-s nexus-alpha-meta">
+            {{ note.buddyName or t("goals.a_member") }}{% if note.createdAtDateLabel %} &middot; {{ note.createdAtDateLabel }}{% endif %}
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if isOwner or isBuddy %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("goals.history_title") }}</h2>
+    {% if not goalHistory or not goalHistory.length %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("goals.history_empty") }}</p></div>
+    {% else %}
+      <dl class="govuk-summary-list">
+        {% for event in goalHistory %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("goals.history_type_" + event.type) }}</dt>
+            <dd class="govuk-summary-list__value">
+              {{ event.description }}
+              {% if event.createdAtLabel %}<span class="govuk-!-display-block govuk-body-s nexus-alpha-meta">{{ event.createdAtLabel }}</span>{% endif %}
+            </dd>
+          </div>
+        {% endfor %}
+      </dl>
+    {% endif %}
+  {% endif %}
+{% endblock %}

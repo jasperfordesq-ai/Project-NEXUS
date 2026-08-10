@@ -1,0 +1,140 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha.organisations.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.organisations.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.organisations.description") }}</p>
+
+  <nav class="govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha.organisations.title') }}">
+    <ul class="govuk-list">
+      <li><a class="govuk-link" href="{{ urlFor('/organisations/browse') }}">{{ t("govuk_alpha_organisations.nav.browse") }}</a></li>
+      <li><a class="govuk-link" href="{{ urlFor('/organisations/register') }}">{{ t("govuk_alpha_organisations.nav.register") }}</a></li>
+      <li><a class="govuk-link" href="{{ urlFor('/organisations/manage') }}">{{ t("govuk_alpha_organisations.nav.manage") }}</a></li>
+    </ul>
+  </nav>
+
+  {% if status == "org-submitted" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="organisations-success-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="organisations-success-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("govuk_alpha.organisations.states.org-submitted") }}</p>
+      </div>
+    </div>
+  {% elseif status == "org-invalid" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#name">{{ t("govuk_alpha.organisations.states.org-invalid") }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% elseif status == "org-failed" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#name">{{ t("govuk_alpha.organisations.states.org-failed") }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="get" action="{{ urlFor('/organisations') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="q">{{ t("govuk_alpha.organisations.search_label") }}</label>
+      <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ organisationsQuery }}">
+    </div>
+    <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("govuk_alpha.actions.search") }}</button>
+  </form>
+
+  {% if organisations and organisations.length %}
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-8">
+      {% for organisation in organisations %}
+        {% if organisation.id %}
+          <article class="nexus-alpha-card">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/organisations/' + (organisation.id | string)) }}">{{ organisation.name or t("govuk_alpha.organisations.title") }}</a>
+            </h2>
+            {% if organisation.summary %}
+              <p class="govuk-body govuk-!-margin-bottom-0">{{ organisation.summary }}</p>
+            {% endif %}
+          </article>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.organisations.empty") }}</p></div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha.organisations.register_title") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha.organisations.register_note") }}</p>
+  <p class="govuk-body">{{ t("govuk_alpha.organisations.register_intro") }}</p>
+
+  <form method="post" action="{{ urlFor('/organisations') }}" class="govuk-grid-row">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="name">{{ t("govuk_alpha.organisations.name_label") }}</label>
+        <input class="govuk-input" id="name" name="name" type="text" minlength="3" maxlength="255" value="{{ values.name or '' }}" required>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="description">{{ t("govuk_alpha.organisations.description_label") }}</label>
+        <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.organisations.description_hint") }}</div>
+        <textarea class="govuk-textarea" id="description" name="description" rows="3" minlength="20" maxlength="2000" aria-describedby="description-hint" required>{{ values.description or '' }}</textarea>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="email">{{ t("govuk_alpha.organisations.email_label") }}</label>
+        <input class="govuk-input" id="email" name="email" type="email" autocomplete="email" value="{{ values.email or '' }}" required>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="website">{{ t("govuk_alpha.organisations.website_label") }}</label>
+        <input class="govuk-input" id="website" name="website" type="url" inputmode="url" value="{{ values.website or '' }}">
+      </div>
+
+      <div class="govuk-inset-text">
+        <h3 class="govuk-heading-s">{{ t("govuk_alpha.organisations.terms_heading") }}</h3>
+        <ul class="govuk-list govuk-list--bullet">
+          <li>{{ t("govuk_alpha.organisations.terms_item_1") }}</li>
+          <li>{{ t("govuk_alpha.organisations.terms_item_2") }}</li>
+          <li>{{ t("govuk_alpha.organisations.terms_item_3") }}</li>
+          <li>{{ t("govuk_alpha.organisations.terms_item_4") }}</li>
+          <li>{{ t("govuk_alpha.organisations.terms_item_5") }}</li>
+        </ul>
+      </div>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha.organisations.terms_heading") }}</legend>
+          <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="agreed_terms" name="agreed_terms" type="checkbox" value="1"{% if values.agreedTerms %} checked{% endif %} required>
+              <label class="govuk-label govuk-checkboxes__label" for="agreed_terms">{{ t("govuk_alpha.organisations.terms_agree") }}</label>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha.organisations.register_button") }}</button>
+
+      <div class="govuk-inset-text">
+        <p class="govuk-body">{{ t("govuk_alpha.organisations.pending_notice") }}</p>
+      </div>
+        </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,85 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="accessibility-saved-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="accessibility-saved-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ status.message }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha.volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("volunteering.accessibility_title") }}</h1>
+  <p class="govuk-body-l">{{ t("volunteering.accessibility_description") }}</p>
+
+  <form method="post" action="{{ urlFor('/volunteering/accessibility') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="need-types-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("volunteering.need_types_legend") }}</h2>
+        </legend>
+        <div id="need-types-hint" class="govuk-hint">{{ t("volunteering.need_types_hint") }}</div>
+        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+          {% for needType in needTypes %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="need-{{ needType.value }}" name="need_types[]" type="checkbox" value="{{ needType.value }}"{% if selectedTypes.includes(needType.value) %} checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="need-{{ needType.value }}">{{ needType.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="description">{{ t("volunteering.accessibility_description_label") }}</label>
+      <div id="description-hint" class="govuk-hint">{{ t("volunteering.accessibility_description_hint") }}</div>
+      <textarea class="govuk-textarea" id="description" name="description" rows="3" maxlength="2000" aria-describedby="description-hint">{{ accessibility.description }}</textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="accommodations_required">{{ t("volunteering.accessibility_accommodations_label") }}</label>
+      <div id="accommodations-hint" class="govuk-hint">{{ t("volunteering.accessibility_accommodations_hint") }}</div>
+      <textarea class="govuk-textarea" id="accommodations_required" name="accommodations_required" rows="3" maxlength="2000" aria-describedby="accommodations-hint">{{ accessibility.accommodations }}</textarea>
+    </div>
+
+    <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("volunteering.emergency_contact_legend") }}</h2>
+      </legend>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="emergency_contact_name">{{ t("volunteering.emergency_name_label") }}</label>
+        <input class="govuk-input govuk-!-width-two-thirds" id="emergency_contact_name" name="emergency_contact_name" type="text" maxlength="255" value="{{ accessibility.emergencyName }}" autocomplete="name">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="emergency_contact_phone">{{ t("volunteering.emergency_phone_label") }}</label>
+        <div id="emergency-phone-hint" class="govuk-hint">{{ t("volunteering.emergency_phone_hint") }}</div>
+        <input class="govuk-input govuk-input--width-20" id="emergency_contact_phone" name="emergency_contact_phone" type="tel" maxlength="32" value="{{ accessibility.emergencyPhone }}" autocomplete="tel" aria-describedby="emergency-phone-hint">
+      </div>
+    </fieldset>
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("volunteering.accessibility_submit") }}</button>
+  </form>
+{% endblock %}

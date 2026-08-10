@@ -1,0 +1,87 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.shop.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.shop.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.shop.description") }}</p>
+
+  {% set gamificationNavGroup = "achievements" %}
+  {% set gamificationActiveTab = "shop" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if shop.successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="shop-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="shop-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ shop.successMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if shop.errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ shop.errorMessage }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="govuk-panel govuk-panel--confirmation nexus-alpha-panel govuk-!-margin-bottom-6">
+    <div class="govuk-panel__body">
+      {{ t("govuk_alpha_gamification.shop.balance_label") }}
+      <br><strong>{{ shop.userXpLabel }}</strong>
+    </div>
+  </div>
+
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("states.error_title") }}</span>
+      {{ t("govuk_alpha_gamification.shop.warning") }}
+    </strong>
+  </div>
+
+  {% if shop.items.length %}
+    <ul class="nexus-alpha-card-list govuk-list">
+      {% for item in shop.items %}
+        <li class="nexus-alpha-card govuk-!-margin-bottom-4">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ item.name }}</h2>
+            <strong class="govuk-tag govuk-tag--grey">{{ item.typeLabel }}</strong>
+          </div>
+          {% if item.description %}
+            <p class="govuk-body">{{ item.description }}</p>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta">{{ item.costLabel }}</p>
+
+          {% if item.owned %}
+            <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.shop.owned") }}</strong>
+          {% elif item.canPurchase %}
+            <form method="post" action="{{ urlFor('/achievements/shop/purchase') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="item_id" value="{{ item.id }}">
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_gamification.shop.buy_button", { xp: item.cost }) }}</button>
+            </form>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--red">{{ item.unavailableLabel }}</strong>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.shop.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

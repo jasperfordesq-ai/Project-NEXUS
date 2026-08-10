@@ -1,0 +1,65 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ tenantName }}</span>
+  <h1 class="govuk-heading-xl">Outcomes</h1>
+  <p class="govuk-body-l">Track what happened to the winning ideas after each challenge closed.</p>
+
+  {% set activeTab = "outcomes" %}
+  {% include "ideation/_nav.njk" %}
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Total outcomes</dt>
+      <dd class="govuk-summary-list__value">{{ stats.total }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Implemented</dt>
+      <dd class="govuk-summary-list__value">{{ stats.implemented }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">In progress</dt>
+      <dd class="govuk-summary-list__value">{{ stats.inProgress }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Not started</dt>
+      <dd class="govuk-summary-list__value">{{ stats.notStarted }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">Abandoned</dt>
+      <dd class="govuk-summary-list__value">{{ stats.abandoned }}</dd>
+    </div>
+  </dl>
+
+  {% if outcomes and outcomes.length %}
+    <table class="govuk-table">
+      <caption class="govuk-visually-hidden">Outcomes</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("feed.item_types.challenge") }}</th>
+          <th scope="col" class="govuk-table__header">Winning idea</th>
+          <th scope="col" class="govuk-table__header">Status</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for outcome in outcomes %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="{{ urlFor('/ideation/' ~ outcome.challengeId) }}">{{ outcome.challengeTitle }}</a>
+            </td>
+            <td class="govuk-table__cell">{{ outcome.ideaTitle }}</td>
+            <td class="govuk-table__cell">
+              <strong class="govuk-tag {{ outcome.statusClass }}">{{ outcome.statusLabel }}</strong>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text">No outcomes have been recorded yet.</div>
+  {% endif %}
+{% endblock %}

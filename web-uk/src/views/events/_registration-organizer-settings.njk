@@ -1,0 +1,92 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+<hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+<h2 class="govuk-heading-l">{{ t("event_registration.accessible.organizer_heading") }}</h2>
+{% set settings = organizer.settings or {} %}
+<h3 class="govuk-heading-m">{{ t("event_registration.settings.title") }}</h3>
+<p class="govuk-body">{{ t("event_registration.settings.description") }}</p>
+<p class="govuk-body">
+  <strong class="govuk-tag">{{ t("event_registration.statuses." + settings.status) if organizer.settings and settings.status else t("event_registration.settings.not_created") }}</strong>
+  {% if organizer.settings %}{{ t("event_registration.settings.revision", { revision: settings.revision }) }}{% endif %}
+</p>
+<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/settings') }}" novalidate>
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+  <input type="hidden" name="expected_revision" value="{{ settings.revision or 0 }}">
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="registration-approval-mode">{{ t("event_registration.settings.approval_mode") }}</label>
+    <select class="govuk-select" id="registration-approval-mode" name="approval_mode">
+      {% for mode in ["auto", "manual"] %}<option value="{{ mode }}"{% if (settings.approval_mode or "auto") == mode %} selected{% endif %}>{{ t("event_registration.settings.approval_modes." + mode) }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="registration-opens-at">{{ t("event_registration.settings.opens_at") }}</label>
+    <div class="govuk-hint">{{ t("event_registration.settings.window_hint") }}</div>
+    <input class="govuk-input govuk-input--width-20" id="registration-opens-at" name="opens_at" type="datetime-local" value="{{ settings.opens_at_local or '' }}">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="registration-closes-at">{{ t("event_registration.settings.closes_at") }}</label>
+    <input class="govuk-input govuk-input--width-20" id="registration-closes-at" name="closes_at" type="datetime-local" value="{{ settings.closes_at_local or '' }}">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="registration-cutoff">{{ t("event_registration.settings.cancellation_cutoff") }}</label>
+    <input class="govuk-input govuk-input--width-20" id="registration-cutoff" name="cancellation_cutoff_at" type="datetime-local" value="{{ settings.cancellation_cutoff_at_local or '' }}">
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="registration-member-limit">{{ t("event_registration.settings.per_member_limit") }}</label>
+    <input class="govuk-input govuk-input--width-3" id="registration-member-limit" name="per_member_limit" type="number" min="1" max="10" value="{{ settings.per_member_limit or 1 }}" required>
+  </div>
+  <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+    <div class="govuk-checkboxes__item">
+      <input class="govuk-checkboxes__input" id="registration-guests-enabled" name="guests_enabled" type="checkbox" value="1"{% if settings.guests_enabled %} checked{% endif %}>
+      <label class="govuk-label govuk-checkboxes__label" for="registration-guests-enabled">{{ t("event_registration.settings.guests_enabled") }}</label>
+    </div>
+  </div>
+  <div class="govuk-form-group govuk-!-margin-top-4">
+    <label class="govuk-label" for="registration-guest-limit">{{ t("event_registration.settings.max_guests") }}</label>
+    <input class="govuk-input govuk-input--width-3" id="registration-guest-limit" name="max_guests_per_registration" type="number" min="1" max="10" value="{{ settings.max_guests_per_registration or 1 }}" required>
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="registration-guest-retention">{{ t("event_registration.settings.guest_retention") }}</label>
+    <input class="govuk-input govuk-input--width-5" id="registration-guest-retention" name="guest_retention_days" type="number" min="1" max="36500" value="{{ settings.guest_retention_days or 30 }}" required>
+  </div>
+  <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.settings.save") }}</button>
+</form>
+{% if settings.status == "draft" %}
+  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/settings/publish') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+    <input type="hidden" name="expected_revision" value="{{ settings.revision }}">
+    <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("event_registration.settings.publish") }}</button>
+  </form>
+{% endif %}
+
+<h3 class="govuk-heading-m">{{ t("event_registration.forms.title") }}</h3>
+<p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/new') }}">{{ t("event_registration.forms.new") }}</a></p>
+{% for form in organizer.forms %}
+  <div class="govuk-summary-card">
+    <div class="govuk-summary-card__title-wrapper">
+      <h4 class="govuk-summary-card__title">{{ form.name }}</h4>
+      <strong class="govuk-tag">{{ t("event_registration.statuses." + form.status) }}</strong>
+    </div>
+    <div class="govuk-summary-card__content">
+      <p class="govuk-body">{{ t("event_registration.forms.version", { version: form.version_number }) }}</p>
+      {% if form.status == "draft" %}
+        <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string)) }}">{{ t("event_registration.forms.edit") }}</a>
+        <form class="govuk-!-display-inline-block" method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/publish') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}"><input type="hidden" name="expected_form_revision" value="{{ form.revision }}"><input type="hidden" name="expected_settings_revision" value="{{ settings.revision }}">
+          <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.forms.publish") }}</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/registration/forms/' + (form.id | string) + '/fork') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}"><input type="hidden" name="expected_settings_revision" value="{{ settings.revision }}">
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">{{ t("event_registration.forms.create_revision") }}</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <p class="govuk-body">{{ t("event_registration.forms.empty") }}</p>
+{% endfor %}

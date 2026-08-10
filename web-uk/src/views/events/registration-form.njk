@@ -1,0 +1,125 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+{% block content %}
+<a class="govuk-back-link" href="{{ urlFor('/events/' + (eventId | string) + '/registration') }}">{{ t("event_registration.title") }}</a>
+<h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
+<p class="govuk-body-l">{{ t("event_registration.forms.editor.rules_description") }}</p>
+{% if formErrors and (formErrors | length) %}
+<div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+  <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2>
+  <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list">{% for error in formErrors %}<li><a href="#form-name">{{ error }}</a></li>{% endfor %}</ul></div>
+</div>
+{% endif %}
+<div class="govuk-inset-text">{{ t("event_registration.accessible.form_slots_hint") }}</div>
+
+<form method="post" action="{{ urlFor('/events/' + (eventId | string) + '/registration/forms/' + ((form.id | string) if form else 'new')) }}" novalidate>
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+  <input type="hidden" name="expected_settings_revision" value="{{ settingsRevision }}">
+  {% if form %}<input type="hidden" name="expected_form_revision" value="{{ form.revision }}">{% endif %}
+
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--m" for="form-name">{{ t("event_registration.forms.editor.name") }}</label>
+    <input class="govuk-input" id="form-name" name="name" type="text" value="{{ formValues.name or '' }}" maxlength="255" required>
+  </div>
+  <div class="govuk-form-group">
+    <label class="govuk-label" for="form-description">{{ t("event_registration.forms.editor.description") }}</label>
+    <textarea class="govuk-textarea" id="form-description" name="description" rows="4" maxlength="2000">{{ formValues.description or '' }}</textarea>
+  </div>
+
+  {% for row in questionRows %}
+    {% set i = loop.index0 %}
+    {% set questionType = row.question_type or 'short_text' %}
+    {% set classification = row.data_classification or 'internal' %}
+    {% set validation = row.validation_rules or {} %}
+    {% set visibility = row.visibility_rules or {} %}
+    {% set condition = (visibility.conditions or [])[0] or {} %}
+    <fieldset class="govuk-fieldset govuk-!-margin-bottom-8">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("event_registration.forms.editor.question", { number: loop.index }) }}</h2></legend>
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="question-{{ i }}-enabled" name="questions[{{ i }}][enabled]" type="checkbox" value="1"{% if row.enabled %} checked{% endif %}>
+          <label class="govuk-label govuk-checkboxes__label" for="question-{{ i }}-enabled">{{ t("event_registration.accessible.enabled") }}</label>
+        </div>
+      </div>
+      <input type="hidden" name="questions[{{ i }}][stable_key]" value="{{ row.stable_key or ('question_' + (loop.index | string)) }}">
+      <div class="govuk-form-group govuk-!-margin-top-4">
+        <label class="govuk-label" for="question-{{ i }}-type">{{ t("event_registration.forms.editor.type") }}</label>
+        <select class="govuk-select" id="question-{{ i }}-type" name="questions[{{ i }}][question_type]">
+          {% for type in ["short_text", "long_text", "single_choice", "multiple_choice", "dietary", "accessibility", "consent", "waiver"] %}<option value="{{ type }}"{% if questionType == type %} selected{% endif %}>{{ t("event_registration.question_types." + type) }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-classification">{{ t("event_registration.forms.editor.classification") }}</label>
+        <select class="govuk-select" id="question-{{ i }}-classification" name="questions[{{ i }}][data_classification]">
+          {% for option in ["public", "internal", "confidential", "sensitive"] %}<option value="{{ option }}"{% if classification == option %} selected{% endif %}>{{ t("event_registration.classifications." + option) }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-prompt">{{ t("event_registration.forms.editor.prompt") }}</label>
+        <textarea class="govuk-textarea" id="question-{{ i }}-prompt" name="questions[{{ i }}][prompt]" rows="2">{{ row.prompt or '' }}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-help">{{ t("event_registration.forms.editor.help_text") }}</label>
+        <textarea class="govuk-textarea" id="question-{{ i }}-help" name="questions[{{ i }}][help_text]" rows="2">{{ row.help_text or '' }}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-purpose">{{ t("event_registration.forms.editor.purpose") }}</label>
+        <textarea class="govuk-textarea" id="question-{{ i }}-purpose" name="questions[{{ i }}][purpose]" rows="2">{{ row.purpose or '' }}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-retention">{{ t("event_registration.forms.editor.retention_days") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-retention" name="questions[{{ i }}][retention_days]" type="number" min="1" max="36500" value="{{ row.retention_days or 365 }}">
+      </div>
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="question-{{ i }}-required" name="questions[{{ i }}][is_required]" type="checkbox" value="1"{% if row.is_required %} checked{% endif %}>
+          <label class="govuk-label govuk-checkboxes__label" for="question-{{ i }}-required">{{ t("event_registration.forms.editor.required") }}</label>
+        </div>
+      </div>
+      <div class="govuk-form-group govuk-!-margin-top-4">
+        <label class="govuk-label" for="question-{{ i }}-choices">{{ t("event_registration.forms.editor.choices") }}</label>
+        <div class="govuk-hint">{{ t("event_registration.forms.editor.choices_description") }}</div>
+        <textarea class="govuk-textarea" id="question-{{ i }}-choices" name="questions[{{ i }}][choices]" rows="4">{% for choice in row.choice_options %}{{ choice }}{% if not loop.last %}
+{% endif %}{% endfor %}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-min">{{ t("event_registration.forms.editor.min_length") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-min" name="questions[{{ i }}][min_length]" type="number" min="0" value="{{ validation.min_length if validation.min_length is defined else '' }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-max">{{ t("event_registration.forms.editor.max_length") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-max" name="questions[{{ i }}][max_length]" type="number" min="0" value="{{ validation.max_length if validation.max_length is defined else '' }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-displayed">{{ t("event_registration.forms.editor.displayed_text") }}</label>
+        <textarea class="govuk-textarea" id="question-{{ i }}-displayed" name="questions[{{ i }}][displayed_text]" rows="4">{{ row.displayed_text or '' }}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-displayed-version">{{ t("event_registration.forms.editor.displayed_version") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="question-{{ i }}-displayed-version" name="questions[{{ i }}][displayed_text_version]" type="text" value="{{ row.displayed_text_version or '' }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-condition-key">{{ t("event_registration.accessible.condition_key") }}</label>
+        <input class="govuk-input" id="question-{{ i }}-condition-key" name="questions[{{ i }}][condition_key]" type="text" value="{{ condition.question_key or '' }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-condition-operator">{{ t("event_registration.forms.editor.condition_operator") }}</label>
+        <select class="govuk-select" id="question-{{ i }}-condition-operator" name="questions[{{ i }}][condition_operator]">
+          {% for operator in ["equals", "not_equals", "contains", "not_contains"] %}<option value="{{ operator }}"{% if (condition.operator or 'equals') == operator %} selected{% endif %}>{{ t("event_registration.operators." + operator) }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="question-{{ i }}-condition-value">{{ t("event_registration.forms.editor.condition_value") }}</label>
+        <input class="govuk-input" id="question-{{ i }}-condition-value" name="questions[{{ i }}][condition_value]" type="text" value="{{ condition.value or '' }}">
+      </div>
+    </fieldset>
+  {% endfor %}
+
+  <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("event_registration.common.save") }}</button>
+  <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/events/' + (eventId | string) + '/registration') }}">{{ t("event_registration.common.cancel") }}</a>
+</form>
+{% endblock %}

@@ -78,6 +78,7 @@ nav:
       - Tutorial — your first contribution: TUTORIAL.md
   - Architecture & platform:
       - Architecture: ARCHITECTURE.md
+      - Platform monorepo boundaries: PLATFORM-MONOREPO.md
       - API: API.md
       - API reference (OpenAPI): api-reference.md
       - Internationalisation: I18N.md

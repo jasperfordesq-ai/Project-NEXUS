@@ -1,0 +1,112 @@
+{# Copyright (C) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ t("activity.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("activity.title") }}</h1>
+  <p class="govuk-body-l">{{ t("activity.description") }}</p>
+
+  <p class="govuk-body govuk-!-margin-bottom-6">
+    <a class="govuk-link" href="{{ urlFor('/activity/insights') }}">{{ t("govuk_alpha_activity.nav.insights") }}</a>
+  </p>
+
+  <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("activity.hours_given") }}</dt>
+      <dd>{{ activity.hoursGivenLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("activity.hours_received") }}</dt>
+      <dd>{{ activity.hoursReceivedLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("activity.connections") }}</dt>
+      <dd>{{ activity.connectionsLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("activity.groups_joined") }}</dt>
+      <dd>{{ activity.groupsJoinedLabel }}</dd>
+    </div>
+  </dl>
+
+  {% if activity.hasEngagement %}
+    <h2 class="govuk-heading-l">{{ t("polish_discovery.activity_engagement_title") }}</h2>
+    <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-6">
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_discovery.activity_posts_count") }}</dt>
+        <dd>{{ activity.engagement.postsLabel }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_discovery.activity_comments_count") }}</dt>
+        <dd>{{ activity.engagement.commentsLabel }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_discovery.activity_likes_given") }}</dt>
+        <dd>{{ activity.engagement.likesGivenLabel }}</dd>
+      </div>
+      <div class="nexus-alpha-stat">
+        <dt>{{ t("polish_discovery.activity_likes_received") }}</dt>
+        <dd>{{ activity.engagement.likesReceivedLabel }}</dd>
+      </div>
+      {% if activity.netBalanceLabel %}
+        <div class="nexus-alpha-stat">
+          <dt>{{ t("polish_discovery.activity_net_balance") }}</dt>
+          <dd>{{ activity.netBalanceLabel }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+  {% endif %}
+
+  {% if activity.skills.length %}
+    <h2 class="govuk-heading-l">{{ t("polish_discovery.activity_skills_title") }}</h2>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+      {% for skill in activity.skills %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ skill.name }}</dt>
+          <dd class="govuk-summary-list__value">
+            {% if skill.isOffering %}
+              <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_activity.insights.skill_offering") }}</strong>
+            {% endif %}
+            {% if skill.isRequesting %}
+              <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_activity.insights.skill_requesting") }}</strong>
+            {% endif %}
+            {% if skill.endorsementsLabel %}
+              <span class="govuk-body-s nexus-alpha-meta">{{ skill.endorsementsLabel }}</span>
+            {% endif %}
+          </dd>
+        </div>
+      {% endfor %}
+    </dl>
+  {% endif %}
+
+  {% if activity.monthly.length %}
+    <h2 class="govuk-heading-l">{{ t("activity.monthly_title") }}</h2>
+    {% for month in activity.monthly %}
+      <div class="govuk-!-margin-bottom-2">
+        <p class="govuk-body-s govuk-!-margin-bottom-1">
+          {{ month.label }} - {{ t("activity.monthly_given") }} {{ month.givenLabel }} &middot; {{ t("activity.monthly_received") }} {{ month.receivedLabel }}
+        </p>
+        <progress max="100" value="{{ month.percent }}" aria-label="{{ month.label }}: {{ month.totalLabel }}">{{ month.percent }}%</progress>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("activity.timeline_title") }}</h2>
+  {% if activity.timeline.length %}
+    <ul class="govuk-list govuk-list--spaced">
+      {% for item in activity.timeline %}
+        <li>
+          {% if item.text %}{{ item.text }}{% endif %}
+          {% if item.dateLabel %}<span class="govuk-body-s nexus-alpha-meta"> - {{ item.dateLabel }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("activity.timeline_empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,133 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set messageError = status == "appreciation-message-required" %}
+  {% set errorStatuses = ["appreciation-message-required", "appreciation-self", "appreciation-too-long", "appreciation-rate-limited", "appreciation-safeguarding-restricted", "appreciation-safeguarding-unavailable", "appreciation-failed", "reaction-failed"] %}
+  {% set ownerLabel = owner.name or t("govuk_alpha_saved.wall.from_someone") %}
+
+  <a class="govuk-back-link" href="{{ urlFor('/members/' + (owner.id | string)) }}">{{ t("govuk_alpha_saved.wall.back_to_profile") }}</a>
+
+  {% if status in errorStatuses %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{% if messageError %}<a href="#appreciation-message">{% endif %}{% if status == "appreciation-message-required" %}{{ t("govuk_alpha_saved.status.appreciation_message_required") }}{% elif status == "appreciation-self" %}{{ t("govuk_alpha_saved.status.appreciation_self") }}{% elif status == "appreciation-too-long" %}{{ t("govuk_alpha_saved.status.appreciation_too_long") }}{% elif status == "appreciation-rate-limited" %}{{ t("govuk_alpha_saved.status.appreciation_rate_limited") }}{% elif status == "appreciation-safeguarding-restricted" %}{{ t("safeguarding.errors.interaction_not_allowed") }}{% elif status == "appreciation-safeguarding-unavailable" %}{{ t("safeguarding.errors.policy_unavailable") }}{% elif status == "reaction-failed" %}{{ t("govuk_alpha_saved.status.reaction_failed") }}{% else %}{{ t("govuk_alpha_saved.status.appreciation_failed") }}{% endif %}{% if messageError %}</a>{% endif %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.wall.caption", { name: ownerLabel }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.wall.heading", { name: ownerLabel }) }}</h1>
+
+  {% if status == "appreciation-sent" or status == "reaction-updated" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-wall-status-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="saved-wall-status-title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{% if status == "appreciation-sent" %}{{ t("govuk_alpha_saved.status.appreciation_sent") }}{% else %}{{ t("govuk_alpha_saved.status.reaction_updated") }}{% endif %}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <p class="govuk-body-l">{{ t("govuk_alpha_saved.wall.description") }}</p>
+
+  {% if not isSelf %}
+    <h2 class="govuk-heading-l">{{ t("govuk_alpha_saved.send.heading_to", { name: ownerLabel }) }}</h2>
+    <p class="govuk-body">{{ t("govuk_alpha_saved.send.intro") }}</p>
+    <form method="post" action="{{ urlFor('/users/' + (owner.id | string) + '/appreciations') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if messageError %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label" for="appreciation-message">{{ t("govuk_alpha_saved.send.message_label") }}</label>
+        <div id="appreciation-message-hint" class="govuk-hint">{{ t("govuk_alpha_saved.send.message_hint") }}</div>
+        {% if messageError %}
+          <p id="appreciation-message-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.appreciation_message_required") }}</p>
+        {% endif %}
+        <textarea class="govuk-textarea govuk-!-width-two-thirds" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %}"></textarea>
+      </div>
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.send.public_label") }}</legend>
+          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="appreciation-public" name="is_public" type="checkbox" value="1" checked aria-describedby="appreciation-public-hint">
+              <label class="govuk-label govuk-checkboxes__label" for="appreciation-public">{{ t("govuk_alpha_saved.send.public_label") }}</label>
+              <div id="appreciation-public-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_saved.send.public_hint") }}</div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_saved.send.submit") }}</button>
+    </form>
+    <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+  {% endif %}
+
+  {% if appreciations and appreciations.length %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for appreciation in appreciations %}
+        <li class="nexus-alpha-card" id="appreciation-{{ appreciation.id }}">
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            {% if appreciation.sender.id %}
+              <a class="govuk-link" href="{{ urlFor('/members/' + (appreciation.sender.id | string)) }}">{{ appreciation.sender.name or t("govuk_alpha_saved.wall.from_someone") }}</a>
+            {% else %}
+              {{ appreciation.sender.name or t("govuk_alpha_saved.wall.from_someone") }}
+            {% endif %}
+            {% if appreciation.receivedOn %}<span class="govuk-!-margin-left-1">{{ t("govuk_alpha_saved.wall.received_on", { date: appreciation.receivedOn }) }}</span>{% endif %}
+          </p>
+          <p class="govuk-body">{{ appreciation.message }}</p>
+          <fieldset class="govuk-fieldset govuk-!-margin-bottom-0">
+            <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.react.legend") }}</legend>
+            <div class="govuk-button-group govuk-!-margin-bottom-0">
+              {% for reaction in reactionTypes %}
+                {% set reactionLabel = t("govuk_alpha_saved.react." ~ reaction.value) %}
+                {% set isMine = appreciation.myReaction == reaction.value %}
+                <form method="post" action="{{ urlFor('/appreciations/' + (appreciation.id | string) + '/react') }}" class="nexus-alpha-linkform govuk-!-display-inline-block">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="reaction_type" value="{{ reaction.value }}">
+                  <input type="hidden" name="owner_id" value="{{ owner.id }}">
+                  <button type="submit" class="govuk-button{% if not isMine %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" aria-label="{% if isMine %}{{ t('govuk_alpha_saved.react.remove_label', { reaction: reactionLabel }) }}{% else %}{{ t('govuk_alpha_saved.react.react_label', { reaction: reactionLabel }) }}{% endif %}"{% if isMine %} aria-pressed="true"{% endif %}>{{ reactionLabel }}{% if isMine %} <span aria-hidden="true">&check;</span>{% endif %}</button>
+                </form>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-top-1 govuk-!-margin-bottom-0">{{ tc("govuk_alpha_saved.wall.reactions_count", appreciation.reactionCount, { count: appreciation.reactionCount }) }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_saved.wall.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_saved.wall.empty_body") }}</p>
+    </div>
+  {% endif %}
+
+  {% if lastPage > 1 %}
+    <nav class="govuk-pagination" role="navigation" aria-label="{{ t('govuk_alpha_saved.pagination.page_of', { current: currentPage, last: lastPage }) }}">
+      {% if currentPage > 1 %}
+        <div class="govuk-pagination__prev">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/users/' + (owner.id | string) + '/appreciations?page=' + ((currentPage - 1) | string)) }}" rel="prev">
+            <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.7441 1.4062-1.4062-4.3008-4.3398h11.379v-2h-11.397l4.2998-4.2998-1.4063-1.4063z"></path></svg>
+            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.previous") }}</span>
+          </a>
+        </div>
+      {% endif %}
+      {% if currentPage < lastPage %}
+        <div class="govuk-pagination__next">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/users/' + (owner.id | string) + '/appreciations?page=' + ((currentPage + 1) | string)) }}" rel="next">
+            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.next") }}</span>
+            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4062 1.4062 4.2998 4.2998h-11.397v2h11.379l-4.3008 4.3398 1.4062 1.4062 6.7441-6.7441-6.7266-6.7266z"></path></svg>
+          </a>
+        </div>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}

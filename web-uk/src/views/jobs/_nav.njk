@@ -1,0 +1,26 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% set activeTab = jobsActiveTab or "browse" %}
+{% set jobsTabs = [
+  { key: "browse", label: t("govuk_alpha.jobs_t2.nav_browse"), href: "/jobs" },
+  { key: "saved", label: t("govuk_alpha.jobs_t2.nav_saved"), href: "/jobs/saved" },
+  { key: "applications", label: t("govuk_alpha.jobs_t2.nav_applications"), href: "/jobs/applications" },
+  { key: "responses", label: t("govuk_alpha_jobs.responses.title"), href: "/jobs/responses" },
+  { key: "alerts", label: t("govuk_alpha.jobs_t4.nav_alerts"), href: "/jobs/alerts" },
+  { key: "mine", label: t("govuk_alpha.jobs_t3.nav_mine"), href: "/jobs/mine" },
+  { key: "create", label: t("govuk_alpha.jobs_t3.nav_create"), href: "/jobs/create" }
+] %}
+
+<div class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4">
+  <h2 class="govuk-tabs__title">{{ t("govuk_alpha.jobs.title") }}</h2>
+  <ul class="govuk-tabs__list">
+    {% for tab in jobsTabs %}
+      <li class="govuk-tabs__list-item{% if activeTab == tab.key %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor(tab.href) }}"{% if activeTab == tab.key %} aria-current="page"{% endif %}>{{ tab.label }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

@@ -1,0 +1,150 @@
+{# Copyright (C) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/activity') }}">{{ t("govuk_alpha_activity.insights.back_to_activity") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_activity.insights.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_activity.insights.heading") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_activity.insights.intro") }}</p>
+
+  <h2 class="govuk-visually-hidden">{{ t("govuk_alpha_activity.insights.stats_title") }}</h2>
+  <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_activity.insights.stat_hours_given") }}</dt>
+      <dd>{{ activity.hoursGivenLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_activity.insights.stat_hours_received") }}</dt>
+      <dd>{{ activity.hoursReceivedLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_activity.insights.stat_connections") }}</dt>
+      <dd>{{ activity.connectionsLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_activity.insights.stat_exchanges") }}</dt>
+      <dd>{{ activity.exchangesLabel }}</dd>
+    </div>
+  </dl>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-visually-hidden">{{ t("govuk_alpha_activity.insights.activity_column_title") }}</h2>
+
+      <h3 class="govuk-heading-l">{{ t("govuk_alpha_activity.insights.chart_title") }}</h3>
+      <p class="govuk-body">{{ t("govuk_alpha_activity.insights.chart_intro") }}</p>
+      {% if activity.hasChart %}
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-4">
+          <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_activity.insights.chart_given") }}</strong>
+          <strong class="govuk-tag govuk-tag--turquoise">{{ t("govuk_alpha_activity.insights.chart_received") }}</strong>
+        </p>
+        <div role="img" aria-label="{{ t('govuk_alpha_activity.insights.chart_aria') }}">
+          {% for month in activity.chartMonths %}
+            <div class="govuk-!-margin-bottom-3">
+              <p class="govuk-body-s govuk-!-margin-bottom-1">
+                <strong>{{ month.label }}</strong>
+                <span class="nexus-alpha-meta">
+                  - {{ t("govuk_alpha_activity.insights.chart_given") }} {{ month.givenLabel }} &middot; {{ t("govuk_alpha_activity.insights.chart_received") }} {{ month.receivedLabel }}
+                </span>
+              </p>
+              <progress max="100" value="{{ month.givenPercent }}" aria-label="{{ t('govuk_alpha_activity.insights.chart_month_aria', { label: month.label, given: month.givenLabel, received: month.receivedLabel }) }}">{{ month.givenPercent }}%</progress>
+              <progress max="100" value="{{ month.receivedPercent }}" aria-hidden="true">{{ month.receivedPercent }}%</progress>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_activity.insights.chart_empty") }}</p>
+        </div>
+      {% endif %}
+
+      <h3 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_activity.insights.timeline_title") }}</h3>
+      {% if activity.timeline.length %}
+        <ul class="govuk-list govuk-list--spaced">
+          {% for item in activity.timeline %}
+            <li>
+              <strong class="govuk-tag {{ item.tagClass }}">{{ item.typeLabel }}</strong>
+              {% if item.text %} {{ item.text }}{% endif %}
+              {% if item.dateLabel %}<span class="govuk-body-s nexus-alpha-meta"> - {{ item.dateLabel }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="govuk-inset-text">
+          <h4 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_activity.insights.timeline_empty_title") }}</h4>
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_activity.insights.timeline_empty") }}</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+      <h2 class="govuk-visually-hidden">{{ t("govuk_alpha_activity.insights.sidebar_title") }}</h2>
+
+      <div class="nexus-alpha-card govuk-!-margin-bottom-6">
+        <h3 class="govuk-heading-m">{{ t("govuk_alpha_activity.insights.quick_stats_title") }}</h3>
+        <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("activity.groups_joined") }}</dt>
+            <dd class="govuk-summary-list__value">{{ activity.groupsJoinedLabel }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_activity.insights.quick_posts_30d") }}</dt>
+            <dd class="govuk-summary-list__value">{{ activity.engagement.postsLabel }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_activity.insights.quick_comments_30d") }}</dt>
+            <dd class="govuk-summary-list__value">{{ activity.engagement.commentsLabel }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_activity.insights.quick_likes_given_30d") }}</dt>
+            <dd class="govuk-summary-list__value">{{ activity.engagement.likesGivenLabel }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_activity.insights.quick_likes_received_30d") }}</dt>
+            <dd class="govuk-summary-list__value">{{ activity.engagement.likesReceivedLabel }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("polish_discovery.activity_net_balance") }}</dt>
+            <dd class="govuk-summary-list__value">
+              <strong class="govuk-tag {{ activity.netBalanceInsight.tagClass }}">{{ activity.netBalanceInsight.label }}</strong>
+              <span class="govuk-visually-hidden">{{ activity.netBalanceInsight.meaning }}</span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="nexus-alpha-card">
+        <h3 class="govuk-heading-m">{{ t("govuk_alpha_activity.insights.skills_title") }}</h3>
+        {% if activity.skills.length %}
+          <p class="govuk-body-s nexus-alpha-meta">{{ activity.skillsSummaryLabel }}</p>
+          <ul class="govuk-list nexus-alpha-skill-list govuk-!-margin-bottom-0">
+            {% for skill in activity.skills %}
+              <li>
+                <span>{{ skill.name }}</span>
+                {% if skill.isOffering %}
+                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_activity.insights.skill_offering") }}</strong>
+                {% endif %}
+                {% if skill.isRequesting %}
+                  <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_activity.insights.skill_requesting") }}</strong>
+                {% endif %}
+                {% if skill.endorsementsLabel %}
+                  <span class="govuk-body-s nexus-alpha-meta">{{ skill.endorsementsLabel }}</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("profile_settings.skills.none") }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <p class="govuk-body govuk-!-margin-top-7">
+    <a class="govuk-link" href="{{ urlFor('/activity') }}">{{ t("govuk_alpha_activity.insights.back_to_activity") }}</a>
+  </p>
+{% endblock %}

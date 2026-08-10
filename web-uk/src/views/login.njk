@@ -1,0 +1,202 @@
+{% extends "layouts/base.njk" %}
+
+{% block pageTitle %}{{ t("auth.two_factor_title") if show2fa else t("auth.login_title") }} - {{ serviceName }}{% endblock %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {% if show2fa %}
+        <a class="govuk-back-link" href="{{ urlFor('/login') }}">{{ t("auth.back_to_sign_in") }}</a>
+      {% endif %}
+
+      {% if successMessage %}
+        {% set notificationMessage = successMessage %}
+        {% set notificationType = "success" %}
+        {% include "partials/notification-banner.njk" %}
+      {% endif %}
+
+      {% if error %}
+        {% set loginErrorHref = "#email" %}
+        {% if not show2fa and loginStatus in ["email-not-verified", "pending-verification"] %}
+          {% set loginErrorHref = "#resend_email" %}
+        {% elseif not show2fa and loginStatus and loginStatus != "login-failed" %}
+          {% set loginErrorHref = "#main-content" %}
+        {% endif %}
+        {{ govukErrorSummary({
+          titleText: t("states.error_title"),
+          errorList: [
+            {
+              text: error,
+              href: "#code" if show2fa else loginErrorHref
+            }
+          ],
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      {% if show2fa %}
+        <h1 class="govuk-heading-xl">{{ t("auth.two_factor_title") }}</h1>
+        <p class="govuk-body-l">{{ t("auth.two_factor_description") }}</p>
+
+        <form method="post" action="{{ urlFor('/login/two-factor') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {{ govukInput({
+            label: {
+              text: t("auth.two_factor_code_label"),
+              classes: "govuk-label--m"
+            },
+            hint: {
+              text: t("auth.two_factor_code_hint")
+            },
+            id: "code",
+            name: "code",
+            inputmode: "text",
+            autocomplete: "one-time-code",
+            spellcheck: false,
+            classes: "govuk-input--width-10",
+            errorMessage: { text: error } if error else undefined,
+            attributes: {
+              "autocapitalize": "characters"
+            }
+          }) }}
+
+          <div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-4" data-module="govuk-checkboxes">
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="use_backup_code" name="use_backup_code" type="checkbox" value="1">
+              <label class="govuk-label govuk-checkboxes__label" for="use_backup_code">{{ t("auth.two_factor_use_backup_label") }}</label>
+            </div>
+          </div>
+
+          {% if allowTrustedDevice %}
+            {% set trustDeviceLabel = t("govuk_alpha_settings.nav.trust_device", { days: trustedDeviceDays or 30 }) %}
+            <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+              <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ trustDeviceLabel }}</legend>
+              <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="trust_device" name="trust_device" type="checkbox" value="1">
+                  <label class="govuk-label govuk-checkboxes__label" for="trust_device">{{ trustDeviceLabel }}</label>
+                </div>
+              </div>
+            </fieldset>
+          {% endif %}
+
+          {{ govukButton({
+            text: t("auth.two_factor_submit")
+          }) }}
+        </form>
+
+        <p class="govuk-body govuk-!-margin-top-4">
+          <a href="{{ urlFor('/login') }}" class="govuk-link">{{ t("auth.back_to_sign_in") }}</a>
+        </p>
+
+      {% else %}
+        <h1 class="govuk-heading-xl">{{ t("auth.login_title") }}</h1>
+        <p class="govuk-body-l">{{ t("auth.login_description", { community: tenantName or serviceName }) }}</p>
+
+        {% if loginStatus in ["email-not-verified", "pending-verification"] %}
+          <form method="post" action="{{ urlFor('/login/resend-verification') }}" class="govuk-!-margin-bottom-6" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="resend_email">{{ t("auth.resend_email_label") }}</label>
+              <div id="resend-email-hint" class="govuk-hint">{{ t("auth.resend_verification_hint") }}</div>
+              <input class="govuk-input govuk-!-width-two-thirds" id="resend_email" name="email" type="email" autocomplete="email" value="{{ values.email if values else '' }}" aria-describedby="resend-email-hint" required>
+            </div>
+            <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("auth.resend_verification_button") }}</button>
+          </form>
+        {% endif %}
+
+        <form
+          method="post"
+          action="{{ urlFor('/login') }}"
+          novalidate
+          data-validate-form
+          data-validation-error-title="{{ t('states.error_title') }}"
+          data-validation-error-prefix="{{ t('states.error_prefix') }}"
+          data-loading="{{ t('auth.login_action') }}"
+        >
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {{ govukInput({
+            label: {
+              text: t("auth.email_label"),
+              classes: "govuk-label--m"
+            },
+            id: "email",
+            name: "email",
+            type: "email",
+            autocomplete: "email",
+            spellcheck: false,
+            value: values.email if values else "",
+            errorMessage: { text: error } if loginStatus == "login-failed" else undefined,
+            attributes: {
+              "required": "required",
+              "data-validate": "required email",
+              "data-label": t("auth.email_label"),
+              "data-required-message": t("auth.forgot_invalid"),
+              "data-email-message": t("auth.forgot_invalid")
+            }
+          }) }}
+
+          {{ govukInput({
+            label: {
+              text: t("auth.password_label"),
+              classes: "govuk-label--m"
+            },
+            id: "password",
+            name: "password",
+            type: "password",
+            autocomplete: "current-password",
+            attributes: {
+              "required": "required",
+              "data-validate": "required",
+              "data-label": t("auth.password_label"),
+              "data-required-message": t("auth.login_failed")
+            }
+          }) }}
+
+          <p class="govuk-body govuk-!-margin-bottom-6">
+            <a href="{{ urlFor('/login/forgot-password') }}" class="govuk-link">{{ t("auth.forgot_link") }}</a>
+          </p>
+
+          {% if tenantSlug %}
+            <input type="hidden" name="tenant_slug" value="{{ tenantSlug }}">
+          {% else %}
+            {{ govukInput({
+              label: {
+                text: "Community code",
+                classes: "govuk-label--m"
+              },
+              hint: {
+                text: "Your community identifier (e.g. 'acme')"
+              },
+              id: "tenant_slug",
+              name: "tenant_slug",
+              value: values.tenant_slug if values else "",
+              attributes: {
+                "required": "required",
+                "data-validate": "required",
+                "data-label": "Community code"
+              }
+            }) }}
+          {% endif %}
+
+          {# Turnstile widget removed from login 2026-05-15 — rate-limit is the active defence #}
+
+          {{ govukButton({
+            text: t("auth.login_action")
+          }) }}
+        </form>
+
+        <p class="govuk-body govuk-!-margin-top-6">
+          <a href="{{ urlFor('/register') }}" class="govuk-link">{{ t("auth.need_account") }}</a>
+        </p>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

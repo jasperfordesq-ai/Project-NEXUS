@@ -1,0 +1,267 @@
+{# Copyright © 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/messages') }}" class="govuk-back-link">{{ t("govuk_alpha.actions.back_to_messages") }}</a>
+
+      {% if directStatus and directStatus.type == "success" %}
+        {% set notificationMessage = directStatus.message %}
+        {% set notificationType = "success" %}
+        {% include "partials/notification-banner.njk" %}
+      {% endif %}
+
+      {% if directStatus and directStatus.type == "error" %}
+        {{ govukErrorSummary({
+          titleText: t("govuk_alpha.states.error_title"),
+          errorList: [{ text: directStatus.message, href: directStatus.href }],
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha.messages.title") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha.messages.conversation_title", { name: conversation.otherUser.name }) }}</h1>
+
+      {% if listing %}
+        <div class="govuk-inset-text">
+          <a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">
+            {{ t("govuk_alpha.messages.listing_context", { title: listing.title or listing.name }) }}
+          </a>
+        </div>
+      {% endif %}
+
+      {% if not directMessagingEnabled %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="conversation-disabled-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="conversation-disabled-title">{{ t("govuk_alpha.messages.disabled_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content"><p class="govuk-body">{{ t("govuk_alpha.messages.disabled_detail") }}</p></div>
+        </div>
+      {% elseif restricted %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="conversation-restricted-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="conversation-restricted-title">{{ t("govuk_alpha.messages.disabled_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content"><p class="govuk-body">{{ t("govuk_alpha.messages.restricted_detail") }}</p></div>
+        </div>
+      {% elseif safeguarding and safeguarding.restricted %}
+        <div id="safeguarding-notice" class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="conversation-safeguarding-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="conversation-safeguarding-title">{{ safeguarding.title or t("safeguarding.errors.contact_restricted_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content"><p class="govuk-body">{{ safeguarding.detail or safeguarding.message or t("safeguarding.errors.contact_restricted") }}</p></div>
+        </div>
+      {% endif %}
+
+      {% if meta.hasMore and olderHref %}
+        <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha.messages.older_pagination_label') }}">
+          <div class="govuk-pagination__prev">
+            <a class="govuk-link govuk-pagination__link" href="{{ urlFor(olderHref) }}" rel="prev">
+              <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.4492-4.1856-3.9765h12.896v-2h-12.984l4.2931-4.293-1.414-1.4141z"></path></svg>
+              <span class="govuk-pagination__link-title">{{ t("govuk_alpha.messages.show_older") }}</span>
+            </a>
+          </div>
+        </nav>
+      {% endif %}
+
+      {% if messages and messages.length %}
+        <ol class="govuk-list govuk-list--spaced">
+          {% for message in messages %}
+            <li id="m-{{ message.id }}" class="nexus-alpha-card">
+              <div class="nexus-alpha-card-head">
+                {% if message.sender and message.sender.avatarAssetUrl %}
+                  <img class="nexus-alpha-avatar" src="{{ message.sender.avatarAssetUrl }}" alt="" loading="lazy" decoding="async" width="48" height="48">
+                {% else %}
+                  <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ message.displaySenderName | first | upper }}</span>
+                {% endif %}
+                <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-0">{{ message.displaySenderName }}</p>
+              </div>
+
+              {% if message.created_at or message.createdAt %}
+                <p class="govuk-hint govuk-!-margin-bottom-2">
+                  {{ t("govuk_alpha.messages.sent_label") }} {{ (message.created_at or message.createdAt) | formatBladeDateTime }}
+                  {% if (message.is_edited or message.isEdited) and not message.isDeleted %} <span class="govuk-!-font-weight-regular">· {{ t("govuk_alpha.messages.edited") }}</span>{% endif %}
+                </p>
+              {% endif %}
+
+                {% if message.isDeleted %}
+                  <p class="govuk-body govuk-hint">{{ t("govuk_alpha.messages.deleted_placeholder") }}</p>
+                {% else %}
+                  {% if message.body %}
+                    <div class="govuk-body">{{ message.body }}</div>
+                  {% endif %}
+
+                  {% if (message.is_voice or message.isVoice) and message.audioAssetUrl %}
+                    <audio controls preload="none" src="{{ message.audioAssetUrl }}">
+                      {{ t("govuk_alpha_messages.voice.no_audio_support") }}
+                    </audio>
+                    {% if message.transcript %}
+                      <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
+                        <summary class="govuk-details__summary">
+                          <span class="govuk-details__summary-text">{{ t("govuk_alpha_messages.voice.transcript_toggle") }}</span>
+                        </summary>
+                        <div class="govuk-details__text">{{ message.transcript }}</div>
+                      </details>
+                    {% endif %}
+                  {% endif %}
+
+                  {% set attachments = message.attachments or [] %}
+                  {% if attachments.length %}
+                    <ul class="govuk-list govuk-list--bullet">
+                      {% for attachment in attachments %}
+                        {% set attachmentHref = attachment.assetUrl %}
+                        {% set attachmentName = attachment.name or attachment.file_name or attachment.filename or t("govuk_alpha_messages.attachments.default_name") %}
+                        {% set attachmentMime = attachment.mime_type or attachment.mimeType or attachment.type or '' %}
+                        <li>
+                          {% if attachmentHref %}
+                            {% if attachmentMime.startsWith('image/') %}
+                              <a class="govuk-link" href="{{ attachmentHref }}" target="_blank" rel="noopener"><span class="govuk-visually-hidden"> {{ t("govuk_alpha.opens_new_tab") }}</span>
+                                <img src="{{ attachmentHref }}" alt="{{ attachmentName }}" width="220" loading="lazy" decoding="async">
+                              </a>
+                            {% else %}
+                              <a class="govuk-link" href="{{ attachmentHref }}" download>{{ attachmentName }}</a>
+                            {% endif %}
+                          {% else %}
+                            {{ attachmentName }}
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+
+                  {% if translation and translation.id == message.id and translation.text %}
+                    <div class="govuk-inset-text govuk-!-margin-top-2">
+                      <p class="govuk-body govuk-!-font-weight-bold govuk-!-margin-bottom-1">{{ t("govuk_alpha_messages.translate.translated_label") }}</p>
+                      <p class="govuk-body govuk-!-margin-bottom-0">{{ translation.text }}</p>
+                    </div>
+                  {% elseif translationEnabled and message.id and (message.body | trim) %}
+                    <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/m/' + (message.id | string) + '/translate') }}" class="govuk-!-margin-top-2">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                      <input type="hidden" name="target_language" value="{{ locale }}">
+                      {{ govukButton({ text: t("govuk_alpha_messages.translate.button"), classes: "govuk-button--secondary govuk-!-margin-bottom-0" }) }}
+                    </form>
+                  {% endif %}
+                {% endif %}
+
+                {% if message.canManage %}
+                  <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
+                    <summary class="govuk-details__summary">
+                      <span class="govuk-details__summary-text">{{ t("govuk_alpha.messages.edit_delete_toggle") }}</span>
+                    </summary>
+                    <div class="govuk-details__text">
+                      {% if message.canEdit %}
+                        <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/m/' + (message.id | string) + '/edit') }}" class="govuk-!-margin-bottom-3">
+                          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                          {{ govukTextarea({
+                            label: { text: t("govuk_alpha.messages.edit_label"), classes: "govuk-label--s" },
+                            hint: { text: t("govuk_alpha.messages.edit_window_hint") },
+                            id: "edit-body-" + (message.id | string),
+                            name: "body",
+                            rows: 3,
+                            value: message.body
+                          }) }}
+                          {{ govukButton({ text: t("govuk_alpha.messages.edit_button"), classes: "govuk-button--secondary" }) }}
+                        </form>
+                      {% else %}
+                        <p class="govuk-hint">{{ t("govuk_alpha.messages.edit_expired_notice") }}</p>
+                      {% endif %}
+
+                      <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/m/' + (message.id | string) + '/delete') }}">
+                        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                        <fieldset class="govuk-fieldset govuk-!-margin-bottom-3">
+                          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha.messages.delete_legend") }}</legend>
+                          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+                            <div class="govuk-radios__item">
+                              <input class="govuk-radios__input" id="delete-scope-self-{{ message.id }}" name="scope" type="radio" value="self" checked aria-describedby="delete-scope-self-hint-{{ message.id }}">
+                              <label class="govuk-label govuk-radios__label" for="delete-scope-self-{{ message.id }}">{{ t("govuk_alpha.messages.delete_scope_self") }}</label>
+                              <div id="delete-scope-self-hint-{{ message.id }}" class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha.messages.delete_scope_self_hint") }}</div>
+                            </div>
+                            <div class="govuk-radios__item">
+                              <input class="govuk-radios__input" id="delete-scope-everyone-{{ message.id }}" name="scope" type="radio" value="everyone" aria-describedby="delete-scope-everyone-hint-{{ message.id }}">
+                              <label class="govuk-label govuk-radios__label" for="delete-scope-everyone-{{ message.id }}">{{ t("govuk_alpha.messages.delete_scope_everyone") }}</label>
+                              <div id="delete-scope-everyone-hint-{{ message.id }}" class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha.messages.delete_scope_everyone_hint") }}</div>
+                            </div>
+                          </div>
+                        </fieldset>
+                        {{ govukButton({ text: t("govuk_alpha.messages.delete_button"), classes: "govuk-button--warning" }) }}
+                      </form>
+                    </div>
+                  </details>
+                {% endif %}
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.messages.empty") }}</p></div>
+      {% endif %}
+
+      <div class="nexus-alpha-card govuk-!-margin-top-6 govuk-!-margin-bottom-4">
+        <form method="get" action="{{ urlFor('/messages/' + (conversation.id | string)) }}">
+          {% if listingId %}
+            <input type="hidden" name="listing" value="{{ listingId }}">
+          {% endif %}
+          {{ govukInput({
+            label: { text: t("polish_members.conversation_filter_label"), classes: "govuk-label--s" },
+            hint: { text: t("polish_members.conversation_filter_hint") },
+            id: "conv-search",
+            name: "q",
+            value: query,
+            classes: "govuk-!-width-two-thirds"
+          }) }}
+          <div class="govuk-button-group">
+            {{ govukButton({ text: t("govuk_alpha.polish_members.conversation_filter_submit"), classes: "govuk-button--secondary" }) }}
+            {% if query %}
+              <a class="govuk-link" href="{{ urlFor('/messages/' + (conversation.id | string)) }}">{{ t("govuk_alpha.polish_members.conversation_filter_clear") }}</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      {% if canSend %}
+        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        <h2 class="govuk-heading-m">{{ t("govuk_alpha.actions.reply") }}</h2>
+        <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string)) }}" enctype="multipart/form-data" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% if listingId %}
+            <input type="hidden" name="context_type" value="listing">
+            <input type="hidden" name="context_id" value="{{ listingId }}">
+          {% endif %}
+          {{ govukTextarea({
+            label: { text: t("govuk_alpha.messages.message_label"), classes: "govuk-label--m" },
+            hint: { text: t("govuk_alpha.messages.message_hint") },
+            id: "body",
+            name: "body",
+            rows: 5
+          }) }}
+          <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--s" for="attachments">{{ t("govuk_alpha_messages.attachments.label") }}</label>
+            <div id="attachments-hint" class="govuk-hint">{{ t("govuk_alpha_messages.attachments.hint") }}</div>
+            <input class="govuk-file-upload" id="attachments" name="attachments[]" type="file" multiple aria-describedby="attachments-hint" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx">
+          </div>
+          {{ govukButton({ text: t("govuk_alpha.actions.reply") }) }}
+        </form>
+
+        <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/voice') }}" enctype="multipart/form-data" class="govuk-!-margin-top-4">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group govuk-!-margin-bottom-2">
+            <label class="govuk-label govuk-label--s" for="voice">{{ t("govuk_alpha_messages.voice.label") }}</label>
+            <div id="voice-hint" class="govuk-hint">{{ t("govuk_alpha_messages.voice.hint") }}</div>
+            <input class="govuk-file-upload" id="voice" name="voice" type="file" accept="audio/*" capture aria-describedby="voice-hint">
+          </div>
+          {{ govukButton({ text: t("govuk_alpha_messages.voice.submit"), classes: "govuk-button--secondary" }) }}
+        </form>
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/messages/' + (conversation.id | string) + '/archive') }}" class="govuk-!-margin-top-6">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {{ govukButton({ text: t("govuk_alpha.actions.archive_conversation"), classes: "govuk-button--secondary" }) }}
+      </form>
+{% endblock %}

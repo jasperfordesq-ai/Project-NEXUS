@@ -6,7 +6,7 @@
 
 return [
     'opens_new_tab' => '(s\'ouvre dans un nouvel onglet)',
-    'service_name' => 'Projet NEXUS accessible',
+    'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Bêta',
     'feedback' => 'Donnez votre avis',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',

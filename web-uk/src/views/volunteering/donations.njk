@@ -1,0 +1,202 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="donations-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="donations-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li><a href="#{{ status.field or 'donate-amount' }}">{{ status.message }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_volunteering.donations.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.donations.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.donations.description") }}</p>
+
+  <div class="govuk-inset-text" role="note" aria-labelledby="donations-intro-heading">
+    <h2 class="govuk-heading-s govuk-!-margin-bottom-2" id="donations-intro-heading">{{ t("govuk_alpha_volunteering.donations.intro_title") }}</h2>
+    <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_volunteering.donations.intro_desc") }}</p>
+  </div>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.donations.stats_title") }}</h2>
+  <dl class="nexus-alpha-stat-grid">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.donations.stat_total_raised") }}</dt>
+      <dd>{{ dashboard.stats.totalRaisedLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.donations.stat_total_donors") }}</dt>
+      <dd>{{ dashboard.stats.totalDonors }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.donations.stat_active_campaigns") }}</dt>
+      <dd>{{ dashboard.stats.activeCampaigns }}</dd>
+    </div>
+  </dl>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.donations.giving_days_title") }}</h2>
+  {% if dashboard.givingDays.length %}
+    <ul class="nexus-alpha-card-list govuk-list">
+      {% for day in dashboard.givingDays %}
+        <li class="nexus-alpha-card">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
+            {{ day.title }}
+            <strong class="govuk-tag {{ day.status.className }}">{{ day.status.label }}</strong>
+          </h3>
+          {% if day.description %}
+            <p class="govuk-body">{{ day.description }}</p>
+          {% endif %}
+          <p class="govuk-body govuk-!-margin-bottom-1">{{ t("govuk_alpha_volunteering.donations.progress_label", { raised: day.raisedLabel, goal: day.goalLabel }) }}</p>
+          <progress max="100" value="{{ day.percent }}" aria-label="{{ t('govuk_alpha_volunteering.donations.progress_aria', { percent: day.percent }) }}">{{ day.percent }}%</progress>
+          <p class="nexus-alpha-meta govuk-!-margin-top-1">
+            <span>{{ tc("govuk_alpha_volunteering.donations.donors_count", day.donorCount, { count: day.donorCount }) }}</span>
+            {% if day.endDateLabel %}
+              <span>{{ t("govuk_alpha_volunteering.donations.ends_label") }}: {{ day.endDateLabel }}</span>
+            {% endif %}
+          </p>
+          {% if day.id %}
+            <a class="govuk-link" href="#donate-form" data-vol-giving-day="{{ day.id }}">{{ t("govuk_alpha_volunteering.donations.donate_to_day") }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.donations.giving_days_empty") }}</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.donations.history_title") }}</h2>
+  {% if dashboard.donations.length %}
+    <table class="govuk-table">
+      <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.donations.history_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.donations.col_amount") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.donations.col_status") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.donations.col_method") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.donations.col_when") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.donations.col_message") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for donation in dashboard.donations %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ donation.amountLabel }} {{ donation.currency }}</td>
+            <td class="govuk-table__cell">
+              <strong class="govuk-tag {{ donation.status.className }}">{{ donation.status.label }}</strong>
+              {% if donation.isAnonymous %}
+                <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_volunteering.donations.anonymous_tag") }}</strong>
+              {% endif %}
+            </td>
+            <td class="govuk-table__cell">{{ donation.methodLabel }}</td>
+            <td class="govuk-table__cell">{{ donation.createdAtLabel or "—" }}</td>
+            <td class="govuk-table__cell">{{ donation.message }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.donations.history_empty") }}</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l" id="donate-form">{{ t("govuk_alpha_volunteering.donations.form_title") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.donations.form_intro") }}</p>
+  <form id="donate" method="post" action="{{ urlFor('/volunteering/donations#donate') }}" class="govuk-!-margin-bottom-8">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if status and status.type == 'error' %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="donate-amount">{{ t("govuk_alpha_volunteering.donations.amount_label") }}</label>
+      <div id="donate-amount-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.amount_hint") }}</div>
+      {% if status and status.type == 'error' %}
+        <p id="donate-amount-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">There is a problem:</span>
+          {{ status.message }}
+        </p>
+      {% endif %}
+      <div class="govuk-input__wrapper">
+        <div class="govuk-input__prefix">{{ tenantCurrency }}</div>
+        <input class="govuk-input govuk-input--width-10{% if status and status.type == 'error' %} govuk-input--error{% endif %}" id="donate-amount" name="amount" type="text" inputmode="decimal" spellcheck="false" aria-describedby="donate-amount-hint{% if status and status.type == 'error' %} donate-amount-error{% endif %}">
+      </div>
+    </div>
+
+    {% if dashboard.givingDays.length %}
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="donate-giving-day">{{ t("govuk_alpha_volunteering.donations.campaign_label") }}</label>
+        <div id="donate-giving-day-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.campaign_hint") }}</div>
+        <select class="govuk-select" id="donate-giving-day" name="giving_day_id" aria-describedby="donate-giving-day-hint">
+          <option value="0">{{ t("govuk_alpha_volunteering.donations.campaign_general") }}</option>
+          {% for day in dashboard.givingDays %}
+            {% if day.id %}
+              <option value="{{ day.id }}">{{ day.title }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="donate-method-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.donations.method_label") }}</legend>
+        <div id="donate-method-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.method_hint") }}</div>
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          {% for method in dashboard.paymentMethods %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="donate-method-{{ method.value }}" name="payment_method" type="radio" value="{{ method.value }}"{% if method.checked %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="donate-method-{{ method.value }}">{{ method.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="donate-message">{{ t("govuk_alpha_volunteering.donations.message_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
+      <div id="donate-message-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.message_hint") }}</div>
+      <textarea class="govuk-textarea" id="donate-message" name="message" rows="3" maxlength="500" aria-describedby="donate-message-hint"></textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="donate-anonymous" name="is_anonymous" type="checkbox" value="1" aria-describedby="donate-anonymous-hint">
+          <label class="govuk-label govuk-checkboxes__label" for="donate-anonymous">{{ t("govuk_alpha_volunteering.donations.anonymous_label") }}</label>
+          <div id="donate-anonymous-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_volunteering.donations.anonymous_hint") }}</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.donations.submit_button") }}</button>
+  </form>
+{% endblock %}

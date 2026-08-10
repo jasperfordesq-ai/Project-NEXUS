@@ -1,0 +1,152 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering?tab=organisations') }}">{{ t("govuk_alpha.vol_org.back_to_organisations") }}</a>
+
+  <span class="govuk-caption-l">{{ orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_org.manage_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.vol_org.manage_description") }}</p>
+
+  {% if status and status.type == "success" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-manage-success-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="org-manage-success-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+      </div>
+    </div>
+  {% elif status and status.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ status.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ loadError }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha.vol_org.applications_title") }}</h2>
+  {% if not applications.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.vol_org.applications_empty") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.org_applications_empty_cta") }}</p>
+    </div>
+  {% else %}
+    <p class="govuk-body">{{ t("govuk_alpha.vol_org.applications_description") }}</p>
+    <div class="nexus-alpha-card-list">
+      {% for application in applications %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+            {% if application.applicant.id %}
+              <a class="govuk-link" href="{{ urlFor('/members/' ~ application.applicant.id) }}">{{ application.applicant.name }}</a>
+            {% else %}
+              {{ application.applicant.name }}
+            {% endif %}
+          </h3>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_org.opportunity_label") }}</dt>
+              <dd class="govuk-summary-list__value">
+                {% if application.opportunity.id %}
+                  <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' ~ application.opportunity.id) }}">{{ application.opportunity.title }}</a>
+                {% else %}
+                  {{ application.opportunity.title }}
+                {% endif %}
+              </dd>
+            </div>
+            {% if application.shiftLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_org.shift_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ application.shiftLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if application.createdAtLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_org.applied_on") }}</dt>
+                <dd class="govuk-summary-list__value">{{ application.createdAtLabel }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+          {% if application.message %}
+            <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha.vol_org.applicant_message") }}</strong></p>
+            <div class="govuk-inset-text govuk-!-margin-top-0">{{ application.message }}</div>
+          {% endif %}
+          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/applications/' ~ application.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <p class="govuk-hint govuk-!-margin-top-2 govuk-!-margin-bottom-1">{{ t("govuk_alpha.vol_clarity.org_application_action_hint") }}</p>
+            <div class="govuk-button-group govuk-!-margin-top-0">
+              <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="approve" data-module="govuk-button">{{ t("govuk_alpha.vol_org.approve") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.application_for", { name: application.applicant.name }) }}</span></button>
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="decline" data-module="govuk-button">{{ t("govuk_alpha.vol_org.decline") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.application_for", { name: application.applicant.name }) }}</span></button>
+            </div>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-8">{{ t("govuk_alpha.vol_org.hours_title") }}</h2>
+  <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha.vol_org.hours_credit_notice") }}</p></div>
+  {% if not hours.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.vol_org.hours_empty") }}</p>
+      <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.vol_clarity.org_hours_empty_cta") }}</p>
+    </div>
+  {% else %}
+    <p class="govuk-body">{{ t("govuk_alpha.vol_org.hours_description") }}</p>
+    <div class="nexus-alpha-card-list">
+      {% for log in hours %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+            {% if log.volunteer.id %}
+              <a class="govuk-link" href="{{ urlFor('/members/' ~ log.volunteer.id) }}">{{ log.volunteer.name }}</a>
+            {% else %}
+              {{ log.volunteer.name }}
+            {% endif %}
+          </h3>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-0">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_org.hours_label") }}</dt>
+              <dd class="govuk-summary-list__value">{{ log.hoursLabel }}</dd>
+            </div>
+            {% if log.dateLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_org.date_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ log.dateLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if log.opportunity.title %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_org.opportunity_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ log.opportunity.title }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+          {% if log.description %}
+            <p class="govuk-body govuk-!-margin-top-3">{{ log.description }}</p>
+          {% endif %}
+          <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/hours/' ~ log.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <p class="govuk-hint govuk-!-margin-top-2 govuk-!-margin-bottom-1">{{ t("govuk_alpha.vol_clarity.org_hours_action_hint") }}</p>
+            <div class="govuk-button-group govuk-!-margin-top-0">
+              <button class="govuk-button govuk-!-margin-bottom-0" name="action" value="approve" data-module="govuk-button">{{ t("govuk_alpha.vol_org.approve") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.hours_for", { name: log.volunteer.name }) }}</span></button>
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" name="action" value="decline" data-module="govuk-button">{{ t("govuk_alpha.vol_org.decline") }}<span class="govuk-visually-hidden"> {{ t("govuk_alpha.vol_org.hours_for", { name: log.volunteer.name }) }}</span></button>
+            </div>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

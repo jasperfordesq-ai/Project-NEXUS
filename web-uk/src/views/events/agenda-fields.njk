@@ -1,0 +1,74 @@
+{% macro agendaFields(prefix, session, timezone) %}
+  <input type="hidden" name="timezone" value="{{ timezone }}">
+
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--s" for="{{ prefix }}-title">{{ t("govuk_alpha.events.agenda.fields.title") }}</label>
+    <input class="govuk-input" id="{{ prefix }}-title" name="title" type="text" maxlength="255" value="{{ session.title or '' }}" required>
+  </div>
+
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--s" for="{{ prefix }}-capacity">{{ t("event_agenda.capacity_label") }}</label>
+    <div id="{{ prefix }}-capacity-hint" class="govuk-hint">{{ t("event_agenda.capacity_hint") }}</div>
+    <input class="govuk-input govuk-input--width-5" id="{{ prefix }}-capacity" name="capacity" type="number" min="1" max="100000" inputmode="numeric" aria-describedby="{{ prefix }}-capacity-hint" value="{{ session.capacity.limit if session.capacity and session.capacity.limit else '' }}">
+  </div>
+
+  <div class="govuk-form-group">
+    <label class="govuk-label govuk-label--s" for="{{ prefix }}-description">{{ t("govuk_alpha.events.agenda.fields.description") }}</label>
+    <textarea class="govuk-textarea" id="{{ prefix }}-description" name="description" rows="4" maxlength="4000">{{ session.description or '' }}</textarea>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half"><div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="{{ prefix }}-type">{{ t("govuk_alpha.events.agenda.fields.type") }}</label>
+      <select class="govuk-select" id="{{ prefix }}-type" name="session_type" required>{% for value in ["session", "keynote", "workshop", "panel", "break", "networking", "other"] %}<option value="{{ value }}"{% if (session.type or 'session') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.types." + value) }}</option>{% endfor %}</select>
+    </div></div>
+    <div class="govuk-grid-column-one-half"><div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="{{ prefix }}-visibility">{{ t("govuk_alpha.events.agenda.fields.visibility") }}</label>
+      <div class="govuk-hint">{{ t("govuk_alpha.events.agenda.visibility_hint") }}</div>
+      <select class="govuk-select" id="{{ prefix }}-visibility" name="visibility" required>{% for value in ["public", "registered", "staff"] %}<option value="{{ value }}"{% if (session.visibility or 'public') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.visibilities." + value) }}</option>{% endfor %}</select>
+    </div></div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="{{ prefix }}-start">{{ t("govuk_alpha.events.agenda.fields.start") }}</label><input class="govuk-input" id="{{ prefix }}-start" name="start_at" type="datetime-local" value="{{ session.start_at_local or '' }}" required></div></div>
+    <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="{{ prefix }}-end">{{ t("govuk_alpha.events.agenda.fields.end") }}</label><input class="govuk-input" id="{{ prefix }}-end" name="end_at" type="datetime-local" value="{{ session.end_at_local or '' }}" required></div></div>
+  </div>
+  <p class="govuk-hint">{{ t("govuk_alpha.events.agenda.timezone_hint", { timezone: timezone }) }}</p>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="{{ prefix }}-track">{{ t("govuk_alpha.events.agenda.fields.track") }}</label><input class="govuk-input" id="{{ prefix }}-track" name="track_name" type="text" maxlength="160" value="{{ session.track or '' }}"></div></div>
+    <div class="govuk-grid-column-one-half"><div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="{{ prefix }}-room">{{ t("govuk_alpha.events.agenda.fields.room") }}</label><input class="govuk-input" id="{{ prefix }}-room" name="room_name" type="text" maxlength="160" value="{{ session.room or '' }}"></div></div>
+  </div>
+
+  <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha.events.agenda.fields.speakers") }}</legend>
+    <div class="govuk-hint">{{ t("govuk_alpha.events.agenda.speakers_hint") }}</div>
+    {% for speaker in session.speakerRows %}
+      <div class="govuk-grid-row govuk-!-margin-bottom-2">
+        <input type="hidden" name="speaker_member_id[]" value="{{ speaker.member_id or '' }}">
+        <div class="govuk-grid-column-one-half">
+          <label class="govuk-label" for="{{ prefix }}-speaker-name-{{ loop.index0 }}">{{ t("govuk_alpha.events.agenda.fields.speaker_name", { number: loop.index }) }}</label>
+          <input class="govuk-input" id="{{ prefix }}-speaker-name-{{ loop.index0 }}" name="speaker_name[]" type="text" maxlength="160" value="{{ speaker.display_name or '' }}"{% if speaker.member_id %} readonly{% endif %}>
+          {% if speaker.member_id %}<div class="govuk-hint">{{ t("govuk_alpha.events.agenda.linked_member") }}</div>{% endif %}
+        </div>
+        <div class="govuk-grid-column-one-half"><label class="govuk-label" for="{{ prefix }}-speaker-role-{{ loop.index0 }}">{{ t("govuk_alpha.events.agenda.fields.speaker_role") }}</label><input class="govuk-input" id="{{ prefix }}-speaker-role-{{ loop.index0 }}" name="speaker_role[]" type="text" maxlength="120" value="{{ speaker.role or '' }}"></div>
+      </div>
+    {% endfor %}
+  </fieldset>
+
+  <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("event_agenda.resources_title") }}</legend>
+    <div class="govuk-hint">{{ t("event_agenda.resources_hint") }}</div>
+    {% for resource in session.resourceRows %}
+      <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+        <legend class="govuk-fieldset__legend">{{ t("event_agenda.resource_number", { number: loop.index }) }}</legend>
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-half"><label class="govuk-label" for="{{ prefix }}-resource-type-{{ loop.index0 }}">{{ t("event_agenda.resource_type") }}</label><select class="govuk-select" id="{{ prefix }}-resource-type-{{ loop.index0 }}" name="resource_type[]">{% for value in ["link", "document", "slides", "download", "stream", "recording"] %}<option value="{{ value }}"{% if (resource.type or 'link') == value %} selected{% endif %}>{{ t("event_agenda.resource_types." + value) }}</option>{% endfor %}</select></div>
+          <div class="govuk-grid-column-one-half"><label class="govuk-label" for="{{ prefix }}-resource-visibility-{{ loop.index0 }}">{{ t("event_agenda.resource_visibility") }}</label><select class="govuk-select" id="{{ prefix }}-resource-visibility-{{ loop.index0 }}" name="resource_visibility[]">{% for value in ["public", "registered", "staff"] %}<option value="{{ value }}"{% if (resource.visibility or 'public') == value %} selected{% endif %}>{{ t("govuk_alpha.events.agenda.visibilities." + value) }}</option>{% endfor %}</select></div>
+        </div>
+        <div class="govuk-form-group"><label class="govuk-label" for="{{ prefix }}-resource-title-{{ loop.index0 }}">{{ t("event_agenda.resource_title") }}</label><input class="govuk-input" id="{{ prefix }}-resource-title-{{ loop.index0 }}" name="resource_title[]" type="text" maxlength="191" value="{{ resource.title or '' }}"></div>
+        <div class="govuk-form-group"><label class="govuk-label" for="{{ prefix }}-resource-url-{{ loop.index0 }}">{{ t("event_agenda.resource_url") }}</label><div class="govuk-hint">{{ t("event_agenda.resource_url_hint") }}</div><input class="govuk-input" id="{{ prefix }}-resource-url-{{ loop.index0 }}" name="resource_url[]" type="url" inputmode="url" maxlength="2048" value="{{ resource.url or '' }}"></div>
+      </fieldset>
+    {% endfor %}
+  </fieldset>
+{% endmacro %}

@@ -1,0 +1,113 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block beforeContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/explore') }}">{{ t("onboarding.back") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_aichat.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_aichat.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_aichat.description") }}</p>
+
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+      {{ t("govuk_alpha_aichat.ai_notice") }}
+    </strong>
+  </div>
+
+  {% if status == "empty" %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: [
+        {
+          text: t("govuk_alpha_aichat.status_empty"),
+          href: "#message"
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  {% if status == "failed" or apiError %}
+    {{ govukNotificationBanner({
+      titleText: t("states.error_title"),
+      text: t("govuk_alpha_aichat.unavailable_reply")
+    }) }}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-third">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_aichat.conversations_title") }}</h2>
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ urlFor('/chat') }}">{{ t("govuk_alpha_aichat.new_conversation") }}</a>
+      </p>
+
+      {% if conversations and conversations.length %}
+        <ul class="govuk-list govuk-list--spaced">
+          {% for conversation in conversations %}
+            <li>
+              {% if selectedId and conversation.id == selectedId %}
+                <strong>{{ conversation.title or t("govuk_alpha_aichat.thread_title") }}</strong>
+              {% else %}
+                <a class="govuk-link" href="{{ urlFor('/chat?c=' + (conversation.id | string)) }}">{{ conversation.title or t("govuk_alpha_aichat.thread_title") }}</a>
+              {% endif %}
+              {% if conversation.updated_at %}
+                <br><span class="govuk-hint govuk-!-font-size-16">{{ conversation.updated_at | formatDate }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-hint">{{ t("govuk_alpha_aichat.no_conversations") }}</p>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_aichat.thread_title") }}</h2>
+
+      {% if messages and messages.length %}
+        <ol class="govuk-list govuk-list--spaced">
+          {% for message in messages %}
+            <li class="nexus-alpha-card">
+              <p class="govuk-!-margin-bottom-1">
+                {% if message.role == "user" %}
+                  <strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_aichat.you") }}</strong>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_aichat.assistant") }}</strong>
+                {% endif %}
+              </p>
+              <div class="govuk-body govuk-!-margin-bottom-0">{{ message.content | nl2br | safe }}</div>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="govuk-inset-text">{{ t("govuk_alpha_aichat.empty_thread") }}</p>
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/chat') }}" class="govuk-!-margin-top-4">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% if selectedId %}
+          <input type="hidden" name="conversation_id" value="{{ selectedId }}">
+        {% endif %}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="message">{{ t("govuk_alpha_aichat.message_label") }}</label>
+          <div id="message-hint" class="govuk-hint">{{ t("govuk_alpha_aichat.message_hint") }}</div>
+          <textarea class="govuk-textarea" id="message" name="message" rows="4" maxlength="4000" aria-describedby="message-hint" required></textarea>
+        </div>
+        {{ govukButton({
+          text: t("govuk_alpha_aichat.send")
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("tenant_chooser.title") }}</h1>
+
+      <p class="govuk-body-l">
+        {{ t("tenant_chooser.description") }}
+      </p>
+
+      {% if tenantLoadError %}
+        <div class="govuk-inset-text">
+          We could not load the available communities. Try again later.
+        </div>
+      {% endif %}
+
+      {% if tenants and tenants.length %}
+        <ul class="nexus-alpha-card-list">
+          {% for community in tenants %}
+            <li class="nexus-alpha-card">
+              <h2 class="govuk-heading-m nexus-alpha-card__title">
+                <a class="govuk-link" href="{{ community.href }}">{{ community.name }}</a>
+              </h2>
+
+              {% if community.tagline %}
+                <p class="govuk-body">{{ community.tagline }}</p>
+              {% endif %}
+
+              <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("tenant_chooser.community_slug", { slug: community.slug }) }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
+        <p class="govuk-body">{{ t("tenant_chooser.empty") }}</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

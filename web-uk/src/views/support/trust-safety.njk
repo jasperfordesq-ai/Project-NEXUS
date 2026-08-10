@@ -1,0 +1,45 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("trust_safety.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("trust_safety.title") }}</h1>
+      <p class="govuk-body-l">{{ t("trust_safety.subtitle", { name: communityName }) }}</p>
+
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.important") }}</span>
+          <span class="govuk-!-font-weight-bold">{{ t("trust_safety.safeguarding_title") }}.</span>
+          {{ t("trust_safety.safeguarding_body") }}
+        </strong>
+      </div>
+
+      {% for section in sections %}
+        <h2 class="govuk-heading-m">{{ section.heading }}</h2>
+        {% if section.intro %}
+          <p class="govuk-body">{{ section.intro }}</p>
+        {% endif %}
+        {% if section.items.length %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for item in section.items %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endfor %}
+
+      <h2 class="govuk-heading-m">{{ t("trust_safety.contact_cta_title") }}</h2>
+      <p class="govuk-body">{{ t("trust_safety.contact_cta_body") }}</p>
+      <div class="govuk-button-group">
+        <a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/contact') }}">{{ t("trust_safety.contact_cta_button") }}</a>
+        <a class="govuk-link" href="{{ urlFor('/legal/community-guidelines') }}">{{ t("trust_safety.community_guidelines_link") }}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ tenantName }}</span>
+  <h1 class="govuk-heading-xl">{{ title }}</h1>
+  <p class="govuk-body-l">{{ body }}</p>
+
+  <div class="govuk-inset-text">
+    This is a shared accessible frontend preparation page. It preserves the
+    Laravel Blade link contract but does not certify ASP.NET route or workflow
+    parity yet.
+  </div>
+
+  {% if returnUrl %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ returnUrl }}">{{ t("report_problem.back") }}</a>
+    </p>
+  {% endif %}
+{% endblock %}

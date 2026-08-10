@@ -1,0 +1,74 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.showcase.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.showcase.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.showcase.description") }}</p>
+
+  {% set gamificationNavGroup = "achievements" %}
+  {% set gamificationActiveTab = "showcase" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if status == 'showcase-updated' %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="showcase-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="showcase-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_gamification.showcase.states.showcase-updated") }}</p>
+      </div>
+    </div>
+  {% elif status == 'showcase-failed' or status == 'showcase-too-many' or status == 'showcase-not-owned' %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-error-summary__list">
+            <li>
+              <a href="#showcase-badges">
+                {% if status == 'showcase-too-many' %}
+                  {{ t("govuk_alpha_gamification.showcase.states.showcase-too-many") }}
+                {% elif status == 'showcase-not-owned' %}
+                  {{ t("govuk_alpha_gamification.showcase.states.showcase-not-owned") }}
+                {% else %}
+                  {{ t("govuk_alpha_gamification.showcase.states.showcase-failed") }}
+                {% endif %}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if earnedBadges.length %}
+    <form method="post" action="{{ urlFor('/achievements/showcase') }}">
+      <fieldset class="govuk-fieldset" id="showcase-badges" aria-describedby="showcase-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_gamification.showcase.legend") }}</legend>
+        <div id="showcase-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.showcase.hint") }}</div>
+        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+          {% for badge in earnedBadges %}
+            <div class="govuk-checkboxes__item">
+              <input class="govuk-checkboxes__input" id="showcase-{{ loop.index0 }}" name="badge_keys[]" type="checkbox" value="{{ badge.key }}"{% if badge.isShowcased %} checked{% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="showcase-{{ loop.index0 }}">
+                {{ badge.name }}
+                {% if badge.description %}<span class="govuk-hint">{{ badge.description }}</span>{% endif %}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button">{{ t("govuk_alpha_gamification.showcase.save_button") }}</button>
+    </form>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.showcase.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

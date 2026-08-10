@@ -1,0 +1,76 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set statusOptions = [
+    { value: "not_started", label: "Not started" },
+    { value: "in_progress", label: "In progress" },
+    { value: "implemented", label: "Implemented" },
+    { value: "abandoned", label: "Abandoned" }
+  ] %}
+  {% set currentStatus = outcome.status or "not_started" %}
+
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ challenge.title }}</span>
+  <h1 class="govuk-heading-xl">Record challenge outcome</h1>
+  <p class="govuk-body-l">Capture the winning idea, how far it has been implemented, and the impact it had.</p>
+
+  <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/outcome') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="winning_idea_id">Winning idea</label>
+      <select class="govuk-select" id="winning_idea_id" name="winning_idea_id">
+        <option value="">No winning idea selected</option>
+        {% for idea in ideas %}
+          <option value="{{ idea.id }}"{% if outcome.winningIdeaId == idea.id %} selected{% endif %}>{{ idea.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Implementation status</legend>
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          {% for option in statusOptions %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="outcome-status-{{ option.value }}" name="outcome_status" type="radio" value="{{ option.value }}"{% if currentStatus == option.value %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="outcome-status-{{ option.value }}">{{ option.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="impact_description">Impact (optional)</label>
+      <div id="impact_description-hint" class="govuk-hint">Describe the difference this idea made once it was put into action.</div>
+      <textarea class="govuk-textarea" id="impact_description" name="impact_description" rows="4" maxlength="5000" aria-describedby="impact_description-hint">{{ outcome.impactDescription or '' }}</textarea>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">Save outcome</button>
+  </form>
+{% endblock %}

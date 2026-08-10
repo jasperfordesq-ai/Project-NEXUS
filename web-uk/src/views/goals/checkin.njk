@@ -1,0 +1,97 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  {% if successMessage %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: t("states.success_title"),
+      text: successMessage
+    }) }}
+  {% endif %}
+
+  {% if errorMessage %}
+    {{ govukErrorSummary({
+      titleText: t("states.error_title"),
+      errorList: [
+        {
+          text: errorMessage,
+          href: "#progress_percent"
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.checkin.caption") }}: {{ goal.title }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.checkin.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_goals.checkin.intro") }}</p>
+
+  <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/checkin') }}" class="govuk-grid-row">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="progress_percent">{{ t("govuk_alpha_goals.checkin.progress_label") }}</label>
+        <div id="progress-hint" class="govuk-hint">{{ t("govuk_alpha_goals.checkin.progress_help") }}</div>
+        <input class="govuk-input govuk-input--width-5" id="progress_percent" name="progress_percent" type="number" min="0" max="100" step="1" inputmode="numeric" value="{{ currentPercent }}" aria-describedby="progress-hint">
+      </div>
+
+      <fieldset class="govuk-fieldset govuk-form-group">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_goals.checkin.mood_legend") }}</legend>
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="mood-none" name="mood" type="radio" value="" checked>
+            <label class="govuk-label govuk-radios__label" for="mood-none">{{ t("govuk_alpha_goals.checkin.mood_none") }}</label>
+          </div>
+          {% for mood in moods %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="mood-{{ mood.value }}" name="mood" type="radio" value="{{ mood.value }}">
+              <label class="govuk-label govuk-radios__label" for="mood-{{ mood.value }}">{{ mood.label }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--m" for="note">{{ t("govuk_alpha_goals.checkin.note_label") }}</label>
+        <div id="note-hint" class="govuk-hint">{{ t("govuk_alpha_goals.checkin.note_help") }}</div>
+        <textarea class="govuk-textarea" id="note" name="note" rows="3" maxlength="2000" aria-describedby="note-hint"></textarea>
+      </div>
+
+      <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_goals.checkin.submit") }}</button>
+    </div>
+  </form>
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_goals.checkin.history_title") }}</h2>
+  {% if checkins.length %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for checkin in checkins %}
+        <li class="nexus-alpha-card">
+          <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ checkin.progressText }}</strong></p>
+          {% if checkin.moodLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("govuk_alpha_goals.checkin.history_mood", { mood: checkin.moodLabel }) }}</p>
+          {% endif %}
+          {% if checkin.note %}
+            <p class="govuk-body govuk-!-margin-bottom-1">{{ checkin.note }}</p>
+          {% endif %}
+          {% if checkin.createdAtLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ checkin.createdAtLabel }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_goals.checkin.history_empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

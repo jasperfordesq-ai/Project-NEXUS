@@ -1,0 +1,83 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#draft-title-{{ drafts[0].id if drafts and drafts.length else '0' }}">{{ errorMessage }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if challenge.title %}
+    <span class="govuk-caption-xl">{{ challenge.title }}</span>
+  {% endif %}
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Your draft ideas</h1>
+  <p class="govuk-body-l">Drafts are only visible to you. Finish a draft and publish it to share your idea with the challenge.</p>
+
+  {% if not drafts or not drafts.length %}
+    <div class="govuk-inset-text">You have no draft ideas for this challenge.</div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for draft in drafts %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ draft.title if draft.title else "Untitled draft" }}</h2>
+            <strong class="govuk-tag govuk-tag--yellow">Draft</strong>
+          </div>
+
+          {% if draft.updatedAt %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">Saved {{ draft.updatedAt }}</p>
+          {% elif draft.createdAt %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">Started {{ draft.createdAt }}</p>
+          {% endif %}
+
+          <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/drafts/' ~ draft.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Edit draft</h3>
+            <div class="govuk-form-group{% if status == 'draft-invalid' %} govuk-form-group--error{% endif %}">
+              <label class="govuk-label" for="draft-title-{{ draft.id }}">Idea title</label>
+              {% if status == 'draft-invalid' %}
+                <p id="draft-title-{{ draft.id }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a title for your draft.</p>
+              {% endif %}
+              <input class="govuk-input" id="draft-title-{{ draft.id }}" name="draft_title" type="text" maxlength="255" value="{{ draft.title }}" {% if status == 'draft-invalid' %}aria-describedby="draft-title-{{ draft.id }}-error"{% endif %}>
+            </div>
+            <div class="govuk-form-group">
+              <label class="govuk-label" for="draft-description-{{ draft.id }}">Idea details</label>
+              <div id="draft-description-hint-{{ draft.id }}" class="govuk-hint">You can save a draft with just a title, but you will need details before you can publish.</div>
+              <textarea class="govuk-textarea" id="draft-description-{{ draft.id }}" name="draft_description" rows="5" maxlength="5000" aria-describedby="draft-description-hint-{{ draft.id }}">{{ draft.description }}</textarea>
+            </div>
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">Warning</span>
+                Publishing shares this idea with everyone and it can no longer be edited as a draft.
+              </strong>
+            </div>
+            <div class="govuk-button-group">
+              <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="draft_action" value="save">Save draft</button>
+              <button class="govuk-button" data-module="govuk-button" name="draft_action" value="publish">Publish idea</button>
+            </div>
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

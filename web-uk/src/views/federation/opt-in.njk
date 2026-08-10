@@ -1,0 +1,146 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("federation.optin.back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("federation.optin.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("federation.optin.title") }}</h1>
+  <p class="govuk-body-l">{{ t("federation.optin.description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
+  {% if statusBanner %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ statusBanner.message }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("federation.optin.benefits_heading") }}</h2>
+  <div class="govuk-grid-row govuk-!-margin-bottom-6">
+    <div class="govuk-grid-column-one-third">
+      <div class="nexus-alpha-card">
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("federation.optin.benefit_discover_title") }}</h3>
+        <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("federation.optin.benefit_discover_body") }}</p>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-third">
+      <div class="nexus-alpha-card">
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("federation.optin.benefit_meet_title") }}</h3>
+        <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("federation.optin.benefit_meet_body") }}</p>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-third">
+      <div class="nexus-alpha-card">
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("federation.optin.benefit_exchange_title") }}</h3>
+        <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("federation.optin.benefit_exchange_body") }}</p>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" action="{{ urlFor('/federation/opt-in') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="preferences_submitted" value="1">
+
+    <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("federation.optin.privacy_legend") }}</legend>
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="profile_visible_federated" name="profile_visible_federated" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="profile_visible_federated">{{ t("federation.settings.profile_visible_label") }}</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="appear_in_federated_search" name="appear_in_federated_search" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="appear_in_federated_search">{{ t("federation.settings.appear_in_search_label") }}</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="show_skills_federated" name="show_skills_federated" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="show_skills_federated">{{ t("federation.settings.show_skills_label") }}</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="show_location_federated" name="show_location_federated" type="checkbox" value="1" aria-describedby="show_location_federated-hint">
+          <label class="govuk-label govuk-checkboxes__label" for="show_location_federated">{{ t("federation.settings.show_location_label") }}</label>
+          <div id="show_location_federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("federation.optin.location_hint") }}</div>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="show_reviews_federated" name="show_reviews_federated" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="show_reviews_federated">{{ t("federation.settings.show_reviews_label") }}</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("federation.optin.communication_legend") }}</legend>
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="messaging_enabled_federated" name="messaging_enabled_federated" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="messaging_enabled_federated">{{ t("polish_federation.settings_messaging_label") }}</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="transactions_enabled_federated" name="transactions_enabled_federated" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="transactions_enabled_federated">{{ t("polish_federation.settings_transactions_label") }}</label>
+        </div>
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="email_notifications" name="email_notifications" type="checkbox" value="1" checked>
+          <label class="govuk-label govuk-checkboxes__label" for="email_notifications">{{ t("federation.settings.email_notifications_label") }}</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="govuk-fieldset govuk-!-margin-bottom-2">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("federation.optin.reach_legend") }}</legend>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="service_reach">{{ t("federation.settings.reach_legend") }}</label>
+        <select class="govuk-select" id="service_reach" name="service_reach">
+          <option value="local_only" selected>{{ t("federation.settings.reach_local_only") }}</option>
+          <option value="remote_ok">{{ t("federation.settings.reach_remote_ok") }}</option>
+          <option value="travel_ok">{{ t("federation.settings.reach_travel_ok") }}</option>
+        </select>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="travel_radius_km">{{ t("federation.optin.travel_radius_label") }}</label>
+        <div id="travel_radius_km-hint" class="govuk-hint">{{ t("federation.optin.travel_radius_hint") }}</div>
+        <div class="govuk-input__wrapper">
+          <input class="govuk-input govuk-input--width-5" id="travel_radius_km" name="travel_radius_km" type="number" min="0" max="500" step="1" value="25" aria-describedby="travel_radius_km-hint" spellcheck="false">
+          <div class="govuk-input__suffix" aria-hidden="true">{{ t("federation.optin.travel_radius_suffix") }}</div>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="govuk-button-group">
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("federation.optin.submit") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/federation') }}">{{ t("federation.optin.do_this_later") }}</a>
+    </div>
+  </form>
+
+  <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("federation.optin.partners_heading") }}</h2>
+  {% if partners.length %}
+    <div class="nexus-alpha-card-list">
+      {% for partner in partners %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ partner.name }}</h3>
+          {% if partner.location %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("federation.location_label") }}: {{ partner.location }}</p>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("federation.members_label") }}: {{ partner.memberCountLabel }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("federation.optin.partners_empty") }}</p></div>
+  {% endif %}
+{% endblock %}

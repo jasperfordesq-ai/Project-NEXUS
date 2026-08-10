@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    # `ready_for_review` is REQUIRED here, not decoration: the heavy matrices
+    # below skip while a PR is a draft, so marking it ready must itself be an
+    # event that re-runs them. Without it a draft could be marked ready and
+    # merged having never run PHP tests, React tests, or the ASP.NET suite.
+    types: [opened, synchronize, reopened, ready_for_review]
   # Manual trigger — forces every job to run regardless of changed paths
   # (the per-job workflow_dispatch/schedule conditions below already opt in).
   # Use this to run the full suite on the current HEAD when the last push only
@@ -96,7 +101,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: changes
-    if: needs.changes.outputs.php == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    # Draft PRs skip this matrix — see the `types:` list at the top of the file.
+    # `!= true` (not `== false`) is deliberate: on push, schedule and dispatch
+    # there is no pull_request object at all, so the expression must hold when
+    # the field is ABSENT, not only when it is literally false. Marking a PR
+    # ready fires `ready_for_review`, which runs the full matrix before merge is
+    # possible; the nightly sweep and release-gate are the other two nets.
+    if: >-
+      ((needs.changes.outputs.php == 'true') && (github.event.pull_request.draft != true))
+      || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
 
     env:
       # 6 → 10 on 2026-08-03. Measured at 6: shards ranged 15–29 min (~125 min
@@ -723,7 +736,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    # Draft PRs skip this matrix — same reasoning as php-tests above, including
+    # why the test is `!= true` rather than `== false`.
+    if: >-
+      ((needs.changes.outputs.frontend == 'true') && (github.event.pull_request.draft != true))
+      || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     strategy:
       fail-fast: false
       matrix:
@@ -817,6 +834,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # The ONLY mechanism keeping aspnet-backend/ and web-uk/ out of the live
+      # PHP image is that Dockerfile.bluegreen copies an explicit allowlist of
+      # directories rather than `COPY . .`. Nothing else in CI would notice if
+      # that were widened — one well-meant "simplify the build" edit would ship
+      # both experimental trees into production. Runs in this always-on job so a
+      # path filter can never let it sleep.
+      - name: Production image copies an allowlist, not the whole context
+        run: node scripts/check-production-image-allowlist.mjs
 
       - name: Compare PHP settings between Dockerfile and Dockerfile.prod
         run: |

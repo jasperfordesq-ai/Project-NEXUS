@@ -1,0 +1,174 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set gamificationNavGroup = "achievements" %}
+  {% set gamificationActiveTab = "" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  <span class="govuk-caption-xl">{{ t("achievements.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("achievements.title") }}</h1>
+  <p class="govuk-body-l">{{ t("achievements.description") }}</p>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-4">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("achievements.level_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ achievements.profile.levelLabel }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("achievements.xp_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ achievements.profile.xpLabel }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("achievements.badges_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ achievements.profile.badgesCountLabel }}</dd>
+    </div>
+  </dl>
+
+  {% if achievements.profile.atMaxLevel %}
+    <p class="govuk-body">{{ t("achievements.max_level") }}</p>
+  {% else %}
+    <p class="govuk-body govuk-!-margin-bottom-1">{{ t("achievements.progress_to_next", { percent: achievements.profile.progressPercent }) }}</p>
+    <span class="govuk-body-s govuk-!-margin-right-2">{{ achievements.profile.progressPercent }}%</span>
+    <progress max="100" value="{{ achievements.profile.progressPercent }}" aria-label="{{ achievements.profile.progressPercent }}%">{{ achievements.profile.progressPercent }}%</progress>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("polish_gamify.daily_reward_title") }}</h2>
+  <p class="govuk-body">{{ t("polish_gamify.daily_reward_description") }}</p>
+
+  {% if achievements.status.dailySuccessMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="daily-reward-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="daily-reward-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ achievements.status.dailySuccessMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if achievements.status.dailyError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ achievements.status.dailyError }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-4">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("polish_gamify.daily_reward_streak", { days: achievements.dailyReward.streak }) }}</dt>
+      <dd class="govuk-summary-list__value">{{ t("polish_gamify.daily_reward_next_xp", { xp: achievements.dailyReward.nextXp }) }}</dd>
+    </div>
+  </dl>
+
+  {% if achievements.dailyReward.canClaim %}
+    <form method="post" action="{{ urlFor('/achievements/daily-reward') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("polish_gamify.daily_reward_button") }}</button>
+    </form>
+  {% else %}
+    <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("polish_gamify.daily_reward_claimed") }}</strong></p>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("polish_gamify.challenges_title") }}</h2>
+  <p class="govuk-body">{{ t("polish_gamify.challenges_description") }}</p>
+
+  {% if achievements.status.challengeSuccess %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="challenge-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="challenge-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ achievements.status.challengeSuccess }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if achievements.status.challengeError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ achievements.status.challengeError }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if achievements.challenges.length %}
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-8">
+      {% for challenge in achievements.challenges %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ challenge.title }}</h3>
+            {% if challenge.claimed %}
+              <strong class="govuk-tag govuk-tag--green">{{ t("polish_gamify.challenge_claimed_tag") }}</strong>
+            {% elif challenge.completed %}
+              <strong class="govuk-tag govuk-tag--blue">{{ t("polish_gamify.challenge_completed_tag") }}</strong>
+            {% endif %}
+          </div>
+          {% if challenge.description %}
+            <p class="govuk-body-s govuk-!-margin-bottom-1">{{ challenge.description }}</p>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            {{ t("polish_gamify.challenge_progress_label", { current: challenge.current, target: challenge.target }) }}
+            &middot; {{ t("polish_gamify.challenge_reward_xp", { xp: challenge.rewardXp }) }}
+            {% if challenge.daysRemaining > 0 %}&middot; {{ t("polish_gamify.challenge_days_left", { days: challenge.daysRemaining }) }}{% endif %}
+          </p>
+          <span class="govuk-body-s govuk-!-margin-right-2">{{ challenge.percent }}%</span>
+          <progress max="100" value="{{ challenge.percent }}" aria-label="{{ challenge.percent }}%">{{ challenge.percent }}%</progress>
+          {% if challenge.claimable %}
+            <form method="post" action="{{ urlFor('/achievements/challenges/' + (challenge.id | string) + '/claim') }}" class="govuk-!-margin-top-2">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_gamify.challenge_claim_button") }}</button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("polish_gamify.challenges_empty") }}</p>
+    </div>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("achievements.earned_title") }}</h2>
+  {% if achievements.earnedBadges.length %}
+    <div class="nexus-alpha-card-list">
+      {% for badge in achievements.earnedBadges %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{% if badge.icon %}{{ badge.icon }} {% endif %}{{ badge.name }}</h3>
+          {% if badge.message %}
+            <p class="govuk-body-s govuk-!-margin-bottom-0">{{ badge.message }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("achievements.earned_empty") }}</p>
+    </div>
+  {% endif %}
+
+  {% if achievements.badgeProgress.length %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("achievements.progress_title") }}</h2>
+    {% for badge in achievements.badgeProgress %}
+      <div class="govuk-!-margin-bottom-3">
+        <p class="govuk-body govuk-!-margin-bottom-1">{% if badge.icon %}{{ badge.icon }} {% endif %}{{ badge.name }} - {{ t("achievements.progress_remaining", { remaining: badge.remaining }) }}</p>
+        <span class="govuk-body-s govuk-!-margin-right-2">{{ badge.percent }}%</span>
+        <progress max="100" value="{{ badge.percent }}" aria-label="{{ badge.percent }}%">{{ badge.percent }}%</progress>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

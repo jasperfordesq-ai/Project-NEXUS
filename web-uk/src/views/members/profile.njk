@@ -1,0 +1,264 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block beforeContent %}
+  {{ super() }}
+  {% if not isOwnProfile %}
+    {{ govukBackLink({
+      text: t("actions.back_to_members"),
+      href: urlFor("/members")
+    }) }}
+  {% endif %}
+{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      {% if successMessage %}
+        {% set notificationMessage = successMessage %}
+        {% set notificationType = "success" %}
+        {% include "partials/notification-banner.njk" %}
+      {% endif %}
+
+      {% if errorMessage %}
+        {% set notificationMessage = errorMessage %}
+        {% set notificationType = null %}
+        {% include "partials/notification-banner.njk" %}
+      {% endif %}
+
+      <div class="govuk-grid-row govuk-!-margin-bottom-6">
+        <div class="govuk-grid-column-one-quarter">
+          {% set size = 'large' %}{% include "partials/avatar.njk" %}
+        </div>
+        <div class="govuk-grid-column-three-quarters">
+          <span class="govuk-caption-l">{{ t("profile.own_caption") if isOwnProfile else t("profile.member_caption") }}</span>
+          <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ displayName }}</h1>
+          <div class="nexus-alpha-inline-flex-tags govuk-!-margin-bottom-2">
+            {% if identityVerified %}<strong class="govuk-tag govuk-tag--green">{{ t("profile.verified") }}</strong>{% endif %}
+            <strong class="govuk-tag govuk-tag--grey">{{ t("profile.profile_type_" + profileType) }}</strong>
+          </div>
+          {% if user.tagline %}<p class="govuk-body-l govuk-!-margin-top-2">{{ user.tagline }}</p>{% endif %}
+          <p class="govuk-body govuk-!-margin-top-2"><a class="govuk-link" href="{{ urlFor('/members/' + (user.id | string) + '/insights') }}">{{ t("govuk_alpha_members.nav.reputation") }}</a></p>
+
+          {% if isOwnProfile %}
+            <div class="govuk-button-group govuk-!-margin-top-4"><a class="govuk-button" href="{{ urlFor('/profile/settings') }}">{{ t("actions.edit_profile") }}</a></div>
+          {% else %}
+            {% if connectionState == 'pending_received' %}<p class="govuk-body">{{ t("profile.connection.request_received", { name: displayName }) }}</p>{% endif %}
+            <div class="govuk-button-group govuk-!-margin-top-4">
+            {% if directMessagingEnabled %}<a href="{{ urlFor('/messages/new/' + (user.id | string)) }}" class="govuk-button govuk-button--secondary">{{ t("actions.send_message") }}</a>{% endif %}
+            {% if connectionState == 'none' %}
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="connect"><button class="govuk-button">{{ t("profile.connection.connect") }}</button></form>
+            {% elif connectionState == 'pending_sent' %}
+              <strong class="govuk-tag govuk-tag--yellow">{{ t("profile.connection.request_sent") }}</strong>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="cancel"><button class="govuk-button govuk-button--secondary">{{ t("profile.connection.cancel_request") }}</button></form>
+            {% elif connectionState == 'pending_received' %}
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="accept"><button class="govuk-button">{{ t("profile.connection.accept") }}</button></form>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="decline"><button class="govuk-button govuk-button--warning">{{ t("profile.connection.decline") }}</button></form>
+            {% elif connectionState == 'connected' %}
+              <strong class="govuk-tag govuk-tag--green">{{ t("profile.connection.connected") }}</strong>
+              <form action="{{ urlFor('/members/' + (user.id | string) + '/connection') }}" method="post"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="action" value="remove"><button class="govuk-button govuk-button--warning">{{ t("profile.connection.remove") }}</button></form>
+            {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.activity_title") }}</h2>
+      <dl class="nexus-alpha-stat-grid">
+        <div class="nexus-alpha-stat"><dt>{{ t("profile.hours_given_label") }}</dt><dd>{{ profileStats.hoursGivenLabel }}</dd></div>
+        <div class="nexus-alpha-stat"><dt>{{ t("profile.hours_received_label") }}</dt><dd>{{ profileStats.hoursReceivedLabel }}</dd></div>
+        <div class="nexus-alpha-stat"><dt>{{ t("profile.active_listings_label") }}</dt><dd>{{ profileStats.listingsCountLabel }}</dd></div>
+        {% if profileStats.ratingLabel %}<div class="nexus-alpha-stat"><dt>{{ t("profile.rating_label") }}</dt><dd>{{ profileStats.ratingLabel }}</dd></div>{% endif %}
+        <div class="nexus-alpha-stat"><dt>{{ t("profile.level_label") }}</dt><dd>{{ profileStats.levelLabel }}</dd></div>
+        <div class="nexus-alpha-stat"><dt>{{ t("profile.xp_label") }}</dt><dd>{{ profileStats.xpLabel }}</dd></div>
+      </dl>
+
+      {% if gamificationBadges and gamificationBadges.length %}
+        <h2 class="govuk-heading-m govuk-!-margin-top-6">{{ t("profile.badges_title") }}</h2>
+        <ul class="govuk-list nexus-alpha-actions">
+          {% for badge in gamificationBadges %}
+            <li>
+              {% if badge.icon %}<span aria-hidden="true">{{ badge.icon }}</span>{% endif %}
+              <strong class="govuk-tag govuk-tag--blue">{{ badge.name }}</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <p class="govuk-body govuk-!-margin-bottom-4">
+        {% set reportType = "user" %}
+        {% set reportId = user.id %}
+        {% set returnTo = urlFor("/members/" + (user.id | string)) %}
+        {% include "partials/report-link.njk" %}
+      </p>
+
+      {% if not isOwnProfile %}
+        {% if isBlocked %}
+          <div class="govuk-inset-text govuk-!-margin-top-4"><p class="govuk-body govuk-!-margin-bottom-2">{{ t("profile.block.is_blocked", { name: displayName }) }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/unblock') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--secondary">{{ t("profile.block.unblock") }}</button></form></div>
+        {% else %}
+          <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("profile.block.toggle") }}</span></summary><div class="govuk-details__text"><p class="govuk-body">{{ t("profile.block.explain") }}</p><form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/block') }}"><input type="hidden" name="_csrf" value="{{ csrfToken }}"><button class="govuk-button govuk-button--warning">{{ t("profile.block.block") }}</button></form></div></details>
+        {% endif %}
+      {% endif %}
+
+      <div class="govuk-grid-row govuk-!-margin-top-7">
+        <div class="govuk-grid-column-two-thirds">
+          <h2 class="govuk-heading-l">{{ t("profile.about_title") }}</h2>
+          {% if user.bio %}<p class="govuk-body">{{ user.bio }}</p>{% else %}<div class="govuk-inset-text">{{ t("profile.empty_bio") }}</div>{% endif %}
+
+          <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.skills_title") }}</h2>
+          {% if profileSkills.length %}
+            <ul class="govuk-list nexus-alpha-skill-list">
+              {% for skill in profileSkills %}
+                {% set endorsement = profileEndorsements[skill.name] or { count: 0, viewerEndorsed: false } %}
+                <li class="govuk-!-margin-bottom-3">
+                  <span class="govuk-!-font-weight-bold">{{ skill.name }}</span>
+                  {% if skill.isOffering %}<strong class="govuk-tag govuk-tag--blue">{{ t("profile.skill_offering") }}</strong>{% endif %}
+                  {% if skill.isRequesting %}<strong class="govuk-tag govuk-tag--purple">{{ t("profile.skill_requesting") }}</strong>{% endif %}
+                  {% if endorsement.count %}<strong class="govuk-tag govuk-tag--green">{{ tc("profile.endorsement_count", endorsement.count, { count: endorsement.count }) }}</strong>{% endif %}
+                  {% if not isOwnProfile %}
+                    <form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/endorse') }}" class="govuk-!-margin-top-1">
+                      <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="skill_name" value="{{ skill.name }}"><input type="hidden" name="action" value="{{ 'remove' if endorsement.viewerEndorsed else 'endorse' }}">
+                      <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0">{{ t("profile.remove_endorsement") if endorsement.viewerEndorsed else t("profile.endorse") }}<span class="govuk-visually-hidden"> {{ skill.name }}</span></button>
+                    </form>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}<div class="govuk-inset-text">{{ t("profile.empty_skills") }}</div>{% endif %}
+
+          <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.listings_title") }}</h2>
+          {% if profileListings.length %}
+            <div class="nexus-alpha-card-list">
+              {% for listing in profileListings %}
+                {% set listingType = 'request' if listing.type == 'request' else 'offer' %}
+                <article class="nexus-alpha-card"><h3 class="govuk-heading-m govuk-!-margin-bottom-2"><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ listing.title }}</a></h3><strong class="govuk-tag {{ 'govuk-tag--purple' if listingType == 'request' else 'govuk-tag--blue' }}">{{ t("listings." + listingType) }}</strong>{% if listing.description %}<p class="govuk-body govuk-!-margin-top-3">{{ listing.description | truncate(180) }}</p>{% endif %}</article>
+              {% endfor %}
+            </div>
+          {% else %}<div class="govuk-inset-text">{{ t("profile.empty_listings") }}</div>{% endif %}
+
+          <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
+          {% if profileActivity.length %}
+            <ol class="govuk-list nexus-alpha-timeline">
+              {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3"><strong class="govuk-tag {{ activity.tagClass }}">{{ activity.label }}</strong>{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
+            </ol>
+          {% else %}<div class="govuk-inset-text">{{ t("profile.empty_activity") }}</div>{% endif %}
+        </div>
+
+        <div class="govuk-grid-column-one-third">
+          <h2 class="govuk-heading-l">{{ t("profile.summary_title") }}</h2>
+          <dl class="govuk-summary-list">
+            {% if joinedLabel %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("profile.joined_label") }}</dt><dd class="govuk-summary-list__value">{{ joinedLabel }}</dd></div>{% endif %}
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("home.summary_community_key") }}</dt><dd class="govuk-summary-list__value">{{ communityName }}</dd></div>
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("profile.profile_type_label") }}</dt><dd class="govuk-summary-list__value">{{ t("profile.profile_type_" + profileType) }}</dd></div>
+            {% if user.location %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("profile.location_label") }}</dt><dd class="govuk-summary-list__value">{{ user.location }}</dd></div>{% endif %}
+            {% if isOwnProfile and user.email %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("profile.email_label") }}</dt><dd class="govuk-summary-list__value">{{ user.email }}</dd></div>{% endif %}
+            {% if isOwnProfile and user.phone %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("profile.phone_label") }}</dt><dd class="govuk-summary-list__value">{{ user.phone }}</dd></div>{% endif %}
+          </dl>
+
+          <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.availability_title") }}</h2>
+          {% if profileAvailability.length %}<dl class="govuk-summary-list">{% for availability in profileAvailability %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ availability.label }}</dt><dd class="govuk-summary-list__value">{{ availability.time }}{% if availability.note %}<span class="govuk-body-s">{{ availability.note }}</span>{% endif %}</dd></div>{% endfor %}</dl>{% else %}<div class="govuk-inset-text">{{ t("profile.empty_availability") }}</div>{% endif %}
+        </div>
+      </div>
+
+      {# Reviews Section #}
+      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+
+      <h2 class="govuk-heading-l">{{ t("profile.reviews_title") }}</h2>
+
+      {% if reviews and reviews.length > 0 %}
+        <div class="nexus-alpha-card-list">
+          {% for review in reviews %}
+            {% if review.is_anonymous or review.isAnonymous %}
+              {% set reviewerName = t("profile.anonymous_review") %}
+            {% elif review.reviewer %}
+              {% set reviewerName = review.reviewer.name or ((review.reviewer.first_name or review.reviewer.firstName) + " " + (review.reviewer.last_name or review.reviewer.lastName)) %}
+            {% else %}
+              {% set reviewerName = t("profile.anonymous_review") %}
+            {% endif %}
+            <article class="nexus-alpha-card">
+              <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ t("profile.review_by", { name: reviewerName }) }}</h3>
+              <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2"><strong class="govuk-tag govuk-tag--blue">{{ t("ux.rating_out_of", { rating: review.rating }) }}</strong><span class="govuk-visually-hidden">{{ t("polish_members.rating_accessible", { n: review.rating }) }}</span></p>
+              {% if review.comment %}
+                <div class="govuk-body">{{ review.comment }}</div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="govuk-inset-text">{{ t("profile.empty_reviews") }}</div>
+      {% endif %}
+
+      {# Leave a Review Form #}
+      {% if reviewsEnabled and not isOwnProfile %}
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("polish_members.write_review_title", { name: displayName }) }}</h3>
+      <p class="govuk-body">{{ t("polish_members.write_review_hint") }}</p>
+      <form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/review') }}" class="govuk-!-margin-bottom-6">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="return_url" value="{{ urlFor('/members/' + (user.id | string)) }}">
+
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+              {{ t("polish_members.write_review_rating_legend") }}
+            </legend>
+            <div class="app-star-rating" id="rating">
+              {% for i in [1, 2, 3, 4, 5] %}
+                <input type="radio" name="rating" id="user-rating-{{ i }}" value="{{ i }}"
+                       class="app-star-rating__input" required>
+                <label for="user-rating-{{ i }}" class="app-star-rating__label">
+                  <span class="govuk-visually-hidden">{{ t("polish_members.write_review_rating_label", { n: i }) }}</span>
+                  <svg class="app-star-rating__star" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
+
+        {{ govukTextarea({
+          name: "comment",
+          id: "comment",
+          label: {
+            text: t("polish_members.write_review_comment_label")
+          },
+          hint: {
+            text: t("polish_members.write_review_comment_hint")
+          },
+          attributes: {
+            maxlength: "2000"
+          },
+          rows: 3
+        }) }}
+
+        {{ govukButton({
+          text: t("polish_members.write_review_submit")
+        }) }}
+      </form>
+      {% endif %}
+
+      {% if walletEnabled and not isOwnProfile %}
+        <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+          <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("polish_members.send_credits_toggle") }}</span></summary>
+          <div class="govuk-details__text">
+            <h2 class="govuk-heading-m">{{ t("polish_members.send_credits_title", { name: displayName }) }}</h2>
+            <p class="govuk-body">{{ t("polish_members.send_credits_hint") }}</p>
+            <form method="post" action="{{ urlFor('/members/' + (user.id | string) + '/transfer') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="idempotency_key" value="{{ transferIdempotencyKey }}">
+              <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="profile-transfer-amount">{{ t("polish_members.send_credits_amount_label") }}</label><div id="profile-transfer-amount-hint" class="govuk-hint">{{ t("polish_members.send_credits_amount_hint") }}</div><input class="govuk-input govuk-!-width-one-quarter" type="number" id="profile-transfer-amount" name="amount" min="1" step="1" value="1" aria-describedby="profile-transfer-amount-hint" required></div>
+              <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="profile-transfer-note">{{ t("polish_members.send_credits_note_label") }}</label><div id="profile-transfer-note-hint" class="govuk-hint">{{ t("polish_members.send_credits_note_hint") }}</div><input class="govuk-input" type="text" id="profile-transfer-note" name="note" maxlength="255" aria-describedby="profile-transfer-note-hint"></div>
+              <div class="govuk-form-group govuk-!-margin-bottom-3"><div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="profile-transfer-confirm" name="confirm" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="profile-transfer-confirm">{{ t("ux.transfer_confirm_label") }}</label></div></div></div>
+              <button class="govuk-button">{{ t("polish_members.send_credits_submit") }}</button>
+            </form>
+          </div>
+        </details>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

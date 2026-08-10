@@ -1,0 +1,111 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/leaderboard') }}">{{ t("govuk_alpha_gamification.common.back_to_leaderboard") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.seasons.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.seasons.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.seasons.description") }}</p>
+
+  {% set gamificationNavGroup = "leaderboard" %}
+  {% set gamificationActiveTab = "seasons" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_gamification.seasons.current_heading") }}</h2>
+  {% if not seasons.current.hasCurrent %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.seasons.no_current") }}</p>
+    </div>
+  {% else %}
+    <article class="nexus-alpha-card govuk-!-margin-bottom-6">
+      <div class="nexus-alpha-module-row">
+        <h3 class="govuk-heading-m govuk-!-margin-bottom-1">{{ seasons.current.name }}</h3>
+        {% if seasons.current.endingSoon %}
+          <strong class="govuk-tag govuk-tag--orange">{{ t("govuk_alpha_gamification.seasons.ending_soon") }}</strong>
+        {% endif %}
+      </div>
+      <p class="govuk-body-s nexus-alpha-meta">
+        {% if seasons.current.dateRange %}{{ seasons.current.dateRange }} &middot; {% endif %}
+        {{ seasons.current.daysRemainingLabel }} &middot; {{ seasons.current.participantsLabel }}
+      </p>
+
+      {% if seasons.current.hasUserData %}
+        <dl class="govuk-summary-list govuk-!-margin-bottom-2">
+          {% if seasons.current.hasUserRank %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.seasons.your_rank", { rank: "" }) | trim }}</dt>
+              <dd class="govuk-summary-list__value">{{ seasons.current.userRank }}</dd>
+            </div>
+          {% endif %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.seasons.your_xp", { xp: "" }) | trim }}</dt>
+            <dd class="govuk-summary-list__value">{{ seasons.current.userXpLabel }}</dd>
+          </div>
+        </dl>
+      {% endif %}
+
+      <h4 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_gamification.seasons.rewards_heading") }}</h4>
+      {% if seasons.current.rewards.length %}
+        <ul class="govuk-list govuk-list--bullet">
+          {% for reward in seasons.current.rewards %}
+            <li>{{ reward.rankLabel }} - {{ reward.rewardLabel }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_gamification.seasons.no_rewards") }}</p>
+      {% endif %}
+
+      {% if seasons.current.topMembers.length %}
+        <h4 class="govuk-heading-s govuk-!-margin-top-4 govuk-!-margin-bottom-1">{{ t("govuk_alpha_gamification.seasons.top_members") }}</h4>
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.seasons.top_members") }}</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.seasons.rank_column") }}</th>
+              <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.seasons.member_column") }}</th>
+              <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.seasons.xp_column") }}</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for member in seasons.current.topMembers %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ member.rank }}</td>
+                <td class="govuk-table__cell">{{ member.name }}</td>
+                <td class="govuk-table__cell govuk-table__cell--numeric">{{ member.xpLabel }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </article>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_gamification.seasons.history_heading") }}</h2>
+  {% if seasons.history.length %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.seasons.history_heading") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.seasons.season_name_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.seasons.period_column") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for season in seasons.history %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ season.name }}</td>
+            <td class="govuk-table__cell">{{ season.dateRange }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.seasons.no_history") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

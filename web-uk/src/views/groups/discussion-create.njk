@@ -1,0 +1,57 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions') }}">{{ t("groups.discussions.back") }}</a>
+
+  <span class="govuk-caption-l">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.discussions.new_title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.discussions.new_description") }}</p>
+
+  {% if statusBanner and statusBanner.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ statusBanner.title }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ statusBanner.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if fieldErrors.title or fieldErrors.content %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% if fieldErrors.title %}<li><a href="#title">{{ fieldErrors.title }}</a></li>{% endif %}
+            {% if fieldErrors.content %}<li><a href="#content">{{ fieldErrors.content }}</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/discussions/new') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    <div class="govuk-form-group{% if fieldErrors.title %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--m" for="title">{{ t("groups.discussions.title_label") }}</label>
+      <div id="title-hint" class="govuk-hint">{{ t("groups.discussions.title_hint") }}</div>
+      {% if fieldErrors.title %}<p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.title }}</p>{% endif %}
+      <input class="govuk-input{% if fieldErrors.title %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255" value="{{ formValues.title or '' }}" aria-describedby="title-hint{% if fieldErrors.title %} title-error{% endif %}">
+    </div>
+
+    <div class="govuk-form-group{% if fieldErrors.content %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--m" for="content">{{ t("groups.discussions.content_label") }}</label>
+      <div id="content-hint" class="govuk-hint">{{ t("groups.discussions.content_hint") }}</div>
+      {% if fieldErrors.content %}<p id="content-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ fieldErrors.content }}</p>{% endif %}
+      <textarea class="govuk-textarea{% if fieldErrors.content %} govuk-textarea--error{% endif %}" id="content" name="content" rows="6" aria-describedby="content-hint{% if fieldErrors.content %} content-error{% endif %}">{{ formValues.content or '' }}</textarea>
+    </div>
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("groups.discussions.create_submit") }}</button>
+  </form>
+{% endblock %}

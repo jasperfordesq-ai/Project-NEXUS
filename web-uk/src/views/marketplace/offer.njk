@@ -1,0 +1,61 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.common.back_to_listing") }}</a>
+
+  {% if offerErrors.length %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_commerce.common.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            {% for error in offerErrors %}<li><a href="#amount">{{ error }}</a></li>{% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_commerce.offer.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.offer.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.offer.description") }}</p>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.offer.item_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ item.title }}</dd>
+    </div>
+    {% if item.askingPriceLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_commerce.offer.asking_price_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ item.askingPriceLabel }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/offer') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group{% if offerErrors.length %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label govuk-label--s" for="amount">{{ t("govuk_alpha_commerce.offer.amount_label") }}</label>
+      <div id="amount-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.offer.amount_hint") }}</div>
+      {% if offerErrors.length %}
+        <p id="amount-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_commerce.common.error_prefix") }}</span> {{ offerErrors[0] }}</p>
+      {% endif %}
+      <input class="govuk-input govuk-input--width-10{% if offerErrors.length %} govuk-input--error{% endif %}" id="amount" name="amount" type="text" inputmode="decimal" value="{{ oldInput.amount or '' }}" aria-describedby="amount-hint{% if offerErrors.length %} amount-error{% endif %}">
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label govuk-label--s" for="message">{{ t("govuk_alpha_commerce.offer.message_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+      <div id="message-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.offer.message_hint") }}</div>
+      <textarea class="govuk-textarea" id="message" name="message" rows="3" aria-describedby="message-hint">{{ oldInput.message or '' }}</textarea>
+    </div>
+    <div class="govuk-button-group">
+      <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.offer.submit") }}</button>
+      <a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
+    </div>
+  </form>
+{% endblock %}

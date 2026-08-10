@@ -1,0 +1,62 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% set opportunityTitle = opportunity.title or t("govuk_alpha_organisations.apply.title") %}
+{% set organisationName = opportunity.organisationName or "" %}
+{% set organisationId = opportunity.organisationId or 0 %}
+
+{% block mainContent %}
+  {% if organisationId %}
+    <a class="govuk-back-link" href="{{ urlFor('/organisations/' + (organisationId | string)) }}">{{ organisationName or t("govuk_alpha_organisations.common.back_to_organisations") }}</a>
+  {% else %}
+    <a class="govuk-back-link" href="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string)) }}">{{ t("govuk_alpha_organisations.apply.view_opportunity") }}</a>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_organisations.common.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_organisations.apply.heading") }}</h1>
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("govuk_alpha_organisations.apply.opportunity_label") }}</dt>
+      <dd class="govuk-summary-list__value">
+        <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string)) }}">{{ opportunityTitle }}</a>
+      </dd>
+    </div>
+    {% if organisationName %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_organisations.apply.organisation_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ organisationName }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if opportunity.hasApplied %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ t("govuk_alpha_organisations.apply.already_applied_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_organisations.apply.already_applied_body") }}</p>
+      <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string)) }}">{{ t("govuk_alpha_organisations.apply.view_opportunity") }}</a>
+    </div>
+  {% else %}
+    <form method="post" action="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string) + '/apply') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="message">{{ t("govuk_alpha_organisations.apply.message_label") }}</label>
+        <div id="message-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.apply.message_hint") }}</div>
+        <textarea class="govuk-textarea" id="message" name="message" rows="5" maxlength="2000" aria-describedby="message-hint"></textarea>
+      </div>
+
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_organisations.apply.notice") }}</p>
+      </div>
+
+      <div class="govuk-button-group">
+        <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_organisations.apply.submit") }}</button>
+        <a class="govuk-link" href="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string)) }}">{{ t("govuk_alpha_organisations.apply.cancel") }}</a>
+      </div>
+    </form>
+  {% endif %}
+{% endblock %}

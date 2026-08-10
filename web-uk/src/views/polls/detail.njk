@@ -1,0 +1,128 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% macro renderComment(comment) %}
+  <li id="comment-{{ comment.id }}" class="nexus-alpha-module-row">
+    <p class="govuk-body govuk-!-margin-bottom-1">{{ comment.content }}</p>
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
+      {{ comment.user.name }}{% if comment.createdAt %} - {{ t("feed.posted_on_prefix") }} {{ comment.createdAt | formatDate }}{% endif %}
+    </p>
+    {% if comment.replies.length %}
+      <ul class="govuk-list govuk-!-margin-left-4">
+        {% for reply in comment.replies %}
+          {{ renderComment(reply) }}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/polls') }}">{{ t("govuk_alpha_gamification.common.back_to_polls") }}</a>
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.poll_detail.caption", { community: tenantName }) }}</span>
+      <div class="nexus-alpha-module-row">
+        <h1 class="govuk-heading-xl govuk-!-margin-bottom-1">{{ poll.question }}</h1>
+        {% if poll.status == "open" %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_gamification.poll_detail.open_tag") }}</strong>{% else %}<strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_gamification.poll_detail.closed_tag") }}</strong>{% endif %}
+        {% if poll.pollType == "ranked" %}<strong class="govuk-tag govuk-tag--purple">{{ t("govuk_alpha_gamification.poll_detail.ranked_tag") }}</strong>{% endif %}
+      </div>
+
+      <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">
+        {{ t("govuk_alpha_gamification.poll_detail.by_label", { name: poll.creator.name }) }}{% if poll.expiresAt %} - {% if poll.status == "open" %}{{ t("govuk_alpha_gamification.poll_detail.closes_on", { date: poll.expiresAt | formatDate }) }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.closed_on", { date: poll.expiresAt | formatDate }) }}{% endif %}{% endif %} - {{ tc("govuk_alpha_gamification.poll_detail.votes_count", poll.totalVotes, { count: poll.totalVotes }) }}
+      </p>
+
+      {% if statusBanner and statusBanner.type == "success" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert">
+          <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha_gamification.states.success_title") }}</h2></div>
+          <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p></div>
+        </div>
+      {% elif statusBanner and statusBanner.type == "error" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha_gamification.states.error_title") }}</h2><div class="govuk-error-summary__body"><p class="govuk-body">{{ statusBanner.message }}</p></div></div>
+        </div>
+      {% endif %}
+
+      {% if poll.description %}<p class="govuk-body">{{ poll.description }}</p>{% endif %}
+
+      {% if poll.pollType == "ranked" %}
+        <a class="govuk-button" data-module="govuk-button" role="button" href="{{ urlFor('/polls/' + (poll.id | string) + '/rank') }}">{% if poll.hasVoted %}{{ t("govuk_alpha_gamification.nav.view_ranked_poll") }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.rank_link") }}{% endif %}</a>
+      {% elif not poll.options.length %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_gamification.poll_detail.no_options") }}</p></div>
+      {% elif poll.status == "open" and not poll.hasVoted and poll.options.length %}
+        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/vote') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <fieldset class="govuk-fieldset" aria-describedby="poll-detail-{{ poll.id }}-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_gamification.poll_detail.vote_link") }}</legend>
+            <div id="poll-detail-{{ poll.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_detail.results_pending") }}</div>
+            <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+              {% for option in poll.options %}
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" id="poll-detail-{{ poll.id }}-opt-{{ option.id }}" name="option_id" type="radio" value="{{ option.id }}">
+                  <label class="govuk-label govuk-radios__label" for="poll-detail-{{ poll.id }}-opt-{{ option.id }}">{{ option.text }}</label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <button class="govuk-button govuk-!-margin-top-2" data-module="govuk-button">{{ t("govuk_alpha_gamification.poll_detail.vote_link") }}</button>
+        </form>
+      {% elif poll.resultsVisible %}
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_gamification.poll_detail.results_heading") }}</h2>
+        {% for option in poll.options %}
+          <div class="govuk-!-margin-bottom-3">
+            <p class="govuk-body govuk-!-margin-bottom-1">
+              {{ option.text }}
+              {% if poll.votedOptionId and poll.votedOptionId == option.id %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_gamification.poll_detail.your_choice") }}</strong>{% endif %}
+            </p>
+            <progress max="100" value="{{ option.percentage }}" aria-label="{{ option.text }}: {{ option.percentage }}%">{{ option.percentage }}%</progress>
+            <span class="govuk-body-s">{{ option.percentage }}% - {{ tc("govuk_alpha_gamification.poll_detail.votes_count", option.voteCount, { count: option.voteCount }) }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="govuk-inset-text">{{ t("govuk_alpha_gamification.poll_detail.results_pending") }}</div>
+      {% endif %}
+
+      <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+      <h2 class="govuk-heading-l" id="poll-social">{{ t("govuk_alpha_gamification.poll_detail.social_heading") }}</h2>
+
+      <p class="govuk-body-s nexus-alpha-meta">
+        {{ tc("govuk_alpha_gamification.poll_detail.like_summary", poll.likeCount, { count: poll.likeCount }) }} - {{ tc("govuk_alpha_gamification.poll_detail.comment_summary", commentsTotal, { count: commentsTotal }) }}
+      </p>
+
+      <div class="nexus-alpha-actions govuk-!-margin-bottom-4">
+        <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/like') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{% if poll.hasLiked %}true{% else %}false{% endif %}">
+            {% if poll.hasLiked %}{{ t("govuk_alpha_gamification.poll_detail.unlike_button") }}{% else %}{{ t("govuk_alpha_gamification.poll_detail.like_button") }}{% endif %}
+          </button>
+        </form>
+      </div>
+
+      <h3 class="govuk-heading-m" id="poll-comments">{{ t("govuk_alpha_gamification.poll_detail.comments_heading") }}</h3>
+      {% if comments.length %}
+        <ul class="govuk-list nexus-alpha-comments-list">
+          {% for comment in comments %}
+            {{ renderComment(comment) }}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-body">{{ t("govuk_alpha_gamification.poll_detail.no_comments") }}</p>
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/polls/' + (poll.id | string) + '/comment') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="poll-comment-{{ poll.id }}">{{ t("govuk_alpha_gamification.poll_detail.comment_label") }}</label>
+          <div id="poll-comment-{{ poll.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_detail.comment_hint") }}</div>
+          <textarea class="govuk-textarea" id="poll-comment-{{ poll.id }}" name="content" rows="3" aria-describedby="poll-comment-{{ poll.id }}-hint" maxlength="10000"></textarea>
+        </div>
+        <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_gamification.poll_detail.comment_button") }}</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

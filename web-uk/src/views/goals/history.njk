@@ -1,0 +1,48 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.history.caption") }}: {{ goal.title }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.history.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_goals.history.intro") }}</p>
+
+  {% if items.length === 0 %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_goals.history.empty") }}</p>
+    </div>
+  {% else %}
+    <ol class="govuk-list govuk-list--number nexus-alpha-card-list" aria-label="{{ t('govuk_alpha_goals.history.list_aria') }}">
+      {% for item in items %}
+        <li class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
+            <strong class="govuk-tag {{ item.tagClass }}">{{ item.label }}</strong>
+            {% if item.createdAtLabel %}
+              <span class="govuk-body-s nexus-alpha-meta" aria-label="{{ item.createdAtLabel }}">
+                <time datetime="{{ item.createdAt }}" title="{{ item.createdAtLabel }}">{{ item.createdAtLabel }}</time>
+              </span>
+            {% endif %}
+          </div>
+          {% if item.description %}
+            <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+
+    {% if hasMore and nextHref %}
+      <p class="govuk-body govuk-!-margin-top-4">
+        <a class="govuk-link" href="{{ urlFor(nextHref) }}">{{ t("govuk_alpha_goals.history.load_more") }}</a>
+      </p>
+    {% endif %}
+  {% endif %}
+
+  <p class="govuk-body govuk-!-margin-top-6">
+    <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+  </p>
+{% endblock %}

@@ -1,0 +1,182 @@
+# Availability monitoring for the platform's public endpoints.
+#
+# WHY THIS EXISTS
+# The uptime monitoring for the ASP.NET API and the Web UK frontend lived in
+# jasperfordesq-ai/api.project-nexus.net. That repository was archived on
+# 2026-08-10. Archiving disables a repository's scheduled workflows, so both
+# services silently lost their only automated up/down check on that date, while
+# remaining live on their public domains.
+#
+# ALERTING BEHAVIOUR
+# Telegram is the signal, matching deploy-drift-watchdog.yml, because that is
+# the channel the owner already receives. Messages are sent ONLY when the state
+# CHANGES - first failure, a change in which endpoints are failing, or recovery.
+# A monitor that messages every 15 minutes for the length of an outage teaches
+# its owner to ignore it.
+#
+# This workflow does not fail when an endpoint is down: the alert is the signal,
+# and leaving every scheduled run red creates exactly the noise described above.
+# It DOES fail if the probe cannot run or the alert cannot be delivered, so a
+# broken monitor is never mistaken for a healthy platform.
+#
+# 🔴 Scheduled workflows only run from the repository's DEFAULT branch. While
+# this file lives on codex/platform-monorepo it will not fire on a timer; it can
+# still be run by hand from the Actions tab. It starts running automatically
+# once this branch merges to main.
+name: Uptime Check
+
+on:
+  schedule:
+    # Every 15 minutes. Detection latency is therefore up to ~15 minutes plus
+    # the in-run retries (~10s), and GitHub's scheduler can add delay of its own
+    # under load - this is a safety net, not a paging system.
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_alert:
+        description: 'Send a Telegram message even if the state has not changed (use to test the alert path)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime-check
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Probe public endpoints
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The previous run's state, so we can alert on transitions only. The cache
+      # is the state store because this is a PUBLIC repository - using issues
+      # would publish an outage timeline to anyone watching.
+      - name: Restore previous state
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .uptime-state
+          key: uptime-state-${{ github.run_id }}
+          restore-keys: |
+            uptime-state-
+
+      - name: Read previous state
+        id: previous
+        run: |
+          if [ -f .uptime-state/state.txt ]; then
+            PREV=$(cat .uptime-state/state.txt)
+            echo "Previous state: ${PREV}"
+          else
+            # First ever run, or the cache was evicted. Treat as 'unknown' so a
+            # platform that is already down still produces one alert rather than
+            # being silently accepted as the baseline.
+            PREV="unknown"
+            echo "No previous state found - treating as unknown"
+          fi
+          echo "state_key=${PREV}" >> "$GITHUB_OUTPUT"
+
+      - name: Probe endpoints
+        id: probe
+        run: node scripts/uptime-check.mjs
+
+      - name: Decide whether to alert
+        id: decide
+        env:
+          PREV: ${{ steps.previous.outputs.state_key }}
+          NOW: ${{ steps.probe.outputs.state_key }}
+          HEALTHY: ${{ steps.probe.outputs.healthy }}
+          FORCED: ${{ inputs.force_alert }}
+        run: |
+          if [ "${FORCED}" = "true" ]; then
+            echo "Forced alert requested via workflow_dispatch"
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+          elif [ "${PREV}" = "${NOW}" ]; then
+            echo "State unchanged (${NOW}) - no message"
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+          elif [ "${PREV}" = "unknown" ] && [ "${HEALTHY}" = "true" ]; then
+            # First run on a healthy platform is not news.
+            echo "First run and everything is up - no message"
+            echo "alert=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "State changed: ${PREV} -> ${NOW}"
+            echo "alert=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Telegram alert
+        if: steps.decide.outputs.alert == 'true'
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT:  ${{ secrets.TELEGRAM_CHAT_ID }}
+          HEALTHY:  ${{ steps.probe.outputs.healthy }}
+          SUMMARY:  ${{ steps.probe.outputs.summary }}
+          DETAIL:   ${{ steps.probe.outputs.detail }}
+          RUN_URL:  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "${TG_TOKEN}" ] || [ -z "${TG_CHAT}" ]; then
+            echo "::error::TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID secret is not set"
+            exit 1
+          fi
+
+          if [ "${HEALTHY}" = "true" ]; then
+            HEADING="RECOVERED - everything is responding again"
+          else
+            HEADING="SITE DOWN"
+          fi
+
+          MESSAGE=$(printf '%s\n\n%s\n\n%s\n\n%s' \
+            "${HEADING}" "${SUMMARY}" "${DETAIL}" "${RUN_URL}")
+
+          RESPONSE=$(curl -sS --max-time 20 --retry 2 \
+            "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT}" \
+            --data-urlencode "text=${MESSAGE}")
+
+          echo "${RESPONSE}"
+
+          if echo "${RESPONSE}" | jq -e '.ok == true' > /dev/null; then
+            echo "Telegram alert sent"
+          else
+            echo "::error::Telegram API rejected the message"
+            exit 1
+          fi
+
+      - name: Record current state
+        if: always() && steps.probe.outputs.state_key != ''
+        run: |
+          mkdir -p .uptime-state
+          printf '%s' "${{ steps.probe.outputs.state_key }}" > .uptime-state/state.txt
+          cat .uptime-state/state.txt
+
+      - name: Save state for the next run
+        if: always() && steps.probe.outputs.state_key != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .uptime-state
+          key: uptime-state-${{ github.run_id }}
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Uptime check"
+            echo ""
+            echo "${{ steps.probe.outputs.summary }}"
+            echo ""
+            echo '```'
+            echo "${{ steps.probe.outputs.detail }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

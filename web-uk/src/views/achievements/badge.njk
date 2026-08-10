@@ -1,0 +1,63 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.badge.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{% if badge.icon %}{{ badge.icon }} {% endif %}{{ badge.name }}</h1>
+
+  {% if badge.description %}
+    <p class="govuk-body-l">{{ badge.description }}</p>
+  {% endif %}
+
+  {% if badge.earned %}
+    <strong class="govuk-tag govuk-tag--green govuk-!-margin-bottom-4">{{ t("govuk_alpha_gamification.badge.earned_status") }}</strong>
+  {% else %}
+    <strong class="govuk-tag govuk-tag--grey govuk-!-margin-bottom-4">{{ t("govuk_alpha_gamification.badge.not_earned_status") }}</strong>
+  {% endif %}
+
+  <dl class="govuk-summary-list">
+    {% if badge.earned and badge.earnedAtLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.badge.earned_on", { date: '' }) | trim }}</dt>
+        <dd class="govuk-summary-list__value">{{ badge.earnedAtLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if badge.rarityLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.badge.rarity_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ badge.rarityLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if badge.xpValue > 0 %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.badge.xp_value_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ badge.xpValueLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if badge.tierLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.badge.tier_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ badge.tierLabel }}</dd>
+      </div>
+    {% endif %}
+    {% if badge.typeLabel %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_gamification.badge.type_label") }}</dt>
+        <dd class="govuk-summary-list__value">{{ badge.typeLabel }}</dd>
+      </div>
+    {% endif %}
+  </dl>
+
+  {% if badge.earned and badge.isShowcased %}
+    <p class="govuk-body">{{ t("govuk_alpha_gamification.badge.showcased") }}</p>
+  {% endif %}
+
+  <p class="govuk-body govuk-!-margin-top-4">
+    <a class="govuk-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.badge.view_all") }}</a>
+  </p>
+{% endblock %}

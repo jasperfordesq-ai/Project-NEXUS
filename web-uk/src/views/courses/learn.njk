@@ -1,0 +1,175 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/courses/' + (course.id | string)) }}" class="govuk-back-link">{{ t("courses.back") }}</a>
+
+  <span class="govuk-caption-xl">Learning at {{ tenantName }}</span>
+  <h1 class="govuk-heading-xl">{{ course.title }}</h1>
+
+  {% if status %}
+    {% if status.type == 'success' %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" role="region" aria-labelledby="course-learn-status" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="course-learn-status">Notice</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body"><p class="govuk-body">{{ status.message }}</p></div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_commerce.learn.progress_label", { percent: progressPercent }) }}</p>
+  <progress value="{{ progressPercent }}" max="100" aria-label="{{ t('govuk_alpha_commerce.learn.progress_label', { percent: progressPercent }) }}">{{ progressPercent }}%</progress>
+
+  {% if isCompleted %}
+    <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-top-4 govuk-!-margin-bottom-4">
+      <h2 class="govuk-panel__title">You have completed this course. Well done.</h2>
+    </div>
+  {% endif %}
+
+  <div class="govuk-grid-row govuk-!-margin-top-4">
+    <div class="govuk-grid-column-one-third">
+      <h2 class="govuk-heading-m">{{ t("courses.lessons_label") }}</h2>
+      {% if not sections or not sections.length %}
+        <p class="govuk-body">This course has no lessons available yet.</p>
+      {% else %}
+        {% for section in sections %}
+          {% if section.title %}
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ section.title }}</h3>
+          {% endif %}
+          <ul class="govuk-list">
+            {% for lesson in section.lessons %}
+              <li class="govuk-!-margin-bottom-1">
+                {% if not lesson.available %}
+                  <span>{{ lesson.title }} <span class="govuk-tag govuk-tag--grey">Not yet available</span></span>
+                {% elif currentLesson and currentLesson.id == lesson.id %}
+                  <strong>{{ lesson.title }}</strong>
+                  {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">Completed</span>{% endif %}
+                {% else %}
+                  <a class="govuk-link" href="{{ urlFor('/courses/' + (course.id | string) + '/learn?lesson=' + (lesson.id | string)) }}">{{ lesson.title }}</a>
+                  {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">Completed</span>{% endif %}
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-two-thirds">
+      {% if not currentLesson %}
+        <p class="govuk-body">Select a lesson from the list to begin.</p>
+      {% else %}
+        <h2 class="govuk-heading-l">{{ currentLesson.title }}</h2>
+        <p class="govuk-body-s nexus-alpha-meta">{{ currentLesson.contentTypeLabel }}</p>
+
+        {% if currentLesson.contentType == 'video' and currentLesson.videoUrl %}
+          <video class="nexus-alpha-detail-hero" controls preload="metadata" width="100%">
+            <source src="{{ currentLesson.videoUrl }}">
+            Your browser cannot play this video. Open it in a new tab below.
+          </video>
+          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.videoUrl }}" target="_blank" rel="noopener noreferrer">Open the video<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+        {% elif currentLesson.contentType == 'embed' and currentLesson.embedUrl %}
+          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.embedUrl }}" target="_blank" rel="noopener noreferrer">Open the video<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+        {% endif %}
+
+        {% if currentLesson.body %}
+          <div class="govuk-body">{{ currentLesson.body | safe }}</div>
+        {% endif %}
+
+        {% if currentLesson.attachmentUrl %}
+          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.attachmentUrl }}" target="_blank" rel="noopener noreferrer">Download the lesson material<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+        {% endif %}
+
+        {% if currentLesson.contentType == 'quiz' %}
+          {% set quiz = currentLesson.quiz %}
+          {% if not quiz %}
+            <div class="govuk-inset-text"><p class="govuk-body">This quiz is not available yet.</p></div>
+          {% else %}
+            <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ quiz.title or "Quiz" }}</h3>
+            {% if quiz.description %}
+              <p class="govuk-body">{{ quiz.description }}</p>
+            {% endif %}
+            <p class="govuk-body-s nexus-alpha-meta">Pass mark: {{ quiz.pass_mark_percent or 0 }}%{% if quiz.attempts_remaining != null %} - Attempts remaining: {{ quiz.attempts_remaining }}{% endif %}</p>
+
+            {% if quiz.last_attempt %}
+              <div class="govuk-inset-text">
+                {% if quiz.last_attempt.grading_status == 'pending_review' %}
+                  <p class="govuk-body">Your last attempt is awaiting marking by an instructor.</p>
+                {% else %}
+                  <p class="govuk-body">Your last score: {{ quiz.last_attempt.score_percent or 0 }}%
+                    {% if quiz.last_attempt.passed %}<strong class="govuk-tag govuk-tag--green">Passed</strong>{% else %}<strong class="govuk-tag govuk-tag--red">Not passed</strong>{% endif %}
+                  </p>
+                {% endif %}
+              </div>
+            {% endif %}
+
+            {% if quiz.attempts_remaining != null and quiz.attempts_remaining <= 0 %}
+              <div class="govuk-inset-text"><p class="govuk-body">You have used all your attempts for this quiz.</p></div>
+            {% elif not quiz.questions or not quiz.questions.length %}
+              <div class="govuk-inset-text"><p class="govuk-body">This quiz has no questions yet.</p></div>
+            {% else %}
+              <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/quiz') }}" class="govuk-!-margin-top-2">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                {% for question in quiz.questions %}
+                  <div class="govuk-form-group">
+                    <fieldset class="govuk-fieldset">
+                      <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ question.prompt }}</legend>
+                      {% if (question.type == 'multi' or question.type == 'mcq' or question.type == 'truefalse') and question.options and question.options.length %}
+                        {% if question.type == 'multi' %}
+                          <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                            {% for option in question.options %}
+                              <div class="govuk-checkboxes__item">
+                                <input class="govuk-checkboxes__input" id="q-{{ question.id }}-{{ loop.index }}" name="answers[{{ question.id }}][]" type="checkbox" value="{{ option.id or option }}">
+                                <label class="govuk-label govuk-checkboxes__label" for="q-{{ question.id }}-{{ loop.index }}">{{ option.label or option }}</label>
+                              </div>
+                            {% endfor %}
+                          </div>
+                        {% else %}
+                          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+                            {% for option in question.options %}
+                              <div class="govuk-radios__item">
+                                <input class="govuk-radios__input" id="q-{{ question.id }}-{{ loop.index }}" name="answers[{{ question.id }}]" type="radio" value="{{ option.id or option }}">
+                                <label class="govuk-label govuk-radios__label" for="q-{{ question.id }}-{{ loop.index }}">{{ option.label or option }}</label>
+                              </div>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      {% else %}
+                        <textarea class="govuk-textarea" id="q-{{ question.id }}" name="answers[{{ question.id }}]" rows="{% if question.type == 'essay' %}5{% else %}2{% endif %}"></textarea>
+                      {% endif %}
+                    </fieldset>
+                  </div>
+                {% endfor %}
+                <button class="govuk-button" data-module="govuk-button">Submit answers</button>
+              </form>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+        {% if currentLesson.isCompleted %}
+          <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">You have completed this lesson.</strong></p>
+        {% else %}
+          <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/complete') }}" class="govuk-!-margin-top-4">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button" data-module="govuk-button">Mark lesson as complete</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

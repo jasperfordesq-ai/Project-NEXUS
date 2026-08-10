@@ -1,0 +1,37 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  {% include "marketplace/_nav.njk" %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_commerce.pickups.caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_commerce.pickups.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_commerce.pickups.description") }}</p>
+
+  {% if not reservations.length %}
+    <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.pickups.empty") }}</p>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for reservation in reservations %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ reservation.title }}</h2>
+            <strong class="govuk-tag {{ reservation.statusTagClass }}">{{ reservation.statusLabel }}</strong>
+          </div>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_commerce.pickups.window_label") }}: {{ reservation.slotStartLabel }}</p>
+          {% if reservation.status == 'reserved' and reservation.qrCode %}
+            <div class="govuk-inset-text govuk-!-margin-top-0 govuk-!-margin-bottom-0">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("govuk_alpha_commerce.pickups.code_heading") }}</h3>
+              <p class="govuk-hint govuk-!-margin-bottom-1">{{ t("govuk_alpha_commerce.pickups.code_hint") }}</p>
+              <p class="govuk-body govuk-!-font-weight-bold">{{ reservation.qrCode }}</p>
+            </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

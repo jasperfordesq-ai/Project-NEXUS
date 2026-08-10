@@ -1,0 +1,24 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% set active = activeTab or 'challenges' %}
+<div class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-4">
+  <h2 class="govuk-tabs__title">{{ t("govuk_alpha_ideation.nav.heading") }}</h2>
+  <ul class="govuk-tabs__list">
+    <li class="govuk-tabs__list-item{% if active == 'challenges' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/ideation') }}"{% if active == 'challenges' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_ideation.nav.challenges") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'campaigns' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/ideation/campaigns') }}"{% if active == 'campaigns' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_ideation.nav.campaigns") }}</a>
+    </li>
+    <li class="govuk-tabs__list-item{% if active == 'outcomes' %} govuk-tabs__list-item--selected{% endif %}">
+      <a class="govuk-tabs__tab" href="{{ urlFor('/ideation/outcomes') }}"{% if active == 'outcomes' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_ideation.nav.outcomes") }}</a>
+    </li>
+    {% if ideationIsAdmin %}
+      <li class="govuk-tabs__list-item{% if active == 'create' %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor('/ideation/new') }}"{% if active == 'create' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_ideation.nav.create") }}</a>
+      </li>
+    {% endif %}
+  </ul>
+</div>

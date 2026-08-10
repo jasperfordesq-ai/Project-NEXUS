@@ -1,0 +1,162 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("govuk_alpha_listings.analytics.back_to_listing") }}</a>
+
+  <span class="govuk-caption-xl">{{ listingTitle }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_listings.analytics.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_listings.analytics.description") }}</p>
+
+  <ul class="govuk-list nexus-alpha-actions govuk-!-margin-bottom-6">
+    <li><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("govuk_alpha_listings.analytics.view_listing") }}</a></li>
+    <li><a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string) + '/edit') }}">{{ t("govuk_alpha_listings.analytics.edit_listing") }}</a></li>
+  </ul>
+
+  <form method="get" action="{{ urlFor('/listings/' + (listing.id | string) + '/analytics') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="days-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_listings.analytics.period_legend") }}</legend>
+        <div id="days-hint" class="govuk-hint">{{ t("govuk_alpha_listings.analytics.period_hint") }}</div>
+        <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
+          {% for option in dayOptions %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="{{ 'days' if loop.first else 'days-' + option }}" name="days" type="radio" value="{{ option }}"{% if days == option %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="{{ 'days' if loop.first else 'days-' + option }}">{{ t("govuk_alpha_listings.analytics.period_days", { count: option }) }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+    <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_listings.analytics.period_submit") }}</button>
+  </form>
+
+  {% if not analytics.hasData %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_listings.analytics.no_data") }}</div>
+  {% else %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.key_metrics_heading") }}</h2>
+    <dl class="govuk-summary-list govuk-!-margin-bottom-6">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.total_views") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.totalViews }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.unique_viewers") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.uniqueViewers }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.total_contacts") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.totalContacts }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.total_saves") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.totalSaves }}</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.contact_rate") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.contactRate }}%</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.save_rate") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.saveRate }}%</dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.views_trend") }}</dt>
+        <dd class="govuk-summary-list__value">{{ analytics.summary.trendLabel }}</dd>
+      </div>
+      {% if analytics.createdAtLabel %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.listing_created") }}</dt>
+          <dd class="govuk-summary-list__value">{{ analytics.createdAtLabel }}</dd>
+        </div>
+      {% endif %}
+      {% if analytics.expiresAtLabel %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">{{ t("govuk_alpha_listings.analytics.listing_expires") }}</dt>
+          <dd class="govuk-summary-list__value">{{ analytics.expiresAtLabel }}</dd>
+        </div>
+      {% endif %}
+    </dl>
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.views_over_time") }}</h2>
+    {% if analytics.viewsOverTime.length %}
+      <table class="govuk-table govuk-!-margin-bottom-6">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.views_over_time") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_listings.analytics.views_over_time") }}</th>
+            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.count_column") }}</span></th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_listings.analytics.count_column") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in analytics.viewsOverTime %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header govuk-!-font-weight-regular">{{ row.dateLabel }}</th>
+              <td class="govuk-table__cell">
+                <progress value="{{ row.count }}" max="{{ row.max }}" aria-label="{{ t('govuk_alpha_listings.analytics.views_on_date', { date: row.dateLabel }) }}">{{ row.count }}</progress>
+              </td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.countLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_listings.analytics.no_views_yet") }}</p>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.contacts_over_time") }}</h2>
+    {% if analytics.contactsOverTime.length %}
+      <table class="govuk-table govuk-!-margin-bottom-6">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.contacts_over_time") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_listings.analytics.contacts_over_time") }}</th>
+            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.count_column") }}</span></th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_listings.analytics.count_column") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in analytics.contactsOverTime %}
+            <tr class="govuk-table__row">
+              <th scope="row" class="govuk-table__header govuk-!-font-weight-regular">{{ row.dateLabel }}</th>
+              <td class="govuk-table__cell">
+                <progress value="{{ row.count }}" max="{{ row.max }}" aria-label="{{ t('govuk_alpha_listings.analytics.contacts_on_date', { date: row.dateLabel }) }}">{{ row.count }}</progress>
+              </td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.countLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_listings.analytics.no_contacts_yet") }}</p>
+    {% endif %}
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_listings.analytics.contact_types_heading") }}</h2>
+    {% if analytics.contactTypes.length %}
+      <table class="govuk-table govuk-!-margin-bottom-6">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_listings.analytics.contact_types_heading") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_listings.analytics.contact_type_label") }}</th>
+            <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_listings.analytics.count_column") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in analytics.contactTypes %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">{{ row.label }}</td>
+              <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.countLabel }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="govuk-body">{{ t("govuk_alpha_listings.analytics.no_contact_types") }}</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

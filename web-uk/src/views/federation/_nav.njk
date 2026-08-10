@@ -1,0 +1,28 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% set active = federationActiveTab or "overview" %}
+{% set federationNavItems = [
+  { key: "overview", href: "/federation", label: t("govuk_alpha.federation.nav.overview") },
+  { key: "partners", href: "/federation/partners", label: t("govuk_alpha.federation.nav.partners") },
+  { key: "members", href: "/federation/members", label: t("govuk_alpha.federation.nav.members") },
+  { key: "listings", href: "/federation/listings", label: t("govuk_alpha.federation.nav.listings") },
+  { key: "events", href: "/federation/events", label: t("govuk_alpha.federation.nav.events") },
+  { key: "groups", href: "/federation/groups", label: t("govuk_alpha.federation.nav.groups") },
+  { key: "connections", href: "/federation/connections", label: t("govuk_alpha.federation.nav.connections") },
+  { key: "messages", href: "/federation/messages", label: t("govuk_alpha.federation.nav.messages") },
+  { key: "settings", href: "/federation/settings", label: t("govuk_alpha.federation.nav.settings") }
+] %}
+
+<nav class="govuk-tabs govuk-!-margin-top-2 govuk-!-margin-bottom-6" aria-label="{{ t("govuk_alpha.federation.nav.label") }}">
+  <h2 class="govuk-tabs__title">{{ t("govuk_alpha.federation.title") }}</h2>
+  <ul class="govuk-tabs__list">
+    {% for item in federationNavItems %}
+      <li class="govuk-tabs__list-item{% if active == item.key %} govuk-tabs__list-item--selected{% endif %}">
+        <a class="govuk-tabs__tab" href="{{ urlFor(item.href) }}"{% if active == item.key %} aria-current="page"{% endif %}>{{ item.label }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

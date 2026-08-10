@@ -1,0 +1,173 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/group-exchanges') }}">{{ t("actions.back_to_exchanges") }}</a>
+  <span class="govuk-caption-xl" id="group-exchange-top">{{ t("group_exchanges.caption", { community: tenantName }) }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ exchange.title }}</h1>
+    <strong class="govuk-tag {{ exchange.statusClass }}">{{ exchange.statusLabel }}</strong>
+  </div>
+
+  {% if successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="ge-status-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="ge-status-title">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ successMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ errorMessage }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if exchange.description %}
+    <p class="govuk-body-l">{{ exchange.description }}</p>
+  {% endif %}
+
+  <dl class="govuk-summary-list govuk-!-margin-bottom-8">
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("group_exchanges.total_hours_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ exchange.totalHours }}</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+      <dt class="govuk-summary-list__key">{{ t("group_exchanges.status_label") }}</dt>
+      <dd class="govuk-summary-list__value">{{ exchange.statusLabel }}</dd>
+    </div>
+  </dl>
+
+  <h2 class="govuk-heading-l">{{ t("group_exchanges.participants_title") }}</h2>
+  {% if participants and participants.length %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("group_exchanges.participants_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("group_exchanges.name_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("group_exchanges.role_column") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("group_exchanges.hours_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("group_exchanges.confirmed_column") }}</th>
+          {% if editable %}
+            <th scope="col" class="govuk-table__header"><span class="govuk-visually-hidden">{{ t("group_exchanges.remove_button") }}</span></th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for participant in participants %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ participant.name }}</td>
+            <td class="govuk-table__cell">{{ participant.roleLabel }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ participant.hours }}</td>
+            <td class="govuk-table__cell">
+              <strong class="govuk-tag {% if participant.confirmed %}govuk-tag--green{% else %}govuk-tag--grey{% endif %}">{{ participant.confirmedLabel }}</strong>
+            </td>
+            {% if editable %}
+              <td class="govuk-table__cell">
+                <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/participants/' + (participant.userId | string) + '/remove') }}" class="nexus-alpha-linkform">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("group_exchanges.remove_button") }}</button>
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("group_exchanges.no_participants") }}</p></div>
+  {% endif %}
+
+  {% if isParticipant and not isClosed %}
+    <section aria-labelledby="confirm-heading" class="govuk-!-margin-top-6">
+      <h2 class="govuk-heading-l" id="confirm-heading">{{ t("group_exchanges.confirm_title") }}</h2>
+      {% if viewerConfirmed %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("group_exchanges.confirmed_already") }}</p></div>
+      {% else %}
+        <p class="govuk-body">{{ t("group_exchanges.confirm_body") }}</p>
+        <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/confirm') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button" data-module="govuk-button">{{ t("group_exchanges.confirm_button") }}</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {% if editable %}
+    <section aria-labelledby="add-heading" class="govuk-!-margin-top-6">
+      <h2 class="govuk-heading-l" id="add-heading">{{ t("group_exchanges.add_title") }}</h2>
+      <form method="get" action="{{ urlFor('/group-exchanges/' + (exchange.id | string)) }}">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="participant_q">{{ t("group_exchanges.add_search_label") }}</label>
+          <div id="pq-hint" class="govuk-hint">{{ t("group_exchanges.add_search_hint") }}</div>
+          <input class="govuk-input govuk-!-width-two-thirds" id="participant_q" name="participant_q" type="search" value="{{ participantQuery }}" aria-describedby="pq-hint">
+        </div>
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.search") }}</button>
+      </form>
+
+      {% if participantQuery %}
+        {% if participantResults and participantResults.length %}
+          {% for candidate in participantResults %}
+            <div class="nexus-alpha-card govuk-!-margin-bottom-4">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ candidate.name }}</h3>
+              <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/participants') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="participant_id" value="{{ candidate.id }}">
+                <div class="govuk-form-group govuk-!-margin-bottom-3">
+                  <label class="govuk-label" for="role-{{ candidate.id }}">{{ t("group_exchanges.add_role_label") }}</label>
+                  <select class="govuk-select" id="role-{{ candidate.id }}" name="role">
+                    <option value="provider">{{ t("group_exchanges.role_provider") }}</option>
+                    <option value="receiver">{{ t("group_exchanges.role_receiver") }}</option>
+                  </select>
+                </div>
+                <div class="govuk-form-group govuk-!-margin-bottom-3">
+                  <label class="govuk-label" for="hours-{{ candidate.id }}">{{ t("group_exchanges.add_hours_label") }}</label>
+                  <input class="govuk-input govuk-input--width-5" id="hours-{{ candidate.id }}" name="hours" type="number" min="0" max="1000" step="0.25" inputmode="decimal" value="0">
+                </div>
+                <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("group_exchanges.add_button") }}</button>
+              </form>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="govuk-body">{{ t("group_exchanges.add_search_empty") }}</p>
+        {% endif %}
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {% if isOrganizer and not isClosed %}
+    <section aria-labelledby="complete-heading" class="govuk-!-margin-top-7">
+      <h2 class="govuk-heading-l" id="complete-heading">{{ t("group_exchanges.complete_title") }}</h2>
+      <p class="govuk-body">{{ t("group_exchanges.complete_body") }}</p>
+      <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+          <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+          {{ t("group_exchanges.complete_warning") }}
+        </strong>
+      </div>
+      <div class="nexus-alpha-actions">
+        <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/complete') }}" class="nexus-alpha-linkform">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-!-margin-bottom-0 {% if not allConfirmed %}govuk-button--disabled{% endif %}" data-module="govuk-button" {% if not allConfirmed %}disabled aria-disabled="true"{% endif %}>{{ t("group_exchanges.complete_button") }}</button>
+        </form>
+        <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/cancel') }}" class="nexus-alpha-linkform">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("group_exchanges.cancel_button") }}</button>
+        </form>
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}

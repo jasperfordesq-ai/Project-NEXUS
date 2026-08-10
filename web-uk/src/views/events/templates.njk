@@ -1,0 +1,68 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("event_templates.back_to_events") }}</a>
+
+  {% if status in ['captured', 'revised'] %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ t("event_templates." + status) }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <h1 class="govuk-heading-xl">{{ t("event_templates.title") }}</h1>
+  <p class="govuk-body-l">{{ t("event_templates.intro") }}</p>
+
+  <div class="govuk-inset-text">
+    <strong>{{ t("event_templates.safety_title") }}</strong><br>
+    {{ t("event_templates.safety_description") }}
+  </div>
+
+  <nav aria-label="{{ t('event_templates.filter_label') }}" class="govuk-button-group">
+    {% for value in ['active', 'archived', 'all'] %}
+      <a class="govuk-button{% if filter != value %} govuk-button--secondary{% endif %}" href="{{ urlFor('/events/templates?filter=' + value) }}">{{ t("event_templates.filters." + value) }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if not templates.length %}
+    <h2 class="govuk-heading-m">{{ t("event_templates.empty_title") }}</h2>
+    <p class="govuk-body">{{ t("event_templates.empty_description") }}</p>
+  {% else %}
+    <ul class="govuk-list">
+      {% for template in templates %}
+        {% set configuration = template.version.configuration or {} %}
+        <li class="govuk-!-margin-bottom-8">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ configuration.title or template.source_event.title }}</h2>
+          <p class="govuk-body-s"><strong class="govuk-tag{% if template.status == 'archived' %} govuk-tag--grey{% endif %}">{{ t("event_templates.status." + template.status) }}</strong></p>
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("event_templates.source") }}</dt>
+              <dd class="govuk-summary-list__value">{{ template.source_event.title }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("event_templates.version") }}</dt>
+              <dd class="govuk-summary-list__value">{{ template.current_version }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("event_templates.used") }}</dt>
+              <dd class="govuk-summary-list__value">{{ t("event_templates.use_count", { count: template.usage.materialization_count or 0 }) }}</dd>
+            </div>
+          </dl>
+          <div class="govuk-button-group">
+            {% if template.capabilities.materialize %}<a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}">{{ t("event_templates.use_template") }}</a>{% endif %}
+            {% if template.capabilities.revise %}<a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/events/' + (template.source_event.id | string) + '/template-preview?template_id=' + (template.id | string)) }}">{{ t("event_templates.refresh") }}</a>{% endif %}
+            {% if template.capabilities.view_audit %}<a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/event-templates/' + (template.id | string) + '/history?filter=' + filter + (('&library_cursor=' + (cursor | urlencode)) if cursor else '')) }}">{{ t("event_templates.audit_link") }}</a>{% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if pagination.has_more and pagination.next_cursor %}
+    <a class="govuk-button govuk-button--secondary" data-module="govuk-button" href="{{ urlFor('/events/templates?filter=' + filter + '&cursor=' + (pagination.next_cursor | urlencode)) }}">{{ t("event_templates.load_more") }}</a>
+  {% endif %}
+{% endblock %}

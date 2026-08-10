@@ -1,0 +1,222 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ challenge.title }}</span>
+  <div class="nexus-alpha-module-row">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ idea.title }}</h1>
+    <strong class="govuk-tag {{ idea.statusClass }}">{{ idea.statusLabel }}</strong>
+  </div>
+
+  {% if idea.authorName %}
+    <p class="govuk-body-s nexus-alpha-meta">Submitted by {{ idea.authorName }}</p>
+  {% endif %}
+
+  <p class="govuk-body">
+    <strong class="govuk-tag govuk-tag--blue">{{ idea.voteText }}</strong>
+  </p>
+
+  <h2 class="govuk-heading-m">Idea details</h2>
+  {% if idea.description %}
+    <div class="govuk-body">{{ idea.description | nl2br | safe }}</div>
+  {% else %}
+    <p class="govuk-body">No further detail was provided for this idea.</p>
+  {% endif %}
+
+  {% if idea.canVote or idea.hasVoted %}
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/toggle-vote') }}" class="govuk-!-margin-bottom-4">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button type="submit" class="govuk-button{% if idea.hasVoted %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button" aria-label="Vote for idea: {{ idea.title }}">
+        {{ "Remove your vote" if idea.hasVoted else "Vote for this idea" }}
+      </button>
+    </form>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="media">Attachments</h2>
+  {% if media and media.length %}
+    <ul class="govuk-list">
+      {% for item in media %}
+        <li class="govuk-!-margin-bottom-2">
+          <a class="govuk-link" href="{{ item.url }}" rel="noopener noreferrer" target="_blank">
+            {{ item.caption if item.caption else "Open attachment" }}<span class="govuk-visually-hidden"> opens in a new tab</span>
+          </a>
+          <span class="govuk-body-s nexus-alpha-meta">({{ item.typeLabel }})</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">No attachments have been added to this idea.</div>
+  {% endif %}
+
+  {% if idea.isOwner or idea.isAdmin %}
+    <details class="govuk-details" data-module="govuk-details">
+      <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Add an attachment</span></summary>
+      <div class="govuk-details__text">
+        <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/media') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="media_type">Attachment type</label>
+            <select class="govuk-select" id="media_type" name="media_type">
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+              <option value="document">Document</option>
+              <option value="link">Link</option>
+            </select>
+          </div>
+          <div class="govuk-form-group{% if status == 'media-invalid' %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="media_url">Web address (URL)</label>
+            <div id="media_url-hint" class="govuk-hint">Paste a link to an image, video, document or web page.</div>
+            {% if status == 'media-invalid' %}
+              <p id="media_url-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a web address for the attachment.</p>
+            {% endif %}
+            <input class="govuk-input" id="media_url" name="media_url" type="url" maxlength="1000" aria-describedby="media_url-hint{% if status == 'media-invalid' %} media_url-error{% endif %}">
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="media_caption">Caption (optional)</label>
+            <input class="govuk-input" id="media_caption" name="media_caption" type="text" maxlength="500">
+          </div>
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Add attachment</button>
+        </form>
+      </div>
+    </details>
+  {% endif %}
+
+  {% if idea.isAdmin %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">Admin controls</h2>
+    <p class="govuk-body">Shortlist promising ideas, or mark the winning idea once judging is complete.</p>
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/status') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            {% for option in [{ value: "submitted", label: "Submitted" }, { value: "shortlisted", label: "Shortlisted" }, { value: "winner", label: "Winner" }] %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="idea-status-{{ option.value }}" name="idea_status" type="radio" value="{{ option.value }}"{% if idea.status == option.value %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="idea-status-{{ option.value }}">{{ option.label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Update status</button>
+    </form>
+  {% endif %}
+
+  {% if idea.canConvert %}
+    <h2 class="govuk-heading-l govuk-!-margin-top-6">Turn this idea into a group</h2>
+    <p class="govuk-body">Shortlisted and winning ideas can become a working group so people can take them forward together.</p>
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">Warning</span>This creates a new group linked to this idea. It cannot be undone.</strong>
+    </div>
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/convert') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="group_name">{{ t("groups.create.name_label") }}</label>
+        <input class="govuk-input" id="group_name" name="group_name" type="text" maxlength="255" value="{{ idea.title }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="group_description">Group description</label>
+        <textarea class="govuk-textarea" id="group_description" name="group_description" rows="4" maxlength="5000">{{ idea.description }}</textarea>
+      </div>
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Who can see this group</legend>
+          <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="group-visibility-public" name="group_visibility" type="radio" value="public" checked>
+              <label class="govuk-label govuk-radios__label" for="group-visibility-public">Public - anyone in the community can find and join</label>
+            </div>
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="group-visibility-private" name="group_visibility" type="radio" value="private">
+              <label class="govuk-label govuk-radios__label" for="group-visibility-private">Private - people must request to join</label>
+            </div>
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="group-visibility-secret" name="group_visibility" type="radio" value="secret">
+              <label class="govuk-label govuk-radios__label" for="group-visibility-secret">Secret - only people you invite can see it</label>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">Create group from idea</button>
+    </form>
+  {% endif %}
+
+  {% if idea.isOwner or idea.isAdmin %}
+    <details class="govuk-details govuk-!-margin-top-4" data-module="govuk-details">
+      <summary class="govuk-details__summary"><span class="govuk-details__summary-text">Delete idea</span></summary>
+      <div class="govuk-details__text">
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">Warning</span>Deleting this idea cannot be undone. Its votes and comments will be removed.</strong>
+        </div>
+        <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/delete') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">Yes, delete this idea</button>
+        </form>
+      </div>
+    </details>
+  {% endif %}
+
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="comments">Comments</h2>
+  {% if comments and comments.length %}
+    <div class="nexus-alpha-card-list">
+      {% for comment in comments %}
+        <article class="nexus-alpha-card">
+          {% if comment.authorName %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ comment.authorName }} commented</p>
+          {% endif %}
+          <div class="govuk-body govuk-!-margin-bottom-1">{{ comment.body | nl2br | safe }}</div>
+          {% if idea.isAdmin %}
+            <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/comments/' ~ comment.id ~ '/delete') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button type="submit" class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">Delete comment</button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">No comments yet. Be the first to share your thoughts.</div>
+  {% endif %}
+
+  {% if idea.canComment %}
+    <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ t("blog.comment_body_label") }}</h3>
+    <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/comments') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if status == 'comment-invalid' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label" for="comment_body">Your comment</label>
+        {% if status == 'comment-invalid' %}
+          <p id="comment_body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("blog.comment_states.comment-invalid") }}</p>
+        {% endif %}
+        <textarea class="govuk-textarea" id="comment_body" name="comment_body" rows="4" maxlength="5000" {% if status == 'comment-invalid' %}aria-describedby="comment_body-error"{% endif %}></textarea>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("blog.comment_submit") }}</button>
+    </form>
+  {% endif %}
+{% endblock %}

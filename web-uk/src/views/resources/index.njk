@@ -1,0 +1,48 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("resources.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("resources.title") }}</h1>
+  <p class="govuk-body-l">{{ t("resources.description") }}</p>
+
+  <p class="govuk-body govuk-!-margin-bottom-6">
+    <a class="govuk-link" href="{{ urlFor('/resources/library') }}">{{ t("govuk_alpha_resources.nav.library") }}</a>
+  </p>
+
+  <form method="get" action="{{ urlFor('/resources') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="q">{{ t("resources.search_label") }}</label>
+      <div id="q-hint" class="govuk-hint">{{ t("resources.search_hint") }}</div>
+      <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ resourcesQuery }}" aria-describedby="q-hint">
+    </div>
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.search") }}</button>
+  </form>
+
+  {% if not resources.length %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("resources.empty") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for resource in resources %}
+        <article class="nexus-alpha-card" id="resource-{{ resource.id }}">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ resource.title }}</h2>
+            {% if resource.type %}<strong class="govuk-tag govuk-tag--grey">{{ resource.type }}</strong>{% endif %}
+          </div>
+
+          {% if resource.description %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ resource.description }}</p>
+          {% endif %}
+
+          {% if resource.href %}
+            <a class="govuk-link" href="{{ resource.href }}" rel="noopener" aria-label="{{ t('resources.download') }} {{ resource.title }}">{{ t("resources.download") }}</a>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

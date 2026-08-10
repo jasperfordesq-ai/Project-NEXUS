@@ -1,0 +1,45 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/achievements') }}">{{ t("govuk_alpha_gamification.common.back_to_achievements") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_gamification.engagement.caption", { community: communityName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_gamification.engagement.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_gamification.engagement.description") }}</p>
+
+  {% set gamificationNavGroup = "achievements" %}
+  {% set gamificationActiveTab = "engagement" %}
+  {% include "partials/gamification-nav.njk" %}
+
+  {% if engagementHistory.length %}
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.engagement.title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.engagement.month_column") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_gamification.engagement.active_column") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_gamification.engagement.activity_column") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in engagementHistory %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ row.month }}</td>
+            <td class="govuk-table__cell">
+              <strong class="govuk-tag {% if row.wasActive %}govuk-tag--green{% else %}govuk-tag--grey{% endif %}">{% if row.wasActive %}{{ t("govuk_alpha_gamification.engagement.active_yes") }}{% else %}{{ t("govuk_alpha_gamification.engagement.active_no") }}{% endif %}</strong>
+            </td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ row.activityCountLabel }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_gamification.engagement.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

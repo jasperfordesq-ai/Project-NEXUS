@@ -1,0 +1,44 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("guide.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("guide.title") if t else title }}</h1>
+      <p class="govuk-body-l">{{ t("guide.intro") }}</p>
+
+      <h2 class="govuk-heading-l">{{ t("guide.equal_title") }}</h2>
+      <p class="govuk-body">{{ t("guide.equal_body") }}</p>
+
+      <h2 class="govuk-heading-l">{{ t("guide.steps_title") }}</h2>
+      <ol class="govuk-list govuk-list--number govuk-list--spaced">
+        <li><span class="govuk-!-font-weight-bold">{{ t("guide.step1_title") }}.</span> {{ t("guide.step1_body") }}</li>
+        <li><span class="govuk-!-font-weight-bold">{{ t("guide.step2_title") }}.</span> {{ t("guide.step2_body") }}</li>
+        <li><span class="govuk-!-font-weight-bold">{{ t("guide.step3_title") }}.</span> {{ t("guide.step3_body") }}</li>
+      </ol>
+
+      <h2 class="govuk-heading-l">{{ t("guide.getting_started_title") }}</h2>
+      <p class="govuk-body">{{ t("guide.getting_started_body") }}</p>
+
+      <div class="govuk-button-group govuk-!-margin-top-4">
+        {% if isAuthenticated %}
+          {% if listingsEnabled %}
+            <a class="govuk-button" href="{{ urlFor('/listings') }}" role="button" draggable="false" data-module="govuk-button">{{ t("guide.browse_listings") }}</a>
+          {% endif %}
+          {% if walletEnabled %}
+            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/wallet') }}" role="button" draggable="false" data-module="govuk-button">{{ t("guide.go_to_wallet") }}</a>
+          {% endif %}
+        {% else %}
+          <a class="govuk-button" href="{{ urlFor('/register') }}" role="button" draggable="false" data-module="govuk-button">{{ t("guide.create_account") }}</a>
+          {% if listingsEnabled %}
+            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings') }}" role="button" draggable="false" data-module="govuk-button">{{ t("guide.browse_listings") }}</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

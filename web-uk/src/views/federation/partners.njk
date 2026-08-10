@@ -1,0 +1,60 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/federation') }}">{{ t("federation.partners_list.back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("federation.partners_list.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("federation.partners_list.title") }}</h1>
+  <p class="govuk-body-l">{{ t("federation.partners_list.description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
+  {% if partners.length %}
+    <div class="nexus-alpha-card-list">
+      {% for partner in partners %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ partner.name }}</a></h2>
+            {% if partner.isExternal %}
+              <strong class="govuk-tag govuk-tag--blue">{{ t("federation.external_tag") }}</strong>
+            {% elif partner.levelLabel %}
+              <strong class="govuk-tag govuk-tag--purple">{{ partner.levelLabel }}</strong>
+            {% endif %}
+          </div>
+
+          {% if partner.tagline %}
+            <p class="govuk-body govuk-!-margin-bottom-2">{{ partner.tagline }}</p>
+          {% endif %}
+
+          <dl class="nexus-alpha-inline-list">
+            {% if partner.location %}<div><dt>{{ t("federation.location_label") }}</dt><dd>{{ partner.location }}</dd></div>{% endif %}
+            <div><dt>{{ t("federation.members_label") }}</dt><dd>{{ partner.memberCountLabel }}</dd></div>
+            <div><dt>{{ t("federation.listings_label") }}</dt><dd>{{ partner.listingCountLabel }}</dd></div>
+            {% if partner.partnershipSinceLabel %}<div><dt>{{ t("federation.since_label") }}</dt><dd>{{ partner.partnershipSinceLabel }}</dd></div>{% endif %}
+          </dl>
+
+          {% if partner.permissionLabels.length %}
+            <p class="govuk-body-s govuk-!-margin-bottom-2">
+              <span class="nexus-alpha-meta">{{ t("federation.permissions_label") }}:</span>
+              {% for permissionLabel in partner.permissionLabels %}
+                <strong class="govuk-tag govuk-tag--grey govuk-!-margin-right-1">{{ permissionLabel }}</strong>
+              {% endfor %}
+            </p>
+          {% endif %}
+
+          <p class="govuk-body govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ t("federation.partners_list.view_community") }}</a></p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("federation.partners_list.empty") }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

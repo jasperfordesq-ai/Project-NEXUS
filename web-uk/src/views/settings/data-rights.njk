@@ -1,0 +1,112 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+
+      {% if statusMessage and successStatus %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="data-rights-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="data-rights-status-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusMessage }}</p>
+          </div>
+        </div>
+      {% elif statusMessage and infoStatus %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="data-rights-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="data-rights-status-title">{{ t("states.important") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusMessage }}</p>
+          </div>
+        </div>
+      {% elif statusMessage and errorStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#request_type">{{ statusMessage }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.gdpr.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.gdpr.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_settings.gdpr.description") }}</p>
+
+      <section aria-labelledby="data-rights-request-heading" id="request">
+        <h2 class="govuk-heading-l" id="data-rights-request-heading">{{ t("govuk_alpha_settings.gdpr.request_heading") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.gdpr.request_description") }}</p>
+
+        <form method="post" action="{{ urlFor('/settings/data-rights') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_settings.gdpr.type_label") }}</h2>
+              </legend>
+              <div class="govuk-radios" data-module="govuk-radios">
+                {% for type in requestTypes %}
+                  {% set inputId = "request_type" if loop.first else "request_type_" + type.value %}
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="{{ inputId }}" name="request_type" type="radio" value="{{ type.value }}" aria-describedby="request_type_{{ type.value }}-hint">
+                    <label class="govuk-label govuk-radios__label" for="{{ inputId }}">{{ type.label }}</label>
+                    <div id="request_type_{{ type.value }}-hint" class="govuk-hint govuk-radios__hint">{{ type.hint }}</div>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="notes">{{ t("govuk_alpha_settings.gdpr.notes_label") }}</label>
+            <div id="notes-hint" class="govuk-hint">{{ t("govuk_alpha_settings.gdpr.notes_hint") }}</div>
+            <textarea class="govuk-textarea" id="notes" name="notes" rows="4" maxlength="2000" aria-describedby="notes-hint"></textarea>
+          </div>
+
+          <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_settings.gdpr.submit_button") }}</button>
+        </form>
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section aria-labelledby="your-requests-heading" id="your-requests">
+        <h2 class="govuk-heading-l" id="your-requests-heading">{{ t("govuk_alpha_settings.gdpr.your_requests_heading") }}</h2>
+        {% if not requests.length %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_settings.gdpr.your_requests_empty") }}</p></div>
+        {% else %}
+          <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_settings.gdpr.your_requests_heading") }}</caption>
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.gdpr.type_label") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.gdpr.request_status_label") }}</th>
+                <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_settings.gdpr.request_date_label") }}</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for request in requests %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ request.type }}</td>
+                  <td class="govuk-table__cell">{{ request.status }}</td>
+                  <td class="govuk-table__cell">{{ request.requested_at or "-" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,83 @@
+# =============================================================================
+# Git Ignore - Nexus Backend
+# =============================================================================
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+**/packages/
+*.nupkg
+
+# Test results
+**/TestResults/
+*.trx
+
+# Local environment files (keep .env.docker as template)
+.env
+.env.local
+.env.*.local
+.env.production
+!.env.docker
+!.env.production.example
+
+# Database backups (NEVER commit)
+backups/
+
+# Logs
+*.log
+logs/
+uploads/
+artifacts/
+robocopy C*/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets (should never be committed)
+**/secrets/
+*.pfx
+*.key
+*.pem
+
+# ASP.NET Core
+appsettings.Local.json
+appsettings.*.Local.json
+nul
+_nul
+.claude/worktrees/
+.claude/settings.local.json
+
+# Frontend apps — build artifacts and dependencies
+apps/**/node_modules/
+apps/**/dist/
+apps/**/dist-ssr/
+apps/**/.env
+apps/**/.env.local
+apps/**/.env.production
+apps/**/tsconfig.tsbuildinfo
+
+# pnpm workspace
+.pnpm-store/
+
+# E2E test credentials (copy from e2e/.env.example)
+e2e/.env

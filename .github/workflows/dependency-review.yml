@@ -10,6 +10,21 @@ on:
       - 'react-frontend/package-lock.json'
       - 'composer.json'
       - 'composer.lock'
+      # Added 2026-08-10. The first four below are the monorepo siblings, whose
+      # dependency manifests woke NOTHING here after the 2026-08-09 move — the
+      # same blind-spot class .github/ci-paths.yml documents for contracts/**
+      # and e2e/**. The last two are the same omission for trees that predate
+      # the move: both have lockfiles and both were missing from this list.
+      - 'web-uk/package.json'
+      - 'web-uk/package-lock.json'
+      - 'aspnet-backend/e2e/package.json'
+      - 'aspnet-backend/e2e/package-lock.json'
+      - 'aspnet-backend/**/*.csproj'
+      - 'aspnet-backend/**/packages.lock.json'
+      - 'e2e/package.json'
+      - 'e2e/package-lock.json'
+      - 'mobile/package.json'
+      - 'mobile/package-lock.json'
 
 permissions:
   contents: read
@@ -25,11 +40,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Review dependency changes
-        # Non-blocking: action requires GitHub's Dependency Graph feature
-        # which is currently not enabled on this repo. Re-tighten by
-        # removing continue-on-error after enabling Dependency Graph at
-        # https://github.com/jasperfordesq-ai/nexus-v1/settings/security_analysis
-        continue-on-error: true
+        # BLOCKING as of 2026-08-10. It was continue-on-error only because
+        # Dependency Graph was not enabled; the owner enabled it, and the
+        # re-tighten step the old comment described is this change.
+        #
+        # Confirmed safe to gate on before flipping it, rather than after:
+        # run 31373167798 reviewed this PR — the largest dependency diff this
+        # check will ever see, since #169 adds the whole aspnet-backend and
+        # web-uk trees at once — and reported "did not detect any vulnerable
+        # packages with severity level high or higher" and no denied packages.
+        # Dependency Graph itself is live: the SBOM endpoint returns 3,153
+        # packages.
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high

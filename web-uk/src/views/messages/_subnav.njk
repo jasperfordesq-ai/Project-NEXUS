@@ -1,0 +1,16 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% set activeTab = messagesActive or "groups" %}
+<nav class="govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha.messages.tabs_title') }}">
+  <ul class="govuk-list" style="display:flex;gap:1rem;list-style:none;padding:0;margin:0 0 1rem">
+    <li>
+      <a class="govuk-link{% if activeTab == 'direct' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/messages') }}"{% if activeTab == 'direct' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_messages.groups.tab_direct") }}</a>
+    </li>
+    <li>
+      <a class="govuk-link{% if activeTab == 'groups' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/messages/groups') }}"{% if activeTab == 'groups' %} aria-current="page"{% endif %}>{{ t("govuk_alpha_messages.groups.tab_groups") }}</a>
+    </li>
+  </ul>
+</nav>

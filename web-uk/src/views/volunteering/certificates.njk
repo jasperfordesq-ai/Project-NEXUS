@@ -1,0 +1,95 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="certificate-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="certificate-success-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ status.message }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha.volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_depth.certificates_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha.vol_depth.certificates_description") }}</p>
+
+  <form method="post" action="{{ urlFor('/volunteering/certificates/generate') }}" class="govuk-!-margin-bottom-7">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha.vol_depth.certificate_generate") }}</button>
+  </form>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% elseif not certificates.length %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha.vol_depth.certificates_empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha.vol_depth.certificates_empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for certificate in certificates %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ certificate.heading }}</h2>
+          <dl class="govuk-summary-list govuk-!-margin-bottom-3">
+            {% if certificate.rangeStartLabel and certificate.rangeEndLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_depth.certificate_period") }}</dt>
+                <dd class="govuk-summary-list__value">{{ certificate.rangeStartLabel }} &ndash; {{ certificate.rangeEndLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if certificate.generatedAtLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_depth.certificate_generated_on") }}</dt>
+                <dd class="govuk-summary-list__value">{{ certificate.generatedAtLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if certificate.verificationCode %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("govuk_alpha.vol_depth.certificate_code") }}</dt>
+                <dd class="govuk-summary-list__value"><span class="govuk-!-font-weight-bold">{{ certificate.verificationCode }}</span></dd>
+              </div>
+            {% endif %}
+          </dl>
+          {% if certificate.organizations.length %}
+            <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("govuk_alpha.vol_depth.certificate_organisations") }}</strong></p>
+            <ul class="govuk-list govuk-list--bullet">
+              {% for organization in certificate.organizations %}
+                <li>{{ organization.label }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {% if certificate.downloadPath %}
+            <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button" href="{{ urlFor(certificate.downloadPath) }}">{{ t("govuk_alpha.vol_depth.certificate_download") }}</a>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

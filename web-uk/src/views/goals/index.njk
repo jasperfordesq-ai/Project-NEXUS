@@ -1,0 +1,119 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% if successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="goal-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="goal-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ successMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#title">{{ errorMessage }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("goals.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("goals.title") }}</h1>
+  <p class="govuk-body-l">{{ t("goals.description") }}</p>
+
+  <nav class="govuk-!-margin-bottom-6" aria-label="{{ t('goals.title') }}">
+    <ul class="govuk-list govuk-list--inline">
+      <li><a class="govuk-link" href="{{ urlFor('/goals/templates') }}">{{ t("goals.templates_link") }}</a></li>
+      <li><a class="govuk-link" href="{{ urlFor('/goals/buddying') }}">{{ t("goals.buddying_link") }}</a></li>
+      <li><a class="govuk-link" href="{{ urlFor('/goals/discover') }}">{{ t("polish_gamify.goals_discover_title") }}</a></li>
+    </ul>
+  </nav>
+
+  {% if goals and goals.length %}
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-8">
+      {% for goal in goals %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ goal.title }}</a>
+            </h2>
+            <strong class="govuk-tag {{ goal.statusClass }}">{{ goal.statusLabel }}</strong>
+            <strong class="govuk-tag {{ goal.visibilityClass }}">{{ goal.visibilityLabel }}</strong>
+          </div>
+
+          {% if goal.description %}
+            <p class="govuk-body">{{ goal.description }}</p>
+          {% endif %}
+
+          {% if goal.isOverdue %}
+            <strong class="govuk-tag govuk-tag--red govuk-!-margin-bottom-1">{{ t("polish_gamify.goals_overdue_label") }}</strong>
+          {% endif %}
+
+          {% if goal.streakCount > 0 %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("polish_gamify.goals_streak_label", { count: goal.streakCount }) }}</p>
+          {% endif %}
+
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("goals.progress_label", { current: goal.currentText, target: goal.targetText }) }}</p>
+          <progress max="100" value="{{ goal.progressPercent }}" aria-label="{{ goal.title }}: {{ goal.progressPercent }}%">{{ goal.progressPercent }}%</progress>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if meta and meta.hasMore and meta.cursor %}
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/goals?cursor=' + (meta.cursor | string)) }}">{{ t("actions.load_more") }}</a></p>
+    {% endif %}
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("goals.empty") }}</p>
+    </div>
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("goals.create_title") }}</h2>
+    </div>
+  </div>
+
+  <form method="post" action="{{ urlFor('/goals') }}" class="govuk-grid-row">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="title">{{ t("goals.title_label") }}</label>
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="255" required>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="target_value">{{ t("goals.target_label") }}</label>
+        <div id="tv-hint" class="govuk-hint">{{ t("goals.target_hint") }}</div>
+        <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" required aria-describedby="tv-hint">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="description">{{ t("goals.description_label") }}</label>
+        <textarea class="govuk-textarea" id="description" name="description" rows="2" maxlength="1000"></textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="deadline">{{ t("goals.deadline_label") }}</label>
+        <input class="govuk-input govuk-input--width-10" id="deadline" name="deadline" type="date">
+      </div>
+      <div class="govuk-checkboxes govuk-checkboxes--small govuk-form-group" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="is_public" name="is_public" type="checkbox" value="1">
+          <label class="govuk-label govuk-checkboxes__label" for="is_public">{{ t("goals.public_label") }}</label>
+        </div>
+      </div>
+      <button class="govuk-button" data-module="govuk-button">{{ t("goals.create_button") }}</button>
+    </div>
+  </form>
+{% endblock %}

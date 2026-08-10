@@ -1,0 +1,169 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% macro renderComment(comment, goal, csrfToken, isReply) %}
+  <li class="nexus-alpha-comment" id="comment-{{ comment.id }}">
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+      <strong>{{ comment.authorName }}</strong>
+      {% if comment.isOwn %}
+        <span class="govuk-!-font-weight-regular"> ({{ t("govuk_alpha_goals.social.you") }})</span>
+      {% endif %}
+      {% if comment.edited %}
+        <span class="govuk-!-font-weight-regular"> ({{ t("govuk_alpha_goals.social.edited") }})</span>
+      {% endif %}
+      {% if comment.createdAtLabel %}
+        <span aria-hidden="true"> | </span>
+        <time datetime="{{ comment.createdAt }}">{{ comment.createdAtLabel }}</time>
+      {% endif %}
+    </p>
+    <p class="govuk-body govuk-!-margin-bottom-2">{{ comment.content }}</p>
+
+    {% if comment.id and not isReply %}
+      <div class="nexus-alpha-comment-actions govuk-!-margin-bottom-2">
+        <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+          <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">{{ t("govuk_alpha_goals.social.reply_link") }}</span>
+          </summary>
+          <div class="govuk-details__text">
+            <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/comments') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="parent_id" value="{{ comment.id }}">
+              <div class="govuk-form-group">
+                <label class="govuk-label govuk-label--s" for="reply-{{ comment.id }}">{{ t("govuk_alpha_goals.social.reply_label") }}</label>
+                <textarea class="govuk-textarea" id="reply-{{ comment.id }}" name="body" rows="3" maxlength="5000" required></textarea>
+              </div>
+              <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_goals.social.reply_submit") }}</button>
+            </form>
+          </div>
+        </details>
+
+        {% if comment.isOwn %}
+          <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">{{ t("govuk_alpha_goals.social.delete_comment") }}</span>
+            </summary>
+            <div class="govuk-details__text">
+              <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                  <span class="govuk-visually-hidden">{{ t("govuk_alpha_goals.common.error_title") }}</span>
+                  {{ t("govuk_alpha_goals.social.delete_comment_warning") }}
+                </strong>
+              </div>
+              <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/comments/' + (comment.id | string) + '/delete') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_goals.social.delete_comment") }}</button>
+              </form>
+            </div>
+          </details>
+        {% endif %}
+      </div>
+    {% elseif comment.id and comment.isOwn %}
+      <details class="govuk-details govuk-!-margin-bottom-0" data-module="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">{{ t("govuk_alpha_goals.social.delete_comment") }}</span>
+        </summary>
+        <div class="govuk-details__text">
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-visually-hidden">{{ t("govuk_alpha_goals.common.error_title") }}</span>
+              {{ t("govuk_alpha_goals.social.delete_comment_warning") }}
+            </strong>
+          </div>
+          <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/comments/' + (comment.id | string) + '/delete') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_goals.social.delete_comment") }}</button>
+          </form>
+        </div>
+      </details>
+    {% endif %}
+
+    {% if comment.replies.length %}
+      <ul class="govuk-list nexus-alpha-comments-list--nested">
+        {% for reply in comment.replies %}
+          {{ renderComment(reply, goal, csrfToken, true) }}
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
+
+  {% if statusBanner and statusBanner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: statusBanner.title,
+      text: statusBanner.message
+    }) }}
+  {% elif statusBanner and statusBanner.type == "error" %}
+    {{ govukErrorSummary({
+      titleText: statusBanner.title,
+      errorList: [
+        {
+          text: statusBanner.message,
+          href: "#body"
+        }
+      ],
+      attributes: { tabindex: "-1" }
+    }) }}
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_goals.social.caption") }}: {{ goal.title }}</span>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_goals.social.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_goals.social.intro") }}</p>
+
+  <section id="likes" class="govuk-!-margin-bottom-6">
+    <h2 class="govuk-heading-l">{{ t("govuk_alpha_goals.social.likes_heading") }}</h2>
+    <p class="govuk-body nexus-alpha-meta govuk-!-margin-bottom-2" aria-live="polite">{{ likeCountLabel }}</p>
+    <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/like') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <button class="govuk-button{% if not liked %} govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{% if liked %}true{% else %}false{% endif %}">
+        <span aria-hidden="true">{% if liked %}&hearts;{% else %}&#9825;{% endif %}</span>
+        {% if liked %}{{ t("govuk_alpha_goals.social.unlike_button") }}{% else %}{{ t("govuk_alpha_goals.social.like_button") }}{% endif %}
+      </button>
+    </form>
+  </section>
+
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+
+  <section id="comments">
+    <h2 class="govuk-heading-l">
+      {{ t("govuk_alpha_goals.social.comments_heading") }}
+      <span class="govuk-!-font-weight-regular">({{ commentsTotal }})</span>
+    </h2>
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3" aria-live="polite">{{ commentsTotalLabel }}</p>
+
+    {% if not comments.length %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_goals.social.comments_empty") }}</p></div>
+    {% else %}
+      <ul class="govuk-list nexus-alpha-comments-list">
+        {% for comment in comments %}
+          {{ renderComment(comment, goal, csrfToken, false) }}
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_goals.social.add_comment_heading") }}</h3>
+    <form method="post" action="{{ urlFor('/goals/' + (goal.id | string) + '/comments') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-form-group{% if commentInvalid %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_goals.social.comment_label") }}</label>
+        <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_goals.social.comment_help") }}</div>
+        {% if commentInvalid %}
+          <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_goals.common.error_title") }}</span> {{ t("govuk_alpha_goals.states.comment-invalid") }}</p>
+        {% endif %}
+        <textarea class="govuk-textarea{% if commentInvalid %} govuk-textarea--error{% endif %}" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if commentInvalid %} body-error{% endif %}"></textarea>
+      </div>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_goals.social.comment_submit") }}</button>
+    </form>
+  </section>
+{% endblock %}

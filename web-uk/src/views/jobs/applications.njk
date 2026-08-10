@@ -1,0 +1,113 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("jobs_t2.applications_caption", { community: tenantName or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("jobs_t2.applications_title") }}</h1>
+  <p class="govuk-body-l">{{ t("jobs_t2.applications_description") }}</p>
+
+  <p class="govuk-body">
+    <a class="govuk-link" href="{{ urlFor('/jobs/responses') }}">{{ t("govuk_alpha_jobs.responses.title") }}</a>
+  </p>
+
+  {% set jobsActiveTab = "applications" %}
+  {% include "jobs/_nav.njk" %}
+
+  {% if successMessage %}
+    {% set notificationMessage = successMessage %}
+    {% set notificationType = "success" %}
+    {% include "partials/notification-banner.njk" %}
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li>{{ errorMessage }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="get" action="{{ urlFor('/jobs/applications') }}" class="govuk-!-margin-bottom-6">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="status_filter">{{ t("jobs_t2.status_label") }}</label>
+      <select class="govuk-select" id="status_filter" name="status_filter">
+        <option value=""{% if filters.statusFilter == "" %} selected{% endif %}>{{ t("jobs_t2.status_filter_all") }}</option>
+        {% for option in statusOptions %}
+          <option value="{{ option.value }}"{% if filters.statusFilter == option.value %} selected{% endif %}>{{ t("jobs_t2.app_status_" + option.value) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("jobs_t2.apply_filters") }}</button>
+  </form>
+
+  {% if applications.length == 0 %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("jobs_t2.applications_empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for app in applications %}
+        <article class="nexus-alpha-card">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              {% if app.vacancyId %}
+                <a class="govuk-link" href="{{ urlFor('/jobs/' ~ app.vacancyId) }}">{{ app.title }}</a>
+              {% else %}
+                {{ app.title }}
+              {% endif %}
+            </h2>
+            <strong class="govuk-tag govuk-tag--blue">{{ t(app.statusTranslationKey) }}</strong>
+          </div>
+
+          {% if app.appliedOnLabel %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("jobs_t2.applied_on", { date: app.appliedOnLabel }) }}</p>
+          {% endif %}
+
+          {% if app.id %}
+            <p class="govuk-body-s govuk-!-margin-bottom-1">
+              <a class="govuk-link" href="{{ urlFor('/jobs/applications/' ~ app.id ~ '/history') }}">{{ t("govuk_alpha_jobs.history.view_link") }}</a>
+            </p>
+          {% endif %}
+
+          {% if app.canWithdraw %}
+            <form method="post" action="{{ urlFor('/jobs/applications/' ~ app.id ~ '/withdraw') }}" class="govuk-!-margin-top-2">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <div class="govuk-warning-text govuk-!-margin-bottom-2">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                  <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+                  {{ t("jobs_t2.withdraw_warning") }}
+                </strong>
+              </div>
+              <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("jobs_t2.withdraw_button") }}</button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if jobsMeta.has_more and nextHref %}
+      <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('members.pagination_label') }}">
+        <div class="govuk-pagination__next">
+          <a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor(nextHref) }}">
+            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+              <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+            </svg>
+            <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+            <span class="govuk-visually-hidden">:</span>
+            <span class="govuk-pagination__link-label">{{ t("members.more_results_label") }}</span>
+          </a>
+        </div>
+      </nav>
+    {% endif %}
+  {% endif %}
+{% endblock %}

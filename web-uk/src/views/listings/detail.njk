@@ -1,0 +1,316 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/listings') }}">{{ t("actions.back_to_listings") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  {% if listing.status == "active" %}
+    {% set tagColour = "green" %}
+  {% elif listing.status == "draft" %}
+    {% set tagColour = "grey" %}
+  {% else %}
+    {% set tagColour = "grey" %}
+  {% endif %}
+  {% set listingType = "request" if listing.type == "request" else "offer" %}
+  {% set typeColour = "purple" if listingType == "request" else "blue" %}
+  {% set statusHtml %}<strong class="govuk-tag govuk-tag--{{ tagColour }}">{{ t("listings.status_values." + listing.status) if listing.status else "" }}</strong>{% endset %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {% if status == "listing-created" or status == "listing-updated" %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="listing-created-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listing-created-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("listings.edit.updated") if status == "listing-updated" else t("listings.create.created") }}</p>
+          </div>
+        </div>
+      {% elif status == "listing-delete-failed" %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ t("listings.edit.delete_failed") }}</li></ul></div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% set listingActionSuccessKeys = {
+        "listing-saved": "polish_listings.status_listing_saved",
+        "listing-unsaved": "polish_listings.status_listing_unsaved",
+        "listing-renewed": "polish_listings.status_listing_renewed"
+      } %}
+      {% set listingActionErrorKeys = {
+        "save-failed": "polish_listings.status_listing_save_failed",
+        "unsave-failed": "polish_listings.status_listing_save_failed",
+        "renew-failed": "polish_listings.status_listing_renew_failed"
+      } %}
+      {% if listingActionSuccessKeys[status] %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="listing-action-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listing-action-status-title">{{ t("states.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t(listingActionSuccessKeys[status]) }}</p>
+          </div>
+        </div>
+      {% elif listingActionErrorKeys[status] %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><ul class="govuk-list govuk-error-summary__list"><li>{{ t(listingActionErrorKeys[status]) }}</li></ul></div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if status == "exchange-disabled" or status == "own-listing" %}
+        <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="listing-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="listing-status-title">{{ t("states.not_available") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">{{ t("listings.own_listing") if status == "own-listing" else t("listings.exchange_disabled") }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if supplementalErrorMessage %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body"><p class="govuk-body">{{ supplementalErrorMessage }}</p></div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-l">{{ t("listings.detail_title") }}</span>
+      <h1 class="govuk-heading-xl">{{ listing.title or listing.name or t("listings.detail_title") }}</h1>
+      <p class="nexus-alpha-actions govuk-!-margin-bottom-4">
+        <strong class="govuk-tag govuk-tag--{{ typeColour }}">{{ t("listings." + listingType) }}</strong>
+        {% if listing.is_featured %}<strong class="govuk-tag govuk-tag--yellow">{{ t("listings.featured") }}</strong>{% endif %}
+        {% if listing.service_type and listing.service_type != "physical_only" %}<strong class="govuk-tag govuk-tag--turquoise">{{ t("listings.service_types." + listing.service_type) }}</strong>{% endif %}
+      </p>
+
+      {% if listingImageUrl %}
+        <figure class="nexus-alpha-detail-hero">
+          <img src="{{ listingImageUrl }}" alt="{{ t('listings.image_alt', { title: listing.title }) }}" width="640" height="360" decoding="async">
+        </figure>
+      {% endif %}
+
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("listings.description_title") }}</h2>
+      <div class="govuk-body">{{ listing.description | nl2br }}</div>
+
+      {% if listingGallery.length %}
+        <h2 class="govuk-heading-m">{{ t("listings.gallery_title") }}</h2>
+        <ul class="nexus-alpha-thumb-list">
+          {% for image in listingGallery %}
+            <li>
+              <a href="{{ image.url }}" target="_blank" rel="noopener noreferrer">
+                <span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span>
+                <img src="{{ image.url }}" alt="{{ image.altText or t('listings.gallery_image_alt', { number: loop.index, title: listing.title }) }}" loading="lazy" decoding="async">
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if listingSkillTags.length %}
+        <h2 class="govuk-heading-m">{{ t("listings.skills_title") }}</h2>
+        <ul class="govuk-list nexus-alpha-actions govuk-!-margin-bottom-6">
+          {% for skill in listingSkillTags %}<li><strong class="govuk-tag govuk-tag--grey">{{ skill }}</strong></li>{% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+    <div class="govuk-grid-column-one-third">
+      <div class="govuk-inset-text">{{ t("listings.detail_inset", { type: t("listings." + listingType) }) }}</div>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("listings.summary_title") }}</h2>
+      {% set summaryRows = [{ key: { text: t("listings.type") }, value: { text: t("listings." + listingType) } }] %}
+      {% if listing.service_type %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.service_type_label") }, value: { text: t("listings.service_types." + listing.service_type) } }), summaryRows) %}
+      {% endif %}
+      {% if listing.status %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.status_label") }, value: { html: statusHtml } }), summaryRows) %}
+      {% endif %}
+      {% if listing.category_name or listing.category.name %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.category") }, value: { text: listing.category_name or listing.category.name } }), summaryRows) %}
+      {% endif %}
+      {% if listing.location %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.location") }, value: { text: listing.location } }), summaryRows) %}
+      {% endif %}
+      {% if listing.hours_estimate %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.hours_label") }, value: { text: tc("listings.hours", listing.hours_estimate, { count: listing.hours_estimate }) } }), summaryRows) %}
+      {% endif %}
+      {% if listing.createdAt or listing.created_at %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.created") }, value: { text: (listing.createdAt or listing.created_at) | formatDate } }), summaryRows) %}
+      {% endif %}
+      {% if listing.expires_at or listing.expiresAt %}
+        {% set expiryDate = (listing.expires_at or listing.expiresAt) | formatDate %}
+        {% set expiryText = t("listings.expired_on", { date: expiryDate }) if listing.status == "expired" else t("listings.expires_on", { date: expiryDate }) %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.expires_label") }, value: { text: expiryText } }), summaryRows) %}
+      {% endif %}
+      {% if listing.renewal_count or listing.renewalCount %}
+        {% set renewalCount = listing.renewal_count or listing.renewalCount %}
+        {% set summaryRows = (summaryRows.push({ key: { text: t("listings.renewals_label") }, value: { text: tc("listings.renewed_count", renewalCount, { count: renewalCount }) } }), summaryRows) %}
+      {% endif %}
+      {{ govukSummaryList({ rows: summaryRows }) }}
+
+      {% if listingAuthor %}
+        <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("listings.author_title") }}</h2>
+        <div class="nexus-alpha-summary govuk-!-margin-bottom-7">
+          <div>
+            {% if listingAuthor.avatarUrl %}
+              <img class="nexus-alpha-avatar nexus-alpha-avatar--large" src="{{ listingAuthor.avatarUrl }}" alt="" width="64" height="64" loading="lazy" decoding="async">
+            {% else %}
+              <span class="nexus-alpha-avatar nexus-alpha-avatar--large nexus-alpha-avatar--placeholder" aria-hidden="true">{{ listingAuthor.initial }}</span>
+            {% endif %}
+          </div>
+          <div>
+            <p class="govuk-body govuk-!-margin-bottom-1">
+              <strong>{{ listingAuthor.name }}</strong>
+              {% if listingAuthorVerified %}<strong class="govuk-tag govuk-tag--green govuk-!-margin-left-1">{{ t("members.verified") }}</strong>{% endif %}
+            </p>
+            {% if listingAuthor.tagline %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ listingAuthor.tagline }}</p>{% endif %}
+            {% if listingVerificationBadges.length %}
+              <ul class="govuk-list nexus-alpha-actions govuk-!-margin-bottom-2" aria-label="{{ t('govuk_alpha_listings.detail.author_badges_heading') }}">
+                {% for badge in listingVerificationBadges %}<li><strong class="govuk-tag govuk-tag--green">{{ badge.label }}</strong></li>{% endfor %}
+              </ul>
+            {% endif %}
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
+              {% if listingAuthor.rating %}<span>{{ t("members.rating", { rating: listingAuthor.rating }) }}</span><span aria-hidden="true"> · </span>{% endif %}
+              <span>{{ tc("listings.author_reviews", listingAuthor.reviewsCount, { count: listingAuthor.reviewsCount }) }}</span>
+              <span aria-hidden="true"> · </span>
+              <span>{{ tc("listings.author_exchanges", listingAuthor.exchangesCount, { count: listingAuthor.exchangesCount }) }}</span>
+            </p>
+            {% if isAuthenticated and connectionsEnabled and listingAuthor.id %}
+              <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/members/' + (listingAuthor.id | string)) }}">{{ t("listings.view_profile") }}<span class="govuk-visually-hidden">{{ t("listings.view_profile_for", { name: listingAuthor.name }) }}</span></a></p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div id="like" class="govuk-!-margin-top-4 govuk-!-margin-bottom-2">
+        {% if isAuthenticated and not listing.can_edit %}
+          <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/like') }}" class="govuk-!-display-inline-block">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button {% if not hasLiked %}govuk-button--secondary{% endif %} govuk-!-margin-bottom-0" data-module="govuk-button" aria-pressed="{{ 'true' if hasLiked else 'false' }}">{{ t("govuk_alpha_listings.detail.unlike") if hasLiked else t("govuk_alpha_listings.detail.like") }}</button>
+          </form>
+        {% endif %}
+        <span class="govuk-body-s nexus-alpha-meta">{{ tc("govuk_alpha_listings.detail.likes_count", likeCount, { count: likeCount }) }}</span>
+      </div>
+
+      <div class="govuk-button-group govuk-!-margin-top-4 govuk-!-margin-bottom-2">
+        {% if isAuthenticated and not listing.can_edit %}
+          <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + ('/unsave' if isSaved else '/save')) }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-button--secondary" data-module="govuk-button">
+              {{ t("polish_listings.unsave_listing") if isSaved else t("polish_listings.save_listing") }}
+              <span class="govuk-visually-hidden">{{ t("polish_listings.unsave_listing_for", { title: listing.title }) if isSaved else t("polish_listings.save_listing_for", { title: listing.title }) }}</span>
+            </button>
+          </form>
+        {% endif %}
+        {% if isAuthenticated %}
+          <a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string) + '/comments') }}">{{ t("govuk_alpha_listings.detail.comments_link_count", { count: commentsCount }) if commentsCount else t("govuk_alpha_listings.detail.comments_link") }}</a>
+        {% endif %}
+        {% if isAuthenticated and not listing.can_edit %}
+          <a class="govuk-link" href="{{ urlFor('/listings/' + (listing.id | string) + '/report') }}">{{ t("polish_listings.report_listing_title") }}</a>
+        {% endif %}
+      </div>
+
+      <div class="govuk-inset-text govuk-!-margin-bottom-7">
+        <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("listings.share_link_label") }}</strong></p>
+        <p class="govuk-body nexus-alpha-share-url govuk-!-margin-bottom-0">{{ listingShareUrl }}</p>
+      </div>
+
+      <section class="govuk-!-margin-top-7 govuk-!-margin-bottom-7" aria-labelledby="listing-exchange-title">
+        <h2 class="govuk-heading-l" id="listing-exchange-title">{{ t("listings.exchange_title") }}</h2>
+
+        {% if not isAuthenticated %}
+          <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="listing-auth-required-title">
+            <div class="govuk-notification-banner__header">
+              <h3 class="govuk-notification-banner__title" id="listing-auth-required-title">{{ t("states.auth_required") }}</h3>
+            </div>
+            <div class="govuk-notification-banner__content">
+              <p class="govuk-body">{{ t("listings.auth_required_detail") }}</p>
+              <div class="govuk-button-group">
+                <a class="govuk-button" href="{{ urlFor('/login') }}" role="button" draggable="false" data-module="govuk-button">{{ t("nav.login") }}</a>
+                <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/register') }}" role="button" draggable="false" data-module="govuk-button">{{ t("nav.register") }}</a>
+              </div>
+            </div>
+          </div>
+        {% elif listing.can_edit %}
+          <div class="govuk-inset-text">{{ t("listings.own_listing_detail") }}</div>
+          <div class="govuk-button-group">
+            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/' + (listing.id | string) + '/edit') }}" role="button" data-module="govuk-button">{{ t("listings.edit.edit_listing") }}</a>
+            <a class="govuk-button govuk-button--secondary" href="{{ urlFor('/listings/' + (listing.id | string) + '/analytics') }}" role="button" data-module="govuk-button">{{ t("govuk_alpha_listings.nav.view_analytics") }}</a>
+          </div>
+          {% if listing.status == "expired" %}
+            <p class="govuk-hint">{{ t("polish_listings.renew_listing_hint") }}</p>
+            <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/renew') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("polish_listings.renew_listing") }}</button>
+            </form>
+          {% endif %}
+          <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--m govuk-!-margin-top-4">
+          <h3 class="govuk-heading-s">{{ t("govuk_alpha_listings.detail.delete_heading") }}</h3>
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("govuk_alpha_listings.detail.delete_button") }}</span></summary>
+            <div class="govuk-details__text">
+              <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("states.warning") }}</span>{{ t("govuk_alpha_listings.detail.delete_warning") }}</strong>
+              </div>
+              <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/delete') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("ux.confirm_delete_button") }}</button>
+              </form>
+            </div>
+          </details>
+        {% elif exchangeWorkflowEnabled and exchangeContextReady %}
+          {% if activeExchange %}
+            <div class="govuk-inset-text">
+              <p class="govuk-body">{{ t("listings.active_exchange_detail") }}</p>
+              <a class="govuk-button" href="{{ urlFor('/exchanges/' + (activeExchange.id | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("actions.view_exchange") }}</a>
+            </div>
+          {% else %}
+            <p class="govuk-body">{{ t("listings.exchange_detail") }}</p>
+            <a class="govuk-button" href="{{ urlFor('/listings/' + (listing.id | string) + '/exchange-request') }}" role="button" draggable="false" data-module="govuk-button">{{ t("actions.request_exchange") }}</a>
+          {% endif %}
+        {% elif not exchangeWorkflowEnabled and exchangeContextReady and directMessagingEnabled and ownerId %}
+          <p class="govuk-body">{{ t("listings.direct_message_detail") }}</p>
+          <a class="govuk-button" href="{{ urlFor('/messages/' + (ownerId | string) + '?listing=' + (listing.id | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("actions.send_message") }}</a>
+        {% elif not exchangeContextReady %}
+          <div class="govuk-inset-text">Exchange options could not be checked. Try again before sending a request.</div>
+        {% else %}
+          <div class="govuk-inset-text">{{ t("listings.messaging_unavailable") }}</div>
+        {% endif %}
+      </section>
+
+      {% for section in [
+        { title: t("listings.member_offers"), items: memberOffers },
+        { title: t("listings.member_requests"), items: memberRequests }
+      ] %}
+        {% if section.items.length %}
+          <h2 class="govuk-heading-m">{{ section.title }}</h2>
+          <ul class="govuk-list govuk-list--spaced">
+            {% for related in section.items %}
+              <li><a class="govuk-link" href="{{ urlFor('/listings/' + (related.id | string)) }}">{{ related.title }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endfor %}
+
+    </div>
+  </div>
+{% endblock %}

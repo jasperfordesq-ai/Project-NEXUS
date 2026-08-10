@@ -1,0 +1,133 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% macro reviewItem(review) %}
+  <li class="nexus-alpha-card">
+    <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("reviews_page.for_label" if review.direction == "given" else "reviews_page.by_label", { name: review.otherName }) }}</h3>
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ review.ratingLabel }}{% if review.createdAt %} - {{ review.createdAt | formatDate }}{% endif %}</p>
+    {% if review.comment %}
+      <p class="govuk-body govuk-!-margin-bottom-2">{{ review.comment }}</p>
+    {% endif %}
+    {% if review.id %}
+      <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor('/reviews/' + (review.id | string) + '/comments') }}">{{ t("govuk_alpha_blogreviews.reviews_list.moderate_link") }}</a></p>
+    {% endif %}
+    {% if review.id and review.canDelete %}
+      <details class="govuk-details govuk-!-margin-top-3 govuk-!-margin-bottom-0" data-module="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">{{ t("polish_members.review_delete_toggle") }}</span>
+        </summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body">{{ t("polish_members.review_delete_confirm") }}</p>
+          <form method="post" action="{{ urlFor('/reviews/' + (review.id | string) + '/delete') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" type="submit">{{ t("polish_members.review_delete_button") }}</button>
+          </form>
+        </div>
+      </details>
+    {% endif %}
+  </li>
+{% endmacro %}
+
+{% block mainContent %}
+  {% if statusMessage %}
+    {% if statusMessage.type == 'error' %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p class="govuk-body">{{ statusMessage.text }}</p>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="reviews-status-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="reviews-status-title">{{ t("states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ statusMessage.text }}</p>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-xl">{{ t("reviews_page.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("reviews_page.title") }}</h1>
+      <p class="govuk-body-l">{{ t("reviews_page.description") }}</p>
+      <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/reviews/list') }}">{{ t("govuk_alpha_blogreviews.nav.all_reviews") }}</a></p>
+    </div>
+    <div class="govuk-grid-column-one-third">
+      <div class="nexus-alpha-card">
+        <h2 class="govuk-heading-m">{{ t("reviews_page.average_label") }}</h2>
+        <p class="govuk-heading-l govuk-!-margin-bottom-1">{% if reviewStats.average %}{{ t("ux.rating_out_of", { rating: reviewStats.average }) }}{% else %}{{ t("polish_members.rating_none") }}{% endif %}</p>
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("reviews_page.total_label") }}: {{ reviewStats.total }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row govuk-!-margin-top-6">
+    <div class="govuk-grid-column-one-half">
+      <h2 class="govuk-heading-l">{{ t("reviews_page.received_tab") }}</h2>
+      {% if reviewsReceived.length %}
+        <ul class="nexus-alpha-card-list">
+          {% for review in reviewsReceived %}
+            {{ reviewItem(review) }}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-body">{{ t("reviews_page.received_empty") }}</p>
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-one-half">
+      <h2 class="govuk-heading-l">{{ t("reviews_page.given_tab") }}</h2>
+      {% if reviewsGiven.length %}
+        <ul class="nexus-alpha-card-list">
+          {% for review in reviewsGiven %}
+            {{ reviewItem(review) }}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-body">{{ t("reviews_page.given_empty") }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="govuk-grid-row govuk-!-margin-top-6">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">{{ t("reviews_page.pending_tab") }}</h2>
+      {% if reviewsPending.length %}
+        <ul class="nexus-alpha-card-list">
+          {% for pending in reviewsPending %}
+            {% set pendingIndex = loop.index %}
+            <li class="nexus-alpha-card">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ t("reviews_page.for_label", { name: pending.receiverName }) }}</h3>
+              <p class="govuk-body-s nexus-alpha-meta">{{ pending.title }}</p>
+              <form method="post" action="{{ urlFor('/reviews') }}" novalidate>
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="receiver_id" value="{{ pending.receiverId }}">
+                <input type="hidden" name="transaction_id" value="{{ pending.transactionId }}">
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("reviews_page.rating_legend") }}</legend><div class="govuk-radios govuk-radios--inline govuk-radios--small">{% for star in [5,4,3,2,1] %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="rating-{{ pendingIndex }}-{{ star }}" name="rating" type="radio" value="{{ star }}" required><label class="govuk-label govuk-radios__label" for="rating-{{ pendingIndex }}-{{ star }}"><span aria-hidden="true">{{ star }}</span><span class="govuk-visually-hidden">{{ t("ux.rating_out_of", { rating: star }) }}</span></label></div>{% endfor %}</div></fieldset>
+                </div>
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--s" for="comment-{{ loop.index }}">{{ t("reviews_page.comment_label") }}</label><div id="comment-hint-{{ loop.index }}" class="govuk-hint">{{ t("reviews_page.comment_hint") }}</div>
+                  <textarea class="govuk-textarea" id="comment-{{ loop.index }}" name="comment" rows="3" maxlength="2000" aria-describedby="comment-hint-{{ loop.index }}"></textarea>
+                </div>
+                <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("reviews_page.write_review") }}</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="govuk-body">{{ t("reviews_page.pending_empty") }}</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

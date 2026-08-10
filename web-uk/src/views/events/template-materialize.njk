@@ -1,0 +1,74 @@
+{% extends "layouts/base.njk" %}
+
+{% set configuration = template.version.configuration or {} %}
+{% set fields = values.overrides or {} %}
+{% set allDay = fields.all_day or configuration.all_day %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/templates') }}">{{ t("event_templates.back_to_library") }}</a>
+
+  {% if status %}
+    <div class="govuk-error-summary" role="alert" tabindex="-1" data-module="govuk-error-summary">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p>{{ t("event_templates.validation_error") if status == 'invalid' else t("event_templates.save_error") }}</p></div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ configuration.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("event_templates.review_draft_title") if preview else t("event_templates.materialize_title") }}</h1>
+
+  {% if not preview %}
+    <p class="govuk-body-l">{{ t("event_templates.materialize_intro") }}</p>
+    <div class="govuk-inset-text"><strong>{{ t("event_templates.draft_only_title") }}</strong><br>{{ t("event_templates.draft_only_description") }}</div>
+
+    <form method="post" action="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize/preview') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="template_version" value="{{ template.current_version }}">
+      <input type="hidden" name="all_day" value="{{ '1' if allDay else '0' }}">
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="template-start-time">{{ t("event_templates.start_label") }}</label>
+        <div id="template-time-hint" class="govuk-hint">{{ t("event_templates.timezone_hint", { timezone: fields.timezone or configuration.timezone }) }}</div>
+        <input class="govuk-input govuk-input--width-20" id="template-start-time" name="start_time" type="{{ 'date' if allDay else 'datetime-local' }}" value="{{ values.start_time or '' }}" aria-describedby="template-time-hint" required>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="template-end-time">{{ t("event_templates.end_label") }}</label>
+        <input class="govuk-input govuk-input--width-20" id="template-end-time" name="end_time" type="{{ 'date' if allDay else 'datetime-local' }}" value="{{ values.end_time or '' }}"{% if allDay %} required{% endif %}>
+      </div>
+
+      <h2 class="govuk-heading-l">{{ t("event_templates.safe_overrides_title") }}</h2>
+      <p class="govuk-body">{{ t("event_templates.safe_overrides_intro") }}</p>
+
+      <div class="govuk-form-group"><label class="govuk-label" for="template-title">{{ t("event_templates.fields.title") }}</label><input class="govuk-input" id="template-title" name="title" maxlength="255" value="{{ fields.title or configuration.title }}" required></div>
+      <div class="govuk-form-group"><label class="govuk-label" for="template-location">{{ t("event_templates.fields.location") }}</label><input class="govuk-input" id="template-location" name="location" maxlength="255" value="{{ fields.location or configuration.location or '' }}"></div>
+      <div class="govuk-form-group"><label class="govuk-label" for="template-capacity">{{ t("event_templates.fields.max_attendees") }}</label><input class="govuk-input govuk-input--width-5" id="template-capacity" name="max_attendees" type="number" min="1" value="{{ fields.max_attendees or configuration.max_attendees or '' }}"></div>
+      <div class="govuk-form-group"><label class="govuk-label" for="template-timezone">{{ t("event_templates.fields.timezone") }}</label><input class="govuk-input govuk-input--width-20" id="template-timezone" name="timezone" maxlength="64" value="{{ fields.timezone or configuration.timezone }}" required></div>
+      <button class="govuk-button">{{ t("event_templates.review_draft") }}</button>
+    </form>
+  {% else %}
+    <p class="govuk-body-l">{{ t("event_templates.review_draft_intro") }}</p>
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="region" aria-labelledby="draft-ready-title">
+      <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="draft-ready-title">{{ t("event_templates.ready_title") }}</h2></div>
+      <div class="govuk-notification-banner__content"><p>{{ t("event_templates.ready_description") }}</p></div>
+    </div>
+
+    <dl class="govuk-summary-list">
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.event_title") }}</dt><dd class="govuk-summary-list__value">{{ preview.configuration.title }}</dd></div>
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.publication_state") }}</dt><dd class="govuk-summary-list__value">{{ t("event_templates.draft") }}</dd></div>
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("event_templates.fields.timezone") }}</dt><dd class="govuk-summary-list__value">{{ preview.schedule.timezone }}</dd></div>
+    </dl>
+
+    <h2 class="govuk-heading-l">{{ t("event_templates.checklist_title") }}</h2>
+    <ul class="govuk-list govuk-list--bullet">{% for check in (preview.checklist or []) %}<li>{{ t("event_templates.checks." + check.code) }}</li>{% endfor %}</ul>
+    <h2 class="govuk-heading-l">{{ t("event_templates.never_copied_title") }}</h2>
+    <ul class="govuk-list govuk-list--bullet">{% for excluded in ['people', 'invitations', 'forms', 'attendance', 'tickets', 'notifications', 'federation', 'lifecycle'] %}<li>{{ t("event_templates.never_copied." + excluded) }}</li>{% endfor %}</ul>
+
+    <form method="post" action="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+      <input type="hidden" name="template_version" value="{{ values.template_version }}"><input type="hidden" name="start_time" value="{{ values.start_time }}"><input type="hidden" name="end_time" value="{{ values.end_time or '' }}">
+      <input type="hidden" name="title" value="{{ fields.title }}"><input type="hidden" name="location" value="{{ fields.location or '' }}"><input type="hidden" name="max_attendees" value="{{ fields.max_attendees or '' }}"><input type="hidden" name="timezone" value="{{ fields.timezone }}"><input type="hidden" name="all_day" value="{{ '1' if fields.all_day else '0' }}">
+      <button class="govuk-button">{{ t("event_templates.create_draft") }}</button>
+    </form>
+    <form method="get" action="{{ urlFor('/event-templates/' + (template.id | string) + '/materialize') }}"><button class="govuk-button govuk-button--secondary">{{ t("event_templates.change_details") }}</button></form>
+  {% endif %}
+{% endblock %}

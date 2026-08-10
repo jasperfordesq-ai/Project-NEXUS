@@ -1,0 +1,59 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/legal') }}">{{ t("legal.back_to_hub") }}</a>
+
+      <span class="govuk-caption-l">{{ t("legal.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{% if document %}{{ document.title }}{% else %}{{ config.title }}{% endif %}</h1>
+
+      {% if document %}
+        {% if document.updatedAt or document.versionNumber %}
+          <p class="govuk-body-s nexus-alpha-meta">
+            {% if document.updatedAt %}{{ t("legal.updated_label") }}: {{ document.updatedAt | formatDate }}{% endif %}
+            {% if document.versionNumber %}{% if document.updatedAt %} &middot; {% endif %}{{ t("legal.version_label") }} {{ document.versionNumber }}{% endif %}
+          </p>
+        {% endif %}
+        <div class="legal-content govuk-body">
+          {{ document.content | safe }}
+        </div>
+      {% else %}
+        <div class="govuk-inset-text">{{ t("legal.no_document_notice", { community: communityName }) }}</div>
+
+        <p class="govuk-body">{{ config.fallbackIntro }}</p>
+
+        {% if config.fallbackPoints %}
+          {% if config.cookiesTypesTitle %}
+            <h2 class="govuk-heading-m">{{ config.cookiesTypesTitle }}</h2>
+          {% endif %}
+          <ul class="govuk-list govuk-list--bullet">
+            {% for point in config.fallbackPoints %}
+              <li>{{ point }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if config.afterList %}
+          <p class="govuk-body">{{ config.afterList }}</p>
+        {% endif %}
+
+        {% if config.sections %}
+          {% for section in config.sections %}
+            <h2 class="govuk-heading-m">{{ section.heading }}</h2>
+            <p class="govuk-body">{{ section.body }}</p>
+          {% endfor %}
+        {% endif %}
+
+        <p class="govuk-body">
+          {{ t("legal.fallback.contact_prompt_before") }}
+          <a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("legal.fallback.contact_link") }}</a>{{ t("legal.fallback.contact_prompt_after") }}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

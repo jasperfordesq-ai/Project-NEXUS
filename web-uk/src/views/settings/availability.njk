@@ -1,0 +1,66 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/account') }}">{{ t("govuk_alpha_settings.availability.back_link") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.availability.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.availability.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_settings.availability.description") }}</p>
+
+  {% if statusMessage and successStatus %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="availability-status">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="availability-status">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ statusMessage }}</p>
+      </div>
+    </div>
+  {% elif statusMessage and errorStatus %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ statusMessage }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="govuk-inset-text" id="availability">{{ t("govuk_alpha_settings.availability.instructions") }}</div>
+
+  <form method="post" action="{{ urlFor('/settings/availability') }}" novalidate>
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+    {% for backendDay in displayDays %}
+      {% set dayName = dayLabels[loop.index0] or "Day " + loop.index %}
+      {% set existing = availabilityByDay[backendDay] or [] %}
+      <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ dayName }}</legend>
+        {% for slotIndex in range(0, slotsPerDay) %}
+          {% set slot = existing[slotIndex] or {} %}
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-half">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="start-{{ backendDay }}-{{ slotIndex }}">{{ t("govuk_alpha_settings.availability.slot_start_label") }}</label>
+                <input class="govuk-input govuk-input--width-5" id="start-{{ backendDay }}-{{ slotIndex }}" name="slots[{{ backendDay }}][{{ slotIndex }}][start]" type="time" value="{{ slot.start or '' }}">
+              </div>
+            </div>
+            <div class="govuk-grid-column-one-half">
+              <div class="govuk-form-group">
+                <label class="govuk-label" for="end-{{ backendDay }}-{{ slotIndex }}">{{ t("govuk_alpha_settings.availability.slot_end_label") }}</label>
+                <input class="govuk-input govuk-input--width-5" id="end-{{ backendDay }}-{{ slotIndex }}" name="slots[{{ backendDay }}][{{ slotIndex }}][end]" type="time" value="{{ slot.end or '' }}">
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </fieldset>
+    {% endfor %}
+
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_settings.availability.save_button") }}</button>
+  </form>
+{% endblock %}

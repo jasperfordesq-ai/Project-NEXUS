@@ -1,0 +1,120 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/profile/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+
+      {% if statusMessage and successStatus %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="insurance-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="insurance-status-title">{{ t("govuk_alpha_settings.common.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ statusMessage }}</p>
+          </div>
+        </div>
+      {% elif statusMessage and errorStatus %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                <li><a href="#{{ errorAnchor }}">{{ statusMessage }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.insurance.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.insurance.title") }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_settings.insurance.description") }}</p>
+
+      <section aria-labelledby="insurance-certificates-heading" id="certificates">
+        <h2 class="govuk-heading-l" id="insurance-certificates-heading">{{ t("govuk_alpha_settings.insurance.certificates_heading") }}</h2>
+        {% if not certificates.length %}
+          <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_settings.insurance.certificates_empty") }}</p></div>
+        {% else %}
+          {% for certificate in certificates %}
+            <div class="nexus-alpha-card govuk-!-margin-bottom-4">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-2">
+                {{ certificate.insuranceTypeLabel }}
+                <strong class="govuk-tag {{ certificate.statusTagClass }}">{{ certificate.statusLabel }}</strong>
+              </h3>
+              <dl class="nexus-alpha-inline-list govuk-!-margin-bottom-0">
+                <div>
+                  <dt>{{ t("govuk_alpha_settings.insurance.provider_label_short") }}</dt>
+                  <dd>{{ certificate.providerName or t("govuk_alpha_settings.insurance.no_provider") }}</dd>
+                </div>
+                <div>
+                  <dt>{{ t("govuk_alpha_settings.insurance.expiry_label_short") }}</dt>
+                  <dd>{{ certificate.expiryLabel or t("govuk_alpha_settings.insurance.no_expiry") }}</dd>
+                </div>
+              </dl>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </section>
+
+      <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+      <section aria-labelledby="insurance-upload-heading" id="upload">
+        <h2 class="govuk-heading-l" id="insurance-upload-heading">{{ t("govuk_alpha_settings.insurance.upload_heading") }}</h2>
+
+        <form method="post" action="{{ urlFor('/settings/insurance') }}" enctype="multipart/form-data" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+          {% set typeError = errorAnchor == "insurance_type" and errorStatus %}
+          <div class="govuk-form-group{% if typeError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="insurance_type">{{ t("govuk_alpha_settings.insurance.type_label") }}</label>
+            {% if typeError %}
+              <p id="insurance-type-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">{{ t("govuk_alpha_settings.common.error_title") }}:</span> {{ statusMessage }}
+              </p>
+            {% endif %}
+            <select class="govuk-select" id="insurance_type" name="insurance_type"{% if typeError %} aria-describedby="insurance-type-error"{% endif %}>
+              {% for type in insuranceTypes %}
+                <option value="{{ type.value }}">{{ type.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="provider_name">{{ t("govuk_alpha_settings.insurance.provider_label") }}</label>
+            <input class="govuk-input govuk-!-width-two-thirds" id="provider_name" name="provider_name" type="text" maxlength="255">
+          </div>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="policy_number">{{ t("govuk_alpha_settings.insurance.policy_label") }}</label>
+            <input class="govuk-input govuk-!-width-two-thirds" id="policy_number" name="policy_number" type="text" maxlength="100">
+          </div>
+
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="expiry_date">{{ t("govuk_alpha_settings.insurance.expiry_label") }}</label>
+            <div id="expiry-date-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.expiry_hint") }}</div>
+            <input class="govuk-input govuk-input--width-10" id="expiry_date" name="expiry_date" type="date" aria-describedby="expiry-date-hint">
+          </div>
+
+          {% set fileError = errorAnchor == "certificate_file" and errorStatus %}
+          <div class="govuk-form-group{% if fileError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="certificate_file">{{ t("govuk_alpha_settings.insurance.file_label") }}</label>
+            <div id="certificate-file-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.file_hint") }}</div>
+            {% if fileError %}
+              <p id="certificate-file-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">{{ t("govuk_alpha_settings.common.error_title") }}:</span> {{ statusMessage }}
+              </p>
+            {% endif %}
+            <input class="govuk-file-upload" id="certificate_file" name="certificate_file" type="file" accept="application/pdf,image/jpeg,image/png" aria-describedby="certificate-file-hint{% if fileError %} certificate-file-error{% endif %}">
+          </div>
+
+          <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_settings.insurance.upload_button") }}</button>
+        </form>
+      </section>
+    </div>
+  </div>
+{% endblock %}

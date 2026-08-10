@@ -1,0 +1,47 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+<h2 class="govuk-heading-m">{{ t("govuk_alpha_commerce.podcast_studio.rss_metadata_heading") }}</h2>
+
+{% if show.artworkUrl %}<img src="{{ show.artworkUrl }}" alt="" width="160" height="160" class="govuk-!-margin-bottom-3">{% endif %}
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="artwork">{{ t("govuk_alpha_commerce.podcast_studio.artwork_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+  <div id="artwork-hint" class="govuk-hint">{% if show.id %}{{ t("govuk_alpha_commerce.podcast_studio.artwork_replace_hint") }}{% else %}{{ t("govuk_alpha_commerce.podcast_studio.artwork_hint") }}{% endif %}</div>
+  <input class="govuk-file-upload" id="artwork" name="artwork" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="artwork-hint">
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="language">{{ t("govuk_alpha_commerce.podcast_studio.language_label") }}</label>
+  <div id="language-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.language_hint") }}</div>
+  <input class="govuk-input govuk-input--width-10" id="language" name="language" type="text" maxlength="20" value="{{ show.language }}" aria-describedby="language-hint">
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="author_name">{{ t("govuk_alpha_commerce.podcast_studio.author_name_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+  <input class="govuk-input" id="author_name" name="author_name" type="text" maxlength="200" value="{{ show.author_name }}">
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="owner_email">{{ t("govuk_alpha_commerce.podcast_studio.owner_email_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+  <div id="owner_email-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.owner_email_hint") }}</div>
+  <input class="govuk-input" id="owner_email" name="owner_email" type="email" maxlength="320" value="{{ show.owner_email }}" aria-describedby="owner_email-hint">
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="copyright">{{ t("govuk_alpha_commerce.podcast_studio.copyright_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+  <input class="govuk-input" id="copyright" name="copyright" type="text" maxlength="300" value="{{ show.copyright }}">
+</div>
+
+<div class="govuk-form-group">
+  <label class="govuk-label govuk-label--s" for="funding_url">{{ t("govuk_alpha_commerce.podcast_studio.funding_url_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
+  <input class="govuk-input" id="funding_url" name="funding_url" type="url" inputmode="url" value="{{ show.funding_url }}">
+</div>
+
+<div class="govuk-checkboxes govuk-checkboxes--small govuk-!-margin-bottom-6" data-module="govuk-checkboxes">
+  <div class="govuk-checkboxes__item">
+    <input class="govuk-checkboxes__input" id="explicit" name="explicit" type="checkbox" value="1" {% if show.explicit %}checked{% endif %}>
+    <label class="govuk-label govuk-checkboxes__label" for="explicit">{{ t("govuk_alpha_commerce.podcast_studio.explicit_label") }}</label>
+  </div>
+</div>

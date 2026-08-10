@@ -1,0 +1,59 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("groups.back_to_group") }}</a>
+
+  <span class="govuk-caption-l">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.discussions.title") }}</h1>
+
+  {% if statusBanner and statusBanner.type == "success" %}
+    {{ govukNotificationBanner({
+      type: "success",
+      titleText: statusBanner.title,
+      text: statusBanner.message
+    }) }}
+  {% elif statusBanner and statusBanner.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ statusBanner.title }}</h2>
+        <div class="govuk-error-summary__body"><p class="govuk-body">{{ statusBanner.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if not isMember %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.pending_member") }}</p></div>
+  {% else %}
+    <p class="govuk-body">
+      <a class="govuk-button" role="button" draggable="false" data-module="govuk-button" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions/new') }}">{{ t("groups.discussions.new_link") }}</a>
+    </p>
+
+    {% if not discussions.length %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.discussions.empty") }}</p></div>
+    {% else %}
+      <div class="nexus-alpha-card-list">
+        {% for discussion in discussions %}
+          <article class="nexus-alpha-card">
+            <div class="nexus-alpha-module-row">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                <a class="govuk-link" href="{{ urlFor('/groups/' + (group.id | string) + '/discussions/' + (discussion.id | string)) }}">{{ discussion.title }}</a>
+              </h2>
+              {% if discussion.isPinned %}
+                <strong class="govuk-tag govuk-tag--yellow">{{ t("groups.discussions.pinned") }}</strong>
+              {% endif %}
+            </div>
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">
+              {% if discussion.authorName %}{{ t("groups.discussions.started_by", { name: discussion.authorName }) }} · {% endif %}{{ t("groups.discussions.replies_count", { count: discussion.replyCount }) }}
+            </p>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

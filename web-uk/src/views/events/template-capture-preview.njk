@@ -1,0 +1,44 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events/templates') if template else urlFor('/events/' + (event.id | string)) }}">{{ t("event_templates.back") }}</a>
+
+  {% if status %}
+    <div class="govuk-error-summary" role="alert" tabindex="-1" data-module="govuk-error-summary">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p>{{ t("event_templates.validation_error") if status == 'invalid' else t("event_templates.save_error") }}</p></div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ preview.configuration.title or event.title }}</span>
+  <h1 class="govuk-heading-xl">{{ t("event_templates.review_revision_title") if template else t("event_templates.capture_preview_title") }}</h1>
+  <p class="govuk-body-l">{{ t("event_templates.capture_preview_intro") }}</p>
+
+  <div class="govuk-notification-banner govuk-notification-banner--success" role="region" aria-labelledby="template-safe-title">
+    <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="template-safe-title">{{ t("event_templates.safe_title") }}</h2></div>
+    <div class="govuk-notification-banner__content"><p>{{ t("event_templates.safe_description") }}</p></div>
+  </div>
+
+  <h2 class="govuk-heading-l">{{ t("event_templates.copied_title") }}</h2>
+  <ul class="govuk-list govuk-list--bullet">
+    {% for field in (preview.copied_fields or []) %}<li>{{ t("event_templates.fields." + field) }}</li>{% endfor %}
+  </ul>
+
+  <h2 class="govuk-heading-l">{{ t("event_templates.never_copied_title") }}</h2>
+  <p class="govuk-body">{{ t("event_templates.never_copied_description") }}</p>
+  <ul class="govuk-list govuk-list--bullet">
+    {% for excluded in ['people', 'invitations', 'forms', 'attendance', 'tickets', 'notifications', 'federation', 'lifecycle'] %}<li>{{ t("event_templates.never_copied." + excluded) }}</li>{% endfor %}
+  </ul>
+
+  <h2 class="govuk-heading-l">{{ t("event_templates.checklist_title") }}</h2>
+  <ul class="govuk-list govuk-list--tick">
+    {% for check in (preview.checklist or []) %}<li>{{ t("event_templates.checks." + check.code) }}</li>{% endfor %}
+  </ul>
+
+  <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/templates') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">
+    {% if template %}<input type="hidden" name="template_id" value="{{ template.id }}"><input type="hidden" name="expected_version" value="{{ template.current_version }}">{% endif %}
+    <button class="govuk-button">{{ t("event_templates.confirm_revision") if template else t("event_templates.confirm_capture") }}</button>
+  </form>
+{% endblock %}

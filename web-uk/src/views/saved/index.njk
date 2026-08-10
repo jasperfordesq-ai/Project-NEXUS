@@ -1,0 +1,58 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <span class="govuk-caption-xl">{{ t("saved.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("saved.title") }}</h1>
+  <p class="govuk-body-l">{{ t("saved.description") }}</p>
+
+  <form method="get" action="{{ urlFor('/saved') }}" class="govuk-!-margin-bottom-4">
+    <div class="govuk-form-group govuk-!-margin-bottom-2">
+      <label class="govuk-label" for="saved-type-filter">{{ t("polish_discovery.saved_type_filter_label") }}</label>
+      <select class="govuk-select" id="saved-type-filter" name="type">
+        <option value="">{{ t("polish_discovery.saved_type_all") }}</option>
+        {% for type in savedTypes %}
+          <option value="{{ type.value }}"{% if selectedType == type.value %} selected{% endif %}>{{ t("saved.types." ~ type.value) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("actions.apply") }}</button>
+    {% if selectedType %}
+      <a class="govuk-link govuk-!-margin-left-4" href="{{ urlFor('/saved') }}">{{ t("actions.clear_filters") }}</a>
+    {% endif %}
+  </form>
+
+  {% if not bookmarks.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("saved.empty") }}</p>
+    </div>
+  {% else %}
+    <ul class="govuk-list govuk-list--spaced">
+      {% for item in bookmarks %}
+        <li>
+          {% if item.title %}
+            {% if item.href %}
+              <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+            {% else %}
+              {{ item.title }}
+            {% endif %}
+          {% endif %}
+          {% if item.type %}
+            <strong class="govuk-tag govuk-tag--grey govuk-!-margin-left-1">{{ item.label }}</strong>
+          {% endif %}
+          {% if item.itemId and item.type %}
+            <form method="post" action="{{ urlFor('/saved/destroy') }}" class="nexus-alpha-linkform govuk-!-display-inline-block govuk-!-margin-left-2">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <input type="hidden" name="type" value="{{ item.type }}">
+              <input type="hidden" name="id" value="{{ item.itemId }}">
+              <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" aria-label="{{ t('polish_discovery.saved_remove_label', { title: item.title }) }}">{{ t("polish_discovery.saved_remove_button") }}</button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

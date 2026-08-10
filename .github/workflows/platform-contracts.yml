@@ -1,0 +1,346 @@
+name: Platform contracts
+
+on:
+  pull_request:
+    # Restricted to main, matching ci.yml/pr-checks.yml/lighthouse.yml. Without
+    # this a PR targeting some other branch got the ~92-runner-minute contracts
+    # suite but NOT the CI pipeline — the expensive half of the pair with none
+    # of the gating half.
+    branches: [main]
+    # `ready_for_review` is REQUIRED: the ASP.NET test matrix skips while a PR
+    # is a draft, so marking it ready must itself re-run it.
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'app/**'
+      - 'routes/**'
+      - 'config/**'
+      - 'database/**'
+      - 'openapi.json'
+      - 'react-frontend/**'
+      - 'accessible-frontend/**'
+      - 'aspnet-backend/**'
+      - 'web-uk/**'
+      - 'contracts/**'
+      - 'scripts/verify-platform-contracts.ps1'
+      - '.github/workflows/platform-contracts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'routes/**'
+      - 'config/**'
+      - 'database/**'
+      - 'openapi.json'
+      - 'react-frontend/**'
+      - 'accessible-frontend/**'
+      - 'aspnet-backend/**'
+      - 'web-uk/**'
+      - 'contracts/**'
+      - 'scripts/verify-platform-contracts.ps1'
+      - '.github/workflows/platform-contracts.yml'
+  # Forces every job on regardless of what changed — the escape hatch for
+  # "check the whole platform", matching the same convention in ci.yml.
+  workflow_dispatch:
+  # Weekly full sweep. Change-aware skipping means a job can stay asleep while
+  # code it depends on drifts — ci.yml added its nightly sweep for exactly this
+  # reason (the mobile contract bug, 2026-08-03, sat invisible that way), and
+  # this workflow now has the same skipping with none of that cover. It is also
+  # the compensating control for the sibling filters in .github/ci-paths.yml no
+  # longer waking on CI-config edits.
+  #
+  # WEEKLY, not nightly, deliberately: both imported workstreams have been
+  # paused since 2026-07-15 with unchanged scores, so a nightly ~120-runner-
+  # minute sweep would be paying daily for code nobody is changing. Promote to
+  # nightly when ASP.NET or Web UK work actually resumes.
+  schedule:
+    - cron: '10 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  # Scheduled runs get their own group so the weekly sweep can neither cancel
+  # nor be cancelled by a push or PR run — same reasoning as ci.yml:41.
+  group: platform-contracts-${{ github.ref }}-${{ github.event_name == 'schedule' && 'weekly' || 'ci' }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Which sibling actually changed?
+  #
+  # This workflow's `on: paths:` above is deliberately broad, because the
+  # Laravel-side contract inventory genuinely does depend on app/, routes/ and
+  # config/. Without per-job gating, though, that breadth was charged to EVERY
+  # job: a one-line React or Laravel change fired the full ASP.NET test suite,
+  # which is the single slowest thing in this repository.
+  #
+  # Path lists live in .github/ci-paths.yml — the same single-source-of-truth
+  # file ci.yml and the deploy verifier read.
+  # ─────────────────────────────────────────────────────────────────
+  changes:
+    name: Detect changed siblings
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      aspnet: ${{ steps.filter.outputs.aspnet }}
+      webuk: ${{ steps.filter.outputs.webuk }}
+      contracts_inventory: ${{ steps.filter.outputs.contracts_inventory }}
+      react_contracts: ${{ steps.filter.outputs.react_contracts }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: .github/ci-paths.yml
+
+  static-contract-inventory:
+    name: Static contract inventory
+    needs: changes
+    if: >-
+      needs.changes.outputs.contracts_inventory == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # -SkipDotNet/-SkipReact/-SkipWebUk skip the build, lint and test steps
+      # ONLY. Those are not disabled checks — the aspnet-build, aspnet-api-tests,
+      # react-contracts and web-uk jobs in this same workflow run them properly,
+      # in parallel, on the right runners. What this step performs is the
+      # inventory and comparison work, which now includes the Laravel-to-frontend
+      # consumer comparison that until 2026-08-10 was never invoked from
+      # anywhere.
+      - name: Verify comparison tools and generate current inventory
+        shell: pwsh
+        run: ./scripts/verify-platform-contracts.ps1 -SkipDotNet -SkipReact -SkipWebUk
+      # The markdown link checker takes one root at a time, so both siblings get
+      # their own pass. Not previously run by any workflow, while failing.
+      - name: Markdown links resolve (ASP.NET)
+        shell: pwsh
+        run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./aspnet-backend
+      - name: Markdown links resolve (Web UK)
+        shell: pwsh
+        run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./web-uk
+      - name: Upload contract comparison reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-contract-reports
+          path: .local-docs-archive/platform-contracts/latest
+          if-no-files-found: warn
+
+  aspnet-build:
+    name: ASP.NET build
+    needs: changes
+    if: >-
+      needs.changes.outputs.aspnet == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build
+        run: dotnet build aspnet-backend/Nexus.sln --configuration Release
+
+  # ─────────────────────────────────────────────────────────────────
+  # ASP.NET API tests — sharded.
+  #
+  # 🔴 Do NOT collapse this back into a single `dotnet test` call.
+  #
+  # tests/Nexus.Api.Tests/xunit.runner.json sets parallelizeTestCollections to
+  # false, and ~270 of its ~396 files share one [Collection("Integration")]
+  # fixture, so in-process the 3,386 tests run strictly one at a time. As a
+  # single job that measured 54m38s of tests inside a 58m job (run
+  # 31332137158, 2026-08-09) — the entire wall-clock cost of a push.
+  #
+  # scripts/test-backend-shard.ps1 is the supported way to split it. It
+  # discovers tests with --list-tests, balances whole CLASSES across shards
+  # (largest-first greedy, so a shared-fixture class is never split across two
+  # runners), and starts ONE disposable PostgreSQL container per shard, handed
+  # to the fixture via NEXUS_TEST_POSTGRES. Shards therefore never share a
+  # database. It came from the upstream ASP.NET repository, where the same
+  # script ran green on ubuntu-latest at 4 shards.
+  #
+  # 6 shards, not 4: at 4 the upstream shards finished between 11 and 22
+  # minutes, so the slowest one set the pace. More shards buys balance as well
+  # as throughput. Raising ShardCount here needs no other change.
+  # ─────────────────────────────────────────────────────────────────
+  aspnet-api-tests:
+    name: ASP.NET API tests (shard ${{ matrix.shard }}/6)
+    needs: changes
+    # Draft PRs skip this matrix — it is the most expensive thing in the repo
+    # (~90 runner-minutes). `!= true` not `== false`: on push, schedule and
+    # dispatch there is no pull_request object, so the expression must hold when
+    # the field is absent. aspnet-build and aspnet-messaging-tests are
+    # deliberately NOT gated — they are short, and a draft should still get a
+    # compile-and-smoke signal.
+    if: >-
+      (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      # The shard script runs with --no-restore --no-build so that discovery
+      # and execution reuse one build; restore and build explicitly first.
+      - name: Restore
+        run: dotnet restore aspnet-backend/tests/Nexus.Api.Tests/Nexus.Api.Tests.csproj
+      - name: Build tests
+        run: >-
+          dotnet build aspnet-backend/tests/Nexus.Api.Tests/Nexus.Api.Tests.csproj
+          --no-restore --configuration Release
+      - name: Run shard ${{ matrix.shard }} of 6
+        shell: pwsh
+        working-directory: aspnet-backend
+        run: >-
+          ./scripts/test-backend-shard.ps1
+          -ShardCount 6
+          -ShardIndex ${{ matrix.shard }}
+          -HangTimeoutSeconds 600
+          -ManifestPath "artifacts/backend-test-shards/manifest-shard-${{ matrix.shard }}.json"
+      - name: Upload API test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspnet-api-test-results-shard-${{ matrix.shard }}
+          path: aspnet-backend/artifacts/backend-test-shards
+          if-no-files-found: warn
+
+  aspnet-messaging-tests:
+    name: ASP.NET Messaging tests
+    needs: changes
+    if: >-
+      needs.changes.outputs.aspnet == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test Nexus.Messaging.Tests (10-minute hard limit)
+        run: >-
+          timeout --signal=INT --kill-after=60s 10m
+          dotnet test aspnet-backend/tests/Nexus.Messaging.Tests/Nexus.Messaging.Tests.csproj
+          --configuration Release
+          --blame-hang
+          --blame-hang-timeout 2m
+          --logger "trx;LogFileName=nexus-messaging-tests.trx"
+          --results-directory "${{ github.workspace }}/aspnet-test-results/messaging"
+      - name: Upload Messaging test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspnet-messaging-test-results
+          path: aspnet-test-results/messaging
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────
+  # Sibling image smoke builds.
+  #
+  # Neither sibling Dockerfile was built by ANY workflow until 2026-08-10:
+  # ci.yml's docker-verify builds the root Dockerfile, Dockerfile.prod and
+  # react-frontend/Dockerfile.prod; security-scan's container-scan builds the
+  # root Dockerfile only. A syntax or dependency error in either sibling image
+  # was therefore invisible.
+  #
+  # It was not hypothetical. aspnet-backend/Dockerfile could not build at all:
+  # Nexus.sln references five projects and the Dockerfile copied four, so
+  # `dotnet restore` failed with MSB3202. Fixed in the same commit that added
+  # this job. Both images were built locally before wiring this up, so it goes
+  # in green rather than red.
+  #
+  # Build only — nothing is pushed, and per docs/PLATFORM-MONOREPO.md a green
+  # build here does not authorize or certify any deployment.
+  # ─────────────────────────────────────────────────────────────────
+  aspnet-docker-build:
+    name: ASP.NET image builds
+    needs: changes
+    if: >-
+      (needs.changes.outputs.aspnet == 'true' && github.event.pull_request.draft != true)
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build aspnet-backend image
+        run: docker build -t nexus-aspnet:ci aspnet-backend/
+
+  webuk-docker-build:
+    name: Web UK image builds
+    needs: changes
+    if: >-
+      needs.changes.outputs.webuk == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      # --target production: the stage compose.prod.yml selects. The default
+      # final stage would not exercise it.
+      - name: Build web-uk production image
+        run: docker build -t nexus-webuk:ci --target production web-uk/
+
+  react-contracts:
+    name: React backend guardrails
+    needs: changes
+    if: >-
+      needs.changes.outputs.react_contracts == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: react-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: react-frontend/package-lock.json
+      - run: npm ci
+      - run: npm run check:dual-backend-prep
+
+  web-uk:
+    name: Web UK checks
+    needs: changes
+    if: >-
+      needs.changes.outputs.webuk == 'true'
+      || github.event_name == 'workflow_dispatch'
+      || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: web-uk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web-uk/package-lock.json
+      - run: npm ci
+      - run: npm run brand:check
+      - run: npm run lint
+      - run: npm test -- --runInBand
+      - run: npm run build:css

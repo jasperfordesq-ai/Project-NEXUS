@@ -1,0 +1,114 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/dashboard') }}">{{ t("govuk_alpha_volunteering.shared.back_to_dashboard") }}</a>
+
+  {% if status and status.type == "success" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="org-wallet-success-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="org-wallet-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+      </div>
+    </div>
+  {% elif status and status.type == "error" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ status.message }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ orgName }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.org_wallet.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.org_wallet.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body"><p>{{ loadError }}</p></div>
+      </div>
+    </div>
+  {% endif %}
+
+  <dl class="nexus-alpha-stat-grid">
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_wallet.balance") }}</dt>
+      <dd>{{ summary.balanceLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_wallet.total_deposited") }}</dt>
+      <dd>{{ summary.totalDepositedLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_wallet.total_paid_out") }}</dt>
+      <dd>{{ summary.totalPaidOutLabel }}</dd>
+    </div>
+    <div class="nexus-alpha-stat">
+      <dt>{{ t("govuk_alpha_volunteering.org_wallet.pending_hours_value") }}</dt>
+      <dd>{{ summary.pendingHoursValueLabel }}</dd>
+    </div>
+  </dl>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_wallet.auto_credit_title") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha_volunteering.org_wallet.auto_credit_hint") }}</p>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_wallet.deposit_title") }}</h2>
+  <div class="govuk-warning-text">
+    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+    <strong class="govuk-warning-text__text">
+      <span class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.shared.error_title") }}</span>
+      {{ t("govuk_alpha_volunteering.org_wallet.deposit_warning") }}
+    </strong>
+  </div>
+  <form method="post" action="{{ urlFor('/volunteering/organisations/' ~ orgId ~ '/wallet/deposit') }}" class="govuk-!-margin-bottom-8">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="amount">{{ t("govuk_alpha_volunteering.org_wallet.deposit_amount_label") }}</label>
+      <div id="amount-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_wallet.deposit_amount_hint") }}</div>
+      <input class="govuk-input govuk-input--width-5" id="amount" name="amount" type="text" inputmode="numeric" pattern="[0-9]*" aria-describedby="amount-hint" required>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="note">{{ t("govuk_alpha_volunteering.org_wallet.deposit_note_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
+      <div id="note-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_wallet.deposit_note_hint") }}</div>
+      <input class="govuk-input" id="note" name="note" type="text" maxlength="255" aria-describedby="note-hint">
+    </div>
+    <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_wallet.deposit_button") }}</button>
+  </form>
+
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.org_wallet.transactions_title") }}</h2>
+  {% if not transactions.length %}
+    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.org_wallet.transactions_empty") }}</div>
+  {% else %}
+    <table class="govuk-table">
+      <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_wallet.transactions_title") }}</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_wallet.transaction_when") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_wallet.transaction_type") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_volunteering.org_wallet.transaction_amount") }}</th>
+          <th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("govuk_alpha_volunteering.org_wallet.transaction_balance_after") }}</th>
+          <th scope="col" class="govuk-table__header">{{ t("govuk_alpha_volunteering.org_wallet.transaction_description") }}</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for transaction in transactions %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{ transaction.createdAtLabel }}</td>
+            <td class="govuk-table__cell">{{ transaction.typeLabel }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ transaction.amountLabel }}</td>
+            <td class="govuk-table__cell govuk-table__cell--numeric">{{ transaction.balanceAfterLabel }}</td>
+            <td class="govuk-table__cell">{{ transaction.description }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

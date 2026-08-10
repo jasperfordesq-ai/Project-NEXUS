@@ -1,0 +1,195 @@
+{#
+  Copyright © 2024-2026 Jasper Ford
+  SPDX-License-Identifier: AGPL-3.0-or-later
+  Author: Jasper Ford
+  See NOTICE file for attribution and acknowledgements.
+#}
+{#
+  Local GOV.UK-compatible document wrapper for the shared accessible frontend.
+  GOV.UK Frontend 6 exposes htmlLang but not an attribute hook on <html>, so
+  this wrapper owns lang + dir while preserving its block and class contract.
+#}
+
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/macros/attributes.njk" import govukAttributes %}
+
+{% set themeColor = themeColor | default("#1d70b8", true) %}
+
+{# Keep isolated route-harness renders usable while the server supplies t(). #}
+{% set shellSkipToContent = t('skip_to_content') if t else 'Skip to main content' %}
+{% set shellServiceLinks = t('header.links_label') if t else 'Service links' %}
+{% set shellLanguageLabel = t('header.language_label') if t else 'Choose a language' %}
+{% set shellLanguageSubmit = t('header.language_submit') if t else 'Change' %}
+{% set shellAccount = t('nav.account') if t else 'My account' %}
+{% set shellServiceInformation = t('service_information_label') if t else 'Community service information' %}
+{% set shellNavigation = t('navigation_label') if t else 'Community navigation' %}
+{% set shellMenu = t('nav.menu') if t else 'Menu' %}
+{% set shellLogin = t('nav.login') if t else 'Sign in' %}
+{% set shellRegister = t('nav.register') if t else 'Register' %}
+{% set shellAccountNavKeys = ['account', 'profile', 'messages', 'connections', 'wallet', 'matches', 'group_exchanges', 'achievements', 'leaderboard', 'nexus_score'] %}
+{% set shellPhase = t('phase') if t else 'Beta' %}
+{% set shellFeedback = t('feedback') if t else 'Give feedback' %}
+{% set resolvedPageTitle = t(titleKey, titleReplacements) if titleKey and t else title %}
+
+<!DOCTYPE html>
+<html lang="{{ htmlLang or 'en' }}" dir="{{ htmlDirection or 'ltr' }}" class="govuk-template{% if htmlClasses %} {{ htmlClasses }}{% endif %}">
+  <head>
+    <meta charset="utf-8">
+    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{{ resolvedPageTitle }} - {{ serviceName }}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="{{ themeColor }}">
+
+    {% block head %}
+      <link rel="stylesheet" href="/css/main.css">
+    {% endblock %}
+
+    {% block headIcons %}
+      <link rel="icon" href="/assets/favicon.ico">
+    {% endblock %}
+
+    {% if opengraphImageUrl or assetUrl %}
+      <meta property="og:image" content="{{ opengraphImageUrl | default(assetUrl + '/images/govuk-opengraph-image.png', true) }}">
+    {% endif %}
+  </head>
+  <body class="govuk-template__body{% if bodyClasses %} {{ bodyClasses }}{% endif %}"{{ govukAttributes(bodyAttributes) }}>
+    <script{% if cspNonce %} nonce="{{ cspNonce }}"{% endif %}>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+
+    {% block bodyStart %}
+      {% include "partials/cookie-banner.njk" %}
+    {% endblock %}
+
+    {% block govukSkipLink %}
+      {% block skipLink %}
+        <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">{{ shellSkipToContent }}</a>
+      {% endblock %}
+    {% endblock %}
+
+    {% block header %}
+      <header class="nexus-alpha-header" role="banner">
+        <div class="govuk-width-container nexus-alpha-header__container">
+          <div class="nexus-alpha-header__identity">
+            <a class="nexus-alpha-header__brand govuk-!-font-size-24" href="{{ urlFor('/') }}">
+              {% if tenantLogoUrl %}
+                <img class="nexus-alpha-header__logo nexus-alpha-header__logo--{{ tenantLogoShape }}" src="{{ tenantLogoUrl }}" alt="{{ tenantName or serviceName }}" decoding="async">
+              {% else %}
+                {{ tenantName or serviceName }}
+              {% endif %}
+            </a>
+            <p class="nexus-alpha-header__disclaimer">{{ shellNotAffiliated }}</p>
+          </div>
+
+          <nav class="nexus-alpha-header__links" aria-label="{{ shellServiceLinks }}">
+            {% if alphaLocaleOptions and alphaLocaleOptions.length > 1 %}
+              <form method="get" action="{{ currentPath or '/' }}" class="nexus-alpha-lang" aria-label="{{ shellLanguageLabel }}">
+                {% for queryParam in alphaLanguageQueryParams %}
+                  <input type="hidden" name="{{ queryParam.name }}" value="{{ queryParam.value }}">
+                {% endfor %}
+                <label class="govuk-visually-hidden" for="alpha-locale-select">{{ shellLanguageLabel }}</label>
+                <select class="govuk-select nexus-alpha-lang__select" id="alpha-locale-select" name="locale">
+                  {% for locale in alphaLocaleOptions %}
+                    <option value="{{ locale[0] }}" {% if locale[0] == alphaCurrentLocale %}selected{% endif %}>{{ locale[1] }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="govuk-button govuk-button--secondary nexus-alpha-lang__submit govuk-!-margin-bottom-0" data-module="govuk-button">{{ shellLanguageSubmit }}</button>
+              </form>
+            {% endif %}
+
+            {% if isAuthenticated %}
+              <a class="nexus-alpha-header__link" href="{{ urlFor('/account') }}" {% if (activeNav or alphaActiveNav) in shellAccountNavKeys %}aria-current="page"{% endif %}>
+                {{ shellAccount }}
+                {% if unreadMessageCount > 0 %}
+                  <span class="nexus-alpha-nav-badge" aria-hidden="true">{{ unreadMessageCount if unreadMessageCount < 100 else '99+' }}</span>
+                  <span class="govuk-visually-hidden">{{ tc('messages.unread_count', unreadMessageCount, { count: unreadMessageCount }) if tc else (unreadMessageCount ~ ' unread messages') }}</span>
+                {% endif %}
+              </a>
+            {% endif %}
+          </nav>
+        </div>
+      </header>
+
+      {% if tenantSlug %}
+      <section class="govuk-service-navigation" data-module="govuk-service-navigation" aria-label="{{ shellServiceInformation }}">
+        <div class="govuk-width-container">
+          <div class="govuk-service-navigation__container">
+            <nav class="govuk-service-navigation__wrapper" aria-label="{{ shellNavigation }}">
+              <button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="alpha-navigation" hidden aria-hidden="true">
+                {{ shellMenu }}
+              </button>
+              <ul class="govuk-service-navigation__list" id="alpha-navigation">
+                {% for item in alphaNavItems %}
+                  <li class="govuk-service-navigation__item {% if (activeNav or alphaActiveNav) == item.key %}govuk-service-navigation__item--active{% endif %}">
+                    <a class="govuk-service-navigation__link" href="{{ item.href }}" {% if (activeNav or alphaActiveNav) == item.key %}aria-current="page"{% endif %}>
+                      {% if (activeNav or alphaActiveNav) == item.key %}
+                        <strong class="govuk-service-navigation__active-fallback">{{ item.label }}</strong>
+                      {% else %}
+                        {{ item.label }}
+                      {% endif %}
+                    </a>
+                  </li>
+                {% endfor %}
+                {% if not isAuthenticated %}
+                  <li class="govuk-service-navigation__item {% if (activeNav or alphaActiveNav) == 'login' %}govuk-service-navigation__item--active{% endif %}">
+                    <a class="govuk-service-navigation__link" href="{{ urlFor('/login') }}" {% if (activeNav or alphaActiveNav) == 'login' %}aria-current="page"{% endif %}>{% if (activeNav or alphaActiveNav) == 'login' %}<strong class="govuk-service-navigation__active-fallback">{{ shellLogin }}</strong>{% else %}{{ shellLogin }}{% endif %}</a>
+                  </li>
+                  <li class="govuk-service-navigation__item {% if (activeNav or alphaActiveNav) == 'register' %}govuk-service-navigation__item--active{% endif %}">
+                    <a class="govuk-service-navigation__link" href="{{ urlFor('/register') }}" {% if (activeNav or alphaActiveNav) == 'register' %}aria-current="page"{% endif %}>{% if (activeNav or alphaActiveNav) == 'register' %}<strong class="govuk-service-navigation__active-fallback">{{ shellRegister }}</strong>{% else %}{{ shellRegister }}{% endif %}</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+    {% endblock %}
+
+    {% block container %}
+      <div class="govuk-width-container{% if containerClasses %} {{ containerClasses }}{% endif %}"{{ govukAttributes(containerAttributes) }}>
+        {% block containerStart %}
+          {% block beforeContent %}
+            {{ govukPhaseBanner({
+              tag: {
+                text: phaseText or shellPhase
+              },
+              html: '<a class="govuk-link" href="' ~ feedbackUrl ~ '">' ~ shellFeedback ~ '</a>'
+            }) }}
+          {% endblock %}
+        {% endblock %}
+
+        {% block main %}
+          <main class="govuk-main-wrapper{% if mainClasses %} {{ mainClasses }}{% endif %}" id="main-content" tabindex="-1"{% if mainLang %} lang="{{ mainLang }}"{% endif %}{{ govukAttributes(mainAttributes) }}>
+            {% block content %}
+              {% if isAuthenticated %}
+                <div
+                  data-authenticated="true"
+                  data-csrf-token="{{ csrfToken }}"
+                  hidden
+                ></div>
+                <a id="session-timeout-login-link" href="{{ urlFor('/login') }}" hidden tabindex="-1" aria-hidden="true"></a>
+                <form id="session-timeout-logout-form" method="post" action="{{ urlFor('/logout') }}" hidden>
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="timeout" value="true">
+                </form>
+              {% endif %}
+              {% block mainContent %}{% endblock %}
+            {% endblock %}
+          </main>
+        {% endblock %}
+        {% block containerEnd %}{% endblock %}
+      </div>
+    {% endblock %}
+
+    {% block footer %}
+      {% include "partials/footer.njk" %}
+    {% endblock %}
+
+    {% block bodyEnd %}
+      <script type="module" src="/js/govuk-frontend.min.js"></script>
+      <script type="module" src="/js/init.js"></script>
+      <script src="/js/validation.js"></script>
+      <script src="/js/loading-states.js"></script>
+      <script src="/js/timeout-warning.js"></script>
+      <script src="/js/mobile-nav.js"></script>
+    {% endblock %}
+  </body>
+</html>

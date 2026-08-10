@@ -1,0 +1,111 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set nameError = status == "collection-name-required" %}
+
+  {% if nameError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <ul class="govuk-list govuk-error-summary__list">
+            <li><a href="#collection-name">{{ t("govuk_alpha_saved.status.collection_name_required") }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.collections.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_saved.collections.title") }}</h1>
+
+  {% if status == "collection-created" or status == "collection-updated" or status == "collection-deleted" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-collections-status-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="saved-collections-status-title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{% if status == "collection-created" %}{{ t("govuk_alpha_saved.status.collection_created") }}{% elif status == "collection-updated" %}{{ t("govuk_alpha_saved.status.collection_updated") }}{% else %}{{ t("govuk_alpha_saved.status.collection_deleted") }}{% endif %}</p>
+      </div>
+    </div>
+  {% elseif status == "collection-failed" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p class="govuk-body">{{ t("govuk_alpha_saved.status.collection_failed") }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <p class="govuk-body-l">{{ t("govuk_alpha_saved.collections.description") }}</p>
+  <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/saved') }}">{{ t("govuk_alpha_saved.collections.back_to_saved") }}</a></p>
+
+  {% if collections and collections.length %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for collection in collections %}
+        <li class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-1">
+            <span class="nexus-alpha-avatar" style="background-color: {{ collection.color }}; width: 1rem; height: 1rem; display: inline-block; border-radius: 50%; vertical-align: middle;" aria-hidden="true"></span>
+            <a class="govuk-link" href="{{ urlFor('/me/collections/' + (collection.id | string)) }}">{{ collection.name or t("govuk_alpha_saved.detail.title") }}</a>
+          </h2>
+          <p class="govuk-body nexus-alpha-meta">
+            {{ tc("govuk_alpha_saved.collections.count", collection.itemsCount, { count: collection.itemsCount }) }}
+            <strong class="govuk-tag {% if collection.isPublic %}govuk-tag--blue{% else %}govuk-tag--grey{% endif %} govuk-!-margin-left-1">{% if collection.isPublic %}{{ t("govuk_alpha_saved.collections.public_tag") }}{% else %}{{ t("govuk_alpha_saved.collections.private_tag") }}{% endif %}</strong>
+          </p>
+          {% if collection.description %}
+            <p class="govuk-body">{{ collection.description }}</p>
+          {% endif %}
+          <p class="govuk-body govuk-!-margin-bottom-0">
+            <a class="govuk-link" href="{{ urlFor('/me/collections/' + (collection.id | string)) }}">{{ t("govuk_alpha_saved.collections.view") }}</a>
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_saved.collections.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_saved.collections.empty_body") }}</p>
+    </div>
+  {% endif %}
+
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+  <h2 class="govuk-heading-l">{{ t("govuk_alpha_saved.create.heading") }}</h2>
+  <form method="post" action="{{ urlFor('/me/collections') }}">
+    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+    <div class="govuk-form-group{% if nameError %} govuk-form-group--error{% endif %}">
+      <label class="govuk-label" for="collection-name">{{ t("govuk_alpha_saved.create.name_label") }}</label>
+      <div id="collection-name-hint" class="govuk-hint">{{ t("govuk_alpha_saved.create.name_hint") }}</div>
+      {% if nameError %}
+        <p id="collection-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.collection_name_required") }}</p>
+      {% endif %}
+      <input class="govuk-input govuk-!-width-two-thirds" id="collection-name" name="name" type="text" maxlength="255" aria-describedby="collection-name-hint{% if nameError %} collection-name-error{% endif %}">
+    </div>
+
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="collection-description">{{ t("govuk_alpha_saved.create.description_label") }}</label>
+      <textarea class="govuk-textarea govuk-!-width-two-thirds" id="collection-description" name="description" rows="3"></textarea>
+    </div>
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset">
+        <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.create.public_label") }}</legend>
+        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+          <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input" id="collection-public" name="is_public" type="checkbox" value="1" aria-describedby="collection-public-hint">
+            <label class="govuk-label govuk-checkboxes__label" for="collection-public">{{ t("govuk_alpha_saved.create.public_label") }}</label>
+            <div id="collection-public-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_saved.create.public_hint") }}</div>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_saved.create.submit") }}</button>
+  </form>
+{% endblock %}

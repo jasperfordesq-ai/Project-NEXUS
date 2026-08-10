@@ -1,0 +1,162 @@
+{% extends "layouts/base.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string)) }}">{{ t("groups.back_to_group") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-l">{{ group.name }}</span>
+  <h1 class="govuk-heading-xl">{{ t("groups.edit.title") }}</h1>
+  <p class="govuk-body-l">{{ t("groups.edit.description") }}</p>
+
+      {% if updateFailed or deleteFailed %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("polish_groups.update_failed_heading") if updateFailed else t("polish_groups.delete_failed_heading") }}</h2>
+            <div class="govuk-error-summary__body">
+              <p class="govuk-body">{{ t("groups.edit.failed") if updateFailed else t("groups.delete.failed") }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% if errors and errors.length %}
+        {{ govukErrorSummary({
+          titleText: t("states.error_title"),
+          errorList: errors,
+          attributes: { tabindex: "-1" }
+        }) }}
+      {% endif %}
+
+      <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/edit') }}" enctype="multipart/form-data" novalidate data-validate-form data-validation-error-title="{{ t('states.error_title') }}" data-validation-error-prefix="{{ t('states.error_prefix') }}">
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+        {{ govukInput({
+          label: {
+            text: t("groups.create.name_label"),
+            classes: "govuk-label--m"
+          },
+          hint: { text: t("groups.create.name_hint") },
+          id: "name",
+          name: "name",
+          value: group.name,
+          errorMessage: {
+            text: fieldErrors.name,
+            visuallyHiddenText: t("states.error_prefix")
+          } if fieldErrors and fieldErrors.name else null,
+          attributes: {
+            "data-validate": "required maxLength:255",
+            "data-label": t("groups.create.name_label")
+          }
+        }) }}
+
+        {{ govukTextarea({
+          label: {
+            text: t("groups.create.description_label"),
+            classes: "govuk-label--m"
+          },
+          hint: {
+            text: t("groups.create.description_hint")
+          },
+          id: "description",
+          name: "description",
+          rows: 5,
+          value: group.description if group.description else ""
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: t("polish_groups.location_label")
+          },
+          hint: {
+            text: t("polish_groups.location_hint")
+          },
+          id: "location",
+          name: "location",
+          value: group.location if group.location else "",
+          classes: "govuk-!-width-two-thirds",
+          attributes: { maxlength: "255" }
+        }) }}
+
+        {{ govukRadios({
+          name: "visibility",
+          fieldset: {
+            legend: {
+              text: t("groups.create.visibility_legend"),
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          hint: { text: t("groups.create.visibility_hint") },
+          items: [
+            {
+              value: "public",
+              text: t("groups.create.visibility_public_label"),
+              checked: group.visibility != 'private'
+            },
+            {
+              value: "private",
+              text: t("groups.create.visibility_private_label"),
+              checked: group.visibility == 'private'
+            }
+          ]
+        }) }}
+
+        {{ govukInput({
+          label: { text: t("polish_groups.tags_label") },
+          hint: { text: t("polish_groups.tags_hint") },
+          id: "tags",
+          name: "tags",
+          value: group.tagsText or "",
+          classes: "govuk-!-width-two-thirds",
+          attributes: { maxlength: "255" }
+        }) }}
+
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="cover">{{ t("groups.create.cover_label") }}</label>
+          <div id="cover-hint" class="govuk-hint">{{ t("groups.create.cover_hint") }}</div>
+          <input class="govuk-file-upload" id="cover" name="cover" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="cover-hint">
+        </div>
+
+        {{ govukButton({ text: t("groups.edit.submit") }) }}
+      </form>
+
+      {% if isOwner %}
+        <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+
+        <h2 class="govuk-heading-l">{{ t("groups.delete.title") }}</h2>
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning") }}</span>
+            {{ t("groups.delete.warning") }}
+          </strong>
+        </div>
+        <form method="post" action="{{ urlFor('/groups/' + (group.id | string) + '/delete') }}" novalidate>
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if deleteConfirmationRequired %} govuk-form-group--error{% endif %}">
+            {% if deleteConfirmationRequired %}
+              <p id="confirm-delete-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span>
+                Confirm that you understand the group will be permanently deleted.
+              </p>
+            {% endif %}
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="confirm-delete" name="confirm" type="checkbox" value="yes" required{% if deleteConfirmationRequired %} aria-describedby="confirm-delete-error"{% endif %}>
+                <label class="govuk-label govuk-checkboxes__label" for="confirm-delete">{{ t("groups.delete.confirm_label") }}</label>
+              </div>
+            </div>
+          </div>
+          {{ govukButton({
+            text: t("groups.delete.submit"),
+            classes: "govuk-button--warning"
+          }) }}
+        </form>
+      {% endif %}
+{% endblock %}

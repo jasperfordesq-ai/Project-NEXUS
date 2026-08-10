@@ -42,6 +42,55 @@ updates:
       mobile:
         patterns: ['*']
 
+  # ---------------------------------------------------------------------------
+  # Monorepo siblings: the ASP.NET backend and the Web UK accessible frontend.
+  #
+  # These arrived with the repository move (2026-08-09). The former ASP.NET
+  # repository had its own .github/dependabot.yml covering NuGet, its Docker
+  # base images and the Web UK npm tree; that file was not merged into this one,
+  # so between the move and 2026-08-10 nothing here watched any of them —
+  # including for security advisories.
+  #
+  # Style note: the upstream file set open-pull-requests-limit to 0 (security
+  # advisories only), because at the time those projects had no CI running a
+  # full suite on a bump. That reasoning no longer holds — platform-contracts.yml
+  # now builds and tests both — so these follow the same grouped, limit-5 shape
+  # as the entries above rather than upstream's security-only policy.
+  # ---------------------------------------------------------------------------
+
+  # Covers every .csproj under aspnet-backend/ via Nexus.sln.
+  - package-ecosystem: nuget
+    directory: /aspnet-backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      aspnet-backend:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /web-uk
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      web-uk:
+        patterns: ['*']
+
+  # The ASP.NET end-to-end suite keeps its own package.json, separate from the
+  # Web UK tree above.
+  - package-ecosystem: npm
+    directory: /aspnet-backend/e2e
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      aspnet-e2e:
+        patterns: ['*']
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -49,8 +98,26 @@ updates:
       day: monday
     open-pull-requests-limit: 5
 
+  # Docker entries are per-directory: each one only sees Dockerfiles directly in
+  # the directory it names, so the root entry below does NOT cover the sibling
+  # images. aspnet-backend/ holds Dockerfile and Dockerfile.local-rebuild;
+  # web-uk/ holds Dockerfile.
   - package-ecosystem: docker
     directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /aspnet-backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /web-uk
     schedule:
       interval: weekly
       day: monday

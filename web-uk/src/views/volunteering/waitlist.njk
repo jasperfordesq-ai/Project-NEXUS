@@ -1,0 +1,101 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="waitlist-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="waitlist-success-title">{{ t("govuk_alpha.states.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ status.message }}</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.vol_depth.waitlist_title") }}</h1>
+  <p class="govuk-body-l">{{ t("vol_depth.waitlist_description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% elif not entries.length %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("vol_depth.waitlist_empty_title") }}</h2>
+      <p class="govuk-body">{{ t("vol_depth.waitlist_empty") }}</p>
+    </div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for entry in entries %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ entry.title }}</h2>
+          {% if entry.isNotified %}
+            <strong class="govuk-tag govuk-tag--green">{{ t("vol_depth.waitlist_spot_available") }}</strong>
+            <p class="govuk-body govuk-!-margin-top-3">{{ t("vol_depth.waitlist_notified_hint") }}</p>
+          {% else %}
+            <strong class="govuk-tag govuk-tag--yellow">{{ t("vol_depth.waitlist_position", { position: entry.position }) }}</strong>
+          {% endif %}
+
+          <dl class="govuk-summary-list govuk-!-margin-top-4 govuk-!-margin-bottom-3">
+            {% if entry.organizationName %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("volunteering.organization") }}</dt>
+                <dd class="govuk-summary-list__value">{{ entry.organizationName }}</dd>
+              </div>
+            {% endif %}
+            {% if entry.location %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("volunteering.location") }}</dt>
+                <dd class="govuk-summary-list__value">{{ entry.location }}</dd>
+              </div>
+            {% endif %}
+            {% if entry.shiftLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("volunteering.shift_label") }}</dt>
+                <dd class="govuk-summary-list__value">{{ entry.shiftLabel }}</dd>
+              </div>
+            {% endif %}
+            {% if entry.joinedAtLabel %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">{{ t("vol_depth.waitlist_joined") }}</dt>
+                <dd class="govuk-summary-list__value">{{ entry.joinedAtLabel }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          {% if entry.shiftId %}
+            <form method="post" action="{{ urlFor('/volunteering/waitlist/' ~ entry.shiftId ~ '/leave') }}">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">
+                {{ t("vol_depth.waitlist_leave") }}<span class="govuk-visually-hidden"> {{ t("vol_depth.waitlist_leave_for", { title: entry.title }) }}</span>
+              </button>
+            </form>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

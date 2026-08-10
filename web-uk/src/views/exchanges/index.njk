@@ -1,0 +1,110 @@
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-l">{{ t("exchanges.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("exchanges.title") }}</h1>
+  <p class="govuk-body-l">{{ t("exchanges.description") }}</p>
+
+  {% if statusMessage or successMessage %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="exchange-success-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="exchange-success-title">{{ t("states.success_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ successMessage or statusMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if errorMessage %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="exchange-error-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="exchange-error-title">{{ t("states.important") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{{ errorMessage }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if workflowAvailable and not workflowEnabled %}
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="exchange-disabled-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="exchange-disabled-title">{{ t("exchanges.disabled_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-body">{{ t("exchanges.disabled_detail") }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <nav aria-label="{{ t('polish_listings.exchanges_tab_filter_label') }}" class="govuk-!-margin-bottom-7">
+    <ul class="nexus-alpha-filter-nav">
+      <li><a class="govuk-link{% if activeTab == 'all' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/exchanges?tab=all') }}"{% if activeTab == 'all' %} aria-current="true"{% endif %}>{{ t("polish_listings.exchanges_tab_all") }}</a></li>
+      <li><a class="govuk-link{% if activeTab == 'active' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/exchanges?tab=active') }}"{% if activeTab == 'active' %} aria-current="true"{% endif %}>{{ t("polish_listings.exchanges_tab_active") }}</a></li>
+      <li><a class="govuk-link{% if activeTab == 'needs_confirmation' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/exchanges?tab=needs_confirmation') }}"{% if activeTab == 'needs_confirmation' %} aria-current="true"{% endif %}>{{ t("polish_listings.exchanges_tab_needs_confirmation") }}</a></li>
+      <li><a class="govuk-link{% if activeTab == 'completed' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/exchanges?tab=completed') }}"{% if activeTab == 'completed' %} aria-current="true"{% endif %}>{{ t("polish_listings.exchanges_tab_completed") }}</a></li>
+    </ul>
+  </nav>
+
+  <h2 class="govuk-heading-l">{{ t("exchanges.results_title") }}</h2>
+  <p class="govuk-body nexus-alpha-result-count" aria-live="polite">
+    {{ tc("exchanges.result_count", exchanges.length, { count: exchanges.length }) }}
+  </p>
+
+  {% if not errorMessage and exchanges.length == 0 %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("exchanges.empty") }}</p>
+    </div>
+  {% elif exchanges.length > 0 %}
+    <div class="nexus-alpha-card-list">
+      {% for exchange in exchanges %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-m govuk-!-margin-bottom-2">
+            <a class="govuk-link" href="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">{{ exchange.listingTitle }}</a>
+          </h3>
+          <strong class="govuk-tag {{ exchange.statusClass }}">{{ exchange.statusLabel }}</strong>
+          {% if exchange.actionNeeded == 'respond' %}
+            <strong class="govuk-tag govuk-tag--red">{{ t("exchanges.action_respond") }}</strong>
+          {% elif exchange.actionNeeded == 'confirm' %}
+            <strong class="govuk-tag govuk-tag--red">{{ t("exchanges.action_confirm") }}</strong>
+          {% endif %}
+
+          <dl class="nexus-alpha-inline-list govuk-!-margin-top-3">
+            <div>
+              <dt>{{ t("exchanges.proposed_hours_label") }}</dt>
+              <dd>{{ t("exchanges.hours", { count: exchange.proposedHours }) }}</dd>
+            </div>
+            <div>
+              <dt>{% if exchange.isRequester %}{{ t("exchanges.provider_label") }}{% else %}{{ t("exchanges.requester_label") }}{% endif %}</dt>
+              <dd>{{ exchange.otherName }}</dd>
+            </div>
+            {% if exchange.createdAt %}
+              <div>
+                <dt>{{ t("exchanges.created_label") }}</dt>
+                <dd>{{ exchange.createdAt | formatDate }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+
+          <p class="govuk-body govuk-!-margin-bottom-0">
+            <a class="govuk-link govuk-link--no-visited-state" href="{{ urlFor('/exchanges/' + (exchange.id | string)) }}">{{ t("actions.view_exchange") }}</a>
+          </p>
+        </article>
+      {% endfor %}
+    </div>
+
+    {% if meta.has_more and meta.cursor %}
+      <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-top-6" aria-label="{{ t('exchanges.pagination_label') }}">
+        <div class="govuk-pagination__next">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/exchanges?tab=' + activeTab + '&cursor=' + meta.cursor) }}" rel="next">
+            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
+            <span class="govuk-pagination__link-title">{{ t("actions.load_more") }}</span>
+            <span class="govuk-visually-hidden">:</span>
+            <span class="govuk-pagination__link-label">{{ t("exchanges.more_results_label") }}</span>
+          </a>
+        </div>
+      </nav>
+    {% endif %}
+  {% endif %}
+{% endblock %}

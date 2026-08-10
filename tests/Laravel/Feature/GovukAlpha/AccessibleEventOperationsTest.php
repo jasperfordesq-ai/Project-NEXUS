@@ -172,26 +172,32 @@ final class AccessibleEventOperationsTest extends TestCase
 
     public function test_all_day_list_and_detail_use_event_timezone_and_exclusive_end_date(): void
     {
-        $owner = $this->member('Accessible All Day Owner');
-        $eventId = $this->event($owner, false, [
-            'title' => 'Auckland community days',
-            'start_time' => CarbonImmutable::parse('2026-08-09 12:00:00', 'UTC'),
-            'end_time' => CarbonImmutable::parse('2026-08-11 12:00:00', 'UTC'),
-            'timezone' => 'Pacific/Auckland',
-            'all_day' => 1,
-        ]);
-        Sanctum::actingAs($owner, ['*']);
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-09 00:00:00', 'UTC'));
 
-        foreach ([
-            "/{$this->testTenantSlug}/accessible/events",
-            "/{$this->testTenantSlug}/accessible/events/{$eventId}",
-        ] as $path) {
-            $this->get($path)
-                ->assertOk()
-                ->assertSeeText('Auckland community days')
-                ->assertSeeTextInOrder(['10 August 2026', 'All day', '11 August 2026'])
-                ->assertDontSeeText('12 August 2026')
-                ->assertDontSeeText('12:00pm');
+        try {
+            $owner = $this->member('Accessible All Day Owner');
+            $eventId = $this->event($owner, false, [
+                'title' => 'Auckland community days',
+                'start_time' => CarbonImmutable::parse('2026-08-09 12:00:00', 'UTC'),
+                'end_time' => CarbonImmutable::parse('2026-08-11 12:00:00', 'UTC'),
+                'timezone' => 'Pacific/Auckland',
+                'all_day' => 1,
+            ]);
+            Sanctum::actingAs($owner, ['*']);
+
+            foreach ([
+                "/{$this->testTenantSlug}/accessible/events",
+                "/{$this->testTenantSlug}/accessible/events/{$eventId}",
+            ] as $path) {
+                $this->get($path)
+                    ->assertOk()
+                    ->assertSeeText('Auckland community days')
+                    ->assertSeeTextInOrder(['10 August 2026', 'All day', '11 August 2026'])
+                    ->assertDontSeeText('12 August 2026')
+                    ->assertDontSeeText('12:00pm');
+            }
+        } finally {
+            CarbonImmutable::setTestNow();
         }
     }
 

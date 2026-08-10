@@ -1,0 +1,95 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/federation') }}" class="govuk-back-link">{{ t("polish_federation.groups_back") }}</a>
+
+  <span class="govuk-caption-xl">{{ t("polish_federation.groups_caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("polish_federation.groups_title") }}</h1>
+  <p class="govuk-body-l">{{ t("polish_federation.groups_description") }}</p>
+
+  {% include "federation/_nav.njk" %}
+
+
+  {% if not allowed %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("polish_federation.groups_not_available") }}</p></div>
+  {% else %}
+    <form method="get" action="{{ urlFor('/federation/groups') }}" class="govuk-!-margin-bottom-6">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="q">{{ t("polish_federation.groups_search_label") }}</label>
+        <div id="q-hint" class="govuk-hint">{{ t("polish_federation.groups_search_hint") }}</div>
+        <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ filters.q }}" aria-describedby="q-hint">
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="partner_id">{{ t("polish_federation.groups_filter_label") }}</label>
+        <select class="govuk-select" id="partner_id" name="partner_id">
+          <option value=""{% if not filters.partnerId %} selected{% endif %}>{{ t("polish_federation.groups_filter_all") }}</option>
+          {% for partner in partnerOptions %}
+            <option value="{{ partner.id }}"{% if filters.partnerId == partner.id %} selected{% endif %}>{{ partner.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("polish_federation.groups_apply_filters") }}</button>
+    </form>
+
+    {% if loadError %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <p class="govuk-body">{{ t("polish_federation.groups_load_error") }}</p>
+            <ul class="govuk-list govuk-error-summary__list">
+              <li><a href="{{ urlFor('/federation/groups') }}">{{ t("polish_federation.groups_try_again") }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% elif groups.length %}
+      <div class="nexus-alpha-card-list">
+        {% for group in groups %}
+          <article class="nexus-alpha-card">
+            {% if group.coverImage %}
+              <img class="nexus-alpha-card-image govuk-!-margin-bottom-2" src="{{ group.coverImage }}" alt="">
+            {% endif %}
+
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+              {{ group.name }}
+              {% if group.privacy == "private" %}
+                <strong class="govuk-tag govuk-tag--yellow">{{ t("polish_federation.groups_private") }}</strong>
+              {% endif %}
+            </h2>
+
+            {% if group.description %}
+              <p class="govuk-body govuk-!-margin-bottom-1">{{ group.description }}</p>
+            {% endif %}
+
+            <dl class="nexus-alpha-inline-list">
+              <div>
+                <dt>{{ t("polish_federation.groups_community_label") }}</dt>
+                <dd>{{ group.tenantName }}</dd>
+              </div>
+              <div>
+                <dt>{{ t("polish_federation.groups_members_label") }}</dt>
+                <dd>{{ group.memberCountLabel }}</dd>
+              </div>
+            </dl>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if loadMoreHref %}
+        <p class="govuk-body govuk-!-margin-top-4">
+          <a class="govuk-link" href="{{ urlFor(loadMoreHref) }}">{{ t("polish_federation.groups_load_more") }}</a>
+        </p>
+      {% endif %}
+    {% else %}
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("polish_federation.groups_empty") }}</p></div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

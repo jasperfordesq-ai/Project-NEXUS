@@ -1,0 +1,160 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  {% set editNameError = status == "collection-name-required" %}
+
+  <a class="govuk-back-link" href="{{ urlFor('/me/collections') }}">{{ t("govuk_alpha_saved.collections.title") }}</a>
+
+  {% if status == "item-remove-failed" or status == "collection-failed" or editNameError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          {% if editNameError %}
+            <ul class="govuk-list govuk-error-summary__list">
+              <li><a href="#edit-collection-name">{{ t("govuk_alpha_saved.status.collection_name_required") }}</a></li>
+            </ul>
+          {% else %}
+            <p class="govuk-body">{% if status == "item-remove-failed" %}{{ t("govuk_alpha_saved.status.item_remove_failed") }}{% else %}{{ t("govuk_alpha_saved.status.collection_failed") }}{% endif %}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_saved.detail.caption", { community: tenant.name or tenant.slug or serviceName }) }}</span>
+  <h1 class="govuk-heading-xl">
+    <span class="nexus-alpha-avatar" style="background-color: {{ collection.color }}; width: 1.25rem; height: 1.25rem; display: inline-block; border-radius: 50%; vertical-align: middle;" aria-hidden="true"></span>
+    {{ collection.name or t("govuk_alpha_saved.detail.title") }}
+  </h1>
+
+  {% if status == "item-removed" or status == "collection-updated" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="saved-detail-status-title">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="saved-detail-status-title">{{ t("govuk_alpha_saved.errors.summary_title") }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <p class="govuk-notification-banner__heading">{% if status == "item-removed" %}{{ t("govuk_alpha_saved.status.item_removed") }}{% else %}{{ t("govuk_alpha_saved.status.collection_updated") }}{% endif %}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <p class="govuk-body">
+    {{ tc("govuk_alpha_saved.detail.count", collection.itemsCount, { count: collection.itemsCount }) }}
+    <strong class="govuk-tag {% if collection.isPublic %}govuk-tag--blue{% else %}govuk-tag--grey{% endif %} govuk-!-margin-left-1">{% if collection.isPublic %}{{ t("govuk_alpha_saved.detail.public_tag") }}{% else %}{{ t("govuk_alpha_saved.detail.private_tag") }}{% endif %}</strong>
+  </p>
+  {% if collection.description %}
+    <p class="govuk-body-l">{{ collection.description }}</p>
+  {% endif %}
+
+  {% if items and items.length %}
+    <ul class="govuk-list nexus-alpha-card-list">
+      {% for item in items %}
+        <li class="nexus-alpha-card">
+          <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+            {% if item.href %}
+            <a class="govuk-link" href="{{ urlFor(item.href) }}">{{ item.title }}</a>
+            {% else %}
+              {{ item.title }}
+            {% endif %}
+          </h2>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            <strong class="govuk-tag govuk-tag--grey">{{ item.typeLabel }}</strong>
+            {% if item.savedOn %}
+              <span class="govuk-!-margin-left-1">{{ t("govuk_alpha_saved.detail.saved_on", { date: item.savedOn }) }}</span>
+            {% endif %}
+          </p>
+          {% if item.note %}
+            <p class="govuk-body">{{ item.note }}</p>
+          {% endif %}
+          {% if isOwner and item.id %}
+            <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/items/' + (item.id | string) + '/remove') }}" class="govuk-!-margin-bottom-0">
+              <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+              <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-bottom-0 govuk-!-font-size-16" data-module="govuk-button" aria-label="{{ t('govuk_alpha_saved.detail.remove_item_label', { title: item.title }) }}">{{ t("govuk_alpha_saved.detail.remove_item") }}</button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("govuk_alpha_saved.detail.empty_title") }}</h2>
+      <p class="govuk-body">{{ t("govuk_alpha_saved.detail.empty_body") }}</p>
+    </div>
+  {% endif %}
+
+  {% if lastPage > 1 %}
+    <nav class="govuk-pagination" role="navigation" aria-label="{{ t('govuk_alpha_saved.pagination.page_of', { current: currentPage, last: lastPage }) }}">
+      {% if currentPage > 1 %}
+        <div class="govuk-pagination__prev">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/me/collections/' + (collection.id | string) + '?page=' + ((currentPage - 1) | string)) }}" rel="prev">
+            <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.7441 1.4062-1.4062-4.3008-4.3398h11.379v-2h-11.397l4.2998-4.2998-1.4063-1.4063z"></path></svg>
+            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.previous") }}</span>
+          </a>
+        </div>
+      {% endif %}
+      {% if currentPage < lastPage %}
+        <div class="govuk-pagination__next">
+          <a class="govuk-link govuk-pagination__link" href="{{ urlFor('/me/collections/' + (collection.id | string) + '?page=' + ((currentPage + 1) | string)) }}" rel="next">
+            <span class="govuk-pagination__link-title">{{ t("govuk_alpha_saved.pagination.next") }}</span>
+            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4062 1.4062 4.2998 4.2998h-11.397v2h11.379l-4.3008 4.3398 1.4062 1.4062 6.7441-6.7441-6.7266-6.7266z"></path></svg>
+          </a>
+        </div>
+      {% endif %}
+    </nav>
+  {% endif %}
+
+  {% if isOwner and collection.id %}
+    <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
+    <details class="govuk-details" data-module="govuk-details"{% if editNameError %} open{% endif %}>
+      <summary class="govuk-details__summary">
+        <span class="govuk-details__summary-text">{{ t("govuk_alpha_saved.edit.heading") }}</span>
+      </summary>
+      <div class="govuk-details__text">
+        <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/update') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <div class="govuk-form-group{% if editNameError %} govuk-form-group--error{% endif %}">
+            <label class="govuk-label" for="edit-collection-name">{{ t("govuk_alpha_saved.edit.name_label") }}</label>
+            {% if editNameError %}
+              <p id="edit-collection-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.collection_name_required") }}</p>
+            {% endif %}
+            <input class="govuk-input govuk-!-width-two-thirds{% if editNameError %} govuk-input--error{% endif %}" id="edit-collection-name" name="name" type="text" maxlength="255" value="{{ collection.name }}" {% if editNameError %}aria-describedby="edit-collection-name-error"{% endif %}>
+          </div>
+          <div class="govuk-form-group">
+            <label class="govuk-label" for="edit-collection-description">{{ t("govuk_alpha_saved.edit.description_label") }}</label>
+            <textarea class="govuk-textarea govuk-!-width-two-thirds" id="edit-collection-description" name="description" rows="3">{{ collection.description }}</textarea>
+          </div>
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.edit.public_label") }}</legend>
+              <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                <div class="govuk-checkboxes__item">
+                  <input class="govuk-checkboxes__input" id="edit-collection-public" name="is_public" type="checkbox" value="1" {% if collection.isPublic %}checked{% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="edit-collection-public">{{ t("govuk_alpha_saved.edit.public_label") }}</label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_saved.edit.submit") }}</button>
+        </form>
+
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}</span>
+            {{ t("govuk_alpha_saved.edit.delete_warning") }}
+          </strong>
+        </div>
+        <form method="post" action="{{ urlFor('/me/collections/' + (collection.id | string) + '/delete') }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" aria-label="{{ t('govuk_alpha_saved.edit.delete_confirm_label', { name: collection.name or t('govuk_alpha_saved.detail.title') }) }}">{{ t("govuk_alpha_saved.edit.delete_submit") }}</button>
+        </form>
+      </div>
+    </details>
+  {% endif %}
+{% endblock %}

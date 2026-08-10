@@ -1,0 +1,41 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/blog/' + post.slug + '/comments') }}">{{ t("govuk_alpha_blogreviews.likers.back_to_comments") }}</a>
+
+      <span class="govuk-caption-l">{{ t("govuk_alpha_blogreviews.likers.caption") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_blogreviews.likers.heading", { emoji: reactionEmoji }) }}</h1>
+
+      <p class="govuk-body-l">
+        {{ tc("govuk_alpha_blogreviews.likers.count", likersTotal, { count: likersTotal }) }}
+      </p>
+
+      {% if not likers.length %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_blogreviews.likers.empty") }}</p></div>
+      {% else %}
+        <ul class="govuk-list nexus-alpha-card-list">
+          {% for liker in likers %}
+            <li class="nexus-alpha-module-row">
+              {% if liker.id %}
+                <a class="govuk-link" href="{{ urlFor('/members/' + (liker.id | string)) }}">{{ liker.name }}</a>
+              {% else %}
+                {{ liker.name }}
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if likersHasMore %}
+          <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/blog/' + post.slug + '/likers/' + reaction + '?page=' + ((likersPage + 1) | string)) }}">{{ t("govuk_alpha_blogreviews.likers.load_more") }}</a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

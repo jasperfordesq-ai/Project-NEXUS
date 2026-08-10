@@ -1,0 +1,94 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a class="govuk-back-link" href="{{ urlFor('/jobs') }}">{{ t("govuk_alpha_jobs.shared.back_to_jobs") }}</a>
+
+  <div class="nexus-alpha-module-row govuk-!-margin-bottom-2">
+    {% if employer.avatarUrl %}
+      <img class="nexus-alpha-avatar" src="{{ employer.avatarUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async" width="64" height="64">
+    {% else %}
+      <span class="nexus-alpha-avatar nexus-alpha-avatar--placeholder" aria-hidden="true">{{ employer.initial }}</span>
+    {% endif %}
+    <div>
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-1">{{ employer.name }}</h1>
+      {% if employer.headline %}
+        <p class="govuk-body-l govuk-!-margin-bottom-0">{{ employer.headline }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <p class="govuk-body-s nexus-alpha-meta">
+    {% if employer.location %}{{ employer.location }}{% endif %}
+    {% if employer.memberSinceLabel %} &middot; {{ t("govuk_alpha_jobs.employer.member_since", { date: employer.memberSinceLabel }) }}{% endif %}
+  </p>
+
+  {% if employer.bio %}
+    <div class="govuk-body govuk-!-margin-bottom-6">{{ employer.bio | nl2br | safe }}</div>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.employer.open_jobs_heading") }}</h2>
+  <p class="govuk-body-s nexus-alpha-meta">{{ tc("govuk_alpha_jobs.employer.open_jobs_count", openJobs.length, { count: openJobs.length }) }}</p>
+
+  {% if openJobs.length %}
+    <div class="nexus-alpha-card-list govuk-!-margin-bottom-6">
+      {% for job in openJobs %}
+        <article class="nexus-alpha-card">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+            <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id) }}">{{ job.title }}</a>
+          </h3>
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">
+            {{ t(job.typeTranslationKey) }}{% if job.commitmentLabel %} &middot; {{ t(job.commitmentTranslationKey) }}{% endif %}{% if job.locationLabel %} &middot; {{ job.locationLabel }}{% endif %}
+          </p>
+          {% if job.deadlineLabel %}
+            <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("jobs.deadline", { date: job.deadlineLabel }) }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_jobs.employer.no_open_jobs") }}</p></div>
+  {% endif %}
+
+  <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.employer.reviews_heading") }}</h2>
+  {% if reviewStats.totalReviews == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_jobs.employer.no_reviews") }}</p></div>
+  {% else %}
+    {% if reviewStats.averageRating != null %}
+      <p class="govuk-body">
+        <strong>{{ t("govuk_alpha_jobs.employer.average_rating") }}:</strong>
+        {{ reviewStats.averageRating }} / 5
+        <progress value="{{ reviewStats.averageRating }}" max="5" aria-label="{{ t('govuk_alpha_jobs.employer.rating_aria', { rating: reviewStats.averageRating }) }}">{{ reviewStats.averageRating }} / 5</progress>
+        <span class="govuk-body-s nexus-alpha-meta">{{ tc("govuk_alpha_jobs.employer.reviews_count", reviewStats.totalReviews, { count: reviewStats.totalReviews }) }}</span>
+      </p>
+    {% endif %}
+
+    {% if reviewStats.dimensionRows.length %}
+    <h3 class="govuk-heading-s">{{ t("govuk_alpha_jobs.employer.dimensions_heading") }}</h3>
+    <table class="govuk-table govuk-!-margin-bottom-6">
+      <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_jobs.employer.dimensions_heading") }}</caption>
+      <tbody class="govuk-table__body">
+      {% for row in reviewStats.dimensionRows %}
+        <tr class="govuk-table__row"><th scope="row" class="govuk-table__header govuk-!-font-weight-regular">{{ t(row.labelKey) }}</th><td class="govuk-table__cell"><progress value="{{ row.score }}" max="5" aria-label="{{ t('govuk_alpha_jobs.employer.dimension_aria', { dimension: t(row.labelKey), score: row.score }) }}">{{ row.score }} / 5</progress></td><td class="govuk-table__cell govuk-table__cell--numeric">{{ row.score }} / 5</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <div class="nexus-alpha-card-list">
+      {% for review in employerReviews %}
+        <article class="nexus-alpha-card">
+          <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ review.rating }} / 5</strong> <progress value="{{ review.rating }}" max="5" aria-label="{{ t('govuk_alpha_jobs.employer.review_rating_aria', { rating: review.rating }) }}">{{ review.rating }} / 5</progress></p>
+          {% if review.comment %}
+            <div class="govuk-body govuk-!-margin-bottom-1">{{ review.comment | nl2br | safe }}</div>
+          {% endif %}
+          <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{% if review.reviewerName %}{{ review.reviewerName }}{% endif %}{% if review.createdLabel %} &middot; {{ review.createdLabel }}{% endif %}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

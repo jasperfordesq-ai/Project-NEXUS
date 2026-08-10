@@ -1,0 +1,34 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <a href="{{ urlFor('/podcasts/' + (show.id | string)) }}" class="govuk-back-link">{{ t("govuk_alpha.polish_commerce.podcast_episode_back") }}</a>
+
+  <span class="govuk-caption-xl">{{ show.title }}</span>
+  <h1 class="govuk-heading-xl">{{ episode.title }}</h1>
+
+  {% if episode.description %}
+    <div class="govuk-body-l">{{ episode.description | striptags | nl2br | safe }}</div>
+  {% endif %}
+
+  {% if episode.audioUrl %}
+    <div class="govuk-!-margin-bottom-6">
+      <audio controls preload="metadata" class="nexus-alpha-audio" src="{{ episode.audioUrl }}" aria-label="{{ t('govuk_alpha.polish_commerce.podcast_episode_audio_label', { title: episode.title }) }}">
+        <a class="govuk-link" href="{{ episode.audioUrl }}">{{ t("govuk_alpha.podcasts.download_episode", { title: episode.title }) }}</a>
+      </audio>
+    </div>
+  {% else %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha.polish_commerce.podcast_episode_no_audio") }}</p>
+    </div>
+  {% endif %}
+
+  {% if episode.transcript %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha.polish_commerce.podcast_episode_transcript") }}</h2>
+    <div class="govuk-body">{{ episode.transcript | nl2br | safe }}</div>
+  {% endif %}
+{% endblock %}

@@ -15,6 +15,15 @@ composer.phar
 .env.*
 !.env.docker.example
 !.env.example
+# Narrow exception: the Web UK Docker defaults file. web-uk/compose.yml lists it
+# under `env_file:`, so both of its services refuse to start without it — a
+# clean clone could not run `docker compose up` at all while `.env.*` above was
+# swallowing it. It holds no credentials: a port, a backend URL, and two
+# obviously-labelled local dev placeholder secrets. Real secrets still belong in
+# an untracked .env, which the rules above continue to catch.
+# (aspnet-backend/.env.docker is the equivalent file for the ASP.NET stack; it
+# is re-included by aspnet-backend/.gitignore, which takes precedence there.)
+!web-uk/.env.docker
 /env
 /env.docker
 /env.testing
@@ -31,6 +40,14 @@ composer.phar
 # ─── AI Assistant Config (contains sensitive project context) ─────────────────
 CLAUDE.md
 !accessible-frontend/CLAUDE.md
+# Per-track agent guides. These are the working instructions for the two
+# imported tracks, not machine-local notes, and the blanket rule above was
+# quietly excluding them: web-uk/CLAUDE.md (32 KB, the largest single piece of
+# Web UK guidance) survived only as an untracked file that one `git clean`
+# would have destroyed, and aspnet-backend/CLAUDE.md was lost entirely in the
+# 2026-08-09 move and had to be re-imported from the archive repository.
+!web-uk/CLAUDE.md
+!aspnet-backend/CLAUDE.md
 .agent/
 .claude/
 
@@ -56,6 +73,10 @@ CLAUDE.md
 !/scripts/verify-admin-security.sh
 !/scripts/check-regression-patterns.sh
 !/scripts/check-dockerfile-drift.sh
+!/scripts/check-production-image-allowlist.mjs
+!/scripts/uptime-check.mjs
+!/scripts/uptime-targets.json
+!/scripts/backup-aspnet-db.sh
 !/scripts/check-compose-bootstrap-cache.mjs
 !/scripts/verify-feature.sh
 !/scripts/add-spdx-headers.mjs
@@ -124,6 +145,7 @@ CLAUDE.md
 !/scripts/predeploy-ci-check.sh
 !/scripts/predeploy-ci-verify.mjs
 !/scripts/preflight.mjs
+!/scripts/verify-platform-contracts.ps1
 !/scripts/postdeploy-watch.mjs
 !/scripts/deploy.sh
 !/scripts/translate-i18n-gaps.mjs
@@ -305,6 +327,24 @@ Ctemp*
 
 # ─── Data exports (PII) ───────────────────────────────────────────────────────
 *.csv
+
+# Narrow exceptions: two GENERATED contract inventories, deliberately tracked.
+#
+# Both are route/endpoint ledgers — HTTP method, path, route name, handler
+# class, and the source file each was found in. Neither contains member data,
+# so the PII reason for the blanket rule above does not apply. They are named
+# individually rather than by a directory or `*matrix.csv` glob, so the rule
+# keeps catching every genuine data export.
+#
+# They were silently lost in the 2026-08-09 repository move: the tooling and
+# docs still referred to them (aspnet-backend/docs/generated/
+# canonical-react-contracts/README.md calls the first one "the complete
+# deduplicated matrix"), but the blanket rule above meant neither was ever
+# staged, so only their .json/.md siblings survived. Regenerate with
+# `npm --prefix web-uk run route:matrix` and
+# `aspnet-backend/scripts/generate-canonical-react-contract-matrix.ps1`.
+!aspnet-backend/docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv
+!web-uk/docs/generated/accessible-route-matrix.csv
 
 # ─── Legacy analysis / scratch artifacts (cleanup 2026-04-13) ────────────────
 # Prevent recurrence of the stray root-level junk (summary dumps, ad-hoc scripts,

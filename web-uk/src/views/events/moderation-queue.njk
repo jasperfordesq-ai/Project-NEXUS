@@ -1,0 +1,42 @@
+{% extends "layouts/base.njk" %}
+
+{% block beforeContent %}
+  {{ super() }}
+  <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha_events.common.back_to_events") }}</a>
+{% endblock %}
+
+{% block mainContent %}
+  <span class="govuk-caption-l">{{ t("govuk_alpha_events.moderation.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.moderation.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_events.moderation.intro") }}</p>
+
+  {% if status == "approved" or status == "rejected" %}
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="moderation-success-title"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="moderation-success-title">{{ t("govuk_alpha_events.common.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha_events.moderation." + status) }}</p></div></div>
+  {% elif status == "action-failed" %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha_events.common.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("govuk_alpha_events.moderation.action_failed") }}</p></div></div></div>
+  {% endif %}
+
+  <p class="govuk-body" aria-live="polite">{{ tc("govuk_alpha_events.moderation.pending_count", pagination.total, { count: pagination.total }) }}</p>
+  {% if not items.length %}
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("govuk_alpha_events.moderation.empty_title") }}</h2><p class="govuk-body">{{ t("govuk_alpha_events.moderation.empty_body") }}</p></div>
+  {% else %}
+    <div class="nexus-alpha-card-list">
+      {% for event in items %}
+        <article class="nexus-alpha-card">
+          <h2 class="govuk-heading-m">{{ event.title }}</h2>
+          {% if event.recurring %}<strong class="govuk-tag govuk-tag--blue">{{ t("govuk_alpha_events.moderation.recurring_series") }}</strong>{% endif %}
+          <dl class="govuk-summary-list govuk-!-margin-top-3">
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.organizer") }}</dt><dd class="govuk-summary-list__value">{{ event.organizerName }}</dd></div>
+            {% if event.submittedLabel %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.submitted") }}</dt><dd class="govuk-summary-list__value">{{ event.submittedLabel }}</dd></div>{% endif %}
+            {% if event.startLabel %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.schedule") }}</dt><dd class="govuk-summary-list__value">{{ event.startLabel }}{% if event.endLabel %} {{ t("govuk_alpha_events.moderation.schedule_to") }} {{ event.endLabel }}{% endif %}{% if event.allDay %}<br>{{ t("govuk_alpha_events.moderation.all_day") }}{% endif %}</dd></div>{% endif %}
+            <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha_events.moderation.location") }}</dt><dd class="govuk-summary-list__value">{{ event.location or (t("govuk_alpha_events.moderation.online") if event.isOnline else t("govuk_alpha_events.moderation.location_unavailable")) }}</dd></div>
+          </dl>
+          <h3 class="govuk-heading-s">{{ t("govuk_alpha_events.moderation.description") }}</h3><p class="govuk-body">{{ event.description }}</p>
+          <div class="govuk-button-group"><a class="govuk-button" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/approve') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.approve") }}</a><a class="govuk-button govuk-button--warning" href="{{ urlFor('/events/moderation/' + (event.id | string) + '/reject') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_events.moderation.reject") }}</a></div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if pagination.hasPrevious or pagination.hasNext %}<nav class="govuk-pagination govuk-!-margin-top-6" aria-label="{{ t('govuk_alpha_events.moderation.pagination_label') }}">{% if pagination.hasPrevious %}<div class="govuk-pagination__prev"><a class="govuk-link govuk-pagination__link" rel="prev" href="{{ urlFor('/events/moderation?page=' + ((pagination.page - 1) | string)) }}">{{ t("govuk_alpha_events.moderation.previous") }}</a></div>{% endif %}{% if pagination.hasNext %}<div class="govuk-pagination__next"><a class="govuk-link govuk-pagination__link" rel="next" href="{{ urlFor('/events/moderation?page=' + ((pagination.page + 1) | string)) }}">{{ t("govuk_alpha_events.moderation.next") }}</a></div>{% endif %}</nav>{% endif %}
+{% endblock %}

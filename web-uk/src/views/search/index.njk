@@ -1,0 +1,76 @@
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <span class="govuk-caption-xl">{{ t("search.caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("search.title") }}</h1>
+  <p class="govuk-body-l">{{ t("search.description") }}</p>
+
+  <p class="govuk-body govuk-!-margin-bottom-6">
+    <a class="govuk-link" href="{{ urlFor('/search/advanced') }}">{{ t("govuk_alpha_search.nav.advanced") }}</a>
+  </p>
+
+  <form method="get" action="{{ urlFor('/search') }}" class="govuk-!-margin-bottom-6">
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+        <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.polish_core_a.search_filters_legend") }}</h2>
+      </legend>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="q">{{ t("search.label") }}</label>
+        <div id="q-hint" class="govuk-hint">{{ t("search.hint") }}</div>
+        <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ query }}" aria-describedby="q-hint">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="type">{{ t("search.type_label") }}</label>
+        <select class="govuk-select" id="type" name="type">
+          <option value="all"{% if type == 'all' %} selected{% endif %}>{{ t("search.type_all") }}</option>
+          <option value="listing"{% if type == 'listing' %} selected{% endif %}>{{ t("search.type_listing") }}</option>
+          <option value="user"{% if type == 'user' %} selected{% endif %}>{{ t("search.type_user") }}</option>
+          <option value="event"{% if type == 'event' %} selected{% endif %}>{{ t("search.type_event") }}</option>
+          <option value="group"{% if type == 'group' %} selected{% endif %}>{{ t("search.type_group") }}</option>
+        </select>
+      </div>
+    </fieldset>
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("search.button") }}</button>
+  </form>
+
+  {% if not query %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("search.no_query") }}</p></div>
+  {% elif not results or results.length == 0 %}
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("search.empty") }}</p></div>
+  {% else %}
+    <p class="govuk-body">{{ t("search.results_count", { count: totalResults }) }}</p>
+    {% for item in results %}
+      {% set itemTitle = item.displayTitle %}
+      {% if itemTitle %}
+        {% set itemHref = null %}
+        {% set itemTag = null %}
+        {% set itemTagClass = null %}
+        {% if item.type == 'listing' %}
+          {% if item.linkId %}{% set itemHref = '/listings/' + (item.linkId | string) %}{% endif %}
+          {% set itemTag = t("search.tag_listing") %}
+          {% set itemTagClass = 'govuk-tag--blue' %}
+        {% elif item.type == 'user' %}
+          {% if item.linkId %}{% set itemHref = '/members/' + (item.linkId | string) %}{% endif %}
+          {% set itemTag = t("search.tag_user") %}
+          {% set itemTagClass = 'govuk-tag--purple' %}
+        {% elif item.type == 'event' %}
+          {% if item.linkId %}{% set itemHref = '/events/' + (item.linkId | string) %}{% endif %}
+          {% set itemTag = t("search.tag_event") %}
+          {% set itemTagClass = 'govuk-tag--green' %}
+        {% elif item.type == 'group' %}
+          {% if item.linkId %}{% set itemHref = '/groups/' + (item.linkId | string) %}{% endif %}
+          {% set itemTag = t("search.tag_group") %}
+          {% set itemTagClass = 'govuk-tag--turquoise' %}
+        {% endif %}
+        <div class="nexus-alpha-card govuk-!-margin-bottom-3">
+          <div class="nexus-alpha-module-row">
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-0">
+              {% if itemHref %}<a class="govuk-link" href="{{ urlFor(itemHref) }}">{{ itemTitle }}</a>{% else %}{{ itemTitle }}{% endif %}
+            </h2>
+            {% if itemTag %}<strong class="govuk-tag {{ itemTagClass }}">{{ itemTag }}</strong>{% endif %}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}

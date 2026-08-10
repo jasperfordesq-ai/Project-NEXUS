@@ -1,0 +1,51 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha_events.common.back_to_events") }}</a>
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha_events.browse.caption") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_events.browse.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_events.browse.intro") }}</p>
+
+  {% if not categories or not categories.length %}
+    <div class="govuk-inset-text">
+      <p class="govuk-body">{{ t("govuk_alpha_events.browse.none_available") }}</p>
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha_events.browse.view_all_link") }}</a>
+      </p>
+    </div>
+  {% else %}
+    <form method="get" action="{{ urlFor('/events') }}" class="govuk-!-margin-bottom-7">
+      <fieldset class="govuk-fieldset" aria-describedby="events-browse-hint">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_events.browse.choose_legend") }}</h2>
+        </legend>
+        <div id="events-browse-hint" class="govuk-hint">{{ t("govuk_alpha_events.browse.choose_hint") }}</div>
+
+        <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+          <div class="govuk-radios__item">
+            <input class="govuk-radios__input" id="category-all" name="category_id" type="radio" value=""{% if selectedCategoryId == null %} checked{% endif %}>
+            <label class="govuk-label govuk-radios__label" for="category-all">{{ t("govuk_alpha_events.browse.all_categories") }}</label>
+            <div class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.browse.all_categories_hint") }}</div>
+          </div>
+          {% for category in categories %}
+            <div class="govuk-radios__item">
+              <input class="govuk-radios__input" id="category-{{ category.id }}" name="category_id" type="radio" value="{{ category.id }}"{% if selectedCategoryId == category.id %} checked{% endif %}>
+              <label class="govuk-label govuk-radios__label" for="category-{{ category.id }}">{{ category.name }}</label>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button">{{ t("govuk_alpha_events.browse.view_button") }}</button>
+    </form>
+
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ urlFor('/events') }}">{{ t("govuk_alpha_events.browse.view_all_link") }}</a>
+    </p>
+  {% endif %}
+{% endblock %}

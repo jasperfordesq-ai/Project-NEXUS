@@ -1,0 +1,233 @@
+{# Copyright (c) 2024-2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
+
+  {% if status %}
+    {% if status.type == "success" %}
+      <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="safeguarding-success-title">
+        <div class="govuk-notification-banner__header">
+          <h2 class="govuk-notification-banner__title" id="safeguarding-success-title">{{ t("govuk_alpha_volunteering.shared.success_title") }}</h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+          <p class="govuk-notification-banner__heading">{{ status.message }}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+              <li>
+                {% if status.field %}
+                  <a href="#{{ status.field }}">{{ status.message }}</a>
+                {% else %}
+                  {{ status.message }}
+                {% endif %}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <span class="govuk-caption-l">{{ t("govuk_alpha.volunteering.title") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_volunteering.safeguarding.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_volunteering.safeguarding.description") }}</p>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+      <div role="alert">
+        <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_volunteering.shared.error_title") }}</h2>
+        <div class="govuk-error-summary__body">
+          <p>{{ loadError }}</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <nav class="govuk-!-margin-bottom-6" aria-label="{{ t('govuk_alpha_volunteering.safeguarding.tab_nav_label') }}">
+    <ul class="govuk-list" style="display:flex;gap:1rem;flex-wrap:wrap;list-style:none;padding:0;margin:0;">
+      <li>
+        <a class="govuk-link{% if subView == 'training' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering/training') }}"{% if subView == "training" %} aria-current="page"{% endif %}>{{ t("govuk_alpha_volunteering.safeguarding.tab_training") }}</a>
+      </li>
+      <li>
+        <a class="govuk-link{% if subView == 'incidents' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/volunteering/incidents') }}"{% if subView == "incidents" %} aria-current="page"{% endif %}>{{ t("govuk_alpha_volunteering.safeguarding.tab_incidents") }}</a>
+      </li>
+    </ul>
+  </nav>
+
+  {% if subView == "training" %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.add_training_title") }}</h2>
+    <form method="post" action="{{ urlFor('/volunteering/training') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+      <div class="govuk-form-group{% if status.field == 'training_type' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="training_type">{{ t("govuk_alpha_volunteering.safeguarding.training_type_label") }}</label>
+        {% if status.field == "training_type" %}
+          <p id="training-type-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <select class="govuk-select{% if status.field == 'training_type' %} govuk-select--error{% endif %}" id="training_type" name="training_type"{% if status.field == "training_type" %} aria-describedby="training-type-error"{% endif %}>
+          <option value="">{{ t("govuk_alpha_volunteering.safeguarding.training_type_choose") }}</option>
+          {% for type in trainingTypes %}
+            <option value="{{ type.value }}">{{ type.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="govuk-form-group{% if status.field == 'training_name' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="training_name">{{ t("govuk_alpha_volunteering.safeguarding.training_name_label") }}</label>
+        {% if status.field == "training_name" %}
+          <p id="training-name-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <input class="govuk-input{% if status.field == 'training_name' %} govuk-input--error{% endif %}" id="training_name" name="training_name" type="text" maxlength="255"{% if status.field == "training_name" %} aria-describedby="training-name-error"{% endif %}>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="provider">{{ t("govuk_alpha_volunteering.safeguarding.provider_label") }} <span class="govuk-hint">{{ t("govuk_alpha_volunteering.shared.optional") }}</span></label>
+        <input class="govuk-input" id="provider" name="provider" type="text" maxlength="255">
+      </div>
+
+      <div class="govuk-form-group{% if status.field == 'completed_at' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="completed_at">{{ t("govuk_alpha_volunteering.safeguarding.completed_at_label") }}</label>
+        {% if status.field == "completed_at" %}
+          <p id="completed-at-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <input class="govuk-input govuk-input--width-10{% if status.field == 'completed_at' %} govuk-input--error{% endif %}" id="completed_at" name="completed_at" type="date"{% if status.field == "completed_at" %} aria-describedby="completed-at-error"{% endif %}>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="expires_at">{{ t("govuk_alpha_volunteering.safeguarding.expires_at_label") }} <span class="govuk-hint">{{ t("govuk_alpha_volunteering.shared.optional") }}</span></label>
+        <input class="govuk-input govuk-input--width-10" id="expires_at" name="expires_at" type="date">
+      </div>
+
+      <button type="submit" class="govuk-button govuk-!-margin-top-2">{{ t("govuk_alpha_volunteering.safeguarding.submit_training") }}</button>
+    </form>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.training_list_title") }}</h2>
+    {% if not trainings.length %}
+      <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.safeguarding.no_training") }}</div>
+    {% else %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.safeguarding.training_list_title") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_training_name") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_type") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_completed") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_expires") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_status") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for training in trainings %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">
+                <strong>{{ training.trainingName }}</strong>
+                {% if training.provider %}
+                  <br><span class="govuk-hint govuk-!-font-size-16">{{ training.provider }}</span>
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">{{ training.type.label }}</td>
+              <td class="govuk-table__cell">{{ training.completedAtLabel or "—" }}</td>
+              <td class="govuk-table__cell">{{ training.expiresAtLabel or "—" }}</td>
+              <td class="govuk-table__cell"><strong class="govuk-tag {{ training.status.className }}">{{ training.status.label }}</strong></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  {% else %}
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.report_incident_title") }}</h2>
+    <div class="govuk-inset-text" role="note">
+      {{ t("govuk_alpha_volunteering.safeguarding.report_notice") }}
+    </div>
+
+    <form method="post" action="{{ urlFor('/volunteering/incidents') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+
+      <div class="govuk-form-group{% if status.field == 'title' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="title">{{ t("govuk_alpha_volunteering.safeguarding.incident_title_label") }}</label>
+        {% if status.field == "title" %}
+          <p id="incident-title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <input class="govuk-input{% if status.field == 'title' %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255"{% if status.field == "title" %} aria-describedby="incident-title-error"{% endif %}>
+      </div>
+
+      <div class="govuk-form-group{% if status.field == 'description' %} govuk-form-group--error{% endif %}">
+        <label class="govuk-label govuk-label--s" for="description">{{ t("govuk_alpha_volunteering.safeguarding.incident_description_label") }}</label>
+        <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.safeguarding.incident_description_hint") }}</div>
+        {% if status.field == "description" %}
+          <p id="incident-desc-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
+        {% endif %}
+        <textarea class="govuk-textarea{% if status.field == 'description' %} govuk-textarea--error{% endif %}" id="description" name="description" rows="5" maxlength="2000" aria-describedby="description-hint{% if status.field == 'description' %} incident-desc-error{% endif %}"></textarea>
+      </div>
+
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.safeguarding.severity_label") }}</legend>
+          <div class="govuk-radios govuk-radios--inline">
+            {% for severity in severities %}
+              <div class="govuk-radios__item">
+                <input class="govuk-radios__input" id="severity-{{ severity.value }}" name="severity" type="radio" value="{{ severity.value }}"{% if severity.value == "low" %} checked{% endif %}>
+                <label class="govuk-label govuk-radios__label" for="severity-{{ severity.value }}">{{ severity.label }}</label>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="govuk-form-group">
+        <label class="govuk-label govuk-label--s" for="category">{{ t("govuk_alpha_volunteering.safeguarding.category_label") }} <span class="govuk-hint">{{ t("govuk_alpha_volunteering.shared.optional") }}</span></label>
+        <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="100">
+      </div>
+
+      <button type="submit" class="govuk-button govuk-button--warning govuk-!-margin-top-2">{{ t("govuk_alpha_volunteering.safeguarding.submit_incident") }}</button>
+    </form>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.incidents_list_title") }}</h2>
+    {% if not incidents.length %}
+      <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.safeguarding.no_incidents") }}</div>
+    {% else %}
+      <table class="govuk-table">
+        <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.safeguarding.incidents_list_title") }}</caption>
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_incident_title") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_severity") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_incident_status") }}</th>
+            <th class="govuk-table__header" scope="col">{{ t("govuk_alpha_volunteering.safeguarding.col_reported") }}</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for incident in incidents %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">
+                <strong>{{ incident.title }}</strong>
+                {% if incident.category and incident.category != "general" %}
+                  <br><span class="govuk-hint govuk-!-font-size-16">{{ incident.category }}</span>
+                {% endif %}
+                {% if incident.descriptionExcerpt %}
+                  <br><span class="govuk-hint govuk-!-font-size-16">{{ incident.descriptionExcerpt }}</span>
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell"><strong class="govuk-tag {{ incident.severity.className }}">{{ incident.severity.label }}</strong></td>
+              <td class="govuk-table__cell"><strong class="govuk-tag {{ incident.status.className }}">{{ incident.status.label }}</strong></td>
+              <td class="govuk-table__cell">{{ incident.createdAtLabel or "—" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  {% endif %}
+{% endblock %}
