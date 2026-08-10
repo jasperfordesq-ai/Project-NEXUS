@@ -3,10 +3,32 @@
 # Author: Jasper Ford
 # See NOTICE file for attribution and acknowledgements.
 
+#
+# IMPORTANT: Consumer roots are explicit parameters, and a missing one is a hard error.
+#
+# Until 2026-08-10 two probes were derived from $TargetRoot (= aspnet-backend/)
+# using the PRE-CONSOLIDATION layout, and both failed silently:
+#   - `apps\react-frontend\src\App.tsx` - that app was deleted upstream in
+#     f27412bb ("delete dead apps/react-frontend and its wiring") because there
+#     is now ONE React frontend serving both backends. Export-ReactRoutes
+#     warned and returned @(), so `current_react_routes` was 0 and
+#     `v15_routes_missing` reported 100% of React routes as missing.
+#   - `apps\admin\src` and `apps\web-uk\src` - admin was deleted, web-uk became
+#     a top-level sibling. Export-FrontendApiStrings `continue`d past both
+#     without even a warning, so every frontend_api_* count was 0.
+# All of those zeros looked like findings. They were missing directories.
+#
+# The React app is now INVENTORIED, not compared: there is no second React app
+# to compare it against, and manufacturing a two-sided comparison would be
+# invented evidence. Same reasoning, and same shape, as the fix already applied
+# to compare-laravel-frontend-parity.ps1.
+#
 [CmdletBinding()]
 param(
     [string]$TargetRoot,
     [string]$SourceRoot,
+    # The Web UK accessible frontend - a SIBLING of aspnet-backend/, not a child.
+    [string]$WebUkRoot,
     [string]$OutDir
 )
 
@@ -21,8 +43,20 @@ if ([string]::IsNullOrWhiteSpace($TargetRoot)) {
     $TargetRoot = (Resolve-Path (Join-Path $scriptRoot '..')).Path
 }
 
+if ([string]::IsNullOrWhiteSpace($WebUkRoot)) {
+    $WebUkRoot = Join-Path $SourceRoot 'web-uk\src'
+}
+
 if ([string]::IsNullOrWhiteSpace($OutDir)) {
     $OutDir = Join-Path $TargetRoot 'artifacts\parity-audit'
+}
+
+function Assert-ConsumerPath {
+    param([string]$Name, [string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "$Name not found at '$Path'. Refusing to report zero - that reads as a finding when it is a missing directory. Pass the correct root."
+    }
 }
 
 function Ensure-Directory {
@@ -811,26 +845,41 @@ function Export-LaravelRoutes {
 }
 
 function Export-ReactRoutes {
-    param([string]$AppFile, [string]$Destination, [string]$Label)
+    # Walks the React src TREE, not App.tsx alone.
+    #
+    # IMPORTANT: this read only App.tsx until 2026-08-10, which stopped being
+    # where the routes live when they were split into route modules: App.tsx now
+    # holds providers and ONE catch-all (3 <Route> elements), while
+    # routes/AppRoutes.tsx alone has 246, plus PublicAppRoutes.tsx,
+    # AuthRoutes.tsx and admin/routes.tsx. So this count was ~1% of reality long
+    # before the consolidation, and looked like a real number the whole time.
+    # compare-laravel-frontend-parity.ps1 already walks the tree; this now
+    # agrees with it instead of quietly contradicting it.
+    param([string]$ReactSrcRoot, [string]$Destination, [string]$Label)
 
-    if (-not (Test-Path -LiteralPath $AppFile)) {
-        Write-Warning "$Label App.tsx not found: $AppFile"
-        return @()
-    }
+    Assert-ConsumerPath "$Label src" $ReactSrcRoot
 
-    $text = Get-Content -LiteralPath $AppFile -Raw
-    $rows = [regex]::Matches($text, '<Route\s+[^>]*path=\{?["'']([^"''}]+)["'']\}?', 'IgnoreCase') |
+    $rows = New-Object System.Collections.Generic.List[object]
+    Get-ChildItem -LiteralPath $ReactSrcRoot -Recurse -Include '*.tsx','*.ts','*.jsx','*.js' -File |
+        Where-Object { $_.FullName -notmatch '\.(test|spec)\.' } |
         ForEach-Object {
-            [pscustomobject]@{
-                app = $Label
-                route = Normalize-RoutePath $_.Groups[1].Value
-                file = $AppFile
+            $file = $_
+            $text = Get-Content -Raw -LiteralPath $file.FullName
+            foreach ($m in [regex]::Matches($text, '<Route\s+[^>]*path=\{?["'']([^"''}]+)["'']\}?', 'IgnoreCase')) {
+                $rows.Add([pscustomobject]@{
+                    app = $Label
+                    route = Normalize-RoutePath $m.Groups[1].Value
+                    file = $file.FullName
+                })
             }
-        } |
-        Sort-Object route -Unique
+        }
 
-    $rows | Export-Csv -LiteralPath $Destination -NoTypeInformation
-    return $rows
+    # @() keeps .Count a number even for 0 or 1 result — a bare scalar reports
+    # an empty .Count in Windows PowerShell, which is how react_routes rendered
+    # blank rather than as a figure.
+    $uniqueRows = @($rows | Sort-Object route -Unique)
+    $uniqueRows | Export-Csv -LiteralPath $Destination -NoTypeInformation
+    return $uniqueRows
 }
 
 function Convert-NextFileToRoute {
@@ -846,20 +895,18 @@ function Convert-NextFileToRoute {
 }
 
 function Export-FrontendApiStrings {
-    param([string]$Root, [string]$Destination)
+    # Web UK's backend calls. `apps\admin\src` was dropped on 2026-08-10 - that
+    # app was deleted before the move, exactly like the apps/react-frontend and
+    # apps/admin checks removed from verify-base.ps1.
+    param([string]$WebUkSrc, [string]$Destination)
 
-    $appSrcs = @(
-        'apps\admin\src',
-        'apps\web-uk\src'
-    )
+    Assert-ConsumerPath 'Web UK src' $WebUkSrc
 
     $pattern = '(?i)(?:/api|/v2)/[A-Za-z0-9_\-./:{}\[\]$?=&%()!]+'
     $rows = New-Object System.Collections.Generic.List[object]
 
-    foreach ($relative in $appSrcs) {
-        $src = Join-Path $Root $relative
-        if (-not (Test-Path -LiteralPath $src)) { continue }
-        $app = ($relative -split '\\')[1]
+    foreach ($src in @($WebUkSrc)) {
+        $app = 'web-uk'
 
         Get-ChildItem -LiteralPath $src -Recurse -Include '*.ts','*.tsx','*.js','*.jsx' -File |
             Where-Object {
@@ -1307,16 +1354,20 @@ Ensure-Directory $OutDir
 
 $aspNetRoutes = Export-AspNetRoutes $TargetRoot (Join-Path $OutDir 'aspnet-routes.csv')
 $laravelRoutes = Export-LaravelRoutes $SourceRoot (Join-Path $OutDir 'v15-laravel-routes.csv')
-$currentReactRoutes = Export-ReactRoutes (Join-Path $TargetRoot 'apps\react-frontend\src\App.tsx') (Join-Path $OutDir 'react-routes-current.csv') 'react-frontend-current'
-$v15ReactRoutes = Export-ReactRoutes (Join-Path $SourceRoot 'react-frontend\src\App.tsx') (Join-Path $OutDir 'react-routes-v15.csv') 'react-frontend-v15'
-$frontendApiStrings = Export-FrontendApiStrings $TargetRoot (Join-Path $OutDir 'frontend-api-strings.csv')
+# ONE React frontend, inventoried. The former "current vs v15" pair compared the
+# shared app against a directory deleted in f27412bb; see the header.
+$reactRoutes = Export-ReactRoutes (Join-Path $SourceRoot 'react-frontend\src') (Join-Path $OutDir 'react-routes.csv') 'react-frontend'
+$frontendApiStrings = Export-FrontendApiStrings $WebUkRoot (Join-Path $OutDir 'frontend-api-strings.csv')
 $v15FrontendApiStrings = Export-V15FrontendApiStrings $SourceRoot (Join-Path $OutDir 'v15-frontend-api-strings.csv')
 $aspNetIndex = New-RouteIndex $aspNetRoutes
 $laravelIndex = New-RouteIndex $laravelRoutes
 $frontendApiMatrix = Export-FrontendApiMatrix $frontendApiStrings $aspNetIndex $laravelIndex (Join-Path $OutDir 'frontend-api-to-aspnet-matrix.csv')
 $v15FrontendApiMatrix = Export-FrontendApiMatrix $v15FrontendApiStrings $aspNetIndex $laravelIndex (Join-Path $OutDir 'v15-frontend-api-to-aspnet-matrix.csv')
 $laravelMatrix = Export-LaravelToAspNetMatrix $laravelRoutes $aspNetIndex (Join-Path $OutDir 'v15-laravel-to-aspnet-matrix.csv')
-$routeParityMatrix = Export-FrontendRouteParityMatrix $v15ReactRoutes $currentReactRoutes (Join-Path $OutDir 'frontend-route-parity-matrix.csv')
+# frontend-route-parity-matrix.csv is no longer written: it compared the shared
+# React app against the deleted apps/react-frontend, so every row was 'missing'.
+# Nothing consumed it (only v15-frontend-api-to-aspnet-matrix.csv and
+# frontend-api-to-aspnet-matrix.csv have consumers, and both are unchanged).
 
 $summary = [pscustomobject]@{
     generated_at = (Get-Date).ToString('o')
@@ -1324,8 +1375,11 @@ $summary = [pscustomobject]@{
     source_root = $SourceRoot
     aspnet_routes = $aspNetRoutes.Count
     v15_laravel_routes = $laravelRoutes.Count
-    current_react_routes = $currentReactRoutes.Count
-    v15_react_routes = $v15ReactRoutes.Count
+    # One shared React frontend: a count, not a comparison. `current_react_routes`,
+    # `v15_react_routes` and `v15_routes_missing` were removed on 2026-08-10  - 
+    # they described a two-app world that no longer exists.
+    react_routes = $reactRoutes.Count
+    web_uk_root = $WebUkRoot
     frontend_api_strings = $frontendApiStrings.Count
     frontend_api_missing = @($frontendApiMatrix | Where-Object { $_.status -eq 'missing' }).Count
     frontend_api_dynamic_unresolved = @($frontendApiMatrix | Where-Object { $_.status -eq 'dynamic-unresolved' }).Count
@@ -1334,7 +1388,6 @@ $summary = [pscustomobject]@{
     v15_frontend_laravel_missing = @($v15FrontendApiMatrix | Where-Object { $_.laravel_status -eq 'missing' }).Count
     v15_frontend_api_dynamic_unresolved = @($v15FrontendApiMatrix | Where-Object { $_.status -eq 'dynamic-unresolved' }).Count
     v15_laravel_missing = @($laravelMatrix | Where-Object { $_.status -eq 'missing' }).Count
-    v15_routes_missing = @($routeParityMatrix | Where-Object { $_.status -eq 'missing' }).Count
 }
 
 $summary | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutDir 'summary.json')

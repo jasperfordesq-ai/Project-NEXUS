@@ -58,7 +58,7 @@ if (-not $SkipFrontend) {
     # Web UK is a SIBLING of aspnet-backend in the platform monorepo, not a
     # child of it. Before 2026-08-10 this block invoked apps\admin (deleted
     # before the move) and apps\web-uk (the pre-move path), so the whole
-    # frontend section pointed at directories that do not exist — it could only
+    # frontend section pointed at directories that do not exist - it could only
     # ever fail, while the testing docs presented it as the local gate.
     if (-not (Test-Path -LiteralPath $webUkRoot)) {
         throw "Web UK not found at '$webUkRoot'. Run this from a full monorepo checkout, or pass -SkipFrontend."

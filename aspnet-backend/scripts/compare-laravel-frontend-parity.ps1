@@ -6,7 +6,7 @@
 #
 # Every consumer root is an explicit, validated parameter.
 #
-# 🔴 This script used to accept only -SourceRoot / -TargetRoot and derive the
+# IMPORTANT: This script used to accept only -SourceRoot / -TargetRoot and derive the
 # consumer directories from them, and BOTH derivations were dead:
 #   - Get-WebUkRoutes looked under <TargetRoot>\apps\web-uk\src. web-uk/ became
 #     a top-level sibling in the 2026-08-09 monorepo move.
@@ -17,7 +17,7 @@
 # Both helpers returned an empty collection for a missing directory, so the
 # script reported "0 routes, nothing missing" and exited 0. That is the whole
 # reason it could be green while comparing nothing. Missing roots are now a
-# hard failure — see Assert-ConsumerRoot.
+# hard failure - see Assert-ConsumerRoot.
 #
 [CmdletBinding()]
 param(
@@ -477,7 +477,7 @@ try {
     Ensure-Directory $OutDir
 
     # React is a SINGLE shared consumer: one app that must work against either
-    # backend. It is inventoried, never compared — a Laravel-side vs .NET-side
+    # backend. It is inventoried, never compared - a Laravel-side vs .NET-side
     # React comparison stopped being a real question when apps/react-frontend
     # was deleted (f27412bb), and reporting one would be invented evidence.
     $sharedReactRoutes = @(Get-ReactRoutes $ReactRoot 'shared')

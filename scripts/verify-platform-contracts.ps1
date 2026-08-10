@@ -51,8 +51,8 @@ Invoke-NativeCheck 'Laravel to ASP.NET schema inventory' {
         -OutDir (Join-Path $reportRoot 'schema')
 }
 
-# 🔴 The frontend comparison was written but never invoked — not here, not
-# anywhere — so the central question of the consolidation (do the frontends
+# IMPORTANT: The frontend comparison was written but never invoked - not here, not
+# anywhere - so the central question of the consolidation (do the frontends
 # still line up with the backends?) was checked by nothing, while this script
 # reported success. Wired in 2026-08-10.
 #
