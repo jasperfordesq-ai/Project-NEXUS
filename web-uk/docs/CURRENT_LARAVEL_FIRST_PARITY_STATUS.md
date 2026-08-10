@@ -14,13 +14,13 @@ evidence ledger. `CURRENT_WEB_UK_HANDOFF.md` is a historical archive and must
 never be used as a current resume, queue, count, or scoring source.
 
 The root
-[`ADR-0001`](../../../docs/decisions/ADR-0001-contract-identical-backends.md)
+[`ADR-0001`](../../aspnet-backend/docs/decisions/ADR-0001-contract-identical-backends.md)
 is binding for the later backend switch: ASP.NET must be externally
 contract-identical to Laravel for this unchanged frontend. Web UK must not carry
 an ASP.NET-specific workaround.
 
 Development is paused. Read the root
-[`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](../../../docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md)
+[`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](../../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md)
 before using this queue. This page records the next packages but does not
 authorize a session to start them.
 
@@ -352,7 +352,7 @@ completion percentage.
 
 The exact Windows Update interruption and the pre-restart product boundary are
 recorded in
-[`RESTART_INCIDENT_2026-07-15.md`](../../../docs/RESTART_INCIDENT_2026-07-15.md).
+[`RESTART_INCIDENT_2026-07-15.md`](../../aspnet-backend/docs/RESTART_INCIDENT_2026-07-15.md).
 
 ## Superseded Dated Evidence Archive
 

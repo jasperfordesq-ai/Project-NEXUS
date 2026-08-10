@@ -20,7 +20,7 @@ owned by a separate backend workstream. It may become a second backend only by
 reproducing the consumed Laravel contract identically for the same unchanged
 Web UK frontend and evidence suite. Approximate compatibility is insufficient;
 the binding definition is
-[`../../../docs/decisions/ADR-0001-contract-identical-backends.md`](../../../docs/decisions/ADR-0001-contract-identical-backends.md).
+[`../../../docs/decisions/ADR-0001-contract-identical-backends.md`](../../aspnet-backend/docs/decisions/ADR-0001-contract-identical-backends.md).
 
 The repository containing Web UK is not an architectural authority: locating
 `apps/web-uk` inside `asp.net-backend` does not make ASP.NET the frontend's

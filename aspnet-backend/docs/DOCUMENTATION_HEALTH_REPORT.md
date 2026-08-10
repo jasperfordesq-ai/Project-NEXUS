@@ -92,7 +92,7 @@ same D3 denominator and closed explicit deductions:
   terminal green at `dbafc5c3`, but dedicated migration-163 blank/populated-
   upgrade proof, remaining storage classification, fixed-rubric acceptance,
   and release/production upgrades are not certified.
-- [Web UK Baseline W1](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
+- [Web UK Baseline W1](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
   remains **663/1000**. Goal W2 has **no percentage** and three gates: isolated
   manual accessibility evidence/fixes, the accessibility-copy decision, then a
   complete W2 audit/certification transaction.

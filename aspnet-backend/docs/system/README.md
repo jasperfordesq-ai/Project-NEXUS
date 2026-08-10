@@ -47,7 +47,7 @@ focused test is not semantic or production certification.
 
 - [ASP.NET contract status](../CURRENT_ASPNET_CONTRACT_STATUS.md) is the only
   current backend score authority.
-- [Web UK status](../../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
+- [Web UK status](../../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
   is the only accessible-frontend certification score authority.
 - [Parity remediation runbook](../FULL_PARITY_REMEDIATION_RUNBOOK.md) owns the
   fixed rubric and cross-workstream end state.

@@ -135,22 +135,29 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------------
-  # UK Frontend (apps/web-uk) - GOV.UK Design System (Express/Node)
-  # Previously at htdocs/nexus-uk-frontend/
+  # UK Frontend - GOV.UK Design System (Express/Node)
+  #
+  # Lives at ../web-uk: it is a SIBLING of aspnet-backend/ in the platform
+  # monorepo, not a child. These four paths said ./apps/web-uk until
+  # 2026-08-10, which was the pre-move layout — `docker compose up` could not
+  # build this service at all from a monorepo checkout.
+  #
+  # web-uk/compose.yml runs the same service standalone; prefer that unless you
+  # specifically need it on the ASP.NET network.
   # ---------------------------------------------------------------------------
   web-uk:
     build:
-      context: ./apps/web-uk
+      context: ../web-uk
       dockerfile: Dockerfile
       target: development
     container_name: nexus-uk-frontend-dev
     ports:
       - "5180:3001"
     volumes:
-      - ./apps/web-uk:/app
+      - ../web-uk:/app
       - /app/node_modules
     env_file:
-      - ./apps/web-uk/.env.docker
+      - ../web-uk/.env.docker
     networks:
       - nexus-backend-net
     restart: unless-stopped

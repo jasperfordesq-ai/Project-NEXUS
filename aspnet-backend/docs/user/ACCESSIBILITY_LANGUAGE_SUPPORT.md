@@ -21,8 +21,8 @@ all assistive-technology combinations.
 Do not interpret phrases such as "built with semantic HTML" or a target of WCAG
 2.2 AA as proof that every page has passed manual testing. The live evidence
 boundary is recorded in
-[the accessibility verification method](../../apps/web-uk/docs/ACCESSIBILITY_CERTIFICATION.md)
-and [manual evidence register](../../apps/web-uk/docs/MANUAL_ACCESSIBILITY_EVIDENCE.md).
+[the accessibility verification method](../../../web-uk/docs/ACCESSIBILITY_CERTIFICATION.md)
+and [manual evidence register](../../../web-uk/docs/MANUAL_ACCESSIBILITY_EVIDENCE.md).
 
 ## Language
 
@@ -48,5 +48,5 @@ Do not include passwords, tokens, identity documents, private messages, or
 another person's personal information. If a different format or human-assisted
 route is required, ask the community contact shown by the service.
 
-For repository defects, use [SUPPORT.md](../../SUPPORT.md). For a security
-vulnerability, use [SECURITY.md](../../SECURITY.md).
+For repository defects, use [SUPPORT.md](../../../SUPPORT.md). For a security
+vulnerability, use [SECURITY.md](../../../SECURITY.md).

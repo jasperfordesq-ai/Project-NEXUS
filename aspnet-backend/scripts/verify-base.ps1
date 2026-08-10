@@ -14,6 +14,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+# The monorepo root is one level above aspnet-backend/; web-uk/ sits beside it.
+$monorepoRoot = (Resolve-Path (Join-Path $repoRoot '..')).Path
+$webUkRoot = Join-Path $monorepoRoot 'web-uk'
 $failures = New-Object System.Collections.Generic.List[string]
 
 function Invoke-Check {
@@ -52,12 +55,20 @@ if (-not $SkipBackend) {
 }
 
 if (-not $SkipFrontend) {
-    Invoke-Check 'admin tests' 'npm test' (Join-Path $repoRoot 'apps\admin')
-    Invoke-Check 'admin build' 'npm run build' (Join-Path $repoRoot 'apps\admin')
-    Invoke-Check 'web-uk brand check' 'npm run brand:check' (Join-Path $repoRoot 'apps\web-uk')
+    # Web UK is a SIBLING of aspnet-backend in the platform monorepo, not a
+    # child of it. Before 2026-08-10 this block invoked apps\admin (deleted
+    # before the move) and apps\web-uk (the pre-move path), so the whole
+    # frontend section pointed at directories that do not exist — it could only
+    # ever fail, while the testing docs presented it as the local gate.
+    if (-not (Test-Path -LiteralPath $webUkRoot)) {
+        throw "Web UK not found at '$webUkRoot'. Run this from a full monorepo checkout, or pass -SkipFrontend."
+    }
+
+    Invoke-Check 'web-uk brand check' 'npm run brand:check' $webUkRoot
+    Invoke-Check 'web-uk lint' 'npm run lint' $webUkRoot
 
     if ($FullFrontend) {
-        Invoke-Check 'web-uk tests' 'npm test -- --runInBand' (Join-Path $repoRoot 'apps\web-uk')
+        Invoke-Check 'web-uk tests' 'npm test -- --runInBand' $webUkRoot
     }
 }
 

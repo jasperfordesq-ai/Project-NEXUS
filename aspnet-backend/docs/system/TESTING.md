@@ -76,6 +76,6 @@ factually current; the review must still compare them with source.
 ## Current Certification Boundary
 
 Use [the canonical ASP.NET status](../CURRENT_ASPNET_CONTRACT_STATUS.md) and
-[the canonical Web UK status](../../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
+[the canonical Web UK status](../../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
 for the latest banked and published-but-unscored boundaries. Do not quote a test
 count from this guide.

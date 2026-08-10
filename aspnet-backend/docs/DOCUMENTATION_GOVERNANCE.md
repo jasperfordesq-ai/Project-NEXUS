@@ -13,23 +13,23 @@ agent instructions.
 
 | Decision or status | Canonical document | What other documents may do |
 | --- | --- | --- |
-| Agent scope and non-negotiable guardrails | [`AGENTS.md`](../AGENTS.md), then [`CLAUDE.md`](../CLAUDE.md) | Link or summarize without weakening a rule |
+| Agent scope and non-negotiable guardrails | [`AGENTS.md`](../AGENTS.md), then [`CLAUDE.md`](../../CLAUDE.md) | Link or summarize without weakening a rule |
 | Paused-development boundary, cold-start order, and repository freeze | [`PROJECT_PAUSE_HANDOFF_2026-07-15.md`](PROJECT_PAUSE_HANDOFF_2026-07-15.md) | Link to it while paused; do not treat a historical handoff or runbook loop as standing authorization |
 | Backend product objective and meaning of contract identity | [`ADR-0001`](decisions/ADR-0001-contract-identical-backends.md) | Historical "parity" or "compatibility" wording is shorthand only; never permit observable divergence or frontend forks |
 | ASP.NET banked score, score provenance, and certification gaps | [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md) | Link to it; do not publish a competing current overall score |
 | ASP.NET schema pause/restart verdict and current migration-chain boundary | [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md) | Link to it; keep the schema category score in the ASP.NET status and detailed dated evidence in `SCHEMA_PARITY.md` |
-| Accessible Web UK banked score, ownership, blockers, and queue | [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Link to it; do not treat the old handoff log as current |
+| Accessible Web UK banked score, ownership, blockers, and queue | [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Link to it; do not treat the old handoff log as current |
 | Fixed 1000-point rubric, 2x2 end state, shared evidence gates, and execution loop | [`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md) | Reuse its denominator and category definitions exactly; follow each canonical status document for its live queue |
 | Runtime boundaries and two-frontends-by-two-backends shape | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Link to it; do not draw a competing current architecture |
 | React retirement and unchanged-client policy | [`REACT_FRONTEND_RETIREMENT.md`](REACT_FRONTEND_RETIREMENT.md) | Retirement is complete: the copy was deleted 2026-08-09. Preserve the do-not-recreate and Laravel-consumer rules |
-| Web UK backend-switch contract | [`BACKEND_SWITCHING_CONTRACT.md`](../apps/web-uk/docs/BACKEND_SWITCHING_CONTRACT.md) | Preserve Laravel-first certification and configuration-only switching |
+| Web UK backend-switch contract | [`BACKEND_SWITCHING_CONTRACT.md`](../../web-uk/docs/BACKEND_SWITCHING_CONTRACT.md) | Preserve Laravel-first certification and configuration-only switching |
 | Member/end-user documentation | [`user/README.md`](user/README.md) | Keep backend-neutral, tenant-aware, and honest about experimental/certification limits |
 | Tenant/community administrator documentation | [`admin/README.md`](admin/README.md) | Separate tenant governance from platform/production operations |
 | API consumer documentation | [`api/README.md`](api/README.md) | Require exact endpoint contracts rather than a universal invented envelope |
 | Developer/operator/security/configuration documentation | [`system/README.md`](system/README.md) | Index supported local, test, configuration, security, operations, and incident-response methods |
-| Support and vulnerability reporting | [`SUPPORT.md`](../SUPPORT.md) and [`SECURITY.md`](../SECURITY.md) | Keep secrets, personal data, incidents, and vulnerabilities out of public defect reports |
-| Contributor participation and conduct reporting | [`CONTRIBUTING.md`](../CONTRIBUTING.md), [`CONTRIBUTOR_TERMS.md`](../CONTRIBUTOR_TERMS.md), and [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) | Preserve licensing, disclosure, safety, private reporting, and non-retaliation boundaries |
-| Curated project-direction history | [`CHANGELOG.md`](../CHANGELOG.md) | Link to canonical current sources; never publish a competing live score, queue, or certification claim |
+| Support and vulnerability reporting | [`SUPPORT.md`](../../SUPPORT.md) and [`SECURITY.md`](../../SECURITY.md) | Keep secrets, personal data, incidents, and vulnerabilities out of public defect reports |
+| Contributor participation and conduct reporting | [`CONTRIBUTING.md`](../../CONTRIBUTING.md), [`CONTRIBUTOR_TERMS.md`](../../CONTRIBUTOR_TERMS.md), and [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md) | Preserve licensing, disclosure, safety, private reporting, and non-retaliation boundaries |
+| Curated project-direction history | [`CHANGELOG.md`](../../CHANGELOG.md) | Link to canonical current sources; never publish a competing live score, queue, or certification claim |
 | Surface-specific generated or curated inventories | `API_PARITY.md`, `SCHEMA_PARITY.md`, `FRONTEND_PARITY.md`, `LOCALIZATION_PARITY.md`, and their generated artifacts | State the capture date and exact source SHAs, or label unverifiable legacy tables historical and provenance-incomplete; do not turn representation counts into completion claims |
 
 When two maintained documents disagree, the source named in this table wins.
@@ -42,12 +42,18 @@ Deployment inventory and product authority are separate documentation planes:
 
 | Operational source | Authority it has | Authority it does not have |
 | --- | --- | --- |
-| [`.claude/production-containers.md`](../.claude/production-containers.md) | Current production domains, containers, ports, proxy ownership, and component-specific operator procedures | Product source-of-truth status, contract correctness, parity score, or permission to deploy |
-| [`.claude/production-server.md`](../.claude/production-server.md) | Connection pointer and concise operational warnings | An independent deployment recipe or product architecture |
+| `.claude/production-containers.md` † | Current production domains, containers, ports, proxy ownership, and component-specific operator procedures | Product source-of-truth status, contract correctness, parity score, or permission to deploy |
+| `.claude/production-server.md` † | Connection pointer and concise operational warnings | An independent deployment recipe or product architecture |
 | [`compose.prod.yml`](../compose.prod.yml) | A versioned description of legacy/experimental Compose topology | A blanket production release path; its Web UK ASP.NET override remains under an explicit deployment hold |
-| [`compose.production.yml`](../compose.production.yml) | A zero-service historical stub whose former topology remains in Git history | Any local or production startup command |
-| [`compose.fullstack.yml`](../compose.fullstack.yml) | A zero-service historical stub for the obsolete duplicate local topology | A supported local-development or production command |
-| [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) | A manual-only exact-SHA validation scaffold with its legacy deploy job hard-disabled | A usable deployment entry point, standing authorization, or proof that the retained backup/migration/rollback body is safe |
+| `compose.production.yml` † | A zero-service historical stub whose former topology remains in Git history | Any local or production startup command |
+| `compose.fullstack.yml` † | A zero-service historical stub for the obsolete duplicate local topology | A supported local-development or production command |
+| `.github/workflows/deploy.yml` † | A manual-only exact-SHA validation scaffold with its legacy deploy job hard-disabled | A usable deployment entry point, standing authorization, or proof that the retained backup/migration/rollback body is safe |
+
+† Not imported by the 2026-08-09 move into the platform monorepo, so these are
+named here without a link. They remain in the history of the former
+`api.project-nexus.net` repository. The rows are kept because they still record
+what each surface was and was not authority for; do not re-link them until the
+file itself is imported.
 
 The fact that a legacy or experimental surface is deployed does not make it a
 product, UI, or API-contract source of truth. Laravel remains the current

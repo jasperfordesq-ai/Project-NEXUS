@@ -62,6 +62,6 @@ also remain open. Consult
 [CURRENT_ASPNET_CONTRACT_STATUS.md](../CURRENT_ASPNET_CONTRACT_STATUS.md) rather
 than inferring readiness from this architecture summary.
 
-Report vulnerabilities through [SECURITY.md](../../SECURITY.md). Do not test a
+Report vulnerabilities through [SECURITY.md](../../../SECURITY.md). Do not test a
 suspected issue against another tenant or a production system without explicit
 authorization.

@@ -18,7 +18,7 @@ For the current schema-chain verdict and cold-start sequence, read
 a separate backend score.
 
 The matching accessible-frontend source is
-[`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md).
+[`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md).
 Do not combine its score with the ASP.NET score: the two workstreams have
 different evidence gates.
 

@@ -54,8 +54,8 @@ Before a destructive, financial, role, access, or safeguarding decision:
 6. verify the final state once without repeating the action.
 
 Never edit the database directly to resolve an application workflow. Escalate a
-software defect through [SUPPORT.md](../../SUPPORT.md) and a vulnerability
-through [SECURITY.md](../../SECURITY.md). Production or data-recovery work needs
+software defect through [SUPPORT.md](../../../SUPPORT.md) and a vulnerability
+through [SECURITY.md](../../../SECURITY.md). Production or data-recovery work needs
 separate explicit authorization and the current operator runbook.
 
 ## Maintainer References

@@ -55,7 +55,7 @@ A new agent must read these files in order before proposing work:
 
 1. [`AGENTS.md`](../AGENTS.md) — urgent scope, frontend, database, and production
    guardrails.
-2. [`CLAUDE.md`](../CLAUDE.md) — authoritative project instructions and supported
+2. [`CLAUDE.md`](../../CLAUDE.md) — authoritative project instructions and supported
    development methods.
 3. this pause handoff — pause boundary, workstream map, and restart protocol.
 4. [`ADR-0001`](decisions/ADR-0001-contract-identical-backends.md) — binding
@@ -64,7 +64,7 @@ A new agent must read these files in order before proposing work:
    sole ASP.NET score, evidence boundary, and eight-package queue.
 6. [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md) — schema verdict,
    163-migration boundary, missing proof, and safe recommission sequence.
-7. [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
+7. [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
    — sole Web UK score, evidence boundary, and three-gate finish line.
 8. [`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md) —
    fixed rubric and evidence method, but only after the user explicitly resumes
@@ -103,9 +103,9 @@ outcome. Static route matches alone are not contract identity.
 | --- | --- | --- | --- |
 | ASP.NET contract identity | [`CURRENT_ASPNET_CONTRACT_STATUS.md`](CURRENT_ASPNET_CONTRACT_STATUS.md) | 712/1000 banked; 288 points remain; later commits are published but unscored | Re-establish exact SHAs and choose one of the eight ordered packages; do not estimate score movement |
 | ASP.NET schema | [`CURRENT_SCHEMA_READINESS.md`](CURRENT_SCHEMA_READINESS.md) | 129/150 banked; working/partly proved; 163 runtime IDs; the pause-boundary full exact-SHA result was absent, while the post-pause required CI gate is now green | Certify migration 163 on blank and populated disposable PostgreSQL; do not treat the green general suite as upgrade certification |
-| Web UK Laravel-first frontend | [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | W1 663/1000; W2 unscored; source-owned work is near its finite finish line but not certified | Isolated manual accessibility evidence/fixes, then copy decision, then W2 audit |
-| Dual-backend client switching | ASP.NET status plus [`BACKEND_SWITCHING_CONTRACT.md`](../apps/web-uk/docs/BACKEND_SWITCHING_CONTRACT.md) | Not certified for either unchanged client | Build exact consumer matrices and run unchanged-client workflows against ASP.NET |
-| Production | [production container guide](../.claude/production-containers.md) | No deployment was authorized by this pause audit | Remains a separate explicit-authority operation |
+| Web UK Laravel-first frontend | [`CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | W1 663/1000; W2 unscored; source-owned work is near its finite finish line but not certified | Isolated manual accessibility evidence/fixes, then copy decision, then W2 audit |
+| Dual-backend client switching | ASP.NET status plus [`BACKEND_SWITCHING_CONTRACT.md`](../../web-uk/docs/BACKEND_SWITCHING_CONTRACT.md) | Not certified for either unchanged client | Build exact consumer matrices and run unchanged-client workflows against ASP.NET |
+| Production | production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 monorepo move) | No deployment was authorized by this pause audit | Remains a separate explicit-authority operation |
 
 Never combine the ASP.NET and Web UK scores. Documentation health also has a
 separate denominator and does not imply product readiness.

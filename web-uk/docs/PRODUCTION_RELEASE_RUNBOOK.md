@@ -18,9 +18,11 @@ Laravel Blade or to run against ASP.NET in production.
 - A release operator needs an explicit production instruction. This runbook is
   not standing authorization to deploy, restart, repoint, or remove a
   container.
-- Before any production action, reread
-  [`../../../.claude/production-containers.md`](../../../.claude/production-containers.md)
-  and confirm that its Web UK deployment hold has been explicitly lifted.
+- Before any production action, reread the production container guide
+  (`.claude/production-containers.md`) and confirm that its Web UK deployment
+  hold has been explicitly lifted. That file was not imported by the 2026-08-09
+  move into the platform monorepo — it remains in the history of the former
+  `api.project-nexus.net` repository — so it is named here without a link.
 
 ## 1. Freeze the release evidence
 

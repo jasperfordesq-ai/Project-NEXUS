@@ -15,6 +15,15 @@ composer.phar
 .env.*
 !.env.docker.example
 !.env.example
+# Narrow exception: the Web UK Docker defaults file. web-uk/compose.yml lists it
+# under `env_file:`, so both of its services refuse to start without it — a
+# clean clone could not run `docker compose up` at all while `.env.*` above was
+# swallowing it. It holds no credentials: a port, a backend URL, and two
+# obviously-labelled local dev placeholder secrets. Real secrets still belong in
+# an untracked .env, which the rules above continue to catch.
+# (aspnet-backend/.env.docker is the equivalent file for the ASP.NET stack; it
+# is re-included by aspnet-backend/.gitignore, which takes precedence there.)
+!web-uk/.env.docker
 /env
 /env.docker
 /env.testing

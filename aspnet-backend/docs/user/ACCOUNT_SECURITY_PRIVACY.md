@@ -50,5 +50,5 @@ status, or provider session should not be inferred from route presence alone.
 
 For an immediate account concern, use the tenant's support or administrator
 route. For a software vulnerability, follow the repository's
-[security policy](../../SECURITY.md). Do not exploit another account, tenant,
+[security policy](../../../SECURITY.md). Do not exploit another account, tenant,
 or production system to demonstrate a report.

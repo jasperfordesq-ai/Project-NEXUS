@@ -41,4 +41,4 @@ that authentication, tenancy, jobs, providers, sessions, or background effects
 recovered correctly.
 
 Use [operations guidance](OPERATIONS.md) for the current automation hazards and
-[SUPPORT.md](../../SUPPORT.md) for sanitized defect-reporting content.
+[SUPPORT.md](../../../SUPPORT.md) for sanitized defect-reporting content.

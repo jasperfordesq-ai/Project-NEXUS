@@ -18,10 +18,10 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
 | [admin/README.md](admin/README.md) | Tenant/community administrator responsibilities and safe workflow boundaries. |
 | [api/README.md](api/README.md) | API consumer guide for auth, tenancy, exact endpoint shapes, retries, uploads, and side effects. |
 | [system/README.md](system/README.md) | Developer/operator hub for local setup, configuration, testing, security, operations, and incident response. |
-| [../SUPPORT.md](../SUPPORT.md) | Product-support and software-defect reporting. |
-| [../SECURITY.md](../SECURITY.md) | Private vulnerability reporting and safe-testing policy. |
-| [../CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) | Contributor participation, safety, conduct-reporting, and enforcement policy. |
-| [../CHANGELOG.md](../CHANGELOG.md) | Curated project-direction and pause-history index; never a competing score or queue. |
+| [../SUPPORT.md](../../SUPPORT.md) | Product-support and software-defect reporting. |
+| [../SECURITY.md](../../SECURITY.md) | Private vulnerability reporting and safe-testing policy. |
+| [../CODE_OF_CONDUCT.md](../../CODE_OF_CONDUCT.md) | Contributor participation, safety, conduct-reporting, and enforcement policy. |
+| [../CHANGELOG.md](../../CHANGELOG.md) | Curated project-direction and pause-history index; never a competing score or queue. |
 | [FULL_PARITY_REMEDIATION_RUNBOOK.md](FULL_PARITY_REMEDIATION_RUNBOOK.md) | Fixed cross-workstream rubric, two-frontends-by-two-backends completion gate, shared evidence rules, and autonomous execution loop. Each canonical status document owns its live queue. |
 | [CURRENT_ASPNET_CONTRACT_STATUS.md](CURRENT_ASPNET_CONTRACT_STATUS.md) | Current ASP.NET fixed-rubric score, evidence boundary, published-but-unscored work, blockers, and next queue. Start here for backend status or resumption. |
 | [CURRENT_SCHEMA_READINESS.md](CURRENT_SCHEMA_READINESS.md) | One-page schema verdict at the pause: 163-ID runtime boundary, proved versus unproved migration evidence, green general exact-SHA CI, remaining migration/release gates, and safe recommission sequence. |
@@ -38,8 +38,8 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
 | [API_PARITY.md](API_PARITY.md) | API contract inventory and comparison policy. |
 | [REACT_FRONTEND_RETIREMENT.md](REACT_FRONTEND_RETIREMENT.md) | Retirement policy for the old ASP.NET React fork and contract-identity rules for the Laravel React frontend. |
 | [ACCESSIBLE_SHARED_FRONTEND.md](ACCESSIBLE_SHARED_FRONTEND.md) | Current architecture, two Laravel sources of truth, repository/data boundaries, GOV.UK upstream references, and guardrails for the shared Web UK implementation. |
-| [../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Current Laravel-first status, cross-session ownership boundaries, blockers, and ordered completion queue. Read this before older Web UK handoffs. |
-| [../apps/web-uk/docs/CURRENT_WEB_UK_HANDOFF.md](../apps/web-uk/docs/CURRENT_WEB_UK_HANDOFF.md) | Chronological Web UK implementation history and detailed legacy commands. Its old counts and scores are superseded by the Laravel-first status document above. |
+| [../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Current Laravel-first status, cross-session ownership boundaries, blockers, and ordered completion queue. Read this before older Web UK handoffs. |
+| [../apps/web-uk/docs/CURRENT_WEB_UK_HANDOFF.md](../../web-uk/docs/CURRENT_WEB_UK_HANDOFF.md) | Chronological Web UK implementation history and detailed legacy commands. Its old counts and scores are superseded by the Laravel-first status document above. |
 | [SCHEMA_PARITY.md](SCHEMA_PARITY.md) | Database table/entity/migration parity inventory and generated report policy. |
 | [FRONTEND_PARITY.md](FRONTEND_PARITY.md) | React and accessible frontend route parity inventory and generated report policy. |
 | [generated/canonical-react-contracts/README.md](generated/canonical-react-contracts/README.md) | Exact-SHA canonical React API call-site matrix against Laravel and ASP.NET route/method ownership; static evidence only, not a parity score. |

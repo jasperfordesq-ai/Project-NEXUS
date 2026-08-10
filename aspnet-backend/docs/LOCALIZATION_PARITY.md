@@ -35,7 +35,7 @@ frozen React copy. It is not the Web UK localization status, the current
 backend ledger, or an overall parity score. Use
 [`BACKEND_LOCALIZATION_CONTRACT.md`](BACKEND_LOCALIZATION_CONTRACT.md) for the
 backend evidence and
-[`../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
+[`../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md)
 for Web UK.
 
 ## Historical Static Source Counts (2026-07-04)

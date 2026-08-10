@@ -176,8 +176,8 @@ header/footer must retain the non-affiliation statement.
 ## User And Administrator Documentation
 
 Backend-neutral user guidance begins at
-[../../docs/user/README.md](../../docs/user/README.md). Tenant administrator
-guidance begins at [../../docs/admin/README.md](../../docs/admin/README.md).
+[../../docs/user/README.md](../aspnet-backend/docs/user/README.md). Tenant administrator
+guidance begins at [../../docs/admin/README.md](../aspnet-backend/docs/admin/README.md).
 Neither guide changes the current Web UK certification boundary.
 
 ## License And Credits
