@@ -4,3 +4,8 @@ node_modules/
 public/css/
 .env
 nul
+
+# Playwright/axe output from the local accessibility gate. Running
+# `npm run test:accessibility:isolated` writes reports and traces here; they are
+# per-run evidence, not source, and must never be committed.
+artifacts/

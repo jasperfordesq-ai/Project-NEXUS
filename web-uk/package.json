@@ -48,7 +48,8 @@
     "locales:sync": "php scripts/sync-laravel-locales.php",
     "locales:audit": "node scripts/audit-laravel-locales.js",
     "locales:audit-keys": "node scripts/audit-translation-keys.js",
-    "locales:audit-templates": "node scripts/audit-template-localization.js"
+    "locales:audit-templates": "node scripts/audit-template-localization.js",
+    "playwright:install": "playwright install chromium"
   },
   "dependencies": {
     "connect-redis": "^9.0.0",
