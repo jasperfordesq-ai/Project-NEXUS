@@ -53,7 +53,7 @@
   {% endif %}
 
   {% if prerequisites and prerequisites.length %}
-    <h2 class="govuk-heading-l">Before you start</h2>
+    <h2 class="govuk-heading-l">{{ t("courses.prerequisites_label") }}</h2>
     <ul class="govuk-list">
       {% for prerequisite in prerequisites %}
         <li class="govuk-!-margin-bottom-1">
@@ -65,7 +65,7 @@
           {% if prerequisite.completed %}
             <strong class="govuk-tag govuk-tag--green">Completed</strong>
           {% else %}
-            <strong class="govuk-tag govuk-tag--grey">Not yet completed</strong>
+            <strong class="govuk-tag govuk-tag--grey">{{ t("courses.prerequisite_todo") }}</strong>
           {% endif %}
         </li>
       {% endfor %}
@@ -73,17 +73,17 @@
   {% endif %}
 
   {% if isCompleted %}
-    <h2 class="govuk-heading-l">Your certificate</h2>
+    <h2 class="govuk-heading-l">{{ t("courses.certificate_label") }}</h2>
     <p class="govuk-body">
-      <a class="govuk-button govuk-button--secondary" role="button" data-module="govuk-button" href="{{ urlFor('/courses/' + (course.id | string) + '/certificate') }}" target="_blank" rel="noopener noreferrer">Download your certificate<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a>
+      <a class="govuk-button govuk-button--secondary" role="button" data-module="govuk-button" href="{{ urlFor('/courses/' + (course.id | string) + '/certificate') }}" target="_blank" rel="noopener noreferrer">{{ t("courses.certificate_download") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a>
     </p>
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="reviews">Ratings and reviews</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-6" id="reviews">{{ t("courses.reviews_label") }}</h2>
   {% if course.ratingCount > 0 %}
     <p class="govuk-body-l govuk-!-margin-bottom-1">
       <span aria-hidden="true">{{ course.ratingStars }}</span>
-      <strong>{{ course.ratingAvgLabel }}</strong> out of 5
+      <strong>{{ course.ratingAvgLabel }}</strong> {{ t("courses.out_of_5") }}
     </p>
     <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-4">Based on {{ course.ratingCount }} review{% if course.ratingCount != 1 %}s{% endif %}</p>
   {% endif %}
@@ -104,15 +104,15 @@
       {% endfor %}
     </ul>
   {% elif course.ratingCount == 0 %}
-    <p class="govuk-body">No reviews yet. Be the first to review this course.</p>
+    <p class="govuk-body">{{ t("courses.no_reviews_yet") }}</p>
   {% endif %}
 
   {% if canReview %}
-    <h3 class="govuk-heading-m">Leave a review</h3>
+    <h3 class="govuk-heading-m">{{ t("courses.leave_review_heading") }}</h3>
     <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/reviews') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <div class="govuk-form-group">
-        <label class="govuk-label" for="rating">Your rating</label>
+        <label class="govuk-label" for="rating">{{ t("courses.rating_label") }}</label>
         <select class="govuk-select" id="rating" name="rating">
           {% for rating in [5, 4, 3, 2, 1] %}
             <option value="{{ rating }}">{{ rating }} out of 5</option>
@@ -120,10 +120,10 @@
         </select>
       </div>
       <div class="govuk-form-group">
-        <label class="govuk-label" for="body">Your review (optional)</label>
+        <label class="govuk-label" for="body">{{ t("courses.review_body_label") }}</label>
         <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="2000"></textarea>
       </div>
-      <button class="govuk-button" data-module="govuk-button">Submit review</button>
+      <button class="govuk-button" data-module="govuk-button">{{ t("courses.review_submit") }}</button>
     </form>
   {% endif %}
 

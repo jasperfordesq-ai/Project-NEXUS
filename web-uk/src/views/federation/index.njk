@@ -53,18 +53,18 @@
         </div>
       </div>
 
-      <h2 class="govuk-heading-l">How federation works</h2>
+      <h2 class="govuk-heading-l">{{ t("federation.hub.how_it_works_heading") }}</h2>
       <div class="govuk-grid-row">
-        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">Discover</h3><p class="govuk-body">Find people, listings, events, and groups from partner communities.</p></div>
+        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("federation.hub.how_it_works_0_title") }}</h3><p class="govuk-body">Find people, listings, events, and groups from partner communities.</p></div>
         <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">Meet</h3><p class="govuk-body">Send connection requests and messages when both communities allow it.</p></div>
-        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">Exchange</h3><p class="govuk-body">Use time-credit transfers only when federation settings permit them.</p></div>
+        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("federation.hub.how_it_works_2_title") }}</h3><p class="govuk-body">Use time-credit transfers only when federation settings permit them.</p></div>
       </div>
     {% endif %}
 
     <h2 class="govuk-heading-l">Network stats</h2>
     <dl class="govuk-summary-list">
       <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Partnerships</dt><dd class="govuk-summary-list__value">{{ stats.partnershipsCount }}</dd></div>
-      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Messages</dt><dd class="govuk-summary-list__value">{{ stats.messagesCount }}</dd></div>
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("account.messages_title") }}</dt><dd class="govuk-summary-list__value">{{ stats.messagesCount }}</dd></div>
       <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Transactions</dt><dd class="govuk-summary-list__value">{{ stats.transactionsCount }}</dd></div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Federation status</dt>
@@ -107,7 +107,7 @@
             <div class="nexus-alpha-module-row">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ partner.name }}</a></h3>
               {% if partner.isExternal %}
-                <strong class="govuk-tag govuk-tag--grey">External</strong>
+                <strong class="govuk-tag govuk-tag--grey">{{ t("federation.levels.external") }}</strong>
               {% elif partner.levelName %}
                 <strong class="govuk-tag govuk-tag--purple">{{ partner.levelName }}</strong>
               {% endif %}
@@ -119,7 +119,7 @@
               <div><dt>Listings</dt><dd>{{ partner.listingCount }}</dd></div>
               {% if partner.partnershipSince %}<div><dt>Since</dt><dd>{{ partner.partnershipSince | date }}</dd></div>{% endif %}
             </dl>
-            <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor(partner.href) }}">View community</a></p>
+            <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ t("federation.hub.view_partner") }}</a></p>
           </article>
         {% endfor %}
       </div>
@@ -141,7 +141,7 @@
             <li><a class="govuk-link" href="{{ urlFor('/federation/messages') }}">Federation messages</a></li>
             <li><a class="govuk-link" href="{{ urlFor('/federation/listings') }}">{{ t("federation.hub.quick_link_listings") }}</a></li>
             <li><a class="govuk-link" href="{{ urlFor('/federation/events') }}">{{ t("federation.events_browse.title") }}</a></li>
-            <li><a class="govuk-link" href="{{ urlFor('/federation/groups') }}">Federated groups</a></li>
+            <li><a class="govuk-link" href="{{ urlFor('/federation/groups') }}">{{ t("federation.hub.quick_link_groups") }}</a></li>
             <li><a class="govuk-link" href="{{ urlFor('/federation/settings') }}">Federation settings</a></li>
           </ul>
           <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor('/federation/opt-out') }}">Turn off federation</a></p>

@@ -258,12 +258,21 @@ describe('Laravel account and settings contract parity', () => {
       relationshipTypeLabel: t('govuk_alpha_settings.linked.types.guardian'),
       status: 'pending'
     }));
+    // 🔴 Three labels still live under linked.permissions.*, but Laravel moved
+    // message viewing into its own linked_messages.* namespace when it became a
+    // request-and-approve capability, and removed the old key.
+    //
+    // This previously built every expectation from the linked.permissions.*
+    // pattern, so for can_view_messages `t()` returned the RAW KEY and the test
+    // asserted that raw key as the expected label — pinning the broken output.
+    // Listing the keys explicitly keeps the test honest about where each one
+    // actually comes from. See linkPermissionLabelKey in src/routes/settings.js.
     expect(response.body.locals.permissions.map(({ label }) => label)).toEqual([
-      'can_view_activity',
-      'can_manage_listings',
-      'can_transact',
-      'can_view_messages'
-    ].map((permission) => t(`govuk_alpha_settings.linked.permissions.${permission}`)));
+      'govuk_alpha_settings.linked.permissions.can_view_activity',
+      'govuk_alpha_settings.linked.permissions.can_manage_listings',
+      'govuk_alpha_settings.linked.permissions.can_transact',
+      'govuk_alpha_settings.linked_messages.view_link'
+    ].map((key) => t(key)));
   });
 
   it('normalizes insurance certificates and labels from the exact Laravel catalog', async () => {

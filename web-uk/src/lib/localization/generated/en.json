@@ -1105,7 +1105,9 @@
                 "messages": "Messages",
                 "members": "Members",
                 "events": "Events",
+                "whats_on": "What's on",
                 "volunteering": "Volunteering",
+                "venues": "Partner venues",
                 "organisations": "Organisations",
                 "jobs": "Jobs",
                 "profile": "My Profile",
@@ -1879,6 +1881,9 @@
                 "disabled_title": "Messaging is not available",
                 "disabled_detail": "Direct messaging is currently disabled for this community.",
                 "restricted_detail": "Your messaging access is currently restricted. You can still read existing messages.",
+                "visibility_notice": "Messages in this conversation may be reviewed by a coordinator for safeguarding, or visible to someone a participant trusts to support them.",
+                "own_messages_shared_reminder": "Someone you chose as a supporter can view your messages.",
+                "own_messages_shared_manage": "Manage this",
                 "inbox": "Inbox",
                 "archived": "Archived",
                 "tabs_title": "Message folders",
@@ -2251,6 +2256,7 @@
                 "interested": "{0} No one interested yet|{1} 1 person interested|[2,*] :count people interested",
                 "spots_left": ":count places left",
                 "full": "Full",
+                "attendance_reward_tag": "Earn :amount time credits for attending",
                 "rsvp_title": "Your RSVP",
                 "rsvp_hint": "Tell the organiser whether you plan to attend.",
                 "rsvp_status_label": "RSVP status",
@@ -2271,6 +2277,8 @@
                     "back_to_event": "Back to event",
                     "manager_intro": "Create and maintain the running order, sessions, speakers, rooms, tracks and audience access without relying on JavaScript.",
                     "viewer_intro": "View the running order, sessions, rooms, tracks and speakers in the event time zone.",
+                    "cancelled_heading": "Important",
+                    "cancelled_notice": "This event has been cancelled. The running order below is kept as a record — none of these sessions are going ahead.",
                     "load_error": "The event agenda could not be loaded.",
                     "add_session": "Add a session",
                     "create_session": "Create session",
@@ -2438,7 +2446,6 @@
                     "checkin_failed": "Check-in could not be recorded. Try again.",
                     "checkin_success": "Attendance marked.",
                     "checkin_empty": "No RSVPs yet.",
-                    "checkin_failed_status": "check-in-failed",
                     "share_heading": "Share this event",
                     "share_email_label": "Share by email",
                     "edit_image_label": "Cover image",
@@ -5629,9 +5636,7 @@
                 "pagination_previous": "Previous",
                 "pagination_next": "Next",
                 "reply_posted_by": "Reply by :name",
-                "create_group_cta": "Create a group",
-                "states_invite_success": "group-invite-sent",
-                "states_invite_failed": "group-invite-failed"
+                "create_group_cta": "Create a group"
             },
             "polish_core_a": {
                 "search_filters_legend": "Search and filter"
@@ -9363,14 +9368,38 @@
                 "permissions": {
                     "can_view_activity": "View their activity",
                     "can_manage_listings": "Manage their listings",
-                    "can_transact": "Send and receive time credits",
-                    "can_view_messages": "View their messages"
+                    "can_transact": "Send and receive time credits"
                 },
                 "permissions_none": "No permissions granted yet.",
                 "save_permissions": "Save permissions",
                 "approve_button": "Approve link",
                 "revoke_button": "Remove link",
                 "revoke_warning": "Removing a link cannot be undone. The other account will no longer be linked to yours.",
+                "activity_link": "See their activity",
+                "activity_title": "Activity for :name",
+                "activity_intro": "A summary of what :name has been doing on the timebank. You can see this because they allowed it. Seeing is all this page does.",
+                "activity_hours_heading": "Time credits",
+                "activity_hours_given": "Hours given",
+                "activity_hours_received": "Hours received",
+                "activity_net_balance": "Net balance",
+                "activity_community_heading": "Community",
+                "activity_connections": "Connections",
+                "activity_groups": "Groups joined",
+                "activity_posts": "Posts in the last 30 days",
+                "activity_timeline_heading": "Recent activity",
+                "activity_timeline_empty": "Nothing recent to show.",
+                "activity_type_post": "Posted",
+                "activity_type_comment": "Commented",
+                "activity_type_connection": "New connection",
+                "activity_type_gave_hours": "Gave hours",
+                "activity_type_received_hours": "Received hours",
+                "activity_type_other": "Activity",
+                "activity_back": "Back to linked accounts",
+                "tiers_capability_listings": "Their listings",
+                "tiers_capability_credits": "Their time credits",
+                "tiers_option_none": "Off",
+                "tiers_option_co_decide": "Prepare only — they approve each one",
+                "tiers_option_represent": "Act alone — fully recorded",
                 "request_heading": "Link a new account",
                 "request_description": "Enter the email address of the member you want to link. They must already have an account in this community.",
                 "request_max": "You can manage up to :count linked accounts.",
@@ -9430,11 +9459,11 @@
                 }
             },
             "insurance": {
-                "title": "Insurance certificates",
+                "title": "Insurance records",
                 "caption": "Account settings",
-                "description": "Upload proof of insurance so the team can verify your cover. Accepted file types are PDF, JPG and PNG, up to 10MB.",
-                "certificates_heading": "Your certificates",
-                "certificates_empty": "You have not uploaded any insurance certificates yet.",
+                "description": "Record the insurance type, provider and expiry date only. Do not upload documents or sensitive policy data.",
+                "certificates_heading": "Your insurance records",
+                "certificates_empty": "You have not added any insurance records yet.",
                 "provider_label_short": "Provider",
                 "expiry_label_short": "Expires",
                 "status_label": "Status",
@@ -9456,15 +9485,15 @@
                     "personal_accident": "Personal accident",
                     "other": "Other"
                 },
-                "upload_heading": "Upload a certificate",
+                "upload_heading": "Add an insurance record",
                 "type_label": "Type of insurance",
                 "provider_label": "Insurance provider (optional)",
                 "policy_label": "Policy number (optional)",
-                "expiry_label": "Expiry date (optional)",
+                "expiry_label": "Expiry date",
                 "expiry_hint": "For example, 27 3 2027",
                 "file_label": "Certificate file",
                 "file_hint": "Upload a PDF, JPG or PNG, up to 10MB.",
-                "upload_button": "Upload certificate"
+                "upload_button": "Save insurance record"
             },
             "states": {
                 "link-requested": "Your link request has been sent. The other member must approve it.",
@@ -9477,6 +9506,10 @@
                 "link-exists": "A link with this member already exists.",
                 "link-max": "You have reached the maximum number of linked accounts.",
                 "link-failed": "Sorry, we could not complete that request. Please try again.",
+                "activity-denied": "You can no longer view this member's activity. The permission may have been changed.",
+                "message-access-requested": "They have been asked. Viewing only starts if they say yes.",
+                "message-access-withdrawn": "Stopped. They can no longer view your messages.",
+                "message-view-denied": "You cannot view this member's messages. The permission may have been withdrawn.",
                 "appearance-saved": "Your appearance settings have been saved.",
                 "appearance-invalid": "Choose one of the available themes.",
                 "appearance-failed": "Sorry, we could not save your appearance settings. Please try again.",
@@ -9492,7 +9525,10 @@
                 "insurance-file-required": "Choose a certificate file to upload.",
                 "insurance-file-type": "The certificate must be a PDF, JPG or PNG file.",
                 "insurance-file-large": "The certificate file must be smaller than 10MB.",
-                "insurance-failed": "Sorry, we could not upload your certificate. Please try again."
+                "insurance-failed": "Sorry, we could not upload your certificate. Please try again.",
+                "insurance-recorded": "Your insurance record has been saved.",
+                "insurance-file-forbidden": "Do not upload insurance documents or sensitive policy data.",
+                "insurance-expiry-required": "Enter a valid insurance expiry date."
             },
             "nav": {
                 "linked_accounts": "Linked accounts",
@@ -9520,6 +9556,146 @@
                 "slot_start_label": "Start time",
                 "slot_end_label": "End time",
                 "save_button": "Save availability"
+            },
+            "guardians": {
+                "tiers_title": "What they may do for you",
+                "tiers_intro": "You have agreed to this arrangement. You can also choose whether {{name}} may help with your listings or your time credits. This is your choice, and you can change or remove it at any time.",
+                "tiers_capability_listings": "Your listings",
+                "tiers_capability_credits": "Your time credits",
+                "tiers_option_none": "Nothing",
+                "tiers_option_co_decide": "Prepare only — you approve each one",
+                "tiers_option_represent": "Do it on their own",
+                "tiers_save_button": "Save",
+                "tiers_explainer": "\"Prepare only\" means they set something up and nothing happens until you say yes. \"Do it on their own\" means it happens straight away, recorded as done by them on your behalf.",
+                "status_tiers_saved": "Saved.",
+                "status_tiers_failed": "That could not be saved. Nothing was changed.",
+                "title": "Guardian arrangements",
+                "intro": "Your coordinators have recorded that these people are responsible for supporting you. This is a record only. It does not allow them to create listings, use your time credits, or read your messages.",
+                "none": "No guardian arrangements have been recorded for you.",
+                "date_added": "Date added",
+                "coordinator_note": "Note from your coordinators",
+                "your_answer": "Your answer",
+                "your_reason": "Your reason",
+                "state_pending": "Waiting for your answer",
+                "state_consented": "You agreed",
+                "state_declined": "You did not agree",
+                "state_withdrawn": "You withdrew your agreement",
+                "agree_button": "I agree to this arrangement",
+                "agree_again_button": "I agree after all",
+                "decline_button": "I do not agree",
+                "withdraw_button": "Withdraw my agreement",
+                "reason_label": "Reason (optional)",
+                "reason_hint": "You do not have to give a reason. If you do, your coordinators will see it.",
+                "wards_title": "People you support",
+                "wards_intro": "Your coordinators have recorded that you are responsible for supporting these people. You can see whether they have agreed. This does not let you act for them.",
+                "wards_none": "You have not been recorded as responsible for anyone.",
+                "ward_state_pending": "Waiting for their answer",
+                "ward_state_consented": "They agreed",
+                "ward_state_declined": "They did not agree",
+                "ward_state_withdrawn": "They withdrew their agreement",
+                "status_consented": "Your agreement has been recorded.",
+                "status_declined": "Your coordinators have been told that you do not agree.",
+                "status_withdrawn": "Your agreement has been withdrawn.",
+                "status_not_found": "That arrangement could not be found.",
+                "status_not_allowed": "That answer is not available for this arrangement.",
+                "status_failed": "That could not be saved. Please try again."
+            },
+            "linked_messages": {
+                "capability_heading": "Their messages",
+                "state_active": "On",
+                "state_active_since": "You have been able to view since :date.",
+                "state_pending": "Waiting for :name to approve",
+                "request_button": "Ask to view their messages",
+                "view_link": "View their messages",
+                "explainer": "Viewing only ever starts with :name's own yes, every viewing is recorded where they can see it, and they can withdraw at any time.",
+                "member_disclosure": ":name can view your messages — you agreed to this.",
+                "member_last_viewed": "Last viewed :date.",
+                "member_never_viewed": "Never viewed so far.",
+                "member_withdraw_button": "Stop them viewing my messages",
+                "purpose_title": "Why do you need to look?",
+                "purpose_warning": "Your reason is recorded permanently and cannot be edited or deleted. It helps everyone trust how this access is used.",
+                "purpose_reason_legend": "Reason",
+                "reason_wellbeing": "Checking they're okay",
+                "reason_safety": "A safety concern",
+                "reason_helping_reply": "Helping them read or reply",
+                "reason_other": "Something else",
+                "purpose_detail_label": "Add a few words (optional)",
+                "purpose_detail_hint": "Anything you write here becomes part of the permanent record.",
+                "purpose_continue": "Continue",
+                "title": "Viewing :name's messages",
+                "thread_title": "Viewing :name's conversation",
+                "read_only_banner": "Read-only. You cannot send anything, and nothing is marked as read. Every visit here is recorded, and they can see when you last looked.",
+                "empty_list": "No conversations to show.",
+                "open_thread": "Conversation with :name",
+                "back_to_list": "Back to all conversations",
+                "empty_thread": "No messages in this conversation.",
+                "voice_message": "A voice message (not playable here)"
+            },
+            "support_actions": {
+                "title": "Waiting for your approval",
+                "intro": "A helper has prepared these for you. Nothing happens unless you approve it. You can also decline, and you never have to give a reason. If you do nothing, a request simply expires.",
+                "none": "Nothing is waiting for your approval.",
+                "prepared_by": "Prepared by",
+                "detail": "Details",
+                "expires": "Expires",
+                "nothing_without_you": "This will only happen if you approve it.",
+                "approve_button": "Approve",
+                "decline_button": "Decline",
+                "withdraw_button": "Withdraw",
+                "reason_label": "Reason (optional)",
+                "reason_hint": "You never have to give a reason.",
+                "type_listing_create": "A new listing",
+                "type_credit_transfer": "A time-credit transfer",
+                "type_message_access_grant": "Permission to view your messages",
+                "outgoing_title": "Prepared by you",
+                "outgoing_intro": "Waiting for the person you support to approve.",
+                "state_pending": "Waiting",
+                "state_confirmed": "Approved",
+                "state_declined": "Declined",
+                "state_expired": "Expired",
+                "state_cancelled": "Withdrawn",
+                "status_approved": "Approved. It has now been done.",
+                "status_declined": "Declined. Nothing was done.",
+                "status_withdrawn": "Withdrawn.",
+                "status_not_found": "That request was not found or has already been answered.",
+                "status_failed": "Something went wrong. Nothing was changed."
+            }
+        },
+        "govuk_alpha_venues": {
+            "index": {
+                "title": "Partner venues",
+                "intro": "Local venues that welcome your member pass. Any offer shown is run by the venue itself.",
+                "my_pass": "Show my pass",
+                "empty": "No partner venues have been added yet.",
+                "website": "Visit website (opens the venue's own site)",
+                "how_it_works": "Show your pass at the till. A member of staff scans it with their phone to record your visit — nothing is charged and no payment details are involved."
+            },
+            "pass": {
+                "title": "My venue pass",
+                "back": "Back to partner venues",
+                "intro": "Show this code at a partner venue. Staff scan it with their phone camera to record your visit.",
+                "qr_alt": "Your personal venue pass QR code",
+                "privacy": "Your pass identifies you only to venue staff signed in to this community. It is not a payment card and holds no money.",
+                "rotate_hint": "If someone may have photographed your code, get a new one — the old code stops working immediately.",
+                "rotate_button": "Get a new code",
+                "rotated_notice": "Your pass has a new code. The previous code no longer works.",
+                "visits_title": "Your recorded visits",
+                "visits_empty": "No visits recorded yet."
+            },
+            "checkin": {
+                "title": "Record a member visit",
+                "intro": "You are about to record a member's visit to your venue. Nothing has been recorded yet — confirm below.",
+                "confirm": "Record this visit",
+                "choose_venue": "Which venue is this visit for?",
+                "recorded": "Visit recorded for :member at :venue.",
+                "already_recorded": "A visit for :member was already recorded today.",
+                "visits_this_month": "Visits this month: :count",
+                "challenge_completed": "Challenge completed: :title",
+                "done": "Done",
+                "forbidden_title": "You cannot record visits",
+                "forbidden_body": "Only staff of a partner venue can record visits, and staff cannot record their own visit. Ask a community admin to add you to the venue's staff.",
+                "invalid_title": "This pass is not valid",
+                "invalid_body": "The scanned pass does not exist or has been revoked. Ask the member to open their pass again and rescan."
             }
         },
         "govuk_alpha_volunteering": {
@@ -10115,6 +10291,47 @@
                 "manage": "Manage your credits"
             }
         },
+        "govuk_alpha_whats_on": {
+            "index": {
+                "title": "What's on",
+                "intro": "Community events anyone can browse. Sign in to register for a place.",
+                "register_prompt": "Want to take part? Signing in lets you register for events.",
+                "sign_in_link": "Sign in or create an account",
+                "search_label": "Search events",
+                "when_label": "Show",
+                "when_upcoming": "Upcoming events",
+                "when_past": "Past events",
+                "when_all": "All events",
+                "apply": "Apply filters",
+                "empty": "No events to show yet. Check back soon.",
+                "online_tag": "Online",
+                "cancelled_tag": "Cancelled",
+                "postponed_tag": "Postponed",
+                "more": "Show more events"
+            },
+            "show": {
+                "title": "Event details",
+                "back": "Back to What's on",
+                "starts": "Starts",
+                "ends": "Ends",
+                "where": "Where",
+                "online": "Online event",
+                "hybrid": "also joinable online",
+                "location_tba": "Location to be announced",
+                "organiser": "Organised by",
+                "accessibility_title": "Venue accessibility",
+                "accessibility_step_free": "Step-free access",
+                "accessibility_accessible_toilet": "Accessible toilet",
+                "accessibility_hearing_loop": "Hearing loop",
+                "accessibility_quiet_space": "Quiet space",
+                "accessibility_seating": "Seating available",
+                "accessibility_parking": "Accessible parking",
+                "yes": "Yes",
+                "no": "No",
+                "register_prompt": "To register for this event, sign in or create a free account with this community.",
+                "sign_in_to_register": "Sign in to register"
+            }
+        },
         "safeguarding": {
             "errors": {
                 "vetting_required": "This conversation is paused by a community safeguarding rule. Your community must have recorded a current :types confirmation for you before you can message this member. Ask your broker or community administrator to record this metadata-only status. Do not send or upload any vetting document.",
@@ -10153,10 +10370,12 @@
                 "access_ni": "AccessNI",
                 "pvg_scotland": "PVG Scotland",
                 "international": "International background check",
-                "other": "Other vetting check"
+                "other": "Other vetting check",
+                "uk_safeguarding_clearance": "UK safeguarding clearance"
             },
             "jurisdictions": {
                 "unconfigured": "Safeguarding jurisdiction not configured",
+                "united_kingdom": "United Kingdom — national policy package",
                 "england_wales": "England and Wales",
                 "scotland": "Scotland",
                 "northern_ireland": "Northern Ireland",
@@ -10167,7 +10386,8 @@
                 "dbs_enhanced": "Enhanced DBS confirmed for safeguarded member contact",
                 "pvg_scotland": "PVG status confirmed for safeguarded member contact",
                 "access_ni": "AccessNI status confirmed for safeguarded member contact",
-                "garda_vetting": "Garda Vetting confirmed for safeguarded member contact"
+                "garda_vetting": "Garda Vetting confirmed for safeguarded member contact",
+                "uk_safeguarding_clearance": "UK safeguarding clearance confirmed for safeguarded member contact"
             },
             "confirmation": {
                 "title": "Your safeguarding preferences have been saved",
@@ -10246,6 +10466,21 @@
                         },
                         "works_with_vulnerable_adults": {
                             "description": "A coordinator may discuss Garda Vetting requirements with you. Activities involving vulnerable adults may require vetting."
+                        }
+                    }
+                },
+                "united_kingdom": {
+                    "name": "United Kingdom",
+                    "vetting_authority": "DBS, Disclosure Scotland and AccessNI",
+                    "options": {
+                        "requires_vetted_partners": {
+                            "description": "Across the United Kingdom, coordinators confirm the appropriate Enhanced DBS, PVG and/or AccessNI basis for safeguarded contact."
+                        },
+                        "works_with_children": {
+                            "description": "A coordinator will assess the role and applicable UK jurisdiction before deciding which safeguarding check is legally appropriate."
+                        },
+                        "works_with_vulnerable_adults": {
+                            "description": "A coordinator will assess the role, the adults involved and the applicable UK jurisdiction before deciding which safeguarding check is legally appropriate."
                         }
                     }
                 },

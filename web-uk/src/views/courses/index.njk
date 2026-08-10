@@ -35,7 +35,7 @@
     <div class="govuk-form-group">
       <label class="govuk-label" for="level">Level</label>
       <select class="govuk-select" id="level" name="level">
-        <option value="">All levels</option>
+        <option value="">{{ t("courses.all_levels") }}</option>
         {% for level in levels %}
           <option value="{{ level.value }}"{% if courseLevel == level.value %} selected{% endif %}>{{ level.label }}</option>
         {% endfor %}

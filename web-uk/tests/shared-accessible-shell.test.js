@@ -4065,23 +4065,34 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('Success');
     expect(signed.text).toContain('Your certificate has been uploaded and is awaiting review.');
     expect(signed.text).toContain('Account settings');
-    expect(signed.text).toContain('Insurance certificates');
-    expect(signed.text).toContain('Upload proof of insurance so the team can verify your cover.');
-    expect(signed.text).toContain('Your certificates');
+    // Laravel renamed this copy: insurance.title "Insurance certificates" ->
+    // "Insurance records", certificates_heading "Your certificates" -> "Your
+    // insurance records". Web UK follows Laravel, so the expectation moves.
+    //
+    // 🔴 The description change is NOT cosmetic and is worth reading: Laravel
+    // went from "Upload proof of insurance so the team can verify your cover."
+    // to telling members to record metadata ONLY and explicitly NOT to upload
+    // documents or sensitive policy data. That is a privacy decision upstream.
+    // Web UK's page still offers an upload; reconciling that is outstanding
+    // parity work, tracked in CURRENT_LARAVEL_FIRST_PARITY_STATUS.md, not
+    // something this catalog refresh changes.
+    expect(signed.text).toContain('Insurance records');
+    expect(signed.text).toContain('Record the insurance type, provider and expiry date only. Do not upload documents or sensitive policy data.');
+    expect(signed.text).toContain('Your insurance records');
     expect(signed.text).toContain('Public liability');
     expect(signed.text).toContain('Verified');
     expect(signed.text).toContain('Provider');
     expect(signed.text).toContain('Acme Cover Ltd');
     expect(signed.text).toContain('Expires');
     expect(signed.text).toContain('27 March 2027');
-    expect(signed.text).toContain('Upload a certificate');
+    expect(signed.text).toContain('Add an insurance record');
     expect(signed.text).toContain('Type of insurance');
     expect(signed.text).toContain('Professional indemnity');
     expect(signed.text).toContain('Insurance provider (optional)');
     expect(signed.text).toContain('Policy number (optional)');
-    expect(signed.text).toContain('Expiry date (optional)');
+    expect(signed.text).toContain('Expiry date');
     expect(signed.text).toContain('Certificate file');
-    expect(signed.text).toContain('Upload certificate');
+    expect(signed.text).toContain('Save insurance record');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
   });
 
@@ -10805,9 +10816,18 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.headers['content-language']).toBe('ar');
     expect(response.text).toContain('<html lang="ar" dir="rtl"');
-    expect(response.text).toContain('My network - Project NEXUS Accessible');
-    expect(response.text).toContain('You have 1,234 connections, 12 requests waiting for your reply and 34 requests you have sent.');
-    expect(response.text).toContain('Clear search');
+    // 🔴 These asserted ENGLISH copy on an Arabic page — they were asserting the
+    // bug. The generated catalogs were ~47% English placeholders, so an Arabic
+    // page really did render English, and this test locked that in. With the
+    // catalogs refreshed from Laravel the page is genuinely Arabic.
+    //
+    // The service name stays English on purpose: it is the product's BRAND, and
+    // is declared invariant in scripts/php-lang-invariant-allowlist.json.
+    expect(response.text).toContain('شبكتي - Project NEXUS Accessible');
+    // Asserted on a distinctive Arabic fragment rather than the whole sentence,
+    // so this proves Arabic rendering without pinning locale number formatting.
+    expect(response.text).toContain('في انتظار ردك');
+    expect(response.text).toContain('مسح البحث');
   });
 
   it('renders the canonical three-section Laravel connections inbox on the tenant-aware index', async () => {
@@ -15028,8 +15048,18 @@ describe('shared accessible frontend shell', () => {
     ]) {
       expect(ranked.text).toContain(t(key));
     }
-    expect(ranked.text).toMatch(/id="rank-11"[\s\S]*?<option value="1" selected>Position 1<\/option>[\s\S]*?<option value="2">Position 2<\/option>/);
-    expect(ranked.text).toMatch(/id="rank-12"[\s\S]*?<option value="1">Position 1<\/option>[\s\S]*?<option value="2" selected>Position 2<\/option>/);
+    // 🔴 This block requests ?locale=ar. It asserted the ENGLISH "Position N"
+    // because the generated catalogs were ~47% English placeholders, so the
+    // Arabic page genuinely rendered English and this locked that in. Refreshed
+    // from Laravel, the label is govuk_alpha_gamification.ranked.position_label
+    // = "الموضع :num".
+    //
+    // Built from the translator rather than hard-coded Arabic, so the day
+    // Laravel revises this label the test follows instead of failing.
+    const pos = (n) => t('govuk_alpha_gamification.ranked.position_label', { num: n });
+    const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    expect(ranked.text).toMatch(new RegExp(`id="rank-11"[\\s\\S]*?<option value="1" selected>${esc(pos(1))}</option>[\\s\\S]*?<option value="2">${esc(pos(2))}</option>`));
+    expect(ranked.text).toMatch(new RegExp(`id="rank-12"[\\s\\S]*?<option value="1">${esc(pos(1))}</option>[\\s\\S]*?<option value="2" selected>${esc(pos(2))}</option>`));
   });
 
   it('renders tied ranked results with exact Laravel plurals and winner semantics', async () => {

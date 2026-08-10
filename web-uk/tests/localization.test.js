@@ -144,7 +144,16 @@ describe('translation and formatter foundation', () => {
     const expectedNamespaces = Object.keys(english.namespaces);
     const expectedLeafCount = countStringLeaves(english.namespaces);
 
-    expect(expectedNamespaces).toHaveLength(36);
+    // A FLOOR, not an exact count. This pinned 36 and broke the moment Laravel
+    // legitimately shipped two new namespaces (govuk_alpha_venues,
+    // govuk_alpha_whats_on) during the 2026-07-15 development pause — the same
+    // frozen-shape trap that makes an added field look like a regression.
+    //
+    // A floor still catches what matters, which is namespaces DISAPPEARING. The
+    // strong assertion in this test is the loop below: every locale must carry
+    // exactly the same namespaces and the same leaf count as English. That
+    // catches a partial or truncated sync regardless of the total.
+    expect(expectedNamespaces.length).toBeGreaterThanOrEqual(38);
     expect(expectedNamespaces).toContain('safeguarding');
     expect(expectedLeafCount).toBeGreaterThan(8500);
     for (const locale of SUPPORTED_LOCALES) {

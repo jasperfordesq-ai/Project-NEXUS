@@ -217,10 +217,19 @@ describe('localized accessible chrome', () => {
       expect(t(key)).not.toBe(english(key));
     }
 
-    expect(search).toContain('aria-label="Run saved search Care &amp; &lt;support&gt;"');
-    expect(search).toContain('aria-label="Delete saved search Care &amp; &lt;support&gt;"');
-    expect(collection).toContain('aria-label="Remove Tea &amp; &lt;chat&gt; from this collection"');
-    expect(collection).toContain('aria-label="Delete the collection Care &amp; &lt;support&gt;"');
+    // 🔴 These four hard-coded ENGLISH aria-labels while the surrounding test
+    // renders in `locale` (ga and ar). They passed only because the generated
+    // catalogs were ~47% English placeholders — the test was asserting the bug.
+    //
+    // Built from the translator now, matching the assertion immediately below
+    // that already did so. The names are passed pre-escaped because the labels
+    // are interpolated into HTML attributes.
+    const escapedSupport = 'Care &amp; &lt;support&gt;';
+    const escapedChat = 'Tea &amp; &lt;chat&gt;';
+    expect(search).toContain(`aria-label="${t('govuk_alpha_search.saved.run_aria', { name: escapedSupport })}"`);
+    expect(search).toContain(`aria-label="${t('govuk_alpha_search.saved.delete_aria', { name: escapedSupport })}"`);
+    expect(collection).toContain(`aria-label="${t('govuk_alpha_saved.detail.remove_item_label', { title: escapedChat })}"`);
+    expect(collection).toContain(`aria-label="${t('govuk_alpha_saved.edit.delete_confirm_label', { name: escapedSupport })}"`);
     expect(collection).toContain(`<span class="govuk-visually-hidden">${t('govuk_alpha_saved.errors.summary_title')}:</span>`);
     expect(collection).toContain(tc('govuk_alpha_saved.detail.count', 1, { count: 1 }));
     expect(appreciations).toContain(t('govuk_alpha_saved.wall.heading', { name: 'Morgan' }));
@@ -230,12 +239,25 @@ describe('localized accessible chrome', () => {
     expect(appreciations).toContain(t('govuk_alpha_saved.pagination.previous'));
     expect(appreciations).toContain(t('govuk_alpha_saved.pagination.next'));
     expect(appreciations).toContain('aria-pressed="true"');
-    expect(appreciations).toContain(t('govuk_alpha_saved.react.remove_label', {
+    // Rendered into an HTML attribute, so Nunjucks escapes it. That only
+    // started to matter once the catalogs became genuinely translated: the
+    // Irish label is "Bain d'imoibriú :reaction", and its APOSTROPHE escapes to
+    // &#39;. The English placeholder it replaced had none, so the raw
+    // comparison happened to work.
+    const attrEscape = (s) => s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    expect(appreciations).toContain(attrEscape(t('govuk_alpha_saved.react.remove_label', {
       reaction: t('govuk_alpha_saved.react.heart')
-    }));
+    })));
     expect(network).toContain(`${t('govuk_alpha_connections.network.about', { name: 'Amina' })}: </span>`);
     expect(network).toContain(t('govuk_alpha_connections.network.load_more'));
-    expect(course).toContain('aria-label="Course progress: 42% complete"');
+    // Was hard-coded English on a page rendered in `locale`. Same cause as the
+    // aria-labels above.
+    expect(course).toContain(`aria-label="${attrEscape(t('govuk_alpha_commerce.learn.progress_label', { percent: 42 }))}"`);
     expect(search).not.toContain('<support>');
     expect(collection).not.toContain('<chat>');
   });

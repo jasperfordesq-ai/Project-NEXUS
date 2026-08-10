@@ -176,7 +176,18 @@ describe('Laravel-first Jobs template localization', () => {
     }));
 
     expect(html).toContain(`<html lang="${locale}" dir="${direction}" class="govuk-template">`);
-    expect(html).toContain(t('govuk_alpha_jobs.history.back_link'));
+    // Nunjucks renders with autoescape (see the environment above), so any
+    // APOSTROPHE in a translation becomes &#39; in the output. That first
+    // mattered when the catalogs became genuinely translated: the Irish value
+    // is "Ar ais go dtí m'iarratais". The English placeholder it replaced had
+    // no apostrophe, so a raw comparison happened to work.
+    const escaped = (s) => s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    expect(html).toContain(escaped(t('govuk_alpha_jobs.history.back_link')));
     expect(html).toContain(`<h1 class="govuk-heading-xl">${t('govuk_alpha_jobs.history.title')}</h1>`);
     expect(html).toContain(t('govuk_alpha_jobs.history.empty'));
   });

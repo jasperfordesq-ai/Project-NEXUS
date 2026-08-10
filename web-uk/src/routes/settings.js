@@ -24,6 +24,28 @@ const SETTINGS_LINK_PERMISSIONS = [
   'can_transact',
   'can_view_messages'
 ];
+// Where each linked-account permission's LABEL lives in the Laravel catalogs.
+//
+// Three still sit under `linked.permissions.*`. `can_view_messages` does not:
+// Laravel moved message viewing out of the flat permission list into its own
+// `linked_messages.*` namespace when it became a request-and-approve capability
+// (ask -> the other member approves -> viewing is recorded -> either side can
+// withdraw). The old `linked.permissions.can_view_messages` key was removed
+// upstream, so building the key by pattern rendered an EMPTY label here.
+//
+// 🔴 Scope note: this maps the label only. Web UK still presents message access
+// as a simple checkbox, whereas Laravel now runs the full consent flow above.
+// Reproducing that flow is outstanding parity work, not part of this fix —
+// see web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md.
+const SETTINGS_LINK_PERMISSION_LABEL_KEYS = {
+  can_view_messages: 'govuk_alpha_settings.linked_messages.view_link'
+};
+
+function linkPermissionLabelKey(permission) {
+  return SETTINGS_LINK_PERMISSION_LABEL_KEYS[permission]
+    || `govuk_alpha_settings.linked.permissions.${permission}`;
+}
+
 const SETTINGS_GDPR_TYPES = ['portability', 'rectification', 'restriction', 'objection'];
 const SETTINGS_INSURANCE_TYPES = [
   'public_liability',
@@ -455,7 +477,7 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
     permissions: SETTINGS_LINK_PERMISSIONS.map((permission) => ({
       value: permission,
       field: `perm_${permission}`,
-      label: res.locals.t(`govuk_alpha_settings.linked.permissions.${permission}`),
+      label: res.locals.t(linkPermissionLabelKey(permission)),
       checkedByDefault: permission === 'can_view_activity'
     }))
   });
