@@ -74,6 +74,8 @@ CLAUDE.md
 !/scripts/check-regression-patterns.sh
 !/scripts/check-dockerfile-drift.sh
 !/scripts/check-production-image-allowlist.mjs
+!/scripts/uptime-check.mjs
+!/scripts/uptime-targets.json
 !/scripts/check-compose-bootstrap-cache.mjs
 !/scripts/verify-feature.sh
 !/scripts/add-spdx-headers.mjs

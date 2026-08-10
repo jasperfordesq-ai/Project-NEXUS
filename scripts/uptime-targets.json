@@ -1,0 +1,61 @@
+{
+  "_comment": [
+    "Public endpoints probed by scripts/uptime-check.mjs on a schedule.",
+    "",
+    "This replaces the availability monitoring that lived in the",
+    "jasperfordesq-ai/api.project-nexus.net repository, which was archived on",
+    "2026-08-10. Archiving a repository disables its scheduled workflows, so",
+    "the ASP.NET API and Web UK frontend silently lost their only automated",
+    "up/down check on that date.",
+    "",
+    "Every entry MUST be an unauthenticated GET against a public URL. Do not",
+    "add an endpoint that requires a credential, mutates state, or is not",
+    "already public - this file is committed to a PUBLIC repository.",
+    "",
+    "'track' groups an endpoint by deployment: 'production' is the live",
+    "Laravel/React platform; 'experimental' is the ASP.NET backend and the Web",
+    "UK frontend, which are live on their own domains but are development-only",
+    "as far as this repository's deploy scripts are concerned."
+  ],
+  "timeoutMs": 15000,
+  "attempts": 3,
+  "retryDelayMs": 5000,
+  "targets": [
+    {
+      "name": "Sales site",
+      "url": "https://project-nexus.ie",
+      "track": "production",
+      "expectStatus": [200]
+    },
+    {
+      "name": "React app",
+      "url": "https://app.project-nexus.ie",
+      "track": "production",
+      "expectStatus": [200]
+    },
+    {
+      "name": "Laravel API",
+      "url": "https://api.project-nexus.ie/api/v2/health",
+      "track": "production",
+      "expectStatus": [200]
+    },
+    {
+      "name": "Accessible frontend",
+      "url": "https://accessible.project-nexus.ie",
+      "track": "production",
+      "expectStatus": [200]
+    },
+    {
+      "name": "ASP.NET API",
+      "url": "https://api.project-nexus.net/health",
+      "track": "experimental",
+      "expectStatus": [200]
+    },
+    {
+      "name": "Web UK frontend",
+      "url": "https://uk.project-nexus.net/health",
+      "track": "experimental",
+      "expectStatus": [200]
+    }
+  ]
+}

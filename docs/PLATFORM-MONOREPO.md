@@ -68,6 +68,22 @@ ASP.NET-specific workflow branch.
 were not imported. Keep the former repository archived as the historical
 record.
 
+### Monitoring moved with the archive
+
+🔴 Archiving a GitHub repository disables its scheduled workflows. The former
+repository ran the only automated availability check for the two services it
+deployed, so on 2026-08-10 `api.project-nexus.net` and `uk.project-nexus.net`
+lost that check while staying live on their public domains.
+
+`.github/workflows/uptime-check.yml` replaces it, and covers the Laravel/React
+production hosts as well, which previously had no scheduled availability check
+in this repository either. Endpoints live in `scripts/uptime-targets.json`;
+adding one means adding an unauthenticated, non-mutating, already-public GET —
+this repository is public.
+
+Alerts go to Telegram, matching `deploy-drift-watchdog.yml`, and are sent only
+when the state changes rather than on every scheduled run.
+
 ## Safe development commands
 
 ```powershell
