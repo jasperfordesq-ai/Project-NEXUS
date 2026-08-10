@@ -569,7 +569,7 @@ docker compose down
 docker compose ps
 ```
 
-See the root [agent instructions](../../CLAUDE.md) for the Docker-only project invariant and production-container warnings.
+See the root [agent instructions](../CLAUDE.md) for the Docker-only project invariant and production-container warnings.
 
 ## Environment Variables
 

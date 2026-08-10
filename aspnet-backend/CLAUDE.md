@@ -351,7 +351,8 @@ Audience entry points are [`docs/user/README.md`](docs/user/README.md),
 [`docs/admin/README.md`](docs/admin/README.md),
 [`docs/api/README.md`](docs/api/README.md), and
 [`docs/system/README.md`](docs/system/README.md). Support and private security
-reporting live in [`SUPPORT.md`](SUPPORT.md) and [`SECURITY.md`](SECURITY.md).
+reporting live in [`SUPPORT.md`](../SUPPORT.md) and
+[`SECURITY.md`](../SECURITY.md), at the monorepo root.
 
 When updating parity docs, cite local source paths instead of memory and keep
 the Laravel repo read-only.
