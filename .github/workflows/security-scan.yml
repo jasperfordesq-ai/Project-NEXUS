@@ -167,12 +167,40 @@ jobs:
       # A tag is not enough: tags can be moved by the publisher, so pin the
       # SHA and name the version beside it. To upgrade, bump BOTH together
       # after checking the release notes.
+      #
+      # 🔴 The Lob detector is excluded (2026-08-10), and pinning did NOT fix
+      # this — that is the whole point of the note below.
+      #
+      # The same 522 bogus "verified Lob" findings returned on the 2026-08-10
+      # 04:00 nightly and failed it. The pinned build is v3.96.0 from 2026-07-24,
+      # i.e. from BEFORE the problem first appeared, so this is not a scanner
+      # regression a version pin can hold back. "Verified" means TruffleHog
+      # called Lob's own API and got a success response; when that endpoint
+      # accepts anything, every candidate string verifies. The fault is
+      # server-side at Lob, so it will keep recurring until they fix it.
+      #
+      # Why excluding this ONE detector is safe here, and not a suppression of
+      # a real risk:
+      #   - Project NEXUS does not integrate Lob (a direct-mail API) anywhere.
+      #     Searched every PHP/TS/JS/JSON/env file for a Lob key, endpoint or
+      #     live_/test_ token: nothing.
+      #   - All 522 findings came from this one detector. Zero from any other,
+      #     so nothing else is being silenced.
+      #   - A gate that goes red overnight with no code change is the one thing
+      #     this scanner must never do (see the note above) — leaving it red
+      #     teaches everyone to ignore the security gate.
+      #
+      # `--exclude-detectors` validates its argument: an unrecognised name
+      # fails with "unrecognized detector type", so a typo here cannot silently
+      # disable nothing (verified against v3.96.0).
+      #
+      # 🔴 REMOVE this exclusion if the platform ever integrates Lob.
       - name: Check for Hardcoded Secrets
         if: ${{ !cancelled() }}
         uses: trufflesecurity/trufflehog@6f3c981e7b77f235fd2702dd74af25fc4b72bf11 # v3.96.0
         with:
           path: ./
-          extra_args: --only-verified
+          extra_args: --only-verified --exclude-detectors=lob
 
       # ── PHP dependency vulnerability check ───────────────────────
       # Blocks if any known vulnerabilities exist in composer.lock.

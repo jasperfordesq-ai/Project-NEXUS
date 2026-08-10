@@ -78,9 +78,28 @@ mattered when CodeQL was a blocking gate; under default setup it is
 non-blocking alerting, where a noisy alert is dismissed rather than failing a
 build.
 
-**Owner action:** repository *Settings → Advanced Security → Code scanning →
-CodeQL → Edit configuration*, tick **C#**, keep the existing languages. Default
-setup analyses C# without a build step, so no build configuration is needed.
+🔴 **It cannot be enabled until this branch merges.** Default setup only offers
+languages GitHub detects on the **default branch**, and `aspnet-backend/` is not
+on `main` yet — PR #169 is still a draft. `GET /repos/.../languages` returns PHP,
+TypeScript, Blade, JavaScript, Shell, CSS, SCSS, Dockerfile, Python, HTML and
+Makefile, with **no C#**, and `PATCH /code-scanning/default-setup` with `csharp`
+is rejected: *"One or more languages you selected are not present in the
+repository"* (HTTP 422, verified 2026-08-10). The tick box is genuinely absent
+from the settings UI for the same reason. This is therefore a **post-merge**
+action, not something anyone missed.
+
+**Action once merged:** repository *Settings → Advanced Security → Code scanning
+→ CodeQL → Edit configuration*, tick **C#**, keep the existing languages
+(`actions`, `javascript-typescript`, `python` — confirm against the live list
+first; the API replaces rather than appends). Default setup analyses C# with
+build-mode `none`, so no build configuration is needed. Equivalent CLI:
+
+```bash
+gh api -X PATCH repos/jasperfordesq-ai/nexus-v1/code-scanning/default-setup \
+  -f state=configured -f 'languages[]=actions' -f 'languages[]=javascript-typescript' \
+  -f 'languages[]=python' -f 'languages[]=csharp'
+```
+
 Severity: medium while ASP.NET has no production path; high the moment it gains
 one.
 
