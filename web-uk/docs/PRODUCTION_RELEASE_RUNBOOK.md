@@ -116,12 +116,12 @@ Use the checked-in multi-stage Dockerfile and the frozen repository SHA:
 
 ```powershell
 $sha = git rev-parse HEAD
-$nodeImage = 'node:20-alpine@sha256:<operator-approved-digest>'
+$nodeImage = 'node:22-alpine@sha256:<operator-approved-digest>'
 docker build --pull --target production `
   --build-arg "NODE_IMAGE=$nodeImage" `
   --label "org.opencontainers.image.revision=$sha" `
   --tag "nexus-web-uk:$sha" `
-  apps/web-uk
+  web-uk
 docker image inspect "nexus-web-uk:$sha" --format '{{json .RepoDigests}}'
 ```
 
