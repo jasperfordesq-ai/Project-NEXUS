@@ -34,12 +34,18 @@ describe('accessible route matrix generator', () => {
   let fixtureRoot;
   let sourceRoot;
   let targetRoot;
+  // Passed explicitly so these fixtures keep their historical
+  // <targetRoot>/apps/web-uk shape while the generator's own default follows
+  // the monorepo layout (web-uk/ beside the Laravel root). Passing it also
+  // means the tests exercise the option real callers can use.
+  let webUkRoot;
   let outDir;
 
   beforeEach(() => {
     fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'web-uk-route-matrix-'));
     sourceRoot = path.join(fixtureRoot, 'laravel');
     targetRoot = path.join(fixtureRoot, 'aspnet');
+    webUkRoot = path.join(targetRoot, 'apps', 'web-uk');
     outDir = path.join(fixtureRoot, 'out');
 
     writeFile(path.join(sourceRoot, 'routes', 'govuk-alpha.php'), `
@@ -158,6 +164,7 @@ module.exports = router;
     const report = generateAccessibleRouteMatrix({
       sourceRoot,
       targetRoot,
+      webUkRoot,
       outDir,
       provenance: fixtureProvenance(sourceRoot, targetRoot)
     });
@@ -298,6 +305,7 @@ module.exports.prepPages = prepPages;
     const report = generateAccessibleRouteMatrix({
       sourceRoot,
       targetRoot,
+      webUkRoot,
       outDir,
       provenance: fixtureProvenance(sourceRoot, targetRoot)
     });
@@ -362,6 +370,7 @@ module.exports = router;
     const report = generateAccessibleRouteMatrix({
       sourceRoot,
       targetRoot,
+      webUkRoot,
       outDir,
       provenance: fixtureProvenance(sourceRoot, targetRoot)
     });
@@ -392,6 +401,7 @@ app.use('/dashboard', dashboardRoutes);
     const report = generateAccessibleRouteMatrix({
       sourceRoot,
       targetRoot,
+      webUkRoot,
       outDir,
       provenance: fixtureProvenance(sourceRoot, targetRoot)
     });

@@ -2,19 +2,19 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-07-15T14:45:46.507Z
-Laravel commit SHA: `903d03d3db78bbf87129ad35728be3b72819acaf`
-Web UK repository commit SHA: `a3f18f0699f5590a47220f3fd501e93258f286f0`
+Generated: 2026-08-10T06:38:44.020Z
+Laravel commit SHA: `f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef`
+Web UK repository commit SHA: `f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
 
 | Metric | Count |
 | --- | ---: |
-| Laravel accessible routes | 689 |
+| Laravel accessible routes | 707 |
 | web-uk routes | 695 |
 | Matched routes | 688 |
-| Missing routes | 1 |
+| Missing routes | 19 |
 | Extra web-uk routes | 5 |
 | Ignored web-uk infrastructure routes | 3 |
 
@@ -84,29 +84,49 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | search | 6 | 0 | 0 | 0 |
 | service-unavailable | 0 | 0 | 0 | 1 |
 | session | 0 | 0 | 0 | 1 |
-| settings | 13 | 0 | 0 | 0 |
+| settings | 13 | 11 | 0 | 0 |
 | skills | 1 | 0 | 0 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
 | users | 3 | 0 | 0 | 0 |
+| venues | 0 | 5 | 0 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
 | volunteering | 52 | 0 | 1 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
+| whats-on | 0 | 2 | 0 | 0 |
 
 ## Missing Laravel Routes
 
 | Method | Path | Family | Handler | Blade view | Auth | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | `/events/{param}/check-in/code` | events | eventsOfflineCheckinCode |  | public-or-unknown |  |
+| GET | `/settings/guardians` | settings | settingsGuardians | settings-guardians | auth-optional |  |
+| GET | `/settings/linked-accounts/activity/{param}` | settings | settingsLinkedAccountActivity | settings-linked-account-activity | auth-optional |  |
+| GET | `/settings/linked-accounts/messages/{param}` | settings | settingsLinkedAccountMessages |  | public-or-unknown |  |
+| GET | `/settings/linked-accounts/messages/{param}/{param}` | settings | settingsLinkedAccountThread |  | public-or-unknown |  |
+| GET | `/settings/support-actions` | settings | settingsSupportActions | settings-support-actions | auth-optional |  |
+| POST | `/settings/guardians/permissions` | settings | settingsUpdateGuardianPermissions |  | auth-optional |  |
+| POST | `/settings/guardians/respond` | settings | settingsRespondToGuardian |  | auth-optional |  |
+| POST | `/settings/linked-accounts/message-access/request` | settings | settingsRequestMessageAccess |  | auth-optional |  |
+| POST | `/settings/linked-accounts/message-access/withdraw` | settings | settingsWithdrawMessageAccess |  | auth-optional |  |
+| POST | `/settings/linked-accounts/messages/{param}/purpose` | settings | settingsLinkedAccountMessagesPurpose |  | auth-optional |  |
+| POST | `/settings/support-actions/respond` | settings | settingsRespondToSupportAction |  | auth-optional |  |
+| GET | `/venues` | venues | venuesIndex | venues | auth-required | feature:partner_venues |
+| GET | `/venues/checkin/{param}` | venues | venuesCheckin | venue-checkin | auth-optional | feature:partner_venues |
+| GET | `/venues/pass` | venues | venuesPass | venue-pass | auth-optional | feature:partner_venues |
+| POST | `/venues/checkin/{param}` | venues | venuesCheckinStore | venue-checkin | auth-optional | feature:partner_venues |
+| POST | `/venues/pass/rotate` | venues | venuesPassRotate |  | auth-optional | feature:partner_venues |
+| GET | `/whats-on` | whats-on | whatsOnIndex | whats-on | public-or-unknown | feature:events; feature:public_events |
+| GET | `/whats-on/{param}` | whats-on | whatsOnShow | whats-on-detail | public-or-unknown | feature:events; feature:public_events |
 
 ## Extra Web UK Routes
 
 | Method | Path | Family | Web UK view | Web UK file |
 | --- | --- | --- | --- | --- |
-| GET | `/events/my` | events |  | C:\platforms\htdocs\asp.net-backend\apps\web-uk\src\server.js |
-| POST | `/events/{param}/rsvp/remove` | events |  | C:\platforms\htdocs\asp.net-backend\apps\web-uk\src\server.js |
-| GET | `/listings/{param}/delete` | listings |  | C:\platforms\htdocs\asp.net-backend\apps\web-uk\src\server.js |
-| POST | `/members/{param}/connect` | members |  | C:\platforms\htdocs\asp.net-backend\apps\web-uk\src\server.js |
-| GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | C:\platforms\htdocs\asp.net-backend\apps\web-uk\src\routes\volunteering-actions.js |
+| GET | `/events/my` | events |  | web-uk/src/server.js |
+| POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
+| GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
+| POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
+| GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
 
 ## Ignored Web UK Infrastructure Routes
 

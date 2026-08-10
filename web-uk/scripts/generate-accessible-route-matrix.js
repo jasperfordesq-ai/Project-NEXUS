@@ -450,8 +450,8 @@ function parseStaticPageRoutes(routeFile, prefix) {
   return routes;
 }
 
-function parseWebUkRoutes(targetRoot) {
-  const webRoot = path.join(targetRoot, 'apps', 'web-uk', 'src');
+function parseWebUkRoutes(webUkRoot) {
+  const webRoot = path.join(webUkRoot, 'src');
   const serverPath = path.join(webRoot, 'server.js');
 
   if (!fs.existsSync(serverPath)) {
@@ -735,21 +735,74 @@ function writeMarkdown(summary, matrix, filePath, provenance) {
   fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
 }
 
+// Record file paths relative to the nearest known root, with forward slashes,
+// so the generated artifacts are byte-identical on every machine and in CI.
+//
+// 🔴 They used to be written absolute. The committed matrix therefore carried
+// one developer's directory layout, which is both noise in every diff and
+// actively misleading once the tree moves — the CSV that shipped before the
+// consolidation still pointed at a checkout path that no longer exists.
+// Roots are tried most-general first so a monorepo path keeps its sibling
+// prefix (`web-uk/src/server.js`, not a bare `src/server.js`).
+function toRelativePath(filePath, roots) {
+  if (!filePath) {
+    return '';
+  }
+
+  for (const root of roots) {
+    if (!root) {
+      continue;
+    }
+
+    const relative = path.relative(root, filePath);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+      return relative.split(path.sep).join('/');
+    }
+  }
+
+  return filePath;
+}
+
+function relativizeMatrixPaths(matrix, roots) {
+  return matrix.map((row) => ({
+    ...row,
+    laravelRouteFile: toRelativePath(row.laravelRouteFile, roots),
+    laravelControllerFile: toRelativePath(row.laravelControllerFile, roots),
+    webUkFile: toRelativePath(row.webUkFile, roots)
+  }));
+}
+
+// Defaults follow the monorepo layout: this script lives at web-uk/scripts/, so
+// web-uk/ is one level up and the repository root is two. Laravel is AT that
+// repository root, which is why sourceRoot defaults to the same path.
+//
+// 🔴 These three were previously hardcoded to the pre-consolidation layout: a
+// targetRoot of `<repo>/..`, a webUkRoot of `<targetRoot>/apps/web-uk`, and a
+// sourceRoot of the literal string 'C:\platforms\htdocs\staging' — one
+// developer's Laravel checkout. Running it anywhere else silently produced an
+// empty or wrong matrix rather than failing, which is how the committed CSV
+// ended up carrying absolute paths from a machine layout that no longer exists.
+// Keep every root derived from __dirname or an explicit option; never reintroduce
+// an absolute path.
 function generateAccessibleRouteMatrix(options = {}) {
-  const targetRoot = options.targetRoot || path.resolve(__dirname, '..', '..', '..');
-  const sourceRoot = options.sourceRoot || 'C:\\platforms\\htdocs\\staging';
-  const outDir = options.outDir || path.join(targetRoot, 'apps', 'web-uk', 'docs', 'generated');
+  const webUkRoot = options.webUkRoot || path.resolve(__dirname, '..');
+  const targetRoot = options.targetRoot || path.resolve(__dirname, '..', '..');
+  const sourceRoot = options.sourceRoot || targetRoot;
+  const outDir = options.outDir || path.join(webUkRoot, 'docs', 'generated');
   const provenance = options.provenance || collectGeneratorProvenance({
     laravelRoot: sourceRoot,
-    webUkRoot: path.join(targetRoot, 'apps', 'web-uk'),
+    webUkRoot,
     generatedAt: options.generatedAt
   });
   const laravelRoutes = parseLaravelRoutes(sourceRoot);
   const methodDetails = parseControllerMethods(sourceRoot);
-  const webUkRoutes = parseWebUkRoutes(targetRoot).filter((route) => (
+  const webUkRoutes = parseWebUkRoutes(webUkRoot).filter((route) => (
     path.basename(route.webUkFile || '') !== 'laravel-prep-pages.js'
   ));
-  const matrix = buildMatrix(laravelRoutes, webUkRoutes, methodDetails);
+  const matrix = relativizeMatrixPaths(
+    buildMatrix(laravelRoutes, webUkRoutes, methodDetails),
+    [targetRoot, sourceRoot, webUkRoot]
+  );
   const summary = summarize(
     matrix,
     laravelRoutes,
@@ -784,6 +837,9 @@ function parseArgs(argv) {
       index += 1;
     } else if (arg === '--target-root') {
       options.targetRoot = next;
+      index += 1;
+    } else if (arg === '--web-uk-root') {
+      options.webUkRoot = next;
       index += 1;
     } else if (arg === '--out-dir') {
       options.outDir = next;
