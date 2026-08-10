@@ -6,7 +6,7 @@
 
 return [
     'opens_new_tab' => '(osclaítear i gcluaisín nua)',
-    'service_name' => 'Tionscadal NEXUS Inrochtana',
+    'service_name' => 'Project NEXUS Accessible',
     'phase' => 'Béite',
     'feedback' => 'Tabhair aiseolas',
     'feedback_url' => 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback',
