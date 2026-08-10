@@ -3,10 +3,31 @@
 # Author: Jasper Ford
 # See NOTICE file for attribution and acknowledgements.
 
+#
+# Every consumer root is an explicit, validated parameter.
+#
+# 🔴 This script used to accept only -SourceRoot / -TargetRoot and derive the
+# consumer directories from them, and BOTH derivations were dead:
+#   - Get-WebUkRoutes looked under <TargetRoot>\apps\web-uk\src. web-uk/ became
+#     a top-level sibling in the 2026-08-09 monorepo move.
+#   - Get-ReactRoutes was asked for <TargetRoot>\apps\react-frontend\src, which
+#     was deliberately deleted upstream in f27412bb ("delete dead
+#     apps/react-frontend and its wiring") because there is now ONE React
+#     frontend serving both backends.
+# Both helpers returned an empty collection for a missing directory, so the
+# script reported "0 routes, nothing missing" and exited 0. That is the whole
+# reason it could be green while comparing nothing. Missing roots are now a
+# hard failure — see Assert-ConsumerRoot.
+#
 [CmdletBinding()]
 param(
     [string]$TargetRoot,
     [string]$SourceRoot,
+    # The single shared React frontend. Inventoried, not compared: there is no
+    # second React app to compare it against, by design.
+    [string]$ReactRoot,
+    # The Web UK accessible frontend, a sibling of aspnet-backend/.
+    [string]$WebUkRoot,
     [string]$OutDir
 )
 
@@ -20,8 +41,35 @@ if ([string]::IsNullOrWhiteSpace($TargetRoot)) {
     $TargetRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 }
 
+if ([string]::IsNullOrWhiteSpace($ReactRoot)) {
+    $ReactRoot = Join-Path $SourceRoot 'react-frontend\src'
+}
+
+if ([string]::IsNullOrWhiteSpace($WebUkRoot)) {
+    $WebUkRoot = Join-Path $SourceRoot 'web-uk\src'
+}
+
 if ([string]::IsNullOrWhiteSpace($OutDir)) {
     $OutDir = Join-Path $TargetRoot 'artifacts\parity\frontend'
+}
+
+function Assert-ConsumerRoot {
+    param(
+        [string]$Name,
+        [string]$Path,
+        [string]$RequiredFile
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "$Name not found at '$Path'. This comparison is meaningless without it; pass the correct root rather than letting it report zero routes."
+    }
+
+    if ($RequiredFile) {
+        $full = Join-Path $Path $RequiredFile
+        if (-not (Test-Path -LiteralPath $full)) {
+            throw "$Name at '$Path' is missing '$RequiredFile'. Refusing to report an empty comparison."
+        }
+    }
 }
 
 function Ensure-Directory {
@@ -152,15 +200,13 @@ function Get-ReactRouteDetail {
 
 function Get-ReactRoutes {
     param(
-        [string]$Root,
-        [string]$RelativeRoot,
+        [string]$ReactSrcRoot,
         [string]$Origin
     )
 
-    $reactRoot = Join-Path $Root $RelativeRoot
-    if (-not (Test-Path -LiteralPath $reactRoot)) {
-        return @()
-    }
+    Assert-ConsumerRoot 'React frontend' $ReactSrcRoot
+
+    $reactRoot = $ReactSrcRoot
 
     $rows = New-Object System.Collections.Generic.List[object]
     $pathPattern = '<Route\s+[^>]*\bpath\s*=\s*["'']([^"'']+)["'']'
@@ -225,18 +271,14 @@ function Get-LaravelAccessibleRoutes {
 }
 
 function Get-WebUkRoutes {
-    param([string]$Root)
+    param([string]$WebRoot)
 
-    $webRoot = Join-Path $Root 'apps\web-uk\src'
-    if (-not (Test-Path -LiteralPath $webRoot)) {
-        return @()
-    }
+    # Caller has already asserted this exists; keep the guard as a contract
+    # check rather than a silent `return @()`.
+    Assert-ConsumerRoot 'Web UK frontend' $WebRoot 'server.js'
 
     $rows = New-Object System.Collections.Generic.List[object]
-    $serverPath = Join-Path $webRoot 'server.js'
-    if (-not (Test-Path -LiteralPath $serverPath)) {
-        return @()
-    }
+    $serverPath = Join-Path $WebRoot 'server.js'
 
     $serverText = Get-Content -Raw -LiteralPath $serverPath
     $directPattern = 'app\.(get|post|put|patch|delete)\s*\(\s*[''"]([^''"]+)[''"]'
@@ -388,16 +430,18 @@ function Write-MarkdownReport {
     $lines.Add('')
     $lines.Add('| Metric | Count |')
     $lines.Add('| --- | ---: |')
-    $lines.Add("| Laravel React routes | $($Summary.laravel_react_routes) |")
-    $lines.Add("| .NET React routes | $($Summary.dotnet_react_routes) |")
-    $lines.Add("| React matched routes | $($Summary.react_matched_routes) |")
-    $lines.Add("| React missing routes | $($Summary.react_missing_routes) |")
-    $lines.Add("| React extra routes | $($Summary.react_extra_routes) |")
+    $lines.Add("| Shared React routes (inventory only) | $($Summary.shared_react_routes) |")
     $lines.Add("| Laravel accessible routes | $($Summary.laravel_accessible_routes) |")
     $lines.Add("| .NET accessible routes | $($Summary.dotnet_accessible_routes) |")
     $lines.Add("| Accessible matched routes | $($Summary.accessible_matched_routes) |")
     $lines.Add("| Accessible missing routes | $($Summary.accessible_missing_routes) |")
     $lines.Add("| Accessible extra routes | $($Summary.accessible_extra_routes) |")
+    $lines.Add('')
+    $lines.Add('React is a single frontend shared by both backends, so it is')
+    $lines.Add('inventoried rather than compared; there is no second React app to')
+    $lines.Add('compare it against. Only the accessible surface is a two-sided')
+    $lines.Add('comparison. Every root above is asserted to exist before this report')
+    $lines.Add('is written, so a zero here means zero routes, never a missing folder.')
     $lines.Add('')
     $lines.Add('## Missing Source Routes')
     $lines.Add('')
@@ -432,23 +476,34 @@ function Write-MarkdownReport {
 try {
     Ensure-Directory $OutDir
 
-    $sourceReactRoutes = @(Get-ReactRoutes $SourceRoot 'react-frontend\src' 'laravel')
-    $targetReactRoutes = @(Get-ReactRoutes $TargetRoot 'apps\react-frontend\src' 'dotnet')
-    $sourceAccessibleRoutes = @(Get-LaravelAccessibleRoutes $SourceRoot)
-    $targetAccessibleRoutes = @(Get-WebUkRoutes $TargetRoot)
-    $sourceRoutes = @($sourceReactRoutes + $sourceAccessibleRoutes)
-    $targetRoutes = @($targetReactRoutes + $targetAccessibleRoutes)
+    # React is a SINGLE shared consumer: one app that must work against either
+    # backend. It is inventoried, never compared — a Laravel-side vs .NET-side
+    # React comparison stopped being a real question when apps/react-frontend
+    # was deleted (f27412bb), and reporting one would be invented evidence.
+    $sharedReactRoutes = @(Get-ReactRoutes $ReactRoot 'shared')
+
+    # The accessible surface IS a genuine two-sided comparison: Laravel's
+    # accessible frontend routes against the Web UK Express routes.
+    $sourceRoutes = @(Get-LaravelAccessibleRoutes $SourceRoot)
+    $targetRoutes = @(Get-WebUkRoutes $WebUkRoot)
+
+    if ($sourceRoutes.Count -eq 0) {
+        throw "No Laravel accessible routes found under '$SourceRoot'. Refusing to report a comparison against nothing."
+    }
+    if ($targetRoutes.Count -eq 0) {
+        throw "No Web UK routes found under '$WebUkRoot'. Refusing to report a comparison against nothing."
+    }
+
     $matrix = New-ParityMatrix $sourceRoutes $targetRoutes
 
     $summary = [pscustomobject]@{
         generated_at = (Get-Date).ToString('o')
         target_root = $TargetRoot
         source_root = $SourceRoot
-        laravel_react_routes = Count-Routes $sourceRoutes 'react'
-        dotnet_react_routes = Count-Routes $targetRoutes 'react'
-        react_matched_routes = Count-Matrix $matrix 'react' 'matched'
-        react_missing_routes = Count-Matrix $matrix 'react' 'missing'
-        react_extra_routes = Count-Matrix $matrix 'react' 'extra-dotnet'
+        react_root = $ReactRoot
+        web_uk_root = $WebUkRoot
+        shared_react_routes = $sharedReactRoutes.Count
+        react_comparison = 'not-applicable-single-shared-frontend'
         laravel_accessible_routes = Count-Routes $sourceRoutes 'accessible'
         dotnet_accessible_routes = Count-Routes $targetRoutes 'accessible'
         accessible_matched_routes = Count-Matrix $matrix 'accessible' 'matched'

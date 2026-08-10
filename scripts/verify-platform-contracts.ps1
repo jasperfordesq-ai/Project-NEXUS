@@ -51,6 +51,29 @@ Invoke-NativeCheck 'Laravel to ASP.NET schema inventory' {
         -OutDir (Join-Path $reportRoot 'schema')
 }
 
+# 🔴 The frontend comparison was written but never invoked — not here, not
+# anywhere — so the central question of the consolidation (do the frontends
+# still line up with the backends?) was checked by nothing, while this script
+# reported success. Wired in 2026-08-10.
+#
+# What this gates on, and what it does NOT:
+#   GATES: every consumer root exists and is readable. The comparator throws if
+#     one is missing, which is the exact failure mode that let it pass while
+#     comparing nothing.
+#   DOES NOT GATE: the parity counts themselves. They are a deliberately crude
+#     static match and currently report several hundred differences on both
+#     sides; web-uk's own generated docs call these counts backlog evidence,
+#     not a certification. Turning that into a blocking threshold would be
+#     inventing a contract nobody has agreed. Read the report instead.
+Invoke-NativeCheck 'Laravel to frontend consumer parity' {
+    & (Join-Path $aspNetRoot 'scripts\compare-laravel-frontend-parity.ps1') `
+        -SourceRoot $root `
+        -TargetRoot $aspNetRoot `
+        -ReactRoot (Join-Path $root 'react-frontend\src') `
+        -WebUkRoot (Join-Path $webUkRoot 'src') `
+        -OutDir (Join-Path $reportRoot 'frontend')
+}
+
 if (-not $SkipDotNet) {
     Invoke-NativeCheck 'ASP.NET build' {
         dotnet build (Join-Path $aspNetRoot 'Nexus.sln') --configuration Release

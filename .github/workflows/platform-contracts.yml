@@ -80,9 +80,31 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      # -SkipDotNet/-SkipReact/-SkipWebUk skip the build, lint and test steps
+      # ONLY. Those are not disabled checks — the aspnet-build, aspnet-api-tests,
+      # react-contracts and web-uk jobs in this same workflow run them properly,
+      # in parallel, on the right runners. What this step performs is the
+      # inventory and comparison work, which now includes the Laravel-to-frontend
+      # consumer comparison that until 2026-08-10 was never invoked from
+      # anywhere.
       - name: Verify comparison tools and generate current inventory
         shell: pwsh
         run: ./scripts/verify-platform-contracts.ps1 -SkipDotNet -SkipReact -SkipWebUk
+      # The markdown link checker takes one root at a time, so both siblings get
+      # their own pass. Not previously run by any workflow, while failing.
+      - name: Markdown links resolve (ASP.NET)
+        shell: pwsh
+        run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./aspnet-backend
+      - name: Markdown links resolve (Web UK)
+        shell: pwsh
+        run: ./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./web-uk
+      - name: Upload contract comparison reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-contract-reports
+          path: .local-docs-archive/platform-contracts/latest
+          if-no-files-found: warn
 
   aspnet-build:
     name: ASP.NET build
