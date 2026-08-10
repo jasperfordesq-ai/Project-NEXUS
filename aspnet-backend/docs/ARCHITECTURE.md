@@ -1,5 +1,12 @@
 # Project NEXUS Contract-Identical Backend Architecture
 
+> **Pre-consolidation paths.** Written before the 2026-08-09 move into the
+> platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
+> `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read
+> `web-uk/` and `aspnet-backend/` in this repository (the first two `apps/`
+> directories were deleted before the move). The paths are left unedited
+> because this is a record of what was true at the time.
+
 Last reviewed: 2026-07-14
 
 Status: **Maintained reference — canonical architecture; no current score**
@@ -19,13 +26,13 @@ only:
 | Frontend | Laravel backend | ASP.NET backend |
 | --- | --- | --- |
 | Canonical React at `C:\platforms\htdocs\staging\react-frontend` | Production source-of-truth baseline | Same methods, paths, payloads, envelopes, statuses, auth, tenancy, side effects, and workflows; runtime-certified |
-| Shared accessible Web UK at `apps/web-uk` | Laravel-first implementation and certification target | Same unchanged Web UK code and page flows; runtime-certified after backend contract parity |
+| Shared accessible Web UK at `web-uk` | Laravel-first implementation and certification target | Same unchanged Web UK code and page flows; runtime-certified after backend contract parity |
 
 ```mermaid
 flowchart TD
     users["Members and administrators"]
     react["Canonical React frontend\nLaravel repository"]
-    webuk["Shared accessible Web UK frontend\napps/web-uk"]
+    webuk["Shared accessible Web UK frontend\nweb-uk"]
     laravel["Laravel backend\nproduction contract source"]
     aspnet["ASP.NET Core 8 backend\nexperimental contract-identical target"]
     laravelBlade["Laravel Blade accessible UI\nvisual and workflow source"]
@@ -62,7 +69,7 @@ persistence, providers, or workflows.
 | ASP.NET data model | `src/Nexus.Api/Entities`, `src/Nexus.Api/Data`, `src/Nexus.Api/Migrations` | Tenant-aware EF persistence and forward-only migrations. |
 | Shared contracts | `src/Nexus.Contracts` | DTOs/contracts used outside API internals. |
 | Messaging | `src/Nexus.Messaging`, `tests/Nexus.Messaging.Tests` | RabbitMQ publishing and messaging integration proof. |
-| Shared accessible Web UK | `apps/web-uk` | Laravel-first accessible implementation; must remain backend-neutral. |
+| Shared accessible Web UK | `web-uk` | Laravel-first accessible implementation; must remain backend-neutral. |
 | ~~Legacy React copy~~ | *(deleted 2026-08-09)* | Retired. `apps/react-frontend` was removed from this repository and its production container and image were deleted. Do not recreate it. |
 | ~~Standalone admin~~ | *(deleted 2026-08-09)* | Retired. The admin panel lives in the canonical React frontend in the staging repository. |
 
@@ -73,7 +80,7 @@ canonical status sources:
 
 - `CURRENT_ASPNET_CONTRACT_STATUS.md` for the current ASP.NET fixed-rubric score,
   evidence SHAs, published-but-unscored work, blockers, and next queue;
-- `../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for the current
+- `../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for the current
   accessible frontend score, route/API ledgers, certification boundary, and
   next queue;
 - `FULL_PARITY_REMEDIATION_RUNBOOK.md` for the shared 1000-point rubric and

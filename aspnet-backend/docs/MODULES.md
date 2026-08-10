@@ -1,5 +1,12 @@
 # Laravel-to-.NET Module Map
 
+> **Pre-consolidation paths.** Written before the 2026-08-09 move into the
+> platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
+> `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read
+> `web-uk/` and `aspnet-backend/` in this repository (the first two `apps/`
+> directories were deleted before the move). The paths are left unedited
+> because this is a record of what was true at the time.
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained reference — qualitative map, not a completion score**
@@ -13,7 +20,7 @@ frontend; the canonical one lives in the staging repository.
 
 This is a qualitative module map, not current completion scoring. Read
 `CURRENT_ASPNET_CONTRACT_STATUS.md` for the current baseline and
-`../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for accessible-
+`../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for accessible-
 frontend status. A **Mapped** or **Partial** row does not certify either
 unchanged frontend against ASP.NET.
 
@@ -69,7 +76,7 @@ Status values:
 | Regional Analytics | `routes/regional-analytics-routes.txt`, `app/Services/RegionalAnalytics*`, `Api/SuperAdmin/RegionalAnalyticsAdminController.php`, regional analytics schema migrations | EF entities/configuration/migration/tests now cover `regional_analytics_subscriptions`, `regional_analytics_reports`, `regional_analytics_access_log`, and `regional_analytics_cache`; Laravel React super-admin subscription management/report queue/access-log calls now have backend compatibility routes and focused tests; tenant-admin overview, heatmap, demand/supply, demographics, engagement trends, volunteer breakdown, help-request analytics, export JSON, and cache invalidation routes now have backend compatibility routes and focused tests; partner report download now returns a valid minimal PDF from report metadata/payload instead of placeholder text | Partial: billing, stored-file fidelity, scheduled/monthly job workflows, deeper service parity, and runtime smoke coverage remain gaps |
 | National KISS | `NationalKissDashboardController.php`, `NationalKissDashboardService.php`, Laravel React `NationalKissDashboardPage.tsx` | `NationalKissDashboardController.cs` covers summary, comparative, trend, and cooperatives backend contracts with privacy-preserving buckets and focused regression tests | Partial: Laravel `tenants.tenant_category`, `national.kiss_dashboard.view` permission parity, caching, runtime smoke coverage, and deeper service equivalence remain gaps |
 | Partner API and portal | `app/Http/Controllers/Api/PartnerApi`, `app/Services/PartnerApi`, `react-frontend/src/partners` | `AdminApiPartnersController`, API partner entity/service | Partial |
-| Accessible frontend | `accessible-frontend/`, `routes/govuk-alpha.php`, `routes/govuk-alpha-parity/*` | `apps/web-uk/`; see `docs/FRONTEND_PARITY.md` | Partial |
+| Accessible frontend | `accessible-frontend/`, `routes/govuk-alpha.php`, `routes/govuk-alpha-parity/*` | `web-uk/`; see `docs/FRONTEND_PARITY.md` | Partial |
 
 ## Notes
 

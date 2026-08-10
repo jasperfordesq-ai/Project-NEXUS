@@ -38,8 +38,8 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
 | [API_PARITY.md](API_PARITY.md) | API contract inventory and comparison policy. |
 | [REACT_FRONTEND_RETIREMENT.md](REACT_FRONTEND_RETIREMENT.md) | Retirement policy for the old ASP.NET React fork and contract-identity rules for the Laravel React frontend. |
 | [ACCESSIBLE_SHARED_FRONTEND.md](ACCESSIBLE_SHARED_FRONTEND.md) | Current architecture, two Laravel sources of truth, repository/data boundaries, GOV.UK upstream references, and guardrails for the shared Web UK implementation. |
-| [../apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Current Laravel-first status, cross-session ownership boundaries, blockers, and ordered completion queue. Read this before older Web UK handoffs. |
-| [../apps/web-uk/docs/CURRENT_WEB_UK_HANDOFF.md](../../web-uk/docs/CURRENT_WEB_UK_HANDOFF.md) | Chronological Web UK implementation history and detailed legacy commands. Its old counts and scores are superseded by the Laravel-first status document above. |
+| [../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md](../../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md) | Current Laravel-first status, cross-session ownership boundaries, blockers, and ordered completion queue. Read this before older Web UK handoffs. |
+| [../../web-uk/docs/CURRENT_WEB_UK_HANDOFF.md](../../web-uk/docs/CURRENT_WEB_UK_HANDOFF.md) | Chronological Web UK implementation history and detailed legacy commands. Its old counts and scores are superseded by the Laravel-first status document above. |
 | [SCHEMA_PARITY.md](SCHEMA_PARITY.md) | Database table/entity/migration parity inventory and generated report policy. |
 | [FRONTEND_PARITY.md](FRONTEND_PARITY.md) | React and accessible frontend route parity inventory and generated report policy. |
 | [generated/canonical-react-contracts/README.md](generated/canonical-react-contracts/README.md) | Exact-SHA canonical React API call-site matrix against Laravel and ASP.NET route/method ownership; static evidence only, not a parity score. |
@@ -53,7 +53,7 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
   verification passes.
 - Keep the two workstream status documents as the only current score sources:
   `CURRENT_ASPNET_CONTRACT_STATUS.md` for ASP.NET and
-  `apps/web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for Web UK. Treat
+  `web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` for Web UK. Treat
   scores and counts in handoff histories as dated evidence only.
 - Keep Laravel references source-backed and path-specific.
 - Keep generated one-off reports out of committed docs unless curated into a
@@ -65,10 +65,10 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
   frontend contract target for ASP.NET contract identity.
 - Do not modify frontend files unless the user explicitly approves that specific
   frontend change.
-- Treat `apps/web-uk/` as the shared accessible frontend implementation target;
+- Treat `web-uk/` as the shared accessible frontend implementation target;
   its repository location does not make ASP.NET authoritative.
 - Treat Laravel Blade as the product/UI source of truth and the Laravel
-  backend/API as the backend-contract source of truth for `apps/web-uk/`.
+  backend/API as the backend-contract source of truth for `web-uk/`.
 - Do not modify ASP.NET backend code, migrations, schema, fixtures, or runtime
   data from the Web UK workstream.
 - Treat the Laravel repository, schema, and ordinary local database as read-only
@@ -76,5 +76,5 @@ configuration only, with Laravel defining the contract ASP.NET must satisfy.
   require a separately provisioned, verified disposable Laravel environment.
   The ordinary production-derived local database is never a test fixture; no
   cleanup plan creates an exception.
-- Do not point production utility-bar traffic at `apps/web-uk/` until accessible
+- Do not point production utility-bar traffic at `web-uk/` until accessible
   route/workflow/tenant/auth/accessibility certification passes.

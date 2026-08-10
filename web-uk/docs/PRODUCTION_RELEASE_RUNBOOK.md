@@ -1,5 +1,12 @@
 # Web UK Production Release Runbook
 
+> **Pre-consolidation paths.** Written before the 2026-08-09 move into the
+> platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
+> `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read
+> `web-uk/` and `aspnet-backend/` in this repository (the first two `apps/`
+> directories were deleted before the move). The paths are left unedited
+> because this is a record of what was true at the time.
+
 Last reviewed: 2026-07-15
 
 Status: **Maintained reference - deployment hold, no standing authorization**

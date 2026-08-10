@@ -249,7 +249,7 @@ reservations, waitlist entries, and other history explicitly before retrying.
 
 If an explicitly authorized future production plan includes
 `GuardianConsentLifecycle`, first read
-`../.claude/production-containers.md`, verify the exact component, source SHA,
+the production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 monorepo move; retained in the archive repository), verify the exact component, source SHA,
 and database target, and require independently checked backup/restore evidence
 plus an agreed rollback or forward-remediation plan. Review affected-row counts
 before approval. The migration deliberately expires legacy pending/active rows
@@ -523,7 +523,7 @@ focused/full tests -> PR/CI -> merge -> explicitly authorized deployment plan
 
 > **Production boundary:** This document does not authorize production access,
 > migration, backup, restore, or deployment. Before any production action, read
-> `../.claude/production-containers.md`, obtain explicit authorization for the
+> the production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 monorepo move; retained in the archive repository), obtain explicit authorization for the
 > exact component and SHA, and inspect the current operator scripts. The
 > production-oriented Make targets are fail-closed historical recipes, not
 > helpers, a standing runbook, or proof that a backup, workflow, or target is
@@ -654,7 +654,7 @@ unless every item below is satisfied:
 
 1. the user explicitly authorized the named component, source SHA, migration
    set, and database target;
-2. the operator read `../.claude/production-containers.md` immediately before
+2. the operator read the production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 monorepo move; retained in the archive repository) immediately before
    the action and confirmed the component-specific procedure;
 3. the live target and currently deployed source/image SHA were independently
    verified;
@@ -808,7 +808,7 @@ that has been applied or published without a reviewed reconciliation plan.
 Treat this as a production incident, not a prompt to copy files or modify the
 database. Stop the planned change and preserve the evidence. With explicit
 authorization for read-only investigation, read
-`../.claude/production-containers.md`, verify the target and deployed SHA, then
+the production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 monorepo move; retained in the archive repository), verify the target and deployed SHA, then
 compare the live migration history with trusted repository history. Escalate
 the discrepancy and agree a reviewed reconciliation and recovery plan before
 any source, schema, migration-history, or deployment change.

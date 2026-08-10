@@ -125,7 +125,7 @@ side-effect, accessibility, or production certification.
 
 ## Verification Commands
 
-From `apps/web-uk`:
+From `web-uk`:
 
 ```powershell
 npm ci

@@ -31,7 +31,7 @@ UK has completed that feature.
 | --- | --- | --- |
 | Canonical React with Laravel | Production source-of-truth product | Follow the link supplied by your community. Labels and available modules are tenant-specific. |
 | Laravel Blade accessible service | Current accessible browser-experience source | Use the `/accessible` address supplied by your community. |
-| Shared Web UK in `apps/web-uk` | Experimental, Laravel-first implementation | It is still under source and manual-accessibility verification. It must not be presented as certified merely because a page exists. |
+| Shared Web UK in `web-uk` | Experimental, Laravel-first implementation | It is still under source and manual-accessibility verification. It must not be presented as certified merely because a page exists. |
 | ASP.NET API | Experimental second backend | It is being made contract-correct but is not a certified replacement for Laravel. |
 | Standalone .NET admin app | Secondary administration surface | Its route presence does not certify a complete admin workflow. |
 

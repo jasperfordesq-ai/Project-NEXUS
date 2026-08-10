@@ -1,5 +1,12 @@
 # Windows Update Restart Incident - 2026-07-15
 
+> **Pre-consolidation paths.** Written before the 2026-08-09 move into the
+> platform monorepo. Where this document says `apps/web-uk`, `apps/admin`,
+> `apps/react-frontend` or `C:\platforms\htdocs\asp.net-backend`, read
+> `web-uk/` and `aspnet-backend/` in this repository (the first two `apps/`
+> directories were deleted before the move). The paths are left unedited
+> because this is a record of what was true at the time.
+
 Status: **Maintained incident record - Irish local time (UTC+01:00)**
 
 This record separates the host restart from the longer unattended-work

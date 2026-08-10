@@ -26,7 +26,7 @@ Never touch the Laravel blue/green containers from this repository.
 - `.claude/production-containers.md` is the component/container inventory and
   component-specific reference after explicit authorization.
 - `.claude/production-server.md` is only a connection pointer.
-- `apps/web-uk/docs/PRODUCTION_RELEASE_RUNBOOK.md` is fail-closed and retains a
+- `web-uk/docs/PRODUCTION_RELEASE_RUNBOOK.md` is fail-closed and retains a
   Web UK deployment hold.
 - `docs/database-migrations.md` owns migration method and safety explanation.
 - Historical `PHASE63_73_DEPLOY_NOTES.md` is quarantined and must not be used.
