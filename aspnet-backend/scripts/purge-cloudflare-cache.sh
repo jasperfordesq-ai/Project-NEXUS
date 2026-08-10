@@ -3,8 +3,9 @@
 # Project NEXUS .NET Edition - Cloudflare Cache Purge (All Domains)
 # =============================================================================
 # Purges the Cloudflare cache for all project domains.
-# Called automatically after every deployment by scripts/deploy.sh (Step 6)
-# and after the .NET Edition SPA swap documented in .claude/production-containers.md.
+# Run by hand. It was previously called automatically by scripts/deploy.sh,
+# which was removed on 2026-08-10 (see docs/system/OPERATIONS.md); there is no
+# automated caller any more.
 #
 # Usage:
 #   bash scripts/purge-cloudflare-cache.sh

@@ -77,6 +77,56 @@ accessible:
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 
+# ---------------------------------------------------------------------------
+# Monorepo siblings (development-only tracks, see docs/PLATFORM-MONOREPO.md).
+#
+# These wake .github/workflows/platform-contracts.yml, NOT ci.yml, and neither
+# appears in scripts/predeploy-ci-verify.mjs REQUIRED_JOBS — the ASP.NET
+# backend and Web UK frontend are not in any production deploy path.
+#
+# They are listed here anyway so that this file stays the single place where
+# "which paths wake which job" is written down, per the rule at the top.
+#
+# 🔴 Keep these NARROW. Before 2026-08-10 the ASP.NET test suite was woken by
+# 'app/**', 'routes/**', 'config/**', 'database/**' and 'react-frontend/**',
+# so every ordinary Laravel or React commit paid for a 55-minute .NET test run
+# that could not possibly be affected by the change. Do not re-add Laravel or
+# React paths here: nothing in aspnet-backend/ is built from them.
+aspnet:
+  - 'aspnet-backend/**'
+  # Shared payload shapes the ASP.NET contract tests assert against. Same
+  # reasoning as contracts/** in the php/frontend/mobile filters above.
+  - 'contracts/**'
+  - 'openapi.json'
+  - '.github/workflows/platform-contracts.yml'
+  - '.github/ci-paths.yml'
+
+webuk:
+  - 'web-uk/**'
+  - 'contracts/**'
+  - '.github/workflows/platform-contracts.yml'
+  - '.github/ci-paths.yml'
+
+# The Laravel-side contract inventory: what the comparison tooling reads when
+# it builds the "what does Laravel actually expose" side of the parity report.
+contracts_inventory:
+  - 'app/**'
+  - 'routes/**'
+  - 'config/**'
+  - 'database/**'
+  - 'openapi.json'
+  - 'contracts/**'
+  - 'scripts/verify-platform-contracts.ps1'
+  - '.github/workflows/platform-contracts.yml'
+  - '.github/ci-paths.yml'
+
+# The React guardrail job only inspects react-frontend/ sources.
+react_contracts:
+  - 'react-frontend/**'
+  - 'contracts/**'
+  - '.github/workflows/platform-contracts.yml'
+  - '.github/ci-paths.yml'
+
 i18n:
   - 'react-frontend/public/locales/**'
   - 'react-frontend/src/**/*.ts'

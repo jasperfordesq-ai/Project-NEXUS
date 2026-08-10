@@ -157,7 +157,8 @@ if [ $FAIL -gt 0 ]; then
     echo "  1. Inspect logs:   sudo docker logs --tail 200 <container-from-output>"
     echo "  2. Check limits:   grep -A2 'deploy:' compose.yml"
     echo "  3. Raise limit:    edit compose.yml -> deploy.resources.limits.memory"
-    echo "  4. Redeploy:       bash scripts/deploy.sh"
+    echo "  4. Redeploy:       no automated path — scripts/deploy.sh was removed"
+    echo "                     (development-only stack; see docs/system/OPERATIONS.md)"
     exit 1
 elif [ $WARN -gt 0 ]; then
     log_warn "Health check passed with ${WARN} warning(s)"
