@@ -7,6 +7,9 @@
 param(
     [string]$TargetRoot,
     [string]$SourceRoot,
+    # The shared React app's i18next catalogs. Explicit, because deriving it
+    # from $TargetRoot is what made this comparison silently empty.
+    [string]$ReactLocalesRoot,
     [string]$OutDir,
     [string[]]$KeyLocales = @('en')
 )
@@ -20,6 +23,10 @@ $script:LocalizationParseErrors = New-Object System.Collections.Generic.List[obj
 
 if ([string]::IsNullOrWhiteSpace($TargetRoot)) {
     $TargetRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+}
+
+if ([string]::IsNullOrWhiteSpace($ReactLocalesRoot)) {
+    $ReactLocalesRoot = Join-Path $SourceRoot 'react-frontend\public\locales'
 }
 
 if ([string]::IsNullOrWhiteSpace($OutDir)) {
@@ -205,7 +212,13 @@ function Get-LocalizationKeys {
 
     $localeRoot = Join-Path $Root $RelativeRoot
     if (-not (Test-Path -LiteralPath $localeRoot)) {
-        return @()
+        # IMPORTANT: this used to `return @()`. Combined with the dead
+        # apps\react-frontend path below, that produced a complete,
+        # plausible-looking "zero localization parity" report - 0 locales, 0
+        # namespaces, 0 keys, and every Laravel key listed as missing - and
+        # exited 0. A zero here must mean an empty directory, never an absent
+        # one.
+        throw "Localization root not found at '$localeRoot'. Refusing to report zero keys for a directory that does not exist; pass the correct root."
     }
 
     $rows = New-Object System.Collections.Generic.List[object]
@@ -521,7 +534,15 @@ try {
     Ensure-Directory $OutDir
 
     $sourceRows = @(Get-LocalizationKeys $SourceRoot 'lang' 'laravel' $KeyLocales)
-    $targetRows = @(Get-LocalizationKeys $TargetRoot 'apps\react-frontend\public\locales' 'dotnet' $KeyLocales)
+    # The shared React app's i18next catalogs. Unlike the route comparison in
+    # audit-platform-parity.ps1, this IS a genuine two-sided comparison - Laravel
+    # lang/ files against the frontend's catalogs, both of which exist - so it is
+    # repointed, not retired.
+    #
+    # IMPORTANT: this read <TargetRoot>\apps\react-frontend\public\locales until
+    # 2026-08-10. That app was deleted upstream in f27412bb, and $TargetRoot is
+    # aspnet-backend/ in any case, so it never resolved.
+    $targetRows = @(Get-LocalizationKeys $ReactLocalesRoot '' 'dotnet' $KeyLocales)
     $sourceKeyRows = @($sourceRows | Where-Object { $_.key -ne '__namespace_present__' })
     $targetKeyRows = @($targetRows | Where-Object { $_.key -ne '__namespace_present__' })
     $localeMatrix = New-LocaleMatrix $sourceRows $targetRows

@@ -22,10 +22,21 @@ Laravel source of truth: `C:\platforms\htdocs\staging\lang`.
 .NET historical React target: `apps/react-frontend/public/locales` — **deleted
 2026-08-09**.
 
-That React locale target no longer exists. `compare-laravel-localization-parity.ps1`
-still runs but its .NET side now always resolves empty; read that as "no
-.NET-side React frontend exists", not as a localization gap. The forward React localization contract is the production Laravel React
-frontend at `C:\platforms\htdocs\staging\react-frontend`. Backend localization,
+**Superseded 2026-08-10.** The paragraph that used to sit here told readers the
+comparator's .NET side "always resolves empty" and to read that as "no .NET-side
+React frontend exists". That instruction is no longer correct, and the situation
+it described was itself a bug: the script silently returned an empty set for a
+missing directory, producing a complete zero-parity report that exited 0.
+
+`compare-laravel-localization-parity.ps1` now takes an explicit
+`-ReactLocalesRoot`, defaulting to the shared React app at
+`react-frontend/public/locales` in this repository, and **throws** if the
+directory is absent. It is a real two-sided comparison again — a live run
+reports 11 locales on both sides, 11 matched, 0 missing. Do not interpret a zero
+from it as an absent frontend; a zero now means an empty catalog.
+
+The forward React localization contract is the shared React frontend at
+`react-frontend/` in this repository. Backend localization,
 email, validation, and API error-message parity should be implemented in ASP.NET
 backend resources or services, not by continuing development in the legacy React
 copy unless explicitly approved.

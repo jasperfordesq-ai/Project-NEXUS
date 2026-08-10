@@ -700,9 +700,24 @@ function renderMarkdown(report) {
   return `${lines.join('\n')}\n`;
 }
 
+// 🔴 Laravel is the monorepo root — this script lives at web-uk/scripts/, so
+// web-uk/ is one level up and the repository root is two.
+//
+// The default was previously the literal string 'C:\platforms\htdocs\staging'.
+// That is a DIFFERENT repository, and one that still exists on this machine, so
+// the generator did not fail — it silently produced a ledger describing another
+// checkout's API surface. The committed artifact still carried
+// `laravelRepositoryRoot: C:\platforms\htdocs\staging` and
+// `webUkRepositoryRoot: C:\platforms\htdocs\asp.net-backend` from 2026-07-15.
+// Its sibling generate-accessible-route-matrix.js had the identical fault and
+// was fixed on 2026-08-10; this is the same fix.
+//
+// Keep every root derived from __dirname or an explicit option; never
+// reintroduce an absolute path. LARAVEL_SOURCE_ROOT is retained as a deliberate
+// override for comparing against another checkout.
 function generateApiConsumerLedger(options = {}) {
   const webUkRoot = options.webUkRoot || path.resolve(__dirname, '..');
-  const laravelRoot = options.laravelRoot || process.env.LARAVEL_SOURCE_ROOT || 'C:\\platforms\\htdocs\\staging';
+  const laravelRoot = options.laravelRoot || process.env.LARAVEL_SOURCE_ROOT || path.resolve(__dirname, '..', '..');
   const outDir = options.outDir || path.join(webUkRoot, 'docs', 'generated');
   const apiPath = options.apiPath || path.join(webUkRoot, 'src', 'lib', 'api.js');
   const openApiPath = options.openApiPath || path.join(laravelRoot, 'openapi.json');

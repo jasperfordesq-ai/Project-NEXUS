@@ -89,7 +89,11 @@ return [
 }
 '@ | Set-Content -LiteralPath (Join-Path $targetRoot 'apps\react-frontend\public\locales\es\common.json')
 
-    & powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -TargetRoot $targetRoot -SourceRoot $sourceRoot -OutDir $outDir
+    # -ReactLocalesRoot passed explicitly so this fixture keeps its historical
+    # <targetRoot>\apps\react-frontend\... shape while the script's own default
+    # follows the monorepo layout. Passing it also exercises the parameter real
+    # callers use.
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath -TargetRoot $targetRoot -SourceRoot $sourceRoot -ReactLocalesRoot (Join-Path $targetRoot 'apps\react-frontend\public\locales') -OutDir $outDir
     if ($LASTEXITCODE -ne 0) {
         throw "compare-laravel-localization-parity.ps1 exited with $LASTEXITCODE"
     }
