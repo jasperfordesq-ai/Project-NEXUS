@@ -156,10 +156,17 @@ link arbitrary tool output merely to make documentation coverage appear full.
 Documentation-changing work must run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-documentation-consistency.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-markdown-links.ps1
 git diff --check
 ```
+
+`check-documentation-consistency.ps1` was deleted on 2026-08-10. It asserted a
+pre-consolidation layout (64 of its assertions named `apps/web-uk/...`, others
+named files the move did not import) and failed 73 times from a clean tree. Its
+job is now covered by checks that actually run: `check-markdown-links.ps1` above
+— executed for both siblings by the `Static contract inventory` job in
+`.github/workflows/platform-contracts.yml` — plus repo-root `markdownlint-cli2`
+and `npm run check:docs`. The original is retained in the archive repository.
 
 The consistency check is read-only. It protects canonical links, the 2x2
 architecture markers, current-score language, Web UK resume authority, and the

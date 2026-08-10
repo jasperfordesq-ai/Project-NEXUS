@@ -67,15 +67,18 @@ npm --prefix apps/web-uk test -- --runInBand
 npm --prefix apps/web-uk run lint
 npm --prefix apps/web-uk run brand:check
 npm --prefix apps/web-uk run build:css
-npm --prefix apps/web-uk run route:matrix
-npm --prefix apps/web-uk run api:ledger
-npm --prefix apps/web-uk run locales:audit
-npm --prefix apps/web-uk run locales:audit-keys
-npm --prefix apps/web-uk run locales:audit-templates -- --summary
-npm --prefix apps/web-uk run test:accessibility:isolated
-./scripts/check-documentation-consistency.ps1
-./scripts/check-markdown-links.ps1
+npm --prefix web-uk run route:matrix
+npm --prefix web-uk run api:ledger
+npm --prefix web-uk run locales:audit
+npm --prefix web-uk run locales:audit-keys
+npm --prefix web-uk run locales:audit-templates -- --summary
+npm --prefix web-uk run test:accessibility:isolated
+./aspnet-backend/scripts/check-markdown-links.ps1 -RepositoryRoot ./web-uk
 ```
+
+Run these from the monorepo root. `check-documentation-consistency.ps1` was
+deleted on 2026-08-10 (it asserted the pre-consolidation layout); the link
+check above is the surviving gate and runs in CI for both siblings.
 
 These gates prove only the source-owned release candidate. The accessibility
 command is deliberately limited to random-loopback Web UK plus a GET/HEAD-only

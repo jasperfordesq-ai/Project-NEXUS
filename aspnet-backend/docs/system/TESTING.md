@@ -42,12 +42,12 @@ or production-derived database even if its name happens to start with `nexus_`.
 Safe source-owned gates include:
 
 ```powershell
-npm --prefix apps/web-uk test -- --runInBand
-npm --prefix apps/web-uk run lint
-npm --prefix apps/web-uk run brand:check
-npm --prefix apps/web-uk run route:matrix
-npm --prefix apps/web-uk run api:ledger
-npm --prefix apps/web-uk run test:accessibility:isolated
+npm --prefix web-uk test -- --runInBand
+npm --prefix web-uk run lint
+npm --prefix web-uk run brand:check
+npm --prefix web-uk run route:matrix
+npm --prefix web-uk run api:ledger
+npm --prefix web-uk run test:accessibility:isolated
 ```
 
 The isolated accessibility command uses random loopback listeners and a
@@ -58,16 +58,19 @@ must be recorded separately from automated axe/structure results.
 
 There are no `apps/react-frontend` or `apps/admin` tests to run: both were
 deleted on 2026-08-09, and the `scripts/verify-base.ps1` checks that invoked
-them were removed at the same time. `apps/web-uk` (jest) is the only remaining
+them were removed at the same time. `web-uk` (jest) is the only remaining
 frontend suite in this repository.
 
 ## Documentation Gates
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-documentation-consistency.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-markdown-links.ps1
 git diff --check
 ```
+
+`check-documentation-consistency.ps1` was deleted on 2026-08-10 — it asserted
+the pre-consolidation directory layout and could not pass. The link check above
+runs in CI for both siblings.
 
 These protect structure, links, and selected contradictions. They do not prove
 that SHAs, route inventories, credentials, commands, or product prose are

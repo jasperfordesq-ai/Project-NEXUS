@@ -165,9 +165,8 @@ production work.
 Run from the repository root after fetching the published tags and refs:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-pause-readiness.ps1
-npm --prefix apps/web-uk ci
-npm --prefix apps/web-uk test -- --runInBand tests/contributors.test.js
+npm --prefix web-uk ci
+npm --prefix web-uk test -- --runInBand tests/contributors.test.js
 git status --short --branch
 git rev-parse HEAD
 git rev-parse origin/main
