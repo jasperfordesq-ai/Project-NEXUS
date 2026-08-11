@@ -38,6 +38,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [SAFEGUARDING-AND-CONSENT.md](SAFEGUARDING-AND-CONSENT.md) | Guardian relationships, versioned consent records, the safeguarding case workflow, vetting attestations, and the current state of acting on behalf of a member. |
 | [CI.md](CI.md) | The CI pipeline, which checks are blocking, PR gates, and how to run them locally. |
 | [TESTING.md](TESTING.md) | Test-layer meanings, E2E status, and generated-report policy. |
+| [REAL-SAFARI-TESTING.md](REAL-SAFARI-TESTING.md) | Safari coverage: the engine layer that runs on every push, the real-macOS layer and how to enable it, and what each one can and cannot prove. |
 | [LOCAL-PERFORMANCE.md](LOCAL-PERFORMANCE.md) | Getting full speed from a development machine, which concurrency knobs are machine-aware, and the container file-I/O bottleneck that CPU tuning cannot fix. |
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |

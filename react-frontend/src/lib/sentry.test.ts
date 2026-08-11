@@ -221,18 +221,116 @@ describe('sentry analytics consent checks', () => {
     vi.useRealTimers();
   });
 
-  it('is disabled when no consent stored', async () => {
+  /**
+   * 🔴 The two tests these replaced were named "is disabled when no consent
+   * stored" / "...when analytics consent is false" and asserted only
+   * `expect(() => initSentry()).not.toThrow()`. They never checked that anything
+   * was disabled, so they passed identically before and after the consent model
+   * changed — pinning nothing at all. The consent split is a privacy contract and
+   * has to be asserted in both directions.
+   */
+  it('reports crashes even without analytics consent — that is the point', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SENTRY_DSN', 'https://public@example.sentry.io/1');
     mockReadStoredConsent.mockReturnValue(null);
-    // Since sentry module is cached and IS_ENABLED is computed at module load time,
-    // we test the behavior via the exported functions
-    const { initSentry } = await import('./sentry');
-    expect(() => initSentry()).not.toThrow();
+    const Sentry = await import('@sentry/react');
+    vi.clearAllMocks();
+
+    const { initSentry, captureSentryException } = await import('./sentry');
+    initSentry();
+    await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
+
+    captureSentryException(new Error('safari only boom'));
+    // captureSentryException resolves the SDK lazily (`loadSentry().then(...)`),
+    // so the dispatch is not synchronous.
+    await vi.waitFor(() => expect(Sentry.captureException).toHaveBeenCalled());
   });
 
-  it('is disabled when analytics consent is false', async () => {
+  it('withholds the member identity without analytics consent', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SENTRY_DSN', 'https://public@example.sentry.io/1');
     mockReadStoredConsent.mockReturnValue({ analytics: false });
+    const Sentry = await import('@sentry/react');
+    vi.clearAllMocks();
+
+    const { initSentry, setSentryUser } = await import('./sentry');
+    initSentry();
+    await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
+
+    setSentryUser({ id: 4242 } as Parameters<typeof setSentryUser>[0]);
+    await vi.waitFor(() => expect(Sentry.setUser).toHaveBeenCalled());
+    // Reported, but not attributed to anybody.
+    expect(Sentry.setUser).toHaveBeenLastCalledWith(null);
+  });
+
+  it('attaches the member id once analytics consent is given', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SENTRY_DSN', 'https://public@example.sentry.io/1');
+    mockReadStoredConsent.mockReturnValue({ analytics: true });
+    const Sentry = await import('@sentry/react');
+    vi.clearAllMocks();
+
+    const { initSentry, setSentryUser } = await import('./sentry');
+    initSentry();
+    await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
+
+    setSentryUser({ id: 4242 } as Parameters<typeof setSentryUser>[0]);
+    await vi.waitFor(() =>
+      expect(Sentry.setUser).toHaveBeenLastCalledWith({ id: '4242' }),
+    );
+  });
+
+  it('does not trace performance without analytics consent', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SENTRY_DSN', 'https://public@example.sentry.io/1');
+    vi.stubEnv('VITE_SENTRY_TRACES_SAMPLE_RATE', '1');
+    mockReadStoredConsent.mockReturnValue({ analytics: false });
+    const Sentry = await import('@sentry/react');
+    vi.clearAllMocks();
+
     const { initSentry } = await import('./sentry');
-    expect(() => initSentry()).not.toThrow();
+    initSentry();
+    await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
+
+    // Not merely sampled to zero — the integration must not be registered.
+    expect(Sentry.browserTracingIntegration).not.toHaveBeenCalled();
+    expect(Sentry.init).toHaveBeenCalledWith(
+      expect.objectContaining({ tracesSampleRate: 0 }),
+    );
+  });
+
+  it('does not record the screen without analytics consent', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SENTRY_DSN', 'https://public@example.sentry.io/1');
+    // Replay explicitly enabled by env, and still refused without consent.
+    vi.stubEnv('VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE', '1');
+    mockReadStoredConsent.mockReturnValue({ analytics: false });
+    const Sentry = await import('@sentry/react');
+    vi.clearAllMocks();
+
+    const { initSentry } = await import('./sentry');
+    initSentry();
+    await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
+
+    expect(Sentry.replayIntegration).not.toHaveBeenCalled();
+    expect(Sentry.init).toHaveBeenCalledWith(
+      expect.objectContaining({ replaysOnErrorSampleRate: 0 }),
+    );
+  });
+
+  it('stays fully off when no DSN is configured, consent or not', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SENTRY_DSN', '');
+    mockReadStoredConsent.mockReturnValue({ analytics: true });
+    const Sentry = await import('@sentry/react');
+    vi.clearAllMocks();
+
+    const { initSentry, captureSentryException } = await import('./sentry');
+    initSentry();
+    captureSentryException(new Error('should go nowhere'));
+
+    expect(Sentry.init).not.toHaveBeenCalled();
+    expect(Sentry.captureException).not.toHaveBeenCalled();
   });
 
   it('returns the Sentry event id for captured messages when enabled', async () => {

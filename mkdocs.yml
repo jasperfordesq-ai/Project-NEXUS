@@ -88,6 +88,7 @@ nav:
       - Safeguarding & consent: SAFEGUARDING-AND-CONSENT.md
       - CI & quality gates: CI.md
       - Testing: TESTING.md
+      - Safari & macOS testing: REAL-SAFARI-TESTING.md
       - Local performance: LOCAL-PERFORMANCE.md
       - Custom domains: CUSTOM-DOMAINS.md
       - React dual-backend guardrails: REACT-DUAL-BACKEND.md

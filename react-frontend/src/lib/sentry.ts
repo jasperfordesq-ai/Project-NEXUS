@@ -8,8 +8,33 @@
  *
  * This wrapper deliberately avoids a static @sentry/react import. Public routes
  * import these helpers for breadcrumbs and error capture, so loading the SDK at
- * module evaluation time would put Sentry in the startup bundle even before the
- * visitor has granted analytics consent.
+ * module evaluation time would put Sentry in the startup bundle before it is
+ * needed. The dynamic import keeps it out of the startup graph.
+ *
+ * 🔴 CONSENT MODEL — changed 2026-08-11 by owner decision. Read this before
+ * touching `checkEnabled()`.
+ *
+ * Crash reporting used to require ANALYTICS consent, so one click on "Essential
+ * only" meant the platform never learned that anything had broken for that
+ * member. The consequence was measured, not theoretical: **2 frontend errors in
+ * 14 days across 369 members**, and a coordinator who hit real faults over three
+ * days generated NO client-side record at all. We were blind to exactly the
+ * people careful enough to decline optional cookies.
+ *
+ * The split is now:
+ *
+ *   ALWAYS ON — the error report itself: exception, stack, browser, OS, release.
+ *   Knowing our own software is broken is not tracking the person who found it.
+ *   `sendDefaultPii` stays false and `beforeSend` still scrubs sensitive fields.
+ *
+ *   ANALYTICS CONSENT ONLY — everything that goes beyond "it broke":
+ *     - the member's user id (pseudonymous, but it is still identifying them)
+ *     - performance tracing
+ *     - session replay, which records the screen
+ *
+ * So without consent we learn that a crash happened and where in the code, but
+ * not who it happened to. That is enough to find a Safari-only fault, which is
+ * what this change was for. Do not quietly widen it.
  */
 
 import { Component, createElement } from 'react';
@@ -32,10 +57,20 @@ const REPLAY_ON_ERROR_SAMPLE_RATE = Number.parseFloat(
   (import.meta.env.VITE_SENTRY_REPLAY_ON_ERROR_SAMPLE_RATE as string | undefined) || '0',
 );
 
+/**
+ * Whether to report crashes at all. A configured DSN is the only requirement —
+ * see the consent model in the module docblock.
+ */
 function checkEnabled(): boolean {
-  if (!DSN) return false;
-  const consent = readStoredConsent();
-  return consent?.analytics === true;
+  return Boolean(DSN);
+}
+
+/**
+ * Gates the parts that go beyond "something broke": the member's user id,
+ * performance tracing, and session replay.
+ */
+function hasAnalyticsConsent(): boolean {
+  return readStoredConsent()?.analytics === true;
 }
 
 let IS_ENABLED = checkEnabled();
@@ -87,6 +122,15 @@ function sensitiveFields(): string[] {
 }
 
 function applySentryUser(Sentry: SentryModule, user: User | null): void {
+  // Only the id, never email — but an id still identifies the member, so it is
+  // attached only with analytics consent. Without it a crash is still reported,
+  // just not tied to a person: enough to find the fault, not enough to profile
+  // whoever hit it. See the consent model in the module docblock.
+  if (!hasAnalyticsConsent()) {
+    Sentry.setUser(null);
+    return;
+  }
+
   Sentry.setUser(user ? { id: String(user.id) } : null);
 }
 
@@ -144,15 +188,25 @@ async function loadAndInitializeSentry(): Promise<void> {
   const Sentry = await loadSentry();
   if (!Sentry || hasInitialized || !IS_ENABLED) return;
 
-  const replayOnErrorSampleRate = getReplayOnErrorSampleRate();
+  // Everything beyond the crash report itself requires analytics consent.
+  const analyticsAllowed = hasAnalyticsConsent();
+  const replayOnErrorSampleRate = analyticsAllowed ? getReplayOnErrorSampleRate() : 0;
+
   const integrations: unknown[] = [
-    Sentry.browserTracingIntegration(),
     Sentry.feedbackIntegration({
       colorScheme: 'system',
       autoInject: false,
     }),
   ];
 
+  // Performance tracing measures how a member moves through the app, so it is
+  // analytics rather than "did it break". Without consent the integration is not
+  // registered at all, not merely sampled at zero.
+  if (analyticsAllowed) {
+    integrations.push(Sentry.browserTracingIntegration());
+  }
+
+  // Session replay records the screen. Consent-only, unconditionally.
   if (replayOnErrorSampleRate > 0) {
     integrations.push(Sentry.replayIntegration({
       maskAllText: true,
@@ -165,9 +219,9 @@ async function loadAndInitializeSentry(): Promise<void> {
     environment: (import.meta.env.VITE_SENTRY_ENVIRONMENT as string) || 'production',
     release: `nexus-react@${__BUILD_COMMIT__}`,
     sampleRate: 1.0,
-    tracesSampleRate: parseFloat(
-      (import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE as string) || '0.1',
-    ),
+    tracesSampleRate: analyticsAllowed
+      ? parseFloat((import.meta.env.VITE_SENTRY_TRACES_SAMPLE_RATE as string) || '0.1')
+      : 0,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: replayOnErrorSampleRate,
     maxBreadcrumbs: 50,

@@ -12,6 +12,51 @@ dotenv.config({ path: path.join(__dirname, 'e2e/.env.test') });
 const enterpriseEventsJourney = '**/events/enterprise-journey.spec.ts';
 
 /**
+ * Real Safari on real macOS, via a remote browser grid.
+ *
+ * 🔴 Why this exists. Playwright's bundled `webkit` is Safari's ENGINE, not
+ * Safari. It cannot tell you anything about Safari's own native form controls,
+ * content blockers and ad blockers, extensions, or Lockdown Mode — and after a
+ * Mac user reported the app misbehaving on 2026-08-09, those were exactly the
+ * things left untested once the engine came back clean. Closing that gap needs
+ * actual macOS, which no amount of local testing provides.
+ *
+ * Deliberately provider-agnostic: set `PLAYWRIGHT_REMOTE_WS_ENDPOINT` to any
+ * Playwright-compatible grid (BrowserStack, Sauce Labs, LambdaTest, or a
+ * self-hosted one). For BrowserStack specifically, setting
+ * `BROWSERSTACK_USERNAME` + `BROWSERSTACK_ACCESS_KEY` is enough and the endpoint
+ * is built below. See docs/REAL-SAFARI-TESTING.md.
+ *
+ * The project only exists when configured, so an unconfigured checkout is not
+ * left with a project that always fails.
+ */
+function realSafariWsEndpoint(): string | null {
+  const explicit = process.env.PLAYWRIGHT_REMOTE_WS_ENDPOINT;
+  if (explicit) return explicit;
+
+  const user = process.env.BROWSERSTACK_USERNAME;
+  const key = process.env.BROWSERSTACK_ACCESS_KEY;
+  if (!user || !key) return null;
+
+  const caps = {
+    browser: 'playwright-webkit',
+    os: 'OS X',
+    osVersion: process.env.BROWSERSTACK_OS_VERSION || 'Sonoma',
+    // Named so a failing run is identifiable in the provider's dashboard.
+    buildName: process.env.GITHUB_RUN_ID
+      ? `nexus-ci-${process.env.GITHUB_RUN_ID}`
+      : 'nexus-local',
+    sessionName: 'Real Safari on macOS',
+    'browserstack.username': user,
+    'browserstack.accessKey': key,
+  };
+
+  return `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
+}
+
+const REAL_SAFARI_WS = realSafariWsEndpoint();
+
+/**
  * Project NEXUS - E2E Test Configuration
  *
  * This configuration supports:
@@ -174,6 +219,31 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
+
+    // Real Safari on real macOS, via a remote grid. Only registered when
+    // configured — see realSafariWsEndpoint() above and
+    // docs/REAL-SAFARI-TESTING.md. This is the ONLY project that can see
+    // Safari's native controls, content blockers, extensions and Lockdown Mode;
+    // webkit-modern is the engine only.
+    ...(REAL_SAFARI_WS
+      ? [
+          {
+            name: 'real-safari',
+            // Keep it to the fast, high-signal specs. A remote grid is billed by
+            // the minute and is a poor place to run the whole suite.
+            testMatch: ['**/smoke.spec.ts', '**/ui/dropdowns.spec.ts'],
+            use: {
+              ...devices['Desktop Safari'],
+              // Desktop Safari's default 1280x720 sits below the header's
+              // desktop breakpoint, which silently skipped every menu test.
+              viewport: { width: 1440, height: 950 },
+              storageState: 'e2e/fixtures/.auth/user.json',
+              connectOptions: { wsEndpoint: REAL_SAFARI_WS },
+            },
+            dependencies: ['setup'],
+          },
+        ]
+      : []),
 
     // Chromium-only production PWA install/offline lifecycle. This project is
     // invoked against the built live stack; Vite development intentionally has
