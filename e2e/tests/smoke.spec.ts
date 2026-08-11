@@ -373,10 +373,28 @@ test.describe('Smoke Tests @smoke', () => {
       const content = page.locator('main, [role="main"], .content');
       await expect(content.first()).toBeVisible({ timeout: 30000 });
 
-      // Should have a heading or listing cards/list
-      const hasHeading = await page.locator('h1').isVisible({ timeout: 3000 }).catch(() => false);
-      const hasCards = await page.locator('article, [class*="card"], [class*="glass"]').first().isVisible({ timeout: 3000 }).catch(() => false);
-      expect(hasHeading || hasCards).toBeTruthy();
+      // Should have a heading or listing cards/list.
+      //
+      // 🔴 A WAITING assertion, because the previous form did not wait at all.
+      // It read:
+      //   const hasHeading = await page.locator('h1').isVisible({ timeout: 3000 })
+      // and `isVisible()` is an INSTANTANEOUS check — it returns the current state
+      // and ignores `timeout`. So the test looked like it allowed three seconds for
+      // the heading to appear and in fact raced React's first render, immediately
+      // after `main` became visible.
+      //
+      // That made it flaky in BOTH engines, not just Safari. On the run at
+      // 2026-08-11 (ae692b79d): chromium failed once and passed on retry 1; webkit
+      // failed twice and passed on retry 2 — consistent with WebKit simply being
+      // slower to paint, not with a Safari-specific defect.
+      //
+      // `.or()` waits for EITHER locator, so this now expresses what the old code
+      // meant. The `.catch(() => false)` is also gone: it silently swallowed
+      // strict-mode violations, so a page with two `h1`s would have reported
+      // "no heading" rather than the real problem.
+      const heading = page.locator('h1');
+      const cards = page.locator('article, [class*="card"], [class*="glass"]');
+      await expect(heading.or(cards).first()).toBeVisible({ timeout: 15000 });
 
       expect(consoleErrors).toHaveLength(0);
     });
