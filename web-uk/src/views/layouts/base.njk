@@ -67,16 +67,32 @@
     {% block header %}
       <header class="nexus-alpha-header" role="banner">
         <div class="govuk-width-container nexus-alpha-header__container">
-          <div class="nexus-alpha-header__identity">
-            <a class="nexus-alpha-header__brand govuk-!-font-size-24" href="{{ urlFor('/') }}">
-              {% if tenantLogoUrl %}
-                <img class="nexus-alpha-header__logo nexus-alpha-header__logo--{{ tenantLogoShape }}" src="{{ tenantLogoUrl }}" alt="{{ tenantName or serviceName }}" decoding="async">
-              {% else %}
-                {{ tenantName or serviceName }}
-              {% endif %}
-            </a>
-            <p class="nexus-alpha-header__disclaimer">{{ shellNotAffiliated }}</p>
-          </div>
+          {# Structural parity with accessible-frontend/views/layout.blade.php: the
+             brand link sits directly in the container. The former
+             `__identity` wrapper existed only to pair the brand with a
+             non-affiliation disclaimer that Blade never had, and which was
+             removed on the owner's decision (2026-08-11) — the GOV.UK Frontend
+             licence is MIT and requires attribution, not disavowal. The real
+             brand limits are still enforced by scripts/brand-check.js, which
+             refuses the crown, the copyright logo class, the crest, the official
+             header/footer macros, and the government copyright wording. (This
+             comment deliberately avoids quoting that wording: the check scans
+             templates for it, and it caught this comment on the first run.)
+
+             The logo is a tenant-uploaded RASTER image (transparent PNG
+             preferred), never an inline or generated SVG, so light/dark contrast
+             uses the real asset. The shell prefers the dark-background variant
+             because this header is always dark, and no width/height is set:
+             `.nexus-alpha-header__logo--{wide,landscape,square}` drives the
+             height from the aspect-ratio bucket, and hardcoding a size would
+             defeat it. Falls back to the tenant's name when no logo exists. #}
+          <a class="nexus-alpha-header__brand govuk-!-font-size-24" href="{{ urlFor('/') }}">
+            {% if tenantLogoUrl %}
+              <img class="nexus-alpha-header__logo nexus-alpha-header__logo--{{ tenantLogoShape }}" src="{{ tenantLogoUrl }}" alt="{{ tenantName or serviceName }}" decoding="async">
+            {% else %}
+              {{ tenantName or serviceName }}
+            {% endif %}
+          </a>
 
           <nav class="nexus-alpha-header__links" aria-label="{{ shellServiceLinks }}">
             {% if alphaLocaleOptions and alphaLocaleOptions.length > 1 %}

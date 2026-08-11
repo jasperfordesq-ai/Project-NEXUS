@@ -176,7 +176,9 @@ describe('Public Routes', () => {
       expect(response.text).toContain('class="nexus-alpha-header__logo nexus-alpha-header__logo--wide"');
       expect(response.text).toContain('src="http://127.0.0.1:8090/uploads/tenants/acme/tenant-logo.png"');
       expect(response.text).toContain('alt="Acme Timebank"');
-      expect(response.text).toContain('Not affiliated with GOV.UK');
+      // Removed 2026-08-11 (owner decision): Blade never carried this and the
+      // MIT licence does not require it. Asserted absent so it cannot return.
+      expect(response.text).not.toContain('Not affiliated with GOV.UK');
       expect(response.headers['content-security-policy']).toContain('img-src \'self\' data: http://127.0.0.1:8090');
       expect(response.text).toContain('Built for accessibility needs');
       expect(response.text).toContain('Members');

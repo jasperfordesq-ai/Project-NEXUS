@@ -42,16 +42,10 @@
 .nexus-alpha-header__logo--landscape { max-height: 64px; }
 .nexus-alpha-header__logo--square { max-height: 104px; }
 
-.nexus-alpha-header__identity {
-  min-width: 0;
-}
-
-.nexus-alpha-header__disclaimer {
-  margin: govuk-spacing(1) 0 0;
-  color: var(--nexus-alpha-header-fg, govuk-colour("white"));
-  font-size: 1rem;
-  line-height: 1.25;
-}
+// `.nexus-alpha-header__identity` and `.nexus-alpha-header__disclaimer` were
+// removed on 2026-08-11 with the header disclosure they existed to lay out. The
+// brand link now sits directly in the header container, matching
+// accessible-frontend/views/layout.blade.php.
 
 .nexus-alpha-header__links {
   display: flex;

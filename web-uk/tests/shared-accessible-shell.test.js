@@ -778,7 +778,8 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('class="nexus-alpha-header"');
     expect(response.text).toContain('Project NEXUS Accessible');
-    expect(response.text).toContain('Not affiliated with GOV.UK');
+    // Removed 2026-08-11 (owner decision) — see accessible-shell.test.js.
+    expect(response.text).not.toContain('Not affiliated with GOV.UK');
     expect(response.text).toContain('Choose a community');
     expect(response.text).toContain('href="/acme/accessible"');
     expect(response.text).not.toContain('class="govuk-service-navigation"');

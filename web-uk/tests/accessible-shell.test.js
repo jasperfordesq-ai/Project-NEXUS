@@ -80,12 +80,22 @@ describe('accessible shell tenant gating', () => {
     expect(resolveBackendAssetUrl('https://untrusted.example/logo.png')).toBe('');
   });
 
-  it('localizes the mandatory non-government header disclosure', () => {
+  /**
+   * 🔴 Inverted on 2026-08-11 (owner decision). The header disclosure was
+   * removed: Laravel Blade — the source of truth for the browser experience —
+   * never had it, and `govuk-frontend` is MIT, which requires the licence notice
+   * be retained rather than a visible statement disclaiming affiliation.
+   *
+   * This asserts it stays GONE, so it cannot creep back in as an unexplained
+   * string. The real brand limits are enforced separately by
+   * `scripts/brand-check.js` and are untouched.
+   */
+  it('exposes no non-government header disclosure', () => {
     const english = buildShellLocals({ query: {}, locale: 'en', path: '/', originalUrl: '/' }, false);
     const arabic = buildShellLocals({ query: {}, locale: 'ar', path: '/', originalUrl: '/' }, false);
 
-    expect(english.shellNotAffiliated).toBe('Not affiliated with GOV.UK');
-    expect(arabic.shellNotAffiliated).toBe('غير تابع لـ GOV.UK');
+    expect(english.shellNotAffiliated).toBeUndefined();
+    expect(arabic.shellNotAffiliated).toBeUndefined();
   });
 
   it('exposes Laravel bootstrap logo variants and a safe shape to the shell', () => {

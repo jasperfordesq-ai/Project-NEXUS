@@ -272,25 +272,43 @@ We use the GOV.UK Design System (govuk-frontend) for its accessibility and usabi
 1. **NO crown logo** - Never use the GOV.UK crown, crest, Royal Arms, or any government marks
 2. **NO GOV.UK header** - Never use `govukHeader` macro; always use custom header in `base.njk`
 3. **NO government branding** - No "GOV.UK" text in headers, footers, or anywhere implying government affiliation
-4. **MANDATORY disclaimer** - Header MUST include: "Not affiliated with GOV.UK"
+4. **NO government copyright wording** - No "Crown copyright", no Open Government Licence text or logo, no OGL class
 5. **Custom header/footer only** - See `src/views/layouts/base.njk` and `src/views/partials/footer.njk`
+6. **NO GDS Transport font** - the Sass override to a system font stack stays
 
-### Localized Non-Affiliation Disclosure (MANDATORY)
+### The header non-affiliation disclosure was REMOVED (owner decision, 2026-08-11)
 
-The non-affiliation disclosure is part of the service identity and must remain
-visible in the custom header for every offered locale. Its implementation is
-deliberately local to Web UK because Laravel's generated locale catalogs do not
-contain this project-specific legal/identity copy:
+This section previously required "Not affiliated with GOV.UK" in the header and
+called it mandatory. It is **no longer required and is no longer rendered**.
 
-- `src/lib/accessible-shell.js` owns `notAffiliatedByLocale` for all 11 offered
-  locales and exposes the request-localized value as `shellNotAffiliated`;
-- `src/views/layouts/base.njk` renders `shellNotAffiliated` inside the custom
-  header;
-- English is the safe fallback for an unknown locale;
-- do not move this string into the generated Laravel catalog JSON, hard-code an
-  English-only template value, or remove it while refactoring the shell;
-- keep `tests/accessible-shell.test.js`, the shared-shell render tests, and
-  `npm run brand:check` green when changing branding or localization behavior.
+Why the removal was correct, so nobody reinstates it by reflex:
+
+- **Laravel Blade never had it.** `accessible-frontend/` — the declared source of
+  truth for the browser experience — carries no such disclosure anywhere, so
+  keeping it made the two accessible frontends disagree on their own header.
+- **The licence does not ask for it.** `govuk-frontend` declares `license: MIT`
+  in `package.json`, and its README states the codebase and sample code are MIT
+  while documentation prose is Crown copyright under OGL v3.0. MIT requires the
+  licence notice be **retained**; neither licence requires a visible statement
+  **disclaiming** affiliation. This project uses the code, not the prose.
+
+What actually protects the position — and none of it was weakened:
+
+- no crown, crest or Royal Arms; no GOV.UK logotype;
+- no `govukHeader` / `govukFooter` macro, no footer identity;
+- no GDS Transport font;
+- no government copyright or licence wording;
+- a custom `nexus-alpha-header` carrying the tenant's own brand.
+
+`scripts/brand-check.js` still enforces all of the above and remains BLOCKING. It
+no longer asserts the disclosure, and a test now asserts the string stays
+**absent**, so re-adding it silently fails rather than passing quietly. Reinstate
+it only on a new explicit decision, recorded here.
+
+🔴 The residual risk was never the licence — it is passing off, i.e. *looking*
+like an official government service. That is managed by the list above. Adding
+the crown or the official header would create real exposure; removing a
+disclaimer from a site that already avoids every government mark does not.
 
 ### What We CAN Use
 

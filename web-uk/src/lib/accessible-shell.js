@@ -33,22 +33,23 @@ const localeOptions = [
   ['ar', 'العربية']
 ];
 
-// Web UK's branding guard requires this explicit non-government disclosure in
-// the shared header. Laravel Blade omits it, so this remains a deliberate local
-// compliance divergence rather than source-parity copy.
-const notAffiliatedByLocale = Object.freeze({
-  en: 'Not affiliated with GOV.UK',
-  ga: 'Níl sé cleamhnaithe le GOV.UK',
-  de: 'Nicht mit GOV.UK verbunden',
-  fr: 'Non affilié à GOV.UK',
-  it: 'Non affiliato a GOV.UK',
-  pt: 'Não afiliado ao GOV.UK',
-  es: 'No afiliado a GOV.UK',
-  nl: 'Niet verbonden aan GOV.UK',
-  pl: 'Brak powiązania z GOV.UK',
-  ja: 'GOV.UKとは提携していません',
-  ar: 'غير تابع لـ GOV.UK'
-});
+// 🔴 The header's "Not affiliated with GOV.UK" disclosure was REMOVED on the
+// owner's decision (2026-08-11), ending a divergence this file previously
+// described as deliberate.
+//
+// Why it was safe to remove:
+//   - Laravel Blade — the declared source of truth for the browser experience —
+//     never had it. Keeping it made the two accessible frontends disagree.
+//   - `govuk-frontend` is MIT (package.json `license: MIT`; its README states the
+//     codebase and sample code are MIT, documentation prose is Crown copyright
+//     under OGL v3.0). MIT requires the licence notice be retained; neither
+//     licence requires a visible statement disclaiming affiliation.
+//
+// What still protects the position, and must NOT be weakened: no crown, no GOV.UK
+// logotype, no `govukHeader`/footer identity, no GDS Transport, no "Crown
+// copyright" wording, and a custom `nexus-alpha-header`. `scripts/brand-check.js`
+// enforces those, and a test asserts the disclosure stays absent so it cannot
+// creep back in as an unexplained string.
 
 const navItems = [
   { key: 'home', label: 'Home', href: '/', anonymousOnly: true },
@@ -536,7 +537,6 @@ function buildShellLocals(req, isAuthenticated) {
     cookieSettingsUrl: urlFor('/cookies'),
     mainSiteUrl: process.env.MAIN_FRONTEND_URL || 'https://app.project-nexus.ie',
     sourceCodeUrl,
-    shellNotAffiliated: notAffiliatedByLocale[currentLocale] || notAffiliatedByLocale.en,
     sharedAccessibleStatus: 'candidate_not_certified'
   };
 }
