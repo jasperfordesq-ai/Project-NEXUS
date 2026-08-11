@@ -56,6 +56,8 @@ interface FormData {
   service_type: 'physical_only' | 'remote_only' | 'hybrid' | 'location_dependent';
   category_id: string;
   hours_estimate: string;
+  /** Empty string means "no limit" — see hours_available on the Listing type. */
+  hours_available: string;
   location: string;
   latitude?: number;
   longitude?: number;
@@ -84,6 +86,7 @@ const SERVER_FIELD_KEYS = new Set<string>([
   'service_type',
   'category_id',
   'hours_estimate',
+  'hours_available',
   'location',
   'latitude',
   'longitude',
@@ -127,6 +130,7 @@ const initialFormData: FormData = {
   service_type: 'hybrid',
   category_id: '',
   hours_estimate: '1',
+  hours_available: '',
   location: '',
   skill_tags: [],
 };
@@ -201,6 +205,8 @@ export interface ListingSubmitPayload {
   longitude?: number;
   category_id?: number;
   hours_estimate: number;
+  /** null = no cap on the total hours offered. */
+  hours_available: number | null;
   service_type: string;
 }
 
@@ -337,6 +343,10 @@ export function ListingForm({
             service_type: listing.service_type || 'hybrid',
             category_id: listing.category_id?.toString() || '',
             hours_estimate: (listing.hours_estimate ?? listing.estimated_hours ?? 1).toString(),
+            hours_available:
+              listing.hours_available === null || listing.hours_available === undefined
+                ? ''
+                : listing.hours_available.toString(),
             skill_tags: Array.isArray(listing.skill_tags) ? listing.skill_tags : [],
             // location/latitude/longitude are always sourced from the user's profile
             // (set during state initialisation above); do not overwrite with stored
@@ -407,6 +417,18 @@ export function ListingForm({
       newErrors.hours_estimate = t('form.hours_range');
     }
 
+    // Total-hours cap. Blank is valid and means no cap.
+    const rawAvailable = formData.hours_available.trim();
+    if (rawAvailable !== '') {
+      const available = parseFloat(rawAvailable);
+      if (isNaN(available) || available < 0.5) {
+        newErrors.hours_available = t('form.hours_available_range');
+      } else if (!isNaN(hours) && available < hours) {
+        // A cap below one exchange's duration makes the listing unbookable.
+        newErrors.hours_available = t('form.hours_available_below_estimate');
+      }
+    }
+
     if (formData.accessibility_notes && formData.accessibility_notes.length > 200) {
       newErrors.accessibility_notes = t('form.accessibility_max_length');
     }
@@ -461,6 +483,11 @@ export function ListingForm({
         longitude: formData.longitude,
         category_id: formData.category_id ? parseInt(formData.category_id, 10) : undefined,
         hours_estimate: parseFloat(formData.hours_estimate),
+        // Blank means "no limit", which the API stores as NULL. Sending an empty
+        // string instead would be cast to 0 and read as "no hours left".
+        hours_available: formData.hours_available.trim() === ''
+          ? null
+          : parseFloat(formData.hours_available),
         service_type: formData.service_type,
       };
 
@@ -973,6 +1000,28 @@ export function ListingForm({
               step={0.5}
               isInvalid={!!errors.hours_estimate}
               errorMessage={errors.hours_estimate}
+              startContent={<Clock className="w-4 h-4 text-theme-subtle" aria-hidden="true" />}
+              classNames={{
+                input: 'bg-transparent text-theme-primary',
+                inputWrapper: 'bg-theme-elevated border-theme-default',
+                label: 'text-theme-muted',
+              }}
+            />
+          </div>
+
+          <div>
+            <Input
+              type="number"
+              inputMode="decimal"
+              label={t('form.hours_available_label')}
+              placeholder={t('form.hours_available_placeholder')}
+              description={t('form.hours_available_help')}
+              value={formData.hours_available}
+              onChange={(e) => updateField('hours_available', e.target.value)}
+              min={0.5}
+              step={0.5}
+              isInvalid={!!errors.hours_available}
+              errorMessage={errors.hours_available}
               startContent={<Clock className="w-4 h-4 text-theme-subtle" aria-hidden="true" />}
               classNames={{
                 input: 'bg-transparent text-theme-primary',

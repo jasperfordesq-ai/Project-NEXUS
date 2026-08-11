@@ -46,6 +46,7 @@ class Listing extends Model
         'direct_messaging_disabled',
         'exchange_workflow_required',
         'hours_estimate',
+        'hours_available',
         'renewed_at',
         'renewal_count',
         'view_count',
@@ -70,6 +71,8 @@ class Listing extends Model
         'longitude' => 'float',
         'price' => 'decimal:2',
         'hours_estimate' => 'decimal:2',
+        // NULL means no cap — see the 2026_08_11 add_hours_available migration.
+        'hours_available' => 'decimal:2',
         'direct_messaging_disabled' => 'boolean',
         'exchange_workflow_required' => 'boolean',
         'is_featured' => 'boolean',

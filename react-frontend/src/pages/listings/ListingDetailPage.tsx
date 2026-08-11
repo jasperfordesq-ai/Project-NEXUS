@@ -627,6 +627,14 @@ export function ListingDetailPage() {
                   ? t('detail_hours', { count: listing.hours_estimate ?? listing.estimated_hours })
                   : t('detail_flexible')}
               </div>
+              {/* Total-hours cap, shown only when the member set one. Kept inside
+                  the duration tile rather than added as a fifth tile, so the
+                  two hour numbers read together and the 4-column grid holds. */}
+              {listing.hours_available != null && (
+                <div className="truncate text-xs text-theme-subtle">
+                  {t('detail_hours_available', { count: listing.hours_available })}
+                </div>
+              )}
             </div>
           </div>
 

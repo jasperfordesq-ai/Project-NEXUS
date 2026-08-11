@@ -1083,6 +1083,11 @@ class ListingService
                 'latitude'              => $data['latitude'] ?? null,
                 'longitude'             => $data['longitude'] ?? null,
                 'hours_estimate'        => isset($data['hours_estimate']) ? (float) $data['hours_estimate'] : null,
+                // NULL = no cap on the total hours offered. An empty string from
+                // a cleared form field must also mean "no cap", not 0.
+                'hours_available'       => (isset($data['hours_available']) && $data['hours_available'] !== '')
+                    ? (float) $data['hours_available']
+                    : null,
                 'service_type'          => $data['service_type'] ?? 'physical_only',
                 'federated_visibility'  => $data['federated_visibility'] ?? 'none',
                 'availability'          => $data['availability'] ?? null,
@@ -1208,11 +1213,20 @@ class ListingService
 
         $allowed = [
             'title', 'description', 'type', 'category_id', 'image_url',
-            'location', 'latitude', 'longitude', 'hours_estimate',
+            'location', 'latitude', 'longitude', 'hours_estimate', 'hours_available',
             'service_type', 'federated_visibility', 'status', 'sdg_goals', 'availability',
         ];
 
-        $listing->fill(collect($data)->only($allowed)->all());
+        $updates = collect($data)->only($allowed)->all();
+
+        // Clearing the cap field must remove the cap. Without this an empty
+        // string would be cast to 0.00 by the decimal cast, silently turning
+        // "no limit" into "no hours left".
+        if (array_key_exists('hours_available', $updates) && $updates['hours_available'] === '') {
+            $updates['hours_available'] = null;
+        }
+
+        $listing->fill($updates);
         $listing->save();
 
         // Notify users who have saved/favourited this listing (exclude the listing owner)
@@ -1507,6 +1521,26 @@ class ListingService
         $rules['service_type']         = 'sometimes|in:physical_only,remote_only,hybrid,location_dependent';
         $rules['federated_visibility'] = 'sometimes|in:none,listed,bookable';
         $rules['hours_estimate']       = $hoursRules;
+
+        // Total hours the member is willing to give. Always optional — absent or
+        // null means no cap, which is what every listing did before this field
+        // existed.
+        $availableRules = ['sometimes', 'nullable', 'numeric', 'min:0.5', 'max:100000'];
+
+        // Reject a cap that cannot fit even one exchange (e.g. a 3-hour task with
+        // a 2-hour total), which would leave the listing unbookable the moment it
+        // was published. Only comparable when BOTH numbers are in this payload:
+        // Laravel's `gte:<field>` compares against null when the other field is
+        // absent, which does not mean what it looks like it means.
+        if (
+            isset($data['hours_estimate'], $data['hours_available'])
+            && is_numeric($data['hours_estimate'])
+            && is_numeric($data['hours_available'])
+        ) {
+            $availableRules[] = 'gte:hours_estimate';
+        }
+
+        $rules['hours_available']      = implode('|', $availableRules);
         $rules['location']             = $locationRules;
         $rules['latitude']             = 'sometimes|nullable|numeric|min:-90|max:90';
         $rules['longitude']            = 'sometimes|nullable|numeric|min:-180|max:180';

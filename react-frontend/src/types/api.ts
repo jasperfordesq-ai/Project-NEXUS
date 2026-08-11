@@ -256,6 +256,12 @@ export interface Listing {
   category_color?: string;
   estimated_hours?: number;
   hours_estimate?: number;  // Alias for estimated_hours (frontend compatibility)
+  /**
+   * Total hours the member is willing to give for this listing. `null` or absent
+   * means no cap — distinct from `hours_estimate`, which is how long ONE
+   * exchange is expected to take.
+   */
+  hours_available?: number | null;
   location?: string | null;
   latitude?: number | null;
   longitude?: number | null;
