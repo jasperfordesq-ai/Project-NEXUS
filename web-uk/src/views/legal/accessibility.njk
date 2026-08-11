@@ -10,7 +10,26 @@
       <a class="govuk-back-link" href="{{ urlFor('/legal') }}">{{ t("legal.back_to_hub") }}</a>
 
       <span class="govuk-caption-l">{{ t("accessibility.caption", { community: communityName }) }}</span>
-      <h1 class="govuk-heading-xl">{{ t("accessibility.title") if t else title }}</h1>
+      <h1 class="govuk-heading-xl">{% if document %}{{ document.title }}{% else %}{{ t("accessibility.title") if t else title }}{% endif %}</h1>
+
+      {# `accessibility` is a valid legal document type, so a community can publish
+         its own statement. Blade never asks the API for it, which means a
+         published statement is silently ignored there. When none exists — which
+         is every community today — the standard statement below is what shows,
+         so this changes nothing for anybody who has not opted in. #}
+      {% if document %}
+        {% if document.updatedAt %}
+          <p class="govuk-body-s nexus-alpha-meta">
+            {{ t("legal.effective_from_label") if document.notYetInForce else t("legal.updated_label") }}:
+            <time datetime="{{ document.updatedAtIso }}">{{ document.updatedAt | formatLegalDate }}</time>
+            {% if document.versionNumber %} &middot; {{ t("legal.version_label") }} {{ document.versionNumber }}{% endif %}
+          </p>
+        {% endif %}
+        <div class="legal-content govuk-body">
+          {{ document.content | safe }}
+        </div>
+        <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("accessibility.feedback_cta") }}</a></p>
+      {% else %}
       <p class="govuk-body-l">{{ t("accessibility.intro", { name: communityName }) }}</p>
 
       <h2 class="govuk-heading-m">{{ t("accessibility.conformance_title") }}</h2>
@@ -29,6 +48,7 @@
       <h2 class="govuk-heading-m">{{ t("accessibility.feedback_title") }}</h2>
       <p class="govuk-body">{{ t("accessibility.feedback_body") }}</p>
       <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/contact') }}">{{ t("accessibility.feedback_cta") }}</a></p>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

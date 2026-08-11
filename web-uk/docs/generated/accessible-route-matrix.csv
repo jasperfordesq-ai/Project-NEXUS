@@ -1,8 +1,13 @@
 status,method,path,family,laravelRouteName,laravelHandler,laravelView,laravelParamConstraints,auth,tenantScoped,gates,apiNeeds,webUkView,webUkRouteKind,laravelRouteFile,laravelControllerFile,webUkFile,laravelMiddleware
 extra-web-uk,GET,/events/my,events,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/events/{param}/rsvp/remove,events,,,,,,,,,,,,,web-uk/src/server.js,
+extra-web-uk,GET,/legal/{param}/versions,legal,,,,,,,,,legal/versions,,,,web-uk/src/routes/legal.js,
+extra-web-uk,GET,/legal/{param}/versions/{param},legal,,,,,,,,,legal/version,,,,web-uk/src/routes/legal.js,
+extra-web-uk,GET,/legal/{param}/versions/compare,legal,,,,,,,,,legal/compare,,,,web-uk/src/routes/legal.js,
 extra-web-uk,GET,/listings/{param}/delete,listings,,,,,,,,,,,,,web-uk/src/server.js,
 extra-web-uk,POST,/members/{param}/connect,members,,,,,,,,,,,,,web-uk/src/server.js,
+extra-web-uk,GET,/privacy,privacy,,,,,,,,,,,,,web-uk/src/routes/legal.js,
+extra-web-uk,GET,/terms,terms,,,,,,,,,,,,,web-uk/src/routes/legal.js,
 extra-web-uk,GET,/volunteering/credentials/{param}/download,volunteering,,,,,,,,,streamed-download,,,,web-uk/src/routes/volunteering-actions.js,
 ignored-web-uk-infrastructure,GET,/health,health,,,,,,,,,,infrastructure,,,web-uk/src/server.js,
 ignored-web-uk-infrastructure,GET,/service-unavailable,service-unavailable,,,,,,,,,,infrastructure,,,web-uk/src/server.js,

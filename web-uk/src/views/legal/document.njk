@@ -14,14 +14,57 @@
 
       {% if document %}
         {% if document.updatedAt or document.versionNumber %}
+          {# 🔴 `formatLegalDate`, never `formatDate`. A legal effective_date is
+             routinely FUTURE-dated, and the relative-time filter renders a
+             negative difference as "just now" — claiming terms apply now when
+             they do not. The ISO value in `datetime` is exactly what Blade
+             prints. #}
           <p class="govuk-body-s nexus-alpha-meta">
-            {% if document.updatedAt %}{{ t("legal.updated_label") }}: {{ document.updatedAt | formatDate }}{% endif %}
+            {% if document.updatedAt %}{{ t("legal.effective_from_label") if document.notYetInForce else t("legal.updated_label") }}: <time datetime="{{ document.updatedAtIso }}">{{ document.updatedAt | formatLegalDate }}</time>{% endif %}
             {% if document.versionNumber %}{% if document.updatedAt %} &middot; {% endif %}{{ t("legal.version_label") }} {{ document.versionNumber }}{% endif %}
           </p>
         {% endif %}
+
+        {% if document.notYetInForce %}
+          <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+              <span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>
+              {{ t("legal.not_yet_in_force") }}
+            </strong>
+          </div>
+        {% endif %}
+
+        {% if document.summaryOfChanges %}
+          <h2 class="govuk-heading-m">{{ t("legal.summary_of_changes_title") }}</h2>
+          <p class="govuk-body">{{ document.summaryOfChanges }}</p>
+        {% endif %}
+
+        {# Built on the server from the document's own headings, so it works with
+           JavaScript switched off. Only worth rendering for a document long
+           enough to need it. #}
+        {% if document.headings | length > 2 %}
+          <nav class="nexus-alpha-toc" aria-labelledby="legal-contents-title">
+            <h2 class="govuk-heading-s" id="legal-contents-title">{{ t("legal.contents_title") }}</h2>
+            <ul class="govuk-list">
+              {% for heading in document.headings %}
+                <li{% if heading.level == 3 %} class="nexus-alpha-toc__sub"{% endif %}>
+                  <a class="govuk-link" href="#{{ heading.id }}">{{ heading.label }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        {% endif %}
+
         <div class="legal-content govuk-body">
           {{ document.content | safe }}
         </div>
+
+        {% if document.hasPreviousVersions %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ urlFor('/legal/' + docSlug + '/versions') }}">{{ t("legal.previous_versions_link") }}</a>
+          </p>
+        {% endif %}
       {% else %}
         <div class="govuk-inset-text">{{ t("legal.no_document_notice", { community: communityName }) }}</div>
 

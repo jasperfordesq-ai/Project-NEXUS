@@ -5,14 +5,14 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-11T08:43:08.687Z
-- Laravel commit SHA: `f144201f592892a99babe09fab9c253105962874`
-- Web UK repository commit SHA: `f144201f592892a99babe09fab9c253105962874`
+- Generated: 2026-08-11T09:04:13.696Z
+- Laravel commit SHA: `51014a72d484b8b0404387885b2104ee27d266ad`
+- Web UK repository commit SHA: `51014a72d484b8b0404387885b2104ee27d266ad`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 688
-- Laravel OpenAPI matches: 461
+- Contracts: 691
+- Laravel OpenAPI matches: 464
 - Missing OpenAPI matches: 227
 - Direct Laravel route declarations omitted from OpenAPI: 227
 - Without a direct Laravel route declaration: 0
@@ -23,7 +23,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique helpers without direct API-helper assertions: 0
 - State-changing rows without direct API-helper assertions: 0
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `0cc83a2c47c7f3373c627f899fd3519a71c4a3cb77764a5bb5f3a4cc809a49fc`
+- API source SHA-256: `e9f876ee2520f8dc6aa811710991d40735942bea67760cfcce230f6a8ecd8483`
 - Laravel OpenAPI SHA-256: `a1ccb5360deda28cf179065ebf6e5273f8c9ac50f63322de44fffe2e53b8de5b`
 - Laravel API routes SHA-256: `94c26fe5ddb82c4510586a018c75d0c6946c0828b9947756ef900ddaaa98bec0`
 
@@ -419,7 +419,10 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/kb?{query}` | `getKnowledgeBaseArticles` | documented | read-only by HTTP method<br>not applicable | src/routes/kb.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/kb/{param}` | `getKnowledgeBaseArticle` | documented | read-only by HTTP method<br>not applicable | src/routes/kb.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/kb/search?{query}` | `getKnowledgeBaseArticles` | documented | read-only by HTTP method<br>not applicable | src/routes/kb.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
-| GET | `/api/v2/legal/{param}` | `getLegalDocument` | documented | read-only by HTTP method<br>not applicable | src/routes/legal.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/legal/{param}` | `getLegalDocument` | documented | read-only by HTTP method<br>not applicable | src/routes/legal.js | tests/api.test.js<br>tests/legal-fidelity.test.js<br>tests/localization.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/legal/{param}/versions` | `getLegalVersions` | documented | read-only by HTTP method<br>not applicable | src/routes/legal.js | tests/api.test.js<br>tests/legal-fidelity.test.js<br>tests/localization.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/legal/version/{param}` | `getLegalVersion` | documented | read-only by HTTP method<br>not applicable | src/routes/legal.js | tests/api.test.js<br>tests/legal-fidelity.test.js<br>tests/localization.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/legal/versions/compare?{query}` | `compareLegalVersions` | documented | read-only by HTTP method<br>not applicable | src/routes/legal.js | tests/api.test.js<br>tests/legal-fidelity.test.js<br>tests/localization.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/listings` | `createListing` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/listings.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/listings?{query}` | `getListings` | documented | read-only by HTTP method<br>not applicable | src/routes/dashboard.js<br>src/routes/explore.js<br>src/routes/listings.js<br>src/routes/profile.js | tests/api.test.js<br>tests/routes.test.js<br>tests/runtime/listings-mutation.spec.js<br>tests/runtime/saved-collections-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/listings/{param}` | `deleteListing` | documented | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/listings.js | tests/api.test.js<br>tests/runtime/listings-mutation.spec.js<br>tests/shared-accessible-shell.test.js |

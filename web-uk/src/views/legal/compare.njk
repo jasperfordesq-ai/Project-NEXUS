@@ -1,0 +1,46 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/legal/' + docSlug + '/versions') }}">{{ t("legal.versions_title") }}</a>
+
+      <span class="govuk-caption-l">{{ t("legal.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("legal.compare_title") }}</h1>
+
+      {% if unavailable %}
+        {# A rejected pair or a tripped comparison rate limit is not a missing
+           page. Say what happened and leave the history reachable. #}
+        <div class="govuk-inset-text">{{ t("legal.compare_unavailable") }}</div>
+      {% else %}
+        <p class="govuk-body-l">{{ t("legal.compare_intro", { from: from.versionNumber, to: to.versionNumber }) }}</p>
+
+        {# 🔴 The key must not rely on colour. `<ins>`/`<del>` carry the meaning to
+           assistive technology, the +/− indicators carry it visually, and this
+           legend names both in words. #}
+        <dl class="govuk-summary-list govuk-summary-list--no-border">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("legal.compare_added") }}</dt>
+            <dd class="govuk-summary-list__value"><ins>+</ins></dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("legal.compare_removed") }}</dt>
+            <dd class="govuk-summary-list__value"><del>&minus;</del></dd>
+          </div>
+        </dl>
+
+        <div class="legal-diff govuk-body">
+          {{ diffHtml | safe }}
+        </div>
+
+        <p class="govuk-body">
+          <a class="govuk-link" href="{{ urlFor('/legal/' + docSlug) }}">{{ t("legal.view_current_version") }}</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -366,6 +366,7 @@ function parseDirectAppRoutes(serverText, serverPath) {
   let match;
 
   while ((match = directPattern.exec(serverText)) !== null) {
+    if (isCommentedOut(serverText, match.index)) continue;
     const nextRouteIndex = findNextRouteBoundary(serverText, match.index + 1);
     const snippet = serverText.slice(match.index, nextRouteIndex);
 
@@ -378,6 +379,25 @@ function parseDirectAppRoutes(serverText, serverPath) {
   }
 
   return routes;
+}
+
+/**
+ * Is this match inside a comment rather than in real code?
+ *
+ * 🔴 Route discovery is a TEXTUAL match on the registration call, so prose that
+ * quotes one is picked up as a working route. That produced a phantom
+ * `GET /...` row in the matrix from a comment in `src/routes/legal.js` warning
+ * about exactly this hazard. A phantom extra route is not harmless: it inflates
+ * the extra-route count, which is one of the numbers the parity score reads.
+ *
+ * Line-level test only. A registration call genuinely sitting inside a block
+ * comment would need the whole file tokenised, and a commented-out route on its
+ * own line already starts with `//` or a continuation `*`.
+ */
+function isCommentedOut(text, index) {
+  const lineStart = text.lastIndexOf('\n', index) + 1;
+  const before = text.slice(lineStart, index).trimStart();
+  return before.startsWith('//') || before.startsWith('*');
 }
 
 function findNextRouteBoundary(text, start) {
@@ -409,6 +429,7 @@ function parseRouterFile(routeFile, prefix) {
   let match;
 
   while ((match = routerPattern.exec(text)) !== null) {
+    if (isCommentedOut(text, match.index)) continue;
     const nextRouteIndex = findNextRouteBoundary(text, match.index + 1);
     const snippet = text.slice(match.index, nextRouteIndex);
 

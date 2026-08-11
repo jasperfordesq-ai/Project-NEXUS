@@ -202,6 +202,35 @@ nunjucksEnv.addFilter('formatBladeDateTime', (dateStr) => {
   }
 });
 
+// 🔴 Legal dates must NEVER go through `formatDate`.
+//
+// `formatDate` is a relative-time filter, and a legal document's
+// `effective_date` is routinely set in the FUTURE — a policy published today to
+// take effect next month. A future date gives a negative difference, which lands
+// in the `diffMins < 1` branch and renders "just now" for a policy that is not
+// yet in force. That is worse than an unhelpful date: it is a false statement
+// about when terms started applying.
+//
+// Blade renders the raw ISO date part (`Str::of($updated)->before('T')`). This
+// filter shows a localised absolute date instead, which is a deliberate
+// improvement on an eleven-language site — the machine-readable ISO value still
+// travels in the surrounding `<time datetime>` attribute, so the exact value
+// Blade prints is not lost.
+nunjucksEnv.addFilter('formatLegalDate', (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return String(dateStr);
+    return formatLocaleDate(date, getRequestLocale() || 'en', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch {
+    return dateStr;
+  }
+});
+
 nunjucksEnv.addFilter('formatEventDate', (dateStr) => {
   if (!dateStr) return '';
   try {

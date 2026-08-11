@@ -1,0 +1,74 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/legal/' + docSlug + '/versions') }}">{{ t("legal.versions_title") }}</a>
+
+      <span class="govuk-caption-l">{{ t("legal.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ document.title }}</h1>
+
+      {# 🔴 An archived version must say so BEFORE its text, not after. Somebody
+         arriving from a search result or an old link would otherwise read terms
+         that no longer apply and have no way to tell. #}
+      {% if not document.isCurrent %}
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>
+            {{ t("legal.version_archived_warning") }}
+          </strong>
+        </div>
+        <p class="govuk-body">
+          <a class="govuk-link" href="{{ urlFor('/legal/' + docSlug) }}">{{ t("legal.view_current_version") }}</a>
+        </p>
+      {% elif document.notYetInForce %}
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">{{ t("states.warning_prefix") }}</span>
+            {{ t("legal.not_yet_in_force") }}
+          </strong>
+        </div>
+      {% endif %}
+
+      <p class="govuk-body-s nexus-alpha-meta">
+        {{ t("legal.version_label") }} {{ document.versionNumber }}{% if document.versionLabel %} — {{ document.versionLabel }}{% endif %}
+        {% if document.updatedAt %}
+          &middot; {{ t("legal.effective_from_label") if document.notYetInForce else t("legal.updated_label") }}:
+          <time datetime="{{ document.updatedAtIso }}">{{ document.updatedAt | formatLegalDate }}</time>
+        {% endif %}
+        {% if document.publishedAt %}
+          &middot; {{ t("legal.published_label") }}:
+          <time datetime="{{ document.publishedAtIso }}">{{ document.publishedAt | formatLegalDate }}</time>
+        {% endif %}
+      </p>
+
+      {% if document.summaryOfChanges %}
+        <h2 class="govuk-heading-m">{{ t("legal.summary_of_changes_title") }}</h2>
+        <p class="govuk-body">{{ document.summaryOfChanges }}</p>
+      {% endif %}
+
+      {% if document.headings | length > 2 %}
+        <nav class="nexus-alpha-toc" aria-labelledby="legal-contents-title">
+          <h2 class="govuk-heading-s" id="legal-contents-title">{{ t("legal.contents_title") }}</h2>
+          <ul class="govuk-list">
+            {% for heading in document.headings %}
+              <li{% if heading.level == 3 %} class="nexus-alpha-toc__sub"{% endif %}>
+                <a class="govuk-link" href="#{{ heading.id }}">{{ heading.label }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endif %}
+
+      <div class="legal-content govuk-body">
+        {{ document.content | safe }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

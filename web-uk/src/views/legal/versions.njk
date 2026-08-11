@@ -1,0 +1,75 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/legal/' + docSlug) }}">{{ documentTitle }}</a>
+
+      <span class="govuk-caption-l">{{ t("legal.caption", { community: communityName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("legal.versions_title") }}</h1>
+      <p class="govuk-body-l">{{ t("legal.versions_intro", { title: documentTitle }) }}</p>
+
+      {% if versions | length == 0 %}
+        <div class="govuk-inset-text">{{ t("legal.versions_empty") }}</div>
+      {% else %}
+        <dl class="govuk-summary-list">
+          {% for version in versions %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                {{ t("legal.version_label") }} {{ version.versionNumber }}
+                {% if version.versionLabel %}<span class="govuk-!-font-weight-regular"> — {{ version.versionLabel }}</span>{% endif %}
+                {# A tag, not a colour: the state has to be readable as text. #}
+                {% if version.isCurrent %}
+                  <strong class="govuk-tag govuk-tag--green">{{ t("legal.versions_current_tag") }}</strong>
+                {% endif %}
+              </dt>
+              <dd class="govuk-summary-list__value">
+                {% if version.effectiveDate %}
+                  <p class="govuk-body-s govuk-!-margin-bottom-1">
+                    {{ t("legal.effective_from_label") if version.notYetInForce else t("legal.updated_label") }}:
+                    <time datetime="{{ version.effectiveDateIso }}">{{ version.effectiveDate | formatLegalDate }}</time>
+                  </p>
+                {% endif %}
+                {% if version.publishedAt %}
+                  <p class="govuk-body-s govuk-!-margin-bottom-1">
+                    {{ t("legal.published_label") }}:
+                    <time datetime="{{ version.publishedAtIso }}">{{ version.publishedAt | formatLegalDate }}</time>
+                  </p>
+                {% endif %}
+                {% if version.summaryOfChanges %}
+                  <p class="govuk-body-s govuk-!-margin-bottom-0">{{ version.summaryOfChanges }}</p>
+                {% endif %}
+              </dd>
+              <dd class="govuk-summary-list__actions">
+                {% if version.isCurrent %}
+                  <a class="govuk-link" href="{{ urlFor('/legal/' + docSlug) }}">
+                    {{ t("legal.view_current_version") }}
+                  </a>
+                {% else %}
+                  <a class="govuk-link" href="{{ urlFor('/legal/' + docSlug + '/versions/' + version.id) }}">
+                    {{ t("legal.version_label") }} {{ version.versionNumber }}
+                  </a>
+                {% endif %}
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+
+        {# Comparison needs two versions to compare, so the link only appears when
+           there are at least two. It compares the current version with the one
+           published before it, which is the question people actually have. #}
+        {% if versions | length > 1 %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ urlFor('/legal/' + docSlug + '/versions/compare') }}?v1={{ versions[1].id }}&amp;v2={{ versions[0].id }}">
+              {{ t("legal.compare_title") }}
+            </a>
+          </p>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

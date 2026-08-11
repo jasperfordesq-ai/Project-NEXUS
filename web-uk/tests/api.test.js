@@ -7499,6 +7499,78 @@ describe('API Request Functions', () => {
   // URL, method or header. These 23 helpers were added with route tests only, so
   // the ledger reported 21 rows without direct assertions and 9 of them
   // state-changing. Each case below pins the exact request the helper makes.
+
+  describe('Laravel legal document helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('reads a legal document by type, unauthenticated', async () => {
+      jsonOnce({ data: { type: 'terms' } });
+
+      await api.getLegalDocument('terms');
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/legal/terms');
+      // 🔴 Deliberately UNAUTHENTICATED. routes/api.php keeps these outside the
+      // auth:sanctum group so a visitor can read the terms before they have an
+      // account — and, once an acceptance gate exists, while blocked from
+      // everything else.
+      expect(options.headers && options.headers.Authorization).toBeUndefined();
+    });
+
+    it('URL-encodes an underscored document type', async () => {
+      jsonOnce({ data: null });
+
+      await api.getLegalDocument('community_guidelines');
+
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        'http://localhost:5000/api/v2/legal/community_guidelines'
+      );
+    });
+
+    it('reads the published version list for a type', async () => {
+      jsonOnce({ data: { title: 'Community Terms', versions: [] } });
+
+      await api.getLegalVersions('terms');
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/legal/terms/versions');
+      expect(options.headers && options.headers.Authorization).toBeUndefined();
+    });
+
+    it('reads one version by id', async () => {
+      jsonOnce({ data: { id: 90 } });
+
+      await api.getLegalVersion(90);
+
+      expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:5000/api/v2/legal/version/90');
+    });
+
+    it('compares two versions using the API parameter names', async () => {
+      jsonOnce({ data: { diff_html: '', changes_count: 0 } });
+
+      await api.compareLegalVersions(90, 91);
+
+      // v1/v2, in that order: the API treats v1 as the earlier side of the diff.
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        'http://localhost:5000/api/v2/legal/versions/compare?v1=90&v2=91'
+      );
+    });
+
+    it('sends comparison ids as strings without losing them', async () => {
+      jsonOnce({ data: {} });
+
+      await api.compareLegalVersions('90', '91');
+
+      expect(mockFetch.mock.calls[0][0]).toContain('v1=90&v2=91');
+    });
+  });
+
   describe('Laravel support-action helpers', () => {
     function jsonOnce(body) {
       mockFetch.mockResolvedValueOnce({

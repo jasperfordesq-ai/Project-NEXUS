@@ -1891,3 +1891,60 @@ body.app-timeout-modal--open {
     outline-offset: 0;
   }
 }
+
+// Legal document contents list, built on the server from the document's own
+// headings so it works with JavaScript switched off.
+.nexus-alpha-toc {
+  margin-bottom: govuk-spacing(6);
+  padding: govuk-spacing(3);
+  border-inline-start: 4px solid $govuk-border-colour;
+
+  ul {
+    margin-bottom: 0;
+  }
+}
+
+.nexus-alpha-toc__sub {
+  padding-inline-start: govuk-spacing(4);
+}
+
+// Version comparison. 🔴 Colour is a SECOND signal only. `<ins>`/`<del>` carry
+// the meaning to assistive technology and the +/- indicator carries it visually,
+// so the page still reads correctly in forced-colours mode and in monochrome.
+.legal-diff {
+  .diff-unified {
+    font-family: monospace;
+    overflow-x: auto;
+  }
+
+  .diff-line {
+    padding: govuk-spacing(1);
+  }
+
+  .diff-indicator {
+    display: inline-block;
+    min-width: 1.5em;
+    font-weight: bold;
+  }
+
+  .diff-added {
+    background-color: govuk-tint(govuk-colour("green"), 90%);
+  }
+
+  .diff-removed {
+    background-color: govuk-tint(govuk-colour("red"), 90%);
+  }
+
+  ins,
+  del {
+    text-decoration: none;
+  }
+
+  ins {
+    border-bottom: 2px solid govuk-colour("green");
+  }
+
+  del {
+    text-decoration: line-through;
+  }
+}

@@ -806,8 +806,40 @@ async function getHelpFaqs(params = {}) {
   return request(`/api/v2/help/faqs${queryString ? `?${queryString}` : ''}`);
 }
 
+// Legal documents and their published version history.
+//
+// All four are deliberately UNAUTHENTICATED. `routes/api.php` places them
+// outside the `auth:sanctum` group on purpose: a member must be able to read the
+// terms before they have an account, and — once an acceptance gate exists — while
+// they are blocked from everything else. Sending a bearer token here would work,
+// but it would make the pages behave differently for signed-in visitors for no
+// reason, so none is sent.
+//
+// The API returns only PUBLISHED versions and refuses drafts and other tenants'
+// versions with 404, so there is no filtering to repeat on this side.
 async function getLegalDocument(type) {
   return request(`/api/v2/legal/${encodeURIComponent(type)}`);
+}
+
+async function getLegalVersions(type) {
+  return request(`/api/v2/legal/${encodeURIComponent(type)}/versions`);
+}
+
+async function getLegalVersion(versionId) {
+  return request(`/api/v2/legal/version/${encodeURIComponent(versionId)}`);
+}
+
+/**
+ * Compare two published versions of the SAME document. The API rejects a
+ * cross-document pair with 400 and rate-limits to 30 comparisons per 10 minutes,
+ * so callers must handle both rather than assuming success.
+ */
+async function compareLegalVersions(fromVersionId, toVersionId) {
+  const query = new URLSearchParams();
+  query.set('v1', String(fromVersionId));
+  query.set('v2', String(toVersionId));
+
+  return request(`/api/v2/legal/versions/compare?${query.toString()}`);
 }
 
 async function callNewsletterApi(method, path = '', data = undefined) {
@@ -3752,6 +3784,9 @@ module.exports = {
   getKnowledgeBaseArticle,
   getHelpFaqs,
   getLegalDocument,
+  getLegalVersions,
+  getLegalVersion,
+  compareLegalVersions,
   callNewsletterApi,
   getMyVolunteerOrganisations,
   createVolunteerOrganisation,

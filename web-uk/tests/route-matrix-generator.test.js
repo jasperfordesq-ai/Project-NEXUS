@@ -430,4 +430,49 @@ app.use('/dashboard', dashboardRoutes);
       webUkRouteKind: ''
     }));
   });
+
+it('never invents a route from a comment that quotes a registration call', () => {
+    // 🔴 Route discovery is a TEXTUAL match, so prose mentioning a registration
+    // call used to be read as a real route. A comment in src/routes/legal.js
+    // warning about exactly this hazard produced a phantom "GET /..." extra
+    // route — and the extra-route count is one of the numbers the parity score
+    // reads, so a phantom is not harmless.
+    writeFile(path.join(targetRoot, 'apps', 'web-uk', 'src', 'routes', 'dashboard.js'), [
+      "const express = require('express');",
+      'const router = express.Router();',
+      '',
+      "// Register literal paths only: the generator reads router.get('...') as text.",
+      "//   router.get('/commented-out', handler);",
+      '/*',
+      " * router.get('/inside-block-comment', handler);",
+      ' */',
+      "router.get('/real-page', (req, res) => res.render('dashboard'));",
+      '',
+      'module.exports = router;'
+    ].join('\n'));
+
+    writeFile(path.join(targetRoot, 'apps', 'web-uk', 'src', 'server.js'), [
+      "const express = require('express');",
+      "const dashboardRoutes = require('./routes/dashboard');",
+      'const app = express();',
+      '',
+      "// app.get('/commented-direct-route', handler);",
+      "app.use('/dashboard', dashboardRoutes);"
+    ].join('\n'));
+
+    const report = generateAccessibleRouteMatrix({
+      sourceRoot,
+      targetRoot,
+      webUkRoot,
+      outDir,
+      provenance: fixtureProvenance(sourceRoot, targetRoot)
+    });
+    const paths = report.matrix.filter((row) => row.webUkPath).map((row) => row.webUkPath);
+
+    expect(paths).toContain('/dashboard/real-page');
+    expect(paths).not.toContain('/dashboard/commented-out');
+    expect(paths).not.toContain('/commented-direct-route');
+    expect(paths.some((routePath) => routePath.includes('...'))).toBe(false);
+    expect(report.summary.webUkRoutes).toBe(1);
+  });
 });

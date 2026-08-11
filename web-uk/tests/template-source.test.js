@@ -1669,7 +1669,12 @@ describe('tenant-aware template helper conversion', () => {
       path.join('legal', 'accessibility.njk'),
       path.join('legal', 'document.njk'),
       path.join('partials', 'cookie-banner.njk'),
-      'privacy.njk'
+      // 'privacy.njk' was here. It and 'terms.njk' were unrouted views holding
+      // hardcoded English legal prose with no SPDX header; both are deleted, and
+      // /privacy + /terms now redirect permanently to their /legal paths.
+      path.join('legal', 'versions.njk'),
+      path.join('legal', 'version.njk'),
+      path.join('legal', 'compare.njk')
     ].map((templatePath) => fs.readFileSync(
       path.join(__dirname, '..', 'src', 'views', templatePath),
       'utf8'

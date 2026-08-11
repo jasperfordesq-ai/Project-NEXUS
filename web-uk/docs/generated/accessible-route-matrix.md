@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-11T08:39:04.497Z
-Laravel commit SHA: `f144201f592892a99babe09fab9c253105962874`
-Web UK repository commit SHA: `f144201f592892a99babe09fab9c253105962874`
+Generated: 2026-08-11T09:05:39.137Z
+Laravel commit SHA: `51014a72d484b8b0404387885b2104ee27d266ad`
+Web UK repository commit SHA: `51014a72d484b8b0404387885b2104ee27d266ad`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 713 |
+| web-uk routes | 718 |
 | Matched routes | 706 |
 | Missing routes | 1 |
-| Extra web-uk routes | 5 |
+| Extra web-uk routes | 10 |
 | Ignored web-uk infrastructure routes | 3 |
 
 ## Family Counts
@@ -57,7 +57,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | jobs | 38 | 0 | 0 | 0 |
 | kb | 2 | 0 | 0 | 0 |
 | leaderboard | 5 | 0 | 0 | 0 |
-| legal | 6 | 0 | 0 | 0 |
+| legal | 6 | 0 | 3 | 0 |
 | listings | 19 | 0 | 1 | 0 |
 | login | 7 | 0 | 0 | 0 |
 | logout | 1 | 0 | 0 | 0 |
@@ -75,6 +75,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | podcasts | 14 | 0 | 0 | 0 |
 | polls | 13 | 0 | 0 | 0 |
 | premium | 6 | 0 | 0 | 0 |
+| privacy | 0 | 0 | 1 | 0 |
 | profile | 23 | 0 | 0 | 0 |
 | register | 2 | 0 | 0 | 0 |
 | report-a-problem | 2 | 0 | 0 | 0 |
@@ -86,6 +87,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | session | 0 | 0 | 0 | 1 |
 | settings | 24 | 0 | 0 | 0 |
 | skills | 1 | 0 | 0 | 0 |
+| terms | 0 | 0 | 1 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
 | users | 3 | 0 | 0 | 0 |
 | venues | 5 | 0 | 0 | 0 |
@@ -106,8 +108,13 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | --- | --- | --- | --- | --- |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
+| GET | `/legal/{param}/versions` | legal | legal/versions | web-uk/src/routes/legal.js |
+| GET | `/legal/{param}/versions/{param}` | legal | legal/version | web-uk/src/routes/legal.js |
+| GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
 | GET | `/listings/{param}/delete` | listings |  | web-uk/src/server.js |
 | POST | `/members/{param}/connect` | members |  | web-uk/src/server.js |
+| GET | `/privacy` | privacy |  | web-uk/src/routes/legal.js |
+| GET | `/terms` | terms |  | web-uk/src/routes/legal.js |
 | GET | `/volunteering/credentials/{param}/download` | volunteering | streamed-download | web-uk/src/routes/volunteering-actions.js |
 
 ## Ignored Web UK Infrastructure Routes

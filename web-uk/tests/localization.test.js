@@ -54,6 +54,13 @@ jest.mock('../src/lib/api', () => ({
     }
   }),
   getProfile: jest.fn(),
+  // /accessibility asks for a tenant-published accessibility statement and falls
+  // back to the standard one, so this mock has to answer even though every
+  // assertion below is about the fallback.
+  getLegalDocument: jest.fn().mockResolvedValue({ data: null }),
+  getLegalVersions: jest.fn().mockResolvedValue({ data: { title: '', versions: [] } }),
+  getLegalVersion: jest.fn().mockResolvedValue({ data: null }),
+  compareLegalVersions: jest.fn().mockResolvedValue({ data: null }),
   getNotificationUnreadCount: jest.fn(),
   getUnreadCount: jest.fn(),
   login: jest.fn(),

@@ -174,6 +174,9 @@ jest.mock('../src/lib/api', () => ({
   getKnowledgeBaseArticle: jest.fn(),
   getHelpFaqs: jest.fn().mockResolvedValue({ data: [] }),
   getLegalDocument: jest.fn().mockResolvedValue({ data: null }),
+  getLegalVersions: jest.fn().mockResolvedValue({ data: { title: '', versions: [] } }),
+  getLegalVersion: jest.fn().mockResolvedValue({ data: null }),
+  compareLegalVersions: jest.fn().mockResolvedValue({ data: null }),
   getBalance: jest.fn(),
   callWalletApi: jest.fn().mockResolvedValue({ data: { id: 42 } }),
   callWalletDownload: jest.fn(),
@@ -1637,18 +1640,23 @@ describe('shared accessible frontend shell', () => {
   it('renders Laravel-style legal and accessibility pages', async () => {
     const api = require('../src/lib/api');
     const staticPageRoutes = require('../src/routes/static-pages');
-    api.getLegalDocument
-      .mockResolvedValueOnce({
+    // Keyed by type rather than by call order: /accessibility now also asks for a
+    // tenant-published document, so a strict Once-chain would hand it the terms.
+    api.getLegalDocument.mockImplementation(async (type) => {
+      if (type !== 'terms') return { data: null };
+      return {
         data: {
           id: 12,
           type: 'terms',
           title: 'Community Terms',
-          content: '<p class="terms" onclick="alert(1)">Use time credits fairly.</p><img src="/unsafe.jpg" alt=""><script>alert(2)</script>',
+          content: '<p class="terms" onclick="alert(1)">Use time credits fairly.</p><img src="/diagram.jpg" alt="How an exchange works"><script>alert(2)</script>',
           version_number: '2.1',
-          effective_date: '2026-07-01T00:00:00Z'
+          effective_date: '2026-07-01T00:00:00Z',
+          summary_of_changes: 'Clarified how time credits are returned when an exchange is cancelled.',
+          has_previous_versions: true
         }
-      })
-      .mockResolvedValueOnce({ data: null });
+      };
+    });
 
     const hub = await request(app).get('/legal');
     const accessibility = await request(app).get('/accessibility');
@@ -1684,25 +1692,42 @@ describe('shared accessible frontend shell', () => {
     expect(terms.status).toBe(200);
     expect(terms.text).toContain('Community Terms');
     expect(terms.text).toContain('Last updated:');
-    expect(terms.text).not.toContain('Last updated: 2026-07-01');
+    // 🔴 An absolute date, and a machine-readable one alongside it. A legal
+    // effective_date is often FUTURE-dated, and the relative-time filter renders
+    // a negative difference as "just now" — a false claim about when terms began
+    // to apply. This previously asserted the raw date was ABSENT, which pinned
+    // the defect in place.
+    expect(terms.text).toContain('1 July 2026');
+    expect(terms.text).toContain('datetime="2026-07-01"');
+    expect(terms.text).not.toContain('just now');
     expect(terms.text).toContain('Version 2.1');
     expect(terms.text).toContain('<p class="terms">Use time credits fairly.</p>');
-    expect(terms.text).not.toContain('<img');
+    // Images are allowed, matching HtmlSanitizer::sanitizeCms() which Blade uses.
+    // A diagram in a policy is an accessibility measure, not a risk.
+    expect(terms.text).toContain('<img src="/diagram.jpg" alt="How an exchange works" />');
     expect(terms.text).not.toContain('onclick=');
     expect(terms.text).not.toContain('alert(2)');
-    expect(api.getLegalDocument).toHaveBeenNthCalledWith(1, 'terms');
+    // Both were being dropped by normalizeDocument.
+    expect(terms.text).toContain('What has changed');
+    expect(terms.text).toContain('Clarified how time credits are returned');
+    expect(terms.text).toContain('href="/legal/terms/versions"');
+    expect(api.getLegalDocument).toHaveBeenCalledWith('terms');
 
     expect(privacy.status).toBe(200);
     expect(privacy.text).toContain('Privacy policy');
     expect(privacy.text).toContain('A tailored version of this document has not been published for Project NEXUS Accessible yet.');
     expect(privacy.text).toContain('What we collect: the details you give us');
     expect(privacy.text).toContain('href="/contact"');
-    expect(api.getLegalDocument).toHaveBeenNthCalledWith(2, 'privacy');
+    expect(api.getLegalDocument).toHaveBeenCalledWith('privacy');
 
-    expect(legacyTerms.status).toBe(404);
-    expect(legacyTerms.text).toContain('Page not found');
-    expect(legacyPrivacy.status).toBe(404);
-    expect(legacyPrivacy.text).toContain('Page not found');
+    // 🔴 301, not 404. LegalDocumentService::notifyUsersOfUpdate() has been
+    // emitting React-shaped /terms links in the notification bell for a long
+    // time; every one of those already-sent links used to dead-end here. The two
+    // unrouted views that held hardcoded English legal prose are deleted.
+    expect(legacyTerms.status).toBe(301);
+    expect(legacyTerms.headers.location).toBe('/legal/terms');
+    expect(legacyPrivacy.status).toBe(301);
+    expect(legacyPrivacy.headers.location).toBe('/legal/privacy');
   });
 
   it('localizes the legal hub, fallback policy, and accessibility statement from Laravel catalogs', async () => {
