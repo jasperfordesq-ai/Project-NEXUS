@@ -1262,30 +1262,95 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Get Playwright version
+      - name: Get Playwright version and browser set
         id: playwright-version
+        env:
+          # 🔴 SINGLE SOURCE OF TRUTH for both the cache key and the install
+          # command below. They MUST NOT be listed separately — see the cache-key
+          # comment for what happened when they could drift.
+          PLAYWRIGHT_BROWSERS: chromium webkit
         run: |
           VERSION=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test']?.version || require('./package-lock.json').packages['node_modules/playwright']?.version || 'unknown'")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "browsers=$PLAYWRIGHT_BROWSERS" >> $GITHUB_OUTPUT
+          echo "browsers_slug=$(echo "$PLAYWRIGHT_BROWSERS" | tr ' ' '-')" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright Browsers
         id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+          # 🔴 THE BROWSER SET IS PART OF THE KEY, and this is why.
+          #
+          # It used to be `playwright-<os>-<version>` only. When webkit was added to
+          # the install command (2026-08-11, so Safari's engine would finally run
+          # in CI), the Playwright VERSION did not change — so this key still
+          # matched a cache saved back when only chromium was installed. Cache hit
+          # ⇒ the branch below runs `install-deps` only, which fetches OS packages
+          # and NOT browser binaries. webkit was never downloaded, and every
+          # webkit test failed with:
+          #
+          #   Executable doesn't exist at ~/.cache/ms-playwright/webkit-2272/pw_run.sh
+          #
+          # The install command listed webkit and silently did not install it —
+          # the same shape of fault as a config value nothing reads. Keying on the
+          # browser set means adding or removing one invalidates the cache by
+          # construction, so this cannot recur.
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}-${{ steps.playwright-version.outputs.browsers_slug }}
 
       - name: Install Playwright Browsers
+        env:
+          BROWSERS: ${{ steps.playwright-version.outputs.browsers }}
         run: |
           # webkit as well as chromium: Safari's engine had never run in CI, so a
           # Mac-only bug could not be caught here. See the webkit-modern project
           # in playwright.config.ts.
+          #
+          # $BROWSERS comes from the same output that keys the cache, so the two
+          # cannot disagree about which browsers this job needs.
           if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
             # Browsers cached — only install OS deps.
-            npx playwright install-deps chromium webkit
+            npx playwright install-deps $BROWSERS
           else
-            npx playwright install chromium webkit --with-deps
+            npx playwright install $BROWSERS --with-deps
           fi
+
+      # 🔴 Fail HERE, with a clear message, rather than inside a test run.
+      #
+      # When webkit was missing, the only symptom was every webkit test failing
+      # with "Executable doesn't exist at .../pw_run.sh" — which reads like a
+      # broken test, not a broken cache. This asserts the binaries are actually on
+      # disk before any test runs, so the next cache mistake names itself.
+      - name: "BLOCKING: verify the Playwright browsers are actually installed"
+        env:
+          BROWSERS: ${{ steps.playwright-version.outputs.browsers }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const pw = require("@playwright/test");
+            const wanted = (process.env.BROWSERS || "").split(/\s+/).filter(Boolean);
+            // 🔴 An EMPTY list must fail, not pass. A verification that checks
+            // nothing and reports success is worse than no verification: it is a
+            // green tick that means nothing. If this is empty the browser set never
+            // reached this step.
+            if (wanted.length === 0) {
+              console.error("no browsers to verify — BROWSERS was empty, so the browser set did not reach this step");
+              process.exit(1);
+            }
+            let missing = 0;
+            for (const name of wanted) {
+              const type = pw[name];
+              if (!type) { console.error(`unknown Playwright browser: ${name}`); missing++; continue; }
+              let path;
+              try { path = type.executablePath(); } catch (e) { console.error(`${name}: ${e.message}`); missing++; continue; }
+              if (!path || !fs.existsSync(path)) { console.error(`MISSING ${name} binary at ${path}`); missing++; continue; }
+              console.log(`ok ${name} -> ${path}`);
+            }
+            if (missing) {
+              console.error(`${missing} Playwright browser(s) missing. The cache key and the install list have drifted, or the cache is stale.`);
+              process.exit(1);
+            }
+          '
 
       - name: Create .env.ci
         run: |
