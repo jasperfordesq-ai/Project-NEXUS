@@ -509,6 +509,18 @@ class TenantProvisioningService
                 Log::info('seedTenantDefaults: seedMenus skipped', ['error' => $e->getMessage()]);
             }
         }
+
+        // The standard shipped Terms of Service, as an acceptable document.
+        // Acceptance enforcement only blocks on a row in legal_documents, so
+        // without this a newly provisioned community has nothing for a member
+        // to accept. Never overwrites a community's own terms.
+        if (Schema::hasTable('legal_documents')) {
+            try {
+                TenantDefaultsSeeder::seedStandardLegalDocuments($tenantId);
+            } catch (Throwable $e) {
+                Log::info('seedTenantDefaults: seedStandardLegalDocuments skipped', ['error' => $e->getMessage()]);
+            }
+        }
     }
 
     /**

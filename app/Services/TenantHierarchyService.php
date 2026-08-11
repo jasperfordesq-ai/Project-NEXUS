@@ -1293,6 +1293,21 @@ class TenantHierarchyService
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // 7. Seed the standard shipped Terms of Service as an acceptable
+        //    document. Acceptance enforcement only ever blocks on a row in
+        //    legal_documents, so without this a brand-new community has
+        //    nothing for a member to accept and the legal obligation is
+        //    silently unmet. Never overwrites a community's own terms.
+        //    Failure is non-fatal: a tenant must still come up.
+        try {
+            TenantDefaultsSeeder::seedStandardLegalDocuments($tenantId);
+        } catch (\Throwable $e) {
+            Log::warning('TenantHierarchyService: seedStandardLegalDocuments failed', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

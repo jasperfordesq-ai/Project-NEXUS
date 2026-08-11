@@ -6,7 +6,9 @@
 
 namespace App\Services;
 
+use App\Support\Legal\StandardTermsContent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * TenantDefaultsSeeder — canonical "day-one" defaults shared by every
@@ -262,5 +264,104 @@ class TenantDefaultsSeeder
                 }
             });
         }
+    }
+    /**
+     * Seed the standard shipped Terms of Service as an acceptable document.
+     *
+     * 🔴 Why this is day-one and not optional. Acceptance enforcement
+     * (App\Http\Middleware\EnsureLegalAcceptance, enforced by default since
+     * 2026-08-11) only ever blocks on a row in legal_documents. Before this method
+     * existed, the shipped terms lived only as display copy on the terms page, so a
+     * brand-new community had NOTHING for a member to accept and the legal
+     * obligation was silently unmet no matter how the gate was configured.
+     *
+     * 🔴 NEVER overwrites. If the community already has a terms document — its own
+     * wording, or this one from a previous run — the method returns untouched. A
+     * community's published terms are a legal record, and members have accepted a
+     * specific version id; replacing that content under them would invalidate every
+     * acceptance already on file while leaving the acceptance rows looking valid.
+     * Idempotent via the (tenant_id, document_type) unique key AND an explicit
+     * check, because the unique key alone would raise rather than skip.
+     *
+     * The document is published immediately (is_draft = 0, is_current = 1) and
+     * requires acceptance at login. A draft would satisfy nothing.
+     */
+    public static function seedStandardLegalDocuments(int $tenantId): void
+    {
+        if (! Schema::hasTable('legal_documents') || ! Schema::hasTable('legal_document_versions')) {
+            return;
+        }
+
+        $existing = DB::table('legal_documents')
+            ->where('tenant_id', $tenantId)
+            ->where('document_type', 'terms')
+            ->exists();
+
+        if ($existing) {
+            return;
+        }
+
+        $tenantName = (string) (DB::table('tenants')->where('id', $tenantId)->value('name') ?? '');
+        $content     = StandardTermsContent::html($tenantName);
+        $plain       = StandardTermsContent::plainText($tenantName);
+
+        // created_by is NOT NULL on both tables and carries no foreign key, so a
+        // real admin id is used when one exists and 0 means "seeded by the
+        // platform" — a fresh community has no users yet, and the seed must not
+        // depend on one.
+        $createdBy = (int) (DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where(function ($q) {
+                $q->where('is_admin', 1)->orWhere('is_super_admin', 1)->orWhere('role', 'admin');
+            })
+            ->orderBy('id')
+            ->value('id') ?? 0);
+
+        $now = now();
+
+        DB::transaction(function () use ($tenantId, $content, $plain, $createdBy, $now) {
+            $documentId = (int) DB::table('legal_documents')->insertGetId([
+                'tenant_id'               => $tenantId,
+                'document_type'           => 'terms',
+                'title'                   => StandardTermsContent::title(),
+                'slug'                    => 'terms',
+                'requires_acceptance'     => 1,
+                // 'login' rather than 'registration': registration-time acceptance
+                // would leave every EXISTING member of an established community
+                // un-gated for ever, which is the hole this is closing.
+                'acceptance_required_for' => 'login',
+                'notify_on_update'        => 1,
+                'is_active'               => 1,
+                'created_by'              => $createdBy,
+                'created_at'              => $now,
+                'updated_at'              => $now,
+            ]);
+
+            $versionId = (int) DB::table('legal_document_versions')->insertGetId([
+                'document_id'        => $documentId,
+                'version_number'     => StandardTermsContent::VERSION,
+                'version_label'      => 'Standard terms',
+                'content'            => $content,
+                'content_plain'      => $plain,
+                'summary_of_changes' => 'The standard terms supplied with the platform.',
+                'effective_date'     => $now->toDateString(),
+                'is_draft'           => 0,
+                'is_current'         => 1,
+                'published_at'       => $now,
+                'published_by'       => $createdBy ?: null,
+                'created_by'         => $createdBy,
+                'created_at'         => $now,
+                'updated_at'         => $now,
+            ]);
+
+            DB::table('legal_documents')
+                ->where('id', $documentId)
+                ->update(['current_version_id' => $versionId]);
+        });
+
+        // The gate caches a per-user verdict keyed on the tenant's legal revision;
+        // without this bump nobody is asked to accept the document that has just
+        // appeared until their cached verdict expires.
+        LegalEnforcementService::bumpRevision($tenantId);
     }
 }
