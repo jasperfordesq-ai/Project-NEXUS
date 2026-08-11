@@ -73,10 +73,10 @@ qualification means the Phase A rule above.
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
 | Blade retirement | **Not started.** A separate change with its own review, after a soak period. |
 
-Current score: **631/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
+Current score: **634/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
 table below before comparing that with any earlier number.
 
-## Prerequisites — four resolved, three still need owner answers
+## Prerequisites — five resolved, two still need owner answers
 
 ### ✅ Resolved
 
@@ -106,12 +106,30 @@ table below before comparing that with any earlier number.
    and `--check` probes each hostname's `/version` to report which frontend is
    actually serving it.
 
+5. **The production container map — RECOVERED 2026-08-11, and the hold it
+   describes is already satisfied.** Several documents make production work
+   conditional on `.claude/production-containers.md`, which the 2026-08-09 monorepo
+   move did not bring across. It was not lost: it was still in the previous ASP.NET
+   checkout on the development machine and has been restored to `.claude/`, which
+   is gitignored — so it stays machine-local rather than entering the public
+   repository, exactly as it was before.
+   It contains no credentials and no IP addresses: it is a map of which container
+   is which, per-stack deploy rules, the recorded blue/green pair (dated
+   2026-05-12, marked "verify live before use"), datastores, and things not to
+   recreate.
+   🔴 The important part: its "Web UK deployment hold" is narrower than the phrase
+   suggests. It forbids deploying `web-uk` **from the ASP.NET production Compose
+   path, pointed at the ASP.NET backend**, because that backend is uncertified for
+   an unchanged accessible frontend. The deployment path built on 2026-08-11 does
+   neither — it deploys from the Laravel blue/green stack with
+   `LARAVEL_BASE_URL` pointed at the **same-colour Laravel** container. The hold's
+   condition is met by design.
+   Because the map is machine-local, a **fresh clone still will not have it**. If
+   that matters, supersede it with a section in [DEPLOYMENT.md](DEPLOYMENT.md) —
+   an owner decision, since it would make the container topology public.
+
 ### Still needed from the owner
 
-5. **`.claude/production-containers.md`.** `web-uk`'s own release runbook makes
-   lifting its deployment hold conditional on a file that was never imported into
-   this repository. As written, the hold cannot be lifted. Either import it or
-   supersede it with a section in [DEPLOYMENT.md](DEPLOYMENT.md).
 6. **Whether to publish per-tenant accessible domains** in the public uptime
    target list.
 7. **An error-reporting project for `web-uk`.** Without one it would become an
