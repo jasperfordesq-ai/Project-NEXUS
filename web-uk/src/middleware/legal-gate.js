@@ -168,7 +168,16 @@ async function pendingDocumentsFor(req) {
   // that if the field ever fails to serialise, behaviour is exactly today's rather
   // than silently dropping the acceptance prompt on a legal obligation the owner
   // deliberately enforces by default.
-  const blocking = payload?.enforcement_blocking !== false;
+  //
+  // TWO independent conditions, and both come from the server:
+  //   enforcement_blocking — is the platform refusing requests at all? (`off` and
+  //                          `report` say no)
+  //   blocking_pending     — is any pending document one it will actually refuse
+  //                          over? A community can mark a document display-only via
+  //                          `acceptance_required_for`, and this gate used to block
+  //                          on it anyway while the API accepted the member's writes.
+  const blocking = payload?.enforcement_blocking !== false
+    && payload?.blocking_pending !== false;
 
   if (req.session) {
     req.session.legalGate = { checkedAt: now, documents, blocking };

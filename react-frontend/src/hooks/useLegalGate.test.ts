@@ -152,6 +152,28 @@ describe('useLegalGate', () => {
     expect(result.current.hasPending).toBe(true);
   });
 
+  it('does not gate when every pending document is display-only', async () => {
+    // A community can mark a document as shown-but-not-gating
+    // (`acceptance_required_for`). The server honours that; the display query behind
+    // has_pending deliberately does not, so gating on has_pending alone blocked
+    // members over a document the API would never refuse.
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: {
+        has_pending: true,
+        enforcement_blocking: true,
+        blocking_pending: false,
+        documents: [pendingDoc],
+      },
+    });
+
+    const { result } = renderHook(() => useLegalGate());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasPending).toBe(false);
+    expect(result.current.pendingDocs).toHaveLength(1);
+  });
+
   it('gates when the field is absent — only an explicit false stands down', async () => {
     // Matches web-uk's rule exactly. Absence means an older backend, which cannot
     // happen in practice (client and API ship from one commit), and treating it as

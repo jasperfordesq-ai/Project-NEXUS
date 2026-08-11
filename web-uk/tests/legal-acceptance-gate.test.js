@@ -68,6 +68,7 @@ const PENDING = {
   data: {
     has_pending: true,
     enforcement_blocking: true,
+    blocking_pending: true,
     documents: [
       {
         document_id: 12,
@@ -91,7 +92,7 @@ const PENDING = {
   }
 };
 
-const NOTHING_PENDING = { data: { has_pending: false, enforcement_blocking: true, documents: [] } };
+const NOTHING_PENDING = { data: { has_pending: false, enforcement_blocking: true, blocking_pending: false, documents: [] } };
 
 /**
  * A member who genuinely owes an acceptance, on a platform that is deliberately NOT
@@ -248,6 +249,21 @@ describe('loop-breaker 5 — the server decides whether anything is enforced', (
     // pass just as happily as "interposes correctly".
     expect(response.status).toBe(303);
     expect(response.headers.location).toContain('/legal-acceptance');
+  });
+
+  it('does NOT interpose when every pending document is display-only', async () => {
+    // 🔴 A community can set `acceptance_required_for` so a document is SHOWN but
+    // never gates. The server honours that; the display query the interstitial reads
+    // deliberately does not (changing it would alter what React shows). So this gate
+    // blocked every page over a document the API itself would never refuse — the two
+    // halves disagreeing about who is blocked.
+    api.getLegalAcceptanceStatus.mockResolvedValue({
+      data: { ...PENDING.data, enforcement_blocking: true, blocking_pending: false }
+    });
+
+    const response = await request(buildApp()).get('/dashboard');
+
+    expect(response.status).toBe(200);
   });
 
   it('caches the not-blocking verdict without turning it into a block', async () => {

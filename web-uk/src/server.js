@@ -1861,7 +1861,21 @@ app.use(/^\/podcasts\/studio\/\d+\/episodes$/, parseMultipartForm({ maxFileSize:
 // closed in Formidable before application code sees them.
 app.use(/^\/jobs\/\d+\/apply$/, parseMultipartForm({ maxFileSize: 6 * 1024 * 1024 }));
 
-app.use(doubleCsrfProtection, postOnly(formLimiter), contactSupportRoutes);
+// 🔴 The RATE LIMITER is scoped to this router's own paths; the router itself stays
+// pathless because it declares absolute paths internally.
+//
+// Mounted pathless, `postOnly(formLimiter)` ran on EVERY non-GET that reached this
+// line — not just contact submissions. `formLimiter` is one shared instance
+// (20 requests / 5 minutes / IP, see lib/rateLimiter.js) and express-rate-limit
+// increments its counter per invocation, so a single POST to /listings or /messages
+// was counted here AND at its own mount AND at the legal-acceptance mount below:
+// three times, reducing the effective allowance to about six form submissions per
+// five minutes, and worse for several members behind one NAT address.
+//
+// Invisible to the test suite by construction: `createLimiter` sets
+// `skip: () => isDevelopment`, so the limiter is a no-op under Jest.
+app.use(['/contact', '/report-a-problem'], postOnly(formLimiter));
+app.use(doubleCsrfProtection, contactSupportRoutes);
 app.use('/jobs', doubleCsrfProtection, postOnly(formLimiter), jobsRoutes);
 app.use('/podcasts', doubleCsrfProtection, podcastRoutes);
 app.use('/marketplace', doubleCsrfProtection, marketplaceRoutes);
@@ -1884,7 +1898,10 @@ app.use(supportRoutes);
 app.use(legalRoutes);
 // The acceptance page POSTs, so it needs CSRF protection. The legal router
 // above is GET-only and deliberately stays bare.
-app.use(doubleCsrfProtection, postOnly(formLimiter), legalAcceptanceRoutes);
+// Limiter scoped to this router's own path — see the note on the contact mount
+// above for why a pathless limiter triple-counted every form POST in the app.
+app.use('/legal-acceptance', postOnly(formLimiter));
+app.use(doubleCsrfProtection, legalAcceptanceRoutes);
 // What's On is deliberately PUBLIC — no requireAuth. It is the logged-out event
 // advertising surface, gated inside the router on the events + public_events
 // tenant features (404 when either is off), matching the Blade controller.

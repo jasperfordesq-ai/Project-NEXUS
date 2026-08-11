@@ -73,7 +73,15 @@ return [
     // took the check-in and safety pages down.
     'allowed_headers' => ['Accept', 'Accept-Language', 'Content-Type', 'Authorization', 'Idempotency-Key', 'X-Requested-With', 'X-XSRF-TOKEN', 'X-CSRF-TOKEN', 'X-Socket-Id', 'X-Timezone', 'X-Locale', 'X-Tenant-ID', 'X-Tenant-Slug', 'X-Trusted-Device', 'X-Request-Id', 'X-Events-Contract', 'X-Event-Checkin-Contract', 'X-Event-Safety-Contract', 'X-Message-View-Purpose', 'Cache-Control', 'Pragma'],
 
-    'exposed_headers' => ['X-Request-Id', 'X-Build', 'X-Events-Contract'],
+    // 🔴 BOTH allowlists must agree — this file AND
+    // app/Http/Middleware/EnsureCorsHeaders.php. A header exposed in only one of them
+    // works in some request paths and not others, which presents as "the feature is
+    // broken in production only".
+    //
+    // X-Legal-Acceptance-Pending is what `report` enforcement mode sets so the blast
+    // radius can be sized per client before anything blocks. Unexposed, no browser
+    // client could read it.
+    'exposed_headers' => ['X-Request-Id', 'X-Build', 'X-Events-Contract', 'X-Legal-Acceptance-Pending'],
 
     // 1 hour — avoids a full CORS preflight before every single request while
     // staying well short of Firefox's 24h / Chromium's 2h browser caps.

@@ -92,7 +92,16 @@ class EnsureCorsHeaders
             // problem — which is how the per-feature event contract headers
             // silently took down the check-in and safety pages in production.
             $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-Requested-With, X-CSRF-TOKEN, Accept, Accept-Language, X-Tenant-Id, X-Tenant-Slug, X-Trusted-Device, X-Timezone, X-Locale, X-Request-Id, X-Events-Contract, X-Event-Checkin-Contract, X-Event-Safety-Contract, X-Message-View-Purpose');
-            $response->headers->set('Access-Control-Expose-Headers', 'X-Request-Id, X-Build, X-Events-Contract');
+            // 🔴 X-Legal-Acceptance-Pending must be EXPOSED, not merely set.
+            //
+            // `EnsureLegalAcceptance` sets it in `report` mode so the blast radius can
+            // be measured per client before anything is enforced. A browser cannot
+            // read a response header that is not on this list, so React — the client
+            // with the most members — could not see it, and the measuring half of
+            // report mode was invisible to exactly the client it most needed to
+            // measure. Same both-allowlists trap that had to be handled for
+            // X-Message-View-Purpose; it was handled there and missed here.
+            $response->headers->set('Access-Control-Expose-Headers', 'X-Request-Id, X-Build, X-Events-Contract, X-Legal-Acceptance-Pending');
         }
 
         return $response;

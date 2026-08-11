@@ -35,6 +35,12 @@ class LegalAcceptanceController extends BaseApiController
      *                                     // `report`. Clients MUST read this
      *                                     // rather than inferring from
      *                                     // has_pending — see the field comment.
+     *     "blocking_pending": bool,       // is any pending document one the server
+     *                                     // will actually refuse writes over? false
+     *                                     // when every pending document is set to
+     *                                     // display-only via acceptance_required_for.
+     *                                     // A client that interposes should require
+     *                                     // enforcement_blocking AND blocking_pending.
      *     "documents": [
      *       {
      *         "document_id": int,
@@ -72,6 +78,22 @@ class LegalAcceptanceController extends BaseApiController
             // the middleware's own predicate, so the gate and the clients cannot
             // hold different views of who is blocked.
             'enforcement_blocking' => EnsureLegalAcceptance::modeBlocks(),
+            // 🔴 Whether any pending document is one the SERVER will actually refuse
+            // writes over.
+            //
+            // `has_pending` above comes from the DISPLAY query, which deliberately
+            // ignores `acceptance_required_for` — that column says WHEN a document must
+            // be accepted, and a community can set it so a document is shown but never
+            // gates. The server gate honours it; the display query does not, on purpose,
+            // because changing that SQL would silently change what React shows.
+            //
+            // The consequence before this field existed: a document set to "do not gate
+            // on this" still had web-uk's interstitial standing in front of every page,
+            // while the API happily accepted the member's writes. The two halves
+            // disagreed about who was blocked.
+            //
+            // Computed with the gate's own query, so they cannot drift apart.
+            'blocking_pending' => LegalEnforcementService::pendingForEnforcement($userId, (int) $tenantId) !== [],
             'documents'   => collect($documents)->map(fn ($doc) => [
                 'document_id'        => (int) $doc->document_id,
                 'document_type'      => $doc->document_type,

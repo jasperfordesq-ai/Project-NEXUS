@@ -350,6 +350,42 @@ class EnsureLegalAcceptanceTest extends TestCase
             ->assertJsonPath('data.enforcement_blocking', false);
     }
 
+    public function test_the_status_endpoint_reports_blocking_pending_for_an_enforced_document(): void
+    {
+        config(['legal.enforcement_mode' => 'write']);
+        $this->member();
+
+        $this->apiGet('/v2/legal/acceptance/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.has_pending', true)
+            ->assertJsonPath('data.blocking_pending', true);
+    }
+
+    public function test_a_display_only_document_is_pending_but_not_blocking(): void
+    {
+        // 🔴 The two halves must agree about WHO IS BLOCKED. `acceptance_required_for`
+        // says when a document must be accepted; a community can set it so the
+        // document is shown and never gates. The server gate honours that. The display
+        // query behind `has_pending` deliberately does not, because changing that SQL
+        // would silently change what React renders.
+        //
+        // So `has_pending` stays TRUE (there IS an outstanding document worth showing)
+        // while `blocking_pending` is FALSE. Before this field, web-uk's interstitial
+        // stood in front of every page over a document the API would happily let the
+        // member write past.
+        config(['legal.enforcement_mode' => 'write']);
+        $this->member();
+
+        DB::table('legal_documents')
+            ->where('tenant_id', $this->testTenantId)
+            ->update(['acceptance_required_for' => 'none']);
+
+        $this->apiGet('/v2/legal/acceptance/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.has_pending', true)
+            ->assertJsonPath('data.blocking_pending', false);
+    }
+
     public function test_an_unrecognised_mode_reports_blocking_like_the_gate_does(): void
     {
         // The gate falls back to `write` on a typo, deliberately. If the published

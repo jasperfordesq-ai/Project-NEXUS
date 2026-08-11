@@ -45,6 +45,18 @@ interface LegalStatusResponse {
    * not have raised.
    */
   enforcement_blocking?: boolean;
+  /**
+   * Is any pending document one the server will actually refuse writes over?
+   *
+   * `has_pending` comes from the display query, which deliberately ignores
+   * `acceptance_required_for` — a community can mark a document display-only. Gating
+   * on `has_pending` alone therefore blocks members over a document the API itself
+   * would never refuse.
+   *
+   * Optional for the same reason as `enforcement_blocking`: absent means an older
+   * backend, and absent must not read as "not blocking".
+   */
+  blocking_pending?: boolean;
 }
 
 export interface LegalGateState {
@@ -99,11 +111,14 @@ export function useLegalGate(): LegalGateState {
       .then((result) => {
         if (cancelled) return;
         if (result.success && result.data) {
-          const { has_pending, documents, enforcement_blocking } = result.data;
-          // Gate only when the server says it is actually refusing requests. See
-          // `enforcement_blocking` on LegalStatusResponse: `report` mode must not
-          // block, and absence of the field must not be read as blocking.
-          setHasPending(has_pending && enforcement_blocking !== false);
+          const { has_pending, documents, enforcement_blocking, blocking_pending } = result.data;
+          // Gate only when the server says it is actually refusing requests, AND at
+          // least one pending document is one it would refuse over. See both fields on
+          // LegalStatusResponse: `report` mode must not block, a display-only document
+          // must not block, and an absent field must not be read as blocking.
+          setHasPending(
+            has_pending && enforcement_blocking !== false && blocking_pending !== false,
+          );
           setPendingDocs(
             documents.filter(
               (d) => d.acceptance_status !== 'current'
