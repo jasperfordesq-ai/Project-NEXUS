@@ -417,10 +417,17 @@ class PasswordResetController extends BaseApiController
         $user = $this->resolvePasswordResetUser($email);
 
         if (!$user) {
-            // User doesn't exist, but we don't reveal this. Log so operators
-            // can diagnose "no email arrived" complaints — distinguishes
-            // "wrong email" from "mailer broken".
-            Log::info('[PasswordReset] reset requested for unknown email', [
+            // User doesn't exist in this tenant or any community beneath it. The
+            // RESPONSE stays deliberately identical to the success case — telling
+            // the caller "no such account" would turn this endpoint into an
+            // email-enumeration oracle. Only the LOG distinguishes them.
+            //
+            // 🔴 This is a `warning`, not an `info`, on purpose: production's
+            // daily log level is `warning`, so the old `info` was written
+            // nowhere. That is what made a silently-dropped reset request
+            // undiagnosable — the member was told to check their inbox for an
+            // email that had never been created, and nothing recorded it.
+            Log::warning('[PasswordReset] reset requested for unknown email', [
                 'email_masked' => $masked,
                 'tenant_id' => TenantContext::getId(),
                 'ip' => \App\Core\ClientIp::get(),
@@ -540,7 +547,48 @@ class PasswordResetController extends BaseApiController
                 ->whereNull('deleted_at')
                 ->first();
 
-            return $row ? (array) $row : null;
+            if ($row) {
+                return (array) $row;
+            }
+
+            // Not in this tenant — try the sub-communities BENEATH it before
+            // giving up. A sub-tenant with no domain of its own is only
+            // reachable at `<parent-domain>/<slug>`, so a member who starts from
+            // the parent domain root resolves to the PARENT and would otherwise
+            // get no email at all while being told to check their inbox. The
+            // boundary is this tenant's own subtree, never "any tenant".
+            $subtreeIds = \App\Support\Tenancy\TenantSubtree::descendantIds((int) $tenantId);
+
+            if ($subtreeIds === []) {
+                return null;
+            }
+
+            $matches = DB::table('users')
+                ->where('email', $normalizedEmail)
+                ->whereIn('tenant_id', $subtreeIds)
+                ->whereNull('deleted_at')
+                ->orderBy('tenant_id')
+                ->limit(2)
+                ->get();
+
+            if ($matches->count() === 1) {
+                return (array) $matches->first();
+            }
+
+            if ($matches->count() > 1) {
+                // Cannot tell which community they meant. Sending to both would
+                // be confusing and doubles the reset tokens in flight; ask them
+                // to use their community's own link instead. Logged at warning
+                // because production runs at `warning` — an `info` here is
+                // written nowhere and made this class of failure invisible.
+                Log::warning('[PasswordReset] ambiguous sub-community reset request', [
+                    'email_masked' => substr($email, 0, 2) . '***@' . (explode('@', $email)[1] ?? '***'),
+                    'resolved_tenant_id' => (int) $tenantId,
+                    'candidate_tenant_ids' => $matches->pluck('tenant_id')->all(),
+                ]);
+            }
+
+            return null;
         }
 
         $rows = DB::table('users')

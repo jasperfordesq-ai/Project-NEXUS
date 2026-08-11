@@ -133,9 +133,21 @@ class AuthController extends BaseApiController
             // Priority 2: platform-level administrator from any tenant
             // (cross-tenant fallback). Tenant administrators remain scoped to
             // their own community.
-            // UNION picks whichever row matches first; ORDER BY ensures tenant row wins.
-            $userRow = DB::selectOne(
-                "SELECT u.*, t.configuration, 1 AS _match_priority
+            // Priority 3: a member of a sub-community BENEATH the tenant this
+            // request resolved to. A sub-tenant with no domain of its own is
+            // only reachable at `<parent-domain>/<slug>`; arriving at the parent
+            // domain root resolves the PARENT, so without this arm the member's
+            // account is invisible and login fails with no explanation. The
+            // boundary is the resolved tenant's own subtree — never "any
+            // tenant" — see App\Support\Tenancy\TenantSubtree.
+            //
+            // The subtree is resolved BEFORE the user lookup and does not depend
+            // on the submitted email, so it adds no email-enumeration timing
+            // signal. It stays folded into the one UNION for the same reason the
+            // super-admin arm is: two separate queries ≠ equal timing.
+            $subtreeIds = \App\Support\Tenancy\TenantSubtree::descendantIds((int) $tenantId);
+
+            $sql = "SELECT u.*, t.configuration, 1 AS _match_priority
                  FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id
                  WHERE u.email = ? AND u.tenant_id = ?
                  UNION
@@ -146,12 +158,52 @@ class AuthController extends BaseApiController
                        u.is_super_admin = 1
                        OR u.is_god = 1
                        OR u.role IN ('super_admin', 'god')
-                   )
-                 ORDER BY _match_priority ASC
-                 LIMIT 1",
-                [$email, $tenantId, $email]
-            );
+                   )";
+            $bindings = [$email, $tenantId, $email];
+
+            if ($subtreeIds !== []) {
+                // Never interpolate the IDs — build placeholders (repo rule:
+                // no arrays in query parameters).
+                $placeholders = implode(',', array_fill(0, count($subtreeIds), '?'));
+                $sql .= "
+                 UNION
+                 SELECT u.*, t.configuration, 3 AS _match_priority
+                 FROM users u LEFT JOIN tenants t ON u.tenant_id = t.id
+                 WHERE u.email = ? AND u.tenant_id IN ({$placeholders}) AND u.deleted_at IS NULL";
+                $bindings[] = $email;
+                foreach ($subtreeIds as $subtreeId) {
+                    $bindings[] = $subtreeId;
+                }
+            }
+
+            // Deterministic tie-break: exact tenant wins, then platform admin,
+            // then the lowest-numbered sub-community. Fetch two rows so an
+            // ambiguous sub-community match is visible rather than silent.
+            $sql .= "
+                 ORDER BY _match_priority ASC, tenant_id ASC
+                 LIMIT 2";
+
+            $rows = DB::select($sql, $bindings);
+            $userRow = $rows[0] ?? null;
             $user = $userRow ? (array)$userRow : null;
+
+            if (
+                $user
+                && (int) ($user['_match_priority'] ?? 0) === 3
+                && isset($rows[1])
+                && (int) (((array) $rows[1])['_match_priority'] ?? 0) === 3
+            ) {
+                // The same address exists in two sub-communities of this hub.
+                // We sign them into the lowest-numbered one; reaching the other
+                // requires its slug URL. Logged at warning so it is visible in
+                // production, where the log level is `warning`.
+                \Illuminate\Support\Facades\Log::warning('[Auth] ambiguous sub-community login match', [
+                    'email_masked' => substr($email, 0, 2) . '***@' . (explode('@', $email)[1] ?? '***'),
+                    'resolved_tenant_id' => (int) $tenantId,
+                    'chosen_tenant_id' => (int) ($user['tenant_id'] ?? 0),
+                ]);
+            }
+
             // Remove internal sorting column from user array
             if ($user) {
                 unset($user['_match_priority']);
