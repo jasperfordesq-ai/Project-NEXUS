@@ -344,3 +344,9 @@ jobs:
       - run: npm run lint
       - run: npm test -- --runInBand
       - run: npm run build:css
+      # The scoring markers in web-uk/docs are enforced here as well as in
+      # docs-lint, because a change under web-uk/ that moves a count does not
+      # necessarily touch a path docs-lint watches.
+      - name: Documentation score markers agree with their own tables and artefacts
+        working-directory: .
+        run: node scripts/check-doc-scores.mjs

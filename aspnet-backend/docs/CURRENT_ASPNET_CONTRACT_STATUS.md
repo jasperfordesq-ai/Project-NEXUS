@@ -6,6 +6,15 @@ Last verified: 2026-08-09 (repository boundary only; scores unchanged since
 Status: **Canonical current - ASP.NET score and certification source**
 
 <!-- doc-consistency: ASPNET_CURRENT_BANKED_SCORE=712/1000 -->
+<!-- doc-consistency: ASPNET_CURRENT_RUBRIC=ASPNET-CONTRACT-R1 -->
+
+🔴 **This score is unchanged and unrelated to Web UK's.** Two 1000-point
+denominators exist in this repository and they measure different things: this one
+measures whether ASP.NET is externally contract-identical to Laravel; Web UK's
+`WEBUK-W2-PROD-R1` measures whether the accessible frontend is safe to serve in
+production. Every score marker now carries a rubric id for exactly this reason —
+**never add the two together, and never present one as progress on the other.**
+This workstream has been paused since 2026-07-15.
 
 Use this document for the current ASP.NET completion score. Use
 [`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md) for

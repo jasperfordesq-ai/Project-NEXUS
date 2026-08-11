@@ -85,6 +85,7 @@ CLAUDE.md
 !/scripts/check-db-column-references.mjs
 !/scripts/check-openapi-route-contract.mjs
 !/scripts/check-version-consistency.mjs
+!/scripts/check-doc-scores.mjs
 !/scripts/check-changelog-updated.mjs
 !/scripts/check-events-e2e-quality.mjs
 !/scripts/test-events.mjs

@@ -5,8 +5,17 @@ Last verified: 2026-07-15 22:51 +01:00
 Status: **Generated snapshot — documentation and handoff quality only, not product readiness**
 
 <!-- doc-consistency: DOCUMENTATION_HEALTH_BASELINE=D3 -->
-<!-- doc-consistency: DOCUMENTATION_HEALTH_SCORE=1000/1000 -->
+<!-- doc-consistency: DOCUMENTATION_HEALTH_INDEX=1000/1000 -->
+<!-- doc-consistency: DOCUMENTATION_HEALTH_RUBRIC=DOCS-HEALTH-D3-R1 -->
 <!-- doc-consistency: DOCUMENTATION_HEALTH_REVALIDATION=D3-R1 -->
+
+🔴 **Renamed from `DOCUMENTATION_HEALTH_SCORE` to `DOCUMENTATION_HEALTH_INDEX` on
+2026-08-11.** It measures documentation and handoff quality — not product
+readiness, not parity, not production readiness. While it was shaped like the two
+product `*_SCORE` markers, a reader scanning for "the score" could pick up a
+perfect 1000/1000 and believe something was finished. The `_INDEX` name makes it
+structurally impossible to confuse with a product score, and a checker now
+refuses any new `*_SCORE` marker that has no rubric id.
 
 ## Audit Correction And Scope
 

@@ -431,6 +431,64 @@ app.use('/dashboard', dashboardRoutes);
     }));
   });
 
+  it('refuses to scan a route file whose router is not named router', () => {
+    // 🔴 The scanner matches the LITERAL token `router.`, so a file naming its
+    // Express router anything else yields zero routes and the matrix reports a
+    // smaller count with nothing failing. That has already cost three working
+    // routes weeks of invisibility, and the count feeds the readiness score, so
+    // under-reporting silently is worse than refusing to generate.
+    writeFile(path.join(targetRoot, 'apps', 'web-uk', 'src', 'routes', 'dashboard.js'), [
+      "const express = require('express');",
+      'const legalRouter = express.Router();',
+      '',
+      "legalRouter.get('/invisible-page', (req, res) => res.render('dashboard'));",
+      '',
+      'module.exports = legalRouter;'
+    ].join('\n'));
+
+    writeFile(path.join(targetRoot, 'apps', 'web-uk', 'src', 'server.js'), [
+      "const express = require('express');",
+      "const dashboardRoutes = require('./routes/dashboard');",
+      'const app = express();',
+      "app.use('/dashboard', dashboardRoutes);"
+    ].join('\n'));
+
+    expect(() => generateAccessibleRouteMatrix({
+      sourceRoot,
+      targetRoot,
+      webUkRoot,
+      outDir,
+      provenance: fixtureProvenance(sourceRoot, targetRoot)
+    })).toThrow(/declared as `legalRouter` rather than `router`/);
+  });
+
+  it('refuses a route file that declares a router but registers nothing the scanner can see', () => {
+    writeFile(path.join(targetRoot, 'apps', 'web-uk', 'src', 'routes', 'dashboard.js'), [
+      "const express = require('express');",
+      'const router = express.Router();',
+      '',
+      '// Registered through a helper the scanner cannot read.',
+      "registerPage(router, '/via-helper');",
+      '',
+      'module.exports = router;'
+    ].join('\n'));
+
+    writeFile(path.join(targetRoot, 'apps', 'web-uk', 'src', 'server.js'), [
+      "const express = require('express');",
+      "const dashboardRoutes = require('./routes/dashboard');",
+      'const app = express();',
+      "app.use('/dashboard', dashboardRoutes);"
+    ].join('\n'));
+
+    expect(() => generateAccessibleRouteMatrix({
+      sourceRoot,
+      targetRoot,
+      webUkRoot,
+      outDir,
+      provenance: fixtureProvenance(sourceRoot, targetRoot)
+    })).toThrow(/found no `router\.<method>\(` call/);
+  });
+
 it('never invents a route from a comment that quotes a registration call', () => {
     // 🔴 Route discovery is a TEXTUAL match, so prose mentioning a registration
     // call used to be read as a real route. A comment in src/routes/legal.js

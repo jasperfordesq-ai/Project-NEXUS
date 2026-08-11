@@ -20,6 +20,7 @@
     "check:i18n": "npm run check:i18n:json-integrity && npm run check:i18n:drift && npm run check:i18n:literals && npm run check:admin-i18n && npm run check:i18n:baseline && npm run check:i18n:stubs && npm run check:i18n:coverage && npm run check:i18n:vars && npm run check:i18n:interpolation-parity && npm run check:i18n:php",
     "check:docs": "node scripts/check-docs-hygiene.mjs",
     "check:version": "node scripts/check-version-consistency.mjs",
+    "check:doc-scores": "node scripts/check-doc-scores.mjs",
     "check:changelog": "node scripts/check-changelog-updated.mjs",
     "check:db-columns": "node scripts/check-db-column-references.mjs",
     "check:licenses": "node scripts/check-licenses.mjs",

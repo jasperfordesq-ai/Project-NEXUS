@@ -24,6 +24,11 @@ on:
       - 'redocly.yaml'
       - 'scripts/check-docs-hygiene.mjs'
       - 'scripts/check-openapi-route-contract.mjs'
+      - 'web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md'
+      - 'web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md'
+      - 'web-uk/docs/generated/**'
+      - 'aspnet-backend/docs/*.md'
+      - 'scripts/check-doc-scores.mjs'
       - '.github/workflows/docs-lint.yml'
   pull_request:
     paths:
@@ -43,6 +48,11 @@ on:
       - 'redocly.yaml'
       - 'scripts/check-docs-hygiene.mjs'
       - 'scripts/check-openapi-route-contract.mjs'
+      - 'web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md'
+      - 'web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md'
+      - 'web-uk/docs/generated/**'
+      - 'aspnet-backend/docs/*.md'
+      - 'scripts/check-doc-scores.mjs'
       - '.github/workflows/docs-lint.yml'
 
 permissions:
@@ -66,6 +76,11 @@ jobs:
         run: npx --yes markdownlint-cli2@0.23.0
       - name: Documentation publication and navigation hygiene
         run: npm run check:docs
+      # The doc-consistency score markers were orphaned: nothing read them, so any
+      # score could drift with no failure. This asserts each one against its own
+      # table and against the generated artefacts.
+      - name: Documentation score markers agree with their own tables and artefacts
+        run: node scripts/check-doc-scores.mjs
 
   openapi-lint:
     name: OpenAPI contract

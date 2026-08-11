@@ -1,12 +1,49 @@
-# Current Laravel-First Accessible Frontend Status
+# Web UK Baseline W1 — Retired Scoring Record (Laravel-First Parity Audit)
 
 Last audited: 2026-07-15 18:24 +01:00
+Last reviewed: 2026-08-11
 
-Status: **Canonical current — sole Web UK coordination and scoring source**
+Status: **RETIRED as a scoring source on 2026-08-11 — kept as the W1 audit trail**
 
-<!-- doc-consistency: WEBUK_CURRENT_BANKED_SCORE=663/1000 -->
+<!-- doc-consistency: WEBUK_W1_RETIRED_SCORE=663/1000 -->
+<!-- doc-consistency: WEBUK_W1_RETIRED_ON=2026-08-11 -->
+<!-- doc-consistency: WEBUK_W1_RUBRIC=WEBUK-W1-FIXED-R1 -->
 
-This is the sole current coordination and scoring document for `apps/web-uk`.
+## 🔴 Read this before quoting any number below
+
+**W1 was retired, not rescored.** On 2026-08-11 the owner decided that `web-uk`
+takes over as the production accessible frontend and Blade retires. W1's rubric
+was built for a different question — "how closely does this candidate clone
+Blade?" — and cannot answer "is this safe to serve in production?", because it
+scores no deployment path, no cutover, no rollback, and no Blade retirement.
+
+The current scoring source is
+[`CURRENT_WEBUK_PRODUCTION_STATUS.md`](CURRENT_WEBUK_PRODUCTION_STATUS.md),
+rubric `WEBUK-W2-PROD-R1`. That document carries the mandatory W1→W2 mapping
+table.
+
+Three things follow, and they are deliberate:
+
+1. **The marker key was renamed** from `WEBUK_CURRENT_BANKED_SCORE` to
+   `WEBUK_W1_RETIRED_SCORE`. Anything still reading the old key now fails to find
+   it rather than silently reporting a retired number as current.
+2. **Every number, deduction reason and dated evidence entry below is left
+   exactly as audited.** They are the audit trail. In particular the
+   `-1` on the route row (no safe HTTP contract for the offline signed Event
+   check-in-code POST) records what was true at that snapshot; that gap was
+   closed on 2026-08-11 and route parity is now 707/707. Do not edit the W1 table
+   to reflect it — record it in W2.
+3. **W2's percentage is materially LOWER than 66.3% and that is not a
+   regression.** 150 points of production deployment/cutover/rollback and 50 of
+   Blade retirement enter the denominator for the first time, starting near zero.
+   Anyone comparing the two headline percentages without the mapping table is
+   comparing two different questions.
+
+Everything from here down is the retired W1 record.
+
+---
+
+This was the sole current coordination and scoring document for `apps/web-uk`.
 Read it before starting, resuming, or reporting accessible-frontend work. It
 overrides older route, test, localization, and readiness counts in every
 narrative handoff, while `BLADE_COMPONENT_PORT_AUDIT.md` remains the detailed
@@ -599,6 +636,11 @@ aggregate belong to the optional runtime track; representative Web UK visual
 and manual review remains required through isolated frontend fixtures.
 
 ### Current Banked Score
+
+Rubric `WEBUK-W1-FIXED-R1`. **Retired 2026-08-11 — do not extend, rescore or
+edit this table.** Its six rows sum to 1000 and its Earned column sums to 663.
+Superseded by `WEBUK-W2-PROD-R1`; see the mapping table in
+[`CURRENT_WEBUK_PRODUCTION_STATUS.md`](CURRENT_WEBUK_PRODUCTION_STATUS.md).
 
 | Fixed rubric | Earned | Exact deduction |
 |---|---:|---|

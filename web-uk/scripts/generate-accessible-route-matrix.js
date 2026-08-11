@@ -409,6 +409,47 @@ function findNextRouteBoundary(text, start) {
   return indexes.length ? Math.min(...indexes) : text.length;
 }
 
+/**
+ * Refuse to scan a route file whose Express router is not called `router`.
+ *
+ * The route scanner below matches a literal `router.` token. That is fine while
+ * every file follows the convention and catastrophic the moment one does not: the
+ * file yields no routes, the matrix reports fewer than exist, and nothing fails.
+ * The generated count feeds the production-readiness score, so under-reporting
+ * silently is worse than not generating at all.
+ *
+ * Also catches the subtler case: a file that clearly creates a router but from
+ * which the scanner extracts nothing.
+ */
+function assertRouterIsConventionallyNamed(routeFile, text) {
+  const declarationPattern = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:express\s*\.\s*)?Router\s*\(/g;
+  const declaredNames = [];
+
+  let declaration;
+  while ((declaration = declarationPattern.exec(text)) !== null) {
+    if (isCommentedOut(text, declaration.index)) continue;
+    declaredNames.push(declaration[1]);
+  }
+
+  const misnamed = [...new Set(declaredNames)].filter((name) => name !== 'router');
+  if (misnamed.length > 0) {
+    throw new Error(
+      `${routeFile}: Express router declared as ${misnamed.map((name) => `\`${name}\``).join(', ')} rather than \`router\`. `
+      + 'The route-matrix scanner matches the literal token `router.`, so every route in this file would be '
+      + 'invisible and the matrix would report a smaller count with no failure. Rename the variable to `router`, '
+      + 'or teach the scanner the new name — do not leave it silently unscanned.'
+    );
+  }
+
+  if (declaredNames.length > 0 && !/\brouter\s*\.\s*(?:get|post|put|patch|delete)\s*\(/.test(text)) {
+    throw new Error(
+      `${routeFile}: declares an Express router but the scanner found no \`router.<method>(\` call in it. `
+      + 'Either the file registers its routes in a form this scanner cannot see, or it is dead. '
+      + 'Both need a human decision — the matrix must not silently omit it.'
+    );
+  }
+}
+
 function parseRouterFile(routeFile, prefix) {
   if (path.basename(routeFile) === 'laravel-prep-pages.js') {
     delete require.cache[require.resolve(routeFile)];
@@ -424,6 +465,14 @@ function parseRouterFile(routeFile, prefix) {
   }
 
   const text = readText(routeFile);
+
+  // 🔴 This scanner matches the LITERAL token `router.`, so a file that names its
+  // Express router anything else contributes ZERO routes and the matrix quietly
+  // under-reports. That has already happened once: three working routes were
+  // invisible for weeks, and the count feeds the readiness score. Fail loudly
+  // instead of scanning on and reporting a smaller number as if it were the truth.
+  assertRouterIsConventionallyNamed(routeFile, text);
+
   const routes = [];
   const routerPattern = /router\.(get|post|put|patch|delete)\s*\(\s*['"]([^'"]+)['"]/g;
   let match;
