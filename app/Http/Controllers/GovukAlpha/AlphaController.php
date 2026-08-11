@@ -3701,8 +3701,9 @@ class AlphaController extends Controller
         ]);
     }
 
-    public function listing(string $tenantSlug, int $id): Response
+    public function listing(string $tenantSlug, $id): Response
     {
+        $id = (int) $id;
         $this->assertTenantSlug($tenantSlug);
         abort_unless(TenantContext::hasModule('listings'), 403);
 
