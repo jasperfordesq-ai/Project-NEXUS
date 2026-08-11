@@ -6,6 +6,7 @@
 
 namespace Tests\Laravel\Feature\Legal;
 
+use App\Http\Middleware\EnsureLegalAcceptance;
 use App\Models\User;
 use App\Services\LegalEnforcementService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -120,13 +121,57 @@ class EnsureLegalAcceptanceTest extends TestCase
         $this->assertNotSame(403, $this->guardedWrite()->getStatusCode());
     }
 
-    public function test_an_unrecognised_mode_is_treated_as_off(): void
+    public function test_an_unrecognised_mode_falls_back_to_enforcing(): void
     {
-        // 🔴 A typo in an env var must not silently start blocking members.
+        // 🔴 This REVERSED on 2026-08-11 with the default. While the default was
+        // `off`, the hazard was a typo silently starting to block members. Now that
+        // enforcement is the legal baseline, the hazard is a typo silently switching
+        // an obligation OFF — so it fails toward the obligation instead.
         config(['legal.enforcement_mode' => 'enforce-everything']);
         $this->member();
 
-        $this->assertNotSame(403, $this->guardedWrite()->getStatusCode());
+        $this->assertSame('write', EnsureLegalAcceptance::mode());
+        $this->assertSame(403, $this->guardedWrite()->getStatusCode());
+    }
+
+    public function test_an_unrecognised_mode_is_logged_rather_than_silently_accepted(): void
+    {
+        // Failing toward the obligation is right, but the operator still has to be
+        // told their setting is wrong.
+        config(['legal.enforcement_mode' => 'wrtie']);
+        Log::spy();
+
+        // The warning is guarded to fire once per process, so reset the guard to
+        // make this test independent of whichever test ran before it.
+        $guard = new \ReflectionProperty(EnsureLegalAcceptance::class, 'warnedAboutMode');
+        $guard->setAccessible(true);
+        $guard->setValue(null, false);
+
+        EnsureLegalAcceptance::mode();
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(fn (string $message, array $context) => $message === 'legal.gate.invalid_mode'
+                && ($context['configured'] ?? null) === 'wrtie'
+                && ($context['using'] ?? null) === 'write');
+    }
+
+    public function test_the_shipped_default_mode_is_enforcing(): void
+    {
+        // 🔴 The whole point of the 2026-08-11 change: an installation that sets
+        // nothing gets the COMPLIANT state. If this ever ships as `off` again, every
+        // new installation silently stops meeting a legal obligation.
+        //
+        // Asserts the literal default in the config file rather than the resolved
+        // value, because the resolved value depends on whichever `.env` the machine
+        // happens to have — which would make this pass or fail for reasons that have
+        // nothing to do with what we ship.
+        $source = file_get_contents(base_path('config/legal.php'));
+
+        $this->assertMatchesRegularExpression(
+            "/'enforcement_mode'\s*=>\s*env\(\s*'LEGAL_ENFORCEMENT_MODE'\s*,\s*'write'\s*\)/",
+            (string) $source,
+            'The shipped default for LEGAL_ENFORCEMENT_MODE must be write (enforced).'
+        );
     }
 
     public function test_write_mode_blocks_with_the_machine_code(): void

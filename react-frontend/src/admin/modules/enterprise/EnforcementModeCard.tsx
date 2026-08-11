@@ -61,11 +61,13 @@ const MODES: Record<KnownMode, ModePresentation> = {
 };
 
 function presentationFor(mode: string): ModePresentation {
-  // 🔴 An unrecognised mode is described as OFF, matching the server: the
-  // middleware treats anything it does not recognise as `off` so a typo cannot
-  // start blocking members. Showing "enforced" for an unknown value would be the
-  // opposite of the truth.
-  return (MODES as Record<string, ModePresentation | undefined>)[mode] ?? OFF_PRESENTATION;
+  // 🔴 Falls back to ENFORCED, matching the server. `EnsureLegalAcceptance::mode()`
+  // treats an unrecognised value as `write` (since 2026-08-11, when enforcement
+  // became the default) because the dangerous typo is now the one that switches an
+  // obligation off. The server also normalises before reporting, so this fallback
+  // should never actually be reached — it exists so the two sides can never
+  // disagree about what the platform is doing.
+  return (MODES as Record<string, ModePresentation | undefined>)[mode] ?? MODES.write;
 }
 
 interface EnforcementModeCardProps {

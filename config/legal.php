@@ -13,11 +13,33 @@
  * pending acceptance entirely. Retiring the Blade accessible frontend in favour
  * of web-uk makes that hole permanent unless the gate lives in the API.
  *
- * 🔴 DEFAULT IS `off`. Turning this on can stop members using the platform, so
- * it is not something to enable as a side effect of deploying the code. The
- * intended sequence:
+ * 🔴 DEFAULT IS `write` — ENFORCED — on the owner's decision of 2026-08-11.
  *
- *   1. `off`    — code deployed, nothing enforced. (Today.)
+ * The reasoning, so nobody "helpfully" softens it back: requiring members to
+ * agree to the licensing terms before using the platform is a LEGAL obligation,
+ * not a product preference. A default of `off` meant every new installation
+ * silently failed that obligation until somebody remembered to set an environment
+ * variable, and a missing setting is not a decision anybody made. Defaulting to
+ * enforced makes the safe state the one you get by doing nothing.
+ *
+ * 🔴 Consequence to keep in mind: an installation that sets nothing will START
+ * ENFORCING as soon as this code is deployed. That is intended. If a particular
+ * installation wants to measure the impact first, it opts DOWN explicitly with
+ * `LEGAL_ENFORCEMENT_MODE=report` — the burden of choosing the weaker setting sits
+ * with whoever wants it, which is the right way round.
+ *
+ * 🔴 Enforcement is only as real as the documents behind it. A tenant with no row
+ * in `legal_documents` — or whose documents have `requires_acceptance = 0`, or
+ * `acceptance_required_for = 'none'` — has nothing pending, so NOBODY is blocked
+ * whatever this is set to. As of 2026-08-11 nothing seeds a default document, so a
+ * fresh installation enforces against an empty set. Setting this to `write` is
+ * necessary for the legal position and not by itself sufficient; the documents have
+ * to exist.
+ *
+ * The modes:
+ *
+ *   1. `off`    — nothing enforced. An installation must now opt into this
+ *                 deliberately.
  *   2. `report` — never blocks. Logs `legal.gate.would_block` **at warning level**
  *                 with the calling client, and sets
  *                 `X-Legal-Acceptance-Pending: 1` on the response. Run this in
@@ -33,22 +55,30 @@
  *                 written with `Log::info` and produced NO evidence at all while
  *                 still setting the response header, so it looked like it worked.
  *                 A test now pins the level.
- *   3. `write`  — blocks the routes the gate is attached to (writes only).
+ *   3. `write`  — THE DEFAULT. Refuses the routes the gate is attached to, which
+ *                 are writes only: creating and changing things. Reading is
+ *                 unaffected, and so is everything a member needs in order to
+ *                 read the documents, accept them, or sign out.
  *   4. `all`    — reserved for a later decision; behaves as `write` today
  *                 because the gate is attached per-route, never to a group.
  *
- * Every client needs an acceptance screen before step 3. As of 2026-08-11 all
- * three have one: React, web-uk (`/legal-acceptance`) and the mobile app
- * (`app/(modals)/legal-acceptance.tsx`).
+ * Every client needs an acceptance screen for `write` to be humane rather than a
+ * dead end. All three have one as of 2026-08-11: React, web-uk
+ * (`/legal-acceptance`) and the mobile app (`app/(modals)/legal-acceptance.tsx`).
+ * 🔴 Do not add a fourth client without one.
  */
 return [
     /*
      * off | report | write | all
      *
-     * Anything unrecognised is treated as `off` — a typo in an env var must not
-     * silently start blocking members.
+     * 🔴 An unrecognised value falls back to the DEFAULT (`write`), not to `off`,
+     * and logs a warning naming the bad value. This reversed on 2026-08-11 with the
+     * default: while `off` was the default, the danger was a typo silently starting
+     * to block members; now that enforcement is the legal baseline, the danger is a
+     * typo silently STOPPING it. Failing toward the obligation is the safer error,
+     * and the warning means the misconfiguration is not silent either way.
      */
-    'enforcement_mode' => env('LEGAL_ENFORCEMENT_MODE', 'off'),
+    'enforcement_mode' => env('LEGAL_ENFORCEMENT_MODE', 'write'),
 
     /*
      * How long a per-user verdict is cached, in seconds.

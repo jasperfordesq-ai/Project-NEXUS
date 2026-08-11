@@ -67,14 +67,15 @@ describe('EnforcementModeCard', () => {
     expect(screen.getByText('enterprise.legal_enforcement_report_help')).toBeInTheDocument();
   });
 
-  it('describes an unrecognised mode as off, matching the server', () => {
-    // 🔴 The middleware treats anything it does not recognise as `off`, so a typo
-    // in the server setting cannot start blocking members. Showing "enforced"
-    // here for an unknown value would tell the admin the opposite of the truth.
+  it('describes an unrecognised mode as enforced, matching the server', () => {
+    // 🔴 Reversed on 2026-08-11 along with the default. The middleware treats an
+    // unrecognised value as `write`, because with enforcement as the legal baseline
+    // the dangerous typo is the one that switches it OFF. The two sides must never
+    // disagree about what the platform is actually doing.
     render(<EnforcementModeCard enforcement={{ mode: 'enforce-everything' }} />);
 
-    expect(screen.getByText('enterprise.legal_enforcement_mode_off')).toBeInTheDocument();
-    expect(screen.getByText('enterprise.legal_enforcement_off_help')).toBeInTheDocument();
+    expect(screen.getByText('enterprise.legal_enforcement_mode_write')).toBeInTheDocument();
+    expect(screen.getByText('enterprise.legal_enforcement_write_help')).toBeInTheDocument();
   });
 
   it('lists which documents are gated', () => {

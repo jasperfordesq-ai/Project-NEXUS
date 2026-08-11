@@ -178,18 +178,45 @@ class EnsureLegalAcceptance
         ], 403, ['API-Version' => '2.0']);
     }
 
+    /** The only values that mean anything. */
+    private const VALID_MODES = ['off', 'report', 'write', 'all'];
+
     /**
-     * The configured mode, with anything unrecognised treated as `off`.
+     * The enforcement mode, with anything unrecognised falling back to `write`.
      *
-     * 🔴 A typo in an env var must not silently start blocking members, so this
-     * defaults to permissive rather than to the nearest match.
+     * 🔴 This fallback REVERSED on 2026-08-11, at the same time as the default.
+     * While the default was `off`, the hazard was a typo silently starting to block
+     * members, so an unrecognised value fell back to permissive. Now that
+     * enforcement is the legal baseline, the hazard is the opposite: a typo
+     * silently switching off an obligation. Failing toward the obligation is the
+     * safer error.
+     *
+     * Either way it is not silent — an unrecognised value logs a warning naming the
+     * value, once per process rather than per request, so a misconfigured
+     * environment is visible without flooding the log from a hot path.
      */
     public static function mode(): string
     {
-        $mode = strtolower(trim((string) config('legal.enforcement_mode', 'off')));
+        $configured = strtolower(trim((string) config('legal.enforcement_mode', 'write')));
 
-        return in_array($mode, ['report', 'write', 'all'], true) ? $mode : 'off';
+        if (in_array($configured, self::VALID_MODES, true)) {
+            return $configured;
+        }
+
+        if (!self::$warnedAboutMode) {
+            self::$warnedAboutMode = true;
+            Log::warning('legal.gate.invalid_mode', [
+                'configured' => $configured,
+                'using' => 'write',
+                'valid' => self::VALID_MODES,
+            ]);
+        }
+
+        return 'write';
     }
+
+    /** Guards the invalid-mode warning so it is logged once, not per request. */
+    private static bool $warnedAboutMode = false;
 
     private static function isExemptPath(Request $request): bool
     {

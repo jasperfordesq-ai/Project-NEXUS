@@ -57,18 +57,20 @@ class AdminLegalDocControllerTest extends TestCase
         $this->assertIsArray($response->json('data.enforcement.enforced_acceptance_modes'));
     }
 
-    public function test_compliance_stats_reports_an_unrecognised_mode_as_off(): void
+    public function test_compliance_stats_reports_an_unrecognised_mode_as_enforcing(): void
     {
-        // Matches the middleware, which treats anything it does not recognise as
-        // `off` so a typo in the server setting cannot start blocking members.
-        // Reporting the raw value here would tell the admin the opposite.
+        // Mirrors the middleware exactly. Since 2026-08-11 an unrecognised value
+        // falls back to `write` rather than `off`, because with enforcement as the
+        // legal baseline the dangerous typo is the one that switches it off.
+        // Reporting the raw value here would tell the admin something the platform
+        // is not doing.
         config(['legal.enforcement_mode' => 'enforce-everything']);
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->apiGet('/v2/admin/legal-documents/compliance');
 
-        $this->assertSame('off', $response->json('data.enforcement.mode'));
+        $this->assertSame('write', $response->json('data.enforcement.mode'));
     }
 
     public function test_compliance_stats_returns_403_for_regular_member(): void
