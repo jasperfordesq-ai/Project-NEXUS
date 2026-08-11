@@ -2246,6 +2246,7 @@ return [
     'legal' => [
         'no_documents_require_acceptance' => 'No documents require acceptance',
         'all_documents_accepted'          => 'All documents accepted',
+        'acceptance_required' => 'Please review and accept the updated terms before continuing',
     ],
 
     // Onboarding (hardcoded-string audit — 2026-04-14)

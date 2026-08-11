@@ -616,6 +616,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'partner.api' => \App\Http\Middleware\PartnerApiAuth::class,
             'partner.api.enabled' => \App\Http\Middleware\EnsurePartnerApiEnabled::class,
             'onboarding-required' => \App\Http\Middleware\EnsureOnboardingComplete::class,
+            // Server-side legal-acceptance gate. Attach PER ROUTE, never to a
+            // group. Default mode is `off` (config/legal.php) — deploying the code
+            // must not start blocking members.
+            'legal-acceptance' => \App\Http\Middleware\EnsureLegalAcceptance::class,
             'feature' => \App\Middleware\TenantFeatureMiddleware::class,
             'group.tab' => \App\Middleware\GroupTabFeatureMiddleware::class,
             'module' => \App\Middleware\TenantModuleMiddleware::class,

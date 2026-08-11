@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
+use App\Services\LegalEnforcementService;
 
 /**
  * LegalAcceptanceController -- Legal document acceptance status and bulk accept.
@@ -161,6 +162,13 @@ class LegalAcceptanceController extends BaseApiController
                 500
             );
         }
+
+        // 🔴 This method inserts into user_legal_acceptances DIRECTLY rather than
+        // through LegalDocumentService, so it does not inherit that service's
+        // cache invalidation. Without this line a member accepts here, retries the
+        // action they were blocked on, and is blocked again by their own stale
+        // verdict — an accept → blocked → accept loop. Tested explicitly.
+        LegalEnforcementService::forgetVerdict($userId, $tenantId);
 
         return $this->respondWithData([
             'accepted' => $accepted,

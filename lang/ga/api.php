@@ -1201,6 +1201,7 @@ return [
     'legal' => [
         'no_documents_require_acceptance' => 'Ní gá glacadh le doiciméid ar bith',
         'all_documents_accepted' => 'Glactar le gach doiciméad',
+        'acceptance_required' => 'Athbhreithnigh agus glac leis na téarmaí nuashonraithe sula leanann tú ar aghaidh',
     ],
     'onboarding' => [
         'complete' => 'Onboarding críochnaithe!',

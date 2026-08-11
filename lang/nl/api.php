@@ -1204,6 +1204,7 @@ return [
     'legal' => [
         'no_documents_require_acceptance' => 'Er zijn geen documenten waarvoor acceptatie vereist is',
         'all_documents_accepted' => 'Alle documenten geaccepteerd',
+        'acceptance_required' => 'Lees en accepteer de bijgewerkte voorwaarden voordat u doorgaat',
     ],
     'onboarding' => [
         'complete' => 'Onboarding voltooid!',

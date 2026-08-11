@@ -69,6 +69,21 @@ class ApiErrorCodes
     /** User is a super admin but their tenant lacks Super Panel access (e.g., no sub-tenant capability) */
     public const SUPER_PANEL_ACCESS_DENIED = 'SUPER_PANEL_ACCESS_DENIED';
 
+    /**
+     * The user must accept updated legal documents before this action.
+     *
+     * 🔴 403, deliberately, and NEVER 401. A 401 tells every client the token is
+     * bad: web-uk's `handleApiError` clears all auth cookies and redirects to
+     * login, and its 401 wrapper first burns a refresh token on a retry that
+     * cannot possibly succeed — the user is authenticated, they simply have not
+     * agreed to something. 403 with a machine code lets each client show the
+     * acceptance page instead of logging the member out.
+     *
+     * Matches ONBOARDING_REQUIRED, the existing precedent for "authenticated but
+     * fails a precondition".
+     */
+    public const LEGAL_ACCEPTANCE_REQUIRED = 'LEGAL_ACCEPTANCE_REQUIRED';
+
     /** 2FA code required to complete login */
     public const AUTH_2FA_REQUIRED = 'AUTH_2FA_REQUIRED';
 
@@ -277,6 +292,7 @@ class ApiErrorCodes
             self::FORBIDDEN,
             self::TENANT_MISMATCH,
             self::REGISTRATION_CLOSED,
+            self::LEGAL_ACCEPTANCE_REQUIRED,
             self::SUPER_PANEL_ACCESS_DENIED => 403,
 
             // 404 Not Found

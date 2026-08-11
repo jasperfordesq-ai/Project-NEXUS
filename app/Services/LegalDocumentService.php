@@ -11,6 +11,7 @@ use App\Core\Mailer;
 use App\Core\TenantContext;
 use App\Helpers\HtmlSanitizer;
 use App\I18n\LocaleContext;
+use App\Services\LegalEnforcementService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -175,6 +176,8 @@ class LegalDocumentService
             'created_by'              => auth()->id(),
         ]);
 
+        LegalEnforcementService::bumpRevision((int) $tenantId);
+
         return self::legacyGetById($id) ?? ['id' => $id];
     }
 
@@ -200,6 +203,8 @@ class LegalDocumentService
             ->where('id', $id)
             ->where('tenant_id', TenantContext::getId())
             ->update($updates);
+
+        LegalEnforcementService::bumpRevision((int) TenantContext::getId());
 
         return self::legacyGetById($id);
     }
@@ -281,6 +286,8 @@ class LegalDocumentService
             })
             ->update($updates);
 
+        LegalEnforcementService::bumpRevision((int) TenantContext::getId());
+
         return true;
     }
 
@@ -294,7 +301,12 @@ class LegalDocumentService
             return false;
         }
 
-        return DB::transaction(function () use ($vid, $version) {
+        // 🔴 Bumped AFTER the transaction commits, so the new revision can never
+        // be visible before the version it describes. The gate caches a verdict
+        // per (tenant, revision, user), so bumping is what makes a newly published
+        // document start blocking every member who has not accepted it — without a
+        // bump this publish is invisible to the gate until each verdict expires.
+        $published = DB::transaction(function () use ($vid, $version) {
             // Unset current flag on all other versions
             DB::table('legal_document_versions')
                 ->where('document_id', $version['document_id'])
@@ -317,6 +329,12 @@ class LegalDocumentService
 
             return true;
         });
+
+        if ($published) {
+            LegalEnforcementService::bumpRevision((int) TenantContext::getId());
+        }
+
+        return $published;
     }
 
     /**
@@ -335,6 +353,8 @@ class LegalDocumentService
                 $q->select('id')->from('legal_documents')->where('tenant_id', TenantContext::getId());
             })
             ->delete();
+
+        LegalEnforcementService::bumpRevision((int) TenantContext::getId());
 
         return true;
     }
@@ -378,6 +398,13 @@ class LegalDocumentService
             }
         }
 
+        // 🔴 Always, not only when something was inserted. The gate caches a
+        // per-user verdict, and a stale "pending" verdict after accepting is an
+        // accept → still blocked → accept loop with no way out but waiting for the
+        // TTL. Clearing on the no-op path too means a member who accepted in
+        // another tab is not left stuck either.
+        LegalEnforcementService::forgetVerdict($userId, (int) TenantContext::getId());
+
         return $accepted;
     }
 
@@ -402,6 +429,10 @@ class LegalDocumentService
                 'accepted_at'       => now(),
             ]
         );
+
+        // Single-document accept (`POST /api/v2/legal/accept`) clears the verdict
+        // too: this may have been the last outstanding document.
+        LegalEnforcementService::forgetVerdict($userId, (int) TenantContext::getId());
     }
 
     /**

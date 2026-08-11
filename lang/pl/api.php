@@ -1204,6 +1204,7 @@ return [
     'legal' => [
         'no_documents_require_acceptance' => 'Żadne dokumenty nie wymagają akceptacji',
         'all_documents_accepted' => 'Wszystkie dokumenty zaakceptowane',
+        'acceptance_required' => 'Zanim przejdziesz dalej, przejrzyj i zaakceptuj zaktualizowane warunki',
     ],
     'onboarding' => [
         'complete' => 'Wdrożenie zakończone!',

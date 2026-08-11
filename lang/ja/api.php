@@ -1204,6 +1204,7 @@ return [
     'legal' => [
         'no_documents_require_acceptance' => '受理を必要とする書類はありません',
         'all_documents_accepted' => 'すべての書類が受け入れられました',
+        'acceptance_required' => '続行する前に、更新された規約を確認して同意してください',
     ],
     'onboarding' => [
         'complete' => 'オンボーディング完了！',

@@ -219,7 +219,7 @@ Route::get('/v2/exchanges/config', [\App\Http\Controllers\Api\ExchangesControlle
 Route::get('/v2/exchanges/check', [\App\Http\Controllers\Api\ExchangesController::class, 'check']);
 Route::get('/v2/exchanges/needs-attention-count', [\App\Http\Controllers\Api\ExchangesController::class, 'needsAttentionCount']);
 Route::get('/v2/exchanges', [\App\Http\Controllers\Api\ExchangesController::class, 'index']);
-Route::post('/v2/exchanges', [\App\Http\Controllers\Api\ExchangesController::class, 'store']);
+Route::post('/v2/exchanges', [\App\Http\Controllers\Api\ExchangesController::class, 'store'])->middleware('legal-acceptance');
 Route::get('/v2/exchanges/{id}', [\App\Http\Controllers\Api\ExchangesController::class, 'show']);
 Route::post('/v2/exchanges/{id}/accept', [\App\Http\Controllers\Api\ExchangesController::class, 'accept']);
 Route::post('/v2/exchanges/{id}/decline', [\App\Http\Controllers\Api\ExchangesController::class, 'decline']);
@@ -276,7 +276,7 @@ Route::middleware('feature:events')->group(function () {
         ->whereNumber('templateId')->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/event-templates/{templateId}/materializations', [\App\Http\Controllers\Api\EventTemplateController::class, 'materialize'])
         ->whereNumber('templateId')->middleware('throttle:nexus-route-20-per-1m');
-    Route::post('/v2/events', [\App\Http\Controllers\Api\EventsController::class, 'store']);
+    Route::post('/v2/events', [\App\Http\Controllers\Api\EventsController::class, 'store'])->middleware('legal-acceptance');
     Route::get('/v2/events/{id}/calendar.ics', [\App\Http\Controllers\Api\EventCalendarController::class, 'eventFeed'])
         ->whereNumber('id');
     Route::get('/v2/events/{id}/calendar-actions', [\App\Http\Controllers\Api\EventCalendarController::class, 'actions'])
@@ -546,7 +546,7 @@ Route::middleware('module:listings')->group(function () {
     Route::get('/v2/listings/featured', [\App\Http\Controllers\Api\ListingsController::class, 'featured']);
     Route::get('/v2/listings/tags/popular', [\App\Http\Controllers\Api\ListingsController::class, 'popularTags'])->withoutMiddleware('auth:sanctum');
     Route::get('/v2/listings/tags/autocomplete', [\App\Http\Controllers\Api\ListingsController::class, 'autocompleteTags'])->withoutMiddleware('auth:sanctum');
-    Route::post('/v2/listings', [\App\Http\Controllers\Api\ListingsController::class, 'store'])->middleware('onboarding-required');
+    Route::post('/v2/listings', [\App\Http\Controllers\Api\ListingsController::class, 'store'])->middleware('onboarding-required')->middleware('legal-acceptance');
     Route::post('/v2/listings/generate-description', [\App\Http\Controllers\Api\ListingsController::class, 'generateDescription']);
     Route::get('/v2/listings/{id}', [\App\Http\Controllers\Api\ListingsController::class, 'show']);
     Route::put('/v2/listings/{id}', [\App\Http\Controllers\Api\ListingsController::class, 'update']);
@@ -571,7 +571,7 @@ Route::middleware('module:listings')->group(function () {
 Route::get('/v2/messages', [\App\Http\Controllers\Api\MessagesController::class, 'conversations']);
 Route::get('/v2/messages/unread-count', [\App\Http\Controllers\Api\MessagesController::class, 'unreadCount']);
 Route::get('/v2/messages/restriction-status', [\App\Http\Controllers\Api\MessagesController::class, 'restrictionStatus']);
-Route::post('/v2/messages', [\App\Http\Controllers\Api\MessagesController::class, 'send'])->middleware('onboarding-required');
+Route::post('/v2/messages', [\App\Http\Controllers\Api\MessagesController::class, 'send'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::post('/v2/messages/typing', [\App\Http\Controllers\Api\MessagesController::class, 'typing']);
 Route::post('/v2/messages/voice', [\App\Http\Controllers\Api\MessagesController::class, 'sendVoice']);
 Route::get('/v2/messages/{message}/attachments/{attachment}', [\App\Http\Controllers\Api\MessageMediaController::class, 'attachment']);
@@ -870,8 +870,8 @@ Route::get('/v2/users/me/sub-accounts/{childId}/activity', [\App\Http\Controller
 // permissions were offered as toggles in the UI (with labels promising exactly
 // these abilities) and checked nowhere, because no endpoint could reach them.
 // Each records the acting carer on the row it writes and audits to org_audit_log.
-Route::post('/v2/users/me/sub-accounts/{childId}/listings', [\App\Http\Controllers\Api\SubAccountController::class, 'createListingForChild'])->middleware('onboarding-required');
-Route::post('/v2/users/me/sub-accounts/{childId}/transfer', [\App\Http\Controllers\Api\SubAccountController::class, 'transferForChild'])->middleware('onboarding-required');
+Route::post('/v2/users/me/sub-accounts/{childId}/listings', [\App\Http\Controllers\Api\SubAccountController::class, 'createListingForChild'])->middleware('onboarding-required')->middleware('legal-acceptance');
+Route::post('/v2/users/me/sub-accounts/{childId}/transfer', [\App\Http\Controllers\Api\SubAccountController::class, 'transferForChild'])->middleware('onboarding-required')->middleware('legal-acceptance');
 // The supported member's balance, so the prepare screen can validate an amount
 // the way the member's own transfer dialog does. Gated on can_transact.
 Route::get('/v2/users/me/sub-accounts/{childId}/wallet', [\App\Http\Controllers\Api\SubAccountController::class, 'getChildWallet']);
@@ -886,12 +886,12 @@ Route::get('/v2/users/me/sub-accounts/{childId}/messages/{partnerId}', [\App\Htt
 // Photo for a listing just posted on someone's behalf. Separate from
 // /v2/listings/{id}/image because that route's canModify() check admits only
 // the owner or an admin — a carer is refused. See the controller for why.
-Route::post('/v2/users/me/sub-accounts/{childId}/listings/{listingId}/image', [\App\Http\Controllers\Api\SubAccountController::class, 'uploadListingImageForChild'])->middleware('onboarding-required');
+Route::post('/v2/users/me/sub-accounts/{childId}/listings/{listingId}/image', [\App\Http\Controllers\Api\SubAccountController::class, 'uploadListingImageForChild'])->middleware('onboarding-required')->middleware('legal-acceptance');
 // Co-decide confirm loop (guardian redesign phase 3). The two direct routes
 // above require the `represent` tier (act alone); a `co_decide` supporter
 // instead PREPARES an action here, and it executes only when the supported
 // member confirms — in-app below, or via the public token routes further down.
-Route::post('/v2/users/me/support-actions', [\App\Http\Controllers\Api\SupportActionController::class, 'prepare'])->middleware('onboarding-required');
+Route::post('/v2/users/me/support-actions', [\App\Http\Controllers\Api\SupportActionController::class, 'prepare'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::get('/v2/users/me/support-actions', [\App\Http\Controllers\Api\SupportActionController::class, 'index']);
 Route::post('/v2/users/me/support-actions/{id}/confirm', [\App\Http\Controllers\Api\SupportActionController::class, 'confirm'])->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
 Route::post('/v2/users/me/support-actions/{id}/decline', [\App\Http\Controllers\Api\SupportActionController::class, 'decline'])->whereNumber('id')->middleware('throttle:nexus-route-10-per-1m');
@@ -914,7 +914,7 @@ Route::get('/v2/wallet/config', [\App\Http\Controllers\Api\WalletController::cla
 Route::get('/v2/wallet/balance', [\App\Http\Controllers\Api\WalletController::class, 'balance']);
 Route::get('/v2/wallet/transactions', [\App\Http\Controllers\Api\WalletController::class, 'transactions']);
 Route::get('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'showTransaction']);
-Route::post('/v2/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])->middleware('onboarding-required');
+Route::post('/v2/wallet/transfer', [\App\Http\Controllers\Api\WalletController::class, 'transfer'])->middleware('onboarding-required')->middleware('legal-acceptance');
 Route::delete('/v2/wallet/transactions/{id}', [\App\Http\Controllers\Api\WalletController::class, 'destroyTransaction']);
 Route::get('/v2/wallet/user-search', [\App\Http\Controllers\Api\WalletController::class, 'userSearch']);
 Route::get('/v2/wallet/pending-count', [\App\Http\Controllers\Api\WalletController::class, 'pendingCount']);
@@ -924,7 +924,7 @@ Route::get('/v2/feed/posts/{id}', [\App\Http\Controllers\Api\SocialController::c
 Route::get('/v2/feed/items/{type}/{id}', [\App\Http\Controllers\Api\SocialController::class, 'showItem'])
     ->where('type', '[a-z_]+')
     ->where('id', '[0-9]+');
-Route::post('/v2/feed/posts', [\App\Http\Controllers\Api\SocialController::class, 'createPostV2']);
+Route::post('/v2/feed/posts', [\App\Http\Controllers\Api\SocialController::class, 'createPostV2'])->middleware('legal-acceptance');
 Route::post('/v2/feed/like', [\App\Http\Controllers\Api\SocialController::class, 'likeV2']);
 Route::post('/v2/feed/polls', [\App\Http\Controllers\Api\SocialController::class, 'createPollV2']);
 Route::get('/v2/feed/polls/{id}', [\App\Http\Controllers\Api\SocialController::class, 'getPollV2']);
@@ -1016,7 +1016,7 @@ Route::get('/v2/users/{userId}/reviews', [\App\Http\Controllers\Api\ReviewsContr
 Route::get('/v2/reviews/user/{userId}/stats', [\App\Http\Controllers\Api\ReviewsController::class, 'userStats']);
 
 Route::get('/v2/reviews/{id}', [\App\Http\Controllers\Api\ReviewsController::class, 'show']);
-Route::post('/v2/reviews', [\App\Http\Controllers\Api\ReviewsController::class, 'store']);
+Route::post('/v2/reviews', [\App\Http\Controllers\Api\ReviewsController::class, 'store'])->middleware('legal-acceptance');
 Route::delete('/v2/reviews/{id}', [\App\Http\Controllers\Api\ReviewsController::class, 'destroy']);
 // Search
 Route::get('/v2/search', [\App\Http\Controllers\Api\SearchController::class, 'index']);
@@ -1220,7 +1220,7 @@ Route::put('/v2/volunteering/opportunities/{id}', [\App\Http\Controllers\Api\Vol
 Route::delete('/v2/volunteering/opportunities/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'deleteOpportunity']);
 Route::get('/v2/volunteering/opportunities/{id}/shifts', [\App\Http\Controllers\Api\VolunteerController::class, 'shifts']);
 Route::get('/v2/volunteering/opportunities/{id}/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'opportunityApplications']);
-Route::post('/v2/volunteering/opportunities/{id}/apply', [\App\Http\Controllers\Api\VolunteerController::class, 'apply']);
+Route::post('/v2/volunteering/opportunities/{id}/apply', [\App\Http\Controllers\Api\VolunteerController::class, 'apply'])->middleware('legal-acceptance');
 Route::get('/v2/volunteering/applications', [\App\Http\Controllers\Api\VolunteerController::class, 'myApplications']);
 Route::put('/v2/volunteering/applications/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'handleApplication']);
 Route::delete('/v2/volunteering/applications/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'withdrawApplication']);
@@ -1257,7 +1257,7 @@ Route::post('/v2/volunteering/reviews', [\App\Http\Controllers\Api\VolunteerCont
 Route::get('/v2/volunteering/reviews/organization/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getOrganizationReviews']);
 Route::get('/v2/volunteering/reviews/{type}/{id}', [\App\Http\Controllers\Api\VolunteerController::class, 'getReviews']);
 Route::get('/v2/comments', [\App\Http\Controllers\Api\CommentsController::class, 'index']);
-Route::post('/v2/comments', [\App\Http\Controllers\Api\CommentsController::class, 'store']);
+Route::post('/v2/comments', [\App\Http\Controllers\Api\CommentsController::class, 'store'])->middleware('legal-acceptance');
 Route::put('/v2/comments/{id}', [\App\Http\Controllers\Api\CommentsController::class, 'update']);
 Route::delete('/v2/comments/{id}', [\App\Http\Controllers\Api\CommentsController::class, 'destroy']);
 // Note: POST /v2/comments/{id}/reactions is handled by ReactionController (line ~354)
@@ -1283,7 +1283,7 @@ Route::post('/v2/resources/categories', [\App\Http\Controllers\Api\ResourceCateg
 Route::put('/v2/resources/categories/{id}', [\App\Http\Controllers\Api\ResourceCategoryController::class, 'update'])->middleware('admin');
 Route::delete('/v2/resources/categories/{id}', [\App\Http\Controllers\Api\ResourceCategoryController::class, 'destroy'])->middleware('admin');
 Route::put('/v2/resources/reorder', [\App\Http\Controllers\Api\ResourceCategoryController::class, 'reorder'])->middleware('admin');
-Route::post('/v2/resources', [\App\Http\Controllers\Api\ResourcePublicController::class, 'store']);
+Route::post('/v2/resources', [\App\Http\Controllers\Api\ResourcePublicController::class, 'store'])->middleware('legal-acceptance');
 Route::get('/v2/resources/{id}/download', [\App\Http\Controllers\Api\ResourcePublicController::class, 'download']);
 Route::put('/v2/resources/{id}', [\App\Http\Controllers\Api\ResourcePublicController::class, 'update']);
 Route::delete('/v2/resources/{id}', [\App\Http\Controllers\Api\ResourcePublicController::class, 'destroy']);

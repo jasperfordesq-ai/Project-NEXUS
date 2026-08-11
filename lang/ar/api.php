@@ -1204,6 +1204,7 @@ return [
     'legal' => [
         'no_documents_require_acceptance' => 'لا توجد وثائق تتطلب القبول',
         'all_documents_accepted' => 'جميع الوثائق مقبولة',
+        'acceptance_required' => 'يرجى مراجعة الشروط المحدثة وقبولها قبل المتابعة',
     ],
     'onboarding' => [
         'complete' => 'اكتمل الإعداد!',
