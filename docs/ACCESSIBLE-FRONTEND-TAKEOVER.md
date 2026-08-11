@@ -76,6 +76,16 @@ qualification means the Phase A rule above.
 Current score: **637/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
 table below before comparing that with any earlier number.
 
+## 🔴 Before the first rehearsal: the plumbing is not on the server yet
+
+The server now holds every variable `web-uk` needs. It does **not** yet hold
+`compose.webuk.bluegreen.yml`, the deploy script with web-uk support, or the Apache
+include — those are in commits that have not been pushed.
+
+This fails safely rather than half-deploying: `compose_files_for_release()` refuses
+outright when the overlay is missing from a release. But it does refuse, so a
+rehearsal attempted before pushing would simply stop. Push first.
+
 ## Prerequisites — six resolved, one still needs an owner answer
 
 ### ✅ Resolved
@@ -145,21 +155,31 @@ table below before comparing that with any earlier number.
    exactly once with a value hash matching local, and with the rest of the file
    proven byte-identical to the backup. It is inert until `web-uk` is deployed.
 
-   🔴 **Three variables are still missing on the server, and without them a
-   `web-uk` deploy cannot even start.** `compose.webuk.bluegreen.yml` declares them
-   with Compose's `${VAR:?}` form so a deployment cannot boot with a guessable
-   session secret, which also means the overlay refuses to load at all when they
-   are absent:
+   **The three session variables were installed on 2026-08-11.** Without them the
+   overlay refuses to load and a deploy aborts, because
+   `compose.webuk.bluegreen.yml` declares them with Compose's `${VAR:?}` form so a
+   deployment cannot boot with a guessable session secret.
 
-   | Variable | What it needs |
+   | Variable | Installed as |
    |---|---|
-   | `WEBUK_COOKIE_SECRET` | a long random value |
-   | `WEBUK_SESSION_SECRET` | a long random value, **different from the cookie secret** — the image refuses to start if they match |
-   | `WEBUK_SESSION_REDIS_URL` | `redis://nexus-php-redis:6379/4` — **index 4, never 0**, because Laravel's cache flush would otherwise sign out every accessible-frontend user |
+   | `WEBUK_COOKIE_SECRET` | 64 hex characters, generated on the server |
+   | `WEBUK_SESSION_SECRET` | 64 hex characters, **verified different** from the cookie secret — the image refuses to start if they match |
+   | `WEBUK_SESSION_REDIS_URL` | `redis://nexus-php-redis:6379/4` |
 
-   These are deliberately left for a deliberate decision rather than generated in
-   passing, because they are production session secrets. They are needed before the
-   first cutover rehearsal, not before then.
+   🔴 **Why index 4 and never 0**, now confirmed with numbers rather than
+   reasoning: production Redis has 16 databases, **db0 holds 521 keys** — the
+   Laravel cache — and `php artisan cache:clear` issues `FLUSHDB`. Sessions on
+   index 0 would be destroyed by an ordinary cache clear, signing out every
+   accessible-frontend user. db4 was verified empty.
+
+   Both secrets were **generated on the server** with `openssl rand -hex 32`, so
+   they never crossed the network and exist in only one place. Hex is deliberate: a
+   `$` or `#` inside a value would be reinterpreted by Compose interpolation or env
+   parsing. Appended after a backup
+   (`.env.bak-pre-webuk-secrets-20260811-164701`), verified as one occurrence each
+   with the correct length and the two proven distinct, and `diff` confirmed a pure
+   append. There is **no local copy** — nothing on the development machine needs
+   them, and the fewer places they exist the better.
 
 ### Still needed from the owner
 
