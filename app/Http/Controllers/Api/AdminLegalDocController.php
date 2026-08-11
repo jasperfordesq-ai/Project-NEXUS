@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
 use App\Core\TenantContext;
+use App\Http\Middleware\EnsureLegalAcceptance;
 use App\Services\LegalDocumentService;
 
 /**
@@ -130,6 +131,28 @@ class AdminLegalDocController extends BaseApiController
         try {
             $tenantId = TenantContext::getId();
             $stats = $this->legalDocumentService->getComplianceSummary($tenantId);
+
+            // READ-ONLY. The mode is a platform-wide server setting
+            // (`LEGAL_ENFORCEMENT_MODE`, see `config/legal.php`) and is reported
+            // here so an admin can see what is actually happening without shell
+            // access.
+            //
+            // 🔴 There is deliberately NO endpoint to change it. This switch can
+            // stop members using the platform, so it stays a considered change to
+            // a server file rather than a button one mis-click away. Do not add a
+            // setter here without an explicit decision to accept that risk.
+            $stats['enforcement'] = [
+                'mode' => EnsureLegalAcceptance::mode(),
+                // Which `acceptance_required_for` values are gated. Worth showing:
+                // a community can mark a document `none`, and until 2026-08-11
+                // that choice was written, validated and then ignored by
+                // everything.
+                'enforced_acceptance_modes' => array_values(
+                    (array) config('legal.enforced_acceptance_modes', [])
+                ),
+                'editable_here' => false,
+            ];
+
             return $this->respondWithData($stats);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning("[AdminLegalDocController] getComplianceStats error: " . $e->getMessage());

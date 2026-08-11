@@ -854,10 +854,24 @@ export interface VersionComparison {
   changes_count: number;
 }
 
+/**
+ * Read-only view of the platform legal-acceptance enforcement mode.
+ *
+ * 🔴 Optional on purpose: a backend older than 2026-08-11 does not send it, and
+ * the card renders nothing rather than claiming a mode it does not know.
+ */
+export interface LegalEnforcement {
+  mode: 'off' | 'report' | 'write' | 'all' | string;
+  enforced_acceptance_modes?: string[];
+  /** Always false — there is deliberately no endpoint to change the mode. */
+  editable_here?: boolean;
+}
+
 export interface ComplianceStats {
   total_users: number;
   overall_compliance_rate: number;
   users_pending_acceptance: number;
+  enforcement?: LegalEnforcement;
   documents: Array<{
     id: number;
     document_type: string;

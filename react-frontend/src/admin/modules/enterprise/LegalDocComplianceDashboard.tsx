@@ -16,6 +16,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { adminLegalDocs } from '@/admin/api/adminApi';
 import type { ComplianceStats, UserAcceptance } from '@/admin/api/types';
 import { useAdminPageMeta } from '../../AdminMetaContext';
+import { EnforcementModeCard } from './EnforcementModeCard';
 // Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
@@ -146,6 +147,8 @@ export default function LegalDocComplianceDashboard() {
           {t('enterprise.track_compliance_description')}
         </p>
       </div>
+
+      <EnforcementModeCard enforcement={stats.enforcement} />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

@@ -38,6 +38,39 @@ class AdminLegalDocControllerTest extends TestCase
         $response->assertJsonStructure(['data']);
     }
 
+    public function test_compliance_stats_reports_the_enforcement_mode_read_only(): void
+    {
+        // The admin panel shows the platform enforcement mode so it can be seen
+        // without shell access. 🔴 READ-ONLY: `editable_here` is always false and
+        // there is deliberately no endpoint to change the mode, because it can stop
+        // members using the platform. If anyone adds a setter, this test's intent
+        // is the record of why they should not have.
+        config(['legal.enforcement_mode' => 'report']);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiGet('/v2/admin/legal-documents/compliance');
+
+        $response->assertStatus(200);
+        $this->assertSame('report', $response->json('data.enforcement.mode'));
+        $this->assertFalse($response->json('data.enforcement.editable_here'));
+        $this->assertIsArray($response->json('data.enforcement.enforced_acceptance_modes'));
+    }
+
+    public function test_compliance_stats_reports_an_unrecognised_mode_as_off(): void
+    {
+        // Matches the middleware, which treats anything it does not recognise as
+        // `off` so a typo in the server setting cannot start blocking members.
+        // Reporting the raw value here would tell the admin the opposite.
+        config(['legal.enforcement_mode' => 'enforce-everything']);
+        $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
+        Sanctum::actingAs($admin);
+
+        $response = $this->apiGet('/v2/admin/legal-documents/compliance');
+
+        $this->assertSame('off', $response->json('data.enforcement.mode'));
+    }
+
     public function test_compliance_stats_returns_403_for_regular_member(): void
     {
         $member = User::factory()->forTenant($this->testTenantId)->create();

@@ -1150,7 +1150,20 @@
     "gdpr_selected_user": "{{name}} ({{email}}) — ID #{{id}}",
     "gdpr_user_id_suffix": "— ID #{{id}}",
     "gdpr_consent_rate_summary": "{{percentage}}% ({{granted}}/{{total}})",
-    "activity_by_user": "by {{name}}"
+    "activity_by_user": "by {{name}}",
+    "legal_enforcement_title": "Terms acceptance enforcement",
+    "legal_enforcement_subtitle": "Whether the platform requires members to accept updated documents before they can act. This is a platform-wide server setting and cannot be changed from here.",
+    "legal_enforcement_mode_label": "Current mode",
+    "legal_enforcement_mode_off": "Not enforced",
+    "legal_enforcement_mode_report": "Reporting only",
+    "legal_enforcement_mode_write": "Enforced on changes",
+    "legal_enforcement_mode_all": "Enforced everywhere",
+    "legal_enforcement_off_help": "Nothing is enforced. Members with an unaccepted document can use the platform normally.",
+    "legal_enforcement_report_help": "Nothing is blocked. The platform records who would have been blocked, and which app they were using, so the effect can be measured before enforcing.",
+    "legal_enforcement_write_help": "Members with an unaccepted document are refused when they try to create or change something. Reading is unaffected.",
+    "legal_enforcement_gated_label": "These documents require acceptance",
+    "legal_enforcement_gated_none": "A document set to \"not required\" is never enforced.",
+    "legal_enforcement_read_only_notice": "Changing this is a deliberate server change, not a setting, because it can prevent members using the platform."
   },
   "legal_doc_form": {
     "back_to_documents": "Back to Documents",
