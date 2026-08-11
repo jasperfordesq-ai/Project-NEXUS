@@ -1,24 +1,24 @@
 {
-  "generatedAt": "2026-08-11T05:57:34.723Z",
+  "generatedAt": "2026-08-11T06:18:26.829Z",
   "provenance": {
-    "generatedAt": "2026-08-11T05:57:34.723Z",
+    "generatedAt": "2026-08-11T06:18:26.829Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "5acc8e820a39eba6306f2e210d1a3f263d1880b8",
+    "laravelCommitSha": "45dcdb0f9b3c3c56a9490c2fbf4c99b7010dad4e",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "5acc8e820a39eba6306f2e210d1a3f263d1880b8",
+    "webUkRepositoryCommitSha": "45dcdb0f9b3c3c56a9490c2fbf4c99b7010dad4e",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-11T05:57:34.723Z",
+    "generatedAt": "2026-08-11T06:18:26.829Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 710,
-    "matchedRoutes": 703,
-    "missingRoutes": 4,
+    "webUkRoutes": 713,
+    "matchedRoutes": 706,
+    "missingRoutes": 1,
     "extraWebUkRoutes": 5,
     "ignoredInfrastructureRoutes": 3,
     "familyCounts": {
@@ -401,8 +401,8 @@
         "ignoredInfrastructure": 0
       },
       "settings": {
-        "matched": 21,
-        "missing": 3,
+        "matched": 24,
+        "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
       },
@@ -13830,6 +13830,51 @@
     },
     {
       "method": "GET",
+      "path": "/settings/linked-accounts/messages/{param}",
+      "family": "settings",
+      "status": "matched",
+      "laravelRouteName": "settings.linked-accounts.messages",
+      "laravelHandler": "settingsLinkedAccountMessages",
+      "laravelView": "",
+      "laravelParamConstraints": [
+        ""
+      ],
+      "laravelRouteFile": "routes/govuk-alpha-parity/settings.php",
+      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php",
+      "laravelMiddleware": "'throttle:nexus-route-30-per-1m'",
+      "auth": "public-or-unknown",
+      "tenantScoped": "unknown",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/settings/linked-accounts/messages/{param}",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/settings-supported-messages.js"
+    },
+    {
+      "method": "GET",
+      "path": "/settings/linked-accounts/messages/{param}/{param}",
+      "family": "settings",
+      "status": "matched",
+      "laravelRouteName": "settings.linked-accounts.messages.thread",
+      "laravelHandler": "settingsLinkedAccountThread",
+      "laravelView": "",
+      "laravelParamConstraints": [
+        "",
+        ""
+      ],
+      "laravelRouteFile": "routes/govuk-alpha-parity/settings.php",
+      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php",
+      "laravelMiddleware": "'throttle:nexus-route-30-per-1m'",
+      "auth": "public-or-unknown",
+      "tenantScoped": "unknown",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/settings/linked-accounts/messages/{param}/{param}",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/settings-supported-messages.js"
+    },
+    {
+      "method": "GET",
       "path": "/settings/support-actions",
       "family": "settings",
       "status": "matched",
@@ -14027,6 +14072,28 @@
       "webUkPath": "/settings/linked-accounts/message-access/withdraw",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/settings-message-access.js"
+    },
+    {
+      "method": "POST",
+      "path": "/settings/linked-accounts/messages/{param}/purpose",
+      "family": "settings",
+      "status": "matched",
+      "laravelRouteName": "settings.linked-accounts.messages.purpose",
+      "laravelHandler": "settingsLinkedAccountMessagesPurpose",
+      "laravelView": "",
+      "laravelParamConstraints": [
+        ""
+      ],
+      "laravelRouteFile": "routes/govuk-alpha-parity/settings.php",
+      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php",
+      "laravelMiddleware": "'throttle:nexus-route-20-per-1m'",
+      "auth": "auth-optional",
+      "tenantScoped": "yes",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/settings/linked-accounts/messages/{param}/purpose",
+      "webUkView": "settings/supported-messages",
+      "webUkFile": "web-uk/src/routes/settings-supported-messages.js"
     },
     {
       "method": "POST",
@@ -15609,73 +15676,6 @@
       "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
       "auth": "public-or-unknown",
       "tenantScoped": "unknown",
-      "gates": "",
-      "apiNeeds": "",
-      "webUkPath": "",
-      "webUkView": "",
-      "webUkFile": ""
-    },
-    {
-      "method": "GET",
-      "path": "/settings/linked-accounts/messages/{param}",
-      "family": "settings",
-      "status": "missing",
-      "laravelRouteName": "settings.linked-accounts.messages",
-      "laravelHandler": "settingsLinkedAccountMessages",
-      "laravelView": "",
-      "laravelParamConstraints": [
-        ""
-      ],
-      "laravelRouteFile": "routes/govuk-alpha-parity/settings.php",
-      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php",
-      "laravelMiddleware": "'throttle:nexus-route-30-per-1m'",
-      "auth": "public-or-unknown",
-      "tenantScoped": "unknown",
-      "gates": "",
-      "apiNeeds": "",
-      "webUkPath": "",
-      "webUkView": "",
-      "webUkFile": ""
-    },
-    {
-      "method": "GET",
-      "path": "/settings/linked-accounts/messages/{param}/{param}",
-      "family": "settings",
-      "status": "missing",
-      "laravelRouteName": "settings.linked-accounts.messages.thread",
-      "laravelHandler": "settingsLinkedAccountThread",
-      "laravelView": "",
-      "laravelParamConstraints": [
-        "",
-        ""
-      ],
-      "laravelRouteFile": "routes/govuk-alpha-parity/settings.php",
-      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php",
-      "laravelMiddleware": "'throttle:nexus-route-30-per-1m'",
-      "auth": "public-or-unknown",
-      "tenantScoped": "unknown",
-      "gates": "",
-      "apiNeeds": "",
-      "webUkPath": "",
-      "webUkView": "",
-      "webUkFile": ""
-    },
-    {
-      "method": "POST",
-      "path": "/settings/linked-accounts/messages/{param}/purpose",
-      "family": "settings",
-      "status": "missing",
-      "laravelRouteName": "settings.linked-accounts.messages.purpose",
-      "laravelHandler": "settingsLinkedAccountMessagesPurpose",
-      "laravelView": "",
-      "laravelParamConstraints": [
-        ""
-      ],
-      "laravelRouteFile": "routes/govuk-alpha-parity/settings.php",
-      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/SettingsAuthParity.php",
-      "laravelMiddleware": "'throttle:nexus-route-20-per-1m'",
-      "auth": "auth-optional",
-      "tenantScoped": "yes",
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "",

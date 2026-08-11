@@ -2752,6 +2752,40 @@ async function withdrawMessageAccess(token, relationshipId) {
   });
 }
 
+/**
+ * A supporter's read-only view of a supported member's conversations.
+ *
+ * 🔴 The stated purpose travels in the `X-Message-View-Purpose` HEADER, never in
+ * the query string. It is free text that can quote a safeguarding concern about
+ * a named person, and a URL is written to access logs, browser history and
+ * shared screenshots. The Blade frontend refuses to put it in a URL for exactly
+ * this reason; the API gained the header so an HTTP client could do the same.
+ *
+ * The service writes an immutable audit row containing the purpose BEFORE any
+ * data is returned, so an absent or blank purpose yields no data at all.
+ */
+async function getSupportedConversations(token, childUserId, purpose, params = {}) {
+  const query = new URLSearchParams();
+  if (params.cursor) query.set('cursor', params.cursor);
+  query.set('limit', String(params.limit || 20));
+
+  return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/messages?${query.toString()}`, {
+    headers: { Authorization: `Bearer ${token}`, 'X-Message-View-Purpose': purpose }
+  });
+}
+
+async function getSupportedThread(token, childUserId, partnerUserId, purpose, params = {}) {
+  const query = new URLSearchParams();
+  if (params.cursor) query.set('cursor', params.cursor);
+  if (params.direction) query.set('direction', params.direction);
+
+  const suffix = query.toString() === '' ? '' : `?${query.toString()}`;
+  return request(
+    `/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/messages/${encodeURIComponent(partnerUserId)}${suffix}`,
+    { headers: { Authorization: `Bearer ${token}`, 'X-Message-View-Purpose': purpose } }
+  );
+}
+
 // Guardian arrangements, member side.
 //
 // 🔴 An arrangement is a RECORD, not a capability. Listing one grants nothing —
@@ -3882,6 +3916,8 @@ module.exports = {
   getChildActivity,
   requestMessageAccess,
   withdrawMessageAccess,
+  getSupportedConversations,
+  getSupportedThread,
   // Guardian arrangements
   getMyGuardians,
   getMyWards,

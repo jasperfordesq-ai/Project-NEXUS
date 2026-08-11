@@ -39,6 +39,7 @@ const settingsGuardiansRoutes = require('./routes/settings-guardians');
 const settingsSupportActionRoutes = require('./routes/settings-support-actions');
 const linkedAccountActivityRoutes = require('./routes/settings-linked-account-activity');
 const linkedAccountMessageAccessRoutes = require('./routes/settings-message-access');
+const supportedMessagesRoutes = require('./routes/settings-supported-messages');
 const eventTemplateRoutes = require('./routes/event-templates');
 const feedRoutes = require('./routes/feed');
 const feedActionRoutes = require('./routes/feed-actions');
@@ -1868,6 +1869,9 @@ app.use('/settings/support-actions', requireAuth, doubleCsrfProtection, postOnly
 // would put this middleware in front of the existing hub page and change it.
 app.use('/settings/linked-accounts/activity', requireAuth, doubleCsrfProtection, linkedAccountActivityRoutes);
 app.use('/settings/linked-accounts/message-access', requireAuth, doubleCsrfProtection, postOnly(formLimiter), linkedAccountMessageAccessRoutes);
+// The read-only supporter message viewer. Its purpose form is the page when no
+// live session purpose is held, so nothing is fetched before a reason is given.
+app.use('/settings/linked-accounts/messages', requireAuth, doubleCsrfProtection, postOnly(formLimiter), supportedMessagesRoutes);
 app.use('/settings', doubleCsrfProtection, settingsRoutes);
 app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);

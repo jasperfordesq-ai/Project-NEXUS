@@ -1,0 +1,60 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Read-only conversation list for a supported member.
+
+    🔴 Read-only means read-only: there is no reply box, no mark-as-read, and no
+    action of any kind. The member's own unread counts are stripped by the
+    service before they reach here, so viewing cannot disturb their inbox.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/settings/linked-accounts') }}">{{ t("govuk_alpha_settings.linked.activity_back") }}</a>
+
+      <h1 class="govuk-heading-l">{{ t("govuk_alpha_settings.linked_messages.title", { name: childName }) }}</h1>
+
+      {# Standing reminder that this is a view, not a mailbox. #}
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_settings.linked_messages.read_only_banner") }}</p>
+      </div>
+
+      {% if not conversations.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_settings.linked_messages.empty_list") }}</p>
+      {% else %}
+        <ul class="govuk-list">
+          {% for conversation in conversations %}
+            {% set partner = conversation.other_user or {} %}
+            {% set partnerId = conversation.partner_id or partner.id %}
+            <li class="govuk-!-margin-bottom-4">
+              <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
+                {{ partner.name or t("govuk_alpha_settings.common.unknown_member") }}
+              </h2>
+              {% if conversation.last_message and conversation.last_message.body %}
+                <p class="govuk-body govuk-!-margin-bottom-1">{{ conversation.last_message.body }}</p>
+              {% endif %}
+              {% if partnerId %}
+                <a class="govuk-link" href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId + '/' + partnerId) }}">
+                  {{ t("govuk_alpha_settings.linked_messages.open_thread") }}
+                </a>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+
+        {% if nextCursor %}
+          <a class="govuk-button govuk-button--secondary" data-module="govuk-button"
+             href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId) }}?cursor={{ nextCursor | urlencode }}">
+            {{ t("govuk_alpha_settings.linked_messages.open_thread") }}
+          </a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

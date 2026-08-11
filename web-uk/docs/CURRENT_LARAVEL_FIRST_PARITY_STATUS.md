@@ -484,9 +484,47 @@ Verified: 22 focused tests (4 rendering the real templates), full suite **64
 suites / 1,889 tests**, ESLint clean, brand check passed, isolated accessibility
 gate **24/24**.
 
-**Still missing: 4.** The three message-viewer routes blocked above, plus the
-`events` check-in-code POST blocked upstream. Every safeguarding route that
-could be ported without an open question now has been.
+### D1 remediation complete — message viewer ported 2026-08-11, 706/707
+
+The purpose-transport blocker was resolved on the **Laravel** side rather than
+worked around: `SubAccountController::messageViewPurpose()` now reads
+`X-Message-View-Purpose` before falling back to `?purpose=` (Laravel commit
+`6cf421a13`, header added to both CORS allowlists). React was switched off the
+query string in `45dcdb0f9`, which is what actually closed the live exposure.
+
+With that in place the three viewer routes are implemented. Matched
+**703 → 706**, missing **4 → 1**, Web UK routes **710 → 713**.
+
+- `POST .../messages/{childId}/purpose` stores the purpose in the **session**
+  with a 30-minute life, exactly as Blade does, and redirects. A test asserts the
+  redirect location contains neither the word `purpose` nor any of the detail
+  text.
+- `GET .../messages/{childId}` and `.../{partnerId}` render the **purpose form as
+  the page** when no live purpose is held — not an overlay over loaded data — and
+  a test asserts no message call is made in that state.
+- The purpose reaches the API in the header, never a query string.
+- An **expired** purpose is treated as none, and the dead session entry is
+  cleared rather than left to be re-read.
+- One member's purpose does **not** unlock another member: the key is per member,
+  and a test covers it.
+- The free-text detail is capped at 300 characters, matching Blade.
+- The reason falls back to a known value rather than storing an arbitrary string.
+- Read-only means read-only: no reply box, no actions, and a voice message is
+  **named but never playable** — the recording URL is not put on the page, which
+  a test pins.
+
+Verified: 17 focused tests (4 rendering the real templates), full suite **65
+suites / 1,906 tests**, ESLint clean, brand check passed, accessibility gate
+**24/24**.
+
+**Still missing: 1** — the `events` check-in-code POST, blocked upstream because
+Laravel exposes no safe frontend contract for it. **Every other Blade accessible
+route now has a Web UK counterpart.**
+
+🔴 Follow-up that finishes the job properly: with React and Web UK both sending
+the header, the `?purpose=` fallback in `messageViewPurpose()` can be retired.
+Removing it is what makes the URL transport impossible rather than merely
+unused.
 The remaining 11 `settings` routes are safeguarding and guardian-consent flows
 and deserve their own pass; read `../../docs/SAFEGUARDING-AND-CONSENT.md` first.
 The `events` check-in-code POST stays blocked upstream: Laravel exposes no safe

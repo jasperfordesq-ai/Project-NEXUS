@@ -1,0 +1,52 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Read-only single conversation for a supported member. No reply box, no
+    actions, nothing marked read.
+
+    A voice message is named but never played here: the label says one exists,
+    which is what a supporter needs to know, without this page becoming a way to
+    listen to the member's recordings.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/settings/linked-accounts/messages/' + childUserId) }}">
+        {{ t("govuk_alpha_settings.linked_messages.back_to_list") }}
+      </a>
+
+      <h1 class="govuk-heading-l">{{ t("govuk_alpha_settings.linked_messages.thread_title", { name: childName }) }}</h1>
+
+      <div class="govuk-inset-text">
+        <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_settings.linked_messages.read_only_banner") }}</p>
+      </div>
+
+      {% if not messages.length %}
+        <p class="govuk-body">{{ t("govuk_alpha_settings.linked_messages.empty_thread") }}</p>
+      {% else %}
+        <ol class="govuk-list">
+          {% for message in messages %}
+            <li class="govuk-!-margin-bottom-4">
+              <p class="govuk-body-s govuk-!-margin-bottom-1">
+                <strong>{{ message.sender_name or t("govuk_alpha_settings.common.unknown_member") }}</strong>
+              </p>
+              {% if message.body %}
+                <p class="govuk-body govuk-!-margin-bottom-0">{{ message.body }}</p>
+              {% elif message.voice_url or message.has_voice %}
+                <p class="govuk-body govuk-!-margin-bottom-0">
+                  <em>{{ t("govuk_alpha_settings.linked_messages.voice_message") }}</em>
+                </p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ol>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
