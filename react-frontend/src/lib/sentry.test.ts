@@ -338,12 +338,17 @@ describe('sentry analytics consent checks', () => {
       initSentry();
       await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
 
-      const options = (Sentry.init as unknown as { mock: { calls: unknown[][] } })
-        .mock.calls[0][0] as {
-          beforeSend: (e: Record<string, unknown>) => Record<string, unknown>;
-          beforeBreadcrumb: (b: Record<string, unknown>) => Record<string, unknown> | null;
-        };
-      return options;
+      const calls = (Sentry.init as unknown as { mock: { calls: unknown[][] } }).mock.calls;
+      // Indexing a mock's calls is `T | undefined` under strict TS, and the
+      // test-type gate is shrink-only — so assert the call exists rather than
+      // suppressing it.
+      const firstCall = calls[0];
+      expect(firstCall).toBeDefined();
+
+      return firstCall![0] as {
+        beforeSend: (e: Record<string, unknown>) => Record<string, unknown>;
+        beforeBreadcrumb: (b: Record<string, unknown>) => Record<string, unknown> | null;
+      };
     }
 
     it('drops the query string from the request URL, keeping the path', async () => {

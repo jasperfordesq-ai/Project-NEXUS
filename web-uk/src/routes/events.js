@@ -1420,7 +1420,18 @@ router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res)
       credential,
       confirmation: '1',
       reason: reason || null,
-      idempotency_key: trimmed(req.body.idempotency_key, 191) || randomUUID()
+      // 🔴 NO `|| randomUUID()` FALLBACK HERE, deliberately.
+      //
+      // Inventing a key when the field is absent is exactly the Blade behaviour the
+      // API endpoint was written to reject: a fresh key per submission can never
+      // match a previous one, so it provides no replay protection at all while
+      // looking as though it does. The form renders one stable key per page
+      // (`events.js` check-in GET), so the normal path always supplies it; a request
+      // arriving without one is a bug worth surfacing, not papering over.
+      //
+      // Laravel answers a missing key with 422 EVENT_REGISTRATION_IDEMPOTENCY_REQUIRED,
+      // which the catch below already turns into the generic failure status.
+      idempotency_key: trimmed(req.body.idempotency_key, 191)
     });
     return redirectTo(res, eventPath(id, '/check-in?status=attendance-code-updated'));
   } catch (error) {

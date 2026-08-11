@@ -392,8 +392,17 @@ test.describe('Smoke Tests @smoke', () => {
       // meant. The `.catch(() => false)` is also gone: it silently swallowed
       // strict-mode violations, so a page with two `h1`s would have reported
       // "no heading" rather than the real problem.
-      const heading = page.locator('h1');
-      const cards = page.locator('article, [class*="card"], [class*="glass"]');
+      // 🔴 SCOPED TO THE MAIN CONTENT, and that scoping is the point.
+      //
+      // Unscoped, `[class*="glass"]` matched the site chrome — Navbar renders
+      // `<header class="… glass-surface …">` and Layout renders it BEFORE <main>. So
+      // `.or().first()` resolved to the always-present header and the assertion
+      // passed the instant the shell painted. If the listings API returned a 500 and
+      // the page rendered an empty state with no h1 and no cards, this still went
+      // green: it waited properly and then checked nothing about listings.
+      const content = page.locator('main').first();
+      const heading = content.locator('h1');
+      const cards = content.locator('article, [class*="card"], [class*="glass"]');
       await expect(heading.or(cards).first()).toBeVisible({ timeout: 15000 });
 
       expect(consoleErrors).toHaveLength(0);

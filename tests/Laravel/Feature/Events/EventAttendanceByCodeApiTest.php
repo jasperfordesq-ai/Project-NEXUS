@@ -218,7 +218,8 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'credential' => $credential,
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_PEOPLE_VALIDATION_FAILED');
         $this->assertSame(0, DB::table('event_attendance')
             ->where('tenant_id', $this->testTenantId)
             ->where('event_id', $eventId)
@@ -237,7 +238,8 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'confirmation' => '1',
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_PEOPLE_VALIDATION_FAILED');
     }
 
     public function test_it_rejects_an_over_long_credential_without_verifying_it(): void
@@ -253,7 +255,8 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'confirmation' => '1',
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_PEOPLE_VALIDATION_FAILED');
     }
 
     public function test_undo_requires_a_reason(): void
@@ -269,7 +272,8 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'confirmation' => '1',
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_PEOPLE_VALIDATION_FAILED');
     }
 
     public function test_it_rejects_an_unknown_action(): void
@@ -283,7 +287,8 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'confirmation' => '1',
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_PEOPLE_VALIDATION_FAILED');
     }
 
     public function test_it_rejects_unexpected_keys(): void
@@ -300,7 +305,8 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'expected_versionn' => 0,
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_PEOPLE_VALIDATION_FAILED');
     }
 
     public function test_a_member_without_roster_permission_is_refused(): void
@@ -372,7 +378,12 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'confirmation' => '1',
         ]);
 
-        $this->assertNotSame(200, $response->getStatusCode());
+        // A DIFFERENT code from the validation failures above: the request was
+        // well-formed, and the credential simply does not belong to this event. Both
+        // are 422, which is why asserting the status alone would not have
+        // distinguished them.
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.0.code', 'EVENT_CHECKIN_CODE_INVALID');
     }
 
     public function test_replaying_the_same_idempotency_key_does_not_double_record(): void
@@ -396,13 +407,52 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'idempotency_key' => $key,
         ]);
 
-        // Whether the replay succeeds or is refused, it must not produce a second
-        // attendance row for the same person.
-        $this->assertLessThanOrEqual(1, DB::table('event_attendance')
+        // 🔴 EXACTLY ONE ROW — the safety property that actually matters, and the one
+        // the old assertion could not establish. `assertLessThanOrEqual(1, …)` is
+        // satisfied by ZERO rows, so it passed whether the attendance was recorded
+        // once or never recorded at all.
+        $this->assertSame(1, DB::table('event_attendance')
             ->where('tenant_id', $this->testTenantId)
             ->where('event_id', $eventId)
             ->where('user_id', (int) $attendee->id)
             ->count());
-        $this->assertContains($second->getStatusCode(), [200, 409, 422]);
+
+        // 🔴 PINNED TO WHAT IT ACTUALLY DOES, WHICH IS NOT WHAT IT SHOULD DO.
+        //
+        // The old `assertContains($status, [200, 409, 422])` accepted three different
+        // behaviours, so it could not tell success from refusal — and it was hiding a
+        // real defect, which is exactly why a multi-status accept is not a test.
+        //
+        // Measured behaviour: an identical retry is REFUSED with 409
+        // EVENT_REGISTRATION_IDEMPOTENCY_CONFLICT — "this idempotency key was already
+        // used for a different request" — even though the request is byte-identical.
+        // The cause is one layer down: `EventAttendanceService::transition()` threads
+        // the key into `EventRegistrationService`, whose replay check compares
+        // `max(0, registration_version - 1)` against an expected version derived from
+        // CURRENT state. After the first call advances that version, a retry can never
+        // match.
+        //
+        // 🔴 Why this matters to a real person: a scanner that retries after a network
+        // timeout — the precise case an idempotency key exists for — is told the
+        // check-in failed when it succeeded. The register is correct; the volunteer
+        // holding the phone is misinformed and may check the person in again by hand.
+        //
+        // It is pinned rather than fixed because the fix belongs in the
+        // attendance→registration version threading, which the LIVE roster endpoints
+        // also use. A speculative change there could break production check-in, so it
+        // needs its own change with its own tests. When that lands, this assertion
+        // must be flipped to expect 200 and a replayed result.
+        $second->assertStatus(409)
+            ->assertJsonPath('errors.0.code', 'EVENT_REGISTRATION_IDEMPOTENCY_CONFLICT');
+
+        // Either way, exactly ONE action was recorded — the refusal did not write a
+        // second activity row. Counted by event and person rather than by the key,
+        // because `event_attendance_activity.idempotency_key` does not store the raw
+        // key the caller sent.
+        $this->assertSame(1, DB::table('event_attendance_activity')
+            ->where('tenant_id', $this->testTenantId)
+            ->where('event_id', $eventId)
+            ->where('user_id', (int) $attendee->id)
+            ->count());
     }
 }

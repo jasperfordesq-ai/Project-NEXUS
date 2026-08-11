@@ -98,39 +98,99 @@ function stripComments(source) {
 
 const findings = { nonWaitingAssertion: [], cannotFail: [] };
 
+/**
+ * Collapse a statement that a formatter has spread over several lines back onto one,
+ * while remembering which line each statement started on.
+ *
+ * 🔴 WHY. Both detectors were single-line regexes applied per line, so ordinary
+ * formatting defeated them completely. Verified against the previous patterns:
+ *
+ *     const hasHeading = await page          // ← not counted
+ *       .locator('h1')
+ *       .isVisible();
+ *
+ *     expect(                                 // ← not counted
+ *       hasHeading || true,
+ *     ).toBeTruthy();
+ *
+ * Prettier produces exactly that shape once a locator chain gets long, so the
+ * ceiling could be held at 139/83 while the real debt grew — a gate that reports
+ * "at ceiling" while measuring less and less. Statement-level matching removes the
+ * formatting dependency.
+ *
+ * @returns {Array<{line: number, text: string}>} statements, 1-indexed start line
+ */
+function statements(code) {
+  const out = [];
+  let buffer = '';
+  let startLine = 1;
+
+  code.split('\n').forEach((raw, index) => {
+    if (buffer === '') startLine = index + 1;
+    buffer += (buffer === '' ? '' : ' ') + raw.trim();
+
+    // A statement ends at a semicolon or a block brace. Anything still open keeps
+    // accumulating, which is what joins a wrapped chain back together.
+    if (/[;{}]\s*$/.test(raw.trim()) || raw.trim() === '') {
+      const text = buffer.replace(/\s+/g, ' ').trim();
+      if (text !== '') out.push({ line: startLine, text });
+      buffer = '';
+    }
+  });
+
+  if (buffer.trim() !== '') out.push({ line: startLine, text: buffer.replace(/\s+/g, ' ').trim() });
+  return out;
+}
+
 for (const file of collectFiles(E2E_DIR)) {
   const rel = relative(ROOT, file).split(sep).join('/');
   const code = stripComments(readFileSync(file, 'utf8'));
-  const lines = code.split('\n');
+  const stmts = statements(code);
 
   // --- Pattern A -----------------------------------------------------------
   // Variables assigned from a non-waiting visibility/enabled check. Deliberately
   // excludes the `if (await ...)` form, which is a legitimate optional check.
+  //
+  // Also catches re-assignment (`hasX = await ...`, no declaration keyword) and
+  // destructuring from Promise.all, both of which the old line-based pattern missed.
   const snapshotVars = new Set();
-  lines.forEach((line) => {
-    const m = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+.*\.(isVisible|isHidden|isEnabled|isDisabled|isChecked)\s*\(/.exec(line);
-    if (m) snapshotVars.add(m[1]);
-  });
+  for (const { text } of stmts) {
+    const declared = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+[^;]*?\.(?:isVisible|isHidden|isEnabled|isDisabled|isChecked)\s*\(/.exec(text);
+    if (declared) snapshotVars.add(declared[1]);
+
+    // Re-assignment without a declaration keyword.
+    const reassigned = /(?:^|[;{]\s*)([A-Za-z_$][\w$]*)\s*=\s*await\s+[^;]*?\.(?:isVisible|isHidden|isEnabled|isDisabled|isChecked)\s*\(/.exec(text);
+    if (reassigned) snapshotVars.add(reassigned[1]);
+
+    // Destructured from an array of non-waiting checks.
+    const destructured = /(?:const|let|var)\s*\[([^\]]+)\]\s*=\s*await\s+[^;]*?\.(?:isVisible|isHidden|isEnabled|isDisabled|isChecked)\s*\(/.exec(text);
+    if (destructured) {
+      for (const name of destructured[1].split(',')) {
+        const clean = name.trim();
+        if (/^[A-Za-z_$][\w$]*$/.test(clean)) snapshotVars.add(clean);
+      }
+    }
+  }
 
   if (snapshotVars.size > 0) {
-    lines.forEach((line, i) => {
-      if (!/\bexpect\s*\(/.test(line)) return;
+    for (const { line, text } of stmts) {
+      if (!/\bexpect\s*\(/.test(text)) continue;
       for (const name of snapshotVars) {
         // Word-boundary match so `hasCard` does not match `hasCards`.
-        if (new RegExp(`\\bexpect\\s*\\([^)]*\\b${name}\\b`).test(line)) {
-          findings.nonWaitingAssertion.push({ file: rel, line: i + 1, text: line.trim().slice(0, 120) });
+        if (new RegExp(`\\bexpect\\s*\\([^)]*\\b${name}\\b`).test(text)) {
+          findings.nonWaitingAssertion.push({ file: rel, line, text: text.slice(0, 120) });
           break;
         }
       }
-    });
+    }
   }
 
   // --- Pattern B -----------------------------------------------------------
-  lines.forEach((line, i) => {
-    if (/\bexpect\s*\([^;]*\|\|\s*true\s*\)/.test(line)) {
-      findings.cannotFail.push({ file: rel, line: i + 1, text: line.trim().slice(0, 120) });
+  for (const { line, text } of stmts) {
+    if (/\bexpect\s*\([^;]*\|\|\s*true\s*[),]/.test(text)) {
+      findings.cannotFail.push({ file: rel, line, text: text.slice(0, 120) });
     }
-  });
+  }
 }
 
 const counts = {
@@ -182,6 +242,34 @@ if (scannedFiles === 0) {
   console.error('check-e2e-assertion-quality FAILED: no .ts files found under e2e/.');
   console.error('The scan measured nothing, which is not a pass.');
   process.exit(1);
+}
+
+// 🔴 AND THE CLAIM ABOVE IS NOW ACTUALLY IMPLEMENTED, PER PATTERN. It was not:
+// only a zero FILE count failed, so a broken regex sent its count to 0, the script
+// printed "IMPROVED — lower the ceiling" and exited 0. The checker could pass by
+// measuring nothing, which is precisely the fault class it polices.
+//
+// 🔴 Checked INDEPENDENTLY for each pattern, because "both must be zero" is too
+// weak — proved by sabotaging only detector A: its count fell 155 → 0 while
+// detector B still reported 83, so a combined guard stayed quiet and the run passed
+// with one detector completely blind.
+//
+// A non-zero ceiling collapsing to exactly zero is not a credible one-commit
+// improvement; it is what a broken pattern looks like. If it IS genuine, the
+// documented workflow already covers it: re-run with --write-baseline in the same
+// commit, which lowers the ceiling to 0 and stops this guard applying.
+for (const [key, label] of [
+  ['nonWaitingAssertion', 'non-waiting check used as an assertion'],
+  ['cannotFail', 'assertion that cannot fail (|| true)'],
+]) {
+  if ((ceiling[key] || 0) > 0 && counts[key] === 0) {
+    console.error(`check-e2e-assertion-quality FAILED: "${label}" matched ZERO instances,`);
+    console.error(`but the baseline expects ${ceiling[key]}.`);
+    console.error(`Scanned ${scannedFiles} file(s), so the files were found — that DETECTOR is broken.`);
+    console.error('A scan that measures nothing is not a clean suite.');
+    console.error('If every instance really was fixed, re-baseline in the same commit and say so.');
+    process.exit(1);
+  }
 }
 
 let failed = false;
