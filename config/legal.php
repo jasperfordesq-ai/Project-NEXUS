@@ -18,19 +18,28 @@
  * intended sequence:
  *
  *   1. `off`    — code deployed, nothing enforced. (Today.)
- *   2. `report` — never blocks. Logs `legal.gate.would_block` with the calling
- *                 client and sets `X-Legal-Acceptance-Pending: 1` on the
- *                 response. Run this in production for at least a week and read
- *                 the logs: it tells you how many members would be blocked and
- *                 WHICH clients they are using. A client with no acceptance
- *                 screen turns a compliance improvement into an outage for
- *                 those members.
+ *   2. `report` — never blocks. Logs `legal.gate.would_block` **at warning level**
+ *                 with the calling client, and sets
+ *                 `X-Legal-Acceptance-Pending: 1` on the response. Run this in
+ *                 production for at least a week and read the logs: it tells you
+ *                 how many members would be blocked and WHICH clients they are
+ *                 using. A client with no acceptance screen turns a compliance
+ *                 improvement into an outage for those members.
+ *
+ *                 🔴 The level matters. `config/logging.php` defaults every
+ *                 channel to `env('LOG_LEVEL', 'warning')`, so an `info` line is
+ *                 discarded on any environment that has not deliberately lowered
+ *                 the threshold — production included. This mode was originally
+ *                 written with `Log::info` and produced NO evidence at all while
+ *                 still setting the response header, so it looked like it worked.
+ *                 A test now pins the level.
  *   3. `write`  — blocks the routes the gate is attached to (writes only).
  *   4. `all`    — reserved for a later decision; behaves as `write` today
  *                 because the gate is attached per-route, never to a group.
  *
- * Every client needs an acceptance screen before step 3. As of 2026-08-11 React
- * has one, web-uk has one, and the mobile app does not yet.
+ * Every client needs an acceptance screen before step 3. As of 2026-08-11 all
+ * three have one: React, web-uk (`/legal-acceptance`) and the mobile app
+ * (`app/(modals)/legal-acceptance.tsx`).
  */
 return [
     /*

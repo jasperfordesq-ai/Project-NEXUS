@@ -142,7 +142,18 @@ class EnsureLegalAcceptance
         }
 
         if ($mode === 'report') {
-            Log::info('legal.gate.would_block', [
+            // 🔴 `warning`, NOT `info`. `config/logging.php` defaults every channel
+            // to `level => env('LOG_LEVEL', 'warning')`, so an `info` line is
+            // dropped on any environment that has not deliberately lowered the
+            // threshold — which includes production and this dev machine. Report
+            // mode exists ONLY to produce this record; logging it below the
+            // threshold makes the whole mode silently useless while still looking
+            // like it works, because the response header is set either way.
+            //
+            // `warning` is also the honest level: "this request would have been
+            // refused" is a thing an operator should see, and report mode is a
+            // deliberate, temporary diagnostic state, not steady-state noise.
+            Log::warning('legal.gate.would_block', [
                 'user_id' => (int) $user->id,
                 'tenant_id' => (int) TenantContext::getId(),
                 'path' => $request->path(),

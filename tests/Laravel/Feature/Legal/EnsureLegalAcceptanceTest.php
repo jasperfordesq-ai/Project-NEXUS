@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\LegalEnforcementService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\Sanctum;
 use Tests\Laravel\TestCase;
 
@@ -159,6 +160,38 @@ class EnsureLegalAcceptanceTest extends TestCase
 
         $this->assertNotSame(403, $response->getStatusCode());
         $this->assertSame('1', $response->headers->get('X-Legal-Acceptance-Pending'));
+    }
+
+    public function test_report_mode_logs_above_the_default_log_threshold(): void
+    {
+        // 🔴 This is the whole point of report mode, and it was silently broken:
+        // `Log::info` was used, but `config/logging.php` defaults every channel to
+        // `level => env('LOG_LEVEL', 'warning')`, so the line was dropped on every
+        // environment that has not deliberately lowered the threshold — including
+        // production. The response header is set either way, so the mode LOOKED
+        // like it worked while producing no evidence at all.
+        config(['legal.enforcement_mode' => 'report']);
+        $user = $this->member();
+
+        // A spy rather than a strict expectation: it reports what WAS logged when
+        // the assertion fails, instead of only that a matcher went unmatched.
+        Log::spy();
+
+        $this->guardedWrite();
+
+        Log::shouldHaveReceived('warning')
+            ->withArgs(function (string $message, array $context) use ($user) {
+                return $message === 'legal.gate.would_block'
+                    && (int) ($context['user_id'] ?? 0) === (int) $user->id
+                    // Which client the member is using is the reason report mode
+                    // exists: it says who would be bricked by enforcing.
+                    && array_key_exists('client', $context)
+                    && array_key_exists('user_agent', $context)
+                    && array_key_exists('path', $context);
+            });
+
+        // 🔴 And never at `info`, which the default threshold discards.
+        Log::shouldNotHaveReceived('info');
     }
 
     public function test_report_mode_sets_no_header_when_nothing_is_pending(): void
