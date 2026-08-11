@@ -2362,7 +2362,12 @@
     "firefox_desktop_title": "Zainstaluj na komputerze",
     "firefox_desktop_intro": "Firefox na komputerze nie obsługuje obecnie instalowania aplikacji webowych. Wciąż możesz przypiąć NEXUS dla szybkiego dostępu:",
     "firefox_desktop_step_1": "Dodaj tę stronę do zakładek za pomocą Ctrl+D lub przypnij kartę z menu kontekstowego karty.",
-    "firefox_desktop_step_2": "Aby uzyskać prawdziwie instalowalną aplikację, wypróbuj Chrome, Edge lub naszą aplikację mobilną."
+    "firefox_desktop_step_2": "Aby uzyskać prawdziwie instalowalną aplikację, wypróbuj Chrome, Edge lub naszą aplikację mobilną.",
+    "macos_safari_title": "Zainstaluj w Safari",
+    "macos_safari_intro": "Safari instaluje tę aplikację z menu Udostępnij:",
+    "macos_safari_step_1": "Kliknij przycisk Udostępnij na pasku narzędzi Safari.",
+    "macos_safari_step_2": "Wybierz „Dodaj do Docka”.",
+    "macos_safari_step_3": "Potwierdź nazwę, a następnie kliknij Dodaj."
   },
   "release_status": {
     "summary": "Project NEXUS aktywnie się rozwija, a dojrzałość funkcji jest przejrzyście pokazywana na całej platformie.",

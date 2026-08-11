@@ -524,3 +524,64 @@ describe('shouldOfferInstall — exhaustive browser coverage', () => {
     }
   });
 });
+
+// ────────────────────────────────────────────────────────────────────────────
+// Real detectBrowser coverage, via the hook's snapshot.
+//
+// The suite above passes `browser` into requestInstall and asserts it comes
+// back, which cannot catch a detection bug. These go through
+// useInstallPrompt(), which calls detectBrowser() for real.
+// ────────────────────────────────────────────────────────────────────────────
+
+describe('detectBrowser (real, via useInstallPrompt snapshot)', () => {
+  async function detect(ua: string, maxTouch = 0): Promise<string> {
+    stubUserAgent(ua);
+    stubMaxTouchPoints(maxTouch);
+    stubMatchMedia(false);
+    stubStandalone(undefined);
+
+    const { useInstallPrompt } = await loadModule();
+    const { renderHook } = await import('@testing-library/react');
+    const { result } = renderHook(() => useInstallPrompt());
+
+    return result.current.browser;
+  }
+
+  it('detects Safari on macOS, which has no three-dot menu', async () => {
+    // Real macOS Sonoma Safari UA. Note it contains "Safari" AND "Version/",
+    // but no Chrome/Edg/Firefox token.
+    expect(
+      await detect(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15',
+      ),
+    ).toBe('macos-safari');
+  });
+
+  it('does not mistake Chrome on macOS for Safari', async () => {
+    // Chrome's UA also ends in "Safari/537.36" — the ordering of the checks in
+    // detectBrowser is what keeps these apart.
+    expect(
+      await detect(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      ),
+    ).toBe('chrome-desktop');
+  });
+
+  it('does not mistake iPadOS Safari (which reports as Macintosh) for macOS', async () => {
+    // iPad on iOS 13+ sends a Macintosh UA; touch points are the only tell.
+    expect(
+      await detect(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15',
+        5,
+      ),
+    ).toBe('ios-safari');
+  });
+
+  it('still detects iPhone Safari', async () => {
+    expect(
+      await detect(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1',
+      ),
+    ).toBe('ios-safari');
+  });
+});

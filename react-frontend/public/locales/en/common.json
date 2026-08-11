@@ -2334,7 +2334,12 @@
     "firefox_desktop_title": "Install on your computer",
     "firefox_desktop_intro": "Firefox on desktop does not currently support installing web apps. You can still pin NEXUS for quick access:",
     "firefox_desktop_step_1": "Bookmark this page with Ctrl+D or pin the tab from the tab context menu.",
-    "firefox_desktop_step_2": "For a true installable app, try Chrome, Edge, or our mobile app."
+    "firefox_desktop_step_2": "For a true installable app, try Chrome, Edge, or our mobile app.",
+    "macos_safari_title": "Install on Safari",
+    "macos_safari_intro": "Safari installs this app from the Share menu:",
+    "macos_safari_step_1": "Click the Share button in the Safari toolbar.",
+    "macos_safari_step_2": "Choose Add to Dock.",
+    "macos_safari_step_3": "Confirm the name, then click Add."
   },
   "release_status": {
     "summary": "Project NEXUS is actively evolving, with feature maturity shown transparently across the platform.",

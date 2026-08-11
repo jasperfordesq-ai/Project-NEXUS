@@ -74,6 +74,7 @@ export type BrowserKind =
   | 'firefox-desktop'
   | 'ios-safari'
   | 'ios-other'
+  | 'macos-safari'
   | 'other';
 
 function detectBrowser(): BrowserKind {
@@ -85,6 +86,15 @@ function detectBrowser(): BrowserKind {
   if (/EdgA?\//.test(ua)) return 'edge-desktop';
   if (/FxiOS|Firefox/.test(ua)) return isAndroid ? 'firefox-android' : 'firefox-desktop';
   if (/Chrome|CriOS/.test(ua)) return isAndroid ? 'chrome-android' : 'chrome-desktop';
+  // Safari on macOS. Must come AFTER the Chrome/Edge/Firefox checks, because
+  // every one of those puts "Safari" in its user agent too. Reached only when
+  // isIos() was false, so this is desktop Safari, not iPadOS.
+  //
+  // It matters because Safari never fires `beforeinstallprompt`, so it always
+  // lands on the manual-instructions modal — and the generic copy told people
+  // to open a "three-dot menu" that Safari does not have. Safari 17+ on macOS
+  // Sonoma installs via Share → Add to Dock.
+  if (isSafari()) return 'macos-safari';
   return 'other';
 }
 

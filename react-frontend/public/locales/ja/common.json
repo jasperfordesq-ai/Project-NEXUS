@@ -2334,7 +2334,12 @@
     "firefox_desktop_title": "パソコンにインストール",
     "firefox_desktop_intro": "デスクトップ版Firefoxは現在、ウェブアプリのインストールに対応していません。素早くアクセスするためにNEXUSをピン留めできます:",
     "firefox_desktop_step_1": "Ctrl+Dでこのページをブックマークするか、タブのコンテキストメニューからタブをピン留めします。",
-    "firefox_desktop_step_2": "本格的なインストール可能なアプリには、Chrome、Edge、または当社のモバイルアプリをお試しください。"
+    "firefox_desktop_step_2": "本格的なインストール可能なアプリには、Chrome、Edge、または当社のモバイルアプリをお試しください。",
+    "macos_safari_title": "Safari にインストール",
+    "macos_safari_intro": "Safari では「共有」メニューからこのアプリをインストールします:",
+    "macos_safari_step_1": "Safari のツールバーにある「共有」ボタンをクリックします。",
+    "macos_safari_step_2": "「Dock に追加」を選択します。",
+    "macos_safari_step_3": "名前を確認して「追加」をクリックします。"
   },
   "release_status": {
     "summary": "Project NEXUS は活発に進化しており、機能の成熟度はプラットフォーム全体で透明に表示されます。",

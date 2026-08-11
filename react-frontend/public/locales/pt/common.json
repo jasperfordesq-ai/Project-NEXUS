@@ -2348,7 +2348,12 @@
     "firefox_desktop_title": "Instalar no seu computador",
     "firefox_desktop_intro": "O Firefox no ambiente de trabalho não suporta atualmente a instalação de aplicações web. Pode na mesma fixar o NEXUS para acesso rápido:",
     "firefox_desktop_step_1": "Adicione esta página aos marcadores com Ctrl+D ou fixe o separador através do menu de contexto do separador.",
-    "firefox_desktop_step_2": "Para uma verdadeira aplicação instalável, experimente o Chrome, o Edge ou a nossa aplicação móvel."
+    "firefox_desktop_step_2": "Para uma verdadeira aplicação instalável, experimente o Chrome, o Edge ou a nossa aplicação móvel.",
+    "macos_safari_title": "Instalar no Safari",
+    "macos_safari_intro": "O Safari instala esta aplicação a partir do menu Partilhar:",
+    "macos_safari_step_1": "Clique no botão Partilhar na barra de ferramentas do Safari.",
+    "macos_safari_step_2": "Escolha «Adicionar à Dock».",
+    "macos_safari_step_3": "Confirme o nome e clique em Adicionar."
   },
   "release_status": {
     "summary": "O Project NEXUS está em evolução ativa, com a maturidade das funcionalidades apresentada de forma transparente em toda a plataforma.",

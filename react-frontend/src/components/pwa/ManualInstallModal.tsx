@@ -9,6 +9,7 @@ import MoreVertical from 'lucide-react/icons/more-vertical';
 import Menu from 'lucide-react/icons/menu';
 import Download from 'lucide-react/icons/download';
 import Plus from 'lucide-react/icons/plus';
+import Share from 'lucide-react/icons/share';
 import type { BrowserKind } from '@/lib/installPrompt';
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui';
 
@@ -71,6 +72,7 @@ function getInstructions(
   const dots = <MoreVertical className="inline w-4 h-4" aria-hidden="true" />;
   const menu = <Menu className="inline w-4 h-4" aria-hidden="true" />;
   const plus = <Plus className="inline w-4 h-4" aria-hidden="true" />;
+  const share = <Share className="inline w-4 h-4" aria-hidden="true" />;
 
   switch (browser) {
     case 'chrome-android':
@@ -130,6 +132,18 @@ function getInstructions(
         steps: [
           { text: t('install.firefox_desktop_step_1') },
           { text: t('install.firefox_desktop_step_2') },
+        ],
+      };
+    case 'macos-safari':
+      // Safari has no three-dot menu — it installs from the Share menu
+      // ("Add to Dock", Safari 17+ on macOS Sonoma).
+      return {
+        title: t('install.macos_safari_title'),
+        intro: t('install.macos_safari_intro'),
+        steps: [
+          { icon: share, text: t('install.macos_safari_step_1') },
+          { text: t('install.macos_safari_step_2') },
+          { text: t('install.macos_safari_step_3') },
         ],
       };
     case 'other':

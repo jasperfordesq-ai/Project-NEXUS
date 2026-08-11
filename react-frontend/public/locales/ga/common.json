@@ -2376,7 +2376,12 @@
     "firefox_desktop_title": "Suiteáil ar do ríomhaire",
     "firefox_desktop_intro": "Ní thacaíonn Firefox ar an deasc le haipeanna gréasáin a shuiteáil faoi láthair. Is féidir leat NEXUS a phionnáil le haghaidh rochtana gasta fós:",
     "firefox_desktop_step_1": "Marcáil an leathanach seo le Ctrl+D nó pionnáil an cluaisín ó roghchlár comhthéacs an chluaisín.",
-    "firefox_desktop_step_2": "Le haghaidh fíor-aip in-suiteáilte, bain triail as Chrome, Edge nó ár n-aip soghluaiste."
+    "firefox_desktop_step_2": "Le haghaidh fíor-aip in-suiteáilte, bain triail as Chrome, Edge nó ár n-aip soghluaiste.",
+    "macos_safari_title": "Suiteáil ar Safari",
+    "macos_safari_intro": "Suiteálann Safari an aip seo ón roghchlár Comhroinn:",
+    "macos_safari_step_1": "Cliceáil an cnaipe Comhroinn i mbarra uirlisí Safari.",
+    "macos_safari_step_2": "Roghnaigh Add to Dock.",
+    "macos_safari_step_3": "Deimhnigh an t-ainm, ansin cliceáil Add."
   },
   "release_status": {
     "summary": "Tá Project NEXUS ag forbairt go gníomhach, agus aibíocht na ngnéithe taispeánta go trédhearcach ar fud an ardáin.",

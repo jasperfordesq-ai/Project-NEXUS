@@ -2390,7 +2390,12 @@
     "firefox_desktop_title": "التثبيت على جهاز الكمبيوتر الخاص بك",
     "firefox_desktop_intro": "لا يدعم Firefox على سطح المكتب حالياً تثبيت تطبيقات الويب. لا يزال بإمكانك تثبيت NEXUS للوصول السريع:",
     "firefox_desktop_step_1": "أضف هذه الصفحة إلى الإشارات المرجعية باستخدام Ctrl+D أو ثبّت علامة التبويب من قائمة سياق علامة التبويب.",
-    "firefox_desktop_step_2": "للحصول على تطبيق قابل للتثبيت بالكامل، جرّب Chrome أو Edge أو تطبيقنا للجوال."
+    "firefox_desktop_step_2": "للحصول على تطبيق قابل للتثبيت بالكامل، جرّب Chrome أو Edge أو تطبيقنا للجوال.",
+    "macos_safari_title": "التثبيت على Safari",
+    "macos_safari_intro": "يقوم Safari بتثبيت هذا التطبيق من قائمة المشاركة:",
+    "macos_safari_step_1": "انقر على زر المشاركة في شريط أدوات Safari.",
+    "macos_safari_step_2": "اختر «إضافة إلى Dock».",
+    "macos_safari_step_3": "أكّد الاسم ثم انقر على «إضافة»."
   },
   "release_status": {
     "summary": "يتطور Project NEXUS بنشاط، مع إظهار نضج الميزات بشفافية عبر المنصة.",

@@ -2334,7 +2334,12 @@
     "firefox_desktop_title": "Installeren op je computer",
     "firefox_desktop_intro": "Firefox op de desktop ondersteunt momenteel geen installatie van webapps. Je kunt NEXUS wel vastmaken voor snelle toegang:",
     "firefox_desktop_step_1": "Maak een bladwijzer van deze pagina met Ctrl+D of maak het tabblad vast via het contextmenu van het tabblad.",
-    "firefox_desktop_step_2": "Probeer voor een echt installeerbare app Chrome, Edge of onze mobiele app."
+    "firefox_desktop_step_2": "Probeer voor een echt installeerbare app Chrome, Edge of onze mobiele app.",
+    "macos_safari_title": "Installeren in Safari",
+    "macos_safari_intro": "Safari installeert deze app via het menu Deel:",
+    "macos_safari_step_1": "Klik op de deelknop in de Safari-werkbalk.",
+    "macos_safari_step_2": "Kies ‘Voeg toe aan Dock’.",
+    "macos_safari_step_3": "Bevestig de naam en klik op Voeg toe."
   },
   "release_status": {
     "summary": "Project NEXUS evolueert actief, waarbij de volwassenheid van de functies transparant wordt getoond op het hele platform.",
