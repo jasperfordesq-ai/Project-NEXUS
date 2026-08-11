@@ -71,7 +71,7 @@ return [
     // fails the preflight and the whole feature dies with an opaque CORS error
     // — which is exactly how X-Event-Checkin-Contract and X-Event-Safety-Contract
     // took the check-in and safety pages down.
-    'allowed_headers' => ['Accept', 'Accept-Language', 'Content-Type', 'Authorization', 'Idempotency-Key', 'X-Requested-With', 'X-XSRF-TOKEN', 'X-CSRF-TOKEN', 'X-Socket-Id', 'X-Timezone', 'X-Locale', 'X-Tenant-ID', 'X-Tenant-Slug', 'X-Trusted-Device', 'X-Request-Id', 'X-Events-Contract', 'X-Event-Checkin-Contract', 'X-Event-Safety-Contract', 'Cache-Control', 'Pragma'],
+    'allowed_headers' => ['Accept', 'Accept-Language', 'Content-Type', 'Authorization', 'Idempotency-Key', 'X-Requested-With', 'X-XSRF-TOKEN', 'X-CSRF-TOKEN', 'X-Socket-Id', 'X-Timezone', 'X-Locale', 'X-Tenant-ID', 'X-Tenant-Slug', 'X-Trusted-Device', 'X-Request-Id', 'X-Events-Contract', 'X-Event-Checkin-Contract', 'X-Event-Safety-Contract', 'X-Message-View-Purpose', 'Cache-Control', 'Pragma'],
 
     'exposed_headers' => ['X-Request-Id', 'X-Build', 'X-Events-Contract'],
 

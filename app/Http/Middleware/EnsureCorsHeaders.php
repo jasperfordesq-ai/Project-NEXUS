@@ -91,7 +91,7 @@ class EnsureCorsHeaders
             // browser reports it as "unable to connect" rather than as a CORS
             // problem — which is how the per-feature event contract headers
             // silently took down the check-in and safety pages in production.
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-Requested-With, X-CSRF-TOKEN, Accept, Accept-Language, X-Tenant-Id, X-Tenant-Slug, X-Trusted-Device, X-Timezone, X-Locale, X-Request-Id, X-Events-Contract, X-Event-Checkin-Contract, X-Event-Safety-Contract');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Idempotency-Key, X-Requested-With, X-CSRF-TOKEN, Accept, Accept-Language, X-Tenant-Id, X-Tenant-Slug, X-Trusted-Device, X-Timezone, X-Locale, X-Request-Id, X-Events-Contract, X-Event-Checkin-Contract, X-Event-Safety-Contract, X-Message-View-Purpose');
             $response->headers->set('Access-Control-Expose-Headers', 'X-Request-Id, X-Build, X-Events-Contract');
         }
 

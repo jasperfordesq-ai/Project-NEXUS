@@ -148,6 +148,100 @@ class SupporterMessageViewTest extends TestCase
         $this->assertSame(0, DB::table('supporter_message_view_audits')->where('supporter_user_id', $supporter->id)->count());
     }
 
+    /**
+     * 🔴 The purpose may be sent as a HEADER, so it need never appear in a URL.
+     *
+     * It is free text that can quote a safeguarding concern about a named
+     * person, and a URL is written to access logs, browser history, `Referer`
+     * headers and shared screenshots. The accessible frontend refuses to put it
+     * in a query string for that reason; before this header, no HTTP client
+     * could do the same.
+     */
+    public function test_purpose_may_be_supplied_as_a_header_and_is_what_the_audit_records(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $partner = $this->member();
+        $relationshipId = $this->seedGrantedRelationship($supporter, $supported);
+        $this->seedMessage($partner->id, $supported->id, 'Header purpose');
+
+        Sanctum::actingAs($supporter, ['*']);
+
+        // No ?purpose= anywhere in the URL.
+        $this->apiGet(
+            "/v2/users/me/sub-accounts/{$supported->id}/messages",
+            ['X-Message-View-Purpose' => 'Wellbeing check via header'],
+        )->assertOk();
+        $this->apiGet(
+            "/v2/users/me/sub-accounts/{$supported->id}/messages/{$partner->id}",
+            ['X-Message-View-Purpose' => 'Thread check via header'],
+        )->assertOk();
+
+        $rows = DB::table('supporter_message_view_audits')
+            ->where('relationship_id', $relationshipId)
+            ->orderBy('id')
+            ->get();
+        $this->assertCount(2, $rows);
+        $this->assertSame('Wellbeing check via header', $rows[0]->purpose);
+        $this->assertSame('Thread check via header', $rows[1]->purpose);
+    }
+
+    /** The header wins, so a caller migrating off the query string cannot double-report. */
+    public function test_header_purpose_takes_precedence_over_the_query_string(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $partner = $this->member();
+        $relationshipId = $this->seedGrantedRelationship($supporter, $supported);
+        $this->seedMessage($partner->id, $supported->id, 'Precedence');
+
+        Sanctum::actingAs($supporter, ['*']);
+        $this->apiGet(
+            "/v2/users/me/sub-accounts/{$supported->id}/messages?purpose=" . urlencode('from query'),
+            ['X-Message-View-Purpose' => 'from header'],
+        )->assertOk();
+
+        $row = DB::table('supporter_message_view_audits')->where('relationship_id', $relationshipId)->first();
+        $this->assertSame('from header', $row->purpose);
+    }
+
+    /**
+     * `?purpose=` still works. It is the fallback, kept so existing callers do
+     * not break; retiring it is what finally removes the URL exposure.
+     */
+    public function test_query_purpose_still_works_for_existing_callers(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $relationshipId = $this->seedGrantedRelationship($supporter, $supported);
+
+        Sanctum::actingAs($supporter, ['*']);
+        $this->apiGet("/v2/users/me/sub-accounts/{$supported->id}/messages?purpose=" . urlencode('legacy caller'))
+            ->assertOk();
+
+        $row = DB::table('supporter_message_view_audits')->where('relationship_id', $relationshipId)->first();
+        $this->assertSame('legacy caller', $row->purpose);
+    }
+
+    /** A blank or whitespace-only header is not a purpose, and must not pass the gate. */
+    public function test_a_blank_header_purpose_is_refused_like_no_purpose_at_all(): void
+    {
+        $supporter = $this->member();
+        $supported = $this->member();
+        $partner = $this->member();
+        $this->seedGrantedRelationship($supporter, $supported);
+        $this->seedMessage($partner->id, $supported->id, 'Blank header secret');
+
+        Sanctum::actingAs($supporter, ['*']);
+        $response = $this->apiGet(
+            "/v2/users/me/sub-accounts/{$supported->id}/messages",
+            ['X-Message-View-Purpose' => '   '],
+        );
+
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertStringNotContainsString('Blank header secret', $response->getContent());
+    }
+
     public function test_every_read_writes_one_immutable_audit_row(): void
     {
         $supporter = $this->member();

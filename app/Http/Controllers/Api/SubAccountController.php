@@ -389,7 +389,10 @@ class SubAccountController extends BaseApiController
      * A supporter's READ-ONLY window onto the supported member's messages —
      * consent-gated (messages tier ≥ assist), safeguarding-rechecked per read,
      * federated threads excluded, nothing marked read, and every request
-     * immutably audited with the ?purpose= the supporter must supply.
+     * immutably audited with the purpose the supporter must supply.
+     *
+     * The purpose is read by messageViewPurpose(): the `X-Message-View-Purpose`
+     * header first, and only then the legacy `?purpose=` query parameter.
      */
     public function listChildMessages($childId): JsonResponse
     {
@@ -400,7 +403,7 @@ class SubAccountController extends BaseApiController
         $result = $service->listConversations(
             $userId,
             (int) $childId,
-            (string) request()->query('purpose', ''),
+            $this->messageViewPurpose(),
             array_filter([
                 'archived' => request()->boolean('archived'),
                 'cursor' => request()->query('cursor'),
@@ -435,7 +438,7 @@ class SubAccountController extends BaseApiController
             $userId,
             (int) $childId,
             (int) $partnerId,
-            (string) request()->query('purpose', ''),
+            $this->messageViewPurpose(),
             $filters,
         );
 
@@ -444,6 +447,35 @@ class SubAccountController extends BaseApiController
         }
 
         return $this->respondWithData($result);
+    }
+
+    /**
+     * The stated purpose for a supporter message read.
+     *
+     * 🔴 Prefer a transport that does not end up in a URL. The purpose is free
+     * text that can quote a safeguarding concern about a NAMED person, and a
+     * URL is written to web-server access logs, browser history, `Referer`
+     * headers and shared screenshots. The accessible frontend already refuses
+     * to put it in a query string for exactly that reason — it holds the
+     * purpose in the session and hands it straight to the service — but any
+     * client speaking HTTP had no way to do the same until this header existed.
+     *
+     * `?purpose=` is still accepted so existing callers keep working, and it
+     * remains the fallback rather than the preferred path. It should be retired
+     * once every caller sends the header; that removal is the point at which
+     * the exposure actually goes away.
+     *
+     * A GET body is deliberately NOT read: proxies and caches may drop it, so a
+     * header is the only reliable non-URL transport for a read.
+     */
+    private function messageViewPurpose(): string
+    {
+        $header = request()->header('X-Message-View-Purpose');
+        if (is_string($header) && trim($header) !== '') {
+            return $header;
+        }
+
+        return (string) request()->query('purpose', '');
     }
 
     private function messageViewStatus(\App\Services\SupporterMessageViewService $service): int
