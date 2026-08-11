@@ -159,7 +159,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [firefox-modern, mobile-chrome, mobile-safari]
+        # webkit-modern = desktop Safari. Added 2026-08-11; there was previously
+        # no desktop-Safari project anywhere, and this whole job is skipped when
+        # E2E secrets are absent, so mobile-safari had never run either.
+        project: [firefox-modern, mobile-chrome, mobile-safari, webkit-modern]
 
     steps:
       - name: Checkout repository

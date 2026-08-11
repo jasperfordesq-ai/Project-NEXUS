@@ -1277,11 +1277,14 @@ jobs:
 
       - name: Install Playwright Browsers
         run: |
+          # webkit as well as chromium: Safari's engine had never run in CI, so a
+          # Mac-only bug could not be caught here. See the webkit-modern project
+          # in playwright.config.ts.
           if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
             # Browsers cached — only install OS deps.
-            npx playwright install-deps chromium
+            npx playwright install-deps chromium webkit
           else
-            npx playwright install chromium --with-deps
+            npx playwright install chromium webkit --with-deps
           fi
 
       - name: Create .env.ci
@@ -1577,6 +1580,31 @@ jobs:
       - name: Run Playwright Smoke Tests
         run: |
           npx playwright test e2e/tests/smoke.spec.ts --grep @smoke --project=chromium-modern || {
+            echo "::group::App container logs"
+            docker compose -f compose.ci.yml logs --no-color app || true
+            echo "::endgroup::"
+            echo "::group::Frontend container logs"
+            docker compose -f compose.ci.yml logs --no-color frontend || true
+            echo "::endgroup::"
+            exit 1
+          }
+        env:
+          E2E_BASE_URL: http://localhost:3000
+          E2E_API_URL: http://localhost:3000
+          E2E_USER_EMAIL: e2e-member@example.test
+          E2E_USER_PASSWORD: password
+          E2E_ADMIN_EMAIL: e2e-admin@example.test
+          E2E_ADMIN_PASSWORD: password
+          E2E_REQUIRE_AUTH: 1
+          CI: true
+
+      - name: Run Playwright Smoke Tests (WebKit / Safari engine)
+        run: |
+          # Same specs, Safari's engine. BLOCKING: a Mac user reported the app
+          # misbehaving and there was no check that could have caught it, because
+          # the only WebKit project lived in a secret-gated job that is skipped
+          # while still reporting success.
+          npx playwright test e2e/tests/smoke.spec.ts e2e/tests/ui/dropdowns.spec.ts --grep @smoke --project=webkit-modern || {
             echo "::group::App container logs"
             docker compose -f compose.ci.yml logs --no-color app || true
             echo "::endgroup::"

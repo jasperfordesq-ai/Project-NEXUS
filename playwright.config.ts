@@ -133,6 +133,33 @@ export default defineConfig({
       dependencies: ['setup'],
     },
 
+    // Desktop Safari (WebKit) - React app
+    //
+    // 🔴 Added 2026-08-11 after a Mac user reported the app behaving oddly and
+    // there was NOTHING to check it against. Before this, desktop Safari had no
+    // project at all, and the only WebKit project (`mobile-safari` below) lives
+    // in the `e2e-cross-browser` job, which is gated on E2E secrets and is
+    // SKIPPED — while the workflow still reports success. So Safari's engine had
+    // never actually run in this repo.
+    //
+    // Playwright's `webkit` is a real WebKit build, so engine-level bugs
+    // reproduce without a Mac. It is NOT Safari the application: native macOS
+    // form-control rendering, content blockers, extensions and Lockdown Mode are
+    // outside its scope, so a clean run here does not fully exonerate Safari.
+    {
+      name: 'webkit-modern',
+      testIgnore: [
+        '**/accessibility-audit.spec.ts',
+        '**/pwa/offline-install.spec.ts',
+        enterpriseEventsJourney,
+      ],
+      use: {
+        ...devices['Desktop Safari'],
+        storageState: 'e2e/fixtures/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+
     // Mobile Safari - React app
     {
       name: 'mobile-safari',
