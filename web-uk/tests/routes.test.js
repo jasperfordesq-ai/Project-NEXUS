@@ -696,6 +696,72 @@ describe('Public Routes', () => {
       expect(api.getTenants).not.toHaveBeenCalled();
     });
 
+    it('preserves the request method on a permanent redirect from a tenant-prefixed path', async () => {
+      // 🔴 A 301 on a POST DROPS THE BODY: browsers replay it as a GET, so a form
+      // submitted from a page rendered before a deploy silently loses everything
+      // the member typed. Laravel already returns 308 for non-GET on the same
+      // redirects (routes/govuk-alpha.php); web-uk hardcoded 301.
+      const api = require('../src/lib/api');
+      api.getTenants.mockClear();
+      api.getTenantBootstrap.mockClear();
+      api.getTenantBootstrap.mockResolvedValue({
+        data: {
+          id: 2,
+          name: 'Acme Timebank',
+          slug: 'acme',
+          accessible_domain: 'acme-accessible.test'
+        }
+      });
+
+      const posted = await request(app)
+        .post('/acme/accessible/contact')
+        .set('Host', 'acme-accessible.test')
+        .type('form')
+        .send({ name: 'Ada Lovelace' });
+
+      expect(posted.status).toBe(308);
+      expect(posted.headers.location).toBe('/contact');
+
+      const fetched = await request(app)
+        .get('/acme/accessible/contact')
+        .set('Host', 'acme-accessible.test');
+
+      // GET and HEAD keep 301, which is what search engines and bookmarks want.
+      expect(fetched.status).toBe(301);
+      expect(fetched.headers.location).toBe('/contact');
+
+      const headed = await request(app)
+        .head('/acme/accessible/contact')
+        .set('Host', 'acme-accessible.test');
+
+      expect(headed.status).toBe(301);
+    });
+
+    it('preserves the request method on the legacy /alpha redirect', async () => {
+      const api = require('../src/lib/api');
+      api.getTenants.mockClear();
+      api.getTenantBootstrap.mockClear();
+      api.getTenantBootstrap.mockResolvedValue({
+        data: { id: 2, name: 'Acme Timebank', slug: 'acme' }
+      });
+
+      // No custom domain here, so this exercises the OTHER hardcoded 301: the
+      // /alpha → /accessible rename from 2026-07-10. A stale PWA-cached React
+      // build or an emailed link can still POST to /alpha.
+      const posted = await request(app)
+        .post('/acme/alpha/contact')
+        .type('form')
+        .send({ name: 'Ada Lovelace' });
+
+      expect(posted.status).toBe(308);
+      expect(posted.headers.location).toBe('/acme/accessible/contact');
+
+      const fetched = await request(app).get('/acme/alpha/contact?ref=email');
+
+      expect(fetched.status).toBe(301);
+      expect(fetched.headers.location).toBe('/acme/accessible/contact?ref=email');
+    });
+
     it('serves a direct child tenant below a parent custom domain path', async () => {
       const api = require('../src/lib/api');
       api.getTenants.mockClear();

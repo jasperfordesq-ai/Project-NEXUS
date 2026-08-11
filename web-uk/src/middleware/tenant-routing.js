@@ -160,6 +160,24 @@ function withQuery(path, queryIndex, originalUrl) {
   return `${path}${originalUrl.slice(queryIndex)}`;
 }
 
+/**
+ * The status code for a permanent redirect, preserving the request method.
+ *
+ * 🔴 A hardcoded 301 on a non-GET request DROPS THE BODY. Browsers turn a
+ * 301/302 on a POST into a GET of the target, so a form submitted from a page
+ * rendered before a deploy silently loses everything the member typed and lands
+ * on a page that looks like it just did nothing.
+ *
+ * Laravel already gets this right for the same redirects
+ * (`routes/govuk-alpha.php`): 301 for GET/HEAD, 308 otherwise. 308 is the
+ * method-preserving permanent redirect, so the POST is replayed against the new
+ * URL with its body intact. web-uk hardcoded 301 in both places.
+ */
+function permanentRedirectStatus(req) {
+  const method = String(req.method || 'GET').toUpperCase();
+  return method === 'GET' || method === 'HEAD' ? 301 : 308;
+}
+
 function splitPathSuffix(value) {
   const match = String(value || '').match(/^([^?#]*)(.*)$/);
   return {
@@ -391,7 +409,7 @@ async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, quer
     }
 
     const sluglessPath = rest === '/' ? '/' : rest;
-    res.redirect(301, withQuery(sluglessPath, queryIndex, originalUrl));
+    res.redirect(permanentRedirectStatus(req), withQuery(sluglessPath, queryIndex, originalUrl));
     return true;
   } catch (error) {
     if (error instanceof ApiOfflineError || (error instanceof ApiError && error.status === 404)) {
@@ -455,7 +473,7 @@ function tenantRouting(req, res, next) {
       }
 
       if (mount === 'alpha') {
-        res.redirect(301, withQuery(`${accessiblePrefix}${rest === '/' ? '' : rest}`, queryIndex, originalUrl));
+        res.redirect(permanentRedirectStatus(req), withQuery(`${accessiblePrefix}${rest === '/' ? '' : rest}`, queryIndex, originalUrl));
         return;
       }
 
