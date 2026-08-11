@@ -7500,6 +7500,55 @@ describe('API Request Functions', () => {
   // the ledger reported 21 rows without direct assertions and 9 of them
   // state-changing. Each case below pins the exact request the helper makes.
 
+
+  describe('Laravel legal acceptance helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('reads the current member\'s acceptance status with their bearer token', async () => {
+      jsonOnce({ data: { has_pending: false, documents: [] } });
+
+      await api.getLegalAcceptanceStatus('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/legal/acceptance/status',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('accepts everything outstanding in one POST', async () => {
+      jsonOnce({ data: { accepted: ['terms'] } });
+
+      await api.acceptAllLegalDocuments('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/legal/acceptance/accept-all',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('sends no body, so the API decides what is outstanding', async () => {
+      // 🔴 The API recomputes the pending set inside a transaction with the rows
+      // locked. A client-supplied list would let a version be recorded that the
+      // member was never shown, which is the whole point of the audit trail.
+      jsonOnce({ data: { accepted: [] } });
+
+      await api.acceptAllLegalDocuments('test-token');
+
+      expect(mockFetch.mock.calls[0][1].body).toBeUndefined();
+    });
+  });
+
   describe('Laravel legal document helpers', () => {
     function jsonOnce(body) {
       mockFetch.mockResolvedValueOnce({

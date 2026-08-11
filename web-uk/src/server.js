@@ -59,6 +59,7 @@ const staticPageRoutes = require('./routes/static-pages');
 const kbRoutes = require('./routes/kb');
 const supportRoutes = require('./routes/support');
 const legalRoutes = require('./routes/legal');
+const legalAcceptanceRoutes = require('./routes/legal-acceptance');
 const publicInfoRoutes = require('./routes/public-info');
 const contactSupportRoutes = require('./routes/contact-support');
 const onboardingPostRoutes = require('./routes/onboarding-posts');
@@ -91,6 +92,7 @@ const { parseMultipartForm } = require('./middleware/multipart');
 const { buildAccountLinks } = require('./lib/account-links');
 const { localization } = require('./middleware/localization');
 const { tenantFeatureGate } = require('./middleware/tenant-feature-gates');
+const { legalGate } = require('./middleware/legal-gate');
 const { tenantRouting } = require('./middleware/tenant-routing');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
 const { isValidEmail } = require('./lib/inputValidator');
@@ -467,6 +469,13 @@ app.use(async (req, res, next) => {
 });
 
 app.use(tenantFeatureGate);
+
+// 🔴 AFTER tenantFeatureGate and BEFORE the first router, so req.token, urlFor
+// and t all exist and no page renders behind the gate. Laravel is the authority
+// on refusing a write (EnsureLegalAcceptance); this only shows the member the
+// acceptance page instead of a bare 403. It fails OPEN and never intercepts a
+// POST — see src/middleware/legal-gate.js for its four loop-breakers.
+app.use(legalGate);
 
 function normalizeTenantChooserCommunities(result) {
   const records = Array.isArray(result?.data)
@@ -1773,6 +1782,9 @@ app.use('/group-exchanges', doubleCsrfProtection, postOnly(formLimiter), groupEx
 app.use('/kb', requireAuth, kbRoutes);
 app.use(supportRoutes);
 app.use(legalRoutes);
+// The acceptance page POSTs, so it needs CSRF protection. The legal router
+// above is GET-only and deliberately stays bare.
+app.use(doubleCsrfProtection, postOnly(formLimiter), legalAcceptanceRoutes);
 // What's On is deliberately PUBLIC — no requireAuth. It is the logged-out event
 // advertising surface, gated inside the router on the events + public_events
 // tenant features (404 when either is off), matching the Blade controller.

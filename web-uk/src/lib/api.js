@@ -825,6 +825,35 @@ async function getLegalVersions(type) {
   return request(`/api/v2/legal/${encodeURIComponent(type)}/versions`);
 }
 
+/**
+ * What this member still owes.
+ *
+ * 🔴 Authenticated, unlike the document reads above — the answer is about one
+ * person. Both of these are on the gate's own exemption list
+ * (`EnsureLegalAcceptance::EXEMPT_PREFIXES`), because a member who is blocked must
+ * always be able to find out why and do something about it.
+ */
+async function getLegalAcceptanceStatus(token) {
+  return request('/api/v2/legal/acceptance/status', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
+ * Accept everything outstanding, in one action.
+ *
+ * The API records each document against its exact current version inside a
+ * transaction with the rows locked, so an admin publishing a new version
+ * mid-accept cannot cause a version to be recorded that was never shown. Nothing
+ * to repeat on this side.
+ */
+async function acceptAllLegalDocuments(token) {
+  return request('/api/v2/legal/acceptance/accept-all', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 async function getLegalVersion(versionId) {
   return request(`/api/v2/legal/version/${encodeURIComponent(versionId)}`);
 }
@@ -3787,6 +3816,8 @@ module.exports = {
   getLegalVersions,
   getLegalVersion,
   compareLegalVersions,
+  getLegalAcceptanceStatus,
+  acceptAllLegalDocuments,
   callNewsletterApi,
   getMyVolunteerOrganisations,
   createVolunteerOrganisation,

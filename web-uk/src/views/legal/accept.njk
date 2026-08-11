@@ -1,0 +1,72 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">{{ t("legal.caption", { community: tenantName }) }}</span>
+      <h1 class="govuk-heading-xl">{{ t("legal.acceptance.title") }}</h1>
+      <p class="govuk-body-l">{{ t("legal.acceptance.intro") }}</p>
+
+      {% if error %}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <p class="govuk-body">{{ error }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Each document is named, tagged as new or updated, and LINKED. A member
+         must be able to read the thing before agreeing to it — a list of titles
+         with an Accept button underneath is not consent. The links open the real
+         document pages, which the gate deliberately never intercepts. #}
+      <dl class="govuk-summary-list">
+        {% for document in documents %}
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">
+              {{ document.title }}
+              {% if document.isNew %}
+                <strong class="govuk-tag govuk-tag--blue">{{ t("legal.acceptance.new_tag") }}</strong>
+              {% else %}
+                <strong class="govuk-tag govuk-tag--yellow">{{ t("legal.acceptance.updated_tag") }}</strong>
+              {% endif %}
+            </dt>
+            <dd class="govuk-summary-list__value">
+              {% if document.versionNumber %}
+                <p class="govuk-body-s govuk-!-margin-bottom-0">{{ t("legal.version_label") }} {{ document.versionNumber }}</p>
+              {% endif %}
+            </dd>
+            <dd class="govuk-summary-list__actions">
+              <a class="govuk-link" href="{{ urlFor('/legal/' + document.slug) }}">
+                {{ t("legal.acceptance.read_link", { title: document.title }) }}
+              </a>
+            </dd>
+          </div>
+        {% endfor %}
+      </dl>
+
+      {# One POST, no JavaScript. The return path travels as a hidden field and is
+         re-validated on the server. #}
+      <form method="post" action="{{ urlFor('/legal-acceptance') }}" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        <input type="hidden" name="return" value="{{ returnTo }}">
+
+        <button class="govuk-button" data-module="govuk-button" type="submit">
+          {{ t("legal.acceptance.accept_button") }}
+        </button>
+      </form>
+
+      {# 🔴 "I do not accept" must have an answer. Without a way out this page is a
+         trap: the member cannot use the platform and cannot leave it either. #}
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ urlFor('/logout') }}">{{ t("legal.acceptance.sign_out") }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

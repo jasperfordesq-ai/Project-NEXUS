@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-11T09:14:38.830Z
-Laravel commit SHA: `3e0d74e989ffc6f20b8b3d6231c2d6d887a599dc`
-Web UK repository commit SHA: `3e0d74e989ffc6f20b8b3d6231c2d6d887a599dc`
+Generated: 2026-08-11T09:49:50.964Z
+Laravel commit SHA: `52efa1e6f231b8acd2cc921f4d84d741ca97a502`
+Web UK repository commit SHA: `52efa1e6f231b8acd2cc921f4d84d741ca97a502`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 718 |
+| web-uk routes | 720 |
 | Matched routes | 706 |
 | Missing routes | 1 |
-| Extra web-uk routes | 10 |
+| Extra web-uk routes | 12 |
 | Ignored web-uk infrastructure routes | 3 |
 
 ## Family Counts
@@ -58,6 +58,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | kb | 2 | 0 | 0 | 0 |
 | leaderboard | 5 | 0 | 0 | 0 |
 | legal | 6 | 0 | 3 | 0 |
+| legal-acceptance | 0 | 0 | 2 | 0 |
 | listings | 19 | 0 | 1 | 0 |
 | login | 7 | 0 | 0 | 0 |
 | logout | 1 | 0 | 0 | 0 |
@@ -108,6 +109,8 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | --- | --- | --- | --- | --- |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
+| GET | `/legal-acceptance` | legal-acceptance | legal/accept | web-uk/src/routes/legal-acceptance.js |
+| POST | `/legal-acceptance` | legal-acceptance |  | web-uk/src/routes/legal-acceptance.js |
 | GET | `/legal/{param}/versions` | legal | legal/versions | web-uk/src/routes/legal.js |
 | GET | `/legal/{param}/versions/{param}` | legal | legal/version | web-uk/src/routes/legal.js |
 | GET | `/legal/{param}/versions/compare` | legal | legal/compare | web-uk/src/routes/legal.js |
