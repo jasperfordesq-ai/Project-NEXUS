@@ -115,13 +115,108 @@ describe('web-uk Sentry error reporting', () => {
     });
   });
 
-  it('ignores the endpoints that are hit constantly by machines', () => {
-    const sentry = require('../src/lib/sentry');
-    // /health is hit every 10 seconds per colour by the container healthcheck;
-    // /version by the deploy script and the drift check.
-    expect(sentry.DEFAULT_IGNORED_TRANSACTIONS).toContain('/health');
-    expect(sentry.DEFAULT_IGNORED_TRANSACTIONS).toContain('/version');
-    expect(sentry.DEFAULT_IGNORED_TRANSACTIONS).toContain('/session/touch');
+  /**
+   * 🔴 These paths must be filtered in `beforeSend`, NOT by `ignoreTransactions`.
+   *
+   * `ignoreTransactions` applies only to events of type `transaction`, and tracing
+   * defaults to a 0 sample rate here — so no transaction events exist and that
+   * option filtered nothing at all. The old test asserted only that the LIST
+   * contained the paths, which stayed true while the filtering did nothing: a test
+   * that passed for a mechanism that was inert.
+   */
+  describe('operational endpoints are filtered out of ERROR events', () => {
+    it('lists the machine-hit endpoints', () => {
+      const sentry = require('../src/lib/sentry');
+      // /health is hit every 10 seconds per colour by the container healthcheck;
+      // /version by the deploy script and the drift check.
+      expect(sentry.IGNORED_OPERATIONAL_PATHS).toContain('/health');
+      expect(sentry.IGNORED_OPERATIONAL_PATHS).toContain('/version');
+      expect(sentry.IGNORED_OPERATIONAL_PATHS).toContain('/session/touch');
+    });
+
+    it('recognises them from the request URL, with or without an origin or query', () => {
+      const { isOperationalNoise } = require('../src/lib/sentry');
+
+      expect(isOperationalNoise({ request: { url: '/health' } })).toBe(true);
+      expect(isOperationalNoise({ request: { url: '/health/' } })).toBe(true);
+      expect(isOperationalNoise({ request: { url: 'https://accessible.example.ie/version' } })).toBe(true);
+      expect(isOperationalNoise({ request: { url: '/session/touch?x=1' } })).toBe(true);
+    });
+
+    it('does not swallow a real page that merely starts the same way', () => {
+      const { isOperationalNoise } = require('../src/lib/sentry');
+
+      // A path prefix match would have discarded genuine faults on these.
+      expect(isOperationalNoise({ request: { url: '/healthcheck-report' } })).toBe(false);
+      expect(isOperationalNoise({ request: { url: '/versions' } })).toBe(false);
+      expect(isOperationalNoise({ request: { url: '/session' } })).toBe(false);
+      expect(isOperationalNoise({ request: { url: '/dashboard' } })).toBe(false);
+      expect(isOperationalNoise({})).toBe(false);
+    });
+  });
+
+  describe('what the scrubber must strip', () => {
+    it('removes forwarded client IP headers — the module promises no IP address', () => {
+      // 🔴 `sendDefaultPii: false` stops the SDK attaching `user.ip_address`, but it
+      // does NOT touch request headers. `app.set('trust proxy', 1)` means Apache
+      // forwards x-forwarded-for, so a member's IP was reaching Sentry while the
+      // comment at the top of the module said it could not.
+      const { scrubEvent } = require('../src/lib/sentry');
+
+      const event = scrubEvent({
+        request: {
+          url: '/dashboard',
+          headers: {
+            'x-forwarded-for': '203.0.113.7',
+            'x-real-ip': '203.0.113.7',
+            'cf-connecting-ip': '203.0.113.7',
+            cookie: 'session=abc',
+            authorization: 'Bearer abc',
+            'user-agent': 'kept'
+          }
+        }
+      });
+
+      const headers = event.request.headers;
+      expect(headers['x-forwarded-for']).toBeUndefined();
+      expect(headers['x-real-ip']).toBeUndefined();
+      expect(headers['cf-connecting-ip']).toBeUndefined();
+      expect(headers.cookie).toBeUndefined();
+      expect(headers.authorization).toBeUndefined();
+      expect(headers['user-agent']).toBe('kept');
+      expect(JSON.stringify(event)).not.toContain('203.0.113.7');
+    });
+
+    it('strips query strings from breadcrumbs, not just the request', () => {
+      // Outgoing HTTP breadcrumbs to Laravel carry the query string, and a search
+      // term is text a member typed.
+      const { scrubEvent } = require('../src/lib/sentry');
+
+      const event = scrubEvent({
+        breadcrumbs: [
+          { category: 'http', message: 'GET /api/v2/search?q=secret+term', data: { url: 'https://api.example.ie/v2/search?q=secret+term' } }
+        ]
+      });
+
+      expect(JSON.stringify(event)).not.toContain('secret');
+    });
+
+    it('drops any ip_address the SDK attached to the user', () => {
+      const { scrubEvent } = require('../src/lib/sentry');
+      const event = scrubEvent({ user: { id: 42, ip_address: '203.0.113.7', email: 'a@b.ie' } });
+
+      expect(event.user).toEqual({ id: '42' });
+    });
+  });
+
+  describe('flushSentry', () => {
+    it('resolves without throwing when reporting is disabled', async () => {
+      // The uncaughtException handler awaits this on every crash, including in
+      // development where there is no DSN. If it threw or hung, a crash would stop
+      // the process exiting at all.
+      const { flushSentry } = require('../src/lib/sentry');
+      await expect(flushSentry(10)).resolves.toBeUndefined();
+    });
   });
 
   describe('source contract', () => {

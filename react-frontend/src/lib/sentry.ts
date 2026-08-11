@@ -102,6 +102,40 @@ function getReplayOnErrorSampleRate(): number {
     : 0;
 }
 
+/**
+ * Keep the path, drop the query string.
+ *
+ * A path tells us which page failed, which is the whole point of a fault report. A
+ * query string is member input — a reset token, a search term, an invite code — and
+ * must never leave the browser attached to diagnostics.
+ *
+ * Deliberately string-based rather than `new URL()`: breadcrumb URLs are sometimes
+ * relative, and `new URL()` throws on those.
+ */
+export function stripQueryString(value: string): string {
+  const cut = value.search(/[?#]/);
+  return cut === -1 ? value : value.slice(0, cut);
+}
+
+/** Applies stripQueryString to every URL-shaped field a breadcrumb can carry. */
+function scrubBreadcrumbUrls(crumb: Record<string, unknown> | null | undefined): void {
+  if (!crumb) return;
+
+  if (typeof crumb.message === 'string' && crumb.message.includes('?')) {
+    // fetch/XHR breadcrumbs put the URL in the message, e.g. "GET /search?q=…".
+    crumb.message = crumb.message.replace(/(https?:\/\/[^\s?#]+|\/[^\s?#]*)[?#][^\s]*/g, '$1');
+  }
+
+  const data = crumb.data as Record<string, unknown> | undefined;
+  if (data) {
+    for (const key of ['url', 'to', 'from']) {
+      if (typeof data[key] === 'string') {
+        data[key] = stripQueryString(data[key] as string);
+      }
+    }
+  }
+}
+
 function sensitiveFields(): string[] {
   return [
     'password',
@@ -235,6 +269,19 @@ async function loadAndInitializeSentry(): Promise<void> {
       /Error invoking postMessage/,
     ],
     integrations: integrations as Parameters<SentryModule['init']>[0]['integrations'],
+    // 🔴 SCRUBBING IS NOW LOAD-BEARING, because fault reports are sent WITHOUT
+    // analytics consent. Before that, a member who declined sent nothing at all, so
+    // gaps here were latent. They are not any more.
+    //
+    // What was missing and is now handled: the request URL and its query string,
+    // request headers, and breadcrumbs. `sendDefaultPii: false` does NOT cover any
+    // of those — it only stops the SDK attaching the user's IP and similar. Only
+    // POST bodies were being filtered.
+    //
+    // The concrete leak: a member declines analytics, is on
+    // `/reset-password?token=…` or `/search?q=<something they typed>`, and any
+    // throw sent that URL to Sentry. web-uk's own scrubber
+    // (`web-uk/src/lib/sentry.js`) already did this properly; this side did not.
     beforeSend(event) {
       if (event.request?.data && typeof event.request.data === 'object') {
         const data = event.request.data as Record<string, unknown>;
@@ -244,12 +291,43 @@ async function loadAndInitializeSentry(): Promise<void> {
           }
         }
       }
+
+      if (event.request) {
+        // A path is diagnostic; a query string is member input. Keep the first,
+        // drop the second — a reset token, a search term, an invite code all live
+        // there.
+        if (typeof event.request.url === 'string') {
+          event.request.url = stripQueryString(event.request.url);
+        }
+        delete event.request.query_string;
+        delete event.request.cookies;
+        if (event.request.headers) {
+          const headers = event.request.headers as Record<string, unknown>;
+          for (const name of Object.keys(headers)) {
+            const lower = name.toLowerCase();
+            if (lower === 'cookie' || lower === 'authorization' || lower === 'x-csrf-token') {
+              delete headers[name];
+            }
+          }
+        }
+      }
+
+      // Breadcrumbs are auto-captured from fetch/XHR and DOM clicks, so they carry
+      // the same URLs. beforeBreadcrumb below strips them as they are recorded, but
+      // a breadcrumb can also be attached to the event directly.
+      if (Array.isArray(event.breadcrumbs)) {
+        for (const crumb of event.breadcrumbs) {
+          scrubBreadcrumbUrls(crumb as Record<string, unknown>);
+        }
+      }
+
       return event;
     },
     beforeBreadcrumb(breadcrumb) {
       if (breadcrumb.category === 'console' && breadcrumb.level === 'debug') {
         return null;
       }
+      scrubBreadcrumbUrls(breadcrumb as unknown as Record<string, unknown>);
       return breadcrumb;
     },
   });

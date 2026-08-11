@@ -8,7 +8,7 @@ require('dotenv').config();
 // 🔴 Must run BEFORE express() is constructed and before route modules load, so
 // the SDK can instrument them. A no-op when SENTRY_DSN is unset, which is the
 // normal state in development and in every test run.
-const { initSentry, attachExpressErrorHandler } = require('./lib/sentry');
+const { initSentry, attachExpressErrorHandler, flushSentry } = require('./lib/sentry');
 
 initSentry();
 
@@ -2066,7 +2066,19 @@ process.on('unhandledRejection', (reason, promise) => {
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  process.exit(1);
+
+  // 🔴 FLUSH BEFORE EXITING, or the most valuable event this service can send is
+  // the one it reliably loses.
+  //
+  // Sentry's `onUncaughtException` integration captures the exception, but
+  // transmission is asynchronous. `process.exit(1)` called straight after — as it
+  // was — pre-empts it, so an uncaught exception was usually absent from Sentry
+  // altogether. Exactly the crash you would want to see, systematically missing.
+  //
+  // Bounded at 2 seconds and `flushSentry` resolves rather than rejecting, so a
+  // broken network delays the restart briefly instead of wedging the process. The
+  // exit still happens on every path.
+  flushSentry(2000).finally(() => process.exit(1));
 });
 
 // Only start listening if not in test mode

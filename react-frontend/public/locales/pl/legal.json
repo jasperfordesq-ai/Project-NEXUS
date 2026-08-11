@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Wprowadzenie"
+  },
   "terms": {
     "meta_description": "Warunki i zasady regulujące korzystanie z naszej platformy czasowej społeczności.",
     "page_title": "Warunki korzystania z usługi",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Uwierzytelnianie użytkowników i tokeny sesji",
     "cat_essential_ex2": "Tokeny ochrony CSRF",
     "cat_essential_ex3": "Preferencje bezpieczeństwa",
-    "cat_essential_ex4": "Równoważenie obciążenia",
+    "cat_essential_ex4": "Równoważenie obciążenia i anonimowe raporty o błędach",
     "cat_analytics_name": "Pliki cookie analityczne",
     "cat_analytics_desc": "Te pliki cookie pomagają nam zrozumieć, jak odwiedzający wchodzą w interakcje z platformą, zbierając i raportując informacje anonimowo. Pomaga to nam poprawić doświadczenia na platformie dla wszystkich.",
     "cat_analytics_ex1": "Odwiedzone strony i czas spędzony",
     "cat_analytics_ex2": "Funkcje używane najczęściej",
-    "cat_analytics_ex3": "Śledzenie błędów i monitorowanie wydajności",
+    "cat_analytics_ex3": "Pomiary prędkości i powtórka sesji",
     "cat_analytics_ex4": "Zagregowane statystyki użycia",
     "cat_preference_name": "Ciasteczka preferencyjne",
     "cat_preference_desc": "Te ciasteczka zapamiętują Twoje preferencje i ustawienia, aby zapewnić bardziej spersonalizowane doświadczenie. Pozwalają platformie zapamiętać wybory, które dokonujesz, takie jak motyw, język i opcje wyświetlania.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Zapamiętuje wybraną przez Ciebie społeczność/najemcę",
     "cookie_locale_purpose": "Przechowuje preferencje dotyczące języka i formatu regionalnego",
     "cookie_consent_purpose": "Przechowuje Twoje preferencje dotyczące zgody na ciasteczka (zaakceptowane kategorie)",
-    "cookie_sentry_purpose": "Śledzenie błędów i monitorowanie wydajności (tylko za zgodą na analitykę)",
+    "cookie_sentry_purpose": "Anonimowe zgłoszenia usterek. Zawsze wysyłane, nawet jeśli odrzucisz analityczne pliki cookie, abyśmy mogli naprawić to, co się psuje. Pomiary prędkości i powtórki sesji są wysyłane tylko wtedy, gdy akceptujesz analityczne pliki cookie.",
     "third_party_title": "Ciasteczka stron trzecich",
     "third_party_intro": "W niektórych przypadkach korzystamy z usług stron trzecich, które mogą ustawiać własne ciasteczka. Usługi te obejmują:",
     "third_party_sentry_label": "Wartownik",
-    "third_party_sentry_desc": "Śledzenie błędów i monitorowanie wydajności (aktywne tylko za zgodą na analitykę)",
+    "third_party_sentry_desc": "Anonimowe zgłaszanie usterek. Zawsze aktywne, nawet jeśli odrzucisz analityczne pliki cookie. Raport nie zawiera nazwy, numeru konta ani szczegółów adresu internetowego. Pomiary prędkości i odtwarzanie sesji są aktywne tylko wtedy, gdy akceptujesz analityczne pliki cookie.",
     "third_party_pusher_label": "Popychacz",
     "third_party_pusher_desc": "Do powiadomień w czasie rzeczywistym i funkcjonalności wiadomości",
     "third_party_compliance": "Starannie wybieramy naszych partnerów zewnętrznych i zapewniamy, że przestrzegają obowiązujących przepisów o ochronie danych. Ciasteczka stron trzecich są regulowane przez politykę prywatności odpowiedniej strony trzeciej.",
@@ -404,10 +407,10 @@
     "changes_count": "{{count}} zmian",
     "legend_removed": "Usunieto",
     "legend_added": "Dodano",
-    "changes_count_few": "{{count}} zmian",
-    "changes_count_many": "{{count}} zmian",
     "changes_count_one": "{{count}} zmian",
-    "changes_count_other": "{{count}} zmian"
+    "changes_count_other": "{{count}} zmian",
+    "changes_count_few": "{{count}} zmian",
+    "changes_count_many": "{{count}} zmian"
   },
   "platform": {
     "effective_date": "Ważne od {{date}}",
@@ -497,10 +500,10 @@
     "accept_aria": "Akceptuj wszystkie zaktualizowane dokumenty prawne i kontynuuj",
     "accepting": "Akceptowanie…",
     "accept_continue": "Akceptuj i kontynuuj",
-    "subtitle_other_few": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować.",
-    "subtitle_other_many": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować.",
     "subtitle_other_one": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować.",
-    "subtitle_other_other": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować."
+    "subtitle_other_other": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować.",
+    "subtitle_other_few": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować.",
+    "subtitle_other_many": "{{count}} dokumenty zostały zaktualizowane. Proszę je przejrzeć i zaakceptować, aby kontynuować."
   },
   "custom": {
     "effective_label": "Ważne: {{date}}",
@@ -814,8 +817,5 @@
     "contact_cta_body": "Skontaktuj się z nami, a koordynator skontaktuje się z Tobą. Na większość wiadomości odpowiadamy w ciągu jednego dnia roboczego.",
     "contact_cta_button": "Skontaktuj się z nami",
     "community_guidelines_link": "Przeczytaj Wytyczne dla społeczności"
-  },
-  "custom_document": {
-    "introduction": "Wprowadzenie"
   }
 }

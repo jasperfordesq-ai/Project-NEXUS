@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "はじめに"
+  },
   "terms": {
     "meta_description": "私たちのコミュニティタイムバンキングプラットフォームの利用に関する利用規約。",
     "page_title": "サービス利用規約",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "ユーザー認証およびセッショントークン",
     "cat_essential_ex2": "CSRF保護トークン",
     "cat_essential_ex3": "セキュリティ設定",
-    "cat_essential_ex4": "負荷分散",
+    "cat_essential_ex4": "負荷分散と匿名の障害レポート",
     "cat_analytics_name": "分析クッキー",
     "cat_analytics_desc": "これらのクッキーは、訪問者がプラットフォームとどのように対話しているかを匿名で情報を収集し報告することで理解するのに役立ちます。これにより、すべての人にとってプラットフォームの体験を向上させることができます。",
     "cat_analytics_ex1": "訪問したページと費やした時間",
     "cat_analytics_ex2": "最も頻繁に使用される機能",
-    "cat_analytics_ex3": "エラー追跡とパフォーマンス監視",
+    "cat_analytics_ex3": "速度測定とセッションリプレイ",
     "cat_analytics_ex4": "集約された使用統計",
     "cat_preference_name": "プライバシー設定用クッキー",
     "cat_preference_desc": "これらのクッキーは、よりパーソナライズされた体験を提供するために、あなたの好みや設定を記憶します。テーマ、言語、表示オプションなど、あなたが選択した内容をプラットフォームが記憶できるようにします。",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "選択したコミュニティ/テナントを記憶します",
     "cookie_locale_purpose": "言語と地域のフォーマットの好みを保存します",
     "cookie_consent_purpose": "クッキーの同意の好みを保存します（受け入れたカテゴリ）",
-    "cookie_sentry_purpose": "エラー追跡とパフォーマンス監視（分析の同意がある場合のみ）",
+    "cookie_sentry_purpose": "匿名の障害報告。分析 Cookie を拒否した場合でも常に送信されるため、壊れた部分を修正できます。速度測定とセッションのリプレイは、分析 Cookie を受け入れた場合にのみ送信されます。",
     "third_party_title": "サードパーティクッキー",
     "third_party_intro": "場合によっては、独自のクッキーを設定するサードパーティサービスを使用します。これらのサービスには、以下が含まれます：",
     "third_party_sentry_label": "セントリー",
-    "third_party_sentry_desc": "エラー追跡とパフォーマンス監視（分析の同意がある場合のみ有効）",
+    "third_party_sentry_desc": "匿名の障害報告。分析 Cookie を拒否した場合でも、常にアクティブになります。レポートには名前、口座番号、Web アドレスの詳細は含まれません。速度測定とセッションの再生は、分析 Cookie を受け入れる場合にのみ有効になります。",
     "third_party_pusher_label": "プッシャー",
     "third_party_pusher_desc": "リアルタイムの通知とメッセージ機能のために",
     "third_party_compliance": "私たちはサードパーティのパートナーを慎重に選び、適用されるデータ保護規則を遵守していることを確認します。サードパーティクッキーは、それぞれのサードパーティのプライバシーポリシーに従います。",
@@ -404,8 +407,8 @@
     "changes_count": "{{count}} の変更",
     "legend_removed": "削除されました",
     "legend_added": "追加した",
-    "changes_count_other": "{{count}} の変更",
-    "changes_count_one": "{{count}} 変更"
+    "changes_count_one": "{{count}} 変更",
+    "changes_count_other": "{{count}} の変更"
   },
   "platform": {
     "effective_date": "有効 {{date}}",
@@ -810,8 +813,5 @@
     "contact_cta_body": "ご連絡いただければ、コーディネーターが折り返しご連絡させていただきます。ほとんどのメッセージは 1 営業日以内に返信されます。",
     "contact_cta_button": "お問い合わせ",
     "community_guidelines_link": "コミュニティガイドラインを読む"
-  },
-  "custom_document": {
-    "introduction": "はじめに"
   }
 }

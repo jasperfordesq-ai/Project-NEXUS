@@ -318,6 +318,119 @@ describe('sentry analytics consent checks', () => {
     );
   });
 
+  /**
+   * 🔴 Scrubbing became load-bearing the moment faults started being sent WITHOUT
+   * analytics consent. Before that, a member who declined sent nothing at all, so a
+   * gap in `beforeSend` was latent. It is not any more.
+   *
+   * Only POST bodies were filtered. Request URLs, query strings, headers and
+   * breadcrumbs were not — and `sendDefaultPii: false` covers none of them.
+   */
+  describe('beforeSend scrubbing (what rides along on an unconsented fault)', () => {
+    async function getHooks() {
+      vi.resetModules();
+      vi.stubEnv('VITE_SENTRY_DSN', 'https://public@example.sentry.io/1');
+      mockReadStoredConsent.mockReturnValue(null);
+      const Sentry = await import('@sentry/react');
+      vi.clearAllMocks();
+
+      const { initSentry } = await import('./sentry');
+      initSentry();
+      await vi.waitFor(() => expect(Sentry.init).toHaveBeenCalled());
+
+      const options = (Sentry.init as unknown as { mock: { calls: unknown[][] } })
+        .mock.calls[0][0] as {
+          beforeSend: (e: Record<string, unknown>) => Record<string, unknown>;
+          beforeBreadcrumb: (b: Record<string, unknown>) => Record<string, unknown> | null;
+        };
+      return options;
+    }
+
+    it('drops the query string from the request URL, keeping the path', async () => {
+      const { beforeSend } = await getHooks();
+
+      const event = beforeSend({
+        request: { url: 'https://app.example.ie/reset-password?token=SECRET123' },
+      });
+
+      const url = (event.request as { url: string }).url;
+      expect(url).toBe('https://app.example.ie/reset-password');
+      expect(url).not.toContain('SECRET123');
+    });
+
+    it('removes query_string, cookies and credential headers', async () => {
+      const { beforeSend } = await getHooks();
+
+      const event = beforeSend({
+        request: {
+          url: 'https://app.example.ie/search',
+          query_string: 'q=something+the+member+typed',
+          cookies: { token: 'abc' },
+          headers: {
+            Cookie: 'session=abc',
+            Authorization: 'Bearer abc',
+            'X-CSRF-Token': 'abc',
+            'User-Agent': 'kept',
+          },
+        },
+      });
+
+      const request = event.request as Record<string, unknown>;
+      expect(request.query_string).toBeUndefined();
+      expect(request.cookies).toBeUndefined();
+      const headers = request.headers as Record<string, unknown>;
+      expect(headers.Cookie).toBeUndefined();
+      expect(headers.Authorization).toBeUndefined();
+      expect(headers['X-CSRF-Token']).toBeUndefined();
+      // Diagnostics that are not credentials survive.
+      expect(headers['User-Agent']).toBe('kept');
+    });
+
+    it('still filters sensitive POST body fields', async () => {
+      const { beforeSend } = await getHooks();
+
+      const event = beforeSend({
+        request: { data: { email: 'someone@example.ie', password: 'hunter2', keep: 'yes' } },
+      });
+
+      const data = (event.request as { data: Record<string, unknown> }).data;
+      expect(data.password).toBe('[FILTERED]');
+      expect(data.email).toBe('[FILTERED]');
+      expect(data.keep).toBe('yes');
+    });
+
+    it('strips query strings from auto-captured fetch breadcrumbs', async () => {
+      const { beforeBreadcrumb } = await getHooks();
+
+      const crumb = beforeBreadcrumb({
+        category: 'fetch',
+        message: 'GET /api/v2/search?q=private+search+term',
+        data: { url: 'https://api.example.ie/v2/search?q=private+search+term' },
+      });
+
+      expect(JSON.stringify(crumb)).not.toContain('private');
+      expect((crumb?.data as { url: string }).url).toBe('https://api.example.ie/v2/search');
+    });
+
+    it('strips query strings from navigation breadcrumbs attached to the event', async () => {
+      const { beforeSend } = await getHooks();
+
+      const event = beforeSend({
+        breadcrumbs: [
+          { category: 'navigation', data: { from: '/a?token=X1', to: '/b?invite=Y2' } },
+        ],
+      });
+
+      expect(JSON.stringify(event.breadcrumbs)).not.toContain('X1');
+      expect(JSON.stringify(event.breadcrumbs)).not.toContain('Y2');
+    });
+
+    it('leaves a console debug breadcrumb dropped, as before', async () => {
+      const { beforeBreadcrumb } = await getHooks();
+      expect(beforeBreadcrumb({ category: 'console', level: 'debug' })).toBeNull();
+    });
+  });
+
   it('stays fully off when no DSN is configured, consent or not', async () => {
     vi.resetModules();
     vi.stubEnv('VITE_SENTRY_DSN', '');

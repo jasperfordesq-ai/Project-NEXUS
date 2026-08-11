@@ -113,7 +113,14 @@ const cookieTableDefs = [
   { name: 'nexus_tenant', providerKey: 'cookies.provider_platform', purposeKey: 'cookies.cookie_tenant_purpose', expiryKey: 'cookies.expiry_30_days', typeKey: 'cookies.type_preference', rawType: 'Preference' as const },
   { name: 'nexus_locale', providerKey: 'cookies.provider_platform', purposeKey: 'cookies.cookie_locale_purpose', expiryKey: 'cookies.expiry_1_year', typeKey: 'cookies.type_preference', rawType: 'Preference' as const },
   { name: 'nexus_cookie_consent', providerKey: 'cookies.provider_platform', purposeKey: 'cookies.cookie_consent_purpose', expiryKey: 'cookies.expiry_6_months', typeKey: 'cookies.type_essential', rawType: 'Essential' as const },
-  { name: 'sentry-*', providerKey: 'cookies.provider_sentry', purposeKey: 'cookies.cookie_sentry_purpose', expiryKey: 'cookies.expiry_session', typeKey: 'cookies.type_analytics', rawType: 'Analytics' as const },
+  // 🔴 Essential, not Analytics. Anonymous fault reports are sent whatever a member
+  // chooses — that is a deliberate decision, so that a crash affecting somebody who
+  // declined analytics is still fixable. Listing this row as "Analytics" told the
+  // member the opposite of what the platform does, on the page that exists to tell
+  // them the truth. The identity, performance timings and session replay that CAN
+  // ride on Sentry all remain analytics-gated, which is what the purpose text now
+  // distinguishes.
+  { name: 'sentry-*', providerKey: 'cookies.provider_sentry', purposeKey: 'cookies.cookie_sentry_purpose', expiryKey: 'cookies.expiry_session', typeKey: 'cookies.type_essential', rawType: 'Essential' as const },
 ];
 
 const browserInstructionKeys = [

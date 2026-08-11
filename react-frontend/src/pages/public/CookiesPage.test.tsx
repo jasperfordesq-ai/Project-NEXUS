@@ -103,4 +103,39 @@ describe('CookiesPage', () => {
     // …and the tenant custom-document branch was NOT taken.
     expect(screen.queryByTestId('custom-legal')).not.toBeInTheDocument();
   });
+
+  /**
+   * 🔴 A COMPLIANCE CLAIM, pinned so it cannot quietly revert.
+   *
+   * This page told members, in all eleven languages, that error tracking happened
+   * "only with analytics consent" and listed it as an example of an analytics
+   * cookie. That stopped being true the day crash reporting was deliberately
+   * decoupled from analytics consent — and it is one click from the banner whose
+   * wording WAS corrected, so a member who chose "essential only" could come here
+   * and read the opposite of what the platform does.
+   *
+   * No gate could catch it: the keys existed and were translated everywhere, so
+   * i18n parity, drift and coverage all passed. Nothing compares copy against
+   * behaviour, which is why this assertion exists.
+   */
+  it('describes fault reporting as essential and always sent, matching what the code does', () => {
+    render(<CookiesPage />);
+
+    // The cookie list is a responsive CARD list, not a <table> — so scope to the
+    // card that contains the cookie name, two levels up from the <code> element.
+    const sentryRow = screen.getByText('sentry-*').closest('div.p-4');
+    expect(sentryRow).not.toBeNull();
+
+    // Classified Essential, because the reports are sent whatever the member chose.
+    expect(sentryRow).toHaveTextContent('Essential');
+    expect(sentryRow).not.toHaveTextContent('Analytics');
+
+    // And the purpose text must say so plainly, not the reverse.
+    expect(sentryRow).toHaveTextContent(/always sent/i);
+    expect(sentryRow).toHaveTextContent(/even if you decline analytics/i);
+
+    // The old claim must be gone from the whole page, in either wording.
+    expect(screen.queryByText(/only with analytics consent/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/only active with analytics consent/i)).not.toBeInTheDocument();
+  });
 });

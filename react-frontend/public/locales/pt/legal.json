@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Introdução"
+  },
   "terms": {
     "meta_description": "Termos e condições que regem o uso da nossa plataforma comunitária de timebanking.",
     "page_title": "Termos de Serviço",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Autenticação de utilizador e tokens de sessão",
     "cat_essential_ex2": "Tokens de proteção CSRF",
     "cat_essential_ex3": "Preferências de segurança",
-    "cat_essential_ex4": "Balanceamento de carga",
+    "cat_essential_ex4": "Balanceamento de carga e relatórios de falhas anônimas",
     "cat_analytics_name": "Cookies de Análise",
     "cat_analytics_desc": "Estes cookies ajudam-nos a compreender como os visitantes interagem com a plataforma, recolhendo e reportando informação de forma anónima. Isto ajuda-nos a melhorar a experiência da plataforma para todos.",
     "cat_analytics_ex1": "Páginas visitadas e tempo gasto",
     "cat_analytics_ex2": "Funcionalidades mais utilizadas",
-    "cat_analytics_ex3": "Rastreio de erros e monitorização de desempenho",
+    "cat_analytics_ex3": "Medições de velocidade e repetição da sessão",
     "cat_analytics_ex4": "Estatísticas de utilização agregadas",
     "cat_preference_name": "Cookies de Preferência",
     "cat_preference_desc": "Estes cookies lembram as suas preferências e definições para proporcionar uma experiência mais personalizada. Permitem que a plataforma recorde escolhas como tema, idioma e opções de apresentação.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Lembra a sua comunidade/tenant selecionado",
     "cookie_locale_purpose": "Armazena a preferência de idioma e formato regional",
     "cookie_consent_purpose": "Armazena as suas preferências de consentimento de cookies (categorias aceites)",
-    "cookie_sentry_purpose": "Rastreio de erros e monitorização de desempenho (apenas com consentimento de análise)",
+    "cookie_sentry_purpose": "Relatórios de falhas anônimos. Sempre enviado, mesmo se você recusar cookies analíticos, para que possamos consertar o que está quebrado. As medições de velocidade e a repetição da sessão só serão enviadas se você aceitar cookies analíticos.",
     "third_party_title": "Cookies de Terceiros",
     "third_party_intro": "Em alguns casos, utilizamos serviços de terceiros que podem definir os seus próprios cookies. Estes serviços incluem:",
     "third_party_sentry_label": "Sentinela",
-    "third_party_sentry_desc": "Rastreio de erros e monitorização de desempenho (apenas ativo com consentimento de análise)",
+    "third_party_sentry_desc": "Relatório anônimo de falhas. Sempre ativo, mesmo se você recusar cookies analíticos. Um relatório não contém nome, número de conta e detalhes de endereço da web. As medições de velocidade e a repetição da sessão só estarão ativas se você aceitar cookies analíticos.",
     "third_party_pusher_label": "Empurrador",
     "third_party_pusher_desc": "Para notificações em tempo real e funcionalidade de mensagens",
     "third_party_compliance": "Selecionamos cuidadosamente os nossos parceiros terceiros e garantimos que cumprem os regulamentos de proteção de dados aplicáveis. Os cookies de terceiros são regidos pela respetiva política de privacidade do terceiro.",
@@ -404,9 +407,9 @@
     "changes_count": "{{count}} alteracoes",
     "legend_removed": "Removido",
     "legend_added": "Adicionado",
-    "changes_count_many": "{{count}} alteracoes",
     "changes_count_one": "{{count}} alteracoes",
-    "changes_count_other": "{{count}} alteracoes"
+    "changes_count_other": "{{count}} alteracoes",
+    "changes_count_many": "{{count}} alteracoes"
   },
   "platform": {
     "effective_date": "Vigente desde {{date}}",
@@ -496,9 +499,9 @@
     "accept_aria": "Aceitar todos os documentos legais atualizados e continuar",
     "accepting": "A aceitar…",
     "accept_continue": "Aceitar e Continuar",
-    "subtitle_other_many": "{{count}} documentos foram atualizados. Por favor, reveja e aceite para continuar.",
     "subtitle_other_one": "{{count}} documentos foram atualizados. Por favor, reveja e aceite para continuar.",
-    "subtitle_other_other": "{{count}} documentos foram atualizados. Por favor, reveja e aceite para continuar."
+    "subtitle_other_other": "{{count}} documentos foram atualizados. Por favor, reveja e aceite para continuar.",
+    "subtitle_other_many": "{{count}} documentos foram atualizados. Por favor, reveja e aceite para continuar."
   },
   "custom": {
     "effective_label": "Vigente: {{date}}",
@@ -812,8 +815,5 @@
     "contact_cta_body": "Entre em contato e um coordenador entrará em contato com você. A maioria das mensagens é respondida em um dia útil.",
     "contact_cta_button": "Contate-nos",
     "community_guidelines_link": "Leia as diretrizes da comunidade"
-  },
-  "custom_document": {
-    "introduction": "Introdução"
   }
 }

@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Introductie"
+  },
   "terms": {
     "meta_description": "Voorwaarden en condities die het gebruik van ons community timebanking platform regelen.",
     "page_title": "Servicevoorwaarden",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Gebruikersauthenticatie en sessietokens",
     "cat_essential_ex2": "CSRF-beschermingstokens",
     "cat_essential_ex3": "Beveiligingsvoorkeuren",
-    "cat_essential_ex4": "Laadbalancering",
+    "cat_essential_ex4": "Load-balancing en anonieme foutrapporten",
     "cat_analytics_name": "Analytische cookies",
     "cat_analytics_desc": "Deze cookies helpen ons te begrijpen hoe bezoekers met het platform omgaan door informatie anoniem te verzamelen en te rapporteren. Dit helpt ons de platformervaring voor iedereen te verbeteren.",
     "cat_analytics_ex1": "Bezochte pagina's en tijd besteed",
     "cat_analytics_ex2": "Meest gebruikte functies",
-    "cat_analytics_ex3": "Foutopsporing en prestatiemonitoring",
+    "cat_analytics_ex3": "Snelheidsmetingen en sessieherhaling",
     "cat_analytics_ex4": "Geaggregeerde gebruiksstatistieken",
     "cat_preference_name": "Voorkeurscookies",
     "cat_preference_desc": "Deze cookies onthouden uw voorkeuren en instellingen om een meer gepersonaliseerde ervaring te bieden. Ze stellen het platform in staat om keuzes die u maakt, zoals thema, taal en weergave-opties, te onthouden.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Onthoudt uw geselecteerde gemeenschap/huurder",
     "cookie_locale_purpose": "Slaat voorkeur voor taal en regionale indeling op",
     "cookie_consent_purpose": "Slaat uw cookie-toestemmingsvoorkeuren op (geaccepteerde categorieën)",
-    "cookie_sentry_purpose": "Foutopsporing en prestatiemonitoring (alleen met analytische toestemming)",
+    "cookie_sentry_purpose": "Anonieme storingsmeldingen. Altijd verzonden, zelfs als u analytische cookies weigert, zodat we kunnen repareren wat kapot gaat. Snelheidsmetingen en sessieherhaling worden alleen verzonden als u analytische cookies accepteert.",
     "third_party_title": "Derde partij cookies",
     "third_party_intro": "In sommige gevallen gebruiken we diensten van derden die hun eigen cookies kunnen instellen. Deze diensten omvatten:",
     "third_party_sentry_label": "Schildwacht",
-    "third_party_sentry_desc": "Foutopsporing en prestatiemonitoring (alleen actief met analytische toestemming)",
+    "third_party_sentry_desc": "Anonieme storingsmelding. Altijd actief, zelfs als u analytische cookies weigert. Een rapport bevat geen naam, geen rekeningnummer en geen webadresgegevens. Snelheidsmetingen en sessieherhaling zijn alleen actief als u analytische cookies accepteert.",
     "third_party_pusher_label": "Opdringer",
     "third_party_pusher_desc": "Voor realtime meldingen en messagingfunctionaliteit",
     "third_party_compliance": "We selecteren onze derde partij partners zorgvuldig en zorgen ervoor dat ze voldoen aan de toepasselijke gegevensbeschermingsregels. Derde partij cookies worden beheerst door het privacybeleid van de respectieve derde partij.",
@@ -810,8 +813,5 @@
     "contact_cta_body": "Neem contact met ons op en een coördinator neemt contact met u op. De meeste berichten worden binnen één werkdag beantwoord.",
     "contact_cta_button": "Neem contact met ons op",
     "community_guidelines_link": "Lees de communityrichtlijnen"
-  },
-  "custom_document": {
-    "introduction": "Introductie"
   }
 }

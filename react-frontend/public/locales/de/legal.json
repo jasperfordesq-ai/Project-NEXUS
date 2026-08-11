@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Einführung"
+  },
   "terms": {
     "meta_description": "Allgemeine Geschäftsbedingungen für die Nutzung unserer Community-Timebanking-Plattform.",
     "page_title": "Nutzungsbedingungen",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Benutzerauthentifizierung und Sitzungstoken",
     "cat_essential_ex2": "CSRF-Schutztoken",
     "cat_essential_ex3": "Sicherheitseinstellungen",
-    "cat_essential_ex4": "Lastverteilung",
+    "cat_essential_ex4": "Lastausgleich und anonyme Fehlerberichte",
     "cat_analytics_name": "Analyse-Cookies",
     "cat_analytics_desc": "Diese Cookies helfen uns zu verstehen, wie Besucher mit der Plattform interagieren, indem sie anonym Informationen sammeln und melden. Dies hilft uns, die Plattformerfahrung fuer alle zu verbessern.",
     "cat_analytics_ex1": "Besuchte Seiten und verbrachte Zeit",
     "cat_analytics_ex2": "Am haeufigsten genutzte Funktionen",
-    "cat_analytics_ex3": "Fehlerverfolgung und Leistungsueberwachung",
+    "cat_analytics_ex3": "Geschwindigkeitsmessungen und Sitzungswiedergabe",
     "cat_analytics_ex4": "Aggregierte Nutzungsstatistiken",
     "cat_preference_name": "Praeferenz-Cookies",
     "cat_preference_desc": "Diese Cookies speichern Ihre Praeferenzen und Einstellungen fuer ein personalisiertes Erlebnis. Sie ermoeglichen der Plattform, Ihre Auswahl wie Theme, Sprache und Anzeigeoptionen zu speichern.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Merkt sich Ihre ausgewaehlte Gemeinschaft/Mandanten",
     "cookie_locale_purpose": "Speichert Sprach- und Regionalformatpraeferenz",
     "cookie_consent_purpose": "Speichert Ihre Cookie-Einwilligungspraeferenzen (akzeptierte Kategorien)",
-    "cookie_sentry_purpose": "Fehlerverfolgung und Leistungsueberwachung (nur mit Analyse-Einwilligung)",
+    "cookie_sentry_purpose": "Anonyme Störungsmeldungen. Wird immer gesendet, auch wenn Sie Analyse-Cookies ablehnen, damit wir Fehler beheben können. Geschwindigkeitsmessungen und Sitzungswiedergabe werden nur gesendet, wenn Sie Analysecookies akzeptieren.",
     "third_party_title": "Drittanbieter-Cookies",
     "third_party_intro": "In einigen Faellen verwenden wir Drittanbieterdienste, die eigene Cookies setzen koennen. Diese Dienste umfassen:",
     "third_party_sentry_label": "Posten",
-    "third_party_sentry_desc": "Fehlerverfolgung und Leistungsueberwachung (nur mit Analyse-Einwilligung aktiv)",
+    "third_party_sentry_desc": "Anonyme Störungsmeldung. Immer aktiv, auch wenn Sie Analyse-Cookies ablehnen. Ein Bericht enthält keinen Namen, keine Kontonummer und keine Angaben zur Webadresse. Geschwindigkeitsmessungen und Sitzungswiedergabe sind nur aktiv, wenn Sie Analysecookies akzeptieren.",
     "third_party_pusher_label": "Pusher",
     "third_party_pusher_desc": "Fuer Echtzeit-Benachrichtigungen und Nachrichtenfunktionalitaet",
     "third_party_compliance": "Wir waehlen unsere Drittanbieterpartner sorgfaeltig aus und stellen sicher, dass sie die geltenden Datenschutzvorschriften einhalten. Drittanbieter-Cookies unterliegen der jeweiligen Datenschutzrichtlinie des Drittanbieters.",
@@ -810,8 +813,5 @@
     "contact_cta_body": "Nehmen Sie Kontakt mit uns auf und ein Koordinator wird sich bei Ihnen melden. Die meisten Nachrichten werden innerhalb eines Werktages beantwortet.",
     "contact_cta_button": "Kontaktieren Sie uns",
     "community_guidelines_link": "Lesen Sie die Community-Richtlinien"
-  },
-  "custom_document": {
-    "introduction": "Einführung"
   }
 }

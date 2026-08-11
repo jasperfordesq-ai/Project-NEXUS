@@ -19,6 +19,41 @@ function resolveRedirectTarget(res, target) {
 }
 
 /**
+ * Report a fault that this file HANDLES and therefore hides from Sentry.
+ *
+ * 🔴 Why this is needed at all. Sentry's Express error handler only sees errors that
+ * reach the end of the middleware chain. Every branch in `handleApiError` that
+ * returns `true` deliberately stops that from happening — which is right for the
+ * member (they get a real page instead of a stack trace) and wrong for us, because
+ * two of those branches hide genuine server faults: the platform API being
+ * unreachable, and a 5xx turned into a flash message.
+ *
+ * Deliberately narrow. 401, 404 and 4xx are the API behaving correctly and are not
+ * reported; flooding Sentry with expected outcomes is how a fault report becomes
+ * something nobody reads.
+ *
+ * Required lazily so this module does not pull in the Sentry wrapper (and, through
+ * it, `@sentry/node`) at load time — the wrapper is a clean no-op without a DSN,
+ * which is the normal state in development and under test.
+ */
+function reportSwallowedFault(error, req, reason) {
+  try {
+    const { captureError } = require('./sentry');
+    captureError(error, {
+      swallowed_by: 'handleApiError',
+      reason,
+      method: req && req.method,
+      // Path only — never `originalUrl`, which carries the query string and so a
+      // member's search terms.
+      path: req && req.path,
+      status: error && error.status
+    });
+  } catch {
+    // Reporting must never be able to break the response the member is waiting for.
+  }
+}
+
+/**
  * Handle API errors consistently across routes
  * Returns true if error was handled, false if it should be thrown
  *
@@ -40,6 +75,10 @@ function handleApiError(error, req, res, options = {}) {
 
   // Handle service unavailable
   if (error instanceof ApiOfflineError) {
+    // 🔴 REPORTED. The platform API being unreachable is exactly the fault an
+    // operator needs to hear about, and it was silently rendered as a 503 page:
+    // this branch returns true, so Sentry's Express error handler never sees it.
+    reportSwallowedFault(error, req, 'api-offline');
     res.status(503).render('errors/503', { title: 'Service unavailable' });
     return true;
   }
@@ -65,6 +104,13 @@ function handleApiError(error, req, res, options = {}) {
 
     // Handle other API errors with flash message if redirect provided
     if (redirectOnError) {
+      // 🔴 A 5xx from Laravel is a SERVER fault, and this branch turned it into a
+      // flash message and a redirect — visible to the member, invisible to us.
+      // 4xx is deliberately NOT reported: validation failures, conflicts and
+      // permission refusals are the API working correctly.
+      if (error.status >= 500) {
+        reportSwallowedFault(error, req, 'api-5xx-swallowed');
+      }
       if (req.flash) {
         req.flash('error', error.message);
       }

@@ -26,13 +26,44 @@
  * site can carry a search term a member typed.
  */
 
-const DEFAULT_IGNORED_TRANSACTIONS = [
-  // Answered constantly by the container healthcheck and the deploy script. They
-  // are noise, and /health in particular is hit every 10 seconds per colour.
+/**
+ * Operational endpoints whose events are noise: answered constantly by the
+ * container healthcheck and the deploy script, with /health hit every 10 seconds
+ * per colour.
+ *
+ * 🔴 These are filtered in `beforeSend`, NOT via `ignoreTransactions`.
+ * `ignoreTransactions` only ever applies to events of type `transaction`, and
+ * tracing here defaults to a 0 sample rate — so no transaction events are produced
+ * at all and that option filtered precisely nothing. It looked configured and did
+ * nothing, which is the failure mode this codebase keeps finding. If a fault ever
+ * throws inside /health, the un-filtered version would have been one Sentry event
+ * every 10 seconds per colour.
+ */
+const IGNORED_OPERATIONAL_PATHS = [
   '/health',
   '/version',
   '/session/touch'
 ];
+
+/**
+ * Does this event come from one of the operational endpoints above?
+ *
+ * Reads the request URL rather than the transaction name, because an ERROR event
+ * carries a request and usually no transaction. Compares the path only, so a query
+ * string cannot smuggle a match past it.
+ */
+function isOperationalNoise(event) {
+  const raw = event && event.request && typeof event.request.url === 'string'
+    ? event.request.url
+    : '';
+  if (!raw) return false;
+
+  // Strip scheme+host if present, then the query/hash, leaving a bare path.
+  const withoutOrigin = raw.replace(/^https?:\/\/[^/]+/i, '');
+  const path = withoutOrigin.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
+
+  return IGNORED_OPERATIONAL_PATHS.includes(path);
+}
 
 let initialised = false;
 let sentryModule = null;
@@ -67,16 +98,57 @@ function scrubEvent(event) {
     delete event.request.cookies;
     delete event.request.data;
     if (event.request.headers && typeof event.request.headers === 'object') {
-      delete event.request.headers.cookie;
-      delete event.request.headers.Cookie;
-      delete event.request.headers.authorization;
-      delete event.request.headers.Authorization;
+      // 🔴 Case-insensitive, and it now removes the FORWARDED-IP headers too.
+      //
+      // The module comment promised "no IP address", and `sendDefaultPii: false`
+      // does suppress the SDK's own `user.ip_address` — but not request headers.
+      // `app.set('trust proxy', 1)` means Apache forwards `x-forwarded-for`, so a
+      // member's IP address was reaching Sentry inside the headers while the
+      // comment above said it could not.
+      //
+      // Header names arrive lower-cased from Node, but an event can be
+      // hand-assembled, so match on the lower-cased name rather than listing
+      // spellings.
+      const REDACT = new Set([
+        'cookie',
+        'authorization',
+        'x-csrf-token',
+        'x-forwarded-for',
+        'x-real-ip',
+        'cf-connecting-ip',
+        'true-client-ip',
+        'x-client-ip'
+      ]);
+      for (const name of Object.keys(event.request.headers)) {
+        if (REDACT.has(name.toLowerCase())) {
+          delete event.request.headers[name];
+        }
+      }
     }
   }
 
   if (event.user) {
     // Keep nothing but an opaque id if the SDK ever attaches a user.
     event.user = event.user.id ? { id: String(event.user.id) } : undefined;
+    if (event.user) delete event.user.ip_address;
+  }
+
+  // Breadcrumbs carry the same URLs — outgoing HTTP calls to Laravel include the
+  // query string, and a search term is member-entered text.
+  if (Array.isArray(event.breadcrumbs)) {
+    for (const crumb of event.breadcrumbs) {
+      if (!crumb || typeof crumb !== 'object') continue;
+      if (crumb.data && typeof crumb.data === 'object') {
+        for (const key of ['url', 'to', 'from']) {
+          if (typeof crumb.data[key] === 'string') {
+            crumb.data[key] = crumb.data[key].split(/[?#]/)[0];
+          }
+        }
+      }
+      if (typeof crumb.message === 'string' && crumb.message.includes('?')) {
+        crumb.message = crumb.message.replace(/(https?:\/\/[^\s?#]+|\/[^\s?#]*)[?#][^\s]*/g, '$1');
+      }
+    }
   }
 
   return event;
@@ -121,8 +193,15 @@ function initSentry() {
     // performance tracing on every request is a quota decision, not a default.
     sampleRate: 1.0,
     tracesSampleRate: Number.parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || '0') || 0,
-    ignoreTransactions: DEFAULT_IGNORED_TRANSACTIONS,
-    beforeSend: (event) => scrubEvent(event),
+    // Kept for the case where tracing IS deliberately switched on, so operational
+    // transactions stay out. It is NOT what filters error events — see
+    // isOperationalNoise() and the comment on IGNORED_OPERATIONAL_PATHS.
+    ignoreTransactions: IGNORED_OPERATIONAL_PATHS,
+    beforeSend: (event) => {
+      // Drop noise BEFORE scrubbing: no point sanitising an event that is discarded.
+      if (isOperationalNoise(event)) return null;
+      return scrubEvent(event);
+    },
     // The colour this container belongs to, so a fault can be traced to one side
     // of a blue/green pair.
     initialScope: {
@@ -151,9 +230,17 @@ function attachExpressErrorHandler(app) {
 }
 
 /**
- * Report an error explicitly. Used by the existing error logger so a fault is
- * reported through the same path that already logs it, rather than adding a
- * second, divergent notion of "what counts as an error".
+ * Report an error explicitly.
+ *
+ * 🔴 This docblock used to claim it was "used by the existing error logger". It was
+ * not called anywhere in `web-uk/src` — a dead export whose comment asserted a
+ * wiring that did not exist. It is now genuinely called from `errorLogger`
+ * (`src/middleware/error-logging.js`), which is what the claim always described.
+ *
+ * Sentry's Express handler only sees errors that reach the end of the middleware
+ * chain. Anything `asyncRoute`/`handleApiError` deals with and does not re-throw —
+ * the majority of handled faults — never reaches it, so without this path those
+ * were logged to stdout and reported nowhere.
  */
 function captureError(error, context = {}) {
   if (!initialised || !sentryModule) return false;
@@ -161,12 +248,39 @@ function captureError(error, context = {}) {
   return true;
 }
 
+/**
+ * Flush queued events, with a bounded wait.
+ *
+ * 🔴 Exists because `process.exit()` does not wait for Sentry. The
+ * `uncaughtException` handler in `src/server.js` called `console.error` then
+ * `process.exit(1)` synchronously; Sentry's own handler had captured the exception,
+ * but transmission is asynchronous, so the process died first and the crash — the
+ * single most valuable event this service can send — usually never arrived.
+ *
+ * Resolves rather than rejecting: a failure to flush must not itself prevent the
+ * exit, or a broken network would leave the process wedged instead of restarting.
+ *
+ * @param {number} timeoutMs upper bound on how long to wait
+ * @returns {Promise<void>}
+ */
+function flushSentry(timeoutMs = 2000) {
+  if (!initialised || !sentryModule || typeof sentryModule.flush !== 'function') {
+    return Promise.resolve();
+  }
+  return sentryModule
+    .flush(timeoutMs)
+    .then(() => undefined)
+    .catch(() => undefined);
+}
+
 module.exports = {
   initSentry,
   attachExpressErrorHandler,
   captureError,
+  flushSentry,
   isEnabled,
   // Exported for tests. Scrubbing is the part that must not silently regress.
   scrubEvent,
-  DEFAULT_IGNORED_TRANSACTIONS
+  isOperationalNoise,
+  IGNORED_OPERATIONAL_PATHS
 };

@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Réamhrá"
+  },
   "terms": {
     "meta_description": "Téarmaí agus coinníollacha a rialaíonn úsáid ár n-ardán bainc ama pobail.",
     "page_title": "Tearmai Seirbhise",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Comharthai fiorasithe agus seisiuin usaideoiri",
     "cat_essential_ex2": "Comharthai cosanta CSRF",
     "cat_essential_ex3": "Roghanna slandala",
-    "cat_essential_ex4": "Cothromaniiocht ualai",
+    "cat_essential_ex4": "Comhardú luchtaithe agus tuairiscí fabhtanna gan ainm",
     "cat_analytics_name": "Fianain Anailisiochta",
     "cat_analytics_desc": "Cuidionn na fianain seo linn a thuiscint conas a idirghniomhaionn cuairteoiri leis an ardan tri fhaisneais a bhailiiu agus a thuairisciu go hanaithnid. Cuidionn se seo linn taithi an ardain a fheabhsu do gach duine.",
     "cat_analytics_ex1": "Leathanaigh ar tugadh cuairt orthu agus am a caitheadh",
     "cat_analytics_ex2": "Gneith a usaidtear is minice",
-    "cat_analytics_ex3": "Rianaithe earraidi agus monatoriacht feidhmiiochta",
+    "cat_analytics_ex3": "Tomhais luais agus athimirt seisiúin",
     "cat_analytics_ex4": "Staitisticii usaide comhiomlanaithe",
     "cat_preference_name": "Fianain Roghanna",
     "cat_preference_desc": "Cuimhnionn na fianain seo ar do roghanna agus do shocruithe chun taithi nios pearsantaithe a sholathar. Ligeann siad don ardan cuimhneamh ar roghanna a dheanann tu cosul le teama, teanga agus roghanna taispeana.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Cuimhnionn ar do phobal/tiononta roghnaithe",
     "cookie_locale_purpose": "Stiorann rogha teanga agus formaid reigiunach",
     "cookie_consent_purpose": "Stiorann do roghanna toilithe fianain (catagoir glactha)",
-    "cookie_sentry_purpose": "Rianaithe earraidi agus monatoriocht feidhmiiochta (le toiliiu anailisiochta amhain)",
+    "cookie_sentry_purpose": "Tuairiscí locht gan ainm. Seolta i gcónaí, fiú má dhiúltaíonn tú fianáin anailísíochta, ionas gur féidir linn a shocrú cad a bhriseann. Ní sheoltar tomhais luais agus athimirt seisiúin ach amháin má ghlacann tú le fianáin anailísíochta.",
     "third_party_title": "Fianain Triiiu Pairtithe",
     "third_party_intro": "I gcasanna airithe, usaidimid seirbhisi triiiu pairtithe a d'fheadfadh a gcuid fianain fein a shocriu. Airaitear orthu seo:",
     "third_party_sentry_label": "Sentry",
-    "third_party_sentry_desc": "Rianaithe earraidi agus monatoriocht feidhmiiochta (gniomhach le toiliiu anailisiochta amhain)",
+    "third_party_sentry_desc": "Tuairisciú locht gan ainm. Gníomhach i gcónaí, fiú má dhiúltaíonn tú fianáin anailíse. Níl aon ainm, uimhir chuntais ná sonraí seoltaí gréasáin i dtuairisc. Ní bheidh tomhais luais agus athseinm seisiún gníomhach ach amháin má ghlacann tú le fianáin anailísíochta.",
     "third_party_pusher_label": "Brúiteoir",
     "third_party_pusher_desc": "Le haghaidh fograi fior-ama agus feidhmiiocht teachtaireachta",
     "third_party_compliance": "Roghnaimid ar bpairtneirti triiiu pairtiihe go curamach agus cinntiomid go gcloionn siad le rialachan cosanta sonrai infheidhmhe. Rialaionn polasai priobhaideachta an triiiu pairtiihe faoi seach na fianain triiiu pairtithe.",
@@ -404,10 +407,10 @@
     "changes_count": "{{count}} athru",
     "legend_removed": "Bainte",
     "legend_added": "Curtha leis",
-    "changes_count_few": "{{count}} athru",
-    "changes_count_many": "{{count}} athru",
     "changes_count_one": "{{count}} athru",
     "changes_count_other": "{{count}} athru",
+    "changes_count_few": "{{count}} athru",
+    "changes_count_many": "{{count}} athru",
     "changes_count_two": "{{count}} athru"
   },
   "platform": {
@@ -498,10 +501,10 @@
     "accept_aria": "Glac le gach doiciméad dlíthiúil nuashonraithe agus lean ar aghaidh",
     "accepting": "Ag Glacadh…",
     "accept_continue": "Glac & Lean Ar Aghaidh",
-    "subtitle_other_few": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
-    "subtitle_other_many": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
     "subtitle_other_one": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
     "subtitle_other_other": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
+    "subtitle_other_few": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
+    "subtitle_other_many": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil.",
     "subtitle_other_two": "Tá {{count}} doiciméad nuashonraithe. Athbhreithnigh agus glac leo chun leanúint ar aghaidh le do thoil."
   },
   "custom": {
@@ -816,8 +819,5 @@
     "contact_cta_body": "Bí i dteagmháil agus gheobhaidh comhordaitheoir ar ais chugat. Freagraítear formhór na dteachtaireachtaí laistigh de lá oibre amháin.",
     "contact_cta_button": "Déan teagmháil linn",
     "community_guidelines_link": "Léigh na Treoirlínte Pobail"
-  },
-  "custom_document": {
-    "introduction": "Réamhrá"
   }
 }

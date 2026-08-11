@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Introducción"
+  },
   "terms": {
     "meta_description": "Términos y condiciones que rigen el uso de nuestra plataforma comunitaria de banco de tiempo.",
     "page_title": "Términos de Servicio",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Autenticación de usuario y tokens de sesión",
     "cat_essential_ex2": "Tokens de protección CSRF",
     "cat_essential_ex3": "Preferencias de seguridad",
-    "cat_essential_ex4": "Balance de carga",
+    "cat_essential_ex4": "Equilibrio de carga e informes de fallos anónimos",
     "cat_analytics_name": "Cookies de Analíticas",
     "cat_analytics_desc": "Estas cookies nos ayudan a entender cómo los visitantes interactúan con la plataforma recopilando e informando datos de forma anónima. Esto nos ayuda a mejorar la experiencia de la plataforma para todos.",
     "cat_analytics_ex1": "Páginas visitadas y tiempo empleado",
     "cat_analytics_ex2": "Funciones más usadas",
-    "cat_analytics_ex3": "Seguimiento de errores y monitoreo de rendimiento",
+    "cat_analytics_ex3": "Mediciones de velocidad y repetición de sesiones",
     "cat_analytics_ex4": "Estadísticas de uso agregadas",
     "cat_preference_name": "Cookies de Preferencias",
     "cat_preference_desc": "Estas cookies recuerdan tus preferencias y ajustes para proporcionar una experiencia más personalizada. Permiten que la plataforma recuerde las opciones que haces como tema, idioma y opciones de visualización.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Recuerda tu comunidad/tenant seleccionado",
     "cookie_locale_purpose": "Almacena preferencia de idioma y formato regional",
     "cookie_consent_purpose": "Almacena tus preferencias de consentimiento de cookies (categorías aceptadas)",
-    "cookie_sentry_purpose": "Seguimiento de errores y monitoreo de rendimiento (solo con consentimiento de analíticas)",
+    "cookie_sentry_purpose": "Informes de fallos anónimos. Siempre se envían, incluso si rechazas las cookies analíticas, para que podamos arreglar lo que falla. Las mediciones de velocidad y la repetición de la sesión solo se envían si acepta las cookies analíticas.",
     "third_party_title": "Cookies de Terceros",
     "third_party_intro": "En algunos casos, usamos servicios de terceros que pueden establecer sus propias cookies. Estos servicios incluyen:",
     "third_party_sentry_label": "Centinela",
-    "third_party_sentry_desc": "Seguimiento de errores y monitoreo de rendimiento (solo activo con consentimiento de analíticas)",
+    "third_party_sentry_desc": "Informe anónimo de fallos. Siempre activo, incluso si rechazas las cookies de análisis. Un informe no contiene nombre, número de cuenta ni detalles de dirección web. Las mediciones de velocidad y la repetición de sesiones solo están activas si acepta las cookies de análisis.",
     "third_party_pusher_label": "Arribista",
     "third_party_pusher_desc": "Para notificaciones en tiempo real y funcionalidad de mensajería",
     "third_party_compliance": "Seleccionamos cuidadosamente a nuestros socios de terceros y nos aseguramos de que cumplan con las regulaciones de protección de datos aplicables. Las cookies de terceros se rigen por la política de privacidad del respectivo tercero.",
@@ -404,9 +407,9 @@
     "changes_count": "{{count}} cambios",
     "legend_removed": "Eliminado",
     "legend_added": "Anadido",
-    "changes_count_many": "{{count}} cambios",
     "changes_count_one": "{{count}} cambios",
-    "changes_count_other": "{{count}} cambios"
+    "changes_count_other": "{{count}} cambios",
+    "changes_count_many": "{{count}} cambios"
   },
   "platform": {
     "effective_date": "Vigente desde {{date}}",
@@ -496,9 +499,9 @@
     "accept_aria": "Aceptar todos los documentos legales actualizados y continuar",
     "accepting": "Aceptando…",
     "accept_continue": "Aceptar y Continuar",
-    "subtitle_other_many": "{{count}} documentos han sido actualizados. Por favor, revíselos y acéptelos para continuar.",
     "subtitle_other_one": "{{count}} documentos han sido actualizados. Por favor, revíselos y acéptelos para continuar.",
-    "subtitle_other_other": "{{count}} documentos han sido actualizados. Por favor, revíselos y acéptelos para continuar."
+    "subtitle_other_other": "{{count}} documentos han sido actualizados. Por favor, revíselos y acéptelos para continuar.",
+    "subtitle_other_many": "{{count}} documentos han sido actualizados. Por favor, revíselos y acéptelos para continuar."
   },
   "custom": {
     "effective_label": "Vigente: {{date}}",
@@ -812,8 +815,5 @@
     "contact_cta_body": "Ponte en contacto y un coordinador se comunicará contigo. La mayoría de los mensajes se responden dentro de un día hábil.",
     "contact_cta_button": "Contáctenos",
     "community_guidelines_link": "Lea las pautas de la comunidad"
-  },
-  "custom_document": {
-    "introduction": "Introducción"
   }
 }

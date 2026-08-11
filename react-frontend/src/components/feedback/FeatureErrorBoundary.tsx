@@ -54,8 +54,12 @@ export class FeatureErrorBoundary extends Component<
       logError(`Feature error in ${this.props.featureName}`, { error, errorInfo });
     }
 
-    // Production crash visibility (consent-gated — captureSentryException no-ops
-    // unless the user granted analytics consent). Mirrors ErrorBoundary.tsx so a
+    // Production crash visibility. 🔴 NOT consent-gated: this comment used to say
+    // "captureSentryException no-ops unless the user granted analytics consent",
+    // which was true when it was written and became false the same day crash
+    // reporting was deliberately decoupled from analytics consent. A crash is
+    // reported whatever the member chose; their identity, performance tracing and
+    // session replay are what stay gated. Mirrors ErrorBoundary.tsx so a
     // render crash in an authenticated feature route (Wallet, Listings, Events,
     // Groups, Messages — the ~169 <FeatureErrorBoundary> wraps) surfaces in
     // Sentry instead of vanishing. The feature tag makes crashes filterable per

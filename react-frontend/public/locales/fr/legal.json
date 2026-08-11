@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Introduction"
+  },
   "terms": {
     "meta_description": "Conditions générales d'utilisation de notre plateforme communautaire de banque de temps.",
     "page_title": "Conditions d'utilisation",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Jetons d'authentification et de session utilisateur",
     "cat_essential_ex2": "Jetons de protection CSRF",
     "cat_essential_ex3": "Preferences de securite",
-    "cat_essential_ex4": "Repartition de charge",
+    "cat_essential_ex4": "Équilibrage de charge et rapports de pannes anonymes",
     "cat_analytics_name": "Cookies d'analyse",
     "cat_analytics_desc": "Ces cookies nous aident a comprendre comment les visiteurs interagissent avec la plateforme en collectant et rapportant des informations de maniere anonyme. Cela nous aide a ameliorer l'experience de la plateforme pour tous.",
     "cat_analytics_ex1": "Pages visitees et temps passe",
     "cat_analytics_ex2": "Fonctionnalites les plus utilisees",
-    "cat_analytics_ex3": "Suivi des erreurs et surveillance des performances",
+    "cat_analytics_ex3": "Mesures de vitesse et relecture de session",
     "cat_analytics_ex4": "Statistiques d'utilisation agregees",
     "cat_preference_name": "Cookies de preference",
     "cat_preference_desc": "Ces cookies memorisent vos preferences et parametres pour offrir une experience plus personnalisee. Ils permettent a la plateforme de se souvenir de vos choix tels que le theme, la langue et les options d'affichage.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Memorise votre communaute/tenant selectionne",
     "cookie_locale_purpose": "Stocke la preference de langue et de format regional",
     "cookie_consent_purpose": "Stocke vos preferences de consentement aux cookies (categories acceptees)",
-    "cookie_sentry_purpose": "Suivi des erreurs et surveillance des performances (uniquement avec le consentement d'analyse)",
+    "cookie_sentry_purpose": "Rapports de pannes anonymes. Toujours envoyé, même si vous refusez les cookies d'analyse, afin que nous puissions réparer ce qui ne fonctionne pas. Les mesures de vitesse et la relecture de session ne sont envoyées que si vous acceptez les cookies d'analyse.",
     "third_party_title": "Cookies tiers",
     "third_party_intro": "Dans certains cas, nous utilisons des services tiers qui peuvent placer leurs propres cookies. Ces services comprennent :",
     "third_party_sentry_label": "Sentinelle",
-    "third_party_sentry_desc": "Suivi des erreurs et surveillance des performances (actif uniquement avec le consentement d'analyse)",
+    "third_party_sentry_desc": "Rapport de panne anonyme. Toujours actif, même si vous refusez les cookies d'analyse. Un rapport ne contient aucun nom, aucun numéro de compte et aucune adresse Web. Les mesures de vitesse et la relecture de session ne sont actives que si vous acceptez les cookies d'analyse.",
     "third_party_pusher_label": "Poussoir",
     "third_party_pusher_desc": "Pour les notifications en temps reel et la fonctionnalite de messagerie",
     "third_party_compliance": "Nous selectionnons soigneusement nos partenaires tiers et nous assurons qu'ils respectent les reglementations applicables en matiere de protection des donnees. Les cookies tiers sont regis par la politique de confidentialite du tiers respectif.",
@@ -404,9 +407,9 @@
     "changes_count": "{{count}} modifications",
     "legend_removed": "Supprime",
     "legend_added": "Ajoute",
-    "changes_count_many": "{{count}} modifications",
     "changes_count_one": "{{count}} modifications",
-    "changes_count_other": "{{count}} modifications"
+    "changes_count_other": "{{count}} modifications",
+    "changes_count_many": "{{count}} modifications"
   },
   "platform": {
     "effective_date": "En vigueur depuis le {{date}}",
@@ -496,9 +499,9 @@
     "accept_aria": "Accepter tous les documents juridiques mis à jour et continuer",
     "accepting": "Acceptation en cours…",
     "accept_continue": "Accepter et continuer",
-    "subtitle_other_many": "{{count}} documents ont été mis à jour. Veuillez les consulter et les accepter pour continuer.",
     "subtitle_other_one": "{{count}} documents ont été mis à jour. Veuillez les consulter et les accepter pour continuer.",
-    "subtitle_other_other": "{{count}} documents ont été mis à jour. Veuillez les consulter et les accepter pour continuer."
+    "subtitle_other_other": "{{count}} documents ont été mis à jour. Veuillez les consulter et les accepter pour continuer.",
+    "subtitle_other_many": "{{count}} documents ont été mis à jour. Veuillez les consulter et les accepter pour continuer."
   },
   "custom": {
     "effective_label": "En vigueur : {{date}}",
@@ -812,8 +815,5 @@
     "contact_cta_body": "Prenez contact et un coordinateur vous répondra. La plupart des messages reçoivent une réponse dans un délai d'un jour ouvrable.",
     "contact_cta_button": "Contactez-nous",
     "community_guidelines_link": "Lire les directives de la communauté"
-  },
-  "custom_document": {
-    "introduction": "Introduction"
   }
 }

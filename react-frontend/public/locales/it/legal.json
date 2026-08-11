@@ -1,4 +1,7 @@
 {
+  "custom_document": {
+    "introduction": "Introduzione"
+  },
   "terms": {
     "meta_description": "Termini e condizioni che regolano l'uso della nostra piattaforma comunitaria di banca del tempo.",
     "page_title": "Termini di servizio",
@@ -238,12 +241,12 @@
     "cat_essential_ex1": "Autenticazione utente e token di sessione",
     "cat_essential_ex2": "Token di protezione CSRF",
     "cat_essential_ex3": "Preferenze di sicurezza",
-    "cat_essential_ex4": "Bilanciamento del carico",
+    "cat_essential_ex4": "Bilanciamento del carico e segnalazioni di guasti anonime",
     "cat_analytics_name": "Cookie analitici",
     "cat_analytics_desc": "Questi cookie ci aiutano a capire come i visitatori interagiscono con la piattaforma, raccogliendo e segnalando informazioni in modo anonimo. Ci aiutano a migliorare l'esperienza sulla piattaforma per tutti.",
     "cat_analytics_ex1": "Pagine visitate e tempo trascorso",
     "cat_analytics_ex2": "Funzionalita utilizzate piu frequentemente",
-    "cat_analytics_ex3": "Tracciamento degli errori e monitoraggio delle prestazioni",
+    "cat_analytics_ex3": "Misurazioni della velocità e riproduzione della sessione",
     "cat_analytics_ex4": "Statistiche aggregate sull'utilizzo",
     "cat_preference_name": "Cookie di preferenza",
     "cat_preference_desc": "Questi cookie ricordano le Sue preferenze e impostazioni per fornire un'esperienza piu personalizzata. Consentono alla piattaforma di ricordare le scelte effettuate, come tema, lingua e opzioni di visualizzazione.",
@@ -273,11 +276,11 @@
     "cookie_tenant_purpose": "Ricorda la Sua comunita/tenant selezionata",
     "cookie_locale_purpose": "Memorizza la preferenza di lingua e formato regionale",
     "cookie_consent_purpose": "Memorizza le Sue preferenze di consenso ai cookie (categorie accettate)",
-    "cookie_sentry_purpose": "Tracciamento degli errori e monitoraggio delle prestazioni (solo con consenso analitico)",
+    "cookie_sentry_purpose": "Segnalazioni di guasti anonime. Inviato sempre, anche se rifiuti i cookie analitici, così possiamo correggere ciò che si interrompe. Le misurazioni della velocità e la riproduzione della sessione vengono inviate solo se si accettano i cookie analitici.",
     "third_party_title": "Cookie di terze parti",
     "third_party_intro": "In alcuni casi, utilizziamo servizi di terze parti che possono impostare i propri cookie. Questi servizi includono:",
     "third_party_sentry_label": "Sentinella",
-    "third_party_sentry_desc": "Tracciamento degli errori e monitoraggio delle prestazioni (attivo solo con consenso analitico)",
+    "third_party_sentry_desc": "Segnalazione anonima dei guasti. Sempre attivo, anche se rifiuti i cookie analitici. Un rapporto non contiene nome, numero di conto e nessun dettaglio di indirizzo web. Le misurazioni della velocità e la riproduzione della sessione sono attivi solo se accetti i cookie analitici.",
     "third_party_pusher_label": "Spintore",
     "third_party_pusher_desc": "Per le notifiche in tempo reale e la funzionalita di messaggistica",
     "third_party_compliance": "Selezioniamo con cura i nostri partner di terze parti e ci assicuriamo che rispettino le normative applicabili sulla protezione dei dati. I cookie di terze parti sono disciplinati dalla rispettiva informativa sulla privacy della terza parte.",
@@ -404,9 +407,9 @@
     "changes_count": "{{count}} modifiche",
     "legend_removed": "Rimosso",
     "legend_added": "Aggiunto",
-    "changes_count_many": "{{count}} modifiche",
     "changes_count_one": "{{count}} modifiche",
-    "changes_count_other": "{{count}} modifiche"
+    "changes_count_other": "{{count}} modifiche",
+    "changes_count_many": "{{count}} modifiche"
   },
   "platform": {
     "effective_date": "In vigore dal {{date}}",
@@ -496,9 +499,9 @@
     "accept_aria": "Accetta tutti i documenti legali aggiornati e continua",
     "accepting": "Accettazione in corso…",
     "accept_continue": "Accetta e Continua",
-    "subtitle_other_many": "{{count}} documenti sono stati aggiornati. Esaminali e accettali per continuare.",
     "subtitle_other_one": "{{count}} documenti sono stati aggiornati. Esaminali e accettali per continuare.",
-    "subtitle_other_other": "{{count}} documenti sono stati aggiornati. Esaminali e accettali per continuare."
+    "subtitle_other_other": "{{count}} documenti sono stati aggiornati. Esaminali e accettali per continuare.",
+    "subtitle_other_many": "{{count}} documenti sono stati aggiornati. Esaminali e accettali per continuare."
   },
   "custom": {
     "effective_label": "In vigore dal: {{date}}",
@@ -812,8 +815,5 @@
     "contact_cta_body": "Mettiti in contatto e un coordinatore ti ricontatterà. Alla maggior parte dei messaggi viene data risposta entro un giorno lavorativo.",
     "contact_cta_button": "Contattaci",
     "community_guidelines_link": "Leggi le Linee guida della community"
-  },
-  "custom_document": {
-    "introduction": "Introduzione"
   }
 }
