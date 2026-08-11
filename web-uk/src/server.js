@@ -93,6 +93,7 @@ const { buildAccountLinks } = require('./lib/account-links');
 const { localization } = require('./middleware/localization');
 const { tenantFeatureGate } = require('./middleware/tenant-feature-gates');
 const { legalGate } = require('./middleware/legal-gate');
+const { recordCookieConsent } = require('./lib/api');
 const { tenantRouting } = require('./middleware/tenant-routing');
 const { requestTenantContext } = require('./middleware/request-tenant-context');
 const { isValidEmail } = require('./lib/inputValidator');
@@ -728,8 +729,15 @@ app.post('/session/touch', doubleCsrfProtection, (req, res) => {
 
 app.get('/cookies', (req, res) => {
   res.render('cookie-settings', {
-    title: 'Cookies',
+    // Was the hardcoded English string 'Cookies'. cookie_settings.title already
+    // exists and is translated into all eleven locales, so the page title was the
+    // only untranslated thing on an otherwise fully translated page.
+    title: res.locals.t('cookie_settings.title'),
+    titleKey: 'cookie_settings.title',
     activeNav: '',
+    // Already computed by the shell middleware; the page was recomputing nothing
+    // and simply not receiving it.
+    hasCookieChoice: res.locals.alphaHasCookieChoice,
     status: typeof req.query.status === 'string' ? req.query.status : '',
     analyticsOn: (req.cookies[ACCESSIBLE_COOKIE_NAME] || req.cookies[LEGACY_ALPHA_COOKIE_NAME]) === 'all'
   });
@@ -747,6 +755,33 @@ app.post('/cookie-consent', doubleCsrfProtection, (req, res) => {
     secure: NODE_ENV === 'production',
     httpOnly: false
   });
+
+  // 🔴 Persist the decision as a GDPR audit row, and NEVER let that affect the
+  // response. Blade records one for every choice; web-uk only set the browser
+  // cookie, so a signed-out visitor's consent existed nowhere but their own
+  // device. The cookie above is already set by this point and the redirect below
+  // happens regardless — a slow or failing API must not cost the member their
+  // choice, and a consent banner that errors is worse than one that records late.
+  //
+  // Deliberately not awaited: the member gets their redirect immediately.
+  //
+  // 🔴 BOTH guards are needed, and the try/catch is not paranoia — it was found by
+  // a test. `.catch()` only handles a rejected promise; if the helper itself throws
+  // synchronously (or is not a function at all, which is what happens when a test
+  // mocks this module without it) the throw escapes and the whole handler 500s. A
+  // signed-out visitor clicking "reject analytics" would get an error page and lose
+  // their choice — the exact opposite of what this block promises.
+  try {
+    const consentAudit = recordCookieConsent(
+      { analytics: analyticsOn, marketing: false, functional: true },
+      req.signedCookies?.token || ''
+    );
+    if (consentAudit && typeof consentAudit.catch === 'function') {
+      void consentAudit.catch(() => { /* best-effort; the choice is already honoured */ });
+    }
+  } catch {
+    /* best-effort audit; never let it cost the member their choice */
+  }
 
   if (choice === 'save') {
     return redirectTo(res, '/cookies?status=saved');

@@ -3969,6 +3969,26 @@ Route::middleware(['federation.api', 'throttle:nexus-route-200-per-1m'])->group(
 // without authentication — the React useLegalDocument hook fetches
 // these with skipAuth:true for all visitors including non-logged-in users.
 // ============================================
+// ============================================
+// PUBLIC COOKIE CONSENT — No auth required
+//
+// 🔴 ADDITIVE. `POST /api/cookie-consent` (line ~3813) stays exactly where it is,
+// inside the auth:sanctum group. Moving it would change behaviour for every
+// existing caller; this adds the public door beside it instead.
+//
+// The controller has always supported anonymous consent — `store()` uses
+// `getOptionalUserId()` and `CookieConsentService::storeConsent()` accepts a null
+// user, keying the record on tenant + IP. Only the route's middleware stood in the
+// way, which meant a signed-out visitor's cookie choice was never recorded
+// anywhere: the accessible frontend set a cookie in the browser and that was all.
+// Blade persists a GDPR audit row for the same action, so the two frontends
+// disagreed about whether a consent decision is auditable.
+//
+// Throttled per IP because it is unauthenticated and writes a row.
+// ============================================
+Route::post('/v2/cookie-consent', [\App\Http\Controllers\Api\CookieConsentController::class, 'store'])
+    ->middleware('throttle:nexus-route-20-per-1m');
+
 Route::get('/v2/legal/versions/compare', [\App\Http\Controllers\Api\LegalController::class, 'apiCompareVersions']);
 Route::get('/v2/legal/version/{versionId}', [\App\Http\Controllers\Api\LegalController::class, 'apiGetVersion']);
 Route::get('/v2/legal/{type}/versions', [\App\Http\Controllers\Api\LegalController::class, 'apiGetVersions']);

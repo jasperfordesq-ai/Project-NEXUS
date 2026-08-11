@@ -5,27 +5,27 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-11T09:50:30.978Z
-- Laravel commit SHA: `52efa1e6f231b8acd2cc921f4d84d741ca97a502`
-- Web UK repository commit SHA: `52efa1e6f231b8acd2cc921f4d84d741ca97a502`
+- Generated: 2026-08-11T14:02:15.482Z
+- Laravel commit SHA: `d20a097293dda9c3ece905482657a14f618aa452`
+- Web UK repository commit SHA: `d20a097293dda9c3ece905482657a14f618aa452`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 693
+- Contracts: 694
 - Laravel OpenAPI matches: 466
-- Missing OpenAPI matches: 227
-- Direct Laravel route declarations omitted from OpenAPI: 227
+- Missing OpenAPI matches: 228
+- Direct Laravel route declarations omitted from OpenAPI: 228
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 379
+- State-changing contracts: 380
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 0
 - Unique helpers without direct API-helper assertions: 0
 - State-changing rows without direct API-helper assertions: 0
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `f322f9b57a496c41fdea97f5d394c0b3efcddfb8862265ef53565889a0c3f454`
+- API source SHA-256: `51aa17f01089d13c5c8e7d78ecd5a4a585b6d15034af41b3c5703986f58106ed`
 - Laravel OpenAPI SHA-256: `a1ccb5360deda28cf179065ebf6e5273f8c9ac50f63322de44fffe2e53b8de5b`
-- Laravel API routes SHA-256: `3b3cd0d392990c64f754500a1303d45e172417a77cc26d9c25c74b5bcf470b44`
+- Laravel API routes SHA-256: `0e07725eb0966dd8fddbd6e55d25213434246b8a53579c1b2690ab890e76a02d`
 
 The JSON companion contains the full request/response, status/error, redirect, side-effect, cleanup, Laravel implementation, consumer, and test fields.
 
@@ -97,6 +97,7 @@ Rows below have test references but no test that directly names and exercises th
 | DELETE | `/api/v2/conversations/{param}/participants/{param}` | `callConversationApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/messages.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/conversations/groups` | `callConversationApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/messages.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/conversations/groups` | `callConversationApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/messages.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/cookie-consent` | `recordCookieConsent` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/server.js | tests/api.test.js<br>tests/cookie-consent-audit.test.js |
 | GET | `/api/v2/coupons` | `callCouponApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/coupons.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/coupons/{param}` | `callCouponApi` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/coupons.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/courses` | `callCourseApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/courses.js | tests/api.test.js<br>tests/runtime/courses-mutation.spec.js<br>tests/shared-accessible-shell.test.js |

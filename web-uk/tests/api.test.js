@@ -7549,6 +7549,68 @@ describe('API Request Functions', () => {
     });
   });
 
+
+  describe('Laravel cookie consent helper', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('posts to the PUBLIC v2 endpoint, not the authenticated legacy one', async () => {
+      jsonOnce({ data: { id: 1 } });
+
+      await api.recordCookieConsent({ analytics: true });
+
+      // 🔴 /api/cookie-consent sits inside the auth:sanctum group, so a signed-out
+      // visitor gets 401 and their decision is recorded nowhere. /api/v2/cookie-consent
+      // is the public door added for exactly this.
+      expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:5000/api/v2/cookie-consent');
+      expect(mockFetch.mock.calls[0][0]).not.toBe('http://localhost:5000/api/cookie-consent');
+    });
+
+    it('sends no Authorization header for a signed-out visitor', async () => {
+      jsonOnce({ data: { id: 1 } });
+
+      await api.recordCookieConsent({ analytics: false });
+
+      const options = mockFetch.mock.calls[0][1];
+      expect(options.headers && options.headers.Authorization).toBeUndefined();
+    });
+
+    it('attaches the bearer token when the visitor is signed in', async () => {
+      jsonOnce({ data: { id: 1 } });
+
+      // So the row carries a user id rather than only an IP.
+      await api.recordCookieConsent({ analytics: true }, 'test-token');
+
+      expect(mockFetch.mock.calls[0][1].headers.Authorization).toBe('Bearer test-token');
+    });
+
+    it('defaults marketing off and functional on, and coerces to booleans', async () => {
+      jsonOnce({ data: { id: 1 } });
+
+      await api.recordCookieConsent({ analytics: 'yes' });
+
+      expect(mockFetch.mock.calls[0][1].body).toBe(
+        JSON.stringify({ analytics: true, marketing: false, functional: true })
+      );
+    });
+
+    it('records an explicit rejection rather than sending nothing', async () => {
+      jsonOnce({ data: { id: 1 } });
+
+      // A rejection is a consent decision and has to be auditable too.
+      await api.recordCookieConsent({ analytics: false });
+
+      expect(mockFetch.mock.calls[0][1].body).toBe(
+        JSON.stringify({ analytics: false, marketing: false, functional: true })
+      );
+    });
+  });
+
   describe('Laravel legal document helpers', () => {
     function jsonOnce(body) {
       mockFetch.mockResolvedValueOnce({

@@ -833,6 +833,34 @@ async function getLegalVersions(type) {
  * (`EnsureLegalAcceptance::EXEMPT_PREFIXES`), because a member who is blocked must
  * always be able to find out why and do something about it.
  */
+/**
+ * Record a cookie-consent decision as a GDPR audit row.
+ *
+ * 🔴 Unauthenticated on purpose, and that is the whole point of this helper.
+ * Blade persists a `cookie_consents` row for every choice (via
+ * `CookieConsentService::storeConsent`, which accepts a null user and keys on
+ * tenant + IP). web-uk only ever set a browser cookie, so a signed-out visitor's
+ * decision was recorded NOWHERE — the two accessible frontends disagreed about
+ * whether a consent decision is auditable at all.
+ *
+ * `POST /api/v2/cookie-consent` is the public door added for this; the older
+ * `POST /api/cookie-consent` stays inside the auth group untouched.
+ *
+ * A bearer token is passed when there is one, so a signed-in member's row carries
+ * their id rather than only an IP.
+ */
+async function recordCookieConsent({ analytics, marketing = false, functional = true }, token = '') {
+  return request('/api/v2/cookie-consent', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: JSON.stringify({
+      analytics: Boolean(analytics),
+      marketing: Boolean(marketing),
+      functional: Boolean(functional)
+    })
+  });
+}
+
 async function getLegalAcceptanceStatus(token) {
   return request('/api/v2/legal/acceptance/status', {
     headers: { Authorization: `Bearer ${token}` }
@@ -3816,6 +3844,7 @@ module.exports = {
   getLegalVersions,
   getLegalVersion,
   compareLegalVersions,
+  recordCookieConsent,
   getLegalAcceptanceStatus,
   acceptAllLegalDocuments,
   callNewsletterApi,
