@@ -230,8 +230,7 @@ router.get('/login', (req, res) => {
     successMessage: statusMessage(req, status, LOGIN_SUCCESS_STATUS_KEYS)
       || legacySuccessMessage
       || null,
-    error: statusMessage(req, status, LOGIN_ERROR_STATUS_KEYS) || null,
-    turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+    error: statusMessage(req, status, LOGIN_ERROR_STATUS_KEYS) || null
   });
 });
 
@@ -244,15 +243,22 @@ router.post('/login', asyncRoute(async (req, res) => {
       title: translate(req, 'auth.login_title'),
       error: 'Enter your email, password and tenant',
       values: { email, tenant_slug: tenantSlug },
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
-      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
 
   // Turnstile gate intentionally removed from login (2026-05-15). It was
   // blocking legitimate members on browsers that couldn't reach
   // challenges.cloudflare.com. Express-rate-limit (10/15min on auth routes)
-  // is the active defence here. Registration + contact keep Turnstile.
+  // is the active defence here.
+  //
+  // 🔴 Corrected 2026-08-11 — the previous wording ("Registration + contact keep
+  // Turnstile") was wrong on both counts. Registration's gate was removed
+  // server-side on 2026-05-16 (RegistrationService.php:117-120 explains the
+  // replacement: honeypot + minimum-form-time + per-IP throttle + admin
+  // approval), and contact never had a widget in this frontend at all even
+  // though Laravel enforces one. Contact is now the ONLY form here with
+  // Turnstile, and the site key is passed to that view alone.
 
   clearPendingTwoFactor(req);
 
@@ -315,8 +321,7 @@ router.post('/login', asyncRoute(async (req, res) => {
       loginStatus,
       error: errorMessage,
       values: { email, tenant_slug: tenantSlug },
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
-      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
 }));
@@ -387,8 +392,7 @@ async function handleTwoFactorPost(req, res) {
       error: translate(req, errorKey),
       allowTrustedDevice,
       trustedDeviceDays,
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
-      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
 }
@@ -405,8 +409,7 @@ router.get('/login/two-factor', (req, res) => {
     error: statusMessage(req, req.query.status, TWO_FACTOR_ERROR_STATUS_KEYS),
     allowTrustedDevice: req.session.pending2faAllowTrustedDevice !== false,
     trustedDeviceDays: Number(req.session.pending2faTrustedDeviceDays) || 30,
-    csrfToken: req.csrfToken ? req.csrfToken() : '',
-    turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+    csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 });
 
@@ -766,8 +769,7 @@ function renderForgotPassword(req, res) {
     forgotSent: status === 'forgot-sent',
     errors: errorKey ? [{ text: translate(req, errorKey), href: '#email' }] : [],
     fieldErrors: invalidEmail ? { email: translate(req, errorKey) } : {},
-    formAction: '/login/forgot-password',
-    turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+    formAction: '/login/forgot-password'
   });
 }
 
@@ -805,8 +807,7 @@ async function handleForgotPasswordPost(req, res) {
       fieldErrors,
       values: { email, tenant_slug: tenantSlug },
       formAction,
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
-      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
 
@@ -899,8 +900,7 @@ async function handleResetPasswordPost(req, res) {
       fieldErrors: {},
       resetToken: token,
       formAction,
-      csrfToken: req.csrfToken ? req.csrfToken() : '',
-      turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || ''
+      csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   }
 }

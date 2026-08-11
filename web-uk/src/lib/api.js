@@ -2808,31 +2808,65 @@ async function getMyWards(token) {
 }
 
 /**
- * Record the ward's own answer. `reason` is accepted and never required —
- * compelling somebody to justify refusing a safeguarding arrangement is
- * pressure to consent.
+ * The ward's own answer. `reason` is accepted and never required — compelling
+ * somebody to justify refusing a safeguarding arrangement is pressure to consent.
+ *
+ * 🔴 Each endpoint gets its own helper with a LITERAL path. An earlier version
+ * looked the path up in an object keyed by the action, which reads fine but is
+ * invisible to `scripts/generate-api-consumer-ledger.js`: it resolves the first
+ * `request()` argument statically, so all three collapsed into one contract row
+ * with the path `/{param}` and no matching Laravel route. Three literals mean
+ * three honest rows in the ledger.
  */
-async function respondToGuardian(token, action, assignmentId, reason) {
-  const endpoint = {
-    consented: '/api/v2/safeguarding/consent-to-guardian',
-    declined: '/api/v2/safeguarding/decline-guardian',
-    withdrawn: '/api/v2/safeguarding/withdraw-guardian-consent'
-  }[action];
-
-  if (!endpoint) {
-    throw new Error(`Unsupported guardian action: ${action}`);
-  }
-
+function guardianResponseBody(assignmentId, reason) {
   const body = { assignment_id: assignmentId };
   if (typeof reason === 'string' && reason.trim() !== '') {
     body.reason = reason.trim();
   }
+  return body;
+}
 
-  return request(endpoint, {
+async function consentToGuardian(token, assignmentId, reason) {
+  return request('/api/v2/safeguarding/consent-to-guardian', {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body)
+    body: JSON.stringify(guardianResponseBody(assignmentId, reason))
   });
+}
+
+async function declineGuardian(token, assignmentId, reason) {
+  return request('/api/v2/safeguarding/decline-guardian', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(guardianResponseBody(assignmentId, reason))
+  });
+}
+
+async function withdrawGuardianConsent(token, assignmentId, reason) {
+  return request('/api/v2/safeguarding/withdraw-guardian-consent', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(guardianResponseBody(assignmentId, reason))
+  });
+}
+
+/**
+ * Blade drives all three answers through one service entry point, and the page
+ * is a single no-JavaScript POST, so the dispatcher stays. It maps the form's
+ * action onto the right endpoint helper.
+ */
+async function respondToGuardian(token, action, assignmentId, reason) {
+  const handler = {
+    consented: consentToGuardian,
+    declined: declineGuardian,
+    withdrawn: withdrawGuardianConsent
+  }[action];
+
+  if (!handler) {
+    throw new Error(`Unsupported guardian action: ${action}`);
+  }
+
+  return handler(token, assignmentId, reason);
 }
 
 /** One capability per call, matching the page's one-select-one-button form. */
@@ -3922,6 +3956,9 @@ module.exports = {
   getMyGuardians,
   getMyWards,
   respondToGuardian,
+  consentToGuardian,
+  declineGuardian,
+  withdrawGuardianConsent,
   updateGuardianPermissions,
   // Partner venues
   getPartnerVenues,

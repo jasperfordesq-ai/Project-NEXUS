@@ -110,7 +110,19 @@ router.get('/contact', (req, res) => {
     errors: status === 'contact-validation'
       ? { ...contactValidationErrors(res.locals.t), ...(stored.errors || {}) }
       : (stored.errors || {}),
-    statusMessage: contactStatusMessages(res.locals.t)[status] || ''
+    statusMessage: contactStatusMessages(res.locals.t)[status] || '',
+    // 🔴 `POST /api/v2/contact` is the ONE Laravel endpoint that enforces
+    // Turnstile (CoreController::apiSubmit → 422 TURNSTILE_FAILED). This view had
+    // no widget and the key was being passed to five views that deliberately
+    // removed Turnstile on 2026-05-16, so every submission would have failed the
+    // moment TURNSTILE_SECRET_KEY was set in production. TurnstileService fails
+    // OPEN when the secret is unset, which is why nothing looked broken.
+    turnstileSiteKey: String(process.env.TURNSTILE_SITE_KEY || ''),
+    // The tenant's real contact address, so the page always offers a route that
+    // does not depend on JavaScript. Same address the API routes the form to.
+    contactEmail: String(req.accessibleRouting?.tenant?.contact?.email
+      || req.accessibleRouting?.tenant?.contact_email
+      || '')
   });
 });
 

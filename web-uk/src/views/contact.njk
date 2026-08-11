@@ -94,6 +94,25 @@
             </div>
           </fieldset>
 
+          {# Cloudflare Turnstile. `POST /api/v2/contact` is the one Laravel
+             endpoint that enforces it, so without this widget every submission
+             returns 422 as soon as TURNSTILE_SECRET_KEY is set. The CSP already
+             permits challenges.cloudflare.com for script, connect and frame. #}
+          {% if turnstileSiteKey %}
+            <div class="govuk-form-group">
+              <div class="cf-turnstile" data-sitekey="{{ turnstileSiteKey }}" data-theme="auto"></div>
+              <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+              {# 🔴 Turnstile has no non-JavaScript mode, so a visitor without it
+                 can never produce a token. Blade leaves those visitors with no way
+                 to contact the service at all, which contradicts its own
+                 HTML-first rule. Say so plainly here and point at a route that
+                 works. #}
+              <noscript>
+                <p class="govuk-body govuk-!-margin-top-2">{{ t("contact.other_ways_no_js") }}</p>
+              </noscript>
+            </div>
+          {% endif %}
+
           <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("contact.form.submit") }}</button>
 
           {% if not isAuthenticated %}
@@ -102,6 +121,24 @@
             </p>
           {% endif %}
         </form>
+      {% endif %}
+
+      {# Always rendered, on the success page and the failure page too: a security
+         check must never be the only route to a community. The email line appears
+         only when the community has published an address; the report-a-problem
+         route is not Turnstile-gated. #}
+      {% if contactEmail or isAuthenticated %}
+        <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("contact.other_ways_title") }}</h2>
+        {% if contactEmail %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="mailto:{{ contactEmail }}">{{ t("contact.other_ways_email", { email: contactEmail }) }}</a>
+          </p>
+        {% endif %}
+        {% if isAuthenticated %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ urlFor('/report-a-problem') }}">{{ t("contact.other_ways_report") }}</a>
+          </p>
+        {% endif %}
       {% endif %}
     </div>
   </div>

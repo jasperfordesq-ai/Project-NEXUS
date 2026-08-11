@@ -2187,7 +2187,7 @@ describe('API Request Functions', () => {
         email: 'ada@example.org',
         subject: 'technical',
         message: 'The page did not load.',
-        turnstile_token: ''
+        turnstile_token: 'turnstile-token-from-widget'
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -2199,7 +2199,7 @@ describe('API Request Functions', () => {
             email: 'ada@example.org',
             subject: 'technical',
             message: 'The page did not load.',
-            turnstile_token: ''
+            turnstile_token: 'turnstile-token-from-widget'
           })
         })
       );
@@ -7489,6 +7489,442 @@ describe('API Request Functions', () => {
       for (const index of [0, 1, 2, 3, 4, 5, 6, 8, 9, 10]) {
         expect(mockFetch.mock.calls[index][1].headers.Authorization).toBe('Bearer test-token');
       }
+    });
+  });
+
+
+  // The ledger (`npm run api:ledger`) requires every contract row to have a test
+  // in THIS file that names the helper and exercises it, because a route test can
+  // pass against a mocked `../src/lib/api` while the real helper calls the wrong
+  // URL, method or header. These 23 helpers were added with route tests only, so
+  // the ledger reported 21 rows without direct assertions and 9 of them
+  // state-changing. Each case below pins the exact request the helper makes.
+  describe('Laravel support-action helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('reads support actions for the supported role by default', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getSupportActions('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/support-actions?role=supported',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('reads support actions for the supporter role when asked', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getSupportActions('test-token', 'supporter');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/support-actions?role=supporter',
+        expect.anything()
+      );
+    });
+
+    it('confirms a support action by id', async () => {
+      jsonOnce({ data: { confirmed: true } });
+
+      await api.confirmSupportAction('test-token', 41);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/support-actions/41/confirm',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('declines without a reason, sending an empty body', async () => {
+      jsonOnce({ data: { declined: true } });
+
+      // Declining a safeguarding action must never require a justification.
+      await api.declineSupportAction('test-token', 41);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/support-actions/41/decline',
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({}) })
+      );
+    });
+
+    it('declines with a trimmed reason when one is given', async () => {
+      jsonOnce({ data: { declined: true } });
+
+      await api.declineSupportAction('test-token', 41, '  I did not ask for this  ');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/support-actions/41/decline',
+        expect.objectContaining({ body: JSON.stringify({ reason: 'I did not ask for this' }) })
+      );
+    });
+
+    it('cancels an unanswered preparation with DELETE', async () => {
+      jsonOnce({ data: { cancelled: true } });
+
+      await api.cancelSupportAction('test-token', 41);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/support-actions/41',
+        expect.objectContaining({ method: 'DELETE' })
+      );
+    });
+  });
+
+  describe('Laravel linked-account helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('lists linked accounts', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getChildAccounts('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/sub-accounts',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('reads one linked account activity summary', async () => {
+      jsonOnce({ data: {} });
+
+      await api.getChildActivity('test-token', 77);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/sub-accounts/77/activity',
+        expect.anything()
+      );
+    });
+
+    it('asks for message access as a tier, never as a boolean', async () => {
+      jsonOnce({ data: { pending: true } });
+
+      // 🔴 The dead `can_view_messages` boolean grants nothing. The tier is the
+      // only path, and the backend turns it into a pending consent action.
+      await api.requestMessageAccess('test-token', 12);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/sub-accounts/12/permissions',
+        expect.objectContaining({
+          method: 'PUT',
+          body: JSON.stringify({ tiers: { messages: 'assist' } })
+        })
+      );
+    });
+
+    it('withdraws message access from the supported member\'s own end', async () => {
+      jsonOnce({ data: { withdrawn: true } });
+
+      await api.withdrawMessageAccess('test-token', 12);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/users/me/parent-accounts/12/message-access/withdraw',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('sends the view purpose as a header, never in the URL', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getSupportedConversations('test-token', 77, 'Checking a safeguarding concern');
+
+      const [url, options] = mockFetch.mock.calls[0];
+      // 🔴 The purpose is free text that can name a person. A URL is written to
+      // access logs, history and screenshots; a request header is not.
+      expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/messages?limit=20');
+      expect(url).not.toContain('purpose');
+      expect(options.headers['X-Message-View-Purpose']).toBe('Checking a safeguarding concern');
+    });
+
+    it('passes a conversation cursor and limit through', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getSupportedConversations('test-token', 77, 'Purpose', { cursor: 'abc', limit: 5 });
+
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        'http://localhost:5000/api/v2/users/me/sub-accounts/77/messages?cursor=abc&limit=5'
+      );
+    });
+
+    it('reads a supported thread with no query when unpaginated', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getSupportedThread('test-token', 77, 88, 'Purpose');
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/users/me/sub-accounts/77/messages/88');
+      expect(options.headers['X-Message-View-Purpose']).toBe('Purpose');
+    });
+
+    it('reads an older page of a supported thread', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getSupportedThread('test-token', 77, 88, 'Purpose', { cursor: 'c1', direction: 'older' });
+
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        'http://localhost:5000/api/v2/users/me/sub-accounts/77/messages/88?cursor=c1&direction=older'
+      );
+    });
+  });
+
+  describe('Laravel guardian arrangement helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('lists the member\'s own guardians', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getMyGuardians('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/my-guardians',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('lists the members this account is guardian for', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getMyWards('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/my-wards',
+        expect.anything()
+      );
+    });
+
+    it('consents to a guardian arrangement', async () => {
+      jsonOnce({ data: { consented: true } });
+
+      await api.consentToGuardian('test-token', 7);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/consent-to-guardian',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ assignment_id: 7 })
+        })
+      );
+    });
+
+    it('declines a guardian arrangement, reason optional', async () => {
+      jsonOnce({ data: { declined: true } });
+
+      await api.declineGuardian('test-token', 7, ' I did not ask for this ');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/decline-guardian',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ assignment_id: 7, reason: 'I did not ask for this' })
+        })
+      );
+    });
+
+    it('withdraws consent already given', async () => {
+      jsonOnce({ data: { withdrawn: true } });
+
+      await api.withdrawGuardianConsent('test-token', 7);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/withdraw-guardian-consent',
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({ assignment_id: 7 }) })
+      );
+    });
+
+    it('routes each dispatcher action to its own literal endpoint', async () => {
+      // The dispatcher exists because the Blade page is one no-JS form. Each
+      // action must still reach its own URL — an object lookup for the path made
+      // all three invisible to the consumer ledger, which is why they are three
+      // helpers now.
+      const expected = {
+        consented: 'consent-to-guardian',
+        declined: 'decline-guardian',
+        withdrawn: 'withdraw-guardian-consent'
+      };
+
+      for (const [action, segment] of Object.entries(expected)) {
+        mockFetch.mockClear();
+        jsonOnce({ data: {} });
+
+        await api.respondToGuardian('test-token', action, 7);
+
+        expect(mockFetch.mock.calls[0][0]).toBe(`http://localhost:5000/api/v2/safeguarding/${segment}`);
+      }
+    });
+
+    it('refuses an action it does not recognise instead of guessing a URL', async () => {
+      await expect(api.respondToGuardian('test-token', 'approved', 7)).rejects.toThrow(
+        'Unsupported guardian action: approved'
+      );
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('sets one guardian capability tier per call', async () => {
+      jsonOnce({ data: { updated: true } });
+
+      await api.updateGuardianPermissions('test-token', 7, 'listings', 'assist');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/safeguarding/guardian-permissions',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ assignment_id: 7, tiers: { listings: 'assist' } })
+        })
+      );
+    });
+  });
+
+  describe('Laravel partner venue helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('lists partner venues', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getPartnerVenues('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/partner-venues',
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' })
+        })
+      );
+    });
+
+    it('reads the member pass', async () => {
+      jsonOnce({ data: { token: 'pass-token' } });
+
+      await api.getVenuePass('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/partner-venues/pass',
+        expect.anything()
+      );
+    });
+
+    it('rotates the member pass', async () => {
+      jsonOnce({ data: { token: 'new-pass-token' } });
+
+      await api.rotateVenuePass('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/partner-venues/pass/rotate',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('lists the member\'s own visits', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getMyVenueVisits('test-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/partner-venues/my-visits',
+        expect.anything()
+      );
+    });
+
+    it('records a visit from a scanned pass, URL-encoding the pass token', async () => {
+      jsonOnce({ data: { recorded: true } });
+
+      await api.recordVenueVisit('test-token', 'pass/token+raw', 9);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/partner-venues/visits/verify/pass%2Ftoken%2Braw',
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({ venue_id: 9 }) })
+      );
+    });
+
+    it('records a visit with an empty body when no venue is supplied', async () => {
+      jsonOnce({ data: { recorded: true } });
+
+      await api.recordVenueVisit('test-token', 'pass-token');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:5000/api/v2/partner-venues/visits/verify/pass-token',
+        expect.objectContaining({ body: JSON.stringify({}) })
+      );
+    });
+  });
+
+  describe('Laravel public event helpers', () => {
+    function jsonOnce(body) {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: async () => body
+      });
+    }
+
+    it('reads the public projection WITHOUT a bearer token', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getPublicEvents();
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/public/events?per_page=20');
+      // 🔴 Sending a token here would silently switch the page onto the member
+      // contract, which exposes fields the public projection withholds.
+      expect(options.headers && options.headers.Authorization).toBeUndefined();
+    });
+
+    it('passes when, search and cursor through', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getPublicEvents({ per_page: 5, when: 'past', q: 'repair', cursor: 'c9' });
+
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        'http://localhost:5000/api/v2/public/events?per_page=5&when=past&q=repair&cursor=c9'
+      );
+    });
+
+    it('accepts search as an alias for q', async () => {
+      jsonOnce({ data: [] });
+
+      await api.getPublicEvents({ search: 'repair' });
+
+      expect(mockFetch.mock.calls[0][0]).toContain('q=repair');
+    });
+
+    it('reads one public event without a bearer token', async () => {
+      jsonOnce({ data: { id: 3 } });
+
+      await api.getPublicEvent(3);
+
+      const [url, options] = mockFetch.mock.calls[0];
+      expect(url).toBe('http://localhost:5000/api/v2/public/events/3');
+      expect(options.headers && options.headers.Authorization).toBeUndefined();
     });
   });
 

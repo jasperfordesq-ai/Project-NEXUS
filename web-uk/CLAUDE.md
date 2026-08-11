@@ -601,6 +601,7 @@ See the root [agent instructions](../CLAUDE.md) for the Docker-only project inva
 | `COOKIE_SECRET` | **Yes** | - | Secret for signed cookies |
 | `SESSION_SECRET` | No | COOKIE_SECRET | Secret for sessions |
 | `NODE_ENV` | No | development | Environment |
+| `TURNSTILE_SITE_KEY` | No | - | Cloudflare Turnstile site key. Renders the challenge on the **contact** form only — `POST /api/v2/contact` is the one Laravel endpoint that enforces it. Unset ⇒ no widget. There is deliberately no secret key here: Laravel verifies. |
 
 ## Nunjucks Configuration
 

@@ -6027,7 +6027,10 @@ describe('shared accessible frontend shell', () => {
         name: 'Ada Lovelace',
         email: 'ada@example.org',
         subject: 'technical',
-        message: 'The accessible page did not load.'
+        message: 'The accessible page did not load.',
+        // The widget's real field name. Previously this test asserted the token
+        // was always empty, which baked in the missing-widget defect.
+        'cf-turnstile-response': 'turnstile-token-from-widget'
       });
 
     expect(response.status).toBe(302);
@@ -6037,7 +6040,7 @@ describe('shared accessible frontend shell', () => {
       email: 'ada@example.org',
       subject: 'technical',
       message: 'The accessible page did not load.',
-      turnstile_token: ''
+      turnstile_token: 'turnstile-token-from-widget'
     });
   });
 

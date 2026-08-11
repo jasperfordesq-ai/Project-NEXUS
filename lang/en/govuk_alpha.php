@@ -281,6 +281,14 @@ return [
         'error_fallback' => 'Failed to send message. Please try again.',
         'rate_limited' => 'Too many contact form attempts. Please wait and try again.',
         'turnstile_failed' => 'The security check failed. Refresh the page and try again.',
+        // 🔴 A security check that needs JavaScript must never be the ONLY way to
+        // reach a community. These strings are shown to everyone, and inside
+        // <noscript>, so a visitor without JavaScript and a visitor whose check
+        // failed both still have a route that works.
+        'other_ways_title' => 'Other ways to get in touch',
+        'other_ways_email' => 'Email :email',
+        'other_ways_no_js' => 'The form includes a security check that needs JavaScript. If that does not work for you, email us instead — we read every message the same way.',
+        'other_ways_report' => 'If you are signed in, you can also report a problem, which does not use a security check.',
         'form' => [
             'fieldset_legend' => 'Contact form',
             'name_label' => 'Name',
@@ -3913,6 +3921,37 @@ return [
         'version_label' => 'Version',
         'contents_title' => 'Contents',
         'no_document_notice' => 'A tailored version of this document has not been published for :community yet. The general policy below applies.',
+        // An effective date can be in the FUTURE — a version published today can
+        // come into force next month. The label has to change with it, or the page
+        // tells the reader a policy already applies when it does not.
+        'effective_from_label' => 'Comes into effect',
+        'not_yet_in_force' => 'This version is not yet in force. The version currently in force applies until the date shown.',
+        'published_label' => 'Published',
+        'summary_of_changes_title' => 'What has changed',
+        'previous_versions_link' => 'See previous versions of this document',
+        'versions_title' => 'Previous versions',
+        'versions_intro' => 'Every published version of :title, newest first. The version in force today is marked as current.',
+        'versions_current_tag' => 'Current version',
+        'versions_empty' => 'No earlier versions have been published.',
+        'version_archived_warning' => 'This is an earlier version, kept for reference. It is not the version that applies today.',
+        'view_current_version' => 'View the version that applies today',
+        'compare_title' => 'Compare versions',
+        'compare_intro' => 'Changes between version :from and version :to.',
+        'compare_added' => 'Added',
+        'compare_removed' => 'Removed',
+        'compare_unavailable' => 'This comparison is temporarily unavailable. Please try again in a few minutes.',
+        // Acceptance interstitial. Server-rendered, no JavaScript: a member must be
+        // able to read what changed and answer with a plain form.
+        'acceptance' => [
+            'title' => 'Accept the updated terms to continue',
+            'intro' => 'These documents have changed since you last agreed to them. Please read them and confirm you accept, or sign out.',
+            'new_tag' => 'New',
+            'updated_tag' => 'Updated',
+            'read_link' => 'Read :title in full',
+            'accept_button' => 'Accept and continue',
+            'sign_out' => 'Sign out instead',
+            'error' => 'That could not be recorded. Nothing has been accepted. Please try again.',
+        ],
         'documents' => [
             'terms' => [
                 'title' => 'Terms of service',
