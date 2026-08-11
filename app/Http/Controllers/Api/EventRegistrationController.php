@@ -13,6 +13,7 @@ use App\Enums\EventAttendanceAction;
 use App\Enums\EventCapacityRegistrationState;
 use App\Exceptions\EventAttendanceException;
 use App\Exceptions\EventParticipationException;
+use App\Exceptions\EventOfflineCheckinException;
 use App\Exceptions\EventRegistrationException;
 use App\Exceptions\EventWaitlistException;
 use App\Exceptions\SafeguardingPolicyException;
@@ -20,6 +21,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Policies\EventPolicy;
 use App\Services\EventAttendanceService;
+use App\Services\EventCheckinCredentialService;
 use App\Services\EventPeopleBulkService;
 use App\Services\EventPeopleHistoryService;
 use App\Services\EventPeopleService;
@@ -30,6 +32,8 @@ use App\Support\Events\EventPeopleQuery;
 use App\Support\Events\EventPeopleBulkOperation;
 use App\Support\Events\EventRegistrationTransitionResult;
 use App\Support\Events\EventWaitlistTransitionResult;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -351,6 +355,135 @@ final class EventRegistrationController extends BaseApiController
             return $this->registrationError($exception);
         }
     }
+    /**
+     * POST /api/v2/events/{id}/attendance/code
+     *
+     * Record attendance from a SCANNED signed check-in credential, rather than from
+     * an organiser picking a person off the roster.
+     *
+     * 🔴 Why this endpoint had to exist. The Blade accessible frontend does this
+     * in-process (GovukAlpha\Concerns\EventOfflineCheckinParity::eventsOfflineCheckinCode),
+     * calling three services directly. Every other accessible-frontend page has an
+     * HTTP equivalent, so web-uk could reach it — this one did not, which is why the
+     * route matrix sat at 706 of 707 and why Blade could not be retired. This is the
+     * 707th.
+     *
+     * Deliberately mirrors eventsOfflineCheckinCode's validation exactly:
+     *   - confirmation must be "1" (a scan alone must not mutate anything; a link
+     *     preview fetching the URL must never mark someone present)
+     *   - the credential must carry the nqx2_ prefix and be at most 1024 characters
+     *   - undo requires a reason
+     *
+     * 🔴 One deliberate DIFFERENCE from Blade: the idempotency key is required, where
+     * Blade invents a fresh uuid whenever the field is absent. A fresh key per POST can
+     * never match a previous submission, so Blade's replay protection does not actually
+     * protect anything; requiring a stable key from the caller does, and it is what
+     * every other mutating endpoint on this controller already demands. web-uk issues
+     * one per rendered form.
+     *
+     * 🔴 It reads the CURRENT attendance_version from the database rather than
+     * requiring expected_version from the caller, which is the one place it differs
+     * from `attendance()` above — and it is not an oversight. A scanner holds a
+     * signed code, not a roster row; it has no way to know the version. Blade made
+     * the same choice for the same reason. The optimistic-locking value is still
+     * passed to the service, so two staff scanning the same pass at once still
+     * conflict rather than both winning.
+     */
+    public function attendanceByCode(int $id): JsonResponse
+    {
+        try {
+            [$event, $actor] = $this->attendanceContext($id);
+            $input = request()->all();
+            $this->assertOnlyKeys($input, [
+                'action',
+                'credential',
+                'confirmation',
+                'reason',
+                'idempotency_key',
+            ], 'event_attendance_action_invalid');
+
+            $credential = trim((string) ($input['credential'] ?? ''));
+            $action = is_string($input['action'] ?? null)
+                ? EventAttendanceAction::tryFrom(strtolower(trim($input['action'])))
+                : null;
+            $reason = $this->reason();
+
+            // One combined guard, matching Blade, so a caller cannot learn which
+            // part of a bad request was wrong.
+            if ((string) ($input['confirmation'] ?? '') !== '1'
+                || $action === null
+                || ! str_starts_with($credential, 'nqx2_')
+                || mb_strlen($credential) > 1024
+                || ($action === EventAttendanceAction::Undo && ($reason === null || $reason === ''))) {
+                throw new EventAttendanceException('event_attendance_action_invalid');
+            }
+
+            $verified = app(EventCheckinCredentialService::class)->verify($id, $credential);
+            $subjectUserId = (int) $verified->user_id;
+
+            // 🔴 An unreadable credential and a credential for somebody this actor
+            // cannot see give the SAME answer. Distinguishing them would turn the
+            // endpoint into a way to test whether a given person is registered.
+            if ($subjectUserId <= 0
+                || ! $this->people->attendanceSubjectVisible($event, $subjectUserId)) {
+                throw new EventOfflineCheckinException('event_qr_registration_not_found');
+            }
+
+            $tenantId = TenantContext::currentId();
+            if ($tenantId === null || $tenantId <= 0) {
+                throw new EventOfflineCheckinException('event_checkin_tenant_context_missing');
+            }
+
+            $version = DB::table('event_attendance')
+                ->where('tenant_id', $tenantId)
+                ->where('event_id', $id)
+                ->where('user_id', $subjectUserId)
+                ->value('attendance_version');
+
+            $member = $this->member($subjectUserId);
+            $result = $this->attendance->transition(
+                (int) $event->getKey(),
+                (int) $member->getKey(),
+                $action,
+                $actor,
+                is_numeric($version) ? (int) $version : 0,
+                $reason,
+                $this->idempotencyKey(),
+            );
+
+            return $this->respondWithData([
+                'member' => [
+                    'id' => (int) $member->getKey(),
+                    'display_name' => $member->getAttribute('name'),
+                ],
+                'mutation' => $result->toArray(),
+            ]);
+        } catch (EventOfflineCheckinException $exception) {
+            // Logged at the same level and with the same fields as Blade, so the two
+            // frontends produce comparable operational records.
+            Log::notice('Signed check-in code rejected', [
+                'tenant_id' => TenantContext::getId(),
+                'event_id' => $id,
+                'reason_code' => $exception->reasonCode,
+            ]);
+
+            return $this->respondWithError(
+                'EVENT_CHECKIN_CODE_INVALID',
+                __('api.event_checkin_code_invalid'),
+                null,
+                422,
+            );
+        } catch (
+            EventAttendanceException|
+            EventRegistrationException|
+            EventWaitlistException|
+            EventParticipationException|
+            SafeguardingPolicyException $exception
+        ) {
+            return $this->registrationError($exception);
+        }
+    }
+
 
     public function attendance(int $id, int $userId): JsonResponse
     {

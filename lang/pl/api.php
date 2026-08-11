@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'Nie znaleziono wpisu',
     'cannot_hide_official_post' => 'Oficjalnych ogłoszeń nie da się ukryć',
     'event_not_found' => 'Nie znaleziono wydarzenia',
+    'event_checkin_code_invalid' => 'Nie można użyć tego kodu zameldowania.',
     'listing_not_found' => 'Nie znaleziono wpisu',
     'group_not_found' => 'Nie znaleziono grupy',
     'invalid_group_type' => 'Nieprawidłowy typ grupy',

@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'Bericht niet gevonden',
     'cannot_hide_official_post' => 'Officiële aankondigingen kunnen niet worden verborgen',
     'event_not_found' => 'Evenement niet gevonden',
+    'event_checkin_code_invalid' => 'Deze incheckcode kon niet worden gebruikt.',
     'listing_not_found' => 'Advertentie niet gevonden',
     'group_not_found' => 'Groep niet gevonden',
     'invalid_group_type' => 'Ongeldig groepstype',

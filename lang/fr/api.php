@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'Message introuvable',
     'cannot_hide_official_post' => 'Les annonces officielles ne peuvent pas être masquées',
     'event_not_found' => 'Événement introuvable',
+    'event_checkin_code_invalid' => 'Ce code d\'enregistrement n\'a pas pu être utilisé.',
     'listing_not_found' => 'Annonce introuvable',
     'group_not_found' => 'Groupe introuvable',
     'invalid_group_type' => 'Type de groupe invalide',

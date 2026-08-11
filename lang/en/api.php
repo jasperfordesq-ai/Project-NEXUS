@@ -94,6 +94,7 @@ return [
     'post_not_found'               => 'Post not found',
     'cannot_hide_official_post'    => 'Official announcements cannot be hidden',
     'event_not_found'              => 'Event not found',
+    'event_checkin_code_invalid' => 'That check-in code could not be used.',
     'listing_not_found'            => 'Listing not found',
     'group_not_found'              => 'Group not found',
     'invalid_group_type'           => 'Invalid group type',

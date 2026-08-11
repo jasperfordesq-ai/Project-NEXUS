@@ -55,6 +55,7 @@ return [
     'post_not_found' => '投稿が見つかりません',
     'cannot_hide_official_post' => '公式発表は非表示にできません',
     'event_not_found' => 'イベントが見つかりません',
+    'event_checkin_code_invalid' => 'そのチェックイン コードは使用できませんでした。',
     'listing_not_found' => 'リストが見つかりません',
     'group_not_found' => 'グループが見つかりません',
     'invalid_group_type' => '無効なグループタイプです',

@@ -6,9 +6,37 @@
   <span class="govuk-caption-l">{{ event.title }}</span>
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha.events.check_in_title") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha.events.check_in_intro") }}</p>
-  {% if status == "attendance-updated" %}<div class="govuk-notification-banner govuk-notification-banner--success" role="alert"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha.states.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha.events.attendance_updated") }}</p></div></div>
-  {% elif status == "attendance-conflict" %}<div class="govuk-notification-banner" role="alert"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha.states.warning_prefix") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha.events.attendance_conflict") }}</p></div></div>
-  {% elif status == "attendance-invalid" or status == "attendance-failed" %}<div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("govuk_alpha.events.attendance_failed") }}</p></div></div></div>{% endif %}
+  {% if status == "attendance-updated" or status == "attendance-code-updated" %}<div class="govuk-notification-banner govuk-notification-banner--success" role="alert"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha.states.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha.events.attendance_updated") }}</p></div></div>
+  {% elif status == "attendance-conflict" or status == "attendance-code-conflict" %}<div class="govuk-notification-banner" role="alert"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha.states.warning_prefix") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("govuk_alpha.events.attendance_conflict") }}</p></div></div>
+  {% elif status == "attendance-invalid" or status == "attendance-failed" or status == "attendance-code-invalid" or status == "attendance-code-failed" %}<div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("govuk_alpha.events.attendance_failed") }}</p></div></div></div>{% endif %}
+  <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("event_offline_checkin.privacy.title") }}</h2><p class="govuk-body">{{ t("event_offline_checkin.privacy.body") }}</p><p class="govuk-body">{{ t("event_offline_checkin.privacy.no_wallet") }}</p></div>
+  <section class="govuk-!-margin-bottom-8" aria-labelledby="signed-code-heading">
+    <h2 class="govuk-heading-l" id="signed-code-heading">{{ t("event_offline_checkin.code.title") }}</h2>
+    <p class="govuk-body">{{ t("event_offline_checkin.code.intro") }}</p>
+    <form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/check-in/code') }}" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {# One key per rendered form, so a double-tapped submit is a replay of the SAME
+         action rather than a second one. The API requires this field. #}
+      <input type="hidden" name="idempotency_key" value="{{ codeIdempotencyKey }}">
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="signed-attendee-code">{{ t("event_offline_checkin.code.label") }}</label>
+        <div class="govuk-hint" id="signed-attendee-code-hint">{{ t("event_offline_checkin.code.hint") }}</div>
+        <textarea class="govuk-textarea" id="signed-attendee-code" name="credential" rows="4" maxlength="1024" required aria-describedby="signed-attendee-code-hint" autocomplete="off" spellcheck="false"></textarea>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="signed-code-action">{{ t("event_offline_checkin.code.action") }}</label>
+        <select class="govuk-select" id="signed-code-action" name="action" required>{% for action in ["check_in", "check_out", "no_show", "undo"] %}<option value="{{ action }}">{{ t("event_offline_checkin.actions." + action) }}</option>{% endfor %}</select>
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="signed-code-reason">{{ t("event_offline_checkin.code.reason") }}</label>
+        <div class="govuk-hint" id="signed-code-reason-hint">{{ t("event_offline_checkin.code.reason_hint") }}</div>
+        <textarea class="govuk-textarea" id="signed-code-reason" name="reason" rows="2" maxlength="500" aria-describedby="signed-code-reason-hint"></textarea>
+      </div>
+      <div class="govuk-checkboxes govuk-checkboxes--small"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="signed-code-confirm" name="confirmation" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="signed-code-confirm">{{ t("event_offline_checkin.code.confirm") }}</label></div></div>
+      <button class="govuk-button govuk-!-margin-top-3">{{ t("event_offline_checkin.code.submit") }}</button>
+    </form>
+  </section>
+  <div class="govuk-warning-text"><span class="govuk-warning-text__icon" aria-hidden="true">!</span><strong class="govuk-warning-text__text"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.warning_prefix") }}</span>{{ t("event_offline_checkin.device.lost") }}</strong></div>
   <h2 class="govuk-heading-m">{{ t("govuk_alpha.events.check_in_metrics_title") }}</h2>
   <dl class="govuk-summary-list">{% for metric in ["confirmed", "checked_in", "checked_out", "no_show", "attended"] %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("govuk_alpha.events.people_metrics." + metric) }}</dt><dd class="govuk-summary-list__value">{{ metrics[metric] or 0 }}</dd></div>{% endfor %}</dl>
   <form method="get" action="{{ urlFor('/events/' + (event.id | string) + '/check-in') }}" class="govuk-!-margin-bottom-7"><fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--m"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.events.check_in_search_title") }}</h2></legend><div class="govuk-form-group"><label class="govuk-label" for="attendance-search">{{ t("govuk_alpha.events.check_in_search_label") }}</label><input class="govuk-input govuk-!-width-two-thirds" id="attendance-search" name="search" type="search" value="{{ query.search }}"></div><div class="govuk-form-group"><label class="govuk-label" for="attendance-state">{{ t("govuk_alpha.events.people_filters.attendance_state") }}</label><select class="govuk-select" id="attendance-state" name="attendance_state"><option value="">{{ t("govuk_alpha.events.people_states.all") }}</option>{% for state in attendanceStates %}<option value="{{ state }}"{% if query.attendance_state == state %} selected{% endif %}>{{ t("govuk_alpha.events.people_states." + state) }}</option>{% endfor %}</select></div><button class="govuk-button">{{ t("govuk_alpha.actions.search") }}</button></fieldset></form>

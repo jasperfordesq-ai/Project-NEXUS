@@ -1052,6 +1052,10 @@ router.get('/:id(\\d+)/check-in', requireAuth, asyncRoute(async (req, res) => {
     query,
     attendanceStates: PEOPLE_FILTERS.attendance_state,
     status: trimmed(req.query.status),
+    // One key per rendered page. The signed-code endpoint requires an idempotency
+    // key, so a double-tapped submit replays the same action instead of recording a
+    // second one.
+    codeIdempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : '',
     previousHref: query.page > 1 ? pathForPage(query.page - 1) : '',
     nextHref: query.page < totalPages ? pathForPage(query.page + 1) : ''
@@ -1383,6 +1387,54 @@ router.post('/:id(\\d+)/people', requireAuth, asyncRoute(async (req, res) => {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && [400, 403, 404, 409, 422].includes(error.status)) {
       return redirectTo(res, eventPath(id, '/people?status=people-failed'));
+    }
+    throw error;
+  }
+}));
+
+// Record attendance from a signed attendee code that a staff member has typed or
+// pasted, rather than from picking a person off the roster.
+//
+// Registered BEFORE '/check-in/:userId' — that pattern is digits-only so it could not
+// swallow 'code' today, but relying on that is fragile if the constraint ever relaxes.
+//
+// Validation is duplicated here on purpose. The API is authoritative and re-checks all
+// of it; repeating it locally means an obviously-bad submission becomes a page the
+// member can read instead of a round-trip and a generic failure.
+router.post('/:id(\\d+)/check-in/code', requireAuth, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  const action = selectedValue(req.body.action, ['check_in', 'check_out', 'no_show', 'undo']);
+  const credential = trimmed(req.body.credential, 1024);
+  const reason = trimmed(req.body.reason, 500);
+  const codeInvalid = eventPath(id, '/check-in?status=attendance-code-invalid');
+  if (!action
+    || !checked(req.body.confirmation)
+    || !credential.startsWith('nqx2_')
+    || (action === 'undo' && !reason)) {
+    return redirectTo(res, codeInvalid);
+  }
+
+  try {
+    await callApi(tokenFrom(req), 'POST', `/${id}/attendance/code`, {
+      action,
+      credential,
+      confirmation: '1',
+      reason: reason || null,
+      idempotency_key: trimmed(req.body.idempotency_key, 191) || randomUUID()
+    });
+    return redirectTo(res, eventPath(id, '/check-in?status=attendance-code-updated'));
+  } catch (error) {
+    if (redirectOnAuthError(error, res)) return undefined;
+    if (error instanceof ApiError && error.status === 409) {
+      return redirectTo(res, eventPath(id, '/check-in?status=attendance-code-conflict'));
+    }
+    // An unreadable code and a code for somebody this staff member cannot see are the
+    // SAME answer, so the page must not distinguish them either.
+    if (apiErrorCode(error) === 'EVENT_CHECKIN_CODE_INVALID') {
+      return redirectTo(res, codeInvalid);
+    }
+    if (error instanceof ApiError && [400, 403, 404, 422].includes(error.status)) {
+      return redirectTo(res, eventPath(id, '/check-in?status=attendance-code-failed'));
     }
     throw error;
   }

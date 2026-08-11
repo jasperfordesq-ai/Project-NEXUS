@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'Beitrag nicht gefunden',
     'cannot_hide_official_post' => 'Offizielle Ankündigungen können nicht ausgeblendet werden',
     'event_not_found' => 'Veranstaltung nicht gefunden',
+    'event_checkin_code_invalid' => 'Dieser Check-in-Code konnte nicht verwendet werden.',
     'listing_not_found' => 'Eintrag nicht gefunden',
     'group_not_found' => 'Gruppe nicht gefunden',
     'invalid_group_type' => 'Ungültiger Gruppentyp',

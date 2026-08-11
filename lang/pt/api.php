@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'Postagem não encontrada',
     'cannot_hide_official_post' => 'Os anúncios oficiais não podem ser ocultados',
     'event_not_found' => 'Evento não encontrado',
+    'event_checkin_code_invalid' => 'Esse código de check-in não pôde ser usado.',
     'listing_not_found' => 'Listagem não encontrada',
     'group_not_found' => 'Grupo não encontrado',
     'invalid_group_type' => 'Tipo de grupo inválido',

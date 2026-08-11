@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'Postáil gan aimsiú',
     'cannot_hide_official_post' => 'Ní féidir fógraí oifigiúla a chur i bhfolach',
     'event_not_found' => 'Níor aimsíodh an t-imeacht',
+    'event_checkin_code_invalid' => 'Níorbh fhéidir an cód seiceála sin a úsáid.',
     'listing_not_found' => 'Níor aimsíodh an liostú',
     'group_not_found' => 'Grúpa gan aimsiú',
     'invalid_group_type' => 'Cineál grúpa neamhbhailí',

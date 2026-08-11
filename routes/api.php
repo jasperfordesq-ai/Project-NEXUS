@@ -517,6 +517,15 @@ Route::middleware(['auth:sanctum', 'feature:events'])->group(function () {
         \App\Http\Controllers\Api\EventRegistrationController::class,
         'attendance',
     ])->whereNumber('id')->whereNumber('userId')->middleware('throttle:nexus-route-60-per-1m');
+    // Attendance from a SCANNED signed credential rather than a roster pick. The
+    // Blade accessible frontend did this in-process, with no HTTP equivalent — the
+    // one accessible-frontend action web-uk could not reach, and the reason route
+    // parity sat at 706 of 707. Same throttle as its roster-pick sibling above:
+    // staff scanning a queue of passes hit this repeatedly and legitimately.
+    Route::post('/v2/events/{id}/attendance/code', [
+        \App\Http\Controllers\Api\EventRegistrationController::class,
+        'attendanceByCode',
+    ])->whereNumber('id')->middleware('throttle:nexus-route-60-per-1m');
     Route::post('/v2/events/{id}/people/{userId}/approve', [
         \App\Http\Controllers\Api\EventRegistrationController::class,
         'approve',

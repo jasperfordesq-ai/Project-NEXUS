@@ -1,30 +1,30 @@
 {
-  "generatedAt": "2026-08-11T14:10:29.219Z",
+  "generatedAt": "2026-08-11T14:44:01.429Z",
   "provenance": {
-    "generatedAt": "2026-08-11T14:10:29.219Z",
+    "generatedAt": "2026-08-11T14:44:01.429Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "d20a097293dda9c3ece905482657a14f618aa452",
+    "laravelCommitSha": "b1deef502f3c4c6f3f0ac5be6f4ba1c652f2297b",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "d20a097293dda9c3ece905482657a14f618aa452",
+    "webUkRepositoryCommitSha": "b1deef502f3c4c6f3f0ac5be6f4ba1c652f2297b",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-11T14:10:29.219Z",
+    "generatedAt": "2026-08-11T14:44:01.429Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 720,
-    "matchedRoutes": 706,
-    "missingRoutes": 1,
+    "webUkRoutes": 721,
+    "matchedRoutes": 707,
+    "missingRoutes": 0,
     "extraWebUkRoutes": 12,
     "ignoredInfrastructureRoutes": 3,
     "familyCounts": {
       "events": {
-        "matched": 93,
-        "missing": 1,
+        "matched": 94,
+        "missing": 0,
         "extraWebUk": 2,
         "ignoredInfrastructure": 0
       },
@@ -3181,6 +3181,28 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/events/{param}/check-in/{param}",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/routes/events.js"
+    },
+    {
+      "method": "POST",
+      "path": "/events/{param}/check-in/code",
+      "family": "events",
+      "status": "matched",
+      "laravelRouteName": "events.check-in.code",
+      "laravelHandler": "eventsOfflineCheckinCode",
+      "laravelView": "",
+      "laravelParamConstraints": [
+        "number"
+      ],
+      "laravelRouteFile": "routes/govuk-alpha-parity/event-offline-checkin.php",
+      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/EventOfflineCheckinParity.php",
+      "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
+      "auth": "public-or-unknown",
+      "tenantScoped": "unknown",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/events/{param}/check-in/code",
       "webUkView": "",
       "webUkFile": "web-uk/src/routes/events.js"
     },
@@ -15824,28 +15846,6 @@
       "webUkPath": "/whats-on/{param}",
       "webUkView": "whats-on/detail",
       "webUkFile": "web-uk/src/routes/whats-on.js"
-    },
-    {
-      "method": "POST",
-      "path": "/events/{param}/check-in/code",
-      "family": "events",
-      "status": "missing",
-      "laravelRouteName": "events.check-in.code",
-      "laravelHandler": "eventsOfflineCheckinCode",
-      "laravelView": "",
-      "laravelParamConstraints": [
-        "number"
-      ],
-      "laravelRouteFile": "routes/govuk-alpha-parity/event-offline-checkin.php",
-      "laravelControllerFile": "app/Http/Controllers/GovukAlpha/Concerns/EventOfflineCheckinParity.php",
-      "laravelMiddleware": "'throttle:nexus-route-60-per-1m'",
-      "auth": "public-or-unknown",
-      "tenantScoped": "unknown",
-      "gates": "",
-      "apiNeeds": "",
-      "webUkPath": "",
-      "webUkView": "",
-      "webUkFile": ""
     }
   ]
 }

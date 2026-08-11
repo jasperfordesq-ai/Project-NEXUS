@@ -5,19 +5,19 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-11T14:02:15.482Z
-- Laravel commit SHA: `d20a097293dda9c3ece905482657a14f618aa452`
-- Web UK repository commit SHA: `d20a097293dda9c3ece905482657a14f618aa452`
+- Generated: 2026-08-11T14:44:02.094Z
+- Laravel commit SHA: `b1deef502f3c4c6f3f0ac5be6f4ba1c652f2297b`
+- Web UK repository commit SHA: `b1deef502f3c4c6f3f0ac5be6f4ba1c652f2297b`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 694
+- Contracts: 695
 - Laravel OpenAPI matches: 466
-- Missing OpenAPI matches: 228
-- Direct Laravel route declarations omitted from OpenAPI: 228
+- Missing OpenAPI matches: 229
+- Direct Laravel route declarations omitted from OpenAPI: 229
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
-- State-changing contracts: 380
+- State-changing contracts: 381
 - Rows without detected tests: 0
 - Rows without direct API-helper assertions: 0
 - Unique helpers without direct API-helper assertions: 0
@@ -25,7 +25,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
 - API source SHA-256: `51aa17f01089d13c5c8e7d78ecd5a4a585b6d15034af41b3c5703986f58106ed`
 - Laravel OpenAPI SHA-256: `a1ccb5360deda28cf179065ebf6e5273f8c9ac50f63322de44fffe2e53b8de5b`
-- Laravel API routes SHA-256: `0e07725eb0966dd8fddbd6e55d25213434246b8a53579c1b2690ab890e76a02d`
+- Laravel API routes SHA-256: `ec4c71362d21cfafc4e6cf689b0ac36b20c562da4ed83790d2d0d31ba37cb35c`
 
 The JSON companion contains the full request/response, status/error, redirect, side-effect, cleanup, Laravel implementation, consumer, and test fields.
 
@@ -147,6 +147,7 @@ Rows below have test references but no test that directly names and exercises th
 | POST | `/api/v2/events/{param}/agenda/sessions/{param}/registration/withdraw` | `callEventApi` | EventAgenda_withdraw<br>App\Http\Controllers\Api\EventAgendaController@withdraw | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/events.js | tests/api-consumer-ledger.test.js<br>tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/events/{param}/analytics` | `callEventApi` | EventAnalytics_show<br>App\Http\Controllers\Api\EventAnalyticsController@show | read-only by HTTP method<br>not applicable | src/routes/events.js | tests/api-consumer-ledger.test.js<br>tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/events/{param}/analytics/export.csv` | `downloadEventApi` | EventAnalytics_export<br>App\Http\Controllers\Api\EventAnalyticsController@export | read-only by HTTP method<br>not applicable | src/routes/events.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| POST | `/api/v2/events/{param}/attendance/code` | `callEventApi` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/events.js | tests/api-consumer-ledger.test.js<br>tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/events/{param}/attendees?{query}` | `getEventRsvps` | Events_attendees<br>App\Http\Controllers\Api\EventsController@attendees | read-only by HTTP method<br>not applicable | src/routes/events.js | tests/api.test.js<br>tests/runtime/events-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/events/{param}/attendees/{param}/check-in` | `callEventApi` | Events_checkIn<br>App\Http\Controllers\Api\EventsController@checkIn | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/events.js | tests/api-consumer-ledger.test.js<br>tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/events/{param}/broadcasts` | `callEventApi` | EventBroadcast_store<br>App\Http\Controllers\Api\EventBroadcastController@store | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/events.js | tests/api-consumer-ledger.test.js<br>tests/api.test.js<br>tests/shared-accessible-shell.test.js |

@@ -23699,9 +23699,16 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Community garden day');
     expect(response.text).toContain('Alex Morgan');
     expect(response.text).toContain('name="expected_version" value="9"');
-    expect(response.text).toContain('<option value="check_out"');
-    expect(response.text).toContain('<option value="undo"');
-    expect(response.text).not.toContain('<option value="check_in"');
+    // 🔴 Scoped to the ROSTER select for this person, not to the whole page. The page
+    // also carries the signed-code form, which always offers all four actions (as
+    // Blade's does), so a page-wide "must not contain check_in" would assert something
+    // that was only ever true while the signed-code form was missing.
+    const rosterSelect = response.text
+      .slice(response.text.indexOf('id="attendance-action-55"'))
+      .split('</select>')[0];
+    expect(rosterSelect).toContain('<option value="check_out"');
+    expect(rosterSelect).toContain('<option value="undo"');
+    expect(rosterSelect).not.toContain('<option value="check_in"');
     expect(response.text).toContain('href="/events/42/check-in?');
     expect(api.callEventApi).toHaveBeenNthCalledWith(1, 'test-token', 'GET', '/42');
     expect(api.callEventApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/42/people?page=1&per_page=25&search=Alex&attendance_state=checked_in&sort=name&direction=asc');
@@ -23748,6 +23755,95 @@ describe('shared accessible frontend shell', () => {
       .send({ _csrf: csrf, action: 'undo', expected_version: '9', reason: 'Recorded in error', confirmation: '1' });
 
     expect(conflict.headers.location).toBe('/events/42/check-in?status=attendance-conflict');
+  });
+
+  it('records Event Check-in attendance from a signed attendee code', async () => {
+    // The 707th route. Blade did this in-process; web-uk had no HTTP equivalent to
+    // reach, which is what held route parity at 706 of 707.
+    const api = require('../src/lib/api');
+    api.callEventApi
+      .mockResolvedValueOnce({ data: { id: 42, title: 'Community garden day' } })
+      .mockResolvedValueOnce({ data: [], meta: { total: 0, total_pages: 0, metrics: {} } });
+
+    const page = await request(app)
+      .get('/events/42/check-in')
+      .set('Cookie', signedCookieHeader());
+
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('action="/events/42/check-in/code"');
+    expect(page.text).toContain('Enter a signed attendee code');
+    expect(page.text).toContain('name="credential"');
+    expect(page.text).toContain('maxlength="1024"');
+    // Every form carries a key, so a double-tapped submit replays one action.
+    expect(page.text).toMatch(/name="idempotency_key" value="[0-9a-f-]{36}"/);
+
+    api.callEventApi.mockResolvedValueOnce({ data: { member: { id: 55 }, mutation: {} } });
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const applied = await agent
+      .post('/events/42/check-in/code')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({
+        _csrf: csrf,
+        action: 'check_in',
+        credential: 'nqx2_signed-attendee-code',
+        confirmation: '1',
+        idempotency_key: 'signed-code-test-key'
+      });
+
+    expect(applied.status).toBe(302);
+    expect(applied.headers.location).toBe('/events/42/check-in?status=attendance-code-updated');
+    expect(api.callEventApi).toHaveBeenLastCalledWith('test-token', 'POST', '/42/attendance/code', {
+      action: 'check_in',
+      credential: 'nqx2_signed-attendee-code',
+      confirmation: '1',
+      reason: null,
+      idempotency_key: 'signed-code-test-key'
+    });
+  });
+
+  it('refuses malformed signed attendee codes without calling Laravel and maps its rejections', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const post = (payload) => agent
+      .post('/events/42/check-in/code')
+      .set('Cookie', signedCookieHeader())
+      .type('form')
+      .send({ _csrf: csrf, ...payload });
+
+    // No prefix: not a signed credential, so it never reaches the verifier.
+    const unsigned = await post({ action: 'check_in', credential: 'plain-text', confirmation: '1' });
+    expect(unsigned.headers.location).toBe('/events/42/check-in?status=attendance-code-invalid');
+
+    // 🔴 Unconfirmed. A crawler or link preview fetching this must change nothing.
+    const unconfirmed = await post({ action: 'check_in', credential: 'nqx2_code' });
+    expect(unconfirmed.headers.location).toBe('/events/42/check-in?status=attendance-code-invalid');
+
+    // Undo with no reason: a correction to a register has to be auditable.
+    const noReason = await post({ action: 'undo', credential: 'nqx2_code', confirmation: '1' });
+    expect(noReason.headers.location).toBe('/events/42/check-in?status=attendance-code-invalid');
+
+    expect(api.callEventApi).not.toHaveBeenCalled();
+
+    api.callEventApi.mockRejectedValueOnce(new api.ApiError('Version conflict', 409));
+    const conflict = await post({ action: 'check_in', credential: 'nqx2_code', confirmation: '1' });
+    expect(conflict.headers.location).toBe('/events/42/check-in?status=attendance-code-conflict');
+
+    // 🔴 An unreadable code and a code for somebody this staff member cannot see must
+    // land on the SAME page, or the form becomes a way to probe who is registered.
+    api.callEventApi.mockRejectedValueOnce(new api.ApiError('Unusable', 422, {
+      errors: [{ code: 'EVENT_CHECKIN_CODE_INVALID' }]
+    }));
+    const unusable = await post({ action: 'check_in', credential: 'nqx2_code', confirmation: '1' });
+    expect(unusable.headers.location).toBe('/events/42/check-in?status=attendance-code-invalid');
+
+    api.callEventApi.mockRejectedValueOnce(new api.ApiError('Rejected', 422));
+    const failed = await post({ action: 'check_in', credential: 'nqx2_code', confirmation: '1' });
+    expect(failed.headers.location).toBe('/events/42/check-in?status=attendance-code-failed');
   });
 
   it('fails the Event Check-in roster closed when Laravel denies attendance access', async () => {

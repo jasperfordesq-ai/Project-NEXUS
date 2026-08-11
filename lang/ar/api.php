@@ -55,6 +55,7 @@ return [
     'post_not_found' => 'لم يتم العثور على آخر',
     'cannot_hide_official_post' => 'لا يمكن إخفاء الإعلانات الرسمية',
     'event_not_found' => 'لم يتم العثور على الحدث',
+    'event_checkin_code_invalid' => 'لا يمكن استخدام رمز تسجيل الوصول هذا.',
     'listing_not_found' => 'لم يتم العثور على القائمة',
     'group_not_found' => 'لم يتم العثور على المجموعة',
     'invalid_group_type' => 'نوع المجموعة غير صالح',

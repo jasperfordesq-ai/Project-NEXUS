@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-11T14:10:29.219Z
-Laravel commit SHA: `d20a097293dda9c3ece905482657a14f618aa452`
-Web UK repository commit SHA: `d20a097293dda9c3ece905482657a14f618aa452`
+Generated: 2026-08-11T14:44:01.429Z
+Laravel commit SHA: `b1deef502f3c4c6f3f0ac5be6f4ba1c652f2297b`
+Web UK repository commit SHA: `b1deef502f3c4c6f3f0ac5be6f4ba1c652f2297b`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,9 +12,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 720 |
-| Matched routes | 706 |
-| Missing routes | 1 |
+| web-uk routes | 721 |
+| Matched routes | 707 |
+| Missing routes | 0 |
 | Extra web-uk routes | 12 |
 | Ignored web-uk infrastructure routes | 3 |
 
@@ -39,7 +39,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | courses | 26 | 0 | 0 | 0 |
 | dashboard | 1 | 0 | 0 | 0 |
 | event-templates | 4 | 0 | 0 | 0 |
-| events | 93 | 1 | 2 | 0 |
+| events | 94 | 0 | 2 | 0 |
 | exchanges | 4 | 0 | 0 | 0 |
 | explore | 1 | 0 | 0 | 0 |
 | faq | 1 | 0 | 0 | 0 |
@@ -101,7 +101,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 
 | Method | Path | Family | Handler | Blade view | Auth | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| POST | `/events/{param}/check-in/code` | events | eventsOfflineCheckinCode |  | public-or-unknown |  |
+| - | - | - | - | - | - | - |
 
 ## Extra Web UK Routes
 
