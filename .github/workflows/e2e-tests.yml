@@ -209,11 +209,25 @@ jobs:
   # still untested after a Mac user reported the app misbehaving on 2026-08-09
   # and the engine came back clean.
   #
-  # 🔴 This job runs UNCONDITIONALLY and reports what it did. It does not use a
-  # secret-gated `if:`, because that is exactly how the existing cross-browser
-  # job ended up skipped-but-green and left Safari untested for the life of the
-  # project. When the grid is not configured it says so loudly and passes; it
-  # never implies coverage it did not provide.
+  # 🔴 This job is not SECRET-gated, and reports what it did. When the grid is not
+  # configured it says so loudly and passes; it never implies coverage it did not
+  # provide. That is deliberate — a secret-gated `if:` is exactly how the existing
+  # cross-browser job ended up skipped-but-green and left Safari untested for the
+  # life of the project.
+  #
+  # 🔴 It is NOT unconditional, which an earlier version of this comment claimed.
+  # Two things can stop it running, and both were surfaced by audit on 2026-08-11:
+  #
+  #   1. `if: push && refs/heads/main` — so it does not run on pull requests or on
+  #      any other branch. A PR gets no real-Safari signal and no warning that it
+  #      has none.
+  #   2. `needs: e2e-preflight` — if that job fails, this one is SKIPPED, which
+  #      reintroduces the skipped-but-green shape through the dependency edge. The
+  #      `needs` buys nothing here: this job consumes no output from preflight.
+  #
+  # Left as-is deliberately for now (a real Safari run is slow and the grid is not
+  # configured, so widening it would add cost without adding signal), but stated
+  # honestly so nobody reads "unconditional" and trusts coverage that is not there.
   #
   # Setup: docs/REAL-SAFARI-TESTING.md
   # ---------------------------------------------------------------------------

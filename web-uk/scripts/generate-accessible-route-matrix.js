@@ -698,6 +698,19 @@ function summarize(matrix, laravelRoutes, webUkRoutes, sourceRoot, targetRoot, g
     generatedAt,
     sourceRoot,
     targetRoot,
+    // 🔴 THESE COUNTS DO NOT SUM, AND THAT IS CORRECT. Read this before "fixing" it.
+    //
+    // `matchedRoutes` counts LARAVEL rows that found a web-uk route.
+    // `webUkRoutes` counts DISTINCT web-uk routes.
+    //
+    // So matched + extra + ignored can exceed webUkRoutes when two Laravel routes
+    // legitimately share one web-uk route. Today that is exactly one case:
+    // `GET /` is registered twice in routes/govuk-alpha.php — once as `home` and
+    // once as `govuk-alpha.tenant-chooser` — and web-uk serves both from a single
+    // `/` route. Hence 707 + 12 + 3 = 722 against 721 web-uk routes.
+    //
+    // Checked on 2026-08-11 after the arithmetic was flagged as a possible
+    // double-count: it is not one, and no route is missing or misclassified.
     laravelRoutes: laravelRoutes.length,
     webUkRoutes: webUkRoutes.length,
     matchedRoutes: count('matched'),

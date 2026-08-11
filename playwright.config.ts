@@ -200,6 +200,14 @@ export default defineConfig({
       ],
       use: {
         ...devices['Desktop Safari'],
+        // 🔴 VIEWPORT PINNED. `devices['Desktop Safari']` leaves Playwright's 1280×720
+        // default, and 1280 is exactly the width at which this suite's own recorded
+        // trap bites: several checks silently skip below the desktop breakpoint, so a
+        // pass proves less than it appears to. `real-safari` pins 1440×950 and
+        // `e2e/tests/ui/dropdowns.spec.ts` pins its own, which meant the two Safari
+        // layers were running the same specs at different widths and were not
+        // comparable. Any spec added to the webkit job inherits this.
+        viewport: { width: 1440, height: 950 },
         storageState: 'e2e/fixtures/.auth/user.json',
       },
       dependencies: ['setup'],
