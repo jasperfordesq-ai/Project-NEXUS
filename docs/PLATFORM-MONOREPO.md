@@ -17,7 +17,7 @@ both frontend consumers against the same contract evidence.
 | `react-frontend/` | Canonical React client | Laravel blue/green |
 | `accessible-frontend/` | Current Laravel-rendered accessible frontend | Laravel blue/green |
 | `aspnet-backend/` | Experimental second backend | None from this repository — see below |
-| `web-uk/` | Experimental shared accessible client | None from this repository — see below |
+| `web-uk/` | **Incoming** accessible frontend — replaces `accessible-frontend/` (decided 2026-08-11) | None yet; deployment path not built — see below |
 
 ### ✅ RETIRED 2026-08-10 — both tracks are now STOPPED
 
@@ -314,9 +314,16 @@ bulk of ongoing work is, in order:
 2. **Blade accessible frontend** (`accessible-frontend/`)
 3. **React frontend** (`react-frontend/`)
 
-`aspnet-backend/` and `web-uk/` are **secondary and development-only**. They
-live here for contract comparison; they must never slow, gate, or complicate
-the three tracks above. The isolation that guarantees this is verified below.
+`aspnet-backend/` is **secondary and development-only**. It lives here for
+contract comparison; it must never slow, gate, or complicate the three tracks
+above. The isolation that guarantees this is verified below.
+
+🔴 **`web-uk/` is no longer merely a comparison target.** On 2026-08-11 the owner
+decided it **replaces** the Blade accessible frontend, which retires. It is
+therefore a production track in waiting rather than development-only. Two things
+have NOT changed: it is **not deployed**, and its deployment isolation below
+stands until a deployment path is deliberately built and separately authorised.
+See [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md).
 
 ### ✅ RESOLVED — the "failing test on main" was a stale local database
 

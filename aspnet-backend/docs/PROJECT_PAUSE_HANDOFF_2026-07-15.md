@@ -12,9 +12,39 @@ Last verified: 2026-07-15 22:51 +01:00
 Status: **Canonical current — development-pause and cold-start source**
 
 <!-- doc-consistency: PROJECT_PAUSE_DATE=2026-07-15 -->
-<!-- doc-consistency: PROJECT_PAUSE_STATE=PAUSED -->
+<!-- doc-consistency: PROJECT_PAUSE_STATE_ASPNET=PAUSED -->
+<!-- doc-consistency: PROJECT_PAUSE_STATE_WEBUK=LIFTED -->
+<!-- doc-consistency: PROJECT_PAUSE_LIFTED_WEBUK_ON=2026-08-11 -->
 <!-- doc-consistency: PROJECT_PAUSE_FINAL_TAG=pause/2026-07-15-final -->
 <!-- doc-consistency: PROJECT_PAUSE_CURRENT_TAG=pause/2026-08-09-final -->
+
+> ## 🔴 The pause is now SPLIT. Read this before anything below.
+>
+> This document paused two workstreams with one marker. On **2026-08-11** the owner
+> decided `web-uk` becomes the production accessible frontend and Blade retires, so
+> the two states diverged and the single `PROJECT_PAUSE_STATE` marker was replaced
+> by two.
+>
+> - **`web-uk`: LIFTED (2026-08-11).** Implementation, tests, documentation and
+>   deployment *preparation* under `web-uk/**` no longer need a fresh instruction.
+>   Current position:
+>   [`../../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+> - **ASP.NET: STILL PAUSED.** Unchanged. Everything this document says about the
+>   ASP.NET backend, its tests, its migrations and its containers stands.
+>
+> 🔴 **Why the marker was split rather than flipped.** Leaving it `PAUSED` was
+> false, because `web-uk` work is authorised. Flipping it to `LIFTED` would have
+> falsely un-paused ASP.NET — whose **live database has had no successful backup
+> since 2026-03-08 while the application runs migrations on every start**, so
+> restarting that service can irreversibly change live data with nothing to restore
+> from. That warning is preserved verbatim throughout this document and is not
+> lifted by anything.
+>
+> Two further things this lift does **not** cover, in either workstream:
+> **no deployment without explicit authorisation**, and the **read-only Laravel
+> database boundary**.
+>
+> Everything below is the original 2026-07-15 record, left unedited.
 
 This is the first project-status document to read after the repository has been
 left alone. It records what was true when development paused on 15 July 2026,

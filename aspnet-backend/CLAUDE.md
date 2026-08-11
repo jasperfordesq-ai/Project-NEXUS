@@ -6,7 +6,23 @@
 > monorepo layout: Laravel now lives at this repository's root rather than a
 > separate checkout, and `web-uk/` is a sibling of `aspnet-backend/`.
 
-Last reviewed: 2026-07-15
+Last reviewed: 2026-08-11
+
+> 🔴 **Two 2026-08-11 changes that affect what you read here.**
+>
+> 1. **`../web-uk/` is no longer a candidate — it REPLACES the Blade accessible
+>    frontend.** Owner decision, 2026-08-11. Read
+>    `../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md` first. Lines below describing it as
+>    an implementation target for a *future* frontend are superseded; they are
+>    flagged rather than deleted because the old wording makes an agent refuse the
+>    work. Its score now lives in `../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`
+>    — `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is **RETIRED** and its `663/1000` is
+>    not current.
+> 2. **The pause is now split.** `web-uk` is lifted; **ASP.NET is not.** Everything
+>    this file says about ASP.NET, its migrations, its containers and its database
+>    boundary stands unchanged — including that its live database has had no
+>    successful backup since 2026-03-08 while the application migrates on every
+>    start.
 
 > **DEVELOPMENT PAUSE:** Development paused on 15 July 2026. Read
 > [`docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md`](docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md)
@@ -117,7 +133,7 @@ workstream-specific status source instead:
 - `docs/CURRENT_SCHEMA_READINESS.md` is the current one-page schema verdict,
   migration-chain boundary, exact-SHA CI result, and recommission sequence. It
   does not publish a separate product score.
-- `../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is the current Web UK
+- `../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` is the current Web UK
   fixed-rubric score, route/API ledgers, certification boundary, and next queue.
 - `docs/FULL_PARITY_REMEDIATION_RUNBOOK.md` defines the shared 1000-point rubric
   and the two-frontends-by-two-backends completion gate.
@@ -136,7 +152,7 @@ excluded modules that are now in scope.
 
 If an agent is resuming backend work, start with
 `docs/CURRENT_ASPNET_CONTRACT_STATUS.md`. If resuming accessible frontend work,
-start with `../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`. The older
+start with `../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`. The older
 `CURRENT_LARAVEL_PARITY_HANDOFF.md` and `CURRENT_WEB_UK_HANDOFF.md` files are
 chronological histories: their old “latest” headings, counts, and scores are not
 current status.
@@ -148,7 +164,7 @@ The canonical tracking documents are:
   the two canonical status documents for their live queues.
 - `docs/CURRENT_ASPNET_CONTRACT_STATUS.md` - current backend score, evidence,
   blockers, and resume queue.
-- `../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` - current accessible
+- `../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` - current accessible
   frontend score, evidence, blockers, and resume queue.
 - `docs/CURRENT_LARAVEL_PARITY_HANDOFF.md` - historical backend implementation
   log; never use its old scores as current.
@@ -206,7 +222,7 @@ being made switchable between the Laravel and ASP.NET backends.
   side-effect contract. Its location in this repository does not make ASP.NET
   authoritative.
 - If resuming the accessible frontend work after an interrupted session, start
-  with `../web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`.
+  with `../web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`.
 - The Laravel Blade accessible frontend remains the current visual/workflow
   source of truth. Port its shell, information architecture, footer, card-list,
   and Explore patterns into `../web-uk` while keeping the Express/Nunjucks/GOV.UK

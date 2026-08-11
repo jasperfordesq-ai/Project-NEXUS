@@ -42,6 +42,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |
 | [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) | Repository boundaries and safe workflow for Laravel, ASP.NET, React, and Web UK contract work. |
+| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | The decision that Web UK replaces the Blade accessible frontend: which phase the changeover is in, both public URL shapes, open owner prerequisites, and which document answers which question. Read this before any other accessible-frontend status claim. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |
 | [MODULES.md](MODULES.md) | The module map: each module → its code paths and guide, including the modules that have no guide yet. |
 

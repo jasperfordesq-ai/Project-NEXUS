@@ -1,5 +1,19 @@
 # Historical Web UK Accessible Frontend Handoff Archive
 
+> 🔴 **Status header added 2026-08-11.** On that date the owner decided `web-uk`
+> becomes the production accessible frontend and the Laravel Blade accessible
+> frontend retires. Read `docs/ACCESSIBLE-FRONTEND-TAKEOVER.md` at the repository
+> root first: it is the only place the current phase of the changeover is stated.
+> **The body below is left as written.** Where it calls `web-uk` a candidate, or
+> says it must not replace Blade, that was true when written and is superseded —
+> those lines are dated evidence, not current status, and rewriting them would
+> destroy the audit trail. The current score lives in
+> `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`; the `663/1000` in
+> `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is **retired**.
+>
+> This file is a **chronological archive**. It was never a current status source
+> and is not one now — do not read its latest heading as the present state.
+
 Last reviewed as an archive: 2026-07-14
 
 Status: **Historical checkpoint — not a current status or resume source**

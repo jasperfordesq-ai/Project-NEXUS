@@ -296,15 +296,30 @@ This project is **publicly released** under AGPL-3.0-or-later at <https://github
 
 - **Laravel is the production/default backend contract.** ASP.NET compatibility work is development-only and must make ASP.NET conform to the Laravel React API rather than changing production frontend behaviour; see [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md).
 - **Repository co-location does not change deployment scope.** `aspnet-backend/`
-  and `web-uk/` are development-only and must not be added to the Laravel
-  blue/green Compose file or production deployment scripts without separate,
-  explicit authorization.
+  is development-only. `web-uk/` is **destined for production** (see
+  [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md))
+  but is **not deployed today**. Neither may be added to the Laravel blue/green
+  Compose file or production deployment scripts without separate, explicit
+  authorization — for `web-uk` that authorization also requires the open owner
+  prerequisites in the takeover document to be answered, because adding it to both
+  colours costs roughly 1 GB on a VM that already has a memory squeeze.
 
 See [react-frontend/CLAUDE.md](react-frontend/CLAUDE.md) for full styling rules, contexts, hooks, and component reference.
 
 ### Accessible Frontend (GOV.UK-Based)
 
 The accessible frontend is an explicitly approved UI track that complements, but does not replace, `react-frontend/`. It is the only maintained exception to the React-primary UI rule and is intended for users who benefit from a highly accessible, HTML-first experience. The public-facing track is now Beta and served under `/{tenantSlug}/accessible/...` (legacy `/alpha/...` URLs permanently redirect); the `GovukAlpha`, `govuk_alpha`, and `govuk-alpha.*` names remain as internal code-path names (namespaces, translation files, route names) until a deliberate namespace migration is done.
+
+> 🔴 **There are TWO accessible frontends, and the one described below is being
+> replaced.** `accessible-frontend/` is Laravel Blade and is what production
+> serves today. `web-uk/` is an Express/Nunjucks application consuming the Laravel
+> API, and on **2026-08-11** the owner decided it takes over and Blade retires.
+> Both public URL shapes are preserved exactly, so nothing a member has bookmarked
+> changes. **`web-uk` is not deployed yet** and the deployment path is not built.
+> Read [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md)
+> before acting on any status claim about either one — it is the single place the
+> current phase is stated. The rules below still govern the Blade track for as long
+> as it is deployed, and its GOV.UK branding prohibitions apply to **both**.
 
 - Keep it isolated under root-level `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`, and `/{tenantSlug}/accessible/...` routes.
 - Preferred public subdomain: `accessible.project-nexus.ie`.

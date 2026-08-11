@@ -33,6 +33,19 @@ Use `--detach` for production deploys so long Docker builds do not depend on an 
 
 The accessible frontend is not a separate SPA container. It is rendered by Laravel, with source under `accessible-frontend/` and built assets under `httpdocs/build/accessible-frontend/`.
 
+> 🔴 **That is true today and is changing.** On 2026-08-11 the owner decided that
+> `web-uk/` — a Node/Express application consuming the Laravel API — replaces the
+> Blade accessible frontend, which retires. When that happens the accessible
+> hostname will be served by its **own container**, not the PHP blue/green app
+> container, and the table above will need updating. **It is not built or deployed
+> yet**, so the current instructions stand unchanged. Both public URL shapes are
+> preserved, so no member-facing address changes. See
+> [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) for the phase
+> and the open prerequisites — one of which is that `web-uk`'s own release runbook
+> depends on a `.claude/production-containers.md` file that was never imported into
+> this repository, so its deployment hold cannot be lifted as written and may need
+> superseding by a section in this document.
+
 Before deploying accessible frontend changes, run:
 
 ```bash

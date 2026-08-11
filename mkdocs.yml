@@ -79,6 +79,7 @@ nav:
   - Architecture & platform:
       - Architecture: ARCHITECTURE.md
       - Platform monorepo boundaries: PLATFORM-MONOREPO.md
+      - Accessible frontend takeover: ACCESSIBLE-FRONTEND-TAKEOVER.md
       - API: API.md
       - API reference (OpenAPI): api-reference.md
       - Internationalisation: I18N.md

@@ -96,11 +96,20 @@ const KNOWN_MARKERS = {
   DOCUMENTATION_HEALTH_REVALIDATION: { kind: 'opaque' },
 
   // Pause state.
-  PROJECT_PAUSE_STATE: {
+  // 🔴 Split on 2026-08-11. One marker paused two workstreams; web-uk was lifted
+  // and ASP.NET was not. Leaving it PAUSED was false; flipping it would have
+  // falsely un-paused a backend whose database has no recent backup.
+  PROJECT_PAUSE_STATE_ASPNET: {
     kind: 'pause',
     enum: ['PAUSED', 'LIFTED'],
     companionDate: 'PROJECT_PAUSE_DATE'
   },
+  PROJECT_PAUSE_STATE_WEBUK: {
+    kind: 'pause',
+    enum: ['PAUSED', 'LIFTED'],
+    companionDate: 'PROJECT_PAUSE_LIFTED_WEBUK_ON'
+  },
+  PROJECT_PAUSE_LIFTED_WEBUK_ON: { kind: 'opaque' },
   PROJECT_PAUSE_DATE: { kind: 'opaque' },
   PROJECT_PAUSE_FINAL_TAG: { kind: 'opaque' },
   PROJECT_PAUSE_CURRENT_TAG: { kind: 'opaque' },
@@ -116,7 +125,8 @@ const KNOWN_MARKERS = {
  */
 const RETIRED_MARKERS = {
   WEBUK_CURRENT_BANKED_SCORE: 'renamed to WEBUK_W1_RETIRED_SCORE when W1 was retired on 2026-08-11; the current score is WEBUK_W2_CURRENT_SCORE',
-  DOCUMENTATION_HEALTH_SCORE: 'renamed to DOCUMENTATION_HEALTH_INDEX on 2026-08-11 so it cannot be mistaken for a product score'
+  DOCUMENTATION_HEALTH_SCORE: 'renamed to DOCUMENTATION_HEALTH_INDEX on 2026-08-11 so it cannot be mistaken for a product score',
+  PROJECT_PAUSE_STATE: 'split on 2026-08-11 into PROJECT_PAUSE_STATE_ASPNET and PROJECT_PAUSE_STATE_WEBUK; one marker cannot describe two workstreams whose states now differ'
 };
 
 // Documents that may carry markers. Kept explicit: a marker appearing in an

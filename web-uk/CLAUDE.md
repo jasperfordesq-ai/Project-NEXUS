@@ -1,25 +1,66 @@
 # CLAUDE.md - Project NEXUS Shared Accessible Frontend
 
-> **DEVELOPMENT PAUSE:** Development paused on 15 July 2026. Read
-> [`../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md`](../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md)
-> and obtain a new explicit user instruction before editing. Opening this file
-> does not resume the former implementation loop.
+> **🔴 PAUSE LIFTED for `web-uk` on 2026-08-11 — the ASP.NET fence STAYS.**
+>
+> This file previously carried a blanket development pause dated 15 July 2026 that
+> required a new explicit instruction before any edit. That pause is **lifted for
+> `web-uk` only**, by owner decision on 2026-08-11: `web-uk` becomes the production
+> accessible frontend and Blade retires.
+>
+> **What the lift covers:** implementation, tests, documentation and deployment
+> *preparation* inside `web-uk/**`.
+>
+> **What remains fenced, unchanged:**
+> - **The ASP.NET backend stays paused**, and its **database boundary stays
+>   closed.** Its live database has had no successful backup since 2026-03-08
+>   while the application runs migrations on every start, so restarting that
+>   service can irreversibly change live data with nothing to restore from.
+> - **Nothing is deployed without explicit authorisation.** Building the
+>   deployment path is not permission to use it.
+> - The read-only Laravel data boundary below still applies.
+>
+> The original pause record is
+> [`../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md`](../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md),
+> kept for its cold-start detail. Read
+> [`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md)
+> first for the current position.
 
 ## Shared Accessible Frontend Direction
 
-`web-uk` is the implementation target for Project NEXUS's future shared
-accessible frontend. It is not production-ready and must not replace the
-Laravel Blade accessible frontend until the maintained certification gate is
-complete.
+`web-uk` **is the accessible frontend Project NEXUS is moving to.** The Laravel
+Blade accessible frontend retires at the end of the changeover.
 
-Two Laravel surfaces are authoritative, for different responsibilities:
+🔴 **This paragraph used to say the opposite** — that `web-uk` was not
+production-ready and *must not* replace Blade. That was correct while `web-uk` was
+an uncertified candidate, and it is superseded. It is called out rather than
+quietly deleted because an agent reading the old wording refuses this work.
 
-1. The Laravel Blade accessible frontend is the product/UI source of truth for
-   browser routes, links, layout, navigation, content hierarchy, forms,
-   validation presentation, redirects, tenant behaviour, and workflows.
-2. The Laravel backend/API is the contract source of truth for HTTP methods and
-   paths, request/response shapes, status codes, auth, roles, modules, uploads,
-   downloads, persistence, and side effects.
+Being the target does not mean being finished. Current readiness is scored in
+`docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`, and the deployment path is **not built
+yet**.
+
+### 🔴 The two-phase source-of-truth rule
+
+Which phase we are in is stated in **one** place:
+[`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+Do not restate it here or anywhere else — that is how status claims go stale.
+
+**Phase A — Blade is still deployed (where we are now).**
+
+1. The Laravel Blade accessible frontend remains the **observable-behaviour
+   specification** for browser routes, links, layout, navigation, content
+   hierarchy, forms, validation presentation, redirects, tenant behaviour and
+   workflows. Where `web-uk` disagrees, Blade is right unless the difference is a
+   recorded deliberate improvement.
+2. The generated route matrix is a **live drift alarm**: a route in Blade and not
+   in `web-uk` is a real gap.
+
+**Phase B — Blade is decommissioned.** `web-uk` owns browser behaviour and the
+route matrix becomes a historical record.
+
+**In both phases:** the Laravel backend/API is the contract source of truth for
+HTTP methods and paths, request/response shapes, status codes, auth, roles,
+modules, uploads, downloads, persistence, and side effects. That never changes.
 
 Authoritative Laravel locations:
 
@@ -63,21 +104,30 @@ it must conform to those contracts and must not cause frontend forks. See
 
 Route and backend preparation docs live beside this app:
 
-- `../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` (read first while paused;
-  exact cold-start boundary and restart protocol)
-- `docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` (read first; current blockers,
-  ownership boundaries, and next-job order)
+- `../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md` (**read first**: the decision, which
+  phase the changeover is in, both public URL shapes, and the open owner
+  prerequisites)
+- `docs/CURRENT_WEBUK_PRODUCTION_STATUS.md` (**the only current score**; rubric
+  `WEBUK-W2-PROD-R1`)
+- `docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` (🔴 **RETIRED 2026-08-11.** The W1
+  audit trail. Its `663/1000` is not current and must not be quoted as such; its
+  next-job order is superseded)
 - `docs/CURRENT_WEB_UK_HANDOFF.md` (historical chronological archive only; not
   a resume, queue, count, or scoring source)
 - `docs/LARAVEL_ACCESSIBLE_ROUTE_MATRIX.md`
-- `docs/BLADE_COMPONENT_PORT_AUDIT.md`
+- `docs/BLADE_COMPONENT_PORT_AUDIT.md` (detailed per-page evidence)
 - `docs/TENANT_ROUTING_PARITY.md`
 - `docs/BACKEND_SWITCHING_CONTRACT.md`
-- `../../docs/CURRENT_ASPNET_CONTRACT_STATUS.md` (separate backend-owned score
-  and unchanged-client switching gate; not a Web UK score source)
+- `docs/MANUAL_ACCESSIBILITY_EVIDENCE.md` (an entry is evidence for exactly the
+  page, browser, input method and viewport it names — never a conformance claim)
+- `../aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md` (a **different**
+  rubric for the paused ASP.NET backend; never a `web-uk` score source, and never
+  added to one)
+- `../aspnet-backend/docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md` (the original pause
+  record, kept for its cold-start detail; the `web-uk` half is lifted, the ASP.NET
+  half is not)
 
-If the user explicitly resumes this work, start with the root pause handoff,
-then `docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md`, then use
+Start with the takeover page, then the W2 score, then
 `docs/BLADE_COMPONENT_PORT_AUDIT.md` for detailed evidence. Treat
 `docs/CURRENT_WEB_UK_HANDOFF.md` as chronological implementation history rather
 than a reliable current snapshot.
@@ -108,9 +158,14 @@ from skeleton or styling work.
 Run the complete current-checkout gate before reporting status, scoring the
 work, or publishing a coherent slice. Start at the repository root:
 
-```powershell
-cd C:\platforms\htdocs\nexus-platform-consolidation
+🔴 **This block used to begin `cd C:\platforms\htdocs\nexus-platform-consolidation`
+— a git worktree that no longer exists.** It was created for the 2026-08-10
+monorepo consolidation, orphaned when that branch merged, and deleted. Working
+checkout is `C:\platforms\htdocs\staging`, and worktrees are forbidden here.
 
+Run from the repository root:
+
+```powershell
 npm --prefix web-uk run brand:check
 npm --prefix web-uk run lint
 npm --prefix web-uk test -- --runInBand
@@ -119,9 +174,14 @@ npm --prefix web-uk run route:matrix
 npm --prefix web-uk run api:ledger
 npm --prefix web-uk run locales:audit
 npm --prefix web-uk run locales:audit-templates -- --summary
+node scripts/check-doc-scores.mjs
 
 git diff --check -- web-uk
 ```
+
+🔴 **Run `route:matrix` and `api:ledger` back to back.** Regenerating one without
+the other leaves the two artefacts naming different commits, so the two sets of
+counts describe different code. `check-doc-scores.mjs` fails on exactly that.
 
 The complete `test:accessibility` aggregate includes an authenticated login
 journey. A failed login writes Laravel rate-limit/audit state, so that aggregate
@@ -248,18 +308,26 @@ The app runs at **http://localhost:5180** (container port 3001 mapped to host 51
 
 ### Production Deployment
 
-Web UK is not production-certified, and this file does not authorize a
-production deployment. Do not copy files to a server, run production Compose
-commands, or touch a production container from this workstream. Before any
-future production operation, read the repository-root
-`.claude/production-containers.md` and obtain an explicitly approved deployment
-plan for the exact certified image and backend target.
+**`web-uk` is the accessible frontend that will be deployed. It is not deployed
+yet, and this file does not authorize deploying it.** Do not copy files to a
+server, run production Compose commands, or touch a production container from
+this workstream. Building the deployment path is not permission to use it.
 
-The root `compose.prod.yml` currently overrides Web UK's backend with
-`API_BASE_URL=http://api:8080`, which resolves to the ASP.NET service. That is a
-legacy, uncertified configuration and is not an approved Web UK production
-path. Do not interpret its presence as ASP.NET switchability evidence or deploy
-it until unchanged-Web-UK ASP.NET certification is banked.
+Open prerequisites and their current state are listed in
+[`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+
+🔴 **Two corrections to what this section used to say.**
+
+- It made deployment conditional on reading a repository-root
+  `.claude/production-containers.md`. **That file was never imported into this
+  monorepo**, so the hold it describes cannot be lifted as written. It is a
+  recorded open prerequisite: either import it, or supersede it with a section in
+  `docs/DEPLOYMENT.md` at the repository root.
+- It described a **root `compose.prod.yml`** overriding `web-uk`'s backend to the
+  ASP.NET service. **There is no root `compose.prod.yml`** — the only file of that
+  name is `aspnet-backend/compose.prod.yml`, which belongs to the paused ASP.NET
+  workstream and is not a `web-uk` deployment path. The substantive warning still
+  stands: nothing here is evidence that `web-uk` can run against ASP.NET.
 
 ## CRITICAL: NOT A GOVERNMENT SERVICE (NON-NEGOTIABLE)
 

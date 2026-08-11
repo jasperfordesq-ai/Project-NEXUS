@@ -1,5 +1,16 @@
 # Frontend Audit Report - Project NEXUS UK
 
+> 🔴 **Status header added 2026-08-11.** On that date the owner decided `web-uk`
+> becomes the production accessible frontend and the Laravel Blade accessible
+> frontend retires. Read `docs/ACCESSIBLE-FRONTEND-TAKEOVER.md` at the repository
+> root first: it is the only place the current phase of the changeover is stated.
+> **The body below is left as written.** Where it calls `web-uk` a candidate, or
+> says it must not replace Blade, that was true when written and is superseded —
+> those lines are dated evidence, not current status, and rewriting them would
+> destroy the audit trail. The current score lives in
+> `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`; the `663/1000` in
+> `CURRENT_LARAVEL_FIRST_PARITY_STATUS.md` is **retired**.
+
 Status: **Historical checkpoint — retained audit evidence, not current status**
 
 > **Historical snapshot:** This February 2026 report is retained as audit
