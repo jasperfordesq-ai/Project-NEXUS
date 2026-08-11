@@ -2675,6 +2675,83 @@ async function getPublicEvent(id) {
   return request(`/api/v2/public/events/${encodeURIComponent(id)}`);
 }
 
+// Co-decide support actions. A supporter PREPARES something; nothing happens
+// until the supported member answers here, from the emailed single-use link, or
+// in the React app. Declining never requires a reason.
+async function getSupportActions(token, role = 'supported') {
+  return request(`/api/v2/users/me/support-actions?role=${encodeURIComponent(role)}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function confirmSupportAction(token, id) {
+  return request(`/api/v2/users/me/support-actions/${encodeURIComponent(id)}/confirm`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function declineSupportAction(token, id, reason) {
+  const body = {};
+  if (typeof reason === 'string' && reason.trim() !== '') body.reason = reason.trim();
+
+  return request(`/api/v2/users/me/support-actions/${encodeURIComponent(id)}/decline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body)
+  });
+}
+
+/** The SUPPORTER withdraws their own unanswered preparation. */
+async function cancelSupportAction(token, id) {
+  return request(`/api/v2/users/me/support-actions/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+// Linked accounts — the read-only activity summary, and the two ends of the
+// message-access consent loop.
+async function getChildAccounts(token) {
+  return request('/api/v2/users/me/sub-accounts', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function getChildActivity(token, childUserId) {
+  return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(childUserId)}/activity`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
+ * The supporter ASKS to view a supported member's messages.
+ *
+ * 🔴 This grants NOTHING. The backend intercepts the messages tier into a
+ * pending consent action, and only the supported member's own yes activates it.
+ * Never describe this as enabling access, and never route it through the dead
+ * `can_view_messages` boolean — the tier is the only path.
+ */
+async function requestMessageAccess(token, relationshipId) {
+  return request(`/api/v2/users/me/sub-accounts/${encodeURIComponent(relationshipId)}/permissions`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ tiers: { messages: 'assist' } })
+  });
+}
+
+/**
+ * The supported MEMBER withdraws a supporter's message access — one press,
+ * effective immediately, no reason asked. Re-enabling always needs fresh
+ * consent, which is why there is no undo.
+ */
+async function withdrawMessageAccess(token, relationshipId) {
+  return request(`/api/v2/users/me/parent-accounts/${encodeURIComponent(relationshipId)}/message-access/withdraw`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
 // Guardian arrangements, member side.
 //
 // 🔴 An arrangement is a RECORD, not a capability. Listing one grants nothing —
@@ -3795,6 +3872,16 @@ module.exports = {
   getEvent,
   getPublicEvents,
   getPublicEvent,
+  // Co-decide support actions
+  getSupportActions,
+  confirmSupportAction,
+  declineSupportAction,
+  cancelSupportAction,
+  // Linked accounts — activity summary and message-access consent loop
+  getChildAccounts,
+  getChildActivity,
+  requestMessageAccess,
+  withdrawMessageAccess,
   // Guardian arrangements
   getMyGuardians,
   getMyWards,

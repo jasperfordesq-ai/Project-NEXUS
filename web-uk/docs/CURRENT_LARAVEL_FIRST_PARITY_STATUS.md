@@ -441,10 +441,52 @@ document the log exposure; (b) have Laravel accept `purpose` in a header or a
 POST body for these reads, which is a Laravel change outside this workstream's
 boundary; (c) leave the viewer unported. **Nothing was built on a guess.**
 
-**Still missing: 9.** `settings` 8, `events` check-in code 1. Of the 8: two
-support-action routes, one activity summary, and two message-access
-request/withdraw routes are all portable with no open question; the three
-message-viewer routes are blocked above.
+### D1 remediation — support actions, activity and message access, 2026-08-11
+
+The five unblocked safeguarding routes are implemented. Matched **698 → 703**,
+missing **9 → 4**, Web UK routes **705 → 710**. **No score moved.**
+
+- `GET/POST /settings/support-actions[/respond]` — the co-decide approval queue,
+  both sides. A supporter prepares a listing or transfer; **nothing happens**
+  until the supported member answers. One POST carries approve, decline and
+  withdraw as a form field, so the page needs only submit buttons.
+  Declining **never** requires a reason. 404 (already answered or expired) is
+  reported separately from a general failure.
+- `GET /settings/linked-accounts/activity/{childId}` — read-only in the strict
+  sense: no action on the page at all, and a test asserts it submits nothing
+  about the supported member. The name is resolved from **this user's own**
+  children list, so another member's id never gets past the lookup; "not yours"
+  and "no grant" produce the **same** refusal so the page cannot probe whether a
+  member exists. Timeline capped at 10, matching Blade.
+- `POST /settings/linked-accounts/message-access/{request,withdraw}` — the two
+  ends of the consent loop. 🔴 The request **grants nothing**: the backend turns
+  the tier write into a pending consent action and only the supported member's
+  own yes activates it. Withdrawal is one press, immediate, no reason asked, and
+  re-enabling always needs fresh consent — hence no undo.
+
+Two structural notes worth keeping:
+
+- Shared helpers live in `src/lib/linked-account-support.js` so the activity
+  summary and the consent loop cannot drift apart in how they identify a
+  supported member or report a refusal.
+- 🔴 The routers are mounted at the **deeper** paths
+  (`/settings/linked-accounts/activity`, `/.../message-access`) rather than at
+  `/settings/linked-accounts`. Mounting at the parent would put this
+  middleware in front of the existing hub page and change its behaviour.
+- 🔴 `generate-accessible-route-matrix.js` discovers Web UK routes by matching
+  the literal token `router.get(` / `router.post(`. A first attempt exported two
+  named routers (`activityRouter`, `messageAccessRouter`) from one file and the
+  generator silently could not see three real, working routes — parity looked
+  two short. One router named `router` per file, exported directly, is therefore
+  a requirement of the tooling and not only house style.
+
+Verified: 22 focused tests (4 rendering the real templates), full suite **64
+suites / 1,889 tests**, ESLint clean, brand check passed, isolated accessibility
+gate **24/24**.
+
+**Still missing: 4.** The three message-viewer routes blocked above, plus the
+`events` check-in-code POST blocked upstream. Every safeguarding route that
+could be ported without an open question now has been.
 The remaining 11 `settings` routes are safeguarding and guardian-consent flows
 and deserve their own pass; read `../../docs/SAFEGUARDING-AND-CONSENT.md` first.
 The `events` check-in-code POST stays blocked upstream: Laravel exposes no safe

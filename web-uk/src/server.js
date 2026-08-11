@@ -36,6 +36,9 @@ const eventsRoutes = require('./routes/events');
 const whatsOnRoutes = require('./routes/whats-on');
 const venuesRoutes = require('./routes/venues');
 const settingsGuardiansRoutes = require('./routes/settings-guardians');
+const settingsSupportActionRoutes = require('./routes/settings-support-actions');
+const linkedAccountActivityRoutes = require('./routes/settings-linked-account-activity');
+const linkedAccountMessageAccessRoutes = require('./routes/settings-message-access');
 const eventTemplateRoutes = require('./routes/event-templates');
 const feedRoutes = require('./routes/feed');
 const feedActionRoutes = require('./routes/feed-actions');
@@ -1860,6 +1863,11 @@ app.use('/notifications', doubleCsrfProtection, notificationsRoutes);
 // is the subject of a guardian arrangement, so the whole router needs a signed-in
 // user: requireAuth redirects to /login?status=auth-required, matching Blade.
 app.use('/settings/guardians', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsGuardiansRoutes);
+app.use('/settings/support-actions', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsSupportActionRoutes);
+// Mounted at the DEEPER paths on purpose: mounting at /settings/linked-accounts
+// would put this middleware in front of the existing hub page and change it.
+app.use('/settings/linked-accounts/activity', requireAuth, doubleCsrfProtection, linkedAccountActivityRoutes);
+app.use('/settings/linked-accounts/message-access', requireAuth, doubleCsrfProtection, postOnly(formLimiter), linkedAccountMessageAccessRoutes);
 app.use('/settings', doubleCsrfProtection, settingsRoutes);
 app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);

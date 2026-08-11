@@ -1,0 +1,85 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Read-only activity summary for a supported member.
+
+    🔴 Read-only in the strict sense: there is no action on this page. The grant
+    behind it is re-checked by the service on every request, and a member id
+    that is not this user's own never reaches here.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/settings/linked-accounts') }}">{{ t("govuk_alpha_settings.linked.activity_back") }}</a>
+
+      <span class="govuk-caption-xl">{{ t("govuk_alpha_settings.linked.title") }}</span>
+      <h1 class="govuk-heading-xl">{{ t("govuk_alpha_settings.linked.activity_title", { name: childName }) }}</h1>
+      <p class="govuk-body-l">{{ t("govuk_alpha_settings.linked.activity_intro", { name: childName }) }}</p>
+
+      {% if hours %}
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_settings.linked.activity_hours_heading") }}</h2>
+        <dl class="govuk-summary-list">
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.activity_hours_given") }}</dt>
+            <dd class="govuk-summary-list__value">{{ hours.hours_given if hours.hours_given !== undefined else 0 }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.activity_hours_received") }}</dt>
+            <dd class="govuk-summary-list__value">{{ hours.hours_received if hours.hours_received !== undefined else 0 }}</dd>
+          </div>
+          <div class="govuk-summary-list__row">
+            <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.activity_net_balance") }}</dt>
+            <dd class="govuk-summary-list__value">{{ hours.net_balance if hours.net_balance !== undefined else 0 }}</dd>
+          </div>
+        </dl>
+      {% endif %}
+
+      {% if connections or engagement %}
+        <h2 class="govuk-heading-l">{{ t("govuk_alpha_settings.linked.activity_community_heading") }}</h2>
+        <dl class="govuk-summary-list">
+          {% if connections %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.activity_connections") }}</dt>
+              <dd class="govuk-summary-list__value">{{ connections.total_connections if connections.total_connections !== undefined else 0 }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.activity_groups") }}</dt>
+              <dd class="govuk-summary-list__value">{{ connections.groups_joined if connections.groups_joined !== undefined else 0 }}</dd>
+            </div>
+          {% endif %}
+          {% if engagement %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.linked.activity_posts") }}</dt>
+              <dd class="govuk-summary-list__value">{{ engagement.posts_count if engagement.posts_count !== undefined else 0 }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+      {% endif %}
+
+      <h2 class="govuk-heading-l">{{ t("govuk_alpha_settings.linked.activity_timeline_heading") }}</h2>
+      {% if not timeline.length %}
+        <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_settings.linked.activity_timeline_empty") }}</p></div>
+      {% else %}
+        <ul class="govuk-list nexus-alpha-card-list">
+          {% set knownTypes = ['post', 'comment', 'connection', 'gave_hours', 'received_hours'] %}
+          {% for item in timeline %}
+            {% set itemType = item.activity_type or '' %}
+            {% set typeKey = itemType if itemType in knownTypes else 'other' %}
+            <li class="govuk-!-margin-bottom-3">
+              <strong class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_settings.linked.activity_type_" + typeKey) }}</strong>
+              {% if item.description %}
+                <p class="govuk-body govuk-!-margin-bottom-0">{{ item.description }}</p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

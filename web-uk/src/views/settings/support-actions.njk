@@ -1,0 +1,133 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Co-decide support actions. A supporter prepares something; NOTHING happens
+    until the supported member answers. Every answer is a plain form POST with
+    the answer as a hidden field, so this page needs no JavaScript.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+
+      {% if statusKey and statusIsSuccess %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="support-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="support-status-title">{{ t("govuk_alpha_settings.common.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_settings.support_actions." + statusKey) }}</p>
+          </div>
+        </div>
+      {% elif statusKey and statusIsError %}
+        {# tabindex="-1" and a single role="alert" — see settings/guardians.njk:
+           the Blade original omits the first and duplicates the second. #}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <p class="govuk-body">{{ t("govuk_alpha_settings.support_actions." + statusKey) }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ t("govuk_alpha_settings.support_actions.title") }}</h1>
+      <p class="govuk-body">{{ t("govuk_alpha_settings.support_actions.intro") }}</p>
+
+      {% if not incoming.length %}
+        <p class="govuk-inset-text">{{ t("govuk_alpha_settings.support_actions.none") }}</p>
+      {% else %}
+        {% for action in incoming %}
+          <div class="govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper">
+              <h2 class="govuk-summary-card__title">{{ t("govuk_alpha_settings.support_actions." + action.typeKey) }}</h2>
+            </div>
+            <div class="govuk-summary-card__content">
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_actions.prepared_by") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ action.other_party_name or t("govuk_alpha_settings.common.unknown_member") }}</dd>
+                </div>
+                {% if action.detail !== null and action.detail !== "" %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_actions.detail") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ action.detail }}</dd>
+                  </div>
+                {% endif %}
+                {% if action.expiresOnLabel %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.support_actions.expires") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ action.expiresOnLabel }}</dd>
+                  </div>
+                {% endif %}
+              </dl>
+
+              <p class="govuk-body">{{ t("govuk_alpha_settings.support_actions.nothing_without_you") }}</p>
+
+              <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}" class="govuk-!-margin-bottom-3">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="action_id" value="{{ action.id }}">
+                <input type="hidden" name="answer" value="approve">
+                <button class="govuk-button" data-module="govuk-button" type="submit">
+                  {{ t("govuk_alpha_settings.support_actions.approve_button") }}
+                </button>
+              </form>
+
+              {# Declining offers a reason and never requires one. #}
+              <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                <input type="hidden" name="action_id" value="{{ action.id }}">
+                <input type="hidden" name="answer" value="decline">
+                <div class="govuk-form-group">
+                  <label class="govuk-label" for="reason_{{ action.id }}">{{ t("govuk_alpha_settings.support_actions.reason_label") }}</label>
+                  <div id="reason-hint-{{ action.id }}" class="govuk-hint">{{ t("govuk_alpha_settings.support_actions.reason_hint") }}</div>
+                  <textarea class="govuk-textarea" id="reason_{{ action.id }}" name="reason" rows="2" maxlength="500" aria-describedby="reason-hint-{{ action.id }}"></textarea>
+                </div>
+                <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
+                  {{ t("govuk_alpha_settings.support_actions.decline_button") }}
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {# The supporter's own prepared actions, withdrawable while unanswered. #}
+      {% if outgoing.length %}
+        <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("govuk_alpha_settings.support_actions.outgoing_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.support_actions.outgoing_intro") }}</p>
+        <dl class="govuk-summary-list">
+          {% for action in outgoing %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                {{ t("govuk_alpha_settings.support_actions." + action.typeKey) }} — {{ action.other_party_name or t("govuk_alpha_settings.common.unknown_member") }}
+              </dt>
+              <dd class="govuk-summary-list__value">
+                <strong class="govuk-tag {{ action.stateTagClass }}">{{ t("govuk_alpha_settings.support_actions.state_" + action.state) }}</strong>
+              </dd>
+              <dd class="govuk-summary-list__actions">
+                {% if action.state === 'pending' %}
+                  <form method="post" action="{{ urlFor('/settings/support-actions/respond') }}">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <input type="hidden" name="action_id" value="{{ action.id }}">
+                    <input type="hidden" name="answer" value="withdraw">
+                    <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+                      {{ t("govuk_alpha_settings.support_actions.withdraw_button") }}
+                    </button>
+                  </form>
+                {% endif %}
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

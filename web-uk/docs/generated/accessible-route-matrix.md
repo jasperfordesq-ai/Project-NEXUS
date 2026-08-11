@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-11T05:46:59.418Z
-Laravel commit SHA: `ca985ce6a07b2468204a28c67a0754e183992835`
-Web UK repository commit SHA: `ca985ce6a07b2468204a28c67a0754e183992835`
+Generated: 2026-08-11T05:57:34.723Z
+Laravel commit SHA: `5acc8e820a39eba6306f2e210d1a3f263d1880b8`
+Web UK repository commit SHA: `5acc8e820a39eba6306f2e210d1a3f263d1880b8`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,9 +12,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 705 |
-| Matched routes | 698 |
-| Missing routes | 9 |
+| web-uk routes | 710 |
+| Matched routes | 703 |
+| Missing routes | 4 |
 | Extra web-uk routes | 5 |
 | Ignored web-uk infrastructure routes | 3 |
 
@@ -84,7 +84,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | search | 6 | 0 | 0 | 0 |
 | service-unavailable | 0 | 0 | 0 | 1 |
 | session | 0 | 0 | 0 | 1 |
-| settings | 16 | 8 | 0 | 0 |
+| settings | 21 | 3 | 0 | 0 |
 | skills | 1 | 0 | 0 | 0 |
 | trust-and-safety | 1 | 0 | 0 | 0 |
 | users | 3 | 0 | 0 | 0 |
@@ -99,14 +99,9 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Method | Path | Family | Handler | Blade view | Auth | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
 | POST | `/events/{param}/check-in/code` | events | eventsOfflineCheckinCode |  | public-or-unknown |  |
-| GET | `/settings/linked-accounts/activity/{param}` | settings | settingsLinkedAccountActivity | settings-linked-account-activity | auth-optional |  |
 | GET | `/settings/linked-accounts/messages/{param}` | settings | settingsLinkedAccountMessages |  | public-or-unknown |  |
 | GET | `/settings/linked-accounts/messages/{param}/{param}` | settings | settingsLinkedAccountThread |  | public-or-unknown |  |
-| GET | `/settings/support-actions` | settings | settingsSupportActions | settings-support-actions | auth-optional |  |
-| POST | `/settings/linked-accounts/message-access/request` | settings | settingsRequestMessageAccess |  | auth-optional |  |
-| POST | `/settings/linked-accounts/message-access/withdraw` | settings | settingsWithdrawMessageAccess |  | auth-optional |  |
 | POST | `/settings/linked-accounts/messages/{param}/purpose` | settings | settingsLinkedAccountMessagesPurpose |  | auth-optional |  |
-| POST | `/settings/support-actions/respond` | settings | settingsRespondToSupportAction |  | auth-optional |  |
 
 ## Extra Web UK Routes
 
