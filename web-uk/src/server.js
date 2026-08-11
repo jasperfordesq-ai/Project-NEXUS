@@ -15,7 +15,7 @@ const morgan = require('morgan');
 const { doubleCsrf } = require('csrf-csrf');
 const path = require('path');
 const { URL } = require('url');
-const { getApiBaseUrl } = require('./lib/backend-contract');
+const { getPublicAssetBaseUrl } = require('./lib/backend-contract');
 
 const authRoutes = require('./routes/auth');
 const listingsRoutes = require('./routes/listings');
@@ -271,7 +271,10 @@ app.use(helmet({
       // challenges.cloudflare.com — Cloudflare Turnstile widget script.
       scriptSrc: ["'self'", "'sha256-GUQ5ad8JK5KmEWmROf3LZd9ge94daqNvd8xy9YS1iDw='", "https://challenges.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", new URL(getApiBaseUrl()).origin],
+      // Browser-reachable asset origin, not the server-to-server API origin: in
+      // Docker those differ, and allowing the container-only hostname would
+      // permit a host the browser cannot resolve while blocking the one it can.
+      imgSrc: ["'self'", "data:", new URL(getPublicAssetBaseUrl()).origin],
       fontSrc: ["'self'"],
       // challenges.cloudflare.com — Turnstile siteverify (server-side) +
       // browser-side widget telemetry posts back to its own origin.

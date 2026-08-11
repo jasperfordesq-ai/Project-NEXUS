@@ -16,7 +16,7 @@ const phaseText = 'Beta';
 const feedbackUrl = 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback';
 const sourceCodeUrl = 'https://github.com/jasperfordesq-ai/nexus-v1';
 const { URL } = require('node:url');
-const { getApiBaseUrl } = require('./backend-contract');
+const { getPublicAssetBaseUrl } = require('./backend-contract');
 const { createTranslator, isSupportedLocale } = require('./localization');
 
 const localeOptions = [
@@ -470,10 +470,14 @@ function resolveBackendAssetUrl(value) {
   const asset = String(value || '').trim();
   if (!asset) return '';
 
-  const apiBaseUrl = getApiBaseUrl();
+  // The BROWSER loads this, so use the browser-reachable origin — which in
+  // Docker is not the origin this server calls the API on. The same-origin
+  // check is kept: an absolute URL pointing anywhere else is rejected rather
+  // than rendered, so a tenant cannot point the header at a third-party host.
+  const assetBaseUrl = getPublicAssetBaseUrl();
   try {
-    const resolved = new URL(asset, `${apiBaseUrl}/`);
-    return resolved.origin === new URL(apiBaseUrl).origin ? resolved.href : '';
+    const resolved = new URL(asset, `${assetBaseUrl}/`);
+    return resolved.origin === new URL(assetBaseUrl).origin ? resolved.href : '';
   } catch {
     return '';
   }

@@ -42,9 +42,31 @@ function getApiBaseUrl(env = process.env) {
   return resolveBackendContract(env).baseUrl;
 }
 
+/**
+ * The backend origin as a BROWSER must reach it, which is not always the origin
+ * this server uses.
+ *
+ * 🔴 In Docker the API is reached at `http://host.docker.internal:8090`, a
+ * hostname that resolves inside the container and NOT on the developer's
+ * machine. Tenant logo `src` attributes and the CSP `img-src` allowlist are
+ * consumed by the browser, so building them from the server-to-server origin
+ * produces a broken image and a policy that permits an unreachable host. Found
+ * for real the first time a tenant had a logo uploaded — nothing had exercised
+ * it before, because no local tenant had one.
+ *
+ * Set `PUBLIC_ASSET_BASE_URL` when the two differ. It falls back to the API
+ * origin, so single-origin setups (production, native `npm run dev`) need no
+ * configuration and behave exactly as before.
+ */
+function getPublicAssetBaseUrl(env = process.env) {
+  const configured = String(env.PUBLIC_ASSET_BASE_URL || '').trim();
+  return configured ? stripTrailingSlash(configured) : getApiBaseUrl(env);
+}
+
 module.exports = {
   DEFAULT_ASPNET_BASE_URL,
   DEFAULT_LARAVEL_BASE_URL,
   getApiBaseUrl,
+  getPublicAssetBaseUrl,
   resolveBackendContract
 };

@@ -95,6 +95,63 @@ describe('backend contract configuration', () => {
   });
 });
 
+describe('browser-reachable asset origin', () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = { ...originalEnv };
+    delete process.env.ACCESSIBLE_BACKEND_TARGET;
+    delete process.env.API_BASE_URL;
+    delete process.env.LARAVEL_BASE_URL;
+    delete process.env.PUBLIC_ASSET_BASE_URL;
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  /**
+   * 🔴 Found for real the first time a tenant had a logo: in Docker the API is
+   * reached at host.docker.internal, which resolves inside the container and NOT
+   * in the developer's browser. Tenant logo `src` values and the CSP img-src
+   * allowlist are consumed by the BROWSER, so they must use this origin.
+   */
+  it('uses PUBLIC_ASSET_BASE_URL when the browser origin differs from the API origin', () => {
+    process.env.LARAVEL_BASE_URL = 'http://host.docker.internal:8090';
+    process.env.PUBLIC_ASSET_BASE_URL = 'http://127.0.0.1:8090';
+    const { getApiBaseUrl, getPublicAssetBaseUrl } = require('../src/lib/backend-contract');
+
+    expect(getApiBaseUrl()).toBe('http://host.docker.internal:8090');
+    expect(getPublicAssetBaseUrl()).toBe('http://127.0.0.1:8090');
+  });
+
+  it('falls back to the API origin so single-origin setups need no configuration', () => {
+    process.env.LARAVEL_BASE_URL = 'http://127.0.0.1:8090';
+    const { getApiBaseUrl, getPublicAssetBaseUrl } = require('../src/lib/backend-contract');
+
+    expect(getPublicAssetBaseUrl()).toBe(getApiBaseUrl());
+  });
+
+  it('trims a trailing slash so the resolved asset URL has no double slash', () => {
+    process.env.PUBLIC_ASSET_BASE_URL = 'http://127.0.0.1:8090/';
+    const { getPublicAssetBaseUrl } = require('../src/lib/backend-contract');
+
+    expect(getPublicAssetBaseUrl()).toBe('http://127.0.0.1:8090');
+  });
+
+  it('resolves a tenant logo against the browser origin and still rejects a foreign host', () => {
+    process.env.LARAVEL_BASE_URL = 'http://host.docker.internal:8090';
+    process.env.PUBLIC_ASSET_BASE_URL = 'http://127.0.0.1:8090';
+    const { resolveBackendAssetUrl } = require('../src/lib/accessible-shell');
+
+    expect(resolveBackendAssetUrl('/uploads/tenants/acme/logo.png'))
+      .toBe('http://127.0.0.1:8090/uploads/tenants/acme/logo.png');
+    // A tenant must not be able to point the header at a third-party host.
+    expect(resolveBackendAssetUrl('https://untrusted.example/logo.png')).toBe('');
+  });
+});
+
 describe('ASP.NET readiness audit', () => {
   it('passes only when the public slug-first bootstrap contract is available', async () => {
     const fetchImpl = jest.fn()
