@@ -63,13 +63,41 @@ else
     fi
 fi
 
+# 🔴 web-uk is opt-in, and it MUST travel as a FLAG.
+#
+# This script reaches the server over SSH and runs the deploy under `sudo`.
+# Neither forwards environment variables, so an earlier version of this plan —
+# `NEXUS_DEPLOY_WEBUK=1 bash scripts/deploy.sh` — deployed WITHOUT web-uk,
+# succeeded, and reported success. Nobody would have noticed until a vhost
+# pointed at a dead port. A flag survives sudo and shows up in the deploy log.
+WEBUK_FLAG=""
+for arg in "$@"; do
+    case "$arg" in
+        --with-webuk) WEBUK_FLAG=" --with-webuk" ;;
+        --without-webuk) WEBUK_FLAG=" --without-webuk" ;;
+    esac
+done
+if [ -n "${NEXUS_DEPLOY_WEBUK:-}" ] && [ -z "$WEBUK_FLAG" ]; then
+    # Refuse rather than silently ignoring it. Someone setting this variable
+    # clearly INTENDS to deploy web-uk; dropping it quietly is the exact fault
+    # this guard exists to prevent.
+    echo "===> NEXUS_DEPLOY_WEBUK is set, but it CANNOT reach the server:"
+    echo "===>   this script deploys over SSH under sudo, and neither forwards"
+    echo "===>   environment variables. Use the flag instead:"
+    echo "===>       bash scripts/deploy.sh --with-webuk"
+    exit 2
+fi
+
 echo "===> [4/5] Blue/green deploy (zero-downtime, detached)"
+if [ -n "$WEBUK_FLAG" ]; then
+    echo "===>       web-uk:$WEBUK_FLAG"
+fi
 ENV_FILE=".secrets.local/deploy.env"
 [ -f "$ENV_FILE" ] || { echo "===> Missing $ENV_FILE — cannot reach the server."; exit 2; }
 SSH_HOST=$(grep ^PROD_SSH_HOST "$ENV_FILE" | cut -d= -f2-)
 SSH_KEY=$(grep ^PROD_SSH_KEY "$ENV_FILE" | cut -d= -f2-)
 ssh -i "$SSH_KEY" -o RequestTTY=force "$SSH_HOST" \
-    "cd /opt/nexus-php && sudo git fetch origin main && sudo git reset --hard origin/main && sudo bash scripts/deploy/bluegreen-deploy.sh deploy --detach"
+    "cd /opt/nexus-php && sudo git fetch origin main && sudo git reset --hard origin/main && sudo bash scripts/deploy/bluegreen-deploy.sh deploy --detach$WEBUK_FLAG"
 
 echo ""
 echo "===> Deploy launched. Watch it with:"

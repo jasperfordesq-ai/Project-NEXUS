@@ -108,6 +108,16 @@ parse_flags() {
             --migrate) LARAVEL_MIGRATE=1 ;;        # accepted as no-op (default)
             --no-migrate) LARAVEL_MIGRATE=0 ;;     # opt out (rare)
             --detach|-d) DETACH=1 ;;
+            # 🔴 A FLAG, NOT AN ENV VAR, and the reason matters. scripts/deploy.sh
+            # runs this over SSH under `sudo`, and forwards no environment at all —
+            # so `NEXUS_DEPLOY_WEBUK=1 bash scripts/deploy.sh` deployed WITHOUT
+            # web-uk, succeeded, and reported success. A flag survives sudo, appears
+            # in the deploy log, and cannot be silently dropped.
+            #
+            # NEXUS_DEPLOY_WEBUK still works for running this script directly on the
+            # server, where the environment is not crossing a boundary.
+            --with-webuk) DEPLOY_WEBUK=1 ;;
+            --without-webuk) DEPLOY_WEBUK=0 ;;
             --skip-prerender) SKIP_PRERENDER=1 ;;
             --force-prerender) FORCE_PRERENDER=1 ;;
             --prerender-tenant) PRERENDER_TENANT="${2:-}"; shift ;;
@@ -745,6 +755,14 @@ deploy_candidate() {
     phase "Build Candidate ($color)" "${CURRENT_ACTIVE:-}" "$color" "$commit"
     log_info "Release: ${commit:0:12}"
     log_info "Inactive ports: API=$api_port frontend=$frontend_port"
+    # 🔴 Stated explicitly, both ways. The whole defect this replaces was that
+    # web-uk's ABSENCE was silent, so the log must answer "was it included?"
+    # without anyone having to infer it from what is missing.
+    if webuk_enabled; then
+        log_info "web-uk: INCLUDED in this deploy (port $(webuk_port_for_color "$color"))"
+    else
+        log_info "web-uk: NOT included (pass --with-webuk to include it)"
+    fi
 
     export NEXUS_COLOR="$color"
     export NEXUS_API_PORT="$api_port"

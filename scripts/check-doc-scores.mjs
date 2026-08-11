@@ -34,9 +34,9 @@
  * Modelled on scripts/check-version-consistency.mjs.
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, relative, sep } from 'node:path';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -129,9 +129,14 @@ const RETIRED_MARKERS = {
   PROJECT_PAUSE_STATE: 'split on 2026-08-11 into PROJECT_PAUSE_STATE_ASPNET and PROJECT_PAUSE_STATE_WEBUK; one marker cannot describe two workstreams whose states now differ'
 };
 
-// Documents that may carry markers. Kept explicit: a marker appearing in an
-// unlisted file is itself a finding, because it means a score now lives
-// somewhere nobody is looking.
+// Documents that may carry markers. Kept explicit, and enforced by a repo-wide
+// scan further down — see `assertNoUnregisteredMarkerDocuments()`.
+//
+// 🔴 This comment used to claim that "a marker appearing in an unlisted file is
+// itself a finding". It was not: the script only ever read this list and never
+// looked anywhere else, so a score added to a new document would have been
+// completely invisible — the exact orphaned-marker problem this checker exists to
+// solve, reproduced inside the checker. The scan below makes the claim true.
 const MARKER_DOCUMENTS = [
   'web-uk/docs/CURRENT_LARAVEL_FIRST_PARITY_STATUS.md',
   'web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md',
@@ -142,6 +147,67 @@ const MARKER_DOCUMENTS = [
 ];
 
 const MARKER_PATTERN = /<!--\s*doc-consistency:\s*([A-Z0-9_]+)\s*=\s*(.+?)\s*-->/g;
+
+/**
+ * Walk the repository for Markdown files carrying markers, and fail on any that
+ * MARKER_DOCUMENTS does not list.
+ *
+ * 🔴 Without this, adding a score to a new document put it beyond every check in
+ * this file — silently. Scanning `.md` only is deliberate and sufficient: a marker
+ * is an HTML comment in prose, and it also excludes this script, whose own regex
+ * literal would otherwise match itself.
+ */
+function assertNoUnregisteredMarkerDocuments() {
+  const SKIP_DIRS = new Set([
+    'node_modules', 'vendor', '.git', 'site', 'dist', 'build', 'coverage',
+    // Local scratch and archived output — not maintained documentation.
+    '.local-docs-archive', '.heroui-docs', 'storage', 'releases'
+  ]);
+  const registered = new Set(MARKER_DOCUMENTS.map((p) => p.split('/').join(sep)));
+  const seen = [];
+
+  const walk = (absolute) => {
+    let entries;
+    try {
+      entries = readdirSync(absolute, { withFileTypes: true });
+    } catch {
+      return; // unreadable directory is not this checker's business
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (SKIP_DIRS.has(entry.name)) continue;
+        walk(join(absolute, entry.name));
+        continue;
+      }
+      if (!entry.name.endsWith('.md')) continue;
+
+      const full = join(absolute, entry.name);
+      let text;
+      try {
+        text = readFileSync(full, 'utf8');
+      } catch {
+        continue;
+      }
+      if (!/<!--\s*doc-consistency:/.test(text)) continue;
+
+      const rel = relative(ROOT, full);
+      seen.push(rel);
+      if (!registered.has(rel)) {
+        failures.push(
+          `${rel.split(sep).join('/')}: carries a doc-consistency marker but is NOT in `
+          + 'MARKER_DOCUMENTS, so none of the checks in scripts/check-doc-scores.mjs '
+          + 'apply to it. Add it to that list (and give any score a rubric id), or '
+          + 'remove the marker. An unregistered score is a score nothing checks.'
+        );
+      }
+    }
+  };
+
+  walk(ROOT);
+  notes.push(`repo scan: ${seen.length} Markdown file(s) carry markers, all registered`);
+}
+
+assertNoUnregisteredMarkerDocuments();
 
 /** @type {Map<string, {value: string, doc: string}[]>} */
 const found = new Map();

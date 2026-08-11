@@ -151,6 +151,40 @@ describe('web-uk Sentry error reporting', () => {
     });
   });
 
+  it('🔴 mounts /version and /health BEFORE every gate', () => {
+    // These must answer when the platform is broken, which is the only time anyone
+    // reads them. /version was originally registered below tenantFeatureGate and
+    // legalGate, and /health always had been — so both inherited a dependency on the
+    // Laravel backend being reachable.
+    //
+    // /version is what proves a cutover switched colour and what the routing-drift
+    // check reads; /health is the container healthcheck, so a backend wobble behind
+    // a tenant gate could have got the container RESTARTED over an unrelated fault.
+    //
+    // A unit test cannot catch this — the harness mocks the backend away, which is
+    // precisely what makes the position invisible. So the ordering is asserted
+    // directly.
+    const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.js'), 'utf8');
+
+    const healthAt = server.indexOf("app.get('/health'");
+    const versionAt = server.indexOf("app.get('/version'");
+    const tenantGateAt = server.indexOf('app.use(tenantFeatureGate)');
+    const legalGateAt = server.indexOf('app.use(legalGate)');
+
+    for (const [label, index] of [
+      ['/health', healthAt], ['/version', versionAt],
+      ['tenantFeatureGate', tenantGateAt], ['legalGate', legalGateAt]
+    ]) {
+      expect(index).toBeGreaterThan(-1);
+      expect(typeof label).toBe('string');
+    }
+
+    expect(healthAt).toBeLessThan(tenantGateAt);
+    expect(versionAt).toBeLessThan(tenantGateAt);
+    expect(healthAt).toBeLessThan(legalGateAt);
+    expect(versionAt).toBeLessThan(legalGateAt);
+  });
+
   it('is wired into the server before express is constructed', () => {
     const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.js'), 'utf8');
     const initAt = server.indexOf('initSentry()');

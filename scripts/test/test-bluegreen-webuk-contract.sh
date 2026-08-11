@@ -107,6 +107,29 @@ else
   echo "  PASS  missing overlay fails loudly"
 fi
 
+echo
+echo "=== 8. the --with-webuk FLAG works, because an env var cannot cross ssh+sudo ==="
+# 🔴 The defect this covers: scripts/deploy.sh reaches the server over SSH and runs
+# the deploy under sudo, neither of which forwards environment variables. So
+# NEXUS_DEPLOY_WEBUK=1 deployed WITHOUT web-uk and reported success.
+unset NEXUS_DEPLOY_WEBUK
+DEPLOY_WEBUK=0
+eval "$(sed -n '/^parse_flags() {/,/^}/p' "$SRC")"
+usage () { :; }
+parse_flags deploy --with-webuk
+if [ "$DEPLOY_WEBUK" = "1" ]; then echo "  PASS  --with-webuk enables it"; else echo "  FAIL  --with-webuk did not enable it"; fail=$((fail+1)); fi
+DEPLOY_WEBUK=1
+parse_flags deploy --without-webuk
+if [ "$DEPLOY_WEBUK" = "0" ]; then echo "  PASS  --without-webuk disables it"; else echo "  FAIL  --without-webuk did not disable it"; fail=$((fail+1)); fi
+
+echo
+echo "=== 9. deploy.sh forwards the flag and REFUSES the env var ==="
+D="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/scripts/deploy.sh"
+if grep -q -- '--with-webuk) WEBUK_FLAG=' "$D"; then echo "  PASS  deploy.sh accepts --with-webuk"; else echo "  FAIL  deploy.sh does not accept the flag"; fail=$((fail+1)); fi
+if grep -q 'deploy --detach$WEBUK_FLAG' "$D"; then echo "  PASS  deploy.sh forwards it to the server"; else echo "  FAIL  deploy.sh does not forward it"; fail=$((fail+1)); fi
+# Refusing is the point: silently ignoring the variable is the original defect.
+if grep -q 'NEXUS_DEPLOY_WEBUK is set, but it CANNOT reach the server' "$D"; then echo "  PASS  deploy.sh refuses the env var loudly"; else echo "  FAIL  deploy.sh does not refuse the env var"; fail=$((fail+1)); fi
+
 rm -rf "$REL" "$REL2" "$TMP"
 echo
 if [ "$fail" -eq 0 ]; then echo "ALL CHECKS PASSED"; else echo "$fail CHECK(S) FAILED"; exit 1; fi

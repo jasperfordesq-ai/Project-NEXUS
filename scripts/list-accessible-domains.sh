@@ -55,7 +55,7 @@ run_local () {
 }
 
 run_production () {
-    local host key
+    local host key sql_b64
     if [ ! -f .secrets.local/deploy.env ]; then
         echo "ERROR: .secrets.local/deploy.env not found; cannot reach production." >&2
         exit 1
@@ -64,14 +64,65 @@ run_production () {
     # evaluate, and this is the documented way to read it.
     host="$(grep -E '^PROD_SSH_HOST=' .secrets.local/deploy.env | cut -d= -f2- | tr -d '"'"'"'\r')"
     key="$(grep -E '^PROD_SSH_KEY=' .secrets.local/deploy.env | cut -d= -f2- | tr -d '"'"'"'\r')"
+
+    # 🔴 THE WHOLE PHP PROGRAM TRAVELS AS BASE64, and three failures got us here.
+    #
+    # 1. The first version embedded the SQL in a `php -r '...'` argument inside a
+    #    double-quoted SSH string. The SQL contains single quotes —
+    #    NULLIF(accessible_domain, '') and '-' — which terminated the PHP argument
+    #    early, so the command was always malformed.
+    # 2. It ended in `2>/dev/null`, turning that into EMPTY OUTPUT that is
+    #    indistinguishable from "no community has an accessible domain". This is the
+    #    cutover checklist; a silently empty checklist reads as "nothing to do" and
+    #    is worse than no checklist at all.
+    # 3. Once stderr was visible, two more real faults appeared immediately: the
+    #    documented container `nexus-php-app` IS NOT RUNNING on a blue/green host,
+    #    and the running one has NO `mysql` client installed.
+    #
+    # Base64-ing the entire program — not just the query — removes every quoting
+    # layer between here and the container: the payload is alphanumeric plus `+/=`,
+    # and PHP reads the decoded program from stdin. Nothing is escaped, so nothing
+    # can be mis-escaped.
+    local php_program
+    php_program="$(cat <<'PHPEOF'
+<?php
+$dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8mb4', getenv('DB_HOST'), getenv('DB_NAME'));
+$pdo = new PDO($dsn, getenv('DB_USER'), getenv('DB_PASS'), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$sql = base64_decode(getenv('NEXUS_DOMAIN_SQL_B64'), true);
+if ($sql === false) { fwrite(STDERR, "could not decode the query\n"); exit(1); }
+foreach ($pdo->query($sql) as $row) {
+    echo implode("\t", [$row['id'], $row['slug'], $row['accessible_domain'], $row['domain']]), "\n";
+}
+PHPEOF
+)"
+    sql_b64="$(printf '%s' "$SQL" | base64 -w0 2>/dev/null || printf '%s' "$SQL" | base64 | tr -d '\n')"
+    local php_b64
+    php_b64="$(printf '%s' "$php_program" | base64 -w0 2>/dev/null || printf '%s' "$php_program" | base64 | tr -d '\n')"
+
+    # 🔴 THE CONTAINER NAME IS RESOLVED, NOT ASSUMED.
+    #
+    # The first version of this ran `docker exec nexus-php-app`, which is what the
+    # documentation shows — and that container IS NOT RUNNING on this host. It is the
+    # legacy single-colour container, left in `exited` state by the blue/green
+    # migration. Production runs `nexus-blue-php-app` and `nexus-green-php-app`.
+    #
+    # Found only because the fix above stopped swallowing stderr. With `2>/dev/null`
+    # this would have printed an empty inventory forever and been believed.
+    #
+    # The active colour is recorded in .bluegreen-active; fall back to the legacy
+    # name so this still works on a host that predates blue/green.
+    #
+    # The container's own DB_* environment is used INSIDE the container, so no
+    # credential is written on a command line here or on the remote host.
+    # The query is handed to PHP through an environment variable set on the
+    # `docker exec` line, so it never touches a shell quoting context either. The DB
+    # credentials stay entirely inside the container.
     ssh -i "$key" -o RequestTTY=force "$host" \
-        "sudo docker exec nexus-php-app php -r '
-            \$dsn = sprintf(\"mysql:host=%s;dbname=%s\", getenv(\"DB_HOST\"), getenv(\"DB_NAME\"));
-            \$pdo = new PDO(\$dsn, getenv(\"DB_USER\"), getenv(\"DB_PASS\"));
-            foreach (\$pdo->query(\"$SQL\") as \$r) {
-                printf(\"%s\t%s\t%s\t%s\n\", \$r[\"id\"], \$r[\"slug\"], \$r[\"accessible_domain\"], \$r[\"domain\"]);
-            }
-        '" 2>/dev/null | tr -d '\r'
+        "APP_CONTAINER=\"nexus-\$(sudo cat /opt/nexus-php/.bluegreen-active 2>/dev/null || echo '')-php-app\"; \
+         sudo docker ps --format '{{.Names}}' | grep -qx \"\$APP_CONTAINER\" || APP_CONTAINER=nexus-php-app; \
+         sudo docker exec -e NEXUS_DOMAIN_SQL_B64=$sql_b64 \"\$APP_CONTAINER\" \
+             sh -c 'echo $php_b64 | base64 -d | php'" \
+        | tr -d '\r' | grep -vE '^\s*$'
 }
 
 echo "Accessible-frontend hostname inventory (${MODE})"

@@ -305,6 +305,23 @@ final class EventAttendanceByCodeApiTest extends TestCase
 
     public function test_a_member_without_roster_permission_is_refused(): void
     {
+        // 🔴 ASSERTS 403 AND THE EXACT CODE. This previously accepted any of
+        // [401, 403, 404, 422], which was wrong for a specific reason: 422 is what a
+        // VALIDATION failure returns, so a test about authorisation could have been
+        // satisfied by a refusal that had nothing to do with who the caller was.
+        //
+        // 🔴 What this test does NOT prove, established by experiment rather than
+        // assumed. Disabling the controller's check in attendanceContext()
+        // (viewRoster AND manageAttendance) leaves this test PASSING — because
+        // EventAttendanceService::transition independently re-checks
+        // manageAttendance against a FRESHLY RE-READ actor and throws
+        // event_attendance_authorization_denied, which lands in the same 403 arm.
+        //
+        // That is genuine defence in depth, and the re-read also defeats a stale-role
+        // attack. So this test pins the observable contract — an outsider is refused
+        // with 403 EVENT_REGISTRATION_FORBIDDEN — and deliberately does not care
+        // which of the two layers refused. Removing ONE layer is still a refusal, by
+        // design; removing BOTH is what this catches.
         [, , $eventId, $credential] = $this->fixture();
         $outsider = $this->user();
         Sanctum::actingAs($outsider, ['*']);
@@ -313,9 +330,18 @@ final class EventAttendanceByCodeApiTest extends TestCase
             'action' => 'check_in',
             'credential' => $credential,
             'confirmation' => '1',
+            // Supplied deliberately: without it the request could fail validation
+            // for a MISSING KEY and produce a refusal that says nothing about
+            // authorisation. The request must be otherwise valid so that 403 can
+            // only mean "refused because of who you are".
+            'idempotency_key' => (string) Str::uuid(),
         ]);
 
-        $this->assertContains($response->getStatusCode(), [401, 403, 404, 422]);
+        $response->assertStatus(403);
+        $this->assertSame(
+            'EVENT_REGISTRATION_FORBIDDEN',
+            $response->json('errors.0.code'),
+        );
     }
 
     public function test_it_requires_authentication(): void
