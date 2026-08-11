@@ -32,10 +32,41 @@ export class ApiResponseError extends Error {
     public readonly status: number,
     message: string,
     public readonly errors?: Record<string, string[]>,
+    /**
+     * The API's machine-readable error code, when it sent one.
+     *
+     * 🔴 The v2 API answers a failed precondition with
+     * `{ errors: [{ code, message }], success: false }` — `ONBOARDING_REQUIRED`,
+     * `LEGAL_ACCEPTANCE_REQUIRED`, and others. Only the MESSAGE was being kept, so
+     * the app could tell that something was refused but never WHY, and could not
+     * respond by showing the right screen. Every one of those refusals looked like
+     * a generic error.
+     */
+    public readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiResponseError';
   }
+}
+
+/** The first machine code in a v2 error envelope, if there is one. */
+function extractErrorCode(data: unknown): string | undefined {
+  const body = data as { errors?: unknown; code?: unknown } | null;
+
+  if (typeof body?.code === 'string' && body.code !== '') {
+    return body.code;
+  }
+
+  if (Array.isArray(body?.errors)) {
+    const found = (body.errors as { code?: unknown }[]).find(
+      (error) => typeof error?.code === 'string' && error.code !== '',
+    );
+    if (found) {
+      return String(found.code);
+    }
+  }
+
+  return undefined;
 }
 
 function extractErrorMessage(data: unknown, fallback: string): string {
@@ -63,6 +94,24 @@ let onUnauthorizedCallback: (() => void) | null = null;
 
 export function registerUnauthorizedCallback(cb: () => void): void {
   onUnauthorizedCallback = cb;
+}
+
+/**
+ * Called when the API refuses a request with `LEGAL_ACCEPTANCE_REQUIRED` — the
+ * root layout registers a handler that opens the acceptance screen.
+ *
+ * 🔴 Mirrors the 401 callback deliberately rather than making every one of the
+ * app's 562 call sites handle this. A refusal that only some screens knew about
+ * would surface as a generic error on all the others, which is precisely the
+ * failure this is meant to prevent.
+ *
+ * The error is still THROWN as well, so a caller that wants to handle it locally
+ * can, and a caller that does not is not left thinking the request succeeded.
+ */
+let onLegalAcceptanceRequiredCallback: (() => void) | null = null;
+
+export function registerLegalAcceptanceRequiredCallback(cb: () => void): void {
+  onLegalAcceptanceRequiredCallback = cb;
 }
 
 /** Build headers for native media players/downloaders without exposing tokens in URLs. */
@@ -295,6 +344,7 @@ async function request<T>(
               i18n.t('common:errors.requestFailedWithStatus', { status: retryRes.status }),
             ),
             eb?.errors,
+            extractErrorCode(retryData),
           );
         }
         return retryData as T;
@@ -322,6 +372,14 @@ async function request<T>(
 
   if (!response.ok) {
     const errBody = data as { errors?: Record<string, string[]> } | null;
+    const code = extractErrorCode(data);
+
+    // The acceptance gate refused this. Surface the screen once, centrally, then
+    // still throw so the caller does not mistake the refusal for success.
+    if (code === 'LEGAL_ACCEPTANCE_REQUIRED') {
+      onLegalAcceptanceRequiredCallback?.();
+    }
+
     throw new ApiResponseError(
       response.status,
       extractErrorMessage(
@@ -329,6 +387,7 @@ async function request<T>(
         i18n.t('common:errors.requestFailedWithStatus', { status: response.status }),
       ),
       errBody?.errors,
+      code,
     );
   }
 

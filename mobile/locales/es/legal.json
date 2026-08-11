@@ -1,0 +1,21 @@
+{
+  "acceptance": {
+    "title": "Acepte los términos actualizados para continuar.",
+    "intro": "Estos documentos han cambiado desde la última vez que los aceptó. Léalos y confirme que los acepta o cierre sesión.",
+    "newTag": "Nuevo",
+    "updatedTag": "Actualizado",
+    "readLink": "Leer {{title}} completo",
+    "acceptButton": "Aceptar y continuar",
+    "signOut": "Cerrar sesión en su lugar",
+    "error": "Eso no se pudo grabar. No se ha aceptado nada. Por favor inténtalo de nuevo."
+  },
+  "document": {
+    "versionLabel": "Versión",
+    "summaryTitle": "que ha cambiado",
+    "effectiveFrom": "Entra en vigor",
+    "lastUpdated": "Última actualización",
+    "notYetInForce": "Esta versión aún no está vigente. La versión actualmente vigente se aplica hasta la fecha indicada.",
+    "empty": "Aún no se ha publicado una versión personalizada de este documento para {{community}}. Se aplica la política general a continuación.",
+    "back": "Volver a asuntos legales"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "acceptance": {
+    "title": "Acceptez les conditions mises à jour pour continuer",
+    "intro": "Ces documents ont changé depuis votre dernière acceptation. Veuillez les lire et confirmer votre acceptation, ou vous déconnecter.",
+    "newTag": "Nouveau",
+    "updatedTag": "Mis à jour",
+    "readLink": "Lire {{title}} dans son intégralité",
+    "acceptButton": "Accepter et continuer",
+    "signOut": "Déconnectez-vous plutôt",
+    "error": "Cela n'a pas pu être enregistré. Rien n'a été accepté. Veuillez réessayer."
+  },
+  "document": {
+    "versionLabel": "Version du document",
+    "summaryTitle": "Qu'est-ce qui a changé",
+    "effectiveFrom": "Entre en vigueur",
+    "lastUpdated": "Dernière mise à jour",
+    "notYetInForce": "Cette version n'est pas encore en vigueur. La version actuellement en vigueur s'applique jusqu'à la date indiquée.",
+    "empty": "Une version adaptée de ce document n'a pas encore été publiée pour {{community}}. La politique générale ci-dessous s’applique.",
+    "back": "Retour au légal"
+  }
+}

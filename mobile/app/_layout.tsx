@@ -14,6 +14,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setRootBottomInset } from '@/lib/ui/rootInsets';
+import { registerLegalAcceptanceRequiredCallback } from '@/lib/api/client';
 import { ThemeProvider, DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -173,6 +174,7 @@ function RootNavigator() {
     'groups',
     'ideation',
     'jobs',
+    'legal',
     'marketplace',
     'members',
     'messages',
@@ -205,6 +207,7 @@ function RootNavigator() {
 
   // Queue deep link from push notification taps — only navigate once auth resolves.
   const pendingDeepLinkRef = useRef<string | null>(null);
+  const legalScreenOpenRef = useRef(false);
 
   useEffect(() => {
     void Linking.getInitialURL().then((url) => {
@@ -224,6 +227,33 @@ function RootNavigator() {
       linkSubscription.remove();
     };
   }, []);
+
+  // The acceptance gate refused a request somewhere in the app. Open the screen
+  // once, centrally.
+  //
+  // 🔴 Registered the same way as the 401 handler rather than asking each of the
+  // app's 562 call sites to handle it. A refusal only some screens knew about
+  // would show as a generic error on all the others, which is exactly the
+  // confusion this screen exists to remove.
+  //
+  // Guarded against re-opening: the acceptance screen loads its own status, and
+  // that call can itself be refused on a slow network, which would otherwise
+  // stack a second copy on top of the first.
+  useEffect(() => {
+    registerLegalAcceptanceRequiredCallback(() => {
+      if (legalScreenOpenRef.current) return;
+      legalScreenOpenRef.current = true;
+      router.push('/(modals)/legal-acceptance');
+    });
+  }, []);
+
+  // Cleared when the member leaves the screen, so a later refusal can open it
+  // again.
+  useEffect(() => {
+    if (pathname !== '/legal-acceptance') {
+      legalScreenOpenRef.current = false;
+    }
+  }, [pathname]);
 
   // Auth redirect — check for a pending deep link BEFORE defaulting to home.
   // This prevents the race condition where router.replace('/(tabs)/home')
@@ -383,6 +413,24 @@ function RootNavigator() {
       <Stack.Screen
         name="(modals)/connections"
         options={{ ...modalOptions, headerShown: false, title: t('members:connections.title') }}
+      />
+      {/* 🔴 fullScreenModal, and no back gesture. This screen is shown because
+          the platform REFUSED an action, so swiping it away lands the member back
+          on something that will refuse them again — which reads as the app being
+          broken. The way out is the sign-out link on the screen itself. */}
+      <Stack.Screen
+        name="(modals)/legal-acceptance"
+        options={{
+          presentation: 'fullScreenModal',
+          headerShown: false,
+          gestureEnabled: false,
+          contentStyle: { backgroundColor: theme.bg },
+          title: t('legal:acceptance.title'),
+        }}
+      />
+      <Stack.Screen
+        name="(modals)/legal-document"
+        options={{ ...modalOptions, headerShown: false, title: t('legal:document.back') }}
       />
       <Stack.Screen
         name="(modals)/change-password"

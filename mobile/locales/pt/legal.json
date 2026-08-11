@@ -1,0 +1,21 @@
+{
+  "acceptance": {
+    "title": "Aceite os termos atualizados para continuar",
+    "intro": "Esses documentos foram alterados desde a última vez que você concordou com eles. Por favor, leia-os e confirme que você aceita ou saia.",
+    "newTag": "Novo",
+    "updatedTag": "Atualizado",
+    "readLink": "Leia {{title}} na íntegra",
+    "acceptButton": "Aceite e continue",
+    "signOut": "Sair",
+    "error": "Isso não pôde ser registrado. Nada foi aceito. Por favor, tente novamente."
+  },
+  "document": {
+    "versionLabel": "Versão",
+    "summaryTitle": "O que mudou",
+    "effectiveFrom": "Entra em vigor",
+    "lastUpdated": "Última atualização",
+    "notYetInForce": "Esta versão ainda não está em vigor. A versão atualmente em vigor é válida até a data indicada.",
+    "empty": "Uma versão adaptada deste documento ainda não foi publicada para {{community}}. A política geral abaixo se aplica.",
+    "back": "De volta ao jurídico"
+  }
+}

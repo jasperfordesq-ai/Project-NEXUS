@@ -1,0 +1,21 @@
+{
+  "acceptance": {
+    "title": "Akzeptieren Sie die aktualisierten Bedingungen, um fortzufahren",
+    "intro": "Diese Dokumente haben sich geändert, seit Sie ihnen das letzte Mal zugestimmt haben. Bitte lesen Sie sie durch und bestätigen Sie, dass Sie sie akzeptieren, oder melden Sie sich ab.",
+    "newTag": "Neu",
+    "updatedTag": "Aktualisiert",
+    "readLink": "Lesen Sie {{title}} vollständig",
+    "acceptButton": "Akzeptieren und fortfahren",
+    "signOut": "Melden Sie sich stattdessen ab",
+    "error": "Das konnte nicht erfasst werden. Es wurde nichts akzeptiert. Bitte versuchen Sie es erneut."
+  },
+  "document": {
+    "versionLabel": "Fassung",
+    "summaryTitle": "Was hat sich geändert?",
+    "effectiveFrom": "Tritt in Kraft",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "notYetInForce": "Diese Version ist noch nicht in Kraft. Bis zum angezeigten Datum gilt die aktuell gültige Fassung.",
+    "empty": "Eine maßgeschneiderte Version dieses Dokuments wurde für {{community}} noch nicht veröffentlicht. Es gelten die nachstehenden allgemeinen Richtlinien.",
+    "back": "Zurück zum Recht"
+  }
+}

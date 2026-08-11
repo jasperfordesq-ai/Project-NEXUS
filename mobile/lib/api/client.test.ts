@@ -27,7 +27,7 @@ jest.mock('@/lib/constants', () => ({
   },
 }));
 
-import { ApiResponseError, api, registerUnauthorizedCallback, attemptTokenRefresh } from './client';
+import { ApiResponseError, api, registerUnauthorizedCallback, registerLegalAcceptanceRequiredCallback, attemptTokenRefresh } from './client';
 import { storage } from '@/lib/storage';
 
 const mockStorage = storage as jest.Mocked<typeof storage>;
@@ -295,6 +295,101 @@ describe('error responses', () => {
     fetchMock.mockResolvedValueOnce(mockResponse({}, { status: 500 }));
 
     await expect(api.get('/api/v2/fail')).rejects.toThrow('Request failed with status 500');
+  });
+});
+
+describe('machine error codes', () => {
+  it('keeps the code from a v2 error envelope', async () => {
+    // 🔴 Only the MESSAGE used to be kept, so the app could tell that something was
+    // refused but never WHY — and could not respond by showing the right screen.
+    // Every failed precondition looked like a generic error.
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { errors: [{ code: 'LEGAL_ACCEPTANCE_REQUIRED', message: 'Please accept' }], success: false },
+        { status: 403 },
+      ),
+    );
+
+    try {
+      await api.post('/api/v2/comments', {});
+      fail('Expected to throw');
+    } catch (err) {
+      const apiErr = err as ApiResponseError;
+      expect(apiErr.code).toBe('LEGAL_ACCEPTANCE_REQUIRED');
+      expect(apiErr.status).toBe(403);
+      expect(apiErr.message).toBe('Please accept');
+    }
+  });
+
+  it('accepts a top-level code too', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ code: 'ONBOARDING_REQUIRED' }, { status: 403 }));
+
+    try {
+      await api.get('/api/v2/anything');
+      fail('Expected to throw');
+    } catch (err) {
+      expect((err as ApiResponseError).code).toBe('ONBOARDING_REQUIRED');
+    }
+  });
+
+  it('leaves the code undefined when the server sent none', async () => {
+    fetchMock.mockResolvedValueOnce(mockResponse({ message: 'Nope' }, { status: 400 }));
+
+    try {
+      await api.get('/api/v2/anything');
+      fail('Expected to throw');
+    } catch (err) {
+      expect((err as ApiResponseError).code).toBeUndefined();
+    }
+  });
+
+  it('skips an entry whose code is blank rather than reporting an empty code', async () => {
+    fetchMock.mockResolvedValueOnce(
+      mockResponse({ errors: [{ code: '' }, { code: 'REAL_CODE' }] }, { status: 400 }),
+    );
+
+    try {
+      await api.get('/api/v2/anything');
+      fail('Expected to throw');
+    } catch (err) {
+      expect((err as ApiResponseError).code).toBe('REAL_CODE');
+    }
+  });
+});
+
+describe('the legal acceptance callback', () => {
+  it('fires once when the gate refuses a request, and still throws', async () => {
+    // Registered centrally rather than at each of the app's 562 call sites: a
+    // refusal only some screens knew about would show as a generic error on all
+    // the others.
+    const onGate = jest.fn();
+    registerLegalAcceptanceRequiredCallback(onGate);
+
+    fetchMock.mockResolvedValueOnce(
+      mockResponse(
+        { errors: [{ code: 'LEGAL_ACCEPTANCE_REQUIRED', message: 'Please accept' }] },
+        { status: 403 },
+      ),
+    );
+
+    await expect(api.post('/api/v2/comments', {})).rejects.toThrow(ApiResponseError);
+    expect(onGate).toHaveBeenCalledTimes(1);
+
+    registerLegalAcceptanceRequiredCallback(() => {});
+  });
+
+  it('does not fire for an unrelated refusal', async () => {
+    const onGate = jest.fn();
+    registerLegalAcceptanceRequiredCallback(onGate);
+
+    fetchMock.mockResolvedValueOnce(
+      mockResponse({ errors: [{ code: 'AUTH_INSUFFICIENT_PERMISSIONS' }] }, { status: 403 }),
+    );
+
+    await expect(api.get('/api/v2/admin/thing')).rejects.toThrow(ApiResponseError);
+    expect(onGate).not.toHaveBeenCalled();
+
+    registerLegalAcceptanceRequiredCallback(() => {});
   });
 });
 

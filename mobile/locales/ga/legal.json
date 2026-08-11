@@ -1,0 +1,21 @@
+{
+  "acceptance": {
+    "title": "Glac leis na téarmaí nuashonraithe chun leanúint ar aghaidh",
+    "intro": "Tá na doiciméid seo athraithe ó d'aontaigh tú leo an uair dheireanach. Léigh le do thoil iad agus deimhnigh go nglacann tú leis, nó sínigh amach.",
+    "newTag": "Nua",
+    "updatedTag": "Nuashonraithe",
+    "readLink": "Léigh {{title}} ina iomláine",
+    "acceptButton": "Glac leis agus lean ar aghaidh",
+    "signOut": "Sínigh amach ina ionad sin",
+    "error": "Níorbh fhéidir é sin a thaifeadadh. Níl aon rud glactha. Bain triail eile as."
+  },
+  "document": {
+    "versionLabel": "Leagan",
+    "summaryTitle": "Cad atá athraithe",
+    "effectiveFrom": "Tagann i bhfeidhm",
+    "lastUpdated": "Nuashonraithe is déanaí",
+    "notYetInForce": "Níl an leagan seo i bhfeidhm fós. Tá feidhm ag an leagan atá i bhfeidhm faoi láthair go dtí an dáta a thaispeántar.",
+    "empty": "Níl leagan oiriúnaithe den doiciméad seo foilsithe go fóill do {{community}}. Tá feidhm ag an mbeartas ginearálta thíos.",
+    "back": "Ar ais go dlíthiúil"
+  }
+}

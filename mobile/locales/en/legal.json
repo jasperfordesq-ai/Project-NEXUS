@@ -1,0 +1,21 @@
+{
+  "acceptance": {
+    "title": "Accept the updated terms to continue",
+    "intro": "These documents have changed since you last agreed to them. Please read them and confirm you accept, or sign out.",
+    "newTag": "New",
+    "updatedTag": "Updated",
+    "readLink": "Read {{title}} in full",
+    "acceptButton": "Accept and continue",
+    "signOut": "Sign out instead",
+    "error": "That could not be recorded. Nothing has been accepted. Please try again."
+  },
+  "document": {
+    "versionLabel": "Version",
+    "summaryTitle": "What has changed",
+    "effectiveFrom": "Comes into effect",
+    "lastUpdated": "Last updated",
+    "notYetInForce": "This version is not yet in force. The version currently in force applies until the date shown.",
+    "empty": "A tailored version of this document has not been published for {{community}} yet. The general policy below applies.",
+    "back": "Back to legal"
+  }
+}
