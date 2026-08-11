@@ -42,7 +42,13 @@ class TurnstileService
      */
     public function verify(?string $token, ?string $remoteIp = null): bool
     {
-        $secret = (string) env('TURNSTILE_SECRET_KEY', '');
+        // 🔴 config(), NEVER env(). This read used to be
+        // `env('TURNSTILE_SECRET_KEY', '')`, and the deploy runs `artisan optimize`
+        // — after which Laravel stops loading `.env` and `env()` returns its
+        // default. Combined with the empty-secret fail-open below, that silently
+        // disabled the bot check in production no matter how it was configured.
+        // See config/turnstile.php for the full account.
+        $secret = (string) config('turnstile.secret', '');
 
         if ($secret === '' || $secret === self::TEST_PASS_SECRET) {
             Log::debug('turnstile.skipped', ['reason' => $secret === '' ? 'unset' : 'test_pass_key']);
