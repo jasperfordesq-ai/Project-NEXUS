@@ -31,6 +31,12 @@ const LEGAL_GATE_BYPASS_SEGMENTS = new Set([
   'terms', 'privacy', 'cookies', 'accessibility',
   'community-guidelines', 'acceptable-use',
   'legal', 'onboarding', 'platform',
+  // 🔴 Version history and comparison. This check reads only the LAST path
+  // segment, so /terms/versions had a last segment of "versions" and was blocked
+  // — meaning a member facing the gate could not read what had changed before
+  // agreeing to it. Missing these is the difference between informed consent and
+  // a button.
+  'versions', 'compare',
 ]);
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {

@@ -360,6 +360,38 @@ class LegalDocumentService
     }
 
     /**
+     * The single canonical in-app path for a legal document.
+     *
+     * 🔴 Notifications used to emit TWO different shapes, each broken on the
+     * frontend the other one targets. The bell link was `/{slug}` — a
+     * React-shaped path like `/terms`, which the accessible frontend answered with
+     * 404 until 2026-08-11. The email link was `/legal/{slug}`, which React had no
+     * route for. So every "we have updated our terms" notification sent a member
+     * to a dead end on one frontend or the other, depending on which link they
+     * clicked.
+     *
+     * Both now use this. `/legal/{slug}` is the accessible frontend's real path
+     * and Laravel's own route name (`govuk-alpha.legal.terms`); React gained
+     * `legal/:slug` aliases, and web-uk redirects the bare `/terms` and `/privacy`
+     * paths for links already sent.
+     *
+     * 🔴 Underscores become hyphens. `legal_documents.slug` falls back to
+     * `document_type`, which is underscored (`community_guidelines`), and no route
+     * on either frontend matches that — an unslugged row emitted a link that 404'd
+     * everywhere. web-uk accepts both forms defensively; this emits only the
+     * canonical one.
+     */
+    public static function documentPath(array $document): string
+    {
+        $slug = trim((string) ($document['slug'] ?? $document['document_type'] ?? ''));
+        $slug = str_replace('_', '-', $slug);
+        // Belt and braces: a slug is a URL segment, never a path.
+        $slug = trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slug) ?? '', '-');
+
+        return $slug === '' ? '/legal' : '/legal/' . strtolower($slug);
+    }
+
+    /**
      * Record acceptance of all current legal documents for a user.
      */
     public static function acceptAll(int $userId, string $method = 'registration'): int
@@ -661,13 +693,13 @@ class LegalDocumentService
             ->get();
 
         $docType   = $document['title'] ?? $document['document_type'] ?? 'document';
-        $docSlug   = $document['slug'] ?? $document['document_type'] ?? '';
-        $reviewUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . '/legal/' . $docSlug;
+        $docPath   = self::documentPath($document);
+        $reviewUrl = TenantContext::getFrontendUrl() . TenantContext::getSlugPrefix() . $docPath;
         $community = TenantContext::getName();
 
         $sentCount = 0;
         foreach ($users as $user) {
-            $bellSent = LocaleContext::withLocale($user, function () use ($user, $document, $version, $docSlug, $tenantId) {
+            $bellSent = LocaleContext::withLocale($user, function () use ($user, $document, $version, $docPath, $tenantId) {
                 try {
                     DB::table('notifications')->insert([
                         'tenant_id'  => $tenantId,
@@ -675,7 +707,7 @@ class LegalDocumentService
                         'type'       => 'legal_update',
                         'title'      => __('svc_notifications.legal.update_title', ['title' => $document['title']]),
                         'message'    => __('svc_notifications.legal.update_message', ['version' => $version['version_number'], 'title' => $document['title']]),
-                        'link'       => '/' . $docSlug,
+                        'link'       => $docPath,
                         'created_at' => now(),
                     ]);
                     return true;

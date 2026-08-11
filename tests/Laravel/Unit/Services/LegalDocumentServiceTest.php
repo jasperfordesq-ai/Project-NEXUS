@@ -166,4 +166,61 @@ class LegalDocumentServiceTest extends TestCase
 
         $this->assertNull(LegalDocumentService::compareVersions(1, 2));
     }
+
+// ------------------------------------------------------------------
+    //  documentPath() — the ONE canonical in-app link shape
+    // ------------------------------------------------------------------
+    //
+    // 🔴 notifyUsersOfUpdate() used to emit two different shapes for the same
+    // event: '/{slug}' in the notification bell (React's shape) and
+    // '/legal/{slug}' in the email (the accessible frontend's shape). Each was
+    // broken on the frontend the other one targeted, so every "we have updated
+    // our terms" notification dead-ended for somebody depending on which link
+    // they clicked. Both now go through this helper.
+
+    public function test_documentPath_prefixes_legal(): void
+    {
+        $this->assertSame('/legal/terms', LegalDocumentService::documentPath([
+            'slug' => 'terms',
+            'document_type' => 'terms',
+        ]));
+    }
+
+    public function test_documentPath_prefers_the_slug_over_the_type(): void
+    {
+        $this->assertSame('/legal/our-terms', LegalDocumentService::documentPath([
+            'slug' => 'our-terms',
+            'document_type' => 'terms',
+        ]));
+    }
+
+    public function test_documentPath_normalises_underscores_to_hyphens(): void
+    {
+        // 🔴 An unslugged row falls back to document_type, which is underscored.
+        // No route on EITHER frontend matches 'community_guidelines', so that link
+        // 404'd everywhere it was sent.
+        $this->assertSame('/legal/community-guidelines', LegalDocumentService::documentPath([
+            'document_type' => 'community_guidelines',
+        ]));
+    }
+
+    public function test_documentPath_lowercases(): void
+    {
+        $this->assertSame('/legal/terms', LegalDocumentService::documentPath(['slug' => 'Terms']));
+    }
+
+    public function test_documentPath_cannot_emit_a_path_from_a_slug(): void
+    {
+        // A slug is a single URL segment. Anything else is reduced to one — dots
+        // included, so no traversal fragment survives in any form.
+        $this->assertSame('/legal/terms-evil-example', LegalDocumentService::documentPath([
+            'slug' => 'terms/../../evil.example',
+        ]));
+    }
+
+    public function test_documentPath_falls_back_to_the_hub_when_there_is_no_slug(): void
+    {
+        $this->assertSame('/legal', LegalDocumentService::documentPath([]));
+        $this->assertSame('/legal', LegalDocumentService::documentPath(['slug' => '   ']));
+    }
 }

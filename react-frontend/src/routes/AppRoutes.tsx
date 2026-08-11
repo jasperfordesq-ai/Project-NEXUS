@@ -18,6 +18,7 @@ import { useTenant } from '@/contexts/TenantContext';
 import { CARING_COMMUNITY_ROUTE } from '@/pages/caring-community/config';
 import { ProtectedRoute } from '@/components/routing/ProtectedRoute';
 import { FeatureGate } from '@/components/routing/FeatureGate';
+import { LegalSlugRedirect } from '@/components/routing/LegalSlugRedirect';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { FeatureErrorBoundary } from '@/components/feedback/FeatureErrorBoundary';
 import { lazyWithRetry } from './lazyWithRetry';
@@ -332,6 +333,11 @@ export function AppRoutes() {
         <Route path="acceptable-use" element={<ErrorBoundary><AcceptableUsePage /></ErrorBoundary>} />
         <Route path="acceptable-use/versions" element={<ErrorBoundary><LegalVersionHistoryPage /></ErrorBoundary>} />
         <Route path="legal" element={<ErrorBoundary><LegalHubPage /></ErrorBoundary>} />
+        {/* 🔴 Canonical notification link shape. notifyUsersOfUpdate() emits
+            /legal/{slug} for every client now; these redirect to this app's own
+            page so each legal page keeps ONE implementation. */}
+        <Route path="legal/:slug" element={<ErrorBoundary><LegalSlugRedirect /></ErrorBoundary>} />
+        <Route path="legal/:slug/versions" element={<ErrorBoundary><LegalSlugRedirect suffix="/versions" /></ErrorBoundary>} />
         <Route path="platform/terms" element={<ErrorBoundary><PlatformTermsPage /></ErrorBoundary>} />
         <Route path="platform/privacy" element={<ErrorBoundary><PlatformPrivacyPage /></ErrorBoundary>} />
         <Route path="platform/disclaimer" element={<ErrorBoundary><PlatformDisclaimerPage /></ErrorBoundary>} />
