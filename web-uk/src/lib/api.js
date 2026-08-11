@@ -2675,6 +2675,64 @@ async function getPublicEvent(id) {
   return request(`/api/v2/public/events/${encodeURIComponent(id)}`);
 }
 
+// Guardian arrangements, member side.
+//
+// 🔴 An arrangement is a RECORD, not a capability. Listing one grants nothing —
+// what a guardian may actually do is a separate, consent-gated tier set by the
+// supported member alone. Never present these two as one thing.
+//
+// Blade drives all three ward answers through one service entry point; the HTTP
+// contract splits them into three endpoints, so the caller maps the single form
+// action onto the right one. The form stays a single no-JavaScript POST.
+async function getMyGuardians(token) {
+  return request('/api/v2/safeguarding/my-guardians', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+async function getMyWards(token) {
+  return request('/api/v2/safeguarding/my-wards', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+/**
+ * Record the ward's own answer. `reason` is accepted and never required —
+ * compelling somebody to justify refusing a safeguarding arrangement is
+ * pressure to consent.
+ */
+async function respondToGuardian(token, action, assignmentId, reason) {
+  const endpoint = {
+    consented: '/api/v2/safeguarding/consent-to-guardian',
+    declined: '/api/v2/safeguarding/decline-guardian',
+    withdrawn: '/api/v2/safeguarding/withdraw-guardian-consent'
+  }[action];
+
+  if (!endpoint) {
+    throw new Error(`Unsupported guardian action: ${action}`);
+  }
+
+  const body = { assignment_id: assignmentId };
+  if (typeof reason === 'string' && reason.trim() !== '') {
+    body.reason = reason.trim();
+  }
+
+  return request(endpoint, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body)
+  });
+}
+
+/** One capability per call, matching the page's one-select-one-button form. */
+async function updateGuardianPermissions(token, assignmentId, capability, tier) {
+  return request('/api/v2/safeguarding/guardian-permissions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ assignment_id: assignmentId, tiers: { [capability]: tier } })
+  });
+}
+
 // Partner venues. The Blade pages call PartnerVenueService /
 // PartnerVenueVisitService directly; these are the same operations over their
 // HTTP contract, so no engagement, money or authorization logic is reimplemented
@@ -3737,6 +3795,11 @@ module.exports = {
   getEvent,
   getPublicEvents,
   getPublicEvent,
+  // Guardian arrangements
+  getMyGuardians,
+  getMyWards,
+  respondToGuardian,
+  updateGuardianPermissions,
   // Partner venues
   getPartnerVenues,
   getVenuePass,

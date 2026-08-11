@@ -1,0 +1,175 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+    Guardian arrangements, member side — parity with the Blade page.
+
+    🔴 The member is the SUBJECT of the arrangement and the only person who can
+    answer it. HTML-first by design: every action is a plain form POST with a
+    submit button, so agreeing, refusing and withdrawing all work with no
+    JavaScript.
+#}
+
+{% extends "layouts/base.njk" %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <a class="govuk-back-link" href="{{ urlFor('/settings') }}">{{ t("govuk_alpha_settings.common.back_to_settings") }}</a>
+
+      {% if statusKey and statusIsSuccess %}
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="guardian-status-title">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="guardian-status-title">{{ t("govuk_alpha_settings.common.success_title") }}</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">{{ t("govuk_alpha_settings.guardians." + statusKey) }}</p>
+          </div>
+        </div>
+      {% elif statusKey and statusIsError %}
+        {# Two deliberate departures from the Blade markup, both required by this
+           repository's own error-summary contract and by the GOV.UK pattern:
+           `tabindex="-1"` so the summary can be focused programmatically (Blade
+           omits it, so its summary cannot receive focus), and a single
+           `role="alert"` on the inner element rather than one on each of two
+           nested elements, which would announce the same message twice. #}
+        <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1">
+          <div role="alert">
+            <h2 class="govuk-error-summary__title">{{ t("govuk_alpha_settings.common.error_title") }}</h2>
+            <div class="govuk-error-summary__body">
+              <p class="govuk-body">{{ t("govuk_alpha_settings.guardians." + statusKey) }}</p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <h1 class="govuk-heading-l">{{ t("govuk_alpha_settings.guardians.title") }}</h1>
+      <p class="govuk-body">{{ t("govuk_alpha_settings.guardians.intro") }}</p>
+
+      {% if not guardians.length %}
+        <p class="govuk-inset-text">{{ t("govuk_alpha_settings.guardians.none") }}</p>
+      {% else %}
+        {% for guardian in guardians %}
+          {% set guardianName = guardian.guardian_name or t("govuk_alpha_settings.common.unknown_member") %}
+          <div class="govuk-summary-card">
+            <div class="govuk-summary-card__title-wrapper">
+              <h2 class="govuk-summary-card__title">{{ guardianName }}</h2>
+            </div>
+            <div class="govuk-summary-card__content">
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.guardians.date_added") }}</dt>
+                  <dd class="govuk-summary-list__value">{{ guardian.addedOnLabel or "—" }}</dd>
+                </div>
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.guardians.your_answer") }}</dt>
+                  <dd class="govuk-summary-list__value">
+                    <strong class="govuk-tag {{ guardian.stateTagClass }}">{{ t("govuk_alpha_settings.guardians.state_" + guardian.state) }}</strong>
+                  </dd>
+                </div>
+                {% if guardian.notes %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.guardians.coordinator_note") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ guardian.notes }}</dd>
+                  </div>
+                {% endif %}
+                {% if guardian.ward_response_reason %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">{{ t("govuk_alpha_settings.guardians.your_reason") }}</dt>
+                    <dd class="govuk-summary-list__value">{{ guardian.ward_response_reason }}</dd>
+                  </div>
+                {% endif %}
+              </dl>
+
+              {# Agreeing is a single button. Refusing and withdrawing offer a
+                 reason field — never required, because requiring somebody to
+                 justify refusing a safeguarding arrangement is pressure to agree. #}
+              {% if 'consented' in guardian.allowedActions %}
+                <form method="post" action="{{ urlFor('/settings/guardians/respond') }}" class="govuk-!-margin-bottom-3">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
+                  <input type="hidden" name="action" value="consented">
+                  <button class="govuk-button" data-module="govuk-button" type="submit">
+                    {{ t("govuk_alpha_settings.guardians.agree_button") if guardian.state === 'pending' else t("govuk_alpha_settings.guardians.agree_again_button") }}
+                  </button>
+                </form>
+              {% endif %}
+
+              {# What this guardian may DO — offered only once the member has
+                 agreed. A grant must never stand in for the consent. One
+                 capability per form: a plain select and a submit button. #}
+              {% if guardian.state === 'consented' %}
+                <h3 class="govuk-heading-s govuk-!-margin-top-4">{{ t("govuk_alpha_settings.guardians.tiers_title") }}</h3>
+                <p class="govuk-body-s">{{ t("govuk_alpha_settings.guardians.tiers_intro", { name: guardianName }) }}</p>
+
+                {% for capability in guardian.capabilities %}
+                  <form method="post" action="{{ urlFor('/settings/guardians/permissions') }}" class="govuk-!-margin-bottom-3">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
+                    <input type="hidden" name="capability" value="{{ capability.key }}">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="tier_{{ capability.key }}_{{ guardian.id }}">
+                        {{ t("govuk_alpha_settings.guardians.tiers_capability_" + capability.key) }}
+                      </label>
+                      <select class="govuk-select" id="tier_{{ capability.key }}_{{ guardian.id }}" name="tier">
+                        {% for tierOption in grantableTiers %}
+                          <option value="{{ tierOption }}"{% if tierOption === capability.current %} selected{% endif %}>
+                            {{ t("govuk_alpha_settings.guardians.tiers_option_" + tierOption) }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+                      {{ t("govuk_alpha_settings.guardians.tiers_save_button") }}
+                    </button>
+                  </form>
+                {% endfor %}
+
+                <p class="govuk-body-s">{{ t("govuk_alpha_settings.guardians.tiers_explainer") }}</p>
+              {% endif %}
+
+              {% for negative in ['declined', 'withdrawn'] %}
+                {% if negative in guardian.allowedActions %}
+                  <form method="post" action="{{ urlFor('/settings/guardians/respond') }}">
+                    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                    <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
+                    <input type="hidden" name="action" value="{{ negative }}">
+                    <div class="govuk-form-group">
+                      <label class="govuk-label" for="reason_{{ negative }}_{{ guardian.id }}">{{ t("govuk_alpha_settings.guardians.reason_label") }}</label>
+                      <div id="reason-hint-{{ negative }}-{{ guardian.id }}" class="govuk-hint">{{ t("govuk_alpha_settings.guardians.reason_hint") }}</div>
+                      <textarea class="govuk-textarea" id="reason_{{ negative }}_{{ guardian.id }}" name="reason" rows="2" maxlength="500" aria-describedby="reason-hint-{{ negative }}-{{ guardian.id }}"></textarea>
+                    </div>
+                    <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
+                      {{ t("govuk_alpha_settings.guardians.decline_button") if negative === 'declined' else t("govuk_alpha_settings.guardians.withdraw_button") }}
+                    </button>
+                  </form>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {# The other half of the relationship. A guardian previously had no screen
+         at all — emailed that they were responsible for someone, with nowhere to
+         see it or whether that person had agreed. Rendered only when they
+         actually support someone. #}
+      {% if wards.length %}
+        <h2 class="govuk-heading-m govuk-!-margin-top-8">{{ t("govuk_alpha_settings.guardians.wards_title") }}</h2>
+        <p class="govuk-body">{{ t("govuk_alpha_settings.guardians.wards_intro") }}</p>
+        <dl class="govuk-summary-list">
+          {% for ward in wards %}
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">{{ ward.ward_name or t("govuk_alpha_settings.common.unknown_member") }}</dt>
+              <dd class="govuk-summary-list__value">
+                <strong class="govuk-tag {{ ward.stateTagClass }}">{{ t("govuk_alpha_settings.guardians.ward_state_" + ward.state) }}</strong>
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -35,6 +35,7 @@ const coursesRoutes = require('./routes/courses');
 const eventsRoutes = require('./routes/events');
 const whatsOnRoutes = require('./routes/whats-on');
 const venuesRoutes = require('./routes/venues');
+const settingsGuardiansRoutes = require('./routes/settings-guardians');
 const eventTemplateRoutes = require('./routes/event-templates');
 const feedRoutes = require('./routes/feed');
 const feedActionRoutes = require('./routes/feed-actions');
@@ -1854,6 +1855,11 @@ app.use('/podcasts', doubleCsrfProtection, postOnly(formLimiter), podcastActionR
 app.use('/connections', doubleCsrfProtection, postOnly(formLimiter), connectionsRoutes);
 app.use('/members', requireAuth, doubleCsrfProtection, membersRoutes);
 app.use('/notifications', doubleCsrfProtection, notificationsRoutes);
+// Mounted BEFORE the general settings router so /settings/guardians resolves
+// here rather than falling through to the settings hub's catch-alls. The member
+// is the subject of a guardian arrangement, so the whole router needs a signed-in
+// user: requireAuth redirects to /login?status=auth-required, matching Blade.
+app.use('/settings/guardians', requireAuth, doubleCsrfProtection, postOnly(formLimiter), settingsGuardiansRoutes);
 app.use('/settings', doubleCsrfProtection, settingsRoutes);
 app.use('/groups', doubleCsrfProtection, postOnly(formLimiter), groupsRoutes);
 app.use('/events', requireAuth, doubleCsrfProtection, postOnly(formLimiter), eventsRoutes);

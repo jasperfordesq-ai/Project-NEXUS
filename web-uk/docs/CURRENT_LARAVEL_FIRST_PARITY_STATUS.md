@@ -369,7 +369,82 @@ because the route tests stub `res.render` and would not catch a template error),
 full suite **62 suites / 1,844 tests**, ESLint clean, brand check passed,
 production `npm audit` 0 vulnerabilities, isolated accessibility gate **24/24**.
 
-**Still missing: 12.** `settings` 11, `events` check-in code 1.
+### D1 remediation — guardian arrangements ported 2026-08-11 (owner-authorized)
+
+The three guardian routes are implemented: `GET /settings/guardians`,
+`POST /settings/guardians/respond`, `POST /settings/guardians/permissions`.
+Matched **695 → 698**, missing **12 → 9**. **No score moved.**
+
+This is the page the safeguarding documentation singles out: a member using this
+frontend previously could not see, agree to, refuse or withdraw a guardian
+arrangement — "on the frontend most likely to be used by the very people those
+arrangements are about". Everything is a plain form POST; nothing needs
+JavaScript.
+
+Contract points reproduced, each of them load-bearing:
+
+- **An arrangement is a record, not a capability.** Agreeing grants nothing. The
+  capability selects appear **only** once the member has agreed — a grant must
+  never stand in for the consent.
+- `ALLOWED_FROM` is mirrored, so the page never offers an answer the backend will
+  refuse (`pending` → agree/refuse; `consented` → withdraw; `declined` and
+  `withdrawn` → agree again).
+- **A reason is offered and never required.** Requiring somebody to justify
+  refusing a safeguarding arrangement is pressure to consent; a test asserts a
+  refusal with no reason is recorded.
+- `revoked` is the **staff** exit and is refused as a ward answer.
+- `assist` is **not** a grantable level here (no draft-only screen behind it) and
+  a hand-edited form post naming it is refused before any call is made. Neither
+  is `messages` a capability on this page — message viewing has its own consent
+  machinery and the dead `can_view_messages` boolean stays dead.
+- Blade drives all three answers through one service entry point while the HTTP
+  contract splits them into three endpoints; the single no-JavaScript form is
+  preserved and mapped in the route.
+- 404 and 422 are reported **distinctly** ("that is not yours" versus "you cannot
+  do that from here"), because those need different wording for the member.
+
+🔴 **Two deliberate deviations, both declining to copy an upstream accessibility
+defect.** Blade's error summary carries no `tabindex="-1"`, so it cannot be
+focused programmatically, and it puts `role="alert"` on **two nested elements**,
+which announces the message twice. Web UK's own `error-summary-source.test.js`
+contract caught the first the moment the Blade markup was copied in. Web UK uses
+the GOV.UK pattern: one `role="alert"` on the inner element, `tabindex="-1"` on
+the summary. The Blade page should be corrected to match.
+
+Verified: 23 focused tests (4 rendering the real template), full suite **63
+suites / 1,867 tests**, ESLint clean, brand check passed, accessibility gate
+**24/24**.
+
+### 🔴 D1 blocker — the message viewer needs an owner decision
+
+Three of the remaining routes (`.../messages/{childId}/purpose`,
+`.../messages/{childId}`, `.../messages/{childId}/{partnerId}`) **cannot be
+ported faithfully as things stand**, and the reason is a contract gap, not
+effort.
+
+`SupporterMessageViewService` requires a stated **purpose** before any message
+data is returned, and writes it to an immutable audit. Blade holds that purpose
+in the **session** and passes it straight to the PHP service, so it never
+appears in a URL. The route file says exactly why: URLs "land in server logs,
+browser history and shared screenshots, and the purpose can quote a safeguarding
+concern about a named person."
+
+The HTTP contract only accepts it as a **query parameter**:
+`SubAccountController::listChildMessages` reads `request()->query('purpose')`.
+Web UK must use HTTP, so a faithful port would put safeguarding free text —
+potentially naming a person — into the API's access logs on every view. The
+browser URL would stay clean, but the exposure Blade deliberately avoids would
+reappear one layer down.
+
+Options for the owner: (a) accept query-string transport server-to-server and
+document the log exposure; (b) have Laravel accept `purpose` in a header or a
+POST body for these reads, which is a Laravel change outside this workstream's
+boundary; (c) leave the viewer unported. **Nothing was built on a guess.**
+
+**Still missing: 9.** `settings` 8, `events` check-in code 1. Of the 8: two
+support-action routes, one activity summary, and two message-access
+request/withdraw routes are all portable with no open question; the three
+message-viewer routes are blocked above.
 The remaining 11 `settings` routes are safeguarding and guardian-consent flows
 and deserve their own pass; read `../../docs/SAFEGUARDING-AND-CONSENT.md` first.
 The `events` check-in-code POST stays blocked upstream: Laravel exposes no safe
