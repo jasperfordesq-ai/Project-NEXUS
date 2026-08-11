@@ -109,8 +109,21 @@ services:
     networks:
       - nexus-php-internal
     healthcheck:
-      # /health reports 503 until the Redis session store is ready, so this is a
-      # genuine readiness check rather than a liveness ping.
+      # 🔴 CORRECTED 2026-08-11 after actually testing it. This comment previously
+      # said "/health reports 503 until the Redis session store is ready". It does
+      # NOT. With Redis unreachable the process starts, logs
+      # "Redis session store error: getaddrinfo ENOTFOUND …" on a loop, and NEVER
+      # LISTENS AT ALL — verified with `netstat` inside the container, which showed
+      # nothing bound to 3001.
+      #
+      # So this healthcheck fails by CONNECTION REFUSED, not by a 503. The safety
+      # property is unchanged and arguably stronger: the container never becomes
+      # healthy, so wait_for_color() times out and the deploy aborts before the
+      # traffic switch. But anyone debugging would hunt for a 503 that never comes,
+      # which is why the comment is corrected rather than left to mislead.
+      #
+      # Once Redis IS reachable it listens and returns "OK" — measured at roughly a
+      # second on a warm local stack.
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/health"]
       interval: 10s
       timeout: 5s

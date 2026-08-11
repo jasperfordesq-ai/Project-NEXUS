@@ -36,6 +36,16 @@ No public address changes. Two shapes exist and both keep working:
 - `/{tenantSlug}/accessible/...` on the shared host
 - slug-less paths on a community's own domain, resolved from the `Host` header
 
+🔴 **How the community domain actually reaches the platform**, because this was
+mis-recorded as a risk and cost an unnecessary worry. There are two hops. The
+browser sends `Host: <community domain>` to `web-uk`. `web-uk` then calls the
+platform with the upstream host — a container name — and forwards the community
+domain as **`Origin`**. `TenantBootstrapController` resolves `tenants.domain` from
+`HTTP_ORIGIN`, deliberately only when the Host resolved to the master tenant, which
+a container name does. Verified 2026-08-11 by placing an echo server between the two
+and reading what was actually sent. So the question "does Node's `fetch` forward a
+custom `Host`?" was the wrong one: it does not, and must not.
+
 Legacy `/{tenantSlug}/alpha/...` paths permanently redirect to `/accessible/...`
 and remain redirect-compatibility only. The internal Laravel route names,
 namespaces and translation files still say `govuk_alpha`; that is an internal
@@ -69,11 +79,11 @@ qualification means the Phase A rule above.
 | Legal acceptance enforcement | **Built.** Server-side enforcement, a `web-uk` interstitial, and a mobile acceptance screen. |
 | Bot protection on the contact form | **Built.** The challenge renders on the contact form, and the platform-side configuration fault that silently disabled it is fixed. |
 | Cookie-consent record keeping | **Built.** Anonymous visitors' choices are now recorded, as Blade already did. |
-| Deployment path | **Built 2026-08-11, not exercised.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. Nothing has been deployed and no cutover or rollback has been rehearsed. |
+| Deployment path | **Built, and locally rehearsed 2026-08-11.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. The production image was run against the local platform and proved: it does not listen at all until Redis is reachable (so a broken deploy aborts); `/health` then returns `OK`; `/version` returns `{"service":"nexus-webuk",…}` — the exact string the deploy smoke test matches; and a real accessible page renders at 200 in 25 KB. Nothing has been deployed to the server, and no cutover or rollback has been rehearsed there. |
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
 | Blade retirement | **Not started.** A separate change with its own review, after a soak period. |
 
-Current score: **637/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
+Current score: **640/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
 table below before comparing that with any earlier number.
 
 ## 🔴 Before the first rehearsal: the plumbing is not on the server yet
