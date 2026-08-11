@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-08-11T19:53:28.896Z",
+  "source": "scripts/check-e2e-assertion-quality.mjs",
+  "note": "Shrink-only ceiling on two browser-test anti-patterns. nonWaitingAssertion: a non-waiting isVisible()/isEnabled() result used inside expect(); the timeout option on those calls is IGNORED, so the assertion races rendering. cannotFail: expect(... || true), which passes whatever the page does. Regenerate ONLY with --write-baseline, and only on genuine improvement. Never hand-edit.",
+  "reference": "e2e/tests/smoke.spec.ts:367 — the fixed form, validated in CI run 31527851183",
+  "counts": {
+    "nonWaitingAssertion": 139,
+    "cannotFail": 83
+  }
+}
