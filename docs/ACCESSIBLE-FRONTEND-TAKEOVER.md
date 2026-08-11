@@ -73,10 +73,10 @@ qualification means the Phase A rule above.
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
 | Blade retirement | **Not started.** A separate change with its own review, after a soak period. |
 
-Current score: **634/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
+Current score: **637/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
 table below before comparing that with any earlier number.
 
-## Prerequisites — five resolved, two still need owner answers
+## Prerequisites — six resolved, one still needs an owner answer
 
 ### ✅ Resolved
 
@@ -128,13 +128,24 @@ table below before comparing that with any earlier number.
    that matters, supersede it with a section in [DEPLOYMENT.md](DEPLOYMENT.md) —
    an owner decision, since it would make the container topology public.
 
+6. **Error reporting — DONE 2026-08-11.** Sentry project `nexus-webuk` created in
+   the existing organisation, matching the `nexus-php` / `nexus-react` naming.
+   🔴 The project was only half the job: `web-uk` had **no Sentry integration at
+   all**, so the `SENTRY_DSN` the compose overlay passed was read by nothing. The
+   SDK is now wired in, privacy-matched to `config/sentry.php` (no PII, query
+   strings and cookie headers scrubbed), with health and version endpoints ignored
+   so machine traffic does not flood the quota. Verified end to end by sending a
+   real event and confirming it arrived as `NEXUS-WEBUK-1`, then resolving it.
+   The release tag is `nexus-webuk@<commit>`, matching the other two — without
+   that exact shape the service would have been invisible to the 30-minute
+   post-deploy error watch, which now counts it as an optional third project.
+   The DSN is in `.secrets.local/sentry.env`; **it still needs adding to
+   `/opt/nexus-php/.env` on the server** before a deploy would report anything.
+
 ### Still needed from the owner
 
-6. **Whether to publish per-tenant accessible domains** in the public uptime
+7. **Whether to publish per-tenant accessible domains** in the public uptime
    target list.
-7. **An error-reporting project for `web-uk`.** Without one it would become an
-   internet-facing production service with no error reporting. The service already
-   reads a DSN if one is provided.
 
 ### 🔴 Also outstanding, and not an owner decision
 

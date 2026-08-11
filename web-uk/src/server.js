@@ -5,6 +5,13 @@
 
 require('dotenv').config();
 
+// 🔴 Must run BEFORE express() is constructed and before route modules load, so
+// the SDK can instrument them. A no-op when SENTRY_DSN is unset, which is the
+// normal state in development and in every test run.
+const { initSentry, attachExpressErrorHandler } = require('./lib/sentry');
+
+initSentry();
+
 const express = require('express');
 const nunjucks = require('nunjucks');
 const cookieParser = require('cookie-parser');
@@ -2008,6 +2015,10 @@ app.use((req, res) => {
 });
 
 // Error logging middleware
+// Sentry first: it must see the error before our own handler renders a page.
+// A no-op when reporting is disabled, so the chain is identical under test.
+attachExpressErrorHandler(app);
+
 app.use(errorLogger);
 
 // Final error handler

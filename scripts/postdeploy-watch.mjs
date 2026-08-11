@@ -78,12 +78,20 @@ async function main() {
   const TOKEN = env.SENTRY_AUTH_TOKEN_MONITOR || env.SENTRY_AUTH_TOKEN;
   const ORG = env.SENTRY_ORG;
   const BASE = (env.SENTRY_API_BASE || '').replace(/\/$/, '');
-  const PROJECTS = { php: env.SENTRY_PROJECT_PHP, react: env.SENTRY_PROJECT_REACT };
+  // 🔴 webuk is OPTIONAL, following react's existing pattern: absent id ⇒ counted
+  // as 0, never a failed watch. It is not deployed yet, so it will normally be
+  // absent — but once it is, a spike in the accessible frontend must be visible
+  // in the post-deploy window, which is the whole point of this watch.
+  const PROJECTS = {
+    php: env.SENTRY_PROJECT_PHP,
+    react: env.SENTRY_PROJECT_REACT,
+    webuk: env.SENTRY_PROJECT_WEBUK
+  };
   if (!TOKEN || !ORG || !BASE || !PROJECTS.php) {
     bad('sentry.env is missing SENTRY_AUTH_TOKEN(_MONITOR), SENTRY_ORG, SENTRY_API_BASE or SENTRY_PROJECT_PHP.');
     return 2;
   }
-  const allProjects = [PROJECTS.php, PROJECTS.react].filter(Boolean);
+  const allProjects = [PROJECTS.php, PROJECTS.react, PROJECTS.webuk].filter(Boolean);
 
   // One Sentry counting query. Throws {scope:true} on a permissions failure
   // so callers can print the fix instead of a bare error.
@@ -161,11 +169,12 @@ async function main() {
     const elapsedMin = (now.getTime() - t0.getTime()) / 60_000;
     const range = { start: t0.toISOString(), end: now.toISOString() };
 
-    let sinceSwitch; let newRelPhp; let newRelReact;
+    let sinceSwitch; let newRelPhp; let newRelReact; let newRelWebuk;
     try {
       sinceSwitch = await countErrors(allProjects, '', range);
       newRelPhp = await countErrors([PROJECTS.php], `release:nexus-php@${release}`, range);
       newRelReact = PROJECTS.react ? await countErrors([PROJECTS.react], `release:nexus-react@${release}`, range) : 0;
+      newRelWebuk = PROJECTS.webuk ? await countErrors([PROJECTS.webuk], `release:nexus-webuk@${release}`, range) : 0;
     } catch (e) {
       bad(e.scope ? 'token lost permission mid-watch' : `Sentry unreachable: ${e.message}`);
       bad('The watch could not finish — the deploy is UNVERIFIED, not unhealthy.');
@@ -176,7 +185,7 @@ async function main() {
     // with an absolute floor so a near-silent project doesn't alarm on 2 events.
     const expected = (baselinePerDay * elapsedMin) / 1440;
     const threshold = Math.max(3 * expected, 10);
-    say(`${Math.round(elapsedMin)}m in: ${sinceSwitch} error(s) since switch (normal for this span ≈ ${expected.toFixed(1)}, alarm at ${threshold.toFixed(0)}); new release: php=${newRelPhp} react=${newRelReact}`);
+    say(`${Math.round(elapsedMin)}m in: ${sinceSwitch} error(s) since switch (normal for this span ≈ ${expected.toFixed(1)}, alarm at ${threshold.toFixed(0)}); new release: php=${newRelPhp} react=${newRelReact} webuk=${newRelWebuk}`);
 
     if (sinceSwitch > threshold) {
       bad(`ERROR SPIKE: ${sinceSwitch} errors since the switch — well above the normal rate.`);
