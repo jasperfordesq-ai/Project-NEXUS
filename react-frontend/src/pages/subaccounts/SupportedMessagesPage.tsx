@@ -102,15 +102,28 @@ export function SupportedMessagesPage() {
 
   const inThread = Boolean(partnerId);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal?: AbortSignal) => {
     if (purpose.trim() === '') return;
     setLoading(true);
     setDeniedMessage(null);
     try {
-      const purposeQuery = `purpose=${encodeURIComponent(purpose)}`;
+      // 🔴 The purpose travels in a HEADER, never in the URL. It is free text
+      // that can quote a safeguarding concern about a named person, and a URL is
+      // written to access logs, browser history, `Referer` headers and shared
+      // screenshots. The accessible frontend has always refused to put it in a
+      // query string; this does the same.
+      //
+      // `signal` is not optional in spirit: api.get keys its in-flight/response
+      // cache on method + URL + tenant ONLY, so with the purpose out of the URL
+      // two reads with DIFFERENT purposes would otherwise share one request —
+      // the second purpose would never reach the server and no audit row would
+      // be written for it. Passing a signal takes the documented
+      // do-not-share path.
+      const purposeRequest = { headers: { 'X-Message-View-Purpose': purpose }, signal };
       if (inThread) {
         const res = await api.get<{ items: MessageRow[] }>(
-          `/v2/users/me/sub-accounts/${childId}/messages/${partnerId}?${purposeQuery}`,
+          `/v2/users/me/sub-accounts/${childId}/messages/${partnerId}`,
+          purposeRequest,
         );
         if (res.success && res.data) {
           setMessages(res.data.items ?? []);
@@ -119,7 +132,8 @@ export function SupportedMessagesPage() {
         }
       } else {
         const res = await api.get<{ conversations: ConversationRow[]; cursor?: string | null; has_more?: boolean }>(
-          `/v2/users/me/sub-accounts/${childId}/messages?${purposeQuery}`,
+          `/v2/users/me/sub-accounts/${childId}/messages`,
+          purposeRequest,
         );
         if (res.success && res.data) {
           setConversations(res.data.conversations ?? []);
@@ -142,7 +156,10 @@ export function SupportedMessagesPage() {
     setLoading(true);
     try {
       const res = await api.get<{ conversations: ConversationRow[]; cursor?: string | null; has_more?: boolean }>(
-        `/v2/users/me/sub-accounts/${childId}/messages?purpose=${encodeURIComponent(purpose)}&cursor=${encodeURIComponent(nextCursor)}`,
+        `/v2/users/me/sub-accounts/${childId}/messages?cursor=${encodeURIComponent(nextCursor)}`,
+        // Same reasoning as load(): purpose in the header, and a signal so this
+        // page is never served another read's response.
+        { headers: { 'X-Message-View-Purpose': purpose }, signal: new AbortController().signal },
       );
       if (res.success && res.data) {
         setConversations((current) => [...(current ?? []), ...(res.data?.conversations ?? [])]);
@@ -160,7 +177,11 @@ export function SupportedMessagesPage() {
   };
 
   useEffect(() => {
-    void load();
+    const controller = new AbortController();
+    void load(controller.signal);
+    // Aborting on unmount also stops a late response writing state after the
+    // supporter has navigated away.
+    return () => controller.abort();
   }, [load]);
 
   const submitPurpose = () => {

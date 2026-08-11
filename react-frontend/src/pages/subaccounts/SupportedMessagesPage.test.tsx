@@ -57,12 +57,24 @@ describe('SupportedMessagesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     await waitFor(() => {
-      expect(mockedGet).toHaveBeenCalledWith(
-        expect.stringContaining(`/v2/users/me/sub-accounts/42/messages?purpose=`),
-      );
+      expect(mockedGet).toHaveBeenCalled();
     });
-    // The default reason travels into the audit purpose.
-    expect(String(mockedGet.mock.calls[0]?.[0])).toContain(encodeURIComponent('Checking they’re okay'));
+
+    // 🔴 The purpose travels in a HEADER and must NOT appear in the URL: it can
+    // quote a safeguarding concern about a named person, and URLs reach access
+    // logs, browser history, `Referer` headers and shared screenshots.
+    const [url, options] = mockedGet.mock.calls[0] ?? [];
+    expect(String(url)).toBe('/v2/users/me/sub-accounts/42/messages');
+    expect(String(url)).not.toContain('purpose');
+
+    // The default reason still travels into the audit purpose.
+    const headers = (options as { headers?: Record<string, string> } | undefined)?.headers ?? {};
+    expect(headers['X-Message-View-Purpose']).toContain('Checking they’re okay');
+
+    // A signal is required, not incidental: api.get keys its in-flight cache on
+    // method + URL + tenant only, so without one two reads with different
+    // purposes would share a request and one would go unaudited.
+    expect((options as { signal?: AbortSignal } | undefined)?.signal).toBeDefined();
   });
 
   it('remembers the purpose for the session and renders the real conversation-row shape', async () => {
