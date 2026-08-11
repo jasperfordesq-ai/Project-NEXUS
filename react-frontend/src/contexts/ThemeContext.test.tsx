@@ -64,15 +64,16 @@ describe('ThemeContext', () => {
     vi.clearAllMocks();
   });
 
-  it('provides default theme (dark)', () => {
+  it('provides default theme (light)', () => {
     render(
       <ThemeProvider>
         <TestComponent />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('dark');
-    expect(screen.getByTestId('resolved')).toHaveTextContent('dark');
+    // Light is the platform default — see DEFAULT_THEME in ThemeContext.
+    expect(screen.getByTestId('theme')).toHaveTextContent('light');
+    expect(screen.getByTestId('resolved')).toHaveTextContent('light');
   });
 
   it('accepts custom default theme', () => {
@@ -216,8 +217,8 @@ describe('ThemeContext', () => {
       </ThemeProvider>
     );
 
-    // Falls back to default (dark)
-    expect(screen.getByTestId('theme')).toHaveTextContent('dark');
+    // Falls back to default (light)
+    expect(screen.getByTestId('theme')).toHaveTextContent('light');
   });
 
   it('marks as initialized after mount', async () => {

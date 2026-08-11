@@ -73,7 +73,11 @@ interface ThemeContextValue extends ThemeState, ThemePreferences {
 
 const THEME_STORAGE_KEY = 'nexus_theme';
 const THEME_PREFS_STORAGE_KEY = 'nexus_theme_preferences';
-const DEFAULT_THEME: ThemeMode = 'dark';
+// Light by default. Changed 2026-08-11 on owner instruction after feedback from
+// a coordinator that dark mode is hard on older eyes — a first impression that
+// members shouldn't have to go and fix. An explicit choice still wins: it is
+// stored under `nexus_theme` and mirrored to `users.preferred_theme`.
+const DEFAULT_THEME: ThemeMode = 'light';
 
 const DEFAULT_PREFERENCES: ThemePreferences = {
   accentColor: '#6366f1',
@@ -102,7 +106,9 @@ const SPACING_MULTIPLIER_MAP: Record<Density, string> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getSystemTheme(): ResolvedTheme {
-  if (typeof window === 'undefined') return 'dark';
+  // No window (SSR/prerender) — fall back to the platform default rather than
+  // dark, so 'system' resolves consistently with DEFAULT_THEME.
+  if (typeof window === 'undefined') return 'light';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
