@@ -127,7 +127,21 @@ jobs:
         run: pip install "mkdocs==1.6.1" "mkdocs-material==9.7.6" "pymdown-extensions==11.0.1"
       - name: Stage the OpenAPI contract for the API reference page
         run: cp openapi.json docs/openapi.json
-      # check:docs in the Markdown job validates repo-root links and complete
-      # nav coverage before MkDocs performs its strict site-only validation.
+      # 🔴 WHAT THIS JOB DOES AND DOES NOT CATCH. Measured 2026-08-11, because the
+      # phrase "strict validation" invites over-trusting it.
+      #
+      #   ✅ a `nav:` entry pointing at a file that does not exist
+      #   ✅ the site genuinely renders with its theme and markdown extensions
+      #   ❌ NOT broken links: mkdocs.yml sets `validation.links.not_found: ignore`
+      #      (plus absolute_links, unrecognized_links). `--strict` promotes
+      #      WARNINGS to errors, and an `ignore` produces no warning to promote.
+      #      Confirmed by adding a link to a non-existent page — the strict build
+      #      passed.
+      #
+      # Broken links are caught by `npm run check:docs` in the Markdown job, which
+      # fails with "broken local link: ...". The two jobs do NOT overlap; removing
+      # either leaves a real hole.
+      #
+      # Reproduce locally without installing Python: `npm run check:docs:site`.
       - name: Build site
         run: mkdocs build --clean --strict
