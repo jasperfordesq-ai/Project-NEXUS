@@ -3899,7 +3899,7 @@ return [
         'effective_from_label' => 'Tritt in Kraft',
         'not_yet_in_force' => 'Diese Version ist noch nicht in Kraft. Bis zum angezeigten Datum gilt die aktuell gültige Fassung.',
         'published_label' => 'Veröffentlicht',
-        'summary_of_changes_title' => 'Was hat sich geändert?',
+        'summary_of_changes_title' => 'Was sich geändert hat',
         'previous_versions_link' => 'Siehe frühere Versionen dieses Dokuments',
         'versions_title' => 'Frühere Versionen',
         'versions_intro' => 'Jede veröffentlichte Version von :title, die neueste zuerst. Die heute gültige Fassung ist als aktuell gekennzeichnet.',

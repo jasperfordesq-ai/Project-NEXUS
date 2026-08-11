@@ -22517,6 +22517,56 @@
         ]
       }
     },
+    "/api/v2/events/{id}/attendance/code": {
+      "post": {
+        "summary": "POST /api/v2/events/{id}/attendance/code",
+        "description": "Maintained Events operation served by EventRegistrationController@attendanceByCode. Records attendance from a scanned signed check-in credential rather than a roster pick. Requires confirmation, an nqx2_ credential of at most 1024 characters, a reason for undo, and an idempotency key. Reads the current attendance version itself, because a scanner holds a signed code rather than a roster row.",
+        "operationId": "EventRegistration_attendanceByCode",
+        "tags": [
+          "Events"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation or idempotent replay"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Tenant, feature, policy, or capability denied"
+          },
+          "404": {
+            "description": "Resource not found in the current tenant"
+          },
+          "409": {
+            "description": "Attendance version conflict or state transition refused"
+          },
+          "422": {
+            "description": "Validation failure, or the credential could not be used. An unreadable credential and a credential for a member the actor cannot see return the SAME response, so the endpoint cannot be used to discover who is registered."
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "x-controller-action": "App\\Http\\Controllers\\Api\\EventRegistrationController@attendanceByCode",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
     "/api/v2/events/{id}/people/{userId}/attendance": {
       "post": {
         "summary": "POST /api/v2/events/{id}/people/{userId}/attendance",
