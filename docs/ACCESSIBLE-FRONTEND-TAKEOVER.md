@@ -139,8 +139,27 @@ table below before comparing that with any earlier number.
    The release tag is `nexus-webuk@<commit>`, matching the other two — without
    that exact shape the service would have been invisible to the 30-minute
    post-deploy error watch, which now counts it as an optional third project.
-   The DSN is in `.secrets.local/sentry.env`; **it still needs adding to
-   `/opt/nexus-php/.env` on the server** before a deploy would report anything.
+   The DSN is recorded in `.secrets.local/sentry.env` and **was added to
+   `/opt/nexus-php/.env` on the server on 2026-08-11** — appended only, after a
+   backup (`.env.bak-pre-webuk-sentry-20260811-163656`), verified as present
+   exactly once with a value hash matching local, and with the rest of the file
+   proven byte-identical to the backup. It is inert until `web-uk` is deployed.
+
+   🔴 **Three variables are still missing on the server, and without them a
+   `web-uk` deploy cannot even start.** `compose.webuk.bluegreen.yml` declares them
+   with Compose's `${VAR:?}` form so a deployment cannot boot with a guessable
+   session secret, which also means the overlay refuses to load at all when they
+   are absent:
+
+   | Variable | What it needs |
+   |---|---|
+   | `WEBUK_COOKIE_SECRET` | a long random value |
+   | `WEBUK_SESSION_SECRET` | a long random value, **different from the cookie secret** — the image refuses to start if they match |
+   | `WEBUK_SESSION_REDIS_URL` | `redis://nexus-php-redis:6379/4` — **index 4, never 0**, because Laravel's cache flush would otherwise sign out every accessible-frontend user |
+
+   These are deliberately left for a deliberate decision rather than generated in
+   passing, because they are production session secrets. They are needed before the
+   first cutover rehearsal, not before then.
 
 ### Still needed from the owner
 
