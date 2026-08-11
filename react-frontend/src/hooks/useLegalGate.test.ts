@@ -119,6 +119,54 @@ describe('useLegalGate', () => {
     expect(result.current.error).toBe('Server error');
   });
 
+  it('does not gate when the server says it is not enforcing (report mode)', async () => {
+    // 🔴 `has_pending` and "will anything stop them?" are different questions.
+    // Under LEGAL_ENFORCEMENT_MODE=report the member genuinely owes an acceptance
+    // and the server deliberately blocks nobody, because that mode exists to size
+    // the blast radius for a week before enforcing. Gating on has_pending alone
+    // blocks everybody during exactly the week meant to block nobody.
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: { has_pending: true, enforcement_blocking: false, documents: [pendingDoc] },
+    });
+
+    const { result } = renderHook(() => useLegalGate());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasPending).toBe(false);
+    // The documents are still reported, so a settings page can show "you have
+    // outstanding terms" without the modal standing in the member's way.
+    expect(result.current.pendingDocs).toHaveLength(1);
+  });
+
+  it('gates when the server says it IS enforcing', async () => {
+    // The control. Without it, "never gates" would pass as happily as correct.
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: { has_pending: true, enforcement_blocking: true, documents: [pendingDoc] },
+    });
+
+    const { result } = renderHook(() => useLegalGate());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasPending).toBe(true);
+  });
+
+  it('gates when the field is absent — only an explicit false stands down', async () => {
+    // Matches web-uk's rule exactly. Absence means an older backend, which cannot
+    // happen in practice (client and API ship from one commit), and treating it as
+    // "not enforcing" would let a serialisation fault silently drop the prompt.
+    mockApi.get.mockResolvedValue({
+      success: true,
+      data: { has_pending: true, documents: [pendingDoc] },
+    });
+
+    const { result } = renderHook(() => useLegalGate());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.hasPending).toBe(true);
+  });
+
   it('acceptAll calls post and clears pending state on success', async () => {
     mockApi.get.mockResolvedValue({
       success: true,

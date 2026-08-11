@@ -36,6 +36,21 @@ export interface LegalAcceptanceStatusResponse {
   data: {
     has_pending: boolean;
     documents: LegalAcceptanceDocument[];
+    /**
+     * Whether the platform is actually refusing requests (false under
+     * `LEGAL_ENFORCEMENT_MODE=report` and `off`).
+     *
+     * 🔴 This client does NOT need it, and that is deliberate — do not add a
+     * poll-and-gate here. The acceptance screen opens only when the API really
+     * refuses a request with `LEGAL_ACCEPTANCE_REQUIRED` (`lib/api/client.ts`), so
+     * enforcement mode is honoured for free: in report mode nothing is refused, so
+     * nothing opens. web-uk and React DO have to read this field, because they
+     * decide up front whether to interpose, and web-uk shipped without reading it
+     * and blocked every member in a mode meant to block nobody.
+     *
+     * Declared so the shape is documented and an added field is visibly expected.
+     */
+    enforcement_blocking?: boolean;
   };
 }
 

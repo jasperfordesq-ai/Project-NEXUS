@@ -57,9 +57,17 @@ const VIEW_PATHS = [
   path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'dist')
 ];
 
+// 🔴 `enforcement_blocking: true` is REQUIRED for the gate to interpose, and it is
+// deliberately part of this fixture rather than defaulted in the gate. It answers a
+// different question from `has_pending`: "does this member owe an acceptance?" versus
+// "will the platform actually refuse them?". Under `LEGAL_ENFORCEMENT_MODE=report`
+// the first is true and the second is false, and the gate shipped reading only the
+// first — so it blocked every member during what was supposed to be a
+// block-nobody measurement week. See REPORT_MODE_PENDING below.
 const PENDING = {
   data: {
     has_pending: true,
+    enforcement_blocking: true,
     documents: [
       {
         document_id: 12,
@@ -83,7 +91,37 @@ const PENDING = {
   }
 };
 
-const NOTHING_PENDING = { data: { has_pending: false, documents: [] } };
+const NOTHING_PENDING = { data: { has_pending: false, enforcement_blocking: true, documents: [] } };
+
+/**
+ * A member who genuinely owes an acceptance, on a platform that is deliberately NOT
+ * refusing requests — `LEGAL_ENFORCEMENT_MODE=report` or `off`.
+ *
+ * The documents are identical to PENDING. The ONLY difference is the server saying
+ * it is not blocking. If the gate ever reverts to deciding for itself, these tests
+ * fail and the ones above still pass, which is what makes the pair meaningful.
+ */
+const REPORT_MODE_PENDING = {
+  data: {
+    ...PENDING.data,
+    enforcement_blocking: false
+  }
+};
+
+/**
+ * An older backend that predates the field entirely.
+ *
+ * 🔴 This must still BLOCK. Only an explicit `false` stands the gate down. Treating
+ * absence as "not blocking" would mean a serialisation fault silently drops the
+ * acceptance prompt on an obligation that is enforced by default — so absence keeps
+ * today's behaviour instead. React applies the identical rule.
+ */
+const LEGACY_BACKEND_PENDING = {
+  data: {
+    has_pending: true,
+    documents: PENDING.data.documents
+  }
+};
 
 /**
  * Mounts the real gate and the real acceptance router in front of a stand-in for
@@ -174,6 +212,53 @@ describe('the gate intercepts a blocked member', () => {
     });
 
     expect((await request(buildApp()).get('/dashboard')).status).toBe(200);
+  });
+});
+
+describe('loop-breaker 5 — the server decides whether anything is enforced', () => {
+  it('does NOT interpose in report mode, even with documents pending', async () => {
+    api.getLegalAcceptanceStatus.mockResolvedValue(REPORT_MODE_PENDING);
+
+    const response = await request(buildApp()).get('/dashboard');
+
+    // The whole point of report mode: Laravel counts who WOULD be blocked and
+    // blocks nobody. An interstitial here would make that count measure a
+    // frontend that was already blocking.
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('dashboard reached');
+  });
+
+  it('STILL interposes when the backend omits the field — only explicit false stands down', async () => {
+    api.getLegalAcceptanceStatus.mockResolvedValue(LEGACY_BACKEND_PENDING);
+
+    const response = await request(buildApp()).get('/dashboard');
+
+    // Deliberate: absence keeps today's behaviour rather than silently dropping the
+    // prompt. Acceptance is enforced by default, so a missing field must not be the
+    // thing that quietly switches the interstitial off.
+    expect(response.status).toBe(303);
+  });
+
+  it('still interposes when the server says it IS blocking', async () => {
+    api.getLegalAcceptanceStatus.mockResolvedValue(PENDING);
+
+    const response = await request(buildApp()).get('/dashboard');
+
+    // The control for the two tests above. Without this, "never interposes" would
+    // pass just as happily as "interposes correctly".
+    expect(response.status).toBe(303);
+    expect(response.headers.location).toContain('/legal-acceptance');
+  });
+
+  it('caches the not-blocking verdict without turning it into a block', async () => {
+    api.getLegalAcceptanceStatus.mockResolvedValue(REPORT_MODE_PENDING);
+    const app = buildApp();
+
+    await request(app).get('/dashboard');
+    const second = await request(app).get('/dashboard');
+
+    expect(second.status).toBe(200);
+    expect(api.getLegalAcceptanceStatus).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -284,6 +369,33 @@ describe('loop-breaker 4 — the cached verdict', () => {
     api.getLegalAcceptanceStatus.mockResolvedValue(NOTHING_PENDING);
     const after = await request(app).get('/dashboard');
 
+    expect(after.status).toBe(200);
+    expect(after.text).toBe('dashboard reached');
+  });
+
+  it('becoming clear ELSEWHERE also breaks the loop, not just accepting here', async () => {
+    // 🔴 The gap the accept-here test above could not see. The member accepts on
+    // their phone, or in the React app, or an admin deactivates the document. The
+    // session cache still says "pending" for up to 60 seconds while the server says
+    // "clear", so: gate redirects here → this page reads fresh status, sees nothing
+    // pending, redirects back → gate redirects here again. The browser gives up with
+    // ERR_TOO_MANY_REDIRECTS. Fixed by clearing the cache on that redirect.
+    api.getLegalAcceptanceStatus.mockResolvedValue(PENDING);
+    const app = buildApp();
+
+    // Warm the cache with a "pending" verdict.
+    expect((await request(app).get('/dashboard')).status).toBe(303);
+
+    // Now the member is clear, but WITHOUT posting the form on this page.
+    api.getLegalAcceptanceStatus.mockResolvedValue(NOTHING_PENDING);
+
+    const landed = await request(app).get('/legal-acceptance?return=%2Fdashboard');
+    expect(landed.status).toBe(302);
+    expect(landed.headers.location).toBe('/dashboard');
+
+    // The cache must be gone. If it is not, this is a 303 straight back to the
+    // acceptance page and the member is in the loop.
+    const after = await request(app).get('/dashboard');
     expect(after.status).toBe(200);
     expect(after.text).toBe('dashboard reached');
   });

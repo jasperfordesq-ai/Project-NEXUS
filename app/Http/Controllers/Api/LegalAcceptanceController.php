@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Core\TenantContext;
+use App\Http\Middleware\EnsureLegalAcceptance;
 use App\Services\LegalEnforcementService;
 
 /**
@@ -29,6 +30,11 @@ class LegalAcceptanceController extends BaseApiController
      * {
      *   "data": {
      *     "has_pending": bool,
+     *     "enforcement_blocking": bool,   // does the platform actually refuse
+     *                                     // requests now? false under `off` and
+     *                                     // `report`. Clients MUST read this
+     *                                     // rather than inferring from
+     *                                     // has_pending — see the field comment.
      *     "documents": [
      *       {
      *         "document_id": int,
@@ -53,6 +59,19 @@ class LegalAcceptanceController extends BaseApiController
 
         return $this->respondWithData([
             'has_pending' => $hasPending,
+            // 🔴 Whether the platform actually REFUSES requests right now.
+            //
+            // `has_pending` answers "does this member owe an acceptance?".
+            // It does NOT answer "will anything stop them?" — under
+            // `LEGAL_ENFORCEMENT_MODE=report` the answer is no, by design, because
+            // report mode exists to size the blast radius without blocking anyone.
+            //
+            // web-uk previously decided for itself, from `has_pending` alone, and so
+            // blocked every accessible-frontend member even in `report` and `off`.
+            // Clients must not infer enforcement; they read this. It is computed by
+            // the middleware's own predicate, so the gate and the clients cannot
+            // hold different views of who is blocked.
+            'enforcement_blocking' => EnsureLegalAcceptance::modeBlocks(),
             'documents'   => collect($documents)->map(fn ($doc) => [
                 'document_id'        => (int) $doc->document_id,
                 'document_type'      => $doc->document_type,

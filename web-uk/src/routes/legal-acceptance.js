@@ -67,7 +67,17 @@ router.get('/legal-acceptance', asyncRoute(async (req, res) => {
   // Nothing outstanding — the member accepted in another tab, or arrived here by
   // an old link. Send them where they were going rather than showing an empty
   // form with a button that does nothing.
+  //
+  // 🔴 CLEAR THE GATE CACHE FIRST, or this redirect is a loop. The gate caches its
+  // verdict in the session for 60 seconds. If the member accepted somewhere else —
+  // another tab, the mobile app, the React frontend — or an admin deactivated the
+  // document, the cache still says "pending" while the server says "clear". The
+  // gate then sends them here, this handler reads the fresh status, sees nothing
+  // pending, redirects back, and the gate sends them here again: up to a minute of
+  // ERR_TOO_MANY_REDIRECTS. Accepting on THIS page already cleared the cache
+  // (below); this is the same fix for every other way of becoming clear.
   if (documents.length === 0) {
+    clearLegalGateCache(req);
     return redirectTo(res, returnTo);
   }
 

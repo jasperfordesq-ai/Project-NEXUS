@@ -51,7 +51,12 @@ SQL="SELECT id, slug, COALESCE(NULLIF(accessible_domain, ''), '-') AS accessible
      ORDER BY id;"
 
 run_local () {
-    docker exec nexus-php-app sh -lc "mysql --skip-ssl -h db -unexus -pnexus_secret nexus -N -B -e \"$SQL\"" 2>/dev/null
+    # 🔴 stderr is NOT swallowed. It used to end in `2>/dev/null`, which is the same
+    # fault that was fixed in run_production and left here: a container that is not
+    # running, a renamed service or a credential change all became "no communities
+    # have accessible domains", which reads as "nothing to do" on a cutover
+    # checklist. A silently empty checklist is worse than no checklist.
+    docker exec nexus-php-app sh -lc "mysql --skip-ssl -h db -unexus -pnexus_secret nexus -N -B -e \"$SQL\""
 }
 
 run_production () {
@@ -128,9 +133,42 @@ PHPEOF
 echo "Accessible-frontend hostname inventory (${MODE})"
 echo
 
-rows="$(if [ "$MODE" = production ]; then run_production; else run_local; fi)"
+# 🔴 The QUERY'S OWN EXIT STATUS IS CHECKED, and an empty production result is an
+# ERROR rather than a reassuring message.
+#
+# Two related faults were fixed here. First, `run_production`'s `exit 1` for a
+# missing `.secrets.local/deploy.env` only ever exited the command-substitution
+# subshell, so the script sailed on. Second — and this is the one that mattered —
+# whatever the cause (no secrets file, unreachable SSH, a failed `docker exec`), the
+# script printed "No communities … were returned. For local runs this is normal…"
+# and exited 0. In `--production` mode that is a cutover checklist reporting
+# "nothing to do" because it could not read anything at all.
+rows=""
+query_status=0
+if [ "$MODE" = production ]; then
+    rows="$(run_production)" || query_status=$?
+else
+    rows="$(run_local)" || query_status=$?
+fi
+
+if [ "$query_status" -ne 0 ]; then
+    echo "ERROR: the domain query FAILED (exit $query_status). The list below would be incomplete." >&2
+    if [ "$MODE" = production ]; then
+        echo "       Do NOT use this run as a cutover checklist." >&2
+    fi
+    exit 1
+fi
 
 if [ -z "$rows" ]; then
+    if [ "$MODE" = production ]; then
+        # Production has communities with domains. An empty result here means the
+        # query did not really run, not that there is nothing to cut over.
+        echo "ERROR: production returned NO rows." >&2
+        echo "       Production is known to have communities with domains, so this is almost" >&2
+        echo "       certainly a failed query rather than an empty table — check the output" >&2
+        echo "       above for the real error. Do NOT treat this as 'nothing to cut over'." >&2
+        exit 1
+    fi
     echo "No communities with a domain or accessible_domain were returned."
     echo "For local runs this is normal: local fixtures usually have neither set."
     exit 0

@@ -306,6 +306,65 @@ class EnsureLegalAcceptanceTest extends TestCase
     }
 
     // ------------------------------------------------------------------
+    //  🔴 The status endpoint must tell clients whether it is REALLY blocking
+    //
+    //  web-uk decided this for itself, from `has_pending` alone, and so blocked
+    //  every accessible-frontend member even in `report` mode — whose entire
+    //  purpose is to block nobody while counting who would be. The fix is that the
+    //  server publishes the answer and clients obey it, rather than each client
+    //  reimplementing the mode table and drifting.
+    // ------------------------------------------------------------------
+
+    public function test_the_status_endpoint_reports_blocking_in_write_mode(): void
+    {
+        config(['legal.enforcement_mode' => 'write']);
+        $this->member();
+
+        $this->apiGet('/v2/legal/acceptance/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.has_pending', true)
+            ->assertJsonPath('data.enforcement_blocking', true);
+    }
+
+    public function test_the_status_endpoint_reports_not_blocking_in_report_mode(): void
+    {
+        config(['legal.enforcement_mode' => 'report']);
+        $this->member();
+
+        // `has_pending` stays TRUE — the member really does owe an acceptance, and a
+        // settings page should still be able to say so. Only `enforcement_blocking`
+        // changes, which is exactly the distinction the clients need.
+        $this->apiGet('/v2/legal/acceptance/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.has_pending', true)
+            ->assertJsonPath('data.enforcement_blocking', false);
+    }
+
+    public function test_the_status_endpoint_reports_not_blocking_in_off_mode(): void
+    {
+        config(['legal.enforcement_mode' => 'off']);
+        $this->member();
+
+        $this->apiGet('/v2/legal/acceptance/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.enforcement_blocking', false);
+    }
+
+    public function test_an_unrecognised_mode_reports_blocking_like_the_gate_does(): void
+    {
+        // The gate falls back to `write` on a typo, deliberately. If the published
+        // flag fell back the other way, a typo would switch every client's prompt
+        // off while the server carried on refusing writes — members would hit bare
+        // 403s with nothing explaining why.
+        config(['legal.enforcement_mode' => 'wrtie']);
+        $this->member();
+
+        $this->apiGet('/v2/legal/acceptance/status')
+            ->assertStatus(200)
+            ->assertJsonPath('data.enforcement_blocking', true);
+    }
+
+    // ------------------------------------------------------------------
     //  🔴 The exemption list — the gate must not lock the key inside
     // ------------------------------------------------------------------
 

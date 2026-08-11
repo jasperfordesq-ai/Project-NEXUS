@@ -109,18 +109,24 @@ services:
     networks:
       - nexus-php-internal
     healthcheck:
-      # 🔴 CORRECTED 2026-08-11 after actually testing it. This comment previously
-      # said "/health reports 503 until the Redis session store is ready". It does
-      # NOT. With Redis unreachable the process starts, logs
-      # "Redis session store error: getaddrinfo ENOTFOUND …" on a loop, and NEVER
-      # LISTENS AT ALL — verified with `netstat` inside the container, which showed
-      # nothing bound to 3001.
+      # 🔴 TWO DISTINCT FAILURE MODES, and this comment has now been wrong in both
+      # directions. It originally said only "/health reports 503 until the Redis
+      # session store is ready". The rehearsal correction then overstated the fix by
+      # saying a 503 never happens. Both are wrong. What is actually true:
       #
-      # So this healthcheck fails by CONNECTION REFUSED, not by a 503. The safety
-      # property is unchanged and arguably stronger: the container never becomes
-      # healthy, so wait_for_color() times out and the deploy aborts before the
-      # traffic switch. But anyone debugging would hunt for a 503 that never comes,
-      # which is why the comment is corrected rather than left to mislead.
+      #   - Redis unreachable AT STARTUP ⇒ CONNECTION REFUSED, never a 503.
+      #     `app.listen()` is awaited behind `sessionStore.ready` (web-uk/src/server.js),
+      #     and node-redis retries indefinitely rather than rejecting, so the process
+      #     runs, logs "Redis session store error: getaddrinfo ENOTFOUND …" on a loop,
+      #     and never binds 3001. Verified with `netstat` inside the container.
+      #
+      #   - Redis dropping AFTER a successful start ⇒ HTTP 503 "NOT READY", because
+      #     the route checks `sessionStore.isReady()` on every request.
+      #
+      # Either way the container never becomes healthy, so wait_for_color() times out
+      # and the deploy aborts before the traffic switch. The distinction matters only
+      # when debugging: connection-refused means it never came up, 503 means it came
+      # up and lost Redis.
       #
       # Once Redis IS reachable it listens and returns "OK" — measured at roughly a
       # second on a warm local stack.

@@ -185,6 +185,29 @@ describe('web-uk Sentry error reporting', () => {
     expect(versionAt).toBeLessThan(legalGateAt);
   });
 
+  it('🔴 mounts /version and /health BEFORE the general rate limiter too', () => {
+    // The gate move above missed this, and the arithmetic is not close:
+    // generalLimiter allows 100 requests per 15 minutes per IP, and the container
+    // healthcheck polls /health every 10 seconds — 90 per window, all keyed to
+    // 127.0.0.1. Ten more localhost requests (an operator running wget while
+    // debugging, an extra internal probe, or a shorter interval to speed up
+    // wait_for_color) tip it over. The limiter then answers the healthcheck with a
+    // 429 HTML page, wget --spider fails, the retries exhaust, the container is
+    // marked unhealthy, and the deploy aborts over nothing.
+    const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.js'), 'utf8');
+
+    const healthAt = server.indexOf("app.get('/health'");
+    const versionAt = server.indexOf("app.get('/version'");
+    const limiterAt = server.indexOf('app.use(generalLimiter)');
+
+    expect(healthAt).toBeGreaterThan(-1);
+    expect(versionAt).toBeGreaterThan(-1);
+    expect(limiterAt).toBeGreaterThan(-1);
+
+    expect(healthAt).toBeLessThan(limiterAt);
+    expect(versionAt).toBeLessThan(limiterAt);
+  });
+
   it('is wired into the server before express is constructed', () => {
     const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.js'), 'utf8');
     const initAt = server.indexOf('initSentry()');

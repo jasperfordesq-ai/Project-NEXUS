@@ -83,7 +83,21 @@ jobs:
           # NOT sourced from .github/ci-paths.yml: that file answers "which
           # CHECKS should wake", which is a broader question than "what does
           # production ship" (it includes tests/, phpunit.xml, e2e/ and so on).
-          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views accessible-frontend react-frontend web-uk artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml compose.webuk.bluegreen.yml"
+          # 🔴 `web-uk` and its overlay are DELIBERATELY ABSENT, and putting them
+          # here contradicted the comment directly above — which is exactly what
+          # happened when the deployment path was built.
+          #
+          # Production does not receive web-uk yet: it deploys only when someone
+          # passes --with-webuk, and no cutover has happened. So listing `web-uk`
+          # made every web-uk commit — including `web-uk/docs/*.md` — count as
+          # deployable, and this watchdog then alarmed every 10 minutes about work
+          # production must never receive. That is the cry-wolf outcome the comment
+          # says destroys the watchdog's value.
+          #
+          # ADD THEM BACK as part of the cutover commit, once web-uk really is
+          # deployed to both colours — the marker for that is
+          # `.webuk-live` on the server (see bluegreen-deploy.sh).
+          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views accessible-frontend react-frontend artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml"
 
           MAIN_COMMIT=""
           # Bounded walk: 200 commits is far more than any realistic gap, and it

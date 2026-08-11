@@ -30,6 +30,21 @@ export interface PendingDocument {
 interface LegalStatusResponse {
   has_pending: boolean;
   documents: PendingDocument[];
+  /**
+   * 🔴 Does the platform actually REFUSE requests right now?
+   *
+   * This answers a different question from `has_pending`. Under
+   * `LEGAL_ENFORCEMENT_MODE=report` a member genuinely owes an acceptance
+   * (`has_pending: true`) and the server deliberately blocks nobody — that mode
+   * exists to count who WOULD be blocked, for a measurement week, before anything
+   * is enforced. A client that gates on `has_pending` alone blocks everybody
+   * during exactly the week that was supposed to block nobody.
+   *
+   * Optional because an older backend does not send it. Absent is read as "not
+   * blocking", so a version skew mid-deploy cannot raise a wall the server would
+   * not have raised.
+   */
+  enforcement_blocking?: boolean;
 }
 
 export interface LegalGateState {
@@ -84,8 +99,11 @@ export function useLegalGate(): LegalGateState {
       .then((result) => {
         if (cancelled) return;
         if (result.success && result.data) {
-          const { has_pending, documents } = result.data;
-          setHasPending(has_pending);
+          const { has_pending, documents, enforcement_blocking } = result.data;
+          // Gate only when the server says it is actually refusing requests. See
+          // `enforcement_blocking` on LegalStatusResponse: `report` mode must not
+          // block, and absence of the field must not be read as blocking.
+          setHasPending(has_pending && enforcement_blocking !== false);
           setPendingDocs(
             documents.filter(
               (d) => d.acceptance_status !== 'current'

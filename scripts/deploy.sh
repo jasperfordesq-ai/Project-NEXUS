@@ -36,6 +36,62 @@ if [ -n "$(git status --porcelain)" ]; then
     echo "[deploy]   Commit + (the script will push) first if you want them included."
 fi
 
+# ---------------------------------------------------------------------------
+# [0/5] Argument handling — FIRST, before anything with a side effect.
+#
+# 🔴 TWO FAULTS FIXED HERE, both found auditing this script's own web-uk support.
+#
+# 1. This loop had no `*)` arm, so an unrecognised argument was SILENTLY IGNORED.
+#    `bash scripts/deploy.sh --with-web-uk` (one stray hyphen) set nothing, never
+#    reached bluegreen-deploy.sh's own unknown-flag guard, and deployed WITHOUT
+#    web-uk while reporting success. That is the same silent no-op the flag was
+#    invented to replace — moved from an env var to a typo.
+#
+# 2. This block used to sit AFTER the push and after the CI wait. So a rejected
+#    invocation had already pushed main to origin and burned several minutes
+#    waiting for GitHub before refusing. A guard that fires after the
+#    irreversible step is not a guard.
+# ---------------------------------------------------------------------------
+WEBUK_FLAG=""
+for arg in "$@"; do
+    case "$arg" in
+        --with-webuk) WEBUK_FLAG=" --with-webuk" ;;
+        --without-webuk) WEBUK_FLAG=" --without-webuk" ;;
+        -h|--help)
+            echo "Usage: bash scripts/deploy.sh [--with-webuk | --without-webuk]"
+            echo ""
+            echo "  --with-webuk     include the web-uk accessible frontend"
+            echo "  --without-webuk  deliberately exclude it (required once web-uk is live)"
+            exit 0
+            ;;
+        *)
+            echo "===> Unrecognised argument: $arg"
+            echo "===> Nothing has been pushed or deployed."
+            echo "===>"
+            echo "===> Known arguments: --with-webuk, --without-webuk"
+            echo "===> (a mistyped flag used to be ignored, and the deploy would"
+            echo "===>  quietly proceed without web-uk while reporting success)"
+            exit 2
+            ;;
+    esac
+done
+if [ -n "${NEXUS_DEPLOY_WEBUK:-}" ] && [ -z "$WEBUK_FLAG" ]; then
+    # Refuse rather than silently ignoring it. Someone setting this variable
+    # clearly INTENDS to deploy web-uk; dropping it quietly is the exact fault
+    # this guard exists to prevent.
+    #
+    # 🔴 web-uk is opt-in, and it MUST travel as a FLAG. This script reaches the
+    # server over SSH and runs the deploy under `sudo`. Neither forwards
+    # environment variables, so `NEXUS_DEPLOY_WEBUK=1 bash scripts/deploy.sh`
+    # deployed WITHOUT web-uk, succeeded, and reported success.
+    echo "===> NEXUS_DEPLOY_WEBUK is set, but it CANNOT reach the server:"
+    echo "===>   this script deploys over SSH under sudo, and neither forwards"
+    echo "===>   environment variables. Use the flag instead:"
+    echo "===>       bash scripts/deploy.sh --with-webuk"
+    echo "===> Nothing has been pushed or deployed."
+    exit 2
+fi
+
 echo "===> [1/4] Pre-deploy static-analysis gate"
 if ! bash scripts/predeploy-check.sh; then
     echo "===> Deploy ABORTED. Fix the errors above, or re-run as: ALLOW_PHPSTAN_FAIL=1 bash scripts/deploy.sh"
@@ -61,31 +117,6 @@ else
         echo "===> In a real emergency only: ALLOW_UNVERIFIED_DEPLOY=1 bash scripts/deploy.sh"
         exit 1
     fi
-fi
-
-# 🔴 web-uk is opt-in, and it MUST travel as a FLAG.
-#
-# This script reaches the server over SSH and runs the deploy under `sudo`.
-# Neither forwards environment variables, so an earlier version of this plan —
-# `NEXUS_DEPLOY_WEBUK=1 bash scripts/deploy.sh` — deployed WITHOUT web-uk,
-# succeeded, and reported success. Nobody would have noticed until a vhost
-# pointed at a dead port. A flag survives sudo and shows up in the deploy log.
-WEBUK_FLAG=""
-for arg in "$@"; do
-    case "$arg" in
-        --with-webuk) WEBUK_FLAG=" --with-webuk" ;;
-        --without-webuk) WEBUK_FLAG=" --without-webuk" ;;
-    esac
-done
-if [ -n "${NEXUS_DEPLOY_WEBUK:-}" ] && [ -z "$WEBUK_FLAG" ]; then
-    # Refuse rather than silently ignoring it. Someone setting this variable
-    # clearly INTENDS to deploy web-uk; dropping it quietly is the exact fault
-    # this guard exists to prevent.
-    echo "===> NEXUS_DEPLOY_WEBUK is set, but it CANNOT reach the server:"
-    echo "===>   this script deploys over SSH under sudo, and neither forwards"
-    echo "===>   environment variables. Use the flag instead:"
-    echo "===>       bash scripts/deploy.sh --with-webuk"
-    exit 2
 fi
 
 echo "===> [4/5] Blue/green deploy (zero-downtime, detached)"

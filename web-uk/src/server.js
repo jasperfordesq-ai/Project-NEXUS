@@ -359,6 +359,68 @@ app.use('/js', express.static(
   staticOptions
 ));
 
+// ===========================================================================
+// 🔴 OPERATIONAL ENDPOINTS — ABOVE THE RATE LIMITER AND EVERY GATE.
+//
+// These two must answer when the platform is BROKEN, which is the only time
+// anyone reads them. They were moved above `tenantFeatureGate`/`legalGate` first,
+// which removed their dependency on the Laravel backend being reachable:
+//
+//   - /version proves a blue/green cutover switched colour, and is what the
+//     routing-drift check uses to tell whether a hostname is served by web-uk or
+//     still by Blade. A tenant-resolution failure could have made it fail at
+//     exactly the moment those checks matter most.
+//   - /health is the container healthcheck. Behind a tenant gate, a backend
+//     wobble could report the container unhealthy and get it RESTARTED, over a
+//     fault that has nothing to do with this process.
+//
+// 🔴 They are now above `generalLimiter` TOO, which the first move missed.
+// generalLimiter allows 100 requests per 15 minutes per IP, and the container
+// healthcheck polls /health every 10 seconds — 90 requests per window, all keyed
+// to 127.0.0.1. Ten more localhost requests (an operator running wget a few times
+// while debugging, an added internal probe, or shortening the interval to make
+// wait_for_color faster) tipped it over, and the limiter answers with a 429 HTML
+// error page. wget --spider then fails, the retries exhaust, the container is
+// marked unhealthy, and the deploy aborts — over nothing.
+//
+// Neither endpoint reads a tenant, a session or a locale, so nothing is lost by
+// being this early. The test suite asserts this ordering against the source.
+// ===========================================================================
+app.get('/health', (req, res) => {
+  // 503 covers Redis dropping AFTER a successful start. It is NOT what a
+  // Redis-down-at-boot looks like: `app.listen()` waits on `sessionStore.ready`,
+  // so an unreachable Redis at startup means the process never binds the port at
+  // all and this route is never reached. Both failure modes are real; the
+  // healthcheck sees connection-refused for the first and 503 for the second.
+  if (!sessionStore.isReady()) {
+    return res.status(503).type('text/plain').send('NOT READY');
+  }
+  res.type('text/plain').send('OK');
+});
+
+// 🔴 Deployment identity. This is the ONLY way to prove a blue/green cutover
+// actually switched colour, and the only way a routing-drift check can tell that a
+// hostname is being served by web-uk rather than still by the Blade accessible
+// frontend. A missed vhost otherwise keeps serving Blade indefinitely at HTTP 200,
+// which no smoke test would notice.
+//
+// Deliberately minimal and safe to expose publicly: the service name, the release
+// it was built from, and the colour it belongs to. No configuration, no secrets, no
+// dependency status — /health already answers readiness, and an endpoint that
+// reports what a service is connected to is an information-disclosure hazard on a
+// public origin.
+//
+// `service` is a fixed literal on purpose. A drift check compares it exactly, so
+// deriving it from an environment variable would let a misconfigured deployment
+// claim to be something it is not.
+app.get('/version', (req, res) => {
+  res.type('application/json').json({
+    service: 'nexus-webuk',
+    release: process.env.BUILD_COMMIT || 'unknown',
+    color: process.env.NEXUS_COLOR || 'unknown'
+  });
+});
+
 // General rate limiting (see lib/rateLimiter.js for route-specific limits)
 app.use(generalLimiter);
 
@@ -476,54 +538,8 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// ===========================================================================
-// 🔴 OPERATIONAL ENDPOINTS — MOUNTED BEFORE EVERY GATE, DELIBERATELY.
-//
-// These two must answer when the platform is BROKEN, which is the only time
-// anyone reads them. Registered below tenantFeatureGate and legalGate — where
-// /version originally was, and where /health had always been — they inherited a
-// dependency on the Laravel backend being reachable:
-//
-//   - /version proves a blue/green cutover switched colour, and is what the
-//     routing-drift check uses to tell whether a hostname is served by web-uk or
-//     still by Blade. A tenant-resolution failure could have made it fail at
-//     exactly the moment those checks matter most.
-//   - /health is the container healthcheck. Behind a tenant gate, a backend
-//     wobble could report the container unhealthy and get it RESTARTED, over a
-//     fault that has nothing to do with this process.
-//
-// Neither reads a tenant, a session or a locale, so nothing is lost by moving
-// them above the gates. The test suite asserts this ordering.
-// ===========================================================================
-app.get('/health', (req, res) => {
-  if (!sessionStore.isReady()) {
-    return res.status(503).type('text/plain').send('NOT READY');
-  }
-  res.type('text/plain').send('OK');
-});
-
-// 🔴 Deployment identity. This is the ONLY way to prove a blue/green cutover
-// actually switched colour, and the only way a routing-drift check can tell that a
-// hostname is being served by web-uk rather than still by the Blade accessible
-// frontend. A missed vhost otherwise keeps serving Blade indefinitely at HTTP 200,
-// which no smoke test would notice.
-//
-// Deliberately minimal and safe to expose publicly: the service name, the release
-// it was built from, and the colour it belongs to. No configuration, no secrets, no
-// dependency status — /health already answers readiness, and an endpoint that
-// reports what a service is connected to is an information-disclosure hazard on a
-// public origin.
-//
-// `service` is a fixed literal on purpose. A drift check compares it exactly, so
-// deriving it from an environment variable would let a misconfigured deployment
-// claim to be something it is not.
-app.get('/version', (req, res) => {
-  res.type('application/json').json({
-    service: 'nexus-webuk',
-    release: process.env.BUILD_COMMIT || 'unknown',
-    color: process.env.NEXUS_COLOR || 'unknown'
-  });
-});
+// /health and /version are registered much earlier — above generalLimiter and
+// above every gate. See the block beside `app.use(generalLimiter)`.
 
 app.use(tenantFeatureGate);
 

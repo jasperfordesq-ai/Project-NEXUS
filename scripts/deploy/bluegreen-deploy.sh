@@ -29,6 +29,23 @@ MIGRATION_SNAPSHOT_TAKEN=0
 
 STATE_FILE="${NEXUS_BLUEGREEN_STATE_FILE:-$DEPLOY_DIR/.bluegreen-active}"
 STATUS_FILE="${NEXUS_BLUEGREEN_STATUS_FILE:-$DEPLOY_DIR/.bluegreen-status}"
+
+# 🔴 Records that web-uk is LIVE — that at least one accessible hostname has been
+# confirmed served by it. Written once, at the first confirmation, and never
+# removed by a deploy.
+#
+# WHY THIS FILE EXISTS. `DEPLOY_WEBUK` came only from the current invocation's flag
+# or environment. Nothing remembered it. So after a cutover, one ordinary
+# `bash scripts/deploy.sh` — no flag, exactly what a routine deploy looks like —
+# wrote the Apache routes file WITHOUT `Define NEXUS_WEBUK_PORT`, the vhost's
+# `<IfDefine !NEXUS_WEBUK_PORT>` arm took over, and every accessible hostname
+# silently went back to serving the Blade frontend. At HTTP 200. And the
+# post-cutover check waved it through, because Blade does not answer `/version`
+# at all, so "no response" was treated as "not cut over yet".
+#
+# Once this marker exists: an absent `/version` is a hard failure, and a deploy
+# that would drop web-uk must say `--without-webuk` out loud.
+WEBUK_LIVE_MARKER="${NEXUS_WEBUK_LIVE_MARKER:-$DEPLOY_DIR/.webuk-live}"
 LATEST_LOG_FILE="${NEXUS_BLUEGREEN_LATEST_LOG_FILE:-$DEPLOY_DIR/.bluegreen-latest-log}"
 RELEASES_DIR="${NEXUS_RELEASES_DIR:-$(dirname "$DEPLOY_DIR")/nexus-releases}"
 APACHE_ROUTES_FILE="${NEXUS_APACHE_ROUTES_FILE:-}"
@@ -73,6 +90,9 @@ GREEN_FRONTEND_PORT="${NEXUS_GREEN_FRONTEND_PORT:-3400}"
 # make the whole compose file fail to interpolate on any host without those secrets,
 # breaking every deploy. See compose.webuk.bluegreen.yml.
 DEPLOY_WEBUK="${NEXUS_DEPLOY_WEBUK:-0}"
+# Distinguishes "--without-webuk was given" from "no flag was given", which both
+# leave DEPLOY_WEBUK=0. See enforce_webuk_live_marker().
+WEBUK_EXPLICITLY_DISABLED=0
 BLUE_WEBUK_PORT="${NEXUS_BLUE_WEBUK_PORT:-3500}"
 GREEN_WEBUK_PORT="${NEXUS_GREEN_WEBUK_PORT:-3600}"
 WEBUK_COMPOSE_OVERLAY="compose.webuk.bluegreen.yml"
@@ -117,7 +137,11 @@ parse_flags() {
             # NEXUS_DEPLOY_WEBUK still works for running this script directly on the
             # server, where the environment is not crossing a boundary.
             --with-webuk) DEPLOY_WEBUK=1 ;;
-            --without-webuk) DEPLOY_WEBUK=0 ;;
+            # Tracked separately from DEPLOY_WEBUK=0, which is also the DEFAULT.
+            # "not asked for" and "explicitly refused" must be distinguishable, or
+            # the live-marker guard below cannot tell a routine flagless deploy from
+            # a deliberate retreat to Blade.
+            --without-webuk) DEPLOY_WEBUK=0; WEBUK_EXPLICITLY_DISABLED=1 ;;
             --skip-prerender) SKIP_PRERENDER=1 ;;
             --force-prerender) FORCE_PRERENDER=1 ;;
             --prerender-tenant) PRERENDER_TENANT="${2:-}"; shift ;;
@@ -130,6 +154,38 @@ parse_flags() {
         esac
         shift
     done
+}
+
+# 🔴 Refuse to silently un-deploy a live web-uk.
+#
+# Called after flag parsing, on every subcommand. If the marker says web-uk is
+# serving real traffic and this invocation was not told to include it, the deploy
+# STOPS. It does not helpfully assume, because "helpfully assume" is how a routine
+# deploy would have taken the accessible frontend back to Blade without a word.
+#
+# Two ways past it, both deliberate and both visible in the log:
+#   --with-webuk     carry on with web-uk, the normal case after cutover
+#   --without-webuk  yes, really remove it (a deliberate retreat to Blade)
+enforce_webuk_live_marker() {
+    [ -f "$WEBUK_LIVE_MARKER" ] || return 0
+    [ "$DEPLOY_WEBUK" = "1" ] && return 0
+    [ "$WEBUK_EXPLICITLY_DISABLED" = "1" ] && {
+        log_warn "web-uk is LIVE but --without-webuk was given: the accessible hostnames will fall back to the Blade frontend."
+        log_warn "Marker kept at $WEBUK_LIVE_MARKER. Remove it by hand once Blade is intended to be permanent again."
+        return 0
+    }
+
+    log_err "REFUSING TO DEPLOY: web-uk is live, but this deploy was not told to include it."
+    log_err ""
+    log_err "  Marker: $WEBUK_LIVE_MARKER"
+    log_err ""
+    log_err "Deploying without it would rewrite the Apache routes file with no"
+    log_err "Define NEXUS_WEBUK_PORT, so every accessible hostname would quietly go"
+    log_err "back to serving the Blade frontend — at HTTP 200, with nothing failing."
+    log_err ""
+    log_err "  Keep web-uk:    add --with-webuk"
+    log_err "  Really drop it: add --without-webuk"
+    exit 2
 }
 
 write_deploy_status() {
@@ -324,8 +380,31 @@ compose_for_release() {
     shift
     # The web-uk overlay is appended ONLY when NEXUS_DEPLOY_WEBUK=1, so an
     # ordinary deploy issues exactly the docker compose command it always did.
+    #
+    # 🔴 COMMAND substitution, not PROCESS substitution, and the status is checked.
+    # This was `while read … < <(compose_files_for_release …)`, where the function's
+    # `exit 1` for a missing overlay terminated only the subshell: the loop had
+    # already consumed the lines printed before the guard, finished with status 0,
+    # and `set -e` saw nothing. The deploy then carried on and died later on
+    # "no such service: webuk" — so the operator got a Docker error instead of
+    # "push the web-uk deployment overlay before enabling it". The contract test
+    # passed throughout, because it called the function in a command substitution,
+    # where `exit 1` DOES set the status. It asserted a property the real call site
+    # did not have.
     local -a files=()
-    while IFS= read -r line; do files+=("$line"); done < <(compose_files_for_release "$release_dir")
+    local file_list=""
+    if ! file_list="$(compose_files_for_release "$release_dir")"; then
+        log_err "Could not determine the compose file list for $release_dir. Refusing to continue."
+        exit 1
+    fi
+    while IFS= read -r line; do
+        [ -n "$line" ] && files+=("$line")
+    done <<< "$file_list"
+
+    if [ "${#files[@]}" -eq 0 ]; then
+        log_err "Compose file list came back empty for $release_dir. Refusing to run docker compose with no -f."
+        exit 1
+    fi
     docker compose \
         --env-file "$DEPLOY_DIR/.env" \
         -p "nexus-$NEXUS_COLOR" \
@@ -393,8 +472,12 @@ wait_for_color() {
     wait_for_container_health "$(container_name "$color" app)"
     wait_for_container_health "$(container_name "$color" frontend)"
     if webuk_enabled; then
-        # /health returns 503 until the Redis session store is ready, so this is
-        # a genuine readiness wait rather than a liveness ping.
+        # 🔴 A genuine readiness wait, and it can fail in TWO ways — worth knowing
+        # because they point at different causes. Redis unreachable at STARTUP means
+        # the process never binds its port (listen is awaited behind the session
+        # store), so this fails by connection-refused. Redis lost AFTER a good start
+        # means /health answers 503. Either way the container never turns healthy, so
+        # this times out and the deploy aborts before the traffic switch.
         wait_for_container_health "$(container_name "$color" webuk)"
     fi
 }
@@ -715,7 +798,14 @@ smoke_color() {
         webuk_port="$(webuk_port_for_color "$color")"
 
         if ! curl -sf "http://127.0.0.1:$webuk_port/health" | grep -q 'OK'; then
-            log_err "web-uk health failed on $webuk_port (503 means the Redis session store is not ready)"
+            # 🔴 This said "503 means the Redis session store is not ready" and sent
+            # an operator hunting for a response that never comes. Measured in the
+            # local rehearsal: with Redis unreachable the process never listens at
+            # all, so the real symptom is CONNECTION REFUSED.
+            log_err "web-uk health failed on $webuk_port."
+            log_err "Connection refused usually means it never started listening — most often the"
+            log_err "Redis session store is unreachable (WEBUK_SESSION_REDIS_URL). Check:"
+            log_err "  docker logs $(container_name "$color" webuk) --tail 50"
             return 1
         fi
         log_ok "web-uk health passed on $webuk_port"
@@ -1075,8 +1165,27 @@ post_cutover_smoke() {
         accessible_version="$(curl -sf -H 'Cache-Control: no-cache' \
             "https://accessible.project-nexus.ie/version?_t=$(date +%s)" 2>/dev/null || true)"
         if [ -z "$accessible_version" ]; then
+            # 🔴 THIS ARM USED TO PASS UNCONDITIONALLY, AND THAT MADE THE WHOLE CHECK
+            # USELESS FOR ITS OWN PURPOSE. Blade does not serve /version at all — so
+            # "the hostname silently fell back to Blade", the exact scenario /version
+            # was invented to detect, produces an empty response and landed here.
+            #
+            # Before the first confirmed cutover, empty genuinely is expected: no
+            # vhost include exists yet. After it, empty means the frontend that was
+            # serving members is gone. The marker is what tells the two apart.
+            if [ -f "$WEBUK_LIVE_MARKER" ]; then
+                log_err "https://accessible.project-nexus.ie/version did NOT respond, and web-uk is LIVE."
+                log_err "Marker: $WEBUK_LIVE_MARKER"
+                log_err ""
+                log_err "Blade does not serve /version, so silence is the signature of a"
+                log_err "fallback to Blade — not of a missing vhost. Most likely the Apache"
+                log_err "routes file lost Define NEXUS_WEBUK_PORT, or the web-uk container"
+                log_err "is not running on the active colour."
+                return 1
+            fi
             log_warn "Public accessible /version did not respond."
             log_warn "Expected while the vhost include has not been installed yet (cutover step 2)."
+            log_warn "Once a hostname is confirmed served by web-uk, this becomes a hard failure."
         elif ! echo "$accessible_version" | grep -q '"service":"nexus-webuk"'; then
             log_err "https://accessible.project-nexus.ie is NOT served by web-uk."
             log_err "It is most likely still served by the Blade accessible frontend."
@@ -1084,6 +1193,21 @@ post_cutover_smoke() {
             return 1
         else
             log_ok "Public accessible host confirmed as web-uk"
+            # 🔴 First confirmation LATCHES. From here on, a flagless deploy refuses
+            # rather than silently dropping web-uk, and an empty /version is a hard
+            # failure rather than "not cut over yet". Written only on a positive
+            # observation of a real public hostname — never inferred from a flag.
+            if [ ! -f "$WEBUK_LIVE_MARKER" ]; then
+                if printf 'confirmed_at=%s\nhost=accessible.project-nexus.ie\ncommit=%s\n' \
+                    "$(date -Iseconds)" "${BUILD_COMMIT:-unknown}" > "$WEBUK_LIVE_MARKER" 2>/dev/null; then
+                    log_ok "web-uk recorded as LIVE ($WEBUK_LIVE_MARKER)"
+                    log_info "Future deploys must pass --with-webuk, or refuse."
+                else
+                    # Not fatal: the cutover itself succeeded. But say so loudly,
+                    # because without the marker the protections above stay dormant.
+                    log_warn "Could not write $WEBUK_LIVE_MARKER — the live-marker protections are NOT armed."
+                fi
+            fi
         fi
     fi
 
@@ -1183,14 +1307,30 @@ cmd_status() {
     read -r api_port frontend_port < <(ports_for_color "$active")
     log_info "Active color: $active"
     log_info "Active ports: API=$api_port frontend=$frontend_port"
-    if webuk_enabled; then
-        local webuk_port webuk_state
-        webuk_port="$(webuk_port_for_color "$active")"
-        webuk_state="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
-            "$(container_name "$active" webuk)" 2>/dev/null || echo missing)"
-        log_info "web-uk: port=$webuk_port container=$webuk_state"
+    # 🔴 `status` is the one command an operator runs to ask "is web-uk live?", and it
+    # used to answer from THIS invocation's flag — which `status` is never given. So
+    # after a successful cutover it reported "not enabled" while web-uk was serving
+    # members. Report the recorded fact and the observed container, not the flag.
+    local webuk_port webuk_state
+    webuk_port="$(webuk_port_for_color "$active")"
+    webuk_state="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
+        "$(container_name "$active" webuk)" 2>/dev/null || echo missing)"
+
+    if [ -f "$WEBUK_LIVE_MARKER" ]; then
+        log_info "web-uk: LIVE (confirmed serving a public hostname) port=$webuk_port container=$webuk_state"
+        sed -n '1,5p' "$WEBUK_LIVE_MARKER" 2>/dev/null || true
+        if [ "$webuk_state" = "missing" ]; then
+            log_err "web-uk is recorded as LIVE but no container exists on the active colour ($active)."
+            log_err "The accessible hostnames are very likely being served by Blade right now."
+        fi
+    elif webuk_enabled; then
+        log_info "web-uk: included in this invocation, not yet confirmed live. port=$webuk_port container=$webuk_state"
+    elif [ "$webuk_state" != "missing" ]; then
+        # Running but never confirmed on a public hostname — the deliberate state
+        # during rehearsal, when it is deployed with nothing routed to it.
+        log_info "web-uk: running but routed nowhere (rehearsal state). port=$webuk_port container=$webuk_state"
     else
-        log_info "web-uk: not enabled (set NEXUS_DEPLOY_WEBUK=1 to include it)"
+        log_info "web-uk: not deployed (pass --with-webuk to include it)"
     fi
     if [ -f "$STATUS_FILE" ]; then
         log_info "Latest deployment status:"
@@ -1562,8 +1702,13 @@ cmd_rollback() {
 }
 
 case "${1:-}" in
-    deploy) parse_flags "$@"; detach_if_requested deploy "$@"; cmd_deploy ;;
-    rollback) parse_flags "$@"; detach_if_requested rollback "$@"; cmd_rollback ;;
+    # 🔴 enforce_webuk_live_marker runs BEFORE detaching, so the refusal is seen by
+    # the person who typed the command rather than buried in a detached log. It is
+    # deliberately NOT inside parse_flags: that function is sourced in isolation by
+    # scripts/test/test-bluegreen-webuk-contract.sh, and calling an undefined
+    # function there printed an error the test happily ignored.
+    deploy) parse_flags "$@"; enforce_webuk_live_marker; detach_if_requested deploy "$@"; cmd_deploy ;;
+    rollback) parse_flags "$@"; enforce_webuk_live_marker; detach_if_requested rollback "$@"; cmd_rollback ;;
     status) cmd_status ;;
     logs) shift; cmd_logs "${1:-}" ;;
     monitor) cmd_monitor ;;

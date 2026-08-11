@@ -14,7 +14,28 @@ const { ApiError, ApiOfflineError, getLegalAcceptanceStatus } = require('../lib/
  * page explaining what changed and a button, instead of a bare 403 from whatever
  * they were trying to do.
  *
- * 🔴 FOUR independent loop-breakers, because an interstitial that can trap
+ * 🔴 THE MODE IS NOW ACTUALLY READ. This docblock claimed it was, and it was not:
+ * nothing here consulted the mode, so this gate redirected whenever a document was
+ * pending. An installation deliberately running `report` — whose entire purpose is
+ * "log who WOULD be blocked, block nobody, for a measurement week" — still had
+ * every accessible-frontend member stopped before any page, and `off` did not mean
+ * off. Found by audit on 2026-08-11, the same day it shipped.
+ *
+ * The fix is server-published, not duplicated here. `GET /v2/legal/acceptance/status`
+ * now returns `enforcement_blocking`, computed by `EnsureLegalAcceptance::modeBlocks()`
+ * — the same predicate the gate itself uses. Copying the mode table into JavaScript
+ * would drift, and two gates disagreeing about who is blocked is worse than one
+ * being wrong. When the server says it is not blocking, this stands down entirely.
+ *
+ * 🔴 Only an EXPLICIT `false` stands it down. An absent field keeps today's
+ * behaviour, because the alternative — treating absence as "not blocking" — would
+ * silently drop the acceptance prompt if that field ever failed to serialise, on an
+ * obligation the owner deliberately enforces by default. React's `useLegalGate`
+ * applies the identical test, so the two clients cannot disagree about who is
+ * blocked. In practice absence cannot occur: web-uk calls its own colour's Laravel
+ * container, so client and server ship from one commit.
+ *
+ * 🔴 FIVE independent loop-breakers, because an interstitial that can trap
  * somebody is worse than no interstitial at all. Any one of them failing must not
  * be enough to strand a member:
  *
@@ -30,6 +51,9 @@ const { ApiError, ApiOfflineError, getLegalAcceptanceStatus } = require('../lib/
  *   4. A 60-second session-cached verdict, cleared the moment the member accepts.
  *      Without the clear, accepting and being sent straight back here is exactly
  *      the loop this is meant to prevent.
+ *   5. The server's own enforcement mode, above. If the platform is not refusing
+ *      requests, this never interposes — so a misconfiguration here cannot block
+ *      members that Laravel would have let through.
  *
  * 🔴 It also FAILS OPEN. If the status call errors or the API is unreachable, the
  * member continues to the page they asked for. Laravel still refuses the actual
@@ -122,18 +146,35 @@ async function pendingDocumentsFor(req) {
   const cached = req.session?.legalGate;
 
   if (cached && typeof cached.checkedAt === 'number' && now - cached.checkedAt < VERDICT_TTL_MS) {
-    return Array.isArray(cached.documents) ? cached.documents : [];
+    return {
+      documents: Array.isArray(cached.documents) ? cached.documents : [],
+      // Matches the fresh-read rule below: only an explicit false stands down. A
+      // cache written before this field existed has `undefined` and keeps
+      // today's behaviour.
+      blocking: cached.blocking !== false
+    };
   }
 
   const result = await getLegalAcceptanceStatus(req.signedCookies.token);
   const payload = result?.data !== undefined ? result.data : result;
   const documents = payload?.has_pending === false ? [] : normalizeDocuments(payload);
 
+  // 🔴 `!== false`, NOT `=== true`. Only an EXPLICIT false stands the gate down.
+  //
+  // The difference is what an absent field means, and the two clients must agree —
+  // React's `useLegalGate` uses the identical test. An absent field means an older
+  // backend, which in practice cannot happen: web-uk talks to its own colour's
+  // Laravel container, so they ship from one commit. Choosing `!== false` means
+  // that if the field ever fails to serialise, behaviour is exactly today's rather
+  // than silently dropping the acceptance prompt on a legal obligation the owner
+  // deliberately enforces by default.
+  const blocking = payload?.enforcement_blocking !== false;
+
   if (req.session) {
-    req.session.legalGate = { checkedAt: now, documents };
+    req.session.legalGate = { checkedAt: now, documents, blocking };
   }
 
-  return documents;
+  return { documents, blocking };
 }
 
 /** Called after a successful accept, so the next request is not sent back here. */
@@ -163,7 +204,14 @@ function legalGate(req, res, next) {
   }
 
   return pendingDocumentsFor(req)
-    .then((documents) => {
+    .then(({ documents, blocking }) => {
+      // (5) The platform is not refusing requests — `off` or `report`. Nothing to
+      // interpose. Under `report` Laravel is deliberately still counting who WOULD
+      // be blocked; standing down here is what makes that count meaningful.
+      if (!blocking) {
+        return next();
+      }
+
       if (documents.length === 0) {
         return next();
       }
