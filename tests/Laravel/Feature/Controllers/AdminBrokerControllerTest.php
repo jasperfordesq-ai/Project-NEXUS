@@ -528,8 +528,19 @@ class AdminBrokerControllerTest extends TestCase
         // An arbitrator must not be able to post a figure the workflow would have
         // refused from a participant. Default window is proposed ±25%.
         $admin = User::factory()->forTenant($this->testTenantId)->admin()->create();
-        $requester = User::factory()->forTenant($this->testTenantId)->create();
-        $provider = User::factory()->forTenant($this->testTenantId)->create();
+        // 🔴 The balances are EXPLICIT, and this test failed roughly one run in ten
+        // without them. UserFactory sets 'balance' => randomFloat(2, 0, 50), so the
+        // requester started with a random 0–50 credits. Resolving this dispute moves
+        // the clamped 5.0 credits, and completeExchange() throws
+        // RuntimeException('INSUFFICIENT_BALANCE') when the payer cannot cover it —
+        // which is exactly a 10% chance on a uniform 0–50 draw. That surfaced as an
+        // opaque 500 in CI (PHP shard 2, 2026-08-11) and reproduced locally at the
+        // same rate: 1 failure in 6, then 1 in 11.
+        //
+        // Every other exchange test in this file already sets a balance for this
+        // reason. This one was the outlier, not a special case.
+        $requester = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
+        $provider = User::factory()->forTenant($this->testTenantId)->create(['balance' => 10.0]);
         $listingId = $this->makeListingId($this->testTenantId, $provider->id);
 
         $exchangeId = DB::table('exchange_requests')->insertGetId([

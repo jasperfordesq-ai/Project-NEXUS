@@ -666,6 +666,19 @@ class AdminBrokerController extends BaseApiController
                 $status = in_array($code, ['NOT_FOUND'], true) ? 404
                     : (in_array($code, ['UNAUTHORIZED'], true) ? 403
                     : (in_array($code, ['NOT_DISPUTED', 'REASON_REQUIRED', 'INVALID_HOURS'], true) ? 400 : 500));
+
+                // 🔴 A 500 from HERE and a 500 from the catch below produced BYTE-IDENTICAL
+                // responses, which is why the CI failure on 2026-08-11 could not be
+                // diagnosed at all: `SERVER_ERROR` is both this branch's fallback (when
+                // the service returns no error key) and the catch-all's fixed code.
+                // Logging the actual result distinguishes the two.
+                if ($status >= 500) {
+                    \Illuminate\Support\Facades\Log::error('Exchange dispute resolution refused with a server-error code', [
+                        'exchange_id' => $id,
+                        'result' => $result,
+                    ]);
+                }
+
                 return $this->respondWithError($code, __('api.exchange_complete_failed'), null, $status);
             }
 
@@ -682,7 +695,51 @@ class AdminBrokerController extends BaseApiController
                 'final_hours' => $result['final_hours'] ?? null,
             ]);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Exchange dispute resolution failed', ['exchange_id' => $id, 'error' => $e->getMessage()]);
+            // Class and location as well as the message: "Unable to complete this
+            // exchange" on its own identifies nothing, and this catch swallows every
+            // possible cause into one response.
+            \Illuminate\Support\Facades\Log::error('Exchange dispute resolution failed', [
+                'exchange_id' => $id,
+                'error' => $e->getMessage(),
+                'exception' => $e::class,
+                'at' => $e->getFile() . ':' . $e->getLine(),
+            ]);
+
+            // 🔴 TESTING ONLY — so a CI failure diagnoses itself.
+            //
+            // This endpoint failed on CI (2026-08-11, PHP shard 2,
+            // test_resolve_dispute_clamps_hours_to_the_variance_window) with a 500 and
+            // the body {"code":"SERVER_ERROR","message":"Unable to complete this
+            // exchange"} — and that was ALL the evidence available. It passes locally,
+            // including in exact shard order, so the difference is environmental
+            // (CI builds a fresh database per shard).
+            //
+            // The cause could not be identified because the only description of it
+            // goes to Log::error, which writes to a file CI never prints. Every
+            // legitimate refusal in this path returns its own code, so SERVER_ERROR
+            // narrows it to "something threw" and stops there.
+            //
+            // PHPUnit prints the response body on an assertion failure, so putting the
+            // exception in the message means the NEXT occurrence names its own cause.
+            // Gated on the testing environment — never production, where an exception
+            // message in an API response is an information-disclosure hazard. The env
+            // check follows the existing convention in app/Core/TenantContext.php.
+            if (($_ENV['APP_ENV'] ?? getenv('APP_ENV')) === 'testing'
+                || (function_exists('app') && app()->environment('testing'))) {
+                return $this->respondWithError(
+                    'SERVER_ERROR',
+                    sprintf(
+                        '%s: %s (%s:%d)',
+                        $e::class,
+                        $e->getMessage(),
+                        basename($e->getFile()),
+                        $e->getLine()
+                    ),
+                    null,
+                    500
+                );
+            }
+
             return $this->respondWithError('SERVER_ERROR', __('api.exchange_complete_failed'), null, 500);
         }
     }
