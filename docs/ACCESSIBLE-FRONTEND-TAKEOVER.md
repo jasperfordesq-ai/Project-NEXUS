@@ -69,28 +69,45 @@ qualification means the Phase A rule above.
 | Legal acceptance enforcement | **Built.** Server-side enforcement, a `web-uk` interstitial, and a mobile acceptance screen. |
 | Bot protection on the contact form | **Built.** The challenge renders on the contact form, and the platform-side configuration fault that silently disabled it is fixed. |
 | Cookie-consent record keeping | **Built.** Anonymous visitors' choices are now recorded, as Blade already did. |
-| Deployment path | **Not built.** No container service, no vhost, no rollback rehearsal. Blocked on the prerequisites below. |
+| Deployment path | **Built 2026-08-11, not exercised.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. Nothing has been deployed and no cutover or rollback has been rehearsed. |
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
 | Blade retirement | **Not started.** A separate change with its own review, after a soak period. |
 
-Current score: **592/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
+Current score: **631/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
 table below before comparing that with any earlier number.
 
-## Open prerequisites — these need owner answers
+## Prerequisites — four resolved, three still need owner answers
 
-Deployment cannot be built past a certain point without these. They are not
-discoverable from the repository.
+### ✅ Resolved
 
-1. **Spare memory on the production VM.** Adding `web-uk` to both deployment
-   colours costs about 2 × 512 MB. An existing memory squeeze on that machine has
-   already caused unrelated queue-worker crash loops, so this is the most likely
-   way this work causes an outage somewhere else.
-2. **Two free host ports** for the two colours.
-3. **A Redis database index that is not 0.** The Laravel cache store issues a
-   flush; if `web-uk` sessions shared index 0, clearing the Laravel cache would
-   sign out every accessible-frontend user.
-4. **The list of community accessible domains**, which is production data and
-   forms the per-vhost checklist.
+1. **Spare memory on the production VM — MEASURED 2026-08-11, and there is room.**
+   The VM has 16 GB. Idle it uses 6.6 GB with 9.3 GB available. A deploy peaks at
+   roughly 12.3 GB, because the React image build is given a 4 GB allowance and
+   builds at the same time as the PHP image, while both colours stay running — so
+   about 3 GB is spare at the worst moment.
+   `web-uk` was then measured directly rather than estimated: **66.5 MB idle,
+   71.3 MB peak** across ~260 requests over ten distinct templates, with the server
+   process at 123 MB. Its limit is set to **384 MB** per colour, not the 512 MB
+   originally planned — the measurement did not justify it.
+   🔴 One separate finding worth knowing: the only out-of-memory kill on that
+   machine (6 August) was the page-prerendering worker **hitting its own 3 GB
+   container limit**, not the host running out. It sits at 99.99% of that limit
+   permanently. More host memory would not have prevented it, and it has nothing to
+   do with `web-uk`.
+2. **Two free host ports** — **3500** (blue) and **3600** (green). Checked against
+   the API ports (8090/8190), frontend ports (3000/3400/3100) and `web-uk`'s dev
+   port (5180); a test asserts they stay distinct.
+3. **A Redis database index that is not 0** — **index 4**. The Laravel cache store
+   issues a flush, so sessions on index 0 would be destroyed by
+   `php artisan cache:clear`, signing out every accessible-frontend user. The
+   service refuses to start without this variable set.
+4. **The list of community accessible domains** — no longer an owner task.
+   `scripts/list-accessible-domains.sh` produces it read-only from the database,
+   and `--check` probes each hostname's `/version` to report which frontend is
+   actually serving it.
+
+### Still needed from the owner
+
 5. **`.claude/production-containers.md`.** `web-uk`'s own release runbook makes
    lifting its deployment hold conditional on a file that was never imported into
    this repository. As written, the hold cannot be lifted. Either import it or
@@ -98,7 +115,18 @@ discoverable from the repository.
 6. **Whether to publish per-tenant accessible domains** in the public uptime
    target list.
 7. **An error-reporting project for `web-uk`.** Without one it would become an
-   internet-facing production service with no error reporting.
+   internet-facing production service with no error reporting. The service already
+   reads a DSN if one is provided.
+
+### 🔴 Also outstanding, and not an owner decision
+
+**The Apache `Define` / `<IfDefine>` behaviour that makes rollback cheap is
+unverified against the production Apache build.** The accessible vhost include
+falls back to the PHP port when `NEXUS_WEBUK_PORT` is not defined, so that a
+rollback to a release predating `web-uk` does not fail its own configuration test
+and thereby abort the rollback. That must be confirmed with `apachectl configtest`
+on the real server, in both states, **before** any cutover — not discovered during
+a rollback.
 
 ## Documents that carry a status claim
 

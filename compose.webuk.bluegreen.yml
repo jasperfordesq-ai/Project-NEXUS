@@ -1,0 +1,118 @@
+# =============================================================================
+# Project NEXUS — web-uk accessible frontend, blue/green OVERLAY
+# =============================================================================
+#
+# 🔴 WHY THIS IS A SEPARATE FILE AND NOT PART OF compose.bluegreen.yml.
+#
+# This service requires three secrets and declares them with Compose`s
+# `${VAR:?}` form so a deployment cannot boot with a guessable session secret.
+# Compose interpolates the ENTIRE file when it loads it, not just the service
+# being acted on — so with these lines in the main file,
+# `docker compose build app frontend` FAILS OUTRIGHT on any host where the
+# web-uk secrets are not set. Measured 2026-08-11:
+#
+#   error while interpolating services.webuk.environment.[]:
+#   required variable WEBUK_COOKIE_SECRET is missing a value
+#
+# That would have broken every production deploy as a side effect of preparing a
+# service nobody had asked to deploy yet. Compose profiles do not help: profiles
+# filter which services RUN, they do not stop interpolation.
+#
+# Keeping it in an overlay means the strict secret handling is preserved AND the
+# existing deploy path cannot be affected. Opt in with:
+#
+#   NEXUS_DEPLOY_WEBUK=1 bash scripts/deploy/bluegreen-deploy.sh deploy --detach
+#
+# 🔴 NOT AUTHORISED FOR PRODUCTION USE. The path exists so it can be rehearsed.
+# See docs/ACCESSIBLE-FRONTEND-TAKEOVER.md for the open prerequisites.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # web-uk — the incoming accessible frontend (Node/Express + Nunjucks).
+  #
+  # 🔴 NOT DEPLOYED YET. Present so the deployment path exists and can be
+  # rehearsed; routing nothing to it is the whole point of step 1 of the cutover.
+  # See docs/ACCESSIBLE-FRONTEND-TAKEOVER.md.
+  #
+  # Modelled on `frontend` above, NOT on `app`. It builds from its OWN context and
+  # ships its own image, so it must not inherit the PHP service's shape.
+  # ---------------------------------------------------------------------------
+  webuk:
+    build:
+      context: ./web-uk
+      dockerfile: Dockerfile
+      # 🔴 `target: production` is load-bearing. The default final stage is not
+      # guaranteed to be the hardened one, and the `development` stage mounts
+      # source and runs `npm run dev`. check-production-image-allowlist.mjs fails
+      # if this line is missing.
+      target: production
+    image: nexus-webuk:${BUILD_COMMIT:-candidate}
+    container_name: nexus-${NEXUS_COLOR:-green}-webuk
+    restart: unless-stopped
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          # MEASURED 2026-08-11 on the production image, no limit applied so the
+          # measurement could not report its own cap: 66.5 MiB idle, 71.3 MiB peak
+          # across ~260 requests over ten distinct templates, settling to 51.8 MiB
+          # after ~760. The server process itself was 123 MB RSS; Node's heap
+          # stayed at 5.1 MiB total.
+          #
+          # 384M is ~3x the process RSS and ~5x the measured cgroup peak. The plan
+          # originally called for 512M; the measurement did not justify it, and on a
+          # 16 GB VM whose configured limits already total ~14.5 GB, 128 MB per
+          # colour is worth not spending.
+          #
+          # 🔴 What was NOT measured: authenticated pages rendering real API data.
+          # If this is ever OOM-killed, check `docker inspect -f
+          # '{{.State.OOMKilled}}'` before assuming a leak — a large JSON payload
+          # under concurrency is the likelier cause, and the fix is a higher limit,
+          # not a code change.
+          memory: 384M
+        reservations:
+          memory: 64M
+    ports:
+      - "127.0.0.1:${NEXUS_WEBUK_PORT:-3500}:3001"
+    # 🔴 NO env_file. app/queue/scheduler load the whole Laravel .env; handing
+    # every Laravel secret to a Node process would be gratuitous. Everything this
+    # service needs is named explicitly below.
+    environment:
+      - NODE_ENV=production
+      # 🔴 Required, no default. `:?` makes Compose refuse to start rather than
+      # boot with a guessable secret; the image also fails closed on a weak or
+      # duplicated value before it listens.
+      - COOKIE_SECRET=${WEBUK_COOKIE_SECRET:?WEBUK_COOKIE_SECRET must be set}
+      - SESSION_SECRET=${WEBUK_SESSION_SECRET:?WEBUK_SESSION_SECRET must be set and DIFFERENT from WEBUK_COOKIE_SECRET}
+      # 🔴 Sessions MUST NOT land on Redis DB 0. Laravel's cache store issues
+      # FLUSHDB, so `php artisan cache:clear` would silently sign out every
+      # accessible-frontend user. Index 4 is reserved for this.
+      - SESSION_REDIS_URL=${WEBUK_SESSION_REDIS_URL:?WEBUK_SESSION_REDIS_URL must be set and must NOT use database 0}
+      # 🔴 SAME-COLOUR Laravel, by container name. This preserves the blue/green
+      # invariant: the candidate colour talks to its own API, so a broken candidate
+      # cannot be masked by the live colour answering for it.
+      - LARAVEL_BASE_URL=http://nexus-${NEXUS_COLOR:-green}-php-app:80
+      # The PUBLIC API origin, for URLs the BROWSER fetches (tenant logos). This
+      # genuinely differs from the line above: the internal container name does not
+      # resolve in a browser, and using it produced broken images and a CSP that
+      # permitted a host the browser cannot reach.
+      - PUBLIC_ASSET_BASE_URL=${WEBUK_PUBLIC_ASSET_BASE_URL:-https://api.project-nexus.ie}
+      - TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-}
+      - SENTRY_DSN=${SENTRY_DSN_WEBUK:-}
+      - SENTRY_ENVIRONMENT=production
+      # Identity reported by /version, which is how a cutover is proved to have
+      # switched colour and how the routing-drift check spots a vhost still
+      # serving Blade.
+      - BUILD_COMMIT=${BUILD_COMMIT:-candidate}
+      - NEXUS_COLOR=${NEXUS_COLOR:-green}
+    networks:
+      - nexus-php-internal
+    healthcheck:
+      # /health reports 503 until the Redis session store is ready, so this is a
+      # genuine readiness check rather than a liveness ping.
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s

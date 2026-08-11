@@ -19,7 +19,11 @@ const UNPREFIXED_PATHS = [
   '/session/touch',
   '/sitemap.xml',
   '/uploads',
-  '/v2'
+  '/v2',
+  // Deployment identity, used to prove a blue/green cutover switched colour and by
+  // the routing-drift check. Must never be tenant-prefixed: the check calls it on a
+  // bare hostname, before any tenant is known.
+  '/version'
 ];
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1']);
 const RESERVED_CHILD_SEGMENTS = new Set([

@@ -67,6 +67,16 @@ BLUE_FRONTEND_PORT="${NEXUS_BLUE_FRONTEND_PORT:-3000}"
 GREEN_API_PORT="${NEXUS_GREEN_API_PORT:-8190}"
 GREEN_FRONTEND_PORT="${NEXUS_GREEN_FRONTEND_PORT:-3400}"
 
+# web-uk accessible frontend. 🔴 OPT-IN ONLY: unset, nothing about web-uk runs and
+# the existing deploy path is byte-for-byte unaffected. Its compose service lives in
+# a SEPARATE overlay file because its required-secret declarations would otherwise
+# make the whole compose file fail to interpolate on any host without those secrets,
+# breaking every deploy. See compose.webuk.bluegreen.yml.
+DEPLOY_WEBUK="${NEXUS_DEPLOY_WEBUK:-0}"
+BLUE_WEBUK_PORT="${NEXUS_BLUE_WEBUK_PORT:-3500}"
+GREEN_WEBUK_PORT="${NEXUS_GREEN_WEBUK_PORT:-3600}"
+WEBUK_COMPOSE_OVERLAY="compose.webuk.bluegreen.yml"
+
 usage() {
     cat <<'USAGE'
 Usage:
@@ -256,6 +266,41 @@ ports_for_color() {
     fi
 }
 
+# 🔴 DELIBERATELY SEPARATE from ports_for_color(). That function returns exactly two
+# values and eight call sites destructure exactly two with
+# `read -r api_port frontend_port`. Appending a third field would be SILENTLY
+# DISCARDED at seven of them and would corrupt the eighth. Never merge these.
+webuk_port_for_color() {
+    local color="$1"
+    if [ "$color" = "blue" ]; then
+        echo "$BLUE_WEBUK_PORT"
+    else
+        echo "$GREEN_WEBUK_PORT"
+    fi
+}
+
+webuk_enabled() {
+    [ "$DEPLOY_WEBUK" = "1" ]
+}
+
+# Compose invocation including the web-uk overlay only when opted in.
+compose_files_for_release() {
+    local release_dir="$1"
+    printf -- "-f
+%s/compose.bluegreen.yml
+" "$release_dir"
+    if webuk_enabled; then
+        if [ ! -f "$release_dir/$WEBUK_COMPOSE_OVERLAY" ]; then
+            log_err "NEXUS_DEPLOY_WEBUK=1 but $WEBUK_COMPOSE_OVERLAY is missing from the release."
+            log_err "Push the web-uk deployment overlay before enabling it."
+            exit 1
+        fi
+        printf -- "-f
+%s/%s
+" "$release_dir" "$WEBUK_COMPOSE_OVERLAY"
+    fi
+}
+
 require_route_switching() {
     if [ -z "$APACHE_ROUTES_FILE" ]; then
         log_err "NEXUS_APACHE_ROUTES_FILE is not set."
@@ -267,10 +312,14 @@ require_route_switching() {
 compose_for_release() {
     local release_dir="$1"
     shift
+    # The web-uk overlay is appended ONLY when NEXUS_DEPLOY_WEBUK=1, so an
+    # ordinary deploy issues exactly the docker compose command it always did.
+    local -a files=()
+    while IFS= read -r line; do files+=("$line"); done < <(compose_files_for_release "$release_dir")
     docker compose \
         --env-file "$DEPLOY_DIR/.env" \
         -p "nexus-$NEXUS_COLOR" \
-        -f "$release_dir/compose.bluegreen.yml" \
+        "${files[@]}" \
         "$@"
 }
 
@@ -282,6 +331,7 @@ container_name() {
         frontend) echo "nexus-$color-react" ;;
         queue) echo "nexus-$color-php-queue" ;;
         scheduler) echo "nexus-$color-php-scheduler" ;;
+        webuk) echo "nexus-$color-webuk" ;;
         *)
             log_err "Unknown service: $service"
             return 1
@@ -332,6 +382,11 @@ wait_for_color() {
     local color="$1"
     wait_for_container_health "$(container_name "$color" app)"
     wait_for_container_health "$(container_name "$color" frontend)"
+    if webuk_enabled; then
+        # /health returns 503 until the Redis session store is ready, so this is
+        # a genuine readiness wait rather than a liveness ping.
+        wait_for_container_health "$(container_name "$color" webuk)"
+    fi
 }
 
 prepare_release() {
@@ -557,6 +612,15 @@ Define NEXUS_API_PORT $api_port
 Define NEXUS_FRONTEND_PORT $frontend_port
 ROUTES
 
+    # 🔴 Only defined when web-uk is deployed. The accessible vhost include
+    # wraps its use in <IfDefine NEXUS_WEBUK_PORT> with an <IfDefine !...>
+    # fallback to the PHP port, so a ROLLBACK to a release predating web-uk
+    # does not reference an undefined variable, fail configtest, and thereby
+    # abort the rollback itself.
+    if webuk_enabled; then
+        printf 'Define NEXUS_WEBUK_PORT %s\n' "$(webuk_port_for_color "$color")" >> "$tmp_file"
+    fi
+
     if [ -f "$APACHE_ROUTES_FILE" ]; then
         cp "$APACHE_ROUTES_FILE" "$backup_file"
     else
@@ -636,6 +700,39 @@ smoke_color() {
     fi
     log_ok "Frontend passed on $frontend_port"
 
+    if webuk_enabled; then
+        local webuk_port webuk_version
+        webuk_port="$(webuk_port_for_color "$color")"
+
+        if ! curl -sf "http://127.0.0.1:$webuk_port/health" | grep -q 'OK'; then
+            log_err "web-uk health failed on $webuk_port (503 means the Redis session store is not ready)"
+            return 1
+        fi
+        log_ok "web-uk health passed on $webuk_port"
+
+        # 🔴 Identity, not just liveness. This is the ONLY way to prove the
+        # candidate is web-uk at the expected release rather than something else
+        # answering on that port.
+        webuk_version="$(curl -sf "http://127.0.0.1:$webuk_port/version" || true)"
+        if ! echo "$webuk_version" | grep -q '"service":"nexus-webuk"'; then
+            log_err "web-uk /version did not identify itself as nexus-webuk on $webuk_port"
+            return 1
+        fi
+        if ! echo "$webuk_version" | grep -q "\"color\":\"$color\""; then
+            log_err "web-uk /version reports the wrong colour on $webuk_port (expected $color)"
+            log_err "Response: $webuk_version"
+            return 1
+        fi
+        log_ok "web-uk identity passed: nexus-webuk, colour $color"
+
+        # A real page, so a broken template or missing locale catalogue fails the
+        # gate rather than reaching members.
+        if ! curl -sf "http://127.0.0.1:$webuk_port/hour-timebank/accessible/" | grep -q 'govuk'; then
+            log_err "web-uk did not render an accessible page on $webuk_port"
+            return 1
+        fi
+        log_ok "web-uk rendered an accessible page"
+    fi
 }
 
 deploy_candidate() {
@@ -652,6 +749,10 @@ deploy_candidate() {
     export NEXUS_COLOR="$color"
     export NEXUS_API_PORT="$api_port"
     export NEXUS_FRONTEND_PORT="$frontend_port"
+    if webuk_enabled; then
+        NEXUS_WEBUK_PORT="$(webuk_port_for_color "$color")"
+        export NEXUS_WEBUK_PORT
+    fi
     export NEXUS_ENV_FILE="$DEPLOY_DIR/.env"
     export BUILD_COMMIT="${commit:0:12}"
 
@@ -666,8 +767,14 @@ deploy_candidate() {
         log_info "Staged CHANGELOG.md into react-frontend/ for in-app /changelog"
     fi
 
-    compose_for_release "$release_dir" build --no-cache app frontend
-    compose_for_release "$release_dir" up -d --no-build app frontend
+    local -a services=(app frontend)
+    if webuk_enabled; then
+        services+=(webuk)
+        log_info "web-uk ENABLED for this deploy: port=$(webuk_port_for_color "$color")"
+    fi
+
+    compose_for_release "$release_dir" build --no-cache "${services[@]}"
+    compose_for_release "$release_dir" up -d --no-build "${services[@]}"
     wait_for_color "$color"
     optimize_candidate_laravel "$color"
     verify_candidate_images "$color"
@@ -787,6 +894,10 @@ start_worker_services_for_color() {
     export NEXUS_COLOR="$color"
     export NEXUS_API_PORT="$api_port"
     export NEXUS_FRONTEND_PORT="$frontend_port"
+    if webuk_enabled; then
+        NEXUS_WEBUK_PORT="$(webuk_port_for_color "$color")"
+        export NEXUS_WEBUK_PORT
+    fi
     export NEXUS_ENV_FILE="$DEPLOY_DIR/.env"
     export BUILD_COMMIT="${commit:0:12}"
 
@@ -937,6 +1048,27 @@ post_cutover_smoke() {
     fi
     log_ok "Public /version.php confirms live commit is $served_commit"
 
+    # 🔴 The equivalent proof for the accessible frontend, and the reason
+    # web-uk needed a /version at all. Without it, a vhost that was never
+    # switched keeps serving the Blade accessible frontend at HTTP 200 and every
+    # other check here still passes — the failure is invisible.
+    if webuk_enabled; then
+        local accessible_version
+        accessible_version="$(curl -sf -H 'Cache-Control: no-cache' \
+            "https://accessible.project-nexus.ie/version?_t=$(date +%s)" 2>/dev/null || true)"
+        if [ -z "$accessible_version" ]; then
+            log_warn "Public accessible /version did not respond."
+            log_warn "Expected while the vhost include has not been installed yet (cutover step 2)."
+        elif ! echo "$accessible_version" | grep -q '"service":"nexus-webuk"'; then
+            log_err "https://accessible.project-nexus.ie is NOT served by web-uk."
+            log_err "It is most likely still served by the Blade accessible frontend."
+            log_err "Response: $accessible_version"
+            return 1
+        else
+            log_ok "Public accessible host confirmed as web-uk"
+        fi
+    fi
+
     local bootstrap
     bootstrap="$(curl -sf -H "X-Tenant-Slug: hour-timebank" https://api.project-nexus.ie/api/v2/tenant/bootstrap || true)"
     if ! echo "$bootstrap" | grep -q '"hour-timebank"'; then
@@ -1033,6 +1165,15 @@ cmd_status() {
     read -r api_port frontend_port < <(ports_for_color "$active")
     log_info "Active color: $active"
     log_info "Active ports: API=$api_port frontend=$frontend_port"
+    if webuk_enabled; then
+        local webuk_port webuk_state
+        webuk_port="$(webuk_port_for_color "$active")"
+        webuk_state="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
+            "$(container_name "$active" webuk)" 2>/dev/null || echo missing)"
+        log_info "web-uk: port=$webuk_port container=$webuk_state"
+    else
+        log_info "web-uk: not enabled (set NEXUS_DEPLOY_WEBUK=1 to include it)"
+    fi
     if [ -f "$STATUS_FILE" ]; then
         log_info "Latest deployment status:"
         sed -n '1,20p' "$STATUS_FILE"

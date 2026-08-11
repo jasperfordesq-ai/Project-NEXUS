@@ -717,6 +717,29 @@ app.get('/health', (req, res) => {
   res.type('text/plain').send('OK');
 });
 
+// 🔴 Deployment identity. This is the ONLY way to prove a blue/green cutover
+// actually switched colour, and the only way a routing-drift check can tell that a
+// hostname is being served by web-uk rather than still by the Blade accessible
+// frontend. A missed vhost otherwise keeps serving Blade indefinitely at HTTP 200,
+// which no smoke test would notice.
+//
+// Deliberately minimal and safe to expose publicly: the service name, the release
+// it was built from, and the colour it belongs to. No configuration, no secrets, no
+// dependency status — /health already answers readiness, and an endpoint that
+// reports what a service is connected to is an information-disclosure hazard on a
+// public origin.
+//
+// `service` is a fixed literal on purpose. A drift check compares it exactly, so
+// deriving it from an environment variable would let a misconfigured deployment
+// claim to be something it is not.
+app.get('/version', (req, res) => {
+  res.type('application/json').json({
+    service: 'nexus-webuk',
+    release: process.env.BUILD_COMMIT || 'unknown',
+    color: process.env.NEXUS_COLOR || 'unknown'
+  });
+});
+
 // Session touch endpoint - called by timeout-warning.js to extend the session
 // Touching this endpoint is enough to reset the express-session rolling window
 app.post('/session/touch', doubleCsrfProtection, (req, res) => {

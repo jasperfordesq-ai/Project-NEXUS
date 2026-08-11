@@ -4,7 +4,7 @@ Last reviewed: 2026-08-11
 
 Status: **Canonical current — sole Web UK scoring source**
 
-<!-- doc-consistency: WEBUK_W2_CURRENT_SCORE=592/1000 -->
+<!-- doc-consistency: WEBUK_W2_CURRENT_SCORE=631/1000 -->
 <!-- doc-consistency: WEBUK_W2_RUBRIC=WEBUK-W2-PROD-R1 -->
 <!-- doc-consistency: WEBUK_W2_ARTEFACT_TREE=dirty-disclosed -->
 
@@ -23,28 +23,29 @@ artefact.
 
 ## 🔴 The percentage went DOWN and nothing got worse
 
-W1 banked `663/1000` (66.3%). W2 stands at `592/1000` (59.2%).
+W1 banked `663/1000` (66.3%). W2 stands at `631/1000` (63.1%).
 
-**No implementation regressed.** 150 points of production
-deployment/cutover/rollback and 50 points of Blade retirement enter the
-denominator for the first time and start near zero, because that work has not
-been built yet. Three previously-audited rows actually improved. Read the mapping
-table below before quoting either number; do not convert one into the other, and
-do not describe either as "about finished".
+**No implementation regressed.** 150 points that W1 never scored — production
+deployment, cutover and rollback (100) plus Blade retirement (50) — enter the
+denominator for the first time. Deployment moved from 20 to 55 once the path was
+built on 2026-08-11; Blade retirement is still at zero because it has not started.
+Four previously-audited rows improved. Read the mapping table below before quoting
+either number; do not convert one into the other, and do not describe either as
+"about finished".
 
 ## Rubric `WEBUK-W2-PROD-R1`
 
 | Row | Earned | Maximum | Exact deduction |
 |---|---:|---:|---|
-| Route and URL-shape parity | 90 | 100 | -10: the slug-less custom-domain shape is proven only against mocked tests. Node's `fetch` has not been shown to transmit a custom `Host` header to Laravel on a real server, and every custom-domain tenant resolution depends on it; no routing-drift check exists yet to catch a vhost that keeps serving Blade at HTTP 200. |
+| Route and URL-shape parity | 94 | 100 | -6: the slug-less custom-domain shape is proven only against mocked tests. Node's `fetch` has not been shown to transmit a custom `Host` header to Laravel on a real server, and every custom-domain tenant resolution depends on it. The routing-drift half of this deduction is now closed: `scripts/list-accessible-domains.sh --check` probes each hostname's `/version` and names any still served by Blade. |
 | Observable Blade behaviour | 235 | 250 | -8: Event moderation queue membership/order and `is_online` remain upstream Laravel contract boundaries. -7: `web-uk` deliberately withholds Blade's public keyboard/screen-reader assurance copy, because the manual package below has not established it — a knowing observable deviation pending the copy-parity decision. |
 | Localisation | 45 | 50 | -5: 1,443 of 90,700 values across the ten non-English locales are byte-identical to English (1.6%). Structure and usage are clean. |
 | API contract and static/mock verification | 142 | 150 | -8: exhaustive field-shape, publication, auth/role, status/error and side-effect assertions are still not complete for every significant contract. Ownership and direct-assertion coverage are complete. |
 | Live Laravel runtime certification | 0 | 150 | -150: no separately provisioned disposable Laravel application/database/storage environment exists, so live mutation, upload, download and destructive certification is entirely open. Deliberately out of scope until authorised; it is scored because production readiness cannot honestly exclude it. |
 | Manual WCAG 2.2 AA certification | 60 | 150 | -30: no screen-reader speech-output sign-off; this needs a human running NVDA, JAWS or VoiceOver. -25: no representative screenshot comparison set. -20: keyboard activation of submit buttons is unproven — the harness delivers `Enter` with `keyCode: 0`, so Chromium runs no implicit form submission. -15: operating-system forced-colours/high-contrast not manually exercised. |
-| Production deployment, cutover and rollback | 20 | 100 | -80: no service in `compose.bluegreen.yml`, no vhost include, absent from the deploy watchdog's `DEPLOY_PATHS`, no `/version` endpoint to prove a colour switch, and no rehearsed cutover or rollback. Four owner prerequisites are open (VM spare memory, free ports, a Sentry project, and the missing `.claude/production-containers.md`). Credit given only for image-level hardening that genuinely exists and was audited under W1. |
+| Production deployment, cutover and rollback | 55 | 100 | **Built 2026-08-11**, not exercised. Present: an opt-in `webuk` service in `compose.webuk.bluegreen.yml`, deploy-script support (dedicated port function, health wait, candidate smoke including an identity check, Apache `Define`, status reporting), a `/version` endpoint, an Apache include with a rollback-safe fallback, a read-only domain inventory with a drift probe, an extended production-image guard, and `web-uk` added to the deploy watchdog. Memory headroom measured and answered. -25: no cutover or rollback has been rehearsed on a real server, and the Apache `Define`/`<IfDefine>` interaction the whole cheap-rollback story rests on is **unverified against the production Apache build**. -10: three owner prerequisites still open (an error-reporting project, the missing `.claude/production-containers.md`, and whether to publish per-tenant accessible domains). -10: not deployed, so shared-session behaviour and failover under real traffic are unobserved. |
 | Blade retirement without regression | 0 | 50 | -50: not started. It was unblockable until 2026-08-11, when the 707th route landed. Must be a separate change with its own review. |
-| **W2 current score** | **592** | **1000** | 59.2%. Implementation-only subtotal (rows 1–4) is 512/550 (93.1%); it must never be reported as production readiness. |
+| **W2 current score** | **631** | **1000** | 63.1%. Implementation-only subtotal (rows 1–4) is 512/550 (93.1%); it must never be reported as production readiness. |
 
 ## Mandatory W1 → W2 mapping
 
@@ -52,13 +53,13 @@ Every W1 row is accounted for. Nothing was quietly dropped or renamed.
 
 | W1 row (`WEBUK-W1-FIXED-R1`) | W1 result | Maps to W2 row (`WEBUK-W2-PROD-R1`) | W2 result | What changed |
 |---|---:|---|---:|---|
-| Route/inventory representation | 99/100 | Route and URL-shape parity | 90/100 | **Improved then rescoped.** W1's single deduction — no safe HTTP contract for the offline signed Event check-in-code POST — was closed on 2026-08-11 and parity is 707/707. W2 then adds URL-shape parity as new scope, which is where the new -10 sits. |
+| Route/inventory representation | 99/100 | Route and URL-shape parity | 94/100 | **Improved then rescoped.** W1's single deduction — no safe HTTP contract for the offline signed Event check-in-code POST — was closed on 2026-08-11 and parity is 707/707. W2 then adds URL-shape parity as new scope, which is where the remaining -6 sits. |
 | Observable Blade/workflow implementation | 292/300 | Observable Blade behaviour | 235/250 | Rescaled denominator, same two open findings, same proportion (97.3% → 94.0% after the copy-parity deviation is scored explicitly rather than folded in). |
 | — (no W1 row; localisation sat inside observable behaviour) | — | Localisation | 45/50 | **New row.** Split out so a localisation regression cannot hide inside a large behaviour row. |
 | API contract/state coverage plus static/mock verification | 190/200 | API contract and static/mock verification | 142/150 | Rescaled denominator, same finding. Direct-assertion coverage stayed at zero outstanding through the 2026-08 work. |
 | Disposable Laravel runtime certification | 0/200 | Live Laravel runtime certification | 0/150 | Denominator reduced; still entirely open. |
 | Screenshot/manual accessibility/WCAG certification | 35/150 | Manual WCAG 2.2 AA certification | 60/150 | **Improved.** Real dispatched `Tab`/`Enter` evidence now exists — a 34-stop traversal with a visible focus indicator at every stop, keyboard skip-link relocation, keyboard error-summary recovery, and no horizontal overflow at 640 and 320 CSS pixels. Recorded in `MANUAL_ACCESSIBILITY_EVIDENCE.md` (2026-08-10). W2 also names WCAG **2.2** AA explicitly. |
-| Production hardening and reproducible docs | 47/50 | Production deployment, cutover and rollback | 20/100 | **Deliberately harsher.** W1 scored the *image*; W2 scores the *deployment path*. The hardening is real and still credited, but 47/50 on hardening was never evidence that anything could be deployed. |
+| Production hardening and reproducible docs | 47/50 | Production deployment, cutover and rollback | 55/100 | **Deliberately harsher, then genuinely advanced.** W1 scored the *image*; W2 scores the *deployment path*. 47/50 on hardening was never evidence that anything could be deployed. The path was built on 2026-08-11, which is what moved this row from 20 to 55; what remains is rehearsal and three owner decisions. |
 | — (no W1 row) | — | Blade retirement without regression | 0/50 | **New row.** W1 could not score this: it treated Blade as the permanent source of truth. |
 
 ## Current evidence
@@ -89,9 +90,11 @@ dirty tree.
 
 Four gates. Two are owner decisions, not implementation.
 
-1. **Deployment path built** (Phase 5) — compose service on both colours, deploy
-   script support, vhost include, `/version` endpoint, watchdog `DEPLOY_PATHS`,
-   allowlist guard, routing-drift check. Blocked on four owner prerequisites.
+1. ~~**Deployment path built**~~ — **done 2026-08-11.** Compose overlay, deploy
+   script support, vhost include, `/version`, watchdog `DEPLOY_PATHS`, allowlist
+   guard and routing-drift check all exist. **Still to do before any cutover:**
+   rehearse a switch and a rollback on a real server, and verify the Apache
+   `Define`/`<IfDefine>` behaviour the rollback path depends on.
 2. **Manual accessibility completed** — screen-reader speech sign-off (needs a
    human), representative screenshots, a real-`Enter` harness for submit-button
    activation, manual forced-colours.
@@ -103,4 +106,4 @@ Four gates. Two are owner decisions, not implementation.
    period with both frontends live.
 
 Live Laravel runtime certification remains a separate optional workstream and is
-not a prerequisite for gates 1–4, though it caps the achievable score at 850.
+not a prerequisite for the gates above, though it caps the achievable score at 850.

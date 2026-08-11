@@ -6282,6 +6282,44 @@ describe('shared accessible frontend shell', () => {
     expect(follow.text).toContain(translate('ar', 'report_problem.errors.impact'));
   });
 
+  it('reports its deployment identity at /version without a tenant prefix', async () => {
+    // 🔴 This is the only way to prove a blue/green cutover actually switched
+    // colour, and the only way a routing-drift check can tell that a hostname is
+    // being served by web-uk rather than still by the Blade accessible frontend.
+    // A missed vhost otherwise keeps serving Blade at HTTP 200 indefinitely and no
+    // smoke test notices.
+    const response = await request(app).get('/version');
+
+    expect(response.status).toBe(200);
+    expect(response.body.service).toBe('nexus-webuk');
+    expect(response.body).toHaveProperty('release');
+    expect(response.body).toHaveProperty('color');
+  });
+
+  it('never tenant-prefixes or redirects /version', async () => {
+    // The drift check calls it on a bare hostname, before any tenant is known, so a
+    // redirect to /{tenantSlug}/accessible/version would break it.
+    const response = await request(app).get('/version');
+    expect(response.status).not.toBe(302);
+    expect(response.status).not.toBe(301);
+
+    // Also reachable on a tenant custom-domain-style request.
+    const onHost = await request(app).get('/version').set('Host', 'accessible.project-nexus.ie');
+    expect(onHost.status).toBe(200);
+    expect(onHost.body.service).toBe('nexus-webuk');
+  });
+
+  it('does not disclose configuration or dependency state at /version', async () => {
+    // An endpoint that reports what a service is connected to is an
+    // information-disclosure hazard on a public origin. /health already answers
+    // readiness; /version answers identity only.
+    const response = await request(app).get('/version');
+
+    expect(Object.keys(response.body).sort()).toEqual(['color', 'release', 'service']);
+    const body = JSON.stringify(response.body);
+    expect(body).not.toMatch(/redis|secret|password|token|LARAVEL_BASE_URL|8090/i);
+  });
+
   it('serves the Laravel forgot-password alias with a matching form action', async () => {
     const response = await request(app).get('/login/forgot-password');
 

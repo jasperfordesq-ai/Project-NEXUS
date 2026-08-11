@@ -44,7 +44,19 @@ const PRODUCTION_DOCKERFILES = [
 ];
 
 // Directories that must never enter a production image.
-const FORBIDDEN_DIRS = ['aspnet-backend', 'web-uk'];
+// 🔴 SPLIT 2026-08-11, and both halves still stay out of the PHP image — so
+// every assertion below keeps exactly the strength it had. The distinction is
+// WHY each one is excluded, which matters now that one of them is production-bound:
+//
+//   NEVER_DEPLOYED_DIRS — development-only, no production image of its own.
+//   OWN_IMAGE_DIRS      — deployed, but from its OWN build context and image.
+//                         web-uk moved here when it became the incoming
+//                         accessible frontend. Copying it into the PHP image
+//                         would be just as wrong as before, for a different
+//                         reason: it has its own image.
+const NEVER_DEPLOYED_DIRS = ['aspnet-backend'];
+const OWN_IMAGE_DIRS = ['web-uk'];
+const FORBIDDEN_DIRS = [...NEVER_DEPLOYED_DIRS, ...OWN_IMAGE_DIRS];
 
 const failures = [];
 const notes = [];
@@ -139,7 +151,105 @@ if (dockerignore === null) {
     }
   }
 }
+
 
+// --- N. Compose build contexts ---------------------------------------------
+//
+// 🔴 This closes a hole the checks above cannot see. `.dockerignore` excludes
+// web-uk/ from the ROOT (PHP image) build context, which is correct. But someone
+// building web-uk from context `.` would hit "file not found", and the obvious
+// "fix" is to delete that .dockerignore line — which silently drags the entire
+// repository into the PHP production image.
+//
+// So: web-uk must build from ITS OWN context, aspnet-backend must not be built by
+// any compose file at all, and the web-uk service must name `target: production`
+// (the default final stage is not guaranteed to be the hardened one, and the
+// `development` stage mounts source and runs a dev server).
+const COMPOSE_FILES = [
+  'compose.bluegreen.yml',
+  'compose.webuk.bluegreen.yml',
+  'compose.yml'
+];
+
+for (const file of COMPOSE_FILES) {
+  const text = readIfPresent(file);
+  if (text === null) {
+    notes.push(`${file}: not present, skipped`);
+    continue;
+  }
+
+  // Deliberately a line scan rather than a YAML parse: these files use
+  // `${VAR:?}` interpolation that throws on load when the variable is unset,
+  // which is exactly the situation CI runs in.
+  const lines = text.split(/\r?\n/);
+  let service = null;
+  let context = null;
+  let target = null;
+  const services = new Map();
+
+  const flush = () => {
+    if (service) services.set(service, { context, target });
+  };
+
+  for (const raw of lines) {
+    const line = raw.replace(/#.*$/, "");
+    const svc = /^  ([A-Za-z0-9_-]+):\s*$/.exec(line);
+    if (svc) {
+      flush();
+      service = svc[1];
+      context = null;
+      target = null;
+      continue;
+    }
+    const ctx = /^\s+context:\s*(\S+)/.exec(line);
+    if (ctx) context = ctx[1];
+    const tgt = /^\s+target:\s*(\S+)/.exec(line);
+    if (tgt) target = tgt[1];
+  }
+  flush();
+
+  for (const [name, meta] of services) {
+    const ctxValue = (meta.context || "").replace(/^\.\//, "").replace(/\/$/, "");
+
+    for (const dir of NEVER_DEPLOYED_DIRS) {
+      if (ctxValue === dir) {
+        failures.push(
+          `${file}: service "${name}" builds from "${meta.context}" — ${dir}/ is ` +
+          `development-only and must not be built by any deployment compose file.`
+        );
+      }
+    }
+
+    // A service NAMED after an own-image directory must build from that
+    // directory, never from the repository root.
+    for (const dir of OWN_IMAGE_DIRS) {
+      const slug = dir.replace(/-/g, "");
+      if (name !== dir && name !== slug) continue;
+
+      if (!meta.context) {
+        failures.push(`${file}: service "${name}" declares no build context; it must build from ./${dir}.`);
+        continue;
+      }
+      if (ctxValue !== dir) {
+        failures.push(
+          `${file}: service "${name}" builds from "${meta.context}" but must build ` +
+          `from ./${dir}. Building it from the repository root would pull the whole ` +
+          `repo into its image and invites deleting the .dockerignore line that ` +
+          `protects the PHP image.`
+        );
+      }
+      if (meta.target !== "production") {
+        failures.push(
+          `${file}: service "${name}" must declare \`target: production\` ` +
+          `(found ${meta.target ? `"${meta.target}"` : "none"}). The default final ` +
+          `stage is not guaranteed to be the hardened one, and the development ` +
+          `stage mounts source and runs a dev server.`
+        );
+      }
+      notes.push(`${file}: ${name} builds ./${dir} with target ${meta.target}`);
+    }
+  }
+}
 // --- report ------------------------------------------------------------------
 if (failures.length) {
   console.error('production image allowlist check FAILED:\n');

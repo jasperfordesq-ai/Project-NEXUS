@@ -1,0 +1,52 @@
+# Include this in the accessible.project-nexus.ie vhost, and in each community's
+# own accessible-domain vhost.
+#
+# 🔴 NOT YET INSTALLED ANYWHERE. Installing this file is cutover step 2 and needs
+# explicit authorisation. See docs/ACCESSIBLE-FRONTEND-TAKEOVER.md.
+#
+# ProxyPreserveHost is LOAD-BEARING here, more than for the other two vhosts:
+# web-uk resolves a community from the Host header, so stripping it would make
+# every slug-less custom-domain request resolve to the wrong community or none.
+
+ProxyPreserveHost On
+ProxyPass /.well-known/acme-challenge/ !
+
+# 🔴 Why the fallback exists, and why it must stay.
+#
+# NEXUS_WEBUK_PORT is only defined by the deploy script when web-uk is actually
+# deployed (NEXUS_DEPLOY_WEBUK=1). Apache treats an undefined ${VAR} in a
+# ProxyPass target as a literal string, which fails `apachectl configtest`.
+#
+# Without the <IfDefine !...> arm below, a ROLLBACK to any release predating
+# web-uk would rewrite the routes file without NEXUS_WEBUK_PORT, this include
+# would then reference an undefined variable, configtest would fail — and the
+# deploy script treats a failed configtest as a reason to abort and restore.
+# So the rollback would abort itself, at exactly the moment it is most needed.
+#
+# The fallback keeps the accessible hostname served by the PHP application (the
+# Blade accessible frontend), which is precisely the correct behaviour when
+# rolling back to a release where web-uk did not exist.
+<IfDefine NEXUS_WEBUK_PORT>
+    ProxyPass / http://127.0.0.1:${NEXUS_WEBUK_PORT}/ retry=0
+    ProxyPassReverse / http://127.0.0.1:${NEXUS_WEBUK_PORT}/
+</IfDefine>
+<IfDefine !NEXUS_WEBUK_PORT>
+    # Blade accessible frontend, rendered by the Laravel/PHP application.
+    ProxyPass / http://127.0.0.1:${NEXUS_API_PORT}/ retry=0
+    ProxyPassReverse / http://127.0.0.1:${NEXUS_API_PORT}/
+</IfDefine>
+
+# 🔴 VERIFY THIS ON THE REAL SERVER BEFORE RELYING ON IT.
+#
+# The whole cheap-rollback story rests on Define/<IfDefine> interacting the way
+# this file assumes, and that has NOT been confirmed against the production
+# Apache build. Confirm both arms before cutover:
+#
+#   # with web-uk deployed — expect the webuk arm and a clean configtest
+#   sudo apachectl configtest
+#   # then remove the Define line from the routes file and re-test — expect the
+#   # PHP arm and a clean configtest, NOT a failure
+#   sudo apachectl configtest
+#
+# If <IfDefine> does not behave as assumed, fix it here BEFORE any cutover
+# rather than discovering it during a rollback.
