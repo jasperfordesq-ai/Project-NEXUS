@@ -2144,7 +2144,11 @@
       },
       "recent_email_failures": {
         "title": "Teipeanna ríomhphoist le déanaí",
-        "body": "Theip ar iarrachtaí ríomhphoist {{count}}, preabadh, nó cuireadh faoi chois iad sna huaireanta {{window_hours}} deiridh."
+        "body": "Theip ar {{count}} iarracht ríomhphoist nó preabadh siar iad sna {{window_hours}} uair an chloig seo caite."
+      },
+      "recent_email_suppressions": {
+        "title": "Ríomhphoist a scipeáladh ag an liosta cosctha",
+        "body": "Níor seoladh {{count}} ríomhphost sna {{window_hours}} uair an chloig seo caite mar tá an faighteoir ar an liosta cosctha. Bíonn sé seo mar a bhíothas ag súil leis go hiondúil."
       },
       "critical_email_failures": {
         "title": "Teipeanna ríthábhachtacha ríomhphoist",

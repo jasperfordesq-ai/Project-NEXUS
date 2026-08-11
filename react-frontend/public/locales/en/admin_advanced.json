@@ -2009,7 +2009,11 @@
       },
       "recent_email_failures": {
         "title": "Recent email failures",
-        "body": "{{count}} email attempts failed, bounced, or were suppressed in the last {{window_hours}} hours."
+        "body": "{{count}} email attempts failed or bounced in the last {{window_hours}} hours."
+      },
+      "recent_email_suppressions": {
+        "title": "Emails skipped by the suppression list",
+        "body": "{{count}} emails were not sent in the last {{window_hours}} hours because the recipient is on the suppression list. This is usually expected."
       },
       "critical_email_failures": {
         "title": "Critical email failures",

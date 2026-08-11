@@ -2040,7 +2040,11 @@
       },
       "recent_email_failures": {
         "title": "Échecs récents des e-mails",
-        "body": "Les tentatives d'envoi d'e-mails {{count}} ont échoué, ont été rejetées ou ont été supprimées au cours des dernières heures {{window_hours}}."
+        "body": "{{count}} tentatives d’envoi ont échoué ou ont été rejetées au cours des {{window_hours}} dernières heures."
+      },
+      "recent_email_suppressions": {
+        "title": "E-mails ignorés par la liste de suppression",
+        "body": "{{count}} e-mails n’ont pas été envoyés au cours des {{window_hours}} dernières heures car le destinataire figure sur la liste de suppression. C’est généralement normal."
       },
       "critical_email_failures": {
         "title": "Échecs critiques des e-mails",

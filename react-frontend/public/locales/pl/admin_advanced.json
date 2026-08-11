@@ -2092,7 +2092,11 @@
       },
       "recent_email_failures": {
         "title": "Ostatnie awarie poczty e-mail",
-        "body": "Próby wysłania e-maila {{count}} nie powiodły się, zostały odesłane lub zostały pominięte w ciągu ostatnich godzin {{window_hours}}."
+        "body": "W ciągu ostatnich {{window_hours}} godzin nie udało się wysłać lub odrzucono {{count}} wiadomości."
+      },
+      "recent_email_suppressions": {
+        "title": "Wiadomości pominięte przez listę wykluczeń",
+        "body": "W ciągu ostatnich {{window_hours}} godzin nie wysłano {{count}} wiadomości, ponieważ odbiorca znajduje się na liście wykluczeń. Zwykle jest to oczekiwane."
       },
       "critical_email_failures": {
         "title": "Krytyczne awarie poczty e-mail",

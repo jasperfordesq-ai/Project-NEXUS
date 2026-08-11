@@ -1988,7 +1988,11 @@
       },
       "recent_email_failures": {
         "title": "Aktuelle E-Mail-Fehler",
-        "body": "{{count}}-E-Mail-Versuche sind in den letzten {{window_hours}}-Stunden fehlgeschlagen, wurden zurückgesendet oder wurden unterdrückt."
+        "body": "{{count}} E-Mail-Versuche sind in den letzten {{window_hours}} Stunden fehlgeschlagen oder zurückgewiesen worden."
+      },
+      "recent_email_suppressions": {
+        "title": "Von der Sperrliste übersprungene E-Mails",
+        "body": "{{count}} E-Mails wurden in den letzten {{window_hours}} Stunden nicht gesendet, weil der Empfänger auf der Sperrliste steht. Das ist normalerweise zu erwarten."
       },
       "critical_email_failures": {
         "title": "Kritische E-Mail-Fehler",

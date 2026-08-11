@@ -261,7 +261,9 @@ class EmailHealthAlert extends Command
             'critical_email_failures' =>
                 $p('count') . ' critical-category email(s) failed/suppressed/bounced in ' . $p('window_hours', 24) . 'h (activation, password reset, etc.)',
             'recent_email_failures' =>
-                $p('count') . ' failed/bounced/suppressed send(s) (' . $p('rate') . '%) in ' . $p('window_hours', 24) . 'h',
+                $p('count') . ' failed/bounced send(s) (' . $p('rate') . '% of attempted) in ' . $p('window_hours', 24) . 'h',
+            'recent_email_suppressions' =>
+                $p('count') . ' send(s) skipped by the suppression list (' . $p('rate') . '% of all mail) in ' . $p('window_hours', 24) . 'h',
             'notification_queue_stale_processing' =>
                 $p('count') . ' notification(s) stuck in "processing" for >' . $p('minutes', 15) . 'm — queue worker may be stalled',
             'instant_notifications_stuck_pending' =>

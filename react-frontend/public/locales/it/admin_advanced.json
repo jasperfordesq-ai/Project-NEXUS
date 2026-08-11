@@ -2040,7 +2040,11 @@
       },
       "recent_email_failures": {
         "title": "Errori recenti di posta elettronica",
-        "body": "I tentativi di posta elettronica {{count}} non sono riusciti, sono stati respinti o sono stati eliminati nelle ultime ore {{window_hours}}."
+        "body": "{{count}} tentativi di invio sono falliti o sono stati respinti nelle ultime {{window_hours}} ore."
+      },
+      "recent_email_suppressions": {
+        "title": "Email ignorate dall’elenco di soppressione",
+        "body": "{{count}} email non sono state inviate nelle ultime {{window_hours}} ore perché il destinatario è nell’elenco di soppressione. Di norma è previsto."
       },
       "critical_email_failures": {
         "title": "Errori critici di posta elettronica",

@@ -1988,7 +1988,11 @@
       },
       "recent_email_failures": {
         "title": "最近のメール障害",
-        "body": "過去 {{window_hours}} 時間内に、{{count}} 電子メールの試行が失敗、バウンス、または抑制されました。"
+        "body": "過去 {{window_hours}} 時間に {{count}} 件のメール送信が失敗または不達となりました。"
+      },
+      "recent_email_suppressions": {
+        "title": "抑制リストによって送信されなかったメール",
+        "body": "受信者が抑制リストに登録されているため、過去 {{window_hours}} 時間に {{count}} 件のメールが送信されませんでした。通常は想定される動作です。"
       },
       "critical_email_failures": {
         "title": "重大な電子メールの失敗",

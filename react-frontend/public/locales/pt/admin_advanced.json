@@ -2040,7 +2040,11 @@
       },
       "recent_email_failures": {
         "title": "Falhas recentes de e-mail",
-        "body": "As tentativas de e-mail {{count}} falharam, foram devolvidas ou foram suprimidas nas últimas horas {{window_hours}}."
+        "body": "{{count}} tentativas de envio falharam ou foram devolvidas nas últimas {{window_hours}} horas."
+      },
+      "recent_email_suppressions": {
+        "title": "E-mails ignorados pela lista de supressão",
+        "body": "{{count}} e-mails não foram enviados nas últimas {{window_hours}} horas porque o destinatário está na lista de supressão. Normalmente isto é esperado."
       },
       "critical_email_failures": {
         "title": "Falhas críticas de e-mail",

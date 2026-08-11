@@ -2040,7 +2040,11 @@
       },
       "recent_email_failures": {
         "title": "Fallos recientes en el correo electrónico",
-        "body": "Los intentos de correo electrónico de {{count}} fallaron, rebotaron o fueron suprimidos en las últimas horas de {{window_hours}}."
+        "body": "{{count}} intentos de envío fallaron o fueron rechazados en las últimas {{window_hours}} horas."
+      },
+      "recent_email_suppressions": {
+        "title": "Correos omitidos por la lista de supresión",
+        "body": "{{count}} correos no se enviaron en las últimas {{window_hours}} horas porque el destinatario está en la lista de supresión. Esto suele ser lo esperado."
       },
       "critical_email_failures": {
         "title": "Fallos críticos de correo electrónico",

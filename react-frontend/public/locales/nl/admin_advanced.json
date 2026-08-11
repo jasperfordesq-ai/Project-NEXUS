@@ -1988,7 +1988,11 @@
       },
       "recent_email_failures": {
         "title": "Recente e-mailfouten",
-        "body": "{{count}} e-mailpogingen zijn mislukt, teruggestuurd of onderdrukt in de afgelopen {{window_hours}}-uren."
+        "body": "{{count}} e-mailpogingen zijn in de afgelopen {{window_hours}} uur mislukt of geweigerd."
+      },
+      "recent_email_suppressions": {
+        "title": "E-mails overgeslagen door de blokkeerlijst",
+        "body": "{{count}} e-mails zijn in de afgelopen {{window_hours}} uur niet verzonden omdat de ontvanger op de blokkeerlijst staat. Dit is meestal normaal."
       },
       "critical_email_failures": {
         "title": "Kritieke e-mailfouten",

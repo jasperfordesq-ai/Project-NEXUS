@@ -328,16 +328,45 @@ class EmailMonitorService
             $failed = (int) ($last24h['failed'] ?? 0);
             $bounced = (int) ($last24h['bounced'] ?? 0);
             $suppressed = (int) ($last24h['suppressed'] ?? 0);
-            $total = $sent + $delivered + $failed + $bounced + $suppressed;
-            $bad = $failed + $bounced + $suppressed;
+
+            // 🔴 `suppressed` is NOT a delivery failure. It means the suppression
+            // list did its job and we deliberately did not send. Counting it as a
+            // failure raised a CRITICAL alarm every hour, for ever, on any tenant
+            // with a suppressed address on a recurring digest — and because the
+            // rate is a share of a small denominator, three demo addresses on a
+            // quiet day read as "100% failure". Real failures only.
+            $attempted = $sent + $delivered + $failed + $bounced;
+            $bad = $failed + $bounced;
 
             if ($bad > 0) {
-                $rate = $total > 0 ? round(($bad / $total) * 100, 1) : 100.0;
+                $rate = $attempted > 0 ? round(($bad / $attempted) * 100, 1) : 100.0;
                 $warnings[] = [
                     'code' => 'recent_email_failures',
                     'severity' => ($bad >= 5 || $rate >= 25.0) ? 'critical' : 'warning',
                     'message_key' => 'email_health.warnings.recent_email_failures',
                     'params' => ['count' => $bad, 'rate' => $rate, 'window_hours' => 24],
+                ];
+            }
+
+            if ($suppressed > 0) {
+                // Reported separately so it still shows in the admin health view.
+                // `info` is filtered out before alerting (EmailHealthAlert), so a
+                // handful of suppressed demo addresses stays quiet — but a
+                // domain-wide block, which shows up as a high count AND a high
+                // share of all mail, still escalates to a real warning.
+                $suppressionShare = ($attempted + $suppressed) > 0
+                    ? round(($suppressed / ($attempted + $suppressed)) * 100, 1)
+                    : 100.0;
+
+                $warnings[] = [
+                    'code' => 'recent_email_suppressions',
+                    'severity' => ($suppressed >= 10 && $suppressionShare >= 25.0) ? 'warning' : 'info',
+                    'message_key' => 'email_health.warnings.recent_email_suppressions',
+                    'params' => [
+                        'count' => $suppressed,
+                        'rate' => $suppressionShare,
+                        'window_hours' => 24,
+                    ],
                 ];
             }
 
