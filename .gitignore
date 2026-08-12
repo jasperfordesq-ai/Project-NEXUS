@@ -88,6 +88,7 @@ CLAUDE.md
 !/scripts/check-doc-scores.mjs
 !/scripts/list-accessible-domains.sh
 !/scripts/check-docs-site-build.sh
+!/scripts/load-test.mjs
 !/scripts/check-e2e-assertion-quality.mjs
 !/scripts/check-e2e-types.mjs
 !/scripts/check-changelog-updated.mjs

@@ -89,6 +89,7 @@ nav:
       - CI & quality gates: CI.md
       - Testing: TESTING.md
       - Safari & macOS testing: REAL-SAFARI-TESTING.md
+      - Load testing: LOAD-TESTING.md
       - Local performance: LOCAL-PERFORMANCE.md
       - Custom domains: CUSTOM-DOMAINS.md
       - React dual-backend guardrails: REACT-DUAL-BACKEND.md

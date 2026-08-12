@@ -60,7 +60,8 @@
     "audit:performance:routes": "node scripts/audit-performance-routes.mjs",
     "audit:performance:cache": "node scripts/audit-cache-headers.mjs",
     "test:e2e:report": "npx playwright show-report e2e/reports/html",
-    "test:e2e:codegen": "npx playwright codegen http://localhost:5173/hour-timebank"
+    "test:e2e:codegen": "npx playwright codegen http://localhost:5173/hour-timebank",
+    "test:load": "node scripts/load-test.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
