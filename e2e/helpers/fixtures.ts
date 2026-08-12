@@ -77,9 +77,40 @@ export function generateTestData() {
  */
 export const selectors = {
   // Layout
-  navbar: '[data-testid="navbar"], nav.navbar',
+  //
+  // 🔴 These are structural `data-*` hooks, deliberately NOT translated
+  // aria-labels and NOT guessed class names.
+  //
+  // The values here until 2026-08-12 were `[data-testid="navbar"], nav.navbar`
+  // and `[data-testid="mobile-drawer"]`, and they matched NOTHING in the app at
+  // any viewport, signed in or out. Every test that used them failed with
+  // "element(s) not found" — a broken selector wearing the costume of a broken
+  // feature. Verify a selector against the real DOM before trusting it.
+  //
+  /** The site header. Always present, every viewport, both auth states. */
+  siteHeader: '[data-site-header]',
+  /**
+   * Desktop primary navigation. `hidden lg:flex` — in the DOM but not visible
+   * below 1024px, so assert visibility, never mere presence.
+   */
+  desktopNav: 'nav[data-main-nav]',
+  /**
+   * Mobile bottom tab bar. `lg:hidden` — the exact complement of `desktopNav`,
+   * and rendered for SIGNED-IN members only. Those two facts together are the
+   * 768–1023px navigation blackout guarded in responsive.spec.ts.
+   */
+  mobileTabBar: 'nav[data-mobile-tabbar]',
+  /** The slide-up navigation drawer itself (HeroUI DrawerContent). */
+  mobileDrawer: '#mobile-drawer',
+  /** Opens the drawer for GUESTS — the header hamburger, rendered signed-out only. */
+  drawerTriggerGuest: 'button[aria-controls="mobile-drawer"]',
+  /** Opens the drawer for SIGNED-IN MEMBERS — the tab bar's last tab. */
+  drawerTriggerMember: 'nav[data-mobile-tabbar] [data-mobile-tab="menu"]',
+  /** The tab bar's centre Create button; opens the QuickCreateMenu modal. */
+  mobileTabBarCreate: 'nav[data-mobile-tabbar] [data-mobile-tab="create"]',
+  /** Present only when a session is signed in. */
+  userMenu: '[data-user-menu]',
   footer: '[data-testid="footer"], footer',
-  mobileDrawer: '[data-testid="mobile-drawer"]',
 
   // Forms
   submitButton: 'button[type="submit"]',

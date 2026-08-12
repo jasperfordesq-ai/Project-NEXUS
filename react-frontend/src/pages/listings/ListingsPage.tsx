@@ -1228,7 +1228,7 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
   if (!isGrid) {
     // ─── List View ───
     return (
-      <GlassCard className={`relative cursor-pointer p-4 transition-all duration-200 hover:-translate-y-0.5 hover:bg-theme-hover hover:shadow-md border-l-4 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${listing.type === 'offer' ? 'border-l-emerald-500/70' : 'border-l-amber-500/70'}`}>
+      <GlassCard data-testid="listing-card" className={`relative cursor-pointer p-4 transition-all duration-200 hover:-translate-y-0.5 hover:bg-theme-hover hover:shadow-md border-l-4 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${listing.type === 'offer' ? 'border-l-emerald-500/70' : 'border-l-amber-500/70'}`}>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
             {imageProps && !imgError ? (
               <img
@@ -1335,7 +1335,7 @@ const ListingCard = memo(function ListingCard({ listing, viewMode, isSaving, onT
 
   // ─── Grid View ───
   return (
-      <GlassCard className="group relative flex h-full cursor-pointer flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+      <GlassCard data-testid="listing-card" className="group relative flex h-full cursor-pointer flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
         {/* Listing Image with hover overlay and floating save button */}
         <div className="relative aspect-video overflow-hidden bg-theme-elevated">
           {imageProps && !imgError ? (

@@ -665,7 +665,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
             </div>
 
             {/* Desktop Navigation — uses ResizeObserver for smart collapsing */}
-            <nav ref={navRef} className="hidden lg:flex items-center gap-1 flex-1 justify-center min-w-0" aria-label={t('aria.main_navigation')}>
+            {/* `data-main-nav` is the structural hook the E2E suite anchors on —
+                same convention as `data-site-header` and `data-mobile-tabbar`.
+                Do not remove: `aria-label` is translated, so it cannot be used
+                as a stable selector, and this nav is the exact complement of
+                MobileTabBar's `lg:hidden`. */}
+            <nav ref={navRef} data-main-nav className="hidden lg:flex items-center gap-1 flex-1 justify-center min-w-0" aria-label={t('aria.main_navigation')}>
               {hasCustomMenus ? (
                 <DesktopMenuItems menus={headerMenus} />
               ) : (
@@ -886,6 +891,12 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                           type="button"
                           variant="light"
                           size="sm"
+                          // Structural hook for the E2E suite's "is this session
+                          // signed in?" check (e2e/helpers/test-utils.ts already
+                          // looks for it). The aria-label is translated and
+                          // interpolates the user's name, so it is not a stable
+                          // selector.
+                          data-user-menu
                           aria-label={t('aria.user_menu_trigger', { name: user?.first_name || '' })}
                           className="group h-10 w-10 min-w-10 overflow-visible rounded-full bg-transparent p-0 text-theme-primary hover:bg-theme-hover focus-visible:ring-2 focus-visible:ring-accent"
                         >

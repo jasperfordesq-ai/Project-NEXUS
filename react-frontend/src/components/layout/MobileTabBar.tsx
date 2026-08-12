@@ -159,6 +159,8 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
                         radius="full"
                         onPress={tab.action}
                         className="w-[52px] h-[52px] min-w-0 bg-gradient-to-br from-accent to-accent-gradient-end text-white shadow-lg shadow-accent/40 hover:shadow-accent/60 hover:scale-105 active:scale-95 transition-all duration-200"
+                        // Same stable per-tab hook as the regular tabs below.
+                        data-mobile-tab={tab.key}
                         aria-label={t('mobile_tab.create_new_content')}
                       >
                         <motion.div
@@ -199,6 +201,10 @@ export function MobileTabBar({ onMenuOpen, isMenuOpen }: MobileTabBarProps) {
                       : 'text-theme-muted hover:text-theme-primary'
                     }
                   `}
+                  // Stable per-tab hook for the E2E suite. `aria-label` is the
+                  // translated tab name, so it cannot identify a tab reliably;
+                  // `tab.key` can. Same convention as `data-mobile-tab-label`.
+                  data-mobile-tab={tab.key}
                   aria-label={tab.label}
                   aria-current={active ? 'page' : undefined}
                 >

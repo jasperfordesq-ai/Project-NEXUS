@@ -4,6 +4,22 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { Page, expect } from '@playwright/test';
+import { selectors } from './fixtures';
+
+/**
+ * Where the app is allowed to land after a successful sign-in.
+ *
+ * 🔴 This used to be `/dashboard` only, and the app lands on `/feed`. Every
+ * caller therefore sat in `waitForURL` until it timed out — after a sign-in that
+ * had already succeeded. The Playwright log said so plainly
+ * ("navigated to .../feed" while "waiting for .../dashboard") and it still cost
+ * four specs their auth for as long as nobody read it.
+ *
+ * Both destinations are accepted rather than pinning the current one, because
+ * which of the two a member lands on is a product decision (module gating picks
+ * it) and is not what any caller of this helper is testing.
+ */
+const POST_LOGIN_PATHS = /\/(feed|dashboard)\/?$/;
 
 /**
  * Login helper - authenticates a user via the login form
@@ -26,11 +42,21 @@ export async function loginAsUser(
   // Submit form
   await page.click('button[type="submit"]');
 
-  // Wait for redirect to dashboard
-  await page.waitForURL(`**/${tenantSlug}/dashboard`, { timeout: 10000 });
+  // Wait for the post-login landing page (see POST_LOGIN_PATHS above).
+  await page.waitForURL(
+    (url) => url.pathname.startsWith(`/${tenantSlug}/`) && POST_LOGIN_PATHS.test(url.pathname),
+    { timeout: 15000 },
+  );
 
-  // Verify we're logged in by checking for user menu or avatar
-  await expect(page.locator('[data-testid="user-menu"], .user-avatar, button:has-text("Profile")')).toBeVisible({ timeout: 5000 });
+  // Verify we're logged in. `[data-user-menu]` is a structural hook on the
+  // Navbar's avatar trigger and is present at every viewport; the old selector
+  // list (`[data-testid="user-menu"], .user-avatar, button:has-text("Profile")`)
+  // matched nothing in the app, so this assertion could only ever have passed by
+  // never being reached.
+  await expect(
+    page.locator(selectors.userMenu).first(),
+    'Signed in and landed correctly, but no user menu rendered',
+  ).toBeVisible({ timeout: 10000 });
 }
 
 /**
@@ -38,7 +64,7 @@ export async function loginAsUser(
  */
 export async function logout(page: Page): Promise<void> {
   // Click user menu/avatar
-  const userMenu = page.locator('[data-testid="user-menu"], .user-avatar, button:has-text("Profile")').first();
+  const userMenu = page.locator(selectors.userMenu).first();
   await userMenu.click();
 
   // Click logout button
@@ -90,7 +116,7 @@ export async function signUp(
  */
 export async function isLoggedIn(page: Page): Promise<boolean> {
   try {
-    await expect(page.locator('[data-testid="user-menu"], .user-avatar, button:has-text("Profile")')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator(selectors.userMenu).first()).toBeVisible({ timeout: 3000 });
     return true;
   } catch {
     return false;
