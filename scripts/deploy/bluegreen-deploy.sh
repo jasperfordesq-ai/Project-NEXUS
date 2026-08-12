@@ -855,10 +855,49 @@ smoke_color() {
 
         # A real page, so a broken template or missing locale catalogue fails the
         # gate rather than reaching members.
-        if ! curl -sf "http://127.0.0.1:$webuk_port/hour-timebank/accessible/" | grep -q 'govuk'; then
-            log_err "web-uk did not render an accessible page on $webuk_port"
+        #
+        # 🔴 RETRIED, and the reason is measured rather than assumed. On 2026-08-12
+        # this check failed a deploy while web-uk was genuinely fine: the same URL
+        # returned 200 with 24 KB and 189 `govuk` matches a minute later.
+        #
+        # The cause is that web-uk's readiness and web-uk's USEFULNESS are different
+        # things. Its healthcheck only proves the Redis session store connected — so
+        # the container reports "healthy" seconds after starting, while its first
+        # request still has to dial the same-colour Laravel container, resolve the
+        # tenant, and compile Nunjucks templates for the first time. A single-shot
+        # curl against a cold Node process races that.
+        #
+        # A bounded retry is the honest fix: it still fails a genuinely broken build,
+        # it just stops failing a working one. It does NOT paper over a real fault —
+        # 30 seconds is far longer than a warm render, so a page that never appears
+        # still aborts the deploy before the traffic switch.
+        local webuk_page_ok=0 webuk_status="" webuk_body=""
+        for attempt in $(seq 1 10); do
+            webuk_status="$(curl -s -o /tmp/webuk-smoke.html -w '%{http_code}' \
+                "http://127.0.0.1:$webuk_port/hour-timebank/accessible/" 2>/dev/null || echo 000)"
+            if [ "$webuk_status" = "200" ] && grep -q 'govuk' /tmp/webuk-smoke.html 2>/dev/null; then
+                webuk_page_ok=1
+                [ "$attempt" -gt 1 ] && log_info "web-uk page rendered on attempt $attempt"
+                break
+            fi
+            sleep 3
+        done
+
+        if [ "$webuk_page_ok" != "1" ]; then
+            # 🔴 Say WHY. The previous message was "did not render an accessible page"
+            # and nothing else, because `curl -sf` prints nothing on an error status —
+            # so the log could not distinguish "Laravel unreachable" from "template
+            # broken" from "wrong tenant". Both are one-line fixes to diagnose now.
+            webuk_body="$(head -c 300 /tmp/webuk-smoke.html 2>/dev/null || true)"
+            log_err "web-uk did not render an accessible page on $webuk_port after 10 attempts (~30s)"
+            log_err "Last HTTP status: ${webuk_status:-none}"
+            log_err "First 300 bytes of the response:"
+            printf '%s\n' "$webuk_body" | sed 's/^/    /'
+            log_err "Check: docker logs $(container_name "$color" webuk) --tail 50"
+            rm -f /tmp/webuk-smoke.html
             return 1
         fi
+        rm -f /tmp/webuk-smoke.html
         log_ok "web-uk rendered an accessible page"
     fi
 }
