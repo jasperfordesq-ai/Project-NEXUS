@@ -99,6 +99,23 @@ describe('AdminSidebar', () => {
     expect(screen.getByRole('navigation', { name: /admin navigation/i })).toBeInTheDocument();
   });
 
+  it('pins a documentation link that opens in a new tab, expanded and collapsed', async () => {
+    const { AdminSidebar } = await import('./AdminSidebar');
+    const { PROJECT_NEXUS_DOCS_URL } = await import('@/config/externalLinks');
+
+    const { rerender } = render(<AdminSidebar collapsed={false} />);
+    const link = screen.getByRole('link', { name: /platform documentation/i });
+    // Plain anchor, not a router Link: every other sidebar entry is an internal
+    // route, and routing to an absolute URL would produce a dead admin path.
+    expect(link).toHaveAttribute('href', PROJECT_NEXUS_DOCS_URL);
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+
+    // Collapsed, the label is hidden but the link must still be reachable.
+    rerender(<AdminSidebar collapsed />);
+    expect(screen.getByRole('link', { name: /platform documentation/i })).toHaveAttribute('href', PROJECT_NEXUS_DOCS_URL);
+  });
+
   it('shows an Admin heading link when not collapsed', async () => {
     const { AdminSidebar } = await import('./AdminSidebar');
     render(<AdminSidebar collapsed={false} />);

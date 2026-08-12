@@ -733,5 +733,7 @@
   "municipal_impact": "Kommunale Wirkungsberichte",
   "regional_analytics": "Regionale Analysen",
   "nexus_score": "Nexus-Score",
-  "performance": "Leistung"
+  "performance": "Leistung",
+  "documentation": "Dokumentation",
+  "documentation_aria": "Plattform-Dokumentation (wird in einem neuen Tab geöffnet)"
 }

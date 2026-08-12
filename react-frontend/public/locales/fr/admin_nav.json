@@ -737,5 +737,7 @@
   "municipal_impact": "Rapports d'impact municipaux",
   "regional_analytics": "Analyse régionale",
   "nexus_score": "Score Nexus",
-  "performance": "Performances"
+  "performance": "Performances",
+  "documentation": "Documentation",
+  "documentation_aria": "Documentation de la plateforme (s’ouvre dans un nouvel onglet)"
 }

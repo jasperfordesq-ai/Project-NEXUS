@@ -749,5 +749,7 @@
   "municipal_impact": "تقارير الأثر البلدي",
   "regional_analytics": "التحليلات الإقليمية",
   "nexus_score": "نقاط نيكزس",
-  "performance": "أداء"
+  "performance": "أداء",
+  "documentation": "التوثيق",
+  "documentation_aria": "توثيق المنصة (يفتح في علامة تبويب جديدة)"
 }

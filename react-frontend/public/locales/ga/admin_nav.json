@@ -745,5 +745,7 @@
   "municipal_impact": "Tuarascálacha Tionchair Chathrach",
   "regional_analytics": "Anailísí Réigiúnacha",
   "nexus_score": "Scór Nexus",
-  "performance": "Feidhmíocht"
+  "performance": "Feidhmíocht",
+  "documentation": "Doiciméadú",
+  "documentation_aria": "Doiciméadú an ardáin (osclaítear i gcluaisín nua)"
 }

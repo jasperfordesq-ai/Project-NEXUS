@@ -733,5 +733,7 @@
   "municipal_impact": "自治体の影響レポート",
   "regional_analytics": "地域分析",
   "nexus_score": "ネクサススコア",
-  "performance": "パフォーマンス"
+  "performance": "パフォーマンス",
+  "documentation": "ドキュメント",
+  "documentation_aria": "プラットフォームのドキュメント（新しいタブで開きます）"
 }
