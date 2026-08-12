@@ -669,6 +669,12 @@ export function MessagesPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            // Structural hook for the E2E suite: the INBOX conversation list.
+            // Placed on the populated branch only, so its presence means
+            // "conversations rendered" — not "the page is loading" (the skeleton
+            // branch above carries the same classes) and not "the list is empty"
+            // (that branch renders an EmptyState instead).
+            data-conversation-list="inbox"
             className="space-y-3"
           >
             {filteredConversations.map((conversation) => (

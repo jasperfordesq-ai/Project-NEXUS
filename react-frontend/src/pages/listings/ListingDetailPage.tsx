@@ -488,6 +488,11 @@ export function ListingDetailPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      // Structural hook for the E2E suite. Deliberately on the SUCCESS branch
+      // only — the loading and error branches above return early, so the
+      // presence of this element means the listing itself rendered, not merely
+      // that the route resolved.
+      data-listing-detail=""
       className="max-w-6xl mx-auto space-y-5 sm:space-y-6"
     >
       <PageMeta

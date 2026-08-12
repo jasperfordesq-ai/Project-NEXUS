@@ -1080,6 +1080,16 @@ export function ListingsPage() {
                 variants={listingContainerVariants}
                 initial="hidden"
                 animate="visible"
+                // Structural hook for the E2E suite: the RESULTS container.
+                //
+                // 🔴 Must stay on this element, not on the loading skeleton above,
+                // which carries a byte-identical class list
+                // (`grid sm:grid-cols-2 lg:grid-cols-3 gap-4`). Anything keyed on
+                // those classes cannot tell "results painted" from "still
+                // loading" — the skeleton is distinguished only by role="status"
+                // and aria-busy. The value carries the current view mode so a
+                // test can assert grid vs list without re-deriving it.
+                data-listings-grid={viewMode}
                 className={viewMode === 'grid' ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}
               >
                 {listings.map((listing) => (

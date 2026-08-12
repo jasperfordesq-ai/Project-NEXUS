@@ -1988,6 +1988,11 @@ export function ConversationPage() {
       // 3rem/4rem terms below only apply from md: up where the navbar stays.
       // The composer handles safe-area-bottom itself.
       data-immersive-thread=""
+      // Structural hook for the E2E suite. Deliberately separate from
+      // `data-immersive-thread` above: that one exists to drive `body:has()` CSS
+      // and could reasonably change with the layout, whereas this one means
+      // "the conversation thread rendered" and must stay stable.
+      data-message-thread=""
       style={{ '--keyboard-offset': `${keyboardOffset}px` } as CSSProperties}
       className="-my-6 mx-auto flex h-[calc(100dvh-var(--safe-area-top)-3rem-var(--keyboard-offset,0px))] min-h-0 w-full max-w-4xl flex-col gap-3 sm:-my-8 sm:gap-4 md:h-[calc(100dvh-var(--safe-area-top)-4rem-var(--keyboard-offset,0px))]"
     >

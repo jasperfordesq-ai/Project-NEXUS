@@ -279,7 +279,12 @@ export function NotificationFlyout() {
     >
       <Bell className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
       {unreadCount > 0 && (
-        <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-danger rounded-full" />
+        // Structural hook for the E2E suite. This dot is the ONLY unread
+        // indicator: it has no text, no icon and no aria of its own (the count
+        // is announced by the button's aria-label), so there was nothing a test
+        // could hold on to. It renders only while unreadCount > 0, so its
+        // absence is a meaningful assertion too.
+        <span data-notification-badge="" className="absolute top-0.5 right-0.5 w-2 h-2 bg-danger rounded-full" />
       )}
     </Button>
   );

@@ -8,10 +8,31 @@ import { expect } from '@playwright/test';
 /**
  * Test user credentials and data
  */
+/**
+ * 🔴 `E2E_USER_EMAIL` is the fallback for a reason — read this before changing it.
+ *
+ * `primary` read ONLY `E2E_TEST_USER_EMAIL` / `E2E_TEST_USER_PASSWORD` until
+ * 2026-08-12. Nothing sets those names: not `e2e/global.setup.ts`, not
+ * `e2e/helpers/accessible-auth.ts`, not `admin/groups-admin.spec.ts`, and not any
+ * of the six places CI supplies credentials (`.github/workflows/ci.yml`,
+ * `e2e-tests.yml`) — every one of them uses `E2E_USER_EMAIL`. So `primary`
+ * always fell through to the hardcoded `e2e-test@example.com`, which is not a
+ * real account on any environment.
+ *
+ * The consequence was not subtle: every spec whose `beforeEach` calls
+ * `loginAsUser(testUsers.primary…)` failed at the login step. All 8 tests in
+ * `messages.spec.ts` died in `beforeEach` with a `waitForURL` timeout, having
+ * never reached a single assertion — which is easily mistaken for the messaging
+ * feature being broken.
+ *
+ * The `E2E_TEST_USER_*` names are still honoured and still win, so anything that
+ * does set them is unaffected; the added fallback only changes the case that was
+ * previously guaranteed to fail.
+ */
 export const testUsers = {
   primary: {
-    email: process.env.E2E_TEST_USER_EMAIL || 'e2e-test@example.com',
-    password: process.env.E2E_TEST_USER_PASSWORD || 'TestPass123!',
+    email: process.env.E2E_TEST_USER_EMAIL || process.env.E2E_USER_EMAIL || 'e2e-test@example.com',
+    password: process.env.E2E_TEST_USER_PASSWORD || process.env.E2E_USER_PASSWORD || 'TestPass123!',
     firstName: process.env.E2E_TEST_USER_FIRSTNAME || 'E2E',
     lastName: process.env.E2E_TEST_USER_LASTNAME || 'Tester',
   },
@@ -124,21 +145,78 @@ export const selectors = {
   confirmButton: 'button:has-text("Confirm"), button:has-text("Yes")',
 
   // Listings
+  //
+  // Measured against the running app on 2026-08-12, signed in, at 1440x950 and
+  // 390x844. Every selector below was DEAD before that date; the notes record
+  // what each one was actually pointing at, so nobody restores them.
+  //
   listingCard: '[data-testid="listing-card"], .listing-card',
-  listingGrid: '[data-testid="listings-grid"], .listings-grid',
-  listingDetail: '[data-testid="listing-detail"]',
-  createListingButton: 'button:has-text("Create Listing"), a[href*="/listings/new"]',
+  /**
+   * The results container, once results are painted.
+   *
+   * 🔴 Do NOT key this on the grid's Tailwind classes. The loading skeleton
+   * carries a byte-identical class list, so a class-based selector cannot tell
+   * "results" from "still loading" and will pass against an empty page.
+   * The attribute value is the view mode (`grid` | `list` | `map`).
+   */
+  listingGrid: '[data-listings-grid]',
+  /**
+   * A listing detail page that actually rendered its listing. Present on the
+   * success branch only — a loading or not-found detail page does NOT match.
+   */
+  listingDetail: '[data-listing-detail]',
+  /**
+   * The "Create Listing" call to action.
+   *
+   * 🔴 Was `button:has-text("Create Listing"), a[href*="/listings/new"]` and both
+   * halves were wrong for the same element: it is an anchor, not a button, and
+   * the route is `/listings/create` — `/listings/new` matches the `listings/:id`
+   * route with the literal id "new". Matching on href keeps it locale-proof;
+   * the visible label is translated.
+   *
+   * Rendered for signed-in members only, and hidden on phones (the hero is
+   * `hidden sm:block`, and phones get MobileFilterBar instead).
+   */
+  createListingButton: 'a[href$="/listings/create"]',
 
   // Messages
-  messageList: '[data-testid="messages-list"], .messages-list',
-  messageThread: '[data-testid="message-thread"]',
-  messageInput: '[data-testid="message-input"], textarea[placeholder*="message"]',
-  sendButton: 'button:has-text("Send")',
+  /** The inbox conversation list, populated. Empty and loading states do NOT match. */
+  messageList: '[data-conversation-list]',
+  /** A conversation thread that rendered. */
+  messageThread: '[data-message-thread]',
+  /**
+   * The thread composer.
+   *
+   * 🔴 Was `textarea[placeholder*="message"]`, which passed only because the
+   * placeholder reads "Type a message..." in English. It matched nothing in the
+   * other ten locales.
+   */
+  messageInput: '[data-message-input]',
+  /**
+   * The composer's send button.
+   *
+   * 🔴 Was `button:has-text("Send")`, which could never match: the button is
+   * icon-only and its aria-label is translated. It is also CONDITIONAL — it is
+   * not rendered until the composer has text or an attachment, so fill the
+   * input first, then locate it.
+   */
+  sendButton: '[data-message-send]',
 
   // Navigation
-  dashboardLink: 'a[href*="/dashboard"]',
+  //
+  // 🔴 `dashboardLink` was removed on 2026-08-12. It was `a[href*="/dashboard"]`
+  // and matched ZERO elements anywhere in the app — verified signed in at four
+  // viewports, including with the mobile drawer open. The drawer's "Dashboard"
+  // entry is a <button> that calls navigate(); there is no dashboard anchor to
+  // find. Nothing consumed it. Do not restore it: if a test needs to reach the
+  // dashboard, drive the real control or navigate directly.
   listingsLink: 'a[href*="/listings"]',
   messagesLink: 'a[href*="/messages"]',
+  /**
+   * Note: dead on the pages probed so far, but unlike the selectors above this
+   * one is the right SHAPE — the wallet nav item simply was not rendered. Left
+   * as-is rather than "fixed", because there is nothing wrong with it.
+   */
   walletLink: 'a[href*="/wallet"]',
 
   // Auth
@@ -147,8 +225,27 @@ export const selectors = {
   passwordInput: 'input[name="password"], input[type="password"]',
 
   // Notifications
-  toast: '[data-testid="toast"], .toast, [role="alert"]',
-  notificationBadge: '[data-testid="notification-badge"], .notification-badge',
+  /**
+   * One rendered toast. The attribute value is the toast type
+   * (`success` | `error` | `warning` | `info`).
+   *
+   * 🔴 Was `[data-testid="toast"], .toast, [role="alert"]`. The first two matched
+   * nothing, but `[role="alert"]` was worse than dead — it was a FALSE PASS
+   * generator. ToastViewport mounts two role containers unconditionally, so one
+   * is in the DOM with zero toasts, and `role="alert"` is used throughout the app
+   * for ordinary error banners (the safeguarding notice on every message thread
+   * is one, and it is what this selector was matching there). Every
+   * `expect(toast).toBeVisible()` after an action could therefore be satisfied by
+   * the error banner explaining that the action FAILED.
+   *
+   * If you need a specific outcome, say so: `[data-toast="success"]`.
+   */
+  toast: '[data-toast]',
+  /**
+   * The unread dot on the notification bell. Rendered only while the unread
+   * count is above zero, so its absence is assertable.
+   */
+  notificationBadge: '[data-notification-badge]',
 };
 
 /**

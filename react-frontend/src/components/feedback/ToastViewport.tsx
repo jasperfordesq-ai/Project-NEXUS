@@ -98,6 +98,16 @@ function ToastItem({ toast, onRemove, ref }: ToastItemProps & { ref?: Ref<HTMLDi
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.95 }}
+      // Structural hook for the E2E suite — this is ONE REAL TOAST.
+      //
+      // 🔴 Do not remove, and do not let a test match a toast by `[role="alert"]`
+      // instead. The two `role` containers above are mounted unconditionally and
+      // stay in the DOM with zero toasts, and `role="alert"` is used all over the
+      // app for ordinary error banners (a safeguarding notice on the message
+      // thread is one). A test asserting "a toast appeared" via `[role="alert"]`
+      // therefore passes when the action FAILED and merely rendered an error —
+      // a false pass, which is worse than a dead selector.
+      data-toast={toast.type}
       className={`pointer-events-auto bg-slate-900 ${borderColor} border rounded-lg p-4 shadow-lg`}
     >
       <div className="flex items-start gap-3">

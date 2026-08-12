@@ -294,6 +294,11 @@ export function MessageInputArea({
           )}
           <div className="min-w-0 flex-1 flex flex-col">
             <Textarea
+              // Structural hook for the E2E suite. The fixture used to find this
+              // with `textarea[placeholder*="message"]`, which only worked because
+              // the placeholder happens to read "Type a message..." in English —
+              // it matched nothing the moment the suite ran in any other locale.
+              data-message-input=""
               placeholder={t('type_placeholder')}
               value={newMessage}
               maxLength={10000}
@@ -350,6 +355,12 @@ export function MessageInputArea({
             <Button
               type="submit"
               isIconOnly
+              // Structural hook for the E2E suite. This button is ICON-ONLY, so
+              // the old `button:has-text("Send")` could never match it, and its
+              // aria-label is translated. Note it is also conditional — it only
+              // exists once there is text or an attachment (see the guard above),
+              // so a test must type first and then locate it.
+              data-message-send=""
               aria-label={t('aria_send_message')}
               className="shrink-0 bg-gradient-to-r from-accent to-accent-gradient-end text-white dark:text-white"
               isLoading={isSending}
