@@ -4,7 +4,7 @@ Last reviewed: 2026-08-11
 
 Status: **Canonical current — sole Web UK scoring source**
 
-<!-- doc-consistency: WEBUK_W2_CURRENT_SCORE=640/1000 -->
+<!-- doc-consistency: WEBUK_W2_CURRENT_SCORE=651/1000 -->
 <!-- doc-consistency: WEBUK_W2_RUBRIC=WEBUK-W2-PROD-R1 -->
 <!-- doc-consistency: WEBUK_W2_ARTEFACT_TREE=dirty-disclosed -->
 
@@ -23,12 +23,14 @@ artefact.
 
 ## 🔴 The percentage went DOWN and nothing got worse
 
-W1 banked `663/1000` (66.3%). W2 stands at `640/1000` (64.0%).
+W1 banked `663/1000` (66.3%). W2 stands at `651/1000` (65.1%).
 
 **No implementation regressed.** 150 points that W1 never scored — production
 deployment, cutover and rollback (100) plus Blade retirement (50) — enter the
 denominator for the first time. Deployment moved from 20 to 61 once the path was
-built on 2026-08-11; Blade retirement is still at zero because it has not started.
+built on 2026-08-11, and to 72 on 2026-08-12 once that path was actually exercised on
+the server and the Apache rollback fallback was verified against the production
+Apache build; Blade retirement is still at zero because it has not started.
 Four previously-audited rows improved. Read the mapping table below before quoting
 either number; do not convert one into the other, and do not describe either as
 "about finished".
@@ -43,9 +45,9 @@ either number; do not convert one into the other, and do not describe either as
 | API contract and static/mock verification | 142 | 150 | -8: exhaustive field-shape, publication, auth/role, status/error and side-effect assertions are still not complete for every significant contract. Ownership and direct-assertion coverage are complete. |
 | Live Laravel runtime certification | 0 | 150 | -150: no separately provisioned disposable Laravel application/database/storage environment exists, so live mutation, upload, download and destructive certification is entirely open. Deliberately out of scope until authorised; it is scored because production readiness cannot honestly exclude it. |
 | Manual WCAG 2.2 AA certification | 60 | 150 | -30: no screen-reader speech-output sign-off; this needs a human running NVDA, JAWS or VoiceOver. -25: no representative screenshot comparison set. -20: keyboard activation of submit buttons is unproven — the harness delivers `Enter` with `keyCode: 0`, so Chromium runs no implicit form submission. -15: operating-system forced-colours/high-contrast not manually exercised. |
-| Production deployment, cutover and rollback | 61 | 100 | **Built 2026-08-11**, not exercised. Present: an opt-in `webuk` service in `compose.webuk.bluegreen.yml`, deploy-script support (dedicated port function, health wait, candidate smoke including an identity check, Apache `Define`, status reporting), a `/version` endpoint, an Apache include with a rollback-safe fallback, a read-only domain inventory with a drift probe, an extended production-image guard, and `web-uk` added to the deploy watchdog. Memory headroom measured and answered. -25: no cutover or rollback has been rehearsed on a real server, and the Apache `Define`/`<IfDefine>` interaction the whole cheap-rollback story rests on is **unverified against the production Apache build**. -4: one owner prerequisite still open (whether to publish per-tenant accessible domains). Error reporting was built and verified end to end on 2026-08-11 — Sentry project `nexus-webuk`, SDK wired in with PII withheld, release tagged `nexus-webuk@<commit>` so the post-deploy watch can see it. The DSN **was added to the server env file on 2026-08-11**, with a backup taken and the value verified in place — see `docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`. (This sentence previously said it "still has to be added", which contradicted the takeover page. Two enforced documents disagreeing about the same fact is worse than either being silent, and this is the one a reader is told is canonical.) The production container map was recovered on 2026-08-11 and its Web UK hold is satisfied by design — this path deploys from the Laravel stack against the same-colour Laravel API, not from the ASP.NET path it forbids. -10: not deployed, so shared-session behaviour and failover under real traffic are unobserved. |
+| Production deployment, cutover and rollback | 72 | 100 | **Built 2026-08-11; EXERCISED on the real server 2026-08-12.** Deployed four times end to end: web-uk builds, boots, reports healthy and serves a real accessible page on both colours, with NO vhost installed so no member can reach it. The 30-minute post-deploy error watch recorded 0 errors against a normal background of 3/day. 🔴 The Apache `Define`/`<IfDefine>` interaction — recorded as the single assumption the whole cheap-rollback story rested on — is now VERIFIED against the production Apache 2.4.58 build, in both directions and including which arm is selected: with the `Define`, config is valid and the web-uk arm is read; without it (what a rollback to a pre-web-uk release produces) config is STILL valid and the API fallback arm is used, so a rollback cannot abort itself. Proven with a deliberate-error probe because `-DDUMP_CONFIG` yields nothing on this build; tested as a verbatim replica in an isolated config, since no vhost is installed yet. Three real faults were found only by deploying for real and are fixed with tests: `--with-webuk` discarded by the detach relaunch, the Migration Safety Gate refusing a nullable column because it read one line at a time, and the page smoke check failing a healthy service it queried at 9 seconds old. -18: no cutover and no rollback have been rehearsed — no hostname points at web-uk yet. -6: not routed to any member, so shared-session behaviour and failover under real traffic remain unobserved. -4: one owner prerequisite open (whether to publish per-tenant accessible domains). |
 | Blade retirement without regression | 0 | 50 | -50: not started. It was unblockable until 2026-08-11, when the 707th route landed. Must be a separate change with its own review. |
-| **W2 current score** | **640** | **1000** | 64.0%. Implementation-only subtotal (rows 1–4) is 519/550 (94.4%); it must never be reported as production readiness. 🔴 This figure read `512/550 (93.1%)` from when it was written until 2026-08-11: correct only while the route row was 90, and never updated as that row went 90 → 94 → 97. `check-doc-scores.mjs` sums the Earned/Maximum COLUMNS and cannot see a number written in prose, so the one figure a reader is most likely to quote as "how close is the implementation" was wrong while CI stayed green. Recompute it by hand whenever any of rows 1–4 change. |
+| **W2 current score** | **651** | **1000** | 65.1%. Implementation-only subtotal (rows 1–4) is 519/550 (94.4%); it must never be reported as production readiness. 🔴 This figure read `512/550 (93.1%)` from when it was written until 2026-08-11: correct only while the route row was 90, and never updated as that row went 90 → 94 → 97. `check-doc-scores.mjs` sums the Earned/Maximum COLUMNS and cannot see a number written in prose, so the one figure a reader is most likely to quote as "how close is the implementation" was wrong while CI stayed green. Recompute it by hand whenever any of rows 1–4 change. |
 
 ## Mandatory W1 → W2 mapping
 
