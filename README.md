@@ -5,18 +5,50 @@
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13344/badge)](https://www.bestpractices.dev/projects/13344)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.6.0-success.svg)](CHANGELOG.md)
+[![Docs](https://img.shields.io/badge/docs-online-4051B5.svg?logo=materialformkdocs&logoColor=white)](https://jasperfordesq-ai.github.io/nexus-v1/)
+
+**Backend** &nbsp;
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg?logo=php&logoColor=white)](composer.json)
 [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20.svg?logo=laravel&logoColor=white)](composer.json)
+[![MariaDB](https://img.shields.io/badge/MariaDB-10.11-003545.svg?logo=mariadb&logoColor=white)](compose.yml)
+[![Redis](https://img.shields.io/badge/Redis-7-FF4438.svg?logo=redis&logoColor=white)](compose.yml)
+[![Meilisearch](https://img.shields.io/badge/Meilisearch-1.7-FF5CAA.svg?logo=meilisearch&logoColor=white)](compose.yml)
+
+**Web app** &nbsp;
 [![React](https://img.shields.io/badge/React-19-61DAFB.svg?logo=react&logoColor=black)](react-frontend/package.json)
-[![Docs](https://img.shields.io/badge/docs-online-4051B5.svg?logo=materialformkdocs&logoColor=white)](https://jasperfordesq-ai.github.io/nexus-v1/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6.svg?logo=typescript&logoColor=white)](react-frontend/package.json)
+[![HeroUI](https://img.shields.io/badge/HeroUI-v3-000000.svg)](react-frontend/package.json)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8.svg?logo=tailwindcss&logoColor=white)](react-frontend/package.json)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF.svg?logo=vite&logoColor=white)](react-frontend/package.json)
+
+**Accessible site** &nbsp;
+[![Node.js](https://img.shields.io/badge/Node.js-22-5FA04E.svg?logo=nodedotjs&logoColor=white)](web-uk/package.json)
+[![Express](https://img.shields.io/badge/Express-4-000000.svg?logo=express&logoColor=white)](web-uk/package.json)
+[![Nunjucks](https://img.shields.io/badge/Nunjucks-3.2-1C4913.svg)](web-uk/package.json)
+[![GOV.UK Frontend](https://img.shields.io/badge/GOV.UK_Frontend-6.3-1D70B8.svg)](web-uk/package.json)
+
+**Mobile** &nbsp;
+[![Expo](https://img.shields.io/badge/Expo-54-000020.svg?logo=expo&logoColor=white)](mobile/package.json)
+[![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB.svg?logo=react&logoColor=black)](mobile/package.json)
+
+**Second backend** (contract comparison, service retired) &nbsp;
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4.svg?logo=dotnet&logoColor=white)](aspnet-backend/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)](aspnet-backend/)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600.svg?logo=rabbitmq&logoColor=white)](aspnet-backend/)
 
 > 📖 **Documentation** — browse the full, searchable documentation site at **<https://jasperfordesq-ai.github.io/nexus-v1/>** (module guides, architecture, and an interactive API reference). The Markdown sources live in [docs/](docs/README.md).
 
 > 🌐 **Live demo** — see the platform running in production: the [React frontend](https://app.project-nexus.ie) (primary UI) and the [accessible HTML-first frontend](https://accessible.project-nexus.ie). The PHP API is served from `https://api.project-nexus.ie`.
 
-> **Version 1.6.0 — Generally Available** — Project NEXUS V1.6.0 is generally available and in active production use. The platform runs on Laravel 12 + PHP 8.2+ with a React 19 frontend. It is currently in use by communities in **Ireland** and being evaluated by communities in the **United Kingdom**, **Spain**, **Switzerland**, and the **United States**. Newer modules may still ship with their own per-module maturity label (Beta / Preview). Contributions and feedback are welcome.
+> **Version 1.6.0 — Generally Available** — Project NEXUS V1.6.0 is generally available and in active production use. Production runs a Laravel 12 + PHP 8.2+ API behind three clients: the React 19 web app, a GOV.UK-styled accessible site on Node 22 / Express, and an Expo / React Native mobile app. It is currently in use by communities in **Ireland** and being evaluated by communities in the **United Kingdom**, **Spain**, **Switzerland**, and the **United States**. Newer modules may still ship with their own per-module maturity label (Beta / Preview). Contributions and feedback are welcome.
 
-A modern, multi-tenant community time banking platform built with Laravel 12 + PHP 8.2+, React 19, and MariaDB.
+A multi-tenant community time banking platform, and a genuinely full stack: a
+Laravel 12 + PHP 8.2+ API on MariaDB, Redis and Meilisearch; a React 19 +
+TypeScript web app; a separate GOV.UK-styled accessible site on Node 22 /
+Express / Nunjucks; an Expo / React Native mobile app; and a second, complete
+ASP.NET Core 10 backend on its own PostgreSQL and RabbitMQ, kept so the same API
+contracts can be compared from one commit. Every one of those lives in this
+repository — see [Tech Stack](#tech-stack) for what production actually serves.
 
 ## Contents
 
@@ -62,36 +94,55 @@ Time banking is a community-based system where members exchange services using t
 
 ## Tech Stack
 
-Project NEXUS is a full stack in the literal sense: **two backends and three
-clients** live in this repository. They are not equal in status, and the
-difference matters more than the technology list.
+Project NEXUS is a full stack in the literal sense: **two backends and five
+clients** live in this repository, in four languages (PHP, TypeScript,
+JavaScript, C#) across two runtimes and two databases. They are not equal in
+status, and the difference matters more than the technology list.
 
 ### Primary — this is what production runs
 
 | Layer | Technology | Served at |
 |-------|-----------|-----------|
 | **Backend API** | Laravel 12 + PHP 8.2+ | `api.project-nexus.ie` |
-| **React client** | React 19 + TypeScript + HeroUI v3 + Tailwind CSS 4 | `app.project-nexus.ie` |
-| **Accessible client** | Laravel Blade + GOV.UK Frontend Sass/JS, HTML-first | `accessible.project-nexus.ie` |
+| **React web app** | React 19 + TypeScript 5.7 + HeroUI v3 + Tailwind CSS 4 + Vite 7 (`react-frontend/`) | `app.project-nexus.ie` |
+| **Accessible site** | Node 22 + Express 4 + Nunjucks 3.2 + GOV.UK Frontend 6.3, HTML-first, consuming the Laravel API (`web-uk/`) | `accessible.project-nexus.ie` |
+| **Accessible site (Blade)** | Laravel Blade + GOV.UK Frontend, rendered by the PHP application (`accessible-frontend/`) | community accessible domains and `/{tenantSlug}/accessible/...` |
+| **Mobile app** | Expo 54 + React Native 0.81 + React 19, a separate codebase on the same API (`mobile/`) | Android and iOS builds; neither store release is published yet |
 | **Sales site** | Static commercial site | `project-nexus.ie` |
 
-The React client is **backend-switchable by configuration**, but Laravel is the
+🔴 **There are two accessible frontends and the changeover is half-done.** The
+Node application took over `accessible.project-nexus.ie` on **2026-08-12**; the
+Blade one still serves every community accessible domain and every
+`/{tenantSlug}/accessible/...` path, and retires when the rest of the changeover
+completes. Both answer identical public URLs, so `/version` is the only way to
+tell which one replied. Status is stated once, in
+[docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+
+The React web app is **backend-switchable by configuration**, but Laravel is the
 production default and the contract source of truth.
 
-### Secondary — development-only, contract-comparison tracks
+🔴 **On the mobile app:** it is a distinct Expo / React Native codebase (v1.2.0,
+257 screens, 217 test files), not a wrapper around the web build. `mobile/app.json`
+configures both platforms, but only the Android release path is complete — signing,
+build profiles and push credentials exist for Android, while the iOS submit
+configuration is still a placeholder and Apple additionally requires a developer
+account and review. A Capacitor wrapper also exists historically; its project
+directory is **not** in this repository (removed in `df8bf84d6`, gitignored) and it
+is not what we ship.
+
+### Secondary — the second backend, kept for contract comparison
 
 | Layer | Technology | Status |
 |-------|-----------|--------|
-| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ | **Retired 2026-08-10** (container stopped; domain retained) |
-| **Web UK client** | Express 4 + Nunjucks + GOV.UK Frontend + Node 22 | **Retired 2026-08-10** (container stopped; domain retained) |
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | **Service retired 2026-08-10** — container stopped, domain retained, code alive in this repository |
+| **Shared event contracts** | JSON Schema event contracts both backends must satisfy (`contracts/events/v2/`) | Maintained |
 
-Both are a **complete stack of their own** — the ASP.NET side has its own
-database, message broker, migrations and 3,386-test suite; Web UK has its own
-server, templating, session store and 1,787-test suite. Neither shares a
-database with Laravel. Both exist so the same contracts can be compared from a
-single commit, and both are **paused** as of 2026-07-15.
+It is a **complete stack of its own** — its own database, message broker, 165
+migrations and 3,386-test suite, sharing nothing with Laravel — and exists so the
+same contracts can be compared from a single commit. Contract-parity work is
+**paused** as of 2026-07-15; "retired" describes the running service, not the code.
 
-🔴 Their presence changes nothing about what deploys. See
+🔴 Its presence changes nothing about what deploys. See
 [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md) for the enforced
 isolation.
 
@@ -100,44 +151,50 @@ isolation.
 | Layer | Technology |
 |-------|-----------|
 | **Database** | MariaDB 10.11 (Laravel) · PostgreSQL 16 (ASP.NET, separate) |
-| **Cache / queue** | Redis 7+ · RabbitMQ 3.13 (ASP.NET only) |
-| **Search** | Meilisearch |
-| **CDN / edge** | Cloudflare |
+| **Cache / queue** | Redis 7 · RabbitMQ 3.13 (ASP.NET only) |
+| **Search** | Meilisearch 1.7 |
+| **CDN / edge** | Cloudflare (9 zones, purged automatically after every deploy) |
 | **Real-Time** | Pusher (WebSockets) + Firebase Cloud Messaging |
-| **Mobile** | Capacitor wrapper around the React client · separate Expo / React Native client in `mobile/` |
+| **PWA** | Installable web app with per-tenant manifests; `/install-app` explains what installs where |
+| **Payments / identity** | Stripe (payments, Connect, Identity) |
+| **Error monitoring** | Sentry (PHP, React and Node), with a 30-minute post-deploy watch |
 | **Dev Environment** | Docker-first local stack; native Vite proxies to Docker PHP |
-| **Icons / charts / editor** | Lucide React · Recharts · Lexical |
+| **Icons / charts / editor** | Lucide React · Recharts · Lexical · GrapesJS + MJML (newsletters) |
 | **Animations** | CSS transitions via a local motion shim (no framer-motion) |
-| **Deployment** | Zero-downtime blue/green container switch behind Apache |
+| **Testing** | PHPUnit · PHPStan · Vitest (8 shards) · Playwright · axe-core · xUnit (ASP.NET) · dependency-free load tester (`scripts/load-test.mjs`) |
+| **Deployment** | Zero-downtime blue/green container switch behind Apache, with CI-evidence and migration-safety gates |
 
 ## Architecture
 
-A multi-tenant Laravel 12 API serving two production clients — a React 19 SPA
-and an HTML-first accessible frontend — backed by MariaDB, Redis and
-Meilisearch, deployed by a zero-downtime blue/green container switch.
+A multi-tenant Laravel 12 API serving four production clients — a React 19 web
+app, two HTML-first accessible frontends mid-changeover, and a native mobile app
+— backed by MariaDB, Redis and Meilisearch, deployed by a zero-downtime
+blue/green container switch.
 
-Alongside them, and deliberately fenced off, sit a second backend and a second
-accessible client used only for contract comparison.
+Alongside them, and deliberately fenced off, sits a second complete backend used
+only for contract comparison.
 
 ```mermaid
 flowchart TD
     subgraph Clients
         U[Members and admins]
-        M[Mobile: Capacitor PWA / Expo native]
+        M[Mobile app<br/>Expo + React Native<br/>mobile/]
     end
 
-    U -->|app.project-nexus.ie| RC[React 19 SPA<br/>react-frontend/]
-    U -->|accessible.project-nexus.ie| AC[Blade accessible frontend<br/>accessible-frontend/]
-    M --> RC
+    U -->|app.project-nexus.ie| RC[React 19 web app<br/>react-frontend/]
+    U -->|accessible.project-nexus.ie| WU[Accessible site<br/>Node 22 + Express + Nunjucks<br/>web-uk/]
+    U -->|community accessible domains<br/>and tenant slug paths| AC[Accessible site, Blade<br/>accessible-frontend/]
 
     RC -->|JSON / Bearer + CSRF| API[Laravel 12 API<br/>routes/api.php]
+    M -->|JSON / Bearer| API
+    WU -->|server-side fetch, tenant via Origin| API
     AC --> GC[GovukAlpha controllers<br/>app/Http/Controllers/GovukAlpha]
     GC --> API
 
     API --> SVC[Domain services<br/>app/Services]
     SVC --> DB[(MariaDB 10.11)]
     SVC --> RED[(Redis 7)]
-    SVC --> MEI[(Meilisearch)]
+    SVC --> MEI[(Meilisearch 1.7)]
     SVC --> PUSH[Pusher WebSockets]
     SVC --> FCM[Firebase Cloud Messaging]
 
@@ -145,33 +202,36 @@ flowchart TD
         BG[Blue/green switch<br/>scripts/deploy]
     end
     BG -. atomic Apache route swap .-> API
+    BG -. carries web-uk since cutover .-> WU
 
-    subgraph SEC ["SECONDARY - development only, NOT deployed from this repo"]
-        WU[Web UK accessible client<br/>Express + Nunjucks<br/>web-uk/]
+    subgraph SEC ["SECONDARY - second backend, service stopped, NOT deployed from this repo"]
         ASP[ASP.NET Core 10 API<br/>aspnet-backend/]
         PG[(PostgreSQL 16<br/>separate database)]
         MQ[RabbitMQ 3.13]
         ASP --> PG
         ASP --> MQ
-        WU -->|Laravel-first by default| API
-        WU -. future, uncertified .-> ASP
     end
 
     ASP -. must reproduce .-> API
+    CON[Shared event contracts<br/>contracts/events/v2/] -. both must satisfy .-> API
+    CON -. both must satisfy .-> ASP
 
     style SEC stroke-dasharray: 5 5
 ```
 
-**Reading the diagram:** everything outside the dashed box is production.
-Inside it is a parallel stack that duplicates the contract surface on purpose —
-its own API, its own database, its own message broker, its own client. The
-dashed arrows are obligations and intentions, not live traffic: ASP.NET must
-reproduce Laravel's externally observable contracts, and Web UK is built to
-switch backends by configuration alone once that is certified.
+**Reading the diagram:** everything outside the dashed box is production. The two
+accessible sites both answer live traffic today — the Node one on the platform
+accessible domain since 2026-08-12, the Blade one on community domains and
+slug paths — and the changeover finishes when Blade is retired. Inside the dashed
+box is a parallel backend that duplicates the contract surface on purpose, with
+its own API, database and message broker; the dashed arrow is an obligation, not
+live traffic.
 
-🔴 Both secondary services are live on their own domains, deployed from a
-repository archived on 2026-08-10. **This repository has no deploy path to
-either**, by design.
+🔴 **The ASP.NET service** is stopped, its domain retained, and it was deployed
+from a repository archived on 2026-08-10 — **this repository has no deploy path to
+it**, by design. The Node accessible site is the opposite case: it *is* deployed
+from here, and after the cutover every deploy must pass `--with-webuk` or it
+refuses to run.
 
 The full architecture map — runtime boundaries, tenant/feature model, and
 cross-cutting requirements — is in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
@@ -184,9 +244,11 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 |------|---------|
 | `app/`, `routes/`, `config/`, `bootstrap/` | **PRIMARY.** Laravel 12 application, API routing, middleware, providers, and runtime configuration. The contract source of truth for every client. |
 | `react-frontend/` | **PRIMARY.** React 19 + TypeScript UI for members and admin workflows. Backend-switchable by configuration; Laravel is the production default. |
-| `accessible-frontend/` | **PRIMARY.** Accessibility-first, HTML-first frontend rendered by Laravel Blade at `accessible.project-nexus.ie` and `/{tenantSlug}/accessible/...` |
-| `web-uk/` | **SECONDARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend on Node 22, with its own server, sessions and 1,787 tests. Laravel-first. **Retired 2026-08-10** — container stopped, host returns 503 by design. Was never deployable from this repository. |
-| `aspnet-backend/` | **SECONDARY.** A complete second backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's external contracts. **Retired 2026-08-10** — container stopped, host returns 503 by design. Was never deployable from this repository. |
+| `web-uk/` | **PRIMARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend 6.3 on Node 22, with its own server, sessions and 1,787 tests, consuming the Laravel API. **Serves `accessible.project-nexus.ie` since 2026-08-12.** Deployed from this repository; every deploy after the cutover must pass `--with-webuk`. |
+| `accessible-frontend/` | **PRIMARY, retiring.** The original accessibility-first frontend, rendered by Laravel Blade with `app/Http/Controllers/GovukAlpha/`. Still serves community accessible domains and `/{tenantSlug}/accessible/...`. Retires when the changeover to `web-uk/` completes. |
+| `mobile/` | **PRIMARY.** The native mobile app — Expo 54 + React Native 0.81 + React 19, its own codebase (v1.2.0, 257 screens, 217 test files) on the same Laravel API, with its own translation tree covering 7 locales. Android release path complete; iOS configured but not published. |
+| `aspnet-backend/` | **SECONDARY.** A complete second backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's external contracts. **Service retired 2026-08-10** — container stopped, domain retained, code alive here. Not deployable from this repository. |
+| `contracts/events/v2/` | JSON Schema event contracts that both backends must satisfy — the machine-readable half of the contract-comparison work. |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
 | `database/`, `migrations/` | Laravel migrations, schema dump, and legacy SQL history |
@@ -195,18 +257,21 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 | `.github/` | CI, security, contributor, release, and dependency automation |
 | `scripts/` | Build, migration, deployment, maintenance, and audit tooling |
 
-🔴 **"Not deployable from this repository" does not mean "not running."** Both
-secondary services are live on their own domains. They were deployed from a
-separate repository that was archived on 2026-08-10, and nothing here can
-update them. The earlier wording said they were "not deployed", which was
-simply wrong and misled several decisions.
+🔴 **"Not deployable from this repository" does not mean "not running."** The
+ASP.NET service was deployed from a separate repository archived on 2026-08-10,
+so nothing here can update it — but its domain is retained and its code is
+maintained here. An earlier version of this file said the same of `web-uk/`; that
+stopped being true on 2026-08-12, when it took over the platform accessible
+domain and became part of the production deploy.
 
-The two tiers are enforced, not merely described: no secondary job can block a
-production release, neither directory can enter the production image, and no
-deploy script references either. See
+The tiers are enforced, not merely described: no secondary job can block a
+production release, `aspnet-backend/` cannot enter the production image, and no
+deploy script references it. See
 [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
 
-Native mobile project artifacts are not required for the public Docker setup. The React PWA is the canonical user interface; native packaging is release-managed separately from normal local development.
+Native mobile builds are not required for the public Docker setup — `mobile/` has
+its own Expo toolchain and release process, and the React web app remains the
+canonical desktop interface.
 
 ## Quick Start
 
@@ -266,14 +331,15 @@ The full current schema dump is committed at [database/schema/mysql-schema.sql](
 This is **version 1.6.0 — generally available**, in active production use. Per-module maturity (GA / Beta / Preview) is published on the in-app `/features` page and the public Changelog:
 
 - The **React frontend** (`react-frontend/`) is the primary UI for user-facing pages and current admin workflows
-- The **Accessible frontend** (`accessible-frontend/`) is an approved HTML-first UI track for core tenant pages, served by Laravel at `accessible.project-nexus.ie`
+- The **accessible site** is an approved HTML-first UI track, mid-changeover between two implementations: `web-uk/` (Node 22 + Express + Nunjucks) serves `accessible.project-nexus.ie` since 2026-08-12, and `accessible-frontend/` (Laravel Blade) still serves community accessible domains and `/{tenantSlug}/accessible/...` until it retires
+- The **mobile app** (`mobile/`) is a separate Expo / React Native client on the same API — Android release path complete, iOS configured but not yet published to either store
 - The **Laravel 12 backend** provides the API — all services are native Laravel implementations (zero stubs)
+- The **second backend** (`aspnet-backend/`, ASP.NET Core 10) is complete and maintained here, but its service is stopped and contract-parity work is paused
 - The **legacy PHP admin** (`/admin-legacy/`, `/super-admin/`) has been decommissioned — all admin workflows live in the React admin
 - **Zero-downtime blue/green deployments** — production switches between blue and green container stacks with no maintenance window
-- **Native mobile packaging** is managed separately from the default public Docker checkout
 - **Tests** are in `tests/`, `react-frontend/src/**/*.test.*`, and `e2e/`; CI also runs static analysis, build, migration, i18n, SPDX, smoke, accessibility, and security gates
 
-We welcome contributors who are comfortable working with a modern Laravel + React codebase.
+We welcome contributors comfortable in any part of this stack — PHP/Laravel, React/TypeScript, Node/Express, React Native, or C#/ASP.NET. You do not need to know all of it.
 
 ## Quality, Security, and Releases
 
