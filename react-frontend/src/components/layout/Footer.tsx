@@ -80,17 +80,17 @@ export function Footer({ children, copyright }: FooterProps) {
             title={pbLabel || t('footer.powered_by')}
             className="max-w-full transition-opacity hover:opacity-80"
           >
-            <img src={pbImage} alt={pbLabel || t('footer.powered_by')} className="h-auto max-h-24 w-auto max-w-full object-contain" />
+            <img src={pbImage} alt={pbLabel || t('footer.powered_by')} className="h-auto max-h-24 w-auto max-w-[15rem] object-contain" />
           </a>
           <SourceRepositoryLink compact className="w-full max-w-[18rem] justify-center" />
           {/* Tenant partner logo — real or placeholder */}
           {partnerLogoUrl ? (
             partnerLinkUrl ? (
               <a href={partnerLinkUrl} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80">
-                <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-full object-contain" />
+                <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-44 object-contain" />
               </a>
             ) : (
-              <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-full object-contain" />
+              <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-16 w-auto max-w-44 object-contain" />
             )
           ) : (
             <div className="w-full max-w-[22rem] border-2 border-dashed border-theme-default/40 rounded-xl h-16 flex items-center justify-center">
@@ -263,10 +263,10 @@ export function Footer({ children, copyright }: FooterProps) {
                   {partnerLogoUrl ? (
                     partnerLinkUrl ? (
                       <a href={partnerLinkUrl} target="_blank" rel="noopener noreferrer" title={partnerLabel} aria-label={partnerLabel} className="max-w-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg">
-                        <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-full object-contain" />
+                        <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-48 object-contain" />
                       </a>
                     ) : (
-                      <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-full object-contain" />
+                      <img src={partnerLogoUrl} alt={partnerLabel} className="max-h-20 w-auto max-w-48 object-contain" />
                     )
                   ) : (
                     <div className="h-20 w-48 border-2 border-dashed border-theme-default/40 rounded-xl flex items-center justify-center">
@@ -298,10 +298,15 @@ export function Footer({ children, copyright }: FooterProps) {
                     aria-label={pbLabel || t('footer.powered_by')}
                     className="max-w-full transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
                   >
+                    {/*
+                      Cap BOTH axes. A height-only cap lets a wide wordmark scale out to
+                      ~470px, past its native resolution, which renders pixelated. Square
+                      marks stay bound by the height, wide ones by the width.
+                    */}
                     <img
                       src={pbImage}
                       alt={pbLabel || t('footer.powered_by')}
-                      className="h-auto max-h-32 w-auto max-w-full object-contain"
+                      className="h-auto max-h-28 w-auto max-w-[15rem] object-contain sm:max-w-[17rem]"
                     />
                   </a>
                 </div>
