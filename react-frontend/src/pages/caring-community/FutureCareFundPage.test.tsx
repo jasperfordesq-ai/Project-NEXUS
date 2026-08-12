@@ -70,15 +70,19 @@ describe('FutureCareFundPage — loading', () => {
   it('shows skeleton loading state while data is pending', () => {
     mockApi.get.mockReturnValue(new Promise(() => {}));
     render(<FutureCareFundPage />);
-    // Skeleton elements are rendered — at least one text for loading
-    // The PageSkeleton shows a loading label paragraph
-    const statusEls = screen.queryAllByRole('status');
-    // Either a role=status or skeleton elements are present
-    // The skeleton shows a <p> with the loading label key
-    const bodyText = document.body.textContent ?? '';
-    expect(
-      bodyText.includes('loading') || bodyText.includes('future_care_fund.loading') || statusEls.length > 0,
-    ).toBe(true);
+
+    /**
+     * 🔴 This assertion used to accept `bodyText.includes('loading')` or the raw
+     * key `future_care_fund.loading`, and neither can ever match: the English
+     * value is "Calculating your fund...". It was written when `t()` returned raw
+     * keys, and broke the moment `src/test/setup.ts` began initialising i18next
+     * with the committed English translations. It had been failing ever since —
+     * in a suite that is NOT quarantined.
+     *
+     * Assert the label the member actually sees. If the copy changes, this fails
+     * loudly and gets updated, which is the point.
+     */
+    expect(screen.getByText('Calculating your fund...')).toBeInTheDocument();
   });
 });
 

@@ -3,18 +3,16 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import { tenantUrl, generateTestData } from '../../helpers/test-utils';
 
 /**
  * Compose / Create Content Tests
  *
- * The React frontend doesn't have a unified "compose" page.
- * Instead, content creation is contextual:
- * - Posts: created inline in the feed
- * - Listings: dedicated /listings/create page
- * - Events: dedicated /events/create page
- * - Polls: created inline in feed posts
+ * Content creation happens two ways:
+ * - Feed: a composer BUTTON opens the `ComposeHub` modal, whose tabs cover
+ *   Listing / Post / Event / Goal / Poll. Nothing is composed inline.
+ * - Dedicated pages: /listings/create and /events/create.
  *
  * 🔴 Every listing test here used to navigate to `/listings/new`, and every
  * event test to `/events/new`. Neither is a route. Neither 404s either, which
@@ -49,64 +47,90 @@ async function gotoCreateForm(page: Page, path: string): Promise<void> {
   await expect(page.locator('form')).toBeVisible({ timeout: 20000 });
 }
 
+/**
+ * 🔴 There is NO inline composer on the feed, which is what these four tests
+ * assumed (the file header used to say "Posts: created inline in the feed"). The
+ * Quick Post Box is a `<button>` that opens `ComposeHub` — a modal with
+ * Listing / Post / Event / Goal / Poll tabs — and it opens on the LISTING tab.
+ * So `textarea[placeholder*="What"]` matched nothing: there is no textarea on the
+ * feed page at all, and the three tests that filled one failed at the fill.
+ */
+async function openComposer(page: Page, tab: 'Listing' | 'Post' = 'Post') {
+  await page.goto(tenantUrl('feed'));
+
+  // 20s for the same reason as gotoCreateForm: the shell shows
+  // "Checking authentication..." for longer than the default expect timeout.
+  const trigger = page.getByRole('button', { name: "What's on your mind?" });
+  await expect(trigger).toBeVisible({ timeout: 20000 });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('tab', { name: tab, exact: true }).click();
+  return dialog;
+}
+
+/**
+ * The post body is a Lexical rich-text editor, so it is a
+ * `div[role="textbox"][contenteditable]` — NOT a textarea. Locate it by role and
+ * accessible name; `fill()` then works on it normally.
+ */
+const postEditor = (dialog: Locator) => dialog.getByRole('textbox', { name: 'Post content editor' });
+
 test.describe('Feed - Post Creation', () => {
   test('should display feed page with post composer', async ({ page }) => {
     await page.goto(tenantUrl('feed'));
 
-    // Should be on feed page
-    expect(page.url()).toContain('feed');
+    await expect(page).toHaveURL(/feed/);
 
-    // Should have post composer area (may be inline or modal)
-    const composer = page.locator('textarea[placeholder*="What"], textarea[placeholder*="post"], textarea[placeholder*="Share"], .composer, [data-composer]');
-    await expect(composer.first()).toBeVisible({ timeout: 10000 });
+    // The composer is a button, not a text field — see openComposer above.
+    await expect(page.getByRole('button', { name: "What's on your mind?" }))
+      .toBeVisible({ timeout: 20000 });
   });
 
   test('should allow typing in post field', async ({ page }) => {
-    await page.goto(tenantUrl('feed'));
+    const dialog = await openComposer(page, 'Post');
 
-    const textarea = page.locator('textarea[placeholder*="What"], textarea[placeholder*="post"], textarea[placeholder*="Share"]').first();
-    await textarea.fill('Test post content');
+    const editor = postEditor(dialog);
+    await editor.fill('Test post content');
 
-    await expect(textarea).toHaveValue('Test post content');
+    // A contenteditable has no `value`, so assert its text rather than
+    // `toHaveValue` (which throws on a non-input element).
+    await expect(editor).toHaveText('Test post content');
   });
 
   test('should have submit button for post', async ({ page }) => {
-    await page.goto(tenantUrl('feed'));
+    const dialog = await openComposer(page, 'Post');
 
-    // Fill the composer first (submit button may be hidden when empty)
-    const textarea = page.locator('textarea[placeholder*="What"], textarea[placeholder*="post"]').first();
-    await textarea.fill('Test content');
+    await postEditor(dialog).fill('Test content');
 
-    // Look for submit button
-    const submitButton = page.locator('button[type="submit"], button:has-text("Post"), button:has-text("Share"), button:has-text("Publish")');
-
-    // Button should exist (may be disabled if validation fails)
-    expect(await submitButton.count()).toBeGreaterThan(0);
+    // 🔴 The submit control is a button labelled "Post" — it is NOT
+    // `button[type="submit"]`, so the old selector list only ever matched via its
+    // `has-text("Post")` arm, and then only by counting rather than asserting.
+    await expect(dialog.getByRole('button', { name: 'Post', exact: true })).toBeVisible();
   });
 
   test('should create a post successfully', async ({ page }) => {
-    await page.goto(tenantUrl('feed'));
+    test.slow(); // sign in, open the modal, POST the content, then reload the feed
 
     const testData = generateTestData();
     const content = `E2E Test Post ${testData.uniqueId}`;
 
-    // Fill content
-    const textarea = page.locator('textarea[placeholder*="What"], textarea[placeholder*="post"]').first();
-    await textarea.fill(content);
+    const dialog = await openComposer(page, 'Post');
+    await postEditor(dialog).fill(content);
+    await dialog.getByRole('button', { name: 'Post', exact: true }).click();
 
-    // Submit
-    const submitButton = page.locator('button[type="submit"], button:has-text("Post")').first();
-    await submitButton.click();
-
-    // Wait for success (post should appear or success message shown)
-    await page.waitForTimeout(2000);
-
-    // Success indicators: post appears in feed or success toast
-    const newPost = page.locator(`.feed-post, [data-post]:has-text("${testData.uniqueId}")`);
-    const successToast = page.locator('.toast-success, .alert-success, [role="alert"]:has-text("success")');
-
-    const success = (await newPost.count() > 0) || (await successToast.count() > 0);
-    expect(success).toBeTruthy();
+    // 🔴 Assert the post actually landed, rather than the old
+    // "count() > 0 on either of two speculative selectors after a 2s sleep".
+    // `.feed-post` / `[data-post]` match nothing in this app, and
+    // `[role="alert"]:has-text("success")` is the false-pass shape 885e9f2a2
+    // removed from the shared selectors — ordinary error banners are role=alert
+    // too, so a failed post could satisfy it.
+    //
+    // The modal closing is the app's own success signal: ComposeHub stays open
+    // and shows an error if the request fails.
+    await expect(dialog).toBeHidden({ timeout: 20000 });
+    await expect(page.getByText(content, { exact: false }).first()).toBeVisible({ timeout: 20000 });
   });
 });
 
