@@ -104,7 +104,14 @@ test.describe('Responsive Design', () => {
     const menuButton = page.locator('button[aria-label*="menu"]');
     await expect(menuButton).toBeVisible();
 
-    // Switch to landscape
+    // Switch to landscape.
+    //
+    // 🔴 667×375 is a SMALL-phone landscape and sits BELOW the 768px breakpoint,
+    // so it cannot reach the dead band this suite's own landscape bug lived in.
+    // It is kept because rotating a small phone is still worth covering, but it
+    // must not be mistaken for landscape coverage — that is
+    // 'signed-in member keeps primary navigation in phone landscape' below,
+    // which tests 844×390 and 932×430 inside the band.
     await page.setViewportSize({ width: 667, height: 375 });
 
     // Wait for layout to adjust
@@ -113,6 +120,99 @@ test.describe('Responsive Design', () => {
     // Navigation should still be accessible
     await expect(page.locator(selectors.navbar)).toBeVisible();
   });
+
+  /**
+   * 🔴 The landscape navigation blackout, pinned at the widths where it happened.
+   *
+   * Reported by James Ryan (TBUK) on 2026-07-14: the bottom bar "sometimes
+   * overlaps or obscures content ... so when completing a form, the navigation
+   * bar can cover the Submit, Continue, or other action button", and it was worse
+   * in landscape. He was still carrying it in his 2026-08-10 assessment as
+   * NFR-02, "bottom navigation can misalign and cover submit controls".
+   *
+   * Root cause (fixed in b27d6eedc): the bottom tab bar hid at >=768px while the
+   * desktop nav only appears at >=1024px, and the hamburger is guests-only — so a
+   * SIGNED-IN member between those widths had no primary navigation at all. A
+   * phone in landscape is 844–932px, squarely inside that band.
+   *
+   * The fix is now "by construction" — `MobileTabBar` uses `lg:hidden` as the
+   * exact complement of `Navbar`'s `hidden lg:flex`. This test exists because an
+   * argument is not a regression test, and because nothing else in the suite
+   * covers these widths: the case above stops at 667px.
+   *
+   * Must be signed in. The bar does not render for guests, so an anonymous test
+   * would pass while proving nothing.
+   */
+  const PHONE_LANDSCAPE = [
+    { label: 'iPhone 14 landscape', width: 844, height: 390 },
+    { label: 'iPhone 14 Pro Max landscape', width: 932, height: 430 },
+  ];
+
+  for (const { label, width, height } of PHONE_LANDSCAPE) {
+    test(`signed-in member keeps primary navigation in phone landscape — ${label} @regression`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+
+      // Authentication comes from the project's `storageState` (the `setup`
+      // dependency), not from logging in here. `loginAsUser` waits for a redirect
+      // to /dashboard and this app lands on /feed, so calling it would fail on
+      // the helper's assumption rather than on anything this test is about.
+
+      // Somewhere with a form and a submit control at the foot of the page.
+      await page.goto(`/${testTenant.slug}/listings/create`);
+      await page.waitForLoadState('domcontentloaded');
+
+      // 1. Primary navigation must exist. Between 768 and 1023px this is the
+      //    tab bar's job: the desktop nav is still hidden and the hamburger is
+      //    guests-only. Either the bar or a visible desktop nav is acceptable —
+      //    what is NOT acceptable is neither, which is the bug.
+      // The bar's accessible name comes from `aria.mobile_navigation`, which is
+      // "Mobile navigation" in English. Matched case-insensitively on the word
+      // that survives translation least badly, plus the nav role, rather than a
+      // guessed test id — MobileTabBar does not carry one.
+      const tabBar = page.getByRole('navigation', { name: /mobile/i }).first();
+      const desktopNav = page.locator(selectors.navbar).first();
+
+      // 🔴 Auto-waiting assertion, not an instant `isVisible()`. Under Vite dev
+      // the SPA has not rendered by `domcontentloaded`, so an instant check
+      // reports "no navigation" and manufactures exactly the failure this test
+      // is supposed to detect. `.or()` waits for whichever arrives.
+      await expect(
+        tabBar.or(desktopNav).first(),
+        `${label} (${width}×${height}): a signed-in member had NO primary navigation — `
+          + 'this is the 768–1023px blackout. Check that MobileTabBar\'s lg:hidden '
+          + 'is still the exact complement of Navbar\'s hidden lg:flex.',
+      ).toBeVisible({ timeout: 30000 });
+
+      const hasTabBar = await tabBar.isVisible().catch(() => false);
+
+      // 2. The submit control must be reachable and not sitting underneath the
+      //    tab bar. That was the actual complaint: navigation covering Submit.
+      const submit = page.locator('button[type="submit"]').first();
+      if (await submit.count()) {
+        await submit.scrollIntoViewIfNeeded();
+        await expect(submit).toBeVisible();
+
+        const submitBox = await submit.boundingBox();
+        expect(submitBox, 'submit control has no box').not.toBeNull();
+
+        if (submitBox && hasTabBar) {
+          const barBox = await tabBar.boundingBox();
+          if (barBox) {
+            // Overlap on the vertical axis means the bar is over the button.
+            const submitBottom = submitBox.y + submitBox.height;
+            const overlap = submitBottom > barBox.y && submitBox.y < barBox.y + barBox.height;
+            expect(
+              overlap,
+              `${label}: the bottom navigation overlaps the submit control `
+                + `(submit ${Math.round(submitBox.y)}–${Math.round(submitBottom)}, `
+                + `bar starts ${Math.round(barBox.y)}). The tab bar's spacer should `
+                + 'reserve its own height plus the safe-area inset.',
+            ).toBe(false);
+          }
+        }
+      }
+    });
+  }
 
   test('should display modals correctly on mobile @regression', async ({ page }) => {
     await page.setViewportSize(devices['iPhone 12'].viewport);
