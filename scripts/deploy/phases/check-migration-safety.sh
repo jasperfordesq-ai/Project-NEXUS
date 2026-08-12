@@ -69,6 +69,47 @@ NON_NULL_WITHOUT_DEFAULT='->(string|char|text|mediumText|longText|integer|tinyIn
 PRETEND_DESTRUCTIVE_SQL='alter[[:space:]]+table.*[[:space:]](drop|rename|change|modify)[[:space:]]|drop[[:space:]]+table|truncate[[:space:]]+table|rename[[:space:]]+table'
 PRETEND_NON_NULL_ADD='alter[[:space:]]+table.*[[:space:]]add(?!.*\bdefault\b).*[[:space:]]not[[:space:]]+null'
 
+# 🔴 Collapse each PHP statement onto ONE line, prefixed with the line it started on.
+#
+# WHY. `NON_NULL_WITHOUT_DEFAULT` decides a column is dangerous using negative
+# lookaheads for `->nullable()` and `->default(`. grep evaluates a pattern against
+# one LINE at a time, so a fluent chain split across lines — which is this
+# codebase's own style, and what any formatter produces — hides the `->nullable()`
+# from the lookahead and the gate reports a violation that is not there.
+#
+# Measured on 2026-08-12: it blocked a production deploy over
+# `2026_08_11_120000_add_hours_available_to_listings.php`, where the column is
+# `->nullable()->default(null)` on the two lines FOLLOWING the `->decimal(...)`.
+# Entirely safe, refused anyway. A gate that cries wolf gets overridden, and
+# overriding this one risks breaking the colour still serving traffic — so the fix
+# is to read statements, not lines.
+#
+# The line-number prefix keeps the diagnostics as useful as before.
+join_statements() {
+    awk '
+        {
+            if (buf == "") { start = NR }
+            buf = (buf == "" ? $0 : buf " " $0)
+            while (index(buf, ";") > 0) {
+                pos = index(buf, ";")
+                stmt = substr(buf, 1, pos)
+                gsub(/[[:space:]]+/, " ", stmt)
+                sub(/^ /, "", stmt)
+                if (stmt ~ /[^[:space:];]/) { print start ": " stmt }
+                buf = substr(buf, pos + 1)
+                start = NR
+            }
+        }
+        END {
+            if (buf ~ /[^[:space:]]/) {
+                gsub(/[[:space:]]+/, " ", buf)
+                sub(/^ /, "", buf)
+                print start ": " buf
+            }
+        }
+    '
+}
+
 strip_schema_create_blocks() {
     awk '
         /Schema::create[[:space:]]*\(/ {
@@ -142,7 +183,10 @@ for f in "${pending_files[@]}"; do
         violations=$((violations + 1))
     fi
 
-    nullable_matches="$(printf '%s\n' "$alter_body" | grep -nP -- "$NON_NULL_WITHOUT_DEFAULT" || true)"
+    # Statement-joined, not line-by-line — see join_statements() for the false
+    # alarm this fixes. Each joined line already carries its source line number, so
+    # `grep -P` rather than `grep -nP`.
+    nullable_matches="$(printf '%s\n' "$alter_body" | join_statements | grep -P -- "$NON_NULL_WITHOUT_DEFAULT" || true)"
     if [ -n "$nullable_matches" ]; then
         log_err "Non-nullable column add/change on an existing table without nullable() or default() in $(basename "$f"):"
         echo "$nullable_matches" | sed 's/^/    /'

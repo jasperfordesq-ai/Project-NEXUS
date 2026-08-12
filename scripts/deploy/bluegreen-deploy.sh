@@ -272,12 +272,40 @@ detach_if_requested() {
         exit 2
     fi
 
+    # 🔴 EVERY behaviour-changing flag must be forwarded to the detached child, and
+    # this list has now been WRONG TWICE in the same way.
+    #
+    # The child is a fresh `bash "$0"` with a hand-built argument list, so any flag
+    # missing here is silently discarded — the parent parsed it, echoed it, and the
+    # process that actually deploys never saw it.
+    #
+    # Measured on 2026-08-12: `--with-webuk` was absent, so
+    # `bash scripts/deploy.sh --with-webuk` printed "web-uk: --with-webuk", survived
+    # ssh and sudo (the thing that was fixed the day before), and then the server log
+    # said "web-uk: NOT included". A rehearsal would have been reported as successful
+    # with web-uk never built.
+    #
+    # `--no-migrate` was missing too, and that one is worse: LARAVEL_MIGRATE defaults
+    # to 1, so a detached `--no-migrate` deploy ran migrations anyway — the exact
+    # opposite of what was asked, on the flag documented for emergency rollbacks.
+    #
+    # `test-bluegreen-webuk-contract.sh` now asserts that every flag `parse_flags`
+    # accepts is either forwarded here or explicitly listed as deliberately not
+    # forwarded, so this cannot drift a third time.
     local child_args=("$mode")
-    [ "$LARAVEL_MIGRATE" = "1" ] && child_args+=("--migrate")
+    if [ "$LARAVEL_MIGRATE" = "1" ]; then
+        child_args+=("--migrate")
+    else
+        child_args+=("--no-migrate")
+    fi
+    [ "$DEPLOY_WEBUK" = "1" ] && child_args+=("--with-webuk")
+    [ "$WEBUK_EXPLICITLY_DISABLED" = "1" ] && child_args+=("--without-webuk")
     [ "$SKIP_PRERENDER" = "1" ] && child_args+=("--skip-prerender")
     [ "$FORCE_PRERENDER" = "1" ] && child_args+=("--force-prerender")
     [ -n "$PRERENDER_TENANT" ] && child_args+=("--prerender-tenant" "$PRERENDER_TENANT")
     [ -n "$PRERENDER_ROUTES" ] && child_args+=("--prerender-routes" "$PRERENDER_ROUTES")
+    # NOT forwarded, deliberately: --detach / -d (the child must not re-detach; it
+    # already carries __NEXUS_BLUEGREEN_DETACHED__=1) and -h/--help/help.
 
     LOG_FILE="$LOG_DIR/bluegreen-deploy-$TIMESTAMP.log"
     export LOG_FILE __NEXUS_BLUEGREEN_DETACHED__=1

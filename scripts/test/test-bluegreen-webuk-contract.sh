@@ -123,6 +123,49 @@ parse_flags deploy --without-webuk
 if [ "$DEPLOY_WEBUK" = "0" ]; then echo "  PASS  --without-webuk disables it"; else echo "  FAIL  --without-webuk did not disable it"; fail=$((fail+1)); fi
 
 echo
+echo "=== 8a. EVERY parsed flag must survive the --detach relaunch ==="
+# 🔴 The defect this covers, which shipped and was caught in production on
+# 2026-08-12. `--detach` makes the script relaunch itself with `nohup bash "$0"` and
+# a HAND-BUILT argument list. Any flag absent from that list is silently dropped: the
+# parent parses it, echoes it, and the process that actually deploys never sees it.
+#
+# `--with-webuk` was missing, so `bash scripts/deploy.sh --with-webuk` printed the
+# flag, survived ssh and sudo (fixed the day before), and the server log then said
+# "web-uk: NOT included". `--no-migrate` was missing too, and worse: LARAVEL_MIGRATE
+# defaults to 1, so a detached --no-migrate deploy RAN migrations.
+#
+# Compares the two lists mechanically so it cannot drift again.
+PARSED=$(sed -n '/^parse_flags() {/,/^}/p' "$SRC" \
+  | grep -oE -- '--[a-z-]+\)' | tr -d ')' | sort -u)
+FORWARDED=$(sed -n '/^detach_if_requested() {/,/^}/p' "$SRC" \
+  | grep -oE -- '"--[a-z-]+"' | tr -d '"' | sort -u)
+# Deliberately not forwarded: --detach/-d (the child must not re-detach) and help.
+NOT_FORWARDED=$'--detach\n--help'
+
+missing=""
+for flag in $PARSED; do
+  echo "$NOT_FORWARDED" | grep -qx -- "$flag" && continue
+  echo "$FORWARDED" | grep -qx -- "$flag" && continue
+  missing="$missing $flag"
+done
+
+if [ -n "$missing" ]; then
+  echo "  FAIL  these parsed flags are DROPPED by the detach relaunch:$missing"
+  fail=$((fail+1))
+else
+  echo "  PASS  every parsed flag is forwarded to the detached child (or listed as deliberately not)"
+fi
+
+# And specifically the two that were broken, by name.
+for flag in --with-webuk --without-webuk --no-migrate; do
+  if echo "$FORWARDED" | grep -qx -- "$flag"; then
+    echo "  PASS  $flag survives detach"
+  else
+    echo "  FAIL  $flag is dropped by detach"; fail=$((fail+1))
+  fi
+done
+
+echo
 echo "=== 8b. once web-uk is LIVE, a flagless deploy must REFUSE ==="
 # 🔴 The defect this covers, and it is the worst one found in this arm of the work.
 # DEPLOY_WEBUK lived only in the current invocation. Nothing remembered that web-uk
