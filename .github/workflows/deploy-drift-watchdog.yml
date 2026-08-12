@@ -97,7 +97,13 @@ jobs:
           # ADD THEM BACK as part of the cutover commit, once web-uk really is
           # deployed to both colours — the marker for that is
           # `.webuk-live` on the server (see bluegreen-deploy.sh).
-          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views accessible-frontend react-frontend artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml"
+          # 🔴 `web-uk` and its overlay are BACK, as the comment above required, because
+          # the condition it named is now met: web-uk serves
+          # accessible.project-nexus.ie as of 2026-08-12, so production DOES receive
+          # it and a web-uk-only fix genuinely is deployable drift. Leaving them out
+          # from here on would mean production could sit on an old web-uk image with
+          # this watchdog reporting green.
+          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views accessible-frontend react-frontend web-uk artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml compose.webuk.bluegreen.yml"
 
           MAIN_COMMIT=""
           # Bounded walk: 200 commits is far more than any realistic gap, and it

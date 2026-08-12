@@ -53,6 +53,14 @@
       "expectStatus": [
         200
       ]
+    },
+    {
+      "name": "Accessible frontend is web-uk (not a silent fallback to Blade)",
+      "url": "https://accessible.project-nexus.ie/version",
+      "track": "production",
+      "expectStatus": [
+        200
+      ]
     }
   ]
 }

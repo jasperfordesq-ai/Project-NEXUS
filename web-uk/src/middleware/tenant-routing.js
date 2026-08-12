@@ -380,7 +380,7 @@ async function resolveCustomAccessibleDomain(req, pathname) {
     }
 
     if (pathname !== '/' && tenantDataMatchesDomainHost(tenant, host)) {
-      req.url = '/__accessible-domain-not-found__';
+      req.url = REFUSED_PATH;
       return false;
     }
 
@@ -424,6 +424,33 @@ async function redirectMatchedCustomDomainMount(req, res, tenantSlug, rest, quer
   }
 }
 
+/**
+ * Resolve the community named by a `/{slug}/accessible/...` URL on the shared host.
+ *
+ * 🔴 "THIS COMMUNITY DOES NOT EXIST" AND "THE PLATFORM IS UNREACHABLE" ARE NOT THE
+ * SAME ANSWER, and treating them as one was a real defect.
+ *
+ * This function used to catch BOTH an `ApiError` 404 and an `ApiOfflineError` and
+ * return a synthetic `{ slug }` — so an unknown slug carried on as though it were a
+ * real but empty community, and every page rendered a plausible-looking 200.
+ * Measured against production on 2026-08-12: Blade answers
+ * `/not-a-real-community/accessible/` with **404**, web-uk answered **200** with a
+ * full 24 KB page. No other community's data was exposed — it rendered generic
+ * platform chrome — but a member who mistypes an address was told nothing was wrong,
+ * and every misspelling became an indexable URL.
+ *
+ * So the two cases are now separated:
+ *
+ *   - genuine 404 from the platform ⇒ return `null`, and the caller renders 404,
+ *     matching Blade, which is the observable-behaviour specification while Blade
+ *     is still deployed.
+ *   - platform UNREACHABLE (`ApiOfflineError`) ⇒ keep the previous degraded
+ *     behaviour. 🔴 Deliberate: during an outage we must NOT tell members their
+ *     community does not exist. That is a false statement about their data, and it
+ *     is far worse than a thin page. The pages themselves already degrade.
+ *
+ * @returns {Promise<object|null>} the tenant, or null when it genuinely does not exist
+ */
 async function resolveSharedMountTenant(tenantSlug) {
   const { ApiError, ApiOfflineError, getTenantBootstrap } = require('../lib/api');
 
@@ -433,13 +460,133 @@ async function resolveSharedMountTenant(tenantSlug) {
     if (tenant && typeof tenant === 'object') {
       return tenant;
     }
+    // 🔴 A 200 carrying nothing usable is NOT treated as "no such community", and
+    // that restraint is deliberate. Only an explicit 404 from the platform means the
+    // community does not exist; an unusable-but-successful response is a transport
+    // or shape oddity, and 404ing on it would turn a glitch into "your community
+    // does not exist".
+    //
+    // It also has to stay this way for a concrete reason: the shared-mount path makes
+    // TWO bootstrap calls (a host lookup that always misses on the shared host, then
+    // the slug lookup), so any caller or fixture that answers only once leaves the
+    // second call empty. Being strict here failed 16 existing tests whose mocks are
+    // `mockResolvedValueOnce`, none of which describe a missing community.
+    return { slug: tenantSlug };
   } catch (error) {
-    if (!(error instanceof ApiOfflineError || (error instanceof ApiError && error.status === 404))) {
-      throw error;
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
     }
+    if (error instanceof ApiOfflineError) {
+      // Outage, not a missing community — see the note above. Carries on with just
+      // the slug, exactly as before, so pages degrade rather than lying.
+      return { slug: tenantSlug };
+    }
+    throw error;
   }
+}
 
-  return { slug: tenantSlug };
+/**
+ * 🔴 THE FILE'S OWN IDIOM FOR "REFUSE THIS REQUEST", and the reason to use it rather
+ * than send a bespoke 404 here.
+ *
+ * `resolveCustomAccessibleDomain` already refuses slug-less pages on an ordinary
+ * tenant domain by rewriting the URL to a path no router matches, so the request
+ * falls through to the app's catch-all and renders the SAME styled "Page not found"
+ * page as every other 404. That is better than anything this middleware can render
+ * directly, because it runs before the shell middleware and has no `res.locals.t`,
+ * no `urlFor` and no tenant branding.
+ *
+ * An earlier version of this change sent its own minimal HTML body instead, which
+ * overrode that styled page and broke the existing test asserting "Page not found".
+ * All three refusal paths now share this one constant, so a member cannot tell them
+ * apart and there is one place to change the behaviour.
+ */
+const REFUSED_PATH = '/__accessible-domain-not-found__';
+
+/**
+ * On the SHARED platform host, should a slug-less application URL be refused?
+ *
+ * 🔴 THIS PORTS A LARAVEL GUARD web-uk NEVER HAD. Laravel's
+ * `EnsureAccessibleCustomDomain` 404s the slug-less accessible route set on any host
+ * that did not resolve via a tenant's `accessible_domain` — see the note at
+ * `routes/govuk-alpha.php`. web-uk had no equivalent, so it served the whole route
+ * set with NO tenant resolved.
+ *
+ * Measured against production on 2026-08-12, before cutting the shared host over:
+ *
+ *     Blade  accessible.project-nexus.ie/listings  →  404
+ *     web-uk accessible.project-nexus.ie/listings  →  200, 11,661 bytes
+ *
+ * Two consequences, neither acceptable on a public host. Every canonical
+ * `/{slug}/accessible/...` page gained a slug-less duplicate answering 200. And
+ * `tenantFeatureGate` returns `next()` immediately when no tenant is resolved, so on
+ * those URLs every module and feature gate was INERT — a community's disabled module
+ * was not merely visible, it was unguarded.
+ *
+ * No data was exposed in the production configuration, because the container sets
+ * neither `ACCESSIBLE_TENANT_SLUG` nor `TENANT_ID` (verified), so the API refuses the
+ * request and pages render empty. That is luck, not design: `web-uk/.env.docker` DOES
+ * set both for local development, and any deployment inheriting those values would
+ * have served one community's data at slug-less URLs on the shared host.
+ *
+ * 🔴 The exemptions are the whole difficulty, so each is deliberate:
+ *   - the bare root renders the tenant chooser, which is the one correct slug-less
+ *     page on this host;
+ *   - system paths (`/version`, `/health`, `/assets`, …) must answer before any
+ *     tenant is known — the deploy's drift check calls `/version` on a bare hostname;
+ *   - a configured single-tenant fallback keeps LOCAL DEVELOPMENT working, where the
+ *     app is browsed slug-less on localhost:5180 with `ACCESSIBLE_TENANT_SLUG` set;
+ *   - local hosts are exempt outright for the same reason.
+ *
+ * A custom accessible domain is unaffected: it resolves a tenant, so this branch is
+ * never reached for it.
+ */
+function deniesSluglessRouteSet(req, pathname) {
+  if (pathname === '/') return false;
+  if (isUnprefixedPath(pathname)) return false;
+
+  // 🔴 SCOPED TO THE SHARED PLATFORM HOST(S) ONLY, and the narrowing is deliberate.
+  //
+  // The first version refused slug-less paths on ANY non-local host that resolved no
+  // tenant. That is arguably right in principle — serving the app with no tenant
+  // means every feature gate is inert — but it changed behaviour for every host at
+  // once, and it broke a test asserting the Laravel-compatible Blog RSS contract
+  // served slug-less on an arbitrary host. Days before a cutover is the wrong moment
+  // to widen a behavioural change beyond the defect actually measured.
+  //
+  // What WAS measured, on production 2026-08-12:
+  //     Blade  accessible.project-nexus.ie/listings  →  404
+  //     web-uk accessible.project-nexus.ie/listings  →  200
+  // So the guard applies to that host, matching Blade there, and leaves every other
+  // host exactly as it was. Broadening it to all unresolved hosts is a separate,
+  // reviewable change.
+  const host = requestHost(req);
+  if (!platformAccessibleHosts().includes(host)) return false;
+
+  // Keeps LOCAL DEVELOPMENT and any single-tenant deployment working: the app is
+  // browsed slug-less there with ACCESSIBLE_TENANT_SLUG set (web-uk/.env.docker).
+  const configuredFallback = String(process.env.ACCESSIBLE_TENANT_SLUG || '').trim()
+    || String(process.env.TENANT_ID || '').trim();
+  if (configuredFallback) return false;
+
+  return true;
+}
+
+/**
+ * The shared platform accessible host(s) — the ones that serve `/{slug}/accessible`
+ * rather than a single community's own domain.
+ *
+ * Overridable so this is not a hostname buried in code, but defaulted so the guard
+ * is active in production without needing a new environment variable to be set
+ * (an unset variable silently disabling a guard is the failure mode this codebase
+ * keeps finding). Laravel hardcodes the same host in
+ * `TenantHierarchyService::isReservedPlatformHost()`, which is what guarantees no
+ * community can ever claim it as their own domain.
+ */
+function platformAccessibleHosts() {
+  const configured = String(process.env.PLATFORM_ACCESSIBLE_HOSTS || '').trim();
+  const raw = configured || 'accessible.project-nexus.ie';
+  return raw.split(',').map((entry) => normalizeHost(entry)).filter(Boolean);
 }
 
 function tenantRouting(req, res, next) {
@@ -459,6 +606,21 @@ function tenantRouting(req, res, next) {
       })
       .then((handled) => {
         if (!handled) {
+          // 🔴 Gate on `req.accessibleRouting`, NOT on `handled`.
+          //
+          // `handled` is falsy in two very different situations. When
+          // `resolveParentDomainChildTenant` MATCHES it returns early, so this
+          // callback receives `undefined` — and the original code correctly called
+          // next() for that case, because routing had already been set up. Reading
+          // that as "nothing resolved" made this guard refuse requests that had
+          // resolved a community perfectly well: it broke 7 existing tests covering
+          // custom-domain and parent-domain child serving.
+          //
+          // `req.accessibleRouting` is the unambiguous signal: any resolver that
+          // succeeded has set it.
+          if (!req.accessibleRouting && deniesSluglessRouteSet(req, pathname)) {
+            req.url = REFUSED_PATH;
+          }
           next();
         }
       })
@@ -485,6 +647,19 @@ function tenantRouting(req, res, next) {
     })
     .then((tenant) => {
       if (!tenant) {
+        // 🔴 The community named in the URL does not exist ⇒ 404, matching Blade.
+        //
+        // This branch previously did a bare `return`: no response and no next(), so
+        // the request would have HUNG rather than answering. It was unreachable
+        // before, because resolveSharedMountTenant() always returned a synthetic
+        // tenant; now that it can report "no such community", this must actually
+        // answer.
+        //
+        // Refused via REFUSED_PATH rather than a bespoke body, so this renders the
+        // same styled "Page not found" page as every other refusal — see the note on
+        // that constant.
+        req.url = REFUSED_PATH;
+        next();
         return;
       }
 
