@@ -17,7 +17,9 @@ there was none. Not a partial answer — none at all.
 That mattered because the platform already records per-request performance in
 production (see [ARCHITECTURE.md](ARCHITECTURE.md)), which tells you how it
 behaves at today's volume and nothing whatsoever about ten or a hundred times
-that. A national rollout asks the second question.
+that. Growth asks the second question, and the platform is growing — so the point
+of this harness is capacity *planning*: knowing in advance which knob to turn, and
+at what point, rather than finding out from members.
 
 ## Running it
 
@@ -121,9 +123,11 @@ Two findings, both worth acting on:
 produced the same ~6–8 requests per second and roughly 3.5× the latency. That is
 the signature of a **saturated fixed worker pool** — requests are queueing, not
 being served in parallel. Adding load adds waiting, not work. On this stack that
-is the PHP-FPM worker count; the same measurement against production will say
-whether it holds there too, and that is the number that decides whether the
-single-VM setup needs uplifting before a national rollout.
+is the PHP-FPM worker count — a configuration value, not an architectural limit.
+Repeating the measurement against production tells us the real ceiling and
+therefore the **trigger point**: the concurrency at which we add workers, then
+capacity. That is exactly the planning information you want to hold before you
+need it.
 
 **2. Rate limiting engages hard and early.** Zero throttled at 5 users, 44% at 40.
 Good news for abuse protection, and it means any capacity number from this
@@ -150,14 +154,13 @@ target.**
 
 - **Run against a production-like target** — the CI stack or an inactive
   blue/green colour, with config and routes cached. That produces the figures fit
-  to quote.
-- **Agree an uptime target and a latency objective with TBUK.** The thresholds in
-  the script are starting figures for that conversation, not an agreed service
-  level. There isn't one yet, and a made-up number quietly becoming a commitment
-  is exactly how that goes wrong.
-- **Model national-scale volumes** — the sweep above tops out at 40 users against
-  a 365-member platform. The question is what happens at ten or a hundred times
-  today's membership.
+  to quote, and the worker-count trigger point.
+- **Agree an uptime target and a latency objective.** The thresholds in the script
+  are starting figures for that conversation, not an agreed service level. A
+  made-up number quietly becoming a commitment is exactly how that goes wrong.
+- **Model growth volumes** — the sweep above tops out at 40 users against a
+  365-member platform. Knowing the shape at ten and a hundred times that lets
+  capacity be added on a schedule rather than in a hurry.
 - **Add authenticated scenarios** once the above is settled. Writes need a
   disposable environment, because unlike these read-only scenarios they leave data
   behind.
