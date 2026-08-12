@@ -34,7 +34,7 @@ const avatarSizeMap = { sm: 'sm', md: 'sm', lg: 'md' } as const;
 type LogoShape = 'wide' | 'landscape' | 'square';
 
 const logoMaxWidth = {
-  sm: 'max-w-[110px] sm:max-w-[150px]',
+  sm: 'max-w-[180px] sm:max-w-[220px]',
   md: 'max-w-[200px] sm:max-w-[260px]',
   lg: 'max-w-[200px] sm:max-w-[260px]',
 } as const;
@@ -42,7 +42,7 @@ const logoMaxWidth = {
 // Square/stacked logos get notably more height; the navbar row grows to fit them
 // (see Navbar min-h + Layout --logo-extra). Wide/landscape stay compact.
 const logoHeight: Record<'sm' | 'md' | 'lg', Record<LogoShape, string>> = {
-  sm: { wide: 'h-7',          landscape: 'h-8',          square: 'h-10' },
+  sm: { wide: 'h-9 sm:h-10',  landscape: 'h-10 sm:h-12', square: 'h-14 sm:h-16' },
   md: { wide: 'h-9 sm:h-11',  landscape: 'h-10 sm:h-12', square: 'h-16 sm:h-20' },
   lg: { wide: 'h-10 sm:h-12', landscape: 'h-11 sm:h-14', square: 'h-16 sm:h-20' },
 };
@@ -60,7 +60,7 @@ function logoShape(aspect: number | null): LogoShape {
 // controls the rendered size via the imgClassMap classes; these values
 // are the upper bounds so we never under-reserve.
 const imgDimMap = {
-  sm: { width: 150, height: 32 },
+  sm: { width: 220, height: 64 },
   md: { width: 240, height: 48 },
   lg: { width: 240, height: 48 },
 } as const;
