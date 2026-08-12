@@ -1800,7 +1800,7 @@ export default function ExplorePage() {
 
       {/* ─── Empty states for filtered tabs ──────────────────────────────── */}
       {!isLoading && activeTab === 'listings' && !data?.popular_listings?.length && !data?.recommended_listings?.length && (
-        <EmptyState icon={ListTodo} message={t('empty_listings')} cta={t('create_listing')} onAction={() => navigate(tenantPath('/listings/new'))} />
+        <EmptyState icon={ListTodo} message={t('empty_listings')} cta={t('create_listing')} onAction={() => navigate(tenantPath('/listings/create'))} />
       )}
       {!isLoading && hasConnections && activeTab === 'people' && !data?.suggested_connections?.length && !data?.new_members?.length && !data?.top_contributors?.length && (
         <EmptyState icon={Users} message={t('empty_people')} />

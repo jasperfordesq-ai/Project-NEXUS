@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { tenantUrl, generateTestData } from '../../helpers/test-utils';
 
 /**
@@ -12,10 +12,42 @@ import { tenantUrl, generateTestData } from '../../helpers/test-utils';
  * The React frontend doesn't have a unified "compose" page.
  * Instead, content creation is contextual:
  * - Posts: created inline in the feed
- * - Listings: dedicated /listings/new page
- * - Events: dedicated /events/new page
+ * - Listings: dedicated /listings/create page
+ * - Events: dedicated /events/create page
  * - Polls: created inline in feed posts
+ *
+ * 🔴 Every listing test here used to navigate to `/listings/new`, and every
+ * event test to `/events/new`. Neither is a route. Neither 404s either, which
+ * is why this went unnoticed for so long: `listings/:id` and `events/:id` match
+ * them with the literal id "new", so the suite spent its whole life asserting
+ * against a "Listing Not Found" / "Event Not Found" page. The real routes are
+ * `/listings/create` and `/events/create` (react-frontend/src/routes/AppRoutes.tsx).
+ *
+ * 🔴 Fixing only the URL is not enough, and that is the trap worth recording.
+ * Most of these tests were written as `if (await x.count() > 0)`, so they passed
+ * on the not-found page by checking nothing at all. Pointing them at the real
+ * form exposes the second half of the fault: `input[name="title"]` and
+ * `textarea[name="description"]` never match this app — HeroUI/React Aria
+ * generate the `name` attribute (`react-aria1807136103-_r_fg_`). Fields are
+ * matched by their LABEL, the same conclusion e2e/tests/responsive.spec.ts
+ * reached. Every selector below was read off the running form, not guessed.
  */
+
+/**
+ * Navigate to a create form and wait for the app to finish booting.
+ *
+ * 🔴 Do not `goto` and assert straight away. The shell renders a
+ * "Checking authentication..." status while it validates the stored session,
+ * and on a cold dev server that outlasts the 5s default expect timeout
+ * (playwright.config.ts). Every assertion then fails as "element(s) not found"
+ * against a page that was merely still loading — which reads exactly like a
+ * missing feature and is precisely the misdiagnosis this file has already cost
+ * once. The 20s allowance matches e2e/tests/responsive.spec.ts.
+ */
+async function gotoCreateForm(page: Page, path: string): Promise<void> {
+  await page.goto(tenantUrl(path));
+  await expect(page.locator('form')).toBeVisible({ timeout: 20000 });
+}
 
 test.describe('Feed - Post Creation', () => {
   test('should display feed page with post composer', async ({ page }) => {
@@ -79,101 +111,107 @@ test.describe('Feed - Post Creation', () => {
 });
 
 test.describe('Listings - Create Listing', () => {
+  /**
+   * The trailing `\*?` is not decoration: these are required fields and the
+   * asterisk is part of the accessible name ("Title*"), so an exact "Title"
+   * match finds nothing.
+   */
+  const titleField = (page: Page) => page.getByRole('textbox', { name: /^Title\s*\*?$/ });
+  const descriptionField = (page: Page) => page.getByRole('textbox', { name: /^Description\s*\*?$/ });
+
   test('should display create listing page', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    // Should be on create listing page
-    expect(page.url()).toContain('listings/new');
+    // Should be on create listing page (gotoCreateForm already proved the form)
+    await expect(page).toHaveURL(/listings\/create/);
 
-    // Should have listing form
-    const form = page.locator('form, .listing-form, main');
-    await expect(form.first()).toBeVisible();
+    // 🔴 Assert the create page specifically. The old `form, .listing-form, main`
+    // fell through to `main`, which is present on the not-found page too — so it
+    // passed against the wrong page, which is how the wrong URL survived here.
+    await expect(page.getByRole('heading', { name: /Create New Listing/i })).toBeVisible();
   });
 
   test('should show title input for listing', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    const titleInput = page.locator('input[name="title"], input[placeholder*="title" i], input[label*="title" i], input[aria-label*="title" i]');
-    await expect(titleInput.first()).toBeVisible();
+    await expect(titleField(page)).toBeVisible();
   });
 
   test('should show description field for listing', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    const description = page.locator('textarea[name="description"], textarea[placeholder*="description" i]');
-    await expect(description.first()).toBeVisible();
+    await expect(descriptionField(page)).toBeVisible();
   });
 
   test('should show listing type selector (offer/request)', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    // Look for offer/request selector (may be buttons, radio, or select)
-    const typeSelector = page.locator('button:has-text("Offer"), button:has-text("Request"), input[value="offer"], input[value="request"], select[name="listing_type"]');
-
-    expect(await typeSelector.count()).toBeGreaterThan(0);
+    // Radio inputs inside the "What would you like to do?" group. Matched by
+    // `value` because the `name` attribute is React Aria generated.
+    await expect(page.locator('input[type="radio"][value="offer"]')).toBeVisible();
+    await expect(page.locator('input[type="radio"][value="request"]')).toBeVisible();
   });
 
   test('should show category selector', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    // Category selector may be select, combobox, or button group
-    const categorySelect = page.locator('select[name="category"], select[name="category_id"], [role="combobox"][aria-label*="category" i], button:has-text("category")');
-
-    expect(await categorySelect.count()).toBeGreaterThan(0);
+    // 🔴 Category is a HeroUI Autocomplete — not a `<select>`, and not a Select.
+    // Three separate traps, every one of them hit while repairing this test:
+    //   - `select[name="category"]` (the old selector) does not exist. There IS
+    //     a native `<select>` in there, but it is React Aria's form-submission
+    //     mirror: `tabindex="-1"` and no accessible name, so it is not the
+    //     control a member uses.
+    //   - `hasText: /Category/i` finds nothing: the trigger's visible text is
+    //     the placeholder, and the word "Category" sits in the label outside it.
+    //   - `getByRole('button', { name: /Category/i })` resolves the RIGHT
+    //     element and still fails, because that button is the 0px-wide chevron
+    //     indicator — Playwright correctly reports a zero-area node as hidden.
+    // What a member actually sees is the trigger's value/placeholder.
+    await expect(
+      page.getByRole('group').filter({ hasText: 'Select a category' }),
+    ).toBeVisible();
   });
 
   test('should show time credits input', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    const credits = page.locator('input[name="time_credits"], input[name="credits"], input[type="number"][placeholder*="credit" i], input[type="number"][placeholder*="hour" i]');
-
-    if (await credits.count() > 0) {
-      await expect(credits.first()).toBeVisible();
-    }
+    // The field is "Estimated Hours" — this platform trades in hours, not credits,
+    // on the create form. The old selector looked for `name="time_credits"`,
+    // which does not exist.
+    await expect(page.getByRole('spinbutton', { name: /^Estimated Hours\s*\*?$/ })).toBeVisible();
   });
 
   test('should require title for listing', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
     // Fill description but not title
-    const description = page.locator('textarea[name="description"]').first();
-    await description.fill('Test description');
+    await descriptionField(page).fill('Test description');
 
-    // Try to submit
-    const submitButton = page.locator('button[type="submit"], button:has-text("Create"), button:has-text("Post"), button:has-text("Publish")').first();
-    await submitButton.click();
-    await page.waitForTimeout(500);
+    await page.locator('button[type="submit"]').click();
 
-    // Should still be on create page or show validation error
-    const stillOnCreate = page.url().includes('listings/new');
-    const error = await page.locator('.error, [role="alert"], .text-danger, .text-red').count();
-
-    expect(stillOnCreate || error > 0).toBeTruthy();
+    // Must NOT have navigated away to a created listing. Asserted with a
+    // web-first check rather than a bare `url().includes()` after a fixed
+    // timeout, so a slow submit cannot make this pass by accident.
+    await expect(page).toHaveURL(/\/listings\/create/);
   });
 
   test('should create a listing successfully', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
     const testData = generateTestData();
 
     // Fill required fields
-    const title = page.locator('input[name="title"], input[placeholder*="title" i]').first();
-    await title.fill(`E2E Test Listing ${testData.uniqueId}`);
+    await titleField(page).fill(`E2E Test Listing ${testData.uniqueId}`);
+    await descriptionField(page).fill('Test listing description for E2E testing');
 
-    const description = page.locator('textarea[name="description"]').first();
-    await description.fill('Test listing description for E2E testing');
-
-    // Select offer type if available
-    const offerBtn = page.locator('button:has-text("Offer")').first();
-    if (await offerBtn.count() > 0 && await offerBtn.isVisible()) {
-      await offerBtn.click();
-    }
+    // Select offer type. The radio is the control; clicking its label is what a
+    // member does, and `check()` drives the input directly.
+    await page.locator('input[type="radio"][value="offer"]').check();
 
     // Verify form is filled
-    const titleValue = await title.inputValue();
-    const descValue = await description.inputValue();
-    expect(titleValue).toContain('E2E Test Listing');
-    expect(descValue).toBe('Test listing description for E2E testing');
+    await expect(titleField(page)).toHaveValue(`E2E Test Listing ${testData.uniqueId}`);
+    await expect(descriptionField(page)).toHaveValue('Test listing description for E2E testing');
+    await expect(page.locator('input[type="radio"][value="offer"]')).toBeChecked();
 
     // Note: Full submission may require more fields (category, etc.) depending on validation
     // This test validates the form can be filled correctly
@@ -181,62 +219,45 @@ test.describe('Listings - Create Listing', () => {
 });
 
 test.describe('Events - Create Event', () => {
-  test('should display create event page if events feature enabled', async ({ page }) => {
-    await page.goto(tenantUrl('events/new'));
+  /**
+   * 🔴 These were all `if (await x.count() > 0)`, which on `/events/new` meant
+   * "the not-found page has no date picker, so pass". The events feature is
+   * enabled for the E2E tenant, so the form is asserted outright — a disabled
+   * feature should fail this suite loudly rather than skip it silently.
+   *
+   * Start/End Date and Time are React Aria DateField/TimeField, which expose a
+   * `group` with the label and spinbutton segments inside. There is no
+   * `input[type="time"]` to find, and the two `input[type="date"]` present are
+   * hidden form-submission mirrors with no accessible name.
+   */
+  test('should display create event page', async ({ page }) => {
+    await gotoCreateForm(page, 'events/create');
 
-    // May redirect if events feature is disabled
-    await page.waitForLoadState('domcontentloaded');
-
-    // Either shows event form or redirects to events list/403
-    const form = page.locator('form, .event-form');
-    const hasForm = await form.count() > 0;
-
-    if (hasForm) {
-      await expect(form.first()).toBeVisible();
-    } else {
-      // Feature may be disabled - that's OK
-      expect(true).toBeTruthy();
-    }
+    await expect(page.getByRole('heading', { name: /Create New Event/i })).toBeVisible();
   });
 
   test('should show title input for event', async ({ page }) => {
-    await page.goto(tenantUrl('events/new'));
+    await gotoCreateForm(page, 'events/create');
 
-    const titleInput = page.locator('input[name="title"], input[placeholder*="title" i]');
-
-    if (await titleInput.count() > 0) {
-      await expect(titleInput.first()).toBeVisible();
-    }
+    await expect(page.getByRole('textbox', { name: /^Event Title\s*\*?$/ })).toBeVisible();
   });
 
   test('should show date picker for event', async ({ page }) => {
-    await page.goto(tenantUrl('events/new'));
+    await gotoCreateForm(page, 'events/create');
 
-    const datePicker = page.locator('input[type="date"], input[type="datetime-local"], input[name*="date"], input[placeholder*="date" i]');
-
-    if (await datePicker.count() > 0) {
-      await expect(datePicker.first()).toBeVisible();
-    }
+    await expect(page.getByRole('group', { name: /^Start Date\s*\*?$/ })).toBeVisible();
   });
 
   test('should show time picker for event', async ({ page }) => {
-    await page.goto(tenantUrl('events/new'));
+    await gotoCreateForm(page, 'events/create');
 
-    const timePicker = page.locator('input[type="time"], input[name*="time"], input[placeholder*="time" i]');
-
-    if (await timePicker.count() > 0) {
-      await expect(timePicker.first()).toBeVisible();
-    }
+    await expect(page.getByRole('group', { name: /^Start Time\s*\*?$/ }).first()).toBeVisible();
   });
 
   test('should show location field for event', async ({ page }) => {
-    await page.goto(tenantUrl('events/new'));
+    await gotoCreateForm(page, 'events/create');
 
-    const location = page.locator('input[name*="location"], input[placeholder*="location" i], input[placeholder*="venue" i]');
-
-    if (await location.count() > 0) {
-      await expect(location.first()).toBeVisible();
-    }
+    await expect(page.getByRole('textbox', { name: /^Location/ })).toBeVisible();
   });
 });
 
@@ -272,51 +293,44 @@ test.describe('Feed - Poll Creation', () => {
 });
 
 test.describe('Content Creation - Accessibility', () => {
-  test('should have proper heading on listings/new', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+  test('should have proper heading on listings/create', async ({ page }) => {
+    await gotoCreateForm(page, 'listings/create');
 
-    const heading = page.locator('h1, h2');
-    await expect(heading.first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Create New Listing/i })).toBeVisible();
   });
 
   test('should have proper form labels', async ({ page }) => {
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    const titleInput = page.locator('input[name="title"]').first();
-    if (await titleInput.count() > 0) {
-      const hasLabel = await titleInput.getAttribute('aria-label') ||
-        await titleInput.getAttribute('aria-labelledby') ||
-        await titleInput.getAttribute('placeholder');
-
-      expect(hasLabel).toBeTruthy();
-    }
+    // 🔴 This used to look up `input[name="title"]`, find nothing, and skip its
+    // own assertion — an accessibility test that could never fail. Resolving the
+    // field BY its accessible name is itself the assertion: getByRole only
+    // matches if the field is properly labelled.
+    await expect(page.getByRole('textbox', { name: /^Title\s*\*?$/ })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^Description\s*\*?$/ })).toBeVisible();
   });
 });
 
 test.describe('Content Creation - Mobile Behavior', () => {
   test('should display listing creation properly on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto(tenantUrl('listings/new'));
 
-    const form = page.locator('form, .listing-form, main');
-    await expect(form.first()).toBeVisible();
+    // gotoCreateForm asserts the form is visible at this viewport.
+    await gotoCreateForm(page, 'listings/create');
   });
 
   test('should have accessible submit button on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto(tenantUrl('listings/new'));
+    await gotoCreateForm(page, 'listings/create');
 
-    const submitButton = page.locator('button[type="submit"], button:has-text("Create"), button:has-text("Post")').first();
+    const submitButton = page.locator('button[type="submit"]');
+    await expect(submitButton).toBeVisible();
 
-    if (await submitButton.count() > 0) {
-      await expect(submitButton).toBeVisible();
-
-      // Button should be easily tappable (at least 44px per iOS guidelines)
-      const box = await submitButton.boundingBox();
-      if (box) {
-        expect(box.height).toBeGreaterThanOrEqual(32);
-      }
-    }
+    // Button should be easily tappable (at least 44px per iOS guidelines)
+    // 🔴 The old `if (box)` guard meant a missing button skipped the size check
+    // entirely. A visible element always has a box, so assert on it directly.
+    const box = await submitButton.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(32);
   });
 });
 
@@ -326,14 +340,11 @@ test.describe('Content Creation - Authentication', () => {
     const context = await browser.newContext();
     const page = await context.newPage();
 
-    await page.goto(tenantUrl('listings/new'));
+    await page.goto(tenantUrl('listings/create'));
     await page.waitForLoadState('domcontentloaded');
 
     // Should redirect to login or show auth required message
-    const url = page.url();
-    const requiresAuth = url.includes('login') || url.includes('auth');
-
-    expect(requiresAuth).toBeTruthy();
+    await expect(page).toHaveURL(/login|auth/);
 
     await context.close();
   });

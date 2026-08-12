@@ -432,7 +432,7 @@ export function FutureCareFundPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button
                   as={Link}
-                  to={tenantPath('/listings/new')}
+                  to={tenantPath('/listings/create')}
                   color="primary"
                   startContent={<Sparkles className="h-4 w-4" aria-hidden="true" />}
                 >

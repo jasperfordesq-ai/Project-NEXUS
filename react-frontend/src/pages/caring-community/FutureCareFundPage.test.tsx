@@ -156,6 +156,21 @@ describe('FutureCareFundPage — populated state', () => {
     });
   });
 
+  /**
+   * 🔴 Regression: the "offer" CTA pointed at `/listings/new`, which is not a
+   * route. It did not 404 — `listings/:id` (AppRoutes.tsx) matched it with the
+   * literal id "new" and rendered ListingDetailPage's not-found state, so the
+   * dead link was silent. The create route is `/listings/create`.
+   */
+  it('offer CTA links to the create route, not /listings/new', async () => {
+    render(<FutureCareFundPage />);
+    await waitFor(() => {
+      const hrefs = screen.getAllByRole('link').map((l) => l.getAttribute('href'));
+      expect(hrefs).toContain('/test/listings/create');
+      expect(hrefs).not.toContain('/test/listings/new');
+    });
+  });
+
   it('shows active_months count', async () => {
     render(<FutureCareFundPage />);
     await waitFor(() => {

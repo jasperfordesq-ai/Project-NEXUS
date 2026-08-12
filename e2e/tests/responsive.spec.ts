@@ -17,7 +17,9 @@ import { testTenant, selectors } from '../helpers/fixtures';
  *   - `[data-testid="mobile-drawer"]` matched nothing; the drawer is `#mobile-drawer`.
  *   - `a[href*="/dashboard"]` matched nothing; the drawer navigates with buttons.
  *   - `devices['iPad Pro']` was removed from Playwright (1.59.1 has `iPad Pro 11`).
- *   - `/listings/new` is a 404; the create route is `/listings/create`.
+ *   - `/listings/new` is not a route — and it does NOT 404, which is the trap:
+ *     `/listings/:id` matches it with the literal id "new" and renders
+ *     "Listing Not Found". The create route is `/listings/create`.
  *   - `input[name="title"]` never matches — HeroUI/React Aria generate the `name`.
  *
  * A selector that matches nothing fails with "element(s) not found", which reads

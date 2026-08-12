@@ -168,15 +168,19 @@ test.describe('Dashboard', () => {
       await dashboard.navigate();
       await dashboard.waitForLoad();
 
-      // Look for create listing button
-      const createBtn = page.locator('button:has-text("Create"), a:has-text("Create Listing"), a[href*="listings/new"]').first();
+      // Look for create listing button.
+      // 🔴 `a[href*="listings/new"]` matched nothing — that is not a route (it
+      // resolves to `listings/:id` with the literal id "new"). The create route
+      // is `/listings/create`, and the destination assertion below was checking
+      // for the same dead path, so it could only have passed via the `feed`
+      // alternative.
+      const createBtn = page.locator('button:has-text("Create"), a:has-text("Create Listing"), a[href*="listings/create"]').first();
       if (await createBtn.count() > 0 && await createBtn.isVisible()) {
         await createBtn.click();
         await page.waitForLoadState('domcontentloaded');
 
-        // Should navigate to listings/new or feed
-        const url = page.url();
-        expect(url).toMatch(/listings\/new|feed/);
+        // Should navigate to the create form, or to the feed
+        await expect(page).toHaveURL(/listings\/create|feed/);
       }
     });
 

@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@/test/test-utils';
+import { render, screen, waitFor, fireEvent, userEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
 import React from 'react';
 
@@ -361,5 +361,42 @@ describe('ExplorePage', () => {
     }
     // No crash
     expect(document.body).toBeInTheDocument();
+  });
+
+  /**
+   * 🔴 Regression: the empty-listings CTA navigated to `/listings/new`, which is
+   * not a route. It did not 404 — `listings/:id` (AppRoutes.tsx) matched it with
+   * the literal id "new" and rendered ListingDetailPage's not-found state, so the
+   * dead link was silent. The create route is `/listings/create`.
+   */
+  it('empty-listings CTA navigates to the create route, not /listings/new', async () => {
+    const originalUrl = `${window.location.pathname}${window.location.search}`;
+    window.history.pushState({}, '', '/?tab=listings');
+
+    try {
+      mockApi.get.mockImplementation((url: string) => {
+        if (url.includes('/v2/explore/for-you')) {
+          return Promise.resolve({ data: { items: [], total: 0 } });
+        }
+        if (url.includes('/v2/explore')) {
+          return Promise.resolve({
+            success: true,
+            data: { ...makeExploreData(), popular_listings: [], recommended_listings: [] },
+          });
+        }
+        return Promise.resolve({ success: true, data: null });
+      });
+
+      const { default: ExplorePage } = await import('./ExplorePage');
+      render(<ExplorePage />);
+
+      const cta = await screen.findByRole('button', { name: 'Create Listing' });
+      await userEvent.click(cta);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/test/listings/create');
+      expect(mockNavigate).not.toHaveBeenCalledWith('/test/listings/new');
+    } finally {
+      window.history.pushState({}, '', originalUrl);
+    }
   });
 });
