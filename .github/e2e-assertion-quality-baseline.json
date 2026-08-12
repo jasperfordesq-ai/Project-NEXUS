@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-08-11T22:15:06.035Z",
+  "generatedAt": "2026-08-12T06:37:43.038Z",
   "source": "scripts/check-e2e-assertion-quality.mjs",
   "note": "Shrink-only ceiling on two browser-test anti-patterns. nonWaitingAssertion: a non-waiting isVisible()/isEnabled() result used inside expect(); the timeout option on those calls is IGNORED, so the assertion races rendering. cannotFail: expect(... || true), which passes whatever the page does. Regenerate ONLY with --write-baseline, and only on genuine improvement. Never hand-edit.",
   "reference": "e2e/tests/smoke.spec.ts:367 — the fixed form, validated in CI run 31527851183",
   "counts": {
-    "nonWaitingAssertion": 155,
-    "cannotFail": 83
+    "nonWaitingAssertion": 148,
+    "cannotFail": 76
   },
-  "ceilingRaisedOnce": {
-    "date": "2026-08-11",
-    "from": {
-      "nonWaitingAssertion": 139,
-      "cannotFail": 83
-    },
-    "to": {
-      "nonWaitingAssertion": 155,
-      "cannotFail": 83
-    },
-    "why": "🔴 NOT new debt — a DETECTOR FIX that revealed pre-existing debt. Both patterns were single-line regexes applied per line, so any statement a formatter had wrapped was invisible. 16 real instances were hidden that way: the DECLARATION spanned lines (await page.locator(\n  '...'\n).first().isVisible()), so the variable was never registered as a non-waiting snapshot, and the expect() using it was therefore never counted. Verified instance by instance: 16 gained, 0 lost, so the change is a strict improvement. The debt was always 155; the gate could only see 139 and would have reported 'at ceiling' while the real figure grew.",
-    "instances": [
-      "e2e/tests/admin-user-management.spec.ts:166,257,344,403,497,527,561",
-      "e2e/tests/auth/register.spec.ts:347",
-      "e2e/tests/federation-flow.spec.ts:129,176,209,274,290,360,377,411"
-    ],
-    "rule": "This is the ONLY permitted upward move, and it required naming every instance. A raise for any other reason is a regression being hidden. Shrink-only from here."
-  }
+  "paydown": [
+    {
+      "date": "2026-08-12",
+      "from": {
+        "nonWaitingAssertion": 155,
+        "cannotFail": 83
+      },
+      "to": {
+        "nonWaitingAssertion": 148,
+        "cannotFail": 76
+      },
+      "files": [
+        "e2e/tests/federation-flow.spec.ts",
+        "e2e/tests/admin-user-management.spec.ts"
+      ],
+      "what": "Converted non-waiting snapshots to waiting assertions and removed decorative expect(x || true). Both changes are strictly MORE tolerant than what they replaced: a waiting assertion allows time where the snapshot raced the render, and deleting an always-true assertion cannot newly fail. Two assertions were tightened into REAL checks instead of deleted: the federated provenance/origin badges (the subject of their own tests) and the admin users pagination metadata (verified against AdminUsersController::index + respondWithPaginatedCollection before asserting). One was replaced rather than kept: admin pagination presence is genuinely data-dependent, so the test now asserts the user list rendered instead of pretending to check pagination."
+    }
+  ]
 }

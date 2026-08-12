@@ -117,16 +117,17 @@ test.describe('Federation Cross-Tenant Flow', () => {
       ).first();
 
       if (await firstPartner.isVisible({ timeout: 5000 }).catch(() => false)) {
-        // Should have a name
-        const hasName = await firstPartner.locator('h3, h4, .partner-name, .community-name').isVisible().catch(() => false);
-        expect(hasName).toBeTruthy();
+        // A partner card must carry a name. Waiting assertion rather than an
+        // instantaneous snapshot: `isVisible()` ignores its timeout, so the old form
+        // raced the render and reported "no name" for a card that simply had not
+        // painted yet.
+        await expect(
+          firstPartner.locator('h3, h4, .partner-name, .community-name').first()
+        ).toBeVisible({ timeout: 10000 });
 
-        // Should display member count or status
-        const hasStats = await firstPartner.locator(
-          'text=members, text=active, text=connected, .partner-stats, .member-count'
-        ).first().isVisible().catch(() => false);
-        // Stats are optional but expected
-        expect(hasStats || true).toBeTruthy();
+        // Member count / status is genuinely optional, so there is nothing to
+        // assert. The previous `expect(hasStats || true).toBeTruthy()` passed
+        // whatever happened — it read as coverage while checking nothing.
       }
     });
 
@@ -201,12 +202,15 @@ test.describe('Federation Cross-Tenant Flow', () => {
       ).first();
 
       if (await firstMember.isVisible({ timeout: 5000 }).catch(() => false)) {
-        const hasBadge = await firstMember.locator(
-          '.community-badge, .provenance-badge, .federation-badge, [data-community]'
-        ).isVisible().catch(() => false);
-
-        // Provenance badge is expected on federated members
-        expect(hasBadge || true).toBeTruthy();
+        // 🔴 A provenance badge is the whole point of this test: it is how a member
+        // can tell which community someone belongs to. The old
+        // `expect(hasBadge || true).toBeTruthy()` passed whether the badge was there
+        // or not, so the test's own subject was never actually checked.
+        await expect(
+          firstMember.locator(
+            '.community-badge, .provenance-badge, .federation-badge, [data-community]'
+          ).first()
+        ).toBeVisible({ timeout: 10000 });
       }
     });
 
@@ -282,12 +286,14 @@ test.describe('Federation Cross-Tenant Flow', () => {
       ).first();
 
       if (await firstListing.isVisible({ timeout: 5000 }).catch(() => false)) {
-        // Each federated listing should indicate its source community
-        const hasCommunityBadge = await firstListing.locator(
-          '.community-badge, .origin-badge, [data-community], text=from'
-        ).first().isVisible().catch(() => false);
-
-        expect(hasCommunityBadge || true).toBeTruthy();
+        // 🔴 The source community IS the subject of this test — a member needs to know
+        // which community an offer comes from before responding to it. The previous
+        // `|| true` meant that was never verified.
+        await expect(
+          firstListing.locator(
+            '.community-badge, .origin-badge, [data-community], text=from'
+          ).first()
+        ).toBeVisible({ timeout: 10000 });
       }
     });
 
@@ -369,12 +375,11 @@ test.describe('Federation Cross-Tenant Flow', () => {
       ).first();
 
       if (await firstEvent.isVisible({ timeout: 5000 }).catch(() => false)) {
-        // Each federated event should indicate its source community
-        const hasCommunityIndicator = await firstEvent.locator(
-          '.community-badge, .origin-badge, [data-community]'
-        ).isVisible().catch(() => false);
-
-        expect(hasCommunityIndicator || true).toBeTruthy();
+        // Same as the listings case above: the origin community is what this test is
+        // named for, so it is asserted rather than merely computed.
+        await expect(
+          firstEvent.locator('.community-badge, .origin-badge, [data-community]').first()
+        ).toBeVisible({ timeout: 10000 });
       }
     });
 
@@ -398,17 +403,18 @@ test.describe('Federation Cross-Tenant Flow', () => {
     test.skip('should support filtering federated events by date or community', async ({ page }) => {
       await goToTenantPage(page, 'federation/events');
 
-      // Date or community filter controls
-      const hasDateFilter = await page.locator(
+      // 🔴 EITHER filter is acceptable, so `.or()` — which genuinely waits for
+      // whichever appears first. The old form took two instantaneous snapshots and
+      // then `expect(a || b || true)`, which passed even when neither existed, so a
+      // test named "should support filtering" asserted nothing about filtering.
+      const dateFilter = page.locator(
         'input[type="date"], [data-date-filter], button:has-text("Date")'
-      ).first().isVisible({ timeout: 5000 }).catch(() => false);
-
-      const hasCommunityFilter = await page.locator(
+      ).first();
+      const communityFilter = page.locator(
         'select[name*="community"], button[role="combobox"], [data-community-filter]'
-      ).first().isVisible({ timeout: 3000 }).catch(() => false);
+      ).first();
 
-      // Filters are expected but may not be implemented yet
-      expect(hasDateFilter || hasCommunityFilter || true).toBeTruthy();
+      await expect(dateFilter.or(communityFilter).first()).toBeVisible({ timeout: 10000 });
     });
   });
 

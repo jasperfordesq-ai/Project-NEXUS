@@ -400,9 +400,12 @@ test.describe('Smoke Tests @smoke', () => {
       // passed the instant the shell painted. If the listings API returned a 500 and
       // the page rendered an empty state with no h1 and no cards, this still went
       // green: it waited properly and then checked nothing about listings.
-      const content = page.locator('main').first();
-      const heading = content.locator('h1');
-      const cards = content.locator('article, [class*="card"], [class*="glass"]');
+      // Reuses the `content` locator declared above (and already asserted visible)
+      // rather than redeclaring it — two `const content` in one block is a type
+      // error, which is how this was caught.
+      const mainContent = content.first();
+      const heading = mainContent.locator('h1');
+      const cards = mainContent.locator('article, [class*="card"], [class*="glass"]');
       await expect(heading.or(cards).first()).toBeVisible({ timeout: 15000 });
 
       expect(consoleErrors).toHaveLength(0);

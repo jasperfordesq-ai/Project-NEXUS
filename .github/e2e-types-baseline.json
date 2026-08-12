@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-08-12T06:35:53.906Z",
+  "source": "scripts/check-e2e-types.mjs",
+  "note": "Shrink-only ceiling on TypeScript errors under e2e/. Nothing typechecked the browser suite before 2026-08-12, so these accumulated unseen. Regenerate ONLY with --write-baseline, and only when the count goes DOWN. Never hand-edit.",
+  "count": 15,
+  "files": {
+    "e2e/page-objects/AdminPage.ts": 5,
+    "e2e/tests/admin/admin.spec.ts": 2,
+    "e2e/tests/admin/groups-admin.spec.ts": 1,
+    "e2e/tests/caring-community.spec.ts": 1,
+    "e2e/tests/events/enterprise-journey.spec.ts": 1,
+    "e2e/tests/groups/groups.spec.ts": 4,
+    "e2e/tests/listings/listings.spec.ts": 1
+  }
+}

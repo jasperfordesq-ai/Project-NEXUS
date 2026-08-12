@@ -1269,6 +1269,21 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # 🔴 BLOCKING, and placed BEFORE the browser download because it is fast and
+      # needs no browsers. Nothing typechecked e2e/ until 2026-08-12: there is an
+      # e2e/tsconfig.json but no script and no job ever ran tsc against it, so 15
+      # errors accumulated unseen — and a redeclared variable introduced the same day
+      # was committed with every gate green.
+      #
+      # These are not cosmetic. `Expected 0-1 arguments, but got 2` means a test
+      # passes an argument that is silently ignored, so the test does not do what it
+      # reads as doing — which is the same class of problem as an assertion that
+      # cannot fail.
+      #
+      # Shrink-only ceiling, so it starts green and the debt cannot grow.
+      - name: "BLOCKING: no new TypeScript errors in the browser suite"
+        run: npm run check:e2e-types
+
       - name: Get Playwright version and browser set
         id: playwright-version
         env:
