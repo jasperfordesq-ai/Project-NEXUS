@@ -1,3 +1,8 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
 {% extends "layouts/base.njk" %}
 {% block content %}
 <a class="govuk-back-link" href="{{ urlFor('/events/' + (eventId | string)) }}">{{ t("govuk_alpha.events.analytics.back_to_event") }}</a><span class="govuk-caption-l">{{ summary.event_title }}</span><h1 class="govuk-heading-xl">{{ t("govuk_alpha.events.analytics.title") }}</h1><p class="govuk-body-l">{{ t("govuk_alpha.events.analytics.intro") }}</p><p class="govuk-body-s">{{ t("govuk_alpha.events.analytics.generated_at", { date: summary.generated_at }) }}</p><div class="govuk-inset-text"><strong>{{ t("govuk_alpha.events.analytics.privacy_title") }}</strong><br>{{ t("govuk_alpha.events.analytics.privacy_note", { count: summary.privacy_threshold }) }}</div><a class="govuk-button govuk-button--secondary" href="{{ urlFor('/events/' + (eventId | string) + '/analytics/export.csv') }}">{{ t("govuk_alpha.events.analytics.export") }}</a>

@@ -121,6 +121,27 @@ describe('Public Routes', () => {
   });
 
   describe('shared tenant accessible mount', () => {
+    // 🔴 Regression: the tenant home branch of GET / had no error handling, so a
+    // platform-API fault that was NOT ApiOfflineError rejected an async Express 4
+    // handler. next() was never called and no response was ever sent — the page
+    // hung rather than failing. Assert on a real status code, because the bug's
+    // signature is the ABSENCE of one; this test times out if it returns.
+    it('answers with an error page instead of hanging when the platform API faults', async () => {
+      const api = require('../src/lib/api');
+      api.getTenantBootstrap.mockClear();
+      api.getPlatformStats.mockClear();
+      api.getTenantBootstrap.mockResolvedValueOnce({
+        data: { id: 2, name: 'Acme Timebank', slug: 'acme' }
+      });
+      // A 500 from Laravel: deliberately NOT ApiOfflineError, which
+      // loadTenantHomeData() swallows on purpose.
+      api.getPlatformStats.mockRejectedValueOnce(new api.ApiError('Server Error', 500, {}));
+
+      const response = await request(app).get('/acme/accessible').timeout({ deadline: 5000 });
+
+      expect(response.status).toBe(500);
+    });
+
     it('serves the flat app below /{tenantSlug}/accessible and prefixes shell links', async () => {
       const response = await request(app).get('/acme/accessible');
 

@@ -746,16 +746,38 @@ async function loadTenantHomeData(req, res) {
 }
 
 // Public routes (no CSRF needed for GET)
-app.get('/', async (req, res) => {
+app.get('/', async (req, res, next) => {
   if (req.accessibleRouting?.mode) {
-    const homeData = await loadTenantHomeData(req, res);
-    return res.render('home', {
-      title: 'Accessible',
-      titleKey: 'home.title',
-      activeNav: 'home',
-      status: typeof req.query.status === 'string' ? req.query.status : '',
-      ...homeData
-    });
+    // 🔴 This branch had NO error handling while the tenant-chooser branch below
+    // always did, and the difference was invisible until the platform API
+    // actually faulted.
+    //
+    // loadTenantHomeData() deliberately swallows ApiOfflineError and RE-THROWS
+    // everything else, so a Laravel 5xx escaped an `async` handler. Express 4
+    // does not catch a rejected promise from a handler, so next() was never
+    // called: no response was ever sent, and the member's browser hung until it
+    // timed out. It was silent from our side too — Sentry's Express handler only
+    // sees errors that reach the END of the middleware chain, and this one never
+    // entered it. Reproduced with the API returning a 500: the request log
+    // recorded no status code at all.
+    //
+    // This is the community home page — the most-visited page on the site — so
+    // the failure mode was "busiest page hangs, nobody is told".
+    try {
+      const homeData = await loadTenantHomeData(req, res);
+      return res.render('home', {
+        title: 'Accessible',
+        titleKey: 'home.title',
+        activeNav: 'home',
+        status: typeof req.query.status === 'string' ? req.query.status : '',
+        ...homeData
+      });
+    } catch (error) {
+      // 401/404/offline get their proper pages; anything else goes to the error
+      // chain, which reports to Sentry and renders the 500 page.
+      if (handleApiError(error, req, res)) return undefined;
+      return next(error);
+    }
   }
 
   const { ApiOfflineError, getTenants } = require('./lib/api');

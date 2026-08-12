@@ -344,6 +344,53 @@ jobs:
       - run: npm run lint
       - run: npm test -- --runInBand
       - run: npm run build:css
+      # 🔴 The route matrix is described as a "live drift alarm" — a Laravel
+      # accessible route that web-uk has not built is supposed to show up here as
+      # a missing route. It was not live: nothing regenerated it, so it was only
+      # ever as current as the last time somebody ran it by hand. Found stale on
+      # 2026-08-12 (721 committed routes against 722 in the code). A MISSING route
+      # would have hidden exactly as quietly as that extra one did.
+      #
+      # Regenerate both and fail if the committed copies differ. Run back to back
+      # and diff once: each artefact records the commit it was generated from, so
+      # regenerating one alone leaves the pair naming different commits, which
+      # check-doc-scores.mjs separately refuses.
+      #
+      # Regenerated back to back on purpose: each artefact records the commit it
+      # came from, so refreshing one alone leaves the pair naming different
+      # commits, which check-doc-scores.mjs separately refuses.
+      - name: Route matrix and API ledger are current
+        run: |
+          npm run route:matrix
+          npm run api:ledger
+      # Compares summary counts, NOT the files. The artefacts stamp a timestamp,
+      # a commit SHA, a dirty-tree flag and absolute source paths, all four of
+      # which differ on a runner — a plain `git diff` here would fail every run.
+      - name: Fail if the generated artefacts drifted from what is committed
+        run: node scripts/check-generated-artefacts-current.js
+      # 🔴 The 24 automated accessibility checks existed but ran nowhere: they
+      # only happened when somebody chose to run them locally, on an accessible
+      # frontend whose entire reason for existing is accessibility. Added
+      # 2026-08-12.
+      #
+      # The ISOLATED variant deliberately, not the full `test:accessibility`
+      # aggregate. The isolated harness starts its own mock backend that refuses
+      # anything other than GET/HEAD, so it touches no Laravel environment and
+      # writes no state. The full aggregate includes an authenticated login
+      # journey, which writes rate-limit and audit rows and must never run here.
+      - name: Install Playwright browser for the accessibility gate
+        run: npx playwright install --with-deps chromium
+      - name: Automated accessibility checks (isolated fixture, no backend)
+        run: npm run test:accessibility:isolated
+      # Without the report a failure here is just a red cross — the traces and
+      # screenshots are what make it diagnosable.
+      - name: Upload accessibility report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webuk-accessibility-report
+          path: web-uk/artifacts/accessibility/
+          retention-days: 7
       # The scoring markers in web-uk/docs are enforced here as well as in
       # docs-lint, because a change under web-uk/ that moves a count does not
       # necessarily touch a path docs-lint watches.

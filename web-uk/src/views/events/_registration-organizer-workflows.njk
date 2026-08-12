@@ -1,3 +1,8 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
 <h3 class="govuk-heading-m govuk-!-margin-top-7" id="registration-submissions">{{ t("event_registration.submissions.title") }}</h3>
 {% for submission in (organizer.submissions or []) %}
 <details class="govuk-details"><summary class="govuk-details__summary"><span class="govuk-details__summary-text">{{ t("event_registration.accessible.review_submission", { id: submission.id }) }}</span></summary><div class="govuk-details__text">

@@ -34,7 +34,25 @@ function isExcluded(path) {
   return EXCLUDED_FILENAMES.has(filename) || parts.some((part) => EXCLUDED_PATH_PARTS.has(part));
 }
 
-const trackedFiles = execFileSync('git', ['ls-files', '*.php', '*.ts', '*.tsx'], {
+// 🔴 web-uk is JavaScript and Nunjucks, so scanning only PHP/TS/TSX left the
+// whole accessible frontend outside this gate — and it showed: 5 of its source
+// files and 63 of its 335 templates had no licence header at all, despite
+// AGENTS.md and web-uk/CLAUDE.md both requiring one (CLAUDE.md even spells out
+// the `{# … #}` form for templates). Added 2026-08-12 after an audit found them.
+//
+// Deliberately scoped to `web-uk/src` rather than `*.js` repo-wide. A blanket
+// JavaScript rule would sweep in build configs, generated output and tooling
+// across react-frontend, e2e, mobile and scripts — hundreds of files that have
+// never carried a header — turning one honest gap into a red gate nobody can
+// clear. Widen this deliberately, per directory, not by accident.
+const trackedFiles = execFileSync('git', [
+  'ls-files',
+  '*.php',
+  '*.ts',
+  '*.tsx',
+  'web-uk/src/*.js',
+  'web-uk/src/*.njk',
+], {
   encoding: 'utf8',
 })
   .split(/\r?\n/)

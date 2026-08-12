@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-08-11T15:04:21.333Z",
+  "generatedAt": "2026-08-12T17:25:12.257Z",
   "provenance": {
-    "generatedAt": "2026-08-11T15:04:21.333Z",
+    "generatedAt": "2026-08-12T17:25:12.257Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "704f0a1b5224b3267ccf36825cd47ba007695f1a",
+    "laravelCommitSha": "0c05ce064a42ff6ecca962299c5196e8ca77ca0a",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "704f0a1b5224b3267ccf36825cd47ba007695f1a",
+    "webUkRepositoryCommitSha": "0c05ce064a42ff6ecca962299c5196e8ca77ca0a",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-11T15:04:21.333Z",
+    "generatedAt": "2026-08-12T17:25:12.257Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 721,
+    "webUkRoutes": 722,
     "matchedRoutes": 707,
     "missingRoutes": 0,
     "extraWebUkRoutes": 12,
-    "ignoredInfrastructureRoutes": 3,
+    "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
       "events": {
         "matched": 94,
@@ -83,6 +83,12 @@
         "ignoredInfrastructure": 1
       },
       "session": {
+        "matched": 0,
+        "missing": 0,
+        "extraWebUk": 0,
+        "ignoredInfrastructure": 1
+      },
+      "version": {
         "matched": 0,
         "missing": 0,
         "extraWebUk": 0,
@@ -780,6 +786,27 @@
       "gates": "",
       "apiNeeds": "",
       "webUkPath": "/session/touch",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": "infrastructure"
+    },
+    {
+      "method": "GET",
+      "path": "/version",
+      "family": "version",
+      "status": "ignored-web-uk-infrastructure",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/version",
       "webUkView": "",
       "webUkFile": "web-uk/src/server.js",
       "webUkRouteKind": "infrastructure"

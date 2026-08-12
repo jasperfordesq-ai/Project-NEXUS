@@ -39,6 +39,12 @@ const DIRS = [
   { path: join('react-frontend', 'src'), extensions: ['.ts', '.tsx'] },
   { path: 'e2e', extensions: ['.ts', '.tsx'] },
   { path: 'mobile', extensions: ['.ts', '.tsx'] },
+  // web-uk is JavaScript and Nunjucks. It was absent here and from
+  // check-spdx.mjs, which is why 68 of its files had no header — added
+  // 2026-08-12 alongside the matching change to the checker. AGENTS.md tells
+  // people to run THIS script to clear that gate, so the two must agree on
+  // scope or the documented fix does nothing.
+  { path: join('web-uk', 'src'), extensions: ['.js', '.njk'] },
 ];
 
 // Directories to skip
@@ -95,12 +101,24 @@ function addHeaderToTs(content) {
   return `${header}\n${content}`;
 }
 
+// Nunjucks has no `//` comment: a `//` line would be rendered to the member as
+// literal text. Templates use `{# … #}`, and the header goes ABOVE any
+// `{% extends %}`, matching the convention already in web-uk/src/views.
+function addHeaderToNunjucks(content) {
+  if (content.includes(SPDX_MARKER)) return null;
+
+  const header = HEADER_LINES.map(line => `{# ${line} #}`).join('\n') + '\n';
+  return `${header}\n${content}`;
+}
+
 async function processFile(filePath, ext) {
   const content = await readFile(filePath, 'utf-8');
 
   let newContent;
   if (ext === '.php') {
     newContent = addHeaderToPhp(content);
+  } else if (ext === '.njk') {
+    newContent = addHeaderToNunjucks(content);
   } else {
     newContent = addHeaderToTs(content);
   }

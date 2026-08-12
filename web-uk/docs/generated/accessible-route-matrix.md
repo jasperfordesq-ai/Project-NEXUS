@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-11T15:04:21.333Z
-Laravel commit SHA: `704f0a1b5224b3267ccf36825cd47ba007695f1a`
-Web UK repository commit SHA: `704f0a1b5224b3267ccf36825cd47ba007695f1a`
+Generated: 2026-08-12T17:25:12.257Z
+Laravel commit SHA: `0c05ce064a42ff6ecca962299c5196e8ca77ca0a`
+Web UK repository commit SHA: `0c05ce064a42ff6ecca962299c5196e8ca77ca0a`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,11 +12,11 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 721 |
+| web-uk routes | 722 |
 | Matched routes | 707 |
 | Missing routes | 0 |
 | Extra web-uk routes | 12 |
-| Ignored web-uk infrastructure routes | 3 |
+| Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
 
@@ -93,6 +93,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | users | 3 | 0 | 0 | 0 |
 | venues | 5 | 0 | 0 | 0 |
 | verify-email | 1 | 0 | 0 | 0 |
+| version | 0 | 0 | 0 | 1 |
 | volunteering | 52 | 0 | 1 | 0 |
 | wallet | 6 | 0 | 0 | 0 |
 | whats-on | 2 | 0 | 0 | 0 |
@@ -127,3 +128,4 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | GET | `/health` | health | infrastructure |
 | GET | `/service-unavailable` | service-unavailable | infrastructure |
 | POST | `/session/touch` | session | infrastructure |
+| GET | `/version` | version | infrastructure |

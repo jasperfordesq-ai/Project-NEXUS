@@ -67,13 +67,13 @@ Every W1 row is accounted for. Nothing was quietly dropped or renamed.
 ## Current evidence
 
 All counts below come from `docs/generated/`, regenerated at commit
-`704f0a1b5224b3267ccf36825cd47ba007695f1a`, which both artefacts name.
+`0c05ce064a42ff6ecca962299c5196e8ca77ca0a`, which both artefacts name.
 
 | Measure | Current result | What it does and does not prove |
 |---|---|---|
-| Route matrix | Laravel 707, `web-uk` 721, **matched 707, missing 0**, extra 12, ignored infrastructure 3 | Declaration coverage. Not workflow, auth, tenant or visual parity. |
-| API consumer ledger | 695 contracts; 466 OpenAPI matches; 229 route-declared OpenAPI omissions; **0** without a Laravel route declaration; **0** dynamic unresolved; 381 state-changing; **0** without tests; **0** without direct helper assertions | Static and mocked ownership evidence. No live Laravel was contacted. |
-| Jest | 70 suites, 2,063 tests passing, `--runInBand` | Mocked contract and page behaviour. |
+| Route matrix | Laravel 707, `web-uk` 722, **matched 707, missing 0**, extra 12, ignored infrastructure 4 | Declaration coverage. Not workflow, auth, tenant or visual parity. |
+| API consumer ledger | 695 contracts; 467 OpenAPI matches; 228 route-declared OpenAPI omissions; **0** without a Laravel route declaration; **0** dynamic unresolved; 381 state-changing; **0** without tests; **0** without direct helper assertions | Static and mocked ownership evidence. No live Laravel was contacted. |
+| Jest | 73 suites, 2,123 tests passing, `--runInBand` | Mocked contract and page behaviour. |
 | Locale catalogs | 11 locales, 38 namespaces, 9,070 string keys, 0 missing, 0 extra | Structural shape only. |
 | Static locale usage | 7,878 references, 5,984 unique keys, **0 unresolved** | Every key referenced in source exists. |
 | Template localisation | 335 templates, **0** conservative hard-coded matches | No detectable hard-coded user-facing copy. |
@@ -81,12 +81,27 @@ All counts below come from `docs/generated/`, regenerated at commit
 | Brand check, lint, CSS build | Passing | Branding prohibitions and code style. |
 
 🔴 **Artefact working-tree disclosure.** Both artefacts record
-`workingTreeDirty: true`. A concurrent session had unrelated sub-community
-authentication work in progress at generation time. The counts above are
-unaffected — they derive from Laravel route files and `web-uk` source, neither of
-which that work touches — but the flag is disclosed rather than hidden, and
+`workingTreeDirty: true`. They were regenerated on 2026-08-12 during the audit
+that produced the changes landing alongside them — the home-page hang fix, the
+licence headers and the drift gate below — so the tree held that uncommitted work
+at generation time. The flag is disclosed rather than hidden, and
 `check-doc-scores.mjs` requires this disclosure whenever an artefact records a
 dirty tree.
+
+🔴 **These counts had drifted, and nothing was watching.** Before this refresh the
+artefacts were pinned to commit `704f0a1b5` and reported 721 `web-uk` routes; the
+code had 722. Harmless in itself — the extra route was `/version` — but the
+mechanism was not: CI never regenerated these files, so the route matrix could
+only ever be as current as the last time a person ran it by hand. A Blade route
+added and never built here would have sat unreported in exactly the same way. The
+`web-uk` CI job now regenerates both artefacts and fails if they differ from what
+is committed, so this cannot go stale silently again.
+
+🔴 **`/version` moved from "extra" to "infrastructure" in the same pass**, which
+is why extras read 12 rather than 13 against 722 routes. It is a machine-only
+endpoint like `/health` — the deploy smoke test and the cutover check match on it
+— so counting it as a page `web-uk` has and Blade does not was miscounting the
+one figure this artefact exists to keep honest.
 
 ## Finish line
 

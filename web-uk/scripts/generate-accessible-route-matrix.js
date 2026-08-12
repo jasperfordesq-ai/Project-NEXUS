@@ -9,6 +9,13 @@ const { collectGeneratorProvenance } = require('./generator-provenance');
 
 const LOCAL_INFRASTRUCTURE_ROUTES = new Set([
   'GET|/health',
+  // 🔴 `/version` is machine-only, exactly like `/health`: it reports which
+  // accessible frontend answered, and it is what the deploy smoke test and the
+  // cutover check match on. It is not a member-facing page, so counting it as an
+  // "extra web-uk route" put an infrastructure endpoint into the number that is
+  // supposed to mean "a page Blade does not have" — noise in the one figure this
+  // artefact exists to keep honest. Classified 2026-08-12.
+  'GET|/version',
   'GET|/service-unavailable',
   'POST|/session/touch'
 ]);
