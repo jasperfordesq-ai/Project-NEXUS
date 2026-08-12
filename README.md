@@ -45,10 +45,11 @@
 A multi-tenant community time banking platform, and a genuinely full stack: a
 Laravel 12 + PHP 8.2+ API on MariaDB, Redis and Meilisearch; a React 19 +
 TypeScript web app; a separate GOV.UK-styled accessible site on Node 22 /
-Express / Nunjucks; an Expo / React Native mobile app; and a second, complete
-ASP.NET Core 10 backend on its own PostgreSQL and RabbitMQ, kept so the same API
-contracts can be compared from one commit. Every one of those lives in this
-repository — see [Tech Stack](#tech-stack) for what production actually serves.
+Express / Nunjucks; an Expo / React Native mobile app; and a second,
+substantially complete ASP.NET Core 10 backend on its own PostgreSQL and
+RabbitMQ, which the clients can be switched to by configuration once it is
+certified contract-identical. Every one of those lives in this repository — see
+[Tech Stack](#tech-stack) for what production actually serves today.
 
 ## Contents
 
@@ -110,6 +111,13 @@ status, and the difference matters more than the technology list.
 | **Mobile app** | Expo 54 + React Native 0.81 + React 19, a separate codebase on the same API (`mobile/`) | Android and iOS builds; neither store release is published yet |
 | **Sales site** | Static commercial site | `project-nexus.ie` |
 
+**The accessible site is a full application, not a set of templates.** `web-uk/`
+has its own HTTP server, routing layer, middleware, session store, view layer,
+asset pipeline, brand-compliance checks, Jest suite (74 test files, 1,787 tests)
+and its own production container. It talks to the platform over the same public
+HTTP API the React app uses, which is exactly why it can be pointed at either
+backend once the second one is certified.
+
 🔴 **There are two accessible frontends and the changeover is half-done.** The
 Node application took over `accessible.project-nexus.ie` on **2026-08-12**; the
 Blade one still serves every community accessible domain and every
@@ -118,8 +126,13 @@ completes. Both answer identical public URLs, so `/version` is the only way to
 tell which one replied. Status is stated once, in
 [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
 
-The React web app is **backend-switchable by configuration**, but Laravel is the
-production default and the contract source of truth.
+**The clients are backend-switchable by configuration** — the React app selects
+its target with `VITE_BACKEND_TARGET=laravel|dotnet`, and backend-specific
+differences are confined to small adapter modules rather than spread through the
+codebase. Laravel is the production default and the contract source of truth. The
+stated end state is **two frontends by two backends**, in which neither frontend
+changes behaviour when its backend changes; see
+[docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md).
 
 🔴 **On the mobile app:** it is a distinct Expo / React Native codebase (v1.2.0,
 257 screens, 217 test files), not a wrapper around the web build. `mobile/app.json`
@@ -130,21 +143,31 @@ account and review. A Capacitor wrapper also exists historically; its project
 directory is **not** in this repository (removed in `df8bf84d6`, gitignored) and it
 is not what we ship.
 
-### Secondary — the second backend, kept for contract comparison
+### The second backend — a switchable ASP.NET Core 10 stack
 
-| Layer | Technology | Status |
-|-------|-----------|--------|
-| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | **Service retired 2026-08-10** — container stopped, domain retained, code alive in this repository |
+| Layer | Technology | State |
+|-------|-----------|-------|
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 254 controllers, 165 migrations, 393 test files / 3,386 tests. Scored **712/1000** against the contract-identity rubric. Development **paused 2026-07-15**; service stopped 2026-08-10, domain retained |
 | **Shared event contracts** | JSON Schema event contracts both backends must satisfy (`contracts/events/v2/`) | Maintained |
 
-It is a **complete stack of its own** — its own database, message broker, 165
-migrations and 3,386-test suite, sharing nothing with Laravel — and exists so the
-same contracts can be compared from a single commit. Contract-parity work is
-**paused** as of 2026-07-15; "retired" describes the running service, not the code.
+This is not a sketch or a spike. It is a **complete stack of its own** — its own
+database, message broker, migrations, messaging layer and test suite, sharing
+nothing with Laravel — built so that either backend can serve the same clients.
+Progress is measured against a fixed 1,000-point rubric that asks a single
+question: is it *externally contract-identical* to Laravel? It stands at 712, and
+the remaining work is a finite, ordered queue rather than an open-ended research
+problem.
 
-🔴 Its presence changes nothing about what deploys. See
-[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md) for the enforced
-isolation.
+Two things are true at once and both matter: the code is solid and close to
+finished, **and** it is not certified, not the production default, and not
+deployable from here. Laravel decides the contract; ASP.NET must reproduce it.
+
+🔴 Its presence changes nothing about what deploys today. Current score, evidence
+boundary and resume queue: `aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md`
+— the canonical source, and the only figure to quote. 🔴 **Never add its score to
+the accessible frontend's**: two 1,000-point rubrics exist and they measure
+different things. Enforced isolation:
+[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
 
 ### Shared infrastructure and tooling
 
@@ -171,8 +194,8 @@ app, two HTML-first accessible frontends mid-changeover, and a native mobile app
 — backed by MariaDB, Redis and Meilisearch, deployed by a zero-downtime
 blue/green container switch.
 
-Alongside them, and deliberately fenced off, sits a second complete backend used
-only for contract comparison.
+Alongside them, and deliberately fenced off from production, sits a second
+complete backend that the same clients are built to switch to by configuration.
 
 ```mermaid
 flowchart TD
@@ -204,7 +227,7 @@ flowchart TD
     BG -. atomic Apache route swap .-> API
     BG -. carries web-uk since cutover .-> WU
 
-    subgraph SEC ["SECONDARY - second backend, service stopped, NOT deployed from this repo"]
+    subgraph SEC ["SECOND BACKEND - switchable target, 712/1000 contract parity, paused, service stopped"]
         ASP[ASP.NET Core 10 API<br/>aspnet-backend/]
         PG[(PostgreSQL 16<br/>separate database)]
         MQ[RabbitMQ 3.13]
@@ -213,6 +236,8 @@ flowchart TD
     end
 
     ASP -. must reproduce .-> API
+    RC -. switchable by config, once certified .-> ASP
+    WU -. switchable by config, once certified .-> ASP
     CON[Shared event contracts<br/>contracts/events/v2/] -. both must satisfy .-> API
     CON -. both must satisfy .-> ASP
 
@@ -223,9 +248,13 @@ flowchart TD
 accessible sites both answer live traffic today — the Node one on the platform
 accessible domain since 2026-08-12, the Blade one on community domains and
 slug paths — and the changeover finishes when Blade is retired. Inside the dashed
-box is a parallel backend that duplicates the contract surface on purpose, with
-its own API, database and message broker; the dashed arrow is an obligation, not
-live traffic.
+box is a parallel backend that reproduces the contract surface on purpose, with
+its own API, database and message broker. Its dashed arrows are an obligation and
+an intention rather than live traffic: ASP.NET must reproduce Laravel's
+externally observable contracts, and both the React app and the accessible site
+are built to switch to it by configuration alone once that is certified. That
+switch is the point of the exercise — a community running this platform should be
+able to change the engine underneath without its members noticing.
 
 🔴 **The ASP.NET service** is stopped, its domain retained, and it was deployed
 from a repository archived on 2026-08-10 — **this repository has no deploy path to
@@ -247,7 +276,7 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 | `web-uk/` | **PRIMARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend 6.3 on Node 22, with its own server, sessions and 1,787 tests, consuming the Laravel API. **Serves `accessible.project-nexus.ie` since 2026-08-12.** Deployed from this repository; every deploy after the cutover must pass `--with-webuk`. |
 | `accessible-frontend/` | **PRIMARY, retiring.** The original accessibility-first frontend, rendered by Laravel Blade with `app/Http/Controllers/GovukAlpha/`. Still serves community accessible domains and `/{tenantSlug}/accessible/...`. Retires when the changeover to `web-uk/` completes. |
 | `mobile/` | **PRIMARY.** The native mobile app — Expo 54 + React Native 0.81 + React 19, its own codebase (v1.2.0, 257 screens, 217 test files) on the same Laravel API, with its own translation tree covering 7 locales. Android release path complete; iOS configured but not published. |
-| `aspnet-backend/` | **SECONDARY.** A complete second backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 165 migrations, 3,386 tests. Must reproduce Laravel's external contracts. **Service retired 2026-08-10** — container stopped, domain retained, code alive here. Not deployable from this repository. |
+| `aspnet-backend/` | **SECOND BACKEND.** A substantially complete alternative backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 254 controllers, 165 migrations, 3,386 tests — which the clients can be switched to by configuration once it is certified contract-identical to Laravel. At **712/1000** on that rubric; development **paused 2026-07-15**. Service stopped 2026-08-10, domain retained, code alive and maintained here. Not deployable from this repository. |
 | `contracts/events/v2/` | JSON Schema event contracts that both backends must satisfy — the machine-readable half of the contract-comparison work. |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
@@ -334,7 +363,7 @@ This is **version 1.6.0 — generally available**, in active production use. Per
 - The **accessible site** is an approved HTML-first UI track, mid-changeover between two implementations: `web-uk/` (Node 22 + Express + Nunjucks) serves `accessible.project-nexus.ie` since 2026-08-12, and `accessible-frontend/` (Laravel Blade) still serves community accessible domains and `/{tenantSlug}/accessible/...` until it retires
 - The **mobile app** (`mobile/`) is a separate Expo / React Native client on the same API — Android release path complete, iOS configured but not yet published to either store
 - The **Laravel 12 backend** provides the API — all services are native Laravel implementations (zero stubs)
-- The **second backend** (`aspnet-backend/`, ASP.NET Core 10) is complete and maintained here, but its service is stopped and contract-parity work is paused
+- The **second backend** (`aspnet-backend/`, ASP.NET Core 10 on PostgreSQL 16 and RabbitMQ) is substantially built and maintained here — 712/1000 against the contract-identity rubric, intended as a configuration-switchable alternative to Laravel; development is paused since 2026-07-15 and its service is stopped, so it is not certified and not the production default
 - The **legacy PHP admin** (`/admin-legacy/`, `/super-admin/`) has been decommissioned — all admin workflows live in the React admin
 - **Zero-downtime blue/green deployments** — production switches between blue and green container stacks with no maintenance window
 - **Tests** are in `tests/`, `react-frontend/src/**/*.test.*`, and `e2e/`; CI also runs static analysis, build, migration, i18n, SPDX, smoke, accessibility, and security gates
