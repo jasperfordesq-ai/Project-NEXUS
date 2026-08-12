@@ -47,7 +47,7 @@ After these files are pushed to GitHub, run:
 
 ```bash
 gh auth login -h github.com
-node scripts/configure-contributor-terms-ruleset.mjs --repo jasperfordesq-ai/nexus-v1
+node scripts/configure-contributor-terms-ruleset.mjs --repo jasperfordesq-ai/Project-NEXUS
 ```
 
 The script creates or updates a repository ruleset named `Project NEXUS contributor terms gate`. It protects `main` by requiring:
@@ -65,5 +65,5 @@ The script creates or updates a repository ruleset named `Project NEXUS contribu
 Use `--dry-run` to inspect the API payload without changing GitHub:
 
 ```bash
-node scripts/configure-contributor-terms-ruleset.mjs --repo jasperfordesq-ai/nexus-v1 --dry-run
+node scripts/configure-contributor-terms-ruleset.mjs --repo jasperfordesq-ai/Project-NEXUS --dry-run
 ```

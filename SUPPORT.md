@@ -6,15 +6,15 @@ Thanks for using Project NEXUS. This page explains where to go for help so your 
 
 | I want to… | Use this |
 |------------|----------|
-| **Ask a question** or discuss an idea | [GitHub Discussions](https://github.com/jasperfordesq-ai/nexus-v1/discussions) |
-| **Report a bug** | [Open a bug report issue](https://github.com/jasperfordesq-ai/nexus-v1/issues/new/choose) |
-| **Request a feature** | [Open a feature request issue](https://github.com/jasperfordesq-ai/nexus-v1/issues/new/choose) |
+| **Ask a question** or discuss an idea | [GitHub Discussions](https://github.com/jasperfordesq-ai/Project-NEXUS/discussions) |
+| **Report a bug** | [Open a bug report issue](https://github.com/jasperfordesq-ai/Project-NEXUS/issues/new/choose) |
+| **Request a feature** | [Open a feature request issue](https://github.com/jasperfordesq-ai/Project-NEXUS/issues/new/choose) |
 | **Report a security vulnerability** | **Do not open a public issue** — follow [SECURITY.md](SECURITY.md) |
 | **Understand how to contribute** | [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 ## Before you open an issue
 
-- Search [existing issues](https://github.com/jasperfordesq-ai/nexus-v1/issues) and [Discussions](https://github.com/jasperfordesq-ai/nexus-v1/discussions) — your question may already be answered.
+- Search [existing issues](https://github.com/jasperfordesq-ai/Project-NEXUS/issues) and [Discussions](https://github.com/jasperfordesq-ai/Project-NEXUS/discussions) — your question may already be answered.
 - Read the relevant documentation, starting at [docs/README.md](docs/README.md).
 - For setup problems, confirm you followed the [Quick Start](README.md#quick-start) and have the required services running (MariaDB, Redis, Meilisearch).
 

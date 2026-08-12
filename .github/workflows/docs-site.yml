@@ -53,6 +53,14 @@ jobs:
       - name: Build site
         run: mkdocs build --clean --strict
 
+      # The custom domain must be published inside the artifact on every deploy.
+      # It lives here and NOT in docs/, because scripts/check-docs-hygiene.mjs
+      # allows only .md files in that directory and would fail the build.
+      # Without this file GitHub Pages drops the custom domain on the next deploy
+      # and the site reverts to the owner.github.io path.
+      - name: Pin the custom domain into the artifact
+        run: echo 'docs.project-nexus.ie' > site/CNAME
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

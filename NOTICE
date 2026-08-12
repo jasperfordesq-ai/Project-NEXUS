@@ -88,7 +88,7 @@ Canonical attribution wording:
   Powered by Project NEXUS
   Created by Jasper Ford
   Licensed under AGPL v3-or-later
-  Source: https://github.com/jasperfordesq-ai/nexus-v1
+  Source: https://github.com/jasperfordesq-ai/Project-NEXUS
 
 Where the application has an About page, legal page, credits page, or
 equivalent screen, it must include the Project NEXUS attribution and the
@@ -188,7 +188,7 @@ receive the complete corresponding source code of your version.
 
 The canonical public source repository for this version of Project NEXUS is:
 
-  https://github.com/jasperfordesq-ai/nexus-v1
+  https://github.com/jasperfordesq-ai/Project-NEXUS
 
 If you operate a modified network deployment, you must provide the complete
 corresponding source for your modified version, not merely a link to the
@@ -216,7 +216,7 @@ RELATED PROJECTS
 Project NEXUS is actively developed across related codebases. This repository
 is the V1 PHP 8.2+ / React 19 / MariaDB implementation:
 
-  https://github.com/jasperfordesq-ai/nexus-v1
+  https://github.com/jasperfordesq-ai/Project-NEXUS
 
 Any reference to related Project NEXUS codebases is informational only. The
 AGPL Section 7 additional terms in this NOTICE apply to this repository and

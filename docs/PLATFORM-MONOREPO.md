@@ -273,7 +273,7 @@ first; the API replaces rather than appends). Default setup analyses C# with
 build-mode `none`, so no build configuration is needed. Equivalent CLI:
 
 ```bash
-gh api -X PATCH repos/jasperfordesq-ai/nexus-v1/code-scanning/default-setup \
+gh api -X PATCH repos/jasperfordesq-ai/Project-NEXUS/code-scanning/default-setup \
   -f state=configured -f 'languages[]=actions' -f 'languages[]=javascript-typescript' \
   -f 'languages[]=python' -f 'languages[]=csharp'
 ```

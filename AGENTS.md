@@ -11,7 +11,7 @@ This is the single source of truth for project conventions, rules, and workflows
 |------|-------|
 | **Project** | Project NEXUS - Timebanking Platform |
 | **License** | AGPL-3.0-or-later (open source) |
-| **GitHub Repo** | <https://github.com/jasperfordesq-ai/nexus-v1> |
+| **GitHub Repo** | <https://github.com/jasperfordesq-ai/Project-NEXUS> |
 | **Frontend Stack** | React 19 + TypeScript + HeroUI v3 + Tailwind CSS 4 |
 | **PHP Version** | 8.2+ (API backend only) |
 | **Database** | MariaDB 10.11 (MySQL compatible) |
@@ -249,7 +249,7 @@ Project NEXUS is a **global platform** serving timebanks worldwide. It is NOT an
 
 ### 🔴 OPEN SOURCE — AGPL-3.0 (CRITICAL)
 
-This project is **publicly released** under AGPL-3.0-or-later at <https://github.com/jasperfordesq-ai/nexus-v1>.
+This project is **publicly released** under AGPL-3.0-or-later at <https://github.com/jasperfordesq-ai/Project-NEXUS>.
 
 - **Every new source file** (PHP, TS, TSX) MUST have this SPDX header:
 
@@ -345,7 +345,7 @@ No agent may initiate SSH, run `bluegreen-deploy.sh` / `safe-deploy.sh`, or trig
 
 ### 🔴 NEVER AUTO-PUSH TO BACKUP REPO (CRITICAL)
 
-**NEVER push to the `backup` remote (`nexus-v1-backup`) unless the user explicitly tells you to.** The backup repo is private and contains credentials, secrets, and all gitignored files.
+**NEVER push to the `backup` remote (`Project-NEXUS-backup`) unless the user explicitly tells you to.** The backup repo is private and contains credentials, secrets, and all gitignored files.
 
 See local-only `BACKUP.md` for the full backup system documentation.
 

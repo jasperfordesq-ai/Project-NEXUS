@@ -159,7 +159,7 @@ trigger_full_run() {
         fail "  Check manually: gh run list --workflow=$WORKFLOW"
         exit 2
     fi
-    say "Full check running: https://github.com/jasperfordesq-ai/nexus-v1/actions/runs/$new_run"
+    say "Full check running: https://github.com/jasperfordesq-ai/Project-NEXUS/actions/runs/$new_run"
     wait_for_run "$new_run" || exit 2
 }
 

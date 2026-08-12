@@ -90,12 +90,12 @@ const sections: PlatformLegalSection[] = [
           <li>
             <strong>Source Code:</strong>{' '}
             <a
-              href="https://github.com/jasperfordesq-ai/nexus-v1"
+              href="https://github.com/jasperfordesq-ai/Project-NEXUS"
               target="_blank"
               rel="noopener noreferrer"
               className="text-accent hover:underline"
             >
-              github.com/jasperfordesq-ai/nexus-v1
+              github.com/jasperfordesq-ai/Project-NEXUS
             </a>
           </li>
         </ul>

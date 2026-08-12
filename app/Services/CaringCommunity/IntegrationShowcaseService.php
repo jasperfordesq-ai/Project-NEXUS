@@ -45,7 +45,7 @@ class IntegrationShowcaseService
                 ['code' => 'openapi_json', 'path' => '/api/docs/openapi.json', 'method' => 'GET'],
                 ['code' => 'openapi_yaml', 'path' => '/api/docs/openapi.yaml', 'method' => 'GET'],
             ],
-            'docs_link' => 'https://github.com/jasperfordesq-ai/nexus-v1/tree/main/docs',
+            'docs_link' => 'https://github.com/jasperfordesq-ai/Project-NEXUS/tree/main/docs',
         ];
     }
 
@@ -64,7 +64,7 @@ class IntegrationShowcaseService
                 ['code' => 'list_subscriptions', 'path' => '/api/partner/v1/webhooks/subscriptions', 'method' => 'GET'],
                 ['code' => 'create_subscription', 'path' => '/api/partner/v1/webhooks/subscriptions', 'method' => 'POST'],
             ],
-            'docs_link' => 'https://github.com/jasperfordesq-ai/nexus-v1/blob/main/docs/API.md',
+            'docs_link' => 'https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/docs/API.md',
         ];
     }
 
@@ -111,7 +111,7 @@ class IntegrationShowcaseService
             'items' => [
                 ['code' => 'tenant_aggregate', 'path' => '/api/v2/federation/aggregates', 'method' => 'GET'],
             ],
-            'docs_link' => 'https://github.com/jasperfordesq-ai/nexus-v1/blob/main/docs/FEDERATION_API_MANUAL.md',
+            'docs_link' => 'https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/docs/FEDERATION_API_MANUAL.md',
         ];
     }
 

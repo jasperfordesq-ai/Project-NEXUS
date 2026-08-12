@@ -6,7 +6,7 @@ Project NEXUS is released under **AGPL-3.0-or-later**. By contributing, you agre
 
 By submitting a contribution, you also agree to the [Project NEXUS Contributor Terms](CONTRIBUTOR_TERMS.md), including the licence, patent, ownership, third-party-code, and AI-disclosure terms described there.
 
-**Repository:** https://github.com/jasperfordesq-ai/nexus-v1
+**Repository:** https://github.com/jasperfordesq-ai/Project-NEXUS
 
 ---
 
@@ -50,12 +50,12 @@ Pull requests are checked automatically. A PR cannot pass the Project NEXUS PR q
 
 ## Getting Started
 
-1. **Fork** the repository on GitHub: https://github.com/jasperfordesq-ai/nexus-v1
+1. **Fork** the repository on GitHub: https://github.com/jasperfordesq-ai/Project-NEXUS
 2. **Clone** your fork:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/nexus-v1.git
-   cd nexus-v1
+   git clone https://github.com/YOUR_USERNAME/Project-NEXUS.git
+   cd Project-NEXUS
    ```
 
 3. **Set up the development environment** (see below).
@@ -140,7 +140,7 @@ For internal-only changes with no release note, say so in the PR or commit notes
 ## Project Structure Overview
 
 ```text
-nexus-v1/
+Project-NEXUS/
 ├── react-frontend/               # React 19 + HeroUI v3 + Tailwind CSS 4 SPA (PRIMARY UI)
 │   ├── src/
 │   │   ├── components/           # Shared UI components

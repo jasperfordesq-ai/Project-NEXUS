@@ -15,7 +15,7 @@ Security fixes are developed against `main` unless a published release explicitl
 
 Please report suspected vulnerabilities through GitHub's private vulnerability reporting flow for this repository:
 
-<https://github.com/jasperfordesq-ai/nexus-v1/security/advisories/new>
+<https://github.com/jasperfordesq-ai/Project-NEXUS/security/advisories/new>
 
 If GitHub is unavailable, contact the maintainer through the public Project NEXUS contact channel and mark the message as security-sensitive. Do not open a public issue for an unpatched vulnerability.
 

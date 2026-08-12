@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import Github from 'lucide-react/icons/github';
 import ExternalLink from 'lucide-react/icons/external-link';
 
-export const PROJECT_NEXUS_REPO_URL = 'https://github.com/jasperfordesq-ai/nexus-v1';
+export const PROJECT_NEXUS_REPO_URL = 'https://github.com/jasperfordesq-ai/Project-NEXUS';
 
 interface SourceRepositoryLinkProps {
   className?: string;

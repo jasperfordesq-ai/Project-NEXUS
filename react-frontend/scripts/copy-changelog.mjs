@@ -59,7 +59,7 @@ if (copied) {
     '',
     'You can read the complete, up-to-date version on GitHub:',
     '',
-    '[CHANGELOG.md on GitHub](https://github.com/jasperfordesq-ai/nexus-v1/blob/main/CHANGELOG.md)',
+    '[CHANGELOG.md on GitHub](https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/CHANGELOG.md)',
     '',
   ].join('\n');
   await writeFile(target, stub, 'utf8');

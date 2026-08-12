@@ -31,19 +31,19 @@ If Docker is not running, start it now. The data services (database, cache, and 
 
 ## Step 2: Fork and clone the repository
 
-1. Open https://github.com/jasperfordesq-ai/nexus-v1 in your browser.
+1. Open https://github.com/jasperfordesq-ai/Project-NEXUS in your browser.
 2. Click **Fork** to create your own copy under your GitHub account.
 3. Clone your fork:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/nexus-v1.git
-cd nexus-v1
+git clone https://github.com/YOUR_USERNAME/Project-NEXUS.git
+cd Project-NEXUS
 ```
 
 4. Add the upstream repository so you can pull future changes:
 
 ```bash
-git remote add upstream https://github.com/jasperfordesq-ai/nexus-v1.git
+git remote add upstream https://github.com/jasperfordesq-ai/Project-NEXUS.git
 ```
 
 ---
@@ -317,7 +317,7 @@ git push -u origin docs/fix-features-page-label
 Go to your fork on GitHub and click **Compare & pull request**, or open:
 
 ```
-https://github.com/YOUR_USERNAME/nexus-v1/compare/docs/fix-features-page-label
+https://github.com/YOUR_USERNAME/Project-NEXUS/compare/docs/fix-features-page-label
 ```
 
 **Use the PR template** — it is loaded automatically from `.github/pull_request_template.md`. Fill in every section:

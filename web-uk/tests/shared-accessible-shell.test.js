@@ -800,7 +800,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Supporting information and attribution');
     expect(response.text).toContain('Project NEXUS is free software licensed under AGPL-3.0-or-later.');
     expect(response.text).toContain('View the source code on GitHub');
-    expect(response.text).toContain('https://github.com/jasperfordesq-ai/nexus-v1');
+    expect(response.text).toContain('https://github.com/jasperfordesq-ai/Project-NEXUS');
     expect(response.text).not.toContain('href="/components"');
     expect(response.text).not.toContain('View components demo');
     expect(components.status).toBe(404);

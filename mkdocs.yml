@@ -1,8 +1,8 @@
 site_name: Project NEXUS Documentation
 site_description: Documentation for Project NEXUS — an open-source multi-tenant community timebanking platform (Laravel 12 + React 19).
-site_url: https://jasperfordesq-ai.github.io/nexus-v1/
-repo_url: https://github.com/jasperfordesq-ai/nexus-v1
-repo_name: jasperfordesq-ai/nexus-v1
+site_url: https://docs.project-nexus.ie/
+repo_url: https://github.com/jasperfordesq-ai/Project-NEXUS
+repo_name: jasperfordesq-ai/Project-NEXUS
 edit_uri: edit/main/docs/
 docs_dir: docs
 copyright: Copyright &copy; 2024–2026 Jasper Ford — AGPL-3.0-or-later

@@ -434,7 +434,7 @@ export function AboutPage() {
                   </p>
                   <div className="flex flex-col gap-2">
                     <a
-                      href="https://github.com/jasperfordesq-ai/nexus-v1"
+                      href="https://github.com/jasperfordesq-ai/Project-NEXUS"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-sm font-medium text-accent dark:text-accent hover:text-accent dark:hover:text-accent transition-colors"

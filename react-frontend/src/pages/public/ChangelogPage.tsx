@@ -76,7 +76,7 @@ export function ChangelogPage() {
         </p>
         <p>
           <a
-            href="https://github.com/jasperfordesq-ai/nexus-v1/blob/main/CHANGELOG.md"
+            href="https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/CHANGELOG.md"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-md border border-theme-default bg-theme-elevated px-3 py-2 text-sm font-medium text-accent transition-colors hover:border-theme-hover hover:bg-theme-hover focus:outline-none focus:ring-2 focus:ring-accent"

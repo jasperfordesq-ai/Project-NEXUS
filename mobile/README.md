@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-07-14
 
-React Native (Expo) mobile client for the [Project NEXUS](https://github.com/jasperfordesq-ai/nexus-v1) timebanking platform.
+React Native (Expo) mobile client for the [Project NEXUS](https://github.com/jasperfordesq-ai/Project-NEXUS) timebanking platform.
 
 Release identity, package IDs, and website/Play Store distribution decisions are recorded in [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md).
 
@@ -197,6 +197,6 @@ Configure `eas.json` before submitting. See [Expo EAS docs](https://docs.expo.de
 - **No business logic in the app**: all logic lives in the PHP API.
 - **Real-time messaging**: Pusher WebSocket channels are established after login and torn down on logout. Private channels use server-side auth (`/api/v2/pusher/auth`).
 - **Push notifications**: FCM tokens are registered on login via `POST /api/v2/notifications/device-token` and deregistered on logout. Requires `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) in the project root before any EAS build.
-- **AGPL-3.0 attribution** is displayed in the Profile/About screen as required by Section 7(b) and Section 13. The attribution notice must include a copyright notice and visible source repository link: <https://github.com/jasperfordesq-ai/nexus-v1>.
+- **AGPL-3.0 attribution** is displayed in the Profile/About screen as required by Section 7(b) and Section 13. The attribution notice must include a copyright notice and visible source repository link: <https://github.com/jasperfordesq-ai/Project-NEXUS>.
 - Replace `assets/` placeholder images before any public build. When the generated notification icon is ready, save it as `assets/notification-icon.png` (96x96, white on transparent). The dynamic Expo config will use it automatically when the file exists.
 - Add `google-services.json` at the project root before push-notification production builds. It is gitignored and will be added to native config automatically when present.

@@ -8,13 +8,13 @@ body:
       value: |
         Thanks for taking the time to file a bug report. Please fill in the fields below so we can reproduce and fix the problem.
 
-        ⚠️ **Do not report security vulnerabilities here.** Use the private process in [SECURITY.md](https://github.com/jasperfordesq-ai/nexus-v1/blob/main/SECURITY.md) instead.
+        ⚠️ **Do not report security vulnerabilities here.** Use the private process in [SECURITY.md](https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/SECURITY.md) instead.
   - type: checkboxes
     id: preflight
     attributes:
       label: Pre-flight checks
       options:
-        - label: I have searched existing [issues](https://github.com/jasperfordesq-ai/nexus-v1/issues) and [discussions](https://github.com/jasperfordesq-ai/nexus-v1/discussions) and this has not been reported.
+        - label: I have searched existing [issues](https://github.com/jasperfordesq-ai/Project-NEXUS/issues) and [discussions](https://github.com/jasperfordesq-ai/Project-NEXUS/discussions) and this has not been reported.
           required: true
         - label: This is a bug, not a security vulnerability (those go through SECURITY.md).
           required: true

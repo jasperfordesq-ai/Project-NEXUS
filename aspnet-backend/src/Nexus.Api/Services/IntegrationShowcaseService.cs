@@ -67,7 +67,7 @@ public sealed class IntegrationShowcaseService
                 new { label = "JSON", path = "/api/v2/docs/openapi.json", method = "GET" },
                 new { label = "YAML", path = "/api/v2/docs/openapi.yaml", method = "GET" }
             },
-            docs_link = "https://github.com/jasperfordesq-ai/nexus-v1/tree/main/docs"
+            docs_link = "https://github.com/jasperfordesq-ai/Project-NEXUS/tree/main/docs"
         };
     }
 
@@ -90,7 +90,7 @@ public sealed class IntegrationShowcaseService
                 new { label = "List subscriptions", path = "/api/partner/v1/webhooks/subscriptions", method = "GET" },
                 new { label = "Create subscription", path = "/api/partner/v1/webhooks/subscriptions", method = "POST" }
             },
-            docs_link = "https://github.com/jasperfordesq-ai/nexus-v1/blob/main/docs/API.md"
+            docs_link = "https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/docs/API.md"
         };
     }
 
@@ -147,7 +147,7 @@ public sealed class IntegrationShowcaseService
             {
                 new { label = "Tenant aggregate", path = "/api/v2/federation/aggregates", method = "GET" }
             },
-            docs_link = "https://github.com/jasperfordesq-ai/nexus-v1/blob/main/docs/FEDERATION_API_MANUAL.md"
+            docs_link = "https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/docs/FEDERATION_API_MANUAL.md"
         };
     }
 

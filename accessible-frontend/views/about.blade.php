@@ -131,7 +131,7 @@
             <p class="govuk-body">{{ __('govuk_alpha.about.credits.license_text') }}</p>
             <ul class="govuk-list">
                 <li>
-                    <a class="govuk-link" href="https://github.com/jasperfordesq-ai/nexus-v1" rel="noopener noreferrer">{{ __('govuk_alpha.about.credits.v1_source') }}</a>
+                    <a class="govuk-link" href="https://github.com/jasperfordesq-ai/Project-NEXUS" rel="noopener noreferrer">{{ __('govuk_alpha.about.credits.v1_source') }}</a>
                 </li>
                 <li>
                     <a class="govuk-link" href="https://github.com/jasperfordesq-ai/api.project-nexus.net" rel="noopener noreferrer">{{ __('govuk_alpha.about.credits.v2_source') }}</a>

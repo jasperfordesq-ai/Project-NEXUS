@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 Questions & Discussions
-    url: https://github.com/jasperfordesq-ai/nexus-v1/discussions
+    url: https://github.com/jasperfordesq-ai/Project-NEXUS/discussions
     about: Ask questions, share ideas, and discuss the project with the community.
   - name: 🔒 Report a security vulnerability
-    url: https://github.com/jasperfordesq-ai/nexus-v1/blob/main/SECURITY.md
+    url: https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/SECURITY.md
     about: Please report security issues privately — do not open a public issue.
   - name: 📚 Documentation
-    url: https://github.com/jasperfordesq-ai/nexus-v1/blob/main/docs/README.md
+    url: https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/docs/README.md
     about: Read the maintained documentation before opening an issue.

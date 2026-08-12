@@ -582,7 +582,7 @@ export function FeaturesPage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <a
-              href="https://github.com/jasperfordesq-ai/nexus-v1"
+              href="https://github.com/jasperfordesq-ai/Project-NEXUS"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-accent underline font-medium focus:outline-none focus:ring-2 focus:ring-accent rounded"

@@ -85,7 +85,7 @@ async function probeOnce(target) {
       method: 'GET',
       redirect: 'follow',
       signal: controller.signal,
-      headers: { 'User-Agent': 'project-nexus-uptime-check/1.0 (+https://github.com/jasperfordesq-ai/nexus-v1)' }
+      headers: { 'User-Agent': 'project-nexus-uptime-check/1.0 (+https://github.com/jasperfordesq-ai/Project-NEXUS)' }
     });
 
     const expected = Array.isArray(target.expectStatus) && target.expectStatus.length

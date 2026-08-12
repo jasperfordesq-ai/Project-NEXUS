@@ -14,7 +14,7 @@
 const serviceName = 'Project NEXUS Accessible';
 const phaseText = 'Beta';
 const feedbackUrl = 'mailto:feedback@project-nexus.ie?subject=NEXUS%20Beta%20feedback';
-const sourceCodeUrl = 'https://github.com/jasperfordesq-ai/nexus-v1';
+const sourceCodeUrl = 'https://github.com/jasperfordesq-ai/Project-NEXUS';
 const { URL } = require('node:url');
 const { getPublicAssetBaseUrl } = require('./backend-contract');
 const { createTranslator, isSupportedLocale } = require('./localization');

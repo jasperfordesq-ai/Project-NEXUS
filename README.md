@@ -1,11 +1,11 @@
 # Project NEXUS
 
-[![CI](https://img.shields.io/github/actions/workflow/status/jasperfordesq-ai/nexus-v1/ci.yml?branch=main&label=CI&logo=github)](https://github.com/jasperfordesq-ai/nexus-v1/actions/workflows/ci.yml)
-[![Security scan](https://img.shields.io/github/actions/workflow/status/jasperfordesq-ai/nexus-v1/security-scan.yml?branch=main&label=security%20scan&logo=github)](https://github.com/jasperfordesq-ai/nexus-v1/actions/workflows/security-scan.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/jasperfordesq-ai/Project-NEXUS/ci.yml?branch=main&label=CI&logo=github)](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/workflows/ci.yml)
+[![Security scan](https://img.shields.io/github/actions/workflow/status/jasperfordesq-ai/Project-NEXUS/security-scan.yml?branch=main&label=security%20scan&logo=github)](https://github.com/jasperfordesq-ai/Project-NEXUS/actions/workflows/security-scan.yml)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13344/badge)](https://www.bestpractices.dev/projects/13344)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.6.0-success.svg)](CHANGELOG.md)
-[![Docs](https://img.shields.io/badge/docs-online-4051B5.svg?logo=materialformkdocs&logoColor=white)](https://jasperfordesq-ai.github.io/nexus-v1/)
+[![Docs](https://img.shields.io/badge/docs-online-4051B5.svg?logo=materialformkdocs&logoColor=white)](https://docs.project-nexus.ie/)
 
 **Backend** &nbsp;
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg?logo=php&logoColor=white)](composer.json)
@@ -36,7 +36,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)](aspnet-backend/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600.svg?logo=rabbitmq&logoColor=white)](aspnet-backend/)
 
-> 📖 **Documentation** — browse the full, searchable documentation site at **<https://jasperfordesq-ai.github.io/nexus-v1/>** (module guides, architecture, and an interactive API reference). The Markdown sources live in [docs/](docs/README.md).
+> 📖 **Documentation** — browse the full, searchable documentation site at **<https://docs.project-nexus.ie/>** (module guides, architecture, and an interactive API reference). The Markdown sources live in [docs/](docs/README.md).
 
 > 🌐 **Live demo** — see the platform running in production: the [React frontend](https://app.project-nexus.ie) (primary UI) and the [accessible HTML-first frontend](https://accessible.project-nexus.ie). The PHP API is served from `https://api.project-nexus.ie`.
 
@@ -314,8 +314,8 @@ canonical desktop interface.
 
 ```bash
 # Clone the repository
-git clone https://github.com/jasperfordesq-ai/nexus-v1.git
-cd nexus-v1
+git clone https://github.com/jasperfordesq-ai/Project-NEXUS.git
+cd Project-NEXUS
 
 # Copy the example environment file and fill in your values
 cp .env.docker.example .env.docker
@@ -461,14 +461,14 @@ Under AGPL Section 7(b), all public deployments of this software **must** displa
 **Footer (all pages):**
 > "Built on Project NEXUS by Jasper Ford"
 
-This text must be a clickable hyperlink to: <https://github.com/jasperfordesq-ai/nexus-v1>
+This text must be a clickable hyperlink to: <https://github.com/jasperfordesq-ai/Project-NEXUS>
 
 **About page:**
 > "Powered by Project NEXUS
 > Created by Jasper Ford
 > Licensed under AGPL v3"
 
-With a link to: <https://github.com/jasperfordesq-ai/nexus-v1>
+With a link to: <https://github.com/jasperfordesq-ai/Project-NEXUS>
 
 ### Compliance
 
@@ -492,4 +492,4 @@ The **Laravel Edition** at the repository root is the canonical, in-production p
 ## Source Code
 
 The complete source code for this project is available at:
-<https://github.com/jasperfordesq-ai/nexus-v1>
+<https://github.com/jasperfordesq-ai/Project-NEXUS>

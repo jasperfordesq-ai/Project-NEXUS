@@ -352,7 +352,7 @@ class GovukAlphaFrontendTest extends TestCase
         // AGPL Section 7(b) attribution + a link to the source repository.
         $response->assertSee('class="govuk-footer__meta-custom"', false);
         $response->assertSee('AGPL-3.0-or-later');
-        $response->assertSee('https://github.com/jasperfordesq-ai/nexus-v1', false);
+        $response->assertSee('https://github.com/jasperfordesq-ai/Project-NEXUS', false);
         // Strictly not an official government service: no crown, no OGL licence.
         $response->assertDontSee('govuk-footer__crown', false);
         $response->assertDontSee('Open Government Licence');
@@ -369,7 +369,7 @@ class GovukAlphaFrontendTest extends TestCase
         $response->assertSee(__('govuk_alpha.about.credits.title'));
         // Contributors come from the shared react-frontend contributors.json.
         $response->assertSee('Mary Casey');
-        $response->assertSee('https://github.com/jasperfordesq-ai/nexus-v1', false);
+        $response->assertSee('https://github.com/jasperfordesq-ai/Project-NEXUS', false);
     }
 
     public function test_legal_hub_and_documents_render(): void

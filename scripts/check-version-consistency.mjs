@@ -82,7 +82,7 @@ assertContains('README.md', new RegExp(`Version ${versionEscaped}\\b`), 'current
 assertContains('README.md', new RegExp(`Project NEXUS V${versionEscaped}\\b`), 'current Project NEXUS version in README headline');
 assertContains('README.md', new RegExp(`version ${versionEscaped}\\b`, 'i'), 'current platform version in README status');
 assertContains('CHANGELOG.md', new RegExp(`^## \\[${versionEscaped}\\] - `, 'm'), 'current version changelog section');
-assertContains('CHANGELOG.md', `[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v${version}...HEAD`, 'Unreleased compare link');
+assertContains('CHANGELOG.md', `[Unreleased]: https://github.com/jasperfordesq-ai/Project-NEXUS/compare/v${version}...HEAD`, 'Unreleased compare link');
 assertContains('react-frontend/src/config/releaseStatus.ts', `Generally Available (v${version})`, 'release status label');
 
 // --- Extended enforcement (added 2026-06-23) ---

@@ -6,13 +6,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting an improvement. For open-ended ideas or questions, consider starting a [Discussion](https://github.com/jasperfordesq-ai/nexus-v1/discussions) first.
+        Thanks for suggesting an improvement. For open-ended ideas or questions, consider starting a [Discussion](https://github.com/jasperfordesq-ai/Project-NEXUS/discussions) first.
   - type: checkboxes
     id: preflight
     attributes:
       label: Pre-flight checks
       options:
-        - label: I have searched existing [issues](https://github.com/jasperfordesq-ai/nexus-v1/issues) and [discussions](https://github.com/jasperfordesq-ai/nexus-v1/discussions) and this has not been proposed.
+        - label: I have searched existing [issues](https://github.com/jasperfordesq-ai/Project-NEXUS/issues) and [discussions](https://github.com/jasperfordesq-ai/Project-NEXUS/discussions) and this has not been proposed.
           required: true
   - type: textarea
     id: problem

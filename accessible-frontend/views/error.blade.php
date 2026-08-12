@@ -44,7 +44,7 @@
                         <p class="govuk-!-margin-bottom-2">{{ __('govuk_alpha.footer.licence') }}</p>
                         <p class="govuk-!-margin-bottom-2">{{ __('govuk_alpha.footer.attribution') }}</p>
                         <p class="govuk-!-margin-bottom-0">
-                            <a class="govuk-footer__link" href="https://github.com/jasperfordesq-ai/nexus-v1" rel="noopener noreferrer">{{ __('govuk_alpha.footer.source') }}</a>
+                            <a class="govuk-footer__link" href="https://github.com/jasperfordesq-ai/Project-NEXUS" rel="noopener noreferrer">{{ __('govuk_alpha.footer.source') }}</a>
                         </p>
                     </div>
                 </div>

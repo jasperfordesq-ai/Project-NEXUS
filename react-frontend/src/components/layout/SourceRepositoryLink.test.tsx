@@ -27,7 +27,7 @@ describe('SourceRepositoryLink', () => {
   });
 
   it('exports the canonical repo URL constant', () => {
-    expect(PROJECT_NEXUS_REPO_URL).toBe('https://github.com/jasperfordesq-ai/nexus-v1');
+    expect(PROJECT_NEXUS_REPO_URL).toBe('https://github.com/jasperfordesq-ai/Project-NEXUS');
   });
 
   it('has an aria-label for accessibility', () => {

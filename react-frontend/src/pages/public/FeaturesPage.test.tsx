@@ -67,7 +67,7 @@ describe('FeaturesPage', () => {
   it('renders the Open Source GitHub link', async () => {
     const { FeaturesPage } = await import('./FeaturesPage');
     render(<FeaturesPage />);
-    const githubLink = document.querySelector('a[href="https://github.com/jasperfordesq-ai/nexus-v1"]');
+    const githubLink = document.querySelector('a[href="https://github.com/jasperfordesq-ai/Project-NEXUS"]');
     expect(githubLink).toBeTruthy();
   });
 

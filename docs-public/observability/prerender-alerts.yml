@@ -31,7 +31,7 @@ groups:
       description: |
         The prerender engine's own health rollup is reporting RED for >2m.
         Hit /api/v2/admin/prerender/health for actionable details.
-      runbook: "https://github.com/jasperfordesq-ai/nexus-v1/blob/main/docs-public/observability/prerender-runbook.md"
+      runbook: "https://github.com/jasperfordesq-ai/Project-NEXUS/blob/main/docs-public/observability/prerender-runbook.md"
 
   - alert: PrerenderCircuitBreakerTripped
     expr: nexus_prerender_breaker_tripped == 1

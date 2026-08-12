@@ -18,7 +18,7 @@ Project NEXUS is an open-source (AGPL-3.0-or-later) platform created and maintai
 ## How decisions are made
 
 - **Day-to-day changes** (bug fixes, docs, tests, incremental features) are decided by the maintainer and code owners through normal pull-request review.
-- **Significant changes** (new modules, breaking API changes, dependency or architecture shifts, anything affecting tenant isolation, money movement, or AGPL attribution) should start as a [GitHub Discussion](https://github.com/jasperfordesq-ai/nexus-v1/discussions) or issue so the rationale and trade-offs are recorded before code is written.
+- **Significant changes** (new modules, breaking API changes, dependency or architecture shifts, anything affecting tenant isolation, money movement, or AGPL attribution) should start as a [GitHub Discussion](https://github.com/jasperfordesq-ai/Project-NEXUS/discussions) or issue so the rationale and trade-offs are recorded before code is written.
 - **Final authority** rests with the Project Steward. As the contributor base grows, this document will be updated to describe a broader decision-making model (e.g. a maintainers group with documented voting).
 
 ## Contribution flow
