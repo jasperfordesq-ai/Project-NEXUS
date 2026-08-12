@@ -2400,9 +2400,11 @@
     "macos_safari_step_3": "أكّد الاسم ثم انقر على «إضافة»."
   },
   "release_status": {
-    "summary": "يتطور Project NEXUS بنشاط، مع إظهار نضج الميزات بشفافية عبر المنصة.",
+    "summary": "في تطور مستمر.",
     "features_link": "الميزات",
-    "changelog_link": "سجل التغييرات"
+    "changelog_link": "سجل التغييرات",
+    "docs_link": "التوثيق",
+    "docs_link_aria": "التوثيق (يفتح في علامة تبويب جديدة)"
   },
   "no_activity_title": "لا يوجد نشاط بعد",
   "errors": {

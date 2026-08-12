@@ -2344,9 +2344,11 @@
     "macos_safari_step_3": "名前を確認して「追加」をクリックします。"
   },
   "release_status": {
-    "summary": "Project NEXUS は活発に進化しており、機能の成熟度はプラットフォーム全体で透明に表示されます。",
+    "summary": "進化を続けています。",
     "features_link": "機能",
-    "changelog_link": "変更履歴"
+    "changelog_link": "変更履歴",
+    "docs_link": "ドキュメント",
+    "docs_link_aria": "ドキュメント（新しいタブで開きます）"
   },
   "no_activity_title": "まだアクティビティはありません",
   "errors": {

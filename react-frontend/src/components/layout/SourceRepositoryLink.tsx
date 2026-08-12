@@ -9,7 +9,10 @@ import { useTranslation } from 'react-i18next';
 import Github from 'lucide-react/icons/github';
 import ExternalLink from 'lucide-react/icons/external-link';
 
-export const PROJECT_NEXUS_REPO_URL = 'https://github.com/jasperfordesq-ai/Project-NEXUS';
+// Re-exported so the existing importers (Footer, Layout, MobileDrawer and their
+// tests) keep working; the value itself lives in one place with the docs URL.
+export { PROJECT_NEXUS_REPO_URL } from '@/config/externalLinks';
+import { PROJECT_NEXUS_REPO_URL } from '@/config/externalLinks';
 
 interface SourceRepositoryLinkProps {
   className?: string;

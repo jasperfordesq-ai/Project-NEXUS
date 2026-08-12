@@ -46,6 +46,7 @@ vi.mock('@/contexts/CookieConsentContext', () => ({
 
 import { Footer, FooterLink } from './Footer';
 import { PROJECT_NEXUS_REPO_URL } from './SourceRepositoryLink';
+import { PROJECT_NEXUS_DOCS_URL } from '@/config/externalLinks';
 
 const getSourceRepoLinks = () => screen.getAllByRole('link', {
   name: 'Open the Project NEXUS GitHub repository',
@@ -144,6 +145,16 @@ describe('Footer', () => {
         expect(link).toHaveAttribute('target', '_blank');
         expect(link).toHaveAttribute('rel', 'noopener noreferrer');
       });
+    });
+
+    it('links to the documentation site, in a new tab, from the release strip', () => {
+      render(<Footer />);
+      const link = screen.getByRole('link', { name: 'Documentation (opens in a new tab)' });
+      // The docs site is on its own domain on purpose — a URL derived from the
+      // GitHub repository name broke with no redirect when the repo was renamed.
+      expect(link).toHaveAttribute('href', PROJECT_NEXUS_DOCS_URL);
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
     it('renders the full AGPL attribution notice', () => {

@@ -2386,9 +2386,11 @@
     "macos_safari_step_3": "Deimhnigh an t-ainm, ansin cliceáil Add."
   },
   "release_status": {
-    "summary": "Tá Project NEXUS ag forbairt go gníomhach, agus aibíocht na ngnéithe taispeánta go trédhearcach ar fud an ardáin.",
+    "summary": "Ag síorfhorbairt.",
     "features_link": "Gnéithe",
-    "changelog_link": "Loga athruithe"
+    "changelog_link": "Loga athruithe",
+    "docs_link": "Doiciméadú",
+    "docs_link_aria": "Doiciméadú (osclaítear i gcluaisín nua)"
   },
   "no_activity_title": "Níl aon ghníomhaíocht go fóill",
   "errors": {

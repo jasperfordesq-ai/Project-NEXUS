@@ -2344,9 +2344,11 @@
     "macos_safari_step_3": "Bestätigen Sie den Namen und klicken Sie auf „Hinzufügen“."
   },
   "release_status": {
-    "summary": "Project NEXUS entwickelt sich aktiv weiter, und der Reifegrad der Funktionen wird auf der gesamten Plattform transparent angezeigt.",
+    "summary": "Ständig in Weiterentwicklung.",
     "features_link": "Funktionen",
-    "changelog_link": "Änderungsprotokoll"
+    "changelog_link": "Änderungsprotokoll",
+    "docs_link": "Dokumentation",
+    "docs_link_aria": "Dokumentation (wird in einem neuen Tab geöffnet)"
   },
   "no_activity_title": "Noch keine Aktivität",
   "errors": {

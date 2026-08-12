@@ -2344,9 +2344,11 @@
     "macos_safari_step_3": "Bevestig de naam en klik op Voeg toe."
   },
   "release_status": {
-    "summary": "Project NEXUS evolueert actief, waarbij de volwassenheid van de functies transparant wordt getoond op het hele platform.",
+    "summary": "Voortdurend in ontwikkeling.",
     "features_link": "Functies",
-    "changelog_link": "Wijzigingslogboek"
+    "changelog_link": "Wijzigingslogboek",
+    "docs_link": "Documentatie",
+    "docs_link_aria": "Documentatie (opent in een nieuw tabblad)"
   },
   "no_activity_title": "Nog geen activiteit",
   "errors": {

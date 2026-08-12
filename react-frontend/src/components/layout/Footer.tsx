@@ -15,7 +15,9 @@ import MapPin from 'lucide-react/icons/map-pin';
 import Cookie from 'lucide-react/icons/cookie';
 import { TenantLogo } from '@/components/branding';
 import Sparkles from 'lucide-react/icons/sparkles';
+import ExternalLink from 'lucide-react/icons/external-link';
 import { RELEASE_STATUS } from '@/config/releaseStatus';
+import { PROJECT_NEXUS_DOCS_URL } from '@/config/externalLinks';
 import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { Button } from '@/components/ui/Button';
 import { resolveBrandingImageUrl } from '@/lib/helpers';
@@ -249,6 +251,19 @@ export function Footer({ children, copyright }: FooterProps) {
               >
                 {t('release_status.changelog_link')}
               </Link>
+              <span aria-hidden="true">&middot;</span>
+              {/* External: the documentation site is a separate domain, so this
+                  opens in a new tab and says so to screen readers. */}
+              <a
+                href={PROJECT_NEXUS_DOCS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('release_status.docs_link_aria')}
+                className="inline-flex items-center gap-1 underline font-medium hover:text-theme-primary transition-colors focus:outline-none focus:ring-2 focus:ring-accent rounded whitespace-nowrap"
+              >
+                {t('release_status.docs_link')}
+                <ExternalLink className="h-3 w-3 shrink-0 opacity-70" aria-hidden="true" />
+              </a>
             </div>
 
             {/* Platform Attribution — 3-column grid */}
