@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@heroui/react';
+import { Button } from '@heroui/react/button';
 import UserCog from 'lucide-react/icons/user-cog';
 import LogOut from 'lucide-react/icons/log-out';
 import { isImpersonatedTab } from '@/lib/api';
