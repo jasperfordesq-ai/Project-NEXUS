@@ -147,16 +147,18 @@ is not what we ship.
 
 | Layer | Technology | State |
 |-------|-----------|-------|
-| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 254 controllers, 165 migrations, 393 test files / 3,386 tests. Scored **712/1000** against the contract-identity rubric. Development **paused 2026-07-15**; service stopped 2026-08-10, domain retained |
+| **ASP.NET backend** | ASP.NET Core 10 + EF Core + PostgreSQL 16 + RabbitMQ 3.13 (`aspnet-backend/`) | Substantially built: 254 controllers, 165 migrations, 393 test files / 3,386 tests. **712/1000** on the `ASPNET-CONTRACT-R1` rubric as at the **2026-07-15** pause. Service stopped 2026-08-10, domain retained |
 | **Shared event contracts** | JSON Schema event contracts both backends must satisfy (`contracts/events/v2/`) | Maintained |
 
 This is not a sketch or a spike. It is a **complete stack of its own** — its own
 database, message broker, migrations, messaging layer and test suite, sharing
 nothing with Laravel — built so that either backend can serve the same clients.
 Progress is measured against a fixed 1,000-point rubric that asks a single
-question: is it *externally contract-identical* to Laravel? It stands at 712, and
-the remaining work is a finite, ordered queue rather than an open-ended research
-problem.
+question: is it *externally contract-identical* to Laravel? It stood at 712 when
+development paused on 2026-07-15, and the remaining work is a finite, ordered
+queue rather than an open-ended research problem. That figure is a snapshot of a
+paused workstream, not a live counter — when work resumes, read the canonical
+status document rather than this page.
 
 Two things are true at once and both matter: the code is solid and close to
 finished, **and** it is not certified, not the production default, and not
@@ -227,7 +229,7 @@ flowchart TD
     BG -. atomic Apache route swap .-> API
     BG -. carries web-uk since cutover .-> WU
 
-    subgraph SEC ["SECOND BACKEND - switchable target, 712/1000 contract parity, paused, service stopped"]
+    subgraph SEC ["SECOND BACKEND - switchable target, paused 2026-07-15, service stopped"]
         ASP[ASP.NET Core 10 API<br/>aspnet-backend/]
         PG[(PostgreSQL 16<br/>separate database)]
         MQ[RabbitMQ 3.13]
@@ -276,7 +278,7 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 | `web-uk/` | **PRIMARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend 6.3 on Node 22, with its own server, sessions and 1,787 tests, consuming the Laravel API. **Serves `accessible.project-nexus.ie` since 2026-08-12.** Deployed from this repository; every deploy after the cutover must pass `--with-webuk`. |
 | `accessible-frontend/` | **PRIMARY, retiring.** The original accessibility-first frontend, rendered by Laravel Blade with `app/Http/Controllers/GovukAlpha/`. Still serves community accessible domains and `/{tenantSlug}/accessible/...`. Retires when the changeover to `web-uk/` completes. |
 | `mobile/` | **PRIMARY.** The native mobile app — Expo 54 + React Native 0.81 + React 19, its own codebase (v1.2.0, 257 screens, 217 test files) on the same Laravel API, with its own translation tree covering 7 locales. Android release path complete; iOS configured but not published. |
-| `aspnet-backend/` | **SECOND BACKEND.** A substantially complete alternative backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 254 controllers, 165 migrations, 3,386 tests — which the clients can be switched to by configuration once it is certified contract-identical to Laravel. At **712/1000** on that rubric; development **paused 2026-07-15**. Service stopped 2026-08-10, domain retained, code alive and maintained here. Not deployable from this repository. |
+| `aspnet-backend/` | **SECOND BACKEND.** A substantially complete alternative backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 254 controllers, 165 migrations, 3,386 tests — which the clients can be switched to by configuration once it is certified contract-identical to Laravel. **712/1000** on the `ASPNET-CONTRACT-R1` rubric as at the **2026-07-15** pause. Service stopped 2026-08-10, domain retained, code alive and maintained here. Not deployable from this repository. |
 | `contracts/events/v2/` | JSON Schema event contracts that both backends must satisfy — the machine-readable half of the contract-comparison work. |
 | `views/` | Live email templates (`views/emails/match_*.php`) and the module-404 page; everything else under `views/` is retired legacy code |
 | `httpdocs/` | Apache web root, public health endpoints, and compatibility entrypoints |
@@ -363,7 +365,7 @@ This is **version 1.6.0 — generally available**, in active production use. Per
 - The **accessible site** is an approved HTML-first UI track, mid-changeover between two implementations: `web-uk/` (Node 22 + Express + Nunjucks) serves `accessible.project-nexus.ie` since 2026-08-12, and `accessible-frontend/` (Laravel Blade) still serves community accessible domains and `/{tenantSlug}/accessible/...` until it retires
 - The **mobile app** (`mobile/`) is a separate Expo / React Native client on the same API — Android release path complete, iOS configured but not yet published to either store
 - The **Laravel 12 backend** provides the API — all services are native Laravel implementations (zero stubs)
-- The **second backend** (`aspnet-backend/`, ASP.NET Core 10 on PostgreSQL 16 and RabbitMQ) is substantially built and maintained here — 712/1000 against the contract-identity rubric, intended as a configuration-switchable alternative to Laravel; development is paused since 2026-07-15 and its service is stopped, so it is not certified and not the production default
+- The **second backend** (`aspnet-backend/`, ASP.NET Core 10 on PostgreSQL 16 and RabbitMQ) is substantially built and maintained here — 712/1000 against the contract-identity rubric at the 2026-07-15 pause, intended as a configuration-switchable alternative to Laravel; its service is stopped, so it is not certified and not the production default
 - The **legacy PHP admin** (`/admin-legacy/`, `/super-admin/`) has been decommissioned — all admin workflows live in the React admin
 - **Zero-downtime blue/green deployments** — production switches between blue and green container stacks with no maintenance window
 - **Tests** are in `tests/`, `react-frontend/src/**/*.test.*`, and `e2e/`; CI also runs static analysis, build, migration, i18n, SPDX, smoke, accessibility, and security gates
