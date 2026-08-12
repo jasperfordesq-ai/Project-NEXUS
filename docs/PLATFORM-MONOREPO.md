@@ -318,11 +318,15 @@ bulk of ongoing work is, in order:
 contract comparison; it must never slow, gate, or complicate the three tracks
 above. The isolation that guarantees this is verified below.
 
-🔴 **`web-uk/` is no longer merely a comparison target.** On 2026-08-11 the owner
-decided it **replaces** the Blade accessible frontend, which retires. It is
-therefore a production track in waiting rather than development-only. Two things
-have NOT changed: it is **not deployed**, and its deployment isolation below
-stands until a deployment path is deliberately built and separately authorised.
+🔴 **`web-uk/` is no longer merely a comparison target, and it is no longer
+undeployed.** On 2026-08-11 the owner decided it **replaces** the Blade accessible
+frontend, which retires. On **2026-08-12** it was deployed and cut over: it now
+serves `accessible.project-nexus.ie`, while Blade continues to serve the community
+accessible domains and all `/{tenantSlug}/accessible/...` paths. It is a
+**production track**, deployed from this repository, and every deploy from the
+cutover onward must pass `--with-webuk` or it refuses to run. The deployment
+isolation described below therefore no longer applies to `web-uk/` — it applies to
+`aspnet-backend/`, which remains undeployed and unauthorised for deployment.
 See [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md).
 
 ### ✅ RESOLVED — the "failing test on main" was a stale local database

@@ -44,7 +44,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
 | [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |
 | [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) | Repository boundaries and safe workflow for Laravel, ASP.NET, React, and Web UK contract work. |
-| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | The decision that Web UK replaces the Blade accessible frontend: which phase the changeover is in, both public URL shapes, open owner prerequisites, and which document answers which question. Read this before any other accessible-frontend status claim. |
+| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | The changeover in which Web UK replaces the Blade accessible frontend: what each one serves since the 2026-08-12 cutover, which phase the changeover is in, both public URL shapes, and which document answers which question. Read this before any other accessible-frontend status claim. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |
 | [MODULES.md](MODULES.md) | The module map: each module → its code paths and guide, including the modules that have no guide yet. |
 
@@ -92,10 +92,21 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 
 ## Accessible Frontend
 
+🔴 **There are two accessible frontends and they are mid-changeover. Read
+[ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) before
+believing any status claim below or anywhere else.** As of **2026-08-12**,
+`web-uk/` — a standalone Node 22 / Express / Nunjucks application consuming the
+Laravel API — serves `accessible.project-nexus.ie`. The original Laravel Blade
+frontend (`accessible-frontend/` plus `app/Http/Controllers/GovukAlpha/`) still
+serves the community accessible domains and every `/{tenantSlug}/accessible/...`
+path, and retires when the changeover completes. Both answer identical public
+URLs, so `/version` is the only way to tell which one replied.
+
 | Document | Purpose |
 | --- | --- |
-| [govuk-alpha/RESEARCH.md](govuk-alpha/RESEARCH.md) | Accessible frontend architecture and GOV.UK Frontend constraints. |
-| [govuk-alpha/ATTRIBUTION.md](govuk-alpha/ATTRIBUTION.md) | GOV.UK-related attribution notes. |
+| [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | **The status source.** Which frontend serves which addresses, which phase the changeover is in, both public URL shapes, and which document answers which question. |
+| [govuk-alpha/RESEARCH.md](govuk-alpha/RESEARCH.md) | The original architecture decision for the **Blade** track, and the GOV.UK Frontend constraints — branding prohibitions, approved packages, HTML-first progressive enhancement — which still bind **both** frontends. Its architecture description covers Blade only and predates the changeover. |
+| [govuk-alpha/ATTRIBUTION.md](govuk-alpha/ATTRIBUTION.md) | GOV.UK-related attribution notes. Applies to both frontends. |
 
 ## Governance
 

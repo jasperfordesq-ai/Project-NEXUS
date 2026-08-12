@@ -1,8 +1,21 @@
 # GOV.UK-Based Accessible Frontend Research
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-08-12
 
-## Architecture Decision
+🔴 **Read this first: the architecture below describes the Blade frontend, which
+is being replaced.** This page records the original decision and remains the
+reference for the **GOV.UK constraints** — the branding prohibitions, the approved
+packages, the HTML-first progressive-enhancement requirement — and those bind
+**both** accessible frontends. Its *architecture* section does not: since
+**2026-08-12**, `accessible.project-nexus.ie` is served by `web-uk/`, a standalone
+Node 22 / Express / Nunjucks application that consumes the Laravel HTTP API. The
+Blade implementation described here still serves the community accessible domains
+and all `/{tenantSlug}/accessible/...` paths, and retires when the changeover
+completes. **Status is stated once**, in
+[../ACCESSIBLE-FRONTEND-TAKEOVER.md](../ACCESSIBLE-FRONTEND-TAKEOVER.md) — not
+here, and not in any other document.
+
+## Architecture Decision (the Blade track)
 
 Project NEXUS Accessible Frontend is an approved exception to the React-primary UI rule. It is an isolated, HTML-first Laravel frontend that complements `react-frontend/` and does not replace it. It follows GOV.UK Frontend implementation standards for accessibility and resilience, but it is not a GOV.UK service and must not look or read like one.
 
