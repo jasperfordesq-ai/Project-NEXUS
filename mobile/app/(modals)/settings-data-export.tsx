@@ -15,6 +15,7 @@ import { useAppToast } from '@/components/ui/AppToast';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import { getDataExportHistory, requestDataExport, type DataExportFormat, type DataExportHistoryRow } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { usePrimaryColor } from '@/lib/hooks/useTenant';
@@ -170,9 +171,7 @@ export default function SettingsDataExportScreen() {
             </HeroCard.Body>
           </HeroCard>
 
-          <Text className="mt-2 text-center text-[11px]" style={{ color: theme.textMuted }}>
-            {t('common:attribution')}
-          </Text>
+          <SourceRepositoryLink />
         </ScrollView>
       </SafeAreaView>
     </ModalErrorBoundary>

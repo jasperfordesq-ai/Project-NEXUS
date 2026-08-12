@@ -14,6 +14,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import Toggle from '@/components/ui/Toggle';
 import { changeLanguage, SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { getUserPreferences, saveUserPreferences } from '@/lib/api/settings';
@@ -172,9 +173,7 @@ export default function SettingsTranslationScreen() {
             </>
           )}
 
-          <Text className="mt-2 text-center text-[11px]" style={{ color: theme.textMuted }}>
-            {t('common:attribution')}
-          </Text>
+          <SourceRepositoryLink />
         </ScrollView>
       </SafeAreaView>
     </ModalErrorBoundary>

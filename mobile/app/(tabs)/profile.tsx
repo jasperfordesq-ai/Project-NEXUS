@@ -19,6 +19,7 @@ import { ProfileSkeleton } from '@/components/ui/Skeleton';
 import { useConfirm } from '@/components/ui/useConfirm';
 import Avatar from '@/components/ui/Avatar';
 import NativePressable from '@/components/ui/NativePressable';
+import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -194,9 +195,7 @@ export default function MoreScreen() {
           <HeroButton.Label>{t('signOut')}</HeroButton.Label>
         </HeroButton>
 
-        <Text className="mt-6 px-3 text-center text-[11px] leading-4" style={{ color: theme.textMuted }}>
-          {t('common:attribution')}
-        </Text>
+        <SourceRepositoryLink className="mt-6" />
       </ScrollView>
       {confirmDialog}
     </SafeAreaView>

@@ -27,6 +27,7 @@ import AppTopBar from '@/components/ui/AppTopBar';
 import { useAppToast } from '@/components/ui/AppToast';
 import Toggle from '@/components/ui/Toggle';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 
 interface NotificationPrefs {
   email_messages: boolean;
@@ -395,9 +396,7 @@ export default function SettingsScreen() {
             <InfoRow label={t('license')} value="AGPL-3.0-or-later" theme={theme} />
           </Section>
 
-          <Text className="mt-2 text-center text-[11px]" style={{ color: theme.textMuted }}>
-            {t('common:attribution')}
-          </Text>
+          <SourceRepositoryLink />
         </ScrollView>
       </SafeAreaView>
     </ModalErrorBoundary>

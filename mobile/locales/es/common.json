@@ -1,6 +1,11 @@
 {
   "appName": "Timebank Global",
   "attribution": "Project NEXUS es software de código abierto bajo licencia AGPL-3.0.",
+  "sourceRepo": {
+    "copyright": "Derechos de autor © 2024–{{year}} Jasper Ford",
+    "builtOn": "Creado sobre Project NEXUS por Jasper Ford",
+    "accessibilityLabel": "Creado sobre Project NEXUS por Jasper Ford. Abre el repositorio del código fuente en GitHub."
+  },
   "tabs": {
     "home": "Inicio",
     "listings": "Ofertas",

@@ -37,7 +37,10 @@ const mockSettingsDataExportT = (key: string, options?: Record<string, unknown>)
         'dataExport.history.empty': 'No exports yet',
         'dataExport.history.emptyDesc': 'Exports will appear here.',
         'common:buttons.back': 'Back',
-        'common:attribution': 'AGPL attribution',
+        // Read by <SourceRepositoryLink /> from the 'common' namespace.
+        attribution: 'AGPL attribution',
+        'sourceRepo.builtOn': 'Built on Project NEXUS by Jasper Ford',
+        'sourceRepo.accessibilityLabel': 'Opens the source code repository on GitHub.',
         'common:errors.generic': 'Error',
   };
   return map[key] ?? key;

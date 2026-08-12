@@ -147,7 +147,11 @@ jest.mock('react-i18next', () => ({
         'navDescriptions.federationSettings': 'Review federation visibility and sharing preferences.',
         'navDescriptions.settings': 'Security, notifications, preferences, and account controls.',
         'common:buttons.cancel': 'Cancel',
-        'common:attribution': 'Project NEXUS is open-source software licensed under AGPL-3.0-or-later.',
+        // Rendered by <SourceRepositoryLink />, which reads the 'common' namespace directly.
+        attribution: 'Project NEXUS is open-source software licensed under AGPL-3.0-or-later.',
+        'sourceRepo.builtOn': 'Built on Project NEXUS by Jasper Ford',
+        'sourceRepo.accessibilityLabel':
+          'Built on Project NEXUS by Jasper Ford. Opens the source code repository on GitHub.',
       };
       return map[key] ?? key;
     },
@@ -404,8 +408,16 @@ describe('MoreScreen (More tab)', () => {
     expect(queryByText('alice@example.com')).toBeNull();
   });
 
+  // AGPL-3.0-or-later Section 7(b): the notice AND the source link must both stay
+  // reachable from ordinary navigation. Fix the screen if these fail, not the test.
   it('renders the AGPL attribution footer', () => {
     const { getByText } = render(<MoreScreen />);
     expect(getByText(/AGPL-3\.0-or-later/)).toBeTruthy();
+  });
+
+  it('renders the source-repository link alongside the attribution footer', () => {
+    const { getByTestId, getByText } = render(<MoreScreen />);
+    expect(getByTestId('source-repository-link')).toBeTruthy();
+    expect(getByText('Built on Project NEXUS by Jasper Ford')).toBeTruthy();
   });
 });

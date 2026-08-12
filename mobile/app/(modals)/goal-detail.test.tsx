@@ -65,7 +65,10 @@ const mockGoalDetailT = (key: string, opts?: Record<string, unknown>) => {
     buddy: `Buddy: ${opts?.name ?? ''}`,
     'visibility.public': 'Public',
     'common:buttons.back': 'Back',
-    'common:attribution': 'AGPL attribution',
+    // Read by <SourceRepositoryLink /> from the 'common' namespace.
+    attribution: 'AGPL attribution',
+    'sourceRepo.builtOn': 'Built on Project NEXUS by Jasper Ford',
+    'sourceRepo.accessibilityLabel': 'Opens the source code repository on GitHub.',
     'common:errors.alertTitle': 'Error',
   };
   return map[key] ?? key;

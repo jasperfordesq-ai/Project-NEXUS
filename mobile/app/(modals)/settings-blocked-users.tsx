@@ -17,6 +17,7 @@ import Avatar from '@/components/ui/Avatar';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import { getBlockedUsers, unblockUser, type BlockedUser } from '@/lib/api/settings';
 import { useTheme } from '@/lib/hooks/useTheme';
 import { withAlpha } from '@/lib/utils/color';
@@ -141,9 +142,7 @@ export default function SettingsBlockedUsersScreen() {
             ))
           )}
 
-          <Text className="mt-2 text-center text-[11px]" style={{ color: theme.textMuted }}>
-            {t('common:attribution')}
-          </Text>
+          <SourceRepositoryLink />
         </ScrollView>
         {confirmDialog}
       </SafeAreaView>

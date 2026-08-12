@@ -17,6 +17,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Input from '@/components/ui/Input';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ModalErrorBoundary from '@/components/ModalErrorBoundary';
+import SourceRepositoryLink from '@/components/SourceRepositoryLink';
 import {
   deleteGoalReminder,
   getGoal,
@@ -385,9 +386,7 @@ export default function GoalDetailScreen() {
             </HeroCard.Body>
           </HeroCard>
 
-          <Text className="mt-2 text-center text-[11px]" style={{ color: theme.textMuted }}>
-            {t('common:attribution')}
-          </Text>
+          <SourceRepositoryLink />
         </ScrollView>
       </SafeAreaView>
     </ModalErrorBoundary>

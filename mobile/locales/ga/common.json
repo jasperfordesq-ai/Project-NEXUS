@@ -1,6 +1,11 @@
 {
   "appName": "Timebank Global",
   "attribution": "Is bogearraí foinse oscailte é Project NEXUS faoi cheadúnas AGPL-3.0.",
+  "sourceRepo": {
+    "copyright": "Cóipcheart © 2024–{{year}} Jasper Ford",
+    "builtOn": "Tógtha ar Project NEXUS ag Jasper Ford",
+    "accessibilityLabel": "Tógtha ar Project NEXUS ag Jasper Ford. Osclaítear stór an chóid fhoinsigh ar GitHub."
+  },
   "tabs": {
     "home": "Baile",
     "listings": "Liostáil",
