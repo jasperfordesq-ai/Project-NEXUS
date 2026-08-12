@@ -53229,8 +53229,8 @@ export default interface Resources {
               "title": "Multi-Tenancy"
             },
             "native_mobile_app": {
-              "description": "iOS and Android builds from the same React codebase via Capacitor.",
-              "note": "Web is the primary distribution channel; native builds are tested but not yet under continuous release.",
+              "description": "A separate app built with Expo and React Native, talking to the same API as the website. One codebase produces both the Android and the iOS build.",
+              "note": "The web app is still the main way in, and neither store build is published yet. Android is closest: signing, build profiles and push notifications are all in place. iOS is built from the same code but additionally needs an Apple developer account and App Store review, so it will follow.",
               "title": "Native Mobile App"
             },
             "progressive_web_app": {
@@ -53450,7 +53450,7 @@ export default interface Resources {
         "infrastructure_label": "Infrastructure",
         "infrastructure_value": "Docker, Redis, full PWA",
         "mobile_label": "Mobile",
-        "mobile_value": "Capacitor (iOS + Android)",
+        "mobile_value": "Expo / React Native (Android release-ready, iOS pending)",
         "realtime_label": "Real-Time",
         "realtime_value": "Pusher WebSockets, Firebase Cloud Messaging",
         "search_label": "Search",

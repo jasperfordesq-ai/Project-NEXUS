@@ -37,7 +37,7 @@
       "infrastructure_label": "Bonneagar",
       "infrastructure_value": "Docker, Redis, PWA iomlán",
       "mobile_label": "Soghluaiste",
-      "mobile_value": "Toilleoir (iOS + Android)",
+      "mobile_value": "Expo / React Native (Android-réidh le scaoileadh, iOS ar feitheamh)",
       "realtime_label": "Fíor-ama",
       "realtime_value": "Pusher WebSockets, Firebase Cloud Messaging",
       "search_label": "Cuardach",
@@ -73,8 +73,8 @@
           },
           "native_mobile_app": {
             "title": "Aip dhúchasach soghluaiste",
-            "description": "Tógálacha iOS agus Android ón mbunchód céanna React trí Capacitor.",
-            "note": "Is é an gréasán an príomhchainéal dáilte; tá tógálacha dúchasacha tástáilte ach níl siad i scaoileadh leanúnach fós."
+            "description": "Aip ar leith a tógadh le Expo agus React Native, ag caint leis an API céanna leis an láithreán gréasáin. Táirgeann bunachar cód amháin an tógáil Android agus iOS.",
+            "note": "Is é an aip gréasáin an príomhbhealach isteach fós, agus níl ceachtar den dá stór foilsithe fós. Android is gaire: síniú, próifílí a thógáil agus fógraí brú i bhfeidhm. Tá iOS tógtha ón gcód céanna ach tá cuntas forbróra Apple agus athbhreithniú App Store ag teastáil uaidh freisin, mar sin beidh sé ina dhiaidh sin."
           }
         }
       },

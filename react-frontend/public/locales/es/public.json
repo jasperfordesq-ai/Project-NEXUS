@@ -37,7 +37,7 @@
       "infrastructure_label": "Infraestructura",
       "infrastructure_value": "Docker, Redis, PWA completa",
       "mobile_label": "Móvil",
-      "mobile_value": "Condensador (iOS + Android)",
+      "mobile_value": "Expo / React Native (listo para el lanzamiento de Android, pendiente de iOS)",
       "realtime_label": "Tiempo real",
       "realtime_value": "Pusher WebSockets, mensajería en la nube de Firebase",
       "search_label": "Búsqueda",
@@ -73,8 +73,8 @@
           },
           "native_mobile_app": {
             "title": "App móvil nativa",
-            "description": "Builds para iOS y Android desde la misma base de código React mediante Capacitor.",
-            "note": "La web es el canal principal de distribución; los builds nativos están probados pero aún no están en publicación continua."
+            "description": "Una aplicación separada creada con Expo y React Native, que habla con la misma API que el sitio web. Una base de código produce la versión de Android e iOS.",
+            "note": "La aplicación web sigue siendo la principal vía de entrada y ninguna de las versiones de la tienda está publicada todavía. Android es el más cercano: la firma, la creación de perfiles y las notificaciones automáticas están disponibles. iOS se construye a partir del mismo código, pero además necesita una cuenta de desarrollador de Apple y una revisión de la App Store, por lo que seguirá."
           }
         }
       },

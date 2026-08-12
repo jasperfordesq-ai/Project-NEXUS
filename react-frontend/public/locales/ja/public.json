@@ -37,7 +37,7 @@
       "infrastructure_label": "インフラ",
       "infrastructure_value": "Docker、Redis、フル PWA",
       "mobile_label": "モバイル",
-      "mobile_value": "コンデンサー (iOS + Android)",
+      "mobile_value": "Expo / React Native (Android リリース準備完了、iOS 保留中)",
       "realtime_label": "リアルタイム",
       "realtime_value": "Pusher WebSockets、Firebase Cloud Messaging",
       "search_label": "検索",
@@ -73,8 +73,8 @@
           },
           "native_mobile_app": {
             "title": "ネイティブモバイルアプリ",
-            "description": "Capacitor を介して同じ React コードベースから iOS と Android のビルドを生成。",
-            "note": "Web が主要な配布チャネルで、ネイティブビルドはテスト済みですが、まだ継続的なリリース体制にはありません。"
+            "description": "Expo と React Native で構築された別のアプリで、Web サイトと同じ API と通信します。 1 つのコードベースで Android ビルドと iOS ビルドの両方が生成されます。",
+            "note": "Web アプリはまだ主要な手段であり、どちらのストア ビルドもまだ公開されていません。 Android が最も近いです。署名、プロファイルの構築、プッシュ通知がすべて整っています。 iOS は同じコードから構築されていますが、さらに Apple 開発者アカウントと App Store のレビューが必要なので、それに続くことになります。"
           }
         }
       },

@@ -37,7 +37,7 @@
       "infrastructure_label": "البنية التحتية",
       "infrastructure_value": "Docker و Redis و PWA كاملة",
       "mobile_label": "الهاتف المحمول",
-      "mobile_value": "مكثف (iOS + أندرويد)",
+      "mobile_value": "Expo / React Native (إصدار Android جاهز، iOS معلق)",
       "realtime_label": "الوقت الفعلي",
       "realtime_value": "Pusher WebSockets و Firebase Cloud Messaging",
       "search_label": "البحث",
@@ -73,8 +73,8 @@
           },
           "native_mobile_app": {
             "title": "تطبيق هاتف أصلي",
-            "description": "بناءات iOS و Android من نفس قاعدة شيفرة React عبر Capacitor.",
-            "note": "الويب هو قناة التوزيع الأساسية؛ البناءات الأصلية مُختبرة لكنها ليست بعد ضمن إصدار مستمر."
+            "description": "تطبيق منفصل مصمم باستخدام Expo وReact Native، ويتحدث مع نفس واجهة برمجة التطبيقات مثل موقع الويب. تنتج قاعدة التعليمات البرمجية الواحدة كلا من نظامي Android وiOS.",
+            "note": "لا يزال تطبيق الويب هو الطريقة الرئيسية للدخول، ولم يتم نشر أي إصدار للمتجر بعد. Android هو الأقرب: التوقيع وإنشاء الملفات الشخصية ودفع الإشعارات كلها في مكانها الصحيح. تم إنشاء نظام التشغيل iOS من نفس الكود ولكنه يحتاج بالإضافة إلى ذلك إلى حساب مطور Apple ومراجعة App Store، لذلك سيتم اتباعه."
           }
         }
       },

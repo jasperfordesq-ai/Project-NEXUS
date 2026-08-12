@@ -37,7 +37,7 @@
       "infrastructure_label": "Infrastructure",
       "infrastructure_value": "Docker, Redis, PWA complète",
       "mobile_label": "Mobile",
-      "mobile_value": "Condensateur (iOS + Android)",
+      "mobile_value": "Expo / React Native (prêt pour la version Android, iOS en attente)",
       "realtime_label": "Temps réel",
       "realtime_value": "WebSockets Pusher, messagerie cloud Firebase",
       "search_label": "Recherche",
@@ -73,8 +73,8 @@
           },
           "native_mobile_app": {
             "title": "Application mobile native",
-            "description": "Builds iOS et Android à partir de la même base de code React via Capacitor.",
-            "note": "Le web est le canal de distribution principal ; les builds natifs sont testés mais pas encore en livraison continue."
+            "description": "Une application distincte construite avec Expo et React Native, parlant avec la même API que le site Web. Une base de code produit à la fois la version Android et iOS.",
+            "note": "L’application Web reste le principal moyen d’accès et aucune des deux versions de magasin n’est encore publiée. Android est le plus proche : la signature, la création de profils et les notifications push sont toutes en place. iOS est construit à partir du même code mais nécessite en outre un compte de développeur Apple et un examen de l'App Store, il suivra donc."
           }
         }
       },

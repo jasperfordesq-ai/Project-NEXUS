@@ -37,7 +37,7 @@
       "infrastructure_label": "Infrastructuur",
       "infrastructure_value": "Docker, Redis, volledige PWA",
       "mobile_label": "Mobiel",
-      "mobile_value": "Condensator (iOS + Android)",
+      "mobile_value": "Expo / React Native (klaar voor Android-release, iOS in behandeling)",
       "realtime_label": "Realtime",
       "realtime_value": "Pusher WebSockets, Firebase Cloud Messaging",
       "search_label": "Zoeken",
@@ -73,8 +73,8 @@
           },
           "native_mobile_app": {
             "title": "Native mobiele app",
-            "description": "iOS- en Android-builds vanuit dezelfde React-codebase via Capacitor.",
-            "note": "Web is het primaire distributiekanaal; native builds zijn getest maar nog niet in doorlopende release."
+            "description": "Een aparte app gebouwd met Expo en React Native, die met dezelfde API praat als de website. Eén codebase produceert zowel de Android- als de iOS-build.",
+            "note": "De webapp is nog steeds de belangrijkste manier om binnen te komen, en er is nog geen winkelbuild gepubliceerd. Android komt het dichtst in de buurt: ondertekenen, profielen bouwen en pushmeldingen zijn allemaal aanwezig. iOS is opgebouwd uit dezelfde code, maar heeft daarnaast een Apple-ontwikkelaarsaccount en App Store-beoordeling nodig, dus dit zal volgen."
           }
         }
       },
