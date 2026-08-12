@@ -2380,7 +2380,7 @@
   "xp_progress": "{{current}} / {{required}} XP",
   "level_progress_aria": "Fortschritt Stufe {{level}}: {{percentage}}%",
   "user_fallback": "User",
-  "release_stage": "Allgemein verfügbar (v1.5.9)",
+  "release_stage": "Allgemein verfügbar (v1.6.0)",
   "theme_picker": {
     "title": "Appearance",
     "subtitle": "Passen Sie Farbschema, Akzent und Dichte an.",

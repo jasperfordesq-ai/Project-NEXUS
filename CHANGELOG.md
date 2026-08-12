@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-12
+
 ### Added
 
 - **Added a guard so the browser tests cannot gain any more checks that pass without checking anything.** Two patterns were found yesterday while diagnosing a Safari test: **139** checks that look as though they wait for the page and do not, and **83** that can never fail at all because they end in "or true". Neither is a fault in the product — but both are how a genuine failure hides behind a retry, which cost hours of diagnosis in one day. Fixing all 222 in one pass would be worse than leaving them: done mechanically, an always-passing check becomes a wrongly-failing one, and that breaks the build for everyone. So instead there is now a **ceiling**: the build records today's counts and fails if either number goes up. The debt can only shrink, and it can be paid down whenever someone is already working in those files rather than as one disruptive sweep. This follows the same pattern the project already uses for untranslated wording and database-column references. **Proven rather than assumed:** adding one of each pattern makes the build fail; a comment that merely *mentions* the pattern is correctly ignored (three text-based guards in this project have previously flagged their own documentation); and the legitimate "click this if it happens to be there" form is correctly not counted, because that genuinely should not wait. The check also refuses to pass if it finds no test files at all — a check that reports success having measured nothing is the exact fault it exists to catch. 🔴 One correction: an earlier note said 226 of the first pattern. The precise figure is **139**; 226 came from a rougher search that also caught unrelated checks.
@@ -3260,7 +3262,8 @@ For the people behind the project, see [CONTRIBUTORS.md](CONTRIBUTORS.md) — th
 
 ---
 
-[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.9...HEAD
+[Unreleased]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.9...v1.6.0
 [1.5.9]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.8...v1.5.9
 [1.5.8]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.7...v1.5.8
 [1.5.7]: https://github.com/jasperfordesq-ai/nexus-v1/compare/v1.5.6...v1.5.7
