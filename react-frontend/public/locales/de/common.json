@@ -2284,6 +2284,8 @@
   },
   "install": {
     "cta": "App installieren",
+    "menu_cta": "Holen Sie sich die App",
+    "menu_sub": "Fügen Sie es Ihrem Telefon oder Computer hinzu",
     "cta_sub": "Schnellerer Zugriff, funktioniert offline",
     "cta_ios_sub": "NEXUS zum Startbildschirm hinzufügen",
     "banner_title": "{{appName}} für schnelleren Zugriff installieren",

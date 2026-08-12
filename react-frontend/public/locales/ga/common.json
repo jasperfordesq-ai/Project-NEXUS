@@ -2326,6 +2326,8 @@
   },
   "install": {
     "cta": "Suiteáil aip",
+    "menu_cta": "Faigh an app",
+    "menu_sub": "Cuir le do ghuthán nó ríomhaire é",
     "cta_sub": "Rochtain níos tapúla, oibríonn as líne",
     "cta_ios_sub": "Cuir NEXUS le do scáileán baile",
     "banner_title": "Suiteáil {{appName}} le haghaidh rochtana níos tapúla",

@@ -2284,6 +2284,8 @@
   },
   "install": {
     "cta": "App installeren",
+    "menu_cta": "Download de app",
+    "menu_sub": "Voeg het toe aan uw telefoon of computer",
     "cta_sub": "Snellere toegang, werkt offline",
     "cta_ios_sub": "Voeg NEXUS toe aan uw startscherm",
     "banner_title": "Installeer {{appName}} voor snellere toegang",

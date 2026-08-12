@@ -60,7 +60,7 @@ export const RESERVED_PATHS = new Set([
   // System / admin
   'admin', 'admin-legacy', 'super-admin', 'broker', 'partner-timebanks', 'dev',
   'api', 'v2', 'assets', 'downloads', 'uploads',
-  'cron', 'test-email', 'mobile', 'mobile-download', 'share-target',
+  'cron', 'test-email', 'mobile', 'mobile-download', 'install-app', 'share-target',
   'migrate-messages',
   // Static files / well-known
   'sitemap.xml', 'robots.txt', 'manifest.json', 'service-worker.js',

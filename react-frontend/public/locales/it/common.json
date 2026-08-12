@@ -2298,6 +2298,8 @@
   },
   "install": {
     "cta": "Installa l'app",
+    "menu_cta": "Ottieni l'applicazione",
+    "menu_sub": "Aggiungilo al tuo telefono o computer",
     "cta_sub": "Accesso più rapido, funziona offline",
     "cta_ios_sub": "Aggiungi NEXUS alla schermata Home",
     "banner_title": "Installa {{appName}} per un accesso più rapido",

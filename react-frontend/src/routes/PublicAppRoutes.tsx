@@ -53,6 +53,7 @@ const AcceptableUsePage = lazyWithRetry(() => import('@/pages/public/AcceptableU
 const LegalHubPage = lazyWithRetry(() => import('@/pages/public/LegalHubPage'));
 const LegalVersionHistoryPage = lazyWithRetry(() => import('@/pages/public/LegalVersionHistoryPage'));
 const FaqPage = lazyWithRetry(() => import('@/pages/public/FaqPage'));
+const InstallAppPage = lazyWithRetry(() => import('@/pages/public/InstallAppPage'));
 const HelpCenterPage = lazyWithRetry(() => import('@/pages/help/HelpCenterPage'));
 const PilotInquiryPage = lazyWithRetry(() => import('@/pages/public/PilotInquiryPage'));
 const PilotApplyPage = lazyWithRetry(() => import('@/pages/public/PilotApplyPage'));
@@ -101,6 +102,10 @@ export function PublicAppRoutes() {
         <Route path="pilot-apply" element={<ErrorBoundary><PilotApplyPage /></ErrorBoundary>} />
         <Route path="pilot-apply/status/:token" element={<ErrorBoundary><PilotApplyStatusPage /></ErrorBoundary>} />
         <Route path="help" element={<ErrorBoundary><HelpCenterPage /></ErrorBoundary>} />
+        {/* Install instructions. Registered in BOTH route registries (see
+            AppRoutes) because TenantShell picks the registry by path, not by
+            auth state — the profile menu links here from a signed-in session. */}
+        <Route path="install-app" element={<ErrorBoundary><InstallAppPage /></ErrorBoundary>} />
         <Route path="terms" element={<ErrorBoundary><TermsPage /></ErrorBoundary>} />
         <Route path="terms/versions" element={<ErrorBoundary><LegalVersionHistoryPage /></ErrorBoundary>} />
         <Route path="privacy" element={<ErrorBoundary><PrivacyPage /></ErrorBoundary>} />

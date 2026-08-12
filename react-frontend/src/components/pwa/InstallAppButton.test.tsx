@@ -3,6 +3,15 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+/**
+ * Tests for InstallAppButton.
+ *
+ * The behaviour under test changed on 2026-08-12: the entry point navigates to
+ * the /install-app instructions page instead of firing a browser install
+ * prompt, and it renders on every browser (including Chrome/Firefox on iOS,
+ * which the old shouldOfferInstall gate hid).
+ */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@/test/test-utils';
 import { createMockContexts } from '@/test/mock-contexts';
@@ -22,29 +31,12 @@ const { mockApi } = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/api', () => ({ api: mockApi, default: mockApi }));
 
-// ─── installPrompt lib mock ───────────────────────────────────────────────────
-// Hoist mock data so vi.mock factory can reference them safely without
-// per-render arrow functions (avoids infinite-loop / max-update-depth).
-const { mockState, mockShouldOffer, mockRequestInstall, mockUseInstallPrompt } =
-  vi.hoisted(() => {
-    const mockState = {
-      canPrompt: false,
-      isIos: false,
-      isInstalled: false,
-      isIosSafari: false,
-      browser: 'chrome-desktop' as const,
-    };
-    const mockShouldOffer = vi.fn(() => true);
-    const mockRequestInstall = vi.fn();
-    const mockUseInstallPrompt = vi.fn(() => ({ ...mockState }));
-    return { mockState, mockShouldOffer, mockRequestInstall, mockUseInstallPrompt };
-  });
-
-vi.mock('@/lib/installPrompt', () => ({
-  useInstallPrompt: mockUseInstallPrompt,
-  shouldOfferInstall: mockShouldOffer,
-  requestInstall: mockRequestInstall,
-}));
+// ─── Router mock ──────────────────────────────────────────────────────────────
+const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }));
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return { ...actual, useNavigate: () => mockNavigate };
+});
 
 // ─── Contexts ─────────────────────────────────────────────────────────────────
 const mockToast = {
@@ -100,114 +92,49 @@ function renderButton({
 // ─────────────────────────────────────────────────────────────────────────────
 describe('InstallAppButton', () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    // Default: install is offerable, not iOS Safari
-    mockShouldOffer.mockReturnValue(true);
-    mockUseInstallPrompt.mockReturnValue({
-      canPrompt: false,
-      isIos: false,
-      isInstalled: false,
-      isIosSafari: false,
-      browser: 'chrome-desktop' as const,
-    });
+    vi.clearAllMocks();
   });
 
-  it('renders the children render-prop when install should be offered', async () => {
+  it('renders the children render-prop', async () => {
     const { InstallAppButton } = await import('./InstallAppButton');
     render(<InstallAppButton>{renderButton}</InstallAppButton>);
     expect(screen.getByTestId('install-btn')).toBeInTheDocument();
   });
 
-  it('renders nothing (returns null) when shouldOfferInstall is false', async () => {
-    mockShouldOffer.mockReturnValue(false);
+  it('passes the translated label "Get the app" to the render-prop', async () => {
     const { InstallAppButton } = await import('./InstallAppButton');
     render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(screen.queryByTestId('install-btn')).toBeNull();
+    expect(screen.getByTestId('label')).toHaveTextContent('Get the app');
   });
 
-  it('passes the translated label "Install app" to the render-prop', async () => {
+  it('passes the sublabel to the render-prop', async () => {
     const { InstallAppButton } = await import('./InstallAppButton');
     render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(screen.getByTestId('label')).toHaveTextContent('Install app');
+    expect(screen.getByTestId('sublabel')).toHaveTextContent('Add it to your phone or computer');
   });
 
-  it('passes the non-iOS sublabel "Faster access, works offline" by default', async () => {
-    const { InstallAppButton } = await import('./InstallAppButton');
-    render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(screen.getByTestId('sublabel')).toHaveTextContent('Faster access, works offline');
-  });
-
-  it('passes the iOS sublabel when isIosSafari is true', async () => {
-    mockUseInstallPrompt.mockReturnValue({
-      canPrompt: false,
-      isIos: true,
-      isInstalled: false,
-      isIosSafari: true,
-      browser: 'ios-safari' as const,
-    });
-    const { InstallAppButton } = await import('./InstallAppButton');
-    render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(screen.getByTestId('sublabel')).toHaveTextContent('Add NEXUS to your home screen');
-  });
-
-  it('calls requestInstall with the prompt state when button is clicked', async () => {
-    const promptState = {
-      canPrompt: true,
-      isIos: false,
-      isInstalled: false,
-      isIosSafari: false,
-      browser: 'chrome-desktop' as const,
-    };
-    mockUseInstallPrompt.mockReturnValue(promptState);
+  it('navigates to the tenant-scoped install page when clicked', async () => {
     const { InstallAppButton } = await import('./InstallAppButton');
     render(<InstallAppButton>{renderButton}</InstallAppButton>);
 
     fireEvent.click(screen.getByTestId('install-btn'));
-    expect(mockRequestInstall).toHaveBeenCalledTimes(1);
-    expect(mockRequestInstall).toHaveBeenCalledWith(promptState);
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledWith('/test/install-app');
   });
 
-  it('does not call requestInstall before the button is clicked', async () => {
+  it('does not navigate before the button is clicked', async () => {
     const { InstallAppButton } = await import('./InstallAppButton');
     render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(mockRequestInstall).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('calls requestInstall again on a second click', async () => {
+  it('navigates again on a second click', async () => {
     const { InstallAppButton } = await import('./InstallAppButton');
     render(<InstallAppButton>{renderButton}</InstallAppButton>);
     const btn = screen.getByTestId('install-btn');
     fireEvent.click(btn);
     fireEvent.click(btn);
-    expect(mockRequestInstall).toHaveBeenCalledTimes(2);
-  });
-
-  it('renders nothing when isInstalled is true (shouldOfferInstall returns false)', async () => {
-    mockUseInstallPrompt.mockReturnValue({
-      canPrompt: false,
-      isIos: false,
-      isInstalled: true,
-      isIosSafari: false,
-      browser: 'chrome-desktop' as const,
-    });
-    mockShouldOffer.mockReturnValue(false);
-    const { InstallAppButton } = await import('./InstallAppButton');
-    render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(screen.queryByTestId('install-btn')).toBeNull();
-  });
-
-  it('renders nothing for ios-other browser (shouldOfferInstall returns false)', async () => {
-    mockUseInstallPrompt.mockReturnValue({
-      canPrompt: false,
-      isIos: true,
-      isInstalled: false,
-      isIosSafari: false,
-      browser: 'ios-other' as const,
-    });
-    mockShouldOffer.mockReturnValue(false);
-    const { InstallAppButton } = await import('./InstallAppButton');
-    render(<InstallAppButton>{renderButton}</InstallAppButton>);
-    expect(screen.queryByTestId('install-btn')).toBeNull();
+    expect(mockNavigate).toHaveBeenCalledTimes(2);
   });
 
   it('accepts a custom render-prop returning a link element', async () => {
@@ -222,6 +149,6 @@ describe('InstallAppButton', () => {
       </InstallAppButton>,
     );
     expect(screen.getByTestId('install-link')).toBeInTheDocument();
-    expect(screen.getByTestId('install-link')).toHaveTextContent('Install app');
+    expect(screen.getByTestId('install-link')).toHaveTextContent('Get the app');
   });
 });

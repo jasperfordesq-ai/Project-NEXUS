@@ -1055,9 +1055,11 @@ class MenuManager
                 'color' => '#6366f1',
                 'separator_before' => true
             ],
+            // /mobile-download has no React route — this link 404'd. Points at
+            // the install instructions page added 2026-08-12.
             'get_app' => [
                 'label' => 'Get App',
-                'url' => '/mobile-download',
+                'url' => '/install-app',
                 'icon' => 'fa-solid fa-mobile-screen-button',
                 'separator_before' => true
             ]

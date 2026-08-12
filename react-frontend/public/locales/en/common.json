@@ -2284,6 +2284,8 @@
   },
   "install": {
     "cta": "Install app",
+    "menu_cta": "Get the app",
+    "menu_sub": "Add it to your phone or computer",
     "cta_sub": "Faster access, works offline",
     "cta_ios_sub": "Add NEXUS to your home screen",
     "banner_title": "Install {{appName}} for faster access",

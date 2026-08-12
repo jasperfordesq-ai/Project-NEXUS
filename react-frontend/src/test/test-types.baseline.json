@@ -1177,7 +1177,7 @@
       "TS2769": 1
     },
     "src/components/pwa/InstallAppButton.test.tsx": {
-      "TS2322": 3
+      "TS2322": 1
     },
     "src/components/pwa/InstallBanner.test.tsx": {
       "TS2322": 2,
@@ -2219,6 +2219,6 @@
   },
   "totals": {
     "fileCount": 649,
-    "errorCount": 1936
+    "errorCount": 1934
   }
 }

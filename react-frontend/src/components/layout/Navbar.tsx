@@ -36,9 +36,6 @@ import ShieldCheck from 'lucide-react/icons/shield-check';
 import BadgeCheck from 'lucide-react/icons/badge-check';
 import ExternalLink from 'lucide-react/icons/external-link';
 import Download from 'lucide-react/icons/download';
-import { useInstallPrompt,
-  shouldOfferInstall,
-  requestInstall } from '@/lib/installPrompt';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
@@ -141,8 +138,6 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
   const { counts } = useNotificationsOptional();
   const { resolvedTheme, toggleTheme } = useTheme();
   const { headerMenus, hasCustomMenus } = useMenuContext();
-  const installState = useInstallPrompt();
-  const canShowInstall = shouldOfferInstall(installState);
   // Page-provided title shown next to the brand on phones (pages that hide
   // their own header for vertical space publish it via useSetAppBarTitle).
   const appBarTitle = useAppBarTitle();
@@ -223,11 +218,6 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
     if (open) { setTimebankingOpen(false); setCommunityOpen(false); setMoreOpen(false); setCreateOpen(false); setUserOpen(false); }
     setTenantSwitcherOpen(open);
   }, []);
-
-  const handleInstallClick = useCallback(() => {
-    closeAllDropdowns();
-    requestInstall(installState);
-  }, [closeAllDropdowns, installState]);
 
   // Identity verification status — shows "Verify Identity" or "Identity Verified" in
   // utility bar. Gated by the per-tenant `identity_verification` feature flag.
@@ -917,7 +907,6 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                         onAction={(key) => {
                           const k = String(key);
                           if (k === 'theme') { toggleTheme(); closeAllDropdowns(); return; }
-                          if (k === 'install') { handleInstallClick(); return; }
                           if (k === 'logout') { handleLogout(); return; }
                           if (k === 'profile-header') return;
                           dropdownNavigate(k);
@@ -978,17 +967,18 @@ export function Navbar({ onMobileMenuOpen, externalSearchOpen, onSearchOpenChang
                         >
                           {resolvedTheme === 'dark' ? t('user_menu.light_mode') : t('user_menu.dark_mode')}
                         </DropdownItem>
-                        {canShowInstall ? (
-                          <DropdownItem
-                            key="install" id="install"
-                            description={installState.isIosSafari
-                              ? t('install.cta_ios_sub')
-                              : t('install.cta_sub')}
-                            startContent={<Download className="w-4 h-4 text-accent" aria-hidden="true" />}
-                          >
-                            {t('install.cta')}
-                          </DropdownItem>
-                        ) : null}
+                        {/* Goes to the instructions page — it must NOT fire a
+                            browser install prompt. Install is broken on Apple
+                            devices, so the page states what works where and
+                            offers the one-tap install only when the browser has
+                            actually given us a prompt. */}
+                        <DropdownItem
+                          key={tenantPath('/install-app')} id={tenantPath('/install-app')}
+                          description={t('install.menu_sub')}
+                          startContent={<Download className="w-4 h-4 text-accent" aria-hidden="true" />}
+                        >
+                          {t('install.menu_cta')}
+                        </DropdownItem>
                       </DropdownSection>
 
                       <DropdownSection>

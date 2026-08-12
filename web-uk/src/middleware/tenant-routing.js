@@ -83,6 +83,7 @@ const RESERVED_CHILD_SEGMENTS = new Set([
   'ideation',
   'impact-report',
   'impact-summary',
+  'install-app',
   'join',
   'jobs',
   'kb',

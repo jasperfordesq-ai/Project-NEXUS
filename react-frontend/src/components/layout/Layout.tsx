@@ -18,7 +18,6 @@ import { Footer } from './Footer';
 import { SourceRepositoryLink } from './SourceRepositoryLink';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { OfflineIndicator } from '@/components/feedback/OfflineIndicator';
-import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { InstallModalHost } from '@/components/pwa/InstallModalHost';
 import { SessionExpiredModal } from '@/components/feedback/SessionExpiredModal';
@@ -230,8 +229,13 @@ export function Layout({
           </Suspense>
         )}
 
-        {/* PWA install banner — one-time, dismissible, hidden when installed */}
-        <InstallBanner />
+        {/* The one-time PWA install banner used to render here. Withdrawn
+            2026-08-12 (owner instruction): its install path does not work on
+            Apple devices, so the banner promised something a large share of
+            members could not do. The install affordance now lives on the
+            /install-app page, which is honest about which devices work today.
+            <InstallBanner /> is still in the tree (components/pwa) so it can be
+            put back once Safari/iOS install is fixed. */}
 
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 min-w-0">
           <PageTransition>

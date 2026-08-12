@@ -310,6 +310,9 @@ class SitemapService
         $urls[] = $this->url($baseUrl, '/help', $now, 'monthly', '0.5');
         $urls[] = $this->url($baseUrl, '/contact', $now, 'yearly', '0.4');
         $urls[] = $this->url($baseUrl, '/faq', $now, 'monthly', '0.5');
+        // Install instructions ("Get the app") — a public help page members are
+        // pointed at from the profile menu, so it should be findable.
+        $urls[] = $this->url($baseUrl, '/install-app', $now, 'monthly', '0.4');
         // Legal pages
         foreach (['terms', 'privacy', 'cookies', 'accessibility', 'acceptable-use', 'community-guidelines'] as $page) {
             $urls[] = $this->url($baseUrl, "/{$page}", $now, 'yearly', '0.2');
