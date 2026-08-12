@@ -1,6 +1,6 @@
 # Accessible Frontend Takeover
 
-Last reviewed: 2026-08-11
+Last reviewed: 2026-08-12
 
 Project NEXUS has two accessible frontends. This page records the decision that
 one replaces the other, which phase that changeover is in, and which document
@@ -23,8 +23,12 @@ are now superseded by this page.
 |---|---|---|
 | Location | `accessible-frontend/` plus `app/Http/Controllers/GovukAlpha/` | `web-uk/` |
 | Stack | Laravel Blade, rendered by the PHP application | Node/Express + Nunjucks + GOV.UK Frontend, consuming the Laravel HTTP API |
-| Served by | The Laravel/PHP application container | Its own container (not yet deployed) |
-| Status | **Currently deployed.** Retires at the end of the changeover. | **Takes over.** Not yet deployed. |
+| Served by | The Laravel/PHP application container | Its own container, deployed |
+| Status | **Still deployed**, serving the community accessible domains and every `/{tenantSlug}/accessible/...` path. Retires at the end of the changeover. | **Deployed and live.** Took over `accessible.project-nexus.ie` on **2026-08-12**. |
+
+🔴 **Both are serving live traffic right now.** The cutover moved one host, not the
+whole track. `/version` is the only way to tell which one answered a request:
+`web-uk` returns `{"service":"nexus-webuk",…}` and Blade does not.
 
 Both are separate from `react-frontend/`, which is the main product UI and is not
 affected by this changeover.
@@ -53,7 +57,11 @@ name, not a public one.
 
 ## 🔴 Which phase are we in — Phase A
 
-**Phase A: Blade is still deployed.** Therefore:
+**Phase A: Blade is still deployed** — on the community accessible domains and all
+`/{tenantSlug}/accessible/...` paths, even though `web-uk` now owns
+`accessible.project-nexus.ie`. The phase turns on Blade being decommissioned, not
+on the first host being cut over, so the cutover of 2026-08-12 did **not** end
+Phase A. Therefore:
 
 - Blade remains the **observable-behaviour specification**. Where `web-uk`
   disagrees with Blade about what a page does, Blade is right unless the
@@ -79,7 +87,7 @@ qualification means the Phase A rule above.
 | Legal acceptance enforcement | **Built.** Server-side enforcement, a `web-uk` interstitial, and a mobile acceptance screen. |
 | Bot protection on the contact form | **Built.** The challenge renders on the contact form, and the platform-side configuration fault that silently disabled it is fixed. |
 | Cookie-consent record keeping | **Built.** Anonymous visitors' choices are now recorded, as Blade already did. |
-| Deployment path | **Built, and locally rehearsed 2026-08-11.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. The production image was run against the local platform and proved: it does not listen at all until Redis is reachable (so a broken deploy aborts); `/health` then returns `OK`; `/version` returns `{"service":"nexus-webuk",…}` — the exact string the deploy smoke test matches; and a real accessible page renders at 200 in 25 KB. Nothing has been deployed to the server, and no cutover or rollback has been rehearsed there. |
+| Deployment path | **Built, and locally rehearsed 2026-08-11.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. The production image was run against the local platform and proved: it does not listen at all until Redis is reachable (so a broken deploy aborts); `/health` then returns `OK`; `/version` returns `{"service":"nexus-webuk",…}` — the exact string the deploy smoke test matches; and a real accessible page renders at 200 in 25 KB. **Deployed to the server and cut over on 2026-08-12**, with twelve post-cutover checks passing; the rollback path is documented and verified on the real server, and the guard that stops an ordinary deploy reverting the switch has been armed. From now on a deploy must pass `--with-webuk` or it refuses to run. |
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
 | Blade retirement | **Not started.** A separate change with its own review, after a soak period. |
 

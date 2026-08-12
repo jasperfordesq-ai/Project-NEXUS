@@ -21,7 +21,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38BDF8.svg?logo=tailwindcss&logoColor=white)](react-frontend/package.json)
 [![Vite](https://img.shields.io/badge/Vite-7-646CFF.svg?logo=vite&logoColor=white)](react-frontend/package.json)
 
-**Accessible site** &nbsp;
+**Accessible site** (the second frontend — live, in active development) &nbsp;
 [![Node.js](https://img.shields.io/badge/Node.js-22-5FA04E.svg?logo=nodedotjs&logoColor=white)](web-uk/package.json)
 [![Express](https://img.shields.io/badge/Express-4-000000.svg?logo=express&logoColor=white)](web-uk/package.json)
 [![Nunjucks](https://img.shields.io/badge/Nunjucks-3.2-1C4913.svg)](web-uk/package.json)
@@ -31,7 +31,7 @@
 [![Expo](https://img.shields.io/badge/Expo-54-000020.svg?logo=expo&logoColor=white)](mobile/package.json)
 [![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB.svg?logo=react&logoColor=black)](mobile/package.json)
 
-**Second backend** (contract comparison, service retired) &nbsp;
+**Second backend** (switchable, substantially built) &nbsp;
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4.svg?logo=dotnet&logoColor=white)](aspnet-backend/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)](aspnet-backend/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600.svg?logo=rabbitmq&logoColor=white)](aspnet-backend/)
@@ -117,6 +117,12 @@ asset pipeline, brand-compliance checks, Jest suite (74 test files, 1,787 tests)
 and its own production container. It talks to the platform over the same public
 HTTP API the React app uses, which is exactly why it can be pointed at either
 backend once the second one is certified.
+
+**It is under active development.** Work on the accessible frontend resumed on
+2026-08-11, it took over the platform accessible domain the following day, and it
+is the track currently being built out — unlike the second backend, which remains
+paused. The two were paused together on 2026-07-15 and their states have since
+diverged; do not read one's status from the other.
 
 🔴 **There are two accessible frontends and the changeover is half-done.** The
 Node application took over `accessible.project-nexus.ie` on **2026-08-12**; the
