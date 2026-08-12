@@ -251,7 +251,7 @@ describe('AdminSidebar', () => {
     expect(overviewText.indexOf('Broker Panel')).toBeLessThan(overviewText.indexOf('Super Admin Panel'));
   });
 
-  it('pins only the Caring Community link in the footer', () => {
+  it('pins exactly the Caring Community and documentation links in the footer', () => {
     const { container } = render(
       <W><AdminSidebar collapsed={false} onToggle={mockOnToggle} /></W>
     );
@@ -261,12 +261,23 @@ describe('AdminSidebar', () => {
 
     const footer = container.querySelector('aside > div:last-child');
     const footerLinks = Array.from(footer?.querySelectorAll('a') ?? []);
-    expect(footerLinks).toHaveLength(1);
+    // Exactly two, still: this footer is pinned and always visible, so the count
+    // is asserted deliberately to stop it accumulating entries.
+    expect(footerLinks).toHaveLength(2);
+
     expect(footerLinks[0]).toHaveTextContent('Caring Community');
     expect(footerLinks[0]).toHaveTextContent('Alpha');
     expect(footerLinks[0]).toHaveAttribute('href', '/test/caring');
     expect(footerLinks[0].className).toContain('border-warning/30');
     expect(footerLinks[0].className).toContain('bg-warning/10');
+
+    // Documentation is external, so a plain anchor opening in a new tab — not a
+    // router link, which would route an absolute URL to a dead admin path.
+    expect(footerLinks[1]).toHaveTextContent('Documentation');
+    expect(footerLinks[1]).toHaveAttribute('href', 'https://docs.project-nexus.ie/');
+    expect(footerLinks[1]).toHaveAttribute('target', '_blank');
+    expect(footerLinks[1]).toHaveAttribute('rel', 'noopener noreferrer');
+
     expect(footer?.textContent).not.toContain('Help Centre');
   });
 
