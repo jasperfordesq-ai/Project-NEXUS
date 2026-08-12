@@ -176,6 +176,78 @@ describe('🔴 a platform OUTAGE must not be reported as a missing community', (
   });
 });
 
+describe('🔴 a request that has already been answered must STOP', () => {
+  /**
+   * Observed in production minutes after the 2026-08-12 cutover, on
+   * `GET /hour-timebank/alpha/` — a legacy bookmark:
+   *
+   *     Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent
+   *         at contentSecurityPolicyMiddleware (helmet)
+   *
+   * The `/alpha/` branch redirects and then returns `undefined`, which the next
+   * stage read as "no such community" — so it ran the refusal path (set req.url,
+   * called next()) on a request that was already finished. The chain carried on and
+   * helmet threw trying to add a CSP header to a sent response.
+   *
+   * The 301 was still delivered, so members were not broken — which is exactly why
+   * asserting the status code alone did not catch it. The existing `/alpha/` test
+   * below asserts 301 and passed throughout. This one asserts that nothing
+   * downstream runs, which is the part that was wrong.
+   */
+  function buildAppTrackingDownstream() {
+    const state = { downstreamRuns: 0, errors: [] };
+    const app = express();
+    app.use(tenantRouting);
+    app.use((req, res, next) => {
+      state.downstreamRuns += 1;
+      // Mimic what helmet does: touch a header. If the response is already sent this
+      // throws, which is the actual production symptom.
+      try {
+        res.setHeader('Content-Security-Policy', "default-src 'self'");
+      } catch (err) {
+        state.errors.push(err.code || err.message);
+      }
+      next();
+    });
+    app.use((req, res) => res.status(200).json({ reached: true }));
+    return { app, state };
+  }
+
+  it('does not run downstream middleware after the legacy /alpha/ redirect', async () => {
+    const { app, state } = buildAppTrackingDownstream();
+
+    const response = await request(app).get('/hour-timebank/alpha/');
+
+    expect(response.status).toBe(301);
+    expect(response.headers.location).toBe('/hour-timebank/accessible');
+    // The part that was broken: the chain continued past a sent response.
+    expect(state.downstreamRuns).toBe(0);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('does not run downstream middleware after a deeper /alpha/ redirect', async () => {
+    const { app, state } = buildAppTrackingDownstream();
+
+    const response = await request(app).get('/hour-timebank/alpha/listings?page=2');
+
+    expect(response.status).toBe(301);
+    expect(response.headers.location).toBe('/hour-timebank/accessible/listings?page=2');
+    expect(state.downstreamRuns).toBe(0);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('still refuses an unknown community — the guard must not swallow that too', async () => {
+    // The control. `res.headersSent` is false there, so the refusal must still run;
+    // otherwise the fix above would quietly disable the 404 it sits next to.
+    mockGetTenantBootstrap.mockRejectedValue(new MockApiError('Not found', 404));
+    const { app, state } = buildAppTrackingDownstream();
+
+    await request(app).get('/not-a-real-community/accessible/');
+
+    expect(state.downstreamRuns).toBe(1);
+  });
+});
+
 describe('legacy /alpha/ URLs are unaffected by the change', () => {
   it('redirects before any tenant lookup happens', async () => {
     // The redirect runs ahead of resolution, so a bookmark keeps working even for a

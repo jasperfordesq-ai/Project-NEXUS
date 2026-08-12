@@ -110,6 +110,15 @@ Usage:
   sudo bash scripts/deploy/bluegreen-deploy.sh logs
   sudo bash scripts/deploy/bluegreen-deploy.sh logs -f
   sudo bash scripts/deploy/bluegreen-deploy.sh monitor
+  sudo bash scripts/deploy/bluegreen-deploy.sh confirm-webuk-live [hostname]
+
+confirm-webuk-live:
+  Run straight after the Apache reload that switches a hostname to web-uk.
+  It probes the public hostname and records web-uk as live only if web-uk
+  actually answers. That recording is what makes a later deploy REFUSE to
+  drop web-uk without being told to. Until it exists, an ordinary deploy
+  would put the hostname back to the Blade frontend with nothing failing.
+  Defaults to accessible.project-nexus.ie.
 
 Apache route switch file:
   Auto-detected at /etc/apache2/conf-enabled/nexus-active-upstreams.conf
@@ -186,6 +195,68 @@ enforce_webuk_live_marker() {
     log_err "  Keep web-uk:    add --with-webuk"
     log_err "  Really drop it: add --without-webuk"
     exit 2
+}
+
+# 🔴 Arm the live marker at CUTOVER time, which is the only moment that works.
+#
+# The marker is normally latched by post_cutover_smoke, but that runs during a
+# deploy — and the Apache switch happens AFTER the deploy, by hand. So on the
+# real cutover the probe correctly saw Blade, correctly declined to latch, and
+# left the protection dormant for the whole window between the switch and the
+# next deploy. That window is exactly when a flagless deploy would silently undo
+# the switch. Observed on 2026-08-12: the switch went live with no marker.
+#
+# This latches from the same evidence post_cutover_smoke uses — a live probe of a
+# real public hostname — so it CANNOT be used to assert something untrue. There is
+# deliberately no --force: if the host is not serving web-uk, refusing is correct.
+cmd_confirm_webuk_live() {
+    local host="${1:-accessible.project-nexus.ie}"
+    local version
+
+    log_info "Probing https://$host/version"
+    version="$(curl -sf -H 'Cache-Control: no-cache' \
+        "https://$host/version?_t=$(date +%s)" 2>/dev/null || true)"
+
+    if [ -z "$version" ]; then
+        log_err "No response from https://$host/version"
+        log_err "Blade does not serve /version at all, so an empty response means this"
+        log_err "hostname is NOT yet served by web-uk. Nothing recorded."
+        return 1
+    fi
+
+    if ! echo "$version" | grep -q '"service":"nexus-webuk"'; then
+        log_err "https://$host is not served by web-uk."
+        log_err "Response: $version"
+        log_err "Nothing recorded."
+        return 1
+    fi
+
+    log_ok "Confirmed: $host is served by web-uk"
+    log_info "  $version"
+
+    if [ -f "$WEBUK_LIVE_MARKER" ]; then
+        log_ok "Marker already present at $WEBUK_LIVE_MARKER — nothing to do."
+        sed -n '1,5p' "$WEBUK_LIVE_MARKER" 2>/dev/null || true
+        return 0
+    fi
+
+    # The commit comes out of the probe response itself, not from local git or a
+    # deploy variable — it is what the host is actually SERVING, which is the only
+    # commit worth recording here.
+    local serving_commit
+    serving_commit="$(echo "$version" | sed -n 's/.*"release":"\([^"]*\)".*/\1/p')"
+
+    if printf 'confirmed_at=%s\nhost=%s\ncommit=%s\nconfirmed_by=confirm-webuk-live\n' \
+        "$(date -Iseconds)" "$host" "${serving_commit:-unknown}" \
+        > "$WEBUK_LIVE_MARKER" 2>/dev/null; then
+        log_ok "web-uk recorded as LIVE ($WEBUK_LIVE_MARKER)"
+        log_info "From now on a deploy must pass --with-webuk, or it refuses."
+        return 0
+    fi
+
+    log_err "Could not write $WEBUK_LIVE_MARKER — the live-marker protections are NOT armed."
+    log_err "Run this with sudo."
+    return 1
 }
 
 write_deploy_status() {
@@ -1777,6 +1848,10 @@ case "${1:-}" in
     deploy) parse_flags "$@"; enforce_webuk_live_marker; detach_if_requested deploy "$@"; cmd_deploy ;;
     rollback) parse_flags "$@"; enforce_webuk_live_marker; detach_if_requested rollback "$@"; cmd_rollback ;;
     status) cmd_status ;;
+    # Run this immediately after the Apache reload that cuts a hostname over.
+    # It probes the public host and records web-uk as live ONLY if web-uk really
+    # answers, which is what arms the "do not silently un-deploy it" refusal.
+    confirm-webuk-live) shift; cmd_confirm_webuk_live "${1:-}" ;;
     logs) shift; cmd_logs "${1:-}" ;;
     monitor) cmd_monitor ;;
     -h|--help|help|"") usage ;;

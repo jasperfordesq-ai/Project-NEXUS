@@ -646,6 +646,28 @@ function tenantRouting(req, res, next) {
       return resolveSharedMountTenant(tenantSlug);
     })
     .then((tenant) => {
+      // 🔴 A RESPONSE THAT HAS ALREADY BEEN SENT IS NOT "no such community".
+      //
+      // Two branches above answer the request and then `return` — the custom-domain
+      // mount redirect and the legacy `/alpha/` redirect. Both hand `undefined` to
+      // this callback, which is falsy, so reading falsy as "the community does not
+      // exist" ran the refusal path on a request that was already finished: it set
+      // req.url and called next(), the chain carried on, and helmet threw
+      // ERR_HTTP_HEADERS_SENT trying to add a CSP header to a sent response.
+      //
+      // This was observed in production within minutes of the 2026-08-12 cutover, on
+      // GET /hour-timebank/alpha/ — i.e. on the legacy-bookmark path. The redirect
+      // itself was still delivered correctly, so members were not broken, but every
+      // old bookmark raised an application error.
+      //
+      // It is the SAME mistake as the one documented in the !match branch above
+      // (gating on a falsy `handled` that also means "already succeeded"), made a
+      // second time in the sibling branch. The reliable signal differs per branch:
+      // there it is req.accessibleRouting, here it is res.headersSent.
+      if (res.headersSent) {
+        return;
+      }
+
       if (!tenant) {
         // 🔴 The community named in the URL does not exist ⇒ 404, matching Blade.
         //

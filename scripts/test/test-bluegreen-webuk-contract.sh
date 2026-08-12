@@ -270,6 +270,97 @@ else
   echo "  FAIL  an argument guard runs AFTER the push (guard=$guard_line env=$envguard_line push=$push_line)"; fail=$((fail+1))
 fi
 
+echo
+echo "=== 10. confirm-webuk-live arms the marker, and CANNOT arm it on a lie ==="
+# 🔴 Why this subcommand exists. post_cutover_smoke latches the marker, but it runs
+# DURING a deploy — and the Apache switch happens afterwards, by hand. So on the
+# real cutover (2026-08-12) the probe correctly saw Blade, correctly declined to
+# latch, and left the protection dormant for the whole window between the switch
+# and the next deploy. That window is exactly when a flagless deploy silently undoes
+# the switch. This is the arming step for that moment.
+
+if grep -q 'confirm-webuk-live) shift; cmd_confirm_webuk_live' "$SRC"; then
+  echo "  PASS  confirm-webuk-live is dispatched (not swallowed by the catch-all)"
+else
+  echo "  FAIL  confirm-webuk-live is not wired into the dispatch"; fail=$((fail+1))
+fi
+
+# Run the real function against a stubbed curl, in an isolated marker location, so
+# each of the three responses is exercised for real rather than grepped for.
+CTMP=$(mktemp)
+MARKDIR=$(mktemp -d)
+{
+  echo 'WEBUK_LIVE_MARKER="'"$MARKDIR"'/.webuk-live"'
+  sed -n '/^cmd_confirm_webuk_live() {/,/^}/p' "$SRC"
+  echo 'log_err() { echo "ERR: $*"; }'
+  echo 'log_info() { echo "INFO: $*"; }'
+  echo 'log_ok() { echo "OK: $*"; }'
+} > "$CTMP"
+
+# Stub curl: FAKE_VERSION is what the "public host" answers.
+curl() { printf '%s' "${FAKE_VERSION:-}"; }
+export -f curl 2>/dev/null || true
+# shellcheck disable=SC1090
+source "$CTMP"
+
+# (a) Silence must refuse. Blade serves no /version, so empty means "still Blade".
+#
+# 🔴 Mutation-tested, and the result is worth recording: defeating the `-z` check
+# does NOT make this pass, because an empty string also fails the nexus-webuk grep
+# below it. The two guards are genuinely redundant, which is fine. So this case is
+# additionally asserted on the OPERATOR MESSAGE, which only the empty-response
+# branch produces — otherwise the assertion could not tell the branches apart and
+# would silently stop covering the one it names.
+rm -f "$MARKDIR/.webuk-live"
+FAKE_VERSION=""
+out_empty="$(cmd_confirm_webuk_live example.test 2>&1)" && rc=0 || rc=1
+if [ "$rc" -eq 0 ]; then
+  echo "  FAIL  armed the marker on an EMPTY response"; fail=$((fail+1))
+elif [ -f "$MARKDIR/.webuk-live" ]; then
+  echo "  FAIL  wrote the marker despite refusing"; fail=$((fail+1))
+elif ! echo "$out_empty" | grep -q 'No response from'; then
+  echo "  FAIL  refused, but not via the empty-response branch (message missing)"; fail=$((fail+1))
+  echo "        got: $out_empty"
+else
+  echo "  PASS  an empty /version refuses, writes nothing, and says why"
+fi
+
+# (b) A response from the WRONG service must refuse too.
+FAKE_VERSION='{"service":"something-else","release":"abc"}'
+if cmd_confirm_webuk_live example.test >/dev/null 2>&1; then
+  echo "  FAIL  armed the marker for a non-webuk service"; fail=$((fail+1))
+elif [ -f "$MARKDIR/.webuk-live" ]; then
+  echo "  FAIL  wrote the marker for a non-webuk service"; fail=$((fail+1))
+else
+  echo "  PASS  a non-webuk service refuses and writes nothing"
+fi
+
+# (c) A real web-uk response arms it, and records the commit the host is SERVING.
+FAKE_VERSION='{"service":"nexus-webuk","release":"7b39b1b79205","color":"blue"}'
+if cmd_confirm_webuk_live example.test >/dev/null 2>&1 && [ -f "$MARKDIR/.webuk-live" ]; then
+  if grep -q 'commit=7b39b1b79205' "$MARKDIR/.webuk-live" \
+     && grep -q 'host=example.test' "$MARKDIR/.webuk-live"; then
+    echo "  PASS  a confirmed web-uk host arms the marker with the served commit"
+  else
+    echo "  FAIL  marker written but without the served commit/host"; fail=$((fail+1))
+    sed 's/^/        /' "$MARKDIR/.webuk-live"
+  fi
+else
+  echo "  FAIL  a confirmed web-uk host did not arm the marker"; fail=$((fail+1))
+fi
+
+# (d) Idempotent: running it twice must succeed and not corrupt the record.
+before="$(cat "$MARKDIR/.webuk-live")"
+if cmd_confirm_webuk_live example.test >/dev/null 2>&1 \
+   && [ "$before" = "$(cat "$MARKDIR/.webuk-live")" ]; then
+  echo "  PASS  running it again is a no-op"
+else
+  echo "  FAIL  a second run failed or rewrote the marker"; fail=$((fail+1))
+fi
+
+unset -f curl
+rm -rf "$CTMP" "$MARKDIR"
+
 rm -rf "$REL" "$REL2" "$TMP"
 echo
 if [ "$fail" -eq 0 ]; then echo "ALL CHECKS PASSED"; else echo "$fail CHECK(S) FAILED"; exit 1; fi
