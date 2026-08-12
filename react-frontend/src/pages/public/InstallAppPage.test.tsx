@@ -117,28 +117,50 @@ describe('InstallAppPage', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Get the app' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'Where things stand right now' })).toBeInTheDocument();
-    expect(screen.getByText('Available now')).toBeInTheDocument();
+    // "Available now" is deliberately used twice — as the status label here and
+    // as the chip on the home-screen card, so the two agree.
+    expect(screen.getAllByText('Available now')).toHaveLength(2);
     expect(screen.getByText('Android phones and tablets, using Chrome')).toBeInTheDocument();
     expect(screen.getByText('Windows computers, using Chrome or Edge')).toBeInTheDocument();
     // The Apple caveat is the whole reason the banner was withdrawn — it must
     // be on the page, not buried.
-    expect(screen.getByText('Known problem')).toBeInTheDocument();
-    expect(screen.getByText(/Adding the app to an Apple device does not work properly/)).toBeInTheDocument();
+    expect(screen.getByText('Not working properly yet')).toBeInTheDocument();
+    expect(screen.getByText(/Saving Test Community to an Apple device does not work properly/)).toBeInTheDocument();
     expect(screen.getByText(/We will keep this page up to date/)).toBeInTheDocument();
   });
 
-  it('explains all four kinds of app in plain English', () => {
+  it('explains why Apple devices are the awkward ones, in Apple-rule terms', () => {
+    render(<InstallAppPage />);
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: /Why is it harder on Apple devices/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/There is no one-tap install/)).toBeInTheDocument();
+    expect(screen.getByText(/only works in Safari/)).toBeInTheDocument();
+    expect(screen.getByText(/opens logged out and you have to sign in again/)).toBeInTheDocument();
+    // The reader is pointed at the option that does work on Apple.
+    expect(screen.getByText(/None of that applies to the proper app/)).toBeInTheDocument();
+  });
+
+  it('distinguishes the home-screen version from a proper native app', () => {
     render(<InstallAppPage />);
 
     expect(screen.getByRole('heading', { level: 3, name: 'Just use your browser' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 3, name: 'Add it to your home screen' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 3, name: 'Our own Android app' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 3, name: 'Google Play and the Apple App Store' })).toBeInTheDocument();
-    // Jargon is named but immediately defined.
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'The website saved to your home screen' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 3, name: 'The proper app, from the app store' }),
+    ).toBeInTheDocument();
+    // Both bits of jargon are named and then defined in the same sentence.
     expect(screen.getByText(/short for Progressive Web App/)).toBeInTheDocument();
-    expect(screen.getByText(/Developers call this a Capacitor app/)).toBeInTheDocument();
-    // The unreleased Android build must not be advertised as a download.
-    expect(screen.getByText(/built but not released/)).toBeInTheDocument();
+    expect(screen.getByText(/Developers call this a native app/)).toBeInTheDocument();
+    // One app covers both platforms, and the ordering is stated honestly.
+    expect(screen.getByText('One app for both Android and iPhone or iPad')).toBeInTheDocument();
+    expect(screen.getByText(/Android is closest/)).toBeInTheDocument();
+    expect(screen.getByText(/no download link here yet/)).toBeInTheDocument();
+    // The Capacitor wrapper stays off the page while its future is undecided.
+    expect(screen.queryByText(/Capacitor/)).toBeNull();
   });
 
   it('interpolates the tenant brand name instead of leaving the placeholder', () => {
