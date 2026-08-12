@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 /** Serve the install manifest with an identity and URLs scoped to the active tenant. */
 final class PwaManifestController
 {
+    /** The platform/master tenant, which serves its host from the root. */
+    private const MASTER_TENANT_ID = 1;
+
     public function show(Request $request): Response
     {
         $manifest = $this->baseManifest();
@@ -95,7 +98,7 @@ final class PwaManifestController
     private function resolveTenantAndPrefix(Request $request): array
     {
         $tenant = (array) (TenantContext::get() ?? []);
-        $prefix = TenantContext::getSlugPrefix();
+        $prefix = $this->tenantPrefix($tenant);
         $requestedPath = (string) $request->query('path', '/');
         $path = (string) (parse_url($requestedPath, PHP_URL_PATH) ?: '/');
         $firstSegment = explode('/', trim($path, '/'))[0] ?? '';
@@ -121,12 +124,47 @@ final class PwaManifestController
 
             $pathTenant = $pathTenantQuery->first();
 
-            if ($pathTenant !== null) {
+            // The master tenant is deliberately excluded. Its slug is a
+            // platform route ('admin' in production), not a path a community
+            // is served under, so matching it would scope the manifest to the
+            // admin panel — see tenantPrefix() below.
+            if ($pathTenant !== null && (int) $pathTenant->id !== self::MASTER_TENANT_ID) {
                 $tenant = (array) $pathTenant;
                 $prefix = '/' . ltrim((string) $pathTenant->slug, '/');
             }
         }
 
         return [$tenant, rtrim($prefix, '/')];
+    }
+
+    /**
+     * The URL prefix the active tenant's pages live under.
+     *
+     * Deliberately NOT TenantContext::getSlugPrefix(): that returns '' only
+     * for custom-domain tenants with id > 1, so the platform master tenant
+     * (id 1, slug 'admin') fell through to '/admin'. Every install from
+     * app.project-nexus.ie then got a manifest whose start_url was the admin
+     * panel and whose scope excluded every ordinary member page, so those
+     * pages opened in the browser instead of the installed app.
+     *
+     * @param array<string, mixed> $tenant
+     */
+    private function tenantPrefix(array $tenant): string
+    {
+        $id = (int) ($tenant['id'] ?? 0);
+
+        // The platform host serves the whole site from the root.
+        if ($id === self::MASTER_TENANT_ID) {
+            return '';
+        }
+
+        // A dedicated-domain tenant is identified by its host, not by a path.
+        if ($id > self::MASTER_TENANT_ID && trim((string) ($tenant['domain'] ?? '')) !== '') {
+            return '';
+        }
+
+        $slug = trim((string) ($tenant['slug'] ?? ''));
+
+        return $slug === '' ? '' : '/' . $slug;
     }
 }
