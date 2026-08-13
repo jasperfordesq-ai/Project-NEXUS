@@ -195,7 +195,7 @@
   "search": {
     "category_search": "カテゴリを検索...",
     "page_title": "マーケットプレイスを検索",
-    "page_heading": "Search Marketplace",
+    "page_heading": "マーケットプレイスを検索",
     "meta_description": "コミュニティマーケットプレイスでアイテムを検索・絞り込みできます。",
     "breadcrumb_search": "検索",
     "search_placeholder": "マーケットプレイスを検索…",
@@ -675,7 +675,7 @@
   },
   "shipping": {
     "title": "配送オプション",
-    "page_title": "Shipping Options",
+    "page_title": "配送オプション",
     "page_subtitle": "購入者がチェックアウト時に選択できる配送サービスを設定します。",
     "back_to_listings": "マイリストに戻る",
     "manage_cta": "配送設定",

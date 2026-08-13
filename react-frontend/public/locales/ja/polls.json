@@ -89,7 +89,7 @@
   "winner_label": "勝者: {{name}}",
   "submit_rankings": "順位を送信",
   "loading": "投票を読み込んでいます...",
-  "vote_now": "Vote Now",
+  "vote_now": "今すぐ投票",
   "vote_now_for": "今すぐ投票してください: {{question}}",
   "vote_for_option": "{{question}} で {{option}} に投票します。",
   "aria": {

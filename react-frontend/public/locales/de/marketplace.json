@@ -195,7 +195,7 @@
   "search": {
     "category_search": "Kategorien suchen...",
     "page_title": "Marktplatz durchsuchen",
-    "page_heading": "Search Marketplace",
+    "page_heading": "Marktplatz durchsuchen",
     "meta_description": "Durchsuchen und filtern Sie Artikel im Gemeinschaftsmarktplatz.",
     "breadcrumb_search": "Suche",
     "search_placeholder": "Marktplatz durchsuchen...",
@@ -675,7 +675,7 @@
   },
   "shipping": {
     "title": "Versandoptionen",
-    "page_title": "Shipping Options",
+    "page_title": "Versandoptionen",
     "page_subtitle": "Legen Sie die Lieferservices fest, die Käufer beim Bezahlvorgang auswählen können.",
     "back_to_listings": "Zurück zu „Meine Einträge“.",
     "manage_cta": "Versandeinstellungen",

@@ -73,7 +73,7 @@
   "take_photo": "Maak een foto",
   "choose_from_library": "Keuze uit bibliotheek",
   "aria_step": "Stap {{step}}: {{label}}{{status}}",
-  "aria_step_progress": "Step {{step}} of {{total}}",
+  "aria_step_progress": "Stap {{step}} van {{total}}",
   "aria_completed": " (voltooid)",
   "aria_current": " (huidig)",
   "toast_invalid_file_type": "Ongeldig bestandstype",

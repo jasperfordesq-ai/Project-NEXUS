@@ -43,7 +43,7 @@
     "joined": "انضمت للمجموعة",
     "view": "View",
     "join": "Join",
-    "score_chip": "{{score}}% match"
+    "score_chip": "تطابق بنسبة {{score}}٪"
   },
   "welcome": {
     "title": "رسالة ترحيب",

@@ -89,7 +89,7 @@
   "winner_label": "Winnaar: {{name}}",
   "submit_rankings": "Rangschikking indienen",
   "loading": "Polls laden...",
-  "vote_now": "Vote Now",
+  "vote_now": "Nu stemmen",
   "vote_now_for": "Stem nu op: {{question}}",
   "vote_for_option": "Stem op {{option}} in: {{question}}",
   "aria": {

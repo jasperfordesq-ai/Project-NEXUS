@@ -73,7 +73,7 @@
   "take_photo": "写真を撮る",
   "choose_from_library": "ライブラリから選ぶ",
   "aria_step": "ステップ {{step}}: {{label}}{{status}}",
-  "aria_step_progress": "Step {{step}} of {{total}}",
+  "aria_step_progress": "{{total}}ステップ中{{step}}",
   "aria_completed": "（完了）",
   "aria_current": "（現在）",
   "toast_invalid_file_type": "無効なファイルタイプ",

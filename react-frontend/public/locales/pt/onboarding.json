@@ -73,7 +73,7 @@
   "take_photo": "Tirar foto",
   "choose_from_library": "Escolha na biblioteca",
   "aria_step": "Passo {{step}}: {{label}}{{status}}",
-  "aria_step_progress": "Step {{step}} of {{total}}",
+  "aria_step_progress": "Passo {{step}} de {{total}}",
   "aria_completed": " (concluído)",
   "aria_current": " (atual)",
   "toast_invalid_file_type": "Tipo de ficheiro inválido",

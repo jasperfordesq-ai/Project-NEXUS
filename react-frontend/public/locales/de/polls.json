@@ -89,7 +89,7 @@
   "winner_label": "Gewinner: {{name}}",
   "submit_rankings": "Rangfolge absenden",
   "loading": "Umfragen werden geladen...",
-  "vote_now": "Vote Now",
+  "vote_now": "Jetzt abstimmen",
   "vote_now_for": "Jetzt abstimmen über: {{question}}",
   "vote_for_option": "Stimmen Sie für {{option}} in: {{question}}",
   "aria": {

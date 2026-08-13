@@ -43,7 +43,7 @@
     "joined": "参加したグループ",
     "view": "View",
     "join": "Join",
-    "score_chip": "{{score}}% match"
+    "score_chip": "{{score}}%一致"
   },
   "welcome": {
     "title": "ウェルカムメッセージ",

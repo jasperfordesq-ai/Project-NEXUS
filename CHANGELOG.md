@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Marketplace, onboarding, polling and group recommendations no longer fall back to English for core headings and actions.** Search and shipping headings, step-progress announcements, the vote action and recommendation match scores are now localized across all ten translated web languages, replacing 50 visible English values. Translation tooling now also reports exact remaining keys with `--keys` and protects the required-field `*` marker as syntax rather than text, removing ten false positives and lowering the accepted React fallback baseline by 60.
+
 - **Member-facing loading states now remain in the selected language.** The caring-community hub, civic digest, ideas area and municipal-feedback journey previously displayed the English word “Loading…” in every translated web locale. All 40 states now use natural progressive wording in German, French, Italian, Portuguese, Spanish, Dutch, Polish, Japanese, Arabic and Irish, lowering the accepted React fallback baseline by 40.
 
 - **The partner-timebank workspace now uses translated navigation and actions without corrupting the Credit Commons product name.** Account fallbacks, overview and settings sections, partnership and neighbourhood pages, analytics, breadcrumbs, create/open actions and optional-step labels are now localized across all ten translated web languages. This replaces 177 English values, all of which were short labels invisible to the fallback detector. The audit also protects `Credit Commons` as an exact product name, removing 33 false positives across partner and administrator catalogs without sending the name through a translator and lowering the accepted React fallback baseline by 33.

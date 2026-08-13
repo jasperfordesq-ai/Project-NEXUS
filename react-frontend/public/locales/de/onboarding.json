@@ -73,7 +73,7 @@
   "take_photo": "Machen Sie ein Foto",
   "choose_from_library": "Wählen Sie aus der Bibliothek",
   "aria_step": "Schritt {{step}}: {{label}}{{status}}",
-  "aria_step_progress": "Step {{step}} of {{total}}",
+  "aria_step_progress": "Schritt {{step}} von {{total}}",
   "aria_completed": " (abgeschlossen)",
   "aria_current": " (aktuell)",
   "toast_invalid_file_type": "Ungültiger Dateityp",

@@ -204,7 +204,7 @@
   "search": {
     "category_search": "Cuardaigh catagóirí...",
     "page_title": "Cuardaigh an Margadh",
-    "page_heading": "Search Marketplace",
+    "page_heading": "Cuardaigh an margadh",
     "meta_description": "Cuardaigh agus scag earraí i margadh an phobail.",
     "breadcrumb_search": "Cuardach",
     "search_placeholder": "Cuardaigh an margadh...",
@@ -729,7 +729,7 @@
   },
   "shipping": {
     "title": "Roghanna Loingseoireachta",
-    "page_title": "Shipping Options",
+    "page_title": "Roghanna seolta",
     "page_subtitle": "Socraigh na seirbhísí seachadta is féidir le ceannaitheoirí a roghnú ag an tseiceáil amach.",
     "back_to_listings": "Ar ais go Mo Liostaí",
     "manage_cta": "Socruithe loingseoireachta",

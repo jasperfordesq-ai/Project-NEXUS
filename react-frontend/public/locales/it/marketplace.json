@@ -198,7 +198,7 @@
   "search": {
     "category_search": "Cerca categorie...",
     "page_title": "Cerca nel Marketplace",
-    "page_heading": "Search Marketplace",
+    "page_heading": "Cerca nel marketplace",
     "meta_description": "Cerca e filtra articoli nel marketplace della comunità.",
     "breadcrumb_search": "Cerca",
     "search_placeholder": "Cerca nel marketplace...",
@@ -693,7 +693,7 @@
   },
   "shipping": {
     "title": "Opzioni di Spedizione",
-    "page_title": "Shipping Options",
+    "page_title": "Opzioni di spedizione",
     "page_subtitle": "Imposta i servizi di consegna che gli acquirenti possono scegliere al momento del pagamento.",
     "back_to_listings": "Torna alle mie inserzioni",
     "manage_cta": "Impostazioni di spedizione",

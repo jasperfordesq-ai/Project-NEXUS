@@ -89,7 +89,7 @@
   "winner_label": "Buaiteoir: {{name}}",
   "submit_rankings": "Cuir an rangú isteach",
   "loading": "Pobalbhreith á lódáil...",
-  "vote_now": "Vote Now",
+  "vote_now": "Vótáil anois",
   "vote_now_for": "Vóta anois ar: {{question}}",
   "vote_for_option": "Vóta ar son {{option}} in: {{question}}",
   "aria": {

@@ -43,7 +43,7 @@
     "joined": "Groupe rejoint",
     "view": "View",
     "join": "Join",
-    "score_chip": "{{score}}% match"
+    "score_chip": "{{score}} % de correspondance"
   },
   "welcome": {
     "title": "Message de bienvenue",

@@ -73,7 +73,7 @@
   "take_photo": "التقط صورة",
   "choose_from_library": "اختر من المكتبة",
   "aria_step": "الخطوة {{step}}: {{label}}{{status}}",
-  "aria_step_progress": "Step {{step}} of {{total}}",
+  "aria_step_progress": "الخطوة {{step}} من {{total}}",
   "aria_completed": " (مكتمل)",
   "aria_current": " (الحالي)",
   "toast_invalid_file_type": "نوع الملف غير صالح",

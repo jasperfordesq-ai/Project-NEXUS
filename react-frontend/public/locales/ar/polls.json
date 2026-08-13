@@ -89,7 +89,7 @@
   "winner_label": "الفائز: {{name}}",
   "submit_rankings": "إرسال الترتيب",
   "loading": "جارٍ تحميل الاستطلاعات...",
-  "vote_now": "Vote Now",
+  "vote_now": "صوّت الآن",
   "vote_now_for": "التصويت الآن على: {{question}}",
   "vote_for_option": "التصويت لـ {{option}} في: {{question}}",
   "aria": {

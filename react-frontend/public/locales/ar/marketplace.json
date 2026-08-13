@@ -207,7 +207,7 @@
   "search": {
     "category_search": "البحث في الفئات...",
     "page_title": "ابحث في السوق",
-    "page_heading": "Search Marketplace",
+    "page_heading": "البحث في السوق",
     "meta_description": "ابحث وقم بتصفية العناصر في سوق المجتمع.",
     "breadcrumb_search": "بحث",
     "search_placeholder": "ابحث في السوق...",
@@ -747,7 +747,7 @@
   },
   "shipping": {
     "title": "خيارات الشحن",
-    "page_title": "Shipping Options",
+    "page_title": "خيارات الشحن",
     "page_subtitle": "قم بتعيين خدمات التوصيل التي يمكن للمشترين اختيارها عند الخروج.",
     "back_to_listings": "العودة إلى قوائمي",
     "manage_cta": "إعدادات الشحن",

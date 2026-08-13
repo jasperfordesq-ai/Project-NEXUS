@@ -43,7 +43,7 @@
     "joined": "Aangesloten bij groep",
     "view": "View",
     "join": "Join",
-    "score_chip": "{{score}}% match"
+    "score_chip": "{{score}}% overeenkomst"
   },
   "welcome": {
     "title": "Welkomstbericht",

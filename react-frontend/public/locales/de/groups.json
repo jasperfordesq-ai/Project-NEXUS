@@ -43,7 +43,7 @@
     "joined": "Gruppe beigetreten",
     "view": "View",
     "join": "Join",
-    "score_chip": "{{score}}% match"
+    "score_chip": "{{score}}% Übereinstimmung"
   },
   "welcome": {
     "title": "Willkommensnachricht",

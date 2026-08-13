@@ -89,7 +89,7 @@
   "winner_label": "Ganador: {{name}}",
   "submit_rankings": "Enviar clasificación",
   "loading": "Cargando encuestas...",
-  "vote_now": "Vote Now",
+  "vote_now": "Votar ahora",
   "vote_now_for": "Vota ahora por: {{question}}",
   "vote_for_option": "Vota por {{option}} en: {{question}}",
   "aria": {

@@ -43,7 +43,7 @@
     "joined": "Glacadh leis an ngrúpa",
     "view": "View",
     "join": "Join",
-    "score_chip": "{{score}}% match"
+    "score_chip": "Meaitseáil {{score}}%"
   },
   "welcome": {
     "title": "Teachtaireacht failte",

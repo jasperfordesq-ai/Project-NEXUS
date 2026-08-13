@@ -106,6 +106,7 @@ const NO_TRANSLATE_VALUES = new Set([
   'hour-timebank',
   'Apache/Plesk',
   'Credit Commons',
+  '*',
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale
@@ -192,6 +193,7 @@ function buildSnapshot() {
   const enDir = path.join(LOCALES_DIR, 'en');
   const enFiles = fs.readdirSync(enDir).filter((file) => file.endsWith('.json')).sort();
   const files = {};
+  const gapKeys = {};
   let totalGaps = 0;
 
   for (const lang of SUPPORTED_LANGUAGES) {
@@ -209,6 +211,7 @@ function buildSnapshot() {
       const langKeys = new Set(Object.keys(langFlat));
 
       let gapCount = 0;
+      const currentFileGapKeys = [];
 
       for (const [key, enValue] of Object.entries(enFlat)) {
         if (typeof enValue !== 'string') continue;
@@ -220,11 +223,14 @@ function buildSnapshot() {
           || langValue === enValue
         ) {
           gapCount += 1;
+          currentFileGapKeys.push(key);
         }
       }
 
       if (gapCount > 0) {
-        files[`${lang}/${file}`] = gapCount;
+        const fileKey = `${lang}/${file}`;
+        files[fileKey] = gapCount;
+        gapKeys[fileKey] = currentFileGapKeys;
         totalGaps += gapCount;
       }
     }
@@ -237,6 +243,7 @@ function buildSnapshot() {
     languages: SUPPORTED_LANGUAGES,
     totalGaps,
     files,
+    gapKeys,
   };
 }
 
@@ -266,6 +273,7 @@ function compareAgainstBaseline(current, baseline) {
 const args = process.argv.slice(2);
 const shouldWriteBaseline = args.includes('--write-baseline');
 const showDetails = args.includes('--details');
+const showKeys = args.includes('--keys');
 const currentSnapshot = buildSnapshot();
 
 if (showDetails) {
@@ -275,8 +283,16 @@ if (showDetails) {
   console.log('');
 }
 
+if (showKeys) {
+  for (const [file, keys] of Object.entries(currentSnapshot.gapKeys)) {
+    for (const key of keys) console.log(`${file}: ${key}`);
+  }
+  console.log('');
+}
+
 if (shouldWriteBaseline) {
-  fs.writeFileSync(BASELINE_PATH, `${JSON.stringify(currentSnapshot, null, 2)}\n`);
+  const { gapKeys: _gapKeys, ...baselineSnapshot } = currentSnapshot;
+  fs.writeFileSync(BASELINE_PATH, `${JSON.stringify(baselineSnapshot, null, 2)}\n`);
   console.log('✅ Wrote i18n gap baseline.');
   console.log(`   File: ${path.relative(path.resolve(__dirname, '..'), BASELINE_PATH)}`);
   console.log(`   Total non-admin gaps: ${currentSnapshot.totalGaps}`);

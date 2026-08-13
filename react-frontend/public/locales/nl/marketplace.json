@@ -195,7 +195,7 @@
   "search": {
     "category_search": "Categorieën zoeken...",
     "page_title": "Zoek Marktplaats",
-    "page_heading": "Search Marketplace",
+    "page_heading": "Marktplaats doorzoeken",
     "meta_description": "Zoek en filter items in de gemeenschapsmarkt.",
     "breadcrumb_search": "Zoeken",
     "search_placeholder": "Zoek marktplaats...",
@@ -675,7 +675,7 @@
   },
   "shipping": {
     "title": "Verzendopties",
-    "page_title": "Shipping Options",
+    "page_title": "Verzendopties",
     "page_subtitle": "Stel de bezorgdiensten in die kopers kunnen kiezen bij het afrekenen.",
     "back_to_listings": "Terug naar Mijn advertenties",
     "manage_cta": "Verzendinstellingen",
