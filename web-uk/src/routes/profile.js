@@ -12,6 +12,8 @@ const {
   callWebAuthnApi,
   getAllBadges,
   getGamificationProfileByUserId,
+  getUserAvailability,
+  getUserActivityDashboard,
   getListings,
   getUserReviews,
   invalidateUserCache,
@@ -25,6 +27,7 @@ const { flagEnabled, resolveBackendAssetUrl } = require('../lib/accessible-shell
 const { createChoiceTranslator, createTranslator, SUPPORTED_LOCALES } = require('../lib/localization');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
+const { profileAvailabilityFrom, profileActivityFrom } = require('../lib/profile-sections');
 
 const router = express.Router();
 const fallbackTranslator = createTranslator('en');
@@ -1783,7 +1786,7 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
     reviews: flagEnabled(tenant, 'reviews', 'features', true),
     gamification: flagEnabled(tenant, 'gamification', 'features', true)
   };
-  const [listingsResult, reviewsResult, gamificationResult, badgesResult] = await Promise.all([
+  const [listingsResult, reviewsResult, gamificationResult, badgesResult, availabilityResult, activityResult] = await Promise.all([
     memberId && profileFeatures.listings
       ? optionalOwnProfileResult(getListings(req.token, { user_id: memberId, limit: 6 }), { data: [] })
       : Promise.resolve({ data: [] }),
@@ -1795,7 +1798,17 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
       : Promise.resolve({ data: null }),
     memberId && profileFeatures.gamification
       ? optionalOwnProfileResult(getAllBadges(req.token, { user_id: memberId }), { data: [] })
-      : Promise.resolve({ data: [] })
+      : Promise.resolve({ data: [] }),
+    // 🔴 Availability and recent activity. /members/:id has shown both all along
+    // and this page showed NEITHER, so a member could see everyone's but their
+    // own — and could not check how their published availability actually reads.
+    // Blade's own-profile page renders both (profile.blade.php:406, :484).
+    memberId
+      ? optionalOwnProfileResult(getUserAvailability(req.token, memberId), { data: { weekly: [] } })
+      : Promise.resolve({ data: { weekly: [] } }),
+    memberId
+      ? optionalOwnProfileResult(getUserActivityDashboard(req.token, memberId), { data: { timeline: [] } })
+      : Promise.resolve({ data: { timeline: [] } })
   ]);
   const status = typeof req.query.status === 'string' ? req.query.status : '';
   const statusConfig = status === 'profile-updated' ? profileStatusConfig(req, status) : null;
@@ -1824,6 +1837,8 @@ router.get('/', requireOwnProfileFeature, requireAuth, asyncRoute(async (req, re
     joinedLabel: formatProfileDate(profileValue(profile, 'created_at')),
     communityName: res.locals.tenantName || res.locals.serviceName || '',
     profileFeatures,
+    profileAvailability: profileAvailabilityFrom(availabilityResult, t),
+    profileActivity: profileActivityFrom(activityResult, t),
     successMessage: statusConfig?.message || flashSuccess
   });
 }));

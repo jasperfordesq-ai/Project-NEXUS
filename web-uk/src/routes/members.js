@@ -39,6 +39,7 @@ const { asyncRoute, handleApiError } = require('../lib/routeHelpers');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
 const { flagEnabled } = require('../lib/accessible-shell');
+const { profileAvailabilityFrom, profileActivityFrom } = require('../lib/profile-sections');
 
 const router = express.Router();
 
@@ -346,46 +347,6 @@ function profileStatsFrom(user, activityResult, listings, reviewSummary, gamific
   };
 }
 
-function profileAvailabilityFrom(result, t) {
-  const data = dataFrom(result);
-  const source = data && Array.isArray(data.weekly) ? data.weekly : (Array.isArray(data) ? data : []);
-  const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  return source.map((slot) => {
-    const day = boundedInteger(slot.day_of_week ?? slot.dayOfWeek, -1, -1, 6);
-    const specificDate = dateLabel(slot.specific_date || slot.specificDate);
-    const start = String(slot.start_time || slot.startTime || '').slice(0, 5);
-    const end = String(slot.end_time || slot.endTime || '').slice(0, 5);
-    return {
-      label: specificDate || (day >= 0 ? t(`profile.days.${dayKeys[day]}`) : ''),
-      time: start && end ? `${start} - ${end}` : '',
-      note: String(slot.note || '').trim()
-    };
-  }).filter((slot) => slot.label || slot.time || slot.note).slice(0, 12);
-}
-
-function profileActivityFrom(result, t) {
-  const data = dataFrom(result);
-  const timeline = data && Array.isArray(data.timeline) ? data.timeline : [];
-  const knownTypes = new Set(['post', 'comment', 'gave_hours', 'received_hours', 'connection', 'event_rsvp']);
-  const classes = {
-    post: 'govuk-tag--blue',
-    comment: 'govuk-tag--blue',
-    gave_hours: 'govuk-tag--green',
-    received_hours: 'govuk-tag--turquoise',
-    connection: 'govuk-tag--purple',
-    event_rsvp: 'govuk-tag--yellow'
-  };
-  return timeline.map((item) => {
-    const type = String(item.activity_type || item.activityType || 'post');
-    return {
-      type,
-      label: knownTypes.has(type) ? t(`profile.activity_types.${type}`) : titleLabel(type),
-      tagClass: classes[type] || 'govuk-tag--grey',
-      description: String(item.description || '').trim().slice(0, 160),
-      date: dateLabel(item.created_at || item.createdAt)
-    };
-  }).slice(0, 30);
-}
 
 function profileEndorsementsFrom(result, viewerId) {
   const data = dataFrom(result) || {};

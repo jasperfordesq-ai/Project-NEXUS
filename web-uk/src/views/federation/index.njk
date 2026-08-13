@@ -44,7 +44,7 @@
 
   {% if not stats.tenantEnabled %}
     <div class="govuk-inset-text">
-      <h2 class="govuk-heading-m">Federation is not available for this community</h2>
+      <h2 class="govuk-heading-m">{{ t("federation.hub.not_available_title") }}</h2>
       <p class="govuk-body">This community has not enabled cross-community federation yet.</p>
       <p class="govuk-body">Contact the community team if you expected to use federation here.</p>
     </div>
@@ -52,7 +52,7 @@
     {% if not stats.optedIn %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-          <h2 class="govuk-heading-l">{{ t("federation.hub.optin_banner_title") }}</h2>
+          <h2 class="govuk-heading-l">{{ t("federation.hub.hero_title") }}</h2>
           <p class="govuk-body">Choose what profile details, skills, messaging, and time-credit actions you want to make available across trusted partner communities.</p>
           <p class="govuk-body"><a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/onboarding') }}">Opt in to federation</a></p>
         </div>
@@ -66,11 +66,11 @@
       </div>
     {% endif %}
 
-    <h2 class="govuk-heading-l">Network stats</h2>
+    <h2 class="govuk-heading-l">{{ t("federation.hub.stats_heading") }}</h2>
     <dl class="govuk-summary-list">
-      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Partnerships</dt><dd class="govuk-summary-list__value">{{ stats.partnershipsCount }}</dd></div>
-      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("account.messages_title") }}</dt><dd class="govuk-summary-list__value">{{ stats.messagesCount }}</dd></div>
-      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">Transactions</dt><dd class="govuk-summary-list__value">{{ stats.transactionsCount }}</dd></div>
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("federation.hub.stat_partnerships") }}</dt><dd class="govuk-summary-list__value">{{ stats.partnershipsCount }}</dd></div>
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("federation.hub.stat_messages") }}</dt><dd class="govuk-summary-list__value">{{ stats.messagesCount }}</dd></div>
+      <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("federation.hub.stat_transactions") }}</dt><dd class="govuk-summary-list__value">{{ stats.transactionsCount }}</dd></div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">Federation status</dt>
         <dd class="govuk-summary-list__value">
@@ -104,7 +104,7 @@
       {% endif %}
     {% endif %}
 
-    <h2 class="govuk-heading-l">Partner communities</h2>
+    <h2 class="govuk-heading-l">{{ t("federation.hub.partners_heading") }}</h2>
     {% if partners.length %}
       <div class="nexus-alpha-card-list">
         {% for partner in partners %}

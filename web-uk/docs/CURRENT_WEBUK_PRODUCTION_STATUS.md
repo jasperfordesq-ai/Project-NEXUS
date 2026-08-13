@@ -72,7 +72,7 @@ All counts below come from `docs/generated/`, regenerated at commit
 | Measure | Current result | What it does and does not prove |
 |---|---|---|
 | Route matrix | Laravel 707, `web-uk` 722, **matched 707, missing 0**, extra 12, ignored infrastructure 4 | Declaration coverage. Not workflow, auth, tenant or visual parity. |
-| API consumer ledger | 695 contracts; 467 OpenAPI matches; 228 route-declared OpenAPI omissions; **0** without a Laravel route declaration; **0** dynamic unresolved; 381 state-changing; **0** without tests; **0** without direct helper assertions | Static and mocked ownership evidence. No live Laravel was contacted. |
+| API consumer ledger | 696 contracts; 467 OpenAPI matches; 229 route-declared OpenAPI omissions; **0** without a Laravel route declaration; **0** dynamic unresolved; 381 state-changing; **0** without tests; **0** without direct helper assertions | Static and mocked ownership evidence. No live Laravel was contacted. The 696th contract is `GET /api/ai/providers`, newly consumed by the chat page on 2026-08-13 so it can tell a member when no AI assistant is configured, as Blade does. |
 | Jest | 73 suites, 2,123 tests passing, `--runInBand` | Mocked contract and page behaviour. |
 | Locale catalogs | 11 locales, 38 namespaces, 9,070 string keys, 0 missing, 0 extra | Structural shape only. |
 | Static locale usage | 7,878 references, 5,984 unique keys, **0 unresolved** | Every key referenced in source exists. |

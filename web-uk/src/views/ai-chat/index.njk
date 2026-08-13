@@ -45,6 +45,17 @@
     }) }}
   {% endif %}
 
+  {# 🔴 No AI provider is configured, so the assistant cannot reply at all. Blade
+     shows this on every load (ai-chat.blade.php:38); web-uk showed nothing, so the
+     page looked usable. Distinct from the banner above, which reports a failed
+     send. #}
+  {% if aiEnabled === false %}
+    {{ govukNotificationBanner({
+      titleText: t("states.error_title"),
+      text: t("govuk_alpha_aichat.disabled_notice")
+    }) }}
+  {% endif %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-third">
       <h2 class="govuk-heading-m">{{ t("govuk_alpha_aichat.conversations_title") }}</h2>

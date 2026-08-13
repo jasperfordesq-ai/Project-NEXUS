@@ -4,7 +4,7 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const express = require('express');
-const { sendAiChat, getAiConversations, getAiConversation, ApiError } = require('../lib/api');
+const { sendAiChat, getAiConversations, getAiConversation, getAiProviders, ApiError } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
@@ -107,9 +107,25 @@ router.get('/', asyncRoute(async (req, res) => {
     apiError = true;
   }
 
+  // 🔴 Whether an AI provider is actually CONFIGURED, which is not the same as the
+  // tenant enabling the ai_chat module. Blade checks AIServiceFactory::isEnabled()
+  // in-process and shows "The AI assistant is not available at the moment"; web-uk
+  // had no equivalent, so it rendered a chat page that looked usable and could not
+  // answer. Fails OPEN (assume available) on an unreadable response, so a transient
+  // blip does not wrongly tell a member the assistant is gone.
+  let aiEnabled = true;
+  try {
+    const providers = await getAiProviders(token);
+    const payload = (providers && providers.data) || providers || {};
+    if (payload.enabled === false) aiEnabled = false;
+  } catch (error) {
+    if (isAuthError(error)) throw error;
+  }
+
   return res.render('ai-chat/index', {
     title: 'AI assistant',
     titleKey: 'govuk_alpha_aichat.title',
+    aiEnabled,
     activeNav: 'explore',
     conversations,
     messages,

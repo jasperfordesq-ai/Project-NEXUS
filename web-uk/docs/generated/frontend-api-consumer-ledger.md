@@ -5,16 +5,16 @@ Status: **Generated snapshot — static consumer inventory, not certification**
 Generated from `src/lib/api.js`, routed Web UK consumers, tests, and Laravel `openapi.json`.
 This is static evidence: an OpenAPI match or test reference does not prove runtime behavior, role policy, side effects, cleanup, or frontend parity.
 
-- Generated: 2026-08-13T08:26:22.557Z
-- Laravel commit SHA: `b5c39d435155175a825b7aff9e9a1e790dbba506`
-- Web UK repository commit SHA: `b5c39d435155175a825b7aff9e9a1e790dbba506`
+- Generated: 2026-08-13T09:01:56.028Z
+- Laravel commit SHA: `0e01d325f3b7cc6737c75986dbb977c28605eef5`
+- Web UK repository commit SHA: `0e01d325f3b7cc6737c75986dbb977c28605eef5`
 - Laravel working tree dirty: yes
 - Web UK repository working tree dirty: yes
 - Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
-- Contracts: 695
+- Contracts: 696
 - Laravel OpenAPI matches: 467
-- Missing OpenAPI matches: 228
-- Direct Laravel route declarations omitted from OpenAPI: 228
+- Missing OpenAPI matches: 229
+- Direct Laravel route declarations omitted from OpenAPI: 229
 - Without a direct Laravel route declaration: 0
 - Dynamic unresolved contracts: 0
 - State-changing contracts: 381
@@ -23,7 +23,7 @@ This is static evidence: an OpenAPI match or test reference does not prove runti
 - Unique helpers without direct API-helper assertions: 0
 - State-changing rows without direct API-helper assertions: 0
 - Unique OpenAPI-omitted helpers without direct API-client assertions: 0
-- API source SHA-256: `67610e2277997553ce515cd0d868e2ea6e702b99320df0ceff7695f218d68454`
+- API source SHA-256: `6091f739a93e2f00c837d703de3bcf476b7d7001544871f70e6247bb3976ca5f`
 - Laravel OpenAPI SHA-256: `f452d2ee220e8deff05412bf9d2c625ab63b829d73322eed28e21d8f271af5bb`
 - Laravel API routes SHA-256: `ec4c71362d21cfafc4e6cf689b0ac36b20c562da4ed83790d2d0d31ba37cb35c`
 
@@ -45,6 +45,7 @@ Rows below have test references but no test that directly names and exercises th
 | POST | `/api/ai/chat` | `sendAiChat` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/ai-chat.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/ai/conversations?{query}` | `getAiConversations` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/ai-chat.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/ai/conversations/{param}` | `getAiConversation` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/ai-chat.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/ai/providers` | `getAiProviders` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/ai-chat.js | tests/api.test.js |
 | POST | `/api/auth/forgot-password` | `forgotPassword` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/auth.js | tests/api.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-tenant-authority.test.js<br>tests/registration-contract.test.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/auth/login` | `login` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/auth.js | tests/accessibility/default-english-resilience.spec.js<br>tests/accessibility/public-pages.spec.js<br>tests/api-consumer-ledger.test.js<br>tests/api-timeout.test.js<br>tests/api.test.js<br>tests/auth-localization.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-session-rotation.test.js<br>tests/auth-tenant-authority.test.js<br>tests/backend-contract.test.js<br>tests/blade-visual-spotcheck.test.js<br>tests/laravel-runtime-smoke-local-server.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/legal-acceptance-gate.test.js<br>tests/localization.test.js<br>tests/marketplace-payment-contract.test.js<br>tests/profile-account-deletion-contract.test.js<br>tests/profile-email-security-contract.test.js<br>tests/profile-status-localization.test.js<br>tests/profile-two-factor-contract.test.js<br>tests/registration-contract.test.js<br>tests/route-matrix-generator.test.js<br>tests/routes.test.js<br>tests/runtime/availability-mutation.spec.js<br>tests/runtime/blog-mutation.spec.js<br>tests/runtime/courses-mutation.spec.js<br>tests/runtime/events-mutation.spec.js<br>tests/runtime/goals-mutation.spec.js<br>tests/runtime/group-management-mutation.spec.js<br>tests/runtime/groups-mutation.spec.js<br>tests/runtime/ideation-campaign-mutation.spec.js<br>tests/runtime/jobs-mutation.spec.js<br>tests/runtime/listings-mutation.spec.js<br>tests/runtime/marketplace-mutation.spec.js<br>tests/runtime/member-block-mutation.spec.js<br>tests/runtime/podcasts-mutation.spec.js<br>tests/runtime/profile-skills-mutation.spec.js<br>tests/runtime/resources-mutation.spec.js<br>tests/runtime/reviews-mutation.spec.js<br>tests/runtime/saved-collections-mutation.spec.js<br>tests/runtime/tenant-module-gates.spec.js<br>tests/runtime/volunteering-accessibility-mutation.spec.js<br>tests/runtime/volunteering-credentials-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/shell-partials-localization.test.js<br>tests/template-source.test.js<br>tests/timeout-warning-source.test.js<br>tests/visual-screenshot-capture.test.js |
 | POST | `/api/auth/logout` | `logout` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/auth.js | tests/accessibility/public-pages.spec.js<br>tests/api.test.js<br>tests/auth-route-localization.test.js<br>tests/auth-tenant-authority.test.js<br>tests/laravel-runtime-smoke.test.js<br>tests/legal-acceptance-gate.test.js<br>tests/localization.test.js<br>tests/registration-contract.test.js<br>tests/routes.test.js<br>tests/runtime/resources-mutation.spec.js<br>tests/shared-accessible-shell.test.js<br>tests/shell-partials-localization.test.js<br>tests/template-source.test.js<br>tests/timeout-warning-source.test.js |
@@ -607,9 +608,9 @@ Rows below have test references but no test that directly names and exercises th
 | GET | `/api/v2/users?{query}` | `getMembersV2` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/users?{query}` | `getUsers` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/runtime/member-block-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/users/{param}` | `getUser` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js<br>src/routes/messages.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
-| GET | `/api/v2/users/{param}/activity/dashboard` | `getUserActivityDashboard` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/users/{param}/activity/dashboard` | `getUserActivityDashboard` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js<br>src/routes/profile.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/users/{param}/appreciations?{query}` | `getUserAppreciations` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/saved-social.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
-| GET | `/api/v2/users/{param}/availability` | `getUserAvailability` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
+| GET | `/api/v2/users/{param}/availability` | `getUserAvailability` | documented | read-only by HTTP method<br>not applicable | src/routes/members.js<br>src/routes/profile.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | DELETE | `/api/v2/users/{param}/block` | `unblockMember` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/members.js | tests/api.test.js<br>tests/runtime/member-block-mutation.spec.js<br>tests/shared-accessible-shell.test.js |
 | POST | `/api/v2/users/{param}/block` | `blockMember` | route-declared-openapi-omission | state-changing; mocked source-contract assertion required; live Laravel runtime is optional separate work<br>assert intended final state in mocked Web UK tests; do not create or clean up live Laravel fixtures in this goal | src/routes/members.js | tests/api.test.js<br>tests/shared-accessible-shell.test.js |
 | GET | `/api/v2/users/{param}/block-status` | `getUserBlockStatus` | route-declared-openapi-omission | read-only by HTTP method<br>not applicable | src/routes/members.js | tests/api.test.js<br>tests/runtime/member-block-mutation.spec.js<br>tests/shared-accessible-shell.test.js |

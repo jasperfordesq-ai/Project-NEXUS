@@ -135,6 +135,18 @@
           <div class="govuk-inset-text">{{ t("profile.empty_reviews") }}</div>
         {% endif %}
       {% endif %}
+
+      {# 🔴 Recent activity. This page showed neither this nor availability until
+         2026-08-13, while /members/:id showed both — so a member could see
+         everyone's activity except their own. Blade renders both on the
+         own-profile page (profile.blade.php:406 and :484). Markup kept identical
+         to members/profile.njk. #}
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.recent_activity_title") }}</h2>
+      {% if profileActivity.length %}
+        <ol class="govuk-list nexus-alpha-timeline">
+          {% for activity in profileActivity %}<li class="govuk-!-margin-bottom-3"><strong class="govuk-tag {{ activity.tagClass }}">{{ activity.label }}</strong>{% if activity.description %} <span class="govuk-body">{{ activity.description }}</span>{% endif %}{% if activity.date %} <span class="govuk-body-s nexus-alpha-meta">{{ activity.date }}</span>{% endif %}</li>{% endfor %}
+        </ol>
+      {% else %}<div class="govuk-inset-text">{{ t("profile.empty_activity") }}</div>{% endif %}
     </div>
 
     <div class="govuk-grid-column-one-third">
@@ -192,6 +204,12 @@
           <li><a href="{{ urlFor('/leaderboard') }}" class="govuk-link">{{ t("leaderboard.title") }}</a></li>
         </ul>
       {% endif %}
+
+      {# Availability, in the side column as on /members/:id and in Blade. Shown
+         unconditionally, including the empty state: a member needs to be able to
+         see that they have published none. #}
+      <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("profile.availability_title") }}</h2>
+      {% if profileAvailability.length %}<dl class="govuk-summary-list">{% for availability in profileAvailability %}<div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ availability.label }}</dt><dd class="govuk-summary-list__value">{{ availability.time }}{% if availability.note %}<span class="govuk-body-s">{{ availability.note }}</span>{% endif %}</dd></div>{% endfor %}</dl>{% else %}<div class="govuk-inset-text">{{ t("profile.empty_availability") }}</div>{% endif %}
     </div>
   </div>
 {% endblock %}

@@ -32,6 +32,27 @@
       {% else %}
       <p class="govuk-body-l">{{ t("accessibility.intro", { name: communityName }) }}</p>
 
+      {# 🔴 DO NOT ADD Blade's commitment / features / testing sections here.
+         They are DELIBERATELY WITHHELD, and tests assert their absence.
+
+         Blade's statement asserts "full keyboard support", a screen-reader
+         feature list, and that the service "is tested with automated
+         accessibility [tooling] and screen-reader testing". Those assurances
+         EXCEED web-uk's actual manual evidence — screen-reader sign-off still
+         needs a human — so rendering them would publish an accessibility
+         conformance claim we cannot substantiate, on the accessibility statement
+         itself. That is the one page where an unbacked claim does real harm.
+
+         This is a RECORDED DELIBERATE IMPROVEMENT over Blade, not a parity gap:
+         see web-uk/docs/BLADE_COMPONENT_PORT_AUDIT.md (the legal/accessibility
+         row) and docs/MANUAL_ACCESSIBILITY_EVIDENCE.md, which is an evidence
+         register and explicitly not a conformance claim.
+
+         🔴 A parity sweep WILL flag these three sections as "missing from
+         web-uk". They are supposed to be. This comment exists because that sweep
+         was run on 2026-08-13, the sections were added back, and the tests
+         asserting their absence are what caught it. Re-add them only when the
+         manual evidence exists to support each claim. #}
       <h2 class="govuk-heading-m">{{ t("accessibility.conformance_title") }}</h2>
       <p class="govuk-body">{{ t("accessibility.conformance_body") }}</p>
 
