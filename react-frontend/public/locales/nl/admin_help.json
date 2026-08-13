@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten – Autonoom agentframework",
-      "summary": "Dankzij het KI-Agenten (AI Agent)-framework kan NEXUS geautomatiseerde acties voorstellen op basis van datapatronen, bijvoorbeeld het voorstellen van een Smart Nudge-campagne, het markeren van een lid dat het risico loopt af te haken, of het aanbevelen van een coëfficiëntaanpassing. Alle voorstellen vereisen menselijke goedkeuring voordat ze van kracht worden. Agenten handelen nooit eenzijdig, tenzij u de drempel voor automatisch toepassen expliciet verhoogt.",
+      "title": "AI-agenten – autonoom agentframework",
+      "summary": "Dankzij het AI-agentframework kan NEXUS geautomatiseerde acties voorstellen op basis van datapatronen, bijvoorbeeld het voorstellen van een Smart Nudge-campagne, het markeren van een lid dat het risico loopt af te haken, of het aanbevelen van een coëfficiëntaanpassing. Alle voorstellen vereisen menselijke goedkeuring voordat ze van kracht worden. Agenten handelen nooit eenzijdig, tenzij u de drempel voor automatisch toepassen expliciet verhoogt.",
       "steps": [
         {
           "label": "Beoordeel lopende voorstellen",

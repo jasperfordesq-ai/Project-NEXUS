@@ -776,7 +776,7 @@
       "total_codes_count_other": "Totaal aantal codes: {{count}}",
       "save_policy": "Registratiebeleid opslaan",
       "understanding_modes": "Begrijpen van registratiemodi",
-      "provider_stripe": "Provider Stripe"
+      "provider_stripe": "Stripe-provider"
     },
     "registration_policy_saved_successfully": "Registratiebeleid succesvol opgeslagen",
     "run_now": "Ren nu",
@@ -1372,7 +1372,7 @@
     "status_fail": "MISLUKKING",
     "status_ok": "OK",
     "placeholder_partner_logo_label": "Gemeenschapspartner",
-    "label_powered_by_url": "Link URL",
+    "label_powered_by_url": "URL van link",
     "platform_gcp": "GCP",
     "currency_eur": "EUR - Euro",
     "filter_section_header": "Filters",

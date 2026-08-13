@@ -82,12 +82,12 @@
     },
     "ki_agents": {
       "meta": {
-        "title": "KI-Agenten",
+        "title": "AI-agenten",
         "description": "AG61 - Raamwerk voor autonome agenten. Agenten stellen acties voor; mensen keuren het goed voordat er iets wordt toegepast."
       },
       "about": {
-        "title": "Over KI-Agenten",
-        "body": "KI-Agenten (AI Agents) automatiseren routinematige coördinatietaken: het vinden van goede zorgcombinaties, het aansporen van inactieve leden, het samenvatten van de werklast van de coördinator en het doorsturen van open hulpverzoeken. Elke agent werkt volgens het model van eerst voorstellen en vervolgens goedkeuren: agenten genereren voorstellen, maar er wordt niets toegepast totdat een mens het goedkeurt, tenzij de betrouwbaarheidsscore van het voorstel de drempel voor automatisch toepassen overschrijdt die u configureert.",
+        "title": "Over AI-agenten",
+        "body": "AI-agenten automatiseren routinematige coördinatietaken: het vinden van goede zorgcombinaties, het aansporen van inactieve leden, het samenvatten van de werklast van de coördinator en het doorsturen van open hulpverzoeken. Elke agent werkt volgens het model van eerst voorstellen en vervolgens goedkeuren: agenten genereren voorstellen, maar er wordt niets toegepast totdat een mens het goedkeurt, tenzij de betrouwbaarheidsscore van het voorstel de drempel voor automatisch toepassen overschrijdt die u configureert.",
         "tandem_prefix": "suggereert",
         "tandem_suffix": "-stijl één-op-één zorgcombinaties op basis van vaardigheden, locatie en beschikbaarheid.",
         "nudge": "stuurt gerichte prompts naar leden die inactief zijn geweest of ongeëvenaarde verzoeken hebben.",
@@ -96,7 +96,7 @@
         "activity": "e-mailt coördinatoren een wekelijks overzicht van vrijwilligersactiviteiten."
       },
       "tabs": {
-        "aria": "KI-Agenten-tabbladen",
+        "aria": "Tabbladen voor AI-agenten",
         "config": "Configuratie",
         "proposals": "Voorstellen",
         "runs": "Loopt"
@@ -135,8 +135,8 @@
         "schedule": "Schema"
       },
       "config": {
-        "enable_title": "Schakel KI-Agenten in",
-        "enable_description": "Meester aan/uit. Als deze optie is uitgeschakeld, worden er geen agenten volgens schema uitgevoerd.",
+        "enable_title": "AI-agenten inschakelen",
+        "enable_description": "Hoofdschakelaar. Als deze optie is uitgeschakeld, worden er geen agenten volgens schema uitgevoerd.",
         "agent_types_title": "Agenttypen",
         "tandem_description": "-stijl ondersteuningskoppelingen",
         "nudge_description": "Slimme betrokkenheid stimuleert leden",

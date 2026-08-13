@@ -336,7 +336,7 @@
     "success": "Aanvraag ingetrokken",
     "cancel": "Annuleren"
   },
-  "interview_inline": "Interview: {{date}} ({{type}})",
+  "interview_inline": "Gesprek: {{date}} ({{type}})",
   "interview_join": "Deelnemen aan vergadering",
   "offer_inline": "Aanbod: {{salary}}",
   "offer_start_date": "Begin: {{date}}",

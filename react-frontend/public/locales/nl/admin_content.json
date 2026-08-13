@@ -1347,7 +1347,7 @@
     "page_slug_description": "Het URL-pad voor deze pagina (bijvoorbeeld, /page/about-us). Automatisch gegenereerd uit titel.",
     "stripe": "Stripe",
     "stripe_sync": "Stripe Synchroniseren",
-    "in_menu": "In Menu",
+    "in_menu": "In menu",
     "product": "Product"
   },
   "data_table": {

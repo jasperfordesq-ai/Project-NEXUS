@@ -276,7 +276,7 @@
     },
     "count_one": "{{count}} artikelen",
     "count_other": "{{count}} artikelen",
-    "count": "{{count}} items",
+    "count": "{{count}} afleveringen",
     "report_unknown_episode": "Aflevering #{{id}}"
   }
 }

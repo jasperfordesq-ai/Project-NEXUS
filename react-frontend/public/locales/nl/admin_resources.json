@@ -701,7 +701,7 @@
     "page_slug_description": "Het URL-pad voor deze pagina (bijvoorbeeld, /page/about-us). Automatisch gegenereerd uit titel.",
     "stripe": "Stripe",
     "stripe_sync": "Stripe Synchroniseren",
-    "in_menu": "In Menu",
+    "in_menu": "In menu",
     "product": "Product"
   },
   "data_table": {
@@ -1684,7 +1684,7 @@
     "mode_upload": "Bestand uploaden",
     "mode_write": "Schrijven",
     "supported_formats": "Ondersteund: Markdown (.md), PDF, Word (.doc, .docx), Tekst (.txt)",
-    "video_url": "YouTube Video URL",
+    "video_url": "URL van YouTube-video",
     "markdown_desc": "Ruwe markdown - wordt weergegeven op de openbare pagina.",
     "no_attachments": "Nog geen bestanden bijgevoegd.",
     "placeholder_category": "Selecteer een categorie (optioneel)",

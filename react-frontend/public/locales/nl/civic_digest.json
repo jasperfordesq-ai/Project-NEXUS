@@ -39,7 +39,7 @@
     "cta_open": "Openen",
     "cta_manage_prefs": "Digest-voorkeuren beheren",
     "footer": "Je ontvangt dit omdat je je hebt aangemeld voor de civieke digest van {{community}}. Je kunt de frequentie aanpassen of je op elk moment afmelden.",
-    "match_score": "Match {{score}}",
+    "match_score": "Overeenkomst {{score}}",
     "view_all": "Volledige digest bekijken"
   },
   "push": {
