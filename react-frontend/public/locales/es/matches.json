@@ -10,7 +10,7 @@
   "stats_avg_score": "Puntuación Media",
   "stats_hot_matches": "Coincidencias Destacadas",
   "filter_all": "Todos",
-  "filter_mutual_only": "Solo partidos mutuos",
+  "filter_mutual_only": "Solo coincidencias mutuas",
   "source_listing": "Anuncio",
   "source_volunteering": "Voluntariado",
   "source_group": "Grupo",
@@ -39,18 +39,18 @@
     "paused_desc": "No recibirás nuevas sugerencias ni notificaciones de coincidencias hasta que reanudes las coincidencias en tus preferencias.",
     "mutual_title": "Mostrando coincidencias mutuas",
     "mutual_desc": "Estas coincidencias son en ambos sentidos: tú encajas perfectamente con ellos y ellos encajan perfectamente contigo.",
-    "show_all": "Mostrar todos los partidos"
+    "show_all": "Mostrar todas las coincidencias"
   },
   "card": {
-    "mutual": "partido mutuo",
-    "save": "Guardar partido",
+    "mutual": "Coincidencia mutua",
+    "save": "Guardar coincidencia",
     "dismiss": "No interesado",
     "view_group": "Ver grupo",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "A distancia",
+    "message": "Mensaje",
+    "join": "Unirse",
+    "joined": "Te has unido"
   },
   "explanation": {
     "ai_caption": "Explicación generada por IA basada en su perfil y actividad"
@@ -59,19 +59,19 @@
     "title": "¿Por qué esta puntuación?",
     "signals": {
       "category": "Coincidencia de categoría",
-      "skill": "partido de habilidad",
+      "skill": "Coincidencia de habilidades",
       "semantic": "Descripción similitud",
       "activity": "Nivel de actividad",
       "trust_tier": "Nivel de confianza",
       "completion": "Tasa de finalización",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "Proximidad",
+      "availability": "Disponibilidad",
+      "reviews": "Reseñas"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Relevancia",
+      "feasibility": "Viabilidad",
+      "trust": "Confianza"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "Ya hecho",
     "not_my_skills": "No mis habilidades",
     "not_interested": "No interesado",
-    "other": "Other"
+    "other": "Otro"
   },
   "empty": {
     "no_coordinates_title": "Necesitamos su ubicación para encontrar coincidencias",
@@ -97,7 +97,7 @@
     "load_error_desc": "No se pudieron cargar tus preferencias guardadas. La edición está deshabilitada para que no se sobrescriban con valores predeterminados.",
     "retry": "Intentar de nuevo",
     "save": "Guardar preferencias",
-    "save_success": "Preferencias de partido guardadas",
+    "save_success": "Preferencias de coincidencias guardadas",
     "save_failed": "No se pudieron guardar las preferencias de coincidencia",
     "unsaved_changes": "Tienes cambios sin guardar",
     "pause": {
@@ -121,24 +121,24 @@
     },
     "notifications": {
       "frequency_label": "Frecuencia de resumen de coincidencias",
-      "hot_matches": "Alertas de partidos calientes",
-      "hot_matches_desc": "Reciba notificaciones de inmediato sobre coincidencias excepcionalmente fuertes.",
-      "mutual_matches": "Alertas de partidos mutuos",
+      "hot_matches": "Alertas de coincidencias prioritarias",
+      "hot_matches_desc": "Recibe notificaciones inmediatas sobre coincidencias especialmente relevantes.",
+      "mutual_matches": "Alertas de coincidencias mutuas",
       "mutual_matches_desc": "Recibe notificaciones cuando una coincidencia sea en ambos sentidos.",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "title": "Notificaciones",
+      "daily": "A diario",
+      "fortnightly": "Cada dos semanas",
+      "monthly": "Mensualmente",
+      "never": "Nunca"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "Preferencias de coincidencias",
+    "page_meta_title": "Preferencias de coincidencias",
+    "breadcrumb": "Preferencias",
+    "heading": "Preferencias de coincidencias"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "Coincidencias mutuas",
+  "filter_people_listings": "Anuncios",
+  "source_event": "Evento",
   "reasons_more_many": "+{{count}} más",
   "reasons_more_one": "+{{count}} más",
   "reasons_more_other": "+{{count}} más"

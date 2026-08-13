@@ -10,7 +10,7 @@
   "stats_avg_score": "Score moyen",
   "stats_hot_matches": "Correspondances prioritaires",
   "filter_all": "Toutes",
-  "filter_mutual_only": "Matchs mutuels uniquement",
+  "filter_mutual_only": "Correspondances mutuelles uniquement",
   "source_listing": "Annonce",
   "source_volunteering": "Bénévolat",
   "source_group": "Groupe",
@@ -31,15 +31,15 @@
     "title": "Correspondances"
   },
   "filter_tabs_aria": "Filtrer la source de correspondance",
-  "loading": "Chargement des matchs...",
+  "loading": "Chargement des correspondances...",
   "banner": {
     "no_coords_title": "Ajoutez votre emplacement pour voir les correspondances à proximité",
     "no_coords_desc": "Nous ne pouvons pas calculer les correspondances basées sur la distance tant que votre profil n'a pas de localisation. Vous pouvez toujours voir les correspondances ci-dessous en fonction d'autres signaux.",
     "paused_title": "La correspondance est suspendue",
     "paused_desc": "Vous ne recevrez pas de nouvelles suggestions ou notifications de correspondance tant que vous n'aurez pas repris la correspondance dans vos préférences.",
     "mutual_title": "Afficher les correspondances mutuelles",
-    "mutual_desc": "Ces matchs vont dans les deux sens : vous leur correspondez parfaitement, et ils vous conviennent parfaitement.",
-    "show_all": "Afficher tous les matchs"
+    "mutual_desc": "Ces correspondances fonctionnent dans les deux sens : vous leur correspondez et ils vous correspondent.",
+    "show_all": "Afficher toutes les correspondances"
   },
   "card": {
     "mutual": "Correspondance mutuelle",
@@ -47,10 +47,10 @@
     "dismiss": "Pas intéressé",
     "view_group": "Afficher le groupe",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "À distance",
+    "message": "Envoyer un message",
+    "join": "Rejoindre",
+    "joined": "Inscription effectuée"
   },
   "explanation": {
     "ai_caption": "Explication générée par l'IA en fonction de votre profil et de votre activité"
@@ -64,14 +64,14 @@
       "activity": "Niveau d'activité",
       "trust_tier": "Niveau de confiance",
       "completion": "Taux d'achèvement",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "Proximité",
+      "availability": "Disponibilité",
+      "reviews": "Avis"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Pertinence",
+      "feasibility": "Faisabilité",
+      "trust": "Confiance"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "Déjà fait",
     "not_my_skills": "Pas mes compétences",
     "not_interested": "Pas intéressé",
-    "other": "Other"
+    "other": "Autre"
   },
   "empty": {
     "no_coordinates_title": "Nous avons besoin de votre emplacement pour trouver des correspondances",
@@ -102,7 +102,7 @@
     "unsaved_changes": "Vous avez des modifications non enregistrées",
     "pause": {
       "title": "Suspendre la correspondance",
-      "description": "En pause, vous ne recevrez pas de nouvelles suggestions ou notifications de match.",
+      "description": "Lorsque la mise en relation est en pause, vous ne recevez plus de suggestions ni de notifications.",
       "active_description": "La correspondance est suspendue : vous ne recevrez pas de nouvelles suggestions ou notifications tant que vous n'aurez pas repris."
     },
     "thresholds": {
@@ -121,24 +121,24 @@
     },
     "notifications": {
       "frequency_label": "Fréquence de résumé des correspondances",
-      "hot_matches": "Alertes de matchs chauds",
-      "hot_matches_desc": "Soyez immédiatement informé des matchs exceptionnellement forts.",
-      "mutual_matches": "Alertes de match mutuel",
-      "mutual_matches_desc": "Soyez averti lorsqu'un match se déroule dans les deux sens.",
+      "hot_matches": "Alertes de correspondances prioritaires",
+      "hot_matches_desc": "Recevez immédiatement une notification pour les correspondances particulièrement pertinentes.",
+      "mutual_matches": "Alertes de correspondances mutuelles",
+      "mutual_matches_desc": "Recevez une notification lorsqu’une correspondance fonctionne dans les deux sens.",
       "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "daily": "Chaque jour",
+      "fortnightly": "Toutes les deux semaines",
+      "monthly": "Chaque mois",
+      "never": "Jamais"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "Préférences de mise en relation",
+    "page_meta_title": "Préférences de mise en relation",
+    "breadcrumb": "Préférences",
+    "heading": "Préférences de mise en relation"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "Correspondances mutuelles",
+  "filter_people_listings": "Annonces",
+  "source_event": "Événement",
   "reasons_more_many": "+{{count}} de plus",
   "reasons_more_one": "+{{count}} de plus",
   "reasons_more_other": "+{{count}} de plus"

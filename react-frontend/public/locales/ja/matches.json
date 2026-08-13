@@ -10,7 +10,7 @@
   "stats_avg_score": "平均スコア",
   "stats_hot_matches": "ホットマッチ",
   "filter_all": "すべて",
-  "filter_mutual_only": "相互対戦のみ",
+  "filter_mutual_only": "相互マッチのみ",
   "source_listing": "リスト",
   "source_volunteering": "ボランティア",
   "source_group": "グループ",
@@ -31,9 +31,9 @@
     "title": "マッチ"
   },
   "filter_tabs_aria": "一致ソースフィルター",
-  "loading": "試合をロード中...",
+  "loading": "マッチを読み込み中...",
   "banner": {
-    "no_coords_title": "現在地を追加すると近くの試合が表示されます",
+    "no_coords_title": "位置情報を追加すると近くのマッチが表示されます",
     "no_coords_desc": "プロフィールに位置情報が含まれるまで、距離に基づく一致を計算することはできません。他のシグナルに基づいて、以下の一致を引き続き確認できます。",
     "paused_title": "マッチングは一時停止中です",
     "paused_desc": "設定でマッチングを再開するまで、新しいマッチングの提案や通知は受信されません。",
@@ -42,15 +42,15 @@
     "show_all": "すべての一致を表示"
   },
   "card": {
-    "mutual": "相互対戦",
-    "save": "試合を保存する",
+    "mutual": "相互マッチ",
+    "save": "マッチを保存",
     "dismiss": "興味がない",
     "view_group": "グループを表示する",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "オンライン",
+    "message": "メッセージ",
+    "join": "参加する",
+    "joined": "参加済み"
   },
   "explanation": {
     "ai_caption": "プロフィールやアクティビティに基づいてAIが生成した説明"
@@ -64,14 +64,14 @@
       "activity": "活動レベル",
       "trust_tier": "信頼層",
       "completion": "完了率",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "距離",
+      "availability": "対応可能時間",
+      "reviews": "レビュー"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "関連度",
+      "feasibility": "実現可能性",
+      "trust": "信頼度"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "すでに完了しました",
     "not_my_skills": "私のスキルではありません",
     "not_interested": "興味がない",
-    "other": "Other"
+    "other": "その他"
   },
   "empty": {
     "no_coordinates_title": "一致するものを見つけるためにあなたの位置情報が必要です",
@@ -122,23 +122,23 @@
     "notifications": {
       "frequency_label": "一致ダイジェストの頻度",
       "hot_matches": "ホットマッチアラート",
-      "hot_matches_desc": "非常に強力な試合についてすぐに通知を受け取ります。",
+      "hot_matches_desc": "特に関連度の高いマッチをすぐに通知します。",
       "mutual_matches": "相互一致アラート",
-      "mutual_matches_desc": "試合が双方向で行われた場合に通知を受け取ります。",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "mutual_matches_desc": "双方に関連するマッチが見つかったときに通知します。",
+      "title": "通知",
+      "daily": "毎日",
+      "fortnightly": "2週間ごと",
+      "monthly": "毎月",
+      "never": "通知しない"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "マッチング設定",
+    "page_meta_title": "マッチング設定",
+    "breadcrumb": "設定",
+    "heading": "マッチング設定"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "相互マッチ",
+  "filter_people_listings": "掲載情報",
+  "source_event": "イベント",
   "reasons_more_other": "+{{count}} もっと見る",
   "reasons_more_one": "+{{count}} 以上"
 }

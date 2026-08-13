@@ -9,14 +9,14 @@
   "stats_total_matches": "Łączna liczba dopasowań",
   "stats_avg_score": "Średni wynik",
   "stats_hot_matches": "Gorące dopasowania",
-  "stats_mutual_matches": "Mutual Matches",
+  "stats_mutual_matches": "Wzajemne dopasowania",
   "filter_all": "Wszystkie",
-  "filter_mutual_only": "Tylko wzajemne mecze",
-  "filter_people_listings": "Listings",
+  "filter_mutual_only": "Tylko wzajemne dopasowania",
+  "filter_people_listings": "Ogłoszenia",
   "source_listing": "Ogłoszenie",
   "source_volunteering": "Wolontariat",
   "source_group": "Grupa",
-  "source_event": "Event",
+  "source_event": "Wydarzenie",
   "empty_title_all": "Brak dopasowań",
   "empty_title_filtered": "Brak {{source}} dopasowań",
   "empty_description": "Dopasowania pojawią się tutaj, gdy system znajdzie połączenia dla Ciebie w całej platformie.",
@@ -34,9 +34,9 @@
     "title": "Dopasowania"
   },
   "filter_tabs_aria": "Dopasuj filtr źródła",
-  "loading": "Ładowanie meczów...",
+  "loading": "Ładowanie dopasowań...",
   "banner": {
-    "no_coords_title": "Dodaj swoją lokalizację, aby zobaczyć mecze w pobliżu",
+    "no_coords_title": "Dodaj swoją lokalizację, aby zobaczyć dopasowania w pobliżu",
     "no_coords_desc": "Nie możemy obliczyć dopasowań na podstawie odległości, dopóki Twój profil nie będzie miał lokalizacji. Nadal możesz zobaczyć dopasowania poniżej na podstawie innych sygnałów.",
     "paused_title": "Dopasowywanie zostało wstrzymane",
     "paused_desc": "Nie będziesz otrzymywać nowych sugestii ani powiadomień dotyczących dopasowań, dopóki nie wznowisz dopasowywania w swoich preferencjach.",
@@ -46,14 +46,14 @@
   },
   "card": {
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "mutual": "Wzajemny mecz",
-    "message": "Message",
-    "save": "Zapisz mecz",
+    "remote": "Zdalnie",
+    "mutual": "Wzajemne dopasowanie",
+    "message": "Wiadomość",
+    "save": "Zapisz dopasowanie",
     "dismiss": "Nie jestem zainteresowany",
     "view_group": "Zobacz grupę",
-    "join": "Join",
-    "joined": "Joined"
+    "join": "Dołącz",
+    "joined": "Dołączono"
   },
   "explanation": {
     "ai_caption": "Wyjaśnienia generowane przez sztuczną inteligencję na podstawie Twojego profilu i aktywności"
@@ -61,18 +61,18 @@
   "breakdown": {
     "title": "Dlaczego taki wynik?",
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Trafność",
+      "feasibility": "Wykonalność",
+      "trust": "Zaufanie"
     },
     "signals": {
       "category": "Dopasowanie kategorii",
-      "skill": "Mecz umiejętności",
+      "skill": "Dopasowanie umiejętności",
       "semantic": "Podobieństwo opisu",
-      "proximity": "Proximity",
-      "availability": "Availability",
+      "proximity": "Bliskość",
+      "availability": "Dostępność",
       "activity": "Poziom aktywności",
-      "reviews": "Reviews",
+      "reviews": "Opinie",
       "trust_tier": "Poziom zaufania",
       "completion": "Stopień ukończenia"
     }
@@ -83,7 +83,7 @@
     "already_done": "Już zrobione",
     "not_my_skills": "Nie moje umiejętności",
     "not_interested": "Nie jestem zainteresowany",
-    "other": "Other"
+    "other": "Inne"
   },
   "empty": {
     "no_coordinates_title": "Potrzebujemy Twojej lokalizacji, aby znaleźć dopasowania",
@@ -95,16 +95,16 @@
     "adjust_preferences_cta": "Dostosuj preferencje dopasowania"
   },
   "preferences": {
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences",
+    "page_title": "Preferencje dopasowania",
+    "page_meta_title": "Preferencje dopasowania",
+    "breadcrumb": "Preferencje",
+    "heading": "Preferencje dopasowania",
     "subtitle": "Kontroluj sposób, w jaki Smart Matching znajduje i powiadamia Cię o połączeniach.",
     "load_failed": "Nie udało się załadować preferencji dopasowania",
     "load_error_desc": "Nie udało się wczytać zapisanych preferencji. Edycja jest wyłączona, aby nie zostały nadpisane wartościami domyślnymi.",
     "retry": "Spróbuj ponownie",
     "save": "Zapisz preferencje",
-    "save_success": "Ustawienia meczu zostały zapisane",
+    "save_success": "Preferencje dopasowania zostały zapisane",
     "save_failed": "Nie udało się zapisać preferencji dopasowania",
     "unsaved_changes": "Masz niezapisane zmiany",
     "pause": {
@@ -127,14 +127,14 @@
       "empty": "Żadne kategorie nie są jeszcze dostępne."
     },
     "notifications": {
-      "title": "Notifications",
+      "title": "Powiadomienia",
       "frequency_label": "Dopasuj częstotliwość podsumowania",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never",
-      "hot_matches": "Alerty dotyczące gorących meczów",
-      "hot_matches_desc": "Otrzymuj powiadomienia od razu o wyjątkowo mocnych meczach.",
+      "daily": "Codziennie",
+      "fortnightly": "Co dwa tygodnie",
+      "monthly": "Co miesiąc",
+      "never": "Nigdy",
+      "hot_matches": "Alerty o priorytetowych dopasowaniach",
+      "hot_matches_desc": "Otrzymuj natychmiastowe powiadomienia o szczególnie trafnych dopasowaniach.",
       "mutual_matches": "Alerty o wzajemnych dopasowaniach",
       "mutual_matches_desc": "Otrzymuj powiadomienia, gdy dopasowanie przebiega w obie strony."
     }

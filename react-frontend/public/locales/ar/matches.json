@@ -47,10 +47,10 @@
     "dismiss": "غير مهتم",
     "view_group": "عرض المجموعة",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "عن بُعد",
+    "message": "مراسلة",
+    "join": "انضمام",
+    "joined": "تم الانضمام"
   },
   "explanation": {
     "ai_caption": "شرح تم إنشاؤه بواسطة الذكاء الاصطناعي بناءً على ملفك الشخصي ونشاطك"
@@ -64,14 +64,14 @@
       "activity": "مستوى النشاط",
       "trust_tier": "طبقة الثقة",
       "completion": "معدل الإنجاز",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "القرب",
+      "availability": "التوفر",
+      "reviews": "التقييمات"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "مدى الصلة",
+      "feasibility": "إمكانية التنفيذ",
+      "trust": "الثقة"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "تم بالفعل",
     "not_my_skills": "ليست مهاراتي",
     "not_interested": "غير مهتم",
-    "other": "Other"
+    "other": "أخرى"
   },
   "empty": {
     "no_coordinates_title": "نحن بحاجة إلى موقعك للعثور على التطابقات",
@@ -125,20 +125,20 @@
       "hot_matches_desc": "احصل على إشعار على الفور بشأن المباريات القوية بشكل استثنائي.",
       "mutual_matches": "تنبيهات المباراة المتبادلة",
       "mutual_matches_desc": "احصل على إشعار عندما تسير المباراة في كلا الاتجاهين.",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "title": "الإشعارات",
+      "daily": "يوميًا",
+      "fortnightly": "كل أسبوعين",
+      "monthly": "شهريًا",
+      "never": "أبدًا"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "تفضيلات المطابقة",
+    "page_meta_title": "تفضيلات المطابقة",
+    "breadcrumb": "التفضيلات",
+    "heading": "تفضيلات المطابقة"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "مطابقات متبادلة",
+  "filter_people_listings": "الإعلانات",
+  "source_event": "فعالية",
   "reasons_more_few": "+{{count}} المزيد",
   "reasons_more_many": "+{{count}} المزيد",
   "reasons_more_one": "+{{count}} المزيد",

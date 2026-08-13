@@ -47,10 +47,10 @@
     "dismiss": "Não estou interessado",
     "view_group": "Ver grupo",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "À distância",
+    "message": "Mensagem",
+    "join": "Participar",
+    "joined": "A participar"
   },
   "explanation": {
     "ai_caption": "Explicação gerada por IA com base no seu perfil e atividade"
@@ -64,14 +64,14 @@
       "activity": "Nível de atividade",
       "trust_tier": "Nível de confiança",
       "completion": "Taxa de conclusão",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "Proximidade",
+      "availability": "Disponibilidade",
+      "reviews": "Avaliações"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Relevância",
+      "feasibility": "Viabilidade",
+      "trust": "Confiança"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "Já feito",
     "not_my_skills": "Não são minhas habilidades",
     "not_interested": "Não estou interessado",
-    "other": "Other"
+    "other": "Outro"
   },
   "empty": {
     "no_coordinates_title": "Precisamos da sua localização para encontrar correspondências",
@@ -125,20 +125,20 @@
       "hot_matches_desc": "Seja notificado imediatamente sobre correspondências excepcionalmente fortes.",
       "mutual_matches": "Alertas de correspondência mútua",
       "mutual_matches_desc": "Seja notificado quando uma partida for nos dois sentidos.",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "title": "Notificações",
+      "daily": "Diariamente",
+      "fortnightly": "A cada duas semanas",
+      "monthly": "Mensalmente",
+      "never": "Nunca"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "Preferências de correspondência",
+    "page_meta_title": "Preferências de correspondência",
+    "breadcrumb": "Preferências",
+    "heading": "Preferências de correspondência"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "Correspondências mútuas",
+  "filter_people_listings": "Anúncios",
+  "source_event": "Evento",
   "reasons_more_many": "+{{count}} mais",
   "reasons_more_one": "+{{count}} mais",
   "reasons_more_other": "+{{count}} mais"

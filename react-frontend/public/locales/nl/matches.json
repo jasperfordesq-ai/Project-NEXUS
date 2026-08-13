@@ -9,14 +9,14 @@
   "stats_total_matches": "Totaal aantal Matches",
   "stats_avg_score": "Gemiddelde Score",
   "stats_hot_matches": "Populaire Matches",
-  "stats_mutual_matches": "Mutual Matches",
+  "stats_mutual_matches": "Wederzijdse matches",
   "filter_all": "Alles",
-  "filter_mutual_only": "Alleen onderlinge wedstrijden",
-  "filter_people_listings": "Listings",
+  "filter_mutual_only": "Alleen wederzijdse matches",
+  "filter_people_listings": "Aanbiedingen",
   "source_listing": "Aanbieding",
   "source_volunteering": "Vrijwilligerswerk",
   "source_group": "Groep",
-  "source_event": "Event",
+  "source_event": "Evenement",
   "empty_title_all": "Nog geen matches",
   "empty_title_filtered": "Geen {{source}} matches",
   "empty_description": "Matches verschijnen hier zodra het systeem verbindingen voor jou vindt op het platform.",
@@ -34,26 +34,26 @@
     "title": "Overeenkomsten"
   },
   "filter_tabs_aria": "Match bronfilter",
-  "loading": "Wedstrijden laden...",
+  "loading": "Matches laden...",
   "banner": {
-    "no_coords_title": "Voeg uw locatie toe om wedstrijden in de buurt te bekijken",
-    "no_coords_desc": "We kunnen pas op afstand gebaseerde overeenkomsten berekenen als uw profiel een locatie heeft. Hieronder kun je nog steeds wedstrijden zien op basis van andere signalen.",
+    "no_coords_title": "Voeg uw locatie toe om matches in de buurt te bekijken",
+    "no_coords_desc": "We kunnen matches op basis van afstand pas berekenen wanneer uw profiel een locatie heeft. Hieronder ziet u nog steeds matches op basis van andere signalen.",
     "paused_title": "Het matchen is onderbroken",
     "paused_desc": "U ontvangt geen nieuwe matchsuggesties of -meldingen totdat u het matchen in uw voorkeuren hervat.",
     "mutual_title": "Het tonen van onderlinge matches",
     "mutual_desc": "Deze matches gaan beide kanten op: jij past goed bij hen, en zij passen goed bij jou.",
-    "show_all": "Toon alle wedstrijden"
+    "show_all": "Toon alle matches"
   },
   "card": {
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "mutual": "Onderlinge wedstrijd",
-    "message": "Message",
-    "save": "Wedstrijd opslaan",
+    "remote": "Op afstand",
+    "mutual": "Wederzijdse match",
+    "message": "Bericht",
+    "save": "Match opslaan",
     "dismiss": "Niet geïnteresseerd",
     "view_group": "Groep bekijken",
-    "join": "Join",
-    "joined": "Joined"
+    "join": "Deelnemen",
+    "joined": "Deelnemer"
   },
   "explanation": {
     "ai_caption": "Door AI gegenereerde uitleg op basis van uw profiel en activiteit"
@@ -61,18 +61,18 @@
   "breakdown": {
     "title": "Waarom dit cijfer?",
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Relevantie",
+      "feasibility": "Haalbaarheid",
+      "trust": "Vertrouwen"
     },
     "signals": {
       "category": "Categorie-overeenkomst",
-      "skill": "Vaardigheidswedstrijd",
+      "skill": "Overeenkomst in vaardigheden",
       "semantic": "Beschrijving gelijkenis",
-      "proximity": "Proximity",
-      "availability": "Availability",
+      "proximity": "Nabijheid",
+      "availability": "Beschikbaarheid",
       "activity": "Activiteitsniveau",
-      "reviews": "Reviews",
+      "reviews": "Beoordelingen",
       "trust_tier": "Vertrouwenslaag",
       "completion": "Voltooiingspercentage"
     }
@@ -83,7 +83,7 @@
     "already_done": "Al gedaan",
     "not_my_skills": "Niet mijn vaardigheden",
     "not_interested": "Niet geïnteresseerd",
-    "other": "Other"
+    "other": "Overig"
   },
   "empty": {
     "no_coordinates_title": "Om matches te vinden, hebben we uw locatie nodig",
@@ -92,33 +92,33 @@
     "no_listings_title": "Overeenkomende werken uit uw aanbiedingen",
     "no_listings_description": "Maak een vermelding om mensen, groepen en mogelijkheden te vinden die overeenkomen met wat u aanbiedt of nodig heeft.",
     "create_listing_cta": "Maak een vermelding",
-    "adjust_preferences_cta": "Pas wedstrijdvoorkeuren aan"
+    "adjust_preferences_cta": "Matchvoorkeuren aanpassen"
   },
   "preferences": {
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences",
+    "page_title": "Matchvoorkeuren",
+    "page_meta_title": "Matchvoorkeuren",
+    "breadcrumb": "Voorkeuren",
+    "heading": "Matchvoorkeuren",
     "subtitle": "Bepaal hoe Smart Matching verbindingen vindt en u hiervan op de hoogte stelt.",
-    "load_failed": "Kan uw wedstrijdvoorkeuren niet laden",
+    "load_failed": "Uw matchvoorkeuren konden niet worden geladen",
     "load_error_desc": "Je opgeslagen voorkeuren konden niet worden geladen. Bewerken is uitgeschakeld zodat ze niet worden overschreven met standaardwaarden.",
     "retry": "Opnieuw proberen",
     "save": "Bewaar voorkeuren",
     "save_success": "Matchvoorkeuren opgeslagen",
-    "save_failed": "Kan wedstrijdvoorkeuren niet opslaan",
+    "save_failed": "Uw matchvoorkeuren konden niet worden opgeslagen",
     "unsaved_changes": "U heeft niet-opgeslagen wijzigingen",
     "pause": {
       "title": "Pauzeer het matchen",
-      "description": "Als het spel is onderbroken, ontvang je geen nieuwe wedstrijdsuggesties of meldingen.",
+      "description": "Wanneer matching is gepauzeerd, ontvangt u geen nieuwe suggesties of meldingen.",
       "active_description": "Het matchen is onderbroken. U ontvangt pas nieuwe suggesties of meldingen als u weer verdergaat."
     },
     "thresholds": {
       "title": "Afstand & kwaliteit",
       "no_location_title": "Voeg een locatie toe om op afstand gebaseerde matching te gebruiken",
-      "no_location_desc": "Stel uw locatie in uw profiel in om wedstrijden te rangschikken op basis van hoe dicht ze bij u in de buurt zijn.",
+      "no_location_desc": "Stel uw locatie in uw profiel in om matches te rangschikken op afstand.",
       "distance_label": "Maximale afstand",
       "distance_value": "{{value}} km",
-      "quality_label": "Minimale wedstrijdkwaliteit",
+      "quality_label": "Minimale matchkwaliteit",
       "quality_value": "{{value}}%"
     },
     "categories": {
@@ -127,16 +127,16 @@
       "empty": "Er zijn nog geen categorieën beschikbaar."
     },
     "notifications": {
-      "title": "Notifications",
-      "frequency_label": "Pas de verteerfrequentie aan",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never",
+      "title": "Meldingen",
+      "frequency_label": "Frequentie van het matchoverzicht",
+      "daily": "Dagelijks",
+      "fortnightly": "Elke twee weken",
+      "monthly": "Maandelijks",
+      "never": "Nooit",
       "hot_matches": "Hotmatch-waarschuwingen",
       "hot_matches_desc": "Ontvang direct een melding over uitzonderlijk sterke matches.",
-      "mutual_matches": "Wederzijdse wedstrijdwaarschuwingen",
-      "mutual_matches_desc": "Ontvang een melding wanneer een wedstrijd beide kanten op gaat."
+      "mutual_matches": "Meldingen voor wederzijdse matches",
+      "mutual_matches_desc": "Ontvang een melding wanneer een match voor beide kanten relevant is."
     }
   },
   "reasons_more_one": "+{{count}} meer",

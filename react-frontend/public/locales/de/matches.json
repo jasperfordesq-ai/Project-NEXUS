@@ -1,56 +1,56 @@
 {
-  "page_title": "Treffer",
+  "page_title": "Übereinstimmungen",
   "breadcrumb_dashboard": "Übersicht",
-  "breadcrumb_matches": "Treffer",
-  "heading": "Ihre Treffer",
+  "breadcrumb_matches": "Übereinstimmungen",
+  "heading": "Ihre Übereinstimmungen",
   "subtitle": "Entdecken Sie Verbindungen über Anzeigen, Stellen, Freiwilligenarbeit und Gruppen",
   "refresh": "Aktualisieren",
   "preferences_link": "Passen Sie Ihre Präferenzen an",
-  "stats_total_matches": "Gesamttreffer",
+  "stats_total_matches": "Übereinstimmungen insgesamt",
   "stats_avg_score": "Durchschn. Punktzahl",
-  "stats_hot_matches": "Top-Treffer",
+  "stats_hot_matches": "Besonders gute Übereinstimmungen",
   "filter_all": "Alle",
-  "filter_mutual_only": "Nur gegenseitige Spiele",
+  "filter_mutual_only": "Nur gegenseitige Übereinstimmungen",
   "source_listing": "Anzeige",
   "source_volunteering": "Freiwilligenarbeit",
   "source_group": "Gruppe",
-  "empty_title_all": "Noch keine Treffer",
-  "empty_title_filtered": "Keine {{source}}-Treffer",
-  "empty_description": "Treffer erscheinen hier, wenn das System Verbindungen für Sie auf der Plattform findet.",
+  "empty_title_all": "Noch keine Übereinstimmungen",
+  "empty_title_filtered": "Keine Übereinstimmungen für {{source}}",
+  "empty_description": "Übereinstimmungen erscheinen hier, sobald das System passende Verbindungen auf der Plattform für Sie findet.",
   "browse_listings": "Anzeigen durchsuchen",
-  "score_label": "Treffer-Score: {{score}}%",
+  "score_label": "Übereinstimmungswert: {{score}}%",
   "score_percent": "{{score}}% Übereinstimmung",
   "reasons_more": "+{{count}} mehr",
-  "view_details": "Treffer-Details ansehen",
+  "view_details": "Details zur Übereinstimmung ansehen",
   "not_interested": "Kein Interesse",
-  "load_failed": "Matches konnten nicht geladen werden",
-  "load_error_title": "Matches können nicht geladen werden",
+  "load_failed": "Übereinstimmungen konnten nicht geladen werden",
+  "load_error_title": "Übereinstimmungen können nicht geladen werden",
   "retry": "Erneut versuchen",
-  "match_hidden": "Match ausgeblendet — wir zeigen dir weniger davon",
+  "match_hidden": "Übereinstimmung ausgeblendet — ähnliche Ergebnisse werden seltener angezeigt",
   "page_meta": {
-    "title": "Treffer"
+    "title": "Übereinstimmungen"
   },
   "filter_tabs_aria": "Quellfilter anpassen",
-  "loading": "Spiele werden geladen...",
+  "loading": "Übereinstimmungen werden geladen...",
   "banner": {
     "no_coords_title": "Fügen Sie Ihren Standort hinzu, um Übereinstimmungen in der Nähe anzuzeigen",
     "no_coords_desc": "Wir können entfernungsbasierte Übereinstimmungen erst dann berechnen, wenn Ihr Profil über einen Standort verfügt. Unten können Sie immer noch Übereinstimmungen sehen, die auf anderen Signalen basieren.",
     "paused_title": "Der Abgleich ist pausiert",
     "paused_desc": "Sie erhalten keine neuen Übereinstimmungsvorschläge oder Benachrichtigungen, bis Sie die Zuordnung in Ihren Einstellungen wieder aufnehmen.",
     "mutual_title": "Gegenseitige Übereinstimmungen werden angezeigt",
-    "mutual_desc": "Diese Matches gehen in beide Richtungen – Sie passen hervorragend zu ihnen und sie passen hervorragend zu Ihnen.",
+    "mutual_desc": "Diese Übereinstimmungen gelten in beide Richtungen: Sie passen zu ihnen und sie zu Ihnen.",
     "show_all": "Alle Übereinstimmungen anzeigen"
   },
   "card": {
     "mutual": "Gegenseitige Übereinstimmung",
-    "save": "Spiel speichern",
+    "save": "Übereinstimmung speichern",
     "dismiss": "Kein Interesse",
     "view_group": "Gruppe anzeigen",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "Online",
+    "message": "Nachricht senden",
+    "join": "Beitreten",
+    "joined": "Beigetreten"
   },
   "explanation": {
     "ai_caption": "KI-generierte Erklärung basierend auf Ihrem Profil und Ihrer Aktivität"
@@ -59,19 +59,19 @@
     "title": "Warum diese Punktzahl?",
     "signals": {
       "category": "Kategorieübereinstimmung",
-      "skill": "Skill-Match",
+      "skill": "Übereinstimmung der Fähigkeiten",
       "semantic": "Beschreibungsähnlichkeit",
       "activity": "Aktivitätsniveau",
       "trust_tier": "Vertrauensstufe",
       "completion": "Abschlussrate",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "Nähe",
+      "availability": "Verfügbarkeit",
+      "reviews": "Bewertungen"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Relevanz",
+      "feasibility": "Umsetzbarkeit",
+      "trust": "Vertrauen"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "Schon erledigt",
     "not_my_skills": "Nicht meine Fähigkeiten",
     "not_interested": "Kein Interesse",
-    "other": "Other"
+    "other": "Sonstiges"
   },
   "empty": {
     "no_coordinates_title": "Wir benötigen Ihren Standort, um Übereinstimmungen zu finden",
@@ -89,20 +89,20 @@
     "no_listings_title": "Passende Werke aus Ihren Angeboten",
     "no_listings_description": "Erstellen Sie einen Eintrag, um Personen, Gruppen und Möglichkeiten zu finden, die Ihrem Angebot oder Bedarf entsprechen.",
     "create_listing_cta": "Erstellen Sie einen Eintrag",
-    "adjust_preferences_cta": "Passen Sie die Spieleinstellungen an"
+    "adjust_preferences_cta": "Matching-Einstellungen anpassen"
   },
   "preferences": {
     "subtitle": "Steuern Sie, wie Smart Matching Verbindungen findet und Sie darüber benachrichtigt.",
-    "load_failed": "Ihre Match-Einstellungen konnten nicht geladen werden",
+    "load_failed": "Ihre Matching-Einstellungen konnten nicht geladen werden",
     "load_error_desc": "Ihre gespeicherten Einstellungen konnten nicht geladen werden. Die Bearbeitung ist deaktiviert, damit sie nicht mit Standardwerten überschrieben werden.",
     "retry": "Erneut versuchen",
     "save": "Einstellungen speichern",
-    "save_success": "Match-Einstellungen gespeichert",
-    "save_failed": "Spieleinstellungen konnten nicht gespeichert werden",
+    "save_success": "Matching-Einstellungen gespeichert",
+    "save_failed": "Matching-Einstellungen konnten nicht gespeichert werden",
     "unsaved_changes": "Sie haben nicht gespeicherte Änderungen",
     "pause": {
       "title": "Abgleich pausieren",
-      "description": "Im pausierten Zustand erhalten Sie keine neuen Spielvorschläge oder Benachrichtigungen.",
+      "description": "Wenn das Matching pausiert ist, erhalten Sie keine neuen Vorschläge oder Benachrichtigungen.",
       "active_description": "Der Abgleich ist pausiert – Sie erhalten keine neuen Vorschläge oder Benachrichtigungen, bis Sie fortfahren."
     },
     "thresholds": {
@@ -121,24 +121,24 @@
     },
     "notifications": {
       "frequency_label": "Passen Sie die Digest-Häufigkeit an",
-      "hot_matches": "Benachrichtigungen zu heißen Spielen",
-      "hot_matches_desc": "Lassen Sie sich sofort über außergewöhnlich starke Matches benachrichtigen.",
-      "mutual_matches": "Gegenseitige Spielbenachrichtigungen",
-      "mutual_matches_desc": "Lassen Sie sich benachrichtigen, wenn ein Match in beide Richtungen geht.",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "hot_matches": "Benachrichtigungen zu besonders guten Übereinstimmungen",
+      "hot_matches_desc": "Lassen Sie sich sofort über besonders relevante Übereinstimmungen benachrichtigen.",
+      "mutual_matches": "Benachrichtigungen zu gegenseitigen Übereinstimmungen",
+      "mutual_matches_desc": "Lassen Sie sich benachrichtigen, wenn eine Übereinstimmung in beide Richtungen gilt.",
+      "title": "Benachrichtigungen",
+      "daily": "Täglich",
+      "fortnightly": "Alle zwei Wochen",
+      "monthly": "Monatlich",
+      "never": "Nie"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "Matching-Einstellungen",
+    "page_meta_title": "Matching-Einstellungen",
+    "breadcrumb": "Einstellungen",
+    "heading": "Matching-Einstellungen"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "Gegenseitige Übereinstimmungen",
+  "filter_people_listings": "Anzeigen",
+  "source_event": "Veranstaltung",
   "reasons_more_one": "+{{count}} mehr",
   "reasons_more_other": "+{{count}} mehr"
 }

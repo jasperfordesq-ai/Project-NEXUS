@@ -10,7 +10,7 @@
   "stats_avg_score": "Punteggio Medio",
   "stats_hot_matches": "Abbinamenti Top",
   "filter_all": "Tutti",
-  "filter_mutual_only": "Solo partite reciproche",
+  "filter_mutual_only": "Solo corrispondenze reciproche",
   "source_listing": "Annuncio",
   "source_volunteering": "Volontariato",
   "source_group": "Gruppo",
@@ -31,26 +31,26 @@
     "title": "Corrispondenze"
   },
   "filter_tabs_aria": "Corrispondenza filtro di origine",
-  "loading": "Caricamento partite...",
+  "loading": "Caricamento delle corrispondenze...",
   "banner": {
     "no_coords_title": "Aggiungi la tua posizione per vedere le corrispondenze nelle vicinanze",
     "no_coords_desc": "Non possiamo calcolare corrispondenze basate sulla distanza finché il tuo profilo non ha una posizione. Puoi ancora vedere le corrispondenze di seguito in base ad altri segnali.",
     "paused_title": "La corrispondenza è in pausa",
     "paused_desc": "Non riceverai nuovi suggerimenti o notifiche di abbinamento finché non riprenderai l'abbinamento nelle tue preferenze.",
     "mutual_title": "Mostra corrispondenze reciproche",
-    "mutual_desc": "Queste partite vanno in entrambe le direzioni: tu sei perfetto per loro e loro sono perfetti per te.",
+    "mutual_desc": "Queste corrispondenze funzionano in entrambe le direzioni: tu sei adatto a loro e loro sono adatti a te.",
     "show_all": "Mostra tutte le corrispondenze"
   },
   "card": {
     "mutual": "Corrispondenza reciproca",
-    "save": "Salva partita",
+    "save": "Salva corrispondenza",
     "dismiss": "Non interessato",
     "view_group": "Visualizza gruppo",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "Da remoto",
+    "message": "Messaggio",
+    "join": "Partecipa",
+    "joined": "Partecipi"
   },
   "explanation": {
     "ai_caption": "Spiegazione generata dall'intelligenza artificiale in base al tuo profilo e alla tua attività"
@@ -59,19 +59,19 @@
     "title": "Perché questo punteggio?",
     "signals": {
       "category": "Corrispondenza di categoria",
-      "skill": "Partita di abilità",
+      "skill": "Corrispondenza delle competenze",
       "semantic": "Somiglianza nella descrizione",
       "activity": "Livello di attività",
       "trust_tier": "Livello di fiducia",
       "completion": "Tasso di completamento",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "Vicinanza",
+      "availability": "Disponibilità",
+      "reviews": "Recensioni"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Pertinenza",
+      "feasibility": "Fattibilità",
+      "trust": "Affidabilità"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "Già fatto",
     "not_my_skills": "Non le mie capacità",
     "not_interested": "Non interessato",
-    "other": "Other"
+    "other": "Altro"
   },
   "empty": {
     "no_coordinates_title": "Abbiamo bisogno della tua posizione per trovare corrispondenze",
@@ -108,7 +108,7 @@
     "thresholds": {
       "title": "Distanza e qualità",
       "no_location_title": "Aggiungi una posizione per utilizzare la corrispondenza basata sulla distanza",
-      "no_location_desc": "Imposta la tua posizione nel tuo profilo per ottenere partite classificate in base a quanto sono vicine a te.",
+      "no_location_desc": "Imposta la posizione nel profilo per ordinare le corrispondenze in base alla distanza.",
       "distance_label": "Distanza massima",
       "quality_label": "Qualità di corrispondenza minima",
       "distance_value": "{{value}} km",
@@ -120,25 +120,25 @@
       "empty": "Nessuna categoria è ancora disponibile."
     },
     "notifications": {
-      "frequency_label": "Abbina la frequenza digest",
-      "hot_matches": "Avvisi di partite calde",
-      "hot_matches_desc": "Ricevi subito notifiche su partite eccezionalmente forti.",
+      "frequency_label": "Frequenza del riepilogo delle corrispondenze",
+      "hot_matches": "Avvisi per corrispondenze prioritarie",
+      "hot_matches_desc": "Ricevi subito una notifica per le corrispondenze particolarmente rilevanti.",
       "mutual_matches": "Avvisi di corrispondenza reciproca",
-      "mutual_matches_desc": "Ricevi una notifica quando una partita va in entrambe le direzioni.",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "mutual_matches_desc": "Ricevi una notifica quando una corrispondenza funziona in entrambe le direzioni.",
+      "title": "Notifiche",
+      "daily": "Ogni giorno",
+      "fortnightly": "Ogni due settimane",
+      "monthly": "Ogni mese",
+      "never": "Mai"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "Preferenze di abbinamento",
+    "page_meta_title": "Preferenze di abbinamento",
+    "breadcrumb": "Preferenze",
+    "heading": "Preferenze di abbinamento"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "Corrispondenze reciproche",
+  "filter_people_listings": "Annunci",
+  "source_event": "Evento",
   "reasons_more_many": "+{{count}} altri",
   "reasons_more_one": "+{{count}} altri",
   "reasons_more_other": "+{{count}} altri"
