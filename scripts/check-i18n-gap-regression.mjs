@@ -69,6 +69,9 @@ const NO_TRANSLATE_VALUES = new Set([
   // Concrete backend identifier shown as a format example. Translating it
   // changes the value administrators must enter rather than localizing copy.
   'bern-cooperative',
+  // Technical field placeholder. The slug itself is an identifier, and the
+  // ellipsis only indicates that the administrator should enter one.
+  'Slug...',
   // Robots meta directives: literal values a crawler parses, not prose.
   'Noindex Nofollow',
   'Index Follow',

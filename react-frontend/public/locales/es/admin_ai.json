@@ -275,7 +275,7 @@
       "columns": {
         "actions": "Comportamiento",
         "keywords": "Palabras clave",
-        "slug": "Babosa",
+        "slug": "Slug",
         "status": "Estado",
         "title": "Título",
         "updated": "Actualizado"
@@ -291,7 +291,7 @@
           "active": "Activo",
           "body": "Cuerpo",
           "keywords": "Palabras clave de activación (separadas por comas)",
-          "module_slug": "Babosa del módulo",
+          "module_slug": "Slug del módulo",
           "title": "Título"
         },
         "hints": {

@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Antragsteller",
       "country_region": "Land / Region",
-      "slug": "Schnecke",
+      "slug": "Slug",
       "category": "Kategorie",
       "expected_size": "Erwartete Größe",
       "languages": "Sprachen",

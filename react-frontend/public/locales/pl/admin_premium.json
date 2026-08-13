@@ -133,7 +133,7 @@
     "table": {
       "aria": "Poziomy premium",
       "name": "NAZWA",
-      "slug": "ŚLIMAK",
+      "slug": "SLUG",
       "price_month": "CENA / MIESIĄC",
       "price_year": "CENA / ROK",
       "features": "CECHY",
@@ -157,7 +157,7 @@
     },
     "form": {
       "name": "Nazwa",
-      "slug": "Ślimak",
+      "slug": "Slug",
       "slug_description": "Małe litery, cyfry, myślniki/podkreślenia",
       "description": "Opis",
       "price_month": "Cena / miesiąc",
@@ -168,7 +168,7 @@
     },
     "validation": {
       "slug_name_required": "Wymagane są Slug i Imię",
-      "slug_format": "Informacje muszą być pisane małymi literami a–z, 0–9, myślnikami/podkreśleniami"
+      "slug_format": "Slug musi składać się z małych liter a–z, cyfr 0–9, myślników lub podkreśleń"
     },
     "confirm_delete": "Usunąć poziom „{{name}}”? Tego nie można cofnąć.",
     "toasts": {

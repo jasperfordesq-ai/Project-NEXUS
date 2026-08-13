@@ -487,7 +487,7 @@
         },
         "tenant_scope": {
           "title": "Sécurité des locataires",
-          "body": "Lorsqu'une page appartient à un locataire, les actions doivent inclure ce slug de locataire. Le moteur vérifie désormais le chemin de l'hôte et du locataire avant de toucher aux instantanés."
+          "body": "Lorsqu'une page appartient à un locataire, les actions doivent inclure ce slug du locataire. Le moteur vérifie désormais le chemin de l'hôte et du locataire avant de toucher aux instantanés."
         },
         "dry_run": {
           "title": "Aperçu d'abord",
@@ -503,7 +503,7 @@
         "description": "Commencez par la tâche simple, puis utilisez l'onglet qu'elle ouvre. Cela éloigne le travail de routine des contrôles risqués.",
         "refresh_one_tenant": {
           "title": "Actualiser un locataire",
-          "body": "À utiliser lorsque le contenu public a changé pour une seule communauté. Entrez son slug de locataire avant de mettre les travaux en file d'attente."
+          "body": "À utiliser lorsque le contenu public a changé pour une seule communauté. Entrez son slug du locataire avant de mettre les travaux en file d'attente."
         },
         "find_stale_pages": {
           "title": "Rechercher des pages obsolètes ou manquantes",
@@ -783,7 +783,7 @@
           "status_200": "200 seulement",
           "status_non_200": "Non-200",
           "tenant_placeholder": "facultatif",
-          "tenant_slug": "Limace de locataire"
+          "tenant_slug": "Slug du locataire"
         },
         "messages": {
           "bulk_recache": "Instantanés {{count}} invalidés et remise en cache en file d'attente",
@@ -1052,7 +1052,7 @@
         },
         "fields": {
           "routes": "Itinéraires",
-          "tenant_slug": "Limace de locataire"
+          "tenant_slug": "Slug du locataire"
         },
         "force_refresh": {
           "description": "Mettez en file d'attente un nouveau rendu. Laissez les deux champs vides pour actualiser chaque locataire et itinéraire. Le processeur hôte récupère la tâche dans un délai d'environ 60 secondes.",
@@ -1141,7 +1141,7 @@
         },
         "fields": {
           "pattern": "Modèle",
-          "tenant_slug": "Limace de locataire",
+          "tenant_slug": "Slug du locataire",
           "confirm_text": "Tapez {{phrase}} pour confirmer"
         },
         "messages": {
@@ -1242,7 +1242,7 @@
         "description_suffix": "L'ouvrier dramaturge visite cette liste.",
         "error": "Échec de la recherche : vérifiez le slug du locataire",
         "fields": {
-          "tenant_slug": "Limace de locataire"
+          "tenant_slug": "Slug du locataire"
         },
         "none": "(aucun)",
         "placeholders": {
@@ -1277,7 +1277,7 @@
         "title": "Inspecteur de la sécurité des locataires",
         "description": "Vérifiez une communauté avant d’actualiser ou de supprimer quoi que ce soit. Cette vue compare le plan de routage du locataire avec le cache enregistré et explique pourquoi chaque instantané existe.",
         "fields": {
-          "tenant_slug": "Limace de locataire"
+          "tenant_slug": "Slug du locataire"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"
@@ -1287,7 +1287,7 @@
           "open_inventory": "Inventaire ouvert"
         },
         "errors": {
-          "tenant_required": "Entrez d’abord un slug de locataire.",
+          "tenant_required": "Entrez d’abord un slug du locataire.",
           "load": "Échec du chargement du rapport sur la sécurité des locataires."
         },
         "messages": {
@@ -1315,7 +1315,7 @@
           "missing_routes": "Routes manquantes ({{count}})",
           "attention": "Éléments nécessitant une attention particulière"
         },
-        "empty": "Entrez un slug de locataire pour inspecter son plan d'itinéraire et ses instantanés enregistrés.",
+        "empty": "Entrez un slug du locataire pour inspecter son plan d'itinéraire et ses instantanés enregistrés.",
         "empty_attention": "Ce locataire n’a aucun instantané manquant, obsolète, endommagé ou inattendu.",
         "columns": {
           "why": "Pourquoi c'est ici",
@@ -1431,7 +1431,7 @@
         "next_queries_database": "Requêtes de base de données Next.js détectées"
       },
       "tenant_resolution_examples": {
-        "shared_host_slug": "Hôte d'application partagée avec slug de locataire",
+        "shared_host_slug": "Hôte d'application partagée avec slug du locataire",
         "custom_domain": "Domaine de locataire personnalisé"
       },
       "tenant_resolution_route_statuses": {

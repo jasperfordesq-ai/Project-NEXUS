@@ -1987,7 +1987,7 @@
     },
     "table": {
       "name": "Nome",
-      "slug": "Lesma",
+      "slug": "Slug",
       "base_url": "URL base",
       "status": "Estado",
       "last_handshake": "Último contato bem-sucedido",

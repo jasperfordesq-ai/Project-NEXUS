@@ -132,7 +132,7 @@
     "table": {
       "aria": "Niveles premium",
       "name": "NOMBRE",
-      "slug": "BABOSA",
+      "slug": "SLUG",
       "price_month": "PRECIO / MES",
       "price_year": "PRECIO / AÑO",
       "features": "CARACTERÍSTICAS",
@@ -156,7 +156,7 @@
     },
     "form": {
       "name": "Nombre",
-      "slug": "Babosa",
+      "slug": "Slug",
       "slug_description": "Letras minúsculas, números, guiones/guiones bajos",
       "description": "Descripción",
       "price_month": "Precio / mes",

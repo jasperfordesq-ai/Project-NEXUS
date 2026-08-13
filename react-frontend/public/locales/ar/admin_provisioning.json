@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "مقدم الطلب",
       "country_region": "البلد / المنطقة",
-      "slug": "سبيكة",
+      "slug": "معرّف الرابط",
       "subdomain": "النطاق الفرعي",
       "category": "فئة",
       "expected_size": "الحجم المتوقع",

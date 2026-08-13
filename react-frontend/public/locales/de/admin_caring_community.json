@@ -1976,7 +1976,7 @@
     },
     "table": {
       "name": "Name",
-      "slug": "Schnecke",
+      "slug": "Slug",
       "base_url": "Basis URL",
       "status": "Status",
       "last_handshake": "Letzter erfolgreicher Kontakt",

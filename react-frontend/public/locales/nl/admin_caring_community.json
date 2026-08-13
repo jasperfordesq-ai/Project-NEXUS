@@ -1976,7 +1976,7 @@
     },
     "table": {
       "name": "Naam",
-      "slug": "Naaktslak",
+      "slug": "Slug",
       "base_url": "Basis URL",
       "status": "Status",
       "last_handshake": "Laatste succesvolle contact",
@@ -3304,7 +3304,7 @@
     },
     "filters": {
       "search_aria": "Zoek subregio's",
-      "search_placeholder": "Zoek op naam, beschrijving of naaktslak...",
+      "search_placeholder": "Zoek op naam, beschrijving of slug...",
       "type_aria": "Filter op type"
     },
     "table": {

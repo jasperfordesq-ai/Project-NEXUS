@@ -275,7 +275,7 @@
       "columns": {
         "actions": "Actes",
         "keywords": "Mots-clés",
-        "slug": "Limace",
+        "slug": "Slug",
         "status": "Statut",
         "title": "Titre",
         "updated": "Mis à jour"
@@ -291,7 +291,7 @@
           "active": "Actif",
           "body": "Corps",
           "keywords": "Mots-clés déclencheurs (séparés par des virgules)",
-          "module_slug": "Limace de module",
+          "module_slug": "Slug du module",
           "title": "Titre"
         },
         "hints": {

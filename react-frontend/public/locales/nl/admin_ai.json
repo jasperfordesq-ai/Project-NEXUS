@@ -272,7 +272,7 @@
       "columns": {
         "actions": "Acties",
         "keywords": "Trefwoorden",
-        "slug": "Naaktslak",
+        "slug": "Slug",
         "status": "Status",
         "title": "Titel",
         "updated": "Bijgewerkt"
@@ -288,7 +288,7 @@
           "active": "Actief",
           "body": "Lichaam",
           "keywords": "Triggerzoekwoorden (door komma's gescheiden)",
-          "module_slug": "Module-slak",
+          "module_slug": "Module-slug",
           "title": "Titel"
         },
         "hints": {

@@ -132,7 +132,7 @@
     "table": {
       "aria": "Niveaux Premium",
       "name": "NOM",
-      "slug": "LIMACE",
+      "slug": "SLUG",
       "price_month": "PRIX / MOIS",
       "price_year": "PRIX / ANNÉE",
       "features": "CARACTÉRISTIQUES",
@@ -156,7 +156,7 @@
     },
     "form": {
       "name": "Nom",
-      "slug": "Limace",
+      "slug": "Slug",
       "slug_description": "Lettres minuscules, chiffres, tirets/traits de soulignement",
       "description": "Descriptif",
       "price_month": "Prix ​​/ mois",

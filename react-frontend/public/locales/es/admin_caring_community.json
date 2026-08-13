@@ -1987,7 +1987,7 @@
     },
     "table": {
       "name": "Nombre",
-      "slug": "Babosa",
+      "slug": "Slug",
       "base_url": "URL base",
       "status": "Estado",
       "last_handshake": "Último contacto exitoso",

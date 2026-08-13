@@ -141,7 +141,7 @@
       "subscribers": "SUBSCRIBERS",
       "stripe": "STRIPE",
       "actions": "GNÍOMHAÍOCHTAÍ",
-      "slug": "SLUG"
+      "slug": "SLUGA"
     },
     "status": {
       "active": "Gníomhach",
@@ -158,8 +158,8 @@
     },
     "form": {
       "name": "Ainm",
-      "slug": "Drúchtín",
-      "slug_description": "Litreacha i gcás íochtair, uimhreacha, daiseanna/fothaí",
+      "slug": "Sluga",
+      "slug_description": "Litreacha i gcás íochtair, uimhreacha, fleiscíní nó fostríoca",
       "description": "Cur síos",
       "price_month": "Praghas / mí",
       "price_year": "Praghas / bliain",
@@ -169,7 +169,7 @@
     },
     "validation": {
       "slug_name_required": "Tá Sluga agus Ainm ag teastáil",
-      "slug_format": "Ní mór seilide a bheith i gcás íochtair a-z, 0-9, daiseanna/fothaí"
+      "slug_format": "Ní mór sluga a bheith i gcás íochtair a-z, 0-9, fleiscíní nó fostríoca"
     },
     "confirm_delete": "Scrios sraith \"{{name}}\"? Ní féidir é seo a chealú.",
     "toasts": {

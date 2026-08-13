@@ -768,7 +768,7 @@
           "status_200": "Slechts 200",
           "status_non_200": "Niet-200",
           "tenant_placeholder": "optioneel",
-          "tenant_slug": "Huurderslak"
+          "tenant_slug": "Tenant-slug"
         },
         "messages": {
           "bulk_recache": "Ongeldige {{count}}-snapshots en opnieuw cachen in de wachtrij",
@@ -1028,7 +1028,7 @@
           "load_summary": "Kan samenvatting niet laden"
         },
         "fields": {
-          "tenant_slug": "Huurderslak",
+          "tenant_slug": "Tenant-slug",
           "routes": "Routes"
         },
         "force_refresh": {
@@ -1114,7 +1114,7 @@
         },
         "fields": {
           "pattern": "Patroon",
-          "tenant_slug": "Huurderslak",
+          "tenant_slug": "Tenant-slug",
           "confirm_text": "Typ {{phrase}} om te bevestigen"
         },
         "messages": {
@@ -1204,7 +1204,7 @@
         "description_suffix": "De toneelschrijvermedewerker bezoekt deze lijst.",
         "error": "Opzoeken mislukt. Controleer de tenant-slug",
         "fields": {
-          "tenant_slug": "Huurderslak"
+          "tenant_slug": "Tenant-slug"
         },
         "none": "(geen)",
         "placeholders": {
@@ -1239,7 +1239,7 @@
         "title": "Veiligheidsinspecteur huurder",
         "description": "Controleer één community voordat u iets vernieuwt of verwijdert. In deze weergave wordt het tenantrouteplan vergeleken met de opgeslagen cache en wordt uitgelegd waarom elke momentopname bestaat.",
         "fields": {
-          "tenant_slug": "Huurderslak"
+          "tenant_slug": "Tenant-slug"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"

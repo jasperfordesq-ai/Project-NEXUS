@@ -154,8 +154,8 @@
     "no_selection": "Nie wybrano społeczności",
     "select_button": "Wybierać",
     "cancel_button": "Anulować",
-    "empty": "Obecnie nie można odkryć żadnych społeczności stowarzyszonych. Nadal możesz ręcznie wprowadzić ślimak społecznościowy.",
-    "fallback_label": "Możesz też ręcznie wprowadzić ślimak społecznościowy",
+    "empty": "Obecnie nie można odkryć żadnych społeczności stowarzyszonych. Nadal możesz ręcznie wprowadzić slug społeczności.",
+    "fallback_label": "Możesz też ręcznie wprowadzić slug społeczności",
     "member_count_label": "członkowie"
   },
   "onboarding": {

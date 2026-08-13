@@ -523,6 +523,6 @@
     "confirm_delete_tag": "Usunąć tag „{{name}}”? Zostanie usunięty ze wszystkich grup.",
     "confirm_delete_collection": "Usunąć kolekcję „{{name}}”? Grupy w niej zawarte nie zostaną usunięte.",
     "confirm_delete_rule": "Usunąć tę regułę automatycznego przypisywania?",
-    "col_slug": "Śrut"
+    "col_slug": "Slug"
   }
 }

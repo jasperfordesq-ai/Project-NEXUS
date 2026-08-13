@@ -2009,7 +2009,7 @@
     },
     "table": {
       "name": "Ainm",
-      "slug": "Drúchtín",
+      "slug": "Sluga",
       "base_url": "Bonn URL",
       "status": "Stádas",
       "last_handshake": "Teagmháil rathúil dheireanach",
@@ -3397,7 +3397,7 @@
     },
     "filters": {
       "search_aria": "Cuardaigh fo-réigiúin",
-      "search_placeholder": "Cuardaigh de réir ainm, tuairisce nó seilide...",
+      "search_placeholder": "Cuardaigh de réir ainm, tuairisce nó sluga...",
       "type_aria": "Scag de réir cineáil"
     },
     "table": {

@@ -131,7 +131,7 @@
     "table": {
       "aria": "プレミアム層",
       "name": "名前",
-      "slug": "ナメクジ",
+      "slug": "スラッグ",
       "price_month": "料金/月",
       "price_year": "価格/年",
       "features": "特徴",
@@ -155,7 +155,7 @@
     },
     "form": {
       "name": "名前",
-      "slug": "ナメクジ",
+      "slug": "スラッグ",
       "slug_description": "小文字、数字、ダッシュ/アンダースコア",
       "description": "説明",
       "price_month": "料金/月",
@@ -166,7 +166,7 @@
     },
     "validation": {
       "slug_name_required": "スラッグと名前は必須です",
-      "slug_format": "スラグは小文字の a ～ z、0 ～ 9、ダッシュ/アンダースコアでなければなりません"
+      "slug_format": "スラッグは小文字の a ～ z、0 ～ 9、ダッシュ/アンダースコアでなければなりません"
     },
     "confirm_delete": "層「{{name}}」を削除しますか?これを元に戻すことはできません。",
     "toasts": {

@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Requerente",
       "country_region": "País/Região",
-      "slug": "Lesma",
+      "slug": "Slug",
       "subdomain": "Subdomínio",
       "category": "Categoria",
       "expected_size": "Tamanho esperado",

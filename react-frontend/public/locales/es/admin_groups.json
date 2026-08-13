@@ -522,6 +522,6 @@
     "confirm_delete_tag": "¿Eliminar la etiqueta «{{name}}»? Se quitará de todos los grupos.",
     "confirm_delete_collection": "¿Eliminar la colección «{{name}}»? Los grupos que contiene no se eliminan.",
     "confirm_delete_rule": "¿Eliminar esta regla de asignación automática?",
-    "col_slug": "Babosa"
+    "col_slug": "Slug"
   }
 }

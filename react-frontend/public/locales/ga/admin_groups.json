@@ -524,6 +524,6 @@
     "confirm_delete_tag": "An chlib \"{{name}}\" a scriosadh? Bainfear de gach grúpa í.",
     "confirm_delete_collection": "An bailiúchán \"{{name}}\" a scriosadh? Ní scriostar na grúpaí atá ann.",
     "confirm_delete_rule": "An riail uath-shannta seo a scriosadh?",
-    "col_slug": "Limistéar"
+    "col_slug": "Sluga"
   }
 }

@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Demandeur",
       "country_region": "Pays/Région",
-      "slug": "Limace",
+      "slug": "Slug",
       "subdomain": "Sous-domaine",
       "category": "Catégorie",
       "expected_size": "Taille attendue",

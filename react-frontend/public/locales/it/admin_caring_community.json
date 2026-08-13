@@ -1987,7 +1987,7 @@
     },
     "table": {
       "name": "Nome",
-      "slug": "Lumaca",
+      "slug": "Slug",
       "base_url": "URL di base",
       "status": "Stato",
       "last_handshake": "Ultimo contatto riuscito",

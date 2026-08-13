@@ -800,7 +800,7 @@
           "status_200": "Tylko 200",
           "status_non_200": "Nie-200",
           "tenant_placeholder": "fakultatywny",
-          "tenant_slug": "Ślimak najemcy"
+          "tenant_slug": "Slug dzierżawcy"
         },
         "messages": {
           "bulk_recache": "Nieprawidłowe migawki {{count}} i pamięć podręczna w kolejce",
@@ -1077,7 +1077,7 @@
         },
         "fields": {
           "routes": "Trasy",
-          "tenant_slug": "Ślimak najemcy"
+          "tenant_slug": "Slug dzierżawcy"
         },
         "force_refresh": {
           "description": "Kolejkuj ponowne renderowanie. Pozostaw oba pola puste, aby odświeżyć każdego najemcę i trasę. Procesor hosta podejmuje zadanie w ciągu około 60 sekund.",
@@ -1171,7 +1171,7 @@
         },
         "fields": {
           "pattern": "Wzór",
-          "tenant_slug": "Ślimak najemcy",
+          "tenant_slug": "Slug dzierżawcy",
           "confirm_text": "Wpisz {{phrase}}, aby potwierdzić"
         },
         "messages": {
@@ -1282,7 +1282,7 @@
         "description_suffix": "Pracownik dramaturga odwiedza tę listę.",
         "error": "Wyszukiwanie nie powiodło się — sprawdź informację o dzierżawie",
         "fields": {
-          "tenant_slug": "Ślimak najemcy"
+          "tenant_slug": "Slug dzierżawcy"
         },
         "none": "(nic)",
         "placeholders": {
@@ -1317,7 +1317,7 @@
         "title": "Inspektor bezpieczeństwa najemców",
         "description": "Zanim odświeżysz lub usuniesz cokolwiek, sprawdź jedną społeczność. Ten widok porównuje plan trasy najemcy z zapisaną pamięcią podręczną i wyjaśnia, dlaczego istnieje każda migawka.",
         "fields": {
-          "tenant_slug": "Ślimak najemcy"
+          "tenant_slug": "Slug dzierżawcy"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"
@@ -1463,7 +1463,7 @@
         "title": "Umowa o rozwiązanie umowy najmu",
         "bootstrap_endpoint": "Punkt końcowy ładowania początkowego",
         "source_of_truth": "Źródło prawdy",
-        "slug_parameter": "Parametr ślimaka współdzielonego hosta",
+        "slug_parameter": "Parametr sluga współdzielonego hosta",
         "request_host": "Poproś o gospodarza",
         "request_path": "Ścieżka żądania",
         "bootstrap_request": "Żądanie Bootstrapa",
@@ -1472,7 +1472,7 @@
         "next_queries_database": "Wykryto zapytania do bazy danych Next.js"
       },
       "tenant_resolution_examples": {
-        "shared_host_slug": "Udostępniony host aplikacji z ślimakiem dzierżawcy",
+        "shared_host_slug": "Udostępniony host aplikacji z slugiem dzierżawcy",
         "custom_domain": "Niestandardowa domena dzierżawy"
       },
       "tenant_resolution_route_statuses": {

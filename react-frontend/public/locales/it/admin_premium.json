@@ -132,7 +132,7 @@
     "table": {
       "aria": "Livelli premium",
       "name": "NOME",
-      "slug": "LUMA",
+      "slug": "SLUG",
       "price_month": "PREZZO/MESE",
       "price_year": "PREZZO/ANNO",
       "features": "CARATTERISTICHE",
@@ -156,7 +156,7 @@
     },
     "form": {
       "name": "Nome",
-      "slug": "Lumaca",
+      "slug": "Slug",
       "slug_description": "Lettere minuscole, numeri, trattini/trattini bassi",
       "description": "Descrizione",
       "price_month": "Prezzo/mese",
@@ -166,7 +166,7 @@
       "sort_order": "Ordinamento"
     },
     "validation": {
-      "slug_name_required": "Lumaca e Nome sono obbligatori",
+      "slug_name_required": "Slug e nome sono obbligatori",
       "slug_format": "Lo slug deve essere minuscolo, a-z, 0-9, trattini/trattini bassi"
     },
     "confirm_delete": "Eliminare il livello \"{{name}}\"? Questa operazione non può essere annullata.",

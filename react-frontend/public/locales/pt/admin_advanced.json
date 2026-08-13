@@ -785,7 +785,7 @@
           "status_200": "200 apenas",
           "status_non_200": "Não-200",
           "tenant_placeholder": "opcional",
-          "tenant_slug": "Lesma inquilina"
+          "tenant_slug": "Slug do inquilino"
         },
         "messages": {
           "bulk_recache": "Instantâneos {{count}} invalidados e recache em fila",
@@ -1054,7 +1054,7 @@
         },
         "fields": {
           "routes": "Rotas",
-          "tenant_slug": "Lesma inquilina"
+          "tenant_slug": "Slug do inquilino"
         },
         "force_refresh": {
           "description": "Enfileirar uma nova renderização. Deixe ambos os campos vazios para atualizar cada locatário e rota. O processador host seleciona o trabalho em cerca de 60 segundos.",
@@ -1143,7 +1143,7 @@
         },
         "fields": {
           "pattern": "Padrão",
-          "tenant_slug": "Lesma inquilina",
+          "tenant_slug": "Slug do inquilino",
           "confirm_text": "Digite {{phrase}} para confirmar"
         },
         "messages": {
@@ -1244,7 +1244,7 @@
         "description_suffix": "O trabalhador do dramaturgo visita esta lista.",
         "error": "Falha na pesquisa – verifique o slug do locatário",
         "fields": {
-          "tenant_slug": "Lesma inquilina"
+          "tenant_slug": "Slug do inquilino"
         },
         "none": "(nenhum)",
         "placeholders": {
@@ -1279,7 +1279,7 @@
         "title": "Inspetor de segurança do inquilino",
         "description": "Verifique uma comunidade antes de atualizar ou excluir qualquer coisa. Esta visualização compara o plano de rota do locatário com o cache salvo e explica por que cada instantâneo existe.",
         "fields": {
-          "tenant_slug": "Lesma inquilina"
+          "tenant_slug": "Slug do inquilino"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"

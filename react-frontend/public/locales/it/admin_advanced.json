@@ -784,7 +784,7 @@
           "status_200": "solo 200",
           "status_non_200": "Non-200",
           "tenant_placeholder": "opzionale",
-          "tenant_slug": "Lumaca dell'inquilino"
+          "tenant_slug": "Slug dell'inquilino"
         },
         "messages": {
           "bulk_recache": "Istantanee {{count}} e ricodifica in coda non valide",
@@ -1053,7 +1053,7 @@
         },
         "fields": {
           "routes": "Percorsi",
-          "tenant_slug": "Lumaca dell'inquilino"
+          "tenant_slug": "Slug dell'inquilino"
         },
         "force_refresh": {
           "description": "Metti in coda un nuovo rendering. Lasciare entrambi i campi vuoti per aggiornare ogni tenant e percorso. Il processore host riprende il lavoro entro circa 60 secondi.",
@@ -1142,7 +1142,7 @@
         },
         "fields": {
           "pattern": "Modello",
-          "tenant_slug": "Lumaca dell'inquilino",
+          "tenant_slug": "Slug dell'inquilino",
           "confirm_text": "Digita {{phrase}} per confermare"
         },
         "messages": {
@@ -1243,7 +1243,7 @@
         "description_suffix": "L'operaio drammaturgo visita questo elenco.",
         "error": "Ricerca non riuscita: controlla lo slug dell'inquilino",
         "fields": {
-          "tenant_slug": "Lumaca dell'inquilino"
+          "tenant_slug": "Slug dell'inquilino"
         },
         "none": "(nessuno)",
         "placeholders": {
@@ -1278,7 +1278,7 @@
         "title": "Ispettore per la sicurezza degli inquilini",
         "description": "Controlla una comunità prima di aggiornare o eliminare qualsiasi cosa. Questa visualizzazione confronta il piano di instradamento del tenant con la cache salvata e spiega il motivo per cui esiste ogni snapshot.",
         "fields": {
-          "tenant_slug": "Lumaca dell'inquilino"
+          "tenant_slug": "Slug dell'inquilino"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"

@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "申請者",
       "country_region": "国・地域",
-      "slug": "ナメクジ",
+      "slug": "スラッグ",
       "subdomain": "サブドメイン",
       "category": "カテゴリ",
       "expected_size": "予想されるサイズ",

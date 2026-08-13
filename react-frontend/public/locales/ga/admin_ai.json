@@ -281,7 +281,7 @@
       "columns": {
         "actions": "Gníomhartha",
         "keywords": "Eochairfhocail",
-        "slug": "Drúchtín",
+        "slug": "Sluga",
         "status": "Stádas",
         "title": "Teideal",
         "updated": "Nuashonraithe"
@@ -297,13 +297,13 @@
           "active": "Gníomhach",
           "body": "Corp",
           "keywords": "Eochairfhocail truicear (scartha le camóg)",
-          "module_slug": "Seilide modúl",
+          "module_slug": "Sluga an mhodúil",
           "title": "Teideal"
         },
         "hints": {
           "active": "Ní instealladh doiciméid neamhghníomhacha isteach sa leid AI.",
           "keywords": "Nuair a bhíonn aon cheann de na focail seo le feiceáil i dteachtaireacht chomhrá, cuirfear an doiciméad seo isteach sa leid AI.",
-          "module_slug": "Litreacha i gcás íochtair, uimhreacha, béim, agus daiseanna. Ní féidir é a athrú tar éis cruthú."
+          "module_slug": "Litreacha beaga, uimhreacha, fostríoca agus fleiscíní. Ní féidir é a athrú tar éis a chruthaithe."
         },
         "placeholders": {
           "body": "Cur síos simplí ar an modúl seo. Cad a dhéanann sé, conas é a úsáid, agus cad nach féidir.",

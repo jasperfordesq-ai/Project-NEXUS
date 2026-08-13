@@ -521,6 +521,6 @@
     "confirm_delete_collection": "Sammlung \"{{name}}\" löschen? Die enthaltenen Gruppen werden nicht gelöscht.",
     "confirm_delete_rule": "Diese Auto-Zuweisungsregel löschen?",
     "tab_tags": "Tags",
-    "col_slug": "Schnecke"
+    "col_slug": "Slug"
   }
 }

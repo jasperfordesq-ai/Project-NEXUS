@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Petent",
       "country_region": "Kraj/region",
-      "slug": "Ślimak",
+      "slug": "Slug",
       "subdomain": "Subdomena",
       "category": "Kategoria",
       "expected_size": "Oczekiwany rozmiar",

@@ -1987,7 +1987,7 @@
     },
     "table": {
       "name": "Nom",
-      "slug": "Limace",
+      "slug": "Slug",
       "base_url": "URL de base",
       "status": "Statut",
       "last_handshake": "Dernier contact réussi",

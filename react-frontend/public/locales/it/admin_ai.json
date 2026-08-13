@@ -275,7 +275,7 @@
       "columns": {
         "actions": "Azioni",
         "keywords": "Parole chiave",
-        "slug": "Lumaca",
+        "slug": "Slug",
         "status": "Stato",
         "title": "Titolo",
         "updated": "Aggiornato"
@@ -291,7 +291,7 @@
           "active": "Attivo",
           "body": "Corpo",
           "keywords": "Parole chiave attivatrici (separate da virgole)",
-          "module_slug": "Lumaca del modulo",
+          "module_slug": "Slug del modulo",
           "title": "Titolo"
         },
         "hints": {

@@ -156,7 +156,7 @@
     },
     "form": {
       "name": "Nome",
-      "slug": "Lesma",
+      "slug": "Slug",
       "slug_description": "Letras minúsculas, números, travessões/sublinhados",
       "description": "Descrição",
       "price_month": "Preço / mês",

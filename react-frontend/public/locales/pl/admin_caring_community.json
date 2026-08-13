@@ -1998,7 +1998,7 @@
     },
     "table": {
       "name": "Nazwa",
-      "slug": "Ślimak",
+      "slug": "Slug",
       "base_url": "Baza URL",
       "status": "Stan",
       "last_handshake": "Ostatni udany kontakt",
@@ -2186,7 +2186,7 @@
     },
     "about": {
       "title": "O tej stronie",
-      "body": "Skorzystaj z tej strony, konfigurując integrację z usługą strony trzeciej, gminnym systemem danych lub stowarzyszoną siecią NEXUS. Każdy wymieniony tutaj punkt końcowy jest objęty zakresem tego wdrożenia, ale większość nie jest włączona: interfejs API partnera i statek federacji zewnętrznej są wyłączone i odpowiadają tymczasowo niedostępną odpowiedzią, dopóki operator ich nie włączy, a interfejs API partnerów jest również ustawieniem dla społeczności, które zaczyna się. Zanim udostępnisz to partnerowi, skontaktuj się z administratorem platformy. Przykładowe ładunki mają charakter poglądowy — rzeczywiste wartości zależą od ślimaka społecznościowego i danych uwierzytelniających partnera.",
+      "body": "Skorzystaj z tej strony, konfigurując integrację z usługą strony trzeciej, gminnym systemem danych lub stowarzyszoną siecią NEXUS. Każdy wymieniony tutaj punkt końcowy jest objęty zakresem tego wdrożenia, ale większość nie jest włączona: interfejs API partnera i statek federacji zewnętrznej są wyłączone i odpowiadają tymczasowo niedostępną odpowiedzią, dopóki operator ich nie włączy, a interfejs API partnerów jest również ustawieniem dla społeczności, które zaczyna się. Zanim udostępnisz to partnerowi, skontaktuj się z administratorem platformy. Przykładowe ładunki mają charakter poglądowy — rzeczywiste wartości zależą od sluga społecznościowego i danych uwierzytelniających partnera.",
       "last_refreshed": "Ostatnio odświeżony{{date}}."
     },
     "sections": {
@@ -3366,7 +3366,7 @@
     },
     "filters": {
       "search_aria": "Wyszukaj podregiony",
-      "search_placeholder": "Szukaj według nazwy, opisu lub ślimaka...",
+      "search_placeholder": "Szukaj według nazwy, opisu lub sluga...",
       "type_aria": "Filtruj według typu"
     },
     "table": {

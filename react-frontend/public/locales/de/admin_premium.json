@@ -131,7 +131,7 @@
     "table": {
       "aria": "Premium-Stufen",
       "name": "NAME",
-      "slug": "SCHLECKE",
+      "slug": "SLUG",
       "price_month": "PREIS / MONAT",
       "price_year": "PREIS / JAHR",
       "features": "MERKMALE",
@@ -155,7 +155,7 @@
     },
     "form": {
       "name": "Name",
-      "slug": "Schnecke",
+      "slug": "Slug",
       "slug_description": "Kleinbuchstaben, Zahlen, Bindestriche/Unterstriche",
       "description": "Beschreibung",
       "price_month": "Preis / Monat",

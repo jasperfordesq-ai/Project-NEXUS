@@ -522,6 +522,6 @@
     "confirm_delete_tag": "Eliminare il tag \"{{name}}\"? Verrà rimosso da tutti i gruppi.",
     "confirm_delete_collection": "Eliminare la raccolta \"{{name}}\"? I gruppi al suo interno non vengono eliminati.",
     "confirm_delete_rule": "Eliminare questa regola di assegnazione automatica?",
-    "col_slug": "Lumaca"
+    "col_slug": "Slug"
   }
 }

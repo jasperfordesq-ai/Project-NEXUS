@@ -503,7 +503,7 @@
         "description": "Comience con la tarea simple, luego use la pestaña que se abre. Esto mantiene el trabajo rutinario alejado de controles riesgosos.",
         "refresh_one_tenant": {
           "title": "Actualizar un inquilino",
-          "body": "Úselo cuando el contenido público haya cambiado para una sola comunidad. Ingrese su slug inquilino antes de hacer cola para trabajar."
+          "body": "Úselo cuando el contenido público haya cambiado para una sola comunidad. Ingrese su slug del inquilino antes de hacer cola para trabajar."
         },
         "find_stale_pages": {
           "title": "Encuentra páginas obsoletas o faltantes",
@@ -783,7 +783,7 @@
           "status_200": "200 solo",
           "status_non_200": "No 200",
           "tenant_placeholder": "opcional",
-          "tenant_slug": "babosa inquilino"
+          "tenant_slug": "slug del inquilino"
         },
         "messages": {
           "bulk_recache": "Instantáneas de {{count}} no validadas y recuperación de caché en cola",
@@ -1052,7 +1052,7 @@
         },
         "fields": {
           "routes": "Rutas",
-          "tenant_slug": "babosa inquilino"
+          "tenant_slug": "slug del inquilino"
         },
         "force_refresh": {
           "description": "Poner en cola una nueva renderización. Deje ambos campos vacíos para actualizar cada inquilino y ruta. El procesador host retoma el trabajo en unos 60 segundos.",
@@ -1141,7 +1141,7 @@
         },
         "fields": {
           "pattern": "Patrón",
-          "tenant_slug": "babosa inquilino",
+          "tenant_slug": "slug del inquilino",
           "confirm_text": "Escribe {{phrase}} para confirmar"
         },
         "messages": {
@@ -1242,7 +1242,7 @@
         "description_suffix": "El trabajador del Dramaturgo visita esta lista.",
         "error": "La búsqueda falló: verifique el slug del inquilino",
         "fields": {
-          "tenant_slug": "babosa inquilino"
+          "tenant_slug": "slug del inquilino"
         },
         "none": "(ninguno)",
         "placeholders": {
@@ -1277,7 +1277,7 @@
         "title": "inspector de seguridad para inquilinos",
         "description": "Marque una comunidad antes de actualizar o eliminar algo. Esta vista compara el plan de ruta del inquilino con la caché guardada y explica por qué existe cada instantánea.",
         "fields": {
-          "tenant_slug": "babosa inquilino"
+          "tenant_slug": "slug del inquilino"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"
@@ -1315,7 +1315,7 @@
           "missing_routes": "Rutas que faltan ({{count}})",
           "attention": "Artículos que necesitan atención"
         },
-        "empty": "Ingrese un slug inquilino para inspeccionar su plan de ruta y las instantáneas guardadas.",
+        "empty": "Ingrese un slug del inquilino para inspeccionar su plan de ruta y las instantáneas guardadas.",
         "empty_attention": "A este inquilino no le faltan instantáneas, están obsoletas, tienen activos rotos o son inesperadas.",
         "columns": {
           "why": "¿Por qué está aquí?",
@@ -1431,7 +1431,7 @@
         "next_queries_database": "Consultas de base de datos Next.js detectadas"
       },
       "tenant_resolution_examples": {
-        "shared_host_slug": "Host de aplicación compartida con slug inquilino",
+        "shared_host_slug": "Host de aplicación compartida con slug del inquilino",
         "custom_domain": "Dominio de inquilino personalizado"
       },
       "tenant_resolution_route_statuses": {

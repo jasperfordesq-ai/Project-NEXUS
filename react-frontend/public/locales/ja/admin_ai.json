@@ -272,7 +272,7 @@
       "columns": {
         "actions": "アクション",
         "keywords": "キーワード",
-        "slug": "ナメクジ",
+        "slug": "スラッグ",
         "status": "状態",
         "title": "タイトル",
         "updated": "更新されました"
@@ -288,7 +288,7 @@
           "active": "アクティブ",
           "body": "体",
           "keywords": "トリガーキーワード (カンマ区切り)",
-          "module_slug": "モジュールのスラグ",
+          "module_slug": "モジュールのスラッグ",
           "title": "タイトル"
         },
         "hints": {

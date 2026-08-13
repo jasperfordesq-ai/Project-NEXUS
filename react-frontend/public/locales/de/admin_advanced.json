@@ -767,7 +767,7 @@
           "status": "Status",
           "status_200": "Nur 200",
           "status_non_200": "Nicht-200",
-          "tenant_slug": "Mieterschnecke",
+          "tenant_slug": "Mandanten-Slug",
           "tenant_placeholder": "optional"
         },
         "messages": {
@@ -1029,7 +1029,7 @@
         },
         "fields": {
           "routes": "Routen",
-          "tenant_slug": "Mieterschnecke"
+          "tenant_slug": "Mandanten-Slug"
         },
         "force_refresh": {
           "description": "Stellen Sie ein erneutes Rendern in die Warteschlange. Lassen Sie beide Felder leer, um jeden Mandanten und jede Route zu aktualisieren. Der Host-Prozessor übernimmt den Auftrag innerhalb von etwa 60 Sekunden.",
@@ -1114,7 +1114,7 @@
         },
         "fields": {
           "pattern": "Muster",
-          "tenant_slug": "Mieterschnecke",
+          "tenant_slug": "Mandanten-Slug",
           "confirm_text": "Geben Sie zur Bestätigung {{phrase}} ein"
         },
         "messages": {
@@ -1204,7 +1204,7 @@
         "description_suffix": "Der Dramatiker-Mitarbeiter besucht diese Liste.",
         "error": "Die Suche ist fehlgeschlagen. Überprüfen Sie den Mandanten-Slug",
         "fields": {
-          "tenant_slug": "Mieterschnecke"
+          "tenant_slug": "Mandanten-Slug"
         },
         "none": "(keiner)",
         "placeholders": {
@@ -1239,7 +1239,7 @@
         "title": "Mietersicherheitsinspektor",
         "description": "Überprüfen Sie eine Community, bevor Sie etwas aktualisieren oder löschen. Diese Ansicht vergleicht den Mandantenroutenplan mit dem gespeicherten Cache und erklärt, warum jeder Snapshot vorhanden ist.",
         "fields": {
-          "tenant_slug": "Mieterschnecke"
+          "tenant_slug": "Mandanten-Slug"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"

@@ -278,7 +278,7 @@
       "columns": {
         "actions": "Działania",
         "keywords": "Słowa kluczowe",
-        "slug": "Ślimak",
+        "slug": "Slug",
         "status": "Stan",
         "title": "Tytuł",
         "updated": "Zaktualizowano"
@@ -294,7 +294,7 @@
           "active": "Aktywny",
           "body": "Ciało",
           "keywords": "Wyzwalające słowa kluczowe (oddzielone przecinkami)",
-          "module_slug": "Usterka modułu",
+          "module_slug": "Slug modułu",
           "title": "Tytuł"
         },
         "hints": {

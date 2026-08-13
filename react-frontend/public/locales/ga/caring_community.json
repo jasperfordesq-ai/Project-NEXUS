@@ -155,8 +155,8 @@
     "no_selection": "Níor roghnaíodh aon phobal",
     "select_button": "Roghnaigh",
     "cancel_button": "Cealaigh",
-    "empty": "Níl aon phobail chónasctha le fáil faoi láthair. Is féidir leat fós dul isteach i seilide pobail de láimh.",
-    "fallback_label": "Nó cuir isteach seilide pobail de láimh",
+    "empty": "Níl aon phobail chónasctha le fáil faoi láthair. Is féidir leat fós sluga pobail a chur isteach de láimh.",
+    "fallback_label": "Nó cuir isteach sluga pobail de láimh",
     "member_count_label": "baill"
   },
   "onboarding": {

@@ -180,6 +180,9 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   'Cloudflare (CDN / WAF)',
   'application.created, shift.completed, hours.logged',
   'bern-cooperative',
+  // Technical field placeholder. Keep this aligned with the regression
+  // checker so it is never sent to a translation provider.
+  'Slug...',
   '⌘K',
   'broker@example.com',
   'A-Z',

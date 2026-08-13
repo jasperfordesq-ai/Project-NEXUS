@@ -272,7 +272,7 @@
       "columns": {
         "actions": "Aktionen",
         "keywords": "Schlüsselwörter",
-        "slug": "Schnecke",
+        "slug": "Slug",
         "status": "Status",
         "title": "Titel",
         "updated": "Aktualisiert"
@@ -288,7 +288,7 @@
           "active": "Aktiv",
           "body": "Körper",
           "keywords": "Trigger-Schlüsselwörter (durch Kommas getrennt)",
-          "module_slug": "Modulschnecke",
+          "module_slug": "Modul-Slug",
           "title": "Titel"
         },
         "hints": {

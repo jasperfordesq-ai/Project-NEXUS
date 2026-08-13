@@ -484,7 +484,7 @@
         },
         "tenant_scope": {
           "title": "Sábháilteacht tionóntaí",
-          "body": "Nuair a bhaineann leathanach le tionónta amháin, ba cheart go n-áireofaí ar ghníomhartha seilide an tionónta. Seiceálann an t-inneall cosán an óstaigh agus na dtionóntaí sula dteagmháil léi le pictiúir."
+          "body": "Nuair a bhaineann leathanach le tionónta amháin, ba cheart go n-áireofaí ar ghníomhartha sluga an tionónta. Seiceálann an t-inneall cosán an óstaigh agus na dtionóntaí sula dteagmháil léi le pictiúir."
         },
         "dry_run": {
           "title": "Réamhamharc ar dtús",
@@ -500,7 +500,7 @@
         "description": "Tosaigh leis an tasc simplí, ansin bain úsáid as an táb a osclaíonn sé. Coinníonn sé seo gnáthobair ar shiúl ó na rialuithe contúirteacha.",
         "refresh_one_tenant": {
           "title": "Tionónta amháin a athnuachan",
-          "body": "Úsáid nuair a d’athraigh ábhar poiblí do phobal amháin. Cuir isteach a seilide tionónta roimh obair scuaine."
+          "body": "Úsáid nuair a d’athraigh ábhar poiblí do phobal amháin. Cuir isteach a sluga an tionónta roimh obair scuaine."
         },
         "find_stale_pages": {
           "title": "Faigh leathanaigh atá sean nó in easnamh",
@@ -806,7 +806,7 @@
           "status_200": "200 amháin",
           "status_non_200": "Neamh-200",
           "tenant_placeholder": "roghnach",
-          "tenant_slug": "Drúchtín tionónta"
+          "tenant_slug": "Sluga an tionónta"
         },
         "messages": {
           "bulk_recache": "Neamhbhailíochtú pictiúir {{count}} agus reache scuaine",
@@ -1091,7 +1091,7 @@
         },
         "fields": {
           "routes": "Bealaí",
-          "tenant_slug": "Drúchtín tionónta"
+          "tenant_slug": "Sluga an tionónta"
         },
         "force_refresh": {
           "description": "Cuir scuaine ar rindreáil. Fág an dá pháirc folamh chun gach tionónta agus bealach a athnuachan. Roghnaíonn an próiseálaí óstaigh an post laistigh de thart ar 60 soicind.",
@@ -1158,7 +1158,7 @@
           "job_queued": "Cuireadh jab #{{id}} sa scuaine"
         },
         "placeholders": {
-          "tenant_slug": "e.g. banc uair-ama (bán = uile)",
+          "tenant_slug": "m.sh. banc-ama (bán = gach ceann)",
           "routes": "/about,/blog (folamh = uile)"
         },
         "super_admin_only": "Sár-riarachán amháin"
@@ -1175,7 +1175,7 @@
         "description_middle": "do mhír cosáin amháin,",
         "description_suffix": "do shliocht ar bith. Samplaí:",
         "all_tenants_warning": {
-          "body": "Má fhágtar seilide tionóntaí bán, scriosfar na pictiúir chomhoiriúnaithe thar gach tionónta. Níl sé seo ach le haghaidh glanta ar fud an ardáin tar éis duit réamhamharc a dhéanamh ar na comhaid chruinne.",
+          "body": "Má fhágtar sluga an tionónta bán, scriosfar na pictiúir chomhoiriúnaithe thar gach tionónta. Níl sé seo ach le haghaidh glanta ar fud an ardáin tar éis duit réamhamharc a dhéanamh ar na comhaid chruinne.",
           "confirm": "Tuigim go mbaineann an scriosadh seo le gach tionónta",
           "title": "Scriosadh gach tionónta"
         },
@@ -1188,7 +1188,7 @@
         },
         "fields": {
           "pattern": "Patrún",
-          "tenant_slug": "Drúchtín tionónta",
+          "tenant_slug": "Sluga an tionónta",
           "confirm_text": "Clóscríobh {{phrase}} le deimhniú"
         },
         "messages": {
@@ -1309,9 +1309,9 @@
         },
         "description_prefix": "Féach go díreach cé na bealaí atá beartaithe ag an inneall a sholáthar do thionónta - urlár statach (gné / modúl le geata) móide na URLanna dinimiciúla ó",
         "description_suffix": "Tugann oibrí na nDrámadóir cuairt ar an liosta seo.",
-        "error": "Cuardaigh theip - seiceáil an seilide tionónta",
+        "error": "Cuardaigh theip - seiceáil an sluga an tionónta",
         "fields": {
-          "tenant_slug": "Drúchtín tionónta"
+          "tenant_slug": "Sluga an tionónta"
         },
         "none": "(aon cheann)",
         "placeholders": {
@@ -1346,7 +1346,7 @@
         "title": "Cigire sábháilteachta tionóntaí",
         "description": "Seiceáil pobal amháin roimh athnuachan nó scriosadh aon rud. Déanann an dearcadh seo comparáid idir plean bealaigh an tionónta agus an taisce sábháilte agus míníonn sé cén fáth a bhfuil gach pictiúr ann.",
         "fields": {
-          "tenant_slug": "Drúchtín tionónta"
+          "tenant_slug": "Sluga an tionónta"
         },
         "placeholders": {
           "tenant_slug": "hour-timebank"
@@ -1493,7 +1493,7 @@
         "title": "Conradh réitigh tionóntaí",
         "bootstrap_endpoint": "críochphointe Bootstrap",
         "source_of_truth": "Foinse na fírinne",
-        "slug_parameter": "Paraiméadar seilide comh-óstach",
+        "slug_parameter": "Paraiméadar sluga an óstaigh chomhroinnte",
         "request_host": "Iarr óstach",
         "request_path": "Cosán iarratais",
         "bootstrap_request": "Iarratas Bootstrap",
@@ -1502,7 +1502,7 @@
         "next_queries_database": "Braitheadh ​​ceisteanna bunachar sonraí Next.js"
       },
       "tenant_resolution_examples": {
-        "shared_host_slug": "Óstach aip roinnte le seilide tionónta",
+        "shared_host_slug": "Óstach comhroinnte aipe le sluga an tionónta",
         "custom_domain": "Fearann ​​​​tionónta saincheaptha"
       },
       "tenant_resolution_route_statuses": {

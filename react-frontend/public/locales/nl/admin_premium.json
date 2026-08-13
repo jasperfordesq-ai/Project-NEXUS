@@ -131,7 +131,7 @@
     "table": {
       "aria": "Premium-niveaus",
       "name": "NAAM",
-      "slug": "NAAKTSLAK",
+      "slug": "SLUG",
       "price_month": "PRIJS / MAAND",
       "price_year": "PRIJS / JAAR",
       "features": "FUNCTIES",
@@ -155,7 +155,7 @@
     },
     "form": {
       "name": "Naam",
-      "slug": "Naaktslak",
+      "slug": "Slug",
       "slug_description": "Kleine letters, cijfers, streepjes/underscores",
       "description": "Beschrijving",
       "price_month": "Prijs / maand",

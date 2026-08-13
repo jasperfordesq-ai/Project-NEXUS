@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Aanvrager",
       "country_region": "Land/regio",
-      "slug": "Naaktslak",
+      "slug": "Slug",
       "subdomain": "Subdomein",
       "category": "Categorie",
       "expected_size": "Verwachte maat",

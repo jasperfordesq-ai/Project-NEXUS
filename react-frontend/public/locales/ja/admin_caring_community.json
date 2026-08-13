@@ -1976,7 +1976,7 @@
     },
     "table": {
       "name": "名前",
-      "slug": "ナメクジ",
+      "slug": "スラッグ",
       "base_url": "ベース URL",
       "status": "状態",
       "last_handshake": "最後に成功したコンタクト",
@@ -3336,7 +3336,7 @@
     "form": {
       "name": "名前",
       "name_placeholder": "例えばロルツェンホフ",
-      "slug": "スラグ (空白の場合は自動生成)",
+      "slug": "スラッグ (空白の場合は自動生成)",
       "slug_placeholder": "例えばロルツェンホフ",
       "slug_description": "URL およびフィルタで使用される小文字のハイフンでつながれた識別子。",
       "type": "タイプ",

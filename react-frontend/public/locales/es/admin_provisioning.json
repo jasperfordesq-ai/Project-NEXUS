@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Solicitante",
       "country_region": "País / Región",
-      "slug": "Babosa",
+      "slug": "Slug",
       "subdomain": "Subdominio",
       "category": "Categoría",
       "expected_size": "Tamaño esperado",

@@ -108,7 +108,7 @@
     "fields": {
       "applicant": "Richiedente",
       "country_region": "Paese/regione",
-      "slug": "Lumaca",
+      "slug": "Slug",
       "subdomain": "Sottodominio",
       "category": "Categoria",
       "expected_size": "Dimensioni previste",
