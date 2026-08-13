@@ -148,6 +148,18 @@ class SloCheck extends Command
                     if (! empty($context['tenant_id'])) {
                         $scope->setTag('tenant_id', (string) $context['tenant_id']);
                     }
+                    // Stable across runs — see the note in
+                    // OverdueGdprRequestCheck. The message carries percentages
+                    // to three decimal places, so consecutive breaches of the
+                    // SAME SLO would otherwise never group. Kept per tenant:
+                    // one community breaching is a different operational fact
+                    // from another one breaching, and the platform-wide run
+                    // (no tenant) is a third.
+                    $scope->setFingerprint([
+                        'slo_breach',
+                        'exchange_completion',
+                        empty($context['tenant_id']) ? 'platform' : (string) $context['tenant_id'],
+                    ]);
                     $scope->setContext('slo', $context);
                 });
                 \Sentry\captureMessage($message, \Sentry\Severity::error());

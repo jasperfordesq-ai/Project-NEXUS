@@ -8,6 +8,54 @@
  */
 
 const { ApiError, ApiOfflineError } = require('./api');
+const { createChoiceTranslator, createTranslator } = require('./localization');
+const { prefixLocalPath } = require('./accessible-shell');
+const { localeFromAcceptLanguage } = require('../middleware/localization');
+
+/**
+ * 🔴 MAKE THE ERROR PAGES RENDERABLE WHEREVER A REQUEST DIES.
+ *
+ * Every template under `views/errors/` — and `views/layouts/error.njk` itself —
+ * CALLS `t(...)` and `urlFor(...)`. Nunjucks tolerates a missing *value* (it
+ * renders empty) but not a missing *callable*: an interpolated `t(key)` with no
+ * `t` in scope throws `Unable to call \`t\`, which is undefined or falsey`. So the
+ * error page becomes its own second failure — exactly what the comment at the
+ * top of `layouts/error.njk` promises cannot happen. This middleware is what
+ * makes that promise true.
+ *
+ * 🔴 It is not hypothetical. `generalLimiter` is mounted DELIBERATELY above the
+ * body parsers, the session and `localization` — a rate-limited request must not
+ * cost a body copy or a session lookup — so its 429 handler renders with no
+ * `res.locals.t` at all. Production, 2026-08-13: a scanner walked the site,
+ * spent the 100-requests-per-15-minutes allowance, and the 429 page crashed
+ * instead of saying "too many requests" (Sentry NEXUS-WEBUK-3). A real member
+ * hitting the same limit gets the same crash, and 100 page views in fifteen
+ * minutes is an ordinary browsing session, not an attack.
+ *
+ * Mounted early so the fallbacks are in place BEFORE anything can fail. Every
+ * value is installed only when absent, so the real `localization` middleware and
+ * `buildShellLocals` still own these locals on a normal request.
+ */
+function errorPageFallbackLocals(req, res, next) {
+  const locale = localeFromAcceptLanguage(
+    req.get?.('accept-language') || req.headers?.['accept-language']
+  ) || 'en';
+
+  if (typeof res.locals.t !== 'function') res.locals.t = createTranslator(locale);
+  if (typeof res.locals.tc !== 'function') res.locals.tc = createChoiceTranslator(locale);
+  if (!res.locals.locale) res.locals.locale = locale;
+  if (!res.locals.htmlLang) res.locals.htmlLang = locale;
+  if (!res.locals.htmlDirection) res.locals.htmlDirection = locale === 'ar' ? 'rtl' : 'ltr';
+
+  if (typeof res.locals.urlFor !== 'function') {
+    // `tenantRouting` runs before this, so a shared-mount request already knows
+    // its `/{slug}/accessible` prefix. With no prefix the unprefixed path is
+    // correct — that is what a custom accessible domain serves.
+    res.locals.urlFor = (pathname) => prefixLocalPath(pathname, req.accessibleRouting?.prefix || '');
+  }
+
+  next();
+}
 
 function redirectTo(res, pathname) {
   const urlFor = typeof res.locals.urlFor === 'function' ? res.locals.urlFor : (value) => value;
@@ -180,6 +228,7 @@ function finalErrorHandler(err, req, res, next) {
 module.exports = {
   asyncHandler,
   apiErrorHandler,
+  errorPageFallbackLocals,
   logError,
   errorLogger,
   finalErrorHandler

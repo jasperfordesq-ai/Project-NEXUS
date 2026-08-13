@@ -155,6 +155,10 @@ class BackupVerify extends Command
             if (function_exists('Sentry\\captureMessage') && config('sentry.dsn')) {
                 \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($context): void {
                     $scope->setTag('alert', 'backup_missing_or_stale');
+                    // Stable across runs — see the note in
+                    // OverdueGdprRequestCheck. The message names the newest
+                    // backup file and its age, both of which change nightly.
+                    $scope->setFingerprint(['backup_missing_or_stale']);
                     $scope->setContext('backup', $context);
                 });
                 \Sentry\captureMessage($message, \Sentry\Severity::error());

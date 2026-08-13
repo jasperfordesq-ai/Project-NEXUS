@@ -125,6 +125,22 @@ class OverdueGdprRequestCheck extends Command
             if (function_exists('Sentry\\captureMessage') && config('sentry.dsn')) {
                 \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($context): void {
                     $scope->setTag('alert', 'gdpr_request_overdue');
+                    // 🔴 STABLE FINGERPRINT, or this alarm cannot be triaged.
+                    //
+                    // Sentry groups a captureMessage() by its message text, and
+                    // $message embeds each request's AGE IN DAYS ("#123 t2
+                    // erasure 87d"). The age increments every night, so every
+                    // nightly run reported the same four overdue requests as a
+                    // BRAND-NEW issue: six of them accumulated between
+                    // 2026-08-08 and 2026-08-13 (Sentry NEXUS-PHP-44/45/46/48/49/4A).
+                    //
+                    // That is not cosmetic. A new issue each day cannot be
+                    // snoozed, shows no "still happening" history, resets its
+                    // own priority daily, and pushes real errors down the
+                    // unresolved list — an alarm that buries the queue it is
+                    // meant to surface. One fingerprint means one issue whose
+                    // event count IS the age of the breach.
+                    $scope->setFingerprint(['gdpr_request_overdue']);
                     $scope->setContext('gdpr_requests', $context);
                 });
                 \Sentry\captureMessage($message, \Sentry\Severity::error());

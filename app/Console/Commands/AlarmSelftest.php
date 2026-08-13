@@ -102,6 +102,14 @@ class AlarmSelftest extends Command
             try {
                 \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($context): void {
                     $scope->setTag('selftest', 'heartbeat');
+                    // 🔴 Stable across runs, and it matters MORE here than for
+                    // the error alarms. This heartbeat's whole purpose is that
+                    // its ABSENCE is the signal — but the message embeds the
+                    // release, host and timestamp, so each weekly beat opened
+                    // its own Sentry issue with a single event. There was no
+                    // series to notice a gap in. One fingerprint makes it one
+                    // issue whose event timeline is the thing you read.
+                    $scope->setFingerprint(['alarm_selftest_heartbeat']);
                     $scope->setContext('alarm_selftest', $context);
                 });
                 \Sentry\captureMessage($message, \Sentry\Severity::info());

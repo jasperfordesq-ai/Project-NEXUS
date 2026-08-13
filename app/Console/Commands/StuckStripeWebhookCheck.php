@@ -98,6 +98,11 @@ class StuckStripeWebhookCheck extends Command
             if (function_exists('Sentry\\captureMessage') && config('sentry.dsn')) {
                 \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($context): void {
                     $scope->setTag('alert', 'stripe_webhook_stuck');
+                    // Stable across runs — see the note in
+                    // OverdueGdprRequestCheck. The message carries a count and
+                    // an age, so without this each nightly run opens a new
+                    // Sentry issue instead of adding an event to this one.
+                    $scope->setFingerprint(['stripe_webhook_stuck']);
                     $scope->setContext('stripe_webhooks', $context);
                 });
                 \Sentry\captureMessage($message, \Sentry\Severity::error());

@@ -88,7 +88,7 @@ const podcastActionRoutes = require('./routes/podcast-actions');
 const federationRoutes = require('./routes/federation');
 const federationActionRoutes = require('./routes/federation-actions');
 const laravelPrepRoutes = require('./routes/laravel-prep-pages');
-const { errorLogger, finalErrorHandler } = require('./lib/errorHandler');
+const { errorLogger, errorPageFallbackLocals, finalErrorHandler } = require('./lib/errorHandler');
 const { ApiError, getExchangeConfig } = require('./lib/api');
 const { generalLimiter, authLimiter, walletLimiter, formLimiter } = require('./lib/rateLimiter');
 const { handleApiError } = require('./lib/routeHelpers');
@@ -299,6 +299,13 @@ app.set('trust proxy', 1);
 
 app.use(tenantRouting);
 app.use(requestTenantContext);
+
+// 🔴 BEFORE generalLimiter, and that is the whole point — see the long note on
+// errorPageFallbackLocals. The limiter's 429 handler renders an error template,
+// and it runs long before `localization` supplies `t`, so without this the
+// "too many requests" page throws instead of rendering. After tenantRouting so a
+// shared-mount request's /{slug}/accessible prefix is already known.
+app.use(errorPageFallbackLocals);
 
 // Security headers with Helmet
 app.use(helmet({
