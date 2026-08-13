@@ -55,6 +55,29 @@ describe('Checkbox — basic rendering', () => {
 // ─── Checkbox — onChange / onValueChange ─────────────────────────────────────
 
 describe('Checkbox — onChange / onValueChange', () => {
+  // 🔴 Every other interaction test in this file fires its click on the hidden
+  // native input (getByRole('checkbox')), which toggles regardless of how the
+  // visible parts are assembled. So none of them can tell you whether a member
+  // can actually tick the box they can see. This one clicks the rendered
+  // control, using a real pointer sequence rather than fireEvent, because
+  // React Aria's press handling ignores a bare synthetic click.
+  it('toggles when the user clicks the visible control box, not just the label', async () => {
+    const onValueChange = vi.fn();
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+
+    const { container } = render(
+      <Checkbox onValueChange={onValueChange}>Accept the terms</Checkbox>
+    );
+
+    const control = container.querySelector('[data-slot="checkbox-control"]');
+    expect(control).not.toBeNull();
+
+    await user.click(control as Element);
+
+    expect(onValueChange).toHaveBeenCalledWith(true);
+  });
+
   it('calls onChange with true when checked', () => {
     const onChange = vi.fn();
     render(<Checkbox onChange={onChange}>Click me</Checkbox>);

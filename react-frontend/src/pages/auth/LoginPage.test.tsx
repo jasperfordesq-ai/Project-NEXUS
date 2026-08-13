@@ -512,3 +512,88 @@ describe('LoginPage — Passkey/WebAuthn functionality', () => {
     expect(screen.getByText('Trust this device for 14 days')).toBeDefined();
   });
 });
+
+// ─── Awaiting-approval sign-in outcome ──────────────────────────────────────
+//
+// 🔴 Before these tests this file had NO coverage of loginErrorCode at all, so
+// nothing noticed that a member waiting for coordinator approval was shown a
+// red "Sign-in failed. Please check your details and try again." — telling them
+// they had mistyped something they had typed correctly. Approval-required is
+// the DEFAULT for a new community, so that was the normal new-member
+// experience. Reported from a live community on 2026-08-12.
+describe('LoginPage — awaiting-approval sign-in outcome', () => {
+  /** The generic copy AuthContext puts in `error` for any failed sign-in. */
+  const GENERIC_FAILURE = 'Sign-in failed. Please check your details and try again.';
+  const PENDING_HEADLINE = "You're registered and waiting for approval";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authOverrides = {};
+    conditionalAutofillEnabled = true;
+    passkeyAuthenticationEnabled = true;
+    mockIsBiometricAvailable.mockResolvedValue(false);
+    mockIsConditionalMediationAvailable.mockResolvedValue(false);
+    mockStartConditionalAuthentication.mockResolvedValue(null);
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  async function submitLogin(errorCode: string) {
+    // `error` is what AuthContext exposes; `errorCode` is what login() returns
+    // and what LoginPage keys its explanation panels off. Both are needed: the
+    // alert box only renders when `error` is set.
+    authOverrides = { error: GENERIC_FAILURE };
+    mockLogin.mockResolvedValue({ success: false, errorCode });
+
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    fireEvent.change(screen.getByLabelText('Email'), {
+      target: { value: 'waiting@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'the-correct-password' },
+    });
+    await user.click(screen.getByText('Sign In'));
+  }
+
+  it('leads with the real reason instead of "check your details"', async () => {
+    await submitLogin('AUTH_ACCOUNT_PENDING_APPROVAL');
+
+    await waitFor(() => {
+      expect(screen.getByText(PENDING_HEADLINE)).toBeInTheDocument();
+    });
+
+    // The whole point: do not tell someone their correct details are wrong.
+    expect(screen.queryByText(GENERIC_FAILURE)).not.toBeInTheDocument();
+  });
+
+  it('announces politely rather than as an error', async () => {
+    await submitLogin('AUTH_ACCOUNT_PENDING_APPROVAL');
+
+    await waitFor(() => {
+      expect(screen.getByText(PENDING_HEADLINE)).toBeInTheDocument();
+    });
+
+    // role="status" not role="alert" — a screen reader should not hear this as
+    // a failure either. Guards the calm treatment at the markup level, so a
+    // restyle cannot quietly turn it back into an error.
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('still shows the generic failure for a genuinely bad sign-in', async () => {
+    await submitLogin('AUTH_INVALID_CREDENTIALS');
+
+    // Regression guard in the other direction: the calm treatment must apply
+    // ONLY to pending approval. A wrong password must still say so, loudly.
+    await waitFor(() => {
+      expect(screen.getByText(GENERIC_FAILURE)).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText(PENDING_HEADLINE)).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+});

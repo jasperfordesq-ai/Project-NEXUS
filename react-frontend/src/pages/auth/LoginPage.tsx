@@ -35,6 +35,7 @@ import Building2 from 'lucide-react/icons/building-2';
 import Fingerprint from 'lucide-react/icons/fingerprint';
 import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ShieldX from 'lucide-react/icons/shield-x';
+import Clock from 'lucide-react/icons/clock';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenant } from '@/contexts/TenantContext';
@@ -110,6 +111,17 @@ export function LoginPage() {
   // Verification resend state
   const [loginErrorCode, setLoginErrorCode] = useState<string | undefined>();
   const [loginRetryAfter, setLoginRetryAfter] = useState<number | null>(null);
+  // 🔴 Waiting for a coordinator to approve you is NOT a sign-in failure, and
+  // must not be dressed as one. Reported by a coordinator walking the real
+  // journey (Minehead & Coast, 2026-08-12): the member saw a red box headed
+  // "Sign-in failed. Please check your details and try again." — which tells
+  // them they typed something wrong — with the actual reason demoted to amber
+  // small print underneath. They go back and retype correct details forever.
+  // Approval-required is the DEFAULT for a new community, so this is the normal
+  // new-member experience, not an edge case. This flag downgrades the whole
+  // alert to a calm, positive treatment and promotes the real reason to the
+  // headline. Keep the generic "check your details" copy OUT of this branch.
+  const isPendingApproval = loginErrorCode === 'AUTH_ACCOUNT_PENDING_APPROVAL';
   const [isResendingVerification, setIsResendingVerification] = useState(false);
   const [resendVerificationSent, setResendVerificationSent] = useState(false);
 
@@ -473,10 +485,17 @@ export function LoginPage() {
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm"
-                      role="alert"
+                      className={`mb-6 p-4 rounded-xl border text-sm ${
+                        isPendingApproval
+                          ? 'bg-emerald-500/10 border-emerald-500/20'
+                          : 'bg-red-500/10 border-red-500/20'
+                      }`}
+                      role={isPendingApproval ? 'status' : 'alert'}
                     >
-                      <p className="text-red-600 dark:text-red-400">{error}</p>
+                      {/* Suppressed for pending approval — see isPendingApproval above. */}
+                      {!isPendingApproval && (
+                        <p className="text-red-600 dark:text-red-400">{error}</p>
+                      )}
                       {/* Rate limit: show retry_after seconds if available */}
                       {loginErrorCode === 'RATE_LIMITED' && (
                         <p className="text-red-600 dark:text-red-400 text-xs mt-1">
@@ -535,11 +554,14 @@ export function LoginPage() {
                         single line of red text with no explanation of who approves,
                         how long it takes, or what to do next. This explains it.
                       */}
-                      {loginErrorCode === 'AUTH_ACCOUNT_PENDING_APPROVAL' && (
-                        <div className="mt-3 flex items-start gap-2">
-                          <ShieldAlert className="w-4 h-4 text-[var(--color-warning)] mt-0.5 flex-shrink-0" aria-hidden="true" />
+                      {isPendingApproval && (
+                        <div className="flex items-start gap-2">
+                          <Clock className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
                           <div>
-                            <p className="text-amber-600 dark:text-amber-400 text-xs">
+                            <p className="text-emerald-700 dark:text-emerald-300 font-medium">
+                              {t('login.pending_approval_title')}
+                            </p>
+                            <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-1">
                               {t('login.pending_approval')}
                             </p>
                             <Button
@@ -547,7 +569,7 @@ export function LoginPage() {
                               variant="secondary"
                               as={Link}
                               to={tenantPath('/contact')}
-                              className="mt-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
+                              className="mt-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
                             >
                               {t('login.pending_approval_contact')}
                             </Button>

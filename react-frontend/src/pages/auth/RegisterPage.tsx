@@ -945,6 +945,16 @@ export function RegisterPage() {
                 color="primary"
                 classNames={{
                   label: 'text-theme-muted text-sm',
+                  // Border override, not a whim. The control inherits
+                  // --input-border, which in light mode is rgba(0,0,0,0.12) —
+                  // roughly 1.2:1 against the card, where WCAG 1.4.11 asks for
+                  // 3:1 on a UI component boundary. That faintness, not just the
+                  // old 12px size, is what "almost invisible" described. These
+                  // two are overridden here rather than by editing the shared
+                  // token because --input-border styles every input on the
+                  // platform; raising it globally is a design decision, not a
+                  // bug fix. If that global change ever happens, delete these.
+                  wrapper: 'border-black/50 dark:border-white/50',
                 }}
               >
                 <span>
@@ -965,6 +975,8 @@ export function RegisterPage() {
                 color="primary"
                 classNames={{
                   label: 'text-theme-muted text-sm',
+                  // See the contrast note on the terms checkbox above.
+                  wrapper: 'border-black/50 dark:border-white/50',
                 }}
               >
                 {t('register.newsletter_opt_in')}

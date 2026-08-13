@@ -21,6 +21,49 @@ use Illuminate\Support\Facades\Log;
  */
 class NotifyAdminOfNewRegistration
 {
+    /**
+     * Everyone in a tenant who should hear that a member is waiting.
+     *
+     * 🔴 This used to select on the `role` string ALONE, inline in handle(),
+     * which silently lost real admins. Per the authorisation rules,
+     * `super_admin`, `god`, `tenant_admin` and `coordinator` are never written
+     * to `users.role` by the API — that authority is carried by the boolean
+     * flags below, with `role` often left as 'member'. A coordinator set up
+     * that way received NO registration email and NO bell, and had to discover
+     * pending members by opening the admin panel and looking. Reported from a
+     * real community (Minehead & Coast, 2026-08-12) as the top-priority fault.
+     *
+     * The predicate deliberately mirrors AdminTier::allows() (role strings OR
+     * any admin flag) and then ADDS broker/coordinator, which AdminTier
+     * excludes on purpose. That difference is correct here: AdminTier answers
+     * "may this account reach /v2/admin/*", whereas this answers "who should
+     * hear that a member is waiting" — and brokers/coordinators are exactly
+     * the people who action that queue. Keep both halves; dropping either one
+     * reintroduces a silent gap.
+     *
+     * Extracted from handle() so it can be asserted directly against real rows
+     * — the listener's own tests need alias mocks and are quarantined as
+     * order-dependent, so they could not have caught this.
+     *
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    public static function recipientsFor(int $tenantId): \Illuminate\Support\Collection
+    {
+        return DB::table('users')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query
+                    ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
+                    ->orWhere('is_admin', 1)
+                    ->orWhere('is_super_admin', 1)
+                    ->orWhere('is_tenant_super_admin', 1)
+                    ->orWhere('is_god', 1);
+            })
+            ->select(['id', 'email', 'first_name', 'name', 'preferred_language'])
+            ->get();
+    }
+
     public function handle(UserRegistered $event): void
     {
         // Idempotency guard: suppress duplicate/concurrent deliveries so the admin
@@ -60,12 +103,7 @@ class NotifyAdminOfNewRegistration
             // user-facing /profile/{id} route which works for everyone.
             $profileUrl = $baseUrl . $basePath . '/profile/' . $user->id;
 
-            $admins = DB::table('users')
-                ->where('tenant_id', $event->tenantId)
-                ->whereIn('role', ['super_admin', 'admin', 'tenant_admin', 'broker', 'coordinator'])
-                ->where('status', 'active')
-                ->select(['id', 'email', 'first_name', 'name', 'preferred_language'])
-                ->get();
+            $admins = self::recipientsFor((int) $event->tenantId);
 
             if ($admins->isEmpty()) {
                 Log::info('NotifyAdminOfNewRegistration: no active admins found for tenant', ['tenant_id' => $event->tenantId]);
