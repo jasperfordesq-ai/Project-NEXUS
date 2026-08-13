@@ -92,6 +92,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { canAccessSuperPanel, isPlatformSuperAdminUser, isSuperAdminUser } from '@/lib/access';
+import { useAdminBadgeCounts, badgeForCount } from '@/admin/hooks/useAdminBadgeCounts';
 import type { LucideIcon } from 'lucide-react';
 interface NavItem {
   label: string;
@@ -169,6 +170,11 @@ function useAdminNav(): NavSection[] {
   const { t } = useTranslation('admin_nav');
   const { hasFeature, hasModule } = useTenant();
   const { user } = useAuth();
+  // Pending-approval count for the badge. See useAdminBadgeCounts for why this
+  // wiring did not exist before: the badge field, the renderer and the backend
+  // count service all existed, with nothing joining them up.
+  const { counts } = useAdminBadgeCounts();
+  const pendingUsersBadge = badgeForCount(counts.pending_users);
 
   const userRecord = user as Record<string, unknown> | null;
   const isGod = (user?.role as string) === 'god' || userRecord?.is_god === true;
@@ -250,7 +256,16 @@ function useAdminNav(): NavSection[] {
         zone: 'people',
         items: [
           { label: t('all_users'), href: '/admin/users', icon: Users, keywords: keyword(t('search_keywords.all_users')) },
-          { label: t('pending_approvals'), href: '/admin/users?filter=pending', icon: UserCheck, keywords: keyword(t('search_keywords.pending_approvals')) },
+          {
+            label: t('pending_approvals'),
+            href: '/admin/users?filter=pending',
+            icon: UserCheck,
+            keywords: keyword(t('search_keywords.pending_approvals')),
+            // A waiting member is somebody locked out of the community until a
+            // coordinator acts, so this is 'danger' tone rather than the accent
+            // tone — it should read as "someone is stuck", not as decoration.
+            ...(pendingUsersBadge ? { badge: pendingUsersBadge, attention: 'danger' } : {}),
+          },
           ...(hasFeature('caring_community') ? [{ label: t('residency_verifications'), href: '/admin/residency-verifications', icon: MapPin, keywords: keyword(t('search_keywords.residency_verifications')) }] : []),
         ],
       },
@@ -544,7 +559,7 @@ function useAdminNav(): NavSection[] {
     // arrives, the memo is never recomputed, and the super-panel entry never
     // appears — the exact "there is no link to the panel" symptom reported on
     // 2026-08-05.
-  }, [canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, t]);
+  }, [canSeeSuperPanel, hasFeature, hasModule, isGod, isPlatformSuperAdmin, isSuperAdmin, pendingUsersBadge, t]);
 }
 
 interface AdminSidebarProps {

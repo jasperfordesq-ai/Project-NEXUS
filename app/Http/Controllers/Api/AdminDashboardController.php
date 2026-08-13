@@ -102,6 +102,30 @@ class AdminDashboardController extends BaseApiController
     }
 
     /**
+     * GET /api/v2/admin/badge-counts
+     *
+     * Actionable counts for the admin sidebar badges.
+     *
+     * 🔴 AdminBadgeCountService has existed, been unit-tested and been
+     * registered as a container singleton this whole time, with NOTHING calling
+     * it — no route, no controller, no consumer. The sidebar's NavItem type has
+     * a `badge` field and a renderer for it, and no code ever set one. So the
+     * admin panel showed a "Pending approvals" link with no number on it, and a
+     * coordinator had no way to see that somebody was waiting without opening
+     * the screen and looking. That was reported from a live community
+     * (Minehead & Coast, 2026-08-13) as "no badge alert". This endpoint is the
+     * missing wire between the service and the sidebar.
+     */
+    public function badgeCounts(): JsonResponse
+    {
+        $this->requireAdmin();
+
+        return $this->respondWithData(
+            app(\App\Services\AdminBadgeCountService::class)->getCounts()
+        );
+    }
+
+    /**
      * GET /api/v2/admin/dashboard/trends?months=6
      *
      * Returns monthly registration and listing creation counts for charts.

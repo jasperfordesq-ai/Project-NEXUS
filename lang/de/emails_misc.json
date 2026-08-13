@@ -273,7 +273,13 @@
     "gdpr_consent_preview": "Ein Mitglied hat eine Einwilligungseinstellung auf {{community}} geändert",
     "gdpr_consent_bell": "{{name}} hat Einwilligung {{state}}: {{type}}",
     "gdpr_consent_body": "<strong>{{name}}</strong> hat seine Einwilligung für <strong>{{type}}</strong> auf <strong>{{community}}</strong> {{state}}. Dieser Hinweis dient Ihren Unterlagen — es ist keine Aktion erforderlich.",
-    "gdpr_consent_cta": "DSGVO-Dashboard öffnen"
+    "gdpr_consent_cta": "DSGVO-Dashboard öffnen",
+    "new_user_pending_subject": "Handlung erforderlich: Ein neues Mitglied wartet auf Ihre Genehmigung — {{community}}",
+    "new_user_pending_title": "Ein neues Mitglied wartet auf Genehmigung",
+    "new_user_pending_preview": "Jemand ist {{community}} beigetreten und kann das Konto erst nutzen, wenn Sie es genehmigen",
+    "new_user_pending_bell": "Ein neues Mitglied wartet auf Ihre Genehmigung",
+    "new_user_pending_body": "Jemand ist soeben <strong>{{community}}</strong> beigetreten und <strong>kann das Konto erst nutzen, wenn Sie es genehmigen</strong>. Zum Schutz der Privatsphäre enthält diese Benachrichtigung keine persönlichen Daten. Öffnen Sie die Liste der ausstehenden Genehmigungen, um die Person zu prüfen.",
+    "new_user_pending_cta": "Ausstehende Genehmigungen prüfen"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",

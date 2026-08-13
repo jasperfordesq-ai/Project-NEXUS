@@ -273,7 +273,13 @@
     "gdpr_consent_preview": "Un membre a modifié un paramètre de consentement sur {{community}}",
     "gdpr_consent_bell": "{{name}} a {{state}} le consentement : {{type}}",
     "gdpr_consent_body": "<strong>{{name}}</strong> a {{state}} son consentement pour <strong>{{type}}</strong> sur <strong>{{community}}</strong>. Cette notification est conservée pour vos archives — aucune action n'est requise.",
-    "gdpr_consent_cta": "Ouvrir le tableau de bord RGPD"
+    "gdpr_consent_cta": "Ouvrir le tableau de bord RGPD",
+    "new_user_pending_subject": "Action requise : un nouveau membre attend votre approbation — {{community}}",
+    "new_user_pending_title": "Un nouveau membre attend son approbation",
+    "new_user_pending_preview": "Quelqu'un a rejoint {{community}} et ne peut pas utiliser son compte tant que vous ne l'avez pas approuvé",
+    "new_user_pending_bell": "Un nouveau membre attend votre approbation",
+    "new_user_pending_body": "Quelqu'un vient de rejoindre <strong>{{community}}</strong> et <strong>ne peut pas utiliser son compte tant que vous ne l'avez pas approuvé</strong>. Pour protéger sa vie privée, aucune donnée personnelle n'est incluse dans cette notification. Ouvrez la liste des approbations en attente pour l'examiner.",
+    "new_user_pending_cta": "Examiner les approbations en attente"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",

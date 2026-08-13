@@ -1689,6 +1689,9 @@ Route::get('/v2/admin/retention/policies', [\App\Http\Controllers\Api\AdminReten
 Route::put('/v2/admin/retention/policies/{dataType}', [\App\Http\Controllers\Api\AdminRetentionController::class, 'update']);
 Route::get('/v2/admin/retention/runs', [\App\Http\Controllers\Api\AdminRetentionController::class, 'runs']);
 
+// Sidebar badge counts (pending approvals etc). See the controller comment:
+// AdminBadgeCountService existed for a long time with no route reaching it.
+Route::get('/v2/admin/badge-counts', [\App\Http\Controllers\Api\AdminDashboardController::class, 'badgeCounts']);
 Route::get('/v2/admin/dashboard/stats', [\App\Http\Controllers\Api\AdminDashboardController::class, 'stats']);
 Route::get('/v2/admin/dashboard/trends', [\App\Http\Controllers\Api\AdminDashboardController::class, 'trends']);
 Route::get('/v2/admin/dashboard/activity', [\App\Http\Controllers\Api\AdminDashboardController::class, 'activity']);

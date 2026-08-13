@@ -67,12 +67,23 @@ class AdminBadgeCountService
         $this->cachedCounts = null;
     }
 
+    /**
+     * 🔴 Must match the list the badge sends the admin to, exactly.
+     *
+     * This counted `status = 'pending'`, but the "Pending approvals" screen it
+     * links to (AdminUsersController, filter=pending) selects on
+     * `is_approved = 0`. Those two can disagree — the same controller carries a
+     * repair for approvals that left `status` stuck at 'pending' — so a badge
+     * saying "1" could open a screen showing nothing, which is worse than no
+     * badge at all. Keep this predicate identical to that filter; if the filter
+     * changes, change this in the same commit.
+     */
     private function countPendingUsers(int $tenantId): int
     {
         try {
             return (int) DB::table('users')
                 ->where('tenant_id', $tenantId)
-                ->where('status', 'pending')
+                ->where('is_approved', 0)
                 ->count();
         } catch (\Exception $e) {
             Log::warning('[AdminBadgeCount] Failed to count pending users: ' . $e->getMessage());

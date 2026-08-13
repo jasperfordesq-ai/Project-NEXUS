@@ -207,6 +207,106 @@ class NotifyAdminOfNewRegistrationRecipientsTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // What the alert SAYS, and where it sends you
+    // -------------------------------------------------------------------------
+    //
+    // 🔴 The fault these cover was mis-diagnosed once already, so it is worth
+    // stating precisely. On a community that requires approval, the alert used
+    // to carry the same wording as any other registration — "New member
+    // registered", body "log in to view their profile", button to that profile.
+    // A coordinator therefore received a message that never said an approval
+    // was outstanding. She reported getting "no alert"; the delivery records
+    // showed the email WAS delivered and the bell WAS opened. Nothing was
+    // missing except the one fact that mattered.
+
+    public function test_approval_community_gets_wording_that_says_action_is_needed(): void
+    {
+        $admin = (object) ['role' => 'admin'];
+
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            $admin, true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+        );
+
+        $this->assertSame(
+            'new_user_pending_',
+            $plan['key'],
+            'When the community requires approval the alert must use the pending-approval copy, '
+            . 'which states that the member cannot use their account until someone acts.'
+        );
+    }
+
+    public function test_self_serve_community_keeps_the_neutral_wording(): void
+    {
+        $admin = (object) ['role' => 'admin'];
+
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            $admin, false, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+        );
+
+        $this->assertSame(
+            'new_user_',
+            $plan['key'],
+            'A community that does not require approval must NOT be told an approval is outstanding.'
+        );
+        $this->assertSame('/profile/5', $plan['cta_url']);
+    }
+
+    public function test_admin_is_sent_to_the_approvals_queue(): void
+    {
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => 'admin'], true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+        );
+
+        $this->assertSame('/admin/users?filter=pending', $plan['cta_url']);
+        $this->assertSame('/admin/users?filter=pending', $plan['bell_link']);
+    }
+
+    public function test_flag_only_admin_is_also_sent_to_the_approvals_queue(): void
+    {
+        // role='member' but holding authority via a flag — AdminTier says yes,
+        // so this account can open /admin/* and should get the queue link.
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => 'member', 'is_tenant_super_admin' => 1],
+            true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+        );
+
+        $this->assertSame('/admin/users?filter=pending', $plan['cta_url']);
+    }
+
+    /**
+     * @dataProvider operationalRoleProvider
+     */
+    public function test_broker_and_coordinator_are_never_sent_to_an_admin_url(string $role): void
+    {
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => $role], true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+        );
+
+        // AdminTier deliberately refuses these roles at /admin/*, so an admin
+        // link would be a dead end for the very people who work the queue.
+        $this->assertSame('/broker/members', $plan['cta_url'], "A {$role} must not be linked to /admin/*.");
+        $this->assertSame('/broker/members', $plan['bell_link'], "A {$role} must not be linked to /admin/*.");
+        $this->assertStringNotContainsString('/admin/', $plan['cta_url']);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function operationalRoleProvider(): array
+    {
+        return ['broker' => ['broker'], 'coordinator' => ['coordinator']];
+    }
+
+    public function test_broker_still_receives_the_pending_wording(): void
+    {
+        $plan = NotifyAdminOfNewRegistration::alertPlanFor(
+            (object) ['role' => 'broker'], true, '/profile/5', '/admin/users?filter=pending', '/broker/members'
+        );
+
+        // Being unable to open the admin queue is a routing detail; the broker
+        // must still be told an approval is outstanding.
+        $this->assertSame('new_user_pending_', $plan['key']);
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

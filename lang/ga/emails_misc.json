@@ -273,7 +273,13 @@
     "gdpr_consent_preview": "D'athraigh ball socrú toilithe ar {{community}}",
     "gdpr_consent_bell": "{{name}}: toiliú {{state}} do {{type}}",
     "gdpr_consent_body": "Tá <strong>{{name}}</strong> tar éis a gcuid toilithe le haghaidh <strong>{{type}}</strong> a bheith {{state}} ar <strong>{{community}}</strong>. Tá an fógra seo le haghaidh do chuid taifead — níl aon ghníomh ag teastáil.",
-    "gdpr_consent_cta": "Oscail deais GDPR"
+    "gdpr_consent_cta": "Oscail deais GDPR",
+    "new_user_pending_subject": "Gníomh de dhíth: tá ball nua ag fanacht le do cheadú — {{community}}",
+    "new_user_pending_title": "Tá Ball Nua ag Fanacht le Ceadú",
+    "new_user_pending_preview": "Chuaigh duine isteach in {{community}} agus ní féidir leo a gcuntas a úsáid go dtí go gceadaíonn tú é",
+    "new_user_pending_bell": "Tá ball nua ag fanacht le do cheadú",
+    "new_user_pending_body": "Tá duine díreach tar éis dul isteach in <strong>{{community}}</strong> agus <strong>ní féidir leo a gcuntas a úsáid go dtí go gceadaíonn tú é</strong>. Chun a bpríobháideachas a chosaint, níl sonraí pearsanta san fhógra seo. Oscail an liosta ceaduithe ar feitheamh chun athbhreithniú a dhéanamh orthu.",
+    "new_user_pending_cta": "Athbhreithnigh ceaduithe ar feitheamh"
   },
   "goals": {
     "reminder_subject": "Goal reminder — {{title}}",
