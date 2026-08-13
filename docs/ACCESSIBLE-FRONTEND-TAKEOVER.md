@@ -17,6 +17,52 @@ deployed product. Documentation written in that period says so, and much of it
 also *prohibits* replacing Blade. Those prohibitions were correct when written and
 are now superseded by this page.
 
+## 🔴🔴 BLADE IS NOW HISTORIC — React + Laravel are the sources of truth (owner decision, 2026-08-13, later the same day)
+
+This SUPERSEDES the Phase A rule below, which made Blade the observable-behaviour
+specification. The owner's words:
+
+> "We can start forgetting about the blade version. I think it's falling behind, and you
+> can document that it's now historic. We plan to retire it once we are 100% sure we have
+> everything we need from it. I think the React frontend and the Laravel backend are now
+> better sources of truth for what we need building."
+
+**The new model, in priority order:**
+
+1. **GOV.UK Design System and WCAG 2.2 are the presentation authority.** How a page
+   looks, announces itself, validates, and is navigated follows GDS. Where GDS and any
+   internal precedent disagree, GDS wins. Every page polished to that standard.
+2. **`react-frontend/` defines WHAT a member can do** — the feature set, the workflow,
+   the states. It is the live product with the most complete behaviour.
+3. **The Laravel API defines the CONTRACT** — methods, paths, payloads, status codes,
+   auth, roles, module gates, side effects. This never changed and does not change now.
+4. **Blade is HISTORIC.** Read it only to recover something not yet obtainable from
+   React or the API. It is no longer the arbiter of correct behaviour.
+
+**What this changes in practice:**
+
+- 🔴 **A difference from Blade is no longer automatically a defect.** Previously Blade
+  was right unless the divergence was a recorded improvement; now the question is
+  whether web-uk matches GDS, React and the API. Blade being different may simply mean
+  Blade is behind.
+- 🔴 **The generated route matrix stops being a drift alarm and becomes coverage
+  evidence.** A route in Blade and absent from web-uk is now a QUESTION, not a gap —
+  it may be something Blade has and the product no longer wants. Do not "close" such a
+  gap without checking React and the API first.
+- The rubric row "Observable Blade behaviour" is now misnamed for what it measures.
+  It is left in place for continuity of the score, and its deductions still stand, but
+  it should be re-scoped to "Observable product behaviour (React + API)" at the next
+  rubric revision rather than silently reinterpreted.
+- The web-uk ↔ Blade screenshot comparison set becomes a historical baseline, useful for
+  spotting unintended change in web-uk, not a target to converge on.
+
+**Blade is still deployed and still serving real members** on the community accessible
+domains and every `/{tenantSlug}/accessible/...` path. Historic means "no longer the
+specification", not "switched off". Retirement remains a separate reviewed change, and
+the owner's condition is explicit: **once we are 100% sure we have everything we need
+from it.** Until then, do not delete it, do not remove its routes, and do not disable its
+tests or build.
+
 ## 🔴 The Blade track is FROZEN — read-only reference (owner decision, 2026-08-13)
 
 The 2026-08-11 decision said Blade *would* retire. **On 2026-08-13 the owner

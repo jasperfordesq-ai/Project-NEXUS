@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The old accessible site is now recorded as historic, and no longer the thing we copy.** Until today the old site was treated as the definition of "correct" — if the new one differed, the new one was assumed wrong. That has been reversed by decision: the old site is falling behind, so the new one now follows **GOV.UK guidance for how pages should look and behave, the React app for what members can actually do, and the platform's own interface for the rules**. A difference from the old site is no longer automatically a fault; it may simply mean the old site is behind. The old site stays switched on and serving members, and retires only once we are certain nothing is still needed from it. Written into the three places an AI assistant or a person would look, including a plain note that the route comparison list is now a coverage record rather than an alarm.
+- 🔴 **Corrected a readiness score I had inflated.** I recorded 787 out of 1,000 when the honest figure was **730**. The mistake: I awarded points for fixing four real faults, but those faults had never been counted as marks lost in the first place — so repairing them restored *accuracy*, it did not earn credit. The automated check could not catch it, because it only verifies the column adds up to the stated total, which it did. The rule is now written at the top of that document: a row's score is its maximum minus the deductions listed against it, and nothing else may raise it.
+
+### Changed
+
 - **Updated the GOV.UK design system the accessible website is built on** to the current release (6.4.0, published days ago). Everything was re-checked afterwards rather than assumed: 2,142 automated checks, the accessibility scan on 24 real signed-in pages (still completely clean), high-contrast mode, phone width, dark mode, and the visual comparison against the old site — which actually got **closer**, from about 13% of pixels differing down to 10%. 🔴 The instruction file said we were on 6.1.0 when we were really on 6.3.0; that note is corrected, with a warning not to trust a version written in prose.
 
 ### Fixed

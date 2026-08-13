@@ -45,18 +45,37 @@ Which phase we are in is stated in **one** place:
 [`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
 Do not restate it here or anywhere else — that is how status claims go stale.
 
-**Phase A — Blade is still deployed (where we are now).**
+🔴 **SUPERSEDED 2026-08-13: BLADE IS HISTORIC.** The owner decided that Blade is
+falling behind and is no longer the specification. The authority order is now:
 
-1. The Laravel Blade accessible frontend remains the **observable-behaviour
-   specification** for browser routes, links, layout, navigation, content
-   hierarchy, forms, validation presentation, redirects, tenant behaviour and
-   workflows. Where `web-uk` disagrees, Blade is right unless the difference is a
-   recorded deliberate improvement.
-2. The generated route matrix is a **live drift alarm**: a route in Blade and not
-   in `web-uk` is a real gap.
+1. **GOV.UK Design System + WCAG 2.2** — the presentation authority. How a page
+   looks, announces itself, validates and is navigated. Where GDS and any internal
+   precedent disagree, **GDS wins**.
+2. **`react-frontend/`** — defines WHAT a member can do: features, workflows, states.
+3. **The Laravel API** — the contract: methods, paths, payloads, status codes, auth,
+   roles, module gates, side effects. Unchanged, and still absolute.
+4. **Blade** — historic. Read it only to recover something not yet obtainable from
+   React or the API.
 
-**Phase B — Blade is decommissioned.** `web-uk` owns browser behaviour and the
-route matrix becomes a historical record.
+🔴 Consequences you must apply:
+- **A difference from Blade is NO LONGER automatically a defect.** Blade being
+  different may just mean Blade is behind.
+- **The route matrix is coverage evidence, not a drift alarm.** A route in Blade and
+  absent from `web-uk` is a QUESTION — check React and the API before "closing" it.
+- Blade is still **deployed and serving real members**; historic means "not the
+  specification", not "switched off". Do not delete it or disable its tests.
+
+The full decision, and what it changes, is recorded once in
+[`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+
+The superseded rule is kept below because agents refuse work when they find only the
+new wording and remember the old.
+
+**~~Phase A — Blade is still deployed~~ (SUPERSEDED, kept for provenance).** Blade was
+the observable-behaviour specification, and the route matrix was a live drift alarm
+where a route in Blade and not in `web-uk` was a real gap.
+
+**Phase B — Blade is decommissioned.** `web-uk` owns browser behaviour outright.
 
 **In both phases:** the Laravel backend/API is the contract source of truth for
 HTTP methods and paths, request/response shapes, status codes, auth, roles,
