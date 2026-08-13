@@ -132,6 +132,98 @@ describe('eventCommunicationsApi', () => {
     expect(response.data).toBeUndefined();
   });
 
+  // 🔴 The preview path had NO web coverage at all, which is how this shipped:
+  // mobile got z.partialRecord and the web schema kept z.record, and no test
+  // exercised it. Sentry NEXUS-REACT-W, production 2026-08-02.
+  it('accepts a preview that counts only the segments actually requested', async () => {
+    mockApi.post.mockResolvedValue({
+      success: true,
+      data: {
+        contract_version: 1,
+        event_id: 42,
+        variant: 'announcement',
+        segments: ['registration_confirmed'],
+        channels: ['email'],
+        recipient_count: 3,
+        delivery_count: 3,
+        // ONE key, because one segment was requested. An enum-keyed z.record()
+        // is exhaustive in Zod 4 and would demand all four.
+        segment_counts: { registration_confirmed: 3 },
+        generated_at: '2026-08-02T11:57:38+00:00',
+      },
+    });
+
+    const response = await eventCommunicationsApi.preview(42, {
+      variant: 'announcement',
+      segments: ['registration_confirmed'],
+      channels: ['email'],
+    });
+
+    expect(response.success).toBe(true);
+    expect(response.code).not.toBe('EVENTS_CONTRACT_DRIFT');
+    expect(response.data?.segment_counts.registration_confirmed).toBe(3);
+    expect(response.data?.segment_counts.waitlist_active).toBeUndefined();
+  });
+
+  it('accepts a preview covering every segment too', async () => {
+    mockApi.post.mockResolvedValue({
+      success: true,
+      data: {
+        contract_version: 1,
+        event_id: 42,
+        variant: 'follow_up',
+        segments: ['registration_confirmed', 'waitlist_active', 'attendance_attended', 'attendance_no_show'],
+        channels: ['email', 'push'],
+        recipient_count: 6,
+        delivery_count: 12,
+        segment_counts: {
+          registration_confirmed: 3,
+          waitlist_active: 1,
+          attendance_attended: 2,
+          attendance_no_show: 0,
+        },
+        generated_at: '2026-08-02T11:57:38+00:00',
+      },
+    });
+
+    const response = await eventCommunicationsApi.preview(42, {
+      variant: 'follow_up',
+      segments: ['registration_confirmed', 'waitlist_active', 'attendance_attended', 'attendance_no_show'],
+      channels: ['email', 'push'],
+    });
+
+    expect(response.success).toBe(true);
+    expect(response.data?.segment_counts.attendance_no_show).toBe(0);
+  });
+
+  it('still fails closed on a preview segment key outside the contract', async () => {
+    // Loosening record → partialRecord must not stop rejecting a key the
+    // enum does not define.
+    mockApi.post.mockResolvedValue({
+      success: true,
+      data: {
+        contract_version: 1,
+        event_id: 42,
+        variant: 'announcement',
+        segments: ['registration_confirmed'],
+        channels: ['email'],
+        recipient_count: 3,
+        delivery_count: 3,
+        segment_counts: { registration_confirmed: 3, everyone_on_the_platform: 900 },
+        generated_at: '2026-08-02T11:57:38+00:00',
+      },
+    });
+
+    const response = await eventCommunicationsApi.preview(42, {
+      variant: 'announcement',
+      segments: ['registration_confirmed'],
+      channels: ['email'],
+    });
+
+    expect(response.success).toBe(false);
+    expect(response.code).toBe('EVENTS_CONTRACT_DRIFT');
+  });
+
   it('requests an independent bounded history page', async () => {
     mockApi.get.mockResolvedValue({
       success: true,

@@ -84,7 +84,21 @@ export const eventBroadcastPreviewSchema = z.object({
   channels: z.array(channelSchema).min(1),
   recipient_count: z.number().int().nonnegative(),
   delivery_count: z.number().int().nonnegative(),
-  segment_counts: z.record(segmentSchema, z.number().int().nonnegative()),
+  // 🔴 partialRecord, NOT record — an enum-keyed z.record() is EXHAUSTIVE in
+  // Zod 4. It demands ALL FOUR segment keys, but the backend only counts the
+  // segments that were actually requested (`segments` above allows as few as
+  // one, and EventBroadcastAudienceResolver fills one key per requested
+  // segment). So previewing a broadcast for a subset — the normal case —
+  // failed its own successful response as contract drift and the organiser's
+  // preview broke. Observed in production 2026-08-02 on
+  // /events/129/manage/federation (Sentry NEXUS-REACT-W).
+  //
+  // The mobile client already had this right (mobile/lib/api/eventCommunications.ts);
+  // only the web schema was missed when both were written.
+  //
+  // Zero-filling the missing keys on the backend instead would be worse: it
+  // would assert "0 attended" for a segment nobody asked about.
+  segment_counts: z.partialRecord(segmentSchema, z.number().int().nonnegative()),
   generated_at: z.string().datetime({ offset: true }),
 }).strict();
 
