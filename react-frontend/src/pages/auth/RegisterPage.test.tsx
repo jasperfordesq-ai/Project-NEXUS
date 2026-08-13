@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import i18n from 'i18next';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, waitFor } from '@/test/test-utils';
 
 const apiMocks = vi.hoisted(() => ({
   get: vi.fn(),
@@ -21,6 +21,15 @@ vi.mock('@/lib/api', () => ({
     get: apiMocks.get,
     post: apiMocks.post,
   },
+  // 🔴 API_BASE is required even though this file never uses it.
+  //
+  // The sign-up page renders OAuthButtons and SsoButtons, which import API_BASE
+  // from '@/lib/api'. Vitest throws when a mocked module omits an export that
+  // something in the tree imports, and that throw took down the WHOLE render — the
+  // container came back empty, so any assertion needing the full form failed while
+  // step-1-only assertions passed. That is why this suite sat in
+  // src/test/failing-suites.baseline.json rather than for any product reason.
+  API_BASE: '/api',
   tokenManager: {
     getTenantId: vi.fn(),
     clearTokens: vi.fn(),
@@ -190,5 +199,39 @@ describe('RegisterPage', () => {
     expect(message).toContain('<strong>Please check your Junk or spam folder');
     expect(message).toContain('Please check your Junk or spam folder');
     expect(message).toContain("if you can't see this email in your inbox");
+  });
+
+  /**
+   * 🔴 Regression guard for the two faults a coordinator reported doing a real
+   * sign-up (Minehead & Coast, 2026-08-12), fixed in 0e01d325f. Until this suite was
+   * un-quarantined on 2026-08-13 the fix had NO coverage at all.
+   *
+   * 1. The consent tickbox rendered at 12px (`size="sm"` -> `size-3` in our wrapper)
+   *    and was reported as "almost invisible" on desktop and iOS. A control carrying
+   *    legal weight must not be the smallest thing on the page.
+   * 2. Opening Terms or Privacy in the same tab wiped the whole four-step form,
+   *    because every answer lives in component state. They must open in a new tab.
+   *    Deliberately NOT solved by persisting the form: this step holds the password.
+   */
+  it('keeps the consent tickbox legible and opens the policy links in a new tab', async () => {
+    const { container } = render(<RegisterPage />);
+
+    // Our Checkbox wrapper maps size -> a Tailwind class on the control element:
+    // sm => size-3 (12px), lg => size-5 (20px). Assert on the rendered markup,
+    // because that is the only thing that proves what a member actually sees.
+    await waitFor(() => {
+      expect(container.querySelector('input[type="checkbox"]')).not.toBeNull();
+    });
+    expect(container.innerHTML).toContain('size-5');
+    expect(container.innerHTML).not.toContain('size-3');
+
+    // Every policy link on this page opens in a new tab, with the safe rel.
+    const policyLinks = Array.from(container.querySelectorAll('a'))
+      .filter((a) => /\/(terms|privacy)$/.test(a.getAttribute('href') ?? ''));
+    expect(policyLinks.length).toBeGreaterThan(0);
+    for (const link of policyLinks) {
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel') ?? '').toContain('noopener');
+    }
   });
 });

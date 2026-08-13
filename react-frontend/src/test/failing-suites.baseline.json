@@ -44,7 +44,6 @@
     "src/components/search/__tests__/SavedSearches.test.tsx",
     "src/components/verification/__tests__/VerificationBadge.test.tsx",
     "src/pages/about/TimebankingGuidePage.test.tsx",
-    "src/pages/auth/RegisterPage.test.tsx",
     "src/pages/auth/VerifyIdentityPage.test.tsx",
     "src/pages/caring-community/FutureCareFundPage.test.tsx",
     "src/pages/courses/CourseGradingPage.test.tsx",
@@ -56,6 +55,6 @@
     "src/pages/public/LegalVersionHistoryPage.test.tsx"
   ],
   "totals": {
-    "count": 53
+    "count": 52
   }
 }

@@ -71,7 +71,13 @@ const BASELINE_FILE = path.join(ROOT, 'src/test/failing-suites.baseline.json');
 // page reads /v2/metrics/summary, which answers with the event-counter payload,
 // so summary.memory_spikes.length threw in the browser while every test passed
 // against a mocked payload no endpoint produces.
-const BASELINE = 53;
+// Lowered 53 -> 52 on 2026-08-13 by un-quarantining
+// src/pages/auth/RegisterPage.test.tsx. It was failing for a HARNESS reason, not a
+// product one: its '@/lib/api' mock omitted the API_BASE export that OAuthButtons
+// and SsoButtons import, and Vitest's missing-export throw collapsed the entire
+// render. Adding that one export makes all 6 tests pass, which matters because the
+// consent-tickbox and terms-link fix (0e01d325f) otherwise had no CI coverage.
+const BASELINE = 52;
 
 const budget = Number(process.env.QUARANTINE_BUDGET ?? BASELINE);
 
