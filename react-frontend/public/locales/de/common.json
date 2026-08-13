@@ -306,7 +306,7 @@
     "trust_safety": "Vertrauen & Sicherheit",
     "community_partner": "Community-Partner",
     "tenant_logo_placeholder": "Ihr Logo hier",
-    "open_source": "Open Source",
+    "open_source": "Quelloffen",
     "powered_by": "Bereitgestellt von",
     "agpl_short": "Freie und Open-Source-Software. Lizenziert unter AGPL-3.0.",
     "nexus_link_label": "Project NEXUS-Website besuchen"
@@ -901,7 +901,7 @@
     "select_language": "Sprache auswählen",
     "clear_location": "Standort löschen",
     "location_results": "{{count}}-Adressvorschläge verfügbar",
-    "search_results": "{{count}} results available",
+    "search_results": "{{count}} Ergebnisse verfügbar",
     "select_category": "Kategorie auswählen",
     "verification_badges": "Verifizierungsabzeichen",
     "search_skills": "Fähigkeiten suchen",
@@ -985,11 +985,11 @@
   "verification": {
     "not_id_verified": "Nicht ID-verifiziert",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "E-Mail-Adresse bestätigt",
+      "phone_verified": "Telefonnummer bestätigt",
+      "id_verified": "Identität bestätigt",
+      "dbs_checked": "DBS-Prüfung abgeschlossen",
+      "admin_verified": "Durch Administration bestätigt"
     }
   },
   "radius_5": "5 km",
@@ -1323,7 +1323,7 @@
       "type_discovery": "Entdecken-Seite",
       "start_date_label": "Startdatum",
       "end_date_label": "Enddatum",
-      "budget_label": "Budget (€)",
+      "budget_label": "Budget in Euro (€)",
       "radius_label": "Zielradius (km, optional)",
       "submit": "Kampagne erstellen",
       "submitting": "Wird erstellt..."

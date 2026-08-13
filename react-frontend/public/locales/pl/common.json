@@ -909,7 +909,7 @@
     "select_language": "Wybierz język",
     "clear_location": "Wyczyść lokalizację",
     "location_results": "Dostępne są sugestie adresów {{count}}",
-    "search_results": "{{count}} results available",
+    "search_results": "Dostępne wyniki: {{count}}",
     "select_category": "Wybierz kategorię",
     "verification_badges": "Odznaki weryfikacyjne",
     "search_skills": "Szukaj umiejętności",
@@ -923,8 +923,8 @@
     "search_results_other": "Dostępne wyniki {{count}}",
     "location_results_few": "Dostępne są sugestie adresów {{count}}",
     "location_results_many": "Dostępne są sugestie adresów {{count}}",
-    "search_results_few": "{{count}} results available",
-    "search_results_many": "{{count}} results available"
+    "search_results_few": "Dostępne {{count}} wyniki",
+    "search_results_many": "Dostępnych {{count}} wyników"
   },
   "skills": {
     "browse_title": "Katalog umiejętności społeczności",
@@ -999,11 +999,11 @@
   "verification": {
     "not_id_verified": "Niezweryfikowane ID",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "Adres e-mail zweryfikowany",
+      "phone_verified": "Numer telefonu zweryfikowany",
+      "id_verified": "Tożsamość zweryfikowana",
+      "dbs_checked": "Kontrola DBS zakończona",
+      "admin_verified": "Zweryfikowane przez administratora"
     }
   },
   "radius_5": "5 km",

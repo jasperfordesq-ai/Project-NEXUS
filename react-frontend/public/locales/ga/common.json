@@ -913,7 +913,7 @@
     "select_language": "Roghnaigh teanga",
     "clear_location": "Glan suíomh",
     "location_results": "{{count}} moltaí seoltaí ar fáil",
-    "search_results": "{{count}} results available",
+    "search_results": "Tá {{count}} toradh ar fáil",
     "select_category": "Roghnaigh catagóir",
     "verification_badges": "Suaitheantais fhírúcháin",
     "search_skills": "Cuardaigh scileanna",
@@ -923,14 +923,14 @@
     "remove": "Remove",
     "location_results_one": "{{count}} moltaí seoltaí ar fáil",
     "location_results_other": "{{count}} moltaí seoltaí ar fáil",
-    "search_results_one": "{{count}} torthaí ar fáil",
-    "search_results_other": "{{count}} torthaí ar fáil",
+    "search_results_one": "Tá {{count}} toradh ar fáil",
+    "search_results_other": "Tá {{count}} toradh ar fáil",
     "location_results_few": "{{count}} moltaí seoltaí ar fáil",
     "location_results_many": "{{count}} moltaí seoltaí ar fáil",
     "location_results_two": "{{count}} moltaí seoltaí ar fáil",
-    "search_results_few": "{{count}} results available",
-    "search_results_many": "{{count}} results available",
-    "search_results_two": "{{count}} results available"
+    "search_results_few": "Tá {{count}} thoradh ar fáil",
+    "search_results_many": "Tá {{count}} dtoradh ar fáil",
+    "search_results_two": "Tá {{count}} thoradh ar fáil"
   },
   "skills": {
     "browse_title": "Eolaire Scileanna Pobail",
@@ -1006,11 +1006,11 @@
   "verification": {
     "not_id_verified": "Aitheantas gan fhíorú",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "Ríomhphost fíoraithe",
+      "phone_verified": "Uimhir theileafóin fíoraithe",
+      "id_verified": "Aitheantas fíoraithe",
+      "dbs_checked": "Seiceáil DBS déanta",
+      "admin_verified": "Fíoraithe ag riarthóir"
     }
   },
   "radius_5": "5 km",

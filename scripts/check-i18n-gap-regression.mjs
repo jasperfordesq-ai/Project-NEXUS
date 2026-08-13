@@ -77,6 +77,20 @@ const NO_TRANSLATE_VALUES = new Set([
   '⌘K',
   'broker@example.com',
   'A-Z',
+  '⌘',
+  'Project NEXUS',
+  'AGPL-3.0 — Copyright © 2024–{{year}} Jasper Ford',
+  'you@example.com',
+  'P@ssw0rd!',
+  '••••••••',
+  'XXXX-XXXX',
+  'e.g. Acme Corp',
+  'e.g. +1 555 123 4567',
+  '25–34',
+  '35–44',
+  '45–54',
+  '55–64',
+  '∞',
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale

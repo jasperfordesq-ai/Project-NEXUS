@@ -905,7 +905,7 @@
     "select_language": "Seleziona lingua",
     "clear_location": "Cancella posizione",
     "location_results": "{{count}} suggerimenti di indirizzi disponibili",
-    "search_results": "{{count}} results available",
+    "search_results": "{{count}} risultati disponibili",
     "select_category": "Seleziona una categoria",
     "verification_badges": "Badge di verifica",
     "search_skills": "Cerca competenze",
@@ -918,7 +918,7 @@
     "search_results_one": "{{count}} risultati disponibili",
     "search_results_other": "{{count}} risultati disponibili",
     "location_results_many": "{{count}} suggerimenti di indirizzi disponibili",
-    "search_results_many": "{{count}} results available"
+    "search_results_many": "{{count}} risultati disponibili"
   },
   "skills": {
     "browse_title": "Elenco Competenze della Comunità",
@@ -992,11 +992,11 @@
   "verification": {
     "not_id_verified": "Non verificato ID",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "E-mail verificata",
+      "phone_verified": "Numero di telefono verificato",
+      "id_verified": "Identità verificata",
+      "dbs_checked": "Controllo DBS completato",
+      "admin_verified": "Verificato da un amministratore"
     }
   },
   "radius_5": "5 km",
@@ -1332,7 +1332,7 @@
       "type_discovery": "Pagina Scopri",
       "start_date_label": "Data di inizio",
       "end_date_label": "Data di fine",
-      "budget_label": "Budget (€)",
+      "budget_label": "Budget in euro (€)",
       "radius_label": "Raggio di targeting (km, opzionale)",
       "submit": "Crea campagna",
       "submitting": "Creazione in corso..."

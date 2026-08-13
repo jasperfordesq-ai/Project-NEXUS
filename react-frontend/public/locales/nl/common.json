@@ -901,7 +901,7 @@
     "select_language": "Taal selecteren",
     "clear_location": "Locatie wissen",
     "location_results": "{{count}} adressuggesties beschikbaar",
-    "search_results": "{{count}} results available",
+    "search_results": "{{count}} resultaten beschikbaar",
     "select_category": "Selecteer een categorie",
     "verification_badges": "Verificatiebadges",
     "search_skills": "Vaardigheden zoeken",
@@ -985,11 +985,11 @@
   "verification": {
     "not_id_verified": "Niet ID Geverifieerd",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "E-mailadres geverifieerd",
+      "phone_verified": "Telefoonnummer geverifieerd",
+      "id_verified": "Identiteit geverifieerd",
+      "dbs_checked": "DBS-controle voltooid",
+      "admin_verified": "Door beheerder geverifieerd"
     }
   },
   "radius_5": "5 km",

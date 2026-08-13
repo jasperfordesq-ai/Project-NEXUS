@@ -905,7 +905,7 @@
     "select_language": "Choisir la langue",
     "clear_location": "Effacer la localisation",
     "location_results": "{{count}} suggestions d'adresses disponibles",
-    "search_results": "{{count}} results available",
+    "search_results": "{{count}} résultats disponibles",
     "select_category": "Choisir une catégorie",
     "verification_badges": "Badges de vérification",
     "search_skills": "Rechercher des compétences",
@@ -918,7 +918,7 @@
     "search_results_one": "{{count}} résultats disponibles",
     "search_results_other": "{{count}} résultats disponibles",
     "location_results_many": "{{count}} suggestions d'adresses disponibles",
-    "search_results_many": "{{count}} results available"
+    "search_results_many": "{{count}} résultats disponibles"
   },
   "skills": {
     "browse_title": "Répertoire des compétences communautaires",
@@ -992,11 +992,11 @@
   "verification": {
     "not_id_verified": "Non vérifié par ID",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "Adresse e-mail vérifiée",
+      "phone_verified": "Numéro de téléphone vérifié",
+      "id_verified": "Identité vérifiée",
+      "dbs_checked": "Contrôle DBS effectué",
+      "admin_verified": "Vérifié par un administrateur"
     }
   },
   "radius_5": "5km",
@@ -1332,7 +1332,7 @@
       "type_discovery": "Page de découverte",
       "start_date_label": "Date de début",
       "end_date_label": "Date de fin",
-      "budget_label": "Budget (€)",
+      "budget_label": "Budget en euros (€)",
       "radius_label": "Rayon de ciblage (km, facultatif)",
       "submit": "Créer la campagne",
       "submitting": "Création..."

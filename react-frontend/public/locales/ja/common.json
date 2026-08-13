@@ -901,7 +901,7 @@
     "select_language": "言語を選択",
     "clear_location": "位置情報をクリア",
     "location_results": "{{count}} アドレスの提案が利用可能",
-    "search_results": "{{count}} results available",
+    "search_results": "{{count}}件の検索結果があります",
     "select_category": "カテゴリを選択",
     "verification_badges": "認証バッジ",
     "search_skills": "スキルを検索",
@@ -985,11 +985,11 @@
   "verification": {
     "not_id_verified": "ID確認されていません",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "メールアドレス確認済み",
+      "phone_verified": "電話番号確認済み",
+      "id_verified": "本人確認済み",
+      "dbs_checked": "DBS確認済み",
+      "admin_verified": "管理者確認済み"
     }
   },
   "radius_5": "5km",

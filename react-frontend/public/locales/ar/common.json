@@ -917,7 +917,7 @@
     "select_language": "اختر اللغة",
     "clear_location": "مسح الموقع",
     "location_results": "{{count}} اقتراحات العناوين متاحة",
-    "search_results": "{{count}} results available",
+    "search_results": "نتائج البحث المتاحة: {{count}}",
     "select_category": "اختر فئة",
     "verification_badges": "شارات التحقق",
     "search_skills": "البحث عن مهارات",
@@ -933,10 +933,10 @@
     "location_results_many": "{{count}} اقتراحات العناوين متاحة",
     "location_results_two": "{{count}} اقتراحات العناوين متاحة",
     "location_results_zero": "{{count}} اقتراحات العناوين متاحة",
-    "search_results_few": "{{count}} results available",
-    "search_results_many": "{{count}} results available",
-    "search_results_two": "{{count}} results available",
-    "search_results_zero": "{{count}} results available"
+    "search_results_few": "{{count}} نتائج متاحة",
+    "search_results_many": "{{count}} نتيجة متاحة",
+    "search_results_two": "عدد النتائج المتاحة: {{count}}",
+    "search_results_zero": "عدد النتائج المتاحة: {{count}}"
   },
   "skills": {
     "browse_title": "دليل مهارات المجتمع",
@@ -1013,11 +1013,11 @@
   "verification": {
     "not_id_verified": "غير موثق الهوية",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "تم التحقق من البريد الإلكتروني",
+      "phone_verified": "تم التحقق من رقم الهاتف",
+      "id_verified": "تم التحقق من الهوية",
+      "dbs_checked": "اكتمل فحص DBS",
+      "admin_verified": "تم التحقق بواسطة مسؤول"
     }
   },
   "radius_5": "5 كم",

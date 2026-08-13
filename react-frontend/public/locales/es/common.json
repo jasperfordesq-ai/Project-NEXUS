@@ -905,7 +905,7 @@
     "select_language": "Seleccionar idioma",
     "clear_location": "Limpiar ubicación",
     "location_results": "{{count}} sugerencias de direcciones disponibles",
-    "search_results": "{{count}} results available",
+    "search_results": "{{count}} resultados disponibles",
     "select_category": "Seleccionar una categoría",
     "verification_badges": "Insignias de verificación",
     "search_skills": "Buscar habilidades",
@@ -918,7 +918,7 @@
     "search_results_one": "{{count}} resultados disponibles",
     "search_results_other": "{{count}} resultados disponibles",
     "location_results_many": "{{count}} sugerencias de direcciones disponibles",
-    "search_results_many": "{{count}} results available"
+    "search_results_many": "{{count}} resultados disponibles"
   },
   "skills": {
     "browse_title": "Directorio de Habilidades de la Comunidad",
@@ -992,11 +992,11 @@
   "verification": {
     "not_id_verified": "No verificado por ID",
     "badge": {
-      "email_verified": "Email Verified",
-      "phone_verified": "Phone Verified",
-      "id_verified": "ID Verified",
-      "dbs_checked": "DBS Checked",
-      "admin_verified": "Admin Verified"
+      "email_verified": "Correo electrónico verificado",
+      "phone_verified": "Número de teléfono verificado",
+      "id_verified": "Identidad verificada",
+      "dbs_checked": "Comprobación DBS completada",
+      "admin_verified": "Verificado por un administrador"
     }
   },
   "radius_5": "5 kilometros",
