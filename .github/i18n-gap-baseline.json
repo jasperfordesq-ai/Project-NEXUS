@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T18:37:32.870Z",
+  "generatedAt": "2026-08-13T18:39:15.007Z",
   "source": "scripts/check-i18n-gap-regression.mjs",
   "localesDir": "react-frontend/public/locales",
   "languages": [
@@ -14,7 +14,7 @@
     "ar",
     "ga"
   ],
-  "totalGaps": 933,
+  "totalGaps": 929,
   "files": {
     "de/about.json": 1,
     "de/admin_ai.json": 4,
@@ -443,7 +443,6 @@
     "ga/jobs.json": 1,
     "ga/kb.json": 6,
     "ga/marketplace.json": 2,
-    "ga/matches.json": 4,
     "ga/municipality_feedback.json": 1,
     "ga/onboarding.json": 1,
     "ga/partners.json": 3,

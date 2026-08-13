@@ -47,10 +47,10 @@
     "dismiss": "Níl suim acu ann",
     "view_group": "Féach ar ghrúpa",
     "distance_km": "{{value}} km",
-    "remote": "Remote",
-    "message": "Message",
-    "join": "Join",
-    "joined": "Joined"
+    "remote": "Cianda",
+    "message": "Teachtaireacht",
+    "join": "Glac páirt",
+    "joined": "Páirteach"
   },
   "explanation": {
     "ai_caption": "Míniú a ghintear le AI bunaithe ar do phróifíl agus ar do ghníomhaíocht"
@@ -64,14 +64,14 @@
       "activity": "Leibhéal gníomhaíochta",
       "trust_tier": "Sraith iontaobhais",
       "completion": "Ráta críochnaithe",
-      "proximity": "Proximity",
-      "availability": "Availability",
-      "reviews": "Reviews"
+      "proximity": "Gaireacht",
+      "availability": "Infhaighteacht",
+      "reviews": "Léirmheasanna"
     },
     "pillars": {
-      "relevance": "Relevance",
-      "feasibility": "Feasibility",
-      "trust": "Trust"
+      "relevance": "Ábharthacht",
+      "feasibility": "Indéantacht",
+      "trust": "Muinín"
     }
   },
   "dismiss_reasons": {
@@ -80,7 +80,7 @@
     "already_done": "Déanta cheana féin",
     "not_my_skills": "Ní mo scileanna",
     "not_interested": "Níl suim acu ann",
-    "other": "Other"
+    "other": "Eile"
   },
   "empty": {
     "no_coordinates_title": "Teastaíonn do shuíomh uainn chun meaitseanna a aimsiú",
@@ -125,20 +125,20 @@
       "hot_matches_desc": "Faigh fógra láithreach faoi chluichí thar a bheith láidir.",
       "mutual_matches": "Foláirimh maidir le cluiche frithpháirteach",
       "mutual_matches_desc": "Faigh fógra nuair a théann cluiche ar an dá bhealach.",
-      "title": "Notifications",
-      "daily": "Daily",
-      "fortnightly": "Fortnightly",
-      "monthly": "Monthly",
-      "never": "Never"
+      "title": "Fógraí",
+      "daily": "Gach lá",
+      "fortnightly": "Gach coicís",
+      "monthly": "Gach mí",
+      "never": "Riamh"
     },
-    "page_title": "Match Preferences",
-    "page_meta_title": "Match Preferences",
-    "breadcrumb": "Preferences",
-    "heading": "Match Preferences"
+    "page_title": "Sainroghanna meaitseála",
+    "page_meta_title": "Sainroghanna meaitseála",
+    "breadcrumb": "Sainroghanna",
+    "heading": "Sainroghanna meaitseála"
   },
-  "stats_mutual_matches": "Mutual Matches",
-  "filter_people_listings": "Listings",
-  "source_event": "Event",
+  "stats_mutual_matches": "Meaitseanna frithpháirteacha",
+  "filter_people_listings": "Liostuithe",
+  "source_event": "Imeacht",
   "reasons_more_few": "+{{count}} eile",
   "reasons_more_many": "+{{count}} eile",
   "reasons_more_one": "+{{count}} eile",
