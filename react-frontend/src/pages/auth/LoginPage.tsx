@@ -564,15 +564,42 @@ export function LoginPage() {
                             <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-1">
                               {t('login.pending_approval')}
                             </p>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              as={Link}
-                              to={tenantPath('/contact')}
-                              className="mt-2 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
-                            >
-                              {t('login.pending_approval_contact')}
-                            </Button>
+                            {/*
+                              🔴 A way OUT, not just an explanation. The
+                              coordinator's words were that a waiting member
+                              "would be better ... to be able to see something,
+                              even the home page that they first saw". Until now
+                              this panel explained the wait and then left them
+                              staring at a login form they cannot pass — a dead
+                              end, on what is the normal experience of joining a
+                              community that approves members.
+                              The community home page is a PUBLIC route, so they
+                              could always have gone and looked around; nothing
+                              ever told them so or gave them the link. Home is
+                              listed first because looking around is the thing
+                              most of them will want; contacting a coordinator is
+                              the fallback.
+                            */}
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                as={Link}
+                                to={tenantPath('/')}
+                                className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+                              >
+                                {t('login.back_to_home')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                as={Link}
+                                to={tenantPath('/contact')}
+                                className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+                              >
+                                {t('login.pending_approval_contact')}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}

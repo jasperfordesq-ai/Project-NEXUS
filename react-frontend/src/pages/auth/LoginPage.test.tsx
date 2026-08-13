@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fireEvent, render, screen, waitFor, cleanup } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, cleanup, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { type ReactNode } from 'react';
 
@@ -582,6 +582,35 @@ describe('LoginPage — awaiting-approval sign-in outcome', () => {
     // restyle cannot quietly turn it back into an error.
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('offers a way back into the community instead of a dead end', async () => {
+    // 🔴 The coordinator's actual words: a waiting member "would be better ...
+    // to be able to see something, even the home page that they first saw".
+    // Explaining the wait and then leaving them on a login form they cannot
+    // pass is a dead end, and this is the NORMAL experience of joining a
+    // community that approves members. The home page is public, so they could
+    // always have looked around — nothing told them, or gave them the link.
+    await submitLogin('AUTH_ACCOUNT_PENDING_APPROVAL');
+
+    await waitFor(() => {
+      expect(screen.getByText(PENDING_HEADLINE)).toBeInTheDocument();
+    });
+
+    // Scoped to the panel deliberately. The login page has always carried a
+    // generic "Back to home" link at the very bottom, so an unscoped query
+    // matches two elements — and that footer link is precisely the problem:
+    // it is page chrome, nowhere near the message, and nothing connects it to
+    // "you are waiting". What matters is that the way out sits INSIDE the
+    // panel that just told them they cannot get in.
+    const panel = screen.getByRole('status');
+    const home = within(panel).getByText('Back to home');
+
+    // tenantPath('/') — mocked to prefix '/test' in this suite.
+    expect(home.closest('a')).toHaveAttribute('href', '/test/');
+
+    // The contact route stays available as the fallback.
+    expect(within(panel).getByText('Contact the community')).toBeInTheDocument();
   });
 
   it('still shows the generic failure for a genuinely bad sign-in', async () => {
