@@ -4,10 +4,53 @@
 // See NOTICE file for attribution and acknowledgements.
 
 const fs = require('fs');
+const nunjucks = require('nunjucks');
 const path = require('path');
+
+const { createTranslator } = require('../src/lib/localization');
 
 function source(...segments) {
   return fs.readFileSync(path.join(__dirname, '..', ...segments), 'utf8');
+}
+
+const templateEnvironment = nunjucks.configure(
+  [
+    path.join(__dirname, '..', 'src', 'views'),
+    path.join(__dirname, '..', 'node_modules', 'govuk-frontend', 'dist')
+  ],
+  { autoescape: true, noCache: true }
+);
+
+/**
+ * Render the exchanges list with no exchanges, so the empty state is exercised.
+ * Rendered rather than grepped: a source assertion would still pass if the heading
+ * sat inside a branch that never runs.
+ */
+function renderEmptyExchangeList(locale = 'en') {
+  const t = createTranslator(locale);
+  return templateEnvironment.render('exchanges/index.njk', {
+    activeTab: 'all',
+    alphaFooterColumns: [],
+    alphaLanguageQueryParams: [],
+    alphaLocaleOptions: [],
+    alphaNavItems: [],
+    currentPath: '/exchanges',
+    currentUrl: '/exchanges',
+    exchanges: [],
+    htmlDirection: locale === 'ar' ? 'rtl' : 'ltr',
+    htmlLang: locale,
+    isAuthenticated: true,
+    meta: {},
+    serviceName: 'Project NEXUS',
+    t,
+    tc: (key, count, params) => t(key, { ...params, count }),
+    tenantName: 'Test Community',
+    title: 'Exchanges',
+    titleKey: 'exchanges.title',
+    urlFor: (target) => target,
+    workflowAvailable: true,
+    workflowEnabled: true
+  });
 }
 
 describe('Laravel exchange workflow integration contract', () => {
@@ -61,5 +104,33 @@ describe('Laravel exchange workflow integration contract', () => {
     expect(detail).toContain('t("exchanges.review_title")');
     expect(detail).toContain('t("exchanges.empty_timeline")');
     expect(detail).not.toContain('There are no timeline entries yet.');
+  });
+
+  it('gives the empty exchange list a heading, not just a sentence', () => {
+    // 🔴 Behaviour divergence found by rendering both accessible frontends against one
+    // Laravel: Blade's empty state has a heading and web-uk's had only a paragraph. A
+    // screen-reader user navigating by heading had nothing to land on, and the state was
+    // never named before being explained. React's ExchangesPage agrees a heading belongs.
+    const html = renderEmptyExchangeList('en');
+    const t = createTranslator('en');
+
+    expect(html).toContain(t('exchanges.empty'));
+
+    // Assert the HEADING ELEMENT, not merely the string: the wording also appears in
+    // other empty states, so a substring check would pass without a heading present.
+    const insetHeading = html.match(
+      /<div class="govuk-inset-text">\s*<h2 class="govuk-heading-m">([^<]+)<\/h2>/
+    );
+    expect(insetHeading).not.toBeNull();
+    expect(insetHeading[1].trim()).toBe(t('states.empty_title'));
+  });
+
+  it('translates the empty exchange list heading rather than hardcoding English', () => {
+    // Arabic, because it shares no vocabulary with English: if the heading were a literal
+    // it would survive the locale switch, and this assertion would fail.
+    const html = renderEmptyExchangeList('ar');
+
+    expect(html).toContain(createTranslator('ar')('states.empty_title'));
+    expect(html).not.toContain(createTranslator('en')('states.empty_title'));
   });
 });

@@ -125,6 +125,9 @@ CLAUDE.md
 !/scripts/deploy/**
 !/scripts/purge-cloudflare-cache.sh
 !/scripts/refresh-schema-dump.sh
+# Provisions the disposable local web-uk journey database. Contains no credentials
+# beyond the local Docker development ones already in compose.yml.
+!/scripts/webuk-e2e-env.sh
 !/scripts/check-i18n.sh
 !/scripts/check-i18n-literals.mjs
 !/scripts/check-i18n-json-integrity.mjs

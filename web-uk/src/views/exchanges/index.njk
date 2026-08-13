@@ -58,7 +58,20 @@
   </p>
 
   {% if not errorMessage and exchanges.length == 0 %}
+    {#
+      An empty state needs a HEADING, not just a sentence: it gives screen-reader users
+      something to navigate to and names the state before explaining it. This block had
+      only the paragraph.
+      Both other implementations agree a heading belongs here — Blade renders
+      `states.empty_title`, and React's ExchangesPage renders an EmptyState with a title.
+      🔴 React's wording is better ("No Exchanges Found" + a description + a "browse
+      listings" call to action) but every part of that needs NEW translation keys, which
+      are blocked on Irish. Using the already-translated generic title is the honest
+      interim: it closes the accessibility gap now without shipping English to ten
+      locales. Revisit the wording and the call to action once translation is unblocked.
+    #}
     <div class="govuk-inset-text">
+      <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
       <p class="govuk-body">{{ t("exchanges.empty") }}</p>
     </div>
   {% elif exchanges.length > 0 %}
