@@ -173,12 +173,69 @@ async function refreshAuthSession(req, res, next) {
 
 // Middleware to require authentication
 // Will attempt to refresh token if access token is missing but refresh token exists
+/**
+ * Send a signed-in member back to their OWN community when the address names a
+ * different one.
+ *
+ * 🔴 Found by running two synthetic communities against one Laravel. A member of
+ * community A requesting `/community-b/accessible/dashboard` got a 200 — and the page
+ * showed **their own** community-A data (own balance, own community's member list),
+ * because the API resolves the member from the token, not from the URL. So nothing
+ * leaked. The bug is that the page renders at all: it presents one community's name in
+ * the address while showing another's data, and every link on it keeps the foreign
+ * prefix, so the member stays in that hybrid state indefinitely. A shared or bookmarked
+ * link puts them there with no way back other than editing the address.
+ *
+ * The guard lives here rather than in tenant routing on purpose: `requireAuth` runs
+ * only on member-private routes, so browsing another community's PUBLIC pages while
+ * signed in still works, which is legitimate. Cross-community federation browsing is
+ * also unaffected — those links are `/federation/partners/...` under the member's own
+ * prefix, never another community's mount.
+ */
+function redirectForeignTenantMount(req, res) {
+  const routing = req.accessibleRouting;
+  const routed = String(routing?.tenantSlug || '').trim().toLowerCase();
+  const session = String(req.signedCookies?.tenant_slug || '').trim().toLowerCase();
+
+  // Nothing to compare, or already the member's own community.
+  if (!routed || !session || routed === session) {
+    return false;
+  }
+
+  // 🔴 Only slug-prefixed mounts. On a custom domain (`mode: 'custom-domain'`, empty
+  // prefix) there is no slug in the address to be wrong about, and redirecting to
+  // `/slug/accessible/...` on that host would send the member to a path that community
+  // does not serve. Signed cookies are host-scoped anyway, so a session cannot follow a
+  // member onto another community's domain in the first place.
+  if (!String(routing?.prefix || '')) {
+    return false;
+  }
+
+  // `routePath` is the mount-relative path the router rewrote `req.url` to, so
+  // re-prefixing it cannot produce a doubled prefix.
+  const relative = String(routing?.routePath || req.path || '/');
+  const target = `/${session}/accessible${relative.startsWith('/') ? relative : `/${relative}`}`;
+
+  // 🔴 Deliberately NOT `res.redirect`. On a shared mount, tenant routing replaces
+  // `res.redirect` with a wrapper that prefixes local paths with the CURRENT mount — so
+  // `res.redirect('/community-a/accessible/dashboard')` while serving community B emits
+  // `/community-b/accessible/community-a/accessible/dashboard`. That wrapper is correct
+  // for ordinary redirects, which are mount-relative; this is the one case that needs to
+  // leave the mount, so it sets the header directly.
+  res.status(302).location(target).end();
+  return true;
+}
+
 async function requireAuth(req, res, next) {
   await ensureAuthSession(req, res);
   const token = req.token || req.signedCookies.token;
 
   if (!token) {
     return redirectTo(res, AUTH_REQUIRED_LOGIN_PATH);
+  }
+
+  if (redirectForeignTenantMount(req, res)) {
+    return undefined;
   }
 
   req.token = token;

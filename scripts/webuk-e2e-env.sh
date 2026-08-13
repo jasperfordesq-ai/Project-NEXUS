@@ -29,6 +29,12 @@ COMPOSE=(docker compose -f "$ROOT_DIR/compose.yml" -f "$ROOT_DIR/compose.webuk-e
 E2E_TENANT_SLUG="e2e-community"
 E2E_TENANT_NAME="E2E Test Community"
 
+# A SECOND synthetic community. Its whole purpose is tenant-isolation testing: one
+# community's member must never be able to read another's data, and a single-community
+# fixture cannot demonstrate that either way.
+E2E_TENANT2_SLUG="e2e-other"
+E2E_TENANT2_NAME="E2E Other Community"
+
 # 🔴 Hard stop. A typo here would wipe the production-derived snapshot.
 if [[ "$DB_NAME" == "nexus" || "$DB_NAME" == "nexus_test" ]]; then
   echo "REFUSING: DB_NAME is '$DB_NAME'. This script must only ever touch a disposable database." >&2
@@ -121,26 +127,63 @@ seed_synthetic() {
   #    is explicit and there is no chance of pulling a real tenant's configuration.
   #    🔴 The activity column is `is_active`, NOT `status` — `tenants` has no `status`.
   #    `path`/`depth` are the materialised-path columns the sub-tenant logic reads.
-  local existing
-  existing=$(mysql_e2e -N -e "SELECT COUNT(*) FROM tenants WHERE slug='$E2E_TENANT_SLUG';")
-  if [[ "${existing:-0}" == "0" ]]; then
-    mysql_e2e -e "INSERT INTO tenants (name, slug, tenant_category, is_active, parent_id, depth, allows_subtenants, max_depth, created_at, updated_at)
-                  VALUES ('$E2E_TENANT_NAME', '$E2E_TENANT_SLUG', 'community', 1, NULL, 0, 1, 3, NOW(), NOW());"
-    # `path` is self-referential, so it can only be set once the id is known.
-    mysql_e2e -e "UPDATE tenants SET path = CONCAT('/', id, '/') WHERE slug='$E2E_TENANT_SLUG' AND (path IS NULL OR path='');"
-  fi
+  ensure_tenant "$E2E_TENANT_SLUG" "$E2E_TENANT_NAME"
+  ensure_tenant "$E2E_TENANT2_SLUG" "$E2E_TENANT2_NAME"
 
-  local tenant_id
-  tenant_id=$(mysql_e2e -N -e "SELECT id FROM tenants WHERE slug='$E2E_TENANT_SLUG' LIMIT 1;")
-  if [[ -z "$tenant_id" ]]; then
-    echo "ERROR: could not create or find the synthetic tenant." >&2
-    exit 1
-  fi
-  echo "    synthetic tenant '$E2E_TENANT_SLUG' id=$tenant_id"
+  local tenant_id tenant2_id
+  tenant_id=$(tenant_id_for "$E2E_TENANT_SLUG")
+  tenant2_id=$(tenant_id_for "$E2E_TENANT2_SLUG")
+  echo "    synthetic tenants: $E2E_TENANT_SLUG=$tenant_id  $E2E_TENANT2_SLUG=$tenant2_id"
 
-  # 3. Members + a listing, via the existing idempotent seeder.
+  # 3. Members + a listing in the primary community, via the existing idempotent seeder.
   docker exec -e E2E_TENANT_ID="$tenant_id" "$APP_CONTAINER" \
     php artisan db:seed --class=E2ETestDataSeeder --force 2>&1 | tail -2
+
+  # 4. The SECOND community's own members. The seeder keys on (tenant_id, email), so it
+  #    needs distinct addresses — reusing them would collide across communities.
+  docker exec \
+    -e E2E_TENANT_ID="$tenant2_id" \
+    -e E2E_USER_EMAIL="e2e.other.a@project-nexus.local" \
+    -e E2E_SECOND_USER_EMAIL="e2e.other.b@project-nexus.local" \
+    -e E2E_ADMIN_EMAIL="e2e.other.admin@project-nexus.local" \
+    "$APP_CONTAINER" php artisan db:seed --class=E2ETestDataSeeder --force 2>&1 | tail -2
+
+  # 5. A broker in the primary community. 🔴 `broker` is NOT a junior admin — it is an
+  #    operational role with its own application, deliberately refused generic
+  #    /v2/admin/* by AdminTier. The seeder has no broker, and journeys cannot check
+  #    that boundary without one. Cloned from member B so every login-gate column
+  #    (email_verified_at, is_approved, status) is already correct.
+  local broker_email="e2e.broker@project-nexus.local"
+  if [[ "$(mysql_e2e -N -e "SELECT COUNT(*) FROM users WHERE tenant_id=$tenant_id AND email='$broker_email';")" == "0" ]]; then
+    mysql_e2e -e "INSERT INTO users (tenant_id, email, first_name, last_name, name, password_hash, role, status,
+                                     is_verified, email_verified_at, is_approved, balance, profile_type,
+                                     onboarding_completed, created_at, updated_at)
+                  SELECT tenant_id, '$broker_email', 'E2E', 'Broker', 'E2E Broker', password_hash, 'broker', status,
+                         is_verified, email_verified_at, is_approved, 40, profile_type,
+                         onboarding_completed, NOW(), NOW()
+                  FROM users WHERE tenant_id=$tenant_id AND email='e2e.user.b@project-nexus.local' LIMIT 1;"
+  fi
+  echo "    roles present: $(mysql_e2e -N -e "SELECT GROUP_CONCAT(DISTINCT role ORDER BY role) FROM users WHERE tenant_id IN ($tenant_id,$tenant2_id);")"
+}
+
+ensure_tenant() {
+  local slug="$1" name="$2"
+  if [[ "$(mysql_e2e -N -e "SELECT COUNT(*) FROM tenants WHERE slug='$slug';")" == "0" ]]; then
+    mysql_e2e -e "INSERT INTO tenants (name, slug, tenant_category, is_active, parent_id, depth, allows_subtenants, max_depth, created_at, updated_at)
+                  VALUES ('$name', '$slug', 'community', 1, NULL, 0, 1, 3, NOW(), NOW());"
+    # `path` is self-referential, so it can only be set once the id is known.
+    mysql_e2e -e "UPDATE tenants SET path = CONCAT('/', id, '/') WHERE slug='$slug' AND (path IS NULL OR path='');"
+  fi
+}
+
+tenant_id_for() {
+  local id
+  id=$(mysql_e2e -N -e "SELECT id FROM tenants WHERE slug='$1' LIMIT 1;")
+  if [[ -z "$id" ]]; then
+    echo "ERROR: could not create or find synthetic tenant '$1'." >&2
+    exit 1
+  fi
+  printf '%s' "$id"
 }
 
 assert_no_real_data() {
