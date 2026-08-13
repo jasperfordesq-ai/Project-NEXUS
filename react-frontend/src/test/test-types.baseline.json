@@ -1587,9 +1587,6 @@
     "src/pages/events/components/EventCalendarViews.test.tsx": {
       "TS2532": 1
     },
-    "src/pages/events/components/EventCommunicationsWorkspace.test.tsx": {
-      "TS2739": 1
-    },
     "src/pages/events/components/EventRecurrenceDefinitionBlueprintManager.test.tsx": {
       "TS2339": 1
     },
@@ -2218,7 +2215,7 @@
     }
   },
   "totals": {
-    "fileCount": 649,
-    "errorCount": 1934
+    "fileCount": 648,
+    "errorCount": 1933
   }
 }
