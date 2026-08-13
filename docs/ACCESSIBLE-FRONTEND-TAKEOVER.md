@@ -124,7 +124,8 @@ qualification means the Phase A rule above.
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
 | Blade retirement | **Not started**, and now the only remaining phase-ending step. The Blade track was **frozen as read-only reference on 2026-08-13** (see above), but decommissioning is still a separate change with its own review, after a soak period. |
 
-Current score: **651/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
+Current score: **710/1000** under rubric `WEBUK-W2-PROD-R1` (rescored 2026-08-13,
+up from 651). See the scoring
 table below before comparing that with any earlier number.
 
 🔴 **Do not restate that number here from memory.** This page carried **640** and
@@ -283,12 +284,12 @@ CI check refuses a score marker that does not.
 
 | Score | Rubric | Value | Measures | Status |
 |---|---|---|---|---|
-| `web-uk` production readiness | `WEBUK-W2-PROD-R1` | 651/1000 | Is `web-uk` safe to serve, and can Blade retire? | **Current** — read it from `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`, never from here |
+| `web-uk` production readiness | `WEBUK-W2-PROD-R1` | 710/1000 | Is `web-uk` safe to serve, and can Blade retire? | **Current** — read it from `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`, never from here |
 | `web-uk` Laravel-first parity | `WEBUK-W1-FIXED-R1` | 663/1000 | How closely does the candidate clone Blade? | Retired 2026-08-11 |
 | ASP.NET contract identity | `ASPNET-CONTRACT-R1` | 712/1000 | Is ASP.NET externally contract-identical to Laravel? | Paused since 2026-07-15 |
 | Documentation health | `DOCS-HEALTH-D3-R1` | 1000/1000 index | Documentation and handoff quality | Not a product score |
 
-🔴 **The current 651 is lower than the retired 663 and nothing regressed.** The
+🔴 **The current 710 exceeds the retired 663, and the two are still not comparable.** The
 W1 rubric scored no deployment path, no cutover, no rollback and no Blade
 retirement. Those 200 points enter the new denominator for the first time and
 start near zero, while three previously-measured areas improved. The mandatory

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-13T09:01:56.028Z",
+  "generatedAt": "2026-08-13T13:29:35.675Z",
   "provenance": {
-    "generatedAt": "2026-08-13T09:01:56.028Z",
+    "generatedAt": "2026-08-13T13:29:35.675Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "0e01d325f3b7cc6737c75986dbb977c28605eef5",
+    "laravelCommitSha": "01989e921c31ccc316d5ba7094703910b5e3656c",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "0e01d325f3b7cc6737c75986dbb977c28605eef5",
+    "webUkRepositoryCommitSha": "01989e921c31ccc316d5ba7094703910b5e3656c",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
@@ -18,7 +18,7 @@
     "laravelOpenApi": "C:\\platforms\\htdocs\\staging\\openapi.json",
     "laravelOpenApiSha256": "f452d2ee220e8deff05412bf9d2c625ab63b829d73322eed28e21d8f271af5bb",
     "laravelApiRoutes": "C:\\platforms\\htdocs\\staging\\routes\\api.php",
-    "laravelApiRoutesSha256": "ec4c71362d21cfafc4e6cf689b0ac36b20c562da4ed83790d2d0d31ba37cb35c"
+    "laravelApiRoutesSha256": "bf34424979481fd61de1ecccf48ad9566cc5c8ceede25884637d12b369fcad4a"
   },
   "summary": {
     "contracts": 696,

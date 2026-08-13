@@ -208,6 +208,36 @@
   }
 }
 
+// Filter rows on /wallet, /exchanges, /connections/network and the two /matches pages.
+//
+// 🔴 This class was used by five templates and had NO styles at all in web-uk, so the
+// filter row rendered as a default BULLETED VERTICAL LIST instead of a horizontal row
+// of filters. Blade styles it (accessible-frontend/src/app.scss) and that was never
+// ported — a visible layout regression on five pages.
+//
+// 🔴 The link padding goes BEYOND Blade deliberately, and is a recorded improvement.
+// axe flagged WCAG 2.2 AA criterion 2.5.8 (Target Size Minimum) on /wallet: the four
+// transaction filters measured 18-56px wide by **19px tall**, under the 24px minimum
+// and too close together. Blade's flex/gap rules alone do not fix the height, so
+// Blade fails this too. Small, tightly-packed targets are exactly what this frontend's
+// audience cannot use, so the links get a 24px minimum target instead of matching a
+// known-failing original.
+.nexus-alpha-filter-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(2);
+  list-style: none;
+  padding: 0;
+  margin: 0 0 govuk-spacing(6) 0;
+}
+
+.nexus-alpha-filter-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: govuk-spacing(1) govuk-spacing(2);
+}
+
 .nexus-alpha-meta {
   color: $govuk-secondary-text-colour;
 }
