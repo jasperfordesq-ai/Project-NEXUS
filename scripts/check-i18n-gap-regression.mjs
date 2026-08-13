@@ -91,6 +91,20 @@ const NO_TRANSLATE_VALUES = new Set([
   '45–54',
   '55–64',
   '∞',
+  'Google Gemini',
+  'Gmail API',
+  'GOCSPX-xxxxx',
+  'noreply@example.com',
+  'test@example.com',
+  'user@example.com',
+  'User-agent: *\nDisallow: /admin/',
+  'S Gxxxxx...',
+  'Smtpexamplecom...',
+  'Xxxxappsgoogleusercontentcom...',
+  '#',
+  '/blog/my-post',
+  'hour-timebank',
+  'Apache/Plesk',
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale
@@ -109,7 +123,7 @@ const LOCALE_IDENTITY_VALUES = new Map([
   ])],
   ['it', new Set(['{{count}} post'])],
   ['ga', new Set(['{{count}} post'])],
-  ['nl', new Set(['{{count}} check-ins', 'Café'])],
+  ['nl', new Set(['{{count}} check-ins', '{{count}} routes', 'Café'])],
   ['pt', new Set(['Total: {{count}}', '{{count}} total', '{{count}} check-ins', 'Café'])],
 ]);
 

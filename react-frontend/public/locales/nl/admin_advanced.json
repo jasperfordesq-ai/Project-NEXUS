@@ -243,7 +243,7 @@
     "match_count_one": "{{count}}-wedstrijd",
     "match_count_other": "{{count}}-overeenkomsten",
     "meilisearch_offline": "Meilisearch offline",
-    "meilisearch_online": "Meilisearch Online",
+    "meilisearch_online": "Meilisearch is online",
     "member_transactions": "Ledentransacties",
     "meta_tags_heading": "Metatags",
     "missing_indexes_hint_prefix": "Loop",
@@ -1220,7 +1220,7 @@
       "readonly": {
         "prefix": "Alleen-lezen weergave: actieknoppen zijn uitgeschakeld omdat de prerender-engine voor elke tenant werkt. Meld u aan met een",
         "suffix": "account om taken in de wachtrij te plaatsen, momentopnamen op te schonen of driftdetectie te activeren.",
-        "role": "platform super-admin"
+        "role": "platform-superbeheerder"
       },
       "tabs": {
         "analytics": "Analyses",
@@ -1804,7 +1804,7 @@
     "col_hits": "Hits",
     "direct_referrer": "Direct",
     "label_model": "Model",
-    "component_match_score_aria": "{{component}} score: {{score}}%",
+    "component_match_score_aria": "Score voor {{component}}: {{score}}%",
     "chip_pass": "Pass",
     "sitemap_heading": "Sitemap"
   },

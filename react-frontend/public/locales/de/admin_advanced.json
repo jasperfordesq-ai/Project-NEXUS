@@ -245,7 +245,7 @@
     "match_count_one": "{{count}}-Übereinstimmung",
     "match_count_other": "{{count}}stimmt überein",
     "meilisearch_offline": "Meilisearch offline",
-    "meilisearch_online": "Meilisearch Online",
+    "meilisearch_online": "Meilisearch ist online",
     "member_transactions": "Mitgliedertransaktionen",
     "meta_tags_heading": "Meta-Tags",
     "missing_indexes_hint_prefix": "Laufen",
@@ -864,7 +864,7 @@
           "started_at": "Begonnen um",
           "status": "Status",
           "tenant": "Mieter",
-          "title": "Job #{{id}}"
+          "title": "Job Nr. {{id}}"
         },
         "empty": "Keine Jobs",
         "errors": {

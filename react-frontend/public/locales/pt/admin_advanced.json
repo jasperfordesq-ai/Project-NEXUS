@@ -1003,7 +1003,7 @@
           "reset_breaker": "Reinicializar o disjuntor de segurança",
           "reset_queue": "Reparar fila travada",
           "unknown": "Ação desconhecida",
-          "auto_recache": "Auto-recache"
+          "auto_recache": "Recache automático"
         },
         "buttons": {
           "export_csv": "Exportar CSV",

@@ -197,6 +197,20 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   '45–54',
   '55–64',
   '∞',
+  'Google Gemini',
+  'Gmail API',
+  'GOCSPX-xxxxx',
+  'noreply@example.com',
+  'test@example.com',
+  'user@example.com',
+  'User-agent: *\nDisallow: /admin/',
+  'S Gxxxxx...',
+  'Smtpexamplecom...',
+  'Xxxxappsgoogleusercontentcom...',
+  '#',
+  '/blog/my-post',
+  'hour-timebank',
+  'Apache/Plesk',
 ]);
 
 // Cognates and borrowed technical terms that are valid translations only in the
@@ -214,7 +228,7 @@ const LANGUAGE_IDENTICAL_VALUE_ALLOWLIST = {
     'Score (%)',
     'Status:',
     'Tip:',
-    'platform super-admin',
+    '{{count}} routes',
     'Café',
   ]),
 };

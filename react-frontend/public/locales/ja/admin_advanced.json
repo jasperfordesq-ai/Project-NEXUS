@@ -336,7 +336,7 @@
     "warnings_count_with_value": "{{count}}の警告",
     "webhook_u_r_l_copied": "Webhook URL がコピーされました",
     "webhook_url_hint": "通知を受信するための Webhook URL",
-    "webhook_url_label": "Webhook URL",
+    "webhook_url_label": "Webhook の URL",
     "score_category": "カテゴリーマッチ",
     "score_freshness": "鮮度",
     "score_proximity": "近接性",
