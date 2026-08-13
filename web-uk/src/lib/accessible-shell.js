@@ -552,10 +552,24 @@ function buildShellLocals(req, isAuthenticated) {
       routePrefix
     ) : [],
     alphaActiveNav: activeNavForPath(req.path),
+    // 🔴 WCAG 2.2 §3.2.6 Consistent Help: a help mechanism must appear in the same
+    // relative place on EVERY page of the service. This returned [] for any render
+    // without a routed tenant — the shared root / tenant chooser — which deleted the
+    // whole footer, Help centre and Contact included. So the one page a lost visitor
+    // is most likely to be looking at offered no way to get help.
+    //
+    // The tenant-specific columns still require a tenant (their links are
+    // module/feature gated and only make sense inside a community). The SUPPORT column
+    // does not: /help, /contact, /about and /trust-and-safety all resolve un-prefixed
+    // on the shared host (verified 200; /kb redirects, which is fine), so it renders
+    // tenant-free and keeps its position at the same place in the footer.
     alphaFooterColumns: tenantSlug ? prefixFooterColumns(
       localizeFooterColumns(buildFooterColumns({ tenant: routedTenant }), t),
       routePrefix
-    ) : [],
+    ) : localizeFooterColumns(
+      buildFooterColumns({ tenant: routedTenant }).filter((column) => column.key === 'support'),
+      t
+    ),
     alphaExploreLinks: prefixNavItems(buildExploreLinks({ tenant: routedTenant, t }), routePrefix),
     currentPath,
     currentUrl,

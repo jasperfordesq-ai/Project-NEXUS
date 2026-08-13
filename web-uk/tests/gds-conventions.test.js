@@ -160,6 +160,39 @@ describe('GDS conventions', () => {
     });
   });
 
+  describe('consistent help (WCAG 2.2 3.2.6)', () => {
+    /**
+     * 🔴 A help mechanism must appear in the same relative place on EVERY page.
+     * alphaFooterColumns returned [] whenever no tenant was routed, which deleted the
+     * entire footer — Help centre and Contact included — from the shared root and
+     * tenant chooser. The one page a lost visitor is most likely to be on offered no
+     * route to help at all.
+     *
+     * The tenant-specific columns still require a tenant (module/feature gated). Only
+     * the Support column renders tenant-free, because /help, /contact, /about and
+     * /trust-and-safety all resolve un-prefixed on the shared host.
+     */
+    it('keeps the Support column when no tenant is routed', () => {
+      const { buildShellLocals } = require('../src/lib/accessible-shell');
+      const locals = buildShellLocals({ query: {}, path: '/', originalUrl: '/' }, false);
+
+      const keys = locals.alphaFooterColumns.map((c) => c.key);
+      expect(keys).toContain('support');
+
+      const support = locals.alphaFooterColumns.find((c) => c.key === 'support');
+      const hrefs = support.links.map((l) => l.href);
+      expect(hrefs).toContain('/help');
+      expect(hrefs).toContain('/contact');
+    });
+
+    it('still gates the tenant-specific columns behind a routed tenant', () => {
+      const { buildShellLocals } = require('../src/lib/accessible-shell');
+      const locals = buildShellLocals({ query: {}, path: '/', originalUrl: '/' }, false);
+      const keys = locals.alphaFooterColumns.map((c) => c.key);
+      expect(keys).not.toContain('platform');
+    });
+  });
+
   describe('rendered behaviour', () => {
     let app;
     beforeAll(() => {

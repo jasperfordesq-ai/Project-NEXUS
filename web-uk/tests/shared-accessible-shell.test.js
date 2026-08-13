@@ -795,7 +795,16 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Beta');
     expect(response.text).toContain('Give feedback');
     expect(response.text).not.toContain('href="/volunteering"');
-    expect(response.text).not.toContain('class="govuk-footer__navigation"');
+    // 🔴 Inverted 2026-08-13 for WCAG 2.2 3.2.6 Consistent Help. This used to assert
+    // the chooser had NO footer navigation, which is what deleted Help centre and
+    // Contact from the one page a lost visitor is most likely to be looking at. Blade
+    // has the same gap; GOV.UK guidance wins (owner decision). The intent of this
+    // assertion group — no TENANT-specific navigation without a tenant — is preserved
+    // by the /volunteering check above and the platform-column check below.
+    expect(response.text).toContain('class="govuk-footer__navigation"');
+    expect(response.text).toContain('href="/help"');
+    expect(response.text).toContain('href="/contact"');
+    expect(response.text).not.toContain('>Platform<');
     expect(response.text).not.toContain('Report a problem with this page');
     expect(response.text).toContain('Supporting information and attribution');
     expect(response.text).toContain('Project NEXUS is free software licensed under AGPL-3.0-or-later.');
@@ -26287,7 +26296,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('About this event');
     expect(response.text).not.toContain('Date and time');
     expect(response.text).not.toContain('Capacity');
-    expect(response.text).not.toContain('govuk-grid-column-one-third');
+    // 🔴 Scoped to <main>. This assertion is about the event page's READING COLUMN
+    // having no one-third sidebar; the FOOTER's own sections legitimately use
+    // govuk-grid-column-one-third, so a page-wide check started failing on
+    // 2026-08-13 when the Support footer column became visible without a routed
+    // tenant (WCAG 2.2 3.2.6 Consistent Help).
+    expect(/<main[^>]*>([\s\S]*?)<\/main>/.exec(response.text)[1])
+      .not.toContain('govuk-grid-column-one-third');
     expect(response.text).not.toContain('app-sidebar-card');
     expect(response.text).not.toContain('No RSVPs yet. Be the first to respond!');
     expect(response.text).toContain('href="/events/42/people"');
@@ -26561,7 +26576,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('rel="next"');
     expect(response.text).toContain('/events/42?view=calendar&amp;attendees_cursor=next%2Bpage%2F2%3D');
     expect(api.getEventRsvps).toHaveBeenCalledWith('test-token', '42', { status: 'all', perPage: 50, cursor: 'first+page/1=' });
-    expect(response.text).not.toContain('govuk-grid-column-one-third');
+    // 🔴 Scoped to <main>. This assertion is about the event page's READING COLUMN
+    // having no one-third sidebar; the FOOTER's own sections legitimately use
+    // govuk-grid-column-one-third, so a page-wide check started failing on
+    // 2026-08-13 when the Support footer column became visible without a routed
+    // tenant (WCAG 2.2 3.2.6 Consistent Help).
+    expect(/<main[^>]*>([\s\S]*?)<\/main>/.exec(response.text)[1])
+      .not.toContain('govuk-grid-column-one-third');
     expect(response.text).not.toContain('app-attendee-list');
   });
 
