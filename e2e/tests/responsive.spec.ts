@@ -351,11 +351,15 @@ test.describe('Responsive Design', () => {
   /**
    * 🔴 The landscape navigation blackout, pinned at the widths where it happened.
    *
-   * Reported by James Ryan (TBUK) on 2026-07-14: the bottom bar "sometimes
-   * overlaps or obscures content ... so when completing a form, the navigation
-   * bar can cover the Submit, Continue, or other action button", and it was worse
-   * in landscape. He was still carrying it in his 2026-08-10 assessment as
-   * NFR-02, "bottom navigation can misalign and cover submit controls".
+   * Reported by a partner organisation's technical reviewer on 2026-07-14: on a
+   * phone the bottom bar could sit over page content and cover the submit control
+   * at the foot of a form, and it was worse in landscape. Still listed as
+   * outstanding in their follow-up review a month later, which is what prompted
+   * this test.
+   *
+   * (Deliberately unattributed. The report arrived by email under a
+   * confidentiality footer, and this file is in a public repository — the
+   * engineering value is in the widths and the cause, not in who sent it.)
    *
    * Root cause (fixed in b27d6eedc): the bottom tab bar hid at >=768px while the
    * desktop nav only appears at >=1024px, and the hamburger is guests-only — so a

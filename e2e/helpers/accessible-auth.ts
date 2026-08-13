@@ -79,9 +79,9 @@ export const ALPHA_PUBLIC_PAGES = [
  * Pages behind authentication (verified 302 unauthenticated).
  *
  * The first six were in the old list and were silently scanning /login. The
- * last four were absent entirely, which is why James Ryan's J-18 journey
- * ("browse post; open details; message; confirm; complete; review balance")
- * had no accessibility coverage on the pages that actually carry it.
+ * last four were absent entirely, which is why the core member exchange journey
+ * — browse a post, open it, message, confirm, complete, review balance — had no
+ * accessibility coverage on the pages that actually carry it.
  */
 export const ALPHA_MEMBER_PAGES = [
   // Guardian arrangements: the screen where a member agrees to, refuses, or

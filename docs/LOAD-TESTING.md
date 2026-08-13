@@ -11,8 +11,8 @@ Last reviewed: 2026-08-12
 
 ## Why this exists
 
-Timebanking UK's supplier due diligence asked for "load-testing evidence" and
-there was none. Not a partial answer — none at all.
+A partner organisation's technical review asked for load-testing evidence and there
+was none. Not a partial answer — none at all.
 
 That mattered because the platform already records per-request performance in
 production (see [ARCHITECTURE.md](ARCHITECTURE.md)), which tells you how it

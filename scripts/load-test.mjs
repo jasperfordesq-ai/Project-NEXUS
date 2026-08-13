@@ -7,8 +7,8 @@
 /**
  * Load test harness.
  *
- * Written because Timebanking UK's supplier due diligence (SQ-013) asks for
- * "load-testing evidence" and there was none — not a partial answer, none at all.
+ * Written because a partner organisation's technical review asked for
+ * load-testing evidence and there was none — not a partial answer, none at all.
  * Recording per-request performance in production tells you how the platform
  * behaves at today's volume; it says nothing about what happens at ten or a
  * hundred times that, which is the question a national rollout actually poses.
