@@ -322,7 +322,7 @@
     "pillar_relevance": "Pertinence",
     "pillar_feasibility": "Faisabilité",
     "pillar_trust": "Confiance",
-    "col_distance_km": "Distance Km",
+    "col_distance_km": "Distance (km)",
     "col_score": "Score",
     "score_excellent": "Excellent",
     "distance": "Distance"

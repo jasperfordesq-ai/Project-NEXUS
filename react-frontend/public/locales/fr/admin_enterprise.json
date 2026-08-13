@@ -1103,7 +1103,7 @@
       "wallet_transfer": "Transférer des crédits de portefeuille",
       "wallet_view": "Afficher les portefeuilles"
     },
-    "total_value": "Total:{{value}}",
+    "total_value": "Total : {{value}}",
     "value_separator": " / ",
     "col_current_version": "Version actuelle",
     "col_version_count": "Versions",
