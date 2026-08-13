@@ -24142,6 +24142,24 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).not.toContain('name="starts_at_time"');
     expect(csrfMatch).not.toBeNull();
 
+    // 🔴 Venue accessibility must be capturable AT CREATION, not only when editing.
+    // This form rendered none of these fields until 2026-08-13, so an organiser on
+    // the accessible frontend could not record step-free access, an accessible
+    // toilet, a hearing loop, a quiet space, seating, parking or an assistance
+    // contact — precisely what a disabled member needs to decide whether they can
+    // attend. The POST already forwarded them, so the data was dropped only because
+    // nothing asked for it. Asserted field by field: the recurring-edit form has
+    // carried these all along, so a shared-partial regression would otherwise stay
+    // invisible here.
+    for (const field of [
+      'accessibility_step_free', 'accessibility_toilet', 'accessibility_hearing_loop',
+      'accessibility_quiet_space', 'accessibility_seating', 'accessibility_parking',
+      'accessibility_parking_details', 'accessibility_transit_details',
+      'accessibility_assistance_contact', 'accessibility_notes'
+    ]) {
+      expect(page.text).toContain(`name="${field}"`);
+    }
+
     const response = await agent
       .post('/events/new')
       .set('Cookie', `token=${encodeURIComponent(signedToken)}`)

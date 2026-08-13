@@ -568,7 +568,7 @@ router.get('/', asyncRoute(withTokenRefresh(async (req, res) => {
   const statusMessage = feedIndexStatusMessage(status, req.t || res.locals.t);
 
   res.render('feed/index', {
-    title: 'Feed',
+    title: res.locals.t('govuk_alpha.feed.title'),
     posts,
     currentUserId,
     typeOptions,

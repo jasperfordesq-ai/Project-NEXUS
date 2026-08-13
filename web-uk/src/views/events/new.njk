@@ -8,6 +8,7 @@
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
@@ -315,6 +316,13 @@
             </div>
           </div>
         </fieldset>
+
+        {# Venue accessibility — the create form rendered none of this until
+           2026-08-13, so the answers could never be captured at the point the
+           event is made. Shared with the recurring-edit form so the two cannot
+           drift. `values` carries a rejected submission back so a validation
+           error does not wipe the organiser's answers. #}
+        {{ venueAccessibilityFields(t, values) }}
 
         {{ govukButton({
           text: t("actions.create_event"),

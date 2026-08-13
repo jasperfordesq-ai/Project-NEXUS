@@ -466,7 +466,7 @@ router.get('/', asyncRoute(async (req, res) => {
     .filter((challenge) => challenge.id !== null);
 
   return res.render('ideation/index', {
-    title: 'Ideas',
+    title: res.locals.t('govuk_alpha.ideation.title'),
     activeNav: 'explore',
     challenges,
     activeStatus: status,

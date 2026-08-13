@@ -7,7 +7,12 @@
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ tenantName }}</span>
-  <h1 class="govuk-heading-xl">Federation</h1>
+  {# 🔴 Was the hardcoded English word "Federation". Blade renders
+     govuk_alpha.federation.title — "Partner communities" — which is both the
+     member-facing wording and translated: in Irish this heading read "Federation"
+     here and "Pobail chomhpháirtí" on Blade. "Federation" is our internal name for
+     the feature, not a term to show members. #}
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha.federation.title") }}</h1>
   <p class="govuk-body-l">
     {% if stats.optedIn %}
       Discover and collaborate with partner communities in the wider federation network.

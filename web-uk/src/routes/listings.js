@@ -1249,7 +1249,7 @@ router.get('/', asyncRoute(async (req, res) => {
   if (pagination.cursor) nextQuery.set('cursor', pagination.cursor);
 
   res.render('listings/index', {
-    title: 'Listings',
+    title: res.locals.t('govuk_alpha.listings.title'),
     listings,
     categories,
     pagination,
@@ -1268,7 +1268,7 @@ router.get('/', asyncRoute(async (req, res) => {
 router.get('/new', requireAuth, asyncRoute(async (req, res) => {
   const replay = consumeListingFormReplay(req, null);
   res.render('listings/form', await listingFormViewData(req, {
-    title: 'Create listing',
+    title: res.locals.t('govuk_alpha.listings.create.title'),
     listing: null,
     values: replay,
     errors: null,
@@ -1287,7 +1287,7 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
   if (validation.errors.length > 0) {
     await removeUploadedFile(image);
     return res.render('listings/form', await listingFormViewData(req, {
-      title: 'Create listing',
+      title: res.locals.t('govuk_alpha.listings.create.title'),
       listing: null,
       values,
       ...validation
@@ -1327,7 +1327,7 @@ router.post('/new', requireAuth, audit.listingCreate(), asyncRoute(async (req, r
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
       const state = listingFormErrorState(error, 'Unable to create listing');
       return res.render('listings/form', await listingFormViewData(req, {
-        title: 'Create listing',
+        title: res.locals.t('govuk_alpha.listings.create.title'),
         listing: null,
         values,
         ...state

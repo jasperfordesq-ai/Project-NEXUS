@@ -1,0 +1,68 @@
+{#
+  Copyright © 2024-2026 Jasper Ford
+  SPDX-License-Identifier: AGPL-3.0-or-later
+  Author: Jasper Ford
+  See NOTICE file for attribution and acknowledgements.
+
+  Venue accessibility fields, shared by the event CREATE and recurring-EDIT forms.
+  Mirrors accessible-frontend/views/partials/event-venue-accessibility-fields.blade.php,
+  which is a partial for the same reason: these fields must not drift between the
+  form that creates an event and the form that edits one.
+
+  🔴 The create form rendered NONE of these until 2026-08-13, so an organiser using
+  the accessible frontend could not record step-free access, an accessible toilet, a
+  hearing loop, a quiet space, seating, parking or an assistance contact — the exact
+  information a disabled member needs in order to decide whether they can attend.
+  The POST handler already forwarded these fields (it spreads req.body), so the data
+  was being dropped purely because nothing asked for it.
+
+  Callers pass `access`: for edit, the normalised event.accessibility object; for
+  create, the resubmitted `values` so a validation error does not wipe the answers.
+  Every value is optional and falls back to "unknown"/empty.
+#}
+{% macro venueAccessibilityFields(t, access) %}
+  <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="venue-accessibility-hint">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("event_accessibility.form.title") }}</h2></legend>
+    <div id="venue-accessibility-hint" class="govuk-hint">{{ t("event_accessibility.form.hint") }}</div>
+    {% set a = access or {} %}
+    {% set accessFields = [
+      ['accessibility_step_free', 'step_free_access', a.stepFree or a.accessibility_step_free],
+      ['accessibility_toilet', 'accessible_toilet', a.toilet or a.accessibility_toilet],
+      ['accessibility_hearing_loop', 'hearing_loop', a.hearingLoop or a.accessibility_hearing_loop],
+      ['accessibility_quiet_space', 'quiet_space', a.quietSpace or a.accessibility_quiet_space],
+      ['accessibility_seating', 'seating_available', a.seating or a.accessibility_seating],
+      ['accessibility_parking', 'accessible_parking', a.parking or a.accessibility_parking]
+    ] %}
+    <div class="govuk-grid-row">
+      {% for field in accessFields %}
+        <div class="govuk-grid-column-one-half"><div class="govuk-form-group">
+          <label class="govuk-label" for="{{ field[0] }}">{{ t("event_accessibility.features." + field[1]) }}</label>
+          <select class="govuk-select" id="{{ field[0] }}" name="{{ field[0] }}">
+            {% for status in ['unknown', 'yes', 'no'] %}<option value="{{ status }}"{% if status == (field[2] or 'unknown') %} selected{% endif %}>{{ t("event_accessibility.status." + status) }}</option>{% endfor %}
+          </select>
+        </div></div>
+      {% endfor %}
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="accessibility_parking_details">{{ t("event_accessibility.form.parking_details") }}</label>
+      <div id="accessibility-parking-details-hint" class="govuk-hint">{{ t("event_accessibility.form.parking_details_hint") }}</div>
+      <textarea class="govuk-textarea" id="accessibility_parking_details" name="accessibility_parking_details" rows="3" maxlength="1000" aria-describedby="accessibility-parking-details-hint">{{ a.parkingDetails or a.accessibility_parking_details or "" }}</textarea>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="accessibility_transit_details">{{ t("event_accessibility.form.transit_details") }}</label>
+      <div id="accessibility-transit-details-hint" class="govuk-hint">{{ t("event_accessibility.form.transit_details_hint") }}</div>
+      <textarea class="govuk-textarea" id="accessibility_transit_details" name="accessibility_transit_details" rows="3" maxlength="1000" aria-describedby="accessibility-transit-details-hint">{{ a.transitDetails or a.accessibility_transit_details or "" }}</textarea>
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="accessibility_assistance_contact">{{ t("event_accessibility.form.assistance_contact") }}</label>
+      <div id="accessibility-assistance-contact-hint" class="govuk-hint">{{ t("event_accessibility.form.assistance_contact_hint") }}</div>
+      <input class="govuk-input" id="accessibility_assistance_contact" name="accessibility_assistance_contact" type="text" maxlength="500" value="{{ a.assistanceContact or a.accessibility_assistance_contact or "" }}" aria-describedby="accessibility-assistance-contact-hint">
+    </div>
+    <div class="govuk-form-group">
+      <label class="govuk-label" for="accessibility_notes">{{ t("event_accessibility.form.notes") }}</label>
+      <div id="accessibility-notes-hint" class="govuk-hint">{{ t("event_accessibility.form.notes_hint") }}</div>
+      <textarea class="govuk-textarea" id="accessibility_notes" name="accessibility_notes" rows="5" maxlength="4000" aria-describedby="accessibility-notes-hint">{{ a.notes or a.accessibility_notes or "" }}</textarea>
+    </div>
+    <p class="govuk-body-s">{{ t("event_accessibility.form.privacy_note") }}</p>
+  </fieldset>
+{% endmacro %}

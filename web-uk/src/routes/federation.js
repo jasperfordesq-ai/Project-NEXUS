@@ -828,7 +828,9 @@ router.get('/', asyncRoute(async (req, res) => {
   const partnerTotal = numberOrZero(partnerMeta.total || (partnerData && partnerData.total) || partners.length);
 
   return res.render('federation/index', {
-    title: 'Federation',
+    // 🔴 Was hardcoded English. This is the browser tab name and what a screen
+    // reader announces as the page, so it must translate like Blade's does.
+    title: res.locals.t('govuk_alpha.federation.title'),
     activeNav: 'explore',
     federationActiveTab: 'overview',
     stats: {

@@ -3204,7 +3204,7 @@ router.get('/', asyncRoute(async (req, res) => {
     : '';
 
   res.render('events/index', {
-    title: 'Events',
+    title: res.locals.t('govuk_alpha.events.title'),
     events,
     loadError,
     categories,
@@ -3243,7 +3243,7 @@ router.get('/new', requireAuth, asyncRoute(async (req, res) => {
   const categories = collectionFrom(categoriesResult);
 
   res.render('events/new', {
-    title: 'Create an event',
+    title: res.locals.t('govuk_alpha.events.create_title'),
     categories,
     setupErrorMessage,
     csrfToken: req.csrfToken ? req.csrfToken() : ''
@@ -3306,7 +3306,7 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
     }
 
     return res.render('events/new', {
-      title: 'Create an event',
+      title: res.locals.t('govuk_alpha.events.create_title'),
       errors: errorList,
       values,
       categories,

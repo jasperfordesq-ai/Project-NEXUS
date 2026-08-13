@@ -947,7 +947,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
   if (nextCursor) nextQuery.set('cursor', nextCursor);
 
   res.render('groups/index', {
-    title: 'Groups',
+    title: res.locals.t('govuk_alpha.groups.title'),
     groups,
     searchQuery,
     groupsFilter,
@@ -963,7 +963,7 @@ router.get('/', requireAuth, asyncRoute(async (req, res) => {
 // Create group form
 router.get('/new', requireAuth, (req, res) => {
   res.render('groups/new', {
-    title: 'Create a group',
+    title: res.locals.t('govuk_alpha.groups.create.title'),
     createFailed: trimmed(req.query.status) === 'group-create-failed',
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -988,7 +988,7 @@ router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res
   if (errors.length > 0) {
     await removeUploadedFile(cover);
     return res.render('groups/new', {
-      title: 'Create a group',
+      title: res.locals.t('govuk_alpha.groups.create.title'),
       errors,
       fieldErrors: groupFieldErrors(errors),
       values: { name, description, location, visibility, tags },
@@ -1034,7 +1034,7 @@ router.post('/new', requireAuth, audit.groupCreate(), asyncRoute(async (req, res
     if (error instanceof ApiError && error.status !== 401) {
       const formErrors = groupFormErrors(error, 'Unable to create group');
       return res.render('groups/new', {
-        title: 'Create a group',
+        title: res.locals.t('govuk_alpha.groups.create.title'),
         errors: formErrors,
         fieldErrors: groupFieldErrors(formErrors),
         values: { name, description, location, visibility, tags },

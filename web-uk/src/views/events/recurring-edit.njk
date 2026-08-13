@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha_events.common.back_to_event") }}</a>
@@ -117,49 +118,8 @@
           </div>
         </fieldset>
 
-        <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="venue-accessibility-hint">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("event_accessibility.form.title") }}</h2></legend>
-          <div id="venue-accessibility-hint" class="govuk-hint">{{ t("event_accessibility.form.hint") }}</div>
-          {% set accessFields = [
-            ['accessibility_step_free', 'step_free_access', event.accessibility.stepFree],
-            ['accessibility_toilet', 'accessible_toilet', event.accessibility.toilet],
-            ['accessibility_hearing_loop', 'hearing_loop', event.accessibility.hearingLoop],
-            ['accessibility_quiet_space', 'quiet_space', event.accessibility.quietSpace],
-            ['accessibility_seating', 'seating_available', event.accessibility.seating],
-            ['accessibility_parking', 'accessible_parking', event.accessibility.parking]
-          ] %}
-          <div class="govuk-grid-row">
-            {% for field in accessFields %}
-              <div class="govuk-grid-column-one-half"><div class="govuk-form-group">
-                <label class="govuk-label" for="{{ field[0] }}">{{ t("event_accessibility.features." + field[1]) }}</label>
-                <select class="govuk-select" id="{{ field[0] }}" name="{{ field[0] }}">
-                  {% for status in ['unknown', 'yes', 'no'] %}<option value="{{ status }}"{% if status == field[2] %} selected{% endif %}>{{ t("event_accessibility.status." + status) }}</option>{% endfor %}
-                </select>
-              </div></div>
-            {% endfor %}
-          </div>
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="accessibility_parking_details">{{ t("event_accessibility.form.parking_details") }}</label>
-            <div id="accessibility-parking-details-hint" class="govuk-hint">{{ t("event_accessibility.form.parking_details_hint") }}</div>
-            <textarea class="govuk-textarea" id="accessibility_parking_details" name="accessibility_parking_details" rows="3" maxlength="1000" aria-describedby="accessibility-parking-details-hint">{{ event.accessibility.parkingDetails }}</textarea>
-          </div>
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="accessibility_transit_details">{{ t("event_accessibility.form.transit_details") }}</label>
-            <div id="accessibility-transit-details-hint" class="govuk-hint">{{ t("event_accessibility.form.transit_details_hint") }}</div>
-            <textarea class="govuk-textarea" id="accessibility_transit_details" name="accessibility_transit_details" rows="3" maxlength="1000" aria-describedby="accessibility-transit-details-hint">{{ event.accessibility.transitDetails }}</textarea>
-          </div>
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="accessibility_assistance_contact">{{ t("event_accessibility.form.assistance_contact") }}</label>
-            <div id="accessibility-assistance-contact-hint" class="govuk-hint">{{ t("event_accessibility.form.assistance_contact_hint") }}</div>
-            <input class="govuk-input" id="accessibility_assistance_contact" name="accessibility_assistance_contact" type="text" maxlength="500" value="{{ event.accessibility.assistanceContact }}" aria-describedby="accessibility-assistance-contact-hint">
-          </div>
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="accessibility_notes">{{ t("event_accessibility.form.notes") }}</label>
-            <div id="accessibility-notes-hint" class="govuk-hint">{{ t("event_accessibility.form.notes_hint") }}</div>
-            <textarea class="govuk-textarea" id="accessibility_notes" name="accessibility_notes" rows="5" maxlength="4000" aria-describedby="accessibility-notes-hint">{{ event.accessibility.notes }}</textarea>
-          </div>
-          <p class="govuk-body-s">{{ t("event_accessibility.form.privacy_note") }}</p>
-        </fieldset>
+        {# Shared with the event CREATE form so the two cannot drift. #}
+        {{ venueAccessibilityFields(t, event.accessibility) }}
 
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.events.create_capacity_title") }}</h2></legend>
