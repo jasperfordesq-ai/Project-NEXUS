@@ -1,5 +1,5 @@
 {
-  "breadcrumb": "Breadcrumb",
+  "breadcrumb": "Percorso di navigazione",
   "title": "Base di Conoscenza",
   "description": "Trova risposte, guide e risorse utili",
   "search_placeholder": "Cerca nella base di conoscenza...",
@@ -54,14 +54,14 @@
   "attachments": "Allegati",
   "category_tabs_aria": "Categorie della base di conoscenza",
   "loading": "Caricamento della base di conoscenza...",
-  "article_count_one": "{{count}} article",
-  "article_count_other": "{{count}} articles",
-  "category_count_one": "{{count}} category",
-  "category_count_other": "{{count}} categories",
-  "search_results": "{{count}} results for \"{{query}}\"",
-  "searching": "Searching...",
-  "search_results_many": "{{count}} results for \"{{query}}\"",
-  "article_count_many": "{{count}} articles",
+  "article_count_one": "{{count}} articolo",
+  "article_count_other": "{{count}} articoli",
+  "category_count_one": "{{count}} categoria",
+  "category_count_other": "{{count}} categorie",
+  "search_results": "{{count}} risultati per \"{{query}}\"",
+  "searching": "Ricerca in corso...",
+  "search_results_many": "{{count}} risultati per \"{{query}}\"",
+  "article_count_many": "{{count}} articoli",
   "views_many": "{{count}} visualizzazioni",
-  "category_count_many": "{{count}} categories"
+  "category_count_many": "{{count}} categorie"
 }

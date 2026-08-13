@@ -1,5 +1,5 @@
 {
-  "breadcrumb": "Breadcrumb",
+  "breadcrumb": "Brotkrümelnavigation",
   "title": "Wissensdatenbank",
   "description": "Antworten, Anleitungen und hilfreiche Ressourcen finden",
   "search_placeholder": "Wissensdatenbank durchsuchen...",
@@ -54,10 +54,10 @@
   "attachments": "Anhänge",
   "category_tabs_aria": "Kategorien der Wissensdatenbank",
   "loading": "Wissensdatenbank wird geladen...",
-  "article_count_one": "{{count}} article",
-  "article_count_other": "{{count}} articles",
-  "category_count_one": "{{count}} category",
-  "category_count_other": "{{count}} categories",
-  "search_results": "{{count}} results for \"{{query}}\"",
-  "searching": "Searching..."
+  "article_count_one": "{{count}} Artikel",
+  "article_count_other": "{{count}} Artikel",
+  "category_count_one": "{{count}} Kategorie",
+  "category_count_other": "{{count}} Kategorien",
+  "search_results": "{{count}} Ergebnisse für „{{query}}“",
+  "searching": "Suche läuft..."
 }

@@ -220,7 +220,7 @@ const LANGUAGE_IDENTICAL_VALUE_ALLOWLIST = {
   // 'Café' is the native word in these three, not a copied English value — the
   // curation test finds no locale file where they render English 'Café' as
   // anything else.
-  fr: new Set(['Article 9.', 'page.', 'Café']),
+  fr: new Set(['Article 9.', 'page.', '{{count}} article', 'Café']),
   pt: new Set(['Café']),
   nl: new Set([
     'Ortsteil (district)',

@@ -119,6 +119,7 @@ const LOCALE_IDENTITY_VALUES = new Map([
     'Participants ({{count}})',
     '{{count}} votes',
     '{{count}} articles',
+    '{{count}} article',
     'Café',
   ])],
   ['it', new Set(['{{count}} post'])],
