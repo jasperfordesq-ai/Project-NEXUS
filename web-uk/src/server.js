@@ -886,6 +886,24 @@ app.post('/cookie-consent', doubleCsrfProtection, (req, res) => {
   return redirectTo(res, returnPath);
 });
 
+// 🔴 "Hide cookie message" — GDS specifies a BUTTON for this control, so it needs a
+// route to submit to. Previously the confirmation banner offered a plain link back to
+// the same URL, which announces as navigation rather than as dismissing a message.
+//
+// It clears any residual confirmation flash explicitly. In practice the flash is
+// already consumed by the render that displayed it (the shell middleware deletes it on
+// read), so this is belt-and-braces rather than the only thing dismissing the banner —
+// but it makes the control's contract honest: pressing it always ends with no
+// confirmation showing. Works with JavaScript disabled, like the rest of the banner.
+app.post('/cookie-consent/hide', doubleCsrfProtection, (req, res) => {
+  if (req.session && req.session.alphaCookieChoice) {
+    delete req.session.alphaCookieChoice;
+  }
+
+  const returnPath = safeLocalPath(req.body.return, '');
+  return redirectTo(res, returnPath || '/');
+});
+
 app.get('/account', async (req, res) => {
   const token = req.signedCookies?.token;
 

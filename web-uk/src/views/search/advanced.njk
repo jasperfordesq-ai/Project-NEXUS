@@ -5,6 +5,8 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
+  {# GDS: back link at the top of a question page, consistent position. #}
+  <a class="govuk-back-link" href="{{ urlFor('/search') }}">{{ t("govuk_alpha_search.back_to_search") }}</a>
   {% if status == 'search-saved' or status == 'search-deleted' %}
     <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="search-status-title">
       <div class="govuk-notification-banner__header">

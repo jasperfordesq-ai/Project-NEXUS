@@ -26,8 +26,22 @@
             </div>
           </div>
         </div>
+        {#
+          🔴 GDS specifies a BUTTON here ("Hide cookie message"), not a link. The
+          distinction is not cosmetic: a link announces as a navigation and re-requests
+          the page, while this control's job is to dismiss a message. Screen-reader and
+          keyboard users are told what the control does by its role.
+
+          Kept as a real form submit so it still works with JavaScript disabled — the
+          POST clears the one-shot confirmation state server-side and redirects back,
+          which is also why this is a form rather than a JS dismiss.
+        #}
         <div class="govuk-button-group">
-          <a class="govuk-link" href="{{ currentUrl }}">{{ t("cookie_banner.hide") }}</a>
+          <form method="post" action="{{ urlFor('/cookie-consent/hide') }}">
+            <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="hidden" name="return" value="{{ currentUrl }}">
+            <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("cookie_banner.hide") }}</button>
+          </form>
         </div>
       </div>
     {% else %}

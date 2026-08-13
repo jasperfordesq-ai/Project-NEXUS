@@ -5,7 +5,8 @@
 
 {% extends "layouts/base.njk" %}
 
-{% block pageTitle %}{{ t("auth.two_factor_title") if show2fa else t("auth.login_title") }} - {{ serviceName }}{% endblock %}
+{# titleErrorPrefix comes from layouts/base.njk — keep it on any pageTitle override. #}
+{% block pageTitle %}{{ titleErrorPrefix }}{{ t("auth.two_factor_title") if show2fa else t("auth.login_title") }} - {{ serviceName }}{% endblock %}
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}

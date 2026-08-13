@@ -127,7 +127,12 @@ describe('Laravel-first auth localization', () => {
     }
     expect(source).not.toContain('titleText: "There is a problem"');
     if (templateName === 'register.njk') {
-      expect(source).toContain('{% block pageTitle %}{{ title }} - {{ serviceName }}{% endblock %}');
+      // 🔴 titleErrorPrefix is required on every pageTitle override. layouts/base.njk
+      // computes the GDS "Error: " title prefix for validation failures; a template
+      // that overrides the block without re-emitting the prefix silently loses it on
+      // exactly the pages that need it. Keep it in this assertion so a future override
+      // cannot drop it unnoticed.
+      expect(source).toContain('{% block pageTitle %}{{ titleErrorPrefix }}{{ title }} - {{ serviceName }}{% endblock %}');
       expect(source).toContain('<h1 class="govuk-heading-xl">{{ title }}</h1>');
     }
   });

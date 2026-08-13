@@ -1,0 +1,160 @@
+// Copyright © 2024-2026 Jasper Ford
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Author: Jasper Ford
+// See NOTICE file for attribution and acknowledgements.
+
+/**
+ * GOV.UK Design System conventions that are easy to lose and hard to notice.
+ *
+ * Added 2026-08-13 after a GDS-standards audit. Each test here pins a convention that
+ * was ABSENT and is now implemented, so it cannot silently regress.
+ */
+const fs = require('node:fs');
+const path = require('node:path');
+const request = require('supertest');
+
+jest.mock('../src/lib/api', () => ({
+  ApiError: class ApiError extends Error {
+    constructor(message, status, data = {}) {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+      this.data = data;
+    }
+  },
+  ApiOfflineError: class ApiOfflineError extends Error {},
+  getTenantBootstrap: jest.fn().mockResolvedValue({
+    data: { id: 2, name: 'Test Community', slug: 'test', modules: {}, features: {} },
+  }),
+  submitContactMessage: jest.fn(),
+}));
+
+process.env.COOKIE_SECRET = 'test-secret-at-least-32-characters';
+process.env.SESSION_SECRET = 'test-session-secret-32-chars!!';
+process.env.NODE_ENV = 'test';
+
+const VIEWS = path.join(__dirname, '..', 'src', 'views');
+const read = (p) => fs.readFileSync(path.join(VIEWS, p), 'utf8');
+
+describe('GDS conventions', () => {
+  describe('"Error: " page-title prefix (validation failures)', () => {
+    /**
+     * 🔴 GDS: a form page re-rendering with a validation error must prefix its <title>
+     * with "Error: " so a screen reader announces the failure before anything else.
+     * Neither accessible frontend did this — a shared gap with Blade, fixed because
+     * GOV.UK guidance wins (owner decision 2026-08-13).
+     */
+    it('computes the prefix centrally from the validation locals actually in use', () => {
+      const base = read('layouts/base.njk');
+      expect(base).toContain('{% set pageValidationFailed =');
+      // The four validation surfaces in use across the app.
+      for (const local of ['pageHasErrors', 'hasErrors', 'error', 'errors | length']) {
+        expect(base).toContain(local);
+      }
+      // Translated, not hardcoded English.
+      expect(base).toContain("t('states.error_prefix')");
+      // Actually applied to the title.
+      expect(base).toContain('{{ titleErrorPrefix }}{{ resolvedPageTitle }}');
+    });
+
+    /**
+     * 🔴 `errorMessage` must NOT trigger the prefix. It drives NOTIFICATION banners for
+     * page-level failures ("we could not load…") on ~24 pages, not field validation.
+     * Including it would announce "Error:" on pages with nothing to correct.
+     */
+    it('does not treat notification-banner errorMessage as a validation failure', () => {
+      const base = read('layouts/base.njk');
+      const expr = /\{% set pageValidationFailed =[^%]*%\}/.exec(base);
+      expect(expr).not.toBeNull();
+      expect(expr[0]).not.toContain('errorMessage');
+    });
+
+    /**
+     * Every template that overrides the pageTitle block must re-emit the prefix, or it
+     * is silently lost on exactly the pages that need it.
+     */
+    it('keeps the prefix on all four pageTitle overrides', () => {
+      for (const file of ['login.njk', 'register.njk', 'forgot-password.njk', 'reset-password.njk']) {
+        const source = read(file);
+        expect(source).toMatch(/\{%\s*block pageTitle\s*%\}\{\{ titleErrorPrefix \}\}/);
+      }
+    });
+  });
+
+  describe('back links on question pages', () => {
+    /**
+     * GDS: a question page offers a back link in a consistent position at the top.
+     * Reuses only EXISTING translated keys — new keys are blocked on Irish translation.
+     */
+    it('gives the question pages that lacked one a back link', () => {
+      expect(read('reset-password.njk')).toContain('govuk-back-link');
+      expect(read('search/advanced.njk')).toContain('govuk-back-link');
+    });
+
+    /**
+     * 🔴 Deliberately absent, do not "fix": sign-in step 1 has no previous step, so a
+     * back link there would point nowhere meaningful. The 2FA step already has one.
+     * Registration likewise has no previous step — its "already have an account" link
+     * is a different affordance.
+     */
+    it('does not add a back link to pages with no previous step', () => {
+      const login = read('login.njk');
+      // The only back link in login.njk is inside the 2FA branch.
+      const beforeTwoFactor = login.split('show2fa')[0];
+      expect(beforeTwoFactor).not.toContain('govuk-back-link');
+    });
+  });
+
+  describe('cookie banner', () => {
+    /**
+     * 🔴 GDS specifies a BUTTON for "Hide cookie message", not a link: the control
+     * dismisses a message, it does not navigate. Must keep working without JavaScript,
+     * so it is a real form submit rather than a JS dismiss.
+     */
+    it('hides the confirmation with a button, submitted without JavaScript', () => {
+      const banner = read('partials/cookie-banner.njk');
+      expect(banner).toContain('/cookie-consent/hide');
+      expect(banner).toMatch(/<button type="submit"[^>]*>\{\{ t\("cookie_banner\.hide"\)/);
+      expect(banner).not.toMatch(/<a class="govuk-link" href="\{\{ currentUrl \}\}">\{\{ t\("cookie_banner\.hide"\)/);
+    });
+
+    it('serves the hide route with CSRF protection and a safe local redirect', () => {
+      const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.js'), 'utf8');
+      const route = /app\.post\('\/cookie-consent\/hide'[\s\S]{0,600}?\}\);/.exec(server);
+      expect(route).not.toBeNull();
+      expect(route[0]).toContain('doubleCsrfProtection');
+      expect(route[0]).toContain('safeLocalPath');
+    });
+  });
+
+  describe('rendered behaviour', () => {
+    let app;
+    beforeAll(() => {
+      jest.resetModules();
+      app = require('../src/server');
+    });
+
+    /**
+     * End-to-end proof rather than source inspection: an empty contact submission must
+     * come back with both the error summary AND the prefixed title.
+     */
+    it('prefixes the title when the contact form comes back with errors', async () => {
+      const agent = request.agent(app);
+      const page = await agent.get('/test/accessible/contact');
+      const csrf = /name="_csrf" value="([^"]+)"/.exec(page.text);
+      expect(csrf).not.toBeNull();
+
+      const posted = await agent
+        .post('/test/accessible/contact')
+        .type('form')
+        .send({ _csrf: csrf[1] });
+
+      // POST-redirect-GET: follow to the page that renders the errors.
+      const location = posted.headers.location || '/test/accessible/contact';
+      const shown = await agent.get(location.replace(/^https?:\/\/[^/]+/, ''));
+
+      expect(shown.text).toContain('govuk-error-summary');
+      expect(shown.text).toMatch(/<title>Error: /);
+    });
+  });
+});

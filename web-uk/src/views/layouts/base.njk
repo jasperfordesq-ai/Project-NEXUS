@@ -31,11 +31,48 @@
 {% set shellFeedback = t('feedback') if t else 'Give feedback' %}
 {% set resolvedPageTitle = t(titleKey, titleReplacements) if titleKey and t else title %}
 
+{#
+  🔴 GDS convention: when a form page re-renders WITH a validation error, the <title>
+  must be prefixed "Error: " so a screen reader announces the failure first, before the
+  user hunts for it. See https://design-system.service.gov.uk/components/error-message.
+  Neither accessible frontend did this — it is a shared gap with Blade, fixed here
+  because GOV.UK guidance wins (owner decision 2026-08-13).
+
+  Derived centrally rather than set at ~30 error re-render sites, because those sites
+  signal errors through at least eight different local names and a hand-added boolean
+  would silently be missed on the next new form. The four checked below are the
+  VALIDATION surfaces actually used:
+    errors.length  — the error list most forms pass to govukErrorSummary
+    hasErrors      — contact.njk, where `errors` is a keyed object with no .length
+    error          — login.njk and five others, a single message string
+    pageHasErrors  — explicit opt-in for anything the above cannot see
+
+  🔴 `errorMessage` is deliberately NOT included. It drives NOTIFICATION banners for
+  page-level failures ("we could not load…") on ~24 pages, not field validation.
+  Prefixing the title on a transient load failure would announce "Error:" on pages
+  with nothing for the user to correct.
+
+  Uses the already-translated states.error_prefix ("Error:" / "Earráid:" / "خطأ:"),
+  so this is correct in all eleven locales rather than English-only.
+#}
+{#
+  🔴 `errors | length` rather than `errors.length`, because `errors` is an ARRAY on most
+  forms but a KEYED OBJECT on contact.njk (`errors.name`, `errors.email`), where
+  `.length` is undefined. The `length` filter counts both.
+
+  🔴 Do NOT rely on a child template's `{% set hasErrors = … %}`: a top-level `set` in a
+  child runs too late to be visible in the parent's <head>, so contact.njk rendered its
+  error summary while the title stayed unprefixed. `hasErrors` is still honoured for
+  routes that pass it as a real local.
+#}
+{% set pageValidationFailed = pageHasErrors or hasErrors or error or (errors and (errors | length)) %}
+{% set titleErrorPrefix = ((t('states.error_prefix') if t else 'Error:') ~ ' ') if pageValidationFailed else '' %}
+
 <!DOCTYPE html>
 <html lang="{{ htmlLang or 'en' }}" dir="{{ htmlDirection or 'ltr' }}" class="govuk-template{% if htmlClasses %} {{ htmlClasses }}{% endif %}">
   <head>
     <meta charset="utf-8">
-    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{{ resolvedPageTitle }} - {{ serviceName }}{% endblock %}</title>
+    <title{% if pageTitleLang %} lang="{{ pageTitleLang }}"{% endif %}>{% block pageTitle %}{{ titleErrorPrefix }}{{ resolvedPageTitle }} - {{ serviceName }}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="{{ themeColor }}">
 
