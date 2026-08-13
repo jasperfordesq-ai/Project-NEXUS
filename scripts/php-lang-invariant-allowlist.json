@@ -135,6 +135,8 @@
       "Total",
       "Urgent",
       "Version :version",
+      ":count minute",
+      ":count minutes",
       ":count votes",
       ":frequency cadence",
       "discussion",

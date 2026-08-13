@@ -5730,6 +5730,83 @@
                 "project_status_completed": "Completato",
                 "rating_choose": "Scegli una valutazione",
                 "rating_out_of": ":rating su 5"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "Ti restano %{count} caratteri",
+                        "two": "Ti restano %{count} caratteri",
+                        "few": "Ti restano %{count} caratteri",
+                        "many": "Ti restano %{count} caratteri",
+                        "other": "Ti restano %{count} caratteri"
+                    },
+                    "characters_at_limit": "Ti restano 0 caratteri",
+                    "characters_over_limit": {
+                        "one": "Hai %{count} caratteri di troppo",
+                        "two": "Hai %{count} caratteri di troppo",
+                        "few": "Hai %{count} caratteri di troppo",
+                        "many": "Hai %{count} caratteri di troppo",
+                        "other": "Hai %{count} caratteri di troppo"
+                    }
+                },
+                "date_input": {
+                    "day_label": "Giorno",
+                    "month_label": "Mese",
+                    "year_label": "Anno",
+                    "hint": "Ad esempio, 27 3 2027",
+                    "day_required": "Inserisci un giorno",
+                    "month_required": "Inserisci un mese",
+                    "year_required": "Inserisci un anno",
+                    "date_invalid": "Inserisci una data esistente"
+                },
+                "session_timeout": {
+                    "title": "Verrai disconnesso a breve",
+                    "security_notice": "Per la tua sicurezza, ti disconnetteremo tra :time.",
+                    "unsaved_changes": "Eventuali modifiche non salvate andranno perse.",
+                    "stay_signed_in": "Rimani connesso",
+                    "sign_out_now": "Esci adesso",
+                    "announcement": "Verrai disconnesso tra :time.",
+                    "time_separator": "e",
+                    "minutes": {
+                        "one": ":count minuto",
+                        "two": ":count minuti",
+                        "few": ":count minuti",
+                        "many": ":count minuti",
+                        "other": ":count minuti"
+                    },
+                    "seconds": {
+                        "one": ":count secondo",
+                        "two": ":count secondi",
+                        "few": ":count secondi",
+                        "many": ":count secondi",
+                        "other": ":count secondi"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "Le comunità partner non sono ancora disponibili qui.",
+                    "not_enabled_contact": "Contatta il team della tua community se prevedi di utilizzare le community partner qui.",
+                    "discover_description": "Trova persone, elenchi, eventi e gruppi dalle comunità partner.",
+                    "connect_title": "Connettiti",
+                    "connect_description": "Invia richieste di connessione e messaggi quando entrambe le comunità lo consentono.",
+                    "exchange_description": "Trasferisci i crediti di tempo solo quando entrambe le comunità lo consentono.",
+                    "status_label": "Stato della comunità partner",
+                    "no_recent_activity": "Nessuna attività recente della community dei partner.",
+                    "activity_appears": "L'attività delle comunità partner verrà visualizzata qui.",
+                    "since_label": "Partner dal",
+                    "no_partners": "Nessuna comunità partner è ancora disponibile.",
+                    "links_heading": "Collegamenti alla comunità dei partner",
+                    "browse_partners": "Sfoglia le comunità partner",
+                    "find_members": "Trova membri nelle comunità partner",
+                    "manage_connections": "Gestire le connessioni della comunità partner",
+                    "messages": "Messaggi dalle comunità partner",
+                    "turn_off": "Disattiva l'accesso alla community dei partner"
+                },
+                "event_validation": {
+                    "title_required": "Inserisci il titolo dell'evento",
+                    "title_too_long": "Il titolo deve contenere massimo 255 caratteri",
+                    "description_required": "Inserisci una descrizione dell'evento",
+                    "start_required": "Inserisci una data e un'ora di inizio"
+                }
             }
         },
         "govuk_alpha_activity": {

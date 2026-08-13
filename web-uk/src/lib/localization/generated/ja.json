@@ -5730,6 +5730,83 @@
                 "project_status_completed": "完了",
                 "rating_choose": "評価を選択してください",
                 "rating_out_of": "5点中:rating"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "残り %{count} 文字です",
+                        "two": "残り %{count} 文字です",
+                        "few": "残り %{count} 文字です",
+                        "many": "残り %{count} 文字です",
+                        "other": "残り %{count} 文字です"
+                    },
+                    "characters_at_limit": "残り 0 文字です",
+                    "characters_over_limit": {
+                        "one": "%{count} 文字が多すぎます",
+                        "two": "%{count} 文字が多すぎます",
+                        "few": "%{count} 文字が多すぎます",
+                        "many": "%{count} 文字が多すぎます",
+                        "other": "%{count} 文字が多すぎます"
+                    }
+                },
+                "date_input": {
+                    "day_label": "日",
+                    "month_label": "月",
+                    "year_label": "年",
+                    "hint": "例：27 3 2027",
+                    "day_required": "日を入力してください",
+                    "month_required": "月を入力してください",
+                    "year_required": "年を入力してください",
+                    "date_invalid": "実在する日付を入力してください"
+                },
+                "session_timeout": {
+                    "title": "まもなくサインアウトされます",
+                    "security_notice": "セキュリティ保護のため、あと :time でサインアウトします。",
+                    "unsaved_changes": "保存されていない変更は失われます。",
+                    "stay_signed_in": "サインインしたままにする",
+                    "sign_out_now": "今すぐサインアウト",
+                    "announcement": "あと :time でサインアウトされます。",
+                    "time_separator": "と",
+                    "minutes": {
+                        "one": ":count 分",
+                        "two": ":count 分",
+                        "few": ":count 分",
+                        "many": ":count 分",
+                        "other": ":count 分"
+                    },
+                    "seconds": {
+                        "one": ":count 秒",
+                        "two": ":count 秒",
+                        "few": ":count 秒",
+                        "many": ":count 秒",
+                        "other": ":count 秒"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "ここではパートナー コミュニティはまだ利用できません。",
+                    "not_enabled_contact": "ここでパートナー コミュニティの使用を予定している場合は、コミュニティ チームにお問い合わせください。",
+                    "discover_description": "パートナー コミュニティから人、リスト、イベント、グループを検索します。",
+                    "connect_title": "接続する",
+                    "connect_description": "両方のコミュニティで許可されている場合は、接続リクエストとメッセージを送信します。",
+                    "exchange_description": "両方のコミュニティで許可されている場合にのみ、タイム クレジットを転送してください。",
+                    "status_label": "パートナーコミュニティのステータス",
+                    "no_recent_activity": "最近のパートナー コミュニティ活動はありません。",
+                    "activity_appears": "パートナー コミュニティからのアクティビティがここに表示されます。",
+                    "since_label": "提携開始日",
+                    "no_partners": "まだ利用できるパートナー コミュニティはありません。",
+                    "links_heading": "パートナーコミュニティのリンク",
+                    "browse_partners": "パートナーコミュニティを閲覧する",
+                    "find_members": "パートナーコミュニティでメンバーを探す",
+                    "manage_connections": "パートナーコミュニティの接続を管理する",
+                    "messages": "パートナーコミュニティからのメッセージ",
+                    "turn_off": "パートナーコミュニティへのアクセスをオフにする"
+                },
+                "event_validation": {
+                    "title_required": "イベントのタイトルを入力してください",
+                    "title_too_long": "タイトルは 255 文字以内にする必要があります",
+                    "description_required": "イベントの説明を入力してください",
+                    "start_required": "開始日時を入力してください"
+                }
             }
         },
         "govuk_alpha_activity": {

@@ -5730,6 +5730,83 @@
                 "project_status_completed": "Concluído",
                 "rating_choose": "Escolha uma classificação",
                 "rating_out_of": ":rating em 5"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "Você tem %{count} caracteres restantes",
+                        "two": "Você tem %{count} caracteres restantes",
+                        "few": "Você tem %{count} caracteres restantes",
+                        "many": "Você tem %{count} caracteres restantes",
+                        "other": "Você tem %{count} caracteres restantes"
+                    },
+                    "characters_at_limit": "Você tem 0 caracteres restantes",
+                    "characters_over_limit": {
+                        "one": "Você tem %{count} caracteres a mais",
+                        "two": "Você tem %{count} caracteres a mais",
+                        "few": "Você tem %{count} caracteres a mais",
+                        "many": "Você tem %{count} caracteres a mais",
+                        "other": "Você tem %{count} caracteres a mais"
+                    }
+                },
+                "date_input": {
+                    "day_label": "Dia",
+                    "month_label": "Mês",
+                    "year_label": "Ano",
+                    "hint": "Por exemplo, 27 3 2027",
+                    "day_required": "Insira um dia",
+                    "month_required": "Insira um mês",
+                    "year_required": "Digite um ano",
+                    "date_invalid": "Insira uma data que exista"
+                },
+                "session_timeout": {
+                    "title": "Você será desconectado em breve",
+                    "security_notice": "Para sua segurança, desconectaremos você em :time.",
+                    "unsaved_changes": "Quaisquer alterações não salvas serão perdidas.",
+                    "stay_signed_in": "Permaneça conectado",
+                    "sign_out_now": "Sair agora",
+                    "announcement": "Você será desconectado em :time.",
+                    "time_separator": "e",
+                    "minutes": {
+                        "one": ":count minuto",
+                        "two": ":count minutos",
+                        "few": ":count minutos",
+                        "many": ":count minutos",
+                        "other": ":count minutos"
+                    },
+                    "seconds": {
+                        "one": ":count segundo",
+                        "two": ":count segundos",
+                        "few": ":count segundos",
+                        "many": ":count segundos",
+                        "other": ":count segundos"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "As comunidades parceiras ainda não estão disponíveis aqui.",
+                    "not_enabled_contact": "Entre em contato com a equipe da sua comunidade se você pretende usar comunidades parceiras aqui.",
+                    "discover_description": "Encontre pessoas, listagens, eventos e grupos de comunidades parceiras.",
+                    "connect_title": "Conectar",
+                    "connect_description": "Envie solicitações de conexão e mensagens quando ambas as comunidades permitirem.",
+                    "exchange_description": "Transfira créditos de tempo somente quando ambas as comunidades permitirem.",
+                    "status_label": "Status da comunidade parceira",
+                    "no_recent_activity": "Nenhuma atividade recente da comunidade parceira.",
+                    "activity_appears": "As atividades das comunidades parceiras aparecerão aqui.",
+                    "since_label": "Parceiros desde",
+                    "no_partners": "Nenhuma comunidade parceira está disponível ainda.",
+                    "links_heading": "Links da comunidade de parceiros",
+                    "browse_partners": "Procure comunidades parceiras",
+                    "find_members": "Encontre membros em comunidades parceiras",
+                    "manage_connections": "Gerenciar conexões da comunidade parceira",
+                    "messages": "Mensagens de comunidades parceiras",
+                    "turn_off": "Desative o acesso à comunidade de parceiros"
+                },
+                "event_validation": {
+                    "title_required": "Insira um título de evento",
+                    "title_too_long": "O título deve ter 255 caracteres ou menos",
+                    "description_required": "Insira uma descrição do evento",
+                    "start_required": "Insira uma data e hora de início"
+                }
             }
         },
         "govuk_alpha_activity": {

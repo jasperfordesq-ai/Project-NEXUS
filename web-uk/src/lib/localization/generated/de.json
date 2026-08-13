@@ -5730,6 +5730,83 @@
                 "project_status_completed": "Abgeschlossen",
                 "rating_choose": "Bewertung auswählen",
                 "rating_out_of": ":rating von 5"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "Sie haben noch %{count} Zeichen übrig",
+                        "two": "Sie haben noch %{count} Zeichen übrig",
+                        "few": "Sie haben noch %{count} Zeichen übrig",
+                        "many": "Sie haben noch %{count} Zeichen übrig",
+                        "other": "Sie haben noch %{count} Zeichen übrig"
+                    },
+                    "characters_at_limit": "Sie haben noch 0 Zeichen übrig",
+                    "characters_over_limit": {
+                        "one": "Sie haben %{count} Zeichen zu viele",
+                        "two": "Sie haben %{count} Zeichen zu viele",
+                        "few": "Sie haben %{count} Zeichen zu viele",
+                        "many": "Sie haben %{count} Zeichen zu viele",
+                        "other": "Sie haben %{count} Zeichen zu viele"
+                    }
+                },
+                "date_input": {
+                    "day_label": "Tag",
+                    "month_label": "Monat",
+                    "year_label": "Jahr",
+                    "hint": "Beispiel: 27.3.2027",
+                    "day_required": "Geben Sie einen Tag ein",
+                    "month_required": "Geben Sie einen Monat ein",
+                    "year_required": "Geben Sie ein Jahr ein",
+                    "date_invalid": "Geben Sie ein tatsächlich vorhandenes Datum ein"
+                },
+                "session_timeout": {
+                    "title": "Sie werden bald abgemeldet",
+                    "security_notice": "Zu Ihrer Sicherheit werden wir Sie in :time abmelden.",
+                    "unsaved_changes": "Alle nicht gespeicherten Änderungen gehen verloren.",
+                    "stay_signed_in": "Bleiben Sie angemeldet",
+                    "sign_out_now": "Jetzt abmelden",
+                    "announcement": "Sie werden in :time abgemeldet.",
+                    "time_separator": "und",
+                    "minutes": {
+                        "one": ":count Minute",
+                        "two": ":count Minuten",
+                        "few": ":count Minuten",
+                        "many": ":count Minuten",
+                        "other": ":count Minuten"
+                    },
+                    "seconds": {
+                        "one": ":count Sekunde",
+                        "two": ":count Sekunden",
+                        "few": ":count Sekunden",
+                        "many": ":count Sekunden",
+                        "other": ":count Sekunden"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "Partner-Communities sind hier noch nicht verfügbar.",
+                    "not_enabled_contact": "Wenden Sie sich an Ihr Community-Team, wenn Sie erwartet haben, hier Partner-Communities nutzen zu können.",
+                    "discover_description": "Finden Sie Personen, Einträge, Veranstaltungen und Gruppen aus Partner-Communities.",
+                    "connect_title": "Verbinden",
+                    "connect_description": "Senden Sie Verbindungsanfragen und Nachrichten, wenn beide Communities dies zulassen.",
+                    "exchange_description": "Übertragen Sie Zeitguthaben nur, wenn beide Communities dies zulassen.",
+                    "status_label": "Partner-Community-Status",
+                    "no_recent_activity": "Keine kürzlichen Aktivitäten von Partner-Communities.",
+                    "activity_appears": "Hier werden Aktivitäten von Partnergemeinschaften angezeigt.",
+                    "since_label": "Partner seit",
+                    "no_partners": "Es sind noch keine Partner-Communities verfügbar.",
+                    "links_heading": "Links zu Partner-Communities",
+                    "browse_partners": "Durchsuchen Sie Partner-Communitys",
+                    "find_members": "Finden Sie Mitglieder in Partnergemeinschaften",
+                    "manage_connections": "Verbindungen zu Partner-Communities verwalten",
+                    "messages": "Nachrichten von Partnergemeinschaften",
+                    "turn_off": "Deaktivieren Sie den Zugriff auf die Partner-Community"
+                },
+                "event_validation": {
+                    "title_required": "Geben Sie einen Veranstaltungstitel ein",
+                    "title_too_long": "Der Titel darf maximal 255 Zeichen lang sein",
+                    "description_required": "Geben Sie eine Ereignisbeschreibung ein",
+                    "start_required": "Geben Sie ein Startdatum und eine Startzeit ein"
+                }
             }
         },
         "govuk_alpha_activity": {

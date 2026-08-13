@@ -5730,6 +5730,83 @@
                 "project_status_completed": "Completed",
                 "rating_choose": "Choose a rating",
                 "rating_out_of": ":rating out of 5"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "You have %{count} character remaining",
+                        "two": "You have %{count} characters remaining",
+                        "few": "You have %{count} characters remaining",
+                        "many": "You have %{count} characters remaining",
+                        "other": "You have %{count} characters remaining"
+                    },
+                    "characters_at_limit": "You have 0 characters remaining",
+                    "characters_over_limit": {
+                        "one": "You have %{count} character too many",
+                        "two": "You have %{count} characters too many",
+                        "few": "You have %{count} characters too many",
+                        "many": "You have %{count} characters too many",
+                        "other": "You have %{count} characters too many"
+                    }
+                },
+                "date_input": {
+                    "day_label": "Day",
+                    "month_label": "Month",
+                    "year_label": "Year",
+                    "hint": "For example, 27 3 2027",
+                    "day_required": "Enter a day",
+                    "month_required": "Enter a month",
+                    "year_required": "Enter a year",
+                    "date_invalid": "Enter a real date"
+                },
+                "session_timeout": {
+                    "title": "You will be signed out soon",
+                    "security_notice": "For your security, we will sign you out in :time.",
+                    "unsaved_changes": "Any unsaved changes will be lost.",
+                    "stay_signed_in": "Stay signed in",
+                    "sign_out_now": "Sign out now",
+                    "announcement": "You will be signed out in :time.",
+                    "time_separator": "and",
+                    "minutes": {
+                        "one": ":count minute",
+                        "two": ":count minutes",
+                        "few": ":count minutes",
+                        "many": ":count minutes",
+                        "other": ":count minutes"
+                    },
+                    "seconds": {
+                        "one": ":count second",
+                        "two": ":count seconds",
+                        "few": ":count seconds",
+                        "many": ":count seconds",
+                        "other": ":count seconds"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "Partner communities are not available here yet.",
+                    "not_enabled_contact": "Contact your community team if you expected to use partner communities here.",
+                    "discover_description": "Find people, listings, events and groups from partner communities.",
+                    "connect_title": "Connect",
+                    "connect_description": "When both communities allow it, send connection requests and messages.",
+                    "exchange_description": "Transfer time credits only when both communities allow it.",
+                    "status_label": "Partner community status",
+                    "no_recent_activity": "No recent partner community activity.",
+                    "activity_appears": "This is where activity from partner communities will appear.",
+                    "since_label": "Partners since",
+                    "no_partners": "There are no partner communities available yet.",
+                    "links_heading": "Partner community links",
+                    "browse_partners": "Browse the partner communities",
+                    "find_members": "Find members in partner communities",
+                    "manage_connections": "Manage partner community connections",
+                    "messages": "Messages from partner communities",
+                    "turn_off": "Turn off partner community access"
+                },
+                "event_validation": {
+                    "title_required": "Enter an event title",
+                    "title_too_long": "Title must be 255 characters or fewer",
+                    "description_required": "Enter an event description",
+                    "start_required": "Enter a start date and time"
+                }
             }
         },
         "govuk_alpha_activity": {

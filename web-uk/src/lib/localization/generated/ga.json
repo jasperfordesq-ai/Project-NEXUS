@@ -5730,6 +5730,83 @@
                 "project_status_completed": "Críochnaithe",
                 "rating_choose": "Roghnaigh rátáil",
                 "rating_out_of": ":rating as 5"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "Tá %{count} charachtar fágtha agat",
+                        "two": "Tá %{count} charachtar fágtha agat",
+                        "few": "Tá %{count} charachtar fágtha agat",
+                        "many": "Tá %{count} gcarachtar fágtha agat",
+                        "other": "Tá %{count} carachtar fágtha agat"
+                    },
+                    "characters_at_limit": "Níl aon charachtar fágtha agat",
+                    "characters_over_limit": {
+                        "one": "Tá %{count} charachtar sa bhreis agat",
+                        "two": "Tá %{count} charachtar sa bhreis agat",
+                        "few": "Tá %{count} charachtar sa bhreis agat",
+                        "many": "Tá %{count} gcarachtar sa bhreis agat",
+                        "other": "Tá %{count} carachtar sa bhreis agat"
+                    }
+                },
+                "date_input": {
+                    "day_label": "Lá",
+                    "month_label": "Mí",
+                    "year_label": "Bliain",
+                    "hint": "Mar shampla, 27 3 2027",
+                    "day_required": "Cuir lá isteach",
+                    "month_required": "Cuir mí isteach",
+                    "year_required": "Cuir bliain isteach",
+                    "date_invalid": "Cuir dáta ceart isteach"
+                },
+                "session_timeout": {
+                    "title": "Síneofar amach thú go luath",
+                    "security_notice": "Ar mhaithe le do shlándáil, síneoimid amach thú i gceann :time.",
+                    "unsaved_changes": "Caillfear aon athruithe nár sábháladh.",
+                    "stay_signed_in": "Fan sínithe isteach",
+                    "sign_out_now": "Sínigh amach anois",
+                    "announcement": "Síneofar amach thú i gceann :time.",
+                    "time_separator": "agus",
+                    "minutes": {
+                        "one": ":count nóiméad",
+                        "two": ":count nóiméad",
+                        "few": ":count nóiméad",
+                        "many": ":count nóiméad",
+                        "other": ":count nóiméad"
+                    },
+                    "seconds": {
+                        "one": ":count soicind",
+                        "two": ":count shoicind",
+                        "few": ":count shoicind",
+                        "many": ":count soicind",
+                        "other": ":count soicind"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "Níl pobail chomhpháirtíochta ar fáil anseo fós.",
+                    "not_enabled_contact": "Déan teagmháil le foireann do phobail má bhí tú ag súil le pobail chomhpháirtíochta a úsáid anseo.",
+                    "discover_description": "Aimsigh daoine, liostaí, imeachtaí agus grúpaí ó phobail chomhpháirtíochta.",
+                    "connect_title": "Déan teagmháil",
+                    "connect_description": "Seol iarratais cheangail agus teachtaireachtaí nuair a cheadaíonn an dá phobal é.",
+                    "exchange_description": "Ní féidir creidmheasanna ama a aistriú ach amháin nuair a cheadaíonn an dá phobal é.",
+                    "status_label": "Stádas na bpobal comhpháirtíochta",
+                    "no_recent_activity": "Níl aon ghníomhaíocht ó phobail chomhpháirtíochta le déanaí.",
+                    "activity_appears": "Beidh gníomhaíocht ó phobail chomhpháirtíochta le feiceáil anseo.",
+                    "since_label": "Comhpháirtithe ó",
+                    "no_partners": "Níl aon phobal comhpháirtíochta ar fáil fós.",
+                    "links_heading": "Naisc na bpobal comhpháirtíochta",
+                    "browse_partners": "Brabhsáil pobail chomhpháirtíochta",
+                    "find_members": "Aimsigh baill i bpobail chomhpháirtíochta",
+                    "manage_connections": "Bainistigh naisc le pobail chomhpháirtíochta",
+                    "messages": "Teachtaireachtaí ó phobail chomhpháirtíochta",
+                    "turn_off": "Múch rochtain ar phobail chomhpháirtíochta"
+                },
+                "event_validation": {
+                    "title_required": "Cuir teideal imeachta isteach",
+                    "title_too_long": "Ní mór 255 carachtar nó níos lú a bheith sa teideal",
+                    "description_required": "Cuir cur síos ar an imeacht isteach",
+                    "start_required": "Cuir dáta agus am tosaithe isteach"
+                }
             }
         },
         "govuk_alpha_activity": {

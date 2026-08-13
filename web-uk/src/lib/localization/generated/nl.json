@@ -5730,6 +5730,83 @@
                 "project_status_completed": "Afgerond",
                 "rating_choose": "Kies een beoordeling",
                 "rating_out_of": ":rating van 5"
+            },
+            "web_uk": {
+                "character_count": {
+                    "characters_under_limit": {
+                        "one": "Je hebt nog %{count} tekens over",
+                        "two": "Je hebt nog %{count} tekens over",
+                        "few": "Je hebt nog %{count} tekens over",
+                        "many": "Je hebt nog %{count} tekens over",
+                        "other": "Je hebt nog %{count} tekens over"
+                    },
+                    "characters_at_limit": "Je hebt nog 0 tekens over",
+                    "characters_over_limit": {
+                        "one": "Je hebt %{count} tekens te veel",
+                        "two": "Je hebt %{count} tekens te veel",
+                        "few": "Je hebt %{count} tekens te veel",
+                        "many": "Je hebt %{count} tekens te veel",
+                        "other": "Je hebt %{count} tekens te veel"
+                    }
+                },
+                "date_input": {
+                    "day_label": "Dag",
+                    "month_label": "Maand",
+                    "year_label": "Jaar",
+                    "hint": "Bijvoorbeeld 27 3 2027",
+                    "day_required": "Voer een dag in",
+                    "month_required": "Voer een maand in",
+                    "year_required": "Voer een jaar in",
+                    "date_invalid": "Voer een bestaande datum in"
+                },
+                "session_timeout": {
+                    "title": "U wordt binnenkort uitgelogd",
+                    "security_notice": "Voor uw veiligheid loggen we u over :time uit.",
+                    "unsaved_changes": "Alle niet-opgeslagen wijzigingen gaan verloren.",
+                    "stay_signed_in": "Blijf ingelogd",
+                    "sign_out_now": "Meld u nu af",
+                    "announcement": "U wordt over :time uitgelogd.",
+                    "time_separator": "en",
+                    "minutes": {
+                        "one": ":count minuut",
+                        "two": ":count minuten",
+                        "few": ":count minuten",
+                        "many": ":count minuten",
+                        "other": ":count minuten"
+                    },
+                    "seconds": {
+                        "one": ":count seconde",
+                        "two": ":count seconden",
+                        "few": ":count seconden",
+                        "many": ":count seconden",
+                        "other": ":count seconden"
+                    }
+                },
+                "federation_hub": {
+                    "not_enabled_description": "Partnercommunities zijn hier nog niet beschikbaar.",
+                    "not_enabled_contact": "Neem contact op met uw communityteam als u verwachtte partnercommunity's hier te gebruiken.",
+                    "discover_description": "Vind mensen, vermeldingen, evenementen en groepen uit partnergemeenschappen.",
+                    "connect_title": "Verbinden",
+                    "connect_description": "Verzend verbindingsverzoeken en berichten wanneer beide communities dit toestaan.",
+                    "exchange_description": "Tijdskredieten alleen overdragen als beide gemeenschappen dit toestaan.",
+                    "status_label": "Status van partnercommunity's",
+                    "no_recent_activity": "Geen recente activiteit in de partnercommunity.",
+                    "activity_appears": "Activiteit van partnergemeenschappen wordt hier weergegeven.",
+                    "since_label": "Partners sinds",
+                    "no_partners": "Er zijn nog geen partnergemeenschappen beschikbaar.",
+                    "links_heading": "Links naar partnercommunity's",
+                    "browse_partners": "Blader door partnergemeenschappen",
+                    "find_members": "Vind leden in partnergemeenschappen",
+                    "manage_connections": "Beheer partnercommunityverbindingen",
+                    "messages": "Berichten van partnergemeenschappen",
+                    "turn_off": "Schakel de toegang tot de partnercommunity uit"
+                },
+                "event_validation": {
+                    "title_required": "Voer een evenementtitel in",
+                    "title_too_long": "Titel moet 255 tekens of minder bevatten",
+                    "description_required": "Voer een gebeurtenisbeschrijving in",
+                    "start_required": "Voer een startdatum en -tijd in"
+                }
             }
         },
         "govuk_alpha_activity": {
