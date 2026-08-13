@@ -1,22 +1,22 @@
 {
-  "title": "Resources",
-  "subtitle": "Browse shared files and knowledge base articles.",
-  "articleTitle": "Article",
+  "title": "Acmhainní",
+  "subtitle": "Brabhsáil comhaid chomhroinnte agus ailt sa bhunachar eolais.",
+  "articleTitle": "Alt",
   "tabs": {
-    "resources": "Files",
-    "kb": "Knowledge"
+    "resources": "Comhaid",
+    "kb": "Eolas"
   },
-  "searchLabel": "Search",
-  "searchPlaceholder": "Search resources",
-  "allCategories": "All",
-  "download": "Open resource",
-  "readArticle": "Read article",
-  "downloads": "{{count}} downloads",
-  "views": "{{count}} views",
-  "helpful": "{{yes}} helpful",
-  "emptyTitle": "Nothing found",
-  "emptySubtitle": "Try another search or category.",
-  "errorTitle": "Could not load resources",
-  "categoryCount": "{{count}} items",
-  "uncategorized": "General"
+  "searchLabel": "Cuardaigh",
+  "searchPlaceholder": "Cuardaigh acmhainní",
+  "allCategories": "Gach ceann",
+  "download": "Oscail an acmhainn",
+  "readArticle": "Léigh an t-alt",
+  "downloads": "Líon íoslódálacha: {{count}}",
+  "views": "Líon amharc: {{count}}",
+  "helpful": "Líon daoine a mheas go raibh sé cabhrach: {{yes}}",
+  "emptyTitle": "Níor aimsíodh aon rud",
+  "emptySubtitle": "Bain triail as cuardach nó catagóir eile.",
+  "errorTitle": "Níorbh fhéidir na hacmhainní a lódáil",
+  "categoryCount": "Líon míreanna: {{count}}",
+  "uncategorized": "Ginearálta"
 }

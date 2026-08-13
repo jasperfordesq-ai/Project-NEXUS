@@ -47,12 +47,12 @@
     "archives": "レビューアーカイブ",
     "configuration": "設定",
     "help": "ヘルプ",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "コンテンツ審査キュー",
+    "moderation_feed": "フィード投稿",
+    "moderation_comments": "コメント",
+    "moderation_reviews": "レビュー",
+    "moderation_reports": "報告",
+    "safeguarding_options": "セーフガーディング設定"
   },
   "breadcrumbs": {
     "aria_label": "パンくずナビゲーション",
@@ -70,13 +70,13 @@
     "archives": "レビューアーカイブ",
     "configuration": "設定",
     "help": "ヘルプ",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "モデレーション",
+    "moderation_queue": "コンテンツ審査キュー",
+    "moderation_feed": "フィード投稿",
+    "moderation_comments": "コメント",
+    "moderation_reviews": "レビュー",
+    "moderation_reports": "報告",
+    "safeguarding_options": "セーフガーディング設定"
   },
   "dashboard": {
     "title": "ブローカーダッシュボード",
@@ -1418,27 +1418,27 @@
     "skip_to_main": "メインコンテンツにスキップ"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "コンテンツ審査キュー",
     "description": "公開される前にモデレーションを待っているコンテンツをレビューします。"
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "フィードのモデレーション",
     "description": "投稿、リスト、イベント、その他のフィード コンテンツを確認し、管理します。"
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "コメントのモデレーション",
     "description": "コミュニティ全体でメンバーのコメントを確認し、管理します。"
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "レビューのモデレーション",
     "description": "メンバーのレビューをレビューし、フラグを立て、モデレートします。"
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "報告",
     "description": "コンテンツおよび他のメンバーに関するメンバーレポートを優先順位付けして解決します。"
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "セーフガーディング設定",
     "description": "メンバーが選択できる保護宣言オプションを構成します。"
   }
 }

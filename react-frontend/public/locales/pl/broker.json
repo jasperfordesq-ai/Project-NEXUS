@@ -47,12 +47,12 @@
     "archives": "Archiwum przeglądów",
     "configuration": "Konfiguracja",
     "help": "Pomoc",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Kolejka treści",
+    "moderation_feed": "Wpisy w aktualnościach",
+    "moderation_comments": "Komentarze",
+    "moderation_reviews": "Recenzje",
+    "moderation_reports": "Zgłoszenia",
+    "safeguarding_options": "Opcje ochrony"
   },
   "breadcrumbs": {
     "aria_label": "Nawigacja okruszkowa",
@@ -70,13 +70,13 @@
     "archives": "Archiwum przeglądu",
     "configuration": "Konfiguracja",
     "help": "Pomoc",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "Moderacja",
+    "moderation_queue": "Kolejka treści",
+    "moderation_feed": "Wpisy w aktualnościach",
+    "moderation_comments": "Komentarze",
+    "moderation_reviews": "Recenzje",
+    "moderation_reports": "Zgłoszenia",
+    "safeguarding_options": "Opcje ochrony"
   },
   "dashboard": {
     "title": "Panel brokera",
@@ -1440,27 +1440,27 @@
     "skip_to_main": "Przejdź do głównej treści"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "Kolejka treści",
     "description": "Przejrzyj treści oczekujące na moderację, zanim zostaną opublikowane."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Moderacja aktualności",
     "description": "Przeglądaj i moderuj posty, oferty, wydarzenia i inną zawartość kanału."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Moderacja komentarzy",
     "description": "Przeglądaj i moderuj komentarze członków w całej społeczności."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Moderacja recenzji",
     "description": "Przeglądaj, oznaczaj i moderuj recenzje członków."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Zgłoszenia",
     "description": "Segreguj i rozwiązuj raporty członków dotyczące treści i innych członków."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Opcje ochrony",
     "description": "Skonfiguruj opcje deklaracji zabezpieczającej, które mogą wybierać członkowie."
   }
 }

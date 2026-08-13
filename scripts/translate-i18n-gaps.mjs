@@ -181,6 +181,7 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   'application.created, shift.completed, hours.logged',
   'bern-cooperative',
   '⌘K',
+  'broker@example.com',
 ]);
 
 // Cognates and borrowed technical terms that are valid translations only in the

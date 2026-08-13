@@ -47,12 +47,12 @@
     "archives": "Prüfarchiv",
     "configuration": "Konfiguration",
     "help": "Hilfe",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Warteschlange für Inhalte",
+    "moderation_feed": "Feed-Beiträge",
+    "moderation_comments": "Kommentare",
+    "moderation_reviews": "Bewertungen",
+    "moderation_reports": "Meldungen",
+    "safeguarding_options": "Schutzoptionen"
   },
   "breadcrumbs": {
     "aria_label": "Breadcrumb-Navigation",
@@ -71,12 +71,12 @@
     "configuration": "Konfiguration",
     "help": "Hilfe",
     "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Warteschlange für Inhalte",
+    "moderation_feed": "Feed-Beiträge",
+    "moderation_comments": "Kommentare",
+    "moderation_reviews": "Bewertungen",
+    "moderation_reports": "Meldungen",
+    "safeguarding_options": "Schutzoptionen"
   },
   "dashboard": {
     "title": "Broker-Dashboard",
@@ -1418,27 +1418,27 @@
     "skip_to_main": "Zum Hauptinhalt springen"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "Warteschlange für Inhalte",
     "description": "Überprüfen Sie Inhalte, die auf Moderation warten, bevor sie online gehen."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Feed-Moderation",
     "description": "Überprüfen und moderieren Sie Beiträge, Einträge, Veranstaltungen und andere Feed-Inhalte."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Kommentarmoderation",
     "description": "Überprüfen und moderieren Sie Mitgliederkommentare in der gesamten Community."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Bewertungsmoderation",
     "description": "Überprüfen, markieren und moderieren Sie Mitgliederbewertungen."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Meldungen",
     "description": "Sortieren und lösen Sie Mitgliederberichte über Inhalte und andere Mitglieder."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Schutzoptionen",
     "description": "Konfigurieren Sie die Optionen für die Schutzerklärung, die Mitglieder auswählen können."
   }
 }

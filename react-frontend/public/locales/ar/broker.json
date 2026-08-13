@@ -47,12 +47,12 @@
     "archives": "أرشيف المراجعات",
     "configuration": "الإعدادات",
     "help": "المساعدة",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "قائمة انتظار المحتوى",
+    "moderation_feed": "منشورات الخلاصة",
+    "moderation_comments": "التعليقات",
+    "moderation_reviews": "المراجعات",
+    "moderation_reports": "البلاغات",
+    "safeguarding_options": "خيارات الحماية"
   },
   "breadcrumbs": {
     "aria_label": "تنقل فتات الخبز",
@@ -70,13 +70,13 @@
     "archives": "أرشيف المراجعة",
     "configuration": "الإعدادات",
     "help": "المساعدة",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "الإشراف",
+    "moderation_queue": "قائمة انتظار المحتوى",
+    "moderation_feed": "منشورات الخلاصة",
+    "moderation_comments": "التعليقات",
+    "moderation_reviews": "المراجعات",
+    "moderation_reports": "البلاغات",
+    "safeguarding_options": "خيارات الحماية"
   },
   "dashboard": {
     "title": "لوحة تحكم الوسيط",
@@ -1462,27 +1462,27 @@
     "skip_to_main": "انتقل إلى المحتوى الرئيسي"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "قائمة انتظار المحتوى",
     "description": "قم بمراجعة المحتوى الذي ينتظر الإشراف قبل نشره."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "الإشراف على الخلاصة",
     "description": "قم بمراجعة المشاركات والقوائم والأحداث ومحتويات الموجز الأخرى والإشراف عليها."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "الإشراف على التعليقات",
     "description": "مراجعة تعليقات الأعضاء والإشراف عليها عبر المجتمع."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "الإشراف على المراجعات",
     "description": "قم بالمراجعة والإبلاغ ومراجعات الأعضاء المعتدلة."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "البلاغات",
     "description": "فرز وحل تقارير الأعضاء حول المحتوى والأعضاء الآخرين."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "خيارات الحماية",
     "description": "تكوين خيارات إعلان الحماية التي يمكن للأعضاء تحديدها."
   }
 }

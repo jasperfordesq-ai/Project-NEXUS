@@ -1,22 +1,22 @@
 {
-  "title": "Resources",
-  "subtitle": "Browse shared files and knowledge base articles.",
-  "articleTitle": "Article",
+  "title": "Recursos",
+  "subtitle": "Consulte ficheiros partilhados e artigos da base de conhecimento.",
+  "articleTitle": "Artigo",
   "tabs": {
-    "resources": "Files",
-    "kb": "Knowledge"
+    "resources": "Ficheiros",
+    "kb": "Conhecimento"
   },
-  "searchLabel": "Search",
-  "searchPlaceholder": "Search resources",
-  "allCategories": "All",
-  "download": "Open resource",
-  "readArticle": "Read article",
-  "downloads": "{{count}} downloads",
-  "views": "{{count}} views",
-  "helpful": "{{yes}} helpful",
-  "emptyTitle": "Nothing found",
-  "emptySubtitle": "Try another search or category.",
-  "errorTitle": "Could not load resources",
-  "categoryCount": "{{count}} items",
-  "uncategorized": "General"
+  "searchLabel": "Pesquisar",
+  "searchPlaceholder": "Pesquisar recursos",
+  "allCategories": "Todas",
+  "download": "Abrir recurso",
+  "readArticle": "Ler artigo",
+  "downloads": "{{count}} transferências",
+  "views": "{{count}} visualizações",
+  "helpful": "Pessoas que consideraram útil: {{yes}}",
+  "emptyTitle": "Nada encontrado",
+  "emptySubtitle": "Tente outra pesquisa ou categoria.",
+  "errorTitle": "Não foi possível carregar os recursos",
+  "categoryCount": "{{count}} elementos",
+  "uncategorized": "Geral"
 }

@@ -47,12 +47,12 @@
     "archives": "Cartlann athbhreithnithe",
     "configuration": "Cumraíocht",
     "help": "Cabhair",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Scuaine ábhair",
+    "moderation_feed": "Postálacha fotha",
+    "moderation_comments": "Tráchtanna",
+    "moderation_reviews": "Léirmheasanna",
+    "moderation_reports": "Tuairiscí",
+    "safeguarding_options": "Roghanna coimirce"
   },
   "breadcrumbs": {
     "aria_label": "Nascleanúint grabhróige",
@@ -70,13 +70,13 @@
     "archives": "Cartlann Athbhreithnithe",
     "configuration": "Cumraíocht",
     "help": "Cabhair",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "Modhnóireacht",
+    "moderation_queue": "Scuaine ábhair",
+    "moderation_feed": "Postálacha fotha",
+    "moderation_comments": "Tráchtanna",
+    "moderation_reviews": "Léirmheasanna",
+    "moderation_reports": "Tuairiscí",
+    "safeguarding_options": "Roghanna coimirce"
   },
   "dashboard": {
     "title": "Deais Bhróicéara",
@@ -1451,27 +1451,27 @@
     "skip_to_main": "Téigh ar aghaidh chuig an bpríomhábhar"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "Scuaine ábhair",
     "description": "Athbhreithnigh an t-ábhar atá ar feitheamh le modhnóireacht sula dtéann sé beo."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Modhnóireacht fotha",
     "description": "Athbhreithnigh agus modhnaigh postálacha, liostaí, imeachtaí agus ábhar fothaí eile."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Modhnóireacht tráchtanna",
     "description": "Athbhreithniú agus maolú ar thuairimí na mball ar fud an phobail."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Modhnóireacht léirmheasanna",
     "description": "Léirmheas, bratach, agus athbhreithnithe comhalta measartha."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Tuairiscí",
     "description": "Triage agus réiteach tuairiscí ball faoi ábhar agus baill eile."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Roghanna coimirce",
     "description": "Cumraigh na roghanna dearbhaithe coimirce is féidir le baill a roghnú."
   }
 }

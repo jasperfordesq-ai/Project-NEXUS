@@ -47,12 +47,12 @@
     "archives": "Archivo de revisiones",
     "configuration": "Configuración",
     "help": "Ayuda",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Cola de contenido",
+    "moderation_feed": "Publicaciones del feed",
+    "moderation_comments": "Comentarios",
+    "moderation_reviews": "Reseñas",
+    "moderation_reports": "Denuncias",
+    "safeguarding_options": "Opciones de protección"
   },
   "breadcrumbs": {
     "aria_label": "Navegación de migas de pan",
@@ -70,13 +70,13 @@
     "archives": "Archivo de revisión",
     "configuration": "Configuración",
     "help": "Ayuda",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "Moderación",
+    "moderation_queue": "Cola de contenido",
+    "moderation_feed": "Publicaciones del feed",
+    "moderation_comments": "Comentarios",
+    "moderation_reviews": "Reseñas",
+    "moderation_reports": "Denuncias",
+    "safeguarding_options": "Opciones de protección"
   },
   "dashboard": {
     "title": "Tablero del Corredor",
@@ -1429,27 +1429,27 @@
     "skip_to_main": "Saltar al contenido principal"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "Cola de contenido",
     "description": "Revise el contenido en espera de moderación antes de su publicación."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Moderación del feed",
     "description": "Revise y modere publicaciones, listados, eventos y otro contenido del feed."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Moderación de comentarios",
     "description": "Revise y modere los comentarios de los miembros en toda la comunidad."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Moderación de reseñas",
     "description": "Revisar, marcar y moderar las reseñas de los miembros."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Denuncias",
     "description": "Clasificar y resolver informes de miembros sobre el contenido y otros miembros."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Opciones de protección",
     "description": "Configure las opciones de declaración de protección que los miembros pueden seleccionar."
   }
 }

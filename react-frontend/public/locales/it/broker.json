@@ -47,12 +47,12 @@
     "archives": "Archivio revisioni",
     "configuration": "Configurazione",
     "help": "Aiuto",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Coda dei contenuti",
+    "moderation_feed": "Post del feed",
+    "moderation_comments": "Commenti",
+    "moderation_reviews": "Recensioni",
+    "moderation_reports": "Segnalazioni",
+    "safeguarding_options": "Opzioni di tutela"
   },
   "breadcrumbs": {
     "aria_label": "Navigazione a briciole",
@@ -70,13 +70,13 @@
     "archives": "Archivio revisioni",
     "configuration": "Configurazione",
     "help": "Aiuto",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "Moderazione",
+    "moderation_queue": "Coda dei contenuti",
+    "moderation_feed": "Post del feed",
+    "moderation_comments": "Commenti",
+    "moderation_reviews": "Recensioni",
+    "moderation_reports": "Segnalazioni",
+    "safeguarding_options": "Opzioni di tutela"
   },
   "dashboard": {
     "title": "Cruscotto Broker",
@@ -296,7 +296,7 @@
   },
   "onboarding": {
     "title": "Onboarding",
-    "page_title": "Onboarding - Broker",
+    "page_title": "Onboarding del broker",
     "description": "Monitora i progressi dei nuovi membri e approva le registrazioni in attesa.",
     "funnel_title": "Funnel di onboarding",
     "stage_registered": "Registrato",
@@ -1089,7 +1089,7 @@
     "retry": "Riprova",
     "detail_description": "Un'istantanea congelata e di sola lettura di una copia di messaggio revisionata.",
     "frozen_note": "Questo record è conservato esattamente come è stato revisionato e non può essere modificato.",
-    "record_id": "Record #{{id}}",
+    "record_id": "Record n. {{id}}",
     "record_unavailable": "Record non disponibile",
     "messages_count_one": "{{count}} messaggi",
     "messages_count_other": "{{count}} messaggi",
@@ -1429,27 +1429,27 @@
     "skip_to_main": "Passa al contenuto principale"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "Coda dei contenuti",
     "description": "Rivedi i contenuti in attesa di moderazione prima che vengano pubblicati."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Moderazione del feed",
     "description": "Esamina e modera post, elenchi, eventi e altri contenuti dei feed."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Moderazione dei commenti",
     "description": "Esaminare e moderare i commenti dei membri in tutta la comunità."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Moderazione delle recensioni",
     "description": "Esamina, segnala e modera le recensioni dei membri."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Segnalazioni",
     "description": "Valuta e risolvi i rapporti dei membri sui contenuti e sugli altri membri."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Opzioni di tutela",
     "description": "Configura le opzioni della dichiarazione di salvaguardia che i membri possono selezionare."
   }
 }

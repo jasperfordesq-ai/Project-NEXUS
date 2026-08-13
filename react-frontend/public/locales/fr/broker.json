@@ -47,12 +47,12 @@
     "archives": "Archive des révisions",
     "configuration": "Configuration",
     "help": "Aide",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "File de modération",
+    "moderation_feed": "Publications du fil",
+    "moderation_comments": "Commentaires",
+    "moderation_reviews": "Avis",
+    "moderation_reports": "Signalements",
+    "safeguarding_options": "Options de protection"
   },
   "breadcrumbs": {
     "aria_label": "Navigation par fil d'Ariane",
@@ -70,13 +70,13 @@
     "archives": "Archive de révision",
     "configuration": "Configuration",
     "help": "Aide",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "Modération",
+    "moderation_queue": "File de modération",
+    "moderation_feed": "Publications du fil",
+    "moderation_comments": "Commentaires",
+    "moderation_reviews": "Avis",
+    "moderation_reports": "Signalements",
+    "safeguarding_options": "Options de protection"
   },
   "dashboard": {
     "title": "Tableau de bord du courtier",
@@ -1429,27 +1429,27 @@
     "skip_to_main": "Passer au contenu principal"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "File de modération",
     "description": "Examinez le contenu en attente de modération avant sa mise en ligne."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Modération du fil",
     "description": "Examinez et modérez les publications, les listes, les événements et tout autre contenu de flux."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Modération des commentaires",
     "description": "Examinez et modérez les commentaires des membres de la communauté."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Modération des avis",
     "description": "Examinez, signalez et modérez les avis des membres."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Signalements",
     "description": "Triez et résolvez les rapports des membres sur le contenu et les autres membres."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Options de protection",
     "description": "Configurez les options de déclaration de sauvegarde que les membres peuvent sélectionner."
   }
 }

@@ -21,7 +21,7 @@
     "my_profile": "Mijn Profiel",
     "sign_out": "Uitloggen",
     "user_fallback": "Makelaar",
-    "help": "Help Center",
+    "help": "Helpcentrum",
     "search": "Zoeken",
     "search_shortcut": "⌘K"
   },
@@ -47,12 +47,12 @@
     "archives": "Beoordelingsarchief",
     "configuration": "Configuratie",
     "help": "Hulp",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation_queue": "Inhoudswachtrij",
+    "moderation_feed": "Feedberichten",
+    "moderation_comments": "Reacties",
+    "moderation_reviews": "Beoordelingen",
+    "moderation_reports": "Meldingen",
+    "safeguarding_options": "Beschermingsopties"
   },
   "breadcrumbs": {
     "aria_label": "Broodkruimelnavigatie",
@@ -70,13 +70,13 @@
     "archives": "Beoordelingsarchief",
     "configuration": "Configuratie",
     "help": "Hulp",
-    "moderation": "Moderation",
-    "moderation_queue": "Content Queue",
-    "moderation_feed": "Feed Posts",
-    "moderation_comments": "Comments",
-    "moderation_reviews": "Reviews",
-    "moderation_reports": "Reports",
-    "safeguarding_options": "Safeguarding Options"
+    "moderation": "Moderatie",
+    "moderation_queue": "Inhoudswachtrij",
+    "moderation_feed": "Feedberichten",
+    "moderation_comments": "Reacties",
+    "moderation_reviews": "Beoordelingen",
+    "moderation_reports": "Meldingen",
+    "safeguarding_options": "Beschermingsopties"
   },
   "dashboard": {
     "title": "Makelaardashboard",
@@ -1079,7 +1079,7 @@
     "retry": "Opnieuw proberen",
     "detail_description": "Een bevroren, alleen-lezen momentopname van een beoordeelde berichtkopie.",
     "frozen_note": "Dit record is bewaard precies zoals het werd beoordeeld en kan niet worden gewijzigd.",
-    "record_id": "Record #{{id}}",
+    "record_id": "Recordnr. {{id}}",
     "record_unavailable": "Record niet beschikbaar",
     "messages_count_one": "{{count}} berichten",
     "messages_count_other": "{{count}} berichten"
@@ -1418,27 +1418,27 @@
     "skip_to_main": "Ga naar de hoofdinhoud"
   },
   "moderation_queue": {
-    "title": "Content Queue",
+    "title": "Inhoudswachtrij",
     "description": "Beoordeel inhoud die op moderatie wacht voordat deze live gaat."
   },
   "moderation_feed": {
-    "title": "Feed Moderation",
+    "title": "Feedmoderatie",
     "description": "Beoordeel en beheer berichten, vermeldingen, evenementen en andere feedinhoud."
   },
   "moderation_comments": {
-    "title": "Comments Moderation",
+    "title": "Reactiemoderatie",
     "description": "Beoordeel en modereer de reacties van leden in de hele community."
   },
   "moderation_reviews": {
-    "title": "Reviews Moderation",
+    "title": "Beoordelingsmoderatie",
     "description": "Recensies van leden beoordelen, markeren en modereren."
   },
   "moderation_reports": {
-    "title": "Reports",
+    "title": "Meldingen",
     "description": "Triage en oplossing van ledenrapporten over inhoud en andere leden."
   },
   "safeguarding_options": {
-    "title": "Safeguarding Options",
+    "title": "Beschermingsopties",
     "description": "Configureer de opties voor het veiligstellen van aangiften die leden kunnen selecteren."
   }
 }

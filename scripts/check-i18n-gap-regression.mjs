@@ -72,6 +72,10 @@ const NO_TRANSLATE_VALUES = new Set([
   // Robots meta directives: literal values a crawler parses, not prose.
   'Noindex Nofollow',
   'Index Follow',
+  // Keyboard shortcuts and realistic format examples are interface literals,
+  // not English copy. Translating either makes the instruction less accurate.
+  '⌘K',
+  'broker@example.com',
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale
