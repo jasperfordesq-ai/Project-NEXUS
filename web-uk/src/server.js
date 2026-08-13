@@ -1268,7 +1268,7 @@ app.get('/organisations', requireOrganisationAuth, (req, res) => {
     filters.search = organisationsQuery.trim();
   }
 
-  getVolunteerOrganisations(filters)
+  getVolunteerOrganisations(filters, req.signedCookies.token)
     .then((result) => {
       const organisations = (Array.isArray(result?.data) ? result.data : []).map((organisation) => {
         const description = String(organisation?.description || '').trim();
@@ -1317,7 +1317,7 @@ app.get('/organisations/browse', requireOrganisationAuth, (req, res) => {
   }
 
   Promise.allSettled([
-    getVolunteerOrganisations(filters),
+    getVolunteerOrganisations(filters, token),
     getMyVolunteerOrganisations(token, { per_page: 50 })
   ])
     .then(([directoryResult, mineResult]) => {

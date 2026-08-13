@@ -487,6 +487,29 @@ function normalizeLogoShape(value) {
   return ['wide', 'landscape', 'square'].includes(value) ? value : 'landscape';
 }
 
+/**
+ * 🔴 Mirrors AlphaController::feedbackUrl() — do not simplify back to a constant.
+ *
+ * Blade sends "Give feedback" to the COMMUNITY'S OWN contact form on any real
+ * tenant, and only falls back to the platform mailto for the tenant-agnostic
+ * pages (the host tenant, id <= 1, or no slug — the tenant chooser). web-uk used
+ * the mailto unconditionally, which on every community site:
+ *   - produced a dead link for anyone without a configured mail client, which is
+ *     disproportionately this frontend's audience (webmail-only users, shared and
+ *     library machines);
+ *   - routed community feedback to the platform inbox instead of the community;
+ *   - bypassed the Turnstile bot protection deliberately added to /contact.
+ *
+ * Found by walking both accessible frontends side by side on 2026-08-13.
+ */
+function resolveFeedbackUrl({ tenantSlug, tenant, urlFor }) {
+  const tenantId = Number.parseInt(tenant && tenant.id, 10);
+  if (!tenantSlug || !Number.isFinite(tenantId) || tenantId <= 1) {
+    return feedbackUrl;
+  }
+  return urlFor('/contact');
+}
+
 function buildShellLocals(req, isAuthenticated) {
   const routedTenant = req.accessibleRouting?.tenant && typeof req.accessibleRouting.tenant === 'object'
     ? req.accessibleRouting.tenant
@@ -536,7 +559,7 @@ function buildShellLocals(req, isAuthenticated) {
     alphaExploreLinks: prefixNavItems(buildExploreLinks({ tenant: routedTenant, t }), routePrefix),
     currentPath,
     currentUrl,
-    feedbackUrl,
+    feedbackUrl: resolveFeedbackUrl({ tenantSlug, tenant: routedTenant, urlFor }),
     reportProblemUrl: `${urlFor('/report-a-problem')}?return=${encodeURIComponent(currentUrl)}`,
     cookieSettingsUrl: urlFor('/cookies'),
     mainSiteUrl: process.env.MAIN_FRONTEND_URL || 'https://app.project-nexus.ie',

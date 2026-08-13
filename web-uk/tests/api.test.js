@@ -1781,6 +1781,30 @@ describe('API Request Functions', () => {
       );
       expect(result.data[0].name).toBe('Community Club');
     });
+
+    /**
+     * 🔴 Regression guard added 2026-08-13.
+     *
+     * The endpoint returns 401 to an anonymous caller, and both callers in
+     * server.js ('/organisations' and '/organisations/browse') omitted the token.
+     * Every signed-in member therefore saw "We could not load the organisations"
+     * instead of the directory, on every request — a page that could never work,
+     * while Blade rendered the list. The test above passed throughout, because it
+     * asserted the URL and Content-Type but never that the request was authorised.
+     */
+    it('forwards the session token, without which the endpoint returns 401', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({ data: [], meta: { per_page: 20, has_more: false } })
+      });
+
+      await api.getVolunteerOrganisations({ per_page: 20 }, 'session-token-abc');
+
+      expect(mockFetch.mock.calls[0][1].headers).toEqual(expect.objectContaining({
+        Authorization: 'Bearer session-token-abc'
+      }));
+    });
   });
 
   describe('getVolunteeringOpportunities', () => {

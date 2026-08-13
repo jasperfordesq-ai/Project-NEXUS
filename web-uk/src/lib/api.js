@@ -703,7 +703,15 @@ async function callListingApi(token, method, path = '', data = undefined) {
 }
 
 // Laravel volunteering API
-async function getVolunteerOrganisations(params = {}) {
+// 🔴 `token` is REQUIRED in practice, despite being optional in the signature.
+// /api/v2/volunteering/organisations returns 401 to an anonymous caller, so
+// omitting it made "Browse organisations" render its "We could not load the
+// organisations" error for every signed-in member on every request — the page
+// could never show a directory at all. Blade shows the list because it calls the
+// service in-process as the authenticated user. Found 2026-08-13 by sweeping both
+// frontends. The parameter stays optional to match the sibling directory helpers
+// (see getListings), but callers must pass the session token.
+async function getVolunteerOrganisations(params = {}, token = '') {
   const query = new URLSearchParams();
   if (params.search) query.set('search', params.search);
   if (params.per_page) query.set('per_page', params.per_page);
@@ -712,7 +720,9 @@ async function getVolunteerOrganisations(params = {}) {
   const queryString = query.toString();
   const endpoint = `/api/v2/volunteering/organisations${queryString ? `?${queryString}` : ''}`;
 
-  return request(endpoint);
+  return request(endpoint, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
 }
 
 async function getClubs(params = {}) {

@@ -16583,7 +16583,8 @@ describe('shared accessible frontend shell', () => {
       .set('Cookie', signedCookieHeader());
 
     expect(staticPageRoutes.pages['/organisations']).toBeUndefined();
-    expect(api.getVolunteerOrganisations).toHaveBeenCalledWith({ search: 'club', per_page: 30 });
+    // The token is required: the endpoint 401s without it (fixed 2026-08-13).
+    expect(api.getVolunteerOrganisations).toHaveBeenCalledWith({ search: 'club', per_page: 30 }, 'test-token');
     expect(response.status).toBe(200);
     expect(response.text).toContain('Organisations');
     expect(response.text).toContain('Community and partner organisations.');
@@ -16737,7 +16738,8 @@ describe('shared accessible frontend shell', () => {
       .get('/organisations/browse?q=club&cursor=abc')
       .set('Cookie', signedCookieHeader());
 
-    expect(api.getVolunteerOrganisations).toHaveBeenCalledWith({ search: 'club', per_page: 20, cursor: 'abc' });
+    // The token is required: the endpoint 401s without it (fixed 2026-08-13).
+    expect(api.getVolunteerOrganisations).toHaveBeenCalledWith({ search: 'club', per_page: 20, cursor: 'abc' }, 'test-token');
     expect(api.getMyVolunteerOrganisations).toHaveBeenCalledWith('test-token', { per_page: 50 });
     expect(response.status).toBe(200);
     expect(response.text).toContain('Organisations in Project NEXUS Accessible');

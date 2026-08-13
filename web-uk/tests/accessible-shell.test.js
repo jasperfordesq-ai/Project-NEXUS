@@ -81,6 +81,51 @@ describe('accessible shell tenant gating', () => {
   });
 
   /**
+   * 🔴 Mirrors AlphaController::feedbackUrl(). Regression guard added 2026-08-13.
+   *
+   * "Give feedback" was a module-level mailto constant, so on every community site
+   * it opened a mail client instead of the community's own contact form as Blade
+   * does — dead for anyone without a configured mail client (disproportionately
+   * this frontend's audience), routing community feedback to the platform inbox,
+   * and bypassing the Turnstile protection on /contact.
+   *
+   * Both branches are asserted: the mailto is still correct for the tenant-agnostic
+   * pages, so a fix in one direction cannot silently break the other.
+   */
+  it('sends feedback to the community contact form, and only falls back to the platform mailto for tenant-agnostic pages', () => {
+    const shellFor = (routing) => buildShellLocals({
+      query: {},
+      path: '/',
+      originalUrl: '/',
+      accessibleRouting: routing
+    }, false);
+
+    // A real community tenant → its own contact form, prefixed to the tenant mount.
+    expect(shellFor({
+      tenant: { ...tenant, id: 2 },
+      tenantSlug: 'acme',
+      prefix: '/acme/accessible'
+    }).feedbackUrl).toBe('/acme/accessible/contact');
+
+    // The host tenant (id <= 1) renders the tenant chooser → platform mailto.
+    expect(shellFor({
+      tenant: { ...tenant, id: 1 },
+      tenantSlug: 'acme',
+      prefix: '/acme/accessible'
+    }).feedbackUrl).toMatch(/^mailto:/);
+
+    // No routed tenant at all → platform mailto.
+    expect(shellFor({}).feedbackUrl).toMatch(/^mailto:/);
+
+    // An unusable id must not produce a contact link for a tenant we cannot name.
+    expect(shellFor({
+      tenant: { ...tenant, id: undefined },
+      tenantSlug: 'acme',
+      prefix: '/acme/accessible'
+    }).feedbackUrl).toMatch(/^mailto:/);
+  });
+
+  /**
    * 🔴 Inverted on 2026-08-11 (owner decision). The header disclosure was
    * removed: Laravel Blade — the source of truth for the browser experience —
    * never had it, and `govuk-frontend` is MIT, which requires the licence notice

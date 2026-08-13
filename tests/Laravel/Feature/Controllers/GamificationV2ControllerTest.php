@@ -50,6 +50,36 @@ class GamificationV2ControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * 🔴 Regression: the payload must carry `level_name`.
+     *
+     * This controller hand-builds its response rather than returning
+     * GamificationService::getProfile(), and the two had drifted: the service
+     * returned `level_name` and this endpoint did not. The Blade accessible
+     * frontend calls the service in-process so it rendered "Level 3
+     * (Contributor)", while every HTTP consumer — web-uk, React, mobile — could
+     * only ever render "Level 3", because the name was never sent. Found by
+     * walking both accessible frontends side by side on 2026-08-13.
+     *
+     * Asserting the literal name, not merely the key's presence: a null or empty
+     * value would satisfy a has-key assertion and still leave the level title
+     * blank on screen.
+     */
+    public function test_profile_includes_level_name_for_http_consumers(): void
+    {
+        $user = $this->authenticatedUser();
+
+        // 300 XP is the level-3 threshold; level 3 is named "Contributor".
+        // The controller trusts users.level rather than recalculating it, so set both.
+        $user->forceFill(['xp' => 305, 'level' => 3])->save();
+
+        $response = $this->apiGet('/v2/gamification/profile');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('data.level', 3);
+        $response->assertJsonPath('data.level_name', 'Contributor');
+    }
+
     // ------------------------------------------------------------------
     //  GET /v2/gamification/badges
     // ------------------------------------------------------------------

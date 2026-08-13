@@ -61,6 +61,27 @@
         </div>
       {% endif %}
 
+      {# ONE cause-agnostic visibility notice for coordinator review AND supporter
+         message access, folded together so a reader can never tell which applies
+         or to whom (parity: conversation.blade.php, React ConversationPage). The
+         fail-open decision is made in the route. #}
+      {% if visibilityNoticeRequired %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha.messages.visibility_notice") }}</p>
+        </div>
+      {% endif %}
+
+      {# The member's OWN standing reminder that a supporter they chose can read
+         their messages, with the way back to manage or withdraw it. #}
+      {% if ownMessagesShared %}
+        <div class="govuk-inset-text">
+          <p class="govuk-body govuk-!-margin-bottom-0">
+            {{ t("govuk_alpha.messages.own_messages_shared_reminder") }}
+            <a class="govuk-link" href="{{ linkedAccountsHref }}#parents">{{ t("govuk_alpha.messages.own_messages_shared_manage") }}</a>
+          </p>
+        </div>
+      {% endif %}
+
       {% if meta.hasMore and olderHref %}
         <nav class="govuk-pagination govuk-pagination--block govuk-!-margin-bottom-4" aria-label="{{ t('govuk_alpha.messages.older_pagination_label') }}">
           <div class="govuk-pagination__prev">

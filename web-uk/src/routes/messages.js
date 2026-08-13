@@ -326,7 +326,19 @@ function memberName(member, t = null) {
     || (t ? t('govuk_alpha.members.unknown_member') : 'Unknown member');
 }
 
-function senderName(message, currentUserId, t = null) {
+/**
+ * 🔴 `otherName` matters in a DIRECT conversation and mirrors Blade.
+ *
+ * conversation.blade.php:161 is simply `$isOwn ? 'You' : $otherName` — in a 1:1
+ * thread any message that is not yours is from the other participant, so Blade
+ * never depends on per-message sender fields. web-uk did, and the conversation
+ * message payload carries no sender name, so every incoming message was
+ * attributed to "Community member" (the unknown-member string) while the page
+ * heading right above it named the person. Passing the participant keeps the
+ * per-message fields as the preferred source for group threads, where the sender
+ * genuinely varies. Found 2026-08-13 walking both frontends.
+ */
+function senderName(message, currentUserId, t = null, otherName = '') {
   const senderId = positiveInteger(message && message.sender_id);
   if (senderId !== null && currentUserId !== null && senderId === currentUserId) {
     return t ? t('govuk_alpha_messages.conversation.sent_by_you') : 'You';
@@ -334,6 +346,7 @@ function senderName(message, currentUserId, t = null) {
   const sender = message && message.sender && typeof message.sender === 'object' ? message.sender : {};
   return trimmed(sender.name || sender.full_name || sender.fullName)
     || trimmed(message && (message.sender_name || message.senderName))
+    || trimmed(otherName)
     || (t ? t('govuk_alpha.members.unknown_member') : 'Unknown member');
 }
 
@@ -404,7 +417,7 @@ function directConversationFrom(result, userId, currentUserId, t = null) {
       ...message,
       id: messageId || message.id,
       body: String(message.body || message.content || '').slice(0, 10000),
-      displaySenderName: senderName(message, currentUserId, t),
+      displaySenderName: senderName(message, currentUserId, t, otherUser && otherUser.name),
       isOwn,
       isDeleted,
       canManage,
@@ -536,6 +549,18 @@ async function renderDirectConversation(req, res, userId) {
     directMessagingEnabled,
     restricted,
     safeguarding,
+    // 🔴 ONE cause-agnostic visibility notice covering BOTH coordinator review and
+    // supporter message access, folded together so a reader cannot tell which
+    // applies or to whom. Mirrors conversation.blade.php:120-128 exactly, including
+    // its FAIL-OPEN rule: only an explicit `false` review flag with no supporter
+    // flag hides it, so a missing or unreadable restriction payload still warns the
+    // member. web-uk rendered this notice nowhere at all, so members were never
+    // told their messages may be read by a coordinator or by a supporter they
+    // trusted — while Blade told them on every conversation. Found 2026-08-13.
+    visibilityNoticeRequired: (restriction.review_notice_required ?? null) !== false
+      || (restriction.supporter_view_notice_required ?? false) === true,
+    ownMessagesShared: Boolean(restriction.own_messages_shared),
+    linkedAccountsHref: `${req.accessibleRouting?.prefix || ''}/settings/linked-accounts`,
     canSend: directMessagingEnabled && !restricted && !safeguardingRestricted,
     translationEnabled: tenantFeatureEnabled(req, 'message_translation', true),
     translation: messageTranslationFromFlash(req),

@@ -93,6 +93,13 @@ class GamificationV2Controller extends BaseApiController
             ],
             'xp' => $xp,
             'level' => $level,
+            // 🔴 Must stay in this payload. GamificationService::getProfile() returns
+            // level_name, and the Blade accessible frontend reads it from that service
+            // directly to render "Level 3 (Contributor)". Any HTTP consumer — web-uk,
+            // the React app, mobile — can only get it from here, so omitting it made the
+            // level name unrenderable outside the PHP process and silently dropped the
+            // level title from the accessible dashboard and achievements pages.
+            'level_name' => GamificationService::getLevelName($level),
             'level_progress' => [
                 'current_xp' => $xp,
                 'xp_for_current_level' => $currentThreshold,
