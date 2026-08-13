@@ -520,7 +520,7 @@ export function SkillsBrowsePage() {
                                               variant="flat"
                                               className="bg-accent/10 text-accent"
                                             >
-                                              <Users className="w-3 h-3 mr-1 inline" aria-hidden="true" />
+                                              <Users className="w-3 h-3" aria-hidden="true" />
                                               {skill.user_count}
                                             </Chip>
                                           </div>

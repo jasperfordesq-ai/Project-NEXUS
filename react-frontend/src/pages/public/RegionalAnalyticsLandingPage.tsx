@@ -99,7 +99,7 @@ export default function RegionalAnalyticsLandingPage() {
       <PageMeta title={t('regional_analytics.page_title')} description={t('regional_analytics.meta_description')} />
       <section className="text-center space-y-4">
         <Chip color="accent" variant="tertiary">
-          <ShieldCheck size={14} className="ml-1" aria-hidden="true" />
+          <ShieldCheck size={14} aria-hidden="true" />
           {t('regional_analytics.privacy_badge')}
         </Chip>
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">

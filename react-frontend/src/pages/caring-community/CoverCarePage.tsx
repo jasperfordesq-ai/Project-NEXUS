@@ -373,7 +373,7 @@ export default function CoverCarePage() {
                           </div>
                         </div>
                         <Chip size="sm" variant="flat" color="success">
-                          <ShieldCheck className="mr-1 h-3 w-3" aria-hidden="true" />
+                          <ShieldCheck className="h-3 w-3" aria-hidden="true" />
                           {t('cover.trust_tier', { tier: candidate.trust_tier })}
                         </Chip>
                       </div>

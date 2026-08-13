@@ -244,7 +244,7 @@ export function GoalTemplatePickerModal({
                               variant="flat"
                               className="text-[10px] bg-theme-elevated text-theme-subtle"
                             >
-                              <Target className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                              <Target className="w-3 h-3" aria-hidden="true" />
                               {t('template.target_label', { value: template.target_value })}
                             </Chip>
                             {template.category && (

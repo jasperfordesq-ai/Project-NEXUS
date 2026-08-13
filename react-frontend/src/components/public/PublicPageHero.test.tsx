@@ -117,6 +117,22 @@ describe('PublicPageHero', () => {
     expect(chip).toHaveClass('chip--success', 'chip--soft');
   });
 
+  it('keeps the sparkles icon outside the chip label so the eyebrow stays on one line', () => {
+    // Regression: the icon used to be a child of the chip, which puts it inside
+    // <Chip.Label>. Tailwind's reset makes an <svg> display:block, so the label
+    // wrapped — icon stacked above the text in a double-height chip. It must be
+    // a sibling of the label (HeroUI's documented Chip anatomy).
+    render(<PublicPageHero {...defaultProps} />);
+
+    const label = screen.getByText('Featured Section').closest('[data-slot="chip-label"]');
+    const chip = label?.closest('[data-slot="chip"]');
+
+    expect(label).not.toBeNull();
+    expect(chip).not.toBeNull();
+    expect(label!.querySelector('svg')).toBeNull();
+    expect(chip!.querySelector('svg')).not.toBeNull();
+  });
+
   it('accepts rose accent without error', () => {
     render(<PublicPageHero {...defaultProps} accent="rose" />);
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();

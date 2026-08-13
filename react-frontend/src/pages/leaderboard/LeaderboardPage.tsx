@@ -278,7 +278,7 @@ function SeasonCard() {
             </h3>
           </div>
           <Chip size="sm" color="secondary" variant="flat" className="flex-shrink-0">
-            <Calendar className="w-3 h-3 inline mr-1" aria-hidden="true" />
+            <Calendar className="w-3 h-3" aria-hidden="true" />
             {t('leaderboard.season.days_left', { days: season.days_remaining })}
           </Chip>
         </div>

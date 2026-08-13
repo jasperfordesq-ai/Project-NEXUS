@@ -1181,7 +1181,7 @@ export default function ExplorePage() {
                       <div className="flex items-center gap-2">
                         {listing.match_reason && (
                           <Chip size="sm" variant="soft" color="secondary" className="text-xs">
-                            <TrendingUp className="w-3 h-3 mr-1 inline" aria-hidden="true" />
+                            <TrendingUp className="w-3 h-3" aria-hidden="true" />
                             {listing.match_reason}
                           </Chip>
                         )}

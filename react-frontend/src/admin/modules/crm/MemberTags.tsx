@@ -391,7 +391,7 @@ export function MemberTags() {
                     </p>
                   </div>
                   <Chip size="sm" variant="soft">
-                    <Tag size={12} className="inline mr-1" />
+                    <Tag size={12} />
                     {mt.tag}
                   </Chip>
                   <span className="text-xs text-muted hidden sm:inline">

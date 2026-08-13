@@ -73,13 +73,17 @@ export function PublicPageHero({
       <div className={`absolute inset-x-0 bottom-0 h-px bg-linear-to-r ${classes.line}`} aria-hidden="true" />
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
+          {/* The icon goes in startContent, NOT in children: children are wrapped
+              in <Chip.Label>, and Tailwind's reset makes an <svg> display:block,
+              which broke the label onto a second line. As startContent it is a
+              flex sibling of the label and centres against the text. */}
           <Chip
             color={classes.chipColor}
             size="sm"
             variant="soft"
-            className="mb-4 font-medium"
+            className="mb-4 py-1 font-medium"
+            startContent={<Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
           >
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             {eyebrow}
           </Chip>
           <div className="flex items-start gap-4">

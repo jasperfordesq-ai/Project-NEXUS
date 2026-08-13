@@ -482,7 +482,7 @@ function ChallengesTab() {
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <h4 className="font-semibold text-theme-primary">{challenge.title}</h4>
                           <Chip size="sm" color="warning" variant="flat">
-                            <Gem className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                            <Gem className="w-3 h-3" aria-hidden="true" />
                             {t('achievements.xp_value', { xp: challenge.reward_xp })}
                           </Chip>
                         </div>
@@ -557,7 +557,7 @@ function ChallengesTab() {
                           </Button>
                         ) : (
                           <Chip size="sm" color="success" variant="flat">
-                            <CheckCircle className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                            <CheckCircle className="w-3 h-3" aria-hidden="true" />
                             {t('achievements.challenges.claimed')}
                           </Chip>
                         )}
@@ -690,7 +690,7 @@ function JourneysTab() {
                 </div>
                 {collection.reward_xp > 0 && (
                   <Chip size="sm" color="warning" variant="flat" className="flex-shrink-0">
-                    <Gem className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                    <Gem className="w-3 h-3" aria-hidden="true" />
                     {t('achievements.xp_value', { xp: collection.reward_xp })}
                   </Chip>
                 )}
@@ -1122,7 +1122,7 @@ function XpShopTab({ userXp }: { userXp: number }) {
                       color={canAfford ? 'primary' : 'danger'}
                       variant="flat"
                     >
-                      <Gem className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                      <Gem className="w-3 h-3" aria-hidden="true" />
                       {t('achievements.xp_value', { xp: cost.toLocaleString(getFormattingLocale()) })}
                     </Chip>
                     {item.stock_limit !== null && item.stock_limit !== undefined && !isOwned && (
@@ -1133,7 +1133,7 @@ function XpShopTab({ userXp }: { userXp: number }) {
                   {/* Action */}
                   {isOwned ? (
                     <Chip color="success" variant="flat">
-                      <CheckCircle className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                      <CheckCircle className="w-3 h-3" aria-hidden="true" />
                       {t('achievements.shop.owned')}
                     </Chip>
                   ) : !isAvailable ? (
@@ -1859,7 +1859,7 @@ export function AchievementsPage() {
                             <p className="text-xs text-theme-muted line-clamp-2">{badge.description}</p>
                             {!!badge.is_showcased && (
                               <Chip size="sm" color="warning" variant="flat" className="mt-2">
-                                <Star className="w-3 h-3 inline mr-1" aria-hidden="true" />
+                                <Star className="w-3 h-3" aria-hidden="true" />
                                 {t('achievements.showcased')}
                               </Chip>
                             )}

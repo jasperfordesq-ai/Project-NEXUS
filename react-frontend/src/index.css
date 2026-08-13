@@ -110,6 +110,40 @@
 }
 
 /* ─────────────────────────────────────────────
+   CHIP LABELS THAT CONTAIN AN ICON
+
+   HeroUI's documented Chip anatomy puts an icon NEXT TO
+   <Chip.Label>, where .chip's own `inline-flex items-center
+   gap-0.5` centres it. Plain children are wrapped in the
+   label instead, so an icon written as a chip child lands
+   INSIDE the label — and Tailwind's preflight sets
+   `svg { display: block }`, which broke the label onto a
+   second line: icon stacked above the text in a chip twice
+   the height it should be (measured 34px against 20px).
+
+   Thirteen call sites had already worked around it locally
+   with `inline mr-1`; the rest were left wrapping. This
+   restores a single centred row wherever an icon ends up in
+   the label, so the ad-hoc patches are no longer needed.
+   Scoped with :has() so the several hundred text-only chips
+   keep their normal inline layout untouched.
+
+   Prefer `startContent` for new code — this is the safety
+   net, not the pattern to copy.
+   ───────────────────────────────────────────── */
+@layer components {
+  .chip__label:has(> svg) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .chip__label > svg {
+    flex-shrink: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────
    THEME-AWARE UTILITY CLASSES
    Use these instead of hardcoded text-white, etc.
    ───────────────────────────────────────────── */
