@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten — środowisko agenta autonomicznego",
-      "summary": "Framework KI-Agenten (Agent AI) pozwala NEXUSowi proponować zautomatyzowane działania w oparciu o wzorce danych — na przykład sugerowanie kampanii Smart Nudge, oznaczanie członka zagrożonego odejściem lub zalecenie dostosowania współczynnika. Wszystkie propozycje wymagają zgody człowieka, zanim zaczną obowiązywać. Agenci nigdy nie działają jednostronnie, chyba że wyraźnie podniesiesz próg automatycznego stosowania.",
+      "title": "Agenci AI — środowisko agentów autonomicznych",
+      "summary": "Środowisko agentów AI pozwala systemowi NEXUS proponować zautomatyzowane działania na podstawie wzorców w danych — na przykład sugerować kampanię inteligentnych przypomnień, oznaczać członka zagrożonego rezygnacją lub zalecać zmianę współczynnika. Wszystkie propozycje wymagają zgody człowieka, zanim zaczną obowiązywać. Agenci nigdy nie działają jednostronnie, chyba że wyraźnie podniesiesz próg automatycznego stosowania.",
       "steps": [
         {
           "label": "Przejrzyj oczekujące propozycje",

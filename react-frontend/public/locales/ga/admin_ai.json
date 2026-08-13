@@ -82,12 +82,12 @@
     },
     "ki_agents": {
       "meta": {
-        "title": "KI-Agenten",
+        "title": "Gníomhairí intleachta saorga",
         "description": "AG61 - Creat Gníomhaire Uathrialach. Gníomhairí bearta a mholadh; faomhann daoine sula gcuirtear aon rud i bhfeidhm."
       },
       "about": {
-        "title": "Maidir le KI-Agenten",
-        "body": "Déanann KI-Agenten (Gníomhairí AI) gnáththascanna comhordaithe a uathoibriú: teacht ar phéirí dea-chúraim, baill neamhghníomhacha a chothú, ualaí oibre an chomhordaitheora a achoimriú, agus iarratais ar chabhair oscailte a ródú. Oibríonn gach gníomhaire ar shamhail a mholann an t-am sin: gineann gníomhairí tograí, ach ní chuirtear aon rud i bhfeidhm go dtí go gceadaíonn duine é, ach amháin má sháraíonn scór muiníne an togra an tairseach um uath-iarratas a chumraíonn tú.",
+        "title": "Maidir le gníomhairí intleachta saorga",
+        "body": "Déanann gníomhairí intleachta saorga gnáthchúraimí comhordaithe a uathoibriú: péirí maithe cúraim a aimsiú, baill neamhghníomhacha a spreagadh, ualaí oibre na gcomhordaitheoirí a achoimriú, agus iarratais oscailte ar chabhair a chur sa treo ceart. Oibríonn gach gníomhaire de réir samhail ina ndéantar moladh ar dtús agus faomhadh ina dhiaidh sin: gineann na gníomhairí moltaí, ach ní chuirtear aon rud i bhfeidhm go dtí go gceadaíonn duine é, ach amháin má sháraíonn scór muiníne an mholta an tairseach don chur i bhfeidhm uathoibríoch a shocraíonn tú.",
         "tandem_prefix": "le fios",
         "tandem_suffix": "-stíl péireálacha cúraim duine le duine bunaithe ar scileanna, suíomh agus infhaighteacht.",
         "nudge": "cuireann sé leideanna spriocdhírithe chuig baill a bhí neamhghníomhach nó a bhfuil iarratais nach bhfuil a leithéid acu.",
@@ -96,7 +96,7 @@
         "activity": "seoltaí ríomhphoist chuig comhordaitheoirí achoimre sheachtainiúil ar ghníomhaíocht dheonach."
       },
       "tabs": {
-        "aria": "Cluaisíní KI-Agenten",
+        "aria": "Cluaisíní na ngníomhairí intleachta saorga",
         "config": "Cumraíocht",
         "proposals": "Tograí",
         "runs": "Ritheann"
@@ -138,7 +138,7 @@
         "schedule": "Sceideal"
       },
       "config": {
-        "enable_title": "Cumasaigh KI-Agenten",
+        "enable_title": "Cumasaigh gníomhairí intleachta saorga",
         "enable_description": "Máistir ar siúl / as. Nuair a bheidh sé múchta, ní reáchtálfar aon ghníomhairí de réir an sceidil.",
         "agent_types_title": "Cineálacha gníomhairí",
         "tandem_description": "-style tacaíocht pairings",

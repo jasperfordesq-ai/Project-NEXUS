@@ -1471,7 +1471,7 @@
         "notes": "Konto Stripe stanowi działającą infrastrukturę; kod aplikacji pozostaje objęty licencją AGPL."
       },
       "ki_agenten_framework": {
-        "label": "Framework KI-Agenten",
+        "label": "Struktura agentów AI",
         "description": "Środowisko uruchomieniowe agenta dla każdego najemcy, które pozwala koordynatorom definiować strukturalne asystenty dla powtarzalnych procesów.",
         "notes": "Kod jest licencjonowany na zasadach AGPL; każdy najemca dostarcza własne dane uwierzytelniające API modelu językowego i płaci bezpośrednio dostawcy."
       },

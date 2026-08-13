@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten — Cadre d'agent autonome",
-      "summary": "Le framework KI-Agenten (AI Agent) permet à NEXUS de proposer des actions automatisées basées sur des modèles de données – par exemple, suggérer une campagne Smart Nudge, signaler un membre risquant d'abandonner ou recommander un ajustement de coefficient. Toutes les propositions nécessitent l’approbation humaine avant d’entrer en vigueur. Les agents n'agissent jamais de manière unilatérale, sauf si vous augmentez explicitement le seuil d'application automatique.",
+      "title": "Agents d’IA — Cadre d’agents autonomes",
+      "summary": "Le cadre des agents d’IA permet à NEXUS de proposer des actions automatisées à partir de modèles détectés dans les données — par exemple, suggérer une campagne de rappel intelligent, signaler un membre qui risque de se désengager ou recommander un ajustement de coefficient. Toutes les propositions doivent être approuvées par une personne avant de prendre effet. Les agents n’agissent jamais de manière unilatérale, sauf si vous relevez explicitement le seuil d’application automatique.",
       "steps": [
         {
           "label": "Examiner les propositions en attente",

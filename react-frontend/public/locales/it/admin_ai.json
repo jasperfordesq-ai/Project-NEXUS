@@ -86,8 +86,8 @@
         "description": "AG61 - Framework dell'agente autonomo. Gli agenti propongono azioni; gli esseri umani approvano prima che venga applicata qualsiasi cosa."
       },
       "about": {
-        "title": "Informazioni su KI-Agenten",
-        "body": "KI-Agenten (agenti AI) automatizzano le attività di coordinamento di routine: ricerca di buoni abbinamenti di assistenza, sollecitazione dei membri inattivi, riepilogo dei carichi di lavoro dei coordinatori e instradamento delle richieste di aiuto aperte. Ogni agente funziona secondo un modello di proposta e poi approvazione: gli agenti generano proposte, ma nulla viene applicato finché un essere umano non la approva, a meno che il punteggio di confidenza della proposta non superi la soglia di applicazione automatica configurata.",
+        "title": "Informazioni sugli agenti IA",
+        "body": "Gli agenti IA automatizzano le attività ordinarie di coordinamento: individuano abbinamenti di assistenza adeguati, sollecitano i membri inattivi, riepilogano i carichi di lavoro dei coordinatori e instradano le richieste di aiuto aperte. Ogni agente segue un modello basato prima sulla proposta e poi sull’approvazione: gli agenti generano proposte, ma nulla viene applicato finché una persona non le approva, a meno che il punteggio di affidabilità della proposta non superi la soglia di applicazione automatica configurata.",
         "tandem_prefix": "suggerisce",
         "tandem_suffix": "-care abbinamenti individuali in base alle competenze, alla posizione e alla disponibilità.",
         "nudge": "invia richieste mirate ai membri che sono stati inattivi o hanno richieste senza corrispondenza.",
@@ -96,7 +96,7 @@
         "activity": "invia ai coordinatori un riepilogo settimanale delle attività di volontariato."
       },
       "tabs": {
-        "aria": "schede KI-Agenten",
+        "aria": "Schede degli agenti IA",
         "config": "Configurazione",
         "proposals": "Proposte",
         "runs": "Corre"
@@ -136,7 +136,7 @@
         "schedule": "Programma"
       },
       "config": {
-        "enable_title": "Abilita KI-Agenten",
+        "enable_title": "Abilita gli agenti IA",
         "enable_description": "Accensione/spegnimento principale. Quando è disattivato, nessun agente verrà eseguito secondo la pianificazione.",
         "agent_types_title": "Tipi di agenti",
         "tandem_description": "accoppiamenti di supporto in stile",

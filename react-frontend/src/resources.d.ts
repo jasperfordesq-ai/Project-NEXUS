@@ -3332,13 +3332,13 @@ export default interface Resources {
       "ki_agents": {
         "about": {
           "activity": "emails coordinators a weekly digest of volunteer activity.",
-          "body": "KI-Agenten (AI Agents) automate routine coordination tasks: finding good care pairings, nudging inactive members, summarising coordinator workloads, and routing open help requests. Every agent works on a propose-then-approve model: agents generate proposals, but nothing is applied until a human approves it, unless the proposal's confidence score exceeds the auto-apply threshold you configure.",
+          "body": "AI Agents automate routine coordination tasks: finding good care pairings, nudging inactive members, summarising coordinator workloads, and routing open help requests. Every agent works on a propose-then-approve model: agents generate proposals, but nothing is applied until a human approves it, unless the proposal's confidence score exceeds the auto-apply threshold you configure.",
           "demand": "predicts upcoming care demand from historical patterns.",
           "help": "suggests the best coordinator for open help requests.",
           "nudge": "sends targeted prompts to members who have been inactive or have unmatched requests.",
           "tandem_prefix": "suggests",
           "tandem_suffix": "-style one-to-one care pairings based on skills, location, and availability.",
-          "title": "About KI-Agenten"
+          "title": "About AI Agents"
         },
         "actions": {
           "approve": "Approve",
@@ -3364,7 +3364,7 @@ export default interface Resources {
           "auto_apply_threshold_help": "Proposals above this confidence are applied automatically without review.",
           "demand_description": "Predict care demand from volunteer-log trends",
           "enable_description": "Master on/off. When off, no agents will run on schedule.",
-          "enable_title": "Enable KI-Agenten",
+          "enable_title": "Enable AI Agents",
           "help_description": "Auto-route open help requests",
           "max_proposals": "Max proposals per run",
           "notification_email": "Notification email",
@@ -3395,7 +3395,7 @@ export default interface Resources {
         },
         "meta": {
           "description": "AG61 - Autonomous Agent Framework. Agents propose actions; humans approve before anything is applied.",
-          "title": "KI-Agenten"
+          "title": "AI Agents"
         },
         "proposal_types": {
           "create_tandem": "Create tandem",
@@ -3471,7 +3471,7 @@ export default interface Resources {
           "running": "Running"
         },
         "tabs": {
-          "aria": "KI-Agenten tabs",
+          "aria": "AI Agent tabs",
           "config": "Config",
           "proposals": "Proposals",
           "runs": "Runs"
@@ -6303,7 +6303,7 @@ export default interface Resources {
         },
         "ki_agenten_framework": {
           "description": "A per-tenant agent runtime that lets coordinators define structured assistants for repeatable workflows.",
-          "label": "KI-Agenten framework",
+          "label": "AI Agent framework",
           "notes": "The code is AGPL-licensed; each tenant supplies its own language-model API credentials and pays the provider directly."
         },
         "local_advertising_campaigns": {
@@ -18103,9 +18103,9 @@ export default interface Resources {
   "detail": "Use the Agent Registry to enable or disable specific agent types. Start with a small set and expand as you become confident in their recommendations.",
   "label": "Add or disable agent types"
 }],
-        "summary": "The KI-Agenten (AI Agent) framework allows NEXUS to propose automated actions based on data patterns — for example, suggesting a Smart Nudge campaign, flagging a member at risk of dropping out, or recommending a coefficient adjustment. All proposals require human approval before they take effect. Agents never act unilaterally unless you explicitly raise the auto-apply threshold.",
+        "summary": "The AI Agent framework allows NEXUS to propose automated actions based on data patterns — for example, suggesting a Smart Nudge campaign, flagging a member at risk of dropping out, or recommending a coefficient adjustment. All proposals require human approval before they take effect. Agents never act unilaterally unless you explicitly raise the auto-apply threshold.",
         "tips": ["The propose-then-approve model is a deliberate safety mechanism — do not disable it for consequential actions (e.g. safeguarding escalations, large credit transfers).", "Agents learn from your approve/reject decisions over time. Consistent rejections of a specific agent type are a signal to review its configuration."],
-        "title": "KI-Agenten — Autonomous Agent Framework"
+        "title": "AI Agents — Autonomous Agent Framework"
       },
       "/admin/pilot-inquiries": {
         "relatedPaths": [{
@@ -22250,6 +22250,8 @@ export default interface Resources {
     "dashboard": "Dashboard",
     "deliverability": "Deliverability",
     "diagnostics": "Diagnostics",
+    "documentation": "Documentation",
+    "documentation_aria": "Platform documentation (opens in a new tab)",
     "donation_refunds": "Donation Refunds",
     "email_deliverability": "Email Deliverability",
     "email_settings": "Email Settings",
@@ -22470,6 +22472,7 @@ export default interface Resources {
     "search_keywords": {
       "all_users": "members|accounts",
       "bounces": "email failed|mail returned",
+      "categories": "activities|activity categories|listing categories|offer categories|request categories|topics",
       "deliverability": "deliverables|scheduled email",
       "donation_refunds": "donations|refund|Stripe|giving",
       "email_deliverability": "mail failed|SMTP health|delivery",
@@ -32713,6 +32716,7 @@ export default interface Resources {
       "password_placeholder": "••••••••",
       "pending_approval": "Your account is waiting to be approved by a coordinator for this community. You will receive an email as soon as it is approved. This usually happens within a few days.",
       "pending_approval_contact": "Contact the community",
+      "pending_approval_title": "You're registered and waiting for approval",
       "pending_verification": "Your identity verification is still in progress. Please complete the verification process or wait for it to finish.",
       "rate_limited": "Too many attempts. Please try again later.",
       "rate_limited_seconds": "Too many attempts. Please wait {{seconds}} seconds.",
@@ -32825,8 +32829,8 @@ export default interface Resources {
       "password_tip_weak_example": "P@ssw0rd!",
       "passwords_match": "Passwords match",
       "passwords_must_match": "Passwords must match",
-      "phone_admin_note": "Required for account verification. Only visible to administrators.",
-      "phone_error": "Enter a valid international number (e.g. +1 555 123 4567)",
+      "phone_admin_note": "Start with + and your country code, then drop the first 0 of your local number. Required for verification and only visible to administrators.",
+      "phone_error": "Include your country code, starting with +, and drop the first 0 of your local number (e.g. +1 555 123 4567)",
       "phone_label": "Phone Number",
       "phone_placeholder": "e.g. +1 555 123 4567",
       "phone_required": "Phone number is required",
@@ -38296,8 +38300,10 @@ export default interface Resources {
     "release_stage": "Generally Available (v1.6.0)",
     "release_status": {
       "changelog_link": "Changelog",
+      "docs_link": "Documentation",
+      "docs_link_aria": "Documentation (opens in a new tab)",
       "features_link": "Features",
-      "summary": "Project NEXUS is actively evolving, with feature maturity shown transparently across the platform."
+      "summary": "Always evolving."
     },
     "report_problem": {
       "auth_description": "Please sign in before sending a technical support report.",

@@ -86,8 +86,8 @@
         "description": "AG61 - Estrutura de Agente Autônomo. Os agentes propõem ações; os humanos aprovam antes que qualquer coisa seja aplicada."
       },
       "about": {
-        "title": "Sobre KI-Agenten",
-        "body": "KI-Agenten (Agentes AI) automatizam tarefas de coordenação de rotina: encontrar bons pares de cuidados, cutucar membros inativos, resumir cargas de trabalho do coordenador e encaminhar solicitações de ajuda abertas. Cada agente trabalha em um modelo de propor e depois aprovar: os agentes geram propostas, mas nada é aplicado até que um ser humano aprove, a menos que a pontuação de confiança da proposta exceda o limite de aplicação automática que você configurar.",
+        "title": "Sobre os agentes de IA",
+        "body": "Os agentes de IA automatizam tarefas correntes de coordenação: encontram pares de cuidados adequados, contactam membros inativos, resumem as cargas de trabalho dos coordenadores e encaminham pedidos de ajuda em aberto. Cada agente segue um modelo de proposta e posterior aprovação: os agentes geram propostas, mas nada é aplicado até que uma pessoa as aprove, salvo se o nível de confiança da proposta ultrapassar o limiar de aplicação automática configurado.",
         "tandem_prefix": "sugere",
         "tandem_suffix": "pares de cuidados individuais com base em habilidades, localização e disponibilidade.",
         "nudge": "envia avisos direcionados aos membros que estiveram inativos ou que têm solicitações sem correspondência.",
@@ -96,7 +96,7 @@
         "activity": "envia por e-mail aos coordenadores um resumo semanal das atividades voluntárias."
       },
       "tabs": {
-        "aria": "Guias KI-Agenten",
+        "aria": "Separadores dos agentes de IA",
         "config": "Configuração",
         "proposals": "Propostas",
         "runs": "Corre"
@@ -136,7 +136,7 @@
         "schedule": "Agendar"
       },
       "config": {
-        "enable_title": "Habilitar KI-Agenten",
+        "enable_title": "Ativar agentes de IA",
         "enable_description": "Mestre ligado/desligado. Quando desativado, nenhum agente funcionará dentro do cronograma.",
         "agent_types_title": "Tipos de agentes",
         "tandem_description": "pares de suporte de estilo",

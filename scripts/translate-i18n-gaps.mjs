@@ -259,6 +259,11 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   "€16.06 : €1",
   "EU (EEA)",
   "Azure VM",
+  // Duration-filter tokens: the hour unit and numeric ranges are locale-neutral
+  // operational values, not English prose.
+  "1–3h",
+  "3–6h",
+  "6h+",
 ]);
 
 // Cognates and borrowed technical terms that are valid translations only in the
@@ -327,7 +332,52 @@ const LANGUAGE_IDENTICAL_VALUE_ALLOWLIST = {
     "Image {{number}}",
     "{{name}} — Messages",
   ]),
-  pt: new Set(['Café']),
+  it: new Set([
+    '{{count}} post',
+    'Ad hoc',
+    'Jane...',
+    'Webhook...',
+    'Check-in',
+    'Open Source',
+  ]),
+  pt: new Set([
+    'Café',
+    'Total: {{count}}',
+    '{{count}} total',
+    '{{count}} check-ins',
+    'Layouts...',
+    'Ad hoc',
+    'Jane...',
+    'Webhook...',
+    'Check-in',
+    'Check-ins',
+  ]),
+  es: new Set([
+    '{{count}} total',
+    '{{count}} ideas',
+    '{{count}} idea',
+    'General.',
+    'Robots.',
+    'Webhook...',
+  ]),
+  pl: new Set([
+    'Partner #{{id}}',
+    'Status: {{status}}',
+    'Administrator #{{id}}',
+    'Jane...',
+  ]),
+  ja: new Set([
+    'CTA URL',
+    'Webhook URL',
+  ]),
+  ga: new Set([
+    '{{count}} post',
+    '€16 : €1',
+    '€50,000',
+    '€753,184',
+    'OS Places (PSGA)',
+    'Jane...',
+  ]),
   nl: new Set([
     "Ortsteil (district)",
     "Payload (JSON)",

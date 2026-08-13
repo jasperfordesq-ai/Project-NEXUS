@@ -86,8 +86,8 @@
         "description": "AG61 - Marco de agentes autónomos. Los agentes proponen acciones; los humanos aprueban antes de que se aplique algo."
       },
       "about": {
-        "title": "Acerca de KI-Agenten",
-        "body": "KI-Agenten (agentes AI) automatizan tareas de coordinación de rutina: encontrar buenas parejas de atención, empujar a miembros inactivos, resumir las cargas de trabajo de los coordinadores y enrutar solicitudes de ayuda abiertas. Cada agente trabaja en un modelo de proponer y luego aprobar: los agentes generan propuestas, pero no se aplica nada hasta que un humano lo apruebe, a menos que la puntuación de confianza de la propuesta supere el umbral de aplicación automática que usted configure.",
+        "title": "Acerca de los agentes de IA",
+        "body": "Los agentes de IA automatizan tareas habituales de coordinación: encuentran parejas de atención adecuadas, envían recordatorios a miembros inactivos, resumen las cargas de trabajo de los coordinadores y dirigen las solicitudes de ayuda abiertas. Cada agente sigue un modelo de propuesta y posterior aprobación: los agentes generan propuestas, pero nada se aplica hasta que una persona lo aprueba, salvo que la puntuación de confianza de la propuesta supere el umbral de aplicación automática configurado.",
         "tandem_prefix": "sugiere",
         "tandem_suffix": "-Estilo de emparejamientos de atención uno a uno según las habilidades, la ubicación y la disponibilidad.",
         "nudge": "envía mensajes específicos a miembros que han estado inactivos o que tienen solicitudes no coincidentes.",
@@ -96,7 +96,7 @@
         "activity": "envía por correo electrónico a los coordinadores un resumen semanal de la actividad voluntaria."
       },
       "tabs": {
-        "aria": "Pestañas KI-Agenten",
+        "aria": "Pestañas de agentes de IA",
         "config": "configuración",
         "proposals": "Propuestas",
         "runs": "Corre"
@@ -136,7 +136,7 @@
         "schedule": "Horario"
       },
       "config": {
-        "enable_title": "Habilitar KI-Agenten",
+        "enable_title": "Habilitar agentes de IA",
         "enable_description": "Maestro encendido/apagado. Cuando esté desactivado, ningún agente funcionará según lo programado.",
         "agent_types_title": "Tipos de agentes",
         "tandem_description": "-emparejamientos de soporte de estilo",

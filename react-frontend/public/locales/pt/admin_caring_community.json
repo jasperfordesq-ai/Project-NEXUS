@@ -1461,7 +1461,7 @@
         "notes": "A conta do Stripe é infraestrutura operacional; o código do aplicativo continua licenciado sob AGPL."
       },
       "ki_agenten_framework": {
-        "label": "Framework KI-Agenten",
+        "label": "Estrutura de agentes de IA",
         "description": "Um runtime de agente por locatário que permite aos coordenadores definir assistentes estruturados para fluxos de trabalho repetíveis.",
         "notes": "O código é licenciado sob AGPL; cada locatário fornece suas próprias credenciais de API do modelo de linguagem e paga diretamente ao provedor."
       },

@@ -82,12 +82,12 @@
     },
     "ki_agents": {
       "meta": {
-        "title": "KI-Agenten",
+        "title": "AI Agents",
         "description": "AG61 - Autonomous Agent Framework. Agents propose actions; humans approve before anything is applied."
       },
       "about": {
-        "title": "About KI-Agenten",
-        "body": "KI-Agenten (AI Agents) automate routine coordination tasks: finding good care pairings, nudging inactive members, summarising coordinator workloads, and routing open help requests. Every agent works on a propose-then-approve model: agents generate proposals, but nothing is applied until a human approves it, unless the proposal's confidence score exceeds the auto-apply threshold you configure.",
+        "title": "About AI Agents",
+        "body": "AI Agents automate routine coordination tasks: finding good care pairings, nudging inactive members, summarising coordinator workloads, and routing open help requests. Every agent works on a propose-then-approve model: agents generate proposals, but nothing is applied until a human approves it, unless the proposal's confidence score exceeds the auto-apply threshold you configure.",
         "tandem_prefix": "suggests",
         "tandem_suffix": "-style one-to-one care pairings based on skills, location, and availability.",
         "nudge": "sends targeted prompts to members who have been inactive or have unmatched requests.",
@@ -96,7 +96,7 @@
         "activity": "emails coordinators a weekly digest of volunteer activity."
       },
       "tabs": {
-        "aria": "KI-Agenten tabs",
+        "aria": "AI Agent tabs",
         "config": "Config",
         "proposals": "Proposals",
         "runs": "Runs"
@@ -142,7 +142,7 @@
         "send_nudge": "Send nudge"
       },
       "config": {
-        "enable_title": "Enable KI-Agenten",
+        "enable_title": "Enable AI Agents",
         "enable_description": "Master on/off. When off, no agents will run on schedule.",
         "agent_types_title": "Agent types",
         "tandem_description": "-style support pairings",

@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten: marco de agentes autónomos",
-      "summary": "El marco KI-Agenten (Agente de IA) permite a NEXUS proponer acciones automatizadas basadas en patrones de datos, por ejemplo, sugerir una campaña Smart Nudge, señalar a un miembro en riesgo de abandonar o recomendar un ajuste de coeficiente. Todas las propuestas requieren la aprobación humana antes de que entren en vigor. Los agentes nunca actúan unilateralmente a menos que usted aumente explícitamente el umbral de aplicación automática.",
+      "title": "Agentes de IA: marco de agentes autónomos",
+      "summary": "El marco de agentes de IA permite a NEXUS proponer acciones automatizadas basadas en patrones de datos; por ejemplo, sugerir una campaña de recordatorios inteligentes, señalar a un miembro en riesgo de abandonar o recomendar un ajuste del coeficiente. Todas las propuestas requieren la aprobación de una persona antes de entrar en vigor. Los agentes nunca actúan unilateralmente, salvo que aumente explícitamente el umbral de aplicación automática.",
       "steps": [
         {
           "label": "Revisar propuestas pendientes",

@@ -1224,7 +1224,7 @@
         "weekly": "Seachtainiúil",
         "fortnightly": "coicís",
         "monthly": "go míosúil",
-        "ad_hoc": "Ad hoc"
+        "ad_hoc": "De réir mar is gá"
       },
       "status": {
         "active": "Gníomhach",
@@ -2833,7 +2833,7 @@
     "fields": {
       "municipality_domain": "Fearann ​​bardais",
       "domain_or_organisation": "Fearann ​​nó eagraíocht",
-      "domain_placeholder": "e.g. zurich.ch",
+      "domain_placeholder": "m.sh. zurich.ch",
       "attestation_note": "Nóta fianaithe (roghnach)",
       "attestation_description": "Cén fáth a bhfuil sé seo á fhianú agat gan fíorú DNS? (Conair iniúchta.)"
     },
@@ -3428,10 +3428,10 @@
     },
     "form": {
       "name": "Ainm",
-      "name_placeholder": "e.g. Lorzenhof",
-      "slug": "Drúchtín (uathghinte má tá sé bán)",
-      "slug_placeholder": "e.g. lorzenhof",
-      "slug_description": "Cás íochtair, aitheantóir hyphenated a úsáidtear i URLs agus scagairí.",
+      "name_placeholder": "m.sh. Lorzenhof",
+      "slug": "Sluga (gineadh go huathoibríoch má fhágtar bán é)",
+      "slug_placeholder": "m.sh. lorzenhof",
+      "slug_description": "Aitheantóir i gcás íochtair le fleiscíní, a úsáidtear in URLanna agus i scagairí.",
       "type": "Cineál",
       "description": "Cur síos",
       "description_placeholder": "Cur síos gairid ar an réimse seo...",

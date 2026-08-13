@@ -153,6 +153,11 @@ const NO_TRANSLATE_VALUES = new Set([
   "€16.06 : €1",
   "EU (EEA)",
   "Azure VM",
+  // Duration-filter tokens: the hour unit and numeric ranges are locale-neutral
+  // operational values, not English prose.
+  "1–3h",
+  "3–6h",
+  "6h+",
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale
@@ -187,7 +192,14 @@ const LOCALE_IDENTITY_VALUES = new Map([
       "Position {{position}}",
       "Name (optional)",
   ])],
-  ['es', new Set(['{{count}} total', '{{count}} ideas'])],
+  ['es', new Set([
+      '{{count}} total',
+      '{{count}} ideas',
+      '{{count}} idea',
+      'General.',
+      'Robots.',
+      'Webhook...',
+  ])],
   ['fr', new Set([
       "{{count}} messages",
       "{{count}} total",
@@ -219,8 +231,22 @@ const LOCALE_IDENTITY_VALUES = new Map([
       "Image {{number}}",
       "{{name}} — Messages",
   ])],
-  ['it', new Set(['{{count}} post'])],
-  ['ga', new Set(['{{count}} post'])],
+  ['it', new Set([
+      '{{count}} post',
+      'Ad hoc',
+      'Jane...',
+      'Webhook...',
+      'Check-in',
+      'Open Source',
+  ])],
+  ['ga', new Set([
+      '{{count}} post',
+      '€16 : €1',
+      '€50,000',
+      '€753,184',
+      'OS Places (PSGA)',
+      'Jane...',
+  ])],
   ['nl', new Set([
       "Ortsteil (district)",
       "Payload (JSON)",
@@ -246,7 +272,28 @@ const LOCALE_IDENTITY_VALUES = new Map([
       "Deadline: {{date}}",
       "{{count}} item",
   ])],
-  ['pt', new Set(['Total: {{count}}', '{{count}} total', '{{count}} check-ins', 'Café'])],
+  ['pt', new Set([
+      'Total: {{count}}',
+      '{{count}} total',
+      '{{count}} check-ins',
+      'Café',
+      'Layouts...',
+      'Ad hoc',
+      'Jane...',
+      'Webhook...',
+      'Check-in',
+      'Check-ins',
+  ])],
+  ['pl', new Set([
+      'Partner #{{id}}',
+      'Status: {{status}}',
+      'Administrator #{{id}}',
+      'Jane...',
+  ])],
+  ['ja', new Set([
+      'CTA URL',
+      'Webhook URL',
+  ])],
 ]);
 
 const UNIT_OR_FORMAT_PATTERN = /^[\s\d.,:;()+\-–—~/%×∞]*[a-zA-Z]{0,3}[\s\d.,:;()+\-–—~/%×∞]*$/u;

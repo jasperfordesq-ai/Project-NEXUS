@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten — Estrutura de Agente Autônomo",
-      "summary": "A estrutura KI-Agenten (AI Agent) permite que a NEXUS proponha ações automatizadas com base em padrões de dados – por exemplo, sugerindo uma campanha Smart Nudge, sinalizando um membro em risco de abandono ou recomendando um ajuste de coeficiente. Todas as propostas requerem aprovação humana antes de entrarem em vigor. Os agentes nunca agem unilateralmente, a menos que você aumente explicitamente o limite de aplicação automática.",
+      "title": "Agentes de IA — Estrutura de agentes autónomos",
+      "summary": "A estrutura de agentes de IA permite ao NEXUS propor ações automatizadas com base em padrões de dados — por exemplo, sugerir uma campanha de lembretes inteligentes, assinalar um membro em risco de desistir ou recomendar um ajuste do coeficiente. Todas as propostas exigem aprovação humana antes de produzirem efeito. Os agentes nunca agem unilateralmente, a menos que aumente explicitamente o limiar de aplicação automática.",
       "steps": [
         {
           "label": "Analisar propostas pendentes",

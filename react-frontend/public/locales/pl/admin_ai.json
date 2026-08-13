@@ -86,8 +86,8 @@
         "description": "AG61 — Struktura agenta autonomicznego. Agenci proponują działania; ludzie zatwierdzają, zanim cokolwiek zostanie zastosowane."
       },
       "about": {
-        "title": "O KI-Agenten",
-        "body": "KI-Agenten (Agenci AI) automatyzują rutynowe zadania koordynacyjne: znajdowanie dobrych par opieki, szturchanie nieaktywnych członków, podsumowywanie obciążeń koordynatora i kierowanie otwartych próśb o pomoc. Każdy agent działa w oparciu o model „zaproponuj, a następnie zatwierdź”: agenci generują propozycje, ale nic nie jest stosowane, dopóki nie zostanie zatwierdzone przez człowieka, chyba że poziom pewności propozycji przekracza skonfigurowany próg automatycznego stosowania.",
+        "title": "O agentach AI",
+        "body": "Agenci AI automatyzują rutynowe zadania koordynacyjne: wyszukują odpowiednie pary opieki, przypominają się nieaktywnym członkom, podsumowują obciążenie koordynatorów i kierują otwarte prośby o pomoc do właściwych osób. Każdy agent działa według modelu „najpierw propozycja, potem zatwierdzenie”: agenci tworzą propozycje, ale nic nie zostaje zastosowane bez zgody człowieka, chyba że poziom ufności propozycji przekroczy skonfigurowany próg automatycznego zastosowania.",
         "tandem_prefix": "sugeruje",
         "tandem_suffix": "-styl łączenia opieki indywidualnej w oparciu o umiejętności, lokalizację i dostępność.",
         "nudge": "wysyła ukierunkowane powiadomienia do członków, którzy byli nieaktywni lub mają niedopasowane żądania.",
@@ -96,7 +96,7 @@
         "activity": "wysyła e-mailem koordynatorom cotygodniowe podsumowanie działań wolontariatu."
       },
       "tabs": {
-        "aria": "Zakładki KI-Agenten",
+        "aria": "Karty agentów AI",
         "config": "Konfig",
         "proposals": "Propozycje",
         "runs": "Biegnie"
@@ -137,7 +137,7 @@
         "schedule": "Harmonogram"
       },
       "config": {
-        "enable_title": "Włącz KI-Agenten",
+        "enable_title": "Włącz agentów AI",
         "enable_description": "Mistrz wł./wył. Gdy opcja jest wyłączona, żaden agent nie będzie działał zgodnie z harmonogramem.",
         "agent_types_title": "Typy agentów",
         "tandem_description": "-stylowe pary wsparcia",

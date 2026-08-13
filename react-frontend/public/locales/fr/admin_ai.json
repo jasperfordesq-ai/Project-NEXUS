@@ -86,8 +86,8 @@
         "description": "AG61 - Cadre d'agent autonome. Les agents proposent des actions ; les humains approuvent avant que quoi que ce soit ne soit appliqué."
       },
       "about": {
-        "title": "À propos de KI-Agenten",
-        "body": "KI-Agenten (agents AI) automatise les tâches de coordination de routine : trouver de bons couples de soins, donner un coup de pouce aux membres inactifs, résumer les charges de travail des coordonnateurs et acheminer les demandes d'aide ouvertes. Chaque agent travaille sur un modèle de proposition puis d'approbation : les agents génèrent des propositions, mais rien n'est appliqué jusqu'à ce qu'un humain l'approuve, à moins que le score de confiance de la proposition dépasse le seuil d'application automatique que vous configurez.",
+        "title": "À propos des agents d’IA",
+        "body": "Les agents d’IA automatisent les tâches courantes de coordination : trouver des binômes de soins adaptés, relancer les membres inactifs, résumer la charge de travail des coordinateurs et acheminer les demandes d’aide en attente. Chaque agent fonctionne selon un modèle de proposition puis d’approbation : les agents génèrent des propositions, mais rien n’est appliqué avant l’approbation d’une personne, sauf si le score de confiance de la proposition dépasse le seuil d’application automatique que vous avez défini.",
         "tandem_prefix": "suggère",
         "tandem_suffix": "-stylez des jumelages de soins individuels en fonction des compétences, de l'emplacement et de la disponibilité.",
         "nudge": "envoie des invites ciblées aux membres qui ont été inactifs ou dont les demandes n'ont pas été satisfaites.",
@@ -96,7 +96,7 @@
         "activity": "envoie par courrier électronique aux coordinateurs un résumé hebdomadaire des activités bénévoles."
       },
       "tabs": {
-        "aria": "Onglets KI-Agenten",
+        "aria": "Onglets des agents d’IA",
         "config": "Configuration",
         "proposals": "Propositions",
         "runs": "Fonctionne"
@@ -136,7 +136,7 @@
         "schedule": "Calendrier"
       },
       "config": {
-        "enable_title": "Activer KI-Agenten",
+        "enable_title": "Activer les agents d’IA",
         "enable_description": "Maître marche/arrêt. Lorsqu'elle est désactivée, aucun agent ne s'exécutera dans les délais.",
         "agent_types_title": "Types d'agents",
         "tandem_description": "-appariements de support de style",

@@ -166,7 +166,7 @@
         "feed": "Fotha"
       },
       "placeholders": {
-        "budget": "e.g. 5000 = EUR 50.00",
+        "budget": "m.sh. 5000 = EUR 50.00",
         "campaign_name": "Díolachán Samhraidh - Cafe Helvetia",
         "audience_filters_json": "{\"radius_km\": 5, \"lat\": 47.1758, \"lng\": 8.4622, \"interests\": [\"gairdín\"]}"
       },

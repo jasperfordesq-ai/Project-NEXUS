@@ -1429,7 +1429,7 @@
         "notes": ""
       },
       "ki_agenten_framework": {
-        "label": "KI-Agenten framework",
+        "label": "AI Agent framework",
         "description": "A per-tenant agent runtime that lets coordinators define structured assistants for repeatable workflows.",
         "notes": "The code is AGPL-licensed; each tenant supplies its own language-model API credentials and pays the provider directly."
       },

@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten — Autonomous Agent Framework",
-      "summary": "The KI-Agenten (AI Agent) framework allows NEXUS to propose automated actions based on data patterns — for example, suggesting a Smart Nudge campaign, flagging a member at risk of dropping out, or recommending a coefficient adjustment. All proposals require human approval before they take effect. Agents never act unilaterally unless you explicitly raise the auto-apply threshold.",
+      "title": "AI Agents — Autonomous Agent Framework",
+      "summary": "The AI Agent framework allows NEXUS to propose automated actions based on data patterns — for example, suggesting a Smart Nudge campaign, flagging a member at risk of dropping out, or recommending a coefficient adjustment. All proposals require human approval before they take effect. Agents never act unilaterally unless you explicitly raise the auto-apply threshold.",
       "steps": [
         {
           "label": "Review pending proposals",

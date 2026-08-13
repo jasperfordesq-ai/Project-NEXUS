@@ -1539,8 +1539,8 @@
       ]
     },
     "/admin/ki-agents": {
-      "title": "KI-Agenten — Creat Gníomhaire Uathrialach",
-      "summary": "Ligeann creat KI-Agenten (Gníomhaire AI) do NEXUS gníomhartha uathoibrithe a mholadh bunaithe ar phatrúin sonraí - mar shampla, feachtas Smart Nudge a mholadh, comhalta a chur in iúl i mbaol titim amach, nó coigeartú comhéifeacht a mholadh. Teastaíonn faomhadh daonna ó gach togra sula dtiocfaidh siad i bhfeidhm. Ní ghníomhaíonn gníomhairí go haontaobhach mura n-ardaíonn tú go sainráite an tairseach um uath-iarratas.",
+      "title": "Gníomhairí intleachta saorga — Creat do ghníomhairí uathrialacha",
+      "summary": "Cuireann creat na ngníomhairí intleachta saorga ar chumas NEXUS gníomhartha uathoibrithe a mholadh bunaithe ar phatrúin sna sonraí — mar shampla, feachtas meabhrúchán cliste a mholadh, ball atá i mbaol imeacht a thabhairt faoi deara, nó coigeartú comhéifeachta a mholadh. Ní mór do dhuine gach moladh a fhaomhadh sula gcuirtear i bhfeidhm é. Ní ghníomhaíonn na gníomhairí as a stuaim féin ach amháin má ardaíonn tú go sainráite an tairseach don chur i bhfeidhm uathoibríoch.",
       "steps": [
         {
           "label": "Athbhreithniú ar thograí atá ar feitheamh",
