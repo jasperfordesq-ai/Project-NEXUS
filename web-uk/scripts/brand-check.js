@@ -91,6 +91,38 @@ console.log('Branding Guard - Checking for forbidden government branding...\n');
 
 const violations = scanDirectory(VIEWS_DIR);
 
+// 🔴 GDS Transport check — the compiled stylesheet, not the templates.
+//
+// The branding rules forbid the GDS Transport typeface outright: it is a licensed
+// Crown font for GOV.UK services, and this is an independent community project.
+// This guard scanned only `src/views`, so it could never have seen a font: on
+// 2026-08-13 the compiled CSS named GDS Transport **63 TIMES** while this check
+// reported "Branding check passed."
+//
+// It survived because nothing looked wrong — the font file is never served, so text
+// fell back to arial. Blade sets `$govuk-font-family` and web-uk did not, letting
+// govuk-frontend's default stack through.
+//
+// The fix is a `@use "govuk/index" as * with (...)` override in
+// src/assets/scss/main.scss. This asserts the OUTPUT, because that is the thing that
+// ships. If public/css/main.css is missing, that is not a pass — say so.
+const CSS_BUILD = path.join(__dirname, '..', 'public', 'css', 'main.css');
+if (!fs.existsSync(CSS_BUILD)) {
+  console.error('BRANDING CHECK CANNOT RUN: public/css/main.css is missing.');
+  console.error('Run `npm run build:css` first — a missing stylesheet is not a pass.');
+  process.exit(1);
+}
+const compiledCss = fs.readFileSync(CSS_BUILD, 'utf8');
+const gdsHits = (compiledCss.match(/GDS\s+Transport/gi) || []).length;
+if (gdsHits > 0) {
+  violations.push({
+    file: CSS_BUILD,
+    line: 0,
+    description: `GDS Transport named ${gdsHits} time(s) in the compiled CSS — a licensed Crown typeface this project must not use. Add/restore the $govuk-font-family override in src/assets/scss/main.scss and rebuild.`,
+    content: 'font-family: "GDS Transport", ...',
+  });
+}
+
 // 🔴 The header "Not affiliated with GOV.UK" disclosure is no longer required,
 // and this check no longer asserts it (owner decision, 2026-08-11). Laravel Blade
 // — the source of truth for the browser experience — never carried it, and

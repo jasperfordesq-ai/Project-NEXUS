@@ -1,5 +1,33 @@
-// GOV.UK Frontend - all styles
-@use "govuk/index" as *;
+// 🔴 GDS Transport MUST NOT be used, declared or requested by this service.
+//
+// It is a licensed Crown typeface for GOV.UK services. This is an independent
+// community project, so using it — or even naming it in a font stack — is part of
+// the passing-off risk the branding rules exist to avoid. The rule is written in
+// AGENTS.md and web-uk/CLAUDE.md: "NO GDS Transport font — the Sass override to a
+// system font stack stays."
+//
+// The values match accessible-frontend/src/app.scss lines 6-7 exactly, so both
+// accessible frontends render the same typeface.
+//
+// 🔴 They are passed via `@use ... with (...)`, NOT declared above the import. Blade
+// uses the older `@import` model where a plain `$var: value;` beforehand wins; this
+// file uses Sass modules, where the same thing is a hard error ("this module and the
+// new module both define a variable"). Configuring the module is the only way.
+//
+// 🔴 web-uk had NEITHER override until 2026-08-13, so govuk-frontend's default stack
+// flowed straight through and the compiled CSS named GDS Transport **63 times** while
+// Blade's named it zero. In practice the font file is never served, so text fell back
+// to arial and looked correct — which is exactly why it survived: nothing visible was
+// wrong, and `scripts/brand-check.js` did not test fonts at all. That check now does.
+// 🔴 The extra parentheses around the stack are REQUIRED. Without them Sass reads the
+// commas as argument separators and emits `font-family: arial helvetica sans-serif` —
+// space-separated, invalid CSS, which browsers discard entirely and fall back to their
+// default serif. That is a worse regression than the one this override fixes, and it
+// looks fine in the build output, so it is only caught by reading the compiled value.
+@use "govuk/index" as * with (
+  $govuk-font-family: (arial, helvetica, sans-serif),
+  $govuk-font-family-print: sans-serif
+);
 
 // Project NEXUS accessible shell. This mirrors the Laravel Blade accessible
 // frontend's reusable visual layer while keeping this app on Express/Nunjucks.
