@@ -2,9 +2,9 @@
 
 Status: **Generated snapshot — structural route inventory, not certification**
 
-Generated: 2026-08-13T13:29:34.966Z
-Laravel commit SHA: `01989e921c31ccc316d5ba7094703910b5e3656c`
-Web UK repository commit SHA: `01989e921c31ccc316d5ba7094703910b5e3656c`
+Generated: 2026-08-13T15:14:54.537Z
+Laravel commit SHA: `d4c9a0461af821367788eaebbfdb4c19e6fdcc79`
+Web UK repository commit SHA: `d4c9a0461af821367788eaebbfdb4c19e6fdcc79`
 Laravel working tree dirty: yes
 Web UK repository working tree dirty: yes
 Provenance caveat: Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees.
@@ -12,10 +12,10 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | Metric | Count |
 | --- | ---: |
 | Laravel accessible routes | 707 |
-| web-uk routes | 722 |
+| web-uk routes | 723 |
 | Matched routes | 707 |
 | Missing routes | 0 |
-| Extra web-uk routes | 12 |
+| Extra web-uk routes | 13 |
 | Ignored web-uk infrastructure routes | 4 |
 
 ## Family Counts
@@ -33,7 +33,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 | clubs | 1 | 0 | 0 | 0 |
 | connections | 5 | 0 | 0 | 0 |
 | contact | 2 | 0 | 0 | 0 |
-| cookie-consent | 1 | 0 | 0 | 0 |
+| cookie-consent | 1 | 0 | 1 | 0 |
 | cookies | 1 | 0 | 0 | 0 |
 | coupons | 2 | 0 | 0 | 0 |
 | courses | 26 | 0 | 0 | 0 |
@@ -108,6 +108,7 @@ Provenance caveat: Laravel and Web UK repository working trees were dirty when g
 
 | Method | Path | Family | Web UK view | Web UK file |
 | --- | --- | --- | --- | --- |
+| POST | `/cookie-consent/hide` | cookie-consent |  | web-uk/src/server.js |
 | GET | `/events/my` | events |  | web-uk/src/server.js |
 | POST | `/events/{param}/rsvp/remove` | events |  | web-uk/src/server.js |
 | GET | `/legal-acceptance` | legal-acceptance | legal/accept | web-uk/src/routes/legal-acceptance.js |

@@ -1,27 +1,33 @@
 {
-  "generatedAt": "2026-08-13T13:29:34.966Z",
+  "generatedAt": "2026-08-13T15:14:54.537Z",
   "provenance": {
-    "generatedAt": "2026-08-13T13:29:34.966Z",
+    "generatedAt": "2026-08-13T15:14:54.537Z",
     "laravelRepositoryRoot": "C:\\platforms\\htdocs\\staging",
-    "laravelCommitSha": "01989e921c31ccc316d5ba7094703910b5e3656c",
+    "laravelCommitSha": "d4c9a0461af821367788eaebbfdb4c19e6fdcc79",
     "laravelWorkingTreeDirty": true,
     "webUkRepositoryRoot": "C:\\platforms\\htdocs\\staging",
     "webUkPath": "web-uk",
-    "webUkRepositoryCommitSha": "01989e921c31ccc316d5ba7094703910b5e3656c",
+    "webUkRepositoryCommitSha": "d4c9a0461af821367788eaebbfdb4c19e6fdcc79",
     "webUkRepositoryWorkingTreeDirty": true,
     "caveat": "Laravel and Web UK repository working trees were dirty when generated. Commit SHAs identify HEAD only; generated content may include uncommitted changes from the dirty working trees."
   },
   "summary": {
-    "generatedAt": "2026-08-13T13:29:34.966Z",
+    "generatedAt": "2026-08-13T15:14:54.537Z",
     "sourceRoot": "C:\\platforms\\htdocs\\staging",
     "targetRoot": "C:\\platforms\\htdocs\\staging",
     "laravelRoutes": 707,
-    "webUkRoutes": 722,
+    "webUkRoutes": 723,
     "matchedRoutes": 707,
     "missingRoutes": 0,
-    "extraWebUkRoutes": 12,
+    "extraWebUkRoutes": 13,
     "ignoredInfrastructureRoutes": 4,
     "familyCounts": {
+      "cookie-consent": {
+        "matched": 1,
+        "missing": 0,
+        "extraWebUk": 1,
+        "ignoredInfrastructure": 0
+      },
       "events": {
         "matched": 94,
         "missing": 0,
@@ -156,12 +162,6 @@
       },
       "contact": {
         "matched": 2,
-        "missing": 0,
-        "extraWebUk": 0,
-        "ignoredInfrastructure": 0
-      },
-      "cookie-consent": {
-        "matched": 1,
         "missing": 0,
         "extraWebUk": 0,
         "ignoredInfrastructure": 0
@@ -475,6 +475,27 @@
     }
   },
   "matrix": [
+    {
+      "method": "POST",
+      "path": "/cookie-consent/hide",
+      "family": "cookie-consent",
+      "status": "extra-web-uk",
+      "laravelRouteName": "",
+      "laravelHandler": "",
+      "laravelView": "",
+      "laravelParamConstraints": [],
+      "laravelRouteFile": "",
+      "laravelControllerFile": "",
+      "laravelMiddleware": "",
+      "auth": "",
+      "tenantScoped": "",
+      "gates": "",
+      "apiNeeds": "",
+      "webUkPath": "/cookie-consent/hide",
+      "webUkView": "",
+      "webUkFile": "web-uk/src/server.js",
+      "webUkRouteKind": ""
+    },
     {
       "method": "GET",
       "path": "/events/my",
