@@ -347,6 +347,17 @@ describe('Laravel account and settings contract parity', () => {
   });
 
   it('persists newsletter consent through the dedicated Laravel consent API and supports avatar removal', async () => {
+    // The shared stub reports the member as ALREADY opted in, and the route no longer
+    // writes a value that has not changed — so submitting an opt-in against that stub
+    // would correctly write nothing and prove nothing. Stub the stored consent as OFF so
+    // ticking the box is a real change, which is what this test exists to check.
+    api.callUserSettingsApi.mockImplementation((token, method, requestPath) => {
+      if (method === 'GET' && requestPath === '/consent') {
+        return Promise.resolve({ data: [{ consent_type_slug: 'marketing_email', given: false }] });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
     const response = await request(profileApp())
       .post('/profile/settings')
       .type('form')
@@ -367,7 +378,11 @@ describe('Laravel account and settings contract parity', () => {
       avatar_url: null
     }));
     expect(api.callUserSettingsApi.mock.calls[0][3]).not.toHaveProperty('newsletter_opt_in');
-    expect(api.callUserSettingsApi).toHaveBeenNthCalledWith(3, 'test-token', 'PUT', '/consent', {
+    // Asserted by content rather than by call position. The route now reads the current
+    // consent before deciding whether to write, so a fixed ordinal is no longer stable —
+    // and the ordinal was never the point. What matters is that an opt-in goes through
+    // the dedicated consent API, which this still proves.
+    expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'PUT', '/consent', {
       slug: 'marketing_email',
       given: true
     });

@@ -728,6 +728,35 @@ class UsersControllerTest extends TestCase
         $response->assertStatus(400);
     }
 
+    /**
+     * 🔴 An unrecognised consent slug must be a 422, never a 500.
+     *
+     * Found by driving the accessible frontend's profile-settings form against a database
+     * whose `consent_types` table was empty. GdprService threw
+     * InvalidArgumentException("Invalid consent type: ...") and the controller answered
+     * 500, so: error monitoring recorded a server fault for a bad request, and the
+     * frontend told the member their profile update had failed even though their name and
+     * photo had both saved (both PUTs returned 200) — a 500 is indistinguishable from a
+     * real outage, so it had to assume the worst.
+     */
+    public function test_update_consent_returns_422_for_an_unknown_consent_slug(): void
+    {
+        $this->authenticatedUser();
+
+        $response = $this->apiPut('/v2/users/me/consent', [
+            'slug'  => 'definitely-not-a-real-consent-type',
+            'given' => true,
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertNotSame(500, $response->getStatusCode());
+
+        $payload = json_decode($response->getContent(), true);
+        $error = $payload['errors'][0] ?? [];
+        $this->assertSame('VALIDATION_ERROR', $error['code'] ?? null);
+        $this->assertSame('slug', $error['field'] ?? null, 'The rejected field must be named so a client can point at it.');
+    }
+
     // ================================================================
     // GDPR REQUEST — Validation
     // ================================================================

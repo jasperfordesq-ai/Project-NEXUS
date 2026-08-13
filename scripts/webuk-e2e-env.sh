@@ -163,7 +163,48 @@ seed_synthetic() {
                          onboarding_completed, NOW(), NOW()
                   FROM users WHERE tenant_id=$tenant_id AND email='e2e.user.b@project-nexus.local' LIMIT 1;"
   fi
+  # 6. Listing categories, per community.
+  #    🔴 Without these NO listing can be created: the API rejects any category_id with
+  #    "The selected category id is invalid", so every create/edit/delete journey dies at
+  #    the first step. `TenantSeeder` seeds its eight categories for the MASTER tenant
+  #    only (id 1), so a freshly-created community has none — which is easy to mistake for
+  #    a broken create form.
+  ensure_categories "$tenant_id"
+  ensure_categories "$tenant2_id"
+
+  # 7. Consent types.
+  #    🔴 `consent_types` is PLATFORM-GLOBAL (not per community) and NOTHING in the repo
+  #    populates it — no seeder, and the GDPR migration creates the table without rows.
+  #    So a database built from the committed schema dump has none, and the profile
+  #    settings form's newsletter checkbox then fails with "Invalid consent type:
+  #    marketing_email" on every save. Seeded here so journeys measure the app rather
+  #    than a missing row.
+  ensure_consent_type 'marketing_email' 'Marketing email' 'Consent to receive newsletters and marketing email.'
+
   echo "    roles present: $(mysql_e2e -N -e "SELECT GROUP_CONCAT(DISTINCT role ORDER BY role) FROM users WHERE tenant_id IN ($tenant_id,$tenant2_id);")"
+  echo "    categories: $E2E_TENANT_SLUG=$(mysql_e2e -N -e "SELECT COUNT(*) FROM categories WHERE tenant_id=$tenant_id;") $E2E_TENANT2_SLUG=$(mysql_e2e -N -e "SELECT COUNT(*) FROM categories WHERE tenant_id=$tenant2_id;")"
+}
+
+ensure_consent_type() {
+  local slug="$1" name="$2" text="$3"
+  if [[ "$(mysql_e2e -N -e "SELECT COUNT(*) FROM consent_types WHERE slug='$slug';")" == "0" ]]; then
+    mysql_e2e -e "INSERT INTO consent_types (slug, name, description, category, is_required, current_version, current_text, legal_basis, is_active, display_order, created_at, updated_at)
+                  VALUES ('$slug', '$name', '$text', 'marketing', 0, '1.0', '$text', 'consent', 1, 0, NOW(), NOW());"
+  fi
+}
+
+ensure_categories() {
+  local tid="$1" sort=0 name slug
+  for name in "Home and Garden" "Technology Support" "Education and Tutoring" \
+              "Health and Wellbeing" "Transport" "Creative Arts" \
+              "Professional Services" "Community"; do
+    slug=$(printf '%s' "$name" | tr '[:upper:] ' '[:lower:]-')
+    if [[ "$(mysql_e2e -N -e "SELECT COUNT(*) FROM categories WHERE tenant_id=$tid AND name='$name';")" == "0" ]]; then
+      mysql_e2e -e "INSERT INTO categories (tenant_id, name, slug, sort_order, is_active, substitution_coefficient, type, created_at, updated_at)
+                    VALUES ($tid, '$name', '$slug', $sort, 1, 1.00, 'listing', NOW(), NOW());"
+    fi
+    sort=$((sort + 1))
+  done
 }
 
 ensure_tenant() {

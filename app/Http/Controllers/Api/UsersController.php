@@ -903,6 +903,25 @@ class UsersController extends BaseApiController
             }
 
             return $this->respondWithData($result);
+        } catch (\InvalidArgumentException $e) {
+            // 🔴 An unrecognised consent slug is a rejected INPUT, not a server fault.
+            // GdprService throws InvalidArgumentException ("Invalid consent type: ...") when
+            // the slug is not in `consent_types`, and this was answered with a 500. Three
+            // consequences, all seen: it raises a false alarm in error monitoring for what
+            // is really a bad request; a client cannot tell "your value is wrong" from "we
+            // broke", so it cannot show a useful message; and on the accessible frontend the
+            // whole profile save reports as failed even though the name and photo saved,
+            // because a 500 is indistinguishable from a genuine outage.
+            //
+            // The message is deliberately the existing translated one rather than a new
+            // key — only the status and error code change, so no locale is left behind.
+            Log::warning('Consent update rejected: unknown consent type', [
+                'user' => $userId,
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->respondWithError('VALIDATION_ERROR', __('api.user_consent_update_failed'), 'slug', 422);
         } catch (\Exception $e) {
             Log::error('Consent update failed', ['user' => $userId, 'slug' => $slug, 'error' => $e->getMessage()]);
             return $this->respondWithError('CONSENT_UPDATE_FAILED', __('api.user_consent_update_failed'), null, 500);

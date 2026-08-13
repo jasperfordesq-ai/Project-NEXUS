@@ -1208,17 +1208,28 @@ router.post('/settings', asyncRoute(async (req, res) => {
   }
 
   let status = 'profile-updated';
+  // 🔴 Tracks whether the AVATAR upload was the call that failed. Without it, the
+  // catch below reported 'avatar-invalid' — "Upload a JPG, PNG, GIF or WEBP image
+  // smaller than 10MB" — for a 400/422 from ANY call in this block. A rejected consent
+  // write told the member their photo was the wrong format, while the photo had in fact
+  // uploaded successfully.
+  let avatarUploadFailed = false;
   try {
     if (avatar) {
       const buffer = await fs.readFile(avatar.filepath);
-      await uploadProfileAvatar(token, {
-        file: {
-          buffer,
-          filename: trimmed(avatar.originalFilename) || 'avatar',
-          contentType: trimmed(avatar.mimetype) || 'application/octet-stream',
-          size: avatar.size
-        }
-      });
+      try {
+        await uploadProfileAvatar(token, {
+          file: {
+            buffer,
+            filename: trimmed(avatar.originalFilename) || 'avatar',
+            contentType: trimmed(avatar.mimetype) || 'application/octet-stream',
+            size: avatar.size
+          }
+        });
+      } catch (avatarError) {
+        avatarUploadFailed = true;
+        throw avatarError;
+      }
     }
     await callUserSettings(token, 'PUT', '', profilePayload);
     await callUserSettings(token, 'PUT', '/preferences', {
@@ -1227,13 +1238,42 @@ router.post('/settings', asyncRoute(async (req, res) => {
         privacy_search: checked(req.body.privacy_search)
       }
     });
-    await callUserSettings(token, 'PUT', '/consent', {
-      slug: 'marketing_email',
-      given: checked(req.body.newsletter_opt_in)
-    });
+    // 🔴 Only write the newsletter consent when the member actually changed it.
+    //
+    // This used to fire on EVERY profile save. If the write failed for any reason the
+    // whole save reported as failed — and it does fail on any installation where
+    // `consent_types` has no `marketing_email` row, which the API answered with a 500
+    // (now a 422; see UsersController::updateConsent). The member's name, photo and
+    // privacy settings had all saved successfully by that point, yet they were told
+    // "Your profile could not be updated", so the obvious response is to submit again
+    // and get the same message.
+    //
+    // Comparing first also removes a pointless write on every save. When the member HAS
+    // changed the setting and the write genuinely fails, the save is still reported as
+    // failed — that stays deliberate, because a silently-dropped opt-OUT would keep
+    // sending marketing to someone who asked us to stop.
+    const submittedConsent = checked(req.body.newsletter_opt_in);
+    let storedConsent;
+    try {
+      storedConsent = marketingConsentFrom(payloadFrom(await callUserSettings(token, 'GET', '/consent')));
+    } catch {
+      storedConsent = undefined;
+    }
+    // `undefined` means no consent record exists (or it could not be read). Writing then
+    // is only worth doing for an explicit opt-IN — an unticked box against no record is
+    // already the state being asked for, and writing it was what produced the failure.
+    const consentChanged = storedConsent === undefined
+      ? submittedConsent === true
+      : storedConsent !== submittedConsent;
+    if (consentChanged) {
+      await callUserSettings(token, 'PUT', '/consent', {
+        slug: 'marketing_email',
+        given: submittedConsent
+      });
+    }
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
-    status = avatar && error instanceof ApiError && [400, 413, 422].includes(error.status)
+    status = avatarUploadFailed && error instanceof ApiError && [400, 413, 422].includes(error.status)
       ? 'avatar-invalid'
       : 'profile-update-failed';
   } finally {

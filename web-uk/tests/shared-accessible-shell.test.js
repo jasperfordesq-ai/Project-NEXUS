@@ -30622,7 +30622,10 @@ describe('shared accessible frontend shell', () => {
         privacy_search: true
       }
     });
-    expect(api.callUserSettingsApi).toHaveBeenNthCalledWith(3, 'test-token', 'PUT', '/consent', {
+    // By content, not by call position: the route now reads the current consent first, so
+    // the ordinal shifted. The behaviour being pinned — an opt-in reaches the dedicated
+    // consent API — is unchanged.
+    expect(api.callUserSettingsApi).toHaveBeenCalledWith('test-token', 'PUT', '/consent', {
       slug: 'marketing_email',
       given: true
     });
@@ -30632,7 +30635,11 @@ describe('shared accessible frontend shell', () => {
       current_password: 'current-password'
     });
     expect(emailResponse.headers.location).toBe('/profile/settings?status=email-reauthentication-unavailable');
-    expect(api.callUserSettingsApi).toHaveBeenCalledTimes(3);
+    // 4, not 3: the route now READS the current consent before deciding whether to write
+    // it, so the profile save makes PUT '', PUT '/preferences', GET '/consent' and
+    // PUT '/consent'. The count is asserted to keep the settings save from quietly
+    // growing extra upstream calls.
+    expect(api.callUserSettingsApi).toHaveBeenCalledTimes(4);
 
     const passwordResponse = await post('/profile/password', {
       current_password: 'current-password',
