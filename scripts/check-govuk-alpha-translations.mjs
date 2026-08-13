@@ -9,13 +9,21 @@
  * alpha UI is fully user-facing.
  */
 
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { loadPhpArray } from './lib/load-php-array.mjs';
 
 const LANG_DIR = join(process.cwd(), 'lang');
 const SOURCE_LOCALE = 'en';
 const TARGET_LOCALES = ['ga', 'de', 'fr', 'it', 'pt', 'es', 'nl', 'pl', 'ja', 'ar'];
+const SHARED_INVARIANT_ALLOWLIST = JSON.parse(
+  readFileSync(join(process.cwd(), 'scripts', 'php-lang-invariant-allowlist.json'), 'utf8'),
+);
+const SHARED_GLOBAL_INVARIANTS = new Set(SHARED_INVARIANT_ALLOWLIST.global ?? []);
+const SHARED_LOCALE_INVARIANTS = Object.fromEntries(
+  Object.entries(SHARED_INVARIANT_ALLOWLIST.byLocale ?? {})
+    .map(([locale, values]) => [locale, new Set(values)]),
+);
 
 const ALWAYS_ALLOWED_KEYS = new Set([
   'feedback_url',
@@ -278,6 +286,8 @@ function hasSuspiciousCorruption(locale, key, englishValue, value) {
 
 function isAllowedSameAsEnglish(locale, key, value) {
   return value === ''
+    || SHARED_GLOBAL_INVARIANTS.has(value)
+    || SHARED_LOCALE_INVARIANTS[locale]?.has(value)
     || ALWAYS_ALLOWED_KEYS.has(key)
     || REVIEWED_IDENTICAL_KEYS.has(`${locale}:${key}`)
     || isPlaceholderOrFormatOnly(value)

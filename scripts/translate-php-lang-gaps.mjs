@@ -39,9 +39,9 @@
  *   node scripts/translate-php-lang-gaps.mjs --google --namespace api.php --limit 20
  *   node scripts/translate-php-lang-gaps.mjs --list          # what is left, worst first
  *
- * Irish (ga) is skipped unless OPENAI_API_KEY is set: Google's Irish is poor
- * enough that shipping it would be a downgrade dressed as progress, which is why
- * translate-i18n-gaps.mjs special-cases it too.
+ * Irish (ga) is always skipped. This script only implements Google Translate,
+ * whose Irish output is not approved for release. Irish uses a separately
+ * reviewed, context-aware workflow.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -59,10 +59,8 @@ const ALLOWLIST_PATH = path.join(ROOT, 'scripts', 'php-lang-invariant-allowlist.
 const CHECKPOINT_PATH = path.join(ROOT, '.local-docs-archive', 'php-lang-translate-checkpoint.json');
 const SOURCE_LOCALE = 'en';
 
-// Every locale goes through the same path, Irish included. The `ga` special-case
-// in translate-i18n-gaps.mjs is often misread as "Google's Irish is unusable";
-// read the code and it sits AFTER the --google early return, and says what it
-// means: DeepL has no Irish. Google does, so on this path ga is ordinary.
+// This provider is deliberately unavailable for Irish. Do not remove the guard
+// in the main locale loop merely because the Google endpoint accepts `ga`.
 const TARGET_LOCALES = ['ar', 'de', 'es', 'fr', 'ga', 'it', 'ja', 'nl', 'pl', 'pt'];
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -423,7 +421,7 @@ if (LIST_ONLY) {
 
 if (!USE_GOOGLE) {
   console.error('Pass --google. There is no other configured provider for these files.');
-  console.error('  Irish (ga) additionally needs OPENAI_API_KEY, or it is skipped.');
+  console.error('  Irish (ga) is intentionally skipped by this Google-only script.');
   process.exit(1);
 }
 
@@ -449,6 +447,10 @@ const report = { namespace: NAMESPACE, locales: {} };
 
 for (const locale of locales) {
   const batchId = `${locale}/${NAMESPACE}`;
+  if (locale === 'ga') {
+    console.log(`${batchId}: skipped — Google translation is not approved for Irish.`);
+    continue;
+  }
   if (checkpoint.completed.includes(batchId) && !LIMIT) {
     console.log(`${batchId}: already done in this run series (checkpoint) — skipping.`);
     continue;

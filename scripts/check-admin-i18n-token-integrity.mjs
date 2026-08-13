@@ -88,6 +88,7 @@ const SCHEMA_AND_ENUM_TOKENS = [
   'municipal_roi',
   'needs_additional_support',
   'pilot_scoreboard',
+  'peer_slug',
   'tenantId',
   'tenant_admin',
   'tenant_id',
@@ -96,6 +97,7 @@ const SCHEMA_AND_ENUM_TOKENS = [
 // AdminCaringCommunityController generates the first format and the UI uses the
 // second as its concrete placeholder. Translating either makes the help false.
 const BACKEND_DEFAULT_FORMAT_TOKENS = [
+  'bern-cooperative',
   'quarterly_YYYY_MM',
   'quarterly_2026_07',
 ];
@@ -169,6 +171,20 @@ for (const locale of SUPPORTED_NON_ENGLISH_LOCALES) {
             missingTokens,
           });
         }
+      }
+
+      if (
+        /(^|\.)[^.]*peer_slug(?:_|$)/iu.test(key)
+        && !key.endsWith('peer_slug_placeholder')
+        && !localized.toLocaleLowerCase('en').includes('slug')
+      ) {
+        issues.push({
+          category: 'technical_slug_term_mutation',
+          locale,
+          file,
+          key,
+          missingTokens: ['slug'],
+        });
       }
     }
   }

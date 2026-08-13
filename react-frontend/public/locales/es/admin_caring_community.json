@@ -1968,7 +1968,7 @@
       "cancel": "Cancelar",
       "create_reveal_secret": "Crear y revelar secretos",
       "copy_secret": "Copiar secreto",
-      "copy_peer_slug": "Copiar babosa de pares",
+      "copy_peer_slug": "Copiar slug del par",
       "copied_secret": "he copiado el secreto"
     },
     "about": {
@@ -2003,9 +2003,9 @@
     },
     "create_modal": {
       "title": "Agregar par de federación",
-      "peer_slug": "Babosa de pares",
-      "peer_slug_description": "Alfanuméricos en minúsculas + guiones. Se utiliza como babosa cooperativa de destino para transferencias salientes.",
-      "peer_slug_placeholder": "beso-berna",
+      "peer_slug": "Slug del par",
+      "peer_slug_description": "Caracteres alfanuméricos en minúsculas y guiones. Se utiliza como slug de la cooperativa de destino para las transferencias salientes.",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Nombre para mostrar",
       "display_name_placeholder": "Cooperativa Caring Community Berna",
       "base_url": "URL base",
@@ -2021,7 +2021,7 @@
       "body_prefix": "Este secreto se muestra",
       "only_once": "sólo una vez",
       "body_suffix": "Cópielo ahora y péguelo en la entrada de pares de federación de instalación remota NEXUS para esta cooperativa. Si lo pierde, debe rotar el secreto aquí y actualizar el lado remoto nuevamente.",
-      "peer_slug_label": "Babosa de pares:",
+      "peer_slug_label": "Slug del par:",
       "base_url_label": "URL base:"
     },
     "validation": {

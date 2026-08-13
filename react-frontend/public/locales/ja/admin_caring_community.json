@@ -1957,7 +1957,7 @@
       "cancel": "キャンセル",
       "create_reveal_secret": "シークレットの作成と公開",
       "copy_secret": "シークレットをコピーする",
-      "copy_peer_slug": "ピア スラグのコピー",
+      "copy_peer_slug": "ピア slug をコピー",
       "copied_secret": "秘密をコピーしました"
     },
     "about": {
@@ -1992,9 +1992,9 @@
     },
     "create_modal": {
       "title": "フェデレーションピアの追加",
-      "peer_slug": "ピアナメクジ",
-      "peer_slug_description": "小文字の英数字 + ハイフン。アウトバウンド転送の宛先協調スラッグとして使用されます。",
-      "peer_slug_placeholder": "キスバーン",
+      "peer_slug": "ピア slug",
+      "peer_slug_description": "小文字の英数字とハイフンを使用します。送信転送の宛先となる協同組合の slug として使用されます。",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "表示名",
       "display_name_placeholder": "Caring Community ベルン協同組合",
       "base_url": "ベース URL",
@@ -2010,7 +2010,7 @@
       "body_prefix": "この秘密が明かされる",
       "only_once": "一度だけ",
       "body_suffix": "今すぐコピーして、この協同組合のリモート NEXUS インストールのフェデレーション ピア エントリに貼り付けます。紛失した場合は、ここでシークレットをローテーションし、リモート側を再度更新する必要があります。",
-      "peer_slug_label": "ピアスラッグ:",
+      "peer_slug_label": "ピア slug:",
       "base_url_label": "ベース URL:"
     },
     "validation": {

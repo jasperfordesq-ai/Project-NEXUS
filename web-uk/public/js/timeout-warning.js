@@ -49,6 +49,42 @@
   var modalOpen = false;
   var lastFocusedElement = null;
 
+  function timeoutMarker() {
+    return document.querySelector('[data-authenticated="true"]');
+  }
+
+  function timeoutText(attribute) {
+    var marker = timeoutMarker();
+    return marker ? marker.getAttribute(attribute) || '' : '';
+  }
+
+  function pluralCategory(count) {
+    try {
+      return new Intl.PluralRules(document.documentElement.lang || 'en').select(count);
+    } catch (error) {
+      return count === 1 ? 'one' : 'other';
+    }
+  }
+
+  function formatTimeoutUnit(count, unit) {
+    var category = pluralCategory(count);
+    var template = timeoutText('data-timeout-' + unit + '-' + category)
+      || timeoutText('data-timeout-' + unit + '-other');
+    return template.replace(':count', String(count));
+  }
+
+  function appendTimeMessage(element, template, timeText) {
+    var parts = template.split(':time');
+    element.textContent = '';
+    element.appendChild(document.createTextNode(parts[0] || ''));
+    var emphasis = document.createElement('span');
+    emphasis.id = 'timeout-countdown';
+    emphasis.className = 'govuk-!-font-weight-bold';
+    emphasis.textContent = timeText;
+    element.appendChild(emphasis);
+    element.appendChild(document.createTextNode(parts.slice(1).join(':time')));
+  }
+
   // Create modal HTML
   function createModal() {
     var modal = document.createElement('div');
@@ -64,21 +100,26 @@
       '<div class="app-timeout-modal__overlay"></div>' +
       '<div class="app-timeout-modal__container">' +
         '<div class="app-timeout-modal__content">' +
-          '<h2 id="timeout-warning-title" class="govuk-heading-l">You will be signed out soon</h2>' +
-          '<p id="timeout-warning-description" class="govuk-body">' +
-            'For your security, we will sign you out in <span id="timeout-countdown" class="govuk-!-font-weight-bold">' + COUNTDOWN_SECONDS + ' seconds</span>.' +
-          '</p>' +
-          '<p class="govuk-body">Any unsaved changes will be lost.</p>' +
+          '<h2 id="timeout-warning-title" class="govuk-heading-l"></h2>' +
+          '<p id="timeout-warning-description" class="govuk-body"></p>' +
+          '<p id="timeout-warning-unsaved" class="govuk-body"></p>' +
           '<div class="govuk-button-group">' +
-            '<button type="button" id="timeout-extend-button" class="govuk-button" data-module="govuk-button">' +
-              'Stay signed in' +
-            '</button>' +
-            '<button type="submit" form="session-timeout-logout-form" class="app-link-button">Sign out now</button>' +
+            '<button type="button" id="timeout-extend-button" class="govuk-button" data-module="govuk-button"></button>' +
+            '<button type="submit" id="timeout-sign-out-button" form="session-timeout-logout-form" class="app-link-button"></button>' +
           '</div>' +
         '</div>' +
       '</div>';
 
     document.body.appendChild(modal);
+    document.getElementById('timeout-warning-title').textContent = timeoutText('data-timeout-title');
+    document.getElementById('timeout-warning-unsaved').textContent = timeoutText('data-timeout-unsaved-changes');
+    document.getElementById('timeout-extend-button').textContent = timeoutText('data-timeout-stay-signed-in');
+    document.getElementById('timeout-sign-out-button').textContent = timeoutText('data-timeout-sign-out-now');
+    appendTimeMessage(
+      document.getElementById('timeout-warning-description'),
+      timeoutText('data-timeout-security-notice'),
+      formatTimeoutUnit(COUNTDOWN_SECONDS, 'seconds')
+    );
     return modal;
   }
 
@@ -158,18 +199,18 @@
       var text = '';
 
       if (minutes > 0 && seconds > 0) {
-        text = minutes + ' minute' + (minutes !== 1 ? 's' : '') + ' and ' + seconds + ' second' + (seconds !== 1 ? 's' : '');
+        text = formatTimeoutUnit(minutes, 'minutes') + ' ' + timeoutText('data-timeout-time-separator') + ' ' + formatTimeoutUnit(seconds, 'seconds');
       } else if (minutes > 0) {
-        text = minutes + ' minute' + (minutes !== 1 ? 's' : '');
+        text = formatTimeoutUnit(minutes, 'minutes');
       } else {
-        text = seconds + ' second' + (seconds !== 1 ? 's' : '');
+        text = formatTimeoutUnit(seconds, 'seconds');
       }
 
       countdownEl.textContent = text;
 
       // Announce to screen readers at key intervals
       if (countdownSeconds === 30 || countdownSeconds === 10) {
-        announceToScreenReader('You will be signed out in ' + text);
+        announceToScreenReader(timeoutText('data-timeout-announcement').replace(':time', text));
       }
     }
   }

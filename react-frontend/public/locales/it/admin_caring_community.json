@@ -2003,9 +2003,9 @@
     },
     "create_modal": {
       "title": "Aggiungi peer federato",
-      "peer_slug": "Lumaca pari",
+      "peer_slug": "Slug del peer",
       "peer_slug_description": "Alfanumerico minuscolo + trattini. Utilizzato come slug cooperativo di destinazione per i trasferimenti in uscita.",
-      "peer_slug_placeholder": "bacio-berna",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Nome da visualizzare",
       "display_name_placeholder": "Caring Community Berna Cooperativa",
       "base_url": "URL di base",
@@ -2021,7 +2021,7 @@
       "body_prefix": "Questo segreto viene mostrato",
       "only_once": "solo una volta",
       "body_suffix": "Copialo ora e incollalo nella voce peer della federazione dell'installazione NEXUS remota per questa cooperativa. Se lo perdi, devi ruotare il segreto qui e aggiornare nuovamente il lato remoto.",
-      "peer_slug_label": "Lumaca del pari:",
+      "peer_slug_label": "Slug del peer:",
       "base_url_label": "URL di base:"
     },
     "validation": {

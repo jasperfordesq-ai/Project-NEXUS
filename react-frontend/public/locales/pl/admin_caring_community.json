@@ -2014,9 +2014,9 @@
     },
     "create_modal": {
       "title": "Dodaj partnera federacyjnego",
-      "peer_slug": "Ślimak rówieśniczy",
-      "peer_slug_description": "Małe litery alfanumeryczne + łączniki. Używany jako docelowy ślimak kooperacyjny dla transferów wychodzących.",
-      "peer_slug_placeholder": "pocałunek-bern",
+      "peer_slug": "Slug partnera",
+      "peer_slug_description": "Małe litery, cyfry i łączniki. Używany jako slug spółdzielni docelowej dla transferów wychodzących.",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Nazwa wyświetlana",
       "display_name_placeholder": "Spółdzielnia Caring Community Berno",
       "base_url": "Baza URL",
@@ -2032,7 +2032,7 @@
       "body_prefix": "Ten sekret został pokazany",
       "only_once": "tylko raz",
       "body_suffix": "Skopiuj go teraz i wklej do wpisu równorzędnego federacji zdalnej instalacji NEXUS dla tej spółdzielni. Jeśli go zgubisz, musisz obrócić sekret tutaj i ponownie zaktualizować zdalną stronę.",
-      "peer_slug_label": "Ślimak równorzędny:",
+      "peer_slug_label": "Slug partnera:",
       "base_url_label": "Baza URL:"
     },
     "validation": {

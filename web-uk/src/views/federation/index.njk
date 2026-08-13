@@ -15,9 +15,9 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha.federation.title") }}</h1>
   <p class="govuk-body-l">
     {% if stats.optedIn %}
-      Discover and collaborate with partner communities in the wider federation network.
+      {{ t("federation.hub.subtitle_opted_in") }}
     {% else %}
-      Connect with trusted partner communities while keeping control of what you share.
+      {{ t("federation.hub.subtitle_opted_out") }}
     {% endif %}
   </p>
 
@@ -45,24 +45,24 @@
   {% if not stats.tenantEnabled %}
     <div class="govuk-inset-text">
       <h2 class="govuk-heading-m">{{ t("federation.hub.not_available_title") }}</h2>
-      <p class="govuk-body">This community has not enabled cross-community federation yet.</p>
-      <p class="govuk-body">Contact the community team if you expected to use federation here.</p>
+      <p class="govuk-body">{{ t("web_uk.federation_hub.not_enabled_description") }}</p>
+      <p class="govuk-body">{{ t("web_uk.federation_hub.not_enabled_contact") }}</p>
     </div>
   {% else %}
     {% if not stats.optedIn %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
           <h2 class="govuk-heading-l">{{ t("federation.hub.hero_title") }}</h2>
-          <p class="govuk-body">Choose what profile details, skills, messaging, and time-credit actions you want to make available across trusted partner communities.</p>
-          <p class="govuk-body"><a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/onboarding') }}">Opt in to federation</a></p>
+          <p class="govuk-body">{{ t("federation.hub.feature_privacy_description") }}</p>
+          <p class="govuk-body"><a class="govuk-button" data-module="govuk-button" href="{{ urlFor('/federation/onboarding') }}">{{ t("federation.hub.optin_banner_cta") }}</a></p>
         </div>
       </div>
 
       <h2 class="govuk-heading-l">{{ t("federation.hub.how_it_works_heading") }}</h2>
       <div class="govuk-grid-row">
-        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("federation.hub.how_it_works_0_title") }}</h3><p class="govuk-body">Find people, listings, events, and groups from partner communities.</p></div>
-        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">Meet</h3><p class="govuk-body">Send connection requests and messages when both communities allow it.</p></div>
-        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("federation.hub.how_it_works_2_title") }}</h3><p class="govuk-body">Use time-credit transfers only when federation settings permit them.</p></div>
+        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("federation.hub.how_it_works_0_title") }}</h3><p class="govuk-body">{{ t("web_uk.federation_hub.discover_description") }}</p></div>
+        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("web_uk.federation_hub.connect_title") }}</h3><p class="govuk-body">{{ t("web_uk.federation_hub.connect_description") }}</p></div>
+        <div class="govuk-grid-column-one-third"><h3 class="govuk-heading-s">{{ t("federation.hub.how_it_works_2_title") }}</h3><p class="govuk-body">{{ t("web_uk.federation_hub.exchange_description") }}</p></div>
       </div>
     {% endif %}
 
@@ -72,7 +72,7 @@
       <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("federation.hub.stat_messages") }}</dt><dd class="govuk-summary-list__value">{{ stats.messagesCount }}</dd></div>
       <div class="govuk-summary-list__row"><dt class="govuk-summary-list__key">{{ t("federation.hub.stat_transactions") }}</dt><dd class="govuk-summary-list__value">{{ stats.transactionsCount }}</dd></div>
       <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">Federation status</dt>
+        <dt class="govuk-summary-list__key">{{ t("web_uk.federation_hub.status_label") }}</dt>
         <dd class="govuk-summary-list__value">
           {% if stats.optedIn %}
             <strong class="govuk-tag govuk-tag--green">{{ t("federation.hub.optin_on") }}</strong>
@@ -84,22 +84,22 @@
     </dl>
 
     {% if stats.optedIn %}
-      <h2 class="govuk-heading-l">Recent activity</h2>
+      <h2 class="govuk-heading-l">{{ t("federation.hub.recent_activity_heading") }}</h2>
       {% if activity.length %}
         <div class="nexus-alpha-card-list">
           {% for item in activity %}
             <article class="nexus-alpha-card">
               <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ item.title }}</h3>
               {% if item.description %}<p class="govuk-body govuk-!-margin-bottom-1">{{ item.description }}</p>{% endif %}
-              {% if item.community %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">From {{ item.community }}</p>{% endif %}
+              {% if item.community %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-1">{{ t("federation.hub.activity_from_community", { community: item.community }) }}</p>{% endif %}
               {% if item.createdAt %}<p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ item.createdAt | date }}</p>{% endif %}
             </article>
           {% endfor %}
         </div>
       {% else %}
         <div class="govuk-inset-text">
-          <p class="govuk-body govuk-!-margin-bottom-1"><strong>No recent federation activity.</strong></p>
-          <p class="govuk-body govuk-!-margin-bottom-0">Activity from partner communities will appear here.</p>
+          <p class="govuk-body govuk-!-margin-bottom-1"><strong>{{ t("web_uk.federation_hub.no_recent_activity") }}</strong></p>
+          <p class="govuk-body govuk-!-margin-bottom-0">{{ t("web_uk.federation_hub.activity_appears") }}</p>
         </div>
       {% endif %}
     {% endif %}
@@ -119,37 +119,37 @@
             </div>
             {% if partner.tagline %}<p class="govuk-body govuk-!-margin-bottom-2">{{ partner.tagline }}</p>{% endif %}
             <dl class="nexus-alpha-inline-list">
-              {% if partner.location %}<div><dt>Location</dt><dd>{{ partner.location }}</dd></div>{% endif %}
-              <div><dt>Members</dt><dd>{{ partner.memberCount }}</dd></div>
-              <div><dt>Listings</dt><dd>{{ partner.listingCount }}</dd></div>
-              {% if partner.partnershipSince %}<div><dt>Since</dt><dd>{{ partner.partnershipSince | date }}</dd></div>{% endif %}
+            {% if partner.location %}<div><dt>{{ t("federation.location_label") }}</dt><dd>{{ partner.location }}</dd></div>{% endif %}
+            <div><dt>{{ t("federation.members_label") }}</dt><dd>{{ partner.memberCount }}</dd></div>
+            <div><dt>{{ t("federation.listings_label") }}</dt><dd>{{ partner.listingCount }}</dd></div>
+            {% if partner.partnershipSince %}<div><dt>{{ t("web_uk.federation_hub.since_label") }}</dt><dd>{{ partner.partnershipSince | date }}</dd></div>{% endif %}
             </dl>
             <p class="govuk-body-s govuk-!-margin-bottom-0"><a class="govuk-link" href="{{ urlFor(partner.href) }}">{{ t("federation.hub.view_partner") }}</a></p>
           </article>
         {% endfor %}
       </div>
       {% if partnerTotal > partners.length %}
-        <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor('/federation/partners') }}">View all {{ partnerTotal }} partner communities</a></p>
+        <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor('/federation/partners') }}">{{ t("federation.hub.view_all_partners", { count: partnerTotal }) }}</a></p>
       {% endif %}
     {% else %}
-      <div class="govuk-inset-text"><p class="govuk-body">No partner communities are available yet.</p></div>
+      <div class="govuk-inset-text"><p class="govuk-body">{{ t("web_uk.federation_hub.no_partners") }}</p></div>
     {% endif %}
 
     {% if stats.optedIn %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-          <h2 class="govuk-heading-l">Federation links</h2>
+          <h2 class="govuk-heading-l">{{ t("web_uk.federation_hub.links_heading") }}</h2>
           <ul class="govuk-list">
-            <li><a class="govuk-link" href="{{ urlFor('/federation/partners') }}">Browse partner communities</a></li>
-            <li><a class="govuk-link" href="{{ urlFor('/federation/members') }}">Find federation members</a></li>
-            <li><a class="govuk-link" href="{{ urlFor('/federation/connections') }}">Manage federation connections</a></li>
-            <li><a class="govuk-link" href="{{ urlFor('/federation/messages') }}">Federation messages</a></li>
+            <li><a class="govuk-link" href="{{ urlFor('/federation/partners') }}">{{ t("web_uk.federation_hub.browse_partners") }}</a></li>
+            <li><a class="govuk-link" href="{{ urlFor('/federation/members') }}">{{ t("web_uk.federation_hub.find_members") }}</a></li>
+            <li><a class="govuk-link" href="{{ urlFor('/federation/connections') }}">{{ t("web_uk.federation_hub.manage_connections") }}</a></li>
+            <li><a class="govuk-link" href="{{ urlFor('/federation/messages') }}">{{ t("web_uk.federation_hub.messages") }}</a></li>
             <li><a class="govuk-link" href="{{ urlFor('/federation/listings') }}">{{ t("federation.hub.quick_link_listings") }}</a></li>
             <li><a class="govuk-link" href="{{ urlFor('/federation/events') }}">{{ t("federation.events_browse.title") }}</a></li>
             <li><a class="govuk-link" href="{{ urlFor('/federation/groups') }}">{{ t("federation.hub.quick_link_groups") }}</a></li>
-            <li><a class="govuk-link" href="{{ urlFor('/federation/settings') }}">Federation settings</a></li>
+            <li><a class="govuk-link" href="{{ urlFor('/federation/settings') }}">{{ t("federation.hub.quick_link_settings") }}</a></li>
           </ul>
-          <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor('/federation/opt-out') }}">Turn off federation</a></p>
+          <p class="govuk-body govuk-!-margin-top-4"><a class="govuk-link" href="{{ urlFor('/federation/opt-out') }}">{{ t("web_uk.federation_hub.turn_off") }}</a></p>
         </div>
       </div>
     {% endif %}

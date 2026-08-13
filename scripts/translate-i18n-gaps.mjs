@@ -179,6 +179,7 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   'User-agent: *\nDisallow: /admin/',
   'Cloudflare (CDN / WAF)',
   'application.created, shift.completed, hours.logged',
+  'bern-cooperative',
   '⌘K',
 ]);
 
@@ -515,15 +516,15 @@ async function translateBatchGoogle(texts, targetLangCode) {
 }
 
 async function translateBatch(texts, targetLangCode, targetLangDeepL) {
-  if (USE_GOOGLE) {
-    return translateBatchGoogle(texts, targetLangCode);
-  }
-
   if (targetLangCode === 'ga') {
     if (!OPENAI_KEY) {
-      throw new Error('Irish translation requires OPENAI_API_KEY because DeepL does not support ga.');
+      throw new Error('Irish translation requires OPENAI_API_KEY; the Google path is not approved for Irish.');
     }
     return translateBatchOpenAI(texts, targetLangCode, targetLangDeepL);
+  }
+
+  if (USE_GOOGLE) {
+    return translateBatchGoogle(texts, targetLangCode);
   }
 
   if (USE_OPENAI) {
@@ -568,8 +569,8 @@ async function main() {
   for (const lang of langs) {
     if (langFilter && lang !== langFilter) continue;
     const deeplCode = LANG_MAP[lang];
-    if (lang === 'ga' && !OPENAI_KEY && !USE_GOOGLE && !SUMMARY_ONLY && !DRY_RUN) {
-      console.log('⚠️  ga: DeepL does not support Irish and OPENAI_API_KEY is not set — skipping');
+    if (lang === 'ga' && !OPENAI_KEY && !SUMMARY_ONLY && !DRY_RUN) {
+      console.log('⚠️  ga: OPENAI_API_KEY is not set — skipping (Google is not approved for Irish)');
       continue;
     }
     if (!deeplCode && !OPENAI_KEY && !USE_GOOGLE && !SUMMARY_ONLY && !DRY_RUN) {

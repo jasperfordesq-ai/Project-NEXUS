@@ -3280,17 +3280,17 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
   const errors = [];
 
   if (values.title === '') {
-    errors.push({ text: 'Enter an event title', href: '#title' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.title_required'), href: '#title' });
   } else if (values.title.length > 255) {
-    errors.push({ text: 'Title must be 255 characters or fewer', href: '#title' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.title_too_long'), href: '#title' });
   }
 
   if (values.description === '') {
-    errors.push({ text: 'Enter an event description', href: '#description' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.description_required'), href: '#description' });
   }
 
   if (values.start_time === '') {
-    errors.push({ text: 'Enter a start date and time', href: '#start_time' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.start_required'), href: '#start_time' });
   }
 
   // Helper to render form with errors
@@ -3503,17 +3503,17 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
   const errors = [];
 
   if (values.title === '') {
-    errors.push({ text: 'Enter an event title', href: '#title' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.title_required'), href: '#title' });
   } else if (values.title.length > 255) {
-    errors.push({ text: 'Title must be 255 characters or fewer', href: '#title' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.title_too_long'), href: '#title' });
   }
 
   if (values.description === '') {
-    errors.push({ text: 'Enter an event description', href: '#description' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.description_required'), href: '#description' });
   }
 
   if (values.start_time === '') {
-    errors.push({ text: 'Enter a start date and time', href: '#start_time' });
+    errors.push({ text: res.locals.t('web_uk.event_validation.start_required'), href: '#start_time' });
   }
 
   // Helper to render form with errors

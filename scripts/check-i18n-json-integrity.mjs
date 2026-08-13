@@ -17,6 +17,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TRANSLATION_ROOTS = [
   path.join(ROOT, 'lang'),
   path.join(ROOT, 'react-frontend', 'public', 'locales'),
+  path.join(ROOT, 'mobile', 'locales'),
+];
+
+const MOJIBAKE_PATTERNS = [
+  /\u00C3[\u0080-\u00BF]/u,
+  /\u00E2(?:\u20AC|\u0080|\u0082|\u0084)/u,
+  /\u00EF\u00BF\u00BD/u,
+  /\uFFFD/u,
 ];
 
 function collectJsonFiles(directory, files = []) {
@@ -145,6 +153,7 @@ function lineAt(source, offset) {
 const files = TRANSLATION_ROOTS.flatMap((directory) => collectJsonFiles(directory)).sort();
 const invalid = [];
 const duplicates = [];
+const corrupted = [];
 
 for (const file of files) {
   const source = fs.readFileSync(file, 'utf8');
@@ -153,6 +162,11 @@ for (const file of files) {
   } catch (error) {
     invalid.push({ file, message: error instanceof Error ? error.message : String(error) });
     continue;
+  }
+
+  if (MOJIBAKE_PATTERNS.some((pattern) => pattern.test(source))) {
+    const firstOffset = source.search(new RegExp(MOJIBAKE_PATTERNS.map((pattern) => pattern.source).join('|'), 'u'));
+    corrupted.push({ file, line: lineAt(source, Math.max(0, firstOffset)) });
   }
 
   for (const duplicate of findDuplicateKeys(source)) {
@@ -171,6 +185,7 @@ console.log('============================================================');
 console.log(`  Files checked:    ${files.length}`);
 console.log(`  Invalid JSON:     ${invalid.length}`);
 console.log(`  Duplicate keys:   ${duplicates.length}`);
+console.log(`  Encoding errors:  ${corrupted.length}`);
 
 for (const issue of invalid) {
   console.error(`  INVALID ${path.relative(ROOT, issue.file)}: ${issue.message}`);
@@ -180,9 +195,12 @@ for (const issue of duplicates) {
     `  DUPLICATE ${path.relative(ROOT, issue.file)}:${issue.line} ${issue.key} (first at line ${issue.firstLine})`,
   );
 }
+for (const issue of corrupted) {
+  console.error(`  MOJIBAKE ${path.relative(ROOT, issue.file)}:${issue.line}`);
+}
 
-if (invalid.length > 0 || duplicates.length > 0) {
+if (invalid.length > 0 || duplicates.length > 0 || corrupted.length > 0) {
   process.exit(1);
 }
 
-console.log('  PASS: Translation JSON is valid and has no duplicate object keys.');
+console.log('  PASS: Translation JSON is valid, uniquely keyed, and valid UTF-8 text.');

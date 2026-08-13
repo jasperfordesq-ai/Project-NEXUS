@@ -2003,9 +2003,9 @@
     },
     "create_modal": {
       "title": "Ajouter un homologue de fédération",
-      "peer_slug": "Limace de pair",
+      "peer_slug": "Slug du pair",
       "peer_slug_description": "Alphanumérique minuscule + tirets. Utilisé comme slug coopératif de destination pour les transferts sortants.",
-      "peer_slug_placeholder": "baiser-berne",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Nom d'affichage",
       "display_name_placeholder": "Coopérative Caring Community Berne",
       "base_url": "URL de base",
@@ -2021,7 +2021,7 @@
       "body_prefix": "Ce secret est montré",
       "only_once": "une seule fois",
       "body_suffix": "Copiez-le maintenant et collez-le dans l'entrée homologue de la fédération de l'installation NEXUS distante pour cette coopérative. Si vous le perdez, vous devez faire pivoter le secret ici et mettre à jour à nouveau le côté distant.",
-      "peer_slug_label": "Limace homologue:",
+      "peer_slug_label": "Slug du pair :",
       "base_url_label": "URL de base :"
     },
     "validation": {

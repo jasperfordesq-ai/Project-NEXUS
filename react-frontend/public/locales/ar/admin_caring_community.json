@@ -2001,7 +2001,7 @@
       "cancel": "يلغي",
       "create_reveal_secret": "إنشاء وكشف السر",
       "copy_secret": "نسخ السرية",
-      "copy_peer_slug": "نسخ سبيكة النظير",
+      "copy_peer_slug": "نسخ معرّف النظير (slug)",
       "copied_secret": "لقد نسخت السر"
     },
     "about": {
@@ -2036,9 +2036,9 @@
     },
     "create_modal": {
       "title": "إضافة نظير الاتحاد",
-      "peer_slug": "سبيكة الأقران",
-      "peer_slug_description": "حروف أبجدية رقمية صغيرة + واصلات. تستخدم كوجهة تعاونية للتحويلات الخارجية.",
-      "peer_slug_placeholder": "قبلة برن",
+      "peer_slug": "معرّف النظير (slug)",
+      "peer_slug_description": "أحرف وأرقام لاتينية صغيرة مع واصلات. يُستخدم هذا الـ slug لتحديد التعاونية الوجهة للتحويلات الصادرة.",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "اسم العرض",
       "display_name_placeholder": "تعاونية كيس بيرن",
       "base_url": "القاعدة URL",
@@ -2054,7 +2054,7 @@
       "body_prefix": "يظهر هذا السر",
       "only_once": "مرة واحدة فقط",
       "body_suffix": "انسخه الآن والصقه في إدخال نظير اتحاد تثبيت NEXUS البعيد لهذه التعاونية. إذا فقدته، يجب عليك تدوير السر هنا وتحديث الجانب البعيد مرة أخرى.",
-      "peer_slug_label": "سبيكة الأقران:",
+      "peer_slug_label": "معرّف النظير (slug):",
       "base_url_label": "القاعدة URL:"
     },
     "validation": {

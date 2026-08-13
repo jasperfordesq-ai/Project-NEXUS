@@ -1992,9 +1992,9 @@
     },
     "create_modal": {
       "title": "Verbund-Peer hinzufügen",
-      "peer_slug": "Peer-Schnecke",
+      "peer_slug": "Peer-Slug",
       "peer_slug_description": "Kleinbuchstaben alphanumerisch + Bindestriche. Wird als kooperativer Ziel-Slug für ausgehende Übertragungen verwendet.",
-      "peer_slug_placeholder": "Kuss-Bern",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Anzeigename",
       "display_name_placeholder": "Caring Community Genossenschaft Bern",
       "base_url": "Basis URL",
@@ -2010,7 +2010,7 @@
       "body_prefix": "Dieses Geheimnis wird gelüftet",
       "only_once": "nur einmal",
       "body_suffix": "Kopieren Sie es jetzt und fügen Sie es in den Federation-Peer-Eintrag der Remote-NEXUS-Installation für diese Genossenschaft ein. Wenn Sie es verlieren, müssen Sie das Geheimnis hier rotieren und die Remote-Seite erneut aktualisieren.",
-      "peer_slug_label": "Peer-Schnecke:",
+      "peer_slug_label": "Peer-Slug:",
       "base_url_label": "Basis URL:"
     },
     "validation": {

@@ -66,6 +66,9 @@ const NO_TRANSLATE_VALUES = new Set([
   'Twitter / X',
   'Google Play',
   'App Store',
+  // Concrete backend identifier shown as a format example. Translating it
+  // changes the value administrators must enter rather than localizing copy.
+  'bern-cooperative',
   // Robots meta directives: literal values a crawler parses, not prose.
   'Noindex Nofollow',
   'Index Follow',

@@ -1990,7 +1990,7 @@
       "cancel": "Cealaigh",
       "create_reveal_secret": "Cruthaigh & Nocht Rún",
       "copy_secret": "Cóip Rún",
-      "copy_peer_slug": "Cóipeáil Drúchtín Piaraí",
+      "copy_peer_slug": "Cóipeáil slug an phiara",
       "copied_secret": "Tá an rún cóipeáilte agam"
     },
     "about": {
@@ -2025,9 +2025,9 @@
     },
     "create_modal": {
       "title": "Cuir Piaraí Cónaidhme leis",
-      "peer_slug": "Drúchtín Piaraí",
-      "peer_slug_description": "Cás íochtair alfa-uimhriúla + Ceachtanna. Úsáidtear é mar seilide comhoibríoch ceann scríbe le haghaidh aistrithe amach.",
-      "peer_slug_placeholder": "póg-beirn",
+      "peer_slug": "Slug an phiara",
+      "peer_slug_description": "Carachtair alfa-uimhriúla sa chás íochtair agus fleiscíní. Úsáidtear é mar slug an chomharchumainn cinn scríbe le haghaidh aistrithe amach.",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Ainm Taispeána",
       "display_name_placeholder": "Comharchumann Caring Community Bern",
       "base_url": "Bonn URL",
@@ -2043,7 +2043,7 @@
       "body_prefix": "Taispeántar an rún seo",
       "only_once": "ach uair amháin",
       "body_suffix": "Cóipeáil anois é agus greamaigh isteach in iontráil phiara cónaidhm an tsuiteála cianda NEXUS don chomharchumann seo. Má chailleann tú é, ní mór duit an rún a rothlú anseo agus an taobh cianda a nuashonrú arís.",
-      "peer_slug_label": "seilide piaraí:",
+      "peer_slug_label": "Slug an phiara:",
       "base_url_label": "Bonn URL:"
     },
     "validation": {

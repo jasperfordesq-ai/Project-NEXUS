@@ -226,6 +226,23 @@
                   data-authenticated="true"
                   data-csrf-token="{{ csrfToken }}"
                   {% if sessionTimeout %}data-session-timeout-minutes="{{ sessionTimeout }}"{% endif %}
+                  data-timeout-title="{{ t('web_uk.session_timeout.title') }}"
+                  data-timeout-security-notice="{{ t('web_uk.session_timeout.security_notice') }}"
+                  data-timeout-unsaved-changes="{{ t('web_uk.session_timeout.unsaved_changes') }}"
+                  data-timeout-stay-signed-in="{{ t('web_uk.session_timeout.stay_signed_in') }}"
+                  data-timeout-sign-out-now="{{ t('web_uk.session_timeout.sign_out_now') }}"
+                  data-timeout-announcement="{{ t('web_uk.session_timeout.announcement') }}"
+                  data-timeout-time-separator="{{ t('web_uk.session_timeout.time_separator') }}"
+                  data-timeout-minutes-one="{{ t('web_uk.session_timeout.minutes.one') }}"
+                  data-timeout-minutes-two="{{ t('web_uk.session_timeout.minutes.two') }}"
+                  data-timeout-minutes-few="{{ t('web_uk.session_timeout.minutes.few') }}"
+                  data-timeout-minutes-many="{{ t('web_uk.session_timeout.minutes.many') }}"
+                  data-timeout-minutes-other="{{ t('web_uk.session_timeout.minutes.other') }}"
+                  data-timeout-seconds-one="{{ t('web_uk.session_timeout.seconds.one') }}"
+                  data-timeout-seconds-two="{{ t('web_uk.session_timeout.seconds.two') }}"
+                  data-timeout-seconds-few="{{ t('web_uk.session_timeout.seconds.few') }}"
+                  data-timeout-seconds-many="{{ t('web_uk.session_timeout.seconds.many') }}"
+                  data-timeout-seconds-other="{{ t('web_uk.session_timeout.seconds.other') }}"
                   hidden
                 ></div>
                 <a id="session-timeout-login-link" href="{{ urlFor('/login') }}" hidden tabindex="-1" aria-hidden="true"></a>
@@ -234,6 +251,21 @@
                   <input type="hidden" name="timeout" value="true">
                 </form>
               {% endif %}
+              <div
+                id="character-count-translations"
+                data-i18n.characters-under-limit.one="{{ t('web_uk.character_count.characters_under_limit.one') }}"
+                data-i18n.characters-under-limit.two="{{ t('web_uk.character_count.characters_under_limit.two') }}"
+                data-i18n.characters-under-limit.few="{{ t('web_uk.character_count.characters_under_limit.few') }}"
+                data-i18n.characters-under-limit.many="{{ t('web_uk.character_count.characters_under_limit.many') }}"
+                data-i18n.characters-under-limit.other="{{ t('web_uk.character_count.characters_under_limit.other') }}"
+                data-i18n.characters-at-limit="{{ t('web_uk.character_count.characters_at_limit') }}"
+                data-i18n.characters-over-limit.one="{{ t('web_uk.character_count.characters_over_limit.one') }}"
+                data-i18n.characters-over-limit.two="{{ t('web_uk.character_count.characters_over_limit.two') }}"
+                data-i18n.characters-over-limit.few="{{ t('web_uk.character_count.characters_over_limit.few') }}"
+                data-i18n.characters-over-limit.many="{{ t('web_uk.character_count.characters_over_limit.many') }}"
+                data-i18n.characters-over-limit.other="{{ t('web_uk.character_count.characters_over_limit.other') }}"
+                hidden
+              ></div>
               {% block mainContent %}{% endblock %}
             {% endblock %}
           </main>

@@ -2003,9 +2003,9 @@
     },
     "create_modal": {
       "title": "Adicionar peer de federação",
-      "peer_slug": "Lesma de mesmo nível",
+      "peer_slug": "Slug do peer",
       "peer_slug_description": "Alfanumérico minúsculo + hífens. Usado como slug cooperativo de destino para transferências de saída.",
-      "peer_slug_placeholder": "beijo-berna",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Nome de exibição",
       "display_name_placeholder": "Cooperativa Caring Community Berna",
       "base_url": "URL base",
@@ -2021,7 +2021,7 @@
       "body_prefix": "Este segredo é mostrado",
       "only_once": "apenas uma vez",
       "body_suffix": "Copie-o agora e cole-o na entrada de peer da federação da instalação remota NEXUS para esta cooperativa. Se você perdê-lo, deverá girar o segredo aqui e atualizar o lado remoto novamente.",
-      "peer_slug_label": "Lesma de pares:",
+      "peer_slug_label": "Slug do peer:",
       "base_url_label": "URL base:"
     },
     "validation": {

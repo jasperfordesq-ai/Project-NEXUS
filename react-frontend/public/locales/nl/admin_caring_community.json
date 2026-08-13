@@ -1957,7 +1957,7 @@
       "cancel": "Annuleren",
       "create_reveal_secret": "Creëer en onthul geheim",
       "copy_secret": "Kopieer geheim",
-      "copy_peer_slug": "Kopieer peer-slak",
+      "copy_peer_slug": "Peer-slug kopiëren",
       "copied_secret": "Ik heb het geheim gekopieerd"
     },
     "about": {
@@ -1992,9 +1992,9 @@
     },
     "create_modal": {
       "title": "Federatie-peer toevoegen",
-      "peer_slug": "Peer-slak",
-      "peer_slug_description": "Alfanumerieke kleine letters + koppeltekens. Gebruikt als coöperatieve bestemmingsslak voor uitgaande overdrachten.",
-      "peer_slug_placeholder": "kus-bern",
+      "peer_slug": "Peer-slug",
+      "peer_slug_description": "Kleine letters, cijfers en koppeltekens. Wordt gebruikt als slug van de bestemmingscoöperatie voor uitgaande overdrachten.",
+      "peer_slug_placeholder": "bern-cooperative",
       "display_name": "Weergavenaam",
       "display_name_placeholder": "Caring Community Bern-coöperatie",
       "base_url": "Basis URL",
@@ -2010,7 +2010,7 @@
       "body_prefix": "Dit geheim wordt getoond",
       "only_once": "slechts één keer",
       "body_suffix": "Kopieer het nu en plak het in de externe federatie-peer-invoer van NEXUS voor deze coöperatie. Als je het kwijtraakt, moet je het geheim hier draaien en de externe kant opnieuw bijwerken.",
-      "peer_slug_label": "Peer-slak:",
+      "peer_slug_label": "Peer-slug:",
       "base_url_label": "Basis URL:"
     },
     "validation": {
