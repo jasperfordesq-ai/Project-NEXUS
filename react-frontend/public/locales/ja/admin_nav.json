@@ -727,7 +727,8 @@
     "donation_refunds": "寄付|返金|Stripe|寄付する",
     "support_reports": "バグ|フィードバック|診断|Sentry",
     "retention_policies": "保持|GDPR|廃棄|削除|アーカイブ",
-    "sso_providers": "シングルサインオン|OpenID Connect|Entra|ID|ログイン"
+    "sso_providers": "シングルサインオン|OpenID Connect|Entra|ID|ログイン",
+    "categories": "アクティビティ|活動カテゴリ|募集カテゴリ|トピック"
   },
   "user_report": "ユーザーレポート",
   "municipal_impact": "自治体の影響レポート",

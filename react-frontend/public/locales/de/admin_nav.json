@@ -727,7 +727,8 @@
     "donation_refunds": "Spenden|Rückerstattung|Stripe|Spenden",
     "support_reports": "Fehler|Feedback|Diagnose|Sentry",
     "retention_policies": "Aufbewahrung|DSGVO|Entsorgung|Löschung|Archiv",
-    "sso_providers": "einmalige Anmeldung|OpenID Connect|Entra|Identität|Anmeldung"
+    "sso_providers": "einmalige Anmeldung|OpenID Connect|Entra|Identität|Anmeldung",
+    "categories": "Aktivitäten|Aktivitätskategorien|Angebotskategorien|Themen"
   },
   "user_report": "Benutzerbericht",
   "municipal_impact": "Kommunale Wirkungsberichte",

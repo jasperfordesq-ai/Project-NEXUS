@@ -185,6 +185,30 @@ function useAdminNav(): NavSection[] {
   const canSeeSuperPanel = canAccessSuperPanel(user);
 
   return useMemo(() => {
+    // 🔴 Activity categories. A coordinator reported searching the admin panel
+    // and the broker panel for where to edit them and finding nothing
+    // (Minehead & Coast, 2026-08-12). Two reasons, both fixed here:
+    //
+    //  1. The item sat under "Content", beside Blog posts, Pages, Landing page
+    //     and Menus — a section that reads as website/CMS material. Somebody
+    //     looking for the categories their members pick when offering an hour
+    //     looks under Listings. It now lives there.
+    //  2. It carried NO search keywords, while its neighbours did. The sidebar
+    //     search matches label and keywords, so searching "activity" or
+    //     "activities" — the words she and TOL2 use — could never match an item
+    //     labelled "Categories". That is exactly the reported symptom.
+    //
+    // Defined once and placed conditionally: these categories are NOT
+    // listings-only (the API serves listing, event, volunteering and resource
+    // types), so a community with the listings module off keeps the item under
+    // Content instead of losing the page altogether.
+    const categoriesItem: NavItem = {
+      label: t('categories'),
+      href: '/admin/categories',
+      icon: FolderTree,
+      keywords: keyword(t('search_keywords.categories')),
+    };
+
     const communityItems: NavItem[] = [
       ...(hasFeature('groups') ? [
         { label: t('groups'), href: '/admin/groups', icon: Users, keywords: keyword(t('search_keywords.groups')) },
@@ -302,7 +326,10 @@ function useAdminNav(): NavSection[] {
         label: t('listings'),
         icon: ListChecks,
         zone: 'community' as const,
-        items: [{ label: t('all_content'), href: '/admin/listings', icon: ListChecks }],
+        items: [
+          { label: t('all_content'), href: '/admin/listings', icon: ListChecks },
+          categoriesItem,
+        ],
       }] : []),
       {
         key: 'content',
@@ -315,7 +342,11 @@ function useAdminNav(): NavSection[] {
           { label: t('pages'), href: '/admin/pages', icon: FileText },
           { label: t('landing_page'), href: '/admin/landing-page', icon: Palette },
           ...(isGod ? [{ label: t('menus'), href: '/admin/menus', icon: Menu }] : []),
-          { label: t('categories'), href: '/admin/categories', icon: FolderTree },
+          // Categories normally live under Listings now (see categoriesItem).
+          // They stay here only when the listings module is off, so a community
+          // running events or volunteering without listings can still reach the
+          // page rather than losing it entirely.
+          ...(hasModule('listings') ? [] : [categoriesItem]),
           { label: t('attributes'), href: '/admin/attributes', icon: Tags },
           { label: t('help_faqs'), href: '/admin/help/faqs', icon: HelpCircle, keywords: keyword(t('search_keywords.help_faqs')) },
         ],

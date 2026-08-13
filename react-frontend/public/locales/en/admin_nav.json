@@ -19,7 +19,8 @@
     "donation_refunds": "donations|refund|Stripe|giving",
     "support_reports": "bugs|feedback|diagnostics|Sentry",
     "retention_policies": "retention|GDPR|disposal|purge|archive",
-    "sso_providers": "single sign-on|OpenID Connect|Entra|identity|login"
+    "sso_providers": "single sign-on|OpenID Connect|Entra|identity|login",
+    "categories": "activities|activity categories|listing categories|offer categories|request categories|topics"
   },
   "community_fund": "Community Fund",
   "dashboard": "Dashboard",

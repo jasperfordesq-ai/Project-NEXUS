@@ -731,7 +731,8 @@
     "donation_refunds": "donazioni|rimborso|Stripe|donazione",
     "support_reports": "bug|feedback|diagnostica|Sentry",
     "retention_policies": "conservazione|GDPR|smaltimento|purga|archiviazione",
-    "sso_providers": "accesso unico|OpenID Connect|Entra|identità|login"
+    "sso_providers": "accesso unico|OpenID Connect|Entra|identità|login",
+    "categories": "attività|categorie di attività|categorie di annunci|argomenti"
   },
   "user_report": "Rapporto utente",
   "municipal_impact": "Rapporti sull'impatto municipale",

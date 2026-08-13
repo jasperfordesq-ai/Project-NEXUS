@@ -727,7 +727,8 @@
     "donation_refunds": "donaties|teruggave|Stripe|geven",
     "support_reports": "bugs|feedback|diagnostiek|Sentry",
     "retention_policies": "bewaring|AVG|verwijdering|opschonen|archief",
-    "sso_providers": "single sign-on|OpenID Connect|Entra|identiteit|inloggen"
+    "sso_providers": "single sign-on|OpenID Connect|Entra|identiteit|inloggen",
+    "categories": "activiteiten|activiteitencategorieën|aanbodcategorieën|onderwerpen"
   },
   "user_report": "Gebruikersrapport",
   "municipal_impact": "Gemeentelijke Impactrapporten",
