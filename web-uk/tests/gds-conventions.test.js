@@ -193,6 +193,48 @@ describe('GDS conventions', () => {
     });
   });
 
+  describe('production hardening', () => {
+    const server = fs.readFileSync(path.join(__dirname, '..', 'src', 'server.js'), 'utf8');
+
+    /**
+     * 🔴 This process had NO signal handler. The Dockerfile runs node as PID 1 with no
+     * init and no STOPSIGNAL, so `docker stop` delivers SIGTERM straight to it and
+     * Node's default is to exit immediately — severing in-flight responses and dropping
+     * Redis without a quit. On a blue/green switch that is exactly when traffic is
+     * still arriving.
+     */
+    it('shuts down gracefully on SIGTERM and SIGINT', () => {
+      expect(server).toContain("process.on('SIGTERM'");
+      expect(server).toContain("process.on('SIGINT'");
+      expect(server).toContain('server.close(');
+      // Redis must be closed, not dropped.
+      expect(server).toContain('sessionStore.client.quit');
+      // Sentry transmission is async; exiting without flushing loses the events.
+      expect(server).toContain('flushSentry');
+    });
+
+    /**
+     * A hung keep-alive socket must not hold the container past the orchestrator's
+     * grace period — being SIGKILLed is the outcome graceful shutdown exists to avoid.
+     */
+    it('bounds shutdown with an unref-ed timeout and is idempotent', () => {
+      expect(server).toContain('SHUTDOWN_TIMEOUT_MS');
+      expect(server).toContain('forceExit.unref()');
+      expect(server).toContain('if (shuttingDown) return;');
+    });
+
+    /**
+     * The urlencoded `verify` hook buffers the entire raw body onto the request, so the
+     * limit is the only thing bounding that copy. Left implicit it was Express's
+     * undocumented-at-the-call-site 100kb default.
+     */
+    it('states body size limits explicitly', () => {
+      expect(server).toContain("const BODY_LIMIT = '256kb'");
+      expect(server).toContain('limit: BODY_LIMIT');
+      expect(server).toContain('express.json({ limit: BODY_LIMIT })');
+    });
+  });
+
   describe('rendered behaviour', () => {
     let app;
     beforeAll(() => {

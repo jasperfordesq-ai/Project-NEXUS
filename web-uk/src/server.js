@@ -425,13 +425,27 @@ app.get('/version', (req, res) => {
 app.use(generalLimiter);
 
 // Body parsing
+//
+// 🔴 The limit is stated explicitly rather than left to Express's 100kb default. Two
+// reasons: the `verify` hook below buffers the ENTIRE raw urlencoded body onto the
+// request object, so the limit is the only thing bounding that copy; and an implicit
+// default is a value nobody knows without reading Express's source, which makes it
+// impossible to reason about when a long form post starts failing.
+//
+// 256kb is comfortably above the largest real form here (the event form with a 4,000
+// character accessibility notes field plus recurrence fields) while still refusing an
+// abusive body. File uploads do NOT come through here — multipart is handled
+// separately in src/middleware/multipart.js with its own 10MB per-file cap.
+const BODY_LIMIT = '256kb';
+
 app.use(express.urlencoded({
   extended: true,
+  limit: BODY_LIMIT,
   verify: (req, _res, buffer) => {
     req.rawUrlencodedBody = buffer.toString('utf8');
   }
 }));
-app.use(express.json());
+app.use(express.json({ limit: BODY_LIMIT }));
 
 // Cookies
 app.use(cookieParser(COOKIE_SECRET));
@@ -2138,14 +2152,69 @@ process.on('uncaughtException', (error) => {
   flushSentry(2000).finally(() => process.exit(1));
 });
 
+/**
+ * 🔴 Graceful shutdown. This process had NO signal handler at all.
+ *
+ * Why it matters here specifically: the Dockerfile runs `node src/server.js` as PID 1
+ * with no init and no STOPSIGNAL, so `docker stop` delivers SIGTERM straight to Node.
+ * With no handler, Node's default is to exit immediately — every in-flight request is
+ * severed mid-response and the Redis connection is dropped without a quit. On a
+ * blue/green switch that is precisely when traffic is still arriving, so members see
+ * truncated pages rather than a clean handover.
+ *
+ * Sequence: stop accepting new connections, let in-flight requests finish, close Redis,
+ * flush Sentry, exit 0. Bounded by a hard timeout because a slow upstream or a
+ * keep-alive socket must not hold the container open past the orchestrator's grace
+ * period — exceeding it would get us SIGKILLed, which is the very thing being avoided.
+ */
+function installGracefulShutdown(server) {
+  const SHUTDOWN_TIMEOUT_MS = 10000;
+  let shuttingDown = false;
+
+  const shutdown = (signal) => {
+    // A second signal must not restart the sequence or double-exit.
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`${signal} received: closing server to new connections`);
+
+    const forceExit = setTimeout(() => {
+      console.error(`Shutdown exceeded ${SHUTDOWN_TIMEOUT_MS}ms; exiting anyway`);
+      process.exit(0);
+    }, SHUTDOWN_TIMEOUT_MS);
+    // Do not let the timer itself keep the event loop alive.
+    forceExit.unref();
+
+    server.close(async () => {
+      try {
+        if (sessionStore.client && typeof sessionStore.client.quit === 'function') {
+          await sessionStore.client.quit();
+        }
+      } catch (error) {
+        console.error('Session store shutdown error:', error.message);
+      }
+
+      // Same reasoning as the uncaughtException handler: transmission is async, so
+      // exiting without flushing loses the events explaining the shutdown.
+      await flushSentry(2000).catch(() => {});
+      clearTimeout(forceExit);
+      console.log('Shutdown complete');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
 // Only start listening if not in test mode
 if (NODE_ENV !== 'test') {
   sessionStore.ready
     .then(() => {
-      app.listen(PORT, () => {
+      const server = app.listen(PORT, () => {
         console.log(`NEXUS UK Frontend running at http://localhost:${PORT}`);
         console.log(`Environment: ${NODE_ENV}`);
       });
+      installGracefulShutdown(server);
     })
     .catch((error) => {
       console.error('Unable to initialize the persistent session store:', error.message);
