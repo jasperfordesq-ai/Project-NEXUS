@@ -404,7 +404,10 @@ const getChallengeProgress = (startDate: string, endDate: string) => {
 };
 
 export default function ExplorePage() {
-  const { t } = useTranslation('explore');
+  // 'gamification' is listed because the Top Contributors strip renders
+  // gamification:achievements.xp_value. Cross-namespace keys only resolve when
+  // the namespace is loaded, otherwise the raw key is shown to the user.
+  const { t } = useTranslation(['explore', 'gamification']);
   usePageTitle(t('page_title'));
 
   const navigate = useNavigate();

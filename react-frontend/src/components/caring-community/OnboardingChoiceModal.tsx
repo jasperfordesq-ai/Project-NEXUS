@@ -90,7 +90,7 @@ export function clearStoredOnboardingChoice(tenantScope?: string | null): void {
 }
 
 export function OnboardingChoiceModal({ isOpen, onChoice, onClose, tenantScope }: OnboardingChoiceModalProps) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'caring_community']);
   const { tenant, tenantSlug } = useTenant();
   const effectiveTenantScope = tenantScope ?? tenant?.slug ?? tenantSlug ?? (tenant?.id ? String(tenant.id) : null);
 

@@ -144,7 +144,7 @@ function isVisible(
 }
 
 export function CaringCommunityPage() {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'caring_community']);
   const { branding, hasFeature, hasModule, tenant, tenantPath, tenantSlug } = useTenant();
   usePageTitle(t('caring_community.meta.title'));
 

@@ -287,7 +287,7 @@ interface ActionModalProps {
 }
 
 function ActionModal({ kind, relationship, isSubmitting, onCancel, onConfirm }: ActionModalProps) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'caring_community']);
   const [reason, setReason] = useState('');
   const [resumeAt, setResumeAt] = useState('');
 
@@ -378,7 +378,9 @@ function ActionModal({ kind, relationship, isSubmitting, onCancel, onConfirm }: 
 // ---------------------------------------------------------------------------
 
 export function MySupportRelationshipsPage() {
-  const { t } = useTranslation('common');
+  // RelationshipCard receives this `t` as a prop and renders caring_community:*
+  // keys, so that namespace must be loaded here too.
+  const { t } = useTranslation(['common', 'caring_community']);
   const { hasFeature, tenantPath } = useTenant();
   const navigate = useNavigate();
   const toast = useToast();
