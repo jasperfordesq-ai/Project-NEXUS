@@ -76,6 +76,7 @@ const NO_TRANSLATE_VALUES = new Set([
   // not English copy. Translating either makes the instruction less accurate.
   '⌘K',
   'broker@example.com',
+  'A-Z',
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale

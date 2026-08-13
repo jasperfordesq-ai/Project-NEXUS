@@ -182,6 +182,7 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   'bern-cooperative',
   '⌘K',
   'broker@example.com',
+  'A-Z',
 ]);
 
 // Cognates and borrowed technical terms that are valid translations only in the
