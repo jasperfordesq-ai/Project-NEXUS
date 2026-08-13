@@ -921,10 +921,28 @@ export function RegisterPage() {
           <div className="space-y-4">
             {/* Consents */}
             <div className="space-y-3">
+              {/*
+                🔴 Two faults reported by a coordinator running a real sign-up
+                (Minehead & Coast, 2026-08-12), both on this consent block:
+
+                1. The control was "almost invisible" on desktop and iOS. It used
+                   size="sm", which the local Checkbox wrapper maps to `size-3`
+                   — a 12px box. HeroUI v3 itself has no size prop; that mapping
+                   is ours. A consent control that carries legal weight is the
+                   last place to shrink, so this is size="lg" (20px) with an
+                   explicit accent fill so "ticked" is unmistakable.
+                2. Opening Terms wiped the whole form. These links used to be
+                   plain in-tab <Link>s, and every field on this 4-step wizard
+                   lives in component state, so navigating away and coming back
+                   discarded the lot. They open in a new tab now. Do NOT revert
+                   these to in-tab links, and do NOT "fix" it by persisting the
+                   form to storage instead — this step holds the password.
+              */}
               <Checkbox
                 isSelected={termsAccepted}
                 onValueChange={setTermsAccepted}
-                size="sm"
+                size="lg"
+                color="primary"
                 classNames={{
                   label: 'text-theme-muted text-sm',
                 }}
@@ -934,8 +952,8 @@ export function RegisterPage() {
                     i18nKey="register.terms_agreement"
                     t={t}
                     components={{
-                      termsLink: <Link to={tenantPath('/terms')} className="text-accent dark:text-accent hover:underline" />,
-                      privacyLink: <Link to={tenantPath('/privacy')} className="text-accent dark:text-accent hover:underline" />,
+                      termsLink: <Link to={tenantPath('/terms')} target="_blank" rel="noopener noreferrer" className="text-accent dark:text-accent hover:underline" />,
+                      privacyLink: <Link to={tenantPath('/privacy')} target="_blank" rel="noopener noreferrer" className="text-accent dark:text-accent hover:underline" />,
                     }} />
                 </span>
               </Checkbox>
@@ -943,7 +961,8 @@ export function RegisterPage() {
               <Checkbox
                 isSelected={newsletterOptIn}
                 onValueChange={setNewsletterOptIn}
-                size="sm"
+                size="lg"
+                color="primary"
                 classNames={{
                   label: 'text-theme-muted text-sm',
                 }}
@@ -961,6 +980,8 @@ export function RegisterPage() {
               <p>
                 <Link
                   to={tenantPath('/privacy')}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-accent dark:text-accent hover:underline"
                 >
                   {t('register.data_protection_privacy_link')}
