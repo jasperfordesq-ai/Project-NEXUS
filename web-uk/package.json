@@ -19,6 +19,7 @@
     "visual:blade": "node scripts/blade-visual-spotcheck.js",
     "visual:screenshots": "node scripts/capture-blade-web-screenshots.js",
     "visual:journey": "node scripts/capture-webuk-journey-screenshots.js",
+    "api:verify": "node scripts/verify-api-contracts.js",
     "smoke:laravel": "node scripts/laravel-runtime-smoke.js",
     "smoke:laravel:local": "node scripts/laravel-runtime-smoke-local-server.js",
     "smoke:federation:local": "node scripts/federation-onboarding-runtime-smoke.js",
