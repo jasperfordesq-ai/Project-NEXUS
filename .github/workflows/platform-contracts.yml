@@ -340,10 +340,20 @@ jobs:
           cache: npm
           cache-dependency-path: web-uk/package-lock.json
       - run: npm ci
+      # 🔴 build:css MUST come before brand:check. `web-uk/public/css/` is gitignored, so
+      # a fresh checkout has no compiled stylesheet — and brand:check now scans the
+      # COMPILED CSS for the licensed GDS Transport typeface, because scanning templates
+      # (all it did before 2026-08-13) cannot see a font at all. Running it first made it
+      # refuse outright: "a missing stylesheet is not a pass". That refusal is correct and
+      # must stay; the ordering was the bug.
+      #
+      # Worth knowing: for as long as brand:check only scanned templates, this ordering
+      # was invisible — the check passed here without a stylesheet ever existing, which is
+      # exactly the vacuous pass the hardening was written to stop.
+      - run: npm run build:css
       - run: npm run brand:check
       - run: npm run lint
       - run: npm test -- --runInBand
-      - run: npm run build:css
       # 🔴 The route matrix is described as a "live drift alarm" — a Laravel
       # accessible route that web-uk has not built is supposed to show up here as
       # a missing route. It was not live: nothing regenerated it, so it was only
