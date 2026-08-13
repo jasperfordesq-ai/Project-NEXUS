@@ -244,7 +244,7 @@
     "jwt_federation_auth_platform_middle": "und benötigen keine Plattformeinrichtung. Wenn ein Partner ausdrücklich eine JWT-Authentifizierung benötigt, muss der Plattform-Superadministrator dies festlegen",
     "jwt_federation_auth_platform_suffix": "in der Serverumgebung. Status- und Einrichtungsanweisungen finden Sie unten",
     "jwt_federation_auth_platform_title": "Die Anmeldung für JWT-Partner wird vom Plattformbetreiber eingerichtet",
-    "label_super_admin": "Super Admin",
+    "label_super_admin": "Plattform-Superadministrator",
     "formats": "Formate",
     "groups_enabled": "Gruppen aktiviert",
     "health_check": "Verbindung prüfen",

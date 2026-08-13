@@ -264,7 +264,34 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
 // Cognates and borrowed technical terms that are valid translations only in the
 // listed language. Do not broaden these to every locale.
 const LANGUAGE_IDENTICAL_VALUE_ALLOWLIST = {
-  de: new Set(['Status:']),
+  de: new Set([
+    "Status:",
+    "Status: {{status}}",
+    "Jane...",
+    "Webhook...",
+    "Option {{number}}",
+    "Layouts...",
+    "Optional...",
+    "KI-Agenten",
+    "Option 1",
+    "Option 2",
+    "Option 3",
+    "Tandems <->",
+    "Check-ins",
+    "Partner #{{id}}",
+    "Native App",
+    "Benchmark.",
+    "Index Nofollow",
+    "Single Sign-On",
+    "Administrator #{{id}}",
+    "Organisation #{{id}}",
+    "Version {{number}}",
+    "Open Source",
+    "Auto WebP",
+    "Option A\nOption B\nOption C",
+    "Position {{position}}",
+    "Name (optional)",
+  ]),
   // 'Café' is the native word in these three, not a copied English value — the
   // curation test finds no locale file where they render English 'Café' as
   // anything else.
