@@ -360,13 +360,23 @@ describe('Public Routes', () => {
         .send({ _csrf: timeoutCsrfMatch[1], timeout: 'true' });
 
       expect(logoutResponse.status).toBe(302);
-      expect(logoutResponse.headers.location).toBe('/acme/accessible/login?status=signed-out');
+      // 🔴 This posts `timeout: 'true'` — it is the SESSION-EXPIRY logout, not a
+      // deliberate sign-out, so it must not say "You have signed out." (which reads as
+      // though the member chose to). Changed 2026-08-13 to auth-required, whose
+      // already-translated copy is "Sign in to use this page."
+      expect(logoutResponse.headers.location).toBe('/acme/accessible/login?status=auth-required');
       expect(api.logout).toHaveBeenCalledWith('test-token', 'refresh-token');
 
       const signedOutPage = await agent.get(logoutResponse.headers.location);
       expect(signedOutPage.status).toBe(200);
-      expect(signedOutPage.text).toContain('You have signed out.');
-      expect(signedOutPage.text).toContain('govuk-notification-banner--success');
+      // 🔴 An expired session is not a SUCCESS. This previously asserted the green
+      // success banner and "You have signed out.", which told a member whose session
+      // had simply run out that they had done something deliberate and that it went
+      // well. It now surfaces as a problem to act on, with the already-translated
+      // "Sign in to use this page."
+      expect(signedOutPage.text).toContain('Sign in to use this page');
+      expect(signedOutPage.text).toContain('govuk-error-summary');
+      expect(signedOutPage.text).not.toContain('govuk-notification-banner--success');
     });
 
     it('keeps server-level cookie redirects inside the active shared accessible mount', async () => {

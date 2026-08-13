@@ -753,7 +753,17 @@ router.post('/logout', asyncRoute(async (req, res) => {
   }
 
   clearAuthCookies(res);
-  return redirectTo(res, '/login?status=signed-out');
+
+  // 🔴 A timed-out member was told "You have signed out." — which reads as though they
+  // chose to, and gives no hint that their session simply ran out. The timeout modal
+  // has always posted `timeout=true` (layouts/base.njk) and this handler ignored it.
+  //
+  // Reuses the existing, already-translated `states.auth_required` ("Sign in to use
+  // this page.") rather than adding a new status key: new keys cannot currently be
+  // translated into Irish, and an English-only string would breach the untranslated
+  // ceiling gate. It is accurate and neutral for an expired session.
+  const signedOutByTimeout = String(req.body && req.body.timeout) === 'true';
+  return redirectTo(res, signedOutByTimeout ? '/login?status=auth-required' : '/login?status=signed-out');
 }));
 
 // Forgot password

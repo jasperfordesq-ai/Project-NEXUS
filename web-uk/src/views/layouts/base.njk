@@ -213,9 +213,19 @@
           <main class="govuk-main-wrapper{% if mainClasses %} {{ mainClasses }}{% endif %}" id="main-content" tabindex="-1"{% if mainLang %} lang="{{ mainLang }}"{% endif %}{{ govukAttributes(mainAttributes) }}>
             {% block content %}
               {% if isAuthenticated %}
+                {#
+                  🔴 data-session-timeout-minutes carries the SERVER's real session
+                  length to the client. public/js/timeout-warning.js used to hardcode
+                  30 minutes independently of the Express session `maxAge`, so changing
+                  the server's session length silently desynchronised the warning — it
+                  would fire after the session had already died, or long before it,
+                  with nothing failing to reveal it. res.locals.sessionTimeout was
+                  already computed in src/server.js and consumed by nothing at all.
+                #}
                 <div
                   data-authenticated="true"
                   data-csrf-token="{{ csrfToken }}"
+                  {% if sessionTimeout %}data-session-timeout-minutes="{{ sessionTimeout }}"{% endif %}
                   hidden
                 ></div>
                 <a id="session-timeout-login-link" href="{{ urlFor('/login') }}" hidden tabindex="-1" aria-hidden="true"></a>

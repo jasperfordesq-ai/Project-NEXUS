@@ -127,6 +127,39 @@ describe('GDS conventions', () => {
     });
   });
 
+  describe('session timeout', () => {
+    /**
+     * 🔴 The client used to hardcode 30 minutes independently of the Express session
+     * maxAge, so changing the server's session length silently desynchronised the
+     * warning — firing after the session had already died, or minutes early, with
+     * nothing failing. res.locals.sessionTimeout existed and was consumed by nothing.
+     */
+    it('takes the session length from the server, not a hardcoded client constant', () => {
+      const base = read('layouts/base.njk');
+      expect(base).toContain('data-session-timeout-minutes="{{ sessionTimeout }}"');
+
+      const script = fs.readFileSync(
+        path.join(__dirname, '..', 'public', 'js', 'timeout-warning.js'), 'utf8'
+      );
+      expect(script).toContain('[data-session-timeout-minutes]');
+      expect(script).toContain('resolveSessionTimeoutMinutes');
+      // The fallback must not be able to produce a negative warning window.
+      expect(script).toContain('declared > WARNING_BEFORE_MINUTES');
+    });
+
+    /**
+     * 🔴 The timeout modal has always posted `timeout=true`; the logout handler ignored
+     * it and told the member "You have signed out.", implying they chose to. Reuses the
+     * already-translated states.auth_required rather than adding an untranslatable key.
+     */
+    it('distinguishes an expired session from a deliberate sign-out', () => {
+      const auth = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'auth.js'), 'utf8');
+      expect(auth).toContain('signedOutByTimeout');
+      expect(auth).toContain("'/login?status=auth-required'");
+      expect(auth).toContain("'/login?status=signed-out'");
+    });
+  });
+
   describe('rendered behaviour', () => {
     let app;
     beforeAll(() => {

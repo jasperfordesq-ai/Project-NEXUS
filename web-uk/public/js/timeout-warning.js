@@ -12,9 +12,32 @@
   'use strict';
 
   // Configuration
-  var SESSION_TIMEOUT_MINUTES = 30;
+  //
+  // 🔴 The session length comes from the SERVER, via data-session-timeout-minutes on
+  // the authenticated marker element (layouts/base.njk, sourced from the Express
+  // session maxAge). It used to be hardcoded to 30 here, duplicating the server value
+  // with nothing keeping the two in step: changing the server's session length would
+  // silently leave this warning firing after the session had already expired, or
+  // minutes too early, with no test or error to reveal it.
+  //
+  // The 30 below is a last-resort fallback for a page that renders the script without
+  // the marker; it is deliberately the same as the server default so the fallback is
+  // not itself a desync.
+  var DEFAULT_SESSION_TIMEOUT_MINUTES = 30;
   var WARNING_BEFORE_MINUTES = 5; // Show warning 5 minutes before timeout
   var COUNTDOWN_SECONDS = 60; // Countdown in the modal
+
+  function resolveSessionTimeoutMinutes() {
+    var marker = document.querySelector('[data-session-timeout-minutes]');
+    var declared = marker && parseInt(marker.getAttribute('data-session-timeout-minutes'), 10);
+    // Must exceed the warning lead time, or the warning could never be shown.
+    if (declared && isFinite(declared) && declared > WARNING_BEFORE_MINUTES) {
+      return declared;
+    }
+    return DEFAULT_SESSION_TIMEOUT_MINUTES;
+  }
+
+  var SESSION_TIMEOUT_MINUTES = resolveSessionTimeoutMinutes();
 
   var sessionTimeoutMs = SESSION_TIMEOUT_MINUTES * 60 * 1000;
   var warningTimeMs = (SESSION_TIMEOUT_MINUTES - WARNING_BEFORE_MINUTES) * 60 * 1000;
