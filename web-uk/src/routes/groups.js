@@ -1176,7 +1176,7 @@ router.get('/:id(\\d+)/invite', requireAuth, asyncRoute(async (req, res) => {
     .filter((invite) => invite.id !== null);
 
   return res.render('groups/invite', {
-    title: 'Invite members',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_groups.invite.title') : 'Invite members'),
     activeNav: 'explore',
     group,
     generatedLink: inviteGeneratedLink(invitesResult),
@@ -1220,7 +1220,7 @@ router.get('/:id(\\d+)/image', requireAuth, asyncRoute(async (req, res) => {
   }
 
   return res.render('groups/image', {
-    title: 'Group images',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_groups.image.title') : 'Group images'),
     activeNav: 'explore',
     group,
     ...imageStatus(req.query.status, res.locals.t)
@@ -1243,7 +1243,7 @@ router.get('/:id(\\d+)/announcements', requireAuth, asyncRoute(async (req, res) 
     .filter((announcement) => announcement.id !== null);
 
   return res.render('groups/announcements', {
-    title: 'Announcements',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_groups.announcements.title') : 'Announcements'),
     activeNav: 'explore',
     group,
     announcements,
@@ -1293,7 +1293,7 @@ router.get('/:id(\\d+)/discussions', requireAuth, asyncRoute(async (req, res) =>
     .filter((discussion) => discussion.id !== null);
 
   return res.render('groups/discussions', {
-    title: 'Discussions',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.groups.discussions.title') : 'Discussions'),
     activeNav: 'explore',
     group,
     isMember,
@@ -1474,7 +1474,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.groupUpdate(), asyncRoute(asyn
   if (errors.length > 0) {
     await removeUploadedFile(cover);
     return res.render('groups/edit', {
-      title: 'Edit group',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.polish_groups.edit_link') : 'Edit group'),
       group: { id, name, description, location, visibility, tagsText: trimmed(tags) },
       errors,
       fieldErrors: groupFieldErrors(errors),
@@ -1513,7 +1513,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.groupUpdate(), asyncRoute(asyn
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
       const formErrors = groupFormErrors(error, 'Unable to update group');
       return res.render('groups/edit', {
-        title: 'Edit group',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.polish_groups.edit_link') : 'Edit group'),
         group: { id, name, description, location, visibility, tagsText: trimmed(tags) },
         errors: formErrors,
         fieldErrors: groupFieldErrors(formErrors),

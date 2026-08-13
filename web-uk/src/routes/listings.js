@@ -1424,7 +1424,7 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
 
   const replay = consumeListingFormReplay(req, req.params.id);
   res.render('listings/form', await listingFormViewData(req, {
-    title: 'Edit listing',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.listings.edit.edit_listing') : 'Edit listing'),
     listing,
     values: replay || listingFormValues({}, listing),
     errors: null,
@@ -1444,7 +1444,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
   if (validation.errors.length > 0) {
     await removeUploadedFile(image);
     return res.render('listings/form', await listingFormViewData(req, {
-      title: 'Edit listing',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.listings.edit.edit_listing') : 'Edit listing'),
       listing: { id },
       values,
       ...validation
@@ -1476,7 +1476,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.listingUpdate(), asyncRoute(as
     if (error instanceof ApiError && [400, 409, 422].includes(error.status)) {
       const state = listingFormErrorState(error, 'Unable to update listing');
       return res.render('listings/form', await listingFormViewData(req, {
-        title: 'Edit listing',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.listings.edit.edit_listing') : 'Edit listing'),
         listing: { id },
         values,
         ...state

@@ -382,7 +382,7 @@ router.get('/hashtags', asyncRoute(async (req, res) => {
   }
 
   res.render('feed/hashtags', {
-    title: 'Hashtags',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_feed.hashtags.title') : 'Hashtags'),
     activeNav: 'feed',
     alphaActiveNav: 'feed',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
@@ -421,7 +421,7 @@ router.get('/posts/:id(\\d+)', asyncRoute(async (req, res) => {
     : null;
 
   res.render('feed/post', {
-    title: 'Post',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.actions.post') : 'Post'),
     activeNav: 'feed',
     alphaActiveNav: 'feed',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',

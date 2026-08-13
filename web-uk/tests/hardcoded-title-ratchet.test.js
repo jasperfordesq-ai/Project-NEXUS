@@ -32,8 +32,20 @@ const path = require('node:path');
  * The number may only go DOWN. Lower it in the same commit as any fix. If this test
  * fails because the count rose, the fix is to translate the new title — or pair it
  * with a `titleKey` — not to raise the ceiling.
+ *
+ * 🔴 The 22 that remain are NOT all debt, and should not be bulk-converted:
+ *   - Specific not-found titles ('Event not found', 'Listing not found', 'Ticket not
+ *     found', …). The only existing key is the GENERIC error_pages.404_title, so
+ *     substituting it would make the page LESS informative, and tests assert the
+ *     specific wording. These need their own translated keys, which do not exist.
+ *   - 'Access denied', 'Error', 'Problem with the service', and a 503 titled
+ *     'Federation': the available keys reword them.
+ *   - Anything not inside a `res.render(` call. `res` is only definitionally in scope
+ *     there; helper functions in route files (buildProfileSettingsViewModel(req,
+ *     data)) and module-level data (lib/account-links.js) have no `res`, and a blind
+ *     rewrite threw ReferenceError at require time and broke 926 tests in one run.
  */
-const CEILING = 56;
+const CEILING = 22;
 
 const SRC = path.join(__dirname, '..', 'src');
 const TITLE_LITERAL = /title:\s*'[A-Z][^']{2,80}'/g;
@@ -57,12 +69,21 @@ describe('hardcoded page-title debt', () => {
       const source = fs.readFileSync(file, 'utf8');
       let count = 0;
       for (const match of source.matchAll(TITLE_LITERAL)) {
-        // Skip literals that are a deliberate fallback beside a `titleKey`. The
-        // window is the remainder of the render call's object literal.
-        const tail = source.slice(match.index, match.index + 400);
-        const objectEnd = tail.indexOf('});');
-        const scope = objectEnd === -1 ? tail : tail.slice(0, objectEnd);
-        if (/\btitleKey\s*:/.test(scope)) continue;
+        // Skip literals that are a deliberate fallback beside a `titleKey`.
+        //
+        // 🔴 Scan BOTH directions. `titleKey` is written after `title` in the route
+        // files but BEFORE it in lib/account-links.js, and a forward-only window
+        // therefore reported that entry as debt. Chasing that false count is how a
+        // bulk edit put `res.locals.t` into account-links.js — module-level data
+        // where `res` does not exist — breaking 926 tests in one go.
+        const before = source.slice(Math.max(0, match.index - 400), match.index);
+        const after = source.slice(match.index, match.index + 400);
+        // Stay inside the current object literal in each direction.
+        const openIdx = before.lastIndexOf('{');
+        const scopeBefore = openIdx === -1 ? before : before.slice(openIdx);
+        const closeIdx = after.search(/\}\s*[,;)\]]/);
+        const scopeAfter = closeIdx === -1 ? after : after.slice(0, closeIdx);
+        if (/\btitleKey\s*:/.test(scopeBefore + scopeAfter)) continue;
         count += 1;
       }
       if (count) {

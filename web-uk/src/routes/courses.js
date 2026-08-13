@@ -604,7 +604,7 @@ router.get('/', asyncRoute(async (req, res) => {
     ]);
 
     return res.render('courses/index', {
-      title: 'Courses',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.courses.title') : 'Courses'),
       activeNav: 'explore',
       courses: listFrom(coursesResult).map(normalizeCourse),
       categories,
@@ -626,7 +626,7 @@ router.get('/mine', asyncRoute(async (req, res) => {
   try {
     const result = await getMyCourses(token);
     return res.render('courses/my-learning', {
-      title: 'My learning',
+      title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.my_learning.title') : 'My learning'),
       activeNav: 'explore',
       enrollments: listFrom(result).map(normalizeEnrollment)
     });
@@ -643,7 +643,7 @@ router.get('/instructor', asyncRoute(async (req, res) => {
   try {
     const result = await callCourse(token, 'GET', '/mine');
     return res.render('courses/instructor', {
-      title: 'Courses you teach',
+      title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title') : 'Courses you teach'),
       activeNav: 'explore',
       courses: listFrom(result).map(normalizeInstructorCourse),
       canAuthor: true,
@@ -652,7 +652,7 @@ router.get('/instructor', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
       return res.render('courses/instructor', {
-        title: 'Courses you teach',
+        title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title') : 'Courses you teach'),
         activeNav: 'explore',
         courses: [],
         canAuthor: false,
@@ -670,7 +670,7 @@ router.get('/instructor/new', asyncRoute(async (req, res) => {
 
   try {
     return res.render('courses/form', {
-      title: 'Create a course',
+      title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title_create') : 'Create a course'),
       activeNav: 'explore',
       mode: 'create',
       course: normalizeCourse({}),
@@ -701,7 +701,7 @@ router.get('/instructor/:id/edit', asyncRoute(async (req, res) => {
     ]);
 
     return res.render('courses/form', {
-      title: 'Edit your course',
+      title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title_edit') : 'Edit your course'),
       activeNav: 'explore',
       mode: 'edit',
       course: payload.course,
@@ -728,7 +728,7 @@ router.get('/instructor/:id/analytics', asyncRoute(async (req, res) => {
   try {
     const payload = normalizeAnalytics(await callCourse(token, 'GET', `/${req.params.id}/analytics`));
     return res.render('courses/analytics', {
-      title: 'Course analytics',
+      title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.analytics.title') : 'Course analytics'),
       activeNav: 'explore',
       ...payload
     });
@@ -753,7 +753,7 @@ router.get('/instructor/:id/grading', asyncRoute(async (req, res) => {
     const course = normalizeCourse(objectFrom(courseResult));
 
     return res.render('courses/grading', {
-      title: 'Grading queue',
+      title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.grading.title') : 'Grading queue'),
       activeNav: 'explore',
       courseId: req.params.id,
       course,

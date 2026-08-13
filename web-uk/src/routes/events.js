@@ -3529,7 +3529,7 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
     }
 
     return res.render('events/edit', {
-      title: 'Edit event',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.events.edit_event') : 'Edit event'),
       event: { id, ...values },
       errors: errorList,
       categories,

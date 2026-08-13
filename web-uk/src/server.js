@@ -785,7 +785,7 @@ app.get('/', async (req, res, next) => {
   try {
     const result = await getTenants({ includeMaster: false });
     return res.render('tenant-chooser', {
-      title: 'Choose a community',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.tenant_chooser.title') : 'Choose a community'),
       activeNav: '',
       tenants: normalizeTenantChooserCommunities(result),
       tenantLoadError: false
@@ -793,7 +793,7 @@ app.get('/', async (req, res, next) => {
   } catch (error) {
     if (error instanceof ApiOfflineError) {
       return res.render('tenant-chooser', {
-        title: 'Choose a community',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.tenant_chooser.title') : 'Choose a community'),
         activeNav: '',
         tenants: [],
         tenantLoadError: true

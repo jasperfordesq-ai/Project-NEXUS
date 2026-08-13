@@ -490,7 +490,7 @@ router.get('/new', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/challenge-form', {
-    title: 'Create challenge',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.form.submit_create') : 'Create challenge'),
     activeNav: 'explore',
     mode: 'create',
     challenge: {
@@ -518,7 +518,7 @@ router.get('/campaigns', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/campaigns', {
-    title: 'Campaigns',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.campaigns.title') : 'Campaigns'),
     activeNav: 'explore',
     campaigns,
     ideationIsAdmin: ideationAdministrator(profileResult),
@@ -561,7 +561,7 @@ router.get('/outcomes', asyncRoute(async (req, res) => {
     .filter((outcome) => outcome.challengeId !== null);
 
   return res.render('ideation/outcomes', {
-    title: 'Outcomes',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.outcomes.title') : 'Outcomes'),
     activeNav: 'explore',
     stats: normalizeStats(dashboard.stats),
     outcomes,
@@ -592,7 +592,7 @@ router.get('/tags', asyncRoute(async (req, res) => {
   }
 
   return res.render('ideation/tags', {
-    title: 'Browse by tag',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.tags.title') : 'Browse by tag'),
     activeNav: 'explore',
     tags,
     selectedTag,
@@ -614,7 +614,7 @@ router.get('/:id(\\d+)/manage', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/manage', {
-    title: 'Manage challenge',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.manage.heading') : 'Manage challenge'),
     activeNav: 'explore',
     challenge,
     campaigns,
@@ -642,7 +642,7 @@ router.get('/:id(\\d+)/outcome', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/outcome-form', {
-    title: 'Record challenge outcome',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.outcomes.edit_title') : 'Record challenge outcome'),
     activeNav: 'explore',
     challenge,
     ideas,
@@ -667,7 +667,7 @@ router.get('/:id(\\d+)/drafts', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/drafts', {
-    title: 'Your draft ideas',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.drafts.title') : 'Your draft ideas'),
     activeNav: 'explore',
     challenge,
     drafts,
@@ -727,7 +727,7 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   const status = trimmed(req.query.status);
 
   return res.render('ideation/challenge-form', {
-    title: 'Edit challenge',
+    title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.form.edit_title') : 'Edit challenge'),
     activeNav: 'explore',
     mode: 'edit',
     challenge,

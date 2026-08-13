@@ -461,7 +461,7 @@ router.get('/', asyncRoute(async (req, res) => {
   const categories = categoriesFrom(categoriesResult);
 
   return res.render('polls/index', {
-    title: 'Polls',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.polls.title') : 'Polls'),
     titleKey: 'polls.title',
     activeNav: 'explore',
     polls,

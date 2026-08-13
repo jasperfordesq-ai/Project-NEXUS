@@ -23,7 +23,7 @@ router.get('/', asyncRoute(async (req, res) => {
   const posts = (result.items || result.data || []).map(normalizeResponse);
 
   res.render('blog/index', {
-    title: 'Blog',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.blog.title') : 'Blog'),
     posts,
     category,
     pagination: result.pagination || { page, totalPages: 1 },

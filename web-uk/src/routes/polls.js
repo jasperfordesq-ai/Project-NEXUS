@@ -27,7 +27,7 @@ router.get('/', asyncRoute(async (req, res) => {
   const polls = (result.items || result.data || []).map(normalizeResponse);
 
   res.render('polls/index', {
-    title: 'Polls',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.polls.title') : 'Polls'),
     polls,
     pagination: result.pagination || { page, totalPages: 1 },
     successMessage: req.flash ? req.flash('success')[0] : null

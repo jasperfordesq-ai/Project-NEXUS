@@ -1699,7 +1699,7 @@ router.get('/blocked', asyncRoute(async (req, res) => {
   const status = typeof req.query.status === 'string' ? req.query.status : '';
 
   return res.render('profile/blocked', {
-    title: 'Blocked members',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.blocked_users.title') : 'Blocked members'),
     activeNav: 'profile',
     status,
     successStatus: ['member-blocked', 'member-unblocked'].includes(status),
