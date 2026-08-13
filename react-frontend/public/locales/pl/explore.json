@@ -34,7 +34,7 @@
     "subtitle": "Połącz się z podobnie myślącymi członkami",
     "members": "{{count}} członków",
     "view_group": "Zobacz grupę",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Wyświetl grupę: {{name}}",
     "members_few": "{{count}} członków",
     "members_many": "{{count}} członków",
     "members_one": "{{count}} członków",

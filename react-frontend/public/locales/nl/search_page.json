@@ -86,7 +86,7 @@
     "description": "Doorzoek je community voor advertenties, leden, groepen, evenementen en nuttige lokale activiteit op het Project NEXUS tijdbankplatform."
   },
   "tabs_aria": "Type zoekresultaatfilter",
-  "results_count_announcement": "{{count}} results found",
+  "results_count_announcement": "{{count}} resultaten gevonden",
   "form_aria": "Search",
   "delete_confirm": "Deze opgeslagen zoekopdracht verwijderen? Dit kan niet ongedaan worden gemaakt.",
   "results_count_announcement_one": "{{count}} resultaten gevonden",

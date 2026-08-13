@@ -86,7 +86,7 @@
     "description": "Durchsuchen Sie Ihre Community nach Anzeigen, Mitgliedern, Gruppen, Veranstaltungen und nützlichen lokalen Aktivitäten auf der Project NEXUS Zeitbank-Plattform."
   },
   "tabs_aria": "Filter für den Suchergebnistyp",
-  "results_count_announcement": "{{count}} results found",
+  "results_count_announcement": "{{count}} Ergebnisse gefunden",
   "form_aria": "Search",
   "delete_confirm": "Diese gespeicherte Suche löschen? Dies kann nicht rückgängig gemacht werden.",
   "results_count_announcement_one": "{{count}} Ergebnisse gefunden",

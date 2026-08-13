@@ -64,7 +64,7 @@
     "find_cta": "Finden Sie Möglichkeiten"
   },
   "for_organisations": "Für Organisationen",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "Du verwaltest {{name}}",
   "org_callout_you_manage_many": "Sie verwalten {{count}}-Organisationen",
   "org_callout_desc": "Veröffentlichen Sie Möglichkeiten, prüfen Sie Bewerbungen und genehmigen Sie ehrenamtliche Stunden.",
   "manage_organisation": "Organisation verwalten",
@@ -72,7 +72,7 @@
   "org_pending_desc": "Sobald {{name}} genehmigt wurde, können Sie es hier verwalten und ehrenamtliche Stunden genehmigen.",
   "org_register_title": "Eine Organisation leiten?",
   "org_register_desc": "Registrieren Sie Ihre Organisation, um Möglichkeiten zu veröffentlichen und Freiwilligenstunden zu genehmigen.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "Mehr ({{count}})",
   "show_fewer_sections": "Weniger anzeigen",
   "more_sections_caption": "Andere Abschnitte – optionale Extras wie Empfehlungen, Zertifikate, Wohlbefinden, Benachrichtigungen und Spenden.",
   "tab_opportunities": "Einsätze",

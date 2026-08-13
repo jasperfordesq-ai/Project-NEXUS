@@ -204,11 +204,11 @@
     "repeats_monthly": "Se repite mensualmente",
     "repeats_yearly": "Se repite anualmente",
     "repeats_generic": "Recurring",
-    "series_dates_one": "{{count}} date",
-    "series_dates_other": "{{count}} dates",
+    "series_dates_one": "{{count}} fecha",
+    "series_dates_other": "{{count}} fechas",
     "spots_left_one": "{{count}} plazas disponibles",
     "spots_left_other": "{{count}} plazas disponibles",
-    "series_dates_many": "{{count}} dates",
+    "series_dates_many": "{{count}} fechas",
     "spots_left_many": "{{count}} plazas disponibles"
   },
   "form": {

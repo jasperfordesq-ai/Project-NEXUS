@@ -32,7 +32,7 @@
     "subtitle": "Verbind met gelijkgestemde leden",
     "members": "{{count}} leden",
     "view_group": "Bekijk Groep",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Groep bekijken: {{name}}",
     "members_one": "{{count}} leden",
     "members_other": "{{count}} leden"
   },

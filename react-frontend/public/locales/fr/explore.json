@@ -33,7 +33,7 @@
     "subtitle": "Connectez-vous avec des membres partageant les mêmes idées",
     "members": "{{count}} membres",
     "view_group": "Voir le groupe",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Voir le groupe : {{name}}",
     "members_many": "{{count}} membres",
     "members_one": "{{count}} membres",
     "members_other": "{{count}} membres"

@@ -70,7 +70,7 @@
     "find_cta": "Faigh deiseanna"
   },
   "for_organisations": "Le haghaidh eagraíochtaí",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "Bainistíonn tú {{name}}",
   "org_callout_you_manage_many": "Bainistíonn tú eagraíochtaí {{count}}",
   "org_callout_desc": "Deiseanna a phostáil, iarratais a athbhreithniú, agus uaireanta oibrithe deonacha a cheadú.",
   "manage_organisation": "Bainistigh eagraíocht",
@@ -78,7 +78,7 @@
   "org_pending_desc": "Nuair a bheidh {{name}} ceadaithe, bainisteoidh tú é agus ceadóidh tú uaireanta oibrithe deonacha anseo.",
   "org_register_title": "Eagras a reáchtáil?",
   "org_register_desc": "Cláraigh d’eagraíocht chun deiseanna a phostáil agus chun uaireanta oibrithe deonacha a cheadú.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "Tuilleadh ({{count}})",
   "show_fewer_sections": "Taispeáin níos lú",
   "more_sections_caption": "Rannóga eile — míreanna breise roghnacha amhail moltaí, teastais, folláine, foláirimh agus síntiúis.",
   "tab_opportunities": "Deiseanna",
@@ -1125,7 +1125,7 @@
   "org_callout_you_manage_many_few": "Bainistíonn tú eagraíochtaí {{count}}",
   "org_callout_you_manage_many_many": "Bainistíonn tú eagraíochtaí {{count}}",
   "org_callout_you_manage_many_two": "Bainistíonn tú eagraíochtaí {{count}}",
-  "more_sections_few": "More ({{count}})",
-  "more_sections_many": "More ({{count}})",
-  "more_sections_two": "More ({{count}})"
+  "more_sections_few": "Tuilleadh ({{count}})",
+  "more_sections_many": "Tuilleadh ({{count}})",
+  "more_sections_two": "Tuilleadh ({{count}})"
 }

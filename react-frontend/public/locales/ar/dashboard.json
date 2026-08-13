@@ -149,8 +149,8 @@
     "pending_subtitle": "افتح هذا الطلب",
     "view_all_pending": "عرض جميع المعلقة"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} إعجاب",
+  "comments_count": "{{count}} تعليق",
   "exchanges_attention": {
     "none": "أنت على اطلاع بكل شيء",
     "none_description": "ستظهر هنا التبادلات التي تتطلب إجراءً منك.",
@@ -163,16 +163,16 @@
     },
     "view_all": "عرض جميع التبادلات"
   },
-  "likes_count_few": "{{count}} likes",
-  "likes_count_many": "{{count}} likes",
+  "likes_count_few": "{{count}} إعجاب",
+  "likes_count_many": "{{count}} إعجاب",
   "likes_count_one": "{{count}} إعجابات",
   "likes_count_other": "{{count}} إعجابات",
-  "likes_count_two": "{{count}} likes",
-  "likes_count_zero": "{{count}} likes",
-  "comments_count_few": "{{count}} comments",
-  "comments_count_many": "{{count}} comments",
+  "likes_count_two": "{{count}} إعجاب",
+  "likes_count_zero": "{{count}} إعجاب",
+  "comments_count_few": "{{count}} تعليق",
+  "comments_count_many": "{{count}} تعليق",
   "comments_count_one": "{{count}} التعليقات",
   "comments_count_other": "{{count}} التعليقات",
-  "comments_count_two": "{{count}} comments",
-  "comments_count_zero": "{{count}} comments"
+  "comments_count_two": "{{count}} تعليق",
+  "comments_count_zero": "{{count}} تعليق"
 }

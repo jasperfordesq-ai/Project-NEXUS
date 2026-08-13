@@ -143,8 +143,8 @@
     "pending_subtitle": "Apri questa richiesta di recensione",
     "view_all_pending": "Vedi tutti i pendenti"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} Mi piace",
+  "comments_count": "{{count}} commenti",
   "exchanges_attention": {
     "none": "Sei in pari",
     "none_description": "Gli scambi che richiedono un'azione appariranno qui.",
@@ -157,10 +157,10 @@
     },
     "view_all": "Visualizza tutti gli scambi"
   },
-  "likes_count_many": "{{count}} likes",
+  "likes_count_many": "{{count}} Mi piace",
   "likes_count_one": "Mi piace a {{count}}",
   "likes_count_other": "Mi piace a {{count}}",
-  "comments_count_many": "{{count}} comments",
+  "comments_count_many": "{{count}} commenti",
   "comments_count_one": "{{count}} commenti",
   "comments_count_other": "{{count}} commenti"
 }

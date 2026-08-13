@@ -197,8 +197,8 @@
     "repeats_monthly": "Wird monatlich wiederholt",
     "repeats_yearly": "Wird jährlich wiederholt",
     "repeats_generic": "Recurring",
-    "series_dates_one": "{{count}} date",
-    "series_dates_other": "{{count}} dates",
+    "series_dates_one": "{{count}} Termin",
+    "series_dates_other": "{{count}} Termine",
     "spots_left_one": "{{count}} Plätze frei",
     "spots_left_other": "{{count}} Plätze frei"
   },

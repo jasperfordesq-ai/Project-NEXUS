@@ -32,7 +32,7 @@
     "subtitle": "志を同じくするメンバーとつながりましょう",
     "members": "{{count}} メンバー",
     "view_group": "グループを見る",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "グループを表示: {{name}}",
     "members_other": "{{count}} メンバー",
     "members_one": "{{count}} メンバーたち"
   },

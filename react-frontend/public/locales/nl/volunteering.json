@@ -64,7 +64,7 @@
     "find_cta": "Vind kansen"
   },
   "for_organisations": "Voor organisaties",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "Je beheert {{name}}",
   "org_callout_you_manage_many": "Je beheert {{count}} organisaties",
   "org_callout_desc": "Plaats vacatures, beoordeel sollicitaties en keur vrijwilligersuren goed.",
   "manage_organisation": "Beheer organisatie",
@@ -72,7 +72,7 @@
   "org_pending_desc": "Zodra {{name}} is goedgekeurd, beheer je het en keur je de vrijwilligersuren hier goed.",
   "org_register_title": "Een organisatie runnen?",
   "org_register_desc": "Registreer uw organisatie om vacatures te plaatsen en vrijwilligersuren goed te keuren.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "Meer ({{count}})",
   "show_fewer_sections": "Laat minder zien",
   "more_sections_caption": "Andere secties — optionele extra's zoals aanbevelingen, certificaten, welzijn, waarschuwingen en donaties.",
   "tab_opportunities": "Mogelijkheden",

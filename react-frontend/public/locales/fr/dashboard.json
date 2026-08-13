@@ -143,8 +143,8 @@
     "pending_subtitle": "Ouvrir cette demande d'évaluation",
     "view_all_pending": "Voir tous les en attente"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} mentions J’aime",
+  "comments_count": "{{count}} commentaires",
   "exchanges_attention": {
     "none": "Vous êtes à jour",
     "none_description": "Les échanges nécessitant votre action apparaîtront ici.",
@@ -157,10 +157,10 @@
     },
     "view_all": "Voir tous les échanges"
   },
-  "likes_count_many": "{{count}} likes",
+  "likes_count_many": "{{count}} mentions J’aime",
   "likes_count_one": "{{count}} aime",
   "likes_count_other": "{{count}} aime",
-  "comments_count_many": "{{count}} comments",
+  "comments_count_many": "{{count}} commentaires",
   "comments_count_one": "{{count}} commentaires",
   "comments_count_other": "{{count}} commentaires"
 }

@@ -33,7 +33,7 @@
     "subtitle": "Connettiti con membri affini",
     "members": "{{count}} membri",
     "view_group": "Vedi Gruppo",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Visualizza gruppo: {{name}}",
     "members_many": "{{count}} membri",
     "members_one": "{{count}} membri",
     "members_other": "{{count}} membri"

@@ -141,8 +141,8 @@
     "pending_subtitle": "このレビューリクエストを開く",
     "view_all_pending": "保留中をすべて表示"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "いいね{{count}}件",
+  "comments_count": "コメント{{count}}件",
   "exchanges_attention": {
     "none": "すべて対応済みです",
     "none_description": "対応が必要な交換はここに表示されます。",

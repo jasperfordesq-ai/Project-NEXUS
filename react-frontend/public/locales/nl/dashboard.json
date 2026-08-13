@@ -141,8 +141,8 @@
     "pending_subtitle": "Dit beoordelingsverzoek openen",
     "view_all_pending": "Alle openstaande bekijken"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} vind-ik-leuks",
+  "comments_count": "{{count}} reacties",
   "exchanges_attention": {
     "none": "U bent helemaal bij",
     "none_description": "Uitwisselingen die uw actie vereisen verschijnen hier.",

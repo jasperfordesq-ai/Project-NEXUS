@@ -72,7 +72,7 @@
     "find_cta": "البحث عن الفرص"
   },
   "for_organisations": "للمنظمات",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "أنت تدير {{name}}",
   "org_callout_you_manage_many": "أنت تدير مؤسسات {{count}}",
   "org_callout_desc": "نشر الفرص ومراجعة الطلبات والموافقة على الساعات التطوعية.",
   "manage_organisation": "إدارة المنظمة",
@@ -80,7 +80,7 @@
   "org_pending_desc": "بمجرد الموافقة على {{name}}، ستتمكن من إدارته والموافقة على ساعات العمل التطوعي هنا.",
   "org_register_title": "تشغيل منظمة؟",
   "org_register_desc": "قم بتسجيل مؤسستك لنشر الفرص والموافقة على ساعات العمل التطوعي.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "المزيد ({{count}})",
   "show_fewer_sections": "عرض أقل",
   "more_sections_caption": "أقسام أخرى - إضافات اختيارية مثل التوصيات والشهادات والرفاهية والتنبيهات والتبرعات.",
   "tab_opportunities": "فرص",
@@ -1139,8 +1139,8 @@
   "org_callout_you_manage_many_many": "أنت تدير مؤسسات {{count}}",
   "org_callout_you_manage_many_two": "أنت تدير مؤسسات {{count}}",
   "org_callout_you_manage_many_zero": "أنت تدير مؤسسات {{count}}",
-  "more_sections_few": "More ({{count}})",
-  "more_sections_many": "More ({{count}})",
-  "more_sections_two": "More ({{count}})",
-  "more_sections_zero": "More ({{count}})"
+  "more_sections_few": "المزيد ({{count}})",
+  "more_sections_many": "المزيد ({{count}})",
+  "more_sections_two": "المزيد ({{count}})",
+  "more_sections_zero": "المزيد ({{count}})"
 }

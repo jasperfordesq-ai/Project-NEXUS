@@ -32,7 +32,7 @@
     "subtitle": "Mit Gleichgesinnten vernetzen",
     "members": "{{count}} Mitglieder",
     "view_group": "Gruppe ansehen",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Gruppe anzeigen: {{name}}",
     "members_one": "{{count}} Mitglieder",
     "members_other": "{{count}} Mitglieder"
   },

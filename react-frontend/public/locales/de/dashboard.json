@@ -141,8 +141,8 @@
     "pending_subtitle": "Diese Rezensionsanfrage öffnen",
     "view_all_pending": "Alle ausstehenden anzeigen"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} Gefällt-mir-Angaben",
+  "comments_count": "{{count}} Kommentare",
   "exchanges_attention": {
     "none": "Alles erledigt",
     "none_description": "Austausche, die Ihre Aktion erfordern, erscheinen hier.",

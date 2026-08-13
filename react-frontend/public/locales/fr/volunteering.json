@@ -66,7 +66,7 @@
     "find_cta": "Trouver des opportunités"
   },
   "for_organisations": "Pour les organisations",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "Vous gérez {{name}}",
   "org_callout_you_manage_many": "Vous gérez des organisations {{count}}",
   "org_callout_desc": "Publiez des opportunités, examinez les candidatures et approuvez les heures de bénévolat.",
   "manage_organisation": "Gérer l'organisation",
@@ -74,7 +74,7 @@
   "org_pending_desc": "Une fois {{name}} approuvé, vous le gérerez et approuverez les heures de bénévolat ici.",
   "org_register_title": "Diriger une organisation ?",
   "org_register_desc": "Enregistrez votre organisation pour publier des opportunités et approuver les heures de bénévolat.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "Plus ({{count}})",
   "show_fewer_sections": "Afficher moins",
   "more_sections_caption": "Autres sections : extras facultatifs tels que des recommandations, des certificats, du bien-être, des alertes et des dons.",
   "tab_opportunities": "Opportunités",
@@ -1097,5 +1097,5 @@
   "more_sections_one": "Plus ({{count}})",
   "more_sections_other": "Plus ({{count}})",
   "org_callout_you_manage_many_many": "Vous gérez des organisations {{count}}",
-  "more_sections_many": "More ({{count}})"
+  "more_sections_many": "Plus ({{count}})"
 }

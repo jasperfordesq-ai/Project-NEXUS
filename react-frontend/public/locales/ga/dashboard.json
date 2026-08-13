@@ -147,8 +147,8 @@
     "pending_subtitle": "Oscail an t-iarratas athbhreithniúcháin seo",
     "view_all_pending": "Féach ar Gach Ceann Ar Feitheamh"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "Thaitin sé le {{count}} duine",
+  "comments_count": "{{count}} trácht",
   "exchanges_attention": {
     "none": "Tá tú suas chun dáta",
     "none_description": "Taispeánfar anseo malartuithe a dteastaíonn gníomh uait.",
@@ -161,14 +161,14 @@
     },
     "view_all": "Féach ar gach malartú"
   },
-  "likes_count_few": "{{count}} likes",
-  "likes_count_many": "{{count}} likes",
+  "likes_count_few": "{{count}} duine ar thaitin sé leo",
+  "likes_count_many": "{{count}} duine ar thaitin sé leo",
   "likes_count_one": "Is maith {{count}}",
   "likes_count_other": "Is maith {{count}}",
-  "likes_count_two": "{{count}} likes",
-  "comments_count_few": "{{count}} comments",
-  "comments_count_many": "{{count}} comments",
+  "likes_count_two": "{{count}} duine ar thaitin sé leo",
+  "comments_count_few": "{{count}} trácht",
+  "comments_count_many": "{{count}} trácht",
   "comments_count_one": "{{count}} tuairimí",
   "comments_count_other": "{{count}} tuairimí",
-  "comments_count_two": "{{count}} comments"
+  "comments_count_two": "{{count}} trácht"
 }

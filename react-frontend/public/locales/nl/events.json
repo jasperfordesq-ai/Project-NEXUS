@@ -197,8 +197,8 @@
     "repeats_monthly": "Wordt maandelijks herhaald",
     "repeats_yearly": "Wordt jaarlijks herhaald",
     "repeats_generic": "Recurring",
-    "series_dates_one": "{{count}} date",
-    "series_dates_other": "{{count}} dates",
+    "series_dates_one": "{{count}} datum",
+    "series_dates_other": "{{count}} datums",
     "spots_left_one": "{{count}} plekjes vrij",
     "spots_left_other": "{{count}} plekjes vrij"
   },

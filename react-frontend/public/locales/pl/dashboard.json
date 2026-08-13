@@ -145,8 +145,8 @@
     "pending_subtitle": "Otwórz to żądanie recenzji",
     "view_all_pending": "Zobacz wszystkie oczekujące"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} polubień",
+  "comments_count": "{{count}} komentarzy",
   "exchanges_attention": {
     "none": "Wszystko na bieżąco",
     "none_description": "Wymiany wymagające Twojego działania pojawią się tutaj.",
@@ -159,12 +159,12 @@
     },
     "view_all": "Zobacz wszystkie wymiany"
   },
-  "likes_count_few": "{{count}} likes",
-  "likes_count_many": "{{count}} likes",
+  "likes_count_few": "{{count}} polubienia",
+  "likes_count_many": "{{count}} polubień",
   "likes_count_one": "{{count}} lubi",
   "likes_count_other": "{{count}} lubi",
-  "comments_count_few": "{{count}} comments",
-  "comments_count_many": "{{count}} comments",
+  "comments_count_few": "{{count}} komentarze",
+  "comments_count_many": "{{count}} komentarzy",
   "comments_count_one": "{{count}} komentarze",
   "comments_count_other": "{{count}} komentarze"
 }

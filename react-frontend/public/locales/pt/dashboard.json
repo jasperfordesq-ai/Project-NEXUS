@@ -143,8 +143,8 @@
     "pending_subtitle": "Abrir este pedido de avaliação",
     "view_all_pending": "Ver todos os pendentes"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} gostos",
+  "comments_count": "{{count}} comentários",
   "exchanges_attention": {
     "none": "Está em dia",
     "none_description": "As trocas que requerem a sua ação aparecerão aqui.",
@@ -157,10 +157,10 @@
     },
     "view_all": "Ver todas as trocas"
   },
-  "likes_count_many": "{{count}} likes",
+  "likes_count_many": "{{count}} gostos",
   "likes_count_one": "{{count}} gosta",
   "likes_count_other": "{{count}} gosta",
-  "comments_count_many": "{{count}} comments",
+  "comments_count_many": "{{count}} comentários",
   "comments_count_one": "{{count}} comentários",
   "comments_count_other": "{{count}} comentários"
 }

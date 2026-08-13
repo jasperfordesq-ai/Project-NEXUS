@@ -143,8 +143,8 @@
     "pending_subtitle": "Abrir esta solicitud de reseña",
     "view_all_pending": "Ver todos los pendientes"
   },
-  "likes_count": "{{count}} likes",
-  "comments_count": "{{count}} comments",
+  "likes_count": "{{count}} Me gusta",
+  "comments_count": "{{count}} comentarios",
   "exchanges_attention": {
     "none": "Está al día",
     "none_description": "Los intercambios que requieran su acción aparecerán aquí.",
@@ -157,10 +157,10 @@
     },
     "view_all": "Ver todos los intercambios"
   },
-  "likes_count_many": "{{count}} likes",
+  "likes_count_many": "{{count}} Me gusta",
   "likes_count_one": "{{count}} me gusta",
   "likes_count_other": "{{count}} me gusta",
-  "comments_count_many": "{{count}} comments",
+  "comments_count_many": "{{count}} comentarios",
   "comments_count_one": "{{count}} comentarios",
   "comments_count_other": "{{count}} comentarios"
 }

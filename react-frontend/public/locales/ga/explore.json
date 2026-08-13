@@ -35,7 +35,7 @@
     "subtitle": "Ceangail le baill den tuairim chéanna",
     "members": "{{count}} ball",
     "view_group": "Féach ar Ghrúpa",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Féach ar an ngrúpa: {{name}}",
     "members_few": "{{count}} ball",
     "members_many": "{{count}} ball",
     "members_one": "{{count}} ball",

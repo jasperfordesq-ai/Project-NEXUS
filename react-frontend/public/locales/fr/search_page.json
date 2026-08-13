@@ -86,10 +86,10 @@
     "description": "Recherchez dans votre communauté des annonces, des membres, des groupes, des événements et des activités locales utiles sur la plateforme de banque de temps Project NEXUS."
   },
   "tabs_aria": "Filtre de type de résultat de recherche",
-  "results_count_announcement": "{{count}} results found",
+  "results_count_announcement": "{{count}} résultats trouvés",
   "form_aria": "Search",
   "delete_confirm": "Supprimer cette recherche enregistrée ? Cela ne peut pas être annulé.",
-  "results_count_announcement_many": "{{count}} results found",
+  "results_count_announcement_many": "{{count}} résultats trouvés",
   "results_count_announcement_one": "{{count}} résultats trouvés",
   "results_count_announcement_other": "{{count}} résultats trouvés",
   "tab_all_many": "Tout ({{count}})",

@@ -197,8 +197,8 @@
     "repeats_monthly": "毎月繰り返す",
     "repeats_yearly": "毎年繰り返す",
     "repeats_generic": "Recurring",
-    "series_dates_one": "{{count}} date",
-    "series_dates_other": "{{count}} dates",
+    "series_dates_one": "開催日{{count}}件",
+    "series_dates_other": "開催日{{count}}件",
     "spots_left_one": "{{count}} 枠が残っています",
     "spots_left_other": "{{count}} 枠が残っています"
   },

@@ -64,7 +64,7 @@
     "find_cta": "機会を見つける"
   },
   "for_organisations": "組織向け",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "{{name}}を管理しています",
   "org_callout_you_manage_many": "あなたは {{count}} 組織を管理しています",
   "org_callout_desc": "機会を投稿し、申請を確認し、ボランティア時間を承認します。",
   "manage_organisation": "組織の管理",
@@ -72,7 +72,7 @@
   "org_pending_desc": "{{name}} が承認されたら、ここでそれを管理し、ボランティア時間を承認します。",
   "org_register_title": "組織を運営しますか?",
   "org_register_desc": "組織を登録して機会を投稿し、ボランティア時間を承認します。",
-  "more_sections": "More ({{count}})",
+  "more_sections": "その他 ({{count}})",
   "show_fewer_sections": "表示数を減らす",
   "more_sections_caption": "他のセクション — 推奨事項、証明書、福祉、アラート、寄付などのオプションの追加情報。",
   "tab_opportunities": "機会",

@@ -86,7 +86,7 @@
     "description": "Project NEXUS タイムバンクプラットフォームで、コミュニティのリスティング、メンバー、グループ、イベント、有益な地域活動を検索しましょう。"
   },
   "tabs_aria": "検索結果の種類のフィルター",
-  "results_count_announcement": "{{count}} results found",
+  "results_count_announcement": "{{count}}件の結果が見つかりました",
   "form_aria": "Search",
   "delete_confirm": "この保存された検索を削除しますか?これを元に戻すことはできません。",
   "results_count_announcement_other": "{{count}} の結果が見つかりました",

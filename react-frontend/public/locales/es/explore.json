@@ -33,7 +33,7 @@
     "subtitle": "Conéctate con miembros afines",
     "members": "{{count}} miembros",
     "view_group": "Ver Grupo",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Ver grupo: {{name}}",
     "members_many": "{{count}} miembros",
     "members_one": "{{count}} miembros",
     "members_other": "{{count}} miembros"

@@ -66,7 +66,7 @@
     "find_cta": "Trova opportunità"
   },
   "for_organisations": "Per le organizzazioni",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "Gestisci {{name}}",
   "org_callout_you_manage_many": "Gestisci le organizzazioni {{count}}",
   "org_callout_desc": "Pubblica opportunità, esamina le domande e approva le ore di volontariato.",
   "manage_organisation": "Gestire l'organizzazione",
@@ -74,7 +74,7 @@
   "org_pending_desc": "Una volta approvato {{name}}, potrai gestirlo e approvare le ore di volontariato qui.",
   "org_register_title": "Gestire un'organizzazione?",
   "org_register_desc": "Registra la tua organizzazione per pubblicare opportunità e approvare le ore di volontariato.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "Altro ({{count}})",
   "show_fewer_sections": "Mostra meno",
   "more_sections_caption": "Altre sezioni: extra opzionali come raccomandazioni, certificati, benessere, avvisi e donazioni.",
   "tab_opportunities": "Opportunità",
@@ -1097,5 +1097,5 @@
   "more_sections_one": "Altro ({{count}})",
   "more_sections_other": "Altro ({{count}})",
   "org_callout_you_manage_many_many": "Gestisci le organizzazioni {{count}}",
-  "more_sections_many": "More ({{count}})"
+  "more_sections_many": "Altro ({{count}})"
 }

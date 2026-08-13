@@ -68,7 +68,7 @@
     "find_cta": "Znajdź możliwości"
   },
   "for_organisations": "Dla organizacji",
-  "org_callout_you_manage_one": "You manage {{name}}",
+  "org_callout_you_manage_one": "Zarządzasz: {{name}}",
   "org_callout_you_manage_many": "Zarządzasz organizacjami {{count}}",
   "org_callout_desc": "Publikuj możliwości, przeglądaj aplikacje i zatwierdzaj godziny wolontariatu.",
   "manage_organisation": "Zarządzaj organizacją",
@@ -76,7 +76,7 @@
   "org_pending_desc": "Po zatwierdzeniu {{name}} będziesz zarządzać nim i zatwierdzać godziny pracy wolontariatu tutaj.",
   "org_register_title": "Prowadzić organizację?",
   "org_register_desc": "Zarejestruj swoją organizację, aby publikować oferty i zatwierdzać godziny wolontariatu.",
-  "more_sections": "More ({{count}})",
+  "more_sections": "Więcej ({{count}})",
   "show_fewer_sections": "Pokaż mniej",
   "more_sections_caption": "Inne sekcje — opcjonalne dodatki, takie jak rekomendacje, certyfikaty, dobre samopoczucie, alerty i darowizny.",
   "tab_opportunities": "Możliwości",
@@ -1111,6 +1111,6 @@
   "more_sections_other": "Więcej ({{count}})",
   "org_callout_you_manage_many_few": "Zarządzasz organizacjami {{count}}",
   "org_callout_you_manage_many_many": "Zarządzasz organizacjami {{count}}",
-  "more_sections_few": "More ({{count}})",
-  "more_sections_many": "More ({{count}})"
+  "more_sections_few": "Więcej ({{count}})",
+  "more_sections_many": "Więcej ({{count}})"
 }

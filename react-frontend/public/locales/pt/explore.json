@@ -33,7 +33,7 @@
     "subtitle": "Conecte-se com membros com interesses semelhantes",
     "members": "{{count}} membros",
     "view_group": "Ver Grupo",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "Ver grupo: {{name}}",
     "members_many": "{{count}} membros",
     "members_one": "{{count}} membros",
     "members_other": "{{count}} membros"

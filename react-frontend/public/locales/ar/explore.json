@@ -36,7 +36,7 @@
     "subtitle": "تواصل مع أعضاء ذوي اهتمامات مشابهة",
     "members": "{{count}} أعضاء",
     "view_group": "عرض المجموعة",
-    "view_group_named": "View group: {{name}}",
+    "view_group_named": "عرض المجموعة: {{name}}",
     "members_few": "{{count}} أعضاء",
     "members_many": "{{count}} أعضاء",
     "members_one": "{{count}} أعضاء",
