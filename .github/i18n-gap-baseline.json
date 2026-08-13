@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-13T18:30:18.725Z",
+  "generatedAt": "2026-08-13T18:33:00.190Z",
   "source": "scripts/check-i18n-gap-regression.mjs",
   "localesDir": "react-frontend/public/locales",
   "languages": [
@@ -14,7 +14,7 @@
     "ar",
     "ga"
   ],
-  "totalGaps": 1143,
+  "totalGaps": 1062,
   "files": {
     "de/about.json": 1,
     "de/admin_advanced.json": 15,
@@ -63,7 +63,6 @@
     "de/search_page.json": 1,
     "de/settings.json": 2,
     "de/stories.json": 1,
-    "de/utility.json": 8,
     "de/volunteering.json": 2,
     "fr/about.json": 1,
     "fr/admin_advanced.json": 11,
@@ -116,7 +115,6 @@
     "fr/search_page.json": 1,
     "fr/settings.json": 1,
     "fr/stories.json": 1,
-    "fr/utility.json": 8,
     "fr/volunteering.json": 2,
     "it/about.json": 1,
     "it/admin_advanced.json": 11,
@@ -160,7 +158,6 @@
     "it/public.json": 2,
     "it/search_page.json": 1,
     "it/settings.json": 1,
-    "it/utility.json": 9,
     "it/volunteering.json": 2,
     "pt/about.json": 1,
     "pt/admin_advanced.json": 10,
@@ -206,7 +203,6 @@
     "pt/public.json": 1,
     "pt/search_page.json": 1,
     "pt/settings.json": 1,
-    "pt/utility.json": 8,
     "pt/volunteering.json": 2,
     "es/about.json": 1,
     "es/admin_advanced.json": 11,
@@ -249,7 +245,6 @@
     "es/public.json": 1,
     "es/search_page.json": 1,
     "es/settings.json": 1,
-    "es/utility.json": 8,
     "es/volunteering.json": 2,
     "nl/about.json": 1,
     "nl/admin_advanced.json": 16,
@@ -298,7 +293,6 @@
     "nl/public.json": 1,
     "nl/search_page.json": 1,
     "nl/settings.json": 1,
-    "nl/utility.json": 8,
     "nl/volunteering.json": 3,
     "pl/about.json": 1,
     "pl/admin_advanced.json": 11,
@@ -342,7 +336,6 @@
     "pl/public.json": 1,
     "pl/search_page.json": 1,
     "pl/settings.json": 1,
-    "pl/utility.json": 8,
     "pl/volunteering.json": 2,
     "ja/about.json": 3,
     "ja/admin_advanced.json": 13,
@@ -385,7 +378,6 @@
     "ja/public.json": 1,
     "ja/search_page.json": 1,
     "ja/settings.json": 1,
-    "ja/utility.json": 8,
     "ja/volunteering.json": 2,
     "ar/about.json": 1,
     "ar/admin_advanced.json": 9,
@@ -425,7 +417,6 @@
     "ar/public.json": 1,
     "ar/search_page.json": 1,
     "ar/settings.json": 1,
-    "ar/utility.json": 8,
     "ar/volunteering.json": 2,
     "ga/about.json": 6,
     "ga/admin_advanced.json": 11,
@@ -470,7 +461,6 @@
     "ga/public.json": 1,
     "ga/search_page.json": 1,
     "ga/settings.json": 1,
-    "ga/utility.json": 8,
     "ga/volunteering.json": 2
   }
 }
