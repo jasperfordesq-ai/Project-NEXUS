@@ -598,7 +598,7 @@ router.post('/:id(\\d+)/review', asyncRoute(async (req, res) => {
 
   if (!reviewsEnabledFor(req, res)) {
     return res.status(403).render('errors/403', {
-      title: 'Forbidden',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
       message: 'This feature is not enabled for this community.'
     });
   }

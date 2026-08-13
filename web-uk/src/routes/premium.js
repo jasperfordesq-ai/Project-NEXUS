@@ -56,7 +56,7 @@ function renderPremiumError(error, res, title = 'Donate') {
   if (redirectAuthIfNeeded(error, res)) return true;
 
   if (error instanceof ApiError && error.status === 404) {
-    res.status(404).render('errors/404', { title: 'Page not found' });
+    res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     return true;
   }
 

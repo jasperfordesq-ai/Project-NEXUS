@@ -480,7 +480,7 @@ router.get('/new', asyncRoute(async (req, res) => {
 
   const isAdmin = ideationAdministrator(await getRequestProfile(req, token));
   if (!isAdmin) {
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
   }
 
   const categoriesResult = await callIdeationApi(token, 'GET', '/ideation-categories');

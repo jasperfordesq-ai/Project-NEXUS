@@ -38,7 +38,7 @@ function apiErrorHandler(options = {}) {
   return (err, req, res, next) => {
     // API is offline/unreachable
     if (err instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
 
     // API returned an error
@@ -53,14 +53,14 @@ function apiErrorHandler(options = {}) {
       // Forbidden
       if (err.status === 403) {
         return res.status(403).render('errors/403', {
-          title: 'Forbidden',
+          title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
           message: err.message || 'You do not have permission to access this resource.'
         });
       }
 
       // Not found
       if (err.status === 404) {
-        return res.status(404).render('errors/404', { title: 'Page not found' });
+        return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       }
 
       // Validation errors (400) - redirect back with flash message
@@ -146,13 +146,13 @@ function finalErrorHandler(err, req, res, next) {
 
   if (status === 403) {
     return res.status(403).render('errors/403', {
-      title: 'Forbidden',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
       message: isProduction ? 'You do not have permission to access this resource.' : err.message
     });
   }
 
   if (status === 404) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   if (status === 419) {
@@ -160,11 +160,11 @@ function finalErrorHandler(err, req, res, next) {
   }
 
   if (status === 429) {
-    return res.status(429).render('errors/429', { title: 'Too many requests' });
+    return res.status(429).render('errors/429', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
   }
 
   if (status === 503 || err instanceof ApiOfflineError) {
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
   }
 
   // Generic server error

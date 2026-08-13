@@ -293,7 +293,7 @@ router.post('/login', asyncRoute(async (req, res) => {
   } catch (error) {
     // Handle ApiOfflineError specially for 503
     if (error instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
 
     let loginStatus = 'login-failed';
@@ -373,7 +373,7 @@ async function handleTwoFactorPost(req, res) {
     return redirectTo(res, '/dashboard');
   } catch (error) {
     if (error instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
 
     const codeValue = errorCode(error);
@@ -423,7 +423,7 @@ router.post('/login/resend-verification', asyncRoute(async (req, res) => {
     );
   } catch (error) {
     if (error instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
   }
 
@@ -497,7 +497,7 @@ async function validateFlatRegistrationTenant(tenantSlug) {
 }
 
 function renderRegistrationUnavailable(res) {
-  return res.status(503).render('errors/503', { title: 'Service unavailable' });
+  return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
 }
 
 function registrationErrorViewState(req, status, rememberedFieldErrors) {
@@ -716,7 +716,7 @@ router.post('/register', asyncRoute(async (req, res) => {
 
     if (error instanceof ApiError && errorCode(error) === 'RATE_LIMIT_EXCEEDED') {
       return res.status(429).render('errors/429', {
-        title: 'Too many requests',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests'),
         retryAfter: 5
       });
     }
@@ -816,7 +816,7 @@ async function handleForgotPasswordPost(req, res) {
   } catch (error) {
     // Handle ApiOfflineError specially for 503
     if (error instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
     // For other errors, fall through to show success message (security: don't reveal if email exists)
   }
@@ -889,7 +889,7 @@ async function handleResetPasswordPost(req, res) {
   } catch (error) {
     // Handle ApiOfflineError specially for 503
     if (error instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
 
     const errorMessage = translate(req, resetErrorKey(error));

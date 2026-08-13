@@ -3,30 +3,37 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+const fs = require('node:fs');
+const path = require('node:path');
+
 /**
  * 🔴 Shrink-only ceiling on hardcoded English page titles.
  *
  * A `title:` passed to res.render() becomes the page's <title>: the browser tab
  * name, the bookmark name, and what a screen reader announces as the page. On a
- * frontend serving eleven languages it must come from t(), as Blade's does.
+ * frontend serving eleven languages it must come from a translator, as Blade's does.
  *
  * Found 2026-08-13 by comparing every page's <title> against Blade in Irish: eight
  * of the most-used pages — Feed, Listings, Events, Groups, Ideas and the three
- * "create" forms — stayed English on web-uk while Blade rendered Irish. Those eight
- * are fixed; the rest of the debt is real and unfixed, so this records the ceiling
- * rather than pretending the problem is solved.
+ * "create" forms — stayed English on web-uk while Blade rendered Irish.
+ *
+ * 🔴 A `title:` literal is NOT counted when the same render call also passes a
+ * `titleKey`. That pairing is a DELIBERATE contract, not debt: the route supplies an
+ * English fallback in `title` and the translation key in `titleKey`, and the layout
+ * resolves the key at render time. routes/jobs.js uses it for all 16 of its page
+ * titles, and tests/jobs-title-localization.test.js asserts the exact shape
+ * (`title: 'Post an opportunity'` alongside `titleKey: 'jobs_t3.create_title'`).
+ * An earlier version of this counter ignored the pairing, reported 253, and led to
+ * those 16 being "fixed" — which broke the contract and the test above. Do not count
+ * them again. The honest, pairing-aware figure on 2026-08-13 was 56, after the four
+ * generic error-page titles ('Page not found', 'Forbidden', 'Service unavailable',
+ * 'Too many requests' — 75 occurrences across 22 files) were translated.
  *
  * The number may only go DOWN. Lower it in the same commit as any fix. If this test
- * fails because the count rose, the fix is to use t() in the new code, not to raise
- * the ceiling.
- *
- * `jobs.js` alone holds 77 and is the obvious next target.
+ * fails because the count rose, the fix is to translate the new title — or pair it
+ * with a `titleKey` — not to raise the ceiling.
  */
-const fs = require('node:fs');
-const path = require('node:path');
-
-// Ceiling as measured on 2026-08-13, AFTER fixing the eight proven-visible titles.
-const CEILING = 253;
+const CEILING = 56;
 
 const SRC = path.join(__dirname, '..', 'src');
 const TITLE_LITERAL = /title:\s*'[A-Z][^']{2,80}'/g;
@@ -47,10 +54,20 @@ describe('hardcoded page-title debt', () => {
     let total = 0;
 
     for (const file of jsFiles(SRC)) {
-      const matches = fs.readFileSync(file, 'utf8').match(TITLE_LITERAL) || [];
-      if (matches.length) {
-        perFile[path.relative(SRC, file).split(path.sep).join('/')] = matches.length;
-        total += matches.length;
+      const source = fs.readFileSync(file, 'utf8');
+      let count = 0;
+      for (const match of source.matchAll(TITLE_LITERAL)) {
+        // Skip literals that are a deliberate fallback beside a `titleKey`. The
+        // window is the remainder of the render call's object literal.
+        const tail = source.slice(match.index, match.index + 400);
+        const objectEnd = tail.indexOf('});');
+        const scope = objectEnd === -1 ? tail : tail.slice(0, objectEnd);
+        if (/\btitleKey\s*:/.test(scope)) continue;
+        count += 1;
+      }
+      if (count) {
+        perFile[path.relative(SRC, file).split(path.sep).join('/')] = count;
+        total += count;
       }
     }
 

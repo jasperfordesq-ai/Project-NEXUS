@@ -554,7 +554,7 @@ function isKnownGroupMember(group, profile) {
 }
 
 function renderForbidden(res) {
-  return res.status(403).render('errors/403', { title: 'Forbidden' });
+  return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
 }
 
 function renderNotFound(res, title = 'Page not found') {
@@ -562,7 +562,7 @@ function renderNotFound(res, title = 'Page not found') {
 }
 
 function renderTooManyRequests(res) {
-  return res.status(429).render('errors/429', { title: 'Too many requests' });
+  return res.status(429).render('errors/429', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
 }
 
 function groupFileUploadErrorStatus(error) {

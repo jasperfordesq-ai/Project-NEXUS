@@ -1072,7 +1072,7 @@ router.get('/listings/:tenantId/:id', asyncRoute(async (req, res) => {
   const tenantId = trimmed(req.params.tenantId, 32);
   const id = trimmed(req.params.id, 32);
   if (!/^\d+$/.test(tenantId) || !/^\d+$/.test(id)) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   let listing;
@@ -1085,7 +1085,7 @@ router.get('/listings/:tenantId/:id', asyncRoute(async (req, res) => {
       formatNumber: res.locals.formatLocaleNumber
     });
     if (!listing) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     }
 
     if (listing.authorId) {
@@ -1103,7 +1103,7 @@ router.get('/listings/:tenantId/:id', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     }
     if (renderFederationError(error, res)) return undefined;
     throw error;
@@ -1219,7 +1219,7 @@ router.get('/partners/:id', asyncRoute(async (req, res) => {
 
   const id = trimmed(req.params.id, 32);
   if (!validPartnerId(id)) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   let partnerResult;
@@ -1227,7 +1227,7 @@ router.get('/partners/:id', asyncRoute(async (req, res) => {
     partnerResult = await callFederationApi(token, 'GET', `/partners/${id}`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     }
     if (renderFederationError(error, res)) return undefined;
     throw error;
@@ -1529,7 +1529,7 @@ router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
 
   const id = trimmed(req.params.id, 32);
   if (!/^\d+$/.test(id)) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   const tenantId = trimmed(req.query.tenant_id, 32);
@@ -1544,7 +1544,7 @@ router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
     balanceResult = await getBalance(token);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     }
     if (renderFederationError(error, res)) return undefined;
     throw error;
@@ -1556,7 +1556,7 @@ router.get('/members/:id/transfer', asyncRoute(async (req, res) => {
     formatNumber: res.locals.formatLocaleNumber
   });
   if (!member.transactionsEnabled) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   const settingsData = asObject(dataFrom(settingsResult));
@@ -1585,7 +1585,7 @@ router.get('/members/:id', asyncRoute(async (req, res) => {
 
   const id = trimmed(req.params.id, 32);
   if (!/^\d+$/.test(id)) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   const tenantId = trimmed(req.query.tenant_id, 32);
@@ -1598,7 +1598,7 @@ router.get('/members/:id', asyncRoute(async (req, res) => {
     settingsResult = await callFederationApi(token, 'GET', '/settings');
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     }
     if (renderFederationError(error, res)) return undefined;
     throw error;

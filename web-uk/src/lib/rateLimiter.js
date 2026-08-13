@@ -25,7 +25,7 @@ function createLimiter(options) {
     skip: () => isDevelopment, // Skip in development for easier testing
     handler: (req, res) => {
       res.status(429).render('errors/429', {
-        title: 'Too many requests',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests'),
         retryAfter: Math.ceil(options.windowMs / 1000 / 60)
       });
     },

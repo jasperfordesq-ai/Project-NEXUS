@@ -78,7 +78,7 @@ function tenantFeatureGate(req, res, next) {
   for (const gate of gates) {
     if (gate.moduleKey && !flagEnabled(tenant, gate.moduleKey, 'modules', true)) {
       return res.status(403).render('errors/403', {
-        title: 'Forbidden',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
         message: 'This feature is not enabled for this community.'
       });
     }
@@ -93,7 +93,7 @@ function tenantFeatureGate(req, res, next) {
         return next();
       }
       return res.status(403).render('errors/403', {
-        title: 'Forbidden',
+        title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
         message: 'This feature is not enabled for this community.'
       });
     }

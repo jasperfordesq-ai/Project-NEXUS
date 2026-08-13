@@ -167,7 +167,7 @@ function insuranceEnabledForRequest(req) {
 }
 
 function renderNotFound(res) {
-  return res.status(404).render('errors/404', { title: 'Page not found' });
+  return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
 }
 
 function dataFrom(result) {

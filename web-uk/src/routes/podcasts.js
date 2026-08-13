@@ -148,7 +148,7 @@ function renderPodcastError(error, res, title = 'Podcasts') {
     return true;
   }
   if (isNotFound(error)) {
-    res.status(404).render('errors/404', { title: 'Page not found' });
+    res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     return true;
   }
 
@@ -479,7 +479,7 @@ router.get('/studio/:id(\\d+)', asyncRoute(async (req, res) => {
     const shows = rowsFrom(result).map((show) => decorateShow(show, res.locals.t));
     const show = shows.find((row) => row.id === showId);
     if (!show) {
-      res.status(404).render('errors/404', { title: 'Page not found' });
+      res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       return undefined;
     }
 
@@ -522,7 +522,7 @@ router.get('/:showId(\\d+)/episodes/:id(\\d+)', asyncRoute(async (req, res) => {
     const result = await callPodcast(token, 'GET', `/${showId}/${episodeId}`);
     const episodeData = objectFrom(result);
     if (!episodeData) {
-      res.status(404).render('errors/404', { title: 'Page not found' });
+      res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       return undefined;
     }
 
@@ -548,7 +548,7 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     const result = await callPodcast(token, 'GET', `/${showId}`);
     const showData = objectFrom(result);
     if (!showData) {
-      res.status(404).render('errors/404', { title: 'Page not found' });
+      res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       return undefined;
     }
 

@@ -79,7 +79,7 @@ function handleApiError(error, req, res, options = {}) {
     // operator needs to hear about, and it was silently rendered as a 503 page:
     // this branch returns true, so Sentry's Express error handler never sees it.
     reportSwallowedFault(error, req, 'api-offline');
-    res.status(503).render('errors/503', { title: 'Service unavailable' });
+    res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     return true;
   }
 

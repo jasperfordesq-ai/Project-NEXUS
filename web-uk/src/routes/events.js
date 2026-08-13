@@ -302,7 +302,7 @@ function eventFormErrors(error, fallbackMessage) {
 
 function renderForbidden(res, error) {
   return res.status(403).render('errors/403', {
-    title: 'Forbidden',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
     message: trimmed(error?.message) || 'You do not have permission to manage this event.'
   });
 }
@@ -1076,7 +1076,7 @@ router.get('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
   const currentUserId = idFrom(currentUser);
   const canEdit = event.can_edit === true || event.canEdit === true;
   if (!canEdit && (ownerId === null || currentUserId === null || ownerId !== currentUserId)) {
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
   }
   if (!eventIsSeries(event)) {
     return redirectTo(res, eventPath(id, '/edit'));
@@ -1167,7 +1167,7 @@ router.get('/:id(\\d+)/polls', asyncRoute(async (req, res) => {
   const currentUserId = idFrom(currentUser);
   const canEdit = event.can_edit === true || event.canEdit === true;
   if (!canEdit && (ownerId === null || currentUserId === null || ownerId !== currentUserId)) {
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
   }
   const polls = collectionFrom(pollsResult)
     .map((poll) => eventPollFrom(poll, id))
@@ -3461,7 +3461,7 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
   const ownerId = eventOwnerId(event);
   const currentUserId = idFrom(currentUser);
   if (ownerId !== null && currentUserId !== null && String(ownerId) !== String(currentUserId)) {
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
   }
 
   let setupErrorMessage = null;

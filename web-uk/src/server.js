@@ -800,7 +800,7 @@ app.get('/', async (req, res, next) => {
       });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
   }
 });
 
@@ -1242,10 +1242,10 @@ app.get('/volunteering/opportunities/:id(\\d+)', requireAuth, (req, res) => {
     })
     .catch((error) => {
       if (error instanceof ApiError && error.status === 404) {
-        return res.status(404).render('errors/404', { title: 'Page not found' });
+        return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       }
 
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     });
 });
 
@@ -1528,7 +1528,7 @@ async function handleOrganisationRegistrationPost(req, res, options = {}) {
     });
   } catch (error) {
     if (error instanceof ApiOfflineError) {
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     }
 
     if (req.session) {
@@ -1655,10 +1655,10 @@ app.get('/organisations/:id(\\d+)/jobs', requireOrganisationAuth, (req, res) => 
     })
     .catch((error) => {
       if (error instanceof ApiError && error.status === 404) {
-        return res.status(404).render('errors/404', { title: 'Page not found' });
+        return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       }
 
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     });
 });
 
@@ -1702,10 +1702,10 @@ app.get('/organisations/opportunities/:id(\\d+)/apply', requireOrganisationAuth,
     })
     .catch((error) => {
       if (error instanceof ApiError && error.status === 404) {
-        return res.status(404).render('errors/404', { title: 'Page not found' });
+        return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       }
 
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     });
 });
 
@@ -1826,10 +1826,10 @@ app.get('/organisations/:id(\\d+)', requireOrganisationAuth, (req, res) => {
     })
     .catch((error) => {
       if (error instanceof ApiError && error.status === 404) {
-        return res.status(404).render('errors/404', { title: 'Page not found' });
+        return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
       }
 
-      return res.status(503).render('errors/503', { title: 'Service unavailable' });
+      return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     });
 });
 
@@ -1936,7 +1936,7 @@ app.use(publicInfoRoutes);
 app.use(staticPageRoutes);
 
 app.get('/service-unavailable', (req, res) => {
-  res.status(503).render('errors/503', { title: 'Service unavailable' });
+  res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
 });
 
 // Auth routes (with stricter rate limiting on POST)
@@ -2013,7 +2013,7 @@ function redirectTo(res, pathname) {
 // Keep their 404 contract ahead of module-level authentication so an obsolete
 // URL is not mistaken for a valid page that merely needs a login.
 function renderLegacyNotFound(req, res) {
-  return res.status(404).render('errors/404', { title: 'Page not found' });
+  return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
 }
 
 app.get('/listings/:id(\\d+)/delete', renderLegacyNotFound);
@@ -2085,7 +2085,7 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).render('errors/404', { title: 'Page not found' });
+  res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
 });
 
 // Error logging middleware

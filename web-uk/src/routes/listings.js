@@ -406,7 +406,7 @@ async function listingFormViewData(req, options) {
 
 function renderForbidden(res, error) {
   return res.status(403).render('errors/403', {
-    title: 'Forbidden',
+    title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
     message: trimmed(error?.message) || 'You do not have permission to manage this listing.'
   });
 }
@@ -1061,13 +1061,13 @@ router.get('/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
       return res.status(404).render('errors/404', { title: 'Listing not found' });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
     }
     throw error;
   }

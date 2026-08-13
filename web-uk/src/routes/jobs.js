@@ -1778,10 +1778,10 @@ router.get('/applications/:appId(\\d+)/history', asyncRoute(async (req, res) => 
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   try {
@@ -1814,16 +1814,16 @@ router.get('/applications/:appId(\\d+)/cv', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   applyDownloadHeaders(res, download.headers);
@@ -1941,10 +1941,10 @@ router.get('/employer-onboarding', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
     loadError = true;
   }
@@ -1968,18 +1968,18 @@ router.get('/employers/:employerId(\\d+)', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const employer = decorateEmployer(employerResult, employerId);
   if (!employer) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   const jobParams = {
@@ -2032,16 +2032,16 @@ router.get('/bias-audit', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   try {
@@ -2075,16 +2075,16 @@ router.get('/talent-search', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const candidates = collectionItems(result).map((candidate) => decorateCandidate(candidate, req));
@@ -2111,21 +2111,21 @@ router.get('/talent-search/:candidateId(\\d+)', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const candidate = objectFrom(result);
   if (!candidate) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   const authoredName = trimmed(candidate.name || candidate.display_name || candidate.full_name, 255);
@@ -2174,18 +2174,18 @@ router.get('/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const job = dataFrom(jobResult);
   if (!job || typeof job !== 'object' || !job.id) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   try {
@@ -2193,16 +2193,16 @@ router.get('/:id(\\d+)/analytics', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   try {
@@ -2235,22 +2235,22 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const job = dataFrom(result);
   if (!job || typeof job !== 'object' || !job.id) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   if (jobOwnerId(job) !== profileUserId(profileResult)) {
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
   }
 
   const rememberedErrors = recalledJobFormErrors(req);
@@ -2277,18 +2277,18 @@ router.get('/:id(\\d+)/pipeline', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const job = dataFrom(jobResult);
   if (!job || typeof job !== 'object' || !job.id) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   try {
@@ -2296,16 +2296,16 @@ router.get('/:id(\\d+)/pipeline', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const applications = collectionItems(applicationsResult).map((application) => decorateApplicant(application, req));
@@ -2344,18 +2344,18 @@ router.get('/:id(\\d+)/applications', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const job = dataFrom(jobResult);
   if (!job || typeof job !== 'object' || !job.id) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   try {
@@ -2363,12 +2363,12 @@ router.get('/:id(\\d+)/applications', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
   }
 
   try {
@@ -2413,21 +2413,21 @@ router.get('/:id(\\d+)/qualified', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: jobTranslation(req, 'govuk_alpha.error_pages.403_title', 'Forbidden') });
     }
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: jobTranslation(req, 'govuk_alpha.error_pages.429_title', 'Too many requests') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const qualification = decorateQualification(qualificationResult, req);
   if (!qualification) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   return res.render('jobs/qualification', {
@@ -2449,15 +2449,15 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
     }
 
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: jobTranslation(req, 'govuk_alpha.error_pages.503_title', 'Service unavailable') });
   }
 
   const job = dataFrom(result);
   if (!job || typeof job !== 'object' || !job.id) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: jobTranslation(req, 'govuk_alpha.error_pages.404_title', 'Page not found') });
   }
 
   try {

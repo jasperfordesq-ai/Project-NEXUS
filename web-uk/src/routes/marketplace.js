@@ -375,7 +375,7 @@ function renderMarketplaceError(error, res, title = 'Marketplace') {
     return true;
   }
   if (isNotFound(error)) {
-    res.status(404).render('errors/404', { title: 'Page not found' });
+    res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     return true;
   }
 

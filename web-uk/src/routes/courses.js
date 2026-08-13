@@ -210,12 +210,12 @@ function handleCourseGetError(error, res) {
   if (redirectOnAuthError(error, res)) return true;
 
   if (error instanceof ApiError && error.status === 404) {
-    res.status(404).render('errors/404', { title: 'Page not found' });
+    res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     return true;
   }
 
   if (error instanceof ApiOfflineError || error instanceof ApiError) {
-    res.status(503).render('errors/503', { title: 'Service unavailable' });
+    res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
     return true;
   }
 
@@ -734,7 +734,7 @@ router.get('/instructor/:id/analytics', asyncRoute(async (req, res) => {
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
     }
     if (handleCourseGetError(error, res)) return undefined;
     throw error;
@@ -762,7 +762,7 @@ router.get('/instructor/:id/grading', asyncRoute(async (req, res) => {
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
-      return res.status(403).render('errors/403', { title: 'Forbidden' });
+      return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
     }
     if (handleCourseGetError(error, res)) return undefined;
     throw error;

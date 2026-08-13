@@ -200,7 +200,7 @@ function tenantFeatureEnabled(req, key, fallback = true) {
 
 function requireConnectionsFeature(req, res, next) {
   if (!tenantFeatureEnabled(req, 'connections', true)) {
-    return res.status(403).render('errors/403', { title: 'Forbidden' });
+    return res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
   }
   return next();
 }

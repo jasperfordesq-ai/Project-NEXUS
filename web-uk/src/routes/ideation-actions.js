@@ -117,7 +117,7 @@ async function guardCampaignAdministrator(req, res) {
   }
 
   if (!ideationAdministrator(await getRequestProfile(req, token))) {
-    res.status(403).render('errors/403', { title: 'Forbidden' });
+    res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden') });
     return false;
   }
 

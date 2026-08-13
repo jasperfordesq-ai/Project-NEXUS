@@ -1886,7 +1886,7 @@ router.get('/certificates/:code([A-Za-z0-9]+)/download', asyncRoute(async (req, 
   ));
 
   if (!ownsCertificate) {
-    return res.status(404).render('errors/404', { title: 'Page not found' });
+    return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
   }
 
   const html = await callApi(token, 'GET', `/certificates/${encodeURIComponent(code)}/html`);
@@ -2350,12 +2350,12 @@ router.get('/credentials/:id(\\d+)/download', asyncRoute(async (req, res) => {
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
     if (error instanceof ApiError && error.status === 404) {
-      return res.status(404).render('errors/404', { title: 'Page not found' });
+      return res.status(404).render('errors/404', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : 'Page not found') });
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/429', { title: 'Too many requests' });
+      return res.status(429).render('errors/429', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
     }
-    return res.status(503).render('errors/503', { title: 'Service unavailable' });
+    return res.status(503).render('errors/503', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.503_title') : 'Service unavailable') });
   }
 
   res.status(download.status || 200);

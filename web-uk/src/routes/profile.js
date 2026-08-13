@@ -1731,7 +1731,7 @@ router.post('/two-factor/verify', asyncRoute(async (req, res) => {
       return redirectTo(res, twoFactorRedirect('2fa-code-invalid'));
     }
     if (error instanceof ApiError && error.status === 429) {
-      return res.status(429).render('errors/500', { title: 'Too many requests' });
+      return res.status(429).render('errors/500', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
     }
     if (error instanceof ApiError && error.status >= 500) {
       const view = error.status === 503 ? 'errors/503' : 'errors/500';
@@ -1767,7 +1767,7 @@ function requireOwnProfileFeature(req, res, next) {
   const tenant = req.accessibleRouting?.tenant;
   if (tenant && typeof tenant === 'object' && !flagEnabled(tenant, 'connections', 'features', true)) {
     return res.status(403).render('errors/403', {
-      title: 'Forbidden',
+      title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Forbidden'),
       message: 'This feature is not enabled for this community.'
     });
   }
