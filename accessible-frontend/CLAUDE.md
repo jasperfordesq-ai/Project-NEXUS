@@ -1,5 +1,28 @@
 # Accessible Frontend — CLAUDE.md
 
+> 🔴 **THIS TRACK IS FROZEN — READ-ONLY REFERENCE (owner decision, 2026-08-13).**
+>
+> Do **not** build anything new here. `web-uk/` is the accessible frontend being
+> built now; this Blade track is kept as the reference for building it, and
+> retires once `web-uk` is judged finished.
+>
+> **Reading this tree is the intended use** — it is the behaviour specification
+> `web-uk` is built against. Everything below still accurately describes how it
+> works, which is exactly why it is worth reading.
+>
+> **Writing to it is not.** No new pages, features, routes, fields or parity
+> work. The only changes allowed without asking the owner are a security fix, a
+> fault making a live page unusable for a real member, or a mechanical
+> repo-wide sweep this tree cannot be excluded from (SPDX, lint, translation key
+> parity, a dependency bump).
+>
+> It is still deployed and still serving real members on the community accessible
+> domains and every `/{tenantSlug}/accessible/...` path, so do not delete it,
+> remove its routes, or disable its tests or build.
+>
+> Status and phase are stated once, in
+> [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+
 > Stack-specific conventions for `accessible-frontend/`. See root `CLAUDE.md` for project-wide rules and `docs/govuk-alpha/RESEARCH.md` for the architecture decision.
 
 ## Stack

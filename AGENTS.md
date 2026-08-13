@@ -310,16 +310,36 @@ See [react-frontend/CLAUDE.md](react-frontend/CLAUDE.md) for full styling rules,
 
 The accessible frontend is an explicitly approved UI track that complements, but does not replace, `react-frontend/`. It is the only maintained exception to the React-primary UI rule and is intended for users who benefit from a highly accessible, HTML-first experience. The public-facing track is now Beta and served under `/{tenantSlug}/accessible/...` (legacy `/alpha/...` URLs permanently redirect); the `GovukAlpha`, `govuk_alpha`, and `govuk-alpha.*` names remain as internal code-path names (namespaces, translation files, route names) until a deliberate namespace migration is done.
 
-> 🔴 **There are TWO accessible frontends, and the one described below is being
-> replaced.** `accessible-frontend/` is Laravel Blade and is what production
-> serves today. `web-uk/` is an Express/Nunjucks application consuming the Laravel
-> API, and on **2026-08-11** the owner decided it takes over and Blade retires.
-> Both public URL shapes are preserved exactly, so nothing a member has bookmarked
-> changes. **`web-uk` is not deployed yet** and the deployment path is not built.
-> Read [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md)
-> before acting on any status claim about either one — it is the single place the
-> current phase is stated. The rules below still govern the Blade track for as long
-> as it is deployed, and its GOV.UK branding prohibitions apply to **both**.
+#### 🔴 THE BLADE ACCESSIBLE FRONTEND IS FROZEN — READ-ONLY REFERENCE (owner decision, 2026-08-13)
+
+There are TWO accessible frontends. `accessible-frontend/` (+
+`app/Http/Controllers/GovukAlpha/`) is Laravel Blade. `web-uk/` is an
+Express/Nunjucks application consuming the Laravel API, live on
+`accessible.project-nexus.ie` since 2026-08-12.
+
+**On 2026-08-13 the owner froze the Blade track.** It is kept as a **read-only
+reference for building `web-uk`**, and retires once `web-uk` is judged finished.
+
+- 🔴 **Do not build anything new in Blade.** No new pages, features, routes,
+  fields, or parity work. Every new build goes into `web-uk/`.
+- 🔴 **Read it freely — that is what it is for.** It is the behaviour
+  specification `web-uk` is being built against, so opening its Blade templates,
+  controllers and tests to see what a page does is the intended use.
+- **Allowed to change:** a security fix, a fault making a live page unusable for
+  a real member, or a mechanical repo-wide sweep it cannot be excluded from
+  (SPDX headers, lint, translation key parity, a dependency bump). Anything
+  beyond that needs the owner to say so.
+- **It is still deployed and still serving traffic** — the community accessible
+  domains and every `/{tenantSlug}/accessible/...` path. Frozen means "stop
+  adding to it", not "it is dead". Do not delete it, do not remove its routes,
+  and do not disable its tests or build.
+- **Do not propose Blade work.** If a gap exists on the accessible track, the
+  answer is a `web-uk` change.
+
+[docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md) is
+the single place the current phase and status are stated — read it before acting
+on any status claim about either frontend. The rules below still describe the
+Blade track, and its GOV.UK branding prohibitions apply to **both**.
 
 - Keep it isolated under root-level `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`, and `/{tenantSlug}/accessible/...` routes.
 - Preferred public subdomain: `accessible.project-nexus.ie`.

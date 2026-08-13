@@ -1,6 +1,6 @@
 # Accessible Frontend Takeover
 
-Last reviewed: 2026-08-12
+Last reviewed: 2026-08-13
 
 Project NEXUS has two accessible frontends. This page records the decision that
 one replaces the other, which phase that changeover is in, and which document
@@ -16,6 +16,39 @@ Before that decision, `web-uk` was an uncertified candidate and Blade was the
 deployed product. Documentation written in that period says so, and much of it
 also *prohibits* replacing Blade. Those prohibitions were correct when written and
 are now superseded by this page.
+
+## 🔴 The Blade track is FROZEN — read-only reference (owner decision, 2026-08-13)
+
+The 2026-08-11 decision said Blade *would* retire. **On 2026-08-13 the owner
+stopped work on it**, two days before retirement itself:
+
+> Blade is kept **read-only, as reference for building `web-uk`**. It retires
+> when `web-uk` is judged finished. No further build effort goes into Blade —
+> all build effort goes into the new frontend.
+
+What that means in practice:
+
+- **No new build work in Blade.** No new pages, features, routes, fields, or
+  parity work in `accessible-frontend/` or `app/Http/Controllers/GovukAlpha/`.
+- **Reading it is the point.** It stays the observable-behaviour specification
+  `web-uk` is built against (see Phase A below), so its templates, controllers
+  and tests are the reference material — open them freely.
+- **Narrow exceptions still allowed**, because it is still serving real members:
+  a security fix, a fault making a live page unusable, or a mechanical
+  repo-wide sweep it cannot be excluded from (SPDX, lint, translation parity, a
+  dependency bump). Anything wider needs the owner.
+- **It is not deleted and not switched off.** It still serves the community
+  accessible domains and every `/{tenantSlug}/accessible/...` path. Its routes,
+  tests and build stay in place until retirement is done as its own reviewed
+  change.
+
+🔴 **This reverses the direction of the eight commits in the week to 2026-08-13**
+that added parity features *to* Blade (safeguarding tiers, linked-account
+activity views, the message-access consent loop). That work is done and stays;
+work of that shape must not be started in Blade again.
+
+**Retirement itself is still a separate, unstarted change** — see the table
+below. Freezing the track is not retiring it.
 
 ## The two frontends
 
@@ -89,20 +122,20 @@ qualification means the Phase A rule above.
 | Cookie-consent record keeping | **Built.** Anonymous visitors' choices are now recorded, as Blade already did. |
 | Deployment path | **Built, and locally rehearsed 2026-08-11.** Container service, deploy-script support, `/version`, Apache include, domain inventory with a drift probe, and guards all exist. The production image was run against the local platform and proved: it does not listen at all until Redis is reachable (so a broken deploy aborts); `/health` then returns `OK`; `/version` returns `{"service":"nexus-webuk",…}` — the exact string the deploy smoke test matches; and a real accessible page renders at 200 in 25 KB. **Deployed to the server and cut over on 2026-08-12**, with twelve post-cutover checks passing; the rollback path is documented and verified on the real server, and the guard that stops an ordinary deploy reverting the switch has been armed. From now on a deploy must pass `--with-webuk` or it refuses to run. |
 | Manual accessibility sign-off | **Partly done.** Keyboard, focus and reflow evidence exists. Screen-reader sign-off needs a human. |
-| Blade retirement | **Not started.** A separate change with its own review, after a soak period. |
+| Blade retirement | **Not started**, and now the only remaining phase-ending step. The Blade track was **frozen as read-only reference on 2026-08-13** (see above), but decommissioning is still a separate change with its own review, after a soak period. |
 
-Current score: **640/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
+Current score: **651/1000** under rubric `WEBUK-W2-PROD-R1`. See the scoring
 table below before comparing that with any earlier number.
 
-## 🔴 Before the first rehearsal: the plumbing is not on the server yet
-
-The server now holds every variable `web-uk` needs. It does **not** yet hold
-`compose.webuk.bluegreen.yml`, the deploy script with web-uk support, or the Apache
-include — those are in commits that have not been pushed.
-
-This fails safely rather than half-deploying: `compose_files_for_release()` refuses
-outright when the overlay is missing from a release. But it does refuse, so a
-rehearsal attempted before pushing would simply stop. Push first.
+🔴 **Do not restate that number here from memory.** This page carried **640** and
+**592** simultaneously for the same rubric until 2026-08-13, while the canonical
+document said 651. `scripts/check-doc-scores.mjs` could not catch it: the gate
+cross-checks values carried in machine-readable doc-consistency comment markers,
+and both numbers here were bare prose with no marker. Read the score from
+`web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`, which is the only scoring
+source, and quote it in one place only. Adding a marker to *this* page is the
+wrong fix — the gate will demand it be registered, and a second registered home
+for one score is how the disagreement started.
 
 ## Prerequisites — six resolved, one still needs an owner answer
 
@@ -231,7 +264,7 @@ site builds only `docs/`.
 | `web-uk/docs/PRODUCTION_RELEASE_RUNBOOK.md` | The release procedure | Its hold references the missing file in prerequisite 5 |
 | `web-uk/CLAUDE.md` and `web-uk/AGENTS.md` | Working rules inside `web-uk` | Written during the candidate period; the takeover supersedes their replacement prohibition |
 | [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) | Repository boundaries and deployment isolation | Its ASP.NET warnings remain in force |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | How the platform deploys | Describes the Laravel/React path; the `web-uk` path is not built yet |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | How the platform deploys | Describes the Laravel/React path. The `web-uk` path **is** built and was used on 2026-08-12; every deploy must now pass `--with-webuk` |
 | `aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md` | The ASP.NET backend score | A **different** rubric. Never add it to the `web-uk` score |
 
 🔴 **On the ~185 lines elsewhere that still call `web-uk` a candidate.** They were
@@ -250,12 +283,12 @@ CI check refuses a score marker that does not.
 
 | Score | Rubric | Value | Measures | Status |
 |---|---|---|---|---|
-| `web-uk` production readiness | `WEBUK-W2-PROD-R1` | 592/1000 | Is `web-uk` safe to serve, and can Blade retire? | **Current** |
+| `web-uk` production readiness | `WEBUK-W2-PROD-R1` | 651/1000 | Is `web-uk` safe to serve, and can Blade retire? | **Current** — read it from `web-uk/docs/CURRENT_WEBUK_PRODUCTION_STATUS.md`, never from here |
 | `web-uk` Laravel-first parity | `WEBUK-W1-FIXED-R1` | 663/1000 | How closely does the candidate clone Blade? | Retired 2026-08-11 |
 | ASP.NET contract identity | `ASPNET-CONTRACT-R1` | 712/1000 | Is ASP.NET externally contract-identical to Laravel? | Paused since 2026-07-15 |
 | Documentation health | `DOCS-HEALTH-D3-R1` | 1000/1000 index | Documentation and handoff quality | Not a product score |
 
-🔴 **The current 592 is lower than the retired 663 and nothing regressed.** The
+🔴 **The current 651 is lower than the retired 663 and nothing regressed.** The
 W1 rubric scored no deployment path, no cutover, no rollback and no Blade
 retirement. Those 200 points enter the new denominator for the first time and
 start near zero, while three previously-measured areas improved. The mandatory
