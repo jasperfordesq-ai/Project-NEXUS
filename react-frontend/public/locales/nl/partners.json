@@ -8,7 +8,7 @@
   "header": {
     "toggle_sidebar": "Schakel navigatie in",
     "back_to_admin": "Terug naar beheerder",
-    "notifications": "Notifications",
+    "notifications": "Meldingen",
     "user_menu": "Gebruikersmenu",
     "my_profile": "Mijn profiel",
     "sign_out": "Meld u af",
@@ -20,19 +20,19 @@
     "expand": "Zijbalk uitvouwen",
     "collapse": "Zijbalk samenvouwen",
     "full_admin": "Volledig beheerpaneel",
-    "section_overview": "Overview",
+    "section_overview": "Overzicht",
     "section_network": "Partnernetwerk",
     "section_external": "Externe aansluitingen",
     "section_caring": "Zorgzame gemeenschap",
     "section_access": "Toegang & beveiliging",
     "section_data": "Activiteit en gegevens",
-    "section_settings": "Settings"
+    "section_settings": "Instellingen"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "Overzicht",
+    "partnerships": "Partnerschappen",
     "directory": "Partnerlijst",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Buurten",
     "credit_agreements": "Kredietovereenkomsten",
     "external_partners": "Externe platforms",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "Webhooks voor evenementen",
     "api_docs": "Handleiding voor ontwikkelaars",
     "activity": "Activiteitenfeed",
-    "analytics": "Analytics",
+    "analytics": "Analyse",
     "aggregates": "Gedeelde statistieken",
     "data": "Gegevensbeheer",
     "settings": "Netwerkinstellingen"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "Kruimelpad",
     "overview": "Partnertijdbanken",
-    "partnerships": "Partnerships",
+    "partnerships": "Partnerschappen",
     "directory": "Partnerlijst",
     "profile": "Onze vermelding",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Buurten",
     "credit_agreements": "Kredietovereenkomsten",
     "external_partners": "Externe platforms",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "Zorgzame gemeenschap",
     "caring_peers": "Partnercoöperaties",
     "api_keys": "API-sleutels",
-    "create": "Create",
+    "create": "Maken",
     "webhooks": "Webhooks voor evenementen",
     "api_docs": "Handleiding voor ontwikkelaars",
     "activity": "Activiteitenfeed",
-    "analytics": "Analytics",
+    "analytics": "Analyse",
     "aggregates": "Gedeelde statistieken",
     "data": "Gegevensbeheer",
     "settings": "Netwerkinstellingen"
@@ -74,7 +74,7 @@
     "page_title": "Partnertijdbanken",
     "title": "Partnertijdbanken",
     "description": "Verbind uw tijdbank met andere communities, zodat leden tijd en vaardigheden over de grenzen heen kunnen uitwisselen. Dit gebied is alleen zichtbaar voor superbeheerders.",
-    "open": "Open",
+    "open": "Openen",
     "disabled_banner": {
       "title": "Partnerschap is uitgeschakeld",
       "hint": "Er wordt niets gedeeld met andere tijdbanken totdat u dit inschakelt in Netwerkinstellingen.",
@@ -103,7 +103,7 @@
       "profile": "Publiceer de vermelding van uw community in de partnerlijst",
       "connect": "Maak verbinding met uw eerste partnertijdbank",
       "credit": "Spreek kredietlimieten af ​​met uw partners",
-      "optional": "Optional"
+      "optional": "Optioneel"
     },
     "top_partners": {
       "title": "Meest actieve partners",
@@ -120,7 +120,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "Partnerschappen",
       "description": "Uw overeenkomsten met andere tijdbanken op het NEXUS-netwerk: met wie u bent verbonden, wat u deelt en verzoeken die wachten op een beslissing."
     },
     "directory": {
@@ -135,7 +135,7 @@
       "description": "Hoe uw community wordt weergegeven voor andere tijdbanken in de partnerlijst."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "Buurten",
       "description": "Geografische gebieden van uw gemeenschap die kunnen worden gedeeld met tijdbanken van partners in de buurt."
     },
     "credit_agreements": {
@@ -179,7 +179,7 @@
       "description": "Een doorlopend logboek van alles wat wordt uitgewisseld met tijdbanken van partners: overdrachten, berichten en partnerschapswijzigingen."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "Analyse",
       "description": "Grafieken en cijfers voor uw partneractiviteit: wat er is uitgewisseld, met wie en hoe deze trend is."
     },
     "aggregates": {

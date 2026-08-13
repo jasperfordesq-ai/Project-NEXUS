@@ -105,6 +105,7 @@ const NO_TRANSLATE_VALUES = new Set([
   '/blog/my-post',
   'hour-timebank',
   'Apache/Plesk',
+  'Credit Commons',
 ]);
 
 // 'Café' is the native word in fr/pt/nl, not a copied English value: no locale

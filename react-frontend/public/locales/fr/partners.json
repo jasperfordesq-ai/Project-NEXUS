@@ -12,7 +12,7 @@
     "user_menu": "Menu utilisateur",
     "my_profile": "Mon profil",
     "sign_out": "se déconnecter",
-    "user_fallback": "Account"
+    "user_fallback": "Compte"
   },
   "sidebar": {
     "title": "Banques de temps partenaires",
@@ -20,19 +20,19 @@
     "expand": "Développer la barre latérale",
     "collapse": "Réduire la barre latérale",
     "full_admin": "Panneau d'administration complet",
-    "section_overview": "Overview",
+    "section_overview": "Vue d’ensemble",
     "section_network": "Réseau de partenaires",
     "section_external": "Connexions externes",
     "section_caring": "Communauté bienveillante",
     "section_access": "Accès et sécurité",
     "section_data": "Activité et données",
-    "section_settings": "Settings"
+    "section_settings": "Paramètres"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "Vue d’ensemble",
+    "partnerships": "Partenariats",
     "directory": "Annuaire des partenaires",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Quartiers",
     "credit_agreements": "Contrats de crédit",
     "external_partners": "Plateformes externes",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "Webhooks d'événement",
     "api_docs": "Guide du développeur",
     "activity": "Flux d'activité",
-    "analytics": "Analytics",
+    "analytics": "Analyses",
     "aggregates": "Statistiques partagées",
     "data": "Gestion des données",
     "settings": "Paramètres réseau"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "Fil d’Ariane",
     "overview": "Banques de temps partenaires",
-    "partnerships": "Partnerships",
+    "partnerships": "Partenariats",
     "directory": "Annuaire des partenaires",
     "profile": "Notre annonce",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Quartiers",
     "credit_agreements": "Contrats de crédit",
     "external_partners": "Plateformes externes",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "Communauté bienveillante",
     "caring_peers": "Coopératives partenaires",
     "api_keys": "Clés API",
-    "create": "Create",
+    "create": "Créer",
     "webhooks": "Webhooks d'événement",
     "api_docs": "Guide du développeur",
     "activity": "Flux d'activité",
-    "analytics": "Analytics",
+    "analytics": "Analyses",
     "aggregates": "Statistiques partagées",
     "data": "Gestion des données",
     "settings": "Paramètres réseau"
@@ -74,7 +74,7 @@
     "page_title": "Banques de temps partenaires",
     "title": "Banques de temps partenaires",
     "description": "Connectez votre banque de temps à d'autres communautés afin que les membres puissent échanger du temps et des compétences au-delà des frontières. Cette zone n'est visible que par les super administrateurs.",
-    "open": "Open",
+    "open": "Ouvrir",
     "disabled_banner": {
       "title": "Le partenariat est désactivé",
       "hint": "Rien n'est partagé avec d'autres banques de temps jusqu'à ce que vous l'activiez dans les paramètres réseau.",
@@ -104,7 +104,7 @@
       "profile": "Publiez l'annonce de votre communauté dans l'annuaire des partenaires",
       "connect": "Connectez-vous avec votre première banque de temps partenaire",
       "credit": "Convenez des limites de crédit avec vos partenaires",
-      "optional": "Optional"
+      "optional": "Facultatif"
     },
     "top_partners": {
       "title": "Partenaires les plus actifs",
@@ -122,7 +122,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "Partenariats",
       "description": "Vos accords avec d'autres banques de temps sur le réseau NEXUS : avec qui vous êtes connecté, ce que vous partagez et les demandes en attente d'une décision."
     },
     "directory": {
@@ -137,7 +137,7 @@
       "description": "Comment votre communauté apparaît aux autres banques de temps dans l'annuaire des partenaires."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "Quartiers",
       "description": "Zones géographiques de votre communauté pouvant être partagées avec les banques de temps partenaires à proximité."
     },
     "credit_agreements": {
@@ -181,7 +181,7 @@
       "description": "Un journal en cours de tout ce qui a été échangé avec les banques de temps des partenaires : transferts, messages et modifications du partenariat."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "Analyses",
       "description": "Graphiques et chiffres sur l'activité de votre partenaire : ce qui a été échangé, avec qui et quelle est son évolution."
     },
     "aggregates": {

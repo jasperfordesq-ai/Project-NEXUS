@@ -8,11 +8,11 @@
   "header": {
     "toggle_sidebar": "Przełącz nawigację",
     "back_to_admin": "Powrót do administratora",
-    "notifications": "Notifications",
+    "notifications": "Powiadomienia",
     "user_menu": "Menu użytkownika",
     "my_profile": "Mój profil",
     "sign_out": "Wyloguj się",
-    "user_fallback": "Account"
+    "user_fallback": "Konto"
   },
   "sidebar": {
     "title": "Banki czasu partnerów",
@@ -20,19 +20,19 @@
     "expand": "Rozwiń pasek boczny",
     "collapse": "Zwiń pasek boczny",
     "full_admin": "Pełny panel administracyjny",
-    "section_overview": "Overview",
+    "section_overview": "Przegląd",
     "section_network": "Sieć partnerska",
     "section_external": "Połączenia zewnętrzne",
     "section_caring": "Troskliwa społeczność",
     "section_access": "Dostęp i bezpieczeństwo",
     "section_data": "Aktywność i dane",
-    "section_settings": "Settings"
+    "section_settings": "Ustawienia"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "Przegląd",
+    "partnerships": "Partnerstwa",
     "directory": "Katalog partnerów",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Dzielnice",
     "credit_agreements": "Umowy kredytowe",
     "external_partners": "Platformy zewnętrzne",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "Haki internetowe zdarzeń",
     "api_docs": "Przewodnik programisty",
     "activity": "Kanał aktywności",
-    "analytics": "Analytics",
+    "analytics": "Analityka",
     "aggregates": "Udostępnione statystyki",
     "data": "Zarządzanie danymi",
     "settings": "Ustawienia sieciowe"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "Okruszki nawigacyjne",
     "overview": "Banki czasu partnerów",
-    "partnerships": "Partnerships",
+    "partnerships": "Partnerstwa",
     "directory": "Katalog partnerów",
     "profile": "Nasze zestawienie",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Dzielnice",
     "credit_agreements": "Umowy kredytowe",
     "external_partners": "Platformy zewnętrzne",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "Troskliwa społeczność",
     "caring_peers": "Spółdzielnie partnerskie",
     "api_keys": "Klucze API",
-    "create": "Create",
+    "create": "Utwórz",
     "webhooks": "Haki internetowe zdarzeń",
     "api_docs": "Przewodnik programisty",
     "activity": "Kanał aktywności",
-    "analytics": "Analytics",
+    "analytics": "Analityka",
     "aggregates": "Udostępnione statystyki",
     "data": "Zarządzanie danymi",
     "settings": "Ustawienia sieciowe"
@@ -74,7 +74,7 @@
     "page_title": "Banki czasu partnerów",
     "title": "Banki czasu partnerów",
     "description": "Połącz swój bank czasu z innymi społecznościami, aby członkowie mogli wymieniać się czasem i umiejętnościami ponad granicami. Ten obszar jest widoczny tylko dla superadministratorów.",
-    "open": "Open",
+    "open": "Otwórz",
     "disabled_banner": {
       "title": "Partnerstwo jest wyłączone",
       "hint": "Nic nie jest udostępniane innym bankom czasu, dopóki nie włączysz tej opcji w ustawieniach sieci.",
@@ -105,7 +105,7 @@
       "profile": "Opublikuj wpis swojej społeczności w katalogu partnerów",
       "connect": "Połącz się ze swoim pierwszym bankiem czasu partnera",
       "credit": "Uzgodnij limity kredytowe ze swoimi partnerami",
-      "optional": "Optional"
+      "optional": "Opcjonalne"
     },
     "top_partners": {
       "title": "Najbardziej aktywni partnerzy",
@@ -124,7 +124,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "Partnerstwa",
       "description": "Twoje umowy z innymi bankami czasu w sieci NEXUS — z kim jesteś połączony, co udostępniasz i prośby oczekujące na decyzję."
     },
     "directory": {
@@ -139,7 +139,7 @@
       "description": "Jak Twoja społeczność wygląda w innych bankach czasu w katalogu partnerów."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "Dzielnice",
       "description": "Obszary geograficzne Twojej społeczności, które można udostępniać pobliskim partnerskim bankom czasu."
     },
     "credit_agreements": {
@@ -183,7 +183,7 @@
       "description": "Bieżący dziennik wszystkiego wymienianego z bankami czasu partnerów — transferów, wiadomości i zmian w partnerstwie."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "Analityka",
       "description": "Wykresy i liczby dotyczące aktywności Twojego partnera — co zostało wymienione, z kim i jakie są trendy."
     },
     "aggregates": {

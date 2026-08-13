@@ -8,11 +8,11 @@
   "header": {
     "toggle_sidebar": "تبديل التنقل",
     "back_to_admin": "العودة إلى المشرف",
-    "notifications": "Notifications",
+    "notifications": "الإشعارات",
     "user_menu": "قائمة المستخدم",
     "my_profile": "ملفي الشخصي",
     "sign_out": "تسجيل الخروج",
-    "user_fallback": "Account"
+    "user_fallback": "الحساب"
   },
   "sidebar": {
     "title": "بنوك الوقت الشريكة",
@@ -20,19 +20,19 @@
     "expand": "قم بتوسيع الشريط الجانبي",
     "collapse": "طي الشريط الجانبي",
     "full_admin": "لوحة الإدارة الكاملة",
-    "section_overview": "Overview",
+    "section_overview": "نظرة عامة",
     "section_network": "شبكة الشركاء",
     "section_external": "اتصالات خارجية",
     "section_caring": "مجتمع الرعاية",
     "section_access": "الوصول والأمن",
     "section_data": "النشاط والبيانات",
-    "section_settings": "Settings"
+    "section_settings": "الإعدادات"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "نظرة عامة",
+    "partnerships": "الشراكات",
     "directory": "دليل الشركاء",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "الأحياء",
     "credit_agreements": "اتفاقيات الائتمان",
     "external_partners": "المنصات الخارجية",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "خطافات الويب للحدث",
     "api_docs": "دليل المطور",
     "activity": "خلاصة النشاط",
-    "analytics": "Analytics",
+    "analytics": "التحليلات",
     "aggregates": "إحصائيات مشتركة",
     "data": "إدارة البيانات",
     "settings": "إعدادات الشبكة"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "مسار التنقل",
     "overview": "بنوك الوقت الشريكة",
-    "partnerships": "Partnerships",
+    "partnerships": "الشراكات",
     "directory": "دليل الشركاء",
     "profile": "قائمتنا",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "الأحياء",
     "credit_agreements": "اتفاقيات الائتمان",
     "external_partners": "المنصات الخارجية",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "مجتمع الرعاية",
     "caring_peers": "التعاونيات الشريكة",
     "api_keys": "مفاتيح واجهة برمجة التطبيقات",
-    "create": "Create",
+    "create": "إنشاء",
     "webhooks": "خطافات الويب للحدث",
     "api_docs": "دليل المطور",
     "activity": "خلاصة النشاط",
-    "analytics": "Analytics",
+    "analytics": "التحليلات",
     "aggregates": "إحصائيات مشتركة",
     "data": "إدارة البيانات",
     "settings": "إعدادات الشبكة"
@@ -74,7 +74,7 @@
     "page_title": "بنوك الوقت الشريكة",
     "title": "بنوك الوقت الشريكة",
     "description": "قم بتوصيل بنك الوقت الخاص بك بالمجتمعات الأخرى حتى يتمكن الأعضاء من تبادل الوقت والمهارات عبر الحدود. هذه المنطقة مرئية فقط للمشرفين المتميزين.",
-    "open": "Open",
+    "open": "فتح",
     "disabled_banner": {
       "title": "تم إيقاف الشراكة",
       "hint": "لا تتم مشاركة أي شيء مع بنوك الوقت الأخرى حتى تقوم بتشغيله في إعدادات الشبكة.",
@@ -107,7 +107,7 @@
       "profile": "انشر قائمة مجتمعك في دليل الشركاء",
       "connect": "تواصل مع شريكك الأول timebank",
       "credit": "وافق على حدود الائتمان مع شركائك",
-      "optional": "Optional"
+      "optional": "اختياري"
     },
     "top_partners": {
       "title": "الشركاء الأكثر نشاطا",
@@ -128,7 +128,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "الشراكات",
       "description": "اتفاقياتك مع بنوك الوقت الأخرى على شبكة NEXUS - الأشخاص الذين تتصل بهم، وما تشاركه، والطلبات التي تنتظر القرار."
     },
     "directory": {
@@ -143,7 +143,7 @@
       "description": "كيف يظهر مجتمعك لبنوك الوقت الأخرى في دليل الشركاء."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "الأحياء",
       "description": "المناطق الجغرافية لمجتمعك التي يمكن مشاركتها مع بنوك الوقت الشريكة القريبة."
     },
     "credit_agreements": {
@@ -187,7 +187,7 @@
       "description": "سجل قيد التشغيل لكل شيء يتم تبادله مع بنوك الوقت الشريكة - التحويلات والرسائل وتغييرات الشراكة."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "التحليلات",
       "description": "الرسوم البيانية والأرقام لنشاط الشريك الخاص بك - ما الذي تم تبادله ومع من وكيف يتجه."
     },
     "aggregates": {

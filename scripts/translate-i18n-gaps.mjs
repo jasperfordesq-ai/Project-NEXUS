@@ -211,6 +211,7 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   '/blog/my-post',
   'hour-timebank',
   'Apache/Plesk',
+  'Credit Commons',
 ]);
 
 // Cognates and borrowed technical terms that are valid translations only in the

@@ -8,11 +8,11 @@
   "header": {
     "toggle_sidebar": "Alternar navegación",
     "back_to_admin": "Volver al administrador",
-    "notifications": "Notifications",
+    "notifications": "Notificaciones",
     "user_menu": "Menú de usuario",
     "my_profile": "mi perfil",
     "sign_out": "desconectar",
-    "user_fallback": "Account"
+    "user_fallback": "Cuenta"
   },
   "sidebar": {
     "title": "Bancos de tiempo de socios",
@@ -20,19 +20,19 @@
     "expand": "Expandir barra lateral",
     "collapse": "Contraer barra lateral",
     "full_admin": "Panel de administración completo",
-    "section_overview": "Overview",
+    "section_overview": "Vista general",
     "section_network": "Red de socios",
     "section_external": "Conexiones externas",
     "section_caring": "Comunidad solidaria",
     "section_access": "Acceso y seguridad",
     "section_data": "Actividad y datos",
-    "section_settings": "Settings"
+    "section_settings": "Configuración"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "Vista general",
+    "partnerships": "Alianzas",
     "directory": "Directorio de socios",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Barrios",
     "credit_agreements": "Contratos de crédito",
     "external_partners": "Plataformas externas",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "Webhooks de eventos",
     "api_docs": "guía para desarrolladores",
     "activity": "Feed de actividades",
-    "analytics": "Analytics",
+    "analytics": "Análisis",
     "aggregates": "Estadísticas compartidas",
     "data": "Gestión de datos",
     "settings": "Configuración de red"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "Ruta de navegación",
     "overview": "Bancos de tiempo de socios",
-    "partnerships": "Partnerships",
+    "partnerships": "Alianzas",
     "directory": "Directorio de socios",
     "profile": "Nuestro listado",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Barrios",
     "credit_agreements": "Contratos de crédito",
     "external_partners": "Plataformas externas",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "Comunidad solidaria",
     "caring_peers": "Cooperativas asociadas",
     "api_keys": "Claves API",
-    "create": "Create",
+    "create": "Crear",
     "webhooks": "Webhooks de eventos",
     "api_docs": "guía para desarrolladores",
     "activity": "Feed de actividades",
-    "analytics": "Analytics",
+    "analytics": "Análisis",
     "aggregates": "Estadísticas compartidas",
     "data": "Gestión de datos",
     "settings": "Configuración de red"
@@ -74,7 +74,7 @@
     "page_title": "Bancos de tiempo de socios",
     "title": "Bancos de tiempo de socios",
     "description": "Conecte su banco de tiempo con otras comunidades para que los miembros puedan intercambiar tiempo y habilidades a través de fronteras. Esta área solo es visible para superadministradores.",
-    "open": "Open",
+    "open": "Abrir",
     "disabled_banner": {
       "title": "La asociación está desactivada",
       "hint": "No se comparte nada con otros bancos de tiempo hasta que lo actives en la configuración de red.",
@@ -104,7 +104,7 @@
       "profile": "Publica el listado de tu comunidad en el directorio de socios",
       "connect": "Conéctate con tu primer banco de tiempo asociado",
       "credit": "Acuerda límites de crédito con tus socios",
-      "optional": "Optional"
+      "optional": "Opcional"
     },
     "top_partners": {
       "title": "Socios más activos",
@@ -122,7 +122,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "Alianzas",
       "description": "Tus acuerdos con otros bancos de tiempo en la red NEXUS: con quién estás conectado, qué compartes y solicitudes en espera de una decisión."
     },
     "directory": {
@@ -137,7 +137,7 @@
       "description": "Cómo aparece su comunidad ante otros bancos de tiempo en el directorio de socios."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "Barrios",
       "description": "Áreas geográficas de su comunidad que se pueden compartir con bancos de tiempo asociados cercanos."
     },
     "credit_agreements": {
@@ -181,7 +181,7 @@
       "description": "Un registro actualizado de todo lo intercambiado con los bancos de tiempo de los socios: transferencias, mensajes y cambios de asociación."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "Análisis",
       "description": "Gráficos y números de la actividad de su socio: qué se intercambió, con quién y cuáles son las tendencias."
     },
     "aggregates": {

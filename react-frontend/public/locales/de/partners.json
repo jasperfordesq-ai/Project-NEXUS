@@ -8,11 +8,11 @@
   "header": {
     "toggle_sidebar": "Navigation umschalten",
     "back_to_admin": "Zurück zum Admin",
-    "notifications": "Notifications",
+    "notifications": "Benachrichtigungen",
     "user_menu": "Benutzermenü",
     "my_profile": "Mein Profil",
     "sign_out": "Abmelden",
-    "user_fallback": "Account"
+    "user_fallback": "Konto"
   },
   "sidebar": {
     "title": "Partner-Zeitbanken",
@@ -20,19 +20,19 @@
     "expand": "Seitenleiste erweitern",
     "collapse": "Seitenleiste einklappen",
     "full_admin": "Vollständiges Admin-Panel",
-    "section_overview": "Overview",
+    "section_overview": "Übersicht",
     "section_network": "Partnernetzwerk",
     "section_external": "Externe Verbindungen",
     "section_caring": "Fürsorgliche Gemeinschaft",
     "section_access": "Zugang und Sicherheit",
     "section_data": "Aktivität und Daten",
-    "section_settings": "Settings"
+    "section_settings": "Einstellungen"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "Übersicht",
+    "partnerships": "Partnerschaften",
     "directory": "Partnerverzeichnis",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Nachbarschaften",
     "credit_agreements": "Kreditverträge",
     "external_partners": "Externe Plattformen",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "Event-Webhooks",
     "api_docs": "Entwicklerhandbuch",
     "activity": "Aktivitätsfeed",
-    "analytics": "Analytics",
+    "analytics": "Analysen",
     "aggregates": "Geteilte Statistiken",
     "data": "Datenmanagement",
     "settings": "Netzwerkeinstellungen"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "Brotkrümelnavigation",
     "overview": "Partner-Zeitbanken",
-    "partnerships": "Partnerships",
+    "partnerships": "Partnerschaften",
     "directory": "Partnerverzeichnis",
     "profile": "Unser Eintrag",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Nachbarschaften",
     "credit_agreements": "Kreditverträge",
     "external_partners": "Externe Plattformen",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "Fürsorgliche Gemeinschaft",
     "caring_peers": "Partnergenossenschaften",
     "api_keys": "API-Schlüssel",
-    "create": "Create",
+    "create": "Erstellen",
     "webhooks": "Event-Webhooks",
     "api_docs": "Entwicklerhandbuch",
     "activity": "Aktivitätsfeed",
-    "analytics": "Analytics",
+    "analytics": "Analysen",
     "aggregates": "Geteilte Statistiken",
     "data": "Datenmanagement",
     "settings": "Netzwerkeinstellungen"
@@ -74,7 +74,7 @@
     "page_title": "Partner-Zeitbanken",
     "title": "Partner-Zeitbanken",
     "description": "Verbinden Sie Ihre Zeitbank mit anderen Communities, damit Mitglieder grenzüberschreitend Zeit und Fähigkeiten austauschen können. Dieser Bereich ist nur für Superadministratoren sichtbar.",
-    "open": "Open",
+    "open": "Öffnen",
     "disabled_banner": {
       "title": "Die Partnerschaft ist ausgeschaltet",
       "hint": "Es wird nichts mit anderen Zeitbanken geteilt, bis Sie es in den Netzwerkeinstellungen aktivieren.",
@@ -120,7 +120,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "Partnerschaften",
       "description": "Ihre Vereinbarungen mit anderen Zeitbanken im NEXUS-Netzwerk – mit wem Sie verbunden sind, was Sie teilen und Anfragen, die auf eine Entscheidung warten."
     },
     "directory": {
@@ -135,7 +135,7 @@
       "description": "Wie Ihre Community anderen Zeitbanken im Partnerverzeichnis angezeigt wird."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "Nachbarschaften",
       "description": "Geografische Bereiche Ihrer Community, die mit Partnerzeitbanken in der Nähe geteilt werden können."
     },
     "credit_agreements": {
@@ -179,7 +179,7 @@
       "description": "Ein laufendes Protokoll aller mit Partnerzeitbanken ausgetauschten Daten – Überweisungen, Nachrichten und Partnerschaftsänderungen."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "Analysen",
       "description": "Diagramme und Zahlen für Ihre Partneraktivität – was wurde mit wem ausgetauscht und wie ist der Trend."
     },
     "aggregates": {

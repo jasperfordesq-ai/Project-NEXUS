@@ -8,11 +8,11 @@
   "header": {
     "toggle_sidebar": "Scoránaigh an nascleanúint",
     "back_to_admin": "Ar ais go dtí an riarachán",
-    "notifications": "Notifications",
+    "notifications": "Fógraí",
     "user_menu": "Roghchlár úsáideora",
     "my_profile": "Mo phróifíl",
     "sign_out": "Sínigh amach",
-    "user_fallback": "Account"
+    "user_fallback": "Cuntas"
   },
   "sidebar": {
     "title": "Bainc Ama Comhpháirtithe",
@@ -20,19 +20,19 @@
     "expand": "Leathnaigh barra taoibh",
     "collapse": "Laghdaigh an barra taoibh",
     "full_admin": "Painéal Riaracháin Iomlán",
-    "section_overview": "Overview",
+    "section_overview": "Forléargas",
     "section_network": "Líonra comhpháirtithe",
     "section_external": "Naisc sheachtracha",
     "section_caring": "Pobal Cúramach",
     "section_access": "Rochtain & slándáil",
     "section_data": "Gníomhaíocht & sonraí",
-    "section_settings": "Settings"
+    "section_settings": "Socruithe"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "Forléargas",
+    "partnerships": "Comhpháirtíochtaí",
     "directory": "Eolaire comhpháirtithe",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Comharsanachtaí",
     "credit_agreements": "Comhaontuithe creidmheasa",
     "external_partners": "Ardáin sheachtracha",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "Greamáin gréasáin imeachtaí",
     "api_docs": "Treoir forbróir",
     "activity": "Fotha gníomhaíochta",
-    "analytics": "Analytics",
+    "analytics": "Anailísíocht",
     "aggregates": "Staitisticí roinnte",
     "data": "Bainistíocht sonraí",
     "settings": "Socruithe líonra"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "Conair nascleanúna",
     "overview": "Bainc Ama Comhpháirtithe",
-    "partnerships": "Partnerships",
+    "partnerships": "Comhpháirtíochtaí",
     "directory": "Eolaire comhpháirtithe",
     "profile": "Ár liostú",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "Comharsanachtaí",
     "credit_agreements": "Comhaontuithe creidmheasa",
     "external_partners": "Ardáin sheachtracha",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "Pobal Cúramach",
     "caring_peers": "Comharchumainn chomhpháirtíochta",
     "api_keys": "Eochracha API",
-    "create": "Create",
+    "create": "Cruthaigh",
     "webhooks": "Greamáin gréasáin imeachtaí",
     "api_docs": "Treoir forbróir",
     "activity": "Fotha gníomhaíochta",
-    "analytics": "Analytics",
+    "analytics": "Anailísíocht",
     "aggregates": "Staitisticí roinnte",
     "data": "Bainistíocht sonraí",
     "settings": "Socruithe líonra"
@@ -74,7 +74,7 @@
     "page_title": "Bainc Ama Comhpháirtithe",
     "title": "Bainc Ama Comhpháirtithe",
     "description": "Ceangail do bhanc ama le pobail eile ionas gur féidir le baill am agus scileanna a mhalartú thar teorainneacha. Níl an réimse seo le feiceáil ach ag sár-riarthóirí.",
-    "open": "Open",
+    "open": "Oscail",
     "disabled_banner": {
       "title": "Tá an chomhpháirtíocht múchta",
       "hint": "Ní roinntear aon rud le bainc ama eile go dtí go gcuirfidh tú ar siúl é i socruithe Líonra.",
@@ -106,7 +106,7 @@
       "profile": "Foilsigh liostú do phobail san eolaire comhpháirtithe",
       "connect": "Déan teagmháil le do chéad bhanc ama comhpháirtíochta",
       "credit": "Teorainneacha creidmheasa a chomhaontú le do chomhpháirtithe",
-      "optional": "Optional"
+      "optional": "Roghnach"
     },
     "top_partners": {
       "title": "Comhpháirtithe is gníomhaí",
@@ -126,7 +126,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "Comhpháirtíochtaí",
       "description": "Do chomhaontuithe le bainc ama eile ar líonra NEXUS - cé leis a bhfuil tú ceangailte, cad a roinneann tú, agus iarratais ag fanacht le cinneadh."
     },
     "directory": {
@@ -141,7 +141,7 @@
       "description": "An chuma ar do phobal ar bhainc ama eile san eolaire comhpháirtithe."
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "Comharsanachtaí",
       "description": "Limistéir gheografacha de do phobal is féidir a roinnt le bainc ama comhpháirtithe in aice láimhe."
     },
     "credit_agreements": {
@@ -185,7 +185,7 @@
       "description": "Loga reatha de gach rud a mhalartaítear le bainc ama comhpháirtíochta — aistrithe, teachtaireachtaí agus athruithe comhpháirtíochta."
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "Anailísíocht",
       "description": "Cairteacha agus uimhreacha do ghníomhaíocht do chomhpháirtí — cad a mhalartaíodh, cé leis, agus conas atá sé ag treochtáil."
     },
     "aggregates": {

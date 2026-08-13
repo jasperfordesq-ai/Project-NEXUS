@@ -8,11 +8,11 @@
   "header": {
     "toggle_sidebar": "ナビゲーションを切り替え",
     "back_to_admin": "管理者に戻る",
-    "notifications": "Notifications",
+    "notifications": "通知",
     "user_menu": "ユーザーメニュー",
     "my_profile": "私のプロフィール",
     "sign_out": "サインアウト",
-    "user_fallback": "Account"
+    "user_fallback": "アカウント"
   },
   "sidebar": {
     "title": "パートナータイムバンク",
@@ -20,19 +20,19 @@
     "expand": "サイドバーを展開する",
     "collapse": "サイドバーを折りたたむ",
     "full_admin": "完全な管理パネル",
-    "section_overview": "Overview",
+    "section_overview": "概要",
     "section_network": "パートナーネットワーク",
     "section_external": "外部接続",
     "section_caring": "思いやりのあるコミュニティ",
     "section_access": "アクセスとセキュリティ",
     "section_data": "アクティビティとデータ",
-    "section_settings": "Settings"
+    "section_settings": "設定"
   },
   "nav": {
-    "overview": "Overview",
-    "partnerships": "Partnerships",
+    "overview": "概要",
+    "partnerships": "提携関係",
     "directory": "パートナーディレクトリ",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "地域",
     "credit_agreements": "クレジット契約",
     "external_partners": "外部プラットフォーム",
     "credit_commons": "Credit Commons",
@@ -42,18 +42,18 @@
     "webhooks": "イベントWebhook",
     "api_docs": "開発者ガイド",
     "activity": "アクティビティフィード",
-    "analytics": "Analytics",
+    "analytics": "分析",
     "aggregates": "共有統計",
     "data": "データ管理",
     "settings": "ネットワーク設定"
   },
   "breadcrumbs": {
-    "aria_label": "Breadcrumbs",
+    "aria_label": "パンくずリスト",
     "overview": "パートナータイムバンク",
-    "partnerships": "Partnerships",
+    "partnerships": "提携関係",
     "directory": "パートナーディレクトリ",
     "profile": "私たちのリスト",
-    "neighborhoods": "Neighbourhoods",
+    "neighborhoods": "地域",
     "credit_agreements": "クレジット契約",
     "external_partners": "外部プラットフォーム",
     "credit_commons": "Credit Commons",
@@ -61,11 +61,11 @@
     "caring": "思いやりのあるコミュニティ",
     "caring_peers": "パートナー協同組合",
     "api_keys": "APIキー",
-    "create": "Create",
+    "create": "作成",
     "webhooks": "イベントWebhook",
     "api_docs": "開発者ガイド",
     "activity": "アクティビティフィード",
-    "analytics": "Analytics",
+    "analytics": "分析",
     "aggregates": "共有統計",
     "data": "データ管理",
     "settings": "ネットワーク設定"
@@ -74,7 +74,7 @@
     "page_title": "パートナータイムバンク",
     "title": "パートナータイムバンク",
     "description": "タイムバンクを他のコミュニティと接続すると、メンバーは国境を越えて時間やスキルを交換できます。この領域はスーパー管理者のみに表示されます。",
-    "open": "Open",
+    "open": "開く",
     "disabled_banner": {
       "title": "パートナーシップがオフになっています",
       "hint": "ネットワーク設定でオンにするまで、他のタイムバンクと何も共有されません。",
@@ -103,7 +103,7 @@
       "profile": "コミュニティのリストをパートナー ディレクトリに公開します",
       "connect": "最初のパートナーのタイムバンクと接続する",
       "credit": "パートナーと与信限度額に同意する",
-      "optional": "Optional"
+      "optional": "任意"
     },
     "top_partners": {
       "title": "最もアクティブなパートナー",
@@ -120,7 +120,7 @@
   },
   "pages": {
     "partnerships": {
-      "title": "Partnerships",
+      "title": "提携関係",
       "description": "NEXUS ネットワーク上の他のタイムバンクとの合意 - 誰と接続しているか、何を共有しているか、決定を待っているリクエスト。"
     },
     "directory": {
@@ -135,7 +135,7 @@
       "description": "パートナー ディレクトリ内の他のタイムバンクにコミュニティがどのように表示されるか。"
     },
     "neighborhoods": {
-      "title": "Neighbourhoods",
+      "title": "地域",
       "description": "近くのパートナーのタイムバンクと共有できるコミュニティの地理的エリア。"
     },
     "credit_agreements": {
@@ -179,7 +179,7 @@
       "description": "転送、メッセージ、パートナーシップの変更など、パートナーのタイムバンクと交換されたすべての実行ログ。"
     },
     "analytics": {
-      "title": "Analytics",
+      "title": "分析",
       "description": "パートナーのアクティビティに関するグラフと数値 — 何が、誰と、どのように交換されたか、そしてそれがどのようにトレンドになっているか。"
     },
     "aggregates": {
