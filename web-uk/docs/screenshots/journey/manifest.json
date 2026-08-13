@@ -1,0 +1,200 @@
+{
+  "source": "disposable journey environment (synthetic accounts only)",
+  "tenant": "e2e-community",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 900
+    },
+    {
+      "name": "mobile-320",
+      "width": 320,
+      "height": 900
+    }
+  ],
+  "results": [
+    {
+      "page": "01-home",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible",
+      "status": 200,
+      "signedIn": false,
+      "horizontalOverflow": false,
+      "file": "01-home.desktop.png"
+    },
+    {
+      "page": "02-login",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/login",
+      "status": 200,
+      "signedIn": false,
+      "horizontalOverflow": false,
+      "file": "02-login.desktop.png"
+    },
+    {
+      "page": "03-dashboard",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/dashboard",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "03-dashboard.desktop.png"
+    },
+    {
+      "page": "04-listings",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/listings",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "04-listings.desktop.png"
+    },
+    {
+      "page": "05-listing-detail",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/listings/new",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "05-listing-detail.desktop.png"
+    },
+    {
+      "page": "06-messages",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/messages",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "06-messages.desktop.png"
+    },
+    {
+      "page": "07-wallet",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/wallet",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "07-wallet.desktop.png"
+    },
+    {
+      "page": "08-members",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/members",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "08-members.desktop.png"
+    },
+    {
+      "page": "09-profile-settings",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/profile/settings",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "09-profile-settings.desktop.png"
+    },
+    {
+      "page": "10-exchanges",
+      "viewport": "desktop",
+      "url": "/e2e-community/accessible/exchanges",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "10-exchanges.desktop.png"
+    },
+    {
+      "page": "01-home",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible",
+      "status": 200,
+      "signedIn": false,
+      "horizontalOverflow": false,
+      "file": "01-home.mobile-320.png"
+    },
+    {
+      "page": "02-login",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/login",
+      "status": 200,
+      "signedIn": false,
+      "horizontalOverflow": false,
+      "file": "02-login.mobile-320.png"
+    },
+    {
+      "page": "03-dashboard",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/dashboard",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "03-dashboard.mobile-320.png"
+    },
+    {
+      "page": "04-listings",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/listings",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "04-listings.mobile-320.png"
+    },
+    {
+      "page": "05-listing-detail",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/listings/new",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "05-listing-detail.mobile-320.png"
+    },
+    {
+      "page": "06-messages",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/messages",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "06-messages.mobile-320.png"
+    },
+    {
+      "page": "07-wallet",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/wallet",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "07-wallet.mobile-320.png"
+    },
+    {
+      "page": "08-members",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/members",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "08-members.mobile-320.png"
+    },
+    {
+      "page": "09-profile-settings",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/profile/settings",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "09-profile-settings.mobile-320.png"
+    },
+    {
+      "page": "10-exchanges",
+      "viewport": "mobile-320",
+      "url": "/e2e-community/accessible/exchanges",
+      "status": 200,
+      "signedIn": true,
+      "horizontalOverflow": false,
+      "file": "10-exchanges.mobile-320.png"
+    }
+  ],
+  "pagesWithErrorStatus": [],
+  "pagesWithHorizontalOverflow": []
+}
