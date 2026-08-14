@@ -159,8 +159,20 @@ here as a separately named position, never as a silent rescore.
   MEMBER_APPROVAL_REQUIRED, boolean true never escalates, dead
   `can_view_messages` never surfaces, withdraw always available. Pinned by
   `AccountRelationshipTests` (11 tests); two legacy tests updated to the
-  current contract in the same commit. Steps 2–5 (pending-action workflow,
-  proxy execution, supervised message viewing, attestation) remain open.
+  current contract in the same commit. **Step 2 (pending-action workflow) also
+  landed 2026-08-14 (unscored):** migration 167
+  (`20260814190006_AddSupportPendingActions`) creates `support_pending_actions`
+  with the hashed single-use token, 14-day expiry, and the nullable-unique
+  one-open-message-ask-per-relationship key; all seven workflow routes are
+  implemented (prepare / index / confirm / decline / cancel and the two
+  anonymous token routes with the read-only-GET / mutating-POST split);
+  confirmation executes for real — listings and wallet transfers land with the
+  supported member as owner/sender and the supporter stamped as ActingUserId —
+  authority is re-checked at use time (AUTHORITY_CHANGED auto-cancel), and
+  message access rises ONLY through this workflow. Pinned by
+  `SupportActionWorkflowTests` (10 tests). Steps 3–5 (represent-tier proxy
+  execution endpoints, supervised message viewing, admin attestation) remain
+  open.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

@@ -37,16 +37,19 @@ public class AccountRelationshipService
 
     private readonly NexusDbContext _db;
     private readonly SafeguardingInteractionPolicy _safeguarding;
+    private readonly SupportPendingActionService _pendingActions;
     private readonly ILogger<AccountRelationshipService> _logger;
     private readonly List<object> _errors = [];
 
     public AccountRelationshipService(
         NexusDbContext db,
         SafeguardingInteractionPolicy safeguarding,
+        SupportPendingActionService pendingActions,
         ILogger<AccountRelationshipService> logger)
     {
         _db = db;
         _safeguarding = safeguarding;
+        _pendingActions = pendingActions;
         _logger = logger;
     }
 
@@ -111,6 +114,9 @@ public class AccountRelationshipService
         var rows = await RelationshipRowsAsync(
             r => r.ParentUserId == parentUserId, includeChildUser: true, ct);
 
+        var pendingAsks = await PendingMessageAskIdsAsync(
+            rows.Select(pair => pair.Relationship.Id).ToArray(), ct);
+
         var result = new List<Dictionary<string, object?>>();
         foreach (var (relationship, user) in rows)
         {
@@ -123,7 +129,7 @@ public class AccountRelationshipService
                 continue;
             }
 
-            var row = BaseRow(relationship, user, tiers);
+            var row = BaseRow(relationship, user, tiers, pendingAsks);
             row["staff_recorded"] = relationship.ProposedByUserId is not null;
             result.Add(row);
         }
@@ -137,10 +143,27 @@ public class AccountRelationshipService
         var rows = await RelationshipRowsAsync(
             r => r.ChildUserId == childUserId && r.ProposedByUserId == null,
             includeChildUser: false, ct);
+        var pendingAsks = await PendingMessageAskIdsAsync(
+            rows.Select(pair => pair.Relationship.Id).ToArray(), ct);
 
         return rows
-            .Select(pair => BaseRow(pair.Relationship, pair.User, ResolvedTiers(pair.Relationship)))
+            .Select(pair => BaseRow(
+                pair.Relationship, pair.User, ResolvedTiers(pair.Relationship), pendingAsks))
             .ToList();
+    }
+
+    private async Task<HashSet<int>> PendingMessageAskIdsAsync(
+        int[] relationshipIds, CancellationToken ct)
+    {
+        if (relationshipIds.Length == 0) return [];
+        var ids = await _db.SupportPendingActions
+            .AsNoTracking()
+            .Where(a => relationshipIds.Contains(a.RelationshipId)
+                && a.ActionType == SupportPendingAction.TypeMessageAccessGrant
+                && a.Status == SupportPendingAction.StatusPending)
+            .Select(a => a.RelationshipId)
+            .ToListAsync(ct);
+        return [.. ids];
     }
 
     // ─── Lifecycle ──────────────────────────────────────────────────
@@ -253,6 +276,8 @@ public class AccountRelationshipService
         relationship.MessageAccessGrantedAt = null;
         relationship.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _pendingActions.CancelOpenMessageAccessRequestsAsync(
+            relationship.Id, "relationship_revoked", ct);
         var action = relationship.ParentUserId == actorUserId ? "revoked" : "withdrawn";
         await AppendEventAsync(relationship, action, "member", actorUserId, null, null, ct);
         return true;
@@ -310,13 +335,36 @@ public class AccountRelationshipService
         }
 
         var sanitized = SupportTiers.SanitizeTiers(requestedTiers);
-        var messagesStandDown = requestedTiers is not null
-            && requestedTiers.TryGetValue("messages", out var requestedMessages)
-            && requestedMessages == SupportTiers.None
+        var requestedMessages = requestedTiers is not null
+            && requestedTiers.TryGetValue("messages", out var m) ? m : null;
+        var messagesStandDown = requestedMessages == SupportTiers.None
             && before["messages"] != SupportTiers.None;
         sanitized.Remove("messages");
         foreach (var (capability, tier) in sanitized) after[capability] = tier;
         if (messagesStandDown) after["messages"] = SupportTiers.None;
+
+        // A supporter asking for message access never writes the tier — it
+        // opens (or reuses) a consent ask the supported member must answer.
+        if (requestedMessages == SupportTiers.Assist
+            && before["messages"] == SupportTiers.None)
+        {
+            var prepared = await _pendingActions.PrepareAsync(
+                parentUserId, relationship.ChildUserId,
+                SupportPendingAction.TypeMessageAccessGrant, "{}", ct);
+            if (prepared is null)
+            {
+                var code = _pendingActions.Errors.Count > 0
+                    ? _pendingActions.Errors[0].GetType().GetProperty("code")?
+                        .GetValue(_pendingActions.Errors[0]) as string
+                    : null;
+                // An already-open ask is idempotent success, not an error.
+                if (code is not ("ALREADY_PENDING" or "ALREADY_GRANTED"))
+                {
+                    _errors.AddRange(_pendingActions.Errors);
+                    return false;
+                }
+            }
+        }
 
         if (SupportTiers.IsExpansion(before, after))
         {
@@ -334,6 +382,12 @@ public class AccountRelationshipService
             if (messagesStandDown) relationship.MessageAccessGrantedAt = null;
             relationship.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
+            if (messagesStandDown)
+            {
+                await _pendingActions.CancelOpenMessageAccessRequestsAsync(
+                    relationship.Id, "supporter_relinquished_tier", ct);
+            }
+
             await AppendEventAsync(relationship, "permissions_changed", "member", parentUserId, null,
                 JsonSerializer.Serialize(new { tiers_before = before, tiers_after = after }), ct);
         }
@@ -418,6 +472,8 @@ public class AccountRelationshipService
         relationship.MessageAccessGrantedAt = null;
         relationship.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _pendingActions.CancelOpenMessageAccessRequestsAsync(
+            relationship.Id, "message_access_withdrawn", ct);
 
         if (hadAccess)
         {
@@ -489,7 +545,8 @@ public class AccountRelationshipService
     }
 
     private static Dictionary<string, object?> BaseRow(
-        AccountRelationship relationship, User user, IReadOnlyDictionary<string, string> tiers)
+        AccountRelationship relationship, User user, IReadOnlyDictionary<string, string> tiers,
+        HashSet<int> pendingMessageAskIds)
     {
         var (booleans, _) = ParsePermissions(relationship.Permissions);
         var permissions = new Dictionary<string, object>();
@@ -507,8 +564,9 @@ public class AccountRelationshipService
             ["permissions"] = permissions,
             ["status"] = relationship.Status,
             ["approved_at"] = relationship.ApprovedAt,
-            // Build step 2 adds the 'pending' state (open consent ask).
-            ["message_access"] = tiers["messages"] != SupportTiers.None ? "active" : "none",
+            ["message_access"] = tiers["messages"] != SupportTiers.None
+                ? "active"
+                : pendingMessageAskIds.Contains(relationship.Id) ? "pending" : "none",
             ["message_access_granted_at"] = relationship.MessageAccessGrantedAt,
             ["created_at"] = relationship.CreatedAt,
             ["user_id"] = user.Id,

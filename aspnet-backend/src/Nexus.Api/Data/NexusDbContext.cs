@@ -402,6 +402,7 @@ public class NexusDbContext : DbContext
     // Account Relationships (carer/guardian support model)
     public DbSet<AccountRelationship> AccountRelationships => Set<AccountRelationship>();
     public DbSet<AccountRelationshipEvent> AccountRelationshipEvents => Set<AccountRelationshipEvent>();
+    public DbSet<SupportPendingAction> SupportPendingActions => Set<SupportPendingAction>();
 
     // Partner Venues
     public DbSet<PartnerVenue> PartnerVenues => Set<PartnerVenue>();
