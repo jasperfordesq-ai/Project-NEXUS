@@ -86,6 +86,8 @@ public static class ServiceExtensions
         services.AddScoped<NewsletterService>();
         services.AddScoped<CookieConsentService>();
         services.AddScoped<LegalDocumentService>();
+        services.AddScoped<PartnerVenueService>();
+        services.AddScoped<PartnerVenueVisitService>();
         services.AddScoped<PushNotificationService>();
         services.AddScoped<Nexus.Api.Services.WebPush.WebPushSender>();
         services.AddScoped<TranslationService>();

@@ -120,8 +120,24 @@ here as a separately named position, never as a silent rescore.
   records 2,407 static call-site rows, 2,078 unique method/path contracts,
   1,899 method-evidenced, 179 method-unresolved, **59 ASP.NET static gaps**
   (0 at the freeze) and 16 Laravel static gaps.
+- **Partner venues closed later on 2026-08-14 (unscored):** all fourteen
+  partner-venue routes (five member, nine admin) are now implemented with the
+  Laravel contract — feature gate `features.partner_venues` (default off,
+  middleware-shaped 403 body), 64-hex member pass with in-place rotation, the
+  full recordVisit rule ladder (invalid pass 404 / forbidden 403 /
+  needs_venue / database-enforced one-visit-per-day / self-scan block /
+  venue-visit XP and challenge completions), admin CRUD with Laravel
+  validation and the bare thirteen-key 201 store shape, staff roster,
+  lifetime-vs-window summary, and the sanitised CSV export. Storage is
+  migration 164 (`20260814164515_AddPartnerVenueTables`, proven zero-to-164
+  on a disposable PostgreSQL); the staff roster is a dedicated
+  `partner_venue_staff` table rather than Laravel's shared `org_members`
+  pivot, a deliberate internal divergence because the ASP.NET `org_members`
+  mapping hard-pins `org_type='volunteer'` with an FK to `vol_organizations`
+  — the externally observable roster contract is identical. Pinned by
+  `tests/Nexus.Api.Tests/PartnerVenuesTests.cs` (15 tests).
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
-  venues (member and admin), support actions and carer sub-account operations
+  venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),
   guardian consent and safeguarding member/admin endpoints (my-guardians,
   my-wards, authority attestations, support-action attestation), event

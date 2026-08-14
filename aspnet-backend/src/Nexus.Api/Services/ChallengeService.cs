@@ -174,11 +174,15 @@ public class ChallengeService
     }
 
     /// <summary>
-    /// Called when a user performs an action. Auto-increments progress on matching challenges.
+    /// Called when a user performs an action. Auto-increments progress on
+    /// matching challenges and returns the challenges completed by this
+    /// action (Laravel ChallengeService::updateProgress reports the same list
+    /// so callers can surface completed_challenges to the member).
     /// </summary>
-    public async Task UpdateProgressAsync(int userId, string actionType)
+    public async Task<List<CompletedChallengeSummary>> UpdateProgressAsync(int userId, string actionType)
     {
         var now = DateTime.UtcNow;
+        var completed = new List<CompletedChallengeSummary>();
 
         // Find all active challenge participations for this user with matching action type
         var participations = await _db.Set<ChallengeParticipant>()
@@ -201,6 +205,10 @@ public class ChallengeService
             {
                 participation.IsCompleted = true;
                 participation.CompletedAt = now;
+                completed.Add(new CompletedChallengeSummary(
+                    participation.ChallengeId,
+                    participation.Challenge.Title,
+                    participation.Challenge.XpReward));
 
                 _logger.LogInformation(
                     "User {UserId} completed challenge {ChallengeId} '{Title}'",
@@ -233,7 +241,12 @@ public class ChallengeService
         {
             await _db.SaveChangesAsync();
         }
+
+        return completed;
     }
+
+    /// <summary>A challenge completed by a progress update: id, title, xp_reward.</summary>
+    public sealed record CompletedChallengeSummary(int Id, string Title, int XpReward);
 
     /// <summary>
     /// Get a user's active and completed challenges.

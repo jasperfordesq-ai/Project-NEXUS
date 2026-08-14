@@ -66,6 +66,7 @@ public class XpLog : ITenantEntity
         public const string GoalCompleted = "goal_completed";
         public const string CreditsSent = "credits_sent";
         public const string CreditsReceived = "credits_received";
+        public const string VenueVisit = "venue_visit";
     }
 
     /// <summary>
@@ -93,5 +94,6 @@ public class XpLog : ITenantEntity
         public const int ConnectionMade = 10;
         public const int GoalCompleted = 10;
         public const int CommentAdded = 2;
+        public const int VenueVisit = 10;
     }
 }

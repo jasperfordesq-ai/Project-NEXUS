@@ -399,6 +399,12 @@ public class NexusDbContext : DbContext
     public DbSet<LegalDocument> LegalDocuments => Set<LegalDocument>();
     public DbSet<LegalDocumentAcceptance> LegalDocumentAcceptances => Set<LegalDocumentAcceptance>();
 
+    // Partner Venues
+    public DbSet<PartnerVenue> PartnerVenues => Set<PartnerVenue>();
+    public DbSet<PartnerMemberPass> PartnerMemberPasses => Set<PartnerMemberPass>();
+    public DbSet<PartnerVenueVisit> PartnerVenueVisits => Set<PartnerVenueVisit>();
+    public DbSet<PartnerVenueStaffMember> PartnerVenueStaff => Set<PartnerVenueStaffMember>();
+
     // Polls Module
     public DbSet<Poll> Polls => Set<Poll>();
     public DbSet<PollOption> PollOptions => Set<PollOption>();
@@ -696,6 +702,7 @@ public class NexusDbContext : DbContext
             new FeedModerationGamificationConfiguration(_tenantContext),
             new WebhookConfiguration(_tenantContext),
             new ScheduledJobRunConfiguration(),
+            new PartnerVenueConfiguration(_tenantContext),
         };
 
         foreach (var config in configurations)
