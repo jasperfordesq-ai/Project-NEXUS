@@ -235,6 +235,63 @@ describe('GDS conventions', () => {
     });
   });
 
+  describe('error-message visually-hidden prefix (translated, not English "Error")', () => {
+    /**
+     * 🔴 govuk-frontend's error-message macro defaults its visually-hidden prefix to the
+     * hardcoded English "Error". A screen reader in any other language heard "Error"
+     * immediately before the translated message. Every `errorMessage:` object that
+     * carries text/html must pass `visuallyHiddenText` sourced from the translated
+     * `states.error_prefix`, with the key's own colon stripped (the macro re-adds one,
+     * so passing "Error:" straight renders "Error::").
+     */
+    it('every errorMessage object in the views supplies a translated visuallyHiddenText', () => {
+      const fs2 = require('node:fs');
+      const VIEWS = path.join(__dirname, '..', 'src', 'views');
+      const offenders = [];
+      const walk = (dir) => {
+        for (const entry of fs2.readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(entry.parentPath ?? dir, entry.name);
+          if (entry.isDirectory()) { walk(full); continue; }
+          if (!entry.name.endsWith('.njk')) continue;
+          const src = fs2.readFileSync(full, 'utf8');
+          // Each `errorMessage: {` object must contain visuallyHiddenText within a small
+          // window (single-line or the few-line multiline form used in groups/*).
+          let idx = src.indexOf('errorMessage: {');
+          while (idx !== -1) {
+            const window = src.slice(idx, idx + 220);
+            if (!window.includes('visuallyHiddenText')) {
+              offenders.push(`${path.relative(VIEWS, full)} @${idx}`);
+            }
+            idx = src.indexOf('errorMessage: {', idx + 1);
+          }
+        }
+      };
+      walk(VIEWS);
+      expect(offenders).toEqual([]);
+    });
+
+    it('strips the key colon so the prefix renders once, not "Error::"', () => {
+      // Both spellings must use the replace/trim form; a raw t("states.error_prefix")
+      // (which ends in a colon) would double up against the macro's own colon.
+      const fs2 = require('node:fs');
+      const VIEWS = path.join(__dirname, '..', 'src', 'views');
+      const raw = [];
+      const walk = (dir) => {
+        for (const entry of fs2.readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(entry.parentPath ?? dir, entry.name);
+          if (entry.isDirectory()) { walk(full); continue; }
+          if (!entry.name.endsWith('.njk')) continue;
+          const src = fs2.readFileSync(full, 'utf8');
+          // A visuallyHiddenText fed from the prefix key but NOT stripped.
+          const re = /visuallyHiddenText:\s*t\("states\.error_prefix"\)(?!\s*\|\s*replace)/g;
+          if (re.test(src)) raw.push(path.relative(VIEWS, full));
+        }
+      };
+      walk(VIEWS);
+      expect(raw).toEqual([]);
+    });
+  });
+
   describe('rendered behaviour', () => {
     let app;
     beforeAll(() => {

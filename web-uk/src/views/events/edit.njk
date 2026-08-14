@@ -44,7 +44,7 @@
             name: "title",
             value: event.title,
             label: { text: t("events.title_label") },
-            errorMessage: { text: titleError.text } if titleError else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: titleError.text } if titleError else undefined,
             attributes: {
               "data-validate": "required maxLength:255",
               "data-label": t("events.title_label"),
@@ -60,7 +60,7 @@
             label: { text: t("events.description_label") },
             hint: { text: t("events.description_hint") },
             rows: 6,
-            errorMessage: { text: descriptionError.text } if descriptionError else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: descriptionError.text } if descriptionError else undefined,
             attributes: {
               "data-validate": "required",
               "data-label": t("events.description_label"),
@@ -111,7 +111,7 @@
             label: { text: t("events.start_time_label") },
             hint: { text: t("events.datetime_hint") },
             classes: "govuk-!-width-one-half",
-            errorMessage: { text: startTimeError.text } if startTimeError else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: startTimeError.text } if startTimeError else undefined,
             attributes: {
               "data-validate": "required",
               "data-label": t("events.start_time_label"),
@@ -128,7 +128,7 @@
             label: { text: t("events.end_time_label") },
             hint: { text: t("events.end_time_hint") },
             classes: "govuk-!-width-one-half",
-            errorMessage: { text: endTimeError.text } if endTimeError else undefined
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: endTimeError.text } if endTimeError else undefined
           }) }}
         </fieldset>
 

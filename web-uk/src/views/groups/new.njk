@@ -58,7 +58,7 @@
           value: values.name if values else "",
           errorMessage: {
             text: fieldErrors.name,
-            visuallyHiddenText: t("states.error_prefix")
+            visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim
           } if fieldErrors and fieldErrors.name else null,
           attributes: {
             "data-validate": "required maxLength:255",

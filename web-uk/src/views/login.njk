@@ -66,7 +66,7 @@
             autocomplete: "one-time-code",
             spellcheck: false,
             classes: "govuk-input--width-10",
-            errorMessage: { text: error } if error else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: error } if error else undefined,
             attributes: {
               "autocapitalize": "characters"
             }
@@ -138,7 +138,7 @@
             autocomplete: "email",
             spellcheck: false,
             value: values.email if values else "",
-            errorMessage: { text: error } if loginStatus == "login-failed" else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: error } if loginStatus == "login-failed" else undefined,
             attributes: {
               "required": "required",
               "data-validate": "required email",

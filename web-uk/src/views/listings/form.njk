@@ -121,7 +121,7 @@
           },
           hint: { text: t("listings.create.intent_hint") },
           items: typeItems,
-          errorMessage: { text: fieldErrors.type } if fieldErrors.type else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.type } if fieldErrors.type else undefined
         }) }}
 
         {{ govukInput({
@@ -134,7 +134,7 @@
           name: "title",
           value: currentTitle,
           attributes: { maxlength: "255" },
-          errorMessage: { text: fieldErrors.title } if fieldErrors.title else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.title } if fieldErrors.title else undefined
         }) }}
 
         {{ govukTextarea({
@@ -148,7 +148,7 @@
           rows: 6,
           value: currentDescription,
           describedBy: "description-ai-hint",
-          errorMessage: { text: fieldErrors.description } if fieldErrors.description else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.description } if fieldErrors.description else undefined
         }) }}
 
         <p id="description-ai-hint" class="govuk-hint govuk-!-margin-top-2">{{ t("govuk_alpha_listings.ai.hint") }}</p>
@@ -166,7 +166,7 @@
           },
           hint: { text: t("listings.create.category_hint") },
           items: categoryItems,
-          errorMessage: { text: fieldErrors.category_id } if fieldErrors.category_id else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.category_id } if fieldErrors.category_id else undefined
           }) }}
         {% endif %}
 
@@ -181,7 +181,7 @@
           classes: "govuk-input--width-5",
           value: currentHours,
           attributes: { min: "0.5", max: "2000", step: "0.5", inputmode: "decimal" },
-          errorMessage: { text: fieldErrors.hours_estimate } if fieldErrors.hours_estimate else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.hours_estimate } if fieldErrors.hours_estimate else undefined
         }) }}
 
         {% if config.enableServiceType %}
@@ -201,7 +201,7 @@
               { value: "hybrid", text: t("listings.service_types.hybrid"), checked: currentServiceType == "hybrid" },
               { value: "location_dependent", text: t("listings.service_types.location_dependent"), checked: currentServiceType == "location_dependent" }
             ],
-            errorMessage: { text: fieldErrors.service_type } if fieldErrors.service_type else undefined
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.service_type } if fieldErrors.service_type else undefined
           }) }}
         {% endif %}
 
@@ -214,7 +214,7 @@
           name: "location",
           value: currentLocation,
           attributes: { maxlength: "255", autocomplete: "off" },
-          errorMessage: { text: fieldErrors.location } if fieldErrors.location else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.location } if fieldErrors.location else undefined
         }) }}
 
         <div class="govuk-form-group{% if fieldErrors.image %} govuk-form-group--error{% endif %}">
@@ -239,7 +239,7 @@
             name: "skill_tags",
             value: currentSkillTags,
             attributes: { maxlength: "600" },
-            errorMessage: { text: fieldErrors.skill_tags } if fieldErrors.skill_tags else undefined
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.skill_tags } if fieldErrors.skill_tags else undefined
         }) }}
 
         {{ govukButton({ text: t("listings.edit.submit" if listing else "listings.create.submit") }) }}

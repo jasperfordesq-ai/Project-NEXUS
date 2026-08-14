@@ -70,7 +70,7 @@
                 checked: values.profile_type == "organisation"
               }
             ],
-            errorMessage: { text: fieldErrors.profile_type } if fieldErrors.profile_type else undefined
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.profile_type } if fieldErrors.profile_type else undefined
           }) }}
 
           {#
@@ -84,7 +84,7 @@
             name: "organization_name",
             autocomplete: "organization",
             value: values.organization_name,
-            errorMessage: { text: fieldErrors.organization_name } if fieldErrors.organization_name else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.organization_name } if fieldErrors.organization_name else undefined,
             attributes: { maxlength: "255" }
           }) }}
 
@@ -95,7 +95,7 @@
               id: "invite_code",
               name: "invite_code",
               value: values.invite_code,
-              errorMessage: { text: fieldErrors.invite_code } if fieldErrors.invite_code else undefined,
+              errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.invite_code } if fieldErrors.invite_code else undefined,
               attributes: { autocomplete: "off", required: "required" },
               classes: "govuk-input--width-10"
             }) }}
@@ -107,7 +107,7 @@
             name: "first_name",
             autocomplete: "given-name",
             value: values.first_name,
-            errorMessage: { text: fieldErrors.first_name } if fieldErrors.first_name else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.first_name } if fieldErrors.first_name else undefined,
             attributes: { required: "required", maxlength: "100" }
           }) }}
 
@@ -117,7 +117,7 @@
             name: "last_name",
             autocomplete: "family-name",
             value: values.last_name,
-            errorMessage: { text: fieldErrors.last_name } if fieldErrors.last_name else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.last_name } if fieldErrors.last_name else undefined,
             attributes: { required: "required", maxlength: "100" }
           }) }}
 
@@ -129,7 +129,7 @@
             type: "tel",
             autocomplete: "tel",
             value: values.phone,
-            errorMessage: { text: fieldErrors.phone } if fieldErrors.phone else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.phone } if fieldErrors.phone else undefined,
             attributes: { required: "required", maxlength: "30" }
           }) }}
 
@@ -140,7 +140,7 @@
             name: "location",
             autocomplete: "address-level2",
             value: values.location,
-            errorMessage: { text: fieldErrors.location } if fieldErrors.location else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.location } if fieldErrors.location else undefined,
             attributes: { required: "required", maxlength: "255" }
           }) }}
           <input type="hidden" id="latitude" name="latitude" value="{{ values.latitude }}">
@@ -154,7 +154,7 @@
             autocomplete: "email",
             spellcheck: false,
             value: values.email,
-            errorMessage: { text: fieldErrors.email } if fieldErrors.email else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.email } if fieldErrors.email else undefined,
             attributes: { required: "required", maxlength: "255" }
           }) }}
 
@@ -165,7 +165,7 @@
               id: "tenant_slug",
               name: "tenant_slug",
               value: values.tenant_slug,
-              errorMessage: { text: fieldErrors.tenant_slug } if fieldErrors.tenant_slug else undefined,
+              errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.tenant_slug } if fieldErrors.tenant_slug else undefined,
               attributes: { required: "required" }
             }) }}
           {% else %}
@@ -179,7 +179,7 @@
             name: "password",
             type: "password",
             autocomplete: "new-password",
-            errorMessage: { text: fieldErrors.password } if fieldErrors.password else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.password } if fieldErrors.password else undefined,
             attributes: {
               required: "required",
               minlength: "12",
@@ -194,7 +194,7 @@
             name: "password_confirmation",
             type: "password",
             autocomplete: "new-password",
-            errorMessage: { text: fieldErrors.password_confirmation } if fieldErrors.password_confirmation else undefined,
+            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: fieldErrors.password_confirmation } if fieldErrors.password_confirmation else undefined,
             attributes: { required: "required", minlength: "12" }
           }) }}
 

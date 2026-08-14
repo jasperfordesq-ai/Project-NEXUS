@@ -161,7 +161,7 @@
           id: "content",
           name: "content",
           rows: 4,
-          errorMessage: { text: error } if error else undefined
+          errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: error } if error else undefined
         }) }}
 
         <div class="govuk-form-group">
