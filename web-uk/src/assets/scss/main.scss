@@ -2006,3 +2006,58 @@ body.app-timeout-modal--open {
     text-decoration: line-through;
   }
 }
+
+// -----------------------------------------------------------------------------
+// Print styles
+// -----------------------------------------------------------------------------
+// Everything here lives inside @media print, so it can never affect the on-screen
+// experience. It removes interactive chrome (header, navigation, footer, cookie
+// banner, language switcher, buttons, back links, pagination) so a printed page —
+// a wallet statement, an event ticket, a volunteering record — shows only its
+// content, in black on white, with wide tables fully expanded rather than clipped
+// inside their scroll region.
+@media print {
+  .nexus-alpha-header,
+  .govuk-service-navigation,
+  .govuk-skip-link,
+  .govuk-cookie-banner,
+  .govuk-footer,
+  .nexus-alpha-lang,
+  .govuk-back-link,
+  .govuk-pagination,
+  .govuk-button,
+  .nexus-alpha-linkbutton,
+  [data-module="govuk-button"] {
+    display: none !important;
+  }
+
+  // Let scrollable tables print in full instead of being clipped to one screen width.
+  .nexus-alpha-table-scroll {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  body,
+  .govuk-body,
+  .govuk-heading-xl,
+  .govuk-heading-l,
+  .govuk-heading-m,
+  .govuk-heading-s,
+  .govuk-table {
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  a::after {
+    // Show the destination of content links so a printed page stays useful.
+    content: " (" attr(href) ")";
+    font-size: 90%;
+    word-wrap: break-word;
+  }
+
+  // But not for in-page anchors or links whose text already is the URL.
+  a[href^="#"]::after,
+  a[href^="javascript:"]::after {
+    content: "";
+  }
+}
