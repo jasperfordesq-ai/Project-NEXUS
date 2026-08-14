@@ -101,8 +101,24 @@ test.describe('representative public-page accessibility gate', () => {
     expect(response.status()).toBeLessThan(400);
     await expect(page.locator('main')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveText('Choose a community');
+    // Tenant-only navigation must still be absent: there is no community in context yet.
     await expect(page.locator('.govuk-service-navigation')).toHaveCount(0);
-    await expect(page.locator('.govuk-footer__navigation')).toHaveCount(0);
+
+    // 🔴 CHANGED 2026-08-13 (WCAG 2.2 3.2.6 Consistent Help). This previously asserted
+    // `.govuk-footer__navigation` count 0 — that the chooser had NO footer navigation at all.
+    // That was the DEFECT, not the contract: the entire footer was dropped on any render
+    // without a routed tenant, so the one page a lost visitor is most likely to be on offered
+    // no route to help. 3.2.6 requires a help mechanism in the SAME relative place on every
+    // page, precisely because people rely on remembering where it is.
+    //
+    // The footer navigation is now present and MUST carry Help centre and Contact. The
+    // community-specific columns are still gated on having a community, which is correct.
+    await expect(page.locator('.govuk-footer__navigation')).toHaveCount(1);
+    await expect(page.getByRole('link', { name: 'Help centre' })).toHaveCount(1);
+    await expect(page.getByRole('link', { name: 'Contact' })).toHaveCount(1);
+
+    // Page-level feedback stays absent: "Report a problem with this page" resolves a
+    // community-specific contact route, and there is no community in context here.
     await expect(page.getByRole('link', { name: 'Report a problem with this page' })).toHaveCount(0);
 
     const overflow = await page.evaluate(() => ({
