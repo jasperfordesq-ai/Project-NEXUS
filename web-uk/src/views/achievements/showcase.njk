@@ -49,6 +49,7 @@
 
   {% if earnedBadges.length %}
     <form method="post" action="{{ urlFor('/achievements/showcase') }}">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
       <fieldset class="govuk-fieldset" id="showcase-badges" aria-describedby="showcase-hint">
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha_gamification.showcase.legend") }}</legend>
         <div id="showcase-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.showcase.hint") }}</div>

@@ -258,7 +258,7 @@
               <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="profile-transfer-amount">{{ t("polish_members.send_credits_amount_label") }}</label><div id="profile-transfer-amount-hint" class="govuk-hint">{{ t("polish_members.send_credits_amount_hint") }}</div><input class="govuk-input govuk-!-width-one-quarter" type="number" id="profile-transfer-amount" name="amount" min="1" step="1" value="1" aria-describedby="profile-transfer-amount-hint" required></div>
               <div class="govuk-form-group"><label class="govuk-label govuk-label--s" for="profile-transfer-note">{{ t("polish_members.send_credits_note_label") }}</label><div id="profile-transfer-note-hint" class="govuk-hint">{{ t("polish_members.send_credits_note_hint") }}</div><input class="govuk-input" type="text" id="profile-transfer-note" name="note" maxlength="255" aria-describedby="profile-transfer-note-hint"></div>
               <div class="govuk-form-group govuk-!-margin-bottom-3"><div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="profile-transfer-confirm" name="confirm" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="profile-transfer-confirm">{{ t("ux.transfer_confirm_label") }}</label></div></div></div>
-              <button class="govuk-button">{{ t("polish_members.send_credits_submit") }}</button>
+              <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("polish_members.send_credits_submit") }}</button>
             </form>
           </div>
         </details>

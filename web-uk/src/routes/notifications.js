@@ -154,6 +154,10 @@ router.post('/group/read', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
     if (req.flash) req.flash('error', error.message || 'Unable to mark grouped notifications as read');
+    // 🔴 Return HERE. Falling through to the success `?status=` below told the
+    // member "marked as read" while the notifications stayed unread — the sibling
+    // POST /:id/read (below) already returns inside its catch; these two did not.
+    return redirectTo(res, NOTIFICATIONS_PATH);
   }
 
   return redirectTo(res, `${NOTIFICATIONS_PATH}?status=group-marked-read`);
@@ -206,6 +210,9 @@ router.post('/delete-all', asyncRoute(async (req, res) => {
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
     if (req.flash) req.flash('error', error.message || 'Unable to delete notifications');
+    // 🔴 Return HERE — see the note on group/read above. Without it a failed delete
+    // still announced "all notifications deleted".
+    return redirectTo(res, NOTIFICATIONS_PATH);
   }
 
   return redirectTo(res, `${NOTIFICATIONS_PATH}?status=all-notifications-deleted`);

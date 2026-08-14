@@ -72,7 +72,7 @@
         </div>
 
         <div class="govuk-button-group">
-          <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">{{ t("delete_account.submit") }}</button>
+          <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit" data-prevent-double-click="true">{{ t("delete_account.submit") }}</button>
           <a class="govuk-link" href="{{ urlFor('/profile/settings') }}">{{ t("delete_account.cancel") }}</a>
         </div>
       </form>

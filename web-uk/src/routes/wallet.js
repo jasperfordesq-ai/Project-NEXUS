@@ -178,12 +178,23 @@ function transferPayload(body = {}) {
     return { error: 'decimals' };
   }
 
+  // 🔴 This is money. The idempotency key is minted per recipient row at render
+  // (randomUUID), so a legitimate submit always carries a long one; an EMPTY or
+  // stubby key means a hand-crafted or replayed request, and passing it to Laravel
+  // as '' risks a double credit transfer if the backend treats blank as "no key".
+  // Refuse anything under 8 chars, exactly as events.js:1785 already does for its
+  // safety-requirements idempotency key.
+  const idempotencyKey = String(body.idempotency_key || '').trim();
+  if (idempotencyKey.length < 8) {
+    return { error: 'invalid' };
+  }
+
   return {
     payload: {
       recipient,
       amount,
       description: String(body.note || body.description || '').trim().slice(0, 255),
-      idempotency_key: String(body.idempotency_key || '').trim()
+      idempotency_key: idempotencyKey
     }
   };
 }

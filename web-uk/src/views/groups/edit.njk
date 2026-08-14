@@ -160,7 +160,8 @@
           </div>
           {{ govukButton({
             text: t("groups.delete.submit"),
-            classes: "govuk-button--warning"
+            classes: "govuk-button--warning",
+            preventDoubleClick: true
           }) }}
         </form>
       {% endif %}

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Three faults on the accessible site that could genuinely hurt a member — found by a deeper audit, now fixed.**
+  - **Buttons that spend credits or delete things could act twice on a double-click.** No money or destructive button on the site had the standard guard against being pressed twice, and the credit-transfer form would accept a blank duplicate-protection code. A quick double-click, or going back and resubmitting, could send a transfer twice. Every such button now ignores a second press, and the transfer refuses a blank code. A whole-site check now makes sure no future money or delete button can ship without the guard.
+  - **The "show off my badges" form never worked.** It was the one form on the whole site missing its security token, so every save was silently rejected as "this page has expired". Fixed, and a whole-site check now makes sure no form can ever ship without its security token again.
+  - **Two "done!" messages that lied, and a sign-up page that could lock people out.** Marking a group of notifications read, or clearing them all, showed a success message even when the action had actually failed — so the notifications stayed there. And the registration page disabled its own "Create account" button until an outside password-breach-checking service replied; if that service was blocked or slow to answer, nobody could sign up, with no explanation. Both fixed: the success message now only appears on real success, and the sign-up button always works (the password rules are still enforced when you submit).
+
 ### Removed
 
 - **The old accessible website has been taken out of the platform completely.** For a while there were two accessible sites: the original one built into the PHP application, and the newer standalone one that has been serving `accessible.project-nexus.ie` since 12 August and both community accessible addresses since 14 August. The old one is now deleted — its pages, its routes, its controllers and its build. Before deleting it, all three live accessible addresses and all eleven communities were checked one by one and confirmed to be served by the new site. **One thing this costs, stated plainly:** until now, if the new site had broken, changing a single line of web-server configuration sent every accessible address back to the old site within seconds. That escape route is gone, because the old site is no longer in the release. Recovering from a bad release now means undoing this change and deploying again — around fifteen to twenty minutes. The owner decided to accept that.

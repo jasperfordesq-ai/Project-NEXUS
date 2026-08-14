@@ -87,7 +87,7 @@
           </div>
 
           <div class="govuk-button-group">
-            <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button">{{ t("fed2.transfer.submit") }}</button>
+            <button type="submit" class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true">{{ t("fed2.transfer.submit") }}</button>
             <a class="govuk-link" href="{{ urlFor(backHref) }}">{{ t("fed2.transfer.cancel") }}</a>
           </div>
         </form>
