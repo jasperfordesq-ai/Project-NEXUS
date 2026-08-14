@@ -174,6 +174,7 @@ router.get('/network', asyncRoute(async (req, res) => {
   const t = res.locals.t;
 
   let counts = { received: 0, sent: 0, total_friends: 0 };
+  let loadError = '';
   const sections = {
     accepted: emptyNetworkSection(),
     pending_received: emptyNetworkSection(),
@@ -193,7 +194,9 @@ router.get('/network', asyncRoute(async (req, res) => {
     sections.pending_sent = sent;
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    // Laravel reports the failure and renders the canonical empty sections.
+    // Surface a "could not load" notice rather than silently rendering empty
+    // sections (which would misread as "you have no connections").
+    loadError = t('connections.load_error');
   }
 
   if (connSearch) {
@@ -211,6 +214,7 @@ router.get('/network', asyncRoute(async (req, res) => {
     activeTab,
     sections,
     counts,
+    loadError,
     connSearch,
     status,
     countLabels: {
@@ -244,6 +248,7 @@ router.get('/', asyncRoute(async (req, res) => {
   let acceptedConnections = [];
   let receivedRequests = [];
   let sentRequests = [];
+  let loadError = '';
 
   try {
     const [countsResult, accepted, received, sent] = await Promise.all([
@@ -264,7 +269,9 @@ router.get('/', asyncRoute(async (req, res) => {
     }
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw error;
-    // Laravel reports the failure and renders the canonical empty sections.
+    // Surface a "could not load" notice rather than silently rendering empty
+    // sections (which would misread as "you have no connections").
+    loadError = t('connections.load_error');
   }
 
   res.render('connections/index', {
@@ -281,6 +288,7 @@ router.get('/', asyncRoute(async (req, res) => {
     },
     connSearch,
     status: actionStatus,
+    loadError,
     csrfToken: req.csrfToken ? req.csrfToken() : '',
   });
 }, { redirectOn401: '/login?status=auth-required' }));

@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Sínigh amach',
     ],
     'connections' => [
+        'load_error' => 'We could not load your connections. Please try again.',
         'title' => 'Naisc',
         'caption' => ':community',
         'description' => 'Bainistigh d\'iarratais nasctha agus na comhaltaí atá nasctha agat.',

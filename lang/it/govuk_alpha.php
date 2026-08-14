@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Esci',
     ],
     'connections' => [
+        'load_error' => 'Non è stato possibile caricare le tue connessioni. Per favore riprova.',
         'title' => 'Collegamenti',
         'caption' => ':community',
         'description' => 'Gestisci le tue richieste di collegamento e i membri con cui sei collegato.',

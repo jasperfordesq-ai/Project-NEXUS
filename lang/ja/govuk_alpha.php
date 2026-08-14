@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'サインアウト',
     ],
     'connections' => [
+        'load_error' => '接続を読み込むことができませんでした。もう一度試してください。',
         'title' => 'つながり',
         'caption' => ':community',
         'description' => 'つながりのリクエストと、つながっているメンバーを管理します。',

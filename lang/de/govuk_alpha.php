@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Abmelden',
     ],
     'connections' => [
+        'load_error' => 'Wir konnten Ihre Verbindungen nicht laden. Bitte versuchen Sie es erneut.',
         'title' => 'Verbindungen',
         'caption' => ':community',
         'description' => 'Verwalten Sie Ihre Verbindungsanfragen und die Mitglieder, mit denen Sie verbunden sind.',

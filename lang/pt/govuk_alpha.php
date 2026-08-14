@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Terminar sessão',
     ],
     'connections' => [
+        'load_error' => 'Não foi possível carregar suas conexões. Por favor, tente novamente.',
         'title' => 'Ligações',
         'caption' => ':community',
         'description' => 'Gira os seus pedidos de ligação e os membros com quem está ligado.',

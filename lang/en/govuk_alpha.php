@@ -1717,6 +1717,7 @@ return [
         'sign_out' => 'Sign out',
     ],
     'connections' => [
+        'load_error' => 'We could not load your connections. Please try again.',
         'title' => 'Connections',
         'caption' => ':community',
         'description' => 'Manage your connection requests and the members you are connected with.',

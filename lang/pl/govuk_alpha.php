@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Wyloguj się',
     ],
     'connections' => [
+        'load_error' => 'Nie udało się wczytać Twoich połączeń. Spróbuj ponownie.',
         'title' => 'Kontakty',
         'caption' => ':community',
         'description' => 'Zarządzaj zaproszeniami do kontaktu i członkami, z którymi jesteś połączony.',

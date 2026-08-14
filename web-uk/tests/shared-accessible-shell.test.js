@@ -10742,6 +10742,38 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('govuk-error-summary');
   });
 
+  it('shows a load-error notice when connections fail to load (not a silent empty state)', async () => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+
+    api.getConnections.mockReset().mockRejectedValue(new Error('connections service down'));
+
+    const res = await request(app)
+      .get('/connections')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('govuk-error-summary');
+    expect(res.text).toContain('We could not load your connections. Please try again.');
+  });
+
+  it('shows a load-error notice on the connections network page when the API fails', async () => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+
+    api.getConnectionPendingCountsV2.mockReset().mockRejectedValue(new Error('network service down'));
+
+    const res = await request(app)
+      .get('/connections/network')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('govuk-error-summary');
+    expect(res.text).toContain('We could not load your connections. Please try again.');
+  });
+
   it('renders the Laravel-backed connections network page', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');

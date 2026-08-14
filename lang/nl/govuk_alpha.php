@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Afmelden',
     ],
     'connections' => [
+        'load_error' => 'We konden uw verbindingen niet laden. Probeer het opnieuw.',
         'title' => 'Verbindingen',
         'caption' => ':community',
         'description' => 'Beheer uw verbindingsverzoeken en de leden met wie u verbonden bent.',

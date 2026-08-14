@@ -1704,6 +1704,7 @@ return [
         'sign_out' => 'Se déconnecter',
     ],
     'connections' => [
+        'load_error' => 'Nous n\'avons pas pu charger vos connexions. Veuillez réessayer.',
         'title' => 'Connexions',
         'caption' => ':community',
         'description' => 'Gérez vos demandes de connexion et les membres avec lesquels vous êtes connecté.',
