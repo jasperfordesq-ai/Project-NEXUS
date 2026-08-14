@@ -132,7 +132,10 @@ public class NexusWebApplicationFactory : WebApplicationFactory<Program>, IAsync
                 // Turnstile is explicitly unset so the verifier short-circuits
                 // to pass (it already does when no secret is configured).
                 ["Hibp:Enabled"] = "false",
-                ["Turnstile:SecretKey"] = ""
+                ["Turnstile:SecretKey"] = "",
+                // Encrypted-at-rest fields (provider configs, authority
+                // attestation summaries) must be provably ciphertext in tests.
+                ["Registration:EncryptionKey"] = "nexus-test-encryption-key"
             });
         });
 

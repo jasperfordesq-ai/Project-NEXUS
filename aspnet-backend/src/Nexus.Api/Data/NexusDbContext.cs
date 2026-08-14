@@ -404,6 +404,8 @@ public class NexusDbContext : DbContext
     public DbSet<AccountRelationshipEvent> AccountRelationshipEvents => Set<AccountRelationshipEvent>();
     public DbSet<SupportPendingAction> SupportPendingActions => Set<SupportPendingAction>();
     public DbSet<SupporterMessageViewAudit> SupporterMessageViewAudits => Set<SupporterMessageViewAudit>();
+    public DbSet<SupportAuthorityAttestation> SupportAuthorityAttestations => Set<SupportAuthorityAttestation>();
+    public DbSet<SupportAuthorityAttestationEvent> SupportAuthorityAttestationEvents => Set<SupportAuthorityAttestationEvent>();
 
     // Partner Venues
     public DbSet<PartnerVenue> PartnerVenues => Set<PartnerVenue>();

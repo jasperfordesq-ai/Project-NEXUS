@@ -94,6 +94,80 @@ public class AccountRelationshipConfiguration : TenantScopedConfiguration
             entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
         });
 
+        modelBuilder.Entity<SupportAuthorityAttestation>(entity =>
+        {
+            entity.ToTable("support_authority_attestations", table =>
+            {
+                table.HasCheckConstraint("CK_SupportAuthorityAttestations_Type",
+                    "\"authority_type\" IN ('dmr_court_order', 'power_of_attorney', 'edm_assistant_agreement', 'co_decision_agreement')");
+                table.HasCheckConstraint("CK_SupportAuthorityAttestations_Decision",
+                    "\"decision\" IN ('active', 'revoked')");
+            });
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            entity.Property(e => e.RelationshipId).HasColumnName("relationship_id");
+            entity.Property(e => e.SupportedUserId).HasColumnName("supported_user_id");
+            entity.Property(e => e.AuthorityType).HasColumnName("authority_type").HasMaxLength(40).IsRequired();
+            entity.Property(e => e.AcknowledgedSighted).HasColumnName("acknowledged_sighted");
+            entity.Property(e => e.ScopeSummaryEncrypted).HasColumnName("scope_summary_encrypted").HasColumnType("text");
+            entity.Property(e => e.PrivateNotesEncrypted).HasColumnName("private_notes_encrypted").HasColumnType("text");
+            entity.Property(e => e.Decision).HasColumnName("decision").HasMaxLength(20)
+                .HasDefaultValue("active").IsRequired();
+            entity.Property(e => e.AttestedBy).HasColumnName("attested_by");
+            entity.Property(e => e.AttestedAt).HasColumnName("attested_at");
+            entity.Property(e => e.RevokedBy).HasColumnName("revoked_by");
+            entity.Property(e => e.RevokedAt).HasColumnName("revoked_at");
+            entity.Property(e => e.RevocationReasonCode).HasColumnName("revocation_reason_code").HasMaxLength(64);
+            entity.Property(e => e.PolicyVersion).HasColumnName("policy_version").HasMaxLength(64)
+                .HasDefaultValue("1").IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            // Re-attestation reuses the row rather than inserting a second.
+            entity.HasIndex(e => new { e.TenantId, e.RelationshipId, e.AuthorityType }).IsUnique();
+            entity.HasIndex(e => new { e.TenantId, e.SupportedUserId, e.Decision });
+
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Relationship).WithMany().HasForeignKey(e => e.RelationshipId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.SupportedUser).WithMany().HasForeignKey(e => e.SupportedUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
+
+        modelBuilder.Entity<SupportAuthorityAttestationEvent>(entity =>
+        {
+            entity.ToTable("support_authority_attestation_events", table =>
+            {
+                table.HasCheckConstraint("CK_SupportAuthorityAttestationEvents_Type",
+                    "\"event_type\" IN ('attested', 're_attested', 'revoked')");
+            });
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            entity.Property(e => e.AttestationId).HasColumnName("attestation_id");
+            entity.Property(e => e.RelationshipId).HasColumnName("relationship_id");
+            entity.Property(e => e.SupportedUserId).HasColumnName("supported_user_id");
+            entity.Property(e => e.EventType).HasColumnName("event_type").HasMaxLength(32).IsRequired();
+            entity.Property(e => e.DecisionBefore).HasColumnName("decision_before").HasMaxLength(20);
+            entity.Property(e => e.DecisionAfter).HasColumnName("decision_after").HasMaxLength(20).IsRequired();
+            entity.Property(e => e.ReasonCode).HasColumnName("reason_code").HasMaxLength(64);
+            entity.Property(e => e.ActorUserId).HasColumnName("actor_user_id");
+            entity.Property(e => e.PolicyVersion).HasColumnName("policy_version").HasMaxLength(64).IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasIndex(e => new { e.TenantId, e.AttestationId, e.Id });
+            entity.HasIndex(e => new { e.TenantId, e.SupportedUserId, e.CreatedAt });
+
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Attestation).WithMany().HasForeignKey(e => e.AttestationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
+
         modelBuilder.Entity<SupportPendingAction>(entity =>
         {
             entity.ToTable("support_pending_actions", table =>

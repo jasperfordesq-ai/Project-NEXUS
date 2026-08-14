@@ -198,6 +198,25 @@ here as a separately named position, never as a silent rescore.
   total).** Residue: the `restriction-status` notice flags on the ordinary
   messages surface, and email delivery of the confirm-token link (currently
   bell-notification only).
+- **Guardian consent & authority attestations closed later on 2026-08-14
+  (unscored):** all nine routes implemented with the Laravel contract —
+  the ward-only state machine (pending→consented/declined,
+  consented→withdrawn/declined, declined/withdrawn→consented; idempotent
+  repeats write nothing; ending consent resets every tier and cancels open
+  prepared actions; declined/withdrawn keep status pending — revoked stays
+  staff-only), the deliberately minimal my-wards read, ward-only tier grants
+  with messages silently stripped and expansion re-checking the contact
+  policy both ways, and authority attestations (migration 169:
+  `support_authority_attestations` + append-only events with DB triggers;
+  closed vocabularies; evidence fields refused on key presence; free text
+  encrypted at rest, private notes never returned; attest failures 422 even
+  for NOT_FOUND; revocation never touches tiers — a record, not
+  authorisation). Error-shape quirks copied deliberately (422
+  VALIDATION_ERROR with the "Resource not found" message on malformed ids;
+  indistinguishable 404 for not-yours/not-live). Pinned by
+  `GuardianArrangementTests` (13 tests). Storage note: Laravel's
+  `safeguarding_assignments` is a read-only archive; these endpoints run on
+  `account_relationships` with `proposed_by_user_id` set, exactly as Laravel.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

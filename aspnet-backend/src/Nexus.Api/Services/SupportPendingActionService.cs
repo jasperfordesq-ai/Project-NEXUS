@@ -442,14 +442,26 @@ public class SupportPendingActionService
     /// Cancels open message-access asks (member withdrew, supporter stood
     /// down, or the relationship was revoked). Idempotent.
     /// </summary>
-    public async Task CancelOpenMessageAccessRequestsAsync(
+    public Task CancelOpenMessageAccessRequestsAsync(
         int relationshipId, string reason, CancellationToken ct)
+        => CancelOpenAsync(relationshipId, SupportPendingAction.TypeMessageAccessGrant, reason, ct);
+
+    /// <summary>
+    /// Cancels EVERY open prepared action on a relationship — used when a
+    /// guardian arrangement's consent is declined or withdrawn. Idempotent.
+    /// </summary>
+    public Task CancelOpenForRelationshipAsync(
+        int relationshipId, string reason, CancellationToken ct)
+        => CancelOpenAsync(relationshipId, null, reason, ct);
+
+    private async Task CancelOpenAsync(
+        int relationshipId, string? actionType, string reason, CancellationToken ct)
     {
-        var open = await _db.SupportPendingActions
+        var query = _db.SupportPendingActions
             .Where(a => a.RelationshipId == relationshipId
-                && a.ActionType == SupportPendingAction.TypeMessageAccessGrant
-                && a.Status == SupportPendingAction.StatusPending)
-            .ToListAsync(ct);
+                && a.Status == SupportPendingAction.StatusPending);
+        if (actionType is not null) query = query.Where(a => a.ActionType == actionType);
+        var open = await query.ToListAsync(ct);
         foreach (var action in open)
         {
             action.Status = SupportPendingAction.StatusCancelled;

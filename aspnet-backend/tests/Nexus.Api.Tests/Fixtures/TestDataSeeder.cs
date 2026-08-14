@@ -356,6 +356,7 @@ public static class TestDataSeeder
                     'partner_venue_visits','partner_venue_staff',
                     'partner_member_passes','partner_venues',
                     'support_pending_actions','supporter_message_view_audits',
+                    'support_authority_attestation_events','support_authority_attestations',
                     'account_relationship_events','account_relationships',
                     'knowledge_articles','member_vetting_attestation_events',
                     'safeguarding_policy_rotation_events','safeguarding_vetting_review_requests',
