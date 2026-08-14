@@ -41,7 +41,7 @@
            here. The notification banner is the pattern for "something on this
            page needs your attention". #}
         {% set noticeKey = 'forbidden' if status === 'forbidden' else 'invalid' %}
-        <div class="govuk-notification-banner" role="alert" aria-labelledby="venue-checkin-notice-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner" role="region" aria-labelledby="venue-checkin-notice-title" data-module="govuk-notification-banner">
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="venue-checkin-notice-title">{{ t("govuk_alpha_venues.checkin." + noticeKey + "_title") }}</h2>
           </div>

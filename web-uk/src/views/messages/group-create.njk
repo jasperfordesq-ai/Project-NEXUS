@@ -12,7 +12,7 @@
 
 {% block mainContent %}
       {% if groupStatus and groupStatus.type == "success" %}
-        <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="messages-create-status-title">
+        <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="messages-create-status-title">
           <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="messages-create-status-title">{{ t("govuk_alpha.states.success_title") }}</h2>
           </div>

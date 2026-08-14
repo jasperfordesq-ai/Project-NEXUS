@@ -66,8 +66,8 @@
         {% endif %}
 
         {% if statusBanner and statusBanner.type == "success" %}
-          <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert">
-            <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("states.success_title") }}</h2></div>
+          <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="blog-detail-status-title">
+            <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="blog-detail-status-title">{{ t("states.success_title") }}</h2></div>
             <div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ statusBanner.message }}</p></div>
           </div>
         {% elif statusBanner and statusBanner.type == "error" %}

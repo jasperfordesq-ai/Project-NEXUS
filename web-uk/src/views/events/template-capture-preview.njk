@@ -19,7 +19,7 @@
   <h1 class="govuk-heading-xl">{{ t("event_templates.review_revision_title") if template else t("event_templates.capture_preview_title") }}</h1>
   <p class="govuk-body-l">{{ t("event_templates.capture_preview_intro") }}</p>
 
-  <div class="govuk-notification-banner govuk-notification-banner--success" role="region" aria-labelledby="template-safe-title">
+  <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="template-safe-title">
     <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="template-safe-title">{{ t("event_templates.safe_title") }}</h2></div>
     <div class="govuk-notification-banner__content"><p>{{ t("event_templates.safe_description") }}</p></div>
   </div>

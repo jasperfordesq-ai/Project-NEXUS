@@ -214,7 +214,7 @@ describe('Partner venues templates render', () => {
   ])('states the %s outcome as a page-level notice, not field validation', (status, key) => {
     const html = render('venues/checkin.njk', { token: 'abc123', result: { status }, venueChoices: [] });
 
-    expect(html).toContain('role="alert"');
+    expect(html).toContain('role="region"');
     expect(html).toContain(`govuk_alpha_venues.checkin.${key}_title`);
     expect(html).toContain(`govuk_alpha_venues.checkin.${key}_body`);
     // An error summary would promise links back to invalid fields that do not exist.

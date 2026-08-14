@@ -7,7 +7,7 @@
 
 {% block mainContent %}
   {% if status == "onboarding-complete" or successMessage %}
-    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="dashboard-success-title">
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="dashboard-success-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="dashboard-success-title">{{ t("states.success_title") }}</h2>
       </div>
@@ -26,7 +26,7 @@
   {% endif %}
 
   {% if not onboardingCompleted %}
-    <div class="govuk-notification-banner" role="region" aria-labelledby="dashboard-onboarding-title">
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="dashboard-onboarding-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="dashboard-onboarding-title">{{ t("dashboard.onboarding_title") }}</h2>
       </div>
@@ -40,7 +40,7 @@
   {% endif %}
 
   {% if dashboardFeatures.exchangeWorkflow and exchangeAttention and exchangeAttention.count > 0 %}
-    <div class="govuk-notification-banner" role="region" aria-labelledby="dashboard-reviews-title">
+    <div class="govuk-notification-banner" data-module="govuk-notification-banner" role="region" aria-labelledby="dashboard-reviews-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="dashboard-reviews-title">{{ t("dashboard.pending_reviews_title") }}</h2>
       </div>

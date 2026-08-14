@@ -9,9 +9,9 @@
   <a class="govuk-back-link" href="{{ urlFor('/events') }}">{{ t("event_templates.back_to_events") }}</a>
 
   {% if status in ['captured', 'revised'] %}
-    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" data-module="govuk-notification-banner" aria-labelledby="templates-status-title">
       <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title">{{ t("states.success_title") }}</h2>
+        <h2 class="govuk-notification-banner__title" id="templates-status-title">{{ t("states.success_title") }}</h2>
       </div>
       <div class="govuk-notification-banner__content">
         <p class="govuk-notification-banner__heading">{{ t("event_templates." + status) }}</p>

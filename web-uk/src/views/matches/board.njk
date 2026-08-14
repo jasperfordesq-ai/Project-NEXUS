@@ -7,7 +7,7 @@
 
 {% block mainContent %}
   {% if statusMessage %}
-    <div class="govuk-notification-banner{% if statusMessage.type == 'success' %} govuk-notification-banner--success{% endif %}" role="region" aria-labelledby="matches-board-status-title">
+    <div class="govuk-notification-banner{% if statusMessage.type == 'success' %} govuk-notification-banner--success{% endif %}" data-module="govuk-notification-banner" role="{% if statusMessage.type == 'success' %}alert{% else %}region{% endif %}" aria-labelledby="matches-board-status-title">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="matches-board-status-title">{{ t("govuk_alpha_connections.common.success_title") if statusMessage.type == "success" else t("govuk_alpha_connections.common.error_title") }}</h2>
       </div>

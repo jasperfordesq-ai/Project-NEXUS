@@ -16,9 +16,9 @@
       </div>
     </div>
   {% elif status %}
-    <div class="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner govuk-notification-banner--success{% endif %}" data-module="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner{% endif %}" tabindex="-1">
-      <div role="alert">
-        <h2 class="{% if status.type == 'error' %}govuk-error-summary__title{% else %}govuk-notification-banner__title{% endif %}">{{ t("govuk_alpha_commerce.common.error_title") if status.type == 'error' else t("govuk_alpha.states.success_title") }}</h2>
+    <div class="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner govuk-notification-banner--success{% endif %}" data-module="{% if status.type == 'error' %}govuk-error-summary{% else %}govuk-notification-banner{% endif %}"{% if status.type != 'error' %} role="alert" aria-labelledby="commerce-buy-status-title"{% endif %} tabindex="-1">
+      <div{% if status.type == 'error' %} role="alert"{% endif %}>
+        <h2 class="{% if status.type == 'error' %}govuk-error-summary__title{% else %}govuk-notification-banner__title{% endif %}"{% if status.type != 'error' %} id="commerce-buy-status-title"{% endif %}>{{ t("govuk_alpha_commerce.common.error_title") if status.type == 'error' else t("govuk_alpha.states.success_title") }}</h2>
         <div class="{% if status.type == 'error' %}govuk-error-summary__body{% else %}govuk-notification-banner__content{% endif %}"><p class="govuk-body">{{ status.message }}</p></div>
       </div>
     </div>

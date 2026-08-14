@@ -13,7 +13,7 @@
   <p class="govuk-body-l">{{ t("govuk_alpha_commerce.premium_manage.description") }}</p>
 
   {% if status %}
-    <div class="govuk-notification-banner{% if status.type == 'success' %} govuk-notification-banner--success{% endif %}" role="region" aria-labelledby="premium-status" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner{% if status.type == 'success' %} govuk-notification-banner--success{% endif %}" role="{% if status.type == 'success' %}alert{% else %}region{% endif %}" aria-labelledby="premium-status" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
         <h2 class="govuk-notification-banner__title" id="premium-status">{{ t("govuk_alpha_commerce.common.notice_title") }}</h2>
       </div>

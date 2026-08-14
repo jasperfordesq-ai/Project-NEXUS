@@ -52,7 +52,7 @@
     </form>
   {% else %}
     <p class="govuk-body-l">{{ t("event_templates.review_draft_intro") }}</p>
-    <div class="govuk-notification-banner govuk-notification-banner--success" role="region" aria-labelledby="draft-ready-title">
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="draft-ready-title">
       <div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="draft-ready-title">{{ t("event_templates.ready_title") }}</h2></div>
       <div class="govuk-notification-banner__content"><p>{{ t("event_templates.ready_description") }}</p></div>
     </div>

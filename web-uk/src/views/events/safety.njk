@@ -9,7 +9,7 @@
   <p class="govuk-body-l">{{ t("event_safety.govuk.intro") }}</p>
 
   {% if status == "safety-updated" %}
-    <div class="govuk-notification-banner govuk-notification-banner--success" role="alert"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title">{{ t("govuk_alpha.states.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("event_safety.govuk.updated") }}</p></div></div>
+    <div class="govuk-notification-banner govuk-notification-banner--success" data-module="govuk-notification-banner" role="alert" aria-labelledby="safety-status-title"><div class="govuk-notification-banner__header"><h2 class="govuk-notification-banner__title" id="safety-status-title">{{ t("govuk_alpha.states.success_title") }}</h2></div><div class="govuk-notification-banner__content"><p class="govuk-notification-banner__heading">{{ t("event_safety.govuk.updated") }}</p></div></div>
   {% elif status == "safety-failed" %}
     <div class="govuk-error-summary" data-module="govuk-error-summary" tabindex="-1"><div role="alert"><h2 class="govuk-error-summary__title">{{ t("govuk_alpha.states.error_title") }}</h2><div class="govuk-error-summary__body"><p>{{ t("event_safety.govuk.failed") }}</p></div></div></div>
   {% endif %}

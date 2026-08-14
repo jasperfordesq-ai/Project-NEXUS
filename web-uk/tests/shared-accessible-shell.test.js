@@ -32288,7 +32288,7 @@ describe('shared accessible frontend shell', () => {
     expect(api.callMarketplaceApi).toHaveBeenNthCalledWith(2, 'test-token', 'GET', '/listings/free?limit=50');
     expect(saved.text).toContain('Saved items');
     expect(saved.text).toContain('Your saved items at Project NEXUS Accessible');
-    expect(saved.text).toContain('role="region" aria-labelledby="commerce-saved-status"');
+    expect(saved.text).toContain('role="alert" aria-labelledby="commerce-saved-status"');
     expect(saved.text).toContain('Item removed from your saved list.');
     expect(saved.text).toContain('Saved bike');
     expect(saved.text).toContain('Remove from saved');
