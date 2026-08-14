@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
   {% if successMessage %}
@@ -103,10 +104,11 @@
         <label class="govuk-label" for="description">{{ t("goals.description_label") }}</label>
         <textarea class="govuk-textarea" id="description" name="description" rows="2" maxlength="1000"></textarea>
       </div>
-      <div class="govuk-form-group">
-        <label class="govuk-label" for="deadline">{{ t("goals.deadline_label") }}</label>
-        <input class="govuk-input govuk-input--width-10" id="deadline" name="deadline" type="date">
-      </div>
+      {{ nexusDateInput({
+        name: "deadline",
+        legend: t("goals.deadline_label"),
+        hint: t("web_uk.date_input.hint")
+      }, t) }}
       <div class="govuk-checkboxes govuk-checkboxes--small govuk-form-group" data-module="govuk-checkboxes">
         <div class="govuk-checkboxes__item">
           <input class="govuk-checkboxes__input" id="is_public" name="is_public" type="checkbox" value="1">

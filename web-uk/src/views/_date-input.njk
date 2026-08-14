@@ -1,0 +1,91 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+
+{#
+  The GOV.UK three-field date pattern, with this service's translations applied.
+
+  🔴 Replaces `<input type="date">`. GOV.UK guidance is explicit that native pickers fail
+  users: they differ across browsers, a mobile calendar cannot practically reach a date
+  years back, the device decides the display format, and validation cannot be presented
+  in the service's own style.
+
+      {% from "_date-input.njk" import nexusDateInput %}
+      {{ nexusDateInput({
+        name: "deadline",
+        legend: t("goals.deadline_label"),
+        hint: t("web_uk.date_input.hint"),
+        value: deadlineParts,
+        errorMessage: dateError,
+        errorFields: dateErrorFields
+      }, t) }}
+
+  The three inputs post as `{name}-day`, `{name}-month`, `{name}-year`. Recombine them
+  server-side with `composeDate(req.body, name)` from `src/lib/date-input.js`, which
+  returns the same `YYYY-MM-DD` string the routes and the Laravel API already expect.
+
+  🔴 `inputmode="numeric"`, NOT `type="number"`. GDS uses text inputs here: a number
+  spinner on a year field is meaningless, and `type="number"` silently discards a leading
+  zero in some browsers.
+#}
+{#
+  🔴 `visuallyHiddenText` on the error message must be passed, or govuk-frontend emits its
+  own English "Error:" into the hidden span — so a screen reader announces an English word
+  immediately before an Irish message. Found by rendering this in Irish rather than
+  assuming it was fine. It reuses the already-translated `states.error_prefix`, the same
+  key the page-title prefix uses, so the two cannot drift apart.
+
+  🔴 The trailing colon is stripped because govuk-frontend appends its own — the template
+  renders `{{ visuallyHiddenText }}:`. Our key already ends in one, so passing it straight
+  through produced "Error::" / "Earráid::" / "خطأ::". Caught by reading the rendered
+  output rather than trusting the parameter name.
+
+  🔴 Nunjucks cannot take a comment inside a macro call's argument list — it is a parse
+  error, not a no-op, which is why this note lives out here. And a comment must not
+  contain the comment-closing token itself: writing it out ends the comment early and
+  spills the remaining prose into the page. Both mistakes were made writing this file.
+#}
+{% macro nexusDateInput(params, t) %}
+{% set errorFields = params.errorFields or [] %}
+{{ govukDateInput({
+  id: params.name,
+  namePrefix: params.name,
+  fieldset: {
+    legend: {
+      text: params.legend,
+      classes: params.legendClasses or "govuk-fieldset__legend--s"
+    }
+  },
+  hint: { text: params.hint } if params.hint else undefined,
+  errorMessage: {
+    text: params.errorMessage,
+    visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim
+  } if params.errorMessage else undefined,
+  items: [
+    {
+      name: "day",
+      label: t("web_uk.date_input.day_label"),
+      value: (params.value.day if params.value else ""),
+      classes: "govuk-input--width-2" + (" govuk-input--error" if "day" in errorFields else ""),
+      inputmode: "numeric"
+    },
+    {
+      name: "month",
+      label: t("web_uk.date_input.month_label"),
+      value: (params.value.month if params.value else ""),
+      classes: "govuk-input--width-2" + (" govuk-input--error" if "month" in errorFields else ""),
+      inputmode: "numeric"
+    },
+    {
+      name: "year",
+      label: t("web_uk.date_input.year_label"),
+      value: (params.value.year if params.value else ""),
+      classes: "govuk-input--width-4" + (" govuk-input--error" if "year" in errorFields else ""),
+      inputmode: "numeric"
+    }
+  ]
+}) }}
+{% endmacro %}

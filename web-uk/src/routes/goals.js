@@ -20,6 +20,7 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { normalizeResponse } = require('../lib/normalizeResponse');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
+const { composeDate, splitDate } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -118,6 +119,19 @@ function optionalDate(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : null;
 }
 
+/**
+ * Read a deadline from either shape.
+ *
+ * The GOV.UK three-field pattern posts `deadline-day` / `-month` / `-year`; a single
+ * `deadline` is still accepted so any form not yet converted, and any client posting the
+ * API shape directly, keeps working. Both produce the same `YYYY-MM-DD` the API expects.
+ */
+function deadlineFrom(body) {
+  const single = optionalDate(body && body.deadline);
+  if (single) return { value: single, error: null, errorFields: [], parts: splitDate(single) };
+  return composeDate(body, 'deadline');
+}
+
 function isAuthError(error) {
   return error instanceof ApiError && error.status === 401;
 }
@@ -214,7 +228,7 @@ function goalFormPayload(body) {
     title: trimmed(body.title, 255),
     description: optionalText(body.description, 5000),
     target_value: targetValue,
-    deadline: optionalDate(body.deadline),
+    deadline: deadlineFrom(body).value,
     is_public: checked(body.is_public)
   };
 }
@@ -375,6 +389,9 @@ function normalizeEditableGoal(item, t) {
     rawDescription: trimmed(raw.description || ''),
     targetValue: goal.targetText,
     deadlineValue: dateInputValue(raw.deadline || raw.target_date || raw.targetDate),
+    // Three-field GOV.UK date pattern. `deadlineValue` is kept because other views
+    // still read it; both describe the same stored date.
+    deadlineParts: splitDate(dateInputValue(raw.deadline || raw.target_date || raw.targetDate)),
     checkinFrequency: allowedValue(raw.checkin_frequency || raw.checkinFrequency, GOAL_CHECKIN_FREQUENCIES, 'none'),
     isPublic: checked(raw.is_public)
   };
@@ -703,7 +720,7 @@ router.post('/templates/:templateId(\\d+)', asyncRoute(async (req, res) => {
   const templateId = Number(req.params.templateId);
   const payload = {
     title: optionalText(req.body.title, 255),
-    deadline: optionalDate(req.body.deadline),
+    deadline: deadlineFrom(req.body).value,
     is_public: checked(req.body.is_public)
   };
 

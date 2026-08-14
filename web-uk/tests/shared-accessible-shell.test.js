@@ -9095,7 +9095,17 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('id="target_value" name="target_value" type="number"');
     expect(signed.text).toContain('value="6"');
     expect(signed.text).toContain('Complete the local bike maintenance course.');
-    expect(signed.text).toContain('id="deadline" name="deadline" type="date" value="2026-08-01"');
+    // 🔴 Was `type="date"`. Converted to the GOV.UK three-field pattern, because GDS is
+    // explicit that native date pickers fail users. What matters here is unchanged and is
+    // still asserted: the stored deadline is editable and pre-filled. 2026-08-01 splits to
+    // day 1, month 8, year 2026 — leading zeros dropped, since the fields accept either
+    // and the unpadded form reads more naturally back to the member.
+    expect(signed.text).toContain('name="deadline-day"');
+    expect(signed.text).toContain('name="deadline-month"');
+    expect(signed.text).toContain('name="deadline-year"');
+    expect(signed.text).toMatch(/name="deadline-day"[^>]*value="1"|value="1"[^>]*name="deadline-day"/);
+    expect(signed.text).toMatch(/name="deadline-month"[^>]*value="8"|value="8"[^>]*name="deadline-month"/);
+    expect(signed.text).toMatch(/name="deadline-year"[^>]*value="2026"|value="2026"[^>]*name="deadline-year"/);
     expect(signed.text).toContain('id="checkin_frequency" name="checkin_frequency"');
     expect(signed.text).toContain(`<option value="weekly" selected>${t('goals.frequency_weekly')}</option>`);
     expect(signed.text).toContain('id="is_public" name="is_public" type="checkbox" value="1" checked');

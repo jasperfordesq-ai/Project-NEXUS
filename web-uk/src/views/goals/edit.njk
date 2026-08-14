@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block mainContent %}
@@ -47,8 +48,12 @@
         </div>
 
         <div class="govuk-form-group">
-          <label class="govuk-label" for="deadline">{{ t("goals.deadline_label") }}</label>
-          <input class="govuk-input govuk-input--width-10" id="deadline" name="deadline" type="date" value="{{ goal.deadlineValue }}">
+          {{ nexusDateInput({
+            name: "deadline",
+            legend: t("goals.deadline_label"),
+            hint: t("web_uk.date_input.hint"),
+            value: goal.deadlineParts
+          }, t) }}
         </div>
 
         <div class="govuk-form-group">
