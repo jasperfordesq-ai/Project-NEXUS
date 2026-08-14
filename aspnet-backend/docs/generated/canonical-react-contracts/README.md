@@ -1,14 +1,14 @@
 ﻿# Canonical React API Contract Matrix
 
-Generated: 2026-08-10T07:39:29.7563968+01:00
+Generated: 2026-08-14T14:29:41.0059884+01:00
 
-- Laravel SHA: `f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef`
-- ASP.NET SHA: `f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef`
-- Static call-site rows: 2406
-- Unique method/path contracts: 2077
-- Method-evidenced contracts: 1898
+- Laravel SHA: `5afb43ff73dae9acb9f3e76ff0670ed0c21e4139`
+- ASP.NET SHA: `5afb43ff73dae9acb9f3e76ff0670ed0c21e4139`
+- Static call-site rows: 2407
+- Unique method/path contracts: 2078
+- Method-evidenced contracts: 1899
 - Method-unresolved contracts: 179
-- ASP.NET static route/method gaps: 58
+- ASP.NET static route/method gaps: 59
 - Laravel static route/method gaps: 16
 
 This is static call-site evidence, not a parity score. Payloads, response envelopes, status codes, auth, tenancy, uploads, side effects, and unchanged-client runtime remain separate semantic and certification gates.
@@ -17,6 +17,7 @@ This is static call-site evidence, not a parity score. Payloads, response envelo
 
 | Method | Path | Laravel | ASP.NET | Call sites | Representative source |
 | --- | --- | --- | --- | ---: | --- |
+| GET | `/api/v2/admin/badge-counts` | exists GET | missing  | 1 | `admin/hooks/useAdminBadgeCounts.ts` |
 | GET | `/api/v2/admin/events/{id}/attendance-reward` | exists GET | missing  | 1 | `admin/api/adminApi.ts` |
 | PUT | `/api/v2/admin/events/{id}/attendance-reward` | exists PUT | missing  | 1 | `admin/api/adminApi.ts` |
 | GET | `/api/v2/admin/events/attendance-claims` | exists GET | missing GET | 1 | `admin/api/adminApi.ts` |

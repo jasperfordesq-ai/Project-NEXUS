@@ -1,45 +1,52 @@
 ﻿{
     "schema_version":  1,
-    "generated_at":  "2026-08-10T07:39:29.7563968+01:00",
-    "canonical_react_root":  "C:\\platforms\\htdocs\\nexus-platform-consolidation\\react-frontend",
-    "laravel_sha":  "f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef",
-    "aspnet_sha":  "f98b8bc1cbcc4d559f5ae918bce16d2353d4fcef",
+    "generated_at":  "2026-08-14T14:29:41.0059884+01:00",
+    "canonical_react_root":  "C:\\platforms\\htdocs\\staging\\react-frontend",
+    "laravel_sha":  "5afb43ff73dae9acb9f3e76ff0670ed0c21e4139",
+    "aspnet_sha":  "5afb43ff73dae9acb9f3e76ff0670ed0c21e4139",
     "laravel_dirty":  [
-                          " M .github/dependabot.yml",
-                          " M web-uk/docs/generated/accessible-route-matrix.json",
-                          " M web-uk/docs/generated/accessible-route-matrix.md",
-                          " M web-uk/scripts/generate-accessible-route-matrix.js",
-                          " M web-uk/tests/route-matrix-generator.test.js"
+                          " M aspnet-backend/docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv",
+                          " M skills-lock.json"
                       ],
     "aspnet_dirty":  [
-                         " M ../.github/dependabot.yml",
-                         " M ../web-uk/docs/generated/accessible-route-matrix.json",
-                         " M ../web-uk/docs/generated/accessible-route-matrix.md",
-                         " M ../web-uk/scripts/generate-accessible-route-matrix.js",
-                         " M ../web-uk/tests/route-matrix-generator.test.js"
+                         " M docs/generated/canonical-react-contracts/canonical-react-api-contract-matrix.csv",
+                         " M ../skills-lock.json"
                      ],
-    "callsite_rows":  2406,
-    "unique_method_path_contracts":  2077,
-    "method_evidenced_contracts":  1898,
+    "callsite_rows":  2407,
+    "unique_method_path_contracts":  2078,
+    "method_evidenced_contracts":  1899,
     "method_unresolved_contracts":  179,
     "aspnet_status_counts":  {
                                  "exists":  1148,
                                  "exists-any-method":  14,
                                  "exists-compatibility":  733,
                                  "exists-unambiguous-method":  124,
-                                 "missing":  58
+                                 "missing":  59
                              },
     "laravel_status_counts":  {
-                                  "exists":  1887,
+                                  "exists":  1888,
                                   "exists-any-method":  17,
                                   "exists-unambiguous-method":  157,
                                   "method-mismatch":  2,
                                   "missing":  14
                               },
-    "aspnet_gap_count":  58,
+    "aspnet_gap_count":  59,
     "laravel_gap_count":  16,
     "warning":  "Static call-site evidence only. Route presence does not prove payload, response, auth, tenant, side-effect, or runtime parity.",
     "aspnet_gaps":  [
+                        {
+                            "method":  "GET",
+                            "path":  "/api/v2/admin/badge-counts",
+                            "callsite_count":  1,
+                            "source_files":  "admin/hooks/useAdminBadgeCounts.ts",
+                            "representative_line":  45,
+                            "laravel_status":  "exists",
+                            "laravel_methods":  "GET",
+                            "laravel_handlers":  "[\\App\\Http\\Controllers\\Api\\AdminDashboardController::class, \u0027badgeCounts\u0027]",
+                            "aspnet_status":  "missing",
+                            "aspnet_methods":  "",
+                            "aspnet_controllers":  ""
+                        },
                         {
                             "method":  "GET",
                             "path":  "/api/v2/admin/events/{id}/attendance-reward",
@@ -682,7 +689,7 @@
                             "path":  "/api/v2/users/me/sub-accounts/{id}/messages",
                             "callsite_count":  2,
                             "source_files":  "pages/subaccounts/SupportedMessagesPage.tsx",
-                            "representative_line":  122,
+                            "representative_line":  135,
                             "laravel_status":  "exists",
                             "laravel_methods":  "GET",
                             "laravel_handlers":  "[\\App\\Http\\Controllers\\Api\\SubAccountController::class, \u0027listChildMessages\u0027]",
@@ -695,7 +702,7 @@
                             "path":  "/api/v2/users/me/sub-accounts/{id}/messages/{id}",
                             "callsite_count":  1,
                             "source_files":  "pages/subaccounts/SupportedMessagesPage.tsx",
-                            "representative_line":  113,
+                            "representative_line":  125,
                             "laravel_status":  "exists",
                             "laravel_methods":  "GET",
                             "laravel_handlers":  "[\\App\\Http\\Controllers\\Api\\SubAccountController::class, \u0027showChildThread\u0027]",

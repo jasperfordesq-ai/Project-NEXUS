@@ -1,7 +1,8 @@
 # Current ASP.NET Contract Status
 
-Last verified: 2026-08-09 (repository boundary only; scores unchanged since
-2026-07-15 22:39 +01:00)
+Last verified: 2026-08-14 (full evidence re-audit against Laravel HEAD; banked
+score unchanged since 2026-07-15 22:39 +01:00 — see the 2026-08-14 re-audit
+section for the advisory drift-adjusted position)
 
 Status: **Canonical current - ASP.NET score and certification source**
 
@@ -78,6 +79,11 @@ estimated percentage.
 | Providers, jobs, integrations, operational proof, and reproducible docs | 24 | 75 | 51 |
 | **Total** | **712** | **1000** | **288** |
 
+🔴 **Superseded on 2026-08-14 for the current Laravel HEAD:** the regenerated
+comparison now reports **2,600/2,667 matched with 67 missing** (see the
+2026-08-14 re-audit section below). The paragraph that follows remains true only
+for the frozen `903d03d3` baseline it was written against.
+
 Active route representation is **2,601/2,601 matched with 0 missing**. Seven
 retired OpenAPI-only operations are reported separately and return to the
 active gate automatically if a live Laravel route reintroduces them. This
@@ -87,6 +93,89 @@ production certification. The separately generated canonical React matrix has
 static gaps and 171 method-unresolved entries. The reconciled inventory does not
 prove payload, status, auth, tenant, side-effect, or runtime correctness; those
 rows remain semantic and unchanged-client work rather than route-score evidence.
+
+## 2026-08-14 Re-Audit Against Laravel HEAD (Advisory)
+
+A full evidence re-audit ran on 2026-08-14 against monorepo HEAD
+`5afb43ff73dae9acb9f3e76ff0670ed0c21e4139` (Laravel and ASP.NET inspected at the
+same monorepo SHA). Every comparison below was regenerated from the live code on
+that day, not read from documentation. **This section is advisory: it banks zero
+points and performs no fixed-rubric scoring transaction.** The banked score
+above remains 712/1000 against the frozen `903d03d3` baseline. The audit session
+was interrupted after the evidence was gathered and before a drift-adjusted
+scoring transaction could be recorded; per the rubric policy, drift is recorded
+here as a separately named position, never as a silent rescore.
+
+### Route representation against Laravel HEAD
+
+- **2,600 of 2,667 Laravel operations matched; 67 missing.** At the frozen
+  `903d03d3` baseline the same gate was 2,601/2,601 with 0 missing. Nothing
+  regressed on the ASP.NET side: all 67 are Laravel endpoints shipped after the
+  2026-07-15 freeze.
+- The regenerated canonical React call-site matrix
+  ([`generated/canonical-react-contracts/README.md`](generated/canonical-react-contracts/README.md))
+  records 2,407 static call-site rows, 2,078 unique method/path contracts,
+  1,899 method-evidenced, 179 method-unresolved, **59 ASP.NET static gaps**
+  (0 at the freeze) and 16 Laravel static gaps.
+- The 59 React-consumed gaps cluster into post-freeze subsystems: partner
+  venues (member and admin), support actions and carer sub-account operations
+  (prepare/confirm/decline, child listings, messages, transfers, wallet),
+  guardian consent and safeguarding member/admin endpoints (my-guardians,
+  my-wards, authority attestations, support-action attestation), event
+  attendance rewards and claims, gamification challenge administration, admin
+  impersonation (`/admin/super/users/{id}/impersonate`,
+  `/auth/impersonate/exchange`, `/auth/impersonate/end`), platform
+  capabilities, federation external status, admin badge counts, the admin
+  performance summary, and public events.
+
+### Laravel drift since the 2026-07-15 freeze
+
+- **547 commits in 32 days.** The API grew by 67 endpoints (none removed),
+  4 changes were formally breaking, and 26 new database migrations shipped.
+- The **legal-acceptance enforcement gate** (Laravel, 2026-08-11) blocks 15
+  write actions until terms are accepted. ASP.NET can record an acceptance but
+  has no enforcement equivalent; it would permit all 15 writes.
+- Five heavily used areas were rewritten beneath routes ASP.NET does match —
+  super-admin, sub-accounts, safeguarding, login/auth, and broker — so route
+  presence in those areas no longer implies behavioral identity. They need
+  fresh semantic evidence under queue package 2.
+- Static schema-name drift: 229 Laravel tables now have no ASP.NET counterpart
+  and 197 ASP.NET tables have no Laravel counterpart (name comparison only).
+- Localization drift: 363 Laravel translation namespaces and 5,424 English keys
+  are missing on the ASP.NET side.
+
+### ASP.NET code state and test evidence
+
+- The ASP.NET implementation is unchanged since the pause except two
+  maintenance changes on 2026-08-10: the .NET 8 to .NET 10 upgrade, and making
+  unimplemented admin endpoints return honest not-implemented responses instead
+  of fabricated success. 165 migration classes were confirmed on disk; no
+  hidden not-implemented stubs masking as working code were found.
+- **Full local Release test run (2026-08-14, .NET 10): `Nexus.Api.Tests`
+  3,386/3,386 passed in 32m 24s; `Nexus.Messaging.Tests` 38/38 passed in
+  2m 7s; 0 failed, 0 skipped.** TRX evidence:
+  `tests/Nexus.Api.Tests/TestResults/full-audit.trx` and
+  `tests/Nexus.Messaging.Tests/TestResults/full-audit.trx`. This is a local
+  run, not an exact-SHA CI aggregate; it banks nothing under the build/test/CI
+  category on its own.
+- The four retired ASP.NET production containers were confirmed by read-only
+  inspection to be stopped, not removed.
+
+### Web UK switch readiness (queue package 3)
+
+The backend switch genuinely exists (`ACCESSIBLE_BACKEND_TARGET=aspnet`, no
+ASP.NET-specific branches in the frontend), but only roughly 1–2% of the 696
+API calls Web UK makes have ever been proven against ASP.NET, and the promised
+Web UK-to-ASP.NET comparison matrix does not exist. Package 3 is fully open.
+
+### Effect on the queue
+
+The eight-package queue below stands. The drift concentrates additional work in
+packages 2 (semantic evidence for the rewritten areas), 3 (Web UK matrix), 4–6
+(the four new subsystems, the legal-acceptance gate, schema and localization
+drift), and adds the 67-endpoint route gap as new representation work that must
+be reconciled before the route category can be re-banked against any
+newer-than-`903d03d3` Laravel baseline.
 
 ## Baseline And Banked Evidence
 
