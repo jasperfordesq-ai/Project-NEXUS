@@ -35,6 +35,13 @@ E2E_TENANT_NAME="E2E Test Community"
 E2E_TENANT2_SLUG="e2e-other"
 E2E_TENANT2_NAME="E2E Other Community"
 
+# A SUB-community (slug-only, parent_id set) and a community on its own accessible
+# host. These exist so the other two tenant-routing modes can be walked, not assumed.
+E2E_CHILD_SLUG="e2e-branch"
+E2E_CHILD_NAME="E2E Branch Community"
+E2E_PARENT_DOMAIN="e2e-parent.local"
+E2E_ACCESSIBLE_DOMAIN="e2e-accessible.local"
+
 # 🔴 Hard stop. A typo here would wipe the production-derived snapshot.
 if [[ "$DB_NAME" == "nexus" || "$DB_NAME" == "nexus_test" ]]; then
   echo "REFUSING: DB_NAME is '$DB_NAME'. This script must only ever touch a disposable database." >&2
@@ -194,6 +201,32 @@ seed_synthetic() {
   #    marketing_email" on every save. Seeded here so journeys measure the app rather
   #    than a missing row.
   ensure_consent_type 'marketing_email' 'Marketing email' 'Consent to receive newsletters and marketing email.'
+
+  # 8. The two remaining community SHAPES, so routing can be walked rather than reasoned
+  #    about. web-uk has three tenant-routing modes and a single flat community only
+  #    exercises one of them:
+  #      - 'shared'              /{slug}/accessible on the shared host   (already covered)
+  #      - 'parent-domain-child' a SUB-community served at the PARENT's domain + /{slug}
+  #      - 'custom-domain'       a community on its own host, served SLUG-LESS at the root
+  #    Both are matched from the tenant bootstrap payload (`parent_domain`,
+  #    `accessible_domain`), so they need real column values to exist at all.
+  mysql_e2e -e "UPDATE tenants SET domain='$E2E_PARENT_DOMAIN' WHERE id=$tenant_id AND (domain IS NULL OR domain='');"
+  mysql_e2e -e "UPDATE tenants SET accessible_domain='$E2E_ACCESSIBLE_DOMAIN' WHERE id=$tenant2_id AND (accessible_domain IS NULL OR accessible_domain='');"
+
+  if [[ "$(mysql_e2e -N -e "SELECT COUNT(*) FROM tenants WHERE slug='$E2E_CHILD_SLUG';")" == "0" ]]; then
+    # A slug-only SUB-community: no domain of its own, parent_id set, depth 1, and a
+    # materialised path under the parent — which is how the platform scopes a subtree.
+    mysql_e2e -e "INSERT INTO tenants (name, slug, tenant_category, is_active, parent_id, depth, allows_subtenants, max_depth, created_at, updated_at)
+                  VALUES ('$E2E_CHILD_NAME', '$E2E_CHILD_SLUG', 'community', 1, $tenant_id, 1, 0, 3, NOW(), NOW());"
+    mysql_e2e -e "UPDATE tenants SET path = CONCAT('/', $tenant_id, '/', id, '/') WHERE slug='$E2E_CHILD_SLUG';"
+  fi
+  local child_id
+  child_id=$(tenant_id_for "$E2E_CHILD_SLUG")
+  ensure_categories "$child_id"
+  docker exec     -e E2E_TENANT_ID="$child_id"     -e E2E_USER_EMAIL="e2e.child.a@project-nexus.local"     -e E2E_SECOND_USER_EMAIL="e2e.child.b@project-nexus.local"     -e E2E_ADMIN_EMAIL="e2e.child.admin@project-nexus.local"     "$APP_CONTAINER" php artisan db:seed --class=E2ETestDataSeeder --force 2>&1 | tail -1
+
+  echo "    sub-community '$E2E_CHILD_SLUG' id=$child_id under $E2E_TENANT_SLUG ($E2E_PARENT_DOMAIN)"
+  echo "    custom accessible domain: $E2E_TENANT2_SLUG -> $E2E_ACCESSIBLE_DOMAIN"
 
   echo "    roles present: $(mysql_e2e -N -e "SELECT GROUP_CONCAT(DISTINCT role ORDER BY role) FROM users WHERE tenant_id IN ($tenant_id,$tenant2_id);")"
   echo "    categories: $E2E_TENANT_SLUG=$(mysql_e2e -N -e "SELECT COUNT(*) FROM categories WHERE tenant_id=$tenant_id;") $E2E_TENANT2_SLUG=$(mysql_e2e -N -e "SELECT COUNT(*) FROM categories WHERE tenant_id=$tenant2_id;")"

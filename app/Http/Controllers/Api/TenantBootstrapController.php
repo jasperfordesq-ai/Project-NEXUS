@@ -111,9 +111,28 @@ class TenantBootstrapController extends BaseApiController
                 if ($originHost) {
                     $originHost = preg_replace('/^www\./', '', $originHost);
 
+                    // 🔴 `accessible_domain` must match here as well as `domain`, or a
+                    // community's own ACCESSIBLE host can never be resolved through the
+                    // accessible frontend.
+                    //
+                    // Why: that frontend is Node, and `fetch` FORBIDS setting a `Host`
+                    // header — so it forwards the browser's host as `Origin` and depends on
+                    // this fallback. Matching `domain` alone meant a tenant whose
+                    // `accessible_domain` is set (and whose `domain` differs or is unset)
+                    // resolved to nothing, and the request fell through to the community
+                    // chooser instead of that community. Found 2026-08-13 by seeding such a
+                    // tenant and walking it; the path had never been exercised, which is
+                    // consistent with no production tenant having the column set.
+                    //
+                    // `domain` keeps precedence via the ordering, so an existing custom
+                    // domain behaves exactly as before.
                     $originTenant = DB::table('tenants')
-                        ->where('domain', $originHost)
+                        ->where(function ($query) use ($originHost) {
+                            $query->where('domain', $originHost)
+                                ->orWhere('accessible_domain', $originHost);
+                        })
                         ->where('is_active', 1)
+                        ->orderByRaw('CASE WHEN domain = ? THEN 0 ELSE 1 END', [$originHost])
                         ->first();
 
                     if ($originTenant && (int) $originTenant->id !== 1) {
@@ -254,9 +273,28 @@ class TenantBootstrapController extends BaseApiController
                 $originHost = parse_url($origin, PHP_URL_HOST) ?: '';
                 $originHost = preg_replace('/^www\./', '', $originHost);
                 if ($originHost) {
+                    // 🔴 `accessible_domain` must match here as well as `domain`, or a
+                    // community's own ACCESSIBLE host can never be resolved through the
+                    // accessible frontend.
+                    //
+                    // Why: that frontend is Node, and `fetch` FORBIDS setting a `Host`
+                    // header — so it forwards the browser's host as `Origin` and depends on
+                    // this fallback. Matching `domain` alone meant a tenant whose
+                    // `accessible_domain` is set (and whose `domain` differs or is unset)
+                    // resolved to nothing, and the request fell through to the community
+                    // chooser instead of that community. Found 2026-08-13 by seeding such a
+                    // tenant and walking it; the path had never been exercised, which is
+                    // consistent with no production tenant having the column set.
+                    //
+                    // `domain` keeps precedence via the ordering, so an existing custom
+                    // domain behaves exactly as before.
                     $originTenant = DB::table('tenants')
-                        ->where('domain', $originHost)
+                        ->where(function ($query) use ($originHost) {
+                            $query->where('domain', $originHost)
+                                ->orWhere('accessible_domain', $originHost);
+                        })
                         ->where('is_active', 1)
+                        ->orderByRaw('CASE WHEN domain = ? THEN 0 ELSE 1 END', [$originHost])
                         ->first();
                     if ($originTenant && (int) $originTenant->id !== 1) {
                         $resolvedTenantId = (int) $originTenant->id;

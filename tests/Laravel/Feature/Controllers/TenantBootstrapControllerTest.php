@@ -231,6 +231,113 @@ class TenantBootstrapControllerTest extends TestCase
         }
     }
 
+    /**
+     * 🔴 Origin-based resolution must match `accessible_domain`, not only `domain`.
+     *
+     * The accessible frontend is Node, and `fetch` FORBIDS setting a `Host` header — so it
+     * forwards the browser's host as `Origin` and depends on this fallback. While this
+     * matched `domain` alone, a community whose own ACCESSIBLE host was configured resolved
+     * to nothing and the request fell through to the community chooser instead of that
+     * community. Found 2026-08-13 by seeding such a community and walking it; the path had
+     * never been exercised, which is consistent with no production tenant having the column
+     * set.
+     */
+    public function test_bootstrap_resolves_a_tenant_from_its_accessible_domain_origin(): void
+    {
+        DB::table('tenants')->updateOrInsert(
+            ['id' => 990120],
+            [
+                'name'              => 'Accessible Domain Community',
+                'slug'              => 'accessible-domain-test',
+                'domain'            => null,
+                'accessible_domain' => 'accessible-domain-test.example',
+                'parent_id'         => null,
+                'path'              => '/990120/',
+                'depth'             => 0,
+                'is_active'         => true,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]
+        );
+
+        // 🔴 `$_SERVER['HTTP_ORIGIN']` must be set DIRECTLY. The controller reads the
+        // superglobal rather than `request()->header('Origin')`, and Laravel's test HTTP
+        // kernel does NOT populate `$_SERVER` from a headers array — so passing the header
+        // to `getJson()` sets nothing and the fallback never runs. (Same family as the
+        // recorded `$_SERVER['REQUEST_METHOD']` trap: code reading superglobals behaves
+        // differently under test than in production.)
+        $_SERVER['HTTP_ORIGIN'] = 'https://accessible-domain-test.example';
+
+        try {
+            // 🔴 Deliberately NOT `apiGet()`. That helper adds the suite's tenant header,
+            // which resolves TenantContext to the test community — and the Origin fallback
+            // runs ONLY when the host resolved to master (`$tenantId <= 1`), by design, so
+            // that a real custom domain is never overridden by a request's Origin.
+            $response = $this->getJson('/api/v2/tenant/bootstrap');
+            $response->assertStatus(200);
+            $this->assertSame('accessible-domain-test', $response->json('data.slug'));
+        } finally {
+            unset($_SERVER['HTTP_ORIGIN']);
+        }
+    }
+
+    /**
+     * `domain` keeps precedence, so an existing custom domain behaves exactly as before even
+     * when another community happens to use the same host as its accessible domain.
+     */
+    public function test_bootstrap_prefers_the_main_domain_over_an_accessible_domain_on_a_clash(): void
+    {
+        DB::table('tenants')->updateOrInsert(
+            ['id' => 990121],
+            [
+                'name'       => 'Main Domain Owner',
+                'slug'       => 'main-domain-owner-test',
+                'domain'     => 'clashing-host-test.example',
+                'parent_id'  => null,
+                'path'       => '/990121/',
+                'depth'      => 0,
+                'is_active'  => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+        DB::table('tenants')->updateOrInsert(
+            ['id' => 990122],
+            [
+                'name'              => 'Accessible Domain Claimant',
+                'slug'              => 'accessible-claimant-test',
+                'domain'            => null,
+                'accessible_domain' => 'clashing-host-test.example',
+                'parent_id'         => null,
+                'path'              => '/990122/',
+                'depth'             => 0,
+                'is_active'         => true,
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]
+        );
+
+        // 🔴 `$_SERVER['HTTP_ORIGIN']` must be set DIRECTLY. The controller reads the
+        // superglobal rather than `request()->header('Origin')`, and Laravel's test HTTP
+        // kernel does NOT populate `$_SERVER` from a headers array — so passing the header
+        // to `getJson()` sets nothing and the fallback never runs. (Same family as the
+        // recorded `$_SERVER['REQUEST_METHOD']` trap: code reading superglobals behaves
+        // differently under test than in production.)
+        $_SERVER['HTTP_ORIGIN'] = 'https://clashing-host-test.example';
+
+        try {
+            // 🔴 Deliberately NOT `apiGet()`. That helper adds the suite's tenant header,
+            // which resolves TenantContext to the test community — and the Origin fallback
+            // runs ONLY when the host resolved to master (`$tenantId <= 1`), by design, so
+            // that a real custom domain is never overridden by a request's Origin.
+            $response = $this->getJson('/api/v2/tenant/bootstrap');
+            $response->assertStatus(200);
+            $this->assertSame('main-domain-owner-test', $response->json('data.slug'));
+        } finally {
+            unset($_SERVER['HTTP_ORIGIN']);
+        }
+    }
+
     public function test_bootstrap_returns_404_for_unknown_slug(): void
     {
         $response = $this->apiGet('/v2/tenant/bootstrap?slug=nonexistent-slug-xyz');
