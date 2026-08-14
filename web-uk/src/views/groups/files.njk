@@ -33,7 +33,7 @@
   <p class="govuk-body">{{ t("govuk_alpha_groups.files.intro") }}</p>
 
   {% if not files.length %}
-    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_groups.files.empty") }}</p></div>
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("govuk_alpha_groups.files.empty") }}</p></div>
   {% else %}
     <div class="nexus-alpha-table-scroll" role="region" aria-label="{{ t('govuk_alpha_groups.files.title') }}" tabindex="0">
       <table class="govuk-table govuk-!-margin-bottom-0">

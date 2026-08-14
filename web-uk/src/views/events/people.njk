@@ -49,7 +49,7 @@
 
   <p class="govuk-body" aria-live="polite">{{ tc("govuk_alpha.events.people_result_count", total, { count: total }) }}</p>
   {% if people.length == 0 %}
-    <div class="govuk-inset-text">{{ t("govuk_alpha.events.people_empty") }}</div>
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("govuk_alpha.events.people_empty") }}</div>
   {% else %}
     {% if canManageRegistration %}<form method="post" action="{{ urlFor('/events/' + (event.id | string) + '/people') }}">{% endif %}
       {% if canManageRegistration %}<input type="hidden" name="_csrf" value="{{ csrfToken }}"><input type="hidden" name="idempotency_key" value="{{ idempotencyKey }}">{% endif %}

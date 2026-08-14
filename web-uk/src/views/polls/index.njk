@@ -93,7 +93,7 @@
       </details>
 
       {% if not polls.length %}
-        <div class="govuk-inset-text"><p class="govuk-body">{{ t("polls.empty") }}</p></div>
+        <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("polls.empty") }}</p></div>
       {% else %}
         <h2 class="govuk-heading-l">{{ t("polls.open_section_title") }}</h2>
         {% set anyOpen = false %}

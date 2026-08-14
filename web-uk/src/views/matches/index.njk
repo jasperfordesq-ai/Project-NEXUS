@@ -91,7 +91,7 @@
       {% endfor %}
     </div>
   {% else %}
-    <div class="govuk-inset-text">{{ t("matches.empty") }}</div>
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("matches.empty") }}</div>
     <a class="govuk-button" href="{{ urlFor('/listings/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("matches.add_listing") }}</a>
   {% endif %}
 {% endblock %}

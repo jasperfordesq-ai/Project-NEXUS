@@ -55,9 +55,11 @@
 
   {% if not listings.length %}
     {% if mode == 'category' %}
+      <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
       <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.category.empty") }}</p>
     {% else %}
       <div class="govuk-inset-text">
+        <h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>
         <p class="govuk-body">{% if mode == 'saved' %}{{ t("govuk_alpha_commerce.saved.empty") }}{% elseif mode == 'free' %}{{ t("govuk_alpha_commerce.free_items.empty") }}{% else %}{{ emptyMessage }}{% endif %}</p>
       </div>
     {% endif %}

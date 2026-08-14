@@ -24,7 +24,7 @@
   </form>
 
   {% if not resources.length %}
-    <div class="govuk-inset-text"><p class="govuk-body">{{ t("resources.empty") }}</p></div>
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("resources.empty") }}</p></div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for resource in resources %}

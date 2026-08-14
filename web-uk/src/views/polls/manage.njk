@@ -28,7 +28,7 @@
       <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/polls/parity/create') }}">{{ t("govuk_alpha_gamification.poll_manage.create_link") }}</a></p>
 
       {% if not polls.length %}
-        <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_gamification.poll_manage.empty") }}</p></div>
+        <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("govuk_alpha_gamification.poll_manage.empty") }}</p></div>
       {% else %}
         {% for poll in polls %}
           <article class="nexus-alpha-card govuk-!-margin-bottom-6" id="poll-{{ poll.id }}">

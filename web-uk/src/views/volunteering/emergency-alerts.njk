@@ -45,7 +45,7 @@
   {% endif %}
 
   {% if not dashboard.alerts.length %}
-    <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.emergency.empty") }}</div>
+    <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2>{{ t("govuk_alpha_volunteering.emergency.empty") }}</div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for alert in dashboard.alerts %}

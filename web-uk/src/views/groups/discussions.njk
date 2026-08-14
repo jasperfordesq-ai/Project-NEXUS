@@ -35,7 +35,7 @@
     </p>
 
     {% if not discussions.length %}
-      <div class="govuk-inset-text"><p class="govuk-body">{{ t("groups.discussions.empty") }}</p></div>
+      <div class="govuk-inset-text"><h2 class="govuk-heading-m">{{ t("states.empty_title") }}</h2><p class="govuk-body">{{ t("groups.discussions.empty") }}</p></div>
     {% else %}
       <div class="nexus-alpha-card-list">
         {% for discussion in discussions %}
