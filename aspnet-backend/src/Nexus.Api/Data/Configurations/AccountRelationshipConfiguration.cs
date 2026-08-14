@@ -148,5 +148,33 @@ public class AccountRelationshipConfiguration : TenantScopedConfiguration
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
         });
+
+        modelBuilder.Entity<SupporterMessageViewAudit>(entity =>
+        {
+            entity.ToTable("supporter_message_view_audits", table =>
+            {
+                table.HasCheckConstraint("CK_SupporterMessageViewAudits_Action",
+                    "\"action\" IN ('list', 'read')");
+            });
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            entity.Property(e => e.RelationshipId).HasColumnName("relationship_id");
+            entity.Property(e => e.SupporterUserId).HasColumnName("supporter_user_id");
+            entity.Property(e => e.SupportedUserId).HasColumnName("supported_user_id");
+            entity.Property(e => e.PartnerUserId).HasColumnName("partner_user_id");
+            entity.Property(e => e.Action).HasColumnName("action").HasMaxLength(16).IsRequired();
+            entity.Property(e => e.Purpose).HasColumnName("purpose").HasMaxLength(500).IsRequired();
+            entity.Property(e => e.CorrelationHash).HasColumnName("correlation_hash")
+                .HasMaxLength(64).IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.HasIndex(e => new { e.TenantId, e.SupportedUserId, e.CreatedAt, e.Id });
+            entity.HasIndex(e => new { e.TenantId, e.SupporterUserId, e.CreatedAt, e.Id });
+
+            entity.HasOne(e => e.Tenant).WithMany().HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
     }
 }

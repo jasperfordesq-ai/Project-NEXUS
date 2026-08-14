@@ -74,9 +74,9 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260814190006_AddSupportPendingActions",
-            "the chain currently ends with the support-action workflow (migration 167); adding a "
-            + "migration is fine but must be deliberate — update this pin in the same commit");
+        migrations.Last().Should().Be("20260814193140_AddSupporterMessageViewAudits",
+            "the chain currently ends with the supervised message-view audits (migration 168); adding "
+            + "a migration is fine but must be deliberate — update this pin in the same commit");
     }
 
     private static bool HasIndex(IEntityType entity, params string[] propertyNames)

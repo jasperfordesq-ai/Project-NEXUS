@@ -91,6 +91,7 @@ public static class ServiceExtensions
         services.AddScoped<AccountRelationshipService>();
         services.AddScoped<SupportPendingActionService>();
         services.AddScoped<SubAccountProxyService>();
+        services.AddScoped<SupporterMessageViewService>();
         services.AddScoped<PushNotificationService>();
         services.AddScoped<Nexus.Api.Services.WebPush.WebPushSender>();
         services.AddScoped<TranslationService>();

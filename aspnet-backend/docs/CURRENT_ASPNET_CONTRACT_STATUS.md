@@ -177,8 +177,17 @@ here as a separately named position, never as a silent rescore.
   attribution (the listing commits with its audit row or not at all), the
   supported member always the owner/sender and always notified, the carer's
   own balance provably untouched, and the wallet summary gated on the credits
-  tier by design. Pinned by `SubAccountProxyTests` (6 tests). Steps 4–5
-  (supervised message viewing, admin attestation) remain open.
+  tier by design. Pinned by `SubAccountProxyTests` (6 tests). **Step 4
+  (supervised message viewing) also landed 2026-08-14 (unscored):** migration
+  168 (`20260814193140_AddSupporterMessageViewAudits`) creates the append-only
+  `supporter_message_view_audits` (UPDATE refused by trigger, proven by test);
+  the two GET routes require a stated purpose (header first, blank refused,
+  no audit row on refusal), write the audit row BEFORE fetching, read AS the
+  member (their deletions invisible, unread counts stripped, nothing ever
+  marked read), and there is deliberately no write route under the prefix.
+  Pinned by `SupporterMessageViewTests` (7 tests). Step 5 (admin safeguarding
+  attestation endpoints) remains open, plus the `restriction-status` notice
+  flags on the ordinary messages surface.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),
