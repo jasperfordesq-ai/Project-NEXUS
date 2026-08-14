@@ -319,7 +319,10 @@ if (areas.aspnet.length) {
 }
 if (areas.webuk.length) {
   record('Web UK checks', 'UNAVAILABLE',
-    `${areas.webuk.length} file(s) changed under web-uk/ (or its Blade source of truth) — run: npm --prefix web-uk run lint && npm --prefix web-uk test`);
+    // 🔴 This said "(or its Blade source of truth)" until 2026-08-14. There is no Blade
+    // accessible frontend any more, and the shared translations are covered by the i18n
+    // area, so naming a deleted tree here only sent people looking for it.
+    `${areas.webuk.length} file(s) changed under web-uk/ — run: npm --prefix web-uk run brand:check && npm --prefix web-uk run lint && npm --prefix web-uk test`);
 }
 // Anything matching NO known area at all. This is the guard that generalises:
 // a future new top-level directory cannot silently inherit a green preflight.
