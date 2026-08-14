@@ -81,7 +81,7 @@ const i18nMap: Record<string, string> = {
   'nav.partner_with_us': 'Partner With Us', 'nav.impact_report': 'Impact Report',
   'nav.organisations': 'Organisations', 'nav.partner_communities': 'Partner Communities',
   'nav.group_exchanges': 'Group Exchanges',
-  'nav.accessibility_alpha': 'Accessibility (alpha)',
+  'nav.accessibility_alpha': 'WCAG 2.2 AA Version',
   'nav.federation_hub': 'Federation Hub', 'nav.federated_members': 'Federated Members',
   'nav.federation_hub_short': 'Hub', 'nav.federation_partners_short': 'Communities',
   'nav.federation_members_short': 'Members', 'nav.federation_messages_short': 'Messages',
@@ -103,7 +103,7 @@ const i18nMap: Record<string, string> = {
   'sections.federation': 'Federation', 'sections.partner_communities': 'Partner Communities',
   'sections.account': 'Account',
   'accessibility.close_menu': 'Close menu',
-  'accessibility.accessibility_alpha_new_tab': 'Open Accessibility (alpha) in a new tab',
+  'accessibility.accessibility_alpha_new_tab': 'Open WCAG 2.2 AA accessible version in a new tab',
   'aria.open_search': 'Open search',
   'aria.mobile_navigation': 'Mobile navigation',
   'aria.main_navigation': 'Main navigation',
@@ -356,11 +356,11 @@ describe('MobileDrawer', () => {
         },
       });
       render(<MobileDrawer {...defaultProps} />);
-      const link = screen.getByRole('link', { name: 'Open Accessibility (alpha) in a new tab' });
+      const link = screen.getByRole('link', { name: 'Open WCAG 2.2 AA accessible version in a new tab' });
       expect(link).toHaveAttribute('href', 'https://accessible.project-nexus.ie/hour-timebank/accessible');
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-      expect(screen.getByText('Accessibility (alpha)')).toBeInTheDocument();
+      expect(screen.getByText('WCAG 2.2 AA Version')).toBeInTheDocument();
     });
 
     it('renders Legal section', () => {

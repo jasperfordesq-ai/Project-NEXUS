@@ -203,6 +203,16 @@ function Add-FrontendItems {
         return
     }
 
+    # [!] SINCE 2026-08-14 THIS CORRECTLY YIELDS ZERO ITEMS, AND ZERO DOES NOT MEAN DONE.
+    #
+    # compare-laravel-frontend-parity.ps1 no longer publishes a `matrix` or any `status`
+    # field: the Laravel Blade accessible frontend was deleted, so that report is now two
+    # inventories with no verdict. This loop therefore iterates over nothing.
+    #
+    # That is the intended behaviour - a backlog built from a comparison that was not
+    # performed would be invented work. But do not read "frontend_items: 0" in the summary
+    # as "frontend parity is complete". The authoritative accessible route comparison is
+    # `npm --prefix web-uk run route:matrix`; read its artefact for real coverage.
     foreach ($row in @($Report.matrix | Where-Object { $_.status -eq 'missing' })) {
         $surface = if ($row.surface -eq 'accessible') { 'frontend-accessible' } else { 'frontend-react' }
         $evidence = ("{0} {1}" -f $row.method, $row.path).Trim()

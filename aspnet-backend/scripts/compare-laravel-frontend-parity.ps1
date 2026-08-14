@@ -233,12 +233,42 @@ function Get-ReactRoutes {
     return Compress-Routes $rows
 }
 
+# [!] The Laravel Blade accessible frontend this reads was DELETED on 2026-08-14, so the
+# route files below no longer exist and this function returned an EMPTY list. The caller's
+# guard then threw "Refusing to report a comparison against nothing" and failed the
+# Platform contracts workflow -- correct behaviour, and the reason this was caught.
+#
+# The final Blade route inventory is frozen at
+# web-uk/scripts/blade-route-inventory.frozen.json (707 routes, captured while Blade still
+# existed) and is read when the live files are absent, which is now always. That keeps the
+# accessible comparison genuinely two-sided: web-uk's live Express routes against what the
+# accessible frontend served on the day Blade was retired.
+#
+# Do NOT "fix" this by deleting the guard or by letting an empty source pass. The guard
+# exists so a vacuous comparison can never be reported as parity evidence.
+function Get-FrozenBladeAccessibleRoutes {
+    param([string]$Root)
+
+    $frozen = Join-Path $Root 'web-uk/scripts/blade-route-inventory.frozen.json'
+    if (-not (Test-Path -LiteralPath $frozen)) {
+        return @()
+    }
+
+    $inventory = Get-Content -Raw -LiteralPath $frozen | ConvertFrom-Json
+    $rows = New-Object System.Collections.Generic.List[object]
+    foreach ($route in $inventory.routes) {
+        Add-Route $rows 'laravel' 'accessible' 'laravel-blade-frozen-inventory' $route.method $route.path $frozen
+    }
+
+    return Compress-Routes $rows
+}
+
 function Get-LaravelAccessibleRoutes {
     param([string]$Root)
 
     $routeRoot = Join-Path $Root 'routes'
     if (-not (Test-Path -LiteralPath $routeRoot)) {
-        return @()
+        return (Get-FrozenBladeAccessibleRoutes $Root)
     }
 
     $rows = New-Object System.Collections.Generic.List[object]
@@ -252,6 +282,15 @@ function Get-LaravelAccessibleRoutes {
     if (Test-Path -LiteralPath $parityRoot) {
         Get-ChildItem -LiteralPath $parityRoot -Recurse -Filter '*.php' -File |
             ForEach-Object { $files.Add($_) }
+    }
+
+    # [!] THIS is the branch that actually fires after the 2026-08-14 Blade removal, not the
+    # missing-`routes/` check above: `routes/` still exists (api.php, web.php, console.php
+    # all live there) -- it is only the two govuk-alpha entries that are gone. So the
+    # directory test passes, `$files` is empty, the regex loop finds nothing, and the
+    # function returns an empty list. Fall back here or the caller's guard throws.
+    if ($files.Count -eq 0) {
+        return (Get-FrozenBladeAccessibleRoutes $Root)
     }
 
     $routePattern = 'Route::(get|post|put|patch|delete|view)\s*\(\s*[''"]([^''"]+)[''"]'
@@ -416,59 +455,48 @@ function Count-Routes {
 function Write-MarkdownReport {
     param(
         [object]$Summary,
-        [object[]]$Matrix,
+        [object[]]$Inventory,
         [string]$Path
     )
 
-    $missing = @($Matrix | Where-Object { $_.status -eq 'missing' })
-    $extra = @($Matrix | Where-Object { $_.status -eq 'extra-dotnet' })
     $lines = New-Object System.Collections.Generic.List[string]
 
-    $lines.Add('# Frontend Route Parity Report')
+    $lines.Add('# Frontend Route Inventory')
     $lines.Add('')
     $lines.Add("Generated: $($Summary.generated_at)")
     $lines.Add('')
     $lines.Add('| Metric | Count |')
     $lines.Add('| --- | ---: |')
     $lines.Add("| Shared React routes (inventory only) | $($Summary.shared_react_routes) |")
-    $lines.Add("| Laravel accessible routes | $($Summary.laravel_accessible_routes) |")
-    $lines.Add("| .NET accessible routes | $($Summary.dotnet_accessible_routes) |")
-    $lines.Add("| Accessible matched routes | $($Summary.accessible_matched_routes) |")
-    $lines.Add("| Accessible missing routes | $($Summary.accessible_missing_routes) |")
-    $lines.Add("| Accessible extra routes | $($Summary.accessible_extra_routes) |")
+    $lines.Add("| Laravel accessible routes (frozen Blade snapshot) | $($Summary.laravel_accessible_routes) |")
+    $lines.Add("| Web UK accessible routes | $($Summary.web_uk_accessible_routes) |")
     $lines.Add('')
-    $lines.Add('React is a single frontend shared by both backends, so it is')
-    $lines.Add('inventoried rather than compared; there is no second React app to')
-    $lines.Add('compare it against. Only the accessible surface is a two-sided')
-    $lines.Add('comparison. Every root above is asserted to exist before this report')
-    $lines.Add('is written, so a zero here means zero routes, never a missing folder.')
+    $lines.Add('## Why there are no matched/missing/extra counts here')
     $lines.Add('')
-    $lines.Add('## Missing Source Routes')
+    $lines.Add('**Neither surface in this report is a comparison. Both are inventories.**')
     $lines.Add('')
-
-    if ($missing.Count -eq 0) {
-        $lines.Add('No missing frontend routes found by this static comparison.')
-    } else {
-        $lines.Add('| Surface | Method | Path | Source files |')
-        $lines.Add('| --- | --- | --- | --- |')
-        foreach ($row in $missing) {
-            $lines.Add("| $($row.surface) | $($row.method) | `$($row.path)` | `$($row.source_files)` |")
-        }
-    }
-
+    $lines.Add('React is a single frontend shared by both backends, so there is no second')
+    $lines.Add('React app to compare it against.')
     $lines.Add('')
-    $lines.Add('## Extra .NET Routes')
+    $lines.Add('The accessible surface stopped being a two-sided comparison on 2026-08-14,')
+    $lines.Add('when the Laravel Blade accessible frontend was deleted. The Laravel side above')
+    $lines.Add('is a frozen snapshot of what Blade served on its final day')
+    $lines.Add('(`web-uk/scripts/blade-route-inventory.frozen.json`), not live code.')
     $lines.Add('')
-
-    if ($extra.Count -eq 0) {
-        $lines.Add('No .NET-only frontend routes found by this static comparison.')
-    } else {
-        $lines.Add('| Surface | Method | Path | Target files |')
-        $lines.Add('| --- | --- | --- | --- |')
-        foreach ($row in $extra) {
-            $lines.Add("| $($row.surface) | $($row.method) | `$($row.path)` | `$($row.target_files)` |")
-        }
-    }
+    $lines.Add('[!] **The authoritative accessible route comparison is')
+    $lines.Add('`npm --prefix web-uk run route:matrix`**, which compares web-uk against that')
+    $lines.Add('same snapshot with matching path normalisation and reports 707 matched, 0')
+    $lines.Add('missing. It is enforced by `scripts/check-generated-artefacts-current.js`.')
+    $lines.Add('')
+    $lines.Add('This report deliberately does not publish a second, contradictory verdict.')
+    $lines.Add('Measured on 2026-08-14, comparing here reported 406 accessible routes')
+    $lines.Add('"missing" and 376 "extra" -- because this script''s Web UK route scraper')
+    $lines.Add('under-discovers Express routes (`/about` and `/accessibility` both came back')
+    $lines.Add('"missing" while plainly existing). Publishing that alongside 707/0 would be')
+    $lines.Add('invented evidence.')
+    $lines.Add('')
+    $lines.Add('Every root above is asserted to exist before this report is written, so a zero')
+    $lines.Add('here means zero routes, never a missing folder.')
 
     $lines | Set-Content -LiteralPath $Path
 }
@@ -482,19 +510,39 @@ try {
     # was deleted (f27412bb), and reporting one would be invented evidence.
     $sharedReactRoutes = @(Get-ReactRoutes $ReactRoot 'shared')
 
-    # The accessible surface IS a genuine two-sided comparison: Laravel's
-    # accessible frontend routes against the Web UK Express routes.
+    # [!] The accessible surface is now INVENTORIED, NOT COMPARED -- the same treatment, for
+    # the same reason, that React above already gets.
+    #
+    # It was a genuine two-sided comparison while the Laravel Blade accessible frontend
+    # existed. Blade was deleted on 2026-08-14, so the Laravel side is now a frozen
+    # snapshot (web-uk/scripts/blade-route-inventory.frozen.json) rather than live code.
+    #
+    # [!] Do not restore the comparison here, and specifically do not restore it by
+    # deleting the guards below. Measured on 2026-08-14, feeding the frozen snapshot into
+    # this comparison reported 406 accessible routes "missing" and 376 "extra" -- while
+    # `npm --prefix web-uk run route:matrix`, against the SAME snapshot, reports 707
+    # matched and 0 missing. The difference is `Get-WebUkRoutes` under-discovering
+    # web-uk's Express routes: `/about` and `/accessibility` came back "missing" when both
+    # plainly exist. That inaccuracy was invisible before, because with an empty Laravel
+    # side the guard threw and no numbers were ever produced.
+    #
+    # So there is exactly ONE authoritative accessible route comparison, and it is
+    # `npm --prefix web-uk run route:matrix` (checked by
+    # scripts/check-generated-artefacts-current.js). Reporting a second, weaker one that
+    # contradicts it would be invented evidence -- precisely what the React note above
+    # refuses to do.
     $sourceRoutes = @(Get-LaravelAccessibleRoutes $SourceRoot)
     $targetRoutes = @(Get-WebUkRoutes $WebUkRoot)
 
+    # Both guards stay. They no longer gate a comparison, but an empty inventory still
+    # means the scrapers have silently stopped finding anything, and that must fail loudly
+    # rather than publish zeroes.
     if ($sourceRoutes.Count -eq 0) {
-        throw "No Laravel accessible routes found under '$SourceRoot'. Refusing to report a comparison against nothing."
+        throw "No Laravel accessible routes found under '$SourceRoot' and no frozen Blade inventory at web-uk/scripts/blade-route-inventory.frozen.json. Refusing to report an inventory of nothing."
     }
     if ($targetRoutes.Count -eq 0) {
-        throw "No Web UK routes found under '$WebUkRoot'. Refusing to report a comparison against nothing."
+        throw "No Web UK routes found under '$WebUkRoot'. Refusing to report an inventory of nothing."
     }
-
-    $matrix = New-ParityMatrix $sourceRoutes $targetRoutes
 
     $summary = [pscustomobject]@{
         generated_at = (Get-Date).ToString('o')
@@ -505,15 +553,21 @@ try {
         shared_react_routes = $sharedReactRoutes.Count
         react_comparison = 'not-applicable-single-shared-frontend'
         laravel_accessible_routes = Count-Routes $sourceRoutes 'accessible'
-        dotnet_accessible_routes = Count-Routes $targetRoutes 'accessible'
-        accessible_matched_routes = Count-Matrix $matrix 'accessible' 'matched'
-        accessible_missing_routes = Count-Matrix $matrix 'accessible' 'missing'
-        accessible_extra_routes = Count-Matrix $matrix 'accessible' 'extra-dotnet'
+        web_uk_accessible_routes = Count-Routes $targetRoutes 'accessible'
+        accessible_comparison = 'not-applicable-blade-removed-2026-08-14-see-web-uk-route-matrix'
+        accessible_source = 'frozen-blade-inventory'
     }
+
+    # An INVENTORY, not a matrix: every row is labelled with the side it came from and
+    # carries no matched/missing/extra verdict. The `status` field is deliberately absent
+    # so nothing downstream can read a verdict that was never computed.
+    $inventory = New-Object System.Collections.Generic.List[object]
+    foreach ($row in $sourceRoutes) { $inventory.Add($row) }
+    foreach ($row in $targetRoutes) { $inventory.Add($row) }
 
     $report = [pscustomobject]@{
         summary = $summary
-        matrix = $matrix
+        inventory = $inventory
     }
 
     $jsonPath = Join-Path $OutDir 'frontend-parity.json'
@@ -521,8 +575,8 @@ try {
     $csvPath = Join-Path $OutDir 'frontend-parity.csv'
 
     $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $jsonPath
-    $matrix | Export-Csv -LiteralPath $csvPath -NoTypeInformation
-    Write-MarkdownReport $summary $matrix $markdownPath
+    $inventory | Export-Csv -LiteralPath $csvPath -NoTypeInformation
+    Write-MarkdownReport $summary $inventory $markdownPath
 
     $summary | Format-List
     Write-Host "Frontend parity report written to $jsonPath"

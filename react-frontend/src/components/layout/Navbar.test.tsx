@@ -144,7 +144,7 @@ const i18nMap: Record<string, string> = {
   'sections.community': 'Community',
   'sections.explore': 'Explore',
   'nav.unread_notifications': 'Notifications, 5 unread',
-  'nav.accessibility_alpha': 'Accessibility (alpha)',
+  'nav.accessibility_alpha': 'WCAG 2.2 AA Version',
   'nav.switch_community': 'Switch community',
   'theme_picker.open_label': 'Theme',
   'accessibility.create_new': 'Create new',
@@ -152,7 +152,7 @@ const i18nMap: Record<string, string> = {
   'accessibility.search': 'Search',
   'accessibility.search_ctrl_k': 'Search (Ctrl+K)',
   'accessibility.skip_to_content': 'Skip to main content',
-  'accessibility.accessibility_alpha_new_tab': 'Open Accessibility (alpha) in a new tab',
+  'accessibility.accessibility_alpha_new_tab': 'Open WCAG 2.2 AA accessible version in a new tab',
   'accessibility.switch_to_dark': 'Switch to dark mode',
   'accessibility.switch_to_light': 'Switch to light mode',
   'aria.main_navigation': 'Main navigation',
@@ -611,11 +611,11 @@ describe('Navbar', () => {
         },
       });
       render(<Navbar />);
-      const link = screen.getByRole('link', { name: 'Open Accessibility (alpha) in a new tab' });
+      const link = screen.getByRole('link', { name: 'Open WCAG 2.2 AA accessible version in a new tab' });
       expect(link).toHaveAttribute('href', 'https://accessible.project-nexus.ie/hour-timebank/accessible');
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-      expect(screen.getByText('Accessibility (alpha)')).toBeInTheDocument();
+      expect(screen.getByText('WCAG 2.2 AA Version')).toBeInTheDocument();
     });
 
     it('does not render the accessible frontend link without a tenant slug', () => {
@@ -625,7 +625,7 @@ describe('Navbar', () => {
         },
       });
       render(<Navbar />);
-      expect(screen.queryByRole('link', { name: 'Open Accessibility (alpha) in a new tab' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: 'Open WCAG 2.2 AA accessible version in a new tab' })).not.toBeInTheDocument();
     });
 
     it('renders Dashboard link when module is enabled', async () => {
@@ -935,6 +935,90 @@ describe('Navbar', () => {
       // HeroUI Badge renders the count in multiple places; use getAllByText
       const badges = screen.getAllByText('3');
       expect(badges.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  /**
+   * 🔴 The gap these tests close — precisely.
+   *
+   * `buildAccessibleFrontendUrl()` has its own unit tests including four custom-domain
+   * cases, and the API payload that feeds it is asserted in
+   * `tests/Laravel/Feature/TenantBootstrapTest.php`. The Navbar's use of it was ALSO
+   * already tested — in `describe('Navigation links')` above — but ONLY for the slug
+   * fallback, with a tenant object carrying no `accessible_domain` at all.
+   *
+   * So the untested path was the one that actually matters to the two communities that
+   * have their own accessible address: does the Navbar pass `tenant.accessible_domain`
+   * through from a bootstrap-shaped tenant object? Drop that field anywhere along the
+   * chain — the TS type, the API's `!empty()` guard, the context, the `useMemo`
+   * argument list — and the link keeps working. It just quietly stops using the
+   * community's own address and falls back to the platform host plus the slug. No
+   * error, no broken page, and the pre-existing slug test still passes.
+   *
+   * Verified against production on 2026-08-14: exactly two communities have the field
+   * set — `timebanking-org` → `accessible-uk.timebank.global` and
+   * `minehead-and-coast-timebank` → `accessible-minehead-and-coast.timebank.global`.
+   * The other nine correctly have no value and use the slug form.
+   */
+  describe('Accessible frontend link in the utility bar', () => {
+    // 🔴 TWO stubs in `i18nMap` above were stale until 2026-08-14, in this file AND in
+    // MobileDrawer.test.tsx: `nav.accessibility_alpha` read 'Accessibility (alpha)' where
+    // the committed locale says 'WCAG 2.2 AA Version', and the aria-label key matched.
+    // Three pre-existing assertions were therefore checking text the application does
+    // not render. Copy stub values FROM `public/locales/en/common.json`; do not type
+    // what you expect them to say.
+    const accessibleLink = () =>
+      screen.getByLabelText('Open WCAG 2.2 AA accessible version in a new tab') as HTMLAnchorElement;
+
+    it("uses the community's own accessible domain when the API supplies one", () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 11,
+            name: 'Timebanking UK',
+            slug: 'timebanking-org',
+            accessible_domain: 'accessible-uk.timebank.global',
+          },
+        },
+      });
+      render(<Navbar />);
+
+      const href = accessibleLink().getAttribute('href') ?? '';
+      // Bare host, no trailing slash — buildAccessibleFrontendUrl normalises '/' to ''.
+      expect(href).toBe('https://accessible-uk.timebank.global');
+      // The whole point: no slug in the path. A community on its own accessible
+      // domain is served slug-less, so a slug here would 404 on that host.
+      expect(href).not.toContain('timebanking-org');
+    });
+
+    it('falls back to the platform host plus the slug when no accessible domain is set', () => {
+      setupDefaultMocks({
+        tenant: { tenant: { id: 2, name: 'hOUR Timebank', slug: 'hour-timebank' } },
+      });
+      render(<Navbar />);
+
+      const href = accessibleLink().getAttribute('href') ?? '';
+      expect(href).toBe('https://accessible.project-nexus.ie/hour-timebank/accessible');
+    });
+
+    it('opens in a new tab with rel="noopener noreferrer"', () => {
+      setupDefaultMocks({
+        tenant: {
+          tenant: {
+            id: 14,
+            name: 'Minehead',
+            slug: 'minehead-and-coast-timebank',
+            accessible_domain: 'accessible-minehead-and-coast.timebank.global',
+          },
+        },
+      });
+      render(<Navbar />);
+
+      const link = accessibleLink();
+      expect(link.getAttribute('href')).toBe('https://accessible-minehead-and-coast.timebank.global');
+      expect(link.getAttribute('target')).toBe('_blank');
+      // Without noopener the opened page can reach back through window.opener.
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     });
   });
 });
