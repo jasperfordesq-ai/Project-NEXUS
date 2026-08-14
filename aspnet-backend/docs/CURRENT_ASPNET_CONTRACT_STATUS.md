@@ -146,7 +146,21 @@ here as a separately named position, never as a silent rescore.
   (relationship-model upgrade → `support_pending_actions` workflow → proxy
   execution → supervised message viewing → admin attestation) is banked in
   `.local-docs-archive/aspnet-support-actions-blueprint-2026-08-14.md` —
-  start there, do not re-research.
+  start there, do not re-research. **Blueprint step 1 (relationship model)
+  landed later on 2026-08-14 (unscored):** migration 166
+  (`20260814175625_AddAccountRelationships`) creates `account_relationships`
+  and the append-only `account_relationship_events` (UPDATE refused by a
+  database trigger, proven by test), carries legacy `sub_accounts` rows across
+  with tier-mapped permissions, and the relationship endpoints
+  (`/users/me/sub-accounts*`, `/users/me/parent-accounts*` including the two
+  previously missing member routes: PUT `parent-accounts/{id}/permissions`
+  and POST `parent-accounts/{id}/message-access/withdraw`) now enforce the
+  Laravel tier rules: supporter expansion refused with
+  MEMBER_APPROVAL_REQUIRED, boolean true never escalates, dead
+  `can_view_messages` never surfaces, withdraw always available. Pinned by
+  `AccountRelationshipTests` (11 tests); two legacy tests updated to the
+  current contract in the same commit. Steps 2–5 (pending-action workflow,
+  proxy execution, supervised message viewing, attestation) remain open.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

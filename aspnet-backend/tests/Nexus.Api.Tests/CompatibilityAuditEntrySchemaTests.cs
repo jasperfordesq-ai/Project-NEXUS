@@ -74,8 +74,8 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260814173908_AddProxyActingUserAttribution",
-            "the chain currently ends with the proxy acting-user columns (migration 165); adding a "
+        migrations.Last().Should().Be("20260814175625_AddAccountRelationships",
+            "the chain currently ends with the carer relationship model (migration 166); adding a "
             + "migration is fine but must be deliberate — update this pin in the same commit");
     }
 

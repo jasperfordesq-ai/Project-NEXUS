@@ -2702,34 +2702,28 @@ public class CompatibilityAliasController : ControllerBase
         var subUserExists = await _db.Users.AnyAsync(u => u.TenantId == tenantId && u.Id == subUserId);
         if (!subUserExists) return NotFound(new { errors = new[] { new { code = "NOT_FOUND", message = "User not found.", field = "email" } } });
 
-        var existing = await _db.SubAccounts
-            .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.PrimaryUserId == userId.Value && s.SubUserId == subUserId);
-        if (existing != null)
+        var requestedPermissions = new Dictionary<string, bool>();
+        if (request?.Permissions is not null)
         {
-            existing.Relationship = NormalizeSubAccountRelationship(request?.RelationshipType ?? request?.Relationship);
-            ApplySubAccountPermissions(existing, request);
-            existing.IsActive = false;
-            existing.UpdatedAt = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
-            return Created("", new { data = await BuildSubAccountChildrenRowsAsync(userId.Value, tenantId) });
+            foreach (var (key, value) in request.Permissions) requestedPermissions[key] = value;
+        }
+        if (request?.CanTransact is { } canTransact) requestedPermissions.TryAdd("can_transact", canTransact);
+        if (request?.CanJoinGroups is { } canManage) requestedPermissions.TryAdd("can_manage_listings", canManage);
+
+        var relationships = HttpContext.RequestServices.GetRequiredService<AccountRelationshipService>();
+        var created = await relationships.RequestRelationshipAsync(
+            userId.Value, tenantId, subUserId,
+            NormalizeSubAccountRelationship(request?.RelationshipType ?? request?.Relationship),
+            requestedPermissions, HttpContext.RequestAborted);
+        if (!created)
+        {
+            return UnprocessableEntity(new { errors = relationships.Errors });
         }
 
-        var subAccount = new SubAccount
+        return Created("", new
         {
-            TenantId = tenantId,
-            PrimaryUserId = userId.Value,
-            SubUserId = subUserId,
-            Relationship = NormalizeSubAccountRelationship(request?.RelationshipType ?? request?.Relationship),
-            DisplayName = request?.DisplayName?.Trim(),
-            IsActive = false,
-            CreatedAt = DateTime.UtcNow
-        };
-        ApplySubAccountPermissions(subAccount, request);
-
-        _db.SubAccounts.Add(subAccount);
-        await _db.SaveChangesAsync();
-
-        return Created("", new { data = await BuildSubAccountChildrenRowsAsync(userId.Value, tenantId) });
+            data = await relationships.GetChildAccountsAsync(userId.Value, HttpContext.RequestAborted)
+        });
     }
 
     /// <summary>
@@ -2741,15 +2735,11 @@ public class CompatibilityAliasController : ControllerBase
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var tenantId = _tenantContext.GetTenantIdOrThrow();
-        var subAccount = await _db.SubAccounts.FirstOrDefaultAsync(s =>
-            s.TenantId == tenantId &&
-            s.Id == id &&
-            (s.PrimaryUserId == userId.Value || s.SubUserId == userId.Value));
-        if (subAccount == null) return NotFound(new { errors = new[] { new { code = "NOT_FOUND", message = "Sub-account relationship not found." } } });
-
-        _db.SubAccounts.Remove(subAccount);
-        await _db.SaveChangesAsync();
+        var relationships = HttpContext.RequestServices.GetRequiredService<AccountRelationshipService>();
+        if (!await relationships.RevokeAsync(userId.Value, id, HttpContext.RequestAborted))
+        {
+            return NotFound(new { errors = relationships.Errors });
+        }
 
         return Ok(new { data = new { message = "Relationship revoked" } });
     }
@@ -2763,95 +2753,88 @@ public class CompatibilityAliasController : ControllerBase
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var tenantId = _tenantContext.GetTenantIdOrThrow();
-        var subAccount = await _db.SubAccounts.FirstOrDefaultAsync(s =>
-            s.TenantId == tenantId &&
-            s.Id == id &&
-            s.SubUserId == userId.Value &&
-            !s.IsActive);
-        if (subAccount == null) return NotFound(new { errors = new[] { new { code = "NOT_FOUND", message = "Sub-account relationship not found." } } });
+        var relationships = HttpContext.RequestServices.GetRequiredService<AccountRelationshipService>();
+        if (!await relationships.ApproveAsync(userId.Value, id, HttpContext.RequestAborted))
+        {
+            return NotFound(new { errors = relationships.Errors });
+        }
 
-        subAccount.IsActive = true;
-        subAccount.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { data = await BuildSubAccountParentRowsAsync(userId.Value, tenantId) });
+        return Ok(new
+        {
+            data = await relationships.GetParentAccountsAsync(userId.Value, HttpContext.RequestAborted)
+        });
     }
 
     /// <summary>
     /// PUT /api/users/me/sub-accounts/{id}/permissions — Update sub-account permissions.
     /// </summary>
     [HttpPut("api/users/me/sub-accounts/{id:int}/permissions")]
-    public async Task<IActionResult> UpdateSubAccountPermissions(int id, [FromBody] UpdateSubAccountPermissionsAliasRequest? request = null)
+    public async Task<IActionResult> UpdateSubAccountPermissions(int id, [FromBody] JsonElement body)
     {
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var tenantId = _tenantContext.GetTenantIdOrThrow();
-        var subAccount = await _db.SubAccounts.FirstOrDefaultAsync(s =>
-            s.TenantId == tenantId &&
-            s.Id == id &&
-            s.PrimaryUserId == userId.Value &&
-            s.IsActive);
-        if (subAccount == null) return NotFound(new { errors = new[] { new { code = "NOT_FOUND", message = "Sub-account relationship not found." } } });
+        // The React client sends booleans and/or a tiers object, either at the
+        // top level or under "permissions". Laravel semantics: expansion is
+        // refused with MEMBER_APPROVAL_REQUIRED — only the supported member
+        // may expand authority.
+        var (booleans, tiers) = ParsePermissionsBody(body);
 
-        ApplySubAccountPermissions(subAccount, request);
-        subAccount.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync();
-
-        return Ok(new { data = await BuildSubAccountChildrenRowsAsync(userId.Value, tenantId) });
-    }
-
-    private async Task<List<object>> BuildSubAccountChildrenRowsAsync(int userId, int tenantId)
-    {
-        var rows = await (
-            from relationship in _db.SubAccounts.AsNoTracking()
-            join child in _db.Users.AsNoTracking() on relationship.SubUserId equals child.Id
-            where relationship.TenantId == tenantId
-                && relationship.PrimaryUserId == userId
-                && child.TenantId == tenantId
-            orderby relationship.CreatedAt descending
-            select new { relationship, user = child })
-            .ToListAsync();
-
-        return rows.Select(row => SubAccountRelationshipRow(row.relationship, row.user)).ToList();
-    }
-
-    private async Task<List<object>> BuildSubAccountParentRowsAsync(int userId, int tenantId)
-    {
-        var rows = await (
-            from relationship in _db.SubAccounts.AsNoTracking()
-            join parent in _db.Users.AsNoTracking() on relationship.PrimaryUserId equals parent.Id
-            where relationship.TenantId == tenantId
-                && relationship.SubUserId == userId
-                && parent.TenantId == tenantId
-            orderby relationship.CreatedAt descending
-            select new { relationship, user = parent })
-            .ToListAsync();
-
-        return rows.Select(row => SubAccountRelationshipRow(row.relationship, row.user)).ToList();
-    }
-
-    private static object SubAccountRelationshipRow(SubAccount relationship, User user) => new
-    {
-        relationship_id = relationship.Id,
-        relationship_type = relationship.Relationship,
-        permissions = new
+        var relationships = HttpContext.RequestServices.GetRequiredService<AccountRelationshipService>();
+        var updated = await relationships.UpdatePermissionsBySupporterAsync(
+            userId.Value, id, booleans, tiers, HttpContext.RequestAborted);
+        if (!updated)
         {
-            can_view_activity = true,
-            can_manage_listings = relationship.CanJoinGroups,
-            can_transact = relationship.CanTransact,
-            can_view_messages = relationship.CanMessage
-        },
-        status = relationship.IsActive ? "active" : "pending",
-        approved_at = relationship.IsActive ? relationship.UpdatedAt ?? relationship.CreatedAt : (DateTime?)null,
-        created_at = relationship.CreatedAt,
-        user_id = user.Id,
-        first_name = user.FirstName,
-        last_name = user.LastName,
-        avatar_url = user.AvatarUrl,
-        email = user.Email
-    };
+            var code = FirstErrorCode(relationships.Errors);
+            var status = code == "NOT_FOUND" ? StatusCodes.Status404NotFound
+                : StatusCodes.Status422UnprocessableEntity;
+            return StatusCode(status, new { errors = relationships.Errors });
+        }
+
+        return Ok(new
+        {
+            data = await relationships.GetChildAccountsAsync(userId.Value, HttpContext.RequestAborted)
+        });
+    }
+
+    internal static (Dictionary<string, bool> Booleans, Dictionary<string, string> Tiers)
+        ParsePermissionsBody(JsonElement body)
+    {
+        var booleans = new Dictionary<string, bool>();
+        var tiers = new Dictionary<string, string>();
+        void Walk(JsonElement element)
+        {
+            if (element.ValueKind != JsonValueKind.Object) return;
+            foreach (var property in element.EnumerateObject())
+            {
+                if (property.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                {
+                    booleans[property.Name] = property.Value.GetBoolean();
+                }
+                else if (property.Name == "tiers" && property.Value.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var tier in property.Value.EnumerateObject())
+                    {
+                        if (tier.Value.ValueKind == JsonValueKind.String)
+                            tiers[tier.Name] = tier.Value.GetString() ?? "";
+                    }
+                }
+                else if (property.Name == "permissions" && property.Value.ValueKind == JsonValueKind.Object)
+                {
+                    Walk(property.Value);
+                }
+            }
+        }
+
+        if (body.ValueKind == JsonValueKind.Object) Walk(body);
+        return (booleans, tiers);
+    }
+
+    internal static string FirstErrorCode(IReadOnlyList<object> errors)
+    {
+        var first = errors.FirstOrDefault();
+        return first?.GetType().GetProperty("code")?.GetValue(first) as string ?? "";
+    }
 
     private static string NormalizeSubAccountRelationship(string? relationship)
     {

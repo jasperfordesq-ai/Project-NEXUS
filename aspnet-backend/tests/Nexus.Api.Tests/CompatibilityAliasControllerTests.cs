@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright Â© 2024â€“2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Nexus.Api.Data;
 using Nexus.Api.Entities;
+using Nexus.Api.Services;
 using Nexus.Api.Tests.Fixtures;
 
 namespace Nexus.Api.Tests;
@@ -500,10 +501,11 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         var prematurePermissionUpdate = await Client.PutAsJsonAsync($"/api/users/me/sub-accounts/{subAccountId}/permissions", new
         {
             can_transact = false,
-            can_message = true,
-            can_join_groups = false
+            can_view_messages = true,
+            can_manage_listings = false
         });
-        prematurePermissionUpdate.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        prematurePermissionUpdate.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "a pending relationship grants nothing and cannot be edited");
 
         await AuthenticateAsAdminAsync();
         (await Client.PutAsync($"/api/users/me/sub-accounts/{subAccountId}/approve", null))
@@ -513,9 +515,10 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         (await Client.PutAsJsonAsync($"/api/users/me/sub-accounts/{subAccountId}/permissions", new
         {
             can_transact = false,
-            can_message = true,
-            can_join_groups = false
-        })).StatusCode.Should().Be(HttpStatusCode.OK);
+            can_view_messages = true,
+            can_manage_listings = false
+        })).StatusCode.Should().Be(HttpStatusCode.OK,
+            "shrinks and the permanently dead can_view_messages switch are accepted without effect");
 
         var skillResponse = await Client.PostAsJsonAsync("/api/users/me/skills", new
         {
@@ -527,10 +530,14 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         using (var scope = Factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
-            var subAccount = db.SubAccounts.Single(s => s.Id == subAccountId);
-            subAccount.CanTransact.Should().BeFalse();
-            subAccount.CanMessage.Should().BeTrue();
-            subAccount.CanJoinGroups.Should().BeFalse();
+            var relationship = db.AccountRelationships.IgnoreQueryFilters()
+                .Single(r => r.Id == subAccountId);
+            relationship.Status.Should().Be(AccountRelationship.StatusActive);
+            var tiers = AccountRelationshipService.ResolvedTiers(relationship);
+            tiers["credits"].Should().Be("none");
+            tiers["listings"].Should().Be("none");
+            tiers["messages"].Should().Be("none",
+                "the dead can_view_messages boolean never grants the real capability");
 
             db.UserSkills.Any(us =>
                 us.UserId == TestData.MemberUser.Id &&

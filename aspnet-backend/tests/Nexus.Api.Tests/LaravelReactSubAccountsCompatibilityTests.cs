@@ -103,6 +103,9 @@ public sealed class LaravelReactSubAccountsCompatibilityTests : IntegrationTestB
         ClearAuthToken();
         await AuthenticateAsMemberAsync();
 
+        // Laravel semantics (guardian three-tier redesign): the SUPPORTER may
+        // never expand their own authority — expansion needs the supported
+        // member's approval.
         var updatePermissions = await Client.PutAsJsonAsync($"/api/v2/users/me/sub-accounts/{relationshipId}/permissions", new
         {
             permissions = new
@@ -112,14 +115,30 @@ public sealed class LaravelReactSubAccountsCompatibilityTests : IntegrationTestB
             }
         });
 
-        updatePermissions.StatusCode.Should().Be(HttpStatusCode.OK);
-        var updated = (await updatePermissions.Content.ReadFromJsonAsync<JsonElement>())
+        updatePermissions.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        (await updatePermissions.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("errors")[0].GetProperty("code").GetString()
+            .Should().Be("MEMBER_APPROVAL_REQUIRED");
+
+        // The supported member expands via their own route instead.
+        ClearAuthToken();
+        SetAuthToken(await GetAccessTokenAsync(childEmail, "test-tenant"));
+        var memberGrant = await Client.PutAsJsonAsync(
+            $"/api/v2/users/me/parent-accounts/{relationshipId}/permissions",
+            new { tiers = new { credits = "represent" } });
+        memberGrant.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        ClearAuthToken();
+        await AuthenticateAsMemberAsync();
+        var afterGrant = await Client.GetAsync("/api/v2/users/me/sub-accounts");
+        var updated = (await afterGrant.Content.ReadFromJsonAsync<JsonElement>())
             .GetProperty("data")
             .EnumerateArray()
             .Single();
         var permissions = updated.GetProperty("permissions");
         permissions.GetProperty("can_transact").GetBoolean().Should().BeTrue();
-        permissions.GetProperty("can_view_messages").GetBoolean().Should().BeTrue();
+        permissions.GetProperty("can_view_messages").GetBoolean().Should().BeFalse(
+            "the legacy can_view_messages boolean is permanently dead");
 
         var remove = await Client.DeleteAsync($"/api/v2/users/me/sub-accounts/{relationshipId}");
 

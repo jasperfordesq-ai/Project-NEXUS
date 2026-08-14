@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Nexus.Api.Data;
 using Nexus.Api.Entities;
 using Nexus.Api.Extensions;
+using Nexus.Api.Services;
 
 namespace Nexus.Api.Controllers;
 
@@ -487,39 +488,23 @@ public class UsersParityController : ControllerBase
     }
 
     [HttpGet("me/parent-accounts")]
-    public async Task<IActionResult> ParentAccounts()
+    public async Task<IActionResult> ParentAccounts(
+        [FromServices] AccountRelationshipService relationships)
     {
-        var tenantId = TenantId();
-        var userId = UserId();
-        var rows = await (
-            from relationship in _db.SubAccounts.AsNoTracking()
-            join parent in _db.Users.AsNoTracking() on relationship.PrimaryUserId equals parent.Id
-            where relationship.TenantId == tenantId
-                && relationship.SubUserId == userId
-                && parent.TenantId == tenantId
-            orderby relationship.CreatedAt descending
-            select new { relationship, user = parent })
-            .ToListAsync();
-
-        return Ok(new { data = rows.Select(row => SubAccountRelationshipRow(row.relationship, row.user)) });
+        return Ok(new
+        {
+            data = await relationships.GetParentAccountsAsync(UserId(), HttpContext.RequestAborted)
+        });
     }
 
     [HttpGet("me/sub-accounts")]
-    public async Task<IActionResult> SubAccounts()
+    public async Task<IActionResult> SubAccounts(
+        [FromServices] AccountRelationshipService relationships)
     {
-        var tenantId = TenantId();
-        var userId = UserId();
-        var rows = await (
-            from relationship in _db.SubAccounts.AsNoTracking()
-            join child in _db.Users.AsNoTracking() on relationship.SubUserId equals child.Id
-            where relationship.TenantId == tenantId
-                && relationship.PrimaryUserId == userId
-                && child.TenantId == tenantId
-            orderby relationship.CreatedAt descending
-            select new { relationship, user = child })
-            .ToListAsync();
-
-        return Ok(new { data = rows.Select(row => SubAccountRelationshipRow(row.relationship, row.user)) });
+        return Ok(new
+        {
+            data = await relationships.GetChildAccountsAsync(UserId(), HttpContext.RequestAborted)
+        });
     }
 
     [HttpGet("me/sub-accounts/{childId:int}/activity")]
@@ -552,27 +537,6 @@ public class UsersParityController : ControllerBase
         return await _db.Users.FirstOrDefaultAsync(u => u.TenantId == TenantId() && u.Id == userId)
             ?? throw new UnauthorizedAccessException("Invalid token");
     }
-
-    private static object SubAccountRelationshipRow(SubAccount relationship, User user) => new
-    {
-        relationship_id = relationship.Id,
-        relationship_type = relationship.Relationship,
-        permissions = new
-        {
-            can_view_activity = true,
-            can_manage_listings = relationship.CanJoinGroups,
-            can_transact = relationship.CanTransact,
-            can_view_messages = relationship.CanMessage
-        },
-        status = relationship.IsActive ? "active" : "pending",
-        approved_at = relationship.IsActive ? relationship.UpdatedAt ?? relationship.CreatedAt : (DateTime?)null,
-        created_at = relationship.CreatedAt,
-        user_id = user.Id,
-        first_name = user.FirstName,
-        last_name = user.LastName,
-        avatar_url = user.AvatarUrl,
-        email = user.Email
-    };
 
     private static JsonObject ThemePreferencesBag(JsonObject bag)
     {

@@ -399,6 +399,10 @@ public class NexusDbContext : DbContext
     public DbSet<LegalDocument> LegalDocuments => Set<LegalDocument>();
     public DbSet<LegalDocumentAcceptance> LegalDocumentAcceptances => Set<LegalDocumentAcceptance>();
 
+    // Account Relationships (carer/guardian support model)
+    public DbSet<AccountRelationship> AccountRelationships => Set<AccountRelationship>();
+    public DbSet<AccountRelationshipEvent> AccountRelationshipEvents => Set<AccountRelationshipEvent>();
+
     // Partner Venues
     public DbSet<PartnerVenue> PartnerVenues => Set<PartnerVenue>();
     public DbSet<PartnerMemberPass> PartnerMemberPasses => Set<PartnerMemberPass>();
@@ -703,6 +707,7 @@ public class NexusDbContext : DbContext
             new WebhookConfiguration(_tenantContext),
             new ScheduledJobRunConfiguration(),
             new PartnerVenueConfiguration(_tenantContext),
+            new AccountRelationshipConfiguration(_tenantContext),
         };
 
         foreach (var config in configurations)
