@@ -4,10 +4,35 @@ const {
   featureDefaults,
   buildNavItems,
   buildShellLocals,
+  buildLanguageQueryParams,
   prefixLocalPath,
   resolveBackendAssetUrl
 } = require('../src/lib/accessible-shell');
 const { createTranslator } = require('../src/lib/localization');
+
+describe('language switcher preserves the current query (no-JS form)', () => {
+  it('keeps scalar params and drops only locale', () => {
+    const params = buildLanguageQueryParams({ locale: 'en', q: 'plumber', page: '2' });
+    expect(params).toContainEqual({ name: 'q', value: 'plumber' });
+    expect(params).toContainEqual({ name: 'page', value: '2' });
+    expect(params.some((p) => p.name === 'locale')).toBe(false);
+  });
+
+  it('🔴 preserves ARRAY params (e.g. a half-built group message) instead of dropping them', () => {
+    // The regression: switching language used to silently drop `members[]`, wiping
+    // every selected recipient. Each element must survive as its own bracketed input
+    // so Express's extended qs re-reads it back into an array.
+    const params = buildLanguageQueryParams({ locale: 'ga', name: 'Local helpers', 'members': ['44', '55'] });
+    const memberInputs = params.filter((p) => p.name === 'members[]').map((p) => p.value);
+    expect(memberInputs).toEqual(['44', '55']);
+    expect(params).toContainEqual({ name: 'name', value: 'Local helpers' });
+  });
+
+  it('preserves nested-object params (e.g. filter[status])', () => {
+    const params = buildLanguageQueryParams({ filter: { status: 'open' } });
+    expect(params).toContainEqual({ name: 'filter[status]', value: 'open' });
+  });
+});
 
 describe('accessible shell tenant gating', () => {
   const tenant = {

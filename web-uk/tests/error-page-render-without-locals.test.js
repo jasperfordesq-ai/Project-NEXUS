@@ -136,8 +136,13 @@ describe('error pages render when no request locals exist', () => {
 
     expect(fallbackAt).toBeLessThan(limiterAt);
     expect(fallbackAt).toBeLessThan(localizationAt);
-    // After tenantRouting, so a shared-mount request's prefix is already known.
-    expect(routingAt).toBeLessThan(fallbackAt);
+    // 🔴 BEFORE tenantRouting, corrected 2026-08-14. tenantRouting can throw (its
+    // bootstrap API returning 500 re-throws via .catch(next)); Express propagates an
+    // error FORWARD, so if the fallback ran AFTER tenantRouting a bootstrap failure
+    // reached finalErrorHandler with no `t`/`urlFor` and the error template threw a
+    // bare "Internal Server Error". The fallback's urlFor reads the tenant prefix
+    // LAZILY at render time, so running it first still produces the right prefix.
+    expect(fallbackAt).toBeLessThan(routingAt);
   });
 
   it('never overwrites the real localization locals', () => {

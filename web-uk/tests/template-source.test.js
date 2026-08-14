@@ -1360,17 +1360,11 @@ describe('tenant-aware template helper conversion', () => {
     expect(route).toContain('redirectTo(res,');
   });
 
-  it('keeps legacy poll vote redirects behind the active tenant URL helper', () => {
-    const route = fs.readFileSync(
-      path.join(__dirname, '..', 'src', 'routes', 'polls.js'),
-      'utf8'
-    );
-
-    expect(route).not.toMatch(/res\.redirect\(`\/polls/);
-    expect(route).not.toMatch(/res\.redirect\(['"`]\/polls/);
-    expect(route).toContain('res.locals.urlFor');
-    expect(route).toContain('redirectTo(res,');
-  });
+  // 🔴 Removed 2026-08-14: this asserted redirects in src/routes/polls.js, a DEAD
+  // route file that nothing required (the live poll routes are served by
+  // poll-actions.js). polls.js was deleted in the same change. The live file's
+  // redirects are covered by "keeps poll action redirects behind the active tenant
+  // URL helper" below.
 
   it('keeps review action redirects behind the active tenant URL helper', () => {
     const route = fs.readFileSync(

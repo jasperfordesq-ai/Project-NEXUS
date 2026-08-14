@@ -41,14 +41,18 @@ const generalLimiter = createLimiter({
 });
 
 // Authentication attempts (login, register, forgot password)
+//
+// 🔴 Keyed by IP ALONE (the library default, which also normalises IPv6 correctly).
+// It used to key on `${req.ip}-${req.body.email}`, commented "to prevent credential
+// stuffing" — but that did the OPPOSITE: varying the email gave a fresh 10-request
+// bucket per email from one IP, removing the per-IP throttle entirely and defeating
+// the enumeration defence that auth.js:795 relies on (that route dropped its
+// Turnstile gate specifically because "always-200 + rate-limit" was the enumeration
+// defence). Enumeration is exactly the attack that iterates emails from one IP.
 const authLimiter = createLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Strict limit
-  message: 'Too many authentication attempts, please try again later.',
-  keyGenerator: (req) => {
-    // Rate limit by IP + email to prevent credential stuffing
-    return `${req.ip}-${req.body?.email || 'unknown'}`;
-  }
+  message: 'Too many authentication attempts, please try again later.'
 });
 
 // Sensitive actions (password reset, email change)

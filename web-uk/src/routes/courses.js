@@ -11,6 +11,20 @@ const { asyncRoute } = require('../lib/routeHelpers');
 
 const router = express.Router();
 
+// 🔴 Every id-like param in this file is a numeric database id that gets
+// interpolated into an API path by callCourseApi. This was the ONLY route file
+// that did so with neither a numeric route constraint nor encodeURIComponent, so a
+// crafted value like `1%2f..%2f..%2fadmin%2fpurge` (Express decodes %2f to `/`,
+// then fetch's URL normalisation collapses `..`) could redirect the member's OWN
+// authenticated call to a different API endpoint. Reject anything non-numeric here,
+// once, for the whole router — a 404 is the correct answer for a bad id.
+for (const idParam of ['id', 'lessonId', 'sectionId', 'attemptId']) {
+  router.param(idParam, (req, res, next, value) => {
+    if (/^\d+$/.test(String(value))) return next();
+    return res.status(404).render('errors/404', { title: res.locals.t ? res.locals.t('error_pages.404_title') : 'Not found' });
+  });
+}
+
 const COURSE_LEVELS = ['beginner', 'intermediate', 'advanced'];
 const COURSE_VISIBILITIES = ['members', 'public'];
 const COURSE_ENROLLMENT_TYPES = ['self_paced', 'cohort'];

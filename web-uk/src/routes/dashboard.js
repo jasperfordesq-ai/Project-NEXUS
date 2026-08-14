@@ -282,7 +282,15 @@ router.get('/', asyncRoute(async (req, res) => {
   ] = await Promise.all([
     getRequestProfile(req, req.token),
     getBalance(req.token).catch(() => ({ balance: 0 })),
-    getOnboardingStatus(req.token).catch(() => ({ data: { onboarding_completed: true } })),
+    // 🔴 Re-throw auth errors (an expired token must redirect to login, not render a
+    // dashboard that claims onboarding is done). On a non-auth error, do NOT default to
+    // "completed" — that silently hid the onboarding prompt from a member who may still
+    // need it. The prompt is a gentle dismissible banner, so showing it on a transient
+    // blip is recoverable; hiding a needed step is not.
+    getOnboardingStatus(req.token).catch((error) => {
+      if (error instanceof ApiError && error.status === 401) throw error;
+      return { data: { onboarding_completed: false } };
+    }),
     getGamificationProfile(req.token).catch(() => ({ data: null })),
     getMyBadges(req.token).catch(() => ({ data: [], meta: { total: 0, available_types: [] } })),
     dashboardFeatures.listings

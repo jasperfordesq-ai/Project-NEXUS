@@ -454,16 +454,42 @@ function localizeFooterColumns(columns, t) {
   }));
 }
 
+// The no-JS language switcher re-submits the current query as hidden inputs so
+// switching language keeps you on the same filtered/half-built page.
+//
+// 🔴 This used to keep ONLY scalar values, silently dropping arrays and nested
+// objects. That quietly destroyed real state: e.g. the group-message composer keeps
+// its selected recipients in `members[]`, so switching language returned you to the
+// page with every selection gone (name/q survived, so it looked like a partial
+// glitch). Arrays and one level of nesting are now flattened into bracketed names
+// (`members[]`, `filter[status]`) that Express's extended qs parser re-reads back
+// into the same array/object.
+function flattenQueryParam(name, value, out) {
+  if (value === null || value === undefined) return;
+  if (Array.isArray(value)) {
+    for (const element of value) {
+      flattenQueryParam(`${name}[]`, element, out);
+    }
+    return;
+  }
+  if (typeof value === 'object') {
+    for (const [childKey, childValue] of Object.entries(value)) {
+      flattenQueryParam(`${name}[${childKey}]`, childValue, out);
+    }
+    return;
+  }
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    out.push({ name, value: String(value) });
+  }
+}
+
 function buildLanguageQueryParams(query = {}) {
-  return Object.entries(query)
-    .filter(([key, value]) => (
-      key !== 'locale'
-      && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
-    ))
-    .map(([name, value]) => ({
-      name,
-      value: String(value)
-    }));
+  const out = [];
+  for (const [key, value] of Object.entries(query)) {
+    if (key === 'locale') continue;
+    flattenQueryParam(key, value, out);
+  }
+  return out;
 }
 
 function resolveBackendAssetUrl(value) {

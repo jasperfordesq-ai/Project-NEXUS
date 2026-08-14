@@ -302,15 +302,21 @@ app.set('view engine', 'njk');
 // Trust proxy for rate limiting behind reverse proxy
 app.set('trust proxy', 1);
 
+// 🔴 BEFORE tenantRouting, and that is the whole point. tenantRouting ends in
+// `.catch(next)` and re-throws anything that is not a 404/offline (e.g. the tenant
+// bootstrap API returning 500). Express propagates an error FORWARD, skipping every
+// ordinary middleware between the throw and the error handler — so if this ran after
+// tenantRouting, a bootstrap failure reached finalErrorHandler with no `t`/`urlFor`
+// and the error template threw a bare "Internal Server Error", the exact outcome the
+// fallback exists to prevent. Its `urlFor` reads req.accessibleRouting?.prefix LAZILY
+// at render time (so the prefix is still correct once tenantRouting has set it), and
+// the real `localization` middleware later sets res.locals.t UNCONDITIONALLY, so
+// running this first shadows nothing in the normal path. It is also still before
+// generalLimiter, so the 429 page renders.
+app.use(errorPageFallbackLocals);
+
 app.use(tenantRouting);
 app.use(requestTenantContext);
-
-// 🔴 BEFORE generalLimiter, and that is the whole point — see the long note on
-// errorPageFallbackLocals. The limiter's 429 handler renders an error template,
-// and it runs long before `localization` supplies `t`, so without this the
-// "too many requests" page throws instead of rendering. After tenantRouting so a
-// shared-mount request's /{slug}/accessible prefix is already known.
-app.use(errorPageFallbackLocals);
 
 // Security headers with Helmet
 app.use(helmet({

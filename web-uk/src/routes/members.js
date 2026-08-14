@@ -932,7 +932,16 @@ router.get('/:id(\\d+)', requireAuth, asyncRoute(async (req, res) => {
     getUserSkills(req.token, id).catch(() => ({ data: [] })),
     getUserAvailability(req.token, id).catch(() => ({ data: { weekly: [] } })),
     getUserActivityDashboard(req.token, id).catch(() => ({ data: { timeline: [] } })),
-    getUserBlockStatus(req.token, id).catch(() => ({ data: { is_blocked: false, is_blocked_by: false } })),
+    // 🔴 Fail CLOSED. This used to default to is_blocked_by:false on any API error,
+    // so a transient wobble made a member who has blocked you look un-blocking. When
+    // we cannot confirm the block state, assume you may be blocked (is_blocked_by:true)
+    // rather than assert you are not. is_blocked stays false so no spurious "unblock"
+    // control appears. And re-throw auth errors so an expired token redirects to login
+    // instead of rendering a plausible page — the pattern used elsewhere in this file.
+    getUserBlockStatus(req.token, id).catch((error) => {
+      if (isAuthError(error)) throw error;
+      return { data: { is_blocked: false, is_blocked_by: true } };
+    }),
     getMemberEndorsements(req.token, Number(id)).catch(() => ({ data: { endorsements: [] } }))
   ]);
   const publicUser = dataFrom(userResult);
