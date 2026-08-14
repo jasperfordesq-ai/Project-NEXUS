@@ -217,6 +217,19 @@ here as a separately named position, never as a silent rescore.
   `GuardianArrangementTests` (13 tests). Storage note: Laravel's
   `safeguarding_assignments` is a read-only archive; these endpoints run on
   `account_relationships` with `proposed_by_user_id` set, exactly as Laravel.
+- **Small-endpoint batch closed later on 2026-08-14 (unscored):** admin
+  challenge CRUD (4 routes, Laravel wire shape incl. the four-type vocabulary,
+  hand-rolled validation order, JSON-null-skipping partial updates; the
+  ChallengeType enum gained the Laravel values, stored as strings, and
+  badge_reward maps to a Badge slug), `GET /v2/admin/badge-counts` (all eight
+  keys; the five sources with no ASP.NET tables are honestly 0), and the two
+  anonymous public-events routes (double feature gate with public_events OFF
+  by default; the sixteen-key allowlist projection plus description and
+  accessibility on detail; first-name-only organiser; indistinguishable 404;
+  cursor pagination not yet implemented — the React client never sends one).
+  Pinned by `SmallParityEndpointsTests` (6 tests). Remaining route gaps:
+  event attendance rewards (~6), impersonation (3), platform capabilities
+  (2), federation external-status, performance summary.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

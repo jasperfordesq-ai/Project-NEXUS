@@ -12,7 +12,15 @@ public enum ChallengeType
 {
     Individual,
     Team,
-    Community
+    Community,
+
+    // Laravel parity vocabulary (challenges.challenge_type enum
+    // daily|weekly|monthly|special). Appended so existing stored values keep
+    // their positions.
+    Daily,
+    Weekly,
+    Monthly,
+    Special
 }
 
 public enum ChallengeDifficulty
