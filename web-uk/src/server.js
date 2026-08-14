@@ -798,8 +798,12 @@ app.get('/', async (req, res, next) => {
     try {
       const homeData = await loadTenantHomeData(req, res);
       return res.render('home', {
-        title: 'Accessible',
-        titleKey: 'home.title',
+        // 🔴 The community's OWN name, not the generic key. `home.title` is literally
+        // "Accessible" and serviceName is "Project NEXUS Accessible", so every community
+        // home tab read "Accessible - Project NEXUS Accessible" — the community's name
+        // never appeared and "Accessible" showed twice. communityName is already
+        // resolved in homeData; fall back to the translated key only if it is absent.
+        title: homeData.communityName || (res.locals.t ? res.locals.t('home.title') : 'Accessible'),
         activeNav: 'home',
         status: typeof req.query.status === 'string' ? req.query.status : '',
         ...homeData

@@ -98,7 +98,15 @@ function handleApiError(error, req, res, options = {}) {
 
     // Handle 404
     if (error.status === 404) {
-      res.status(404).render('errors/404', { title: notFoundTitle });
+      // 🔴 Use the TRANSLATED 404 title, not the English `notFoundTitle`. 96 call sites
+      // pass a hardcoded English string ("Event not found", …) which was rendered
+      // straight into <title>, so under any non-English locale the page showed a
+      // translated H1 (errors/404.njk already uses error_pages.404_title) above an
+      // English tab name. The tab now matches the heading in all eleven languages.
+      // notFoundTitle survives only as the fallback when no translator is present.
+      res.status(404).render('errors/404', {
+        title: res.locals.t ? res.locals.t('govuk_alpha.error_pages.404_title') : notFoundTitle
+      });
       return true;
     }
 
