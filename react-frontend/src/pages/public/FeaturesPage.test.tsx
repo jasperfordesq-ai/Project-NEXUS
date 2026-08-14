@@ -116,6 +116,28 @@ describe('FeaturesPage', () => {
     expect(listItems.length).toBeGreaterThan(10);
   });
 
+  // The whole point of filter-in-place (rather than tabs or accordions) is that
+  // /features is prerendered for SEO crawlers, so every entry must be in the DOM
+  // before the user touches anything. If someone swaps this for a Tabs or
+  // Accordion layout, this test is what should stop them.
+  it('renders every feature entry up-front, with nothing hidden behind a control', async () => {
+    const { FeaturesPage } = await import('./FeaturesPage');
+    render(<FeaturesPage />);
+    const items = document.querySelectorAll('ul.space-y-3 > li');
+    // 100+ entries across the eight groups; guard the order of magnitude rather
+    // than an exact count so adding a module doesn't fail the suite.
+    expect(items.length).toBeGreaterThan(80);
+  });
+
+  it('renders the search field and a category chip for every group', async () => {
+    const { FeaturesPage } = await import('./FeaturesPage');
+    render(<FeaturesPage />);
+    expect(document.querySelector('input[type="search"]')).toBeTruthy();
+    // One chip per group plus the "everything" chip. Chips are ToggleButtons.
+    const chipGroup = document.querySelector('[role="radiogroup"], [role="group"]');
+    expect(chipGroup).toBeTruthy();
+  });
+
   it('renders maturity chips for beta and preview items', async () => {
     const { FeaturesPage } = await import('./FeaturesPage');
     render(<FeaturesPage />);

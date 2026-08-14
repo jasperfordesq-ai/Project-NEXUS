@@ -6,8 +6,8 @@
       "dormant": "Zbudowany, nie włączony"
     },
     "title": "Funkcje",
-    "meta_title": "Funkcje - Project NEXUS v1.5",
-    "meta_description": "Każdy moduł dostarczony w Project NEXUS v1.5, z uczciwymi etykietami dojrzałości dla federacji, bankowania czasu, marketplace'u, narzędzi społecznościowych, bezpieczeństwa, analityki i infrastruktury open source.",
+    "meta_title": "Funkcje - Project NEXUS v1.6",
+    "meta_description": "Każdy moduł dostarczony w Project NEXUS v1.6, z uczciwymi etykietami dojrzałości dla federacji, bankowania czasu, marketplace'u, narzędzi społecznościowych, bezpieczeństwa, analityki i infrastruktury open source.",
     "heading": "Co robi Project NEXUS",
     "subheading": "Project NEXUS to platforma społecznościowa klasy korporacyjnej, obsługująca wielu dzierżawców. Każdy poniższy moduł jest już dostępny w wersji 1.5. Uczciwie etykietujemy moduły: nieoznaczone elementy są ogólnie dostępne; nowsze lub aktywnie utwardzające się powierzchnie mają chip Beta lub Preview; a wbudowany, niewłączony chip oznacza, że ​​praca została zakończona i wyłączona i oczekuje na żądanie.",
     "maturity_key_title": "Jak oznaczamy dojrzałość",
@@ -41,7 +41,9 @@
       "realtime_label": "Czas rzeczywisty",
       "realtime_value": "Pusher WebSockets, przesyłanie wiadomości w chmurze Firebase",
       "search_label": "Wyszukiwanie",
-      "search_value": "Meilisearch v1.7"
+      "search_value": "Meilisearch v1.7",
+      "accessible_label": "Dostępny interfejs",
+      "accessible_value": "GOV.UK Frontend 6.4 + Express + Nunjucks, najpierw HTML i działa bez JavaScript"
     },
     "groups": {
       "core_platform": {
@@ -75,6 +77,19 @@
             "title": "Natywna aplikacja mobilna",
             "description": "Oddzielna aplikacja zbudowana przy użyciu Expo i React Native, komunikująca się z tym samym API co strona internetowa. Jedna baza kodu tworzy zarówno wersję dla systemu Android, jak i iOS.",
             "note": "Aplikacja internetowa jest nadal głównym narzędziem, a żadna wersja sklepu nie została jeszcze opublikowana. Android jest najbliżej: podpisywanie, tworzenie profili i powiadomienia push są dostępne. iOS jest zbudowany z tego samego kodu, ale dodatkowo wymaga konta programisty Apple i recenzji w App Store, więc będzie działać."
+          },
+          "accessible_frontend": {
+            "title": "Dostępny interfejs",
+            "description": "Drugi, oddzielny frontend zbudowany na GOV.UK Frontend dla członków, którzy chcą prostego, opartego na HTML doświadczenia, które działa bez JavaScript. Działa na własnym adresie internetowym i czyta ten sam interfejs API, co główna aplikacja.",
+            "note": "Żyj dzisiaj. Każda strona w głównej aplikacji ma pasującą dostępną stronę, ale każda z nich jest nadal sprawdzana pod kątem zachowania głównej aplikacji po zachowaniu, dlatego ma etykietę Beta, a nie GA."
+          },
+          "explore_discovery": {
+            "title": "Odkryć",
+            "description": "Jedna wyselekcjonowana strona przedstawiająca umiejętności, listy, wydarzenia, grupy, posty i osoby warte zobaczenia, dzięki czemu członkowie nie muszą przeszukiwać każdej sekcji, aby je znaleźć."
+          },
+          "maps_and_location": {
+            "title": "Dostawcy map i lokalizacji",
+            "description": "Mapowanie i wyszukiwanie adresów można podłączyć do każdej społeczności: Google Maps, OpenStreetMap lub kafelki Ordnance Survey w połączeniu z Google Places, Nominatim lub weryfikacją adresów OS Places wspieraną przez UPRN. Mapy pozostają wyłączone, dopóki społeczność ich nie włączy, więc żaden klucz mapowania domyślnie nie dociera do przeglądarki."
           }
         }
       },
@@ -107,6 +122,11 @@
           "federation_analytics": {
             "title": "Analityka federacji",
             "description": "Panele administracyjne umożliwiające monitorowanie aktywności między społecznościami, stanu synchronizacji i wolumenu transakcji federacyjnych."
+          },
+          "partner_network_portal": {
+            "title": "Portal sieci i partnerów",
+            "description": "Dedykowany obszar dla każdego, kto prowadzi sieć społeczności, a nie jedną: katalog partnerów, grupowanie sąsiedzkie, umowy kredytowe, ustawienia całej sieci, połączone działania i analizy, zarządzanie danymi i klucze API z własną dokumentacją.",
+            "note": "Części docierające do innych instalacji – partnerów zewnętrznych, partnerów API przychodzących i Credit Commons – pozostają wyłączone z resztą federacji zewnętrznej. Narzędzia sieci wewnętrznej są w codziennym użyciu."
           }
         }
       },
@@ -119,7 +139,7 @@
           },
           "marketplace": {
             "title": "Rynek",
-            "description": "Niezależny moduł ogłoszeń drobnych z wypłatami przez Stripe Connect, zamówieniami, profilami sprzedawców i podpowiedziami odpowiedzi opartymi na AI."
+            "description": "Oddzielny moduł ogłoszeń dla towarów i usług płatnych: profile sprzedawców i wdrażanie, zamówienia i sprzedaż, wypłaty Stripe Connect, sekcja bezpłatnych i rozdawanych prezentów, kolekcje, widok mapy, miejsca odbioru ze skanowaniem QR, opcje wysyłki, kupony sprzedawcy, obsługa spraw w przypadku sporów i odpowiedzi sugerowane przez sztuczną inteligencję."
           },
           "donations": {
             "title": "Darowizny",
@@ -151,7 +171,7 @@
           },
           "events_and_groups": {
             "title": "Wydarzenia i grupy",
-            "description": "Spotkania społeczności, grupy zainteresowań i przypomnienia o wydarzeniach."
+            "description": "Spotkania społeczności i grupy oparte na zainteresowaniach z zaproszeniami, zasadami członkostwa, przypomnieniami i dyskusjami grupowymi."
           },
           "connections": {
             "title": "Połączenia",
@@ -179,7 +199,7 @@
           },
           "job_vacancies": {
             "title": "Oferty pracy",
-            "description": "Pełny moduł rekrutacji z alertami, analityką i publicznym kanałem RSS/JSON ofert pracy dla agregatorów."
+            "description": "Pełny moduł rekrutacyjny: oferty pracy i aplikacje, proces rekrutacji metodą „przeciągnij i upuść”, wyszukiwanie talentów, profile pracodawców i budowanie marki, wdrażanie pracodawców, zapisane powiadomienia o ofertach pracy, statystyki dotyczące wolnych stanowisk pracy oraz publiczny kanał RSS i JSON, dzięki któremu agregatory ofert pracy mogą wybierać ogłoszenia."
           },
           "organisations": {
             "title": "Organizacje",
@@ -208,6 +228,55 @@
           "availability_scheduling": {
             "title": "Harmonogram dostępności",
             "description": "Planowanie przedziałów czasowych ze świadomością stref czasowych dla inteligentnego dopasowania i rezerwacji."
+          },
+          "courses": {
+            "title": "Kursy",
+            "description": "Uczenie się przez społeczność: członkowie prowadzą kursy obejmujące lekcje i quizy, inni członkowie zapisują się na nie i pracują nad nimi, a instruktorzy mogą oceniać pracę, sprawdzać wyniki kursu i na koniec wystawiać certyfikat."
+          },
+          "podcasts": {
+            "title": "Podcasty i dźwięk społecznościowy",
+            "description": "Programy społecznościowe, historie audio, wywiady i wiedza lokalna nagrana przez członków, z odcinkami, transkrypcjami, rozdziałami, moderacją i publicznym kanałem RSS, który działa w zwykłych aplikacjach do podcastów."
+          },
+          "clubs_and_associations": {
+            "title": "Kluby i stowarzyszenia",
+            "description": "Obsługa członkostwa klubów i stowarzyszeń: śledzenie składek, masowy import członków i zaproszenia działające w połączonych klubach."
+          },
+          "public_events": {
+            "title": "Wydarzenia publiczne",
+            "description": "Pozwól osobom nieposiadającym konta przeglądać i czytać opublikowanych wydarzeń. Aby zarejestrować się w jednym z nich, nadal konieczne jest zalogowanie się."
+          },
+          "event_attendance_credits": {
+            "title": "Nagrody za obecność",
+            "description": "Przyznawaj punkty czasowe za zweryfikowane zameldowanie na wydarzeniu, przyznawane społeczności, a nie odbierane gospodarzowi, więc prowadzenie wydarzenia nigdy nie jest kosztem osobistym.",
+            "note": "Domyślnie wyłączone i sam przełącznik nie może przenosić kredytów: operator musi także włączyć bicie skarbców i ustawić kwotę dla każdego zdarzenia."
+          },
+          "partner_venues": {
+            "title": "Miejsca partnerskie",
+            "description": "Rejestruj wizyty członków w lokalnych lokalizacjach partnerskich, skanując kod QR przepustki członkowskiej. Rejestruje tylko wizytę – platforma nie wystawia kuponu i nie stosuje rabatu."
+          },
+          "collections_and_bookmarks": {
+            "title": "Kolekcje i zapisane elementy",
+            "description": "Zapisuj oferty, członków i posty oraz grupuj je w kolekcje, które możesz udostępniać innym członkom."
+          },
+          "guardian_consent": {
+            "title": "Zgoda opiekuna",
+            "description": "Przepływ zgód dla członków poniżej 18 roku życia biorących udział w wydarzeniach i wolontariacie przy użyciu jednorazowych linków do wyrażania zgody, zaszyfrowanych danych opiekunów oraz historii zgód, którą można jedynie dodawać i nigdy nie edytować."
+          },
+          "member_premium": {
+            "title": "Darowizny i wsparcie",
+            "description": "Członkowie mogą przekazać jednorazową darowiznę lub ustawić regularną darowiznę, aby wesprzeć społeczność prowadzącą ich bank czasu i samodzielnie zarządzać nią lub ją zatrzymać w dowolnym momencie. Zwolennicy tego są doceniani — nie jest to poziom płatny i żadna część platformy nigdy nie jest obciążona płatnością."
+          },
+          "event_operations": {
+            "title": "Operacje Eventowe",
+            "description": "Wszystko, co potrzebne do faktycznego zorganizowania wydarzenia: sprzedaż biletów i rejestracja, listy oczekujących, plany wydarzeń cyklicznych, porządek obrad z prelegentami, odprawa QR, która działa nawet po zaniku sygnału, szczegóły dostępności, uwagi dotyczące bezpieczeństwa, wiadomości dla uczestników, szablony do wielokrotnego użytku, analiza poszczególnych wydarzeń i pełna historia każdej zmiany."
+          },
+          "merchant_coupons": {
+            "title": "Kupony handlowe",
+            "description": "Kupony rabatowe wydawane przez sprzedawców na rynku. Celowo trzymane oddzielnie od kredytów za czas i wymaga również włączenia Marketplace."
+          },
+          "hiring_bias_audit": {
+            "title": "Audyt stronniczości zatrudnienia",
+            "description": "Analityka procesu, która ujawnia możliwe stronniczość w procesie zatrudniania przez społeczność: sposób, w jaki kandydaci przechodzą przez każdy etap, współczynnik odrzuceń i średni czas na każdym etapie, w jakim stopniu dopasowanie umiejętności faktycznie przewiduje wynik oraz które źródła aplikacji zakończyły się sukcesem."
           }
         }
       },
@@ -247,8 +316,13 @@
             "description": "Analiza SROI, raporty wyników członków i studia przypadków wpływu społecznego."
           },
           "social_prescribing": {
-            "title": "Recepta społeczna",
-            "description": "Informacje i narzędzia dla przepływów integracji ze zdrowiem społecznym."
+            "title": "Społeczne partnerstwo w zakresie przepisywania leków",
+            "description": "Zarządzana ścieżka dla usług zdrowotnych umożliwiająca kierowanie pacjentów do banku czasu w ramach wsparcia społeczności. Lekarz pierwszego kontaktu, lekarz socjalny lub pracownik opieki zdrowotnej wystawia formalne skierowanie — nie ma przeszkód w samodzielnym skierowaniu — następnie koordynator osobiście wita daną osobę, tworzy profil na podstawie jej mocnych stron, dopasowuje ją do wymian, grup i wydarzeń oraz regularnie się melduje, przesyłając dane o wynikach każdemu, kto ją skierował. Na stronie przedstawiono opublikowane wyniki, w tym zwrot socjalny w stosunku 16:1, oraz powiązanie modelu z Sláintecare i Ramowymi zasadami przepisywania leków HSE.",
+            "note": "Jest to program na żywo jednej społeczności, prezentowany do przeczytania partnerom z sektora zdrowia i sektora publicznego — jest to ścieżka skierowań prowadzona przez ludzi, a nie przełącznik, który może włączyć inna społeczność, a platforma nie posiada własnego formularza skierowań. Jeśli chcesz zbudować z nami coś podobnego, skontaktuj się z nami."
+          },
+          "message_translation": {
+            "title": "Tłumaczenie wiadomości",
+            "description": "Przełącznik w dowolnej rozmowie, który automatycznie tłumaczy bezpośrednie wiadomości między dwoma członkami, którzy nie dzielą tego samego języka."
           }
         }
       },
@@ -278,6 +352,15 @@
           "crm": {
             "title": "CRM",
             "description": "Zarządzanie kontaktami po stronie admina z notatkami, zadaniami, tagami, osiami czasu aktywności i eksportem."
+          },
+          "broker_application": {
+            "title": "Aplikacja brokera i koordynatora",
+            "description": "Oddzielna aplikacja dla koordynatorów i brokerów, którzy interweniują między członkami, gdy pojawia się problem dotyczący bezpieczeństwa lub zgodności. Przechowuje nadzór nad giełdą i zatwierdzanie meczów, zapisy członków i postępy wdrażania, kolejki moderacji dla kanału, komentarze i recenzje, znaczniki ryzyka i listy obserwacyjne, przegląd wiadomości dla członków objętych monitorowaniem, śledzenie certyfikatów ubezpieczeniowych i raportowanie.",
+            "note": "Broker pełni samodzielnie rolę operacyjną, a nie młodszego administratora: brokerzy otrzymują tę aplikację i celowo odmawia im się dostępu do ogólnego panelu administracyjnego."
+          },
+          "two_factor_and_passkeys": {
+            "title": "Dwuskładnikowe logowanie i hasła",
+            "description": "Drugim czynnikiem jest aplikacja uwierzytelniająca oraz klucze dostępu do funkcji Windows Hello, Touch ID, Face ID lub sprzętowy klucz bezpieczeństwa, dzięki czemu członek może zalogować się bez wpisywania hasła. Każdy z nich można przełączać w zależności od społeczności."
           }
         }
       },
@@ -315,12 +398,21 @@
           "algorithm_health_dashboard": {
             "title": "Pulpit zdrowia algorytmów",
             "description": "Bieżące monitorowanie i strojenie wszystkich systemów rankingowych po stronie admina."
+          },
+          "ai_agents": {
+            "title": "Agenci AI",
+            "description": "Agenci sztucznej inteligencji dla poszczególnych społeczności, którzy wykonują zadania zgodnie z harmonogramem, przedstawiają proponowane działania administratorowi do zatwierdzenia i pomagają w codziennych operacjach platformy. Każdy bieg i każda propozycja jest rejestrowana.",
+            "note": "Domyślnie zbudowany i wyłączony. Żadna społeczność nie włączyła tego dzisiaj."
+          },
+          "ai_provider_choice": {
+            "title": "Wybór dostawcy AI",
+            "description": "Warstwa sztucznej inteligencji nie jest powiązana z jednym dostawcą: OpenAI, Anthropic, Google Gemini i hostowana na własnym serwerze Ollama są obsługiwane w ramach tego samego interfejsu, więc społeczność może wybierać według kosztów, lokalizacji danych lub zasad."
           }
         }
       },
       "caring_community_layer": {
         "title": "Warstwa troskliwej społeczności",
-        "intro": "Warstwa zarządzania gotowością pilotażową dla wdrożeń obywatelskich i społeczności troszczących się — większość modułów wydana między kwietniem a majem 2026.",
+        "intro": "Zintegrowana warstwa wzajemnej pomocy, która łączy codzienną opiekę, wolontariat, organizacje i wpływ. Pozostaje wyłączony, dopóki społeczność nie wyrazi na to zgody, a panel administracyjny oznaczy go jako Alpha, więc wszystko tutaj ma chip podglądu.",
         "items": {
           "civic_digest": {
             "title": "Digest obywatelski",
@@ -345,6 +437,50 @@
           "copilot": {
             "title": "Drugi pilot",
             "description": "Kontekstowy pomocnik AI dla administratorów społeczności."
+          },
+          "request_help": {
+            "title": "Poproś o pomoc i oferuj przysługi",
+            "description": "Powiedz sąsiadom, czego potrzebujesz, bez pisania formalnego wykazu, lub zapisz nieformalny akt dobroci, który już wykonałeś. Przysługa nie wymaga kredytów czasowych — po prostu zostaje rozpoznana."
+          },
+          "care_relationships": {
+            "title": "Relacje opiekuńcze",
+            "description": "Połącz się z osobą, którą nieformalnie się opiekujesz, zobacz wszystkich znajdujących się pod twoją opieką w jednym miejscu, zorganizuj tymczasową opiekę, gdy potrzebujesz wytchnienia lub jesteś nieobecny, oraz wstrzymaj lub zakończ związek bez utraty jego historii."
+          },
+          "hour_gifting_and_transfer": {
+            "title": "Prezenty, transfery i opieka na przyszłość",
+            "description": "Podaruj zgromadzone godziny rodzinie, przyjaciołom lub każdemu, kto ich potrzebuje; zabierz ze sobą przepracowane godziny, jeśli przeniesiesz się do innej społeczności obsługującej NEXUS; lub zostaw je w przyszłym funduszu opieki, aby później móc je wykorzystać na zakupy spożywcze, spotkania lub po prostu towarzystwo."
+          },
+          "warmth_pass": {
+            "title": "Przepustka Ciepła",
+            "description": "Przenośne poświadczenie zaufania, które członek zdobywa po osiągnięciu poziomu Zaufane, pokazujące zarejestrowane godziny pracy, recenzje wzajemne, weryfikację tożsamości i obszary, w których pomaga. Członkowie pokazują go odbiorcom opieki, koordynatorom i organizacjom jako dowód, że są zaufanym pomocnikiem."
+          },
+          "trust_tiers": {
+            "title": "Poziomy zaufania",
+            "description": "Pozycja członka w społeczności, z prostym opisem tego, w jaki sposób zdobył on swój obecny poziom i o co prosi następny."
+          },
+          "care_providers": {
+            "title": "Katalog dostawców usług opieki",
+            "description": "Znajdź lokalne usługi opieki, ośrodki opieki dziennej, stowarzyszenia i wolontariuszy w swoim regionie, a także pomoc między członkami."
+          },
+          "safeguarding_reporting": {
+            "title": "Zgłaszanie obaw",
+            "description": "Członkowie mogą sami zgłosić problem dotyczący bezpieczeństwa, a personel może go sprawdzić, przypisać i rozwiązać w oparciu o dziennik działań, który można jedynie dodawać, a nie przepisywać."
+          },
+          "surveys_and_projects": {
+            "title": "Ankiety i projekty społecznościowe",
+            "description": "Zbieraj uporządkowane informacje zwrotne od mieszkańców, partnerów miejskich i zespołów programowych oraz koordynuj projekty społeczne z zaangażowanymi osobami."
+          },
+          "municipality_reporting": {
+            "title": "Sprawozdawczość gminy",
+            "description": "Wspólny kalendarz miejski, skrzynka odbiorcza z opiniami mieszkańców, która kieruje pytania, pomysły, problemy i skargi do odpowiedniego zespołu, a także raporty stworzone dla władz samorządowych i partnerów z sektora publicznego."
+          },
+          "community_market": {
+            "title": "Rynek wspólnotowy",
+            "description": "Jedno miejsce, w którym można odkryć usługi kredytu czasowego i lokalne towary oferowane w społeczności."
+          },
+          "time_credit_redemption": {
+            "title": "Lokalne wydawanie kredytów czasowych",
+            "description": "Członkowie widzą zarobione godziny i spędzają je w lokalnych firmach biorących udział w programie, z historią każdego wykupu."
           }
         }
       },
@@ -399,10 +535,6 @@
             "title": "Przetwarzanie webhooków e-mail",
             "description": "Obsługa zdarzeń związanych ze stemplem pocztowym, reklamacjami, otwarciem i dostawą."
           },
-          "500plus_phpunit_tests": {
-            "title": "500+ testów PHPUnit",
-            "description": "Przepływy pieniężne, webhooks, federacja, grupy, marketplace — plus zestawy frontendowe Vitest."
-          },
           "openapi_3_0_specification": {
             "title": "Specyfikacja OpenAPI 3.0",
             "description": "Pełna specyfikacja API z dokumentacją Swagger UI."
@@ -410,11 +542,56 @@
           "fully_dockerized": {
             "title": "W pełni dockeryzowane",
             "description": "Produkcja i development działają na tych samych fundamentach Docker Compose."
+          },
+          "automated_test_suite": {
+            "title": "Zautomatyzowany zestaw testów",
+            "description": "Około 16 500 metod testowych PHP w 1600 plikach testowych oraz około 1300 zestawów testów frontendowych obejmujących przepływ pieniędzy, webhooki, federację, grupy i rynek. Każde wypchnięcie uruchamia je, a wdrożenie jest blokowane do czasu sprawdzenia wypchniętego zatwierdzenia."
+          },
+          "performance_monitoring": {
+            "title": "Monitorowanie wydajności",
+            "description": "Każde żądanie jest zliczane, a powolne, wymagające dużej ilości pamięci lub wymagające dużej liczby zapytań żądania są szczegółowo rejestrowane w panelu administratora. Przechowywany jest tylko kształt zapytania, nigdy dane członkowskie, a stare rekordy są czyszczone co noc."
+          },
+          "partner_api_and_developer_portal": {
+            "title": "Interfejs API partnerów i portal dla programistów",
+            "description": "Udokumentowany interfejs API, który umożliwia partnerowi zewnętrznemu integrację ze społecznością, z uwierzytelnianiem tokenem, referencją do punktu końcowego i elementami webhook, a także samoobsługowym portalem dla programistów dla każdego, kto buduje integrację.",
+            "note": "Domyślnie zbudowany i wyłączony. Dziś nie korzysta z niego żaden partner zewnętrzny."
+          },
+          "local_advertising": {
+            "title": "Reklama lokalna",
+            "description": "Prowadzone przez społeczność kampanie reklamowe i push z własnymi narzędziami do budżetowania i administrowania, dzięki czemu społeczność może sama promować lokalną działalność.",
+            "note": "Domyślnie zbudowany i wyłączony."
+          },
+          "swiss_fadp_mode": {
+            "title": "Szwajcarski tryb FADP",
+            "description": "Dodatkowy baner zgody i tryb przetwarzania danych dla społeczności działających na mocy zmienionej szwajcarskiej ustawy federalnej o ochronie danych.",
+            "note": "Domyślnie zbudowany i wyłączony."
+          },
+          "regional_analytics": {
+            "title": "Analityka regionalna",
+            "description": "Miesięczne raporty z działalności regionalnej przygotowywane dla gmin i organów regionalnych, zarządzane centralnie, a nie przez każdą społeczność.",
+            "note": "Domyślnie zbudowany i wyłączony."
+          },
+          "community_onboarding": {
+            "title": "Nowe wprowadzenie do społeczności",
+            "description": "Jak powstaje nowa społeczność: publiczny formularz zgłoszeniowy, łącze umożliwiające wnioskodawcom śledzenie własnych postępów, ścieżka zadawania pytań w pierwszej kolejności oraz narzędzia administracyjne umożliwiające utrzymanie społeczności po jej zatwierdzeniu."
           }
         }
       }
     },
-    "maturity_dormant": "Domyślnie zbudowany, przetestowany i wyłączony. Praca jest wykonana i audytowana, ale nic z niej jeszcze nie korzysta - będziemy ją dalej rozwijać, gdy będzie realne zapotrzebowanie."
+    "maturity_dormant": "Domyślnie zbudowany, przetestowany i wyłączony. Praca jest wykonana i audytowana, ale nic z niej jeszcze nie korzysta - będziemy ją dalej rozwijać, gdy będzie realne zapotrzebowanie.",
+    "availability_notice_title": "Być może w Twojej społeczności nie wszystkie te funkcje są włączone",
+    "availability_notice_body": "Na tej stronie pokazano wszystko, co potrafi oprogramowanie Project NEXUS. To nie jest lista tego, co jest włączone dla Twojej społeczności.",
+    "availability_notice_body_2": "Każda społeczność wybiera, których części chce używać, więc niektóre z rzeczy wymienionych poniżej nie pojawią się w Twoich menu. Jest to normalne i nie jest to usterka — oznacza po prostu, że Twoja społeczność nie włączyła tej części.",
+    "availability_notice_body_3": "Tak naprawdę możesz używać tego, co widzisz w swoich własnych menu. Jeśli coś tutaj wygląda na przydatne, a nie możesz tego znaleźć, poproś osobę zarządzającą Twoją społecznością, aby to włączyła.",
+    "filter_heading": "Znajdź to, czego potrzebujesz",
+    "search_placeholder": "Funkcje wyszukiwania — wypróbuj „kredyty”, „wydarzenia”, „bezpieczeństwo”",
+    "search_label": "Funkcje wyszukiwania",
+    "filter_all": "Wszystko",
+    "filter_group_label": "Pokaż tylko",
+    "results_summary": "Wyświetlanie {{shown}} z {{total}} wpisów",
+    "no_results_title": "Nic nie pasuje do tego wyszukiwania",
+    "no_results_body": "Spróbuj użyć krótszego słowa lub wybierz opcję Wszystko, aby wyświetlić całą listę.",
+    "clear_filters": "Wyczyść wyszukiwanie i filtry"
   },
   "changelog_page": {
     "title": "Dziennik zmian",
@@ -903,8 +1080,8 @@
     "steps_intro": "Wybierz swoje urządzenie poniżej. Wybraliśmy ten, którego prawdopodobnie używasz.",
     "steps_tab_android": "Android",
     "steps_tab_iphone": "iPhone'a lub iPada",
-    "steps_tab_windows": "Windows",
-    "steps_tab_mac": "Mac",
+    "steps_tab_windows": "Okna",
+    "steps_tab_mac": "Prochowiec",
     "steps_android_title": "Telefon lub tablet z Androidem",
     "steps_android_1": "Otwórz tę stronę w przeglądarce Chrome na telefonie lub tablecie z Androidem.",
     "steps_android_2": "Kliknij menu z trzema kropkami w prawym górnym rogu.",

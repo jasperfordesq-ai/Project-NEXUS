@@ -6,8 +6,8 @@
       "dormant": "Construído, não ativado"
     },
     "title": "Funcionalidades",
-    "meta_title": "Funcionalidades - Project NEXUS v1.5",
-    "meta_description": "Todos os módulos disponibilizados no Project NEXUS v1.5, com indicações honestas de maturidade para federação, banco de tempo, marketplace, ferramentas comunitárias, segurança, análise e infraestrutura open source.",
+    "meta_title": "Funcionalidades - Project NEXUS v1.6",
+    "meta_description": "Todos os módulos disponibilizados no Project NEXUS v1.6, com indicações honestas de maturidade para federação, banco de tempo, marketplace, ferramentas comunitárias, segurança, análise e infraestrutura open source.",
     "heading": "O que o Project NEXUS faz",
     "subheading": "O Projeto NEXUS é uma plataforma comunitária multilocatária de nível empresarial. Cada módulo abaixo é enviado na versão 1.5 hoje. Rotulamos os módulos honestamente: os itens não marcados estão geralmente disponíveis; superfícies mais novas ou de endurecimento ativo carregam um chip Beta ou Preview; e um chip Construído e não habilitado significa que a obra está finalizada e desligada, aguardando demanda.",
     "maturity_key_title": "Como indicamos a maturidade",
@@ -41,7 +41,9 @@
       "realtime_label": "Tempo real",
       "realtime_value": "Pusher WebSockets, Firebase Cloud Messaging",
       "search_label": "Pesquisa",
-      "search_value": "Meilisearch v1.7"
+      "search_value": "Meilisearch v1.7",
+      "accessible_label": "Interface acessível",
+      "accessible_value": "GOV.UK Frontend 6.4 + Express + Nunjucks, HTML primeiro e funciona sem JavaScript"
     },
     "groups": {
       "core_platform": {
@@ -75,6 +77,19 @@
             "title": "App móvel nativa",
             "description": "Um aplicativo separado desenvolvido com Expo e React Native, conversando com a mesma API do site. Uma base de código produz a versão Android e iOS.",
             "note": "O aplicativo da web ainda é a principal forma de entrada e nenhuma versão da loja foi publicada ainda. O Android está mais próximo: assinatura, criação de perfis e notificações push estão disponíveis. O iOS é construído a partir do mesmo código, mas também precisa de uma conta de desenvolvedor da Apple e de uma revisão na App Store, portanto, seguirá."
+          },
+          "accessible_frontend": {
+            "title": "Front-end acessível",
+            "description": "Um segundo front-end separado criado no GOV.UK Frontend para membros que desejam uma experiência simples, baseada em HTML, que continue funcionando sem JavaScript. Ele é executado em seu próprio endereço da web e lê a mesma API do aplicativo principal.",
+            "note": "Viva hoje. Cada página no aplicativo principal tem uma página acessível correspondente, mas cada uma ainda está sendo verificada em relação ao comportamento do aplicativo principal por comportamento, e é por isso que carrega um rótulo Beta em vez de GA."
+          },
+          "explore_discovery": {
+            "title": "Descobrir",
+            "description": "Uma página com curadoria que apresenta habilidades, listagens, eventos, grupos, postagens e pessoas que valem a pena ver, para que os membros não precisem procurar em todas as seções para encontrá-los."
+          },
+          "maps_and_location": {
+            "title": "Provedores de mapas e localização",
+            "description": "O mapeamento e a pesquisa de endereços podem ser conectados por comunidade: blocos do Google Maps, OpenStreetMap ou Ordnance Survey, emparelhados com validação de endereço do Google Places, Nominatim ou OS Places apoiados por UPRN. Os mapas permanecem desligados até que uma comunidade os ative, portanto, nenhuma chave de mapeamento chega ao navegador por padrão."
           }
         }
       },
@@ -107,6 +122,11 @@
           "federation_analytics": {
             "title": "Análise da federação",
             "description": "Painéis de administração para atividades entre comunidades, integridade de sincronização e volume de transações federadas."
+          },
+          "partner_network_portal": {
+            "title": "Portal de rede e parceiros",
+            "description": "Uma área dedicada para quem administra uma rede de comunidades em vez de uma única: diretório de parceiros, agrupamento de bairros, contratos de crédito, configurações de toda a rede, atividade e análise combinadas, gerenciamento de dados e chaves API com documentação própria.",
+            "note": "As partes que alcançam outras instalações — parceiros externos, parceiros API de entrada e Credit Commons — permanecem desligadas com o restante da federação externa. As ferramentas de rede interna são de uso diário."
           }
         }
       },
@@ -119,7 +139,7 @@
           },
           "marketplace": {
             "title": "Mercado",
-            "description": "Módulo de classificados autónomo com pagamentos via Stripe Connect, encomendas, perfis de vendedor e sugestões de resposta com IA."
+            "description": "Um módulo de classificados separado para produtos e serviços pagos: perfis e integração de vendedores, pedidos e vendas, pagamentos do Stripe Connect, uma seção de brindes e brindes, coleções, visualização de mapa, locais de retirada com leitura de QR, opções de envio, cupons de vendedor, tratamento de casos para disputas e respostas sugeridas por IA."
           },
           "donations": {
             "title": "Donativos",
@@ -150,8 +170,8 @@
             "description": "Estado online/offline em tempo real com controlos de privacidade e mensagens de estado personalizadas."
           },
           "events_and_groups": {
-            "title": "Eventos e grupos",
-            "description": "Encontros comunitários, grupos por interesses e lembretes de eventos."
+            "title": "Eventos e Grupos",
+            "description": "Reuniões comunitárias e grupos baseados em interesses, com convites, regras de adesão, lembretes e discussão em grupo."
           },
           "connections": {
             "title": "Ligações",
@@ -178,8 +198,8 @@
             "description": "Oportunidades de voluntariado, registo de horas, check-ins, despesas, certificados, monitorização do bem-estar, alertas de emergência e uma carteira da organização de voluntariado que paga créditos de tempo pelas horas aprovadas."
           },
           "job_vacancies": {
-            "title": "Ofertas de emprego",
-            "description": "Módulo de recrutamento completo com alertas, análise e um feed público de ofertas em RSS/JSON para agregadores."
+            "title": "Vagas de emprego",
+            "description": "Um módulo de recrutamento completo: vagas e inscrições, um pipeline de contratação de arrastar e soltar, busca de talentos, perfis e marcas de empregadores, integração de empregadores, alertas de empregos salvos, análises por vaga e um feed RSS e JSON público para que agregadores de empregos possam selecionar ofertas."
           },
           "organisations": {
             "title": "Organizações",
@@ -208,6 +228,55 @@
           "availability_scheduling": {
             "title": "Agendamento de disponibilidade",
             "description": "Agendamento de horários com fuso horário para correspondência inteligente e reservas."
+          },
+          "courses": {
+            "title": "Cursos",
+            "description": "Aprendizagem comunitária: os membros realizam cursos com aulas e questionários, outros membros se inscrevem e trabalham neles, e os instrutores podem avaliar o trabalho, ver o desempenho de um curso e emitir um certificado no final."
+          },
+          "podcasts": {
+            "title": "Podcasts e áudio comunitário",
+            "description": "Programas comunitários, histórias em áudio, entrevistas e conhecimento local gravados pelos membros, com episódios, transcrições, capítulos, moderação e um feed RSS público que funciona em aplicativos de podcast comuns."
+          },
+          "clubs_and_associations": {
+            "title": "Clubes e Associações",
+            "description": "Tratamento de sócios para clubes e associações: rastreamento de quotas, importação em massa de sócios e convites que funcionam em todos os clubes vinculados."
+          },
+          "public_events": {
+            "title": "Eventos Públicos",
+            "description": "Permita que pessoas sem conta naveguem e leiam eventos publicados. A inscrição em um ainda precisa de um login."
+          },
+          "event_attendance_credits": {
+            "title": "Recompensas de participação",
+            "description": "Conceda créditos de tempo no check-in verificado do evento, emitidos para a comunidade em vez de retirados do anfitrião, de modo que a realização de um evento nunca seja um custo pessoal.",
+            "note": "Desligado por padrão, e o switch por si só não pode movimentar créditos: um operador também deve habilitar a cunhagem de tesouraria e definir um valor por evento."
+          },
+          "partner_venues": {
+            "title": "Locais Parceiros",
+            "description": "Registre as visitas dos membros em locais parceiros locais, digitalizando o código QR do passe do membro. Registra apenas a visita — a plataforma não emite cupom e não aplica desconto."
+          },
+          "collections_and_bookmarks": {
+            "title": "Coleções e itens salvos",
+            "description": "Salve listagens, membros e postagens e agrupe-os em coleções que você pode compartilhar com outros membros."
+          },
+          "guardian_consent": {
+            "title": "Consentimento do Guardião",
+            "description": "Fluxos de consentimento para membros menores de 18 anos que participam de eventos e voluntariado, usando links de consentimento de uso único, detalhes criptografados do responsável e um histórico de consentimento que só pode ser adicionado, nunca editado."
+          },
+          "member_premium": {
+            "title": "Doações e Apoio",
+            "description": "Os membros podem fazer uma doação única ou fazer uma doação regular para apoiar a comunidade que administra seu banco de tempo e gerenciá-lo ou interrompê-lo a qualquer momento. Os apoiadores são reconhecidos por isso – este não é um nível pago e nenhuma parte da plataforma é submetida a pagamento."
+          },
+          "event_operations": {
+            "title": "Operações de Eventos",
+            "description": "Tudo o que é necessário para realmente realizar um evento: ingressos e inscrições, listas de espera, planos para eventos recorrentes, agenda com palestrantes, check-in QR que continua funcionando quando o sinal cai, detalhes de acessibilidade, notas de segurança, mensagens para participantes, modelos reutilizáveis, análises por evento e um histórico completo de cada mudança."
+          },
+          "merchant_coupons": {
+            "title": "Cupons de comerciante",
+            "description": "Cupons de desconto emitidos por comerciantes do marketplace. Mantido deliberadamente separado do gasto de créditos de tempo e também precisa do Marketplace ativado."
+          },
+          "hiring_bias_audit": {
+            "title": "Contratação de auditoria tendenciosa",
+            "description": "Análises de processos que revelam possíveis preconceitos na contratação de uma comunidade: como os candidatos progridem em cada estágio, taxas de rejeição e tempo médio por estágio, até que ponto uma correspondência de habilidades realmente prevê o resultado e quais fontes de candidatura são bem-sucedidas."
           }
         }
       },
@@ -247,8 +316,13 @@
             "description": "Análise SROI, relatórios de resultados dos membros e estudos de caso de impacto social."
           },
           "social_prescribing": {
-            "title": "Prescrição social",
-            "description": "Informação e ferramentas para fluxos de integração com a saúde comunitária."
+            "title": "Parceria de prescrição social",
+            "description": "Um caminho gerenciado para que os serviços de saúde encaminhem pacientes para o banco de tempo como apoio comunitário. Um médico de família, um prescritor social ou um agente comunitário de saúde faz uma referência formal — não há obstáculos à auto-referência — e depois um coordenador dá as boas-vindas pessoalmente à pessoa, constrói um perfil em torno dos seus pontos fortes, associa-a a intercâmbios, grupos e eventos, e verifica-a regularmente, enviando os dados dos resultados de volta a quem a encaminhou. A página apresenta os resultados publicados, incluindo um retorno social de 16:1, e como o modelo se alinha com o Sláintecare e o Quadro de Prescrição Social de HSE.",
+            "note": "Este é um programa ao vivo de uma comunidade, apresentado para leitura pelos parceiros da saúde e do setor público – é um caminho de referência administrado por pessoas, não um interruptor que outra comunidade possa ativar, e a plataforma não possui nenhum formulário de referência próprio. Se você gostaria de construir algo semelhante conosco, entre em contato."
+          },
+          "message_translation": {
+            "title": "Tradução de mensagens",
+            "description": "Uma alternância em qualquer conversa que traduz automaticamente mensagens diretas entre dois membros que não compartilham o mesmo idioma."
           }
         }
       },
@@ -278,6 +352,15 @@
           "crm": {
             "title": "CRM",
             "description": "Gestão de contactos no admin com notas, tarefas, etiquetas, cronologias de atividade e exportação."
+          },
+          "broker_application": {
+            "title": "Aplicativo para corretor e coordenador",
+            "description": "Um aplicativo separado para os coordenadores e corretores que intervêm entre os membros quando uma preocupação de proteção ou conformidade está ativa. Ele mantém supervisão de troca e aprovação de correspondência, registros de membros e progresso de integração, filas de moderação para feed, comentários e análises, tags de risco e listas de observação, revisão de mensagens para membros colocados sob monitoramento, rastreamento de certificados de seguro e relatórios.",
+            "note": "Um corretor tem uma função operacional por si só, não um administrador júnior: os corretores obtêm esse aplicativo e são deliberadamente recusados ​​no painel de administração geral."
+          },
+          "two_factor_and_passkeys": {
+            "title": "Login e senhas de dois fatores",
+            "description": "Um segundo fator de aplicativo autenticador e chaves de acesso por meio do Windows Hello, Touch ID, Face ID ou uma chave de segurança de hardware, para que um membro possa entrar sem digitar nenhuma senha. Cada um pode ser alternado por comunidade."
           }
         }
       },
@@ -315,12 +398,21 @@
           "algorithm_health_dashboard": {
             "title": "Painel de saúde dos algoritmos",
             "description": "Monitorização e ajuste em direto no admin de todos os sistemas de ordenação."
+          },
+          "ai_agents": {
+            "title": "Agentes de IA",
+            "description": "Agentes de IA por comunidade que executam trabalhos de acordo com um cronograma, apresentam ações propostas a um administrador para aprovação e ajudam nas operações diárias da plataforma. Cada execução e cada proposta são registradas.",
+            "note": "Construído e desligado por padrão. Nenhuma comunidade o ativou hoje."
+          },
+          "ai_provider_choice": {
+            "title": "Escolha do provedor de IA",
+            "description": "A camada de IA não está vinculada a um fornecedor: OpenAI, Anthropic, Google Gemini e Ollama auto-hospedado são todos suportados pela mesma interface, para que uma comunidade possa escolher o custo, a localização dos dados ou os motivos políticos."
           }
         }
       },
       "caring_community_layer": {
         "title": "Camada de comunidade solidária",
-        "intro": "Uma camada de governação de preparação para pilotos em implementações cívicas e de comunidades solidárias — a maioria dos módulos foi lançada entre abril e maio de 2026.",
+        "intro": "Uma camada integrada de ajuda mútua que reúne cuidados diários, voluntariado, organizações e impacto. Ele permanece desligado até que uma comunidade aceite e o painel de administração o rotule como Alfa, então tudo aqui carrega um chip de visualização.",
         "items": {
           "civic_digest": {
             "title": "Resumo cívico",
@@ -345,6 +437,50 @@
           "copilot": {
             "title": "Copiloto",
             "description": "Assistente de IA contextual para administradores da comunidade."
+          },
+          "request_help": {
+            "title": "Solicite ajuda e ofereça favores",
+            "description": "Diga aos seus vizinhos o que você precisa sem escrever uma lista formal ou registre um ato informal de gentileza que você já fez. Um favor não precisa de créditos de tempo – ele simplesmente é reconhecido."
+          },
+          "care_relationships": {
+            "title": "Relações de cuidado",
+            "description": "Vincule-se a alguém de quem você cuida informalmente, veja todos sob seus cuidados em um só lugar, providencie cobertura temporária quando precisar de uma pausa ou estiver ausente e pause ou termine um relacionamento sem perder sua história."
+          },
+          "hour_gifting_and_transfer": {
+            "title": "Presentes, transferências e cuidados futuros",
+            "description": "Presenteie horas acumuladas para familiares, amigos ou quem precisar; leve suas horas acumuladas com você se você mudar para outra comunidade executando o NEXUS; ou deixe-os em um fundo de assistência futura para usar em compras, consultas ou simplesmente companhia, mais tarde."
+          },
+          "warmth_pass": {
+            "title": "Passe de Calor",
+            "description": "Uma credencial de confiança portátil que um membro ganha ao atingir o nível Confiável, mostrando suas horas registradas, avaliações de pares, verificação de identidade e as áreas nas quais eles ajudam. Os membros mostram-no aos destinatários dos cuidados, coordenadores e organizações como prova de que são ajudantes de confiança."
+          },
+          "trust_tiers": {
+            "title": "Níveis de confiança",
+            "description": "A posição de um membro na comunidade, com um detalhamento claro de como ele conquistou seu nível atual e o que o próximo pede."
+          },
+          "care_providers": {
+            "title": "Diretório de prestadores de cuidados",
+            "description": "Encontre serviços de cuidados locais, centros de dia, associações e voluntários na sua região, juntamente com ajuda de membro para membro."
+          },
+          "safeguarding_reporting": {
+            "title": "Relatório de preocupações",
+            "description": "Os próprios membros podem levantar uma preocupação de salvaguarda e a equipe pode revisá-la, atribuí-la e resolvê-la em um registro de ações que só pode ser adicionado, nunca reescrito."
+          },
+          "surveys_and_projects": {
+            "title": "Pesquisas e projetos comunitários",
+            "description": "Colete feedback estruturado de residentes, parceiros municipais e equipes do programa e coordene projetos comunitários com as pessoas participantes."
+          },
+          "municipality_reporting": {
+            "title": "Relatórios Municipais",
+            "description": "Um calendário municipal partilhado, uma caixa de entrada de feedback dos residentes que encaminha perguntas, ideias, problemas e reclamações para a equipa certa, e relatórios criados para o conselho e parceiros do setor público."
+          },
+          "community_market": {
+            "title": "Mercado Comunitário",
+            "description": "Um lugar para descobrir serviços de crédito de tempo e produtos locais oferecidos na comunidade."
+          },
+          "time_credit_redemption": {
+            "title": "Gastar créditos de tempo localmente",
+            "description": "Os membros veem as horas que ganharam e as gastam em empresas locais participantes, com um histórico de cada resgate."
           }
         }
       },
@@ -399,10 +535,6 @@
             "title": "Processamento de webhooks de email",
             "description": "Devolução de carimbo postal, reclamação, abertura e tratamento de eventos de entrega."
           },
-          "500plus_phpunit_tests": {
-            "title": "500+ testes PHPUnit",
-            "description": "Fluxos de dinheiro, webhooks, federação, grupos, marketplace — para além das suítes frontend Vitest."
-          },
           "openapi_3_0_specification": {
             "title": "Especificação OpenAPI 3.0",
             "description": "Especificação completa da API com documentação Swagger UI."
@@ -410,11 +542,56 @@
           "fully_dockerized": {
             "title": "Totalmente dockerizado",
             "description": "Produção e desenvolvimento correm sobre as mesmas bases de Docker Compose."
+          },
+          "automated_test_suite": {
+            "title": "Conjunto de testes automatizados",
+            "description": "Cerca de 16.500 métodos de teste de PHP em 1.600 arquivos de teste, além de cerca de 1.300 suítes de testes de frontend, abrangendo fluxo de dinheiro, webhooks, federação, grupos e mercado. Cada push os executa e uma implantação é bloqueada até que o commit enviado seja verificado."
+          },
+          "performance_monitoring": {
+            "title": "Monitoramento de desempenho",
+            "description": "Cada solicitação é contada, e solicitações lentas, com muita memória ou com muitas consultas são registradas detalhadamente em um painel de administração. Apenas o formato de uma consulta é armazenado, nunca os dados dos membros, e os registros antigos são removidos todas as noites."
+          },
+          "partner_api_and_developer_portal": {
+            "title": "API de parceiros e portal do desenvolvedor",
+            "description": "Uma API documentada que permite a integração de um parceiro externo com uma comunidade, com autenticação de token, referência de endpoint e webhooks, além de um portal de desenvolvedor de autoatendimento para quem está construindo a integração.",
+            "note": "Construído e desligado por padrão. Nenhum parceiro externo o utiliza hoje."
+          },
+          "local_advertising": {
+            "title": "Publicidade Local",
+            "description": "Publicidade administrada pela comunidade e campanhas push com seu próprio orçamento e ferramentas administrativas, para que a própria comunidade possa promover a atividade local.",
+            "note": "Construído e desligado por padrão."
+          },
+          "swiss_fadp_mode": {
+            "title": "Modo FADP Suíço",
+            "description": "Um banner de consentimento adicional e um modo de tratamento de dados para comunidades que operam sob a Lei Federal Suíça revisada sobre Proteção de Dados.",
+            "note": "Construído e desligado por padrão."
+          },
+          "regional_analytics": {
+            "title": "Análise Regional",
+            "description": "Relatórios mensais de atividades regionais preparados para municípios e organismos regionais, geridos centralmente e não por cada comunidade.",
+            "note": "Construído e desligado por padrão."
+          },
+          "community_onboarding": {
+            "title": "Nova integração da comunidade",
+            "description": "Como uma nova comunidade começa: um formulário de inscrição público, um link que permite aos candidatos acompanhar seu próprio progresso, uma rota de consulta para perguntas iniciais e ferramentas de provisionamento administrativo para apoiar a comunidade depois que ela for aprovada."
           }
         }
       }
     },
-    "maturity_dormant": "Construído, testado e desligado por padrão. O trabalho está feito e auditado, mas nada está sendo aproveitado ainda – iremos desenvolvê-lo ainda mais quando houver demanda real."
+    "maturity_dormant": "Construído, testado e desligado por padrão. O trabalho está feito e auditado, mas nada está sendo aproveitado ainda – iremos desenvolvê-lo ainda mais quando houver demanda real.",
+    "availability_notice_title": "Sua comunidade pode não ter tudo isso ativado",
+    "availability_notice_body": "Esta página mostra tudo o que o software Project NEXUS pode fazer. Não é uma lista do que está ativado em sua própria comunidade.",
+    "availability_notice_body_2": "Cada comunidade escolhe quais partes deseja usar, então algumas das coisas listadas abaixo não aparecerão nos seus menus. Isso é normal e não é uma falha – significa simplesmente que sua comunidade não ativou essa parte.",
+    "availability_notice_body_3": "O que você realmente pode usar é tudo o que você vê em seus próprios menus. Se algo aqui parecer útil e você não conseguir encontrá-lo, peça a quem dirige sua comunidade para ativá-lo.",
+    "filter_heading": "Encontre o que você precisa",
+    "search_placeholder": "Recursos de pesquisa – experimente “créditos”, “eventos”, “segurança”",
+    "search_label": "Recursos de pesquisa",
+    "filter_all": "Tudo",
+    "filter_group_label": "Mostrar apenas",
+    "results_summary": "Mostrando entradas {{shown}} de {{total}}",
+    "no_results_title": "Nada corresponde a essa pesquisa",
+    "no_results_body": "Experimente uma palavra mais curta ou escolha Tudo para trazer de volta a lista inteira.",
+    "clear_filters": "Limpar pesquisa e filtros"
   },
   "changelog_page": {
     "title": "Registro de alterações",

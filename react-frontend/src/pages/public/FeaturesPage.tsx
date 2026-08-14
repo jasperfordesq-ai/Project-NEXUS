@@ -3,7 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
-import { type ReactNode } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import CheckCircle from 'lucide-react/icons/circle-check-big';
@@ -13,8 +13,16 @@ import Shield from 'lucide-react/icons/shield';
 import Github from 'lucide-react/icons/github';
 import Bug from 'lucide-react/icons/bug';
 import ExternalLink from 'lucide-react/icons/external-link';
+import Info from 'lucide-react/icons/info';
+import Search from 'lucide-react/icons/search';
+import Users from 'lucide-react/icons/users';
+import BookOpen from 'lucide-react/icons/book-open';
+import Heart from 'lucide-react/icons/heart';
+import { Alert } from '@/components/ui/Alert';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
+import { FilterChipGroup } from '@/components/ui/FilterChipGroup';
+import { SearchField } from '@/components/ui/SearchField';
 import { Separator } from '@/components/ui/Separator';
 import { PageMeta } from '@/components/seo';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -50,6 +58,21 @@ import { useTenant } from '@/contexts';
  *
  * The page replaces the previous "Development Status" page; the old route
  * still redirects here so existing bookmarks survive.
+ *
+ * 🔴 This is a catalogue of what the SOFTWARE can do, not an inventory of what
+ * any one tenant has enabled. Most items here are per-tenant feature or module
+ * flags (`TenantFeatureConfig::FEATURE_DEFAULTS`), and several default to OFF —
+ * courses, podcasts, marketplace, caring_community, partner_venues,
+ * public_events, maps, member_premium and more. Members read the page as a
+ * promise about their own site, so the availability notice under the hero is
+ * load-bearing: do not remove it or demote it to a footnote.
+ *
+ * 🔴 Version-bearing copy lives in `features_page.meta_title`,
+ * `meta_description` and `subheading` in `locales/en/public.json`. It said
+ * "v1.5" for three minor releases while the release chip beside the heading —
+ * which reads `RELEASE_STATUS.stageLabel` from `src/config/releaseStatus.ts` —
+ * said v1.6.0. Bump both together, and add the version files listed in
+ * AGENTS.md ("Version and Changelog Hygiene") to the same commit.
  */
 
 
@@ -58,6 +81,9 @@ import { useTenant } from '@/contexts';
 // ---------------------------------------------------------------------------
 
 type Maturity = 'ga' | 'beta' | 'preview' | 'dormant';
+
+/** Sentinel for "no category chosen" in the filter chip row. */
+const ALL_CATEGORIES = '__all__';
 
 function MaturityChip({ level }: { level: Maturity }) {
   const { t } = useTranslation('public');
@@ -112,6 +138,62 @@ function FeatureList({ groupKey, items }: { groupKey: string; items: FeatureItem
       })}
     </ul>
   );
+}
+
+/**
+ * Search + category filtering.
+ *
+ * 🔴 Why filter-in-place rather than tabs or accordions: `/features` is on the
+ * public prerender allowlist (see `vite.config.ts` runtimeCaching and
+ * `prerender:plan-routes`), so SEO crawlers are served a snapshot of the
+ * server-rendered DOM. Tab panels and collapsed accordions unmount their
+ * content, which would drop most of this page out of that snapshot and out of
+ * the browser's own Ctrl+F. With no query and no category chosen, every entry
+ * is rendered — the filter only ever removes nodes in response to a
+ * deliberate user action, so the default DOM stays complete.
+ */
+function useFeatureFilter(groups: FeatureGroup[]) {
+  const { t, i18n } = useTranslation('public');
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState(ALL_CATEGORIES);
+
+  // Match against the rendered copy, not the key names: a member searching
+  // "credits" should find "Attendance Rewards", whose key says nothing about
+  // credits. Notes are included so "switched off" finds the dormant entries.
+  const haystack = useCallback(
+    (groupKey: string, itemKey: string) => {
+      const base = `features_page.groups.${groupKey}.items.${itemKey}`;
+      const noteKey = `${base}.note`;
+      const note = i18n.exists(noteKey, { ns: 'public' }) ? t(noteKey) : '';
+      return `${t(`${base}.title`)} ${t(`${base}.description`)} ${note}`.toLowerCase();
+    },
+    [t, i18n]
+  );
+
+  const normalisedQuery = query.trim().toLowerCase();
+
+  const visible = useMemo(() => {
+    return groups
+      .filter((group) => category === ALL_CATEGORIES || group.key === category)
+      .map((group) => ({
+        ...group,
+        items: normalisedQuery
+          ? group.items.filter((item) => haystack(group.key, item.key).includes(normalisedQuery))
+          : group.items,
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [groups, category, normalisedQuery, haystack]);
+
+  const total = useMemo(() => groups.reduce((n, g) => n + g.items.length, 0), [groups]);
+  const shown = visible.reduce((n, g) => n + g.items.length, 0);
+  const isFiltered = normalisedQuery !== '' || category !== ALL_CATEGORIES;
+
+  const reset = useCallback(() => {
+    setQuery('');
+    setCategory(ALL_CATEGORIES);
+  }, []);
+
+  return { query, setQuery, category, setCategory, visible, total, shown, isFiltered, reset };
 }
 
 interface FeatureGroup {
@@ -173,7 +255,21 @@ const GROUPS: FeatureGroup[] = [
         key: 'progressive_web_app'
       },
       {
+        key: 'explore_discovery'
+      },
+      {
+        key: 'maps_and_location'
+      },
+      {
         key: 'native_mobile_app',
+        maturity: 'beta'
+      },
+      // The GOV.UK-based accessible frontend (`web-uk/`) took over
+      // accessible.project-nexus.ie on 2026-08-12. Route parity with the React
+      // app is complete; behaviour parity is still being verified page by page,
+      // which is what keeps it at beta rather than GA.
+      {
+        key: 'accessible_frontend',
         maturity: 'beta'
       }
     ]
@@ -199,6 +295,12 @@ const GROUPS: FeatureGroup[] = [
       // External partner federation: complete, tested, switched off by default.
       // Not 'beta' — beta asserts "working in production today", and nothing is
       // connected. See the header note on the dormant label.
+      // The portal itself serves internal federation and is in everyday use;
+      // its external-partner sections are off with the rest of external
+      // federation, which its note says explicitly.
+      {
+        key: 'partner_network_portal'
+      },
       {
         key: 'external_partner_federation',
         maturity: 'dormant'
@@ -245,6 +347,13 @@ const GROUPS: FeatureGroup[] = [
       {
         key: 'events_and_groups'
       },
+      // Events had one line on this page while shipping thirteen separate
+      // translation namespaces (tickets, registration, waitlist, recurrence
+      // blueprints, agenda, offline check-in, accessibility, safety,
+      // communications, templates, analytics, federation, lifecycle history).
+      {
+        key: 'event_operations'
+      },
       {
         key: 'connections'
       },
@@ -267,6 +376,14 @@ const GROUPS: FeatureGroup[] = [
         key: 'job_vacancies'
       },
       {
+        key: 'hiring_bias_audit'
+      },
+      // Needs Marketplace as well, and defaults off.
+      {
+        key: 'merchant_coupons',
+        maturity: 'dormant'
+      },
+      {
         key: 'organisations'
       },
       {
@@ -286,6 +403,44 @@ const GROUPS: FeatureGroup[] = [
       },
       {
         key: 'availability_scheduling'
+      },
+      // Opt-in modules: `courses` and `podcasts` default to OFF in
+      // FEATURE_DEFAULTS, and `courses` ships stage:'alpha' in the admin module
+      // registry. `preview` is the honest label for both — recently shipped,
+      // available to opt in, still moving.
+      {
+        key: 'courses',
+        maturity: 'preview'
+      },
+      {
+        key: 'podcasts',
+        maturity: 'preview'
+      },
+      {
+        key: 'clubs_and_associations',
+        maturity: 'preview'
+      },
+      {
+        key: 'member_premium',
+        maturity: 'preview'
+      },
+      {
+        key: 'public_events',
+        maturity: 'beta'
+      },
+      {
+        key: 'event_attendance_credits',
+        maturity: 'beta'
+      },
+      {
+        key: 'partner_venues',
+        maturity: 'beta'
+      },
+      {
+        key: 'collections_and_bookmarks'
+      },
+      {
+        key: 'guardian_consent'
       }
     ]
   },
@@ -318,8 +473,15 @@ const GROUPS: FeatureGroup[] = [
         key: 'impact_reports'
       },
       {
-        key: 'social_prescribing',
-        maturity: 'preview'
+        key: 'message_translation'
+      },
+      // No maturity chip: this is not a switchable module, so none of the four
+      // labels fits. It is live (not Preview), but it is not something another
+      // community can opt into either — its nav entry is restricted to
+      // tenantSlugs: ['hour-timebank'] and there is no referral endpoint. The
+      // note carries that distinction instead of a chip that would misstate it.
+      {
+        key: 'social_prescribing'
       }
     ]
   },
@@ -340,6 +502,13 @@ const GROUPS: FeatureGroup[] = [
       },
       {
         key: 'safeguarding_module'
+      },
+      // A whole second application (20+ pages) that had no entry at all.
+      {
+        key: 'broker_application'
+      },
+      {
+        key: 'two_factor_and_passkeys'
       },
       {
         key: 'crm'
@@ -372,12 +541,72 @@ const GROUPS: FeatureGroup[] = [
       },
       {
         key: 'algorithm_health_dashboard'
+      },
+      {
+        key: 'ai_provider_choice'
+      },
+      // Agent definitions, runs and proposals all exist per tenant, but
+      // `ai_agents` defaults to false and no tenant has it on.
+      {
+        key: 'ai_agents',
+        maturity: 'dormant'
       }
     ]
   },
   {
     key: 'caring_community_layer',
     items: [
+      // `caring_community` defaults to false and ships stage:'alpha', so every
+      // item in this group is preview. The member-facing half of the layer
+      // (request help, care relationships, hour gifting, trust tiers, warmth
+      // pass, provider directory, concern reporting, surveys and projects) was
+      // missing from this page entirely until 2026-08-13 — only the six
+      // stakeholder-reporting surfaces below were listed, which made a
+      // ~25-route module look like an admin add-on.
+      {
+        key: 'request_help',
+        maturity: 'preview'
+      },
+      {
+        key: 'care_relationships',
+        maturity: 'preview'
+      },
+      {
+        key: 'hour_gifting_and_transfer',
+        maturity: 'preview'
+      },
+      {
+        key: 'trust_tiers',
+        maturity: 'preview'
+      },
+      {
+        key: 'warmth_pass',
+        maturity: 'preview'
+      },
+      {
+        key: 'care_providers',
+        maturity: 'preview'
+      },
+      {
+        key: 'safeguarding_reporting',
+        maturity: 'preview'
+      },
+      {
+        key: 'surveys_and_projects',
+        maturity: 'preview'
+      },
+      {
+        key: 'community_market',
+        maturity: 'preview'
+      },
+      {
+        key: 'time_credit_redemption',
+        maturity: 'preview'
+      },
+      {
+        key: 'municipality_reporting',
+        maturity: 'preview'
+      },
       {
         key: 'civic_digest',
         maturity: 'preview'
@@ -438,16 +667,42 @@ const GROUPS: FeatureGroup[] = [
         key: 'guided_onboarding'
       },
       {
+        key: 'community_onboarding'
+      },
+      {
         key: 'admin_panel'
       },
       {
         key: 'email_webhook_processing'
       },
+      // Was '500plus_phpunit_tests'. The real figures are ~16,500 PHP test
+      // methods across ~1,600 files and ~1,300 frontend suites, so a key named
+      // after 500 was quietly understating the suite by a factor of thirty and
+      // would have needed renaming at every future milestone anyway.
       {
-        key: '500plus_phpunit_tests'
+        key: 'automated_test_suite'
+      },
+      {
+        key: 'performance_monitoring'
       },
       {
         key: 'openapi_3_0_specification'
+      },
+      {
+        key: 'partner_api_and_developer_portal',
+        maturity: 'dormant'
+      },
+      {
+        key: 'local_advertising',
+        maturity: 'dormant'
+      },
+      {
+        key: 'regional_analytics',
+        maturity: 'dormant'
+      },
+      {
+        key: 'swiss_fadp_mode',
+        maturity: 'dormant'
       },
       {
         key: 'fully_dockerized'
@@ -457,6 +712,19 @@ const GROUPS: FeatureGroup[] = [
 ];
 
 
+// Keyed by group, not positional: the old positional `icons[index]` array
+// silently reassigned every icon whenever a group was added or reordered.
+const GROUP_ICONS: Record<string, ReactNode> = {
+  core_platform: <Sparkles className="w-5 h-5 text-accent" aria-hidden="true" />,
+  federation: <Globe className="w-5 h-5 text-accent" aria-hidden="true" />,
+  member_experience: <Users className="w-5 h-5 text-success" aria-hidden="true" />,
+  content_and_communication: <BookOpen className="w-5 h-5 text-success" aria-hidden="true" />,
+  trust_reputation_and_safety: <Shield className="w-5 h-5 text-warning" aria-hidden="true" />,
+  ai_and_recommendation_engine: <Sparkles className="w-5 h-5 text-accent" aria-hidden="true" />,
+  caring_community_layer: <Heart className="w-5 h-5 text-accent" aria-hidden="true" />,
+  built_for_production: <Shield className="w-5 h-5 text-accent" aria-hidden="true" />,
+};
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -465,6 +733,20 @@ export function FeaturesPage() {
   const { t } = useTranslation('public');
   const { tenantPath } = useTenant();
   usePageTitle(t('features_page.title'));
+
+  const { query, setQuery, category, setCategory, visible, total, shown, isFiltered, reset } =
+    useFeatureFilter(GROUPS);
+
+  const categoryOptions = useMemo(
+    () => [
+      { key: ALL_CATEGORIES, label: t('features_page.filter_all') },
+      ...GROUPS.map((group) => ({
+        key: group.key,
+        label: t(`features_page.groups.${group.key}.title`),
+      })),
+    ],
+    [t]
+  );
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-4 sm:px-6 lg:px-8">
@@ -488,6 +770,42 @@ export function FeaturesPage() {
           {t('features_page.subheading')}
         </p>
       </div>
+
+      {/* Availability notice.
+          Deliberately the first thing after the heading, deliberately louder
+          than the maturity key below it, and deliberately written without the
+          words "module", "feature flag" or "tenant". The page is a catalogue of
+          what the software can do; readers kept taking it as a list of what
+          their own community had switched on. HeroUI's accent Alert (not a
+          hand-rolled Card) so it inherits the same notice styling and
+          light/dark tokens as every other alert in the app. */}
+      <Alert
+        color="accent"
+        role="note"
+        // HeroUI's own `alert--accent` renders on a plain white surface with a
+        // near-invisible 8%-black border, which is not enough for a notice this
+        // page depends on being read. The tint + heavier border are added
+        // explicitly; both resolve from the Tailwind accent scale that
+        // `text-accent` already uses throughout the app, so it stays
+        // theme-aware in light and dark.
+        className="border-2 border-accent bg-accent/10"
+        icon={<Info className="w-5 h-5" aria-hidden="true" />}
+        classNames={{ title: 'text-base font-bold' }}
+        title={t('features_page.availability_notice_title')}
+        description={
+          <span className="block space-y-2">
+            <span className="block font-medium text-foreground">
+              {t('features_page.availability_notice_body')}
+            </span>
+            <span className="block">
+              {t('features_page.availability_notice_body_2')}
+            </span>
+            <span className="block">
+              {t('features_page.availability_notice_body_3')}
+            </span>
+          </span>
+        }
+      />
 
       {/* Maturity key */}
       <Card className="border border-border shadow-sm">
@@ -530,20 +848,76 @@ export function FeaturesPage() {
         </Card.Content>
       </Card>
 
+      {/* Search + category filter.
+          Sits between the maturity key and the groups so the two things a
+          first-time reader needs (what the page is, how the labels work) are
+          still read first. */}
+      <Card className="border border-border shadow-sm">
+        <Card.Content className="space-y-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm font-semibold text-foreground">
+              {t('features_page.filter_heading')}
+            </p>
+            <p className="text-xs text-theme-muted" aria-live="polite">
+              {t('features_page.results_summary', { shown, total })}
+            </p>
+          </div>
+
+          <SearchField
+            value={query}
+            onValueChange={setQuery}
+            onClear={() => setQuery('')}
+            isClearable
+            aria-label={t('features_page.search_label')}
+            placeholder={t('features_page.search_placeholder')}
+            startContent={<Search size={16} className="text-theme-muted" aria-hidden="true" />}
+          />
+
+          <FilterChipGroup
+            label={t('features_page.filter_group_label')}
+            ariaLabel={t('features_page.filter_group_label')}
+            selected={category}
+            onChange={setCategory}
+            options={categoryOptions}
+            extra={
+              isFiltered ? (
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="min-h-11 rounded-full px-3 text-sm font-medium text-accent underline focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  {t('features_page.clear_filters')}
+                </button>
+              ) : undefined
+            }
+          />
+        </Card.Content>
+      </Card>
+
       {/* Feature groups */}
-      {GROUPS.map((group, index) => {
-        const icons = [
-          <Sparkles key="feature-icon-0" className="w-5 h-5 text-accent" aria-hidden="true" />,
-          <Globe key="feature-icon-1" className="w-5 h-5 text-accent" aria-hidden="true" />,
-          <CheckCircle key="feature-icon-2" className="w-5 h-5 text-success" aria-hidden="true" />,
-          <CheckCircle key="feature-icon-3" className="w-5 h-5 text-success" aria-hidden="true" />,
-          <Shield key="feature-icon-4" className="w-5 h-5 text-warning" aria-hidden="true" />,
-          <Sparkles key="feature-icon-5" className="w-5 h-5 text-accent" aria-hidden="true" />,
-          <Sparkles key="feature-icon-6" className="w-5 h-5 text-accent" aria-hidden="true" />,
-          <Shield key="feature-icon-7" className="w-5 h-5 text-accent" aria-hidden="true" />,
-        ];
-        return <FeatureSection key={group.key} group={group} icon={icons[index]} />;
-      })}
+      {visible.map((group) => (
+        <FeatureSection key={group.key} group={group} icon={GROUP_ICONS[group.key]} />
+      ))}
+
+      {visible.length === 0 && (
+        <Card className="border border-border shadow-sm">
+          <Card.Content className="space-y-2 py-8 text-center">
+            <p className="font-semibold text-foreground">
+              {t('features_page.no_results_title')}
+            </p>
+            <p className="text-sm text-theme-muted">
+              {t('features_page.no_results_body')}
+            </p>
+            <button
+              type="button"
+              onClick={reset}
+              className="mt-2 min-h-11 rounded-full px-4 text-sm font-medium text-accent underline focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              {t('features_page.clear_filters')}
+            </button>
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Modern Tech Stack */}
       <Card className="border border-border shadow-sm">
@@ -556,6 +930,7 @@ export function FeaturesPage() {
         <Card.Content className="text-sm text-theme-muted">
           <ul className="grid sm:grid-cols-2 gap-y-1.5 gap-x-6 list-none">
             <li><strong>{t('features_page.tech_stack.frontend_label')}:</strong> {t('features_page.tech_stack.frontend_value')}</li>
+            <li><strong>{t('features_page.tech_stack.accessible_label')}:</strong> {t('features_page.tech_stack.accessible_value')}</li>
             <li><strong>{t('features_page.tech_stack.backend_label')}:</strong> {t('features_page.tech_stack.backend_value')}</li>
             <li><strong>{t('features_page.tech_stack.database_label')}:</strong> {t('features_page.tech_stack.database_value')}</li>
             <li><strong>{t('features_page.tech_stack.search_label')}:</strong> {t('features_page.tech_stack.search_value')}</li>

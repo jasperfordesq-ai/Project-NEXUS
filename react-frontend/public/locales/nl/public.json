@@ -6,10 +6,10 @@
       "dormant": "Gebouwd, niet ingeschakeld"
     },
     "title": "Functies",
-    "meta_title": "Functies - Project NEXUS v1.5",
-    "meta_description": "Alle modules in Project NEXUS v1.5, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
+    "meta_title": "Functies - Project NEXUS v1.6",
+    "meta_description": "Alle modules in Project NEXUS v1.6, met eerlijke volwassenheidslabels voor federatie, timebanking, marktplaats, community-tools, beveiliging, analytics en open-source infrastructuur.",
     "heading": "Wat Project NEXUS doet",
-    "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v1.5 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
+    "subheading": "Project NEXUS is een multi-tenant communityplatform op bedrijfsniveau. Elke onderstaande module wordt vandaag in v1.6.0 verzonden. We labelen modules eerlijk: ongemarkeerde items zijn algemeen verkrijgbaar; nieuwere of actief uithardende oppervlakken zijn voorzien van een bèta- of preview-chip; en een ingebouwde, niet-geactiveerde chip betekent dat het werk klaar is en uitgeschakeld, wachtend op de vraag.",
     "maturity_key_title": "Hoe we volwassenheid labelen",
     "maturity_ga": "Algemeen beschikbaar - stabiel, ondersteund, in productie bij pilot-tenants.",
     "maturity_beta": "Vandaag in productie, maar het publieke oppervlak of het wire-protocol wordt nog verhard.",
@@ -41,7 +41,9 @@
       "realtime_label": "Realtime",
       "realtime_value": "Pusher WebSockets, Firebase Cloud Messaging",
       "search_label": "Zoeken",
-      "search_value": "Meilisearch v1.7"
+      "search_value": "Meilisearch v1.7",
+      "accessible_label": "Toegankelijke frontend",
+      "accessible_value": "GOV.UK Frontend 6.4 + Express + Nunjucks, HTML-first en werkt zonder JavaScript"
     },
     "groups": {
       "core_platform": {
@@ -75,6 +77,19 @@
             "title": "Native mobiele app",
             "description": "Een aparte app gebouwd met Expo en React Native, die met dezelfde API praat als de website. Eén codebase produceert zowel de Android- als de iOS-build.",
             "note": "De webapp is nog steeds de belangrijkste manier om binnen te komen, en er is nog geen winkelbuild gepubliceerd. Android komt het dichtst in de buurt: ondertekenen, profielen bouwen en pushmeldingen zijn allemaal aanwezig. iOS is opgebouwd uit dezelfde code, maar heeft daarnaast een Apple-ontwikkelaarsaccount en App Store-beoordeling nodig, dus dit zal volgen."
+          },
+          "accessible_frontend": {
+            "title": "Toegankelijke frontend",
+            "description": "Een tweede, aparte frontend gebouwd op GOV.UK Frontend voor leden die een eenvoudige, HTML-eerste ervaring willen die blijft werken zonder JavaScript. Het draait op een eigen webadres en leest dezelfde API als de hoofdapp.",
+            "note": "Leef vandaag. Elke pagina in de hoofdapp heeft een overeenkomende toegankelijke pagina, maar elke pagina wordt nog steeds gecontroleerd aan de hand van het gedrag van de hoofdapp. Daarom heeft deze een bètalabel in plaats van GA."
+          },
+          "explore_discovery": {
+            "title": "Ontdekken",
+            "description": "Eén samengestelde pagina waarop vaardigheden, lijsten, evenementen, groepen, berichten en mensen die de moeite waard zijn om te bekijken worden weergegeven, zodat leden niet door elke sectie hoeven te zoeken om ze te vinden."
+          },
+          "maps_and_location": {
+            "title": "Kaarten- en locatieproviders",
+            "description": "Het in kaart brengen en opzoeken van adressen is mogelijk per community: Google Maps-, OpenStreetMap- of Ordnance Survey-tegels, gecombineerd met adresvalidatie van Google Places, Nominatim of UPRN-ondersteunde OS Places. Kaarten blijven uitgeschakeld totdat een community ze inschakelt. Standaard bereikt geen enkele kaartsleutel ooit de browser."
           }
         }
       },
@@ -107,6 +122,11 @@
           "federation_analytics": {
             "title": "Federatie-analytics",
             "description": "Beheerdersdashboards voor activiteiten tussen verschillende gemeenschappen, synchronisatiestatus en federatief transactievolume."
+          },
+          "partner_network_portal": {
+            "title": "Netwerk- en partnerportaal",
+            "description": "Een speciaal gebied voor iedereen die een netwerk van communities beheert in plaats van één: een partnerlijst, buurtgroepering, kredietovereenkomsten, netwerkbrede instellingen, gecombineerde activiteiten en analyses, gegevensbeheer en API-sleutels met hun eigen documentatie.",
+            "note": "De onderdelen die andere installaties bereiken – externe partners, inkomende API-partners en Credit Commons – blijven uitgeschakeld, net als de rest van de externe federatie. De interne netwerktooling wordt dagelijks gebruikt."
           }
         }
       },
@@ -119,7 +139,7 @@
           },
           "marketplace": {
             "title": "Marktplaats",
-            "description": "Zelfstandige rubrieken-module met uitbetalingen via Stripe Connect, bestellingen, verkopersprofielen en AI-suggesties voor antwoorden."
+            "description": "Een aparte advertentiemodule voor goederen en betaalde diensten: verkopersprofielen en onboarding, bestellingen en verkopen, Stripe Connect-uitbetalingen, een gratis-en-weggeefgedeelte, collecties, een kaartweergave, ophaalmomenten met QR-scanning, verzendopties, verkoperscoupons, afhandeling van zaken bij geschillen en door AI voorgestelde antwoorden."
           },
           "donations": {
             "title": "Donaties",
@@ -151,7 +171,7 @@
           },
           "events_and_groups": {
             "title": "Evenementen en groepen",
-            "description": "Community-bijeenkomsten, interessegroepen en evenementherinneringen."
+            "description": "Gemeenschapsbijeenkomsten en op interesses gebaseerde groepen, met uitnodigingen, lidmaatschapsregels, herinneringen en groepsdiscussies."
           },
           "connections": {
             "title": "Verbindingen",
@@ -179,7 +199,7 @@
           },
           "job_vacancies": {
             "title": "Vacatures",
-            "description": "Volledige recruitment-module met meldingen, analytics en een openbare RSS/JSON-vacaturefeed voor aggregatoren."
+            "description": "Een volledige wervingsmodule: vacatures en sollicitaties, een drag-and-drop-wervingspijplijn, zoeken naar talent, werkgeversprofielen en branding, onboarding van werkgevers, opgeslagen vacature-alerts, analyses per vacature en een openbare RSS- en JSON-feed zodat vacature-aggregators vacatures kunnen oppikken."
           },
           "organisations": {
             "title": "Organisaties",
@@ -208,6 +228,55 @@
           "availability_scheduling": {
             "title": "Beschikbaarheidsplanning",
             "description": "Tijdzonebewuste tijdslot-planning voor slim matchen en boekingen."
+          },
+          "courses": {
+            "title": "Cursussen",
+            "description": "Gemeenschapsleren: leden geven cursussen met lessen en quizzen, andere leden schrijven zich in en werken eraan, en instructeurs kunnen werk beoordelen, zien hoe een cursus presteert en aan het eind een certificaat uitreiken."
+          },
+          "podcasts": {
+            "title": "Podcasts en communityaudio",
+            "description": "Communityshows, audioverhalen, interviews en lokale kennis opgenomen door leden, met afleveringen, transcripties, hoofdstukken, moderatie en een openbare RSS-feed die werkt in gewone podcast-apps."
+          },
+          "clubs_and_associations": {
+            "title": "Clubs & Verenigingen",
+            "description": "Lidmaatschapsafhandeling voor clubs en verenigingen: contributie bijhouden, bulkimport van leden en uitnodigingen die werken voor gekoppelde clubs."
+          },
+          "public_events": {
+            "title": "Publieke evenementen",
+            "description": "Laat mensen zonder account gepubliceerde evenementen bekijken en lezen. Om u hiervoor aan te melden, is nog steeds een login nodig."
+          },
+          "event_attendance_credits": {
+            "title": "Aanwezigheidsbeloningen",
+            "description": "Geef tijdskredieten bij het geverifieerde inchecken bij een evenement, ten gunste van de gemeenschap in plaats van af te nemen van de gastheer, zodat het organiseren van een evenement nooit persoonlijke kosten zijn.",
+            "note": "Standaard uitgeschakeld, en de schakelaar alleen kan geen credits verplaatsen: een operator moet ook schatkistmunten inschakelen en een bedrag per gebeurtenis instellen."
+          },
+          "partner_venues": {
+            "title": "Partnerlocaties",
+            "description": "Registreer ledenbezoeken aan lokale partnerlocaties door de QR-code van de ledenpas te scannen. Het registreert alleen het bezoek; het platform geeft geen kortingsbon uit en past geen korting toe."
+          },
+          "collections_and_bookmarks": {
+            "title": "Collecties en opgeslagen items",
+            "description": "Bewaar vermeldingen, leden en berichten en groepeer ze in collecties die u met andere leden kunt delen."
+          },
+          "guardian_consent": {
+            "title": "Toestemming van de voogd",
+            "description": "Toestemmingsstromen voor leden onder de 18 jaar die deelnemen aan evenementen en vrijwilligerswerk, met behulp van toestemmingslinks voor eenmalig gebruik, gecodeerde voogdgegevens en een toestemmingsgeschiedenis die alleen kan worden toegevoegd en nooit kan worden bewerkt."
+          },
+          "member_premium": {
+            "title": "Donaties en ondersteuning",
+            "description": "Leden kunnen een eenmalige donatie geven, of een reguliere donatie opzetten, om de gemeenschap die hun tijdbank beheert te ondersteunen, en deze op elk gewenst moment zelf beheren of stopzetten. Supporters worden hiervoor erkend; dit is geen betaald niveau en geen enkel onderdeel van het platform wordt ooit achter een betaling geplaatst."
+          },
+          "event_operations": {
+            "title": "Gebeurtenisoperaties",
+            "description": "Alles wat nodig is om een ​​evenement daadwerkelijk te organiseren: ticketing en registratie, wachtlijsten, blauwdrukken voor terugkerende evenementen, een agenda met sprekers, QR-check-in die blijft werken als het signaal wegvalt, toegankelijkheidsgegevens, veiligheidsnotities, berichten over bezoekers, herbruikbare sjablonen, analyses per evenement en een volledige geschiedenis van elke wijziging."
+          },
+          "merchant_coupons": {
+            "title": "Koopmanscoupons",
+            "description": "Kortingsbonnen uitgegeven door marktplaatshandelaren. Met opzet gescheiden gehouden van het uitgeven van tijdskredieten, en de Marktplaats moet ook ingeschakeld zijn."
+          },
+          "hiring_bias_audit": {
+            "title": "Audit voor inhuurbias",
+            "description": "Procesanalyses die mogelijke vooroordelen bij de werving binnen een gemeenschap aan het licht brengen: hoe kandidaten door elke fase heen komen, het aantal afwijzingen en de gemiddelde tijd per fase, hoe sterk een match met vaardigheden de uitkomst daadwerkelijk voorspelt, en welke sollicitatiebronnen slagen."
           }
         }
       },
@@ -247,8 +316,13 @@
             "description": "SROI-analyse, rapporten over uitkomsten van leden en casestudy's over sociale impact."
           },
           "social_prescribing": {
-            "title": "Sociale prescriptie",
-            "description": "Informatie en tooling voor integratieworkflows met community-gezondheidszorg."
+            "title": "Sociaal voorschrijfpartnerschap",
+            "description": "Een beheerd traject voor gezondheidszorgdiensten om patiënten naar de tijdbank te verwijzen als ondersteuning van de gemeenschap. Een huisarts, sociaal voorschrijver of gemeenschapsgezondheidswerker doet een formele verwijzing – er is geen hindernis voor zelfverwijzing – waarna een coördinator de persoon persoonlijk verwelkomt, een profiel opstelt rond zijn sterke punten, hem koppelt aan uitwisselingen, groepen en evenementen, en regelmatig checkt, waarbij de uitkomstgegevens worden teruggestuurd naar degene die hem heeft doorverwezen. Op de pagina worden de gepubliceerde resultaten uiteengezet, waaronder een sociaal rendement van 16:1, en hoe het model aansluit bij Sláintecare en het HSE Social Prescribe Framework.",
+            "note": "Dit is het liveprogramma van één gemeenschap, gepresenteerd aan partners uit de gezondheidszorg en de publieke sector om te lezen. Het is een verwijzingstraject dat door mensen wordt beheerd, niet een schakelaar die een andere gemeenschap kan inschakelen, en het platform heeft geen eigen verwijzingsvorm. Als u iets soortgelijks met ons wilt bouwen, neem dan contact met ons op."
+          },
+          "message_translation": {
+            "title": "Berichtvertaling",
+            "description": "Een schakelaar in elk gesprek die automatisch directe berichten vertaalt tussen twee leden die geen taal delen."
           }
         }
       },
@@ -278,6 +352,15 @@
           "crm": {
             "title": "CRM",
             "description": "Contactbeheer aan de admin-kant met notities, taken, tags, activiteitstijdlijnen en export."
+          },
+          "broker_application": {
+            "title": "Aanvraag makelaar en coördinator",
+            "description": "Een aparte applicatie voor de coördinatoren en makelaars die tussen de leden in stappen wanneer er sprake is van een beveiligings- of nalevingsprobleem. Het houdt toezicht op de uitwisselingen en goedkeuring van wedstrijden, ledengegevens en voortgang van de onboarding, moderatiewachtrijen voor de feed, opmerkingen en beoordelingen, risicotags en volglijsten, berichtbeoordeling voor leden die onder toezicht staan, bijhouden van verzekeringscertificaten en rapportage.",
+            "note": "Een makelaar is op zichzelf een operationele rol, geen junior beheerder: makelaars krijgen deze aanvraag en worden bewust geweigerd in het algemene adminpanel."
+          },
+          "two_factor_and_passkeys": {
+            "title": "Twee-factor login en toegangscodes",
+            "description": "Een tweede factor in de authenticator-app en wachtwoordsleutels via Windows Hello, Touch ID, Face ID of een hardwarebeveiligingssleutel, zodat een lid kan inloggen zonder überhaupt een wachtwoord te typen. Ze zijn per community schakelbaar."
           }
         }
       },
@@ -315,12 +398,21 @@
           "algorithm_health_dashboard": {
             "title": "Dashboard algoritmegezondheid",
             "description": "Live admin-monitoring en bijsturing van alle ranking-systemen."
+          },
+          "ai_agents": {
+            "title": "AI-agenten",
+            "description": "AI-agenten per gemeenschap die taken volgens een schema uitvoeren, voorgestelde acties ter goedkeuring aan een beheerder voorleggen en helpen bij de dagelijkse platformactiviteiten. Elke run en elk voorstel wordt vastgelegd.",
+            "note": "Standaard gebouwd en uitgeschakeld. Geen enkele gemeenschap heeft dit vandaag ingeschakeld."
+          },
+          "ai_provider_choice": {
+            "title": "Keuze van AI-aanbieder",
+            "description": "De AI-laag is niet gebonden aan één leverancier: OpenAI, Anthropic, Google Gemini en zelf-gehoste Ollama worden allemaal ondersteund achter dezelfde interface, zodat een community kan kiezen op basis van kosten, datalocatie of beleidsgronden."
           }
         }
       },
       "caring_community_layer": {
         "title": "Zorgende-communitylaag",
-        "intro": "Een governance-laag voor pilot-gereedheid bij civic- en zorgende-community-deployments — de meeste modules zijn uitgebracht tussen april en mei 2026.",
+        "intro": "Een geïntegreerde laag voor wederzijdse hulp die dagelijkse zorg, vrijwilligerswerk, organisaties en impact samenbrengt. Het blijft uitgeschakeld totdat een community zich aanmeldt en het beheerderspaneel het Alpha noemt, dus alles hier heeft een Preview-chip.",
         "items": {
           "civic_digest": {
             "title": "Burgerlijk overzicht",
@@ -345,6 +437,50 @@
           "copilot": {
             "title": "Tweede piloot",
             "description": "Contextuele AI-helper voor community-beheerders."
+          },
+          "request_help": {
+            "title": "Vraag om hulp en bied gunsten aan",
+            "description": "Vertel uw buren wat u nodig heeft zonder een formele lijst op te stellen, of noteer een informele daad van vriendelijkheid die u al hebt gedaan. Een gunst heeft geen tijdskrediet nodig; hij wordt gewoon erkend."
+          },
+          "care_relationships": {
+            "title": "Zorgrelaties",
+            "description": "Verbind uzelf met iemand voor wie u informeel zorgt, zie iedereen aan wie u zorg toevertrouwt op één plek, regel tijdelijke dekking als u even uitstel nodig heeft of afwezig bent, en pauzeer of beëindig een relatie zonder de geschiedenis ervan te verliezen."
+          },
+          "hour_gifting_and_transfer": {
+            "title": "Schenken, overdrachten en toekomstige zorg",
+            "description": "Geef gebankte uren cadeau aan familie, vrienden of iedereen die ze nodig heeft; neem uw bankuren mee als u verhuist naar een andere community waar NEXUS draait; of laat ze achter in een toekomstig zorgfonds, waar u later gebruik van kunt maken voor boodschappen, afspraken of gewoon gezelschap."
+          },
+          "warmth_pass": {
+            "title": "Warmte pas",
+            "description": "Een draagbare vertrouwensreferentie die een lid verdient bij het bereiken van het Trusted-niveau, waarin de geregistreerde uren, peer reviews, identiteitsverificatie en de gebieden waarmee ze helpen worden weergegeven. Leden laten het zien aan zorgvragers, coördinatoren en organisaties als bewijs dat zij een vertrouwde hulpverlener zijn."
+          },
+          "trust_tiers": {
+            "title": "Vertrouwensniveaus",
+            "description": "De status van een lid in de gemeenschap, met een duidelijk overzicht van hoe hij of zij zijn huidige niveau heeft verdiend en waar het volgende lid om vraagt."
+          },
+          "care_providers": {
+            "title": "Zorgaanbiederlijst",
+            "description": "Vind naast hulp van leden tot leden ook lokale zorgdiensten, dagcentra, verenigingen en vrijwilligers in uw regio."
+          },
+          "safeguarding_reporting": {
+            "title": "Rapporteren van zorgen",
+            "description": "Leden kunnen zelf een beveiligingsprobleem melden, en het personeel kan het beoordelen, toewijzen en oplossen aan de hand van een actielogboek dat alleen kan worden toegevoegd en nooit kan worden herschreven."
+          },
+          "surveys_and_projects": {
+            "title": "Enquêtes en gemeenschapsprojecten",
+            "description": "Verzamel gestructureerde feedback van bewoners, gemeentelijke partners en programmateams en coördineer gemeenschapsprojecten met de deelnemers."
+          },
+          "municipality_reporting": {
+            "title": "Gemeentelijke rapportage",
+            "description": "Een gedeelde gemeentelijke agenda, een inbox voor bewonersfeedback die vragen, ideeën, problemen en klachten doorstuurt naar het juiste team, en rapportage gebouwd voor gemeente- en publieke partners."
+          },
+          "community_market": {
+            "title": "Gemeenschappelijke markt",
+            "description": "Eén plek om tijdkredietdiensten en lokale goederen te ontdekken die binnen de gemeenschap worden aangeboden."
+          },
+          "time_credit_redemption": {
+            "title": "Tijdkredieten lokaal besteden",
+            "description": "Leden zien de uren die ze hebben verdiend en besteden deze bij deelnemende lokale bedrijven, met een geschiedenis van elke verzilvering."
           }
         }
       },
@@ -399,10 +535,6 @@
             "title": "Verwerking van e-mailwebhooks",
             "description": "Postmark bounce-, klacht-, open- en leveringsgebeurtenisafhandeling."
           },
-          "500plus_phpunit_tests": {
-            "title": "500+ PHPUnit-tests",
-            "description": "Geldstromen, webhooks, federatie, groepen, marktplaats — plus Vitest-frontendsuites."
-          },
           "openapi_3_0_specification": {
             "title": "OpenAPI 3.0-specificatie",
             "description": "Volledige API-specificatie met Swagger UI-documentatie."
@@ -410,11 +542,56 @@
           "fully_dockerized": {
             "title": "Volledig gedockeriseerd",
             "description": "Productie en development draaien op dezelfde Docker Compose-fundering."
+          },
+          "automated_test_suite": {
+            "title": "Geautomatiseerde testsuite",
+            "description": "Ongeveer 16.500 PHP-testmethoden verdeeld over 1.600 testbestanden, plus ongeveer 1.300 frontend-testsuites, die betrekking hebben op geldstromen, webhooks, federatie, groepen en de markt. Elke push voert ze uit, en een implementatie wordt geblokkeerd totdat de gepushte commit is gecontroleerd."
+          },
+          "performance_monitoring": {
+            "title": "Prestatiemonitoring",
+            "description": "Elk verzoek wordt geteld en langzame, geheugenvretende of veel zoekopdrachten worden gedetailleerd vastgelegd op een beheerdersdashboard. Alleen de vorm van een zoekopdracht wordt opgeslagen, nooit ledengegevens, en oude records worden elke nacht gesnoeid."
+          },
+          "partner_api_and_developer_portal": {
+            "title": "Partner-API en ontwikkelaarsportal",
+            "description": "Een gedocumenteerde API waarmee een externe partner kan integreren met een community, met tokenauthenticatie, een eindpuntreferentie en webhooks, plus een zelfbedieningsontwikkelaarsportal voor degene die de integratie bouwt.",
+            "note": "Standaard gebouwd en uitgeschakeld. Geen enkele externe partner maakt er momenteel gebruik van."
+          },
+          "local_advertising": {
+            "title": "Lokale reclame",
+            "description": "Door de gemeenschap beheerde reclame- en pushcampagnes met hun eigen budgetterings- en administratieve hulpmiddelen, zodat een gemeenschap zelf lokale activiteiten kan promoten.",
+            "note": "Standaard gebouwd en uitgeschakeld."
+          },
+          "swiss_fadp_mode": {
+            "title": "Zwitserse FADP-modus",
+            "description": "Een extra toestemmingsbanner en gegevensverwerkingsmodus voor gemeenschappen die opereren onder de herziene Zwitserse federale wet inzake gegevensbescherming.",
+            "note": "Standaard gebouwd en uitgeschakeld."
+          },
+          "regional_analytics": {
+            "title": "Regionale analyses",
+            "description": "Maandelijkse regionale activiteitenrapporten opgesteld voor gemeenten en regionale instanties, centraal beheerd in plaats van door elke gemeenschap.",
+            "note": "Standaard gebouwd en uitgeschakeld."
+          },
+          "community_onboarding": {
+            "title": "Nieuwe community-onboarding",
+            "description": "Hoe een nieuwe community van start gaat: een openbaar aanmeldingsformulier, een link waarmee aanvragers hun eigen voortgang kunnen volgen, een route voor vragen eerst en hulpmiddelen voor administratieve voorzieningen om de community staande te houden zodra deze is goedgekeurd."
           }
         }
       }
     },
-    "maturity_dormant": "Standaard gebouwd, getest en uitgeschakeld. Het werk is gedaan en gecontroleerd, maar er wordt nog geen gebruik van gemaakt. We zullen het verder ontwikkelen als er echte vraag naar is."
+    "maturity_dormant": "Standaard gebouwd, getest en uitgeschakeld. Het werk is gedaan en gecontroleerd, maar er wordt nog geen gebruik van gemaakt. We zullen het verder ontwikkelen als er echte vraag naar is.",
+    "availability_notice_title": "Het kan zijn dat uw community deze niet allemaal heeft ingeschakeld",
+    "availability_notice_body": "Deze pagina toont alles wat de Project NEXUS-software kan doen. Het is geen lijst met wat er is ingeschakeld voor uw eigen community.",
+    "availability_notice_body_2": "Elke community kiest welke onderdelen zij wil gebruiken, dus sommige van de onderstaande dingen zullen niet in uw menu's verschijnen. Dat is normaal en geen fout; het betekent eenvoudigweg dat uw gemeenschap dat onderdeel niet heeft ingeschakeld.",
+    "availability_notice_body_3": "Wat u daadwerkelijk kunt gebruiken, is wat u in uw eigen menu's kunt zien. Als iets hier nuttig lijkt en je het niet kunt vinden, vraag dan degene die je community beheert om het in te schakelen.",
+    "filter_heading": "Vind wat je nodig hebt",
+    "search_placeholder": "Zoekfuncties - probeer 'credits', 'evenementen', 'veiligheid'",
+    "search_label": "Zoekfuncties",
+    "filter_all": "Alles",
+    "filter_group_label": "Alleen weergeven",
+    "results_summary": "Toont {{shown}} van {{total}} vermeldingen",
+    "no_results_title": "Niets komt overeen met die zoekopdracht",
+    "no_results_body": "Probeer een korter woord of kies Alles om de hele lijst terug te brengen.",
+    "clear_filters": "Duidelijk zoeken en filters"
   },
   "changelog_page": {
     "title": "Wijzigingslog",
@@ -903,7 +1080,7 @@
     "steps_intro": "Kies hieronder uw apparaat. We hebben degene uitgekozen die u lijkt te gebruiken.",
     "steps_tab_android": "Android",
     "steps_tab_iphone": "iPhone of iPad",
-    "steps_tab_windows": "Windows",
+    "steps_tab_windows": "Ramen",
     "steps_tab_mac": "Mac",
     "steps_android_title": "Android-telefoon of -tablet",
     "steps_android_1": "Open deze pagina in Chrome op uw Android-telefoon of -tablet.",

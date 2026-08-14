@@ -53049,14 +53049,31 @@ export default interface Resources {
       "title": "Frequently Asked Questions"
     },
     "features_page": {
+      "availability_notice_body": "This page shows everything the Project NEXUS software can do. It is not a list of what is turned on for your own community.",
+      "availability_notice_body_2": "Every community chooses which parts it wants to use, so some of the things listed below will not appear in your menus. That is normal and it is not a fault — it simply means your community has not switched that part on.",
+      "availability_notice_body_3": "What you can actually use is whatever you can see in your own menus. If something here looks useful and you cannot find it, ask whoever runs your community to turn it on.",
+      "availability_notice_title": "Your community may not have all of these switched on",
       "chips": {
         "beta": "Beta",
         "dormant": "Built, not enabled",
         "preview": "Preview"
       },
+      "clear_filters": "Clear search and filters",
+      "filter_all": "Everything",
+      "filter_group_label": "Show only",
+      "filter_heading": "Find what you need",
       "groups": {
         "ai_and_recommendation_engine": {
           "items": {
+            "ai_agents": {
+              "description": "Per-community AI agents that run jobs on a schedule, put proposed actions in front of an administrator for approval, and help with day-to-day platform operations. Every run and every proposal is recorded.",
+              "note": "Built and switched off by default. No community has it turned on today.",
+              "title": "AI Agents"
+            },
+            "ai_provider_choice": {
+              "description": "The AI layer is not tied to one vendor: OpenAI, Anthropic, Google Gemini, and self-hosted Ollama are all supported behind the same interface, so a community can pick on cost, data location, or policy grounds.",
+              "title": "Choice of AI Provider"
+            },
             "algorithm_health_dashboard": {
               "description": "Live admin monitoring and tuning of all ranking systems.",
               "title": "Algorithm Health Dashboard"
@@ -53094,13 +53111,17 @@ export default interface Resources {
         },
         "built_for_production": {
           "items": {
-            "500plus_phpunit_tests": {
-              "description": "Money flow, webhooks, federation, groups, marketplace — plus Vitest frontend suites.",
-              "title": "500+ PHPUnit Tests"
-            },
             "admin_panel": {
               "description": "Algorithm controls, diagnostics, cron-job monitoring, and email-deliverability monitoring.",
               "title": "Admin Panel"
+            },
+            "automated_test_suite": {
+              "description": "Around 16,500 PHP test methods across 1,600 test files, plus roughly 1,300 frontend test suites, covering money flow, webhooks, federation, groups and the marketplace. Every push runs them, and a deploy is blocked until the pushed commit has been checked.",
+              "title": "Automated Test Suite"
+            },
+            "community_onboarding": {
+              "description": "How a new community gets started: a public application form, a link that lets applicants follow their own progress, an enquiry route for questions first, and admin provisioning tools to stand the community up once it is approved.",
+              "title": "New Community Onboarding"
             },
             "email_webhook_processing": {
               "description": "Postmark bounce, complaint, open, and delivery event handling.",
@@ -53134,6 +53155,11 @@ export default interface Resources {
               "description": "Volunteer insurance management and verification.",
               "title": "Insurance Certificate Tracking"
             },
+            "local_advertising": {
+              "description": "Community-run advertising and push campaigns with their own budgeting and admin tooling, so a community can promote local activity itself.",
+              "note": "Built and switched off by default.",
+              "title": "Local Advertising"
+            },
             "multi_language_support": {
               "description": "11 languages: English, Irish, German, French, Italian, Portuguese, Spanish, Dutch, Polish, Japanese, and Arabic (full RTL).",
               "title": "Multi-Language Support"
@@ -53141,6 +53167,20 @@ export default interface Resources {
             "openapi_3_0_specification": {
               "description": "Full API spec with Swagger UI docs.",
               "title": "OpenAPI 3.0 Specification"
+            },
+            "partner_api_and_developer_portal": {
+              "description": "A documented API that lets an external partner integrate with a community, with token authentication, an endpoint reference and webhooks, plus a self-serve developer portal for whoever is building the integration.",
+              "note": "Built and switched off by default. No external partner is using it today.",
+              "title": "Partner API & Developer Portal"
+            },
+            "performance_monitoring": {
+              "description": "Every request is counted, and slow, memory-hungry or query-heavy requests are recorded in detail for an admin dashboard. Only the shape of a query is stored, never member data, and old records are pruned nightly.",
+              "title": "Performance Monitoring"
+            },
+            "regional_analytics": {
+              "description": "Monthly regional activity reports prepared for municipalities and regional bodies, managed centrally rather than by each community.",
+              "note": "Built and switched off by default.",
+              "title": "Regional Analytics"
             },
             "self_hosted_prerendering": {
               "description": "Bot-only Playwright snapshots served to SEO crawlers; users always get the live SPA.",
@@ -53150,6 +53190,11 @@ export default interface Resources {
               "description": "Subscriptions, donations, marketplace (Connect), and identity verification, with idempotent webhook handling and deep money-flow test coverage.",
               "title": "Stripe Payments Layer"
             },
+            "swiss_fadp_mode": {
+              "description": "An additional consent banner and data-handling mode for communities operating under the revised Swiss Federal Act on Data Protection.",
+              "note": "Built and switched off by default.",
+              "title": "Swiss FADP Mode"
+            },
             "wcag_2_1_aa_accessibility": {
               "description": "Audited accessibility compliance across the user-facing surface.",
               "title": "WCAG 2.1 AA Accessibility"
@@ -53158,11 +53203,23 @@ export default interface Resources {
           "title": "Built for Production"
         },
         "caring_community_layer": {
-          "intro": "A pilot-readiness governance layer for civic and caring-community deployments — most modules shipped April–May 2026.",
+          "intro": "An integrated mutual-aid layer that brings everyday care, volunteering, organisations and impact together. It stays switched off until a community opts in, and the admin panel labels it Alpha, so everything here carries a Preview chip.",
           "items": {
+            "care_providers": {
+              "description": "Find local care services, day centres, associations and volunteers in your region alongside member-to-member help.",
+              "title": "Care Provider Directory"
+            },
+            "care_relationships": {
+              "description": "Link yourself to someone you are informally caring for, see everyone in your care in one place, arrange temporary cover when you need respite or are away, and pause or end a relationship without losing its history.",
+              "title": "Care Relationships"
+            },
             "civic_digest": {
               "description": "Periodic summary of community activity and outcomes for stakeholders.",
               "title": "Civic Digest"
+            },
+            "community_market": {
+              "description": "One place to discover time-credit services and local goods offered inside the community.",
+              "title": "Community Market"
             },
             "copilot": {
               "description": "In-context AI helper for community administrators.",
@@ -53172,6 +53229,10 @@ export default interface Resources {
               "description": "Centralised pilot-feedback capture with admin triage.",
               "title": "Feedback Inbox"
             },
+            "hour_gifting_and_transfer": {
+              "description": "Gift banked hours to family, friends or anyone who needs them; take your banked hours with you if you move to another community running NEXUS; or leave them in a future care fund to draw on for grocery runs, appointments, or simply company, later on.",
+              "title": "Gifting, Transfers & Future Care"
+            },
             "integration_showcase": {
               "description": "Public surface for connected partners and integrations.",
               "title": "Integration Showcase"
@@ -53180,9 +53241,37 @@ export default interface Resources {
               "description": "Workflow tooling for pilot-stakeholder follow-up.",
               "title": "Lead Nurture"
             },
+            "municipality_reporting": {
+              "description": "A shared municipal calendar, a resident feedback inbox that routes questions, ideas, issues and complaints to the right team, and reporting built for council and public-sector partners.",
+              "title": "Municipality Reporting"
+            },
+            "request_help": {
+              "description": "Tell your neighbours what you need without writing a formal listing, or record an informal act of kindness you have already done. A favour needs no time credits — it simply gets recognised.",
+              "title": "Request Help & Offer Favours"
+            },
+            "safeguarding_reporting": {
+              "description": "Members can raise a safeguarding concern themselves, and staff review, assign and resolve it against an action log that can only be added to, never rewritten.",
+              "title": "Concern Reporting"
+            },
             "success_stories": {
               "description": "Curated case studies of member-led outcomes.",
               "title": "Success Stories"
+            },
+            "surveys_and_projects": {
+              "description": "Collect structured feedback from residents, municipal partners and programme teams, and coordinate community projects with the people taking part.",
+              "title": "Surveys & Community Projects"
+            },
+            "time_credit_redemption": {
+              "description": "Members see the hours they have earned and spend them at taking-part local businesses, with a history of every redemption.",
+              "title": "Spending Time Credits Locally"
+            },
+            "trust_tiers": {
+              "description": "A member’s standing in the community, with a plain breakdown of how they earned their current tier and what the next one asks for.",
+              "title": "Trust Tiers"
+            },
+            "warmth_pass": {
+              "description": "A portable trust credential a member earns on reaching Trusted tier, showing their logged hours, peer reviews, identity verification and the areas they help with. Members show it to care recipients, coordinators and organisations as proof that they are a trusted helper.",
+              "title": "Warmth Pass"
             }
           },
           "title": "Caring Community Layer"
@@ -53213,6 +53302,10 @@ export default interface Resources {
               "description": "Versioned legal documents with acceptance gates and audit trail.",
               "title": "Legal Hub"
             },
+            "message_translation": {
+              "description": "A toggle in any conversation that automatically translates direct messages between two members who do not share a language.",
+              "title": "Message Translation"
+            },
             "newsletter_system": {
               "description": "Email campaign manager with A/B testing, smart segments, geo targeting, recurring sends, templates, send-time optimisation, and full open/click analytics.",
               "title": "Newsletter System"
@@ -53222,14 +53315,28 @@ export default interface Resources {
               "title": "Resources & Knowledge Base"
             },
             "social_prescribing": {
-              "description": "Information and tooling for community health integration workflows.",
-              "title": "Social Prescribing"
+              "description": "A managed pathway for health services to refer patients into the timebank as community support. A GP, social prescriber or community health worker makes a formal referral — there is no self-referral hurdle — then a coordinator personally welcomes the person, builds a profile around their strengths, matches them to exchanges, groups and events, and checks in regularly, sending outcome data back to whoever referred them. The page sets out the published results, including a 16:1 social return, and how the model lines up with Sláintecare and the HSE Social Prescribing Framework.",
+              "note": "This is one community’s live programme, presented for health and public-sector partners to read — it is a referral pathway run by people, not a switch another community can turn on, and the platform holds no referral form of its own. If you would like to build something similar with us, get in touch.",
+              "title": "Social Prescribing Partnership"
             }
           },
           "title": "Content & Communication"
         },
         "core_platform": {
           "items": {
+            "accessible_frontend": {
+              "description": "A second, separate frontend built on GOV.UK Frontend for members who want a plain, HTML-first experience that keeps working without JavaScript. It runs on its own web address and reads the same API as the main app.",
+              "note": "Live today. Every page in the main app has a matching accessible page, but each one is still being checked against the main app behaviour by behaviour, which is why it carries a Beta label rather than GA.",
+              "title": "Accessible Frontend"
+            },
+            "explore_discovery": {
+              "description": "One curated page that surfaces skills, listings, events, groups, posts and people worth seeing, so members do not have to hunt through every section to find them.",
+              "title": "Discover"
+            },
+            "maps_and_location": {
+              "description": "Mapping and address lookup are pluggable per community: Google Maps, OpenStreetMap, or Ordnance Survey tiles, paired with Google Places, Nominatim, or UPRN-backed OS Places address validation. Maps stay switched off until a community turns them on, so no mapping key ever reaches the browser by default.",
+              "title": "Maps & Location Providers"
+            },
             "multi_tenancy": {
               "description": "Host unlimited communities on a single platform, each with their own branding, configuration, and feature set.",
               "title": "Multi-Tenancy"
@@ -53290,6 +53397,11 @@ export default interface Resources {
               "description": "Adapters for two-way sync of 9 entity types — members, listings, events, groups, connections, volunteering, reviews, transfers, messages — across all four protocols.",
               "note": "Built and covered by tests alongside External Partner Federation, and dormant for the same reason: nothing is switched on, so nothing is syncing.",
               "title": "Multi-Protocol Adapters"
+            },
+            "partner_network_portal": {
+              "description": "A dedicated area for whoever runs a network of communities rather than a single one: a partner directory, neighbourhood grouping, credit agreements, network-wide settings, combined activity and analytics, data management, and API keys with their own documentation.",
+              "note": "The parts that reach other installations — external partners, inbound API partners and Credit Commons — stay switched off with the rest of external federation. The internal network tooling is in everyday use.",
+              "title": "Network & Partner Portal"
             }
           },
           "title": "Federation"
@@ -53300,9 +53412,21 @@ export default interface Resources {
               "description": "Timezone-aware time-slot scheduling for smart matching and bookings.",
               "title": "Availability Scheduling"
             },
+            "clubs_and_associations": {
+              "description": "Membership handling for clubs and associations: dues tracking, bulk member import, and invitations that work across linked clubs.",
+              "title": "Clubs & Associations"
+            },
+            "collections_and_bookmarks": {
+              "description": "Save listings, members and posts, and group them into collections you can share with other members.",
+              "title": "Collections & Saved Items"
+            },
             "connections": {
               "description": "Follow and connect with other community members.",
               "title": "Connections"
+            },
+            "courses": {
+              "description": "Community learning: members run courses with lessons and quizzes, other members enrol and work through them, and instructors can grade work, see how a course is doing, and issue a certificate at the end.",
+              "title": "Courses"
             },
             "donations": {
               "description": "One-off and recurring donations via Stripe with full dashboards and receipts for organisations.",
@@ -53312,8 +53436,17 @@ export default interface Resources {
               "description": "Peer skill and experience endorsements.",
               "title": "Endorsements"
             },
+            "event_attendance_credits": {
+              "description": "Award time credits on verified event check-in, minted against the community rather than taken from the host, so running an event is never a personal cost.",
+              "note": "Switched off by default, and the switch alone cannot move credits: an operator must also enable treasury minting and set a per-event amount.",
+              "title": "Attendance Rewards"
+            },
+            "event_operations": {
+              "description": "Everything needed to actually run an event: ticketing and registration, waiting lists, blueprints for recurring events, an agenda with speakers, QR check-in that keeps working when the signal drops, accessibility details, safety notes, attendee messaging, reusable templates, per-event analytics, and a full history of every change.",
+              "title": "Event Operations"
+            },
             "events_and_groups": {
-              "description": "Community gatherings, interest-based groups, and event reminders.",
+              "description": "Community gatherings and interest-based groups, with invitations, membership rules, reminders, and group discussion.",
               "title": "Events & Groups"
             },
             "exchange_workflow": {
@@ -53332,6 +53465,14 @@ export default interface Resources {
               "description": "Bulk community service exchanges across multiple members.",
               "title": "Group Exchanges"
             },
+            "guardian_consent": {
+              "description": "Consent flows for members under 18 taking part in events and volunteering, using single-use consent links, encrypted guardian details, and a consent history that can only be added to, never edited.",
+              "title": "Guardian Consent"
+            },
+            "hiring_bias_audit": {
+              "description": "Process analytics that surface possible bias in a community’s own hiring: how candidates progress through each stage, rejection rates and average time per stage, how strongly a skills match actually predicts the outcome, and which application sources succeed.",
+              "title": "Hiring Bias Audit"
+            },
             "ideation_challenges": {
               "description": "Innovation hub with campaigns, ideas, voting, and outcomes tracking.",
               "title": "Ideation Challenges"
@@ -53341,20 +53482,36 @@ export default interface Resources {
               "title": "Identity Verification"
             },
             "job_vacancies": {
-              "description": "Full recruitment module with alerts, analytics, and a public RSS/JSON job feed for aggregators.",
+              "description": "A full recruitment module: vacancies and applications, a drag-and-drop hiring pipeline, talent search, employer profiles and branding, employer onboarding, saved job alerts, per-vacancy analytics, and a public RSS and JSON feed so job aggregators can pick postings up.",
               "title": "Job Vacancies"
             },
             "marketplace": {
-              "description": "Standalone classifieds module with Stripe Connect payouts, orders, seller profiles, and AI-powered reply suggestions.",
+              "description": "A separate classifieds module for goods and paid services: seller profiles and onboarding, orders and sales, Stripe Connect payouts, a free-and-giveaway section, collections, a map view, pickup slots with QR scanning, shipping options, seller coupons, case handling for disputes, and AI-suggested replies.",
               "title": "Marketplace"
+            },
+            "member_premium": {
+              "description": "Members can give a one-off donation, or set up a regular one, to support the community that runs their timebank, and manage or stop it themselves at any time. Supporters are recognised for it — this is not a paid tier, and no part of the platform is ever put behind a payment.",
+              "title": "Donations & Support"
             },
             "members_directory": {
               "description": "Browse, filter, and discover people in your community.",
               "title": "Members Directory"
             },
+            "merchant_coupons": {
+              "description": "Discount coupons issued by marketplace merchants. Kept deliberately separate from spending time credits, and it needs the Marketplace switched on as well.",
+              "title": "Merchant Coupons"
+            },
             "organisations": {
               "description": "Company and employer profiles with sub-accounts and a dedicated organisation wallet.",
               "title": "Organisations"
+            },
+            "partner_venues": {
+              "description": "Record member visits at local partner venues by scanning the member’s pass QR code. It records the visit only — the platform issues no coupon and applies no discount.",
+              "title": "Partner Venues"
+            },
+            "podcasts": {
+              "description": "Community shows, audio stories, interviews and local knowledge recorded by members, with episodes, transcripts, chapters, moderation, and a public RSS feed that works in ordinary podcast apps.",
+              "title": "Podcasts & Community Audio"
             },
             "polls": {
               "description": "Community voting and surveys with multiple question types.",
@@ -53363,6 +53520,10 @@ export default interface Resources {
             "presence_system": {
               "description": "Real-time online/offline status with privacy controls and custom status messages.",
               "title": "Presence System"
+            },
+            "public_events": {
+              "description": "Let people without an account browse and read published events. Signing up for one still needs a login.",
+              "title": "Public Events"
             },
             "reviews_and_ratings": {
               "description": "Build trust through structured member feedback.",
@@ -53397,6 +53558,11 @@ export default interface Resources {
         },
         "trust_reputation_and_safety": {
           "items": {
+            "broker_application": {
+              "description": "A separate application for the coordinators and brokers who step in between members when a safeguarding or compliance concern is live. It holds exchange oversight and match approval, member records and onboarding progress, moderation queues for the feed, comments and reviews, risk tags and watch lists, message review for members placed under monitoring, insurance certificate tracking, and reporting.",
+              "note": "A broker is an operational role in its own right, not a junior administrator: brokers get this application and are deliberately refused the general admin panel.",
+              "title": "Broker & Coordinator Application"
+            },
             "crm": {
               "description": "Admin contact management with notes, tasks, tags, activity timelines, and export.",
               "title": "CRM"
@@ -53420,6 +53586,10 @@ export default interface Resources {
             "streaks": {
               "description": "Consecutive activity tracking to reward consistent engagement.",
               "title": "Streaks"
+            },
+            "two_factor_and_passkeys": {
+              "description": "An authenticator-app second factor, and passkeys through Windows Hello, Touch ID, Face ID or a hardware security key, so a member can sign in without typing a password at all. Each is switchable per community.",
+              "title": "Two-Factor Login & Passkeys"
             }
           },
           "title": "Trust, Reputation & Safety"
@@ -53435,24 +53605,31 @@ export default interface Resources {
       "maturity_ga": "Generally Available - stable, supported, used in production across pilot tenants.",
       "maturity_key_title": "How we label maturity",
       "maturity_preview": "Recently shipped and available to opt in. Expect rapid iteration - the API and UX may change.",
-      "meta_description": "Every module shipped in Project NEXUS v1.5, with honest maturity labels for federation, timebanking, marketplace, community tools, safety, analytics, and open-source infrastructure.",
-      "meta_title": "Features - Project NEXUS v1.5",
+      "meta_description": "Every module shipped in Project NEXUS v1.6, with honest maturity labels for timebanking, federation, learning, marketplace, community care, safety, analytics, and open-source infrastructure.",
+      "meta_title": "Features - Project NEXUS v1.6",
+      "no_results_body": "Try a shorter word, or choose Everything to bring the whole list back.",
+      "no_results_title": "Nothing matches that search",
       "open_source_body": "Project NEXUS is fully open source under AGPL-3.0. Every line of code is auditable, forkable, and self-hostable. Federation protocols are documented as open standards so no single platform controls the global timebanking network.",
       "open_source_title": "Open Source - AGPL-3.0",
+      "results_summary": "Showing {{shown}} of {{total}} entries",
+      "search_label": "Search features",
+      "search_placeholder": "Search features — try \"credits\", \"events\", \"safety\"",
       "security_body_after": " rather than filing a public issue. Full vulnerability-disclosure policy in SECURITY.md on the source repository.",
       "security_body_before": "Found a security issue? Please report it privately to ",
       "security_email": "jasper@hour-timebank.ie",
       "security_title": "Security disclosure",
-      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.5 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
+      "subheading": "Project NEXUS is an enterprise-grade, multi-tenant community platform. Every module below ships in v1.6.0 today. We label modules honestly: unmarked items are Generally Available; newer or actively-hardening surfaces carry a Beta or Preview chip; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
       "tech_stack": {
+        "accessible_label": "Accessible frontend",
+        "accessible_value": "GOV.UK Frontend 6.4 + Express + Nunjucks, HTML-first and works without JavaScript",
         "ai_label": "AI",
-        "ai_value": "OpenAI text-embedding-3-small",
+        "ai_value": "OpenAI text-embedding-3-small, with Anthropic, Google Gemini and self-hosted Ollama supported behind the same interface",
         "backend_label": "Backend",
         "backend_value": "Laravel 12 + PHP 8.2+",
         "database_label": "Database",
         "database_value": "MariaDB 10.11",
         "frontend_label": "Frontend",
-        "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
+        "frontend_value": "React 19 + TypeScript + HeroUI v3 + Tailwind CSS 4, built with Vite 7",
         "infrastructure_label": "Infrastructure",
         "infrastructure_value": "Docker, Redis, full PWA",
         "mobile_label": "Mobile",

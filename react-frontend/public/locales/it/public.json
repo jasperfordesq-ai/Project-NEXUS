@@ -6,8 +6,8 @@
       "dormant": "Costruito, non abilitato"
     },
     "title": "Funzionalità",
-    "meta_title": "Funzionalità - Project NEXUS v1.5",
-    "meta_description": "Ogni modulo rilasciato in Project NEXUS v1.5, con indicazioni oneste di maturità per federazione, banca del tempo, marketplace, strumenti di comunità, sicurezza, analytics e infrastruttura open source.",
+    "meta_title": "Funzionalità - Project NEXUS v1.6",
+    "meta_description": "Ogni modulo rilasciato in Project NEXUS v1.6, con indicazioni oneste di maturità per federazione, banca del tempo, marketplace, strumenti di comunità, sicurezza, analytics e infrastruttura open source.",
     "heading": "Cosa fa Project NEXUS",
     "subheading": "Project NEXUS è una piattaforma comunitaria multi-tenant di livello aziendale. Ogni modulo riportato di seguito viene fornito oggi con la versione 1.5. Etichettiamo i moduli in modo onesto: gli elementi non contrassegnati sono generalmente disponibili; le superfici più nuove o che si stanno indurendo attivamente portano un chip Beta o Anteprima; and a Built, not enabled chip means the work is finished and switched off, waiting for demand.",
     "maturity_key_title": "Come indichiamo la maturità",
@@ -41,7 +41,9 @@
       "realtime_label": "Tempo reale",
       "realtime_value": "Pusher WebSocket, Firebase Cloud Messaging",
       "search_label": "Ricerca",
-      "search_value": "Meilisearch v1.7"
+      "search_value": "Meilisearch v1.7",
+      "accessible_label": "Frontend accessibile",
+      "accessible_value": "GOV.UK Frontend 6.4 + Express + Nunjucks, HTML-first e funziona senza JavaScript"
     },
     "groups": {
       "core_platform": {
@@ -75,6 +77,19 @@
             "title": "App mobile nativa",
             "description": "Un'app separata creata con Expo e React Native, che comunica con la stessa API del sito web. Una base di codice produce sia la build Android che quella iOS.",
             "note": "L'app Web è ancora la via principale e nessuna delle build del negozio è stata ancora pubblicata. Android è il più vicino: firma, creazione di profili e notifiche push sono tutti a posto. iOS è costruito con lo stesso codice ma necessita inoltre di un account sviluppatore Apple e della revisione dell'App Store, quindi seguirà."
+          },
+          "accessible_frontend": {
+            "title": "Frontend accessibile",
+            "description": "Un secondo frontend separato creato sul frontend GOV.UK per i membri che desiderano un'esperienza semplice, basata su HTML, che continui a funzionare senza JavaScript. Funziona sul proprio indirizzo web e legge la stessa API dell'app principale.",
+            "note": "Vivi oggi. Ogni pagina nell'app principale ha una pagina accessibile corrispondente, ma ognuna viene ancora controllata rispetto al comportamento dell'app principale, motivo per cui porta un'etichetta Beta anziché GA."
+          },
+          "explore_discovery": {
+            "title": "Scoprire",
+            "description": "Una pagina curata che mette in evidenza competenze, elenchi, eventi, gruppi, post e persone che vale la pena vedere, in modo che i membri non debbano cercare in ogni sezione per trovarli."
+          },
+          "maps_and_location": {
+            "title": "Mappe e fornitori di posizione",
+            "description": "La mappatura e la ricerca degli indirizzi sono collegabili per comunità: riquadri Google Maps, OpenStreetMap o Ordnance Survey, abbinati alla convalida degli indirizzi di Google Places, Nominatim o OS Places supportata da UPRN. Le mappe rimangono disattivate finché una comunità non le attiva, quindi nessuna chiave di mappatura raggiunge mai il browser per impostazione predefinita."
           }
         }
       },
@@ -107,6 +122,11 @@
           "federation_analytics": {
             "title": "Analytics della federazione",
             "description": "Dashboard di amministrazione per attività tra comunità, integrità della sincronizzazione e volume delle transazioni federate."
+          },
+          "partner_network_portal": {
+            "title": "Portale di rete e partner",
+            "description": "Un'area dedicata per chi gestisce una rete di comunità piuttosto che una singola: directory dei partner, raggruppamenti di quartiere, contratti di credito, impostazioni a livello di rete, attività combinate e analisi, gestione dei dati e chiavi API con la propria documentazione.",
+            "note": "Le parti che raggiungono altre installazioni – partner esterni, partner API in entrata e Credit Commons – rimangono spente rispetto al resto della federazione esterna. Gli strumenti di rete interna sono di uso quotidiano."
           }
         }
       },
@@ -119,7 +139,7 @@
           },
           "marketplace": {
             "title": "Mercato",
-            "description": "Modulo di annunci classificati indipendente con accrediti Stripe Connect, ordini, profili venditore e suggerimenti di risposta basati su IA."
+            "description": "Un modulo di annunci separato per beni e servizi a pagamento: profili del venditore e onboarding, ordini e vendite, pagamenti Stripe Connect, una sezione gratuita e omaggio, collezioni, visualizzazione mappa, slot di ritiro con scansione QR, opzioni di spedizione, coupon venditore, gestione dei casi in caso di controversie e risposte suggerite dall'intelligenza artificiale."
           },
           "donations": {
             "title": "Donazioni",
@@ -151,7 +171,7 @@
           },
           "events_and_groups": {
             "title": "Eventi e gruppi",
-            "description": "Ritrovi della comunità, gruppi per interessi e promemoria degli eventi."
+            "description": "Riunioni comunitarie e gruppi basati sugli interessi, con inviti, regole di adesione, promemoria e discussioni di gruppo."
           },
           "connections": {
             "title": "Connessioni",
@@ -179,7 +199,7 @@
           },
           "job_vacancies": {
             "title": "Offerte di lavoro",
-            "description": "Modulo di reclutamento completo con avvisi, analytics e un feed pubblico RSS/JSON di offerte per gli aggregatori."
+            "description": "Un modulo di reclutamento completo: offerte di lavoro e candidature, una pipeline di assunzioni drag-and-drop, ricerca di talenti, profili e branding dei datori di lavoro, onboarding dei datori di lavoro, avvisi di lavori salvati, analisi per posti vacanti e un feed RSS e JSON pubblico in modo che gli aggregatori di lavoro possano raccogliere le offerte."
           },
           "organisations": {
             "title": "Organizzazioni",
@@ -208,6 +228,55 @@
           "availability_scheduling": {
             "title": "Pianificazione disponibilità",
             "description": "Pianificazione di fasce orarie con fuso orario per matching intelligente e prenotazioni."
+          },
+          "courses": {
+            "title": "Corsi",
+            "description": "Apprendimento comunitario: i membri gestiscono corsi con lezioni e quiz, altri membri si iscrivono e lavorano con loro e gli istruttori possono valutare il lavoro, vedere come sta andando un corso e rilasciare un certificato alla fine."
+          },
+          "podcasts": {
+            "title": "Podcast e audio della community",
+            "description": "Spettacoli della community, storie audio, interviste e conoscenze locali registrate dai membri, con episodi, trascrizioni, capitoli, moderazione e un feed RSS pubblico che funziona nelle normali app podcast."
+          },
+          "clubs_and_associations": {
+            "title": "Club e associazioni",
+            "description": "Gestione delle iscrizioni per club e associazioni: monitoraggio delle quote, importazione di membri in blocco e inviti che funzionano tra i club collegati."
+          },
+          "public_events": {
+            "title": "Eventi pubblici",
+            "description": "Consenti alle persone senza account di navigare e leggere gli eventi pubblicati. Per registrarsi è comunque necessario effettuare il login."
+          },
+          "event_attendance_credits": {
+            "title": "Premi di partecipazione",
+            "description": "Assegna crediti di tempo al momento del check-in dell'evento verificato, coniati contro la comunità anziché prelevati dall'host, quindi la gestione di un evento non è mai un costo personale.",
+            "note": "Disattivato per impostazione predefinita e il solo interruttore non può spostare crediti: un operatore deve anche abilitare il conio della tesoreria e impostare un importo per evento."
+          },
+          "partner_venues": {
+            "title": "Luoghi partner",
+            "description": "Registra le visite dei membri presso le sedi dei partner locali scansionando il codice QR del pass del membro. Registra solo la visita: la piattaforma non emette coupon e non applica sconti."
+          },
+          "collections_and_bookmarks": {
+            "title": "Raccolte ed elementi salvati",
+            "description": "Salva elenchi, membri e post e raggruppali in raccolte che puoi condividere con altri membri."
+          },
+          "guardian_consent": {
+            "title": "Consenso del tutore",
+            "description": "Flussi di consenso per i membri di età inferiore a 18 anni che partecipano a eventi e fanno volontariato, utilizzando collegamenti di consenso monouso, dettagli del tutore crittografati e una cronologia del consenso che può solo essere aggiunta, mai modificata."
+          },
+          "member_premium": {
+            "title": "Donazioni e supporto",
+            "description": "I membri possono fare una donazione una tantum, o impostarne una regolare, per sostenere la comunità che gestisce la loro banca del tempo e gestirla o interromperla da soli in qualsiasi momento. I sostenitori sono riconosciuti per questo: questo non è un livello a pagamento e nessuna parte della piattaforma è mai soggetta a un pagamento."
+          },
+          "event_operations": {
+            "title": "Operazioni sugli eventi",
+            "description": "Tutto il necessario per gestire effettivamente un evento: biglietteria e registrazione, liste d'attesa, progetti per eventi ricorrenti, un'agenda con i relatori, check-in QR che continua a funzionare quando il segnale cade, dettagli sull'accessibilità, note di sicurezza, messaggi per i partecipanti, modelli riutilizzabili, analisi per evento e una cronologia completa di ogni modifica."
+          },
+          "merchant_coupons": {
+            "title": "Buoni commerciante",
+            "description": "Buoni sconto emessi dai commercianti del marketplace. Mantenuto deliberatamente separato dall'utilizzo di crediti di tempo e necessita anche dell'attivazione del Marketplace."
+          },
+          "hiring_bias_audit": {
+            "title": "Controllo dei pregiudizi nelle assunzioni",
+            "description": "Analisi dei processi che mettono in luce possibili distorsioni nelle assunzioni di una comunità: come i candidati avanzano attraverso ogni fase, tassi di rifiuto e tempo medio per fase, quanto fortemente una corrispondenza delle competenze predice effettivamente il risultato e quali fonti di candidatura hanno successo."
           }
         }
       },
@@ -247,8 +316,13 @@
             "description": "Analisi SROI, report sugli esiti dei membri e casi di studio di impatto sociale."
           },
           "social_prescribing": {
-            "title": "Prescrizione sociale",
-            "description": "Informazioni e strumenti per i flussi di integrazione con la salute di comunità."
+            "title": "Partenariato sulla prescrizione sociale",
+            "description": "Un percorso gestito per i servizi sanitari per indirizzare i pazienti alla banca del tempo come supporto alla comunità. Un medico di famiglia, un prescrittore sociale o un operatore sanitario della comunità effettua un rinvio formale – non vi è alcun ostacolo all’auto-referenza – quindi un coordinatore accoglie personalmente la persona, costruisce un profilo attorno ai suoi punti di forza, la abbina a scambi, gruppi ed eventi e controlla regolarmente, inviando i dati sui risultati a chiunque li abbia indirizzati. La pagina illustra i risultati pubblicati, incluso un rendimento sociale 16:1, e il modo in cui il modello si allinea con Sláintecare e il quadro di prescrizione sociale HSE.",
+            "note": "Questo è il programma dal vivo di una comunità, presentato affinché i partner sanitari e del settore pubblico possano leggerlo: è un percorso di riferimento gestito da persone, non un interruttore che un'altra comunità può attivare, e la piattaforma non dispone di un proprio modulo di riferimento. Se desideri costruire qualcosa di simile con noi, contattaci."
+          },
+          "message_translation": {
+            "title": "Traduzione di messaggi",
+            "description": "Un interruttore in qualsiasi conversazione che traduce automaticamente i messaggi diretti tra due membri che non condividono una lingua."
           }
         }
       },
@@ -278,6 +352,15 @@
           "crm": {
             "title": "CRM",
             "description": "Gestione contatti lato admin con note, attività, tag, timeline di attività ed export."
+          },
+          "broker_application": {
+            "title": "Applicazione per broker e coordinatori",
+            "description": "Un'applicazione separata per i coordinatori e gli intermediari che intervengono tra i membri quando esiste un problema di salvaguardia o conformità. Tiene la supervisione dello scambio e l'approvazione delle partite, i record dei membri e i progressi dell'onboarding, le code di moderazione per il feed, i commenti e le recensioni, i tag di rischio e le liste di controllo, la revisione dei messaggi per i membri posti sotto monitoraggio, il monitoraggio dei certificati assicurativi e la reportistica.",
+            "note": "Un broker ha un ruolo operativo a sé stante, non un amministratore junior: i broker ricevono questa applicazione e gli viene deliberatamente rifiutato il pannello di amministrazione generale."
+          },
+          "two_factor_and_passkeys": {
+            "title": "Accesso a due fattori e passkey",
+            "description": "Un secondo fattore è l'app di autenticazione e passkey tramite Windows Hello, Touch ID, Face ID o una chiave di sicurezza hardware, in modo che un membro possa accedere senza digitare alcuna password. Ciascuno è commutabile per comunità."
           }
         }
       },
@@ -315,12 +398,21 @@
           "algorithm_health_dashboard": {
             "title": "Dashboard di salute degli algoritmi",
             "description": "Monitoraggio e regolazione live da admin di tutti i sistemi di ranking."
+          },
+          "ai_agents": {
+            "title": "Agenti dell'intelligenza artificiale",
+            "description": "Agenti IA per comunità che eseguono lavori secondo una pianificazione, sottopongono le azioni proposte a un amministratore per l'approvazione e aiutano con le operazioni quotidiane della piattaforma. Ogni corsa e ogni proposta viene registrata.",
+            "note": "Costruito e spento per impostazione predefinita. Nessuna comunità l'ha acceso oggi."
+          },
+          "ai_provider_choice": {
+            "title": "Scelta del fornitore di intelligenza artificiale",
+            "description": "Il livello AI non è legato a un fornitore: OpenAI, Anthropic, Google Gemini e Ollama self-hosted sono tutti supportati dalla stessa interfaccia, quindi una comunità può scegliere in base ai costi, alla posizione dei dati o alle politiche."
           }
         }
       },
       "caring_community_layer": {
         "title": "Livello di comunità solidale",
-        "intro": "Un livello di governance per preparare i pilota in deployment civici e di comunità solidali — la maggior parte dei moduli è stata rilasciata tra aprile e maggio 2026.",
+        "intro": "Uno strato integrato di mutuo soccorso che unisce l’assistenza quotidiana, il volontariato, le organizzazioni e l’impatto. Rimane spento finché una comunità non accetta e il pannello di amministrazione lo etichetta come Alpha, quindi tutto qui porta un chip di anteprima.",
         "items": {
           "civic_digest": {
             "title": "Digest civico",
@@ -345,6 +437,50 @@
           "copilot": {
             "title": "Copilota",
             "description": "Assistente IA contestuale per gli amministratori della comunità."
+          },
+          "request_help": {
+            "title": "Richiedi aiuto e offri favori",
+            "description": "Dì ai tuoi vicini ciò di cui hai bisogno senza scrivere un elenco formale o registra un atto informale di gentilezza che hai già compiuto. Un favore non ha bisogno di crediti di tempo: viene semplicemente riconosciuto."
+          },
+          "care_relationships": {
+            "title": "Relazioni di cura",
+            "description": "Collegati a qualcuno di cui ti prendi cura in modo informale, vedi tutte le persone a te affidate in un unico posto, organizza una copertura temporanea quando hai bisogno di tregua o sei assente e metti in pausa o interrompi una relazione senza perdere la sua storia."
+          },
+          "hour_gifting_and_transfer": {
+            "title": "Donazioni, trasferimenti e cure future",
+            "description": "Regala ore accumulate a familiari, amici o chiunque ne abbia bisogno; porta con te le tue ore bancarie se ti trasferisci in un'altra comunità che gestisce NEXUS; o lasciarli in un futuro fondo di assistenza a cui attingere per corse di generi alimentari, appuntamenti o semplicemente compagnia, in seguito."
+          },
+          "warmth_pass": {
+            "title": "Passaggio di calore",
+            "description": "Una credenziale di fiducia portatile che un membro guadagna raggiungendo il livello Affidabile, mostrando le ore registrate, le revisioni tra pari, la verifica dell'identità e le aree in cui aiuta. I membri lo mostrano agli assistiti, ai coordinatori e alle organizzazioni come prova di essere un aiuto fidato."
+          },
+          "trust_tiers": {
+            "title": "Livelli di fiducia",
+            "description": "La posizione di un membro nella comunità, con una chiara ripartizione di come ha guadagnato il livello attuale e cosa richiede quello successivo."
+          },
+          "care_providers": {
+            "title": "Elenco dei fornitori di servizi sanitari",
+            "description": "Trova servizi di assistenza locali, centri diurni, associazioni e volontari nella tua regione insieme all'aiuto da membro a membro."
+          },
+          "safeguarding_reporting": {
+            "title": "Segnalazione di preoccupazioni",
+            "description": "I membri possono sollevare autonomamente un problema di salvaguardia e il personale lo esamina, lo assegna e lo risolve in base a un registro delle azioni che può solo essere aggiunto e mai riscritto."
+          },
+          "surveys_and_projects": {
+            "title": "Sondaggi e progetti comunitari",
+            "description": "Raccogli feedback strutturati da residenti, partner municipali e team di programma e coordina i progetti comunitari con le persone che partecipano."
+          },
+          "municipality_reporting": {
+            "title": "Reportistica del Comune",
+            "description": "Un calendario comunale condiviso, una casella di posta per i feedback dei residenti che indirizza domande, idee, problemi e reclami al team giusto e una reportistica creata per i partner comunali e del settore pubblico."
+          },
+          "community_market": {
+            "title": "Mercato comunitario",
+            "description": "Un luogo dove scoprire i servizi di credito a tempo e i beni locali offerti all'interno della comunità."
+          },
+          "time_credit_redemption": {
+            "title": "Spendere crediti di tempo a livello locale",
+            "description": "I membri vedono le ore guadagnate e le trascorrono presso le attività locali partecipanti, con una cronologia di ogni riscatto."
           }
         }
       },
@@ -399,10 +535,6 @@
             "title": "Elaborazione webhook email",
             "description": "Gestione degli eventi di restituzione, reclamo, apertura e consegna del timbro postale."
           },
-          "500plus_phpunit_tests": {
-            "title": "500+ test PHPUnit",
-            "description": "Flussi di denaro, webhook, federazione, gruppi, marketplace — oltre alle suite frontend Vitest."
-          },
           "openapi_3_0_specification": {
             "title": "Specifica OpenAPI 3.0",
             "description": "Specifica API completa con documentazione Swagger UI."
@@ -410,11 +542,56 @@
           "fully_dockerized": {
             "title": "Completamente dockerizzato",
             "description": "Produzione e sviluppo girano sulle stesse fondamenta di Docker Compose."
+          },
+          "automated_test_suite": {
+            "title": "Suite di test automatizzata",
+            "description": "Circa 16.500 metodi di test PHP in 1.600 file di test, oltre a circa 1.300 suite di test frontend, che coprono flusso di denaro, webhook, federazione, gruppi e mercato. Ogni push li esegue e una distribuzione viene bloccata finché il commit push non viene controllato."
+          },
+          "performance_monitoring": {
+            "title": "Monitoraggio delle prestazioni",
+            "description": "Ogni richiesta viene conteggiata e le richieste lente, affamate di memoria o con molte query vengono registrate in dettaglio per un dashboard di amministrazione. Viene archiviata solo la forma di una query, mai i dati dei membri, e i vecchi record vengono eliminati ogni notte."
+          },
+          "partner_api_and_developer_portal": {
+            "title": "API per i partner e portale per sviluppatori",
+            "description": "Un'API documentata che consente a un partner esterno di integrarsi con una comunità, con autenticazione tramite token, riferimento a un endpoint e webhook, oltre a un portale per sviluppatori self-service per chiunque stia creando l'integrazione.",
+            "note": "Costruito e spento per impostazione predefinita. Nessun partner esterno lo utilizza oggi."
+          },
+          "local_advertising": {
+            "title": "Pubblicità locale",
+            "description": "Pubblicità gestita dalla comunità e campagne push con i propri strumenti di budget e amministrazione, in modo che una comunità possa promuovere essa stessa l'attività locale.",
+            "note": "Costruito e spento per impostazione predefinita."
+          },
+          "swiss_fadp_mode": {
+            "title": "Modalità LPD Svizzera",
+            "description": "Un ulteriore banner di consenso e modalità di trattamento dei dati per le comunità che operano ai sensi della revisione della legge federale svizzera sulla protezione dei dati.",
+            "note": "Costruito e spento per impostazione predefinita."
+          },
+          "regional_analytics": {
+            "title": "Analisi regionale",
+            "description": "Rapporti mensili di attività regionali preparati per i comuni e gli enti regionali, gestiti a livello centrale anziché da ciascuna comunità.",
+            "note": "Costruito e spento per impostazione predefinita."
+          },
+          "community_onboarding": {
+            "title": "Nuova community onboarding",
+            "description": "Come inizia una nuova comunità: un modulo di domanda pubblico, un collegamento che consente ai candidati di seguire i propri progressi, un percorso di richiesta per le domande iniziali e strumenti di fornitura amministrativa per sostenere la comunità una volta approvata."
           }
         }
       }
     },
-    "maturity_dormant": "Costruito, testato e spento per impostazione predefinita. Il lavoro è stato svolto e controllato, ma ancora nulla lo sta utilizzando: lo svilupperemo ulteriormente quando ci sarà una domanda reale."
+    "maturity_dormant": "Costruito, testato e spento per impostazione predefinita. Il lavoro è stato svolto e controllato, ma ancora nulla lo sta utilizzando: lo svilupperemo ulteriormente quando ci sarà una domanda reale.",
+    "availability_notice_title": "La tua comunità potrebbe non averli tutti attivati",
+    "availability_notice_body": "Questa pagina mostra tutto ciò che il software Project NEXUS può fare. Non è un elenco di ciò che è attivato per la tua comunità.",
+    "availability_notice_body_2": "Ogni comunità sceglie quali parti desidera utilizzare, quindi alcune delle cose elencate di seguito non appariranno nei tuoi menu. Questo è normale e non è un difetto: significa semplicemente che la tua comunità non ha attivato quella parte.",
+    "availability_notice_body_3": "Ciò che puoi effettivamente utilizzare è tutto ciò che puoi vedere nei tuoi menu. Se qualcosa qui ti sembra utile e non riesci a trovarlo, chiedi a chiunque gestisca la tua community di attivarlo.",
+    "filter_heading": "Trova ciò di cui hai bisogno",
+    "search_placeholder": "Funzionalità di ricerca: prova \"crediti\", \"eventi\", \"sicurezza\"",
+    "search_label": "Funzionalità di ricerca",
+    "filter_all": "Qualunque cosa",
+    "filter_group_label": "Mostra solo",
+    "results_summary": "Visualizzazione di {{shown}} di {{total}} voci",
+    "no_results_title": "Niente corrisponde a quella ricerca",
+    "no_results_body": "Prova una parola più breve o scegli Tutto per ripristinare l'intero elenco.",
+    "clear_filters": "Cancella ricerca e filtri"
   },
   "changelog_page": {
     "title": "Registro delle modifiche",
@@ -901,9 +1078,9 @@
     "type_native_status": "Onestamente sull'ordine: Android è il più vicino, perché tutto il necessario per rilasciarlo è già impostato. La versione per iPhone e iPad è creata dalla stessa app, ma Apple richiede un account sviluppatore ed esamina ogni app prima che possa essere pubblicata, quindi seguirà poco dopo. Non è ancora presente alcun collegamento per il download qui: ne inseriremo uno in questa pagina nel momento in cui ci sarà qualcosa che valga la pena scaricare.",
     "steps_title": "Come aggiungerlo alla schermata iniziale",
     "steps_intro": "Scegli il tuo dispositivo qui sotto. Abbiamo scelto quello che sembra che tu stia utilizzando.",
-    "steps_tab_android": "Android",
+    "steps_tab_android": "Androide",
     "steps_tab_iphone": "iPhone o iPad",
-    "steps_tab_windows": "Windows",
+    "steps_tab_windows": "Finestre",
     "steps_tab_mac": "Mac",
     "steps_android_title": "Telefono o tablet Android",
     "steps_android_1": "Apri questa pagina in Chrome sul tuo telefono o tablet Android.",
