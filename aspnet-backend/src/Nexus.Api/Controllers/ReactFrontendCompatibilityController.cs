@@ -1844,29 +1844,58 @@ public class ReactFrontendCompatibilityController : ControllerBase
 
     [HttpGet("api/legal/acceptance/status")]
     [Authorize]
-    public async Task<IActionResult> LegalAcceptanceStatus()
+    public async Task<IActionResult> LegalAcceptanceStatus(
+        [FromServices] IConfiguration configuration)
     {
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
-        var requiredIds = await _db.LegalDocuments
+        // Laravel LegalAcceptanceController::getStatus shape. The React app's
+        // useLegalGate hook reads has_pending / enforcement_blocking /
+        // blocking_pending and treats an ABSENT flag as blocking, so the flags
+        // must be published explicitly, and mobile renders the documents list.
+        // The ASP.NET legal schema is document-level (no version rows yet), so
+        // current_version_id stands in as the document id, current_version is
+        // the document's version string, and "outdated" is not representable.
+        var rows = await _db.LegalDocuments
             .Where(d => d.IsActive && d.RequiresAcceptance)
-            .Select(d => d.Id)
+            .Select(d => new
+            {
+                d.Id,
+                d.Slug,
+                d.Title,
+                d.Version,
+                AcceptedAt = _db.LegalDocumentAcceptances
+                    .Where(a => a.UserId == userId.Value && a.LegalDocumentId == d.Id)
+                    .Select(a => (DateTime?)a.AcceptedAt)
+                    .FirstOrDefault()
+            })
             .ToListAsync();
 
-        var acceptedIds = await _db.LegalDocumentAcceptances
-            .Where(a => a.UserId == userId.Value && requiredIds.Contains(a.LegalDocumentId))
-            .Select(a => a.LegalDocumentId)
-            .ToListAsync();
+        var documents = rows
+            .Select(d => new
+            {
+                document_id = d.Id,
+                document_type = d.Slug,
+                title = d.Title,
+                current_version_id = d.Id,
+                current_version = d.Version,
+                acceptance_status = d.AcceptedAt == null ? "not_accepted" : "current",
+                accepted_at = d.AcceptedAt
+            })
+            .ToList();
+
+        var hasPending = documents.Any(d => d.acceptance_status != "current");
+        var mode = LegalAcceptanceGateMiddleware.ResolveMode(configuration);
 
         return Ok(new
         {
             data = new
             {
-                accepted = requiredIds.All(acceptedIds.Contains),
-                required_count = requiredIds.Count,
-                accepted_count = acceptedIds.Count,
-                pending_count = requiredIds.Count - acceptedIds.Count
+                has_pending = hasPending,
+                enforcement_blocking = LegalAcceptanceGateMiddleware.ModeBlocks(mode),
+                blocking_pending = hasPending,
+                documents
             }
         });
     }

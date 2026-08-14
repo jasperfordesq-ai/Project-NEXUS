@@ -24,11 +24,18 @@ Last reviewed: 2026-08-11
 >    successful backup since 2026-03-08 while the application migrates on every
 >    start.
 
-> **DEVELOPMENT PAUSE:** Development paused on 15 July 2026. Read
-> [`docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md`](docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md)
-> before any new phase. Opening the repository is not authorization to resume
-> implementation, migrations, deployment, or an autonomous loop. A new user
-> instruction must name the workstream.
+> **DEVELOPMENT PAUSE LIFTED 2026-08-14.** Development was paused on 15 July
+> 2026; on 14 August 2026 the owner explicitly instructed resumption of the
+> ASP.NET contract-parity workstream toward full parity and production
+> readiness. Local implementation, tests, and migrations are authorized again.
+> Production deployment, production-container operations, and live-provider
+> actions still require separate explicit owner authorization per deploy — the
+> live ASP.NET database still has no successful backup since 2026-03-08, and
+> that must be fixed before anything touches production. For history read
+> [`docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md`](docs/PROJECT_PAUSE_HANDOFF_2026-07-15.md);
+> for the current queue and drift picture read
+> [`docs/CURRENT_ASPNET_CONTRACT_STATUS.md`](docs/CURRENT_ASPNET_CONTRACT_STATUS.md)
+> (2026-08-14 re-audit section).
 
 > WARNING: Before deploying or touching any production container, read
 > the production container guide (`.claude/production-containers.md`, not imported by the 2026-08-09 move; retained in the archive repository).

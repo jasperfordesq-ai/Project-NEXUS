@@ -1612,12 +1612,63 @@ public class CompatibilityAliasController : ControllerBase
     }
 
     /// <summary>
-    /// POST /api/legal/acceptance/accept-all — Accept all legal documents.
+    /// POST /api/legal/acceptance/accept-all — accept every pending legal
+    /// document, mirroring Laravel LegalAcceptanceController::acceptAll.
+    /// This previously returned a hardcoded success without recording
+    /// anything, which left members permanently blocked once the
+    /// legal-acceptance gate began enforcing.
     /// </summary>
     [HttpPost("api/legal/acceptance/accept-all")]
-    public IActionResult AcceptAllLegal()
+    public async Task<IActionResult> AcceptAllLegal()
     {
-        return Ok(new { success = true, message = "All legal documents accepted" });
+        var userId = User.GetUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+
+        var pending = await _db.LegalDocuments
+            .Where(d => d.IsActive
+                && d.RequiresAcceptance
+                && !_db.LegalDocumentAcceptances
+                    .Any(a => a.UserId == userId.Value && a.LegalDocumentId == d.Id))
+            .ToListAsync();
+
+        if (pending.Count == 0)
+        {
+            return Ok(new
+            {
+                data = new
+                {
+                    accepted = Array.Empty<string>(),
+                    message = "No documents require acceptance"
+                }
+            });
+        }
+
+        var now = DateTime.UtcNow;
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = Request.Headers.UserAgent.ToString();
+        foreach (var document in pending)
+        {
+            _db.LegalDocumentAcceptances.Add(new LegalDocumentAcceptance
+            {
+                TenantId = document.TenantId,
+                UserId = userId.Value,
+                LegalDocumentId = document.Id,
+                AcceptedAt = now,
+                IpAddress = ipAddress is { Length: > 50 } ? ipAddress[..50] : ipAddress,
+                UserAgent = userAgent.Length > 500 ? userAgent[..500] : userAgent
+            });
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            data = new
+            {
+                accepted = pending.Select(d => d.Slug).ToArray(),
+                message = "All documents accepted"
+            }
+        });
     }
 
     /// <summary>

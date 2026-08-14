@@ -541,6 +541,10 @@ app.UseMiddleware<VolunteerOrganisationFeatureGateMiddleware>();
 // canonical 400 body error must run after the controller-level feature gate.
 app.UseMiddleware<AdminVolunteerHoursMutationValidationMiddleware>();
 app.UseMiddleware<OnboardingRequiredMiddleware>();
+// Laravel's 'legal-acceptance' route middleware runs with the other member
+// gates, before endpoint throttles, so a blocked write never consumes a
+// rate-limit attempt.
+app.UseMiddleware<LegalAcceptanceGateMiddleware>();
 
 // Rate limiting follows authentication/authorization so authenticated
 // endpoint policies partition by user while protected anonymous requests

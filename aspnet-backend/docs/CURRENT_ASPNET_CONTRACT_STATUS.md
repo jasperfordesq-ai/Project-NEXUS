@@ -15,7 +15,10 @@ measures whether ASP.NET is externally contract-identical to Laravel; Web UK's
 `WEBUK-W2-PROD-R1` measures whether the accessible frontend is safe to serve in
 production. Every score marker now carries a rubric id for exactly this reason —
 **never add the two together, and never present one as progress on the other.**
-This workstream has been paused since 2026-07-15.
+This workstream was paused from 2026-07-15 to 2026-08-14. **The owner lifted the
+pause on 2026-08-14** with an explicit instruction to drive ASP.NET to full
+contract parity and production readiness, working the queue below adjusted for
+the drift recorded in the 2026-08-14 re-audit section.
 
 Use this document for the current ASP.NET completion score. Use
 [`FULL_PARITY_REMEDIATION_RUNBOOK.md`](FULL_PARITY_REMEDIATION_RUNBOOK.md) for
@@ -132,9 +135,20 @@ here as a separately named position, never as a silent rescore.
 
 - **547 commits in 32 days.** The API grew by 67 endpoints (none removed),
   4 changes were formally breaking, and 26 new database migrations shipped.
-- The **legal-acceptance enforcement gate** (Laravel, 2026-08-11) blocks 15
-  write actions until terms are accepted. ASP.NET can record an acceptance but
-  has no enforcement equivalent; it would permit all 15 writes.
+- The **legal-acceptance enforcement gate** (Laravel, 2026-08-11) blocks
+  member write actions until terms are accepted. At audit time ASP.NET could
+  record an acceptance but had no enforcement equivalent. **Closed later on
+  2026-08-14 (unscored):** `LegalAcceptanceGateMiddleware` now enforces the
+  fourteen gated routes with the exact Laravel contract (403 /
+  `LEGAL_ACCEPTANCE_REQUIRED` / `success:false`; modes off/report/write/all
+  with write as default and invalid-fallback; fail-open; admin and partner
+  bypass; report-mode `X-Legal-Acceptance-Pending` header), the
+  acceptance-status endpoint publishes `has_pending` / `enforcement_blocking`
+  / `blocking_pending` in the Laravel shape, and accept-all genuinely records
+  acceptances instead of returning a hardcoded success. Pinned by
+  `tests/Nexus.Api.Tests/LegalAcceptanceGateTests.cs` (14 tests). Version-level
+  acceptance staleness ("outdated") remains open until the legal schema gains
+  version rows (queue package 5).
 - Five heavily used areas were rewritten beneath routes ASP.NET does match —
   super-admin, sub-accounts, safeguarding, login/auth, and broker — so route
   presence in those areas no longer implies behavioral identity. They need
