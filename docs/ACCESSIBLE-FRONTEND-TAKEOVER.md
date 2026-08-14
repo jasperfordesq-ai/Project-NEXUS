@@ -134,10 +134,39 @@ and remain redirect-compatibility only. The internal Laravel route names,
 namespaces and translation files still say `govuk_alpha`; that is an internal
 name, not a public one.
 
+## 🔴 What each frontend ACTUALLY serves — measured 2026-08-14
+
+**Read this table before any claim about either frontend.** Every row was probed live,
+not inferred, because three separate sentences in these documents were wrong on exactly
+this point.
+
+| Surface | Served by | Evidence |
+|---|---|---|
+| `accessible.project-nexus.ie` (+ `/{slug}/accessible/...` on it) | **web-uk** | `/version` returns `{"service":"nexus-webuk","release":"a01c8f5c3d49","color":"blue"}` |
+| `accessible-uk.timebank.global` (root, slug-less) | **Blade** | `/version` returns HTML, not JSON. Community `timebanking-org`. |
+| `accessible-minehead-and-coast.timebank.global` (root, slug-less) | **Blade** | as above. Community `minehead-and-coast-timebank`. |
+| `api.project-nexus.ie/{slug}/accessible` | **Blade** | serves a `govuk-template` page |
+| `/{slug}/accessible` on the MAIN app domains (`app.project-nexus.ie`, `timebanks.us`, `pairc-goodman.com`) | **NEITHER — the React SPA answers** | returns React's 1,950-byte shell (`id="root"`), title "NEXUS — Community Timebanking Platform". There is no React route for `accessible`, so it lands on a client-side 404. |
+
+🔴 **Two long-standing claims in this document were FALSE and are corrected here:**
+
+1. It said Blade serves "**all `/{tenantSlug}/accessible/...` paths**". It does not — on the
+   main app domains that path is swallowed by the React SPA. Blade only serves those paths
+   on the API host and on its own two community domains.
+2. It said no community had an accessible domain. **Two do**, and both are live. That claim
+   came from reading the LOCAL snapshot instead of production.
+
+**Members do not reach the React 404**, because the utility-bar link on every tenant's
+React frontend points at `accessible.project-nexus.ie/{slug}/accessible` (built by
+`buildAccessibleFrontendUrl()`), which is web-uk. An old bookmark of `/{slug}/accessible`
+on a main domain would land on the React 404 — recorded, low priority, not a member-facing
+regression.
+
 ## 🔴 Which phase are we in — Phase A
 
-**Phase A: Blade is still deployed** — on the community accessible domains and all
-`/{tenantSlug}/accessible/...` paths, even though `web-uk` now owns
+**Phase A: Blade is still deployed** — on the two community accessible domains and the
+`/{tenantSlug}/accessible/...` paths of the API host (see the table above for what that
+does and does NOT include), even though `web-uk` now owns
 `accessible.project-nexus.ie`. The phase turns on Blade being decommissioned, not
 on the first host being cut over, so the cutover of 2026-08-12 did **not** end
 Phase A. Therefore:
@@ -300,6 +329,76 @@ rollback to a release predating `web-uk` does not fail its own configuration tes
 and thereby abort the rollback. That must be confirmed with `apachectl configtest`
 on the real server, in both states, **before** any cutover — not discovered during
 a rollback.
+
+## 🔴 RETIRING BLADE — the assessment (2026-08-14)
+
+Scored 5/50. This is the largest single item left in the readiness score, and it is much
+closer than the score suggests, because what Blade still serves turned out to be **two
+hostnames**, not a whole URL space.
+
+### What retirement actually requires
+
+Blade serves exactly three things (see the table above). Two of them are community
+hostnames; the third is the API host, which no member is pointed at.
+
+**Step 1 — the code prerequisite is DONE but NOT DEPLOYED.** Both community domains are
+`accessible_domain` values, and until 2026-08-13 web-uk **could not resolve them at all**:
+`TenantBootstrapController` matched `tenants.domain` only, so a member arriving at either
+address through web-uk would have reached the community chooser instead of their own
+community. Fixed, with two regression tests proven to fail on the old query — but it is
+sitting in unpushed commits. **Cutting either domain over before that fix deploys would
+break it for a real community.**
+
+**Step 2 — repoint two vhosts.** Each domain is configured on the SERVER, not in this
+repository, at
+`/var/www/vhosts/system/<domain>/conf/vhost_ssl.conf`, and currently proxies to
+`http://127.0.0.1:${NEXUS_API_PORT}` (8090 — the Laravel/Blade app). The template to copy
+is `accessible.project-nexus.ie`, which proxies to `${NEXUS_WEBUK_PORT}` (3500) inside an
+`<IfDefine NEXUS_WEBUK_PORT>` arm with a Blade fallback — the arrangement that makes
+rollback cheap, and which is already verified against the production Apache build.
+🔴 These files are not in the repo, so a rebuild loses them; the same trap is already
+recorded for `pairc-goodman.com`.
+
+**Step 3 — soak, then remove.** Only after both domains have run on web-uk for a soak
+period does deleting `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/` and the
+`govuk-alpha` routes become a separate, reviewable change.
+
+### The evidence that makes this low-risk
+
+**Blade's accessible frontend has essentially no human traffic.** Measured on the active
+colour over 7 days to 2026-08-14: **1,070 requests to `/accessible` paths, of which 1,065
+were a single crawler** (`jscrawler/0.1`), 2 were my own `curl` probes, 1 was
+`scrape_central/1.0`, and 2 were generic browser agents with no session behind them.
+
+🔴 State that honestly rather than as "nobody uses it": the Apache access log has **no
+vhost field**, so this total cannot be split per hostname, and a handful of requests are
+indistinguishable from a real person visiting once. What it does establish is the order of
+magnitude — there is no measurable member population on Blade's accessible pages.
+
+### What is NOT a blocker, and was previously listed as one
+
+- **Route parity.** 707 of 707 Laravel accessible routes are matched by web-uk. Under the
+  2026-08-13 decision the matrix is coverage evidence, not a drift alarm.
+- **"Still needed from Blade as a reference."** The freeze made Blade a read-only reference
+  for BUILDING web-uk. Whether anything more is needed from it is an owner judgement, and
+  the honest answer today is that the remaining web-uk gaps are translation strings and
+  human sign-off, neither of which Blade can supply.
+
+### What genuinely blocks it
+
+1. **The `accessible_domain` fix must be deployed.** Non-negotiable and first.
+2. **Both community domains must be cut over and soaked.** Two real communities.
+3. **An owner decision to retire**, which is not a technical step. Freezing is not
+   retiring, and this document has said so since the freeze.
+4. **The blue/green rollback has never been exercised** — 0 of 322 recorded deploys used
+   the `rollback` subcommand. That matters more here than for an ordinary deploy, because
+   the cheap-rollback arm in those vhosts is the safety net for a cutover.
+
+### Recommended order
+
+Deploy the fix → repoint `accessible-minehead-and-coast` first (the smaller community) →
+soak → repoint `accessible-uk` → soak → rehearse a rollback while there is still something
+to roll back to → then, and only then, propose deleting the Blade tree.
 
 ## Documents that carry a status claim
 
