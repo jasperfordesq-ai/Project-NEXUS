@@ -87,6 +87,16 @@ const SETTINGS_STATUS_MESSAGES = {
   'insurance-file-large': 'The certificate file must be smaller than 10MB.',
   'insurance-failed': 'Sorry, we could not upload your certificate. Please try again.'
 };
+// 🔴 These three statuses have no govuk_alpha_settings.states.* key; their text lives in
+// the already-translated safeguarding.errors.* namespace. Resolve them there so a member
+// hears the message in their own language instead of the English literal above. The
+// SETTINGS_STATUS_MESSAGES entries stay as the English source of record and the
+// valid-status existence check.
+const SETTINGS_SAFEGUARDING_STATUS_KEYS = {
+  'link-vetting-required': 'safeguarding.errors.vetting_required_title',
+  'link-contact-restricted': 'safeguarding.errors.contact_restricted',
+  'link-safeguarding-unavailable': 'safeguarding.errors.policy_unavailable'
+};
 const SETTINGS_AVAILABILITY_DISPLAY_DAYS = [1, 2, 3, 4, 5, 6, 0];
 const SETTINGS_AVAILABILITY_SLOTS_PER_DAY = 3;
 const SETTINGS_INSURANCE_STATUS_TAGS = {
@@ -450,9 +460,13 @@ router.get('/linked-accounts', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_settings.linked.title'),
     activeNav: 'account',
     status,
+    // 🔴 The three safeguarding statuses rendered the ENGLISH SETTINGS_STATUS_MESSAGES
+    // value in all eleven languages. They map exactly to already-translated
+    // safeguarding.errors.* keys, so resolve them there instead — no new strings.
+    // Every other status resolves via the translated govuk_alpha_settings.states.*.
     statusMessage: SETTINGS_STATUS_MESSAGES[status]
-      ? (['link-vetting-required', 'link-contact-restricted', 'link-safeguarding-unavailable'].includes(status)
-        ? SETTINGS_STATUS_MESSAGES[status]
+      ? (SETTINGS_SAFEGUARDING_STATUS_KEYS[status]
+        ? res.locals.t(SETTINGS_SAFEGUARDING_STATUS_KEYS[status])
         : res.locals.t(`govuk_alpha_settings.states.${status}`))
       : '',
     successStatus: ['link-requested', 'link-approved', 'link-revoked', 'link-permissions-saved'].includes(status),

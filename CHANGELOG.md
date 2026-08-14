@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Three safeguarding messages on the linked-accounts settings page now show in the reader's language.** When linking an account was blocked for a safeguarding reason, the explanation was shown in English to everyone. The same wording already existed, fully translated, elsewhere in the platform; those three messages now use it. (The other ~25 status messages on that page were already translated — the audit over-counted.)
+
 - **Browser-tab titles on the accessible site are now correct and translated.** Every community's home page showed the tab title "Accessible - Project NEXUS Accessible" — the community's own name never appeared and the word "Accessible" showed twice. The tab now shows the community's name. Separately, 96 "not found" pages (a missing event, listing, group, and so on) showed a translated heading but an English tab title in every non-English language; the tab title now matches the heading in all eleven languages. Both were fixed centrally, reusing wording that already exists — no new translations needed.
 
 - **Success and status messages on the accessible site are now announced properly by screen readers.** About sixty on-page notification messages were missing the small pieces that make a screen reader read them out and give them a name: roughly 23 weren't announced at all, a dozen success messages weren't flagged as announcements, three information notices were wrongly flagged as urgent, and about twenty had no accessible name. All corrected by a simple rule — a success message is announced; an information message is a named region — including the shared message box used across the marketplace, so several pages were fixed at once.
