@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block head %}
   {{ super() }}
@@ -91,10 +92,12 @@
 
           <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments') }}" class="govuk-!-margin-top-4">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            {% call characterCount(5000, characterCountMessages, "body") %}
             <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'body' %} govuk-form-group--error{% endif %}">
               <label class="govuk-label govuk-label--s" for="body">{{ t("blog.comment_body_label") }}</label>
-              <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="5000"></textarea>
+              <textarea class="govuk-textarea govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-info"></textarea>
             </div>
+            {% endcall %}
             <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("blog.comment_submit") }}</button>
           </form>
         {% endif %}

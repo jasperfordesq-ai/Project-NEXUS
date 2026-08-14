@@ -119,7 +119,7 @@
         </fieldset>
 
         {# Shared with the event CREATE form so the two cannot drift. #}
-        {{ venueAccessibilityFields(t, event.accessibility) }}
+        {{ venueAccessibilityFields(t, event.accessibility, characterCountMessages) }}
 
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("govuk_alpha.events.create_capacity_title") }}</h2></legend>

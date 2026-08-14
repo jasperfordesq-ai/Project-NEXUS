@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
@@ -96,11 +97,13 @@
         {% endfor %}
       </div>
     </fieldset>
+    {% call characterCount(500, characterCountMessages, "note") %}
     <div class="govuk-form-group govuk-!-margin-top-4">
       <label class="govuk-label" for="note">{{ t("govuk_alpha_volunteering.wellbeing.note_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
       <div id="note-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.wellbeing.note_hint") }}</div>
-      <textarea class="govuk-textarea" id="note" name="note" rows="3" maxlength="500" aria-describedby="note-hint"></textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="note" name="note" rows="3" maxlength="500" aria-describedby="note-hint note-info"></textarea>
     </div>
+    {% endcall %}
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.wellbeing.checkin_button") }}</button>
   </form>
 

@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <a href="{{ urlFor('/courses') }}" class="govuk-back-link">{{ t("courses.back") }}</a>
@@ -119,10 +120,12 @@
           {% endfor %}
         </select>
       </div>
+      {% call characterCount(2000, characterCountMessages, "body") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="body">{{ t("courses.review_body_label") }}</label>
-        <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="2000"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="body" name="body" rows="4" maxlength="2000" aria-describedby="body-info"></textarea>
       </div>
+      {% endcall %}
       <button class="govuk-button" data-module="govuk-button">{{ t("courses.review_submit") }}</button>
     </form>
   {% endif %}

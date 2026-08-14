@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% macro renderComment(comment, post, reactionLabels, reactionEmoji, depth) %}
   <li id="comment-{{ comment.id }}" class="nexus-alpha-comment">
@@ -42,10 +43,12 @@
               <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments/add') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                {% call characterCount(5000, characterCountMessages, "reply-" + (comment.id | string)) %}
                 <div class="govuk-form-group">
                   <label class="govuk-label govuk-label--s" for="reply-{{ comment.id }}">{{ t("govuk_alpha_blogreviews.comments.reply_to", { name: comment.user.name }) }}</label>
-                  <textarea class="govuk-textarea" id="reply-{{ comment.id }}" name="body" rows="3" maxlength="5000" required></textarea>
+                  <textarea class="govuk-textarea govuk-js-character-count" id="reply-{{ comment.id }}" name="body" rows="3" maxlength="5000" required aria-describedby="reply-{{ comment.id }}-info"></textarea>
                 </div>
+                {% endcall %}
                 <button class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.reply_submit") }}</button>
               </form>
             </div>
@@ -58,10 +61,12 @@
               <form method="post" action="{{ urlFor('/blog/comments/' + (comment.id | string) + '/update') }}">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="slug" value="{{ post.slug }}">
+                {% call characterCount(5000, characterCountMessages, "edit-comment-" + (comment.id | string)) %}
                 <div class="govuk-form-group">
                   <label class="govuk-label govuk-label--s" for="edit-comment-{{ comment.id }}">{{ t("govuk_alpha_blogreviews.comments.edit_label") }}</label>
-                  <textarea class="govuk-textarea" id="edit-comment-{{ comment.id }}" name="content" rows="3" maxlength="5000" required>{{ comment.content }}</textarea>
+                  <textarea class="govuk-textarea govuk-js-character-count" id="edit-comment-{{ comment.id }}" name="content" rows="3" maxlength="5000" required aria-describedby="edit-comment-{{ comment.id }}-info">{{ comment.content }}</textarea>
                 </div>
+                {% endcall %}
                 <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.edit_submit") }}</button>
               </form>
             </div>
@@ -157,12 +162,14 @@
         <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_blogreviews.comments.add_heading") }}</h3>
         <form method="post" action="{{ urlFor('/blog/' + post.slug + '/comments/add') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% call characterCount(5000, characterCountMessages, "body") %}
           <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'body' %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_blogreviews.comments.body_label") }}</label>
             <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_blogreviews.comments.body_hint") }}</div>
             {% if statusBanner and statusBanner.anchor == 'body' %}<p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_blogreviews.states.error_prefix") }}</span> {{ statusBanner.message }}</p>{% endif %}
-            <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if statusBanner and statusBanner.anchor == 'body' %} body-error{% endif %}"></textarea>
+            <textarea class="govuk-textarea govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if statusBanner and statusBanner.anchor == 'body' %} body-error{% endif %} body-info"></textarea>
           </div>
+          {% endcall %}
           <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_blogreviews.comments.submit") }}</button>
         </form>
       </section>

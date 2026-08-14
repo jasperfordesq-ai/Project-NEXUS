@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -181,11 +182,13 @@
       </fieldset>
     </div>
 
+    {% call characterCount(500, characterCountMessages, "donate-message") %}
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="donate-message">{{ t("govuk_alpha_volunteering.donations.message_label") }} {{ t("govuk_alpha_volunteering.shared.optional") }}</label>
       <div id="donate-message-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.donations.message_hint") }}</div>
-      <textarea class="govuk-textarea" id="donate-message" name="message" rows="3" maxlength="500" aria-describedby="donate-message-hint"></textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="donate-message" name="message" rows="3" maxlength="500" aria-describedby="donate-message-hint donate-message-info"></textarea>
     </div>
+    {% endcall %}
 
     <div class="govuk-form-group">
       <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">

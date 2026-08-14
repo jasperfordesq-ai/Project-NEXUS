@@ -6,6 +6,7 @@
 {% extends "layouts/base.njk" %}
 {% from "_date-input.njk" import nexusDateInput %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
@@ -42,10 +43,12 @@
           <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" value="{{ goal.targetValue }}" required aria-describedby="tv-hint">
         </div>
 
+        {% call characterCount(1000, characterCountMessages, "description") %}
         <div class="govuk-form-group">
           <label class="govuk-label" for="description">{{ t("goals.description_label") }}</label>
-          <textarea class="govuk-textarea" id="description" name="description" rows="3" maxlength="1000">{{ goal.rawDescription }}</textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="3" maxlength="1000" aria-describedby="description-info">{{ goal.rawDescription }}</textarea>
         </div>
+        {% endcall %}
 
         <div class="govuk-form-group">
           {{ nexusDateInput({

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   {% set statusOptions = [
@@ -65,11 +66,13 @@
       </fieldset>
     </div>
 
+    {% call characterCount(5000, characterCountMessages, "impact_description") %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="impact_description">Impact (optional)</label>
       <div id="impact_description-hint" class="govuk-hint">Describe the difference this idea made once it was put into action.</div>
-      <textarea class="govuk-textarea" id="impact_description" name="impact_description" rows="4" maxlength="5000" aria-describedby="impact_description-hint">{{ outcome.impactDescription or '' }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="impact_description" name="impact_description" rows="4" maxlength="5000" aria-describedby="impact_description-hint impact_description-info">{{ outcome.impactDescription or '' }}</textarea>
     </div>
+    {% endcall %}
 
     <button type="submit" class="govuk-button" data-module="govuk-button">Save outcome</button>
   </form>

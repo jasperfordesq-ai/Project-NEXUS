@@ -13,6 +13,7 @@
 #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -136,11 +137,13 @@
                     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                     <input type="hidden" name="assignment_id" value="{{ guardian.id }}">
                     <input type="hidden" name="action" value="{{ negative }}">
+                    {% call characterCount(500, characterCountMessages, "reason_" + negative + "_" + (guardian.id | string)) %}
                     <div class="govuk-form-group">
                       <label class="govuk-label" for="reason_{{ negative }}_{{ guardian.id }}">{{ t("govuk_alpha_settings.guardians.reason_label") }}</label>
                       <div id="reason-hint-{{ negative }}-{{ guardian.id }}" class="govuk-hint">{{ t("govuk_alpha_settings.guardians.reason_hint") }}</div>
-                      <textarea class="govuk-textarea" id="reason_{{ negative }}_{{ guardian.id }}" name="reason" rows="2" maxlength="500" aria-describedby="reason-hint-{{ negative }}-{{ guardian.id }}"></textarea>
+                      <textarea class="govuk-textarea govuk-js-character-count" id="reason_{{ negative }}_{{ guardian.id }}" name="reason" rows="2" maxlength="500" aria-describedby="reason-hint-{{ negative }}-{{ guardian.id }} reason_{{ negative }}_{{ guardian.id }}-info"></textarea>
                     </div>
+                    {% endcall %}
                     <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
                       {{ t("govuk_alpha_settings.guardians.decline_button") if negative === 'declined' else t("govuk_alpha_settings.guardians.withdraw_button") }}
                     </button>

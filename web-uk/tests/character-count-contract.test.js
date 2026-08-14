@@ -139,6 +139,14 @@ describe('the converted fields', () => {
     ['events/agenda.njk', 'agenda-session-{{ session.id }}-cancel-reason'],
     ['groups/files.njk', 'file-description'],
     ['events/moderation-decision.njk', 'reason'],
+    // 2026-08-14 audit pass — the acute short-limit fields, where silent truncation
+    // bites a member writing a note they cannot see the end of. Ids taken from the
+    // real textareas (some are loop/record-scoped, e.g. reason_{{ action.id }}).
+    ['saved-social/appreciations.njk', 'appreciation-message'],
+    ['volunteering/swaps.njk', 'message'],
+    ['volunteering/wellbeing.njk', 'note'],
+    ['listings/report.njk', 'details'],
+    ['onboarding/index.njk', 'bio'],
   ];
 
   it.each(CONVERTED)('%s wires the field to the counter', (file, id) => {
@@ -147,8 +155,12 @@ describe('the converted fields', () => {
     expect(source).toContain('{% from "_character-count.njk" import characterCount %}');
     expect(source).toContain('{% call characterCount(');
     // The three things the component needs, each of which fails silently on its own.
-    expect(source).toMatch(new RegExp(`<textarea[^>]*id="${id.replace(/[{}|.*+?^$()[\]\\]/g, '\\$&')}"[^>]*govuk-js-character-count|<textarea[^>]*govuk-js-character-count[^>]*id="${id.replace(/[{}|.*+?^$()[\]\\]/g, '\\$&')}"`));
-    expect(source).toContain(`aria-describedby="${id}-info`);
+    const escId = id.replace(/[{}|.*+?^$()[\]\\]/g, '\\$&');
+    expect(source).toMatch(new RegExp(`<textarea[^>]*id="${escId}"[^>]*govuk-js-character-count|<textarea[^>]*govuk-js-character-count[^>]*id="${escId}"`));
+    // `${id}-info` must be REFERENCED by aria-describedby, but it may be appended after
+    // an existing -hint/-error id rather than sitting first — so match it anywhere in
+    // the attribute value, not only at the start.
+    expect(source).toMatch(new RegExp(`aria-describedby="[^"]*${escId}-info`));
   });
 
   it.each(CONVERTED)('%s keeps maxlength for members without JavaScript', (file) => {
@@ -156,5 +168,24 @@ describe('the converted fields', () => {
     // scripts do not run, and govuk-frontend removes it itself once it takes over.
     const source = fs.readFileSync(path.join(viewsDirectory, file), 'utf8');
     expect(source).toMatch(/<textarea[^>]*govuk-js-character-count[^>]*maxlength="\d+"|<textarea[^>]*maxlength="\d+"[^>]*govuk-js-character-count/);
+  });
+
+  it('keeps the whole converted set attached (floor ratchet)', () => {
+    // A floor, not an exact count: the 2026-08-14 audit brought the number of
+    // reachable-maxlength textareas carrying the counter to 59. If a later edit strips
+    // the component off a field, this catches the regression. Raise the floor when more
+    // are converted; never lower it without a recorded reason.
+    let attached = 0;
+    const walk = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(entry.parentPath ?? dir, entry.name);
+        if (entry.isDirectory()) { walk(full); continue; }
+        if (!entry.name.endsWith('.njk') || entry.name === '_character-count.njk') continue;
+        const src = fs.readFileSync(full, 'utf8');
+        attached += (src.match(/govuk-js-character-count/g) || []).length;
+      }
+    };
+    walk(viewsDirectory);
+    expect(attached).toBeGreaterThanOrEqual(59);
   });
 });

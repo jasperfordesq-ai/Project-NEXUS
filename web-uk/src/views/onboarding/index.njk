@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   {% set bagInterests = bag.interests or [] %}
@@ -78,14 +79,16 @@
 
         <form method="post" action="{{ urlFor('/onboarding/profile') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% call characterCount(2000, characterCountMessages, "bio") %}
           <div class="govuk-form-group{% if statusBanner and statusBanner.anchor == 'bio' %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--s" for="bio">{{ t("govuk_alpha.onboarding.profile.bio_label") }}</label>
             <div id="bio-hint" class="govuk-hint">{{ t("onboarding.profile.bio_hint") }}</div>
             {% if statusBanner and statusBanner.anchor == "bio" %}
               <p id="bio-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
             {% endif %}
-            <textarea class="govuk-textarea" id="bio" name="bio" rows="4" maxlength="2000" aria-describedby="bio-hint{% if statusBanner and statusBanner.anchor == 'bio' %} bio-error{% endif %}">{{ onboardingUser.bio or "" }}</textarea>
+            <textarea class="govuk-textarea govuk-js-character-count" id="bio" name="bio" rows="4" maxlength="2000" aria-describedby="bio-hint{% if statusBanner and statusBanner.anchor == 'bio' %} bio-error{% endif %} bio-info">{{ onboardingUser.bio or "" }}</textarea>
           </div>
+          {% endcall %}
           <button class="govuk-button" data-module="govuk-button">{{ t("onboarding.profile.save_continue") }}</button>
         </form>
 

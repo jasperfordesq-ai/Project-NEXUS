@@ -6,6 +6,7 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "_character-count.njk" import characterCount %}
 
 {% macro renderComment(comment, resourceId, currentUserId, csrfToken) %}
   <li id="comment-{{ comment.id }}" class="nexus-alpha-comment">
@@ -98,14 +99,16 @@
         <h3 class="govuk-heading-m govuk-!-margin-top-6">{{ t("govuk_alpha_resources.social.add_comment_heading") }}</h3>
         <form method="post" action="{{ urlFor('/resources/' + (resourceId | string) + '/comments/add') }}">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          {% call characterCount(5000, characterCountMessages, "body") %}
           <div class="govuk-form-group{% if status and status.anchor == 'body' %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_resources.social.comment_body_label") }}</label>
             <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_resources.social.comment_body_hint") }}</div>
             {% if status and status.anchor == 'body' %}
               <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_resources.states.error_title") }}:</span> {{ status.message }}</p>
             {% endif %}
-            <textarea class="govuk-textarea" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %}"></textarea>
+            <textarea class="govuk-textarea govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %} body-info"></textarea>
           </div>
+          {% endcall %}
           <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_resources.social.comment_submit") }}</button>
         </form>
       </section>

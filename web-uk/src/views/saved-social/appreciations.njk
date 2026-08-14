@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   {% set messageError = status == "appreciation-message-required" %}
@@ -46,14 +47,16 @@
     <p class="govuk-body">{{ t("govuk_alpha_saved.send.intro") }}</p>
     <form method="post" action="{{ urlFor('/users/' + (owner.id | string) + '/appreciations') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {% call characterCount(500, characterCountMessages, "appreciation-message") %}
       <div class="govuk-form-group{% if messageError %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="appreciation-message">{{ t("govuk_alpha_saved.send.message_label") }}</label>
         <div id="appreciation-message-hint" class="govuk-hint">{{ t("govuk_alpha_saved.send.message_hint") }}</div>
         {% if messageError %}
           <p id="appreciation-message-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_saved.errors.summary_title") }}:</span> {{ t("govuk_alpha_saved.status.appreciation_message_required") }}</p>
         {% endif %}
-        <textarea class="govuk-textarea govuk-!-width-two-thirds" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %}"></textarea>
+        <textarea class="govuk-textarea govuk-!-width-two-thirds govuk-js-character-count" id="appreciation-message" name="message" rows="4" maxlength="500" aria-describedby="appreciation-message-hint{% if messageError %} appreciation-message-error{% endif %} appreciation-message-info"></textarea>
       </div>
+      {% endcall %}
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">
           <legend class="govuk-fieldset__legend govuk-visually-hidden">{{ t("govuk_alpha_saved.send.public_label") }}</legend>

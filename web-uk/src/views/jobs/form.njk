@@ -5,6 +5,7 @@
 
 {% extends "layouts/base.njk" %}
 {% from "_date-input.njk" import nexusDateInput %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <a href="{{ urlFor('/jobs/mine') }}" class="govuk-back-link">{{ t("govuk_alpha.jobs_t3.nav_mine") }}</a>
@@ -37,11 +38,13 @@
       <input class="govuk-input" id="title" name="title" type="text" value="{{ jobForm.title or "" }}" maxlength="255" aria-describedby="title-hint" required>
     </div>
 
+    {% call characterCount(5000, characterCountMessages, "description") %}
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--m" for="description">{{ t("govuk_alpha.jobs_t3.label_description") }}</label>
       <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.jobs_t3.hint_description") }}</div>
-      <textarea class="govuk-textarea" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint">{{ jobForm.description or "" }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint description-info">{{ jobForm.description or "" }}</textarea>
     </div>
+    {% endcall %}
 
     <div class="govuk-form-group">
       <label class="govuk-label govuk-label--m" for="type">{{ t("govuk_alpha.jobs_t3.label_type") }}</label>

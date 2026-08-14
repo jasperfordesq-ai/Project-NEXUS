@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% set opportunityTitle = opportunity.title or t("govuk_alpha_organisations.apply.title") %}
 {% set organisationName = opportunity.organisationName or "" %}
@@ -43,11 +44,13 @@
   {% else %}
     <form method="post" action="{{ urlFor('/volunteering/opportunities/' + (opportunityId | string) + '/apply') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {% call characterCount(2000, characterCountMessages, "message") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="message">{{ t("govuk_alpha_organisations.apply.message_label") }}</label>
         <div id="message-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.apply.message_hint") }}</div>
-        <textarea class="govuk-textarea" id="message" name="message" rows="5" maxlength="2000" aria-describedby="message-hint"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="message" name="message" rows="5" maxlength="2000" aria-describedby="message-hint message-info"></textarea>
       </div>
+      {% endcall %}
 
       <div class="govuk-inset-text">
         <p class="govuk-body govuk-!-margin-bottom-0">{{ t("govuk_alpha_organisations.apply.notice") }}</p>

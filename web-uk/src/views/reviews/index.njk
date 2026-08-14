@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% macro reviewItem(review) %}
   <li class="nexus-alpha-card">
@@ -116,10 +117,12 @@
                 <div class="govuk-form-group">
                   <fieldset class="govuk-fieldset"><legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("reviews_page.rating_legend") }}</legend><div class="govuk-radios govuk-radios--inline govuk-radios--small">{% for star in [5,4,3,2,1] %}<div class="govuk-radios__item"><input class="govuk-radios__input" id="rating-{{ pendingIndex }}-{{ star }}" name="rating" type="radio" value="{{ star }}" required><label class="govuk-label govuk-radios__label" for="rating-{{ pendingIndex }}-{{ star }}"><span aria-hidden="true">{{ star }}</span><span class="govuk-visually-hidden">{{ t("ux.rating_out_of", { rating: star }) }}</span></label></div>{% endfor %}</div></fieldset>
                 </div>
+                {% call characterCount(2000, characterCountMessages, "comment-" + (loop.index | string)) %}
                 <div class="govuk-form-group">
                   <label class="govuk-label govuk-label--s" for="comment-{{ loop.index }}">{{ t("reviews_page.comment_label") }}</label><div id="comment-hint-{{ loop.index }}" class="govuk-hint">{{ t("reviews_page.comment_hint") }}</div>
-                  <textarea class="govuk-textarea" id="comment-{{ loop.index }}" name="comment" rows="3" maxlength="2000" aria-describedby="comment-hint-{{ loop.index }}"></textarea>
+                  <textarea class="govuk-textarea govuk-js-character-count" id="comment-{{ loop.index }}" name="comment" rows="3" maxlength="2000" aria-describedby="comment-hint-{{ loop.index }} comment-{{ loop.index }}-info"></textarea>
                 </div>
+                {% endcall %}
                 <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("reviews_page.write_review") }}</button>
               </form>
             </li>

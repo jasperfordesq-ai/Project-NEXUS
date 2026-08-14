@@ -6,6 +6,7 @@
 {% extends "layouts/base.njk" %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <a class="govuk-back-link" href="{{ urlFor('/goals/' + (goal.id | string)) }}">{{ t("goals.back_to_goal") }}</a>
@@ -61,11 +62,13 @@
         </div>
       </fieldset>
 
+      {% call characterCount(2000, characterCountMessages, "note") %}
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--m" for="note">{{ t("govuk_alpha_goals.checkin.note_label") }}</label>
         <div id="note-hint" class="govuk-hint">{{ t("govuk_alpha_goals.checkin.note_help") }}</div>
-        <textarea class="govuk-textarea" id="note" name="note" rows="3" maxlength="2000" aria-describedby="note-hint"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="note" name="note" rows="3" maxlength="2000" aria-describedby="note-hint note-info"></textarea>
       </div>
+      {% endcall %}
 
       <button class="govuk-button" data-module="govuk-button" type="submit">{{ t("govuk_alpha_goals.checkin.submit") }}</button>
     </div>

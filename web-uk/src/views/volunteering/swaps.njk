@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -59,11 +60,13 @@
         <div id="to_user_id-hint" class="govuk-hint">{{ t("vol_depth.swap_to_user_hint") }}</div>
         <input class="govuk-input govuk-input--width-10" id="to_user_id" name="to_user_id" type="text" inputmode="numeric" pattern="[0-9]*" aria-describedby="to_user_id-hint" required>
       </div>
+      {% call characterCount(500, characterCountMessages, "message") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="message">{{ t("vol_depth.swap_message_label") }}</label>
         <div id="message-hint" class="govuk-hint">{{ t("vol_depth.swap_message_hint") }}</div>
-        <textarea class="govuk-textarea" id="message" name="message" rows="3" aria-describedby="message-hint" maxlength="500"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="message" name="message" rows="3" aria-describedby="message-hint message-info" maxlength="500"></textarea>
       </div>
+      {% endcall %}
       <button class="govuk-button" data-module="govuk-button">{{ t("vol_depth.swap_request_submit") }}</button>
     </form>
   {% endif %}

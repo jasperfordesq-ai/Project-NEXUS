@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -69,11 +70,13 @@
             </fieldset>
           </div>
 
+          {% call characterCount(2000, characterCountMessages, "notes") %}
           <div class="govuk-form-group">
             <label class="govuk-label" for="notes">{{ t("govuk_alpha_settings.gdpr.notes_label") }}</label>
             <div id="notes-hint" class="govuk-hint">{{ t("govuk_alpha_settings.gdpr.notes_hint") }}</div>
-            <textarea class="govuk-textarea" id="notes" name="notes" rows="4" maxlength="2000" aria-describedby="notes-hint"></textarea>
+            <textarea class="govuk-textarea govuk-js-character-count" id="notes" name="notes" rows="4" maxlength="2000" aria-describedby="notes-hint notes-info"></textarea>
           </div>
+          {% endcall %}
 
           <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_settings.gdpr.submit_button") }}</button>
         </form>

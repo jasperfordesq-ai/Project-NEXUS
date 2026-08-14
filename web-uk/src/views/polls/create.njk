@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -32,11 +33,13 @@
           <div id="poll-question-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.question_hint") }}</div>
           <input class="govuk-input" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint" required maxlength="255">
         </div>
+        {% call characterCount(2000, characterCountMessages, "poll-description") %}
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--s" for="poll-description">{{ t("govuk_alpha_gamification.poll_create.desc_label") }}</label>
           <div id="poll-desc-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.desc_hint") }}</div>
-          <textarea class="govuk-textarea" id="poll-description" name="description" rows="3" aria-describedby="poll-desc-hint" maxlength="2000"></textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="poll-description" name="description" rows="3" aria-describedby="poll-desc-hint poll-description-info" maxlength="2000"></textarea>
         </div>
+        {% endcall %}
         {% if categories.length %}
           <div class="govuk-form-group">
             <label class="govuk-label govuk-label--s" for="poll-category">{{ t("govuk_alpha_gamification.poll_create.category_label") }}</label>

@@ -324,7 +324,7 @@
            event is made. Shared with the recurring-edit form so the two cannot
            drift. `values` carries a rejected submission back so a validation
            error does not wipe the organiser's answers. #}
-        {{ venueAccessibilityFields(t, values) }}
+        {{ venueAccessibilityFields(t, values, characterCountMessages) }}
 
         {{ govukButton({
           text: t("actions.create_event"),

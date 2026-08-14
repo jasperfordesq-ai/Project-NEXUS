@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -35,10 +36,12 @@
           <input class="govuk-input" id="title" name="title" type="text" maxlength="150" required aria-describedby="title-hint{% if errorMessage %} title-error{% endif %}">
         </div>
 
+        {% call characterCount(2000, characterCountMessages, "description") %}
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--m" for="description">{{ t("group_exchanges.form_description_label") }}</label>
-          <textarea class="govuk-textarea" id="description" name="description" rows="3" maxlength="2000"></textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="3" maxlength="2000" aria-describedby="description-info"></textarea>
         </div>
+        {% endcall %}
 
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--m" for="total_hours">{{ t("group_exchanges.form_hours_label") }}</label>

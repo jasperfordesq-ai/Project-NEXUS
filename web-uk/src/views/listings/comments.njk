@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <a class="govuk-back-link" href="{{ urlFor('/listings/' + (listing.id | string)) }}">{{ t("govuk_alpha_listings.comments.back_to_listing") }}</a>
@@ -50,14 +51,16 @@
       <h2 class="govuk-heading-m govuk-!-margin-top-6" id="add-comment">{{ t("govuk_alpha_listings.comments.add_heading") }}</h2>
       <form method="post" action="{{ urlFor('/listings/' + (listing.id | string) + '/comments') }}" class="govuk-!-margin-top-2">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% call characterCount(5000, characterCountMessages, "body") %}
         <div class="govuk-form-group{% if status and status.anchor == 'body' %} govuk-form-group--error{% endif %}">
           <label class="govuk-label govuk-label--s" for="body">{{ t("govuk_alpha_listings.comments.body_label") }}</label>
           <div id="body-hint" class="govuk-hint">{{ t("govuk_alpha_listings.comments.body_hint") }}</div>
           {% if status and status.anchor == 'body' %}
             <p id="body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
           {% endif %}
-          <textarea class="govuk-textarea{% if status and status.anchor == 'body' %} govuk-textarea--error{% endif %}" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %}"></textarea>
+          <textarea class="govuk-textarea{% if status and status.anchor == 'body' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="body" name="body" rows="4" maxlength="5000" aria-describedby="body-hint{% if status and status.anchor == 'body' %} body-error{% endif %} body-info"></textarea>
         </div>
+        {% endcall %}
         <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_listings.comments.submit") }}</button>
       </form>
     </div>

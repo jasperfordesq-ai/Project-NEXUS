@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   {% set hasErrors = errors and (errors.summary or errors.description or errors.impact) %}
@@ -67,14 +68,16 @@
             <input class="govuk-input{% if errors.summary %} govuk-input--error{% endif %}" id="summary" name="summary" type="text" maxlength="180" value="{{ values.summary or '' }}" aria-describedby="summary-hint{% if errors.summary %} summary-error{% endif %}">
           </div>
 
+          {% call characterCount(5000, characterCountMessages, "description") %}
           <div class="govuk-form-group{% if errors.description %} govuk-form-group--error{% endif %}">
             <label class="govuk-label govuk-label--s" for="description">{{ t("report_problem.description_label") }}</label>
             <div id="description-hint" class="govuk-hint">{{ t("report_problem.description_hint") }}</div>
             {% if errors.description %}
               <p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ errors.description }}</p>
             {% endif %}
-            <textarea class="govuk-textarea{% if errors.description %} govuk-textarea--error{% endif %}" id="description" name="description" rows="5" maxlength="5000" aria-describedby="description-hint{% if errors.description %} description-error{% endif %}">{{ values.description or '' }}</textarea>
+            <textarea class="govuk-textarea{% if errors.description %} govuk-textarea--error{% endif %} govuk-js-character-count" id="description" name="description" rows="5" maxlength="5000" aria-describedby="description-hint{% if errors.description %} description-error{% endif %} description-info">{{ values.description or '' }}</textarea>
           </div>
+          {% endcall %}
 
           <div class="govuk-form-group{% if errors.impact %} govuk-form-group--error{% endif %}">
             <fieldset class="govuk-fieldset" aria-describedby="{% if errors.impact %}impact-error{% endif %}">

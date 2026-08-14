@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 {% block content %}
 <a class="govuk-back-link" href="{{ urlFor('/events/' + (eventId | string) + '/registration') }}">{{ t("event_registration.title") }}</a>
 <h1 class="govuk-heading-xl">{{ t("event_registration.forms.editor.edit_title" if form else "event_registration.forms.editor.create_title") }}</h1>
@@ -25,10 +26,12 @@
     <label class="govuk-label govuk-label--m" for="form-name">{{ t("event_registration.forms.editor.name") }}</label>
     <input class="govuk-input" id="form-name" name="name" type="text" value="{{ formValues.name or '' }}" maxlength="255" required>
   </div>
+  {% call characterCount(2000, characterCountMessages, "form-description") %}
   <div class="govuk-form-group">
     <label class="govuk-label" for="form-description">{{ t("event_registration.forms.editor.description") }}</label>
-    <textarea class="govuk-textarea" id="form-description" name="description" rows="4" maxlength="2000">{{ formValues.description or '' }}</textarea>
+    <textarea class="govuk-textarea govuk-js-character-count" id="form-description" name="description" rows="4" maxlength="2000" aria-describedby="form-description-info">{{ formValues.description or '' }}</textarea>
   </div>
+  {% endcall %}
 
   {% for row in questionRows %}
     {% set i = loop.index0 %}

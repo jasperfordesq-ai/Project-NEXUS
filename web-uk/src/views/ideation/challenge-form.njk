@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   {% set isEdit = mode == "edit" %}
@@ -86,14 +87,16 @@
       <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ challenge.title or '' }}" aria-describedby="title-hint{% if isInvalid %} title-error{% endif %}">
     </div>
 
+    {% call characterCount(5000, characterCountMessages, "description") %}
     <div class="govuk-form-group{% if isInvalid %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="description">Description</label>
       <div id="description-hint" class="govuk-hint">Explain the problem, who it affects, and what good ideas should consider.</div>
       {% if isInvalid %}
         <p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a challenge description.</p>
       {% endif %}
-      <textarea class="govuk-textarea" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint{% if isInvalid %} description-error{% endif %}">{{ challenge.description or '' }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint{% if isInvalid %} description-error{% endif %} description-info">{{ challenge.description or '' }}</textarea>
     </div>
+    {% endcall %}
 
     {% if categories and categories.length %}
       <div class="govuk-form-group">
@@ -113,10 +116,12 @@
       <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="100" value="{{ challenge.category or '' }}" aria-describedby="category-hint">
     </div>
 
+    {% call characterCount(2000, characterCountMessages, "prize_description") %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="prize_description">Prize or recognition</label>
-      <textarea class="govuk-textarea" id="prize_description" name="prize_description" rows="3" maxlength="2000">{{ challenge.prizeDescription or '' }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="prize_description" name="prize_description" rows="3" maxlength="2000" aria-describedby="prize_description-info">{{ challenge.prizeDescription or '' }}</textarea>
     </div>
+    {% endcall %}
 
     <div class="govuk-form-group">
       <label class="govuk-label" for="submission_deadline">Submission deadline</label>

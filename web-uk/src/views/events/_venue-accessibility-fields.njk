@@ -20,7 +20,8 @@
   create, the resubmitted `values` so a validation error does not wipe the answers.
   Every value is optional and falls back to "unknown"/empty.
 #}
-{% macro venueAccessibilityFields(t, access) %}
+{% from "_character-count.njk" import characterCount %}
+{% macro venueAccessibilityFields(t, access, characterCountMessages) %}
   <fieldset class="govuk-fieldset govuk-!-margin-top-7" aria-describedby="venue-accessibility-hint">
     <legend class="govuk-fieldset__legend govuk-fieldset__legend--l"><h2 class="govuk-fieldset__heading">{{ t("event_accessibility.form.title") }}</h2></legend>
     <div id="venue-accessibility-hint" class="govuk-hint">{{ t("event_accessibility.form.hint") }}</div>
@@ -43,26 +44,32 @@
         </div></div>
       {% endfor %}
     </div>
+    {% call characterCount(1000, characterCountMessages, "accessibility_parking_details") %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="accessibility_parking_details">{{ t("event_accessibility.form.parking_details") }}</label>
       <div id="accessibility-parking-details-hint" class="govuk-hint">{{ t("event_accessibility.form.parking_details_hint") }}</div>
-      <textarea class="govuk-textarea" id="accessibility_parking_details" name="accessibility_parking_details" rows="3" maxlength="1000" aria-describedby="accessibility-parking-details-hint">{{ a.parkingDetails or a.accessibility_parking_details or "" }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="accessibility_parking_details" name="accessibility_parking_details" rows="3" maxlength="1000" aria-describedby="accessibility-parking-details-hint accessibility_parking_details-info">{{ a.parkingDetails or a.accessibility_parking_details or "" }}</textarea>
     </div>
+    {% endcall %}
+    {% call characterCount(1000, characterCountMessages, "accessibility_transit_details") %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="accessibility_transit_details">{{ t("event_accessibility.form.transit_details") }}</label>
       <div id="accessibility-transit-details-hint" class="govuk-hint">{{ t("event_accessibility.form.transit_details_hint") }}</div>
-      <textarea class="govuk-textarea" id="accessibility_transit_details" name="accessibility_transit_details" rows="3" maxlength="1000" aria-describedby="accessibility-transit-details-hint">{{ a.transitDetails or a.accessibility_transit_details or "" }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="accessibility_transit_details" name="accessibility_transit_details" rows="3" maxlength="1000" aria-describedby="accessibility-transit-details-hint accessibility_transit_details-info">{{ a.transitDetails or a.accessibility_transit_details or "" }}</textarea>
     </div>
+    {% endcall %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="accessibility_assistance_contact">{{ t("event_accessibility.form.assistance_contact") }}</label>
       <div id="accessibility-assistance-contact-hint" class="govuk-hint">{{ t("event_accessibility.form.assistance_contact_hint") }}</div>
       <input class="govuk-input" id="accessibility_assistance_contact" name="accessibility_assistance_contact" type="text" maxlength="500" value="{{ a.assistanceContact or a.accessibility_assistance_contact or "" }}" aria-describedby="accessibility-assistance-contact-hint">
     </div>
+    {% call characterCount(4000, characterCountMessages, "accessibility_notes") %}
     <div class="govuk-form-group">
       <label class="govuk-label" for="accessibility_notes">{{ t("event_accessibility.form.notes") }}</label>
       <div id="accessibility-notes-hint" class="govuk-hint">{{ t("event_accessibility.form.notes_hint") }}</div>
-      <textarea class="govuk-textarea" id="accessibility_notes" name="accessibility_notes" rows="5" maxlength="4000" aria-describedby="accessibility-notes-hint">{{ a.notes or a.accessibility_notes or "" }}</textarea>
+      <textarea class="govuk-textarea govuk-js-character-count" id="accessibility_notes" name="accessibility_notes" rows="5" maxlength="4000" aria-describedby="accessibility-notes-hint accessibility_notes-info">{{ a.notes or a.accessibility_notes or "" }}</textarea>
     </div>
+    {% endcall %}
     <p class="govuk-body-s">{{ t("event_accessibility.form.privacy_note") }}</p>
   </fieldset>
 {% endmacro %}

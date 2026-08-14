@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   {% set successStates = ["campaign-updated", "campaign-created", "challenge-unlinked"] %}
@@ -70,10 +71,12 @@
         {% if status == "campaign-invalid" %}<p id="campaign_title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.common.error_prefix") }}</span> {{ t("govuk_alpha_ideation.campaigns.title_required") }}</p>{% endif %}
         <input class="govuk-input" id="campaign_title" name="title" type="text" maxlength="255" value="{{ campaign.title }}"{% if status == "campaign-invalid" %} aria-describedby="campaign_title-error"{% endif %}>
       </div>
+      {% call characterCount(5000, characterCountMessages, "campaign_description") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="campaign_description">{{ t("govuk_alpha_ideation.campaigns.description_label") }}</label>
-        <textarea class="govuk-textarea" id="campaign_description" name="description" rows="4" maxlength="5000">{{ campaign.description }}</textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="campaign_description" name="description" rows="4" maxlength="5000" aria-describedby="campaign_description-info">{{ campaign.description }}</textarea>
       </div>
+      {% endcall %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="campaign_start_date">{{ t("govuk_alpha_ideation.campaigns.start_date_label") }}</label>
         <input class="govuk-input govuk-input--width-10" id="campaign_start_date" name="start_date" type="text" value="{{ campaign.startDate }}">

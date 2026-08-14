@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "_date-input.njk" import nexusDateInput %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -179,14 +180,16 @@
         <input class="govuk-input{% if status.field == 'title' %} govuk-input--error{% endif %}" id="title" name="title" type="text" maxlength="255"{% if status.field == "title" %} aria-describedby="incident-title-error"{% endif %}>
       </div>
 
+      {% call characterCount(2000, characterCountMessages, "description") %}
       <div class="govuk-form-group{% if status.field == 'description' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label govuk-label--s" for="description">{{ t("govuk_alpha_volunteering.safeguarding.incident_description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.safeguarding.incident_description_hint") }}</div>
         {% if status.field == "description" %}
           <p id="incident-desc-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
         {% endif %}
-        <textarea class="govuk-textarea{% if status.field == 'description' %} govuk-textarea--error{% endif %}" id="description" name="description" rows="5" maxlength="2000" aria-describedby="description-hint{% if status.field == 'description' %} incident-desc-error{% endif %}"></textarea>
+        <textarea class="govuk-textarea{% if status.field == 'description' %} govuk-textarea--error{% endif %} govuk-js-character-count" id="description" name="description" rows="5" maxlength="2000" aria-describedby="description-hint{% if status.field == 'description' %} incident-desc-error{% endif %} description-info"></textarea>
       </div>
+      {% endcall %}
 
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">

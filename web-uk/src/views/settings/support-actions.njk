@@ -10,6 +10,7 @@
 #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -85,11 +86,13 @@
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                 <input type="hidden" name="action_id" value="{{ action.id }}">
                 <input type="hidden" name="answer" value="decline">
+                {% call characterCount(500, characterCountMessages, "reason_" + (action.id | string)) %}
                 <div class="govuk-form-group">
                   <label class="govuk-label" for="reason_{{ action.id }}">{{ t("govuk_alpha_settings.support_actions.reason_label") }}</label>
                   <div id="reason-hint-{{ action.id }}" class="govuk-hint">{{ t("govuk_alpha_settings.support_actions.reason_hint") }}</div>
-                  <textarea class="govuk-textarea" id="reason_{{ action.id }}" name="reason" rows="2" maxlength="500" aria-describedby="reason-hint-{{ action.id }}"></textarea>
+                  <textarea class="govuk-textarea govuk-js-character-count" id="reason_{{ action.id }}" name="reason" rows="2" maxlength="500" aria-describedby="reason-hint-{{ action.id }} reason_{{ action.id }}-info"></textarea>
                 </div>
+                {% endcall %}
                 <button class="govuk-button govuk-button--warning" data-module="govuk-button" type="submit">
                   {{ t("govuk_alpha_settings.support_actions.decline_button") }}
                 </button>

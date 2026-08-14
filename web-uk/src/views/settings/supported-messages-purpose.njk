@@ -14,6 +14,7 @@
 #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -59,11 +60,13 @@
           </fieldset>
         </div>
 
+        {% call characterCount(300, characterCountMessages, "detail") %}
         <div class="govuk-form-group">
           <label class="govuk-label" for="detail">{{ t("govuk_alpha_settings.linked_messages.purpose_detail_label") }}</label>
           <div id="detail-hint" class="govuk-hint">{{ t("govuk_alpha_settings.linked_messages.purpose_detail_hint") }}</div>
-          <textarea class="govuk-textarea" id="detail" name="detail" rows="3" maxlength="300" aria-describedby="detail-hint"></textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="detail" name="detail" rows="3" maxlength="300" aria-describedby="detail-hint detail-info"></textarea>
         </div>
+        {% endcall %}
 
         <button class="govuk-button" data-module="govuk-button" type="submit">
           {{ t("govuk_alpha_settings.linked_messages.purpose_continue") }}

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
@@ -59,11 +60,13 @@
               {% endif %}
               <input class="govuk-input" id="draft-title-{{ draft.id }}" name="draft_title" type="text" maxlength="255" value="{{ draft.title }}" {% if status == 'draft-invalid' %}aria-describedby="draft-title-{{ draft.id }}-error"{% endif %}>
             </div>
+            {% call characterCount(5000, characterCountMessages, "draft-description-" + (draft.id | string)) %}
             <div class="govuk-form-group">
               <label class="govuk-label" for="draft-description-{{ draft.id }}">Idea details</label>
               <div id="draft-description-hint-{{ draft.id }}" class="govuk-hint">You can save a draft with just a title, but you will need details before you can publish.</div>
-              <textarea class="govuk-textarea" id="draft-description-{{ draft.id }}" name="draft_description" rows="5" maxlength="5000" aria-describedby="draft-description-hint-{{ draft.id }}">{{ draft.description }}</textarea>
+              <textarea class="govuk-textarea govuk-js-character-count" id="draft-description-{{ draft.id }}" name="draft_description" rows="5" maxlength="5000" aria-describedby="draft-description-hint-{{ draft.id }} draft-description-{{ draft.id }}-info">{{ draft.description }}</textarea>
             </div>
+            {% endcall %}
             <div class="govuk-warning-text">
               <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
               <strong class="govuk-warning-text__text">

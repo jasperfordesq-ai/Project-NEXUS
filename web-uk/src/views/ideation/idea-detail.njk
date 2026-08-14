@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block content %}
   <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
@@ -140,10 +141,12 @@
         <label class="govuk-label" for="group_name">{{ t("groups.create.name_label") }}</label>
         <input class="govuk-input" id="group_name" name="group_name" type="text" maxlength="255" value="{{ idea.title }}">
       </div>
+      {% call characterCount(5000, characterCountMessages, "group_description") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="group_description">Group description</label>
-        <textarea class="govuk-textarea" id="group_description" name="group_description" rows="4" maxlength="5000">{{ idea.description }}</textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="group_description" name="group_description" rows="4" maxlength="5000" aria-describedby="group_description-info">{{ idea.description }}</textarea>
       </div>
+      {% endcall %}
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">
           <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Who can see this group</legend>
@@ -209,13 +212,15 @@
     <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ t("blog.comment_body_label") }}</h3>
     <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/ideas/' ~ idea.id ~ '/comments') }}">
       <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      {% call characterCount(5000, characterCountMessages, "comment_body") %}
       <div class="govuk-form-group{% if status == 'comment-invalid' %} govuk-form-group--error{% endif %}">
         <label class="govuk-label" for="comment_body">Your comment</label>
         {% if status == 'comment-invalid' %}
           <p id="comment_body-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("blog.comment_states.comment-invalid") }}</p>
         {% endif %}
-        <textarea class="govuk-textarea" id="comment_body" name="comment_body" rows="4" maxlength="5000" {% if status == 'comment-invalid' %}aria-describedby="comment_body-error"{% endif %}></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="comment_body" name="comment_body" rows="4" maxlength="5000" aria-describedby="{% if status == 'comment-invalid' %}comment_body-error {% endif %}comment_body-info"></textarea>
       </div>
+      {% endcall %}
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("blog.comment_submit") }}</button>
     </form>
   {% endif %}

@@ -15974,7 +15974,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('govuk-error-summary');
     expect(response.text).toContain('href="#body"');
     expect(response.text).toContain('id="body-error"');
-    expect(response.text).toContain('aria-describedby="body-error"');
+    expect(response.text).toContain('aria-describedby="body-error body-info"');
     expect(response.text).not.toContain('states.important');
   });
 

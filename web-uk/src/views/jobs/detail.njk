@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block beforeContent %}
   {{ super() }}
@@ -138,10 +139,12 @@
     {% else %}
       <form method="post" action="{{ urlFor('/jobs/' ~ job.id ~ '/apply') }}" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+        {% call characterCount(5000, characterCountMessages, "cover_letter") %}
         <div class="govuk-form-group">
           <label class="govuk-label" for="cover_letter">{{ t("jobs.cover_letter_label") }}</label>
-          <textarea class="govuk-textarea" id="cover_letter" name="cover_letter" rows="5" maxlength="5000">{{ applicationValues.cover_letter or "" }}</textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="cover_letter" name="cover_letter" rows="5" maxlength="5000" aria-describedby="cover_letter-info">{{ applicationValues.cover_letter or "" }}</textarea>
         </div>
+        {% endcall %}
         <div class="govuk-form-group{% if status in ["cv-invalid", "cv-too-large"] %} govuk-form-group--error{% endif %}">
           <label class="govuk-label" for="cv">{{ t("jobs.cv_label") }}</label>
           <div id="cv-hint" class="govuk-hint">{{ t("jobs.cv_hint") }}</div>

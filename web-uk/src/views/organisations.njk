@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("govuk_alpha.organisations.caption", { community: tenantName }) }}</span>
@@ -91,11 +92,13 @@
         <input class="govuk-input" id="name" name="name" type="text" minlength="3" maxlength="255" value="{{ values.name or '' }}" required>
       </div>
 
+      {% call characterCount(2000, characterCountMessages, "description") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="description">{{ t("govuk_alpha.organisations.description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha.organisations.description_hint") }}</div>
-        <textarea class="govuk-textarea" id="description" name="description" rows="3" minlength="20" maxlength="2000" aria-describedby="description-hint" required>{{ values.description or '' }}</textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="3" minlength="20" maxlength="2000" aria-describedby="description-hint description-info" required>{{ values.description or '' }}</textarea>
       </div>
+      {% endcall %}
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="email">{{ t("govuk_alpha.organisations.email_label") }}</label>
