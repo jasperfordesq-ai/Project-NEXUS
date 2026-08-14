@@ -172,6 +172,18 @@ describe('native date input ceiling', () => {
   // 🔴 The remaining 1 is `polls/create.njk` expires_at, DELIBERATELY native: its
   // min="{{ minDate }}" is the only thing stopping a poll expiring in the past, and there is
   // no server-side minimum. Convert it WITH server validation, not before.
+  // 🔴 `datetime-local` is BLOCKED, not neglected. Converting a date-AND-time field needs a
+  // time sub-field label, an example hint and two time error messages — and NONE exist:
+  // there is no standalone "Time"/"Hour"/"Minute" label anywhere in the catalogs, and the
+  // six "Hours" strings that do exist are TIME-CREDIT hours, a currency, not clock time.
+  // `check-php-lang-untranslated.mjs` also sits at exactly its 249 ceiling, so one
+  // English-only value fails the build. The exact wording needed is listed in
+  // .local-docs-archive/HANDOFF-IRISH-TRANSLATION-FOR-CODEX.md (round 2). The server side
+  // is already written and tested; only `composeDateTime` and the macro's time row remain.
+  //
+  // 🔴 `time: 2` is a deliberate LOW PRIORITY, not a blocker: both are inside a repeating
+  // weekly-slots grid (`slots[day][index][start]`), GOV.UK has no time component, and its
+  // guidance on native time inputs is far weaker than on native date pickers.
   const CEILING = { 'datetime-local': 13, date: 1, time: 2 };
 
   function countNative(type) {

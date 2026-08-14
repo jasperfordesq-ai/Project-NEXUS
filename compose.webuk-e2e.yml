@@ -84,8 +84,16 @@ services:
       - DB_PASS=nexus_secret
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      # A distinct Redis prefix so cache/session keys cannot collide with the
-      # ordinary stack's.
+      # 🔴 `CACHE_PREFIX`, not `REDIS_PREFIX`. This overlay originally set REDIS_PREFIX and
+      # CLAIMED Redis isolation it did not have: `config/database.php` hardcodes the redis
+      # prefix to '' and `config/cache.php` reads `CACHE_PREFIX` (default 'nexus_laravel'),
+      # so this environment was writing cache, session and RATE-LIMIT keys into the same
+      # namespace as the ordinary local stack.
+      #
+      # It caused a wrong conclusion, not just untidiness: the account-deletion endpoint
+      # allows 3 attempts per hour, that counter lives in Redis, and a database `reset` does
+      # not clear it — so a working feature reported as broken on the next run.
+      - CACHE_PREFIX=webuk_e2e_
       - REDIS_PREFIX=webuk_e2e_
       # 🔴 Deliberately NOT `testing`. `APP_ENV=testing` makes Laravel load the repo's
       # `.env.testing`, which points DB_DATABASE at `nexus_test` — PHPUnit's database.

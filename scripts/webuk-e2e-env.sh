@@ -76,6 +76,20 @@ load_schema() {
   echo "    $tables tables"
 }
 
+clear_redis_state() {
+  # 🔴 A database reset alone does NOT give a clean environment, and this cost a wrong
+  # conclusion: rate-limit counters live in REDIS, so after `reset` the account-deletion
+  # endpoint (3 attempts per hour) was still exhausted from the previous run and the journey
+  # reported a working feature as broken. Cache, sessions and throttle keys must go too.
+  #
+  # Scoped to this environment's own prefix, so the ordinary local stack is untouched.
+  echo "==> clearing Redis state for prefix webuk_e2e_"
+  local n
+  n=$(docker exec nexus-php-redis sh -lc "redis-cli --scan --pattern 'webuk_e2e_*' | wc -l" 2>/dev/null | tr -d '[:space:]')
+  docker exec nexus-php-redis sh -lc "redis-cli --scan --pattern 'webuk_e2e_*' | xargs -r redis-cli del >/dev/null" 2>/dev/null
+  echo "    ${n:-0} key(s) removed (rate limits, cache, sessions)"
+}
+
 drop_all_tables() {
   echo "==> dropping all tables in $DB_NAME"
   # Generated DROP avoids DROP DATABASE, which would also drop the GRANT.
@@ -269,6 +283,7 @@ case "$ACTION" in
     create_database
     drop_all_tables
     load_schema
+    clear_redis_state
     seed_synthetic
     assert_no_real_data || true
     ;;
