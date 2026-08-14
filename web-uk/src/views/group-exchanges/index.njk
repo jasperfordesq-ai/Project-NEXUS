@@ -48,6 +48,7 @@
   </nav>
 
   {% if exchanges and exchanges.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('group_exchanges.title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("group_exchanges.title") }}</caption>
       <thead class="govuk-table__head">
@@ -71,6 +72,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text">{{ t("group_exchanges.empty") }}</div>
   {% endif %}

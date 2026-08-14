@@ -335,6 +335,7 @@
         <h3 class="govuk-heading-m govuk-!-margin-top-6" id="sessions">{{ t("profile_settings.sessions.title") }}</h3>
         <p class="govuk-body">{{ t("profile_settings.sessions.description") }}</p>
         {% if sessions.length %}
+          <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('profile_settings.sessions.title') }}">
           <table class="govuk-table">
             <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("profile_settings.sessions.title") }}</caption>
             <thead class="govuk-table__head">
@@ -354,6 +355,7 @@
               {% endfor %}
             </tbody>
           </table>
+          </div>
         {% else %}
           <div class="govuk-inset-text"><p class="govuk-body">{{ t("profile_settings.sessions.none") }}</p></div>
         {% endif %}

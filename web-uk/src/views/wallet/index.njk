@@ -90,9 +90,11 @@
       <li><a class="govuk-link{% if txFilter == 'pending' %} govuk-link--no-visited-state{% endif %}" href="{{ urlFor('/wallet?filter=pending') }}#transactions"{% if txFilter == "pending" %} aria-current="page"{% endif %}>{{ t("wallet_t1.filter_pending") }}</a></li>
     </ul></nav>
     {% if transactions.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('wallet.history_title') }}">
       <table class="govuk-table"><caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("wallet.history_title") }}</caption><thead class="govuk-table__head"><tr class="govuk-table__row"><th scope="col" class="govuk-table__header">{{ t("wallet.when_label") }}</th><th scope="col" class="govuk-table__header">{{ t("wallet.with_label") }}</th><th scope="col" class="govuk-table__header">{{ t("wallet.description_label") }}</th><th scope="col" class="govuk-table__header govuk-table__header--numeric">{{ t("wallet.amount_col") }}</th></tr></thead><tbody class="govuk-table__body">
       {% for tx in transactions %}<tr class="govuk-table__row"><td class="govuk-table__cell">{{ tx.dateLabel or "—" }}</td><td class="govuk-table__cell">{{ tx.otherName }}</td><td class="govuk-table__cell">{{ tx.descriptionLabel or "—" }}</td><td class="govuk-table__cell govuk-table__cell--numeric">{% if tx.isCredit %}+{% else %}−{% endif %}{{ tx.amountLabel }} <span class="govuk-visually-hidden">{{ t("wallet.received") if tx.isCredit else t("wallet.sent_short") }}</span></td></tr>{% endfor %}
       </tbody></table>
+      </div>
     {% else %}<div class="govuk-inset-text"><p class="govuk-body">{{ t("wallet.history_empty") }}</p></div>{% endif %}
     {% if txNextCursor %}
       <nav class="govuk-pagination" aria-label="{{ t('wallet.history_title') }}">

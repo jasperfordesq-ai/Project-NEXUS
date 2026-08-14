@@ -36,6 +36,7 @@
   </dl>
 
   {% if outcomes and outcomes.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_ideation.outcomes.title') }}">
     <table class="govuk-table">
       <caption class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.outcomes.title") }}</caption>
       <thead class="govuk-table__head">
@@ -59,6 +60,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.outcomes.empty") }}</div>
   {% endif %}

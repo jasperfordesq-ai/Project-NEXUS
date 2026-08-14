@@ -30,6 +30,7 @@
     </div>
 
     <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("nexus_score.breakdown_title") }}</h2>
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('nexus_score.breakdown_title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("nexus_score.breakdown_title") }}</caption>
       <thead class="govuk-table__head">
@@ -50,6 +51,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
 
     {% if nexusScore.insights.length %}
       <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("nexus_score.insights_title") }}</h2>

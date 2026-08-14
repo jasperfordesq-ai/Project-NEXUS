@@ -70,6 +70,7 @@
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.funnel_heading") }}</h2>
     {% if report.funnelRows.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.bias_audit.funnel_caption') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.funnel_caption") }}</caption>
         <thead class="govuk-table__head">
@@ -89,12 +90,14 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_funnel_data") }}</p>
     {% endif %}
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.rejection_rates_heading") }}</h2>
     {% if report.rejectionRows.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.bias_audit.rejection_rates_caption') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.rejection_rates_caption") }}</caption>
         <thead class="govuk-table__head">
@@ -116,12 +119,14 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_rejection_data") }}</p>
     {% endif %}
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.time_in_stage_heading") }}</h2>
     {% if report.timeRows.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.bias_audit.time_in_stage_caption') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.time_in_stage_caption") }}</caption>
         <thead class="govuk-table__head">
@@ -139,11 +144,13 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_time_data") }}</p>
     {% endif %}
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.skills_match_heading") }}</h2>
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.bias_audit.skills_match_caption') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.skills_match_caption") }}</caption>
       <thead class="govuk-table__head">
@@ -163,9 +170,11 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
 
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_jobs.bias_audit.source_effectiveness_heading") }}</h2>
     {% if report.sourceRows.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_jobs.bias_audit.source_effectiveness_caption') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s">{{ t("govuk_alpha_jobs.bias_audit.source_effectiveness_caption") }}</caption>
         <thead class="govuk-table__head">
@@ -187,6 +196,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <p class="govuk-body">{{ t("govuk_alpha_jobs.bias_audit.no_source_data") }}</p>
     {% endif %}

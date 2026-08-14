@@ -76,6 +76,7 @@
   </form>
 
   {% if leaderboard.rows.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('leaderboard.title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("leaderboard.title") }}</caption>
       <thead class="govuk-table__head">
@@ -102,6 +103,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("leaderboard.empty") }}</p>

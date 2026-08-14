@@ -69,6 +69,7 @@
 
   {% if competitive.rows.length %}
     <p class="govuk-body-s nexus-alpha-meta">{{ competitive.countLabel }}</p>
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ competitive.type }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ competitive.type }}</caption>
       <thead class="govuk-table__head">
@@ -95,6 +96,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
 
     {% if competitive.hasMore %}
       <a class="govuk-button govuk-button--secondary" data-module="govuk-button" role="button" href="{{ urlFor('/leaderboard/competitive?type=' + competitive.type + '&period=' + competitive.period + '&limit=' + (competitive.nextLimit | string) + '#leaderboard-end') }}">{{ t("govuk_alpha_gamification.competitive.load_more") }}</a>

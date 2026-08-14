@@ -134,6 +134,7 @@
     {% if not trainings.length %}
       <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.safeguarding.no_training") }}</div>
     {% else %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.safeguarding.training_list_title') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.safeguarding.training_list_title") }}</caption>
         <thead class="govuk-table__head">
@@ -162,6 +163,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% endif %}
   {% else %}
     <h2 class="govuk-heading-m">{{ t("govuk_alpha_volunteering.safeguarding.report_incident_title") }}</h2>
@@ -219,6 +221,7 @@
     {% if not incidents.length %}
       <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.safeguarding.no_incidents") }}</div>
     {% else %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.safeguarding.incidents_list_title') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-visually-hidden">{{ t("govuk_alpha_volunteering.safeguarding.incidents_list_title") }}</caption>
         <thead class="govuk-table__head">
@@ -248,6 +251,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% endif %}
   {% endif %}
 {% endblock %}

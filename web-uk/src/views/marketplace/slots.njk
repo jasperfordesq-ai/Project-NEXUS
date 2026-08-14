@@ -33,6 +33,7 @@
   {% if not slots.length %}
     <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.slots.empty") }}</p>
   {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_commerce.slots.title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_commerce.slots.title") }}</caption>
       <thead class="govuk-table__head">
@@ -68,6 +69,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% endif %}
 
   <h2 class="govuk-heading-l govuk-!-margin-top-6" id="new-slot">{{ t("govuk_alpha_commerce.slots.new_button") }}</h2>

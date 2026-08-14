@@ -105,6 +105,7 @@
           {% if not reservation.members.length %}
             <p class="govuk-body">{{ t("govuk_alpha_volunteering.group_signups.no_members") }}</p>
           {% else %}
+            <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.group_signups.members_title') }}">
             <table class="govuk-table">
               <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.group_signups.members_title") }}</caption>
               <thead class="govuk-table__head">
@@ -137,6 +138,7 @@
                 {% endfor %}
               </tbody>
             </table>
+            </div>
           {% endif %}
 
           {% if reservation.isLeader and not reservation.isCancelled %}

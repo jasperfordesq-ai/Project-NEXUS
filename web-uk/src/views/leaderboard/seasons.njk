@@ -61,6 +61,7 @@
 
       {% if seasons.current.topMembers.length %}
         <h4 class="govuk-heading-s govuk-!-margin-top-4 govuk-!-margin-bottom-1">{{ t("govuk_alpha_gamification.seasons.top_members") }}</h4>
+        <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_gamification.seasons.top_members') }}">
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.seasons.top_members") }}</caption>
           <thead class="govuk-table__head">
@@ -80,12 +81,14 @@
             {% endfor %}
           </tbody>
         </table>
+        </div>
       {% endif %}
     </article>
   {% endif %}
 
   <h2 class="govuk-heading-l govuk-!-margin-top-7">{{ t("govuk_alpha_gamification.seasons.history_heading") }}</h2>
   {% if seasons.history.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_gamification.seasons.history_heading') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.seasons.history_heading") }}</caption>
       <thead class="govuk-table__head">
@@ -103,6 +106,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("govuk_alpha_gamification.seasons.no_history") }}</p>

@@ -38,6 +38,7 @@
   {% if not coupons.length %}
     <p class="govuk-inset-text">{{ t("govuk_alpha_commerce.coupons.empty") }}</p>
   {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_commerce.coupons.title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_commerce.coupons.title") }}</caption>
       <thead class="govuk-table__head">
@@ -64,5 +65,6 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% endif %}
 {% endblock %}

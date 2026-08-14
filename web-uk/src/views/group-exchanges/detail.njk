@@ -52,6 +52,7 @@
 
   <h2 class="govuk-heading-l">{{ t("group_exchanges.participants_title") }}</h2>
   {% if participants and participants.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('group_exchanges.participants_title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("group_exchanges.participants_title") }}</caption>
       <thead class="govuk-table__head">
@@ -86,6 +87,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("group_exchanges.no_participants") }}</p></div>
   {% endif %}

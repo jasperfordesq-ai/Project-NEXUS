@@ -109,6 +109,7 @@
 
   <h2 class="govuk-heading-l">{{ t("govuk_alpha_volunteering.wellbeing.recent_title") }}</h2>
   {% if wellbeing.recentCheckins.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.wellbeing.recent_title') }}">
     <table class="govuk-table">
       <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.wellbeing.recent_title") }}</caption>
       <thead class="govuk-table__head">
@@ -128,6 +129,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.wellbeing.recent_empty") }}</div>
   {% endif %}

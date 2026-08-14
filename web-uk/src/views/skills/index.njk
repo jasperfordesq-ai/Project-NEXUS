@@ -79,6 +79,7 @@
     <h2 class="govuk-heading-l">{{ t("skills.skills_in", { category: selectedCategory.name }) }}</h2>
     <p class="govuk-body"><a class="govuk-link" href="{{ urlFor('/skills') }}">{{ t("skills.back_to_categories") }}</a></p>
     {% if categorySkills and categorySkills.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('skills.skills_in', { category: selectedCategory.name }) }}">
       <table class="govuk-table">
         <caption class="govuk-visually-hidden">{{ t("skills.skills_in", { category: selectedCategory.name }) }}</caption>
         <thead class="govuk-table__head">
@@ -100,6 +101,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <div class="govuk-inset-text">
         <p class="govuk-body">{{ t("skills.no_skills_in_category") }}</p>

@@ -87,6 +87,7 @@
   {% if not transactions.length %}
     <div class="govuk-inset-text">{{ t("govuk_alpha_volunteering.org_wallet.transactions_empty") }}</div>
   {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_volunteering.org_wallet.transactions_title') }}">
     <table class="govuk-table">
       <caption class="govuk-visually-hidden">{{ t("govuk_alpha_volunteering.org_wallet.transactions_title") }}</caption>
       <thead class="govuk-table__head">
@@ -110,5 +111,6 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% endif %}
 {% endblock %}

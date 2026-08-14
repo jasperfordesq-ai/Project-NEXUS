@@ -16,6 +16,7 @@
   {% include "partials/gamification-nav.njk" %}
 
   {% if engagementHistory.length %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_gamification.engagement.title') }}">
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.engagement.title") }}</caption>
       <thead class="govuk-table__head">
@@ -37,6 +38,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% else %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("govuk_alpha_gamification.engagement.empty") }}</p>

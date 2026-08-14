@@ -47,6 +47,7 @@
 
     <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_gamification.journey.activity_heading") }}</h2>
     {% if journey.activityRows.length %}
+      <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_gamification.journey.activity_heading') }}">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s govuk-visually-hidden">{{ t("govuk_alpha_gamification.journey.activity_heading") }}</caption>
         <thead class="govuk-table__head">
@@ -64,6 +65,7 @@
           {% endfor %}
         </tbody>
       </table>
+      </div>
     {% else %}
       <div class="govuk-inset-text">
         <p class="govuk-body">{{ t("govuk_alpha_gamification.journey.no_activity") }}</p>

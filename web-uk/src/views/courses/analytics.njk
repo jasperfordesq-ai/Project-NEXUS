@@ -34,6 +34,7 @@
   {% if not perLesson or not perLesson.length %}
     <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.analytics_no_lessons") }}</p></div>
   {% else %}
+    <div class="nexus-alpha-table-scroll" tabindex="0" role="region" aria-label="{{ t('govuk_alpha_courses.completions_by_lesson') }}">
     <table class="govuk-table">
       <caption class="govuk-visually-hidden">{{ t("govuk_alpha_courses.completions_by_lesson") }}</caption>
       <tbody class="govuk-table__body">
@@ -48,5 +49,6 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   {% endif %}
 {% endblock %}
