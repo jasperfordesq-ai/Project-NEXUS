@@ -72,7 +72,7 @@
           <label class="govuk-label" for="website">{{ t("govuk_alpha_organisations.register.website_label") }}</label>
           <div id="website-hint" class="govuk-hint">{{ t("govuk_alpha_organisations.register.website_hint") }}</div>
           {{ errorMessage('website') }}
-          <input class="govuk-input{{ errorClass('website', 'govuk-input--error') }}" id="website" name="website" type="url" inputmode="url" value="{{ values.website or '' }}" aria-describedby="{{ describedBy('website', 'website-hint') }}">
+          <input class="govuk-input{{ errorClass('website', 'govuk-input--error') }}" id="website" name="website" type="url" inputmode="url" autocomplete="url" value="{{ values.website or '' }}" aria-describedby="{{ describedBy('website', 'website-hint') }}">
         </div>
 
         <div class="govuk-inset-text">

@@ -25,14 +25,14 @@
     </div>
     <div class="govuk-checkboxes" data-module="govuk-checkboxes">
       <div class="govuk-checkboxes__item">
-        <input class="govuk-checkboxes__input" id="guest-consent" name="consent_accepted" type="checkbox" value="1" required>
+        <input class="govuk-checkboxes__input" id="guest-consent" name="consent_accepted" type="checkbox" value="1" required aria-describedby="guest-consent-hint">
         <label class="govuk-label govuk-checkboxes__label" for="guest-consent">{{ t("event_registration.accessible.privacy_consent_label") }}</label>
-        <div class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.privacy_consent_text") }}</div>
+        <div id="guest-consent-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.privacy_consent_text") }}</div>
       </div>
       <div class="govuk-checkboxes__item">
-        <input class="govuk-checkboxes__input" id="guest-notifications" name="notification_consent" type="checkbox" value="1">
+        <input class="govuk-checkboxes__input" id="guest-notifications" name="notification_consent" type="checkbox" value="1" aria-describedby="guest-notifications-hint">
         <label class="govuk-label govuk-checkboxes__label" for="guest-notifications">{{ t("event_registration.accessible.notification_consent_label") }}</label>
-        <div class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.notification_consent_text") }}</div>
+        <div id="guest-notifications-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("event_registration.accessible.notification_consent_text") }}</div>
       </div>
     </div>
     <button class="govuk-button govuk-!-margin-top-4" data-module="govuk-button">{{ t("event_registration.accessible.add_guest") }}</button>

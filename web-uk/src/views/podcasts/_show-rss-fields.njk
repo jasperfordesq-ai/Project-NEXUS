@@ -26,7 +26,7 @@
 <div class="govuk-form-group">
   <label class="govuk-label govuk-label--s" for="owner_email">{{ t("govuk_alpha_commerce.podcast_studio.owner_email_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
   <div id="owner_email-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.podcast_studio.owner_email_hint") }}</div>
-  <input class="govuk-input" id="owner_email" name="owner_email" type="email" maxlength="320" value="{{ show.owner_email }}" aria-describedby="owner_email-hint">
+  <input class="govuk-input" id="owner_email" name="owner_email" type="email" maxlength="320" autocomplete="email" value="{{ show.owner_email }}" aria-describedby="owner_email-hint">
 </div>
 
 <div class="govuk-form-group">

@@ -119,14 +119,14 @@
                           <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("messages.delete_legend") }}</legend>
                           <div class="govuk-radios govuk-radios--small">
                             <div class="govuk-radios__item">
-                              <input class="govuk-radios__input" id="delete-scope-self-{{ message.id }}" name="scope" type="radio" value="self" checked>
+                              <input class="govuk-radios__input" id="delete-scope-self-{{ message.id }}" name="scope" type="radio" value="self" aria-describedby="delete-scope-self-{{ message.id }}-hint" checked>
                               <label class="govuk-label govuk-radios__label" for="delete-scope-self-{{ message.id }}">{{ t("messages.delete_scope_self") }}</label>
-                              <div class="govuk-hint govuk-radios__hint">{{ t("messages.delete_scope_self_hint") }}</div>
+                              <div id="delete-scope-self-{{ message.id }}-hint" class="govuk-hint govuk-radios__hint">{{ t("messages.delete_scope_self_hint") }}</div>
                             </div>
                             <div class="govuk-radios__item">
-                              <input class="govuk-radios__input" id="delete-scope-everyone-{{ message.id }}" name="scope" type="radio" value="everyone">
+                              <input class="govuk-radios__input" id="delete-scope-everyone-{{ message.id }}" name="scope" type="radio" value="everyone" aria-describedby="delete-scope-everyone-{{ message.id }}-hint">
                               <label class="govuk-label govuk-radios__label" for="delete-scope-everyone-{{ message.id }}">{{ t("messages.delete_scope_everyone") }}</label>
-                              <div class="govuk-hint govuk-radios__hint">{{ t("messages.delete_scope_everyone_hint") }}</div>
+                              <div id="delete-scope-everyone-{{ message.id }}-hint" class="govuk-hint govuk-radios__hint">{{ t("messages.delete_scope_everyone_hint") }}</div>
                             </div>
                           </div>
                         </fieldset>

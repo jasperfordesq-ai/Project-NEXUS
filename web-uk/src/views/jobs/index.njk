@@ -86,9 +86,12 @@
       {% for job in jobs %}
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
-            <h3 class="govuk-heading-s govuk-!-margin-bottom-1">
+            {# h2, not h3: these job-card titles sit directly under the page h1 with no
+               section heading between, so an h3 skipped a level. The govuk-heading-s
+               size class is kept — heading LEVEL and visual size are independent. #}
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">
               <a class="govuk-link" href="{{ urlFor('/jobs/' ~ job.id) }}">{{ job.title }}</a>
-            </h3>
+            </h2>
             <strong class="govuk-tag govuk-tag--blue">{{ t(job.typeTranslationKey) }}</strong>
           </div>
 

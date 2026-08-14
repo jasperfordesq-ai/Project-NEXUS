@@ -71,7 +71,7 @@
               <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha.onboarding.profile.current_photo") }}</p>
               <img class="nexus-alpha-avatar nexus-alpha-avatar--large govuk-!-margin-bottom-2" src="{{ onboardingUser.avatar_url }}" alt="" width="96" height="96">
             {% endif %}
-            <input class="govuk-file-upload" id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="avatar-hint">
+            <input class="govuk-file-upload" id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/gif,image/webp" aria-describedby="avatar-hint{% if statusBanner and statusBanner.anchor == 'avatar' %} avatar-error{% endif %}">
           </div>
           <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("onboarding.profile.upload_button") }}</button>
         </form>
@@ -84,7 +84,7 @@
             {% if statusBanner and statusBanner.anchor == "bio" %}
               <p id="bio-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ statusBanner.message }}</p>
             {% endif %}
-            <textarea class="govuk-textarea" id="bio" name="bio" rows="4" maxlength="2000" aria-describedby="bio-hint">{{ onboardingUser.bio or "" }}</textarea>
+            <textarea class="govuk-textarea" id="bio" name="bio" rows="4" maxlength="2000" aria-describedby="bio-hint{% if statusBanner and statusBanner.anchor == 'bio' %} bio-error{% endif %}">{{ onboardingUser.bio or "" }}</textarea>
           </div>
           <button class="govuk-button" data-module="govuk-button">{{ t("onboarding.profile.save_continue") }}</button>
         </form>

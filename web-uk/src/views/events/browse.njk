@@ -28,9 +28,9 @@
 
         <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
           <div class="govuk-radios__item">
-            <input class="govuk-radios__input" id="category-all" name="category_id" type="radio" value=""{% if selectedCategoryId == null %} checked{% endif %}>
+            <input class="govuk-radios__input" id="category-all" name="category_id" type="radio" value=""{% if selectedCategoryId == null %} checked{% endif %} aria-describedby="category-all-hint">
             <label class="govuk-label govuk-radios__label" for="category-all">{{ t("govuk_alpha_events.browse.all_categories") }}</label>
-            <div class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.browse.all_categories_hint") }}</div>
+            <div id="category-all-hint" class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.browse.all_categories_hint") }}</div>
           </div>
           {% for category in categories %}
             <div class="govuk-radios__item">

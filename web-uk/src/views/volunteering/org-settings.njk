@@ -75,7 +75,7 @@
     <div class="govuk-form-group">
       <label class="govuk-label" for="website">{{ t("govuk_alpha_volunteering.org_settings.website_label") }}</label>
       <div id="website-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.org_settings.website_hint") }}</div>
-      <input class="govuk-input" id="website" name="website" type="url" spellcheck="false" value="{{ organization.website }}" aria-describedby="website-hint">
+      <input class="govuk-input" id="website" name="website" type="url" spellcheck="false" autocomplete="url" value="{{ organization.website }}" aria-describedby="website-hint">
     </div>
 
     <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_volunteering.org_settings.save_button") }}</button>

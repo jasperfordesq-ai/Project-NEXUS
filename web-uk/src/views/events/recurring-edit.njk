@@ -105,9 +105,9 @@
             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
                 <input type="hidden" name="allow_remote_attendance" value="0">
-                <input class="govuk-checkboxes__input" id="allow_remote_attendance" name="allow_remote_attendance" type="checkbox" value="1"{% if event.allowRemoteAttendance %} checked{% endif %} data-aria-controls="remote-attendance-conditional">
+                <input class="govuk-checkboxes__input" id="allow_remote_attendance" name="allow_remote_attendance" type="checkbox" value="1"{% if event.allowRemoteAttendance %} checked{% endif %} data-aria-controls="remote-attendance-conditional" aria-describedby="allow_remote_attendance-hint">
                 <label class="govuk-label govuk-checkboxes__label" for="allow_remote_attendance">{{ t("govuk_alpha.events.polish_events.allow_remote_label") }}</label>
-                <div class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha.events.polish_events.allow_remote_hint") }}</div>
+                <div id="allow_remote_attendance-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha.events.polish_events.allow_remote_hint") }}</div>
               </div>
               <div class="govuk-checkboxes__conditional{% if not event.allowRemoteAttendance %} govuk-checkboxes__conditional--hidden{% endif %}" id="remote-attendance-conditional">
                 <label class="govuk-label" for="video_url">{{ t("govuk_alpha.events.polish_events.video_url_label") }}</label>
@@ -150,14 +150,14 @@
             <div id="scope-hint" class="govuk-hint">{{ t("govuk_alpha_events.recurring_edit.scope_hint") }}</div>
             <div class="govuk-radios" data-module="govuk-radios">
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="scope-single" name="scope" type="radio" value="single"{% if selectedScope != 'all' %} checked{% endif %}>
+                <input class="govuk-radios__input" id="scope-single" name="scope" type="radio" value="single"{% if selectedScope != 'all' %} checked{% endif %} aria-describedby="scope-single-hint">
                 <label class="govuk-label govuk-radios__label" for="scope-single">{{ t("govuk_alpha_events.recurring_edit.scope_single") }}</label>
-                <div class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.recurring_edit.scope_single_hint") }}</div>
+                <div id="scope-single-hint" class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.recurring_edit.scope_single_hint") }}</div>
               </div>
               {% if supportsEffectiveRevisions %}<div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="scope-all" name="scope" type="radio" value="all"{% if selectedScope == 'all' %} checked{% endif %}>
+                <input class="govuk-radios__input" id="scope-all" name="scope" type="radio" value="all"{% if selectedScope == 'all' %} checked{% endif %} aria-describedby="scope-all-hint">
                 <label class="govuk-label govuk-radios__label" for="scope-all">{{ t("govuk_alpha_events.recurring_edit.scope_all") }}</label>
-                <div class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.recurring_edit.scope_all_hint") }}</div>
+                <div id="scope-all-hint" class="govuk-hint govuk-radios__hint">{{ t("govuk_alpha_events.recurring_edit.scope_all_hint") }}</div>
               </div>{% endif %}
             </div>
           </fieldset>

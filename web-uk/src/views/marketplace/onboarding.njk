@@ -74,7 +74,7 @@
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="display_name">{{ t("govuk_alpha_commerce.onboarding.display_name_label") }}</label>
         <div id="display_name-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.onboarding.display_name_hint") }}</div>
-        <input class="govuk-input" id="display_name" name="display_name" type="text" maxlength="200" value="{{ profile.display_name }}" aria-describedby="display_name-hint">
+        <input class="govuk-input" id="display_name" name="display_name" type="text" maxlength="200" autocomplete="nickname" value="{{ profile.display_name }}" aria-describedby="display_name-hint">
       </div>
 
       <div class="govuk-form-group">

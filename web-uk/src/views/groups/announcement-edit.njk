@@ -43,16 +43,16 @@
       <textarea class="govuk-textarea{% if statusBanner and statusBanner.href == '#ann-content' %} govuk-textarea--error{% endif %}" id="edit-ann-content" name="content" rows="5" aria-describedby="edit-ann-content-hint{% if statusBanner and statusBanner.href == '#ann-content' %} edit-ann-content-error{% endif %}">{{ announcement.content }}</textarea>
     </div>
 
+    {# No fieldset/legend: GDS uses a fieldset only for a GROUP of controls. A single
+       checkbox needs none, and a fieldset with no legend is a WCAG H71 failure. #}
     <div class="govuk-form-group">
-      <fieldset class="govuk-fieldset">
-        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-          <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="edit-ann-is-pinned" name="is_pinned" type="checkbox" value="1"{% if announcement.isPinned %} checked{% endif %} aria-describedby="edit-ann-is-pinned-hint">
-            <label class="govuk-label govuk-checkboxes__label" for="edit-ann-is-pinned">{{ t("govuk_alpha_groups.announcements.is_pinned_label") }}</label>
-            <div id="edit-ann-is-pinned-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_groups.announcements.is_pinned_hint") }}</div>
-          </div>
+      <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+        <div class="govuk-checkboxes__item">
+          <input class="govuk-checkboxes__input" id="edit-ann-is-pinned" name="is_pinned" type="checkbox" value="1"{% if announcement.isPinned %} checked{% endif %} aria-describedby="edit-ann-is-pinned-hint">
+          <label class="govuk-label govuk-checkboxes__label" for="edit-ann-is-pinned">{{ t("govuk_alpha_groups.announcements.is_pinned_label") }}</label>
+          <div id="edit-ann-is-pinned-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_groups.announcements.is_pinned_hint") }}</div>
         </div>
-      </fieldset>
+      </div>
     </div>
 
     {{ nexusDateInput({

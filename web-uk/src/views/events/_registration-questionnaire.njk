@@ -55,9 +55,9 @@
             {% if replayErrors[key] %}<p class="govuk-error-message" id="answer-{{ key }}-error"><span class="govuk-visually-hidden">{{ t("govuk_alpha.states.error_prefix") }}</span> {{ replayErrors[key] }}</p>{% endif %}
             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
               <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" id="answer-{{ key }}" name="answers[{{ key }}]" type="checkbox" value="1"{% if required %} required{% endif %}{% if value %} checked{% endif %}{% if replayErrors[key] %} aria-describedby="answer-{{ key }}-error"{% endif %}>
+                <input class="govuk-checkboxes__input" id="answer-{{ key }}" name="answers[{{ key }}]" type="checkbox" value="1"{% if required %} required{% endif %}{% if value %} checked{% endif %} aria-describedby="{% if question.displayed_text %}answer-{{ key }}-hint {% endif %}{% if replayErrors[key] %}answer-{{ key }}-error{% endif %}">
                 <label class="govuk-label govuk-checkboxes__label" for="answer-{{ key }}">{{ question.prompt }}</label>
-                {% if question.displayed_text %}<div class="govuk-hint govuk-checkboxes__hint">{{ question.displayed_text }}</div>{% endif %}
+                {% if question.displayed_text %}<div id="answer-{{ key }}-hint" class="govuk-hint govuk-checkboxes__hint">{{ question.displayed_text }}</div>{% endif %}
               </div>
             </div>
           {% elif type == 'short_text' %}
