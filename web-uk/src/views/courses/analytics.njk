@@ -6,17 +6,17 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
-  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor') }}">Back to courses you teach</a>
+  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor') }}">{{ t("govuk_alpha_courses.back_to_teaching") }}</a>
 
   {% set activeTab = 'teaching' %}
   {% include "courses/_nav.njk" %}
 
-  <span class="govuk-caption-xl">Course analytics</span>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_courses.analytics_caption") }}</span>
   <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ course.title }}</h1>
-  <p class="govuk-body-l">See how learners are progressing through your course.</p>
+  <p class="govuk-body-l">{{ t("govuk_alpha_courses.analytics_intro") }}</p>
 
   {% if analytics.total == 0 %}
-    <div class="govuk-inset-text"><p class="govuk-body">There is no enrolment data for this course yet.</p></div>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.analytics_no_data") }}</p></div>
   {% endif %}
 
   <dl class="govuk-summary-list">
@@ -28,21 +28,21 @@
     {% endfor %}
   </dl>
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6">Completions by lesson</h2>
-  <p class="govuk-body">How many learners have completed each lesson, in order. A drop is where learners tend to stop.</p>
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_courses.completions_by_lesson") }}</h2>
+  <p class="govuk-body">{{ t("govuk_alpha_courses.completions_intro") }}</p>
 
   {% if not perLesson or not perLesson.length %}
-    <div class="govuk-inset-text"><p class="govuk-body">This course has no lessons yet, so there is nothing to chart.</p></div>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.analytics_no_lessons") }}</p></div>
   {% else %}
     <table class="govuk-table">
-      <caption class="govuk-visually-hidden">Completions by lesson</caption>
+      <caption class="govuk-visually-hidden">{{ t("govuk_alpha_courses.completions_by_lesson") }}</caption>
       <tbody class="govuk-table__body">
         {% for row in perLesson %}
           <tr class="govuk-table__row">
             <th scope="row" class="govuk-table__header govuk-!-width-one-half">{{ row.title }}</th>
             <td class="govuk-table__cell">
-              <progress value="{{ row.completed }}" max="{{ maxLessonCompleted }}" aria-label="{{ row.completed }} completed">{{ row.completed }}</progress>
-              <span class="govuk-body-s nexus-alpha-meta govuk-!-margin-left-2">{{ row.completed }} completed</span>
+              <progress value="{{ row.completed }}" max="{{ maxLessonCompleted }}" aria-label="{{ t('govuk_alpha_courses.lesson_completed_count', { count: row.completed }) }}">{{ row.completed }}</progress>
+              <span class="govuk-body-s nexus-alpha-meta govuk-!-margin-left-2">{{ t("govuk_alpha_courses.lesson_completed_count", { count: row.completed }) }}</span>
             </td>
           </tr>
         {% endfor %}

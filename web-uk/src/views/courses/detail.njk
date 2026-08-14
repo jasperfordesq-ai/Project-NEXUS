@@ -45,7 +45,7 @@
   </div>
 
   {% if course.levelLabel %}
-    <p class="govuk-body-s nexus-alpha-meta">Level: {{ course.levelLabel }}</p>
+    <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_courses.level_meta", { level: course.levelLabel }) }}</p>
   {% endif %}
 
   {% if course.description %}
@@ -64,7 +64,7 @@
             {{ prerequisite.title }}
           {% endif %}
           {% if prerequisite.completed %}
-            <strong class="govuk-tag govuk-tag--green">Completed</strong>
+            <strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.completed_tag") }}</strong>
           {% else %}
             <strong class="govuk-tag govuk-tag--grey">{{ t("courses.prerequisite_todo") }}</strong>
           {% endif %}
@@ -86,7 +86,7 @@
       <span aria-hidden="true">{{ course.ratingStars }}</span>
       <strong>{{ course.ratingAvgLabel }}</strong> {{ t("courses.out_of_5") }}
     </p>
-    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-4">Based on {{ course.ratingCount }} review{% if course.ratingCount != 1 %}s{% endif %}</p>
+    <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-4">{{ tc("govuk_alpha_courses.review_count", course.ratingCount, { count: course.ratingCount }) }}</p>
   {% endif %}
 
   {% if reviews and reviews.length %}
@@ -95,7 +95,7 @@
         <li class="govuk-!-margin-bottom-3">
           <p class="govuk-body-s govuk-!-margin-bottom-1">
             <span aria-hidden="true">{{ review.stars }}</span>
-            <span class="govuk-visually-hidden">Rated {{ review.rating }} out of 5</span>
+            <span class="govuk-visually-hidden">{{ t("govuk_alpha_courses.rated_out_of_5", { rating: review.rating }) }}</span>
             <strong>{{ review.name }}</strong>{% if review.createdAtLabel %} · {{ review.createdAtLabel }}{% endif %}
           </p>
           {% if review.body %}
@@ -116,7 +116,7 @@
         <label class="govuk-label" for="rating">{{ t("courses.rating_label") }}</label>
         <select class="govuk-select" id="rating" name="rating">
           {% for rating in [5, 4, 3, 2, 1] %}
-            <option value="{{ rating }}">{{ rating }} out of 5</option>
+            <option value="{{ rating }}">{{ t("govuk_alpha_courses.rating_option", { rating: rating }) }}</option>
           {% endfor %}
         </select>
       </div>
@@ -134,7 +134,7 @@
     <h2 class="govuk-heading-l">{{ t("courses.contents_label") }}</h2>
     {% for section in sections %}
       {% if section.title or section.lessons.length %}
-        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ section.title or "What you will learn" }}</h3>
+        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">{{ section.title or t("govuk_alpha_courses.what_you_will_learn") }}</h3>
         {% if section.lessons and section.lessons.length %}
           <ul class="govuk-list govuk-list--bullet">
             {% for lesson in section.lessons %}
@@ -146,14 +146,14 @@
     {% endfor %}
   {% endif %}
 
-  <h2 class="govuk-heading-l govuk-!-margin-top-6">Join this course</h2>
+  <h2 class="govuk-heading-l govuk-!-margin-top-6">{{ t("govuk_alpha_courses.join_course") }}</h2>
   {% if isEnrolled %}
     <div class="govuk-inset-text">
       <p class="govuk-body">{{ t("courses.enrolled_notice") }}</p>
     </div>
   {% else %}
     {% if course.creditCost > 0 %}
-      <p class="govuk-body">This course costs {{ course.creditCost }} time credits.</p>
+      <p class="govuk-body">{{ tc("govuk_alpha_courses.credit_cost", course.creditCost, { count: course.creditCost }) }}</p>
     {% else %}
       <p class="govuk-body">{{ t("courses.free_notice") }}</p>
     {% endif %}

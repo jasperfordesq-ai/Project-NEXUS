@@ -16,15 +16,15 @@
   <form method="get" action="{{ urlFor('/courses') }}" class="govuk-!-margin-bottom-6">
     <div class="govuk-form-group">
       <label class="govuk-label" for="q">{{ t("courses.search_label") }}</label>
-      <div id="q-hint" class="govuk-hint">Search by title.</div>
+      <div id="q-hint" class="govuk-hint">{{ t("govuk_alpha_courses.search_hint") }}</div>
       <input class="govuk-input govuk-!-width-two-thirds" id="q" name="q" type="search" value="{{ coursesQuery }}" aria-describedby="q-hint">
     </div>
 
     {% if categories and categories.length %}
       <div class="govuk-form-group">
-        <label class="govuk-label" for="category">Category</label>
+        <label class="govuk-label" for="category">{{ t("govuk_alpha_courses.category_label") }}</label>
         <select class="govuk-select" id="category" name="category">
-          <option value="">All categories</option>
+          <option value="">{{ t("govuk_alpha_courses.category_all") }}</option>
           {% for category in categories %}
             <option value="{{ category.id }}"{% if courseCategoryId == category.id %} selected{% endif %}>{{ category.name }}</option>
           {% endfor %}
@@ -33,7 +33,7 @@
     {% endif %}
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="level">Level</label>
+      <label class="govuk-label" for="level">{{ t("govuk_alpha_courses.level_filter_label") }}</label>
       <select class="govuk-select" id="level" name="level">
         <option value="">{{ t("courses.all_levels") }}</option>
         {% for level in levels %}
@@ -42,7 +42,7 @@
       </select>
     </div>
 
-    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">Search</button>
+    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_courses.search_button") }}</button>
   </form>
 
   {% if not courses or not courses.length %}
@@ -63,7 +63,7 @@
             <p class="govuk-body govuk-!-margin-bottom-1">{{ course.excerpt }}</p>
           {% endif %}
           {% if course.levelLabel %}
-            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">Level: {{ course.levelLabel }}</p>
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-0">{{ t("govuk_alpha_courses.level_meta", { level: course.levelLabel }) }}</p>
           {% endif %}
         </article>
       {% endfor %}

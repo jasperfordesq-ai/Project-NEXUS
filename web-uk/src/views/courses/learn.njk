@@ -8,14 +8,14 @@
 {% block mainContent %}
   <a href="{{ urlFor('/courses/' + (course.id | string)) }}" class="govuk-back-link">{{ t("courses.back") }}</a>
 
-  <span class="govuk-caption-xl">Learning at {{ tenantName }}</span>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_courses.learning_caption", { community: tenantName }) }}</span>
   <h1 class="govuk-heading-xl">{{ course.title }}</h1>
 
   {% if status %}
     {% if status.type == 'success' %}
       <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="course-learn-status" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">
-          <h2 class="govuk-notification-banner__title" id="course-learn-status">Notice</h2>
+          <h2 class="govuk-notification-banner__title" id="course-learn-status">{{ t("govuk_alpha_courses.notice_title") }}</h2>
         </div>
         <div class="govuk-notification-banner__content">
           <p class="govuk-notification-banner__heading">{{ status.message }}</p>
@@ -36,7 +36,7 @@
 
   {% if isCompleted %}
     <div class="govuk-panel govuk-panel--confirmation govuk-!-margin-top-4 govuk-!-margin-bottom-4">
-      <h2 class="govuk-panel__title">You have completed this course. Well done.</h2>
+      <h2 class="govuk-panel__title">{{ t("govuk_alpha_courses.course_completed_panel") }}</h2>
     </div>
   {% endif %}
 
@@ -44,7 +44,7 @@
     <div class="govuk-grid-column-one-third">
       <h2 class="govuk-heading-m">{{ t("courses.lessons_label") }}</h2>
       {% if not sections or not sections.length %}
-        <p class="govuk-body">This course has no lessons available yet.</p>
+        <p class="govuk-body">{{ t("govuk_alpha_courses.no_lessons_available") }}</p>
       {% else %}
         {% for section in sections %}
           {% if section.title %}
@@ -54,13 +54,13 @@
             {% for lesson in section.lessons %}
               <li class="govuk-!-margin-bottom-1">
                 {% if not lesson.available %}
-                  <span>{{ lesson.title }} <span class="govuk-tag govuk-tag--grey">Not yet available</span></span>
+                  <span>{{ lesson.title }} <span class="govuk-tag govuk-tag--grey">{{ t("govuk_alpha_courses.not_yet_available") }}</span></span>
                 {% elif currentLesson and currentLesson.id == lesson.id %}
                   <strong>{{ lesson.title }}</strong>
-                  {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">Completed</span>{% endif %}
+                  {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.completed_tag") }}</span>{% endif %}
                 {% else %}
                   <a class="govuk-link" href="{{ urlFor('/courses/' + (course.id | string) + '/learn?lesson=' + (lesson.id | string)) }}">{{ lesson.title }}</a>
-                  {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">Completed</span>{% endif %}
+                  {% if lesson.isCompleted %}<span class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.completed_tag") }}</span>{% endif %}
                 {% endif %}
               </li>
             {% endfor %}
@@ -71,7 +71,7 @@
 
     <div class="govuk-grid-column-two-thirds">
       {% if not currentLesson %}
-        <p class="govuk-body">Select a lesson from the list to begin.</p>
+        <p class="govuk-body">{{ t("govuk_alpha_courses.select_lesson") }}</p>
       {% else %}
         <h2 class="govuk-heading-l">{{ currentLesson.title }}</h2>
         <p class="govuk-body-s nexus-alpha-meta">{{ currentLesson.contentTypeLabel }}</p>
@@ -79,11 +79,11 @@
         {% if currentLesson.contentType == 'video' and currentLesson.videoUrl %}
           <video class="nexus-alpha-detail-hero" controls preload="metadata" width="100%">
             <source src="{{ currentLesson.videoUrl }}">
-            Your browser cannot play this video. Open it in a new tab below.
+            {{ t("govuk_alpha_courses.video_unsupported") }}
           </video>
-          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.videoUrl }}" target="_blank" rel="noopener noreferrer">Open the video<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.videoUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_courses.open_video") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
         {% elif currentLesson.contentType == 'embed' and currentLesson.embedUrl %}
-          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.embedUrl }}" target="_blank" rel="noopener noreferrer">Open the video<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.embedUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_courses.open_video") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
         {% endif %}
 
         {% if currentLesson.body %}
@@ -91,36 +91,36 @@
         {% endif %}
 
         {% if currentLesson.attachmentUrl %}
-          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.attachmentUrl }}" target="_blank" rel="noopener noreferrer">Download the lesson material<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
+          <p class="govuk-body"><a class="govuk-link" href="{{ currentLesson.attachmentUrl }}" target="_blank" rel="noopener noreferrer">{{ t("govuk_alpha_courses.download_material") }}<span class="govuk-visually-hidden"> {{ t("opens_new_tab") }}</span></a></p>
         {% endif %}
 
         {% if currentLesson.contentType == 'quiz' %}
           {% set quiz = currentLesson.quiz %}
           {% if not quiz %}
-            <div class="govuk-inset-text"><p class="govuk-body">This quiz is not available yet.</p></div>
+            <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.quiz_unavailable") }}</p></div>
           {% else %}
-            <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ quiz.title or "Quiz" }}</h3>
+            <h3 class="govuk-heading-m govuk-!-margin-top-4">{{ quiz.title or t("govuk_alpha_courses.quiz_fallback_title") }}</h3>
             {% if quiz.description %}
               <p class="govuk-body">{{ quiz.description }}</p>
             {% endif %}
-            <p class="govuk-body-s nexus-alpha-meta">Pass mark: {{ quiz.pass_mark_percent or 0 }}%{% if quiz.attempts_remaining != null %} - Attempts remaining: {{ quiz.attempts_remaining }}{% endif %}</p>
+            <p class="govuk-body-s nexus-alpha-meta">{{ t("govuk_alpha_courses.quiz_pass_mark", { percent: quiz.pass_mark_percent or 0 }) }}{% if quiz.attempts_remaining != null %} - {{ t("govuk_alpha_courses.quiz_attempts_remaining", { count: quiz.attempts_remaining }) }}{% endif %}</p>
 
             {% if quiz.last_attempt %}
               <div class="govuk-inset-text">
                 {% if quiz.last_attempt.grading_status == 'pending_review' %}
-                  <p class="govuk-body">Your last attempt is awaiting marking by an instructor.</p>
+                  <p class="govuk-body">{{ t("govuk_alpha_courses.quiz_awaiting_marking") }}</p>
                 {% else %}
-                  <p class="govuk-body">Your last score: {{ quiz.last_attempt.score_percent or 0 }}%
-                    {% if quiz.last_attempt.passed %}<strong class="govuk-tag govuk-tag--green">Passed</strong>{% else %}<strong class="govuk-tag govuk-tag--red">Not passed</strong>{% endif %}
+                  <p class="govuk-body">{{ t("govuk_alpha_courses.quiz_last_score", { percent: quiz.last_attempt.score_percent or 0 }) }}
+                    {% if quiz.last_attempt.passed %}<strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.quiz_passed") }}</strong>{% else %}<strong class="govuk-tag govuk-tag--red">{{ t("govuk_alpha_courses.quiz_not_passed") }}</strong>{% endif %}
                   </p>
                 {% endif %}
               </div>
             {% endif %}
 
             {% if quiz.attempts_remaining != null and quiz.attempts_remaining <= 0 %}
-              <div class="govuk-inset-text"><p class="govuk-body">You have used all your attempts for this quiz.</p></div>
+              <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.quiz_no_attempts_left") }}</p></div>
             {% elif not quiz.questions or not quiz.questions.length %}
-              <div class="govuk-inset-text"><p class="govuk-body">This quiz has no questions yet.</p></div>
+              <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.quiz_no_questions") }}</p></div>
             {% else %}
               <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/quiz') }}" class="govuk-!-margin-top-2">
                 <input type="hidden" name="_csrf" value="{{ csrfToken }}">
@@ -155,18 +155,18 @@
                     </fieldset>
                   </div>
                 {% endfor %}
-                <button class="govuk-button" data-module="govuk-button">Submit answers</button>
+                <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_courses.quiz_submit") }}</button>
               </form>
             {% endif %}
           {% endif %}
         {% endif %}
 
         {% if currentLesson.isCompleted %}
-          <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">You have completed this lesson.</strong></p>
+          <p class="govuk-body"><strong class="govuk-tag govuk-tag--green">{{ t("govuk_alpha_courses.lesson_completed") }}</strong></p>
         {% else %}
           <form method="post" action="{{ urlFor('/courses/' + (course.id | string) + '/lessons/' + (currentLesson.id | string) + '/complete') }}" class="govuk-!-margin-top-4">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-            <button class="govuk-button" data-module="govuk-button">Mark lesson as complete</button>
+            <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_courses.mark_complete") }}</button>
           </form>
         {% endif %}
       {% endif %}

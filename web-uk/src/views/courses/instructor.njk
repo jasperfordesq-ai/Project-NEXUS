@@ -31,20 +31,20 @@
     {% endif %}
   {% endif %}
 
-  <span class="govuk-caption-xl">Teaching at {{ tenantName }}</span>
-  <h1 class="govuk-heading-xl">Courses you teach</h1>
-  <p class="govuk-body-l">Create and manage the courses you teach, track enrolments and publish when you are ready.</p>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_courses.teaching_caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_courses.teaching_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_courses.teaching_intro") }}</p>
 
   {% if canAuthor %}
     <p class="govuk-body">
-      <a class="govuk-button" href="{{ urlFor('/courses/instructor/new') }}" role="button" draggable="false" data-module="govuk-button">Create a course</a>
+      <a class="govuk-button" href="{{ urlFor('/courses/instructor/new') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_courses.create_course") }}</a>
     </p>
   {% else %}
-    <div class="govuk-inset-text"><p class="govuk-body">Course creation is limited to approved instructors at this community.</p></div>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.not_approved_author") }}</p></div>
   {% endif %}
 
   {% if not courses or not courses.length %}
-    <div class="govuk-inset-text"><p class="govuk-body">You have not created any courses yet. Create your first course to start teaching.</p></div>
+    <div class="govuk-inset-text"><p class="govuk-body">{{ t("govuk_alpha_courses.no_courses_created") }}</p></div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for course in courses %}
@@ -54,13 +54,13 @@
             <strong class="govuk-tag {{ course.instructorStatusClass }}">{{ course.instructorStatusLabel }}</strong>
           </div>
           <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">
-            Enrolments: {{ course.enrollmentCount }}
+            {{ t("govuk_alpha_courses.enrolments_count", { count: course.enrollmentCount }) }}
             &middot;
-            Completions: {{ course.completionCount }}
+            {{ t("govuk_alpha_courses.completions_count", { count: course.completionCount }) }}
           </p>
           <div class="nexus-alpha-actions">
-            <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/edit') }}" role="button" draggable="false" data-module="govuk-button">Edit course</a>
-            <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/analytics') }}">View analytics</a>
+            <a class="govuk-button govuk-button--secondary govuk-!-margin-bottom-0" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/edit') }}" role="button" draggable="false" data-module="govuk-button">{{ t("govuk_alpha_courses.edit_course") }}</a>
+            <a class="govuk-link govuk-!-margin-left-3" href="{{ urlFor('/courses/instructor/' + (course.id | string) + '/analytics') }}">{{ t("govuk_alpha_courses.view_analytics") }}</a>
           </div>
         </article>
       {% endfor %}

@@ -6,7 +6,7 @@
 {% extends "layouts/base.njk" %}
 
 {% block mainContent %}
-  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor/' + (courseId | string) + '/edit') }}">Back to course</a>
+  <a class="govuk-back-link" href="{{ urlFor('/courses/instructor/' + (courseId | string) + '/edit') }}">{{ t("govuk_alpha_courses.back_to_course") }}</a>
 
   {% if status %}
     {% if status.type == 'success' %}
@@ -26,13 +26,13 @@
     {% endif %}
   {% endif %}
 
-  <span class="govuk-caption-l">Review quiz attempts at {{ tenantName }}</span>
-  <h1 class="govuk-heading-xl">Grading queue</h1>
-  <p class="govuk-body-l">Course: <strong>{{ course.title }}</strong></p>
-  <p class="govuk-body">Quiz attempts that need a manual grade. Review the learner answers, then award a score.</p>
+  <span class="govuk-caption-l">{{ t("govuk_alpha_courses.grading_caption", { community: tenantName }) }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_courses.grading_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_courses.grading_course_label") }} <strong>{{ course.title }}</strong></p>
+  <p class="govuk-body">{{ t("govuk_alpha_courses.grading_intro") }}</p>
 
   {% if not attempts or not attempts.length %}
-    <p class="govuk-inset-text">There are no attempts waiting to be graded for this course.</p>
+    <p class="govuk-inset-text">{{ t("govuk_alpha_courses.grading_empty") }}</p>
   {% else %}
     {% for attempt in attempts %}
       <article class="nexus-alpha-card govuk-!-margin-bottom-6">
@@ -40,11 +40,11 @@
           <h2 class="govuk-heading-m govuk-!-margin-bottom-1">{{ attempt.learnerName }}</h2>
           <strong class="govuk-tag govuk-tag--yellow">{{ attempt.quizTitle }}</strong>
         </div>
-        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">Submitted: {{ attempt.submittedAt | date }}</p>
+        <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-3">{{ t("govuk_alpha_courses.grading_submitted", { date: attempt.submittedAt | date }) }}</p>
 
-        <h3 class="govuk-heading-s">Learner answers</h3>
+        <h3 class="govuk-heading-s">{{ t("govuk_alpha_courses.learner_answers") }}</h3>
         {% if not attempt.questions or not attempt.questions.length %}
-          <p class="govuk-hint">The learner did not provide any answers.</p>
+          <p class="govuk-hint">{{ t("govuk_alpha_courses.no_answers") }}</p>
         {% else %}
           <dl class="govuk-summary-list">
             {% for question in attempt.questions %}
@@ -60,34 +60,34 @@
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
           <div class="govuk-form-group">
-            <label class="govuk-label govuk-label--s" for="score_percent_{{ attempt.id }}">Score (%)</label>
-            <div id="score_percent_{{ attempt.id }}-hint" class="govuk-hint">A percentage from 0 to 100.</div>
+            <label class="govuk-label govuk-label--s" for="score_percent_{{ attempt.id }}">{{ t("govuk_alpha_courses.score_label") }}</label>
+            <div id="score_percent_{{ attempt.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_courses.score_hint") }}</div>
             <input class="govuk-input govuk-input--width-5" id="score_percent_{{ attempt.id }}" name="score_percent" type="number" min="0" max="100" value="{{ attempt.scorePercent }}" aria-describedby="score_percent_{{ attempt.id }}-hint">
           </div>
 
           <div class="govuk-form-group">
             <fieldset class="govuk-fieldset">
-              <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Outcome</legend>
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_courses.outcome_legend") }}</legend>
               <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
                 <div class="govuk-radios__item">
                   <input class="govuk-radios__input" id="passed_yes_{{ attempt.id }}" name="passed" type="radio" value="1"{% if attempt.passed %} checked{% endif %}>
-                  <label class="govuk-label govuk-radios__label" for="passed_yes_{{ attempt.id }}">Pass</label>
+                  <label class="govuk-label govuk-radios__label" for="passed_yes_{{ attempt.id }}">{{ t("govuk_alpha_courses.pass_label") }}</label>
                 </div>
                 <div class="govuk-radios__item">
                   <input class="govuk-radios__input" id="passed_no_{{ attempt.id }}" name="passed" type="radio" value="0"{% if not attempt.passed %} checked{% endif %}>
-                  <label class="govuk-label govuk-radios__label" for="passed_no_{{ attempt.id }}">Fail</label>
+                  <label class="govuk-label govuk-radios__label" for="passed_no_{{ attempt.id }}">{{ t("govuk_alpha_courses.fail_label") }}</label>
                 </div>
               </div>
             </fieldset>
           </div>
 
           <div class="govuk-form-group">
-            <label class="govuk-label govuk-label--s" for="feedback_{{ attempt.id }}">Feedback for the learner <span class="govuk-hint govuk-!-display-inline">(optional)</span></label>
-            <div id="feedback_{{ attempt.id }}-hint" class="govuk-hint">Optional. The learner will see this with their result.</div>
+            <label class="govuk-label govuk-label--s" for="feedback_{{ attempt.id }}">{{ t("govuk_alpha_courses.feedback_label") }} <span class="govuk-hint govuk-!-display-inline">{{ t("govuk_alpha_courses.optional_parenthetical") }}</span></label>
+            <div id="feedback_{{ attempt.id }}-hint" class="govuk-hint">{{ t("govuk_alpha_courses.feedback_hint") }}</div>
             <textarea class="govuk-textarea" id="feedback_{{ attempt.id }}" name="feedback" rows="3" aria-describedby="feedback_{{ attempt.id }}-hint">{{ attempt.feedback }}</textarea>
           </div>
 
-          <button class="govuk-button" data-module="govuk-button">Save grade</button>
+          <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_courses.save_grade") }}</button>
         </form>
       </article>
     {% endfor %}
