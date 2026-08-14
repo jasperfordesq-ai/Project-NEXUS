@@ -185,9 +185,19 @@ here as a separately named position, never as a silent rescore.
   no audit row on refusal), write the audit row BEFORE fetching, read AS the
   member (their deletions invisible, unread counts stripped, nothing ever
   marked read), and there is deliberately no write route under the prefix.
-  Pinned by `SupporterMessageViewTests` (7 tests). Step 5 (admin safeguarding
-  attestation endpoints) remains open, plus the `restriction-status` notice
-  flags on the ordinary messages surface.
+  Pinned by `SupporterMessageViewTests` (7 tests). **Step 5 (staff
+  attestation) also landed 2026-08-14 (unscored), completing the subsystem:**
+  the broker-or-admin queue (`GET /v2/admin/safeguarding/support-actions`,
+  both names loaded, never the raw payload) and the attest endpoint (channel
+  required ∈ phone/in_person/paper, witness optional ≤160) confirm through
+  the same shared path with `attested_offline` provenance, so authority
+  lapses and safeguarding restrictions refuse attestation identically, and
+  the supported member is always notified. Pinned by
+  `SupportActionAttestationTests` (5 tests). **The support-actions / carer
+  sub-accounts cluster is now implemented end to end (39 pinning tests
+  total).** Residue: the `restriction-status` notice flags on the ordinary
+  messages surface, and email delivery of the confirm-token link (currently
+  bell-notification only).
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

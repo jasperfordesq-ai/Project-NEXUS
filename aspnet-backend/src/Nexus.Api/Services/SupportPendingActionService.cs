@@ -63,6 +63,9 @@ public class SupportPendingActionService
     public sealed record PrepareResult(int Id);
     public sealed record ConfirmResult(int? ResultId);
 
+    /// <summary>Offline attestation context: which staff member vouches, how, before whom.</summary>
+    public sealed record AttestedContext(int AttestedByUserId, string Channel, string? Witness);
+
     // ─── Prepare ────────────────────────────────────────────────────
 
     public async Task<PrepareResult?> PrepareAsync(
@@ -190,6 +193,22 @@ public class SupportPendingActionService
         return actions.Select(a => Present(a, otherParty: a.SupportedUser)).ToList();
     }
 
+    /// <summary>The tenant's pending queue for safeguarding staff — both names loaded.</summary>
+    public async Task<List<object>> ListPendingForTenantAsync(CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var actions = await _db.SupportPendingActions
+            .AsNoTracking()
+            .Include(a => a.SupporterUser)
+            .Include(a => a.SupportedUser)
+            .Where(a => a.Status == SupportPendingAction.StatusPending && a.ExpiresAt > now)
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(100)
+            .ToListAsync(ct);
+        return actions.Select(a => Present(a, otherParty: a.SupporterUser,
+            supporter: a.SupporterUser, supported: a.SupportedUser)).ToList();
+    }
+
     public Task<int> PendingCountForSupportedAsync(int userId, CancellationToken ct)
     {
         var now = DateTime.UtcNow;
@@ -204,7 +223,37 @@ public class SupportPendingActionService
         int supportedUserId, int actionId, string? ip, string? userAgent, CancellationToken ct)
         => ConfirmAsync(
             q => q.Where(a => a.Id == actionId && a.SupportedUserId == supportedUserId),
-            via: "in_app", ip, userAgent, ct);
+            via: "in_app", ip, userAgent, attested: null, ct);
+
+    /// <summary>
+    /// Staff records an approval the supported member gave offline — by
+    /// phone, in person, or on paper. The channel is required; the witness is
+    /// optional. Runs the same shared confirm path, so authority lapses and
+    /// safeguarding restrictions refuse attestation exactly as they refuse
+    /// any other confirmation.
+    /// </summary>
+    public Task<ConfirmResult?> ConfirmAttestedAsync(
+        int staffUserId, int actionId, string? channel, string? witness,
+        string? ip, string? userAgent, CancellationToken ct)
+    {
+        if (channel is null || !SupportPendingAction.AttestChannels.Contains(channel))
+        {
+            _errors.Clear();
+            _errors.Add(new
+            {
+                code = "VALIDATION_ERROR",
+                message = "Choose how the approval was given: by phone, in person, or on paper"
+            });
+            return Task.FromResult<ConfirmResult?>(null);
+        }
+
+        var trimmedWitness = string.IsNullOrWhiteSpace(witness) ? null : witness.Trim();
+        if (trimmedWitness is { Length: > 160 }) trimmedWitness = trimmedWitness[..160];
+        return ConfirmAsync(
+            q => q.Where(a => a.Id == actionId),
+            via: "attested_offline", ip, userAgent,
+            attested: new AttestedContext(staffUserId, channel, trimmedWitness), ct);
+    }
 
     public Task<ConfirmResult?> ConfirmByTokenAsync(
         string token, string? ip, string? userAgent, CancellationToken ct)
@@ -221,12 +270,12 @@ public class SupportPendingActionService
         return ConfirmAsync(
             q => q.IgnoreQueryFilters()
                 .Where(a => a.TokenHash == tokenHash && a.TokenConsumedAt == null),
-            via: "email_token", ip, userAgent, ct);
+            via: "email_token", ip, userAgent, attested: null, ct);
     }
 
     private async Task<ConfirmResult?> ConfirmAsync(
         Func<IQueryable<SupportPendingAction>, IQueryable<SupportPendingAction>> scope,
-        string via, string? ip, string? userAgent, CancellationToken ct)
+        string via, string? ip, string? userAgent, AttestedContext? attested, CancellationToken ct)
     {
         // No outer database transaction here: the wallet service opens its own
         // (its advisory lock requires it), and EF refuses nesting. Replays of
@@ -295,6 +344,12 @@ public class SupportPendingActionService
             action.ConfirmedVia = via;
             action.ResultId = resultId;
             if (via == "email_token") action.TokenConsumedAt = DateTime.UtcNow;
+            if (attested is not null)
+            {
+                action.AttestedByUserId = attested.AttestedByUserId;
+                action.AttestedChannel = attested.Channel;
+                action.AttestedWitness = attested.Witness;
+            }
             action.ResponseIp = ip is { Length: > 45 } ? ip[..45] : ip;
             action.ResponseUserAgent = userAgent is { Length: > 255 } ? userAgent[..255] : userAgent;
             action.UpdatedAt = DateTime.UtcNow;
@@ -305,6 +360,14 @@ public class SupportPendingActionService
                 new { action_id = action.Id, action_type = action.ActionType,
                       confirmed_via = via, result_id = resultId }, ct);
             await NotifySupporterOfAnswerAsync(action, confirmed: true, ct);
+            if (attested is not null)
+            {
+                await TryNotifyAsync(action.TenantId, action.SupportedUserId,
+                    "support_action_attested", "An approval was recorded for you",
+                    "A staff member recorded an approval you gave offline. "
+                    + "If this is wrong, contact your community immediately.", ct);
+            }
+
             return new ConfirmResult(resultId);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -578,7 +641,9 @@ public class SupportPendingActionService
     // ─── Presentation ───────────────────────────────────────────────
 
     /// <summary>The raw payload is NEVER exposed — only a summary.</summary>
-    private static object Present(SupportPendingAction action, User? otherParty)
+    private static object Present(
+        SupportPendingAction action, User? otherParty,
+        User? supporter = null, User? supported = null)
     {
         object payloadSummary;
         try
@@ -620,6 +685,10 @@ public class SupportPendingActionService
             other_party_name = otherParty is null
                 ? null : $"{otherParty.FirstName} {otherParty.LastName}".Trim(),
             other_party_avatar_url = otherParty?.AvatarUrl,
+            supporter_name = supporter is null
+                ? null : $"{supporter.FirstName} {supporter.LastName}".Trim(),
+            supported_name = supported is null
+                ? null : $"{supported.FirstName} {supported.LastName}".Trim(),
             created_at = action.CreatedAt.ToString("yyyy-MM-dd'T'HH:mm:ssK"),
             expires_at = action.ExpiresAt.ToString("yyyy-MM-dd'T'HH:mm:ssK"),
             confirmed_via = action.ConfirmedVia,
