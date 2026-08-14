@@ -17,7 +17,7 @@
         <p class="govuk-body-s nexus-alpha-meta">
           {% if article.authorName %}{{ t("kb.author_label") }} {{ article.authorName }}{% endif %}
           {% if article.authorName and article.updatedAt %} &middot; {% endif %}
-          {% if article.updatedAt %}{{ t("kb.updated_label") }}: {{ article.updatedAt }}{% endif %}
+          {% if article.updatedAt %}{{ t("kb.updated_label") }}: {{ article.updatedAt | formatDate }}{% endif %}
         </p>
       {% endif %}
 

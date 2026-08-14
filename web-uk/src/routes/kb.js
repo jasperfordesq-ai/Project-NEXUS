@@ -81,7 +81,7 @@ function normalizeArticle(result, fallbackId, t) {
     id: positiveInteger(row.id) || fallbackId,
     title: trimmed(row.title) || t('kb.title'),
     content: sanitizeCmsHtml(row.content),
-    updatedAt: trimmed(row.updated_at ?? row.updatedAt ?? row.created_at ?? row.createdAt).split('T')[0],
+    updatedAt: trimmed(row.updated_at ?? row.updatedAt ?? row.created_at ?? row.createdAt),
     authorName: trimmed(author.name),
     children: children
       .map((child) => ({

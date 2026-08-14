@@ -7,7 +7,7 @@ const express = require('express');
 const { randomUUID } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
 const { flagEnabled } = require('../lib/accessible-shell');
-const { createTranslator } = require('../lib/localization');
+const { createTranslator, formatLocaleNumber } = require('../lib/localization');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
 const { splitDate } = require('../lib/date-input');
@@ -866,7 +866,7 @@ function discountLabel(coupon, req) {
   const value = Number(coupon.discount_value);
   const safeValue = Number.isFinite(value) ? value : 0;
   if (type === 'percent') {
-    return `${safeValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}%`;
+    return `${formatLocaleNumber(safeValue, req?.locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}%`;
   }
   if (type === 'bogo') {
     return translateMarketplaceMessage(
@@ -875,7 +875,7 @@ function discountLabel(coupon, req) {
       COUPON_DISCOUNT_LABELS.bogo
     );
   }
-  return safeValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatLocaleNumber(safeValue, req?.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function decorateCoupon(coupon, req) {

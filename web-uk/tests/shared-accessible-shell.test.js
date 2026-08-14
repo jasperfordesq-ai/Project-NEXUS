@@ -1545,8 +1545,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('Using the repair library');
     expect(response.text).toContain('Written by Morgan Lee');
     expect(response.text).toContain('Last updated:');
-    expect(response.text).toContain('Last updated: 2026-07-06');
-    expect(response.text).not.toContain('Last updated: 6 July 2026');
+    // Localized via the shared formatDate filter (was a raw ISO date 2026-07-06).
+    expect(response.text).toContain('Last updated: 6 Jul 2026');
+    expect(response.text).not.toContain('Last updated: 2026-07-06');
     expect(response.text).toContain('<p class="article">Keep your <strong>tools</strong> labelled.</p>');
     expect(response.text).not.toContain('onclick=');
     expect(response.text).not.toContain('alert(2)');
