@@ -184,16 +184,27 @@ describe('native date input ceiling', () => {
   // 🔴 `time: 2` is a deliberate LOW PRIORITY, not a blocker: both are inside a repeating
   // weekly-slots grid (`slots[day][index][start]`), GOV.UK has no time component, and its
   // guidance on native time inputs is far weaker than on native date pickers.
-  const CEILING = { 'datetime-local': 13, date: 1, time: 2 };
+  // 🔴 17, not 13, for datetime-local. The counter used to match only the HTML form
+  // `type="datetime-local"` and so was BLIND to 4 inputs written as a macro argument
+  // (`type: "datetime-local"`) on the two most-used event forms (events/new,
+  // events/edit) — exactly the fields a member meets most. The count below now
+  // includes both spellings, so the true total (13 HTML + 4 macro) is measured. The
+  // conversion of these to the three-field pattern is still blocked on translated time
+  // strings (see the note above); this only stops the ratchet under-counting.
+  const CEILING = { 'datetime-local': 17, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;
+    // Both `type="x"` (HTML attribute) and `type: "x"` / `type: 'x'` (macro argument).
+    const attr = new RegExp(`type="${type}"`, 'g');
+    const arg = new RegExp(`type:\\s*["']${type}["']`, 'g');
     const walk = (dir) => {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(full);
         else if (entry.name.endsWith('.njk')) {
-          total += (fs.readFileSync(full, 'utf8').match(new RegExp(`type="${type}"`, 'g')) || []).length;
+          const src = fs.readFileSync(full, 'utf8');
+          total += (src.match(attr) || []).length + (src.match(arg) || []).length;
         }
       }
     };
