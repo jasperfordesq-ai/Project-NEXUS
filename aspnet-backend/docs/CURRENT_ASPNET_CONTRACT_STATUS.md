@@ -170,9 +170,15 @@ here as a separately named position, never as a silent rescore.
   supported member as owner/sender and the supporter stamped as ActingUserId —
   authority is re-checked at use time (AUTHORITY_CHANGED auto-cancel), and
   message access rises ONLY through this workflow. Pinned by
-  `SupportActionWorkflowTests` (10 tests). Steps 3–5 (represent-tier proxy
-  execution endpoints, supervised message viewing, admin attestation) remain
-  open.
+  `SupportActionWorkflowTests` (10 tests). **Step 3 (represent-tier proxy
+  execution) also landed 2026-08-14 (unscored):** the four direct endpoints
+  (child listings, listing image, transfer, wallet) enforce the represent
+  tier — co_decide never authorises acting alone — with fail-closed audit
+  attribution (the listing commits with its audit row or not at all), the
+  supported member always the owner/sender and always notified, the carer's
+  own balance provably untouched, and the wallet summary gated on the credits
+  tier by design. Pinned by `SubAccountProxyTests` (6 tests). Steps 4–5
+  (supervised message viewing, admin attestation) remain open.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),
