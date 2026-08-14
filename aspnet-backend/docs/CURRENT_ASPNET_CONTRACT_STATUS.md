@@ -136,6 +136,17 @@ here as a separately named position, never as a silent rescore.
   mapping hard-pins `org_type='volunteer'` with an FK to `vol_organizations`
   — the externally observable roster contract is identical. Pinned by
   `tests/Nexus.Api.Tests/PartnerVenuesTests.cs` (15 tests).
+- **Support actions / carer sub-accounts: foundation landed 2026-08-14
+  (unscored), full workflow mapped and queued.** The `SupportTiers` permission
+  engine is ported with its safety rules pinned by 9 unit tests (dead
+  `can_view_messages` boolean, drop-not-clamp caps, staff cap), and migration
+  165 (`20260814173908_AddProxyActingUserAttribution`, proven zero-to-165)
+  adds the nullable acting-user attribution columns to `listings` and
+  `transactions`. The complete contract map and five-step build order
+  (relationship-model upgrade → `support_pending_actions` workflow → proxy
+  execution → supervised message viewing → admin attestation) is banked in
+  `.local-docs-archive/aspnet-support-actions-blueprint-2026-08-14.md` —
+  start there, do not re-research.
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

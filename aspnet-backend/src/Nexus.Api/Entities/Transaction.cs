@@ -28,6 +28,15 @@ public class Transaction : ITenantEntity
     public int? ListingId { get; set; }
     public int? VolunteerLogId { get; set; }
     public TransactionStatus Status { get; set; } = TransactionStatus.Completed;
+
+    /// <summary>
+    /// Laravel parity (2026_08_04 acting-user attribution): when a carer's
+    /// proxy transfer moves a supported member's credits, the sender stays the
+    /// supported member and this records who actually acted. Null for ordinary
+    /// first-person transactions.
+    /// </summary>
+    public int? ActingUserId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 

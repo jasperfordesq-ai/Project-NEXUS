@@ -14,6 +14,15 @@ public class Listing : ITenantEntity
     public int Id { get; set; }
     public int TenantId { get; set; }
     public int UserId { get; set; }
+
+    /// <summary>
+    /// Laravel parity (2026_08_04 acting-user attribution): when a carer
+    /// creates a listing on a supported member's behalf, UserId stays the
+    /// supported member (the owner) and this records who actually acted.
+    /// Null for ordinary first-person listings.
+    /// </summary>
+    public int? ActingUserId { get; set; }
+
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public ListingType Type { get; set; } = ListingType.Offer;
