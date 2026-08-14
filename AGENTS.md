@@ -124,8 +124,12 @@ If a change genuinely needs no release note, state that explicitly in the final 
 ```bash
 npm run dev:docker      # Start Docker PHP, database, Redis, Meilisearch, and native Vite
 npm run dev:frontend    # Start only native Vite on http://127.0.0.1:5173
-npm run dev:accessible-frontend  # Start accessible frontend dev server
+npm --prefix web-uk run dev      # Start the accessible frontend (web-uk) on :3001
 ```
+
+> 🔴 `npm run dev:accessible-frontend` was listed here and **does not exist** — it
+> started the Blade accessible frontend, deleted 2026-08-14. The accessible frontend
+> is `web-uk/` and has its own scripts.
 
 **Important:** Project NEXUS is Docker-first for local development. The Laravel/PHP API runs in the Docker PHP app on `127.0.0.1:8090`; MariaDB, Redis, and Meilisearch run from the same Compose stack. The default frontend workflow uses native Vite on Windows for fast HMR, proxying `/api` to the Docker PHP app. Use the Docker frontend profile only when deliberately testing the frontend container.
 
@@ -308,42 +312,45 @@ See [react-frontend/CLAUDE.md](react-frontend/CLAUDE.md) for full styling rules,
 
 ### Accessible Frontend (GOV.UK-Based)
 
-The accessible frontend is an explicitly approved UI track that complements, but does not replace, `react-frontend/`. It is the only maintained exception to the React-primary UI rule and is intended for users who benefit from a highly accessible, HTML-first experience. The public-facing track is now Beta and served under `/{tenantSlug}/accessible/...` (legacy `/alpha/...` URLs permanently redirect); the `GovukAlpha`, `govuk_alpha`, and `govuk-alpha.*` names remain as internal code-path names (namespaces, translation files, route names) until a deliberate namespace migration is done.
+The accessible frontend is an explicitly approved UI track that complements, but does not replace, `react-frontend/`. It is the only maintained exception to the React-primary UI rule and is intended for users who benefit from a highly accessible, HTML-first experience. It is served under `/{tenantSlug}/accessible/...` on the platform host, and slug-less on a community's own accessible domain (legacy `/alpha/...` URLs permanently redirect). The `govuk_alpha` name survives on the **translation files only**; the `GovukAlpha` namespace and `govuk-alpha.*` route names are gone.
 
-#### 🔴 THE BLADE ACCESSIBLE FRONTEND IS FROZEN — READ-ONLY REFERENCE (owner decision, 2026-08-13)
+#### 🔴 THERE IS ONE ACCESSIBLE FRONTEND: `web-uk`. THE BLADE ONE WAS DELETED (2026-08-14)
 
-There are TWO accessible frontends. `accessible-frontend/` (+
-`app/Http/Controllers/GovukAlpha/`) is Laravel Blade. `web-uk/` is an
-Express/Nunjucks application consuming the Laravel API, live on
-`accessible.project-nexus.ie` since 2026-08-12.
+`web-uk/` is an Express/Nunjucks application consuming the Laravel API. It serves
+**every** accessible surface: `accessible.project-nexus.ie`,
+`accessible-uk.timebank.global`, `accessible-minehead-and-coast.timebank.global`,
+and `/{tenantSlug}/accessible/...` for all eleven communities.
 
-**On 2026-08-13 the owner froze the Blade track.** It is kept as a **read-only
-reference for building `web-uk`**, and retires once `web-uk` is judged finished.
+**This section said the opposite until 2026-08-14** — that there were TWO accessible
+frontends, that the Blade one was "frozen but still deployed and still serving
+traffic", and that you should "read it freely" as the behaviour specification. That
+was true from 2026-08-13 to 2026-08-14 and is now wrong in its central claim. It is
+quoted rather than deleted because an agent that half-remembers the old wording goes
+looking for `accessible-frontend/` and concludes the repository is broken.
 
-- 🔴 **Do not build anything new in Blade.** No new pages, features, routes,
-  fields, or parity work. Every new build goes into `web-uk/`.
-- 🔴 **Read it freely — that is what it is for.** It is the behaviour
-  specification `web-uk` is being built against, so opening its Blade templates,
-  controllers and tests to see what a page does is the intended use.
-- **Allowed to change:** a security fix, a fault making a live page unusable for
-  a real member, or a mechanical repo-wide sweep it cannot be excluded from
-  (SPDX headers, lint, translation key parity, a dependency bump). Anything
-  beyond that needs the owner to say so.
-- **It is still deployed and still serving traffic** — the community accessible
-  domains and every `/{tenantSlug}/accessible/...` path. Frozen means "stop
-  adding to it", not "it is dead". Do not delete it, do not remove its routes,
-  and do not disable its tests or build.
-- **Do not propose Blade work.** If a gap exists on the accessible track, the
-  answer is a `web-uk` change.
+- 🔴 **`accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`,
+  `routes/govuk-alpha.php` and `routes/govuk-alpha-parity/` DO NOT EXIST.** Do not
+  try to read them, do not restore them, and do not treat their absence as damage.
+- 🔴 **`lang/*/govuk_alpha*.php` IS ALIVE AND MUST NOT BE DELETED.** It is the source
+  `web-uk`'s eleven translation catalogues are generated from
+  (`web-uk/scripts/sync-laravel-locales.php`), and three non-Blade classes read it:
+  `EventsController`, `MemberDataExportService`, `StaticPublicPageContentService`.
+  Deleting it strips the live accessible frontend's translations in every language.
+- **Where behaviour is defined now:** GOV.UK Design System + WCAG 2.2 for
+  presentation, `react-frontend/` for what a member can do, and the Laravel API for
+  the contract. There is no Blade to compare against.
+- **The final Blade route inventory is frozen** at
+  `web-uk/scripts/blade-route-inventory.frozen.json` (707 routes, all matched by
+  `web-uk` on the day Blade was retired). `npm run route:matrix` compares against
+  that snapshot, so a `web-uk` route that disappears still shows up as a regression.
 
 [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md) is
-the single place the current phase and status are stated — read it before acting
-on any status claim about either frontend. The rules below still describe the
-Blade track, and its GOV.UK branding prohibitions apply to **both**.
+the single place status is stated — read it before acting on any status claim.
+The GOV.UK branding prohibitions below are unchanged and still binding.
 
-- Keep it isolated under root-level `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`, and `/{tenantSlug}/accessible/...` routes.
-- Preferred public subdomain: `accessible.project-nexus.ie`.
-- Deploy it through the Laravel/PHP blue-green app container, not the React container. Run `npm run build:accessible-frontend`, `npm run test:accessible-frontend:php`, and `npm run test:accessible-frontend:a11y` before deployment.
+- Keep it isolated under root-level `web-uk/`.
+- Public subdomain: `accessible.project-nexus.ie`, plus per-community accessible domains.
+- 🔴 **Deploy it with `bash scripts/deploy.sh --with-webuk`.** The flag is not optional: a guard on the server (`/opt/nexus-php/.webuk-live`) refuses a deploy that would drop web-uk, because since Blade was deleted there is nothing behind the Apache fallback arm and every accessible address would go down.
 - Use official `govuk-frontend` first. 🔴 **This line named `6.1.0` until 2026-08-13 while `web-uk` had actually been on `6.3.0` for some time — do not trust a version written in prose; read `web-uk/package.json` and `node_modules/govuk-frontend/package.json`.** `web-uk` now installs **`govuk-frontend@6.4.0`** (upgraded 2026-08-13, owner-approved, npm latest stable that day). The `6.x` line requires Sass modules (`@use`/`@forward`) — `@import` is deprecated and will be removed. 🔴 `web-uk/src/assets/scss/main.scss` must keep its `@use "govuk/index" as * with ($govuk-font-family: (arial, helvetica, sans-serif), …)` override on every upgrade, or the compiled CSS reintroduces the licensed GDS Transport typeface; `npm run brand:check` now scans the compiled CSS for it.
 - Use official GOV.UK Frontend markup/classes/Sass/JS with HTML-first progressive enhancement; do not use unofficial React GOV.UK libraries as the foundation.
 - Do not use the GOV.UK crown, GOV.UK logotype, GOV.UK header identity, GDS Transport, or wording that implies this is an official UK government service.
@@ -670,12 +677,19 @@ npx playwright test e2e/tests/smoke.spec.ts --grep '@smoke' --project=chromium-m
 
 E2E defaults to `http://localhost:5173`; use `E2E_BASE_URL=...` only when deliberately targeting another environment. Run Playwright from the root dependency tree — do not keep a nested `e2e/node_modules` alongside root Playwright.
 
-### Accessible frontend
+### Accessible frontend (`web-uk`)
+
+🔴 The three `*:accessible-frontend*` commands that used to be listed here were
+removed on 2026-08-14 with the Blade accessible frontend. They do not exist. Run
+these instead — all from the repository root:
 
 ```bash
-npm run build:accessible-frontend
-npm run test:accessible-frontend:php
-npm run test:accessible-frontend:a11y
+npm --prefix web-uk run brand:check   # BLOCKING: no crown, no GDS Transport, no gov branding
+npm --prefix web-uk run lint
+npm --prefix web-uk test              # 80 suites / 2,206 tests
+npm --prefix web-uk run build:css
+npm --prefix web-uk run route:matrix && npm --prefix web-uk run api:ledger
+node scripts/check-doc-scores.mjs
 ```
 
 ---

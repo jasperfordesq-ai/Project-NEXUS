@@ -182,7 +182,15 @@ RUN ok=0; \
     done; \
     if [ "$ok" != 1 ]; then echo "composer install failed after 3 attempts" >&2; exit 1; fi
 
-COPY accessible-frontend ./accessible-frontend
+# 🔴 `COPY accessible-frontend ./accessible-frontend` was HERE and was deleted on
+# 2026-08-14 with the Blade accessible frontend itself. It is called out rather
+# than silently dropped because leaving it behind broke this build outright:
+# COPY fails hard on a missing source path, so the production image could not be
+# built at all — the removal commit was unbuildable until this line went.
+#
+# `COPY views ./views` below is a DIFFERENT tree and must stay: it is the legacy
+# pre-Laravel PHP tree holding the three match-notification email templates and
+# the module-404 page, both still rendered. Do not conflate the two.
 COPY app ./app
 COPY assets ./assets
 COPY bootstrap ./bootstrap

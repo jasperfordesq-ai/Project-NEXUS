@@ -157,6 +157,36 @@ function extractWhereNumberParams(statement) {
     .map((match) => match[1]));
 }
 
+// 🔴 The Blade accessible frontend this compared against was DELETED on 2026-08-14.
+// Its final route inventory is frozen in blade-route-inventory.frozen.json and is
+// read below whenever the live route files are absent — which is now always.
+//
+// Read this before "simplifying" either loader away. Both were existsSync-guarded,
+// so with Blade gone they did not crash: they silently produced ZERO Laravel routes.
+// That is worse than a crash. Every one of web-uk's 723 routes became "extra-web-uk",
+// laravelRoutes/matchedRoutes dropped to 0, the committed artefact no longer matched
+// a regeneration (so `check-generated-artefacts-current.js` could never pass again),
+// and — the part that actually matters — a web-uk route that got DELETED would have
+// been reported as "no Laravel route to match" rather than as a regression.
+//
+// Against the frozen snapshot the comparison keeps its teeth in the only direction
+// that still exists: has web-uk stopped serving something the accessible frontend
+// served on the day Blade was retired?
+const FROZEN_BLADE_INVENTORY = path.join(__dirname, 'blade-route-inventory.frozen.json');
+
+function readFrozenBladeInventory() {
+  if (!fs.existsSync(FROZEN_BLADE_INVENTORY)) {
+    throw new Error(
+      `Frozen Blade route inventory missing: ${FROZEN_BLADE_INVENTORY}\n` +
+      'The Blade accessible frontend was deleted on 2026-08-14, so this snapshot is the\n' +
+      'only remaining Laravel side of the comparison. Restore it from git rather than\n' +
+      'letting the matrix regenerate with zero Laravel routes.'
+    );
+  }
+
+  return JSON.parse(fs.readFileSync(FROZEN_BLADE_INVENTORY, 'utf8'));
+}
+
 function parseLaravelRoutes(sourceRoot) {
   const routeRoot = path.join(sourceRoot, 'routes');
   const routeFiles = [];
@@ -168,6 +198,10 @@ function parseLaravelRoutes(sourceRoot) {
   }
 
   routeFiles.push(...listFiles(parityRoot, (filePath) => filePath.endsWith('.php')).sort());
+
+  if (routeFiles.length === 0) {
+    return readFrozenBladeInventory().routes;
+  }
 
   const routes = [];
 
@@ -241,6 +275,14 @@ function findMatchingBrace(text, openIndex) {
 function parseControllerMethods(sourceRoot) {
   const controllerRoot = path.join(sourceRoot, 'app', 'Http', 'Controllers', 'GovukAlpha');
   const files = listFiles(controllerRoot, (filePath) => filePath.endsWith('.php'));
+
+  // Same frozen fallback as parseLaravelRoutes(), same reason — see the note there.
+  // Without it every matrix row loses its view, auth, tenant-scoping and gate
+  // columns, which is most of what makes the artefact readable as evidence.
+  if (files.length === 0) {
+    return new Map(Object.entries(readFrozenBladeInventory().handlers));
+  }
+
   const methods = new Map();
 
   for (const filePath of files) {

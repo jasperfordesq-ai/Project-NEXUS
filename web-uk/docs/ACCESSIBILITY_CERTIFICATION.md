@@ -75,16 +75,18 @@ covered by the bounded fixture only. Use it for the required directed keyboard,
 focus, zoom/reflow, forced-colour, and screen-reader review; starting or writing
 to Laravel is neither required nor permitted.
 
-The historical paired live-Laravel capture command below is optional runtime
-tooling outside the active Web UK goal. Do not provision or start Laravel to run
-it. It may be used only in a separately authorized future runtime workstream:
+🔴 **The paired Laravel/Web UK capture command was REMOVED on 2026-08-14**, along
+with the Blade accessible frontend it captured the other half of. `npm run
+visual:screenshots` and `npm run visual:blade` no longer exist; both scripts
+required a `laravel-blade` surface to pair against every `web-uk` surface, so they
+could only fail.
 
-```powershell
-$env:LARAVEL_BLADE_BASE_URL = 'http://127.0.0.1:<laravel-port>'
-$env:WEB_UK_BASE_URL = 'http://127.0.0.1:<web-uk-port>'
-$env:VISUAL_SNAPSHOT_ID = '<laravel-sha>__<web-uk-sha>'
-$env:DISPOSABLE_LARAVEL_CONFIRMED = '1'
-npm run visual:screenshots
+Capture Web UK's own journey instead — this needs no Laravel accessible frontend
+and runs against the disposable environment:
+
+```bash
+bash scripts/webuk-e2e-env.sh up
+npm --prefix web-uk run visual:journey
 ```
 
 The command captures Home, sign-in, registration, Contact, Accessibility, and

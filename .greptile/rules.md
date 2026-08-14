@@ -27,7 +27,7 @@ Review for production-impacting issues first: tenant isolation, security, data i
 
 ## Accessible Frontend
 
-- The accessible frontend is isolated under `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`, `routes/govuk-alpha*.php`, and `lang/*/govuk_alpha*.php`.
+- The accessible frontend is `web-uk/` (Express + Nunjucks + `govuk-frontend`), plus the shared translations in `lang/*/govuk_alpha*.php`. The Laravel Blade implementation — `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`, `routes/govuk-alpha*.php` — was **deleted on 2026-08-14** and must not be reintroduced.
 - Keep it HTML-first and progressively enhanced. Do not introduce React/Vue/SPA routing there.
 - Use official `govuk-frontend` classes and approved Project NEXUS branding, not GOV.UK crown/logotype/identity wording.
 - Every user-facing string must use `govuk_alpha` translation keys and matching locale parity.

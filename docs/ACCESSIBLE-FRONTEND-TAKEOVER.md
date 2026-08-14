@@ -1,11 +1,60 @@
 # Accessible Frontend Takeover
 
-Last reviewed: 2026-08-13
+Last reviewed: 2026-08-14
 
-Project NEXUS has two accessible frontends. This page records the decision that
-one replaces the other, which phase that changeover is in, and which document
-answers which question. **It is stated once, here.** Every other document points
-at this page rather than repeating a status claim that can go stale.
+## 🔴 CURRENT STATUS, AND THE ONLY STATUS CLAIM THAT COUNTS
+
+**The takeover is COMPLETE. There is ONE accessible frontend: `web-uk`. The Laravel
+Blade accessible frontend was DELETED on 2026-08-14.**
+
+Measured on the live server that day, not inferred from any document:
+
+| Address | Serving | Community resolved from |
+|---|---|---|
+| `accessible.project-nexus.ie` | `web-uk` | URL slug — `/{tenantSlug}/accessible/...` |
+| `accessible-uk.timebank.global` | `web-uk` | hostname (slug-less) |
+| `accessible-minehead-and-coast.timebank.global` | `web-uk` | hostname (slug-less) |
+| all 11 communities via the platform host | `web-uk` | URL slug |
+
+`/version` is the discriminator: `web-uk` answers it with `"service":"nexus-webuk"`.
+Nothing else serves these addresses, so **a host that does not answer `/version` is
+broken, not "still on the old frontend"** — that inference was valid before
+2026-08-14 and is actively misleading now.
+
+**What was deleted:** `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`,
+`routes/govuk-alpha.php`, `routes/govuk-alpha-parity/`, the `AlphaSetLocale` and
+`StripTenantSlugOnAccessibleDomain` middleware, `App\Support\AccessibleErrorPage`,
+`App\Http\Middleware\EnsureAccessibleCustomDomain`, and the Blade half of the visual
+comparison tooling.
+
+**What deliberately survives, and must not be tidied away:**
+
+- `lang/*/govuk_alpha*.php` — the source `web-uk`'s eleven translation catalogues are
+  generated from, and read by `EventsController`, `MemberDataExportService` and
+  `StaticPublicPageContentService`. Deleting it strips the live site's translations.
+- `web-uk/scripts/blade-route-inventory.frozen.json` — the final Blade route
+  inventory (707 routes, 707 matched, 0 missing). `npm run route:matrix` compares
+  against this snapshot, so the check still catches a `web-uk` route regression even
+  though the codebase it originally compared against is gone.
+
+**Deploying:** `bash scripts/deploy.sh --with-webuk`. The flag is mandatory — see
+[DEPLOYMENT.md](DEPLOYMENT.md). A guard on the server refuses a deploy that would
+drop `web-uk`, because there is no working fallback any more.
+
+**What the cutover cost:** the fast rollback is gone. Until 2026-08-14, removing one
+`Define` line from the Apache routes file sent every accessible address back to a
+working Blade site in seconds. Blade is no longer in the release, so the only
+rollback is to revert the removal commit and deploy again — roughly 15–20 minutes.
+The owner accepted that trade explicitly.
+
+---
+
+## History of the decision
+
+Everything below is the record of how the takeover was decided and executed. It is
+kept for provenance. **Where it disagrees with the status block above, the status
+block above wins** — in particular, every statement below that Blade "is still
+deployed and still serving real members" was true when written and is now false.
 
 ## The decision
 

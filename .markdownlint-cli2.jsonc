@@ -28,8 +28,6 @@
     "*.md",
     "docs/**/*.md",
     "docs-public/**/*.md",
-    "accessible-frontend/README.md",
-    "accessible-frontend/**/*.md",
     "mobile/README.md",
     "mobile/.maestro/README.md",
     "mobile/**/*.md",
@@ -45,7 +43,6 @@
     ".local-docs-archive/**",
     ".heroui-docs/**",
     "react-frontend/**",
-    "accessible-frontend/CLAUDE.md",
     "CHANGELOG.md"
   ]
 }

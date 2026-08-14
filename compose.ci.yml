@@ -32,7 +32,11 @@ services:
       - ./views:/var/www/html/views:ro
       - ./config:/var/www/html/config:ro
       - ./resources:/var/www/html/resources:ro
-      - ./accessible-frontend:/var/www/html/accessible-frontend:ro
+      # 🔴 `./accessible-frontend` was mounted HERE and was removed on 2026-08-14 with
+      # the Blade accessible frontend. It did not fail loudly: Compose's default
+      # create_host_path recreates a missing bind source as an EMPTY DIRECTORY, so
+      # every CI run would have silently resurrected `accessible-frontend/` in the
+      # working tree — ready to be re-committed by accident.
       - ./vendor:/var/www/html/vendor:ro
       - ./artisan:/var/www/html/artisan:ro
       - ./bootstrap:/var/www/html/bootstrap:ro

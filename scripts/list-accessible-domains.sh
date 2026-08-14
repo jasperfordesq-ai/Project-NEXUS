@@ -7,10 +7,16 @@
 # list-accessible-domains — read-only inventory of the hostnames that serve the
 # accessible frontend, and which frontend each one is CURRENTLY serving.
 #
-# Why this exists: cutover happens one vhost at a time, and a vhost that was
-# missed keeps serving the Blade accessible frontend at HTTP 200 indefinitely.
-# Nothing else notices. This is the checklist, and with --check it is also the
+# Why this exists: cutover happened one vhost at a time, and a vhost that was
+# missed kept serving the Blade accessible frontend at HTTP 200 indefinitely.
+# Nothing else noticed. This is the checklist, and with --check it is also the
 # drift alarm.
+#
+# 🔴 THE MEANING OF A SILENT HOST CHANGED ON 2026-08-14. The Blade accessible
+# frontend was deleted, so a hostname that does not answer /version is no longer
+# "still on the old frontend, at HTTP 200" — it is BROKEN. This matters because
+# this script is what you reach for during an incident, and it used to label such
+# a host `blade`, which reads as fine-but-old. It now labels it `DOWN`.
 #
 # 🔴 STRICTLY READ-ONLY. It runs SELECTs and GETs. It never writes, restarts or
 # deploys anything.
@@ -189,7 +195,9 @@ fi
 
 echo
 echo "=== Which frontend is each hostname actually serving? ==="
-echo "(web-uk answers /version with \"service\":\"nexus-webuk\"; Blade does not answer it at all)"
+echo "(web-uk answers /version with \"service\":\"nexus-webuk\". Nothing else serves these"
+echo " hostnames any more — the Blade accessible frontend was deleted on 2026-08-14 — so"
+echo " a hostname that does not answer is DOWN, not 'still on the old frontend'.)"
 echo
 
 drift=0
@@ -205,10 +213,11 @@ probe () {
         release="$(echo "$body" | sed -n 's/.*"release":"\([^"]*\)".*/\1/p')"
         printf '  web-uk   %-40s release=%s\n' "$hostname" "${release:-unknown}"
     elif [ -z "$body" ]; then
-        # 🔴 Expected for every hostname until its vhost include is installed. It
-        # is only drift once that hostname is supposed to have been cut over,
-        # which is why this reports rather than fails.
-        printf '  blade    %-40s (no /version — still the Blade frontend, or unreachable)\n' "$hostname"
+        # 🔴 This arm printed `blade` until 2026-08-14, which was accurate then and is
+        # actively misleading now: with Blade deleted there is no working frontend
+        # behind a silent hostname. Reported rather than failed because this script is
+        # strictly read-only and is often run against a partially-configured host.
+        printf '  DOWN     %-40s no /version — nothing is serving this hostname\n' "$hostname"
         drift=$((drift + 1))
     else
         printf '  UNKNOWN  %-40s answered /version but did not identify as web-uk\n' "$hostname"
@@ -225,7 +234,9 @@ done <<< "$rows"
 probe "accessible.project-nexus.ie" "platform default"
 
 echo
-echo "$drift hostname(s) are not yet served by web-uk."
-echo "Before cutover that is the expected state. AFTER a hostname has been cut over,"
-echo "any entry above that is not 'web-uk' is real drift and must be fixed —"
-echo "a missed vhost serves the old frontend at HTTP 200 with nothing else noticing."
+echo "$drift hostname(s) are NOT served by web-uk."
+echo "🔴 Since 2026-08-14 every one of those is a hostname with NOTHING serving it."
+echo "The Blade accessible frontend that used to answer them at HTTP 200 has been"
+echo "deleted, so any entry above that is not 'web-uk' is a live fault, not a"
+echo "not-yet-migrated host. Fix it by deploying with --with-webuk and confirming"
+echo "Define NEXUS_WEBUK_PORT is present in the Apache routes file."

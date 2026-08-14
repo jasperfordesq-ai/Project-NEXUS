@@ -106,8 +106,7 @@ status, and the difference matters more than the technology list.
 |-------|-----------|-----------|
 | **Backend API** | Laravel 12 + PHP 8.2+ | `api.project-nexus.ie` |
 | **React web app** | React 19 + TypeScript 5.7 + HeroUI v3 + Tailwind CSS 4 + Vite 7 (`react-frontend/`) | `app.project-nexus.ie` |
-| **Accessible site** | Node 22 + Express 4 + Nunjucks 3.2 + GOV.UK Frontend 6.3, HTML-first, consuming the Laravel API (`web-uk/`) | `accessible.project-nexus.ie` |
-| **Accessible site (Blade)** | Laravel Blade + GOV.UK Frontend, rendered by the PHP application (`accessible-frontend/`) | community accessible domains and `/{tenantSlug}/accessible/...` |
+| **Accessible site** | Node 22 + Express 4 + Nunjucks 3.2 + GOV.UK Frontend 6.4, HTML-first, consuming the Laravel API (`web-uk/`) | `accessible.project-nexus.ie`, community accessible domains, and `/{tenantSlug}/accessible/...` |
 | **Mobile app** | Expo 54 + React Native 0.81 + React 19, a separate codebase on the same API (`mobile/`) | Android and iOS builds; neither store release is published yet |
 | **Sales site** | Static commercial site | `project-nexus.ie` |
 
@@ -214,7 +213,6 @@ flowchart TD
 
     U -->|app.project-nexus.ie| RC[React 19 web app<br/>react-frontend/]
     U -->|accessible.project-nexus.ie| WU[Accessible site<br/>Node 22 + Express + Nunjucks<br/>web-uk/]
-    U -->|community accessible domains<br/>and tenant slug paths| AC[Accessible site, Blade<br/>accessible-frontend/]
 
     RC -->|JSON / Bearer + CSRF| API[Laravel 12 API<br/>routes/api.php]
     M -->|JSON / Bearer| API
@@ -281,8 +279,7 @@ in **[docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md)**.
 |------|---------|
 | `app/`, `routes/`, `config/`, `bootstrap/` | **PRIMARY.** Laravel 12 application, API routing, middleware, providers, and runtime configuration. The contract source of truth for every client. |
 | `react-frontend/` | **PRIMARY.** React 19 + TypeScript UI for members and admin workflows. Backend-switchable by configuration; Laravel is the production default. |
-| `web-uk/` | **PRIMARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend 6.3 on Node 22, with its own server, sessions and 1,787 tests, consuming the Laravel API. **Serves `accessible.project-nexus.ie` since 2026-08-12.** Deployed from this repository; every deploy after the cutover must pass `--with-webuk`. |
-| `accessible-frontend/` | **PRIMARY, retiring.** The original accessibility-first frontend, rendered by Laravel Blade with `app/Http/Controllers/GovukAlpha/`. Still serves community accessible domains and `/{tenantSlug}/accessible/...`. Retires when the changeover to `web-uk/` completes. |
+| `web-uk/` | **PRIMARY.** A complete standalone accessible client — Express 4 + Nunjucks + GOV.UK Frontend 6.3 on Node 22, with its own server, sessions and 1,787 tests, consuming the Laravel API. **The sole accessible frontend** since the Laravel Blade one was deleted on 2026-08-14 — it serves `accessible.project-nexus.ie` (since 2026-08-12), both community accessible domains, and `/{tenantSlug}/accessible/...` for every community. Deployed from this repository; **every deploy must pass `--with-webuk`** or the accessible addresses go down. |
 | `mobile/` | **PRIMARY.** The native mobile app — Expo 54 + React Native 0.81 + React 19, its own codebase (v1.2.0, 257 screens, 217 test files) on the same Laravel API, with its own translation tree covering 7 locales. Android release path complete; iOS configured but not published. |
 | `aspnet-backend/` | **SECOND BACKEND.** A substantially complete alternative backend — ASP.NET Core 10, EF Core, its own PostgreSQL 16 database and RabbitMQ, 254 controllers, 165 migrations, 3,386 tests — which the clients can be switched to by configuration once it is certified contract-identical to Laravel. **712/1000** on the `ASPNET-CONTRACT-R1` rubric as at the **2026-07-15** pause. Service stopped 2026-08-10, domain retained, code alive and maintained here. Not deployable from this repository. |
 | `contracts/events/v2/` | JSON Schema event contracts that both backends must satisfy — the machine-readable half of the contract-comparison work. |
@@ -368,7 +365,7 @@ The full current schema dump is committed at [database/schema/mysql-schema.sql](
 This is **version 1.6.0 — generally available**, in active production use. Per-module maturity (GA / Beta / Preview) is published on the in-app `/features` page and the public Changelog:
 
 - The **React frontend** (`react-frontend/`) is the primary UI for user-facing pages and current admin workflows
-- The **accessible site** is an approved HTML-first UI track, mid-changeover between two implementations: `web-uk/` (Node 22 + Express + Nunjucks) serves `accessible.project-nexus.ie` since 2026-08-12, and `accessible-frontend/` (Laravel Blade) still serves community accessible domains and `/{tenantSlug}/accessible/...` until it retires
+- The **accessible site** (`web-uk/`, Node 22 + Express + Nunjucks + GOV.UK Frontend) is an approved HTML-first UI track and is the sole accessible frontend. It serves `accessible.project-nexus.ie`, both community accessible domains, and `/{tenantSlug}/accessible/...` for every community. The Laravel Blade implementation it replaced was deleted on 2026-08-14.
 - The **mobile app** (`mobile/`) is a separate Expo / React Native client on the same API — Android release path complete, iOS configured but not yet published to either store
 - The **Laravel 12 backend** provides the API — all services are native Laravel implementations (zero stubs)
 - The **second backend** (`aspnet-backend/`, ASP.NET Core 10 on PostgreSQL 16 and RabbitMQ) is substantially built and maintained here — 712/1000 against the contract-identity rubric at the 2026-07-15 pause, intended as a configuration-switchable alternative to Laravel; its service is stopped, so it is not certified and not the production default

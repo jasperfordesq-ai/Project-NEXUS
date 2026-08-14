@@ -39,7 +39,6 @@ composer.phar
 
 # ─── AI Assistant Config (contains sensitive project context) ─────────────────
 CLAUDE.md
-!accessible-frontend/CLAUDE.md
 # Per-track agent guides. These are the working instructions for the two
 # imported tracks, not machine-local notes, and the blanket rule above was
 # quietly excluding them: web-uk/CLAUDE.md (32 KB, the largest single piece of
@@ -387,3 +386,22 @@ DPO_Confidentiality_Agreement_*.docx
 
 # Temp audit working files (dev machine only)
 .audit-groups/
+
+# ─── Third-party agent skills — machine-local, NOT committed ─────────────────
+# `npx skills add <repo>` installs into .agents/skills/ inside the working tree,
+# which would otherwise put megabytes of someone else's tooling into this PUBLIC
+# repo and into every contributor's clone. skills-lock.json IS committed — it
+# records the source repo and content hash of each installed skill, so an
+# install is reproducible from the lock file without vendoring the payload.
+#
+# Ignoring is per-entry (`/*`, not `/`) so the HeroUI skills below can be
+# re-included: git does not descend into a wholly-excluded directory, and a
+# `!` negation inside one has no effect.
+#
+# The three HeroUI skills predate this rule, are first-party to our own UI
+# stack, and are referenced by AGENTS.md / CLAUDE.md — they stay tracked.
+# A genuinely project-owned skill added later needs its own `!` line here.
+.agents/skills/*
+!.agents/skills/heroui-migration/
+!.agents/skills/heroui-native/
+!.agents/skills/heroui-react/

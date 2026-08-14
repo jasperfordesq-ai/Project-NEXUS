@@ -24,7 +24,7 @@
     {
       "path": "docs/govuk-alpha/RESEARCH.md",
       "description": "Accessible frontend architecture decision, approved GOV.UK Frontend usage, licensing, and branding limits.",
-      "scope": ["accessible-frontend/**", "app/Http/Controllers/GovukAlpha/**", "routes/govuk-alpha*.php", "routes/govuk-alpha-parity/**", "lang/**/govuk_alpha*.php"]
+      "scope": ["lang/**/govuk_alpha*.php"]
     },
     {
       "path": "react-frontend/CLAUDE.md",
@@ -32,9 +32,9 @@
       "scope": ["react-frontend/**"]
     },
     {
-      "path": "accessible-frontend/CLAUDE.md",
-      "description": "Tracked accessible frontend conventions for Laravel Blade, govuk-frontend, translations, tenant assertions, and progressive enhancement.",
-      "scope": ["accessible-frontend/**", "app/Http/Controllers/GovukAlpha/**", "routes/govuk-alpha*.php", "routes/govuk-alpha-parity/**", "lang/**/govuk_alpha*.php"]
+      "path": "web-uk/CLAUDE.md",
+      "description": "Tracked accessible frontend conventions for web-uk (Express + Nunjucks), govuk-frontend, translations, tenant assertions, and progressive enhancement.",
+      "scope": ["web-uk/**", "lang/**/govuk_alpha*.php"]
     },
     {
       "path": "openapi.json",

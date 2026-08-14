@@ -287,10 +287,38 @@ class ContactPolicyBypassEnforcementTest extends TestCase
         ]);
     }
 
-    public function test_accessible_attachment_attempt_is_denied_before_any_file_is_stored(): void
+    /**
+     * A blocked sender's file must not be left behind in the tenant's uploads
+     * directory.
+     *
+     * 🔴 This replaces `test_accessible_attachment_attempt_is_denied_before_any_file_is_stored`,
+     * which asserted the same property through the Blade accessible frontend's
+     * `POST /{tenantSlug}/accessible/messages/{id}` route. That route was removed
+     * with Blade on 2026-08-14, so the test could only fail — but the property it
+     * guarded is real and now belongs on the API, which is the single path all
+     * three frontends (web-uk, React, mobile) send through.
+     *
+     * The ordering it protects is real. `MessagesController::send()` calls
+     * `preflightWrite()` — which evaluates the safeguarding policy — at line ~139,
+     * BEFORE it touches `request()->file('attachments')` at line ~151. So a denied
+     * sender's file is never written at all, rather than being written and then
+     * cleaned up. Move the preflight below the upload block and this test fails.
+     *
+     * 🔴 THREE traps this test was written wrong for first, all of which still
+     * produce a 4xx and so all of which a loose `assertGreaterThanOrEqual(400)`
+     * waves through while proving nothing:
+     *   1. the field is `recipient_id`, NOT `receiver_id` (wrong name ⇒ 422 before
+     *      the policy is consulted);
+     *   2. a file cannot travel over `postJson()` — it must be a multipart `post()`;
+     *   3. an HTTP request resolves its tenant from HEADERS, so
+     *      `$this->app->instance('tenant.id', …)` is not enough — without
+     *      `withTenantHeader()` the request 403s with `tenant_mismatch`, which looks
+     *      exactly like a safeguarding denial.
+     * Trap 3 is the nasty one: it returns the SAME 403 the denial does. The mock's
+     * `->once()` count is what actually proves the policy ran.
+     */
+    public function test_api_attachment_is_never_stored_when_safeguarding_denies_the_message(): void
     {
-        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
-
         $sender = $this->member();
         $recipient = $this->member();
         Sanctum::actingAs($sender, ['*']);
@@ -306,17 +334,24 @@ class ContactPolicyBypassEnforcementTest extends TestCase
         $before = $this->filesIn($attachmentDirectory);
 
         $response = $this->post(
-            "/{$this->testTenantSlug}/accessible/messages/{$recipient->id}",
+            '/api/v2/messages',
             [
-                '_token' => csrf_token(),
+                'recipient_id' => $recipient->id,
                 'body' => 'Blocked with attachment',
                 'attachments' => [UploadedFile::fake()->create('private.pdf', 8, 'application/pdf')],
             ],
+            $this->withTenantHeader(),
         );
 
-        $response->assertRedirect();
-        $this->assertStringContainsString('status=message-vetting-required', $response->headers->get('Location') ?? '');
-        $this->assertSame($before, $this->filesIn($attachmentDirectory));
+        // 403 is what preflightErrorStatus() maps VETTING_REQUIRED to. Asserting the
+        // exact status is what distinguishes "the policy denied it" from "the request
+        // was malformed and never reached the policy".
+        $response->assertStatus(403);
+        $this->assertSame(
+            $before,
+            $this->filesIn($attachmentDirectory),
+            'A safeguarding-denied message left its attachment on disk.'
+        );
         $this->assertDatabaseMissing('messages', [
             'tenant_id' => $this->testTenantId,
             'sender_id' => $sender->id,
@@ -325,27 +360,17 @@ class ContactPolicyBypassEnforcementTest extends TestCase
         ]);
     }
 
-    public function test_accessible_conversation_hides_composer_when_contact_is_restricted(): void
-    {
-        $sender = $this->member();
-        $recipient = $this->member();
-        Sanctum::actingAs($sender, ['*']);
-
-        $policy = Mockery::mock(SafeguardingInteractionPolicy::class);
-        $policy->shouldReceive('evaluateLocalContact')
-            ->once()
-            ->with($sender->id, $recipient->id, $this->testTenantId, 'direct_message')
-            ->andReturn($this->denied());
-        $this->app->instance(SafeguardingInteractionPolicy::class, $policy);
-
-        $response = $this->get("/{$this->testTenantSlug}/accessible/messages/{$recipient->id}");
-
-        $response->assertOk();
-        $response->assertSee(__('safeguarding.errors.vetting_required_title'));
-        $response->assertDontSee('name="attachments[]"', false);
-        $response->assertDontSee('name="voice"', false);
-        Event::assertNotDispatched(SafeguardingContactAttemptBlocked::class);
-    }
+    // 🔴 `test_accessible_conversation_hides_composer_when_contact_is_restricted`
+    // was removed on 2026-08-14 with the Blade accessible frontend. It asserted
+    // that a Blade view hid the attachment and voice inputs when contact was
+    // restricted — a template assertion with no API equivalent, because the API
+    // returns the restriction state and the frontend decides what to render.
+    //
+    // The property is NOT lost: web-uk gates the composer on both `restricted`
+    // and `safeguarding.restricted` in `web-uk/src/views/messages/direct-conversation.njk`
+    // and `group-conversation.njk`, and its own suite exercises those states.
+    // Do not re-add a Laravel-side version — there is no Laravel-rendered
+    // conversation page any more.
 
     private function member(array $overrides = []): User
     {

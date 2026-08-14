@@ -176,37 +176,17 @@ class SafeguardingPresetLocalizationTest extends TestCase
             );
     }
 
-    public function test_accessible_settings_returns_preset_copy_in_request_locale(): void
-    {
-        $member = User::factory()->forTenant($this->testTenantId)->create([
-            'status' => 'active',
-            'is_approved' => true,
-        ]);
-        Sanctum::actingAs($member);
-        $option = $this->createPresetOption();
-        $this->createPreference((int) $member->id, (int) $option->id);
-        $irish = Lang::get(
-            'safeguarding.presets.common.options.requires_vetted_partners.label',
-            [],
-            'ga',
-            false,
-        );
-        $english = Lang::get(
-            'safeguarding.presets.common.options.requires_vetted_partners.label',
-            [],
-            'en',
-            false,
-        );
-
-        $response = $this->get(
-            "/{$this->testTenantSlug}/accessible/profile/settings?locale=ga",
-        );
-
-        $response->assertOk()
-            ->assertHeader('Content-Language', 'ga')
-            ->assertSee($irish)
-            ->assertDontSee($english);
-    }
+    // 🔴 `test_accessible_settings_returns_preset_copy_in_request_locale` was
+    // removed on 2026-08-14 with the Blade accessible frontend. It fetched
+    // `/{tenantSlug}/accessible/profile/settings?locale=ga` and asserted the
+    // rendered page carried Irish preset labels and a `Content-Language: ga`
+    // header. That route no longer exists, so the test could only fail.
+    //
+    // No coverage was lost. The property — safeguarding preset copy resolves in
+    // the REQUEST's locale, not the server default — is already asserted one
+    // method above in `test_member_api_returns_preset_copy_in_request_locale()`,
+    // against `/api/v2/...`, which is the path web-uk actually reads. The Blade
+    // test only added "and a Blade template printed it".
 
     private function createPresetOption(): TenantSafeguardingOption
     {

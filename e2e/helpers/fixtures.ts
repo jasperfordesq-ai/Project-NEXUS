@@ -9,11 +9,26 @@ import { expect } from '@playwright/test';
  * Test user credentials and data
  */
 /**
+ * 🔴 A LESSON INHERITED FROM `e2e/helpers/accessible-auth.ts`, which was deleted on
+ * 2026-08-14 with the Blade accessible frontend it logged into. Kept here because
+ * it applies to ANY accessibility or structural spec, including web-uk's.
+ *
+ * That spec never authenticated. Six of its twenty-three paths sat behind auth and
+ * answered 302 to the login page — and `page.goto()` follows redirects silently.
+ * Every structural assertion it made (`main#main-content`, an `h1`, the skip link)
+ * is ALSO true of the login page, so the suite passed while axe scanned `/login`
+ * six times over and the member pages had no screen-reader coverage at all.
+ *
+ * The rule: a structural or axe assertion is only evidence if the spec has proved
+ * WHICH page it landed on. Assert the final URL, or something unique to the page
+ * under test — never just "it has a heading".
+ */
+/**
  * 🔴 `E2E_USER_EMAIL` is the fallback for a reason — read this before changing it.
  *
  * `primary` read ONLY `E2E_TEST_USER_EMAIL` / `E2E_TEST_USER_PASSWORD` until
  * 2026-08-12. Nothing sets those names: not `e2e/global.setup.ts`, not
- * `e2e/helpers/accessible-auth.ts`, not `admin/groups-admin.spec.ts`, and not any
+ * `admin/groups-admin.spec.ts`, and not any
  * of the six places CI supplies credentials (`.github/workflows/ci.yml`,
  * `e2e-tests.yml`) — every one of them uses `E2E_USER_EMAIL`. So `primary`
  * always fell through to the hardcoded `e2e-test@example.com`, which is not a

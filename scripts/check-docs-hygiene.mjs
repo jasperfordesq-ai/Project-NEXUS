@@ -73,8 +73,10 @@ const publicMarkdownFiles = [
   'SECURITY.md',
   'AGENTS.md',
   'LARAVEL_MIGRATION_PLAN.md',
-  'accessible-frontend/README.md',
-  'accessible-frontend/COMPONENTS.md',
+  // `accessible-frontend/README.md` and `COMPONENTS.md` were listed here and were
+  // removed on 2026-08-14 with the Blade accessible frontend. Harmless in this
+  // list (it is existsSync-filtered), but see scopedDocumentationIndexes below —
+  // the same directory in THAT list was not optional and failed the check.
   'mobile/README.md',
   'mobile/.maestro/README.md',
   'mobile/docs/ALERT_MIGRATION_PLAYBOOK.md',
@@ -90,11 +92,12 @@ const publicMarkdownFiles = [
 ];
 
 const scopedDocumentationIndexes = [
-  {
-    index: 'accessible-frontend/README.md',
-    prefix: 'accessible-frontend/',
-    excluded: ['accessible-frontend/CLAUDE.md'],
-  },
+  // 🔴 An `accessible-frontend/` entry was HERE and was removed on 2026-08-14 with
+  // the Blade accessible frontend. Unlike publicMarkdownPaths above, this list is
+  // NOT existsSync-filtered — checkScopedDocumentationIndexes() reports
+  // "scoped documentation index is missing" for an absent index and the script
+  // then exits 1. So leaving it behind made `npm run check:docs` (and the
+  // docs-lint workflow) impossible to pass.
   {
     index: 'mobile/README.md',
     prefix: 'mobile/',

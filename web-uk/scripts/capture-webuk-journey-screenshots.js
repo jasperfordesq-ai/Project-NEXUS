@@ -70,14 +70,21 @@ const VIEWPORTS = Object.freeze([
 // ---------------------------------------------------------------------------
 // Guards
 // ---------------------------------------------------------------------------
-function assertDisposableDatabase() {
+function defaultDatabaseQuery(sql) {
+  return execFileSync('docker', [
+    'exec', DB_CONTAINER, 'mysql', '--skip-ssl', '-h', '127.0.0.1',
+    '-unexus', '-pnexus_secret', DB_NAME, '-N', '-e', sql,
+  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+}
+
+// `query` is injectable ONLY so the three refusal paths can be tested deterministically.
+// Without it a test's outcome depends on whether the disposable environment happens to be
+// running, which means the same assertion can pass for two different reasons — and a guard
+// that protects a public repository from real member data deserves better than that.
+function assertDisposableDatabase(query = defaultDatabaseQuery) {
   let total;
   let real;
   try {
-    const query = (sql) => execFileSync('docker', [
-      'exec', DB_CONTAINER, 'mysql', '--skip-ssl', '-h', '127.0.0.1',
-      '-unexus', '-pnexus_secret', DB_NAME, '-N', '-e', sql,
-    ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     total = Number(query('SELECT COUNT(*) FROM users;'));
     real = Number(query(
       "SELECT COUNT(*) FROM users WHERE email NOT LIKE '%@project-nexus.local' AND email NOT LIKE '%@example.%';"
@@ -225,7 +232,27 @@ async function main() {
   if (bad.length || overflowing.length) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(`\n${error.message}`);
-  process.exitCode = 2;
-});
+// 🔴 Only run as a CLI. The guards below are exported so they can be tested, and an
+// unconditional main() would launch a browser and hit the database the moment a test
+// file required this module.
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(`\n${error.message}`);
+    process.exitCode = 2;
+  });
+}
+
+// Exported for tests. These two guards are the only thing standing between this
+// script and real member data being committed to a PUBLIC repository, so they are
+// covered rather than trusted. `tests/webuk-journey-capture.test.js` asserts both
+// refusal paths; the coverage replaces what the two deleted Blade-pairing capture
+// suites used to provide for the old paired script.
+module.exports = {
+  assertDisposableDatabase,
+  assertSyntheticMemberVisible,
+  urlFor,
+  PAGES,
+  VIEWPORTS,
+  ACCOUNT,
+  DB_NAME,
+};

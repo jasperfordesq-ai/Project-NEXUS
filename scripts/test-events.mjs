@@ -204,19 +204,15 @@ if (shouldRun('php')) {
   const explicitPhpTests = [
     'tests/Laravel/Feature/Controllers/EventsControllerTest.php',
     'tests/Laravel/Feature/Controllers/AdminEventsControllerTest.php',
-    'tests/Laravel/Feature/GovukAlpha/EventsParityTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventCanonicalMutationTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventOperationsTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventModerationTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventRegistrationProductTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventAgendaTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventAnalyticsTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventLifecycleHistoryTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventSafetyTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventTemplatesTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventTicketsTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventTimeIdentityTest.php',
-    'tests/Laravel/Feature/GovukAlpha/AccessibleEventVenueAccessibilityTest.php',
+    // 🔴 Thirteen `tests/Laravel/Feature/GovukAlpha/Accessible*Test.php` entries plus
+    // EventsParityTest were HERE and were removed on 2026-08-14 with the Blade
+    // accessible frontend they tested.
+    //
+    // Leaving them cost more than a stale name: assertPathsExist() below THROWS on a
+    // missing path rather than skipping it, so `npm run test:events` and
+    // `test:events:php` died immediately with 15 missing files — no event tests ran
+    // at all. The accessible frontend's own event coverage now lives in web-uk's Jest
+    // suite; the Laravel side of events is covered by the API tests above.
     'tests/Laravel/Integration/EventNotificationStateTest.php',
     'tests/Laravel/Integration/EventEmailReliabilityTest.php',
     'tests/Laravel/Integration/EventNotificationProducerLocaleTest.php',
@@ -232,15 +228,20 @@ if (shouldRun('php')) {
     'tests/Laravel/Unit/Enums/EventBroadcastEnumsTest.php',
     'tests/Laravel/Unit/Http/Resources/EventBroadcastResourceTest.php',
     'tests/Laravel/Unit/Http/Resources/EventAnalyticsResourceTest.php',
-    'tests/Laravel/Unit/Services/AccessibleEventCommunicationsStaticTest.php',
-    'tests/Laravel/Unit/Services/EventAgendaEnterpriseStaticTest.php',
+    // 🔴 Four more entries were HERE — AccessibleEventCommunicationsStaticTest,
+    // EventAgendaEnterpriseStaticTest, EventAccessibilityDiscoveryStaticTest and
+    // EventOfflineCheckinAccessibleStaticTest. All four asserted things about
+    // Blade template source and were deleted with it on 2026-08-14.
+    //
+    // They are called out separately because their names do NOT contain
+    // "GovukAlpha": a sweep that searched for that string found 15 dead paths and
+    // missed these, which would have left this harness still throwing. Grep for
+    // the paths that no longer exist, not for a naming convention.
     'tests/Laravel/Unit/Services/EventMigrationChainSafetyStaticTest.php',
-    'tests/Laravel/Unit/Services/EventAccessibilityDiscoveryStaticTest.php',
     'tests/Laravel/Unit/Services/EventBroadcastPhaseBStaticTest.php',
     'tests/Laravel/Unit/Services/EventGuardianConsentStatusNotificationStaticTest.php',
     'tests/Laravel/Unit/Services/EventFederationPhaseBStaticTest.php',
     'tests/Laravel/Unit/Services/EventNotificationEnterpriseStaticTest.php',
-    'tests/Laravel/Unit/Services/EventOfflineCheckinAccessibleStaticTest.php',
     'tests/Laravel/Unit/Services/EventRegistrationSettingsOutboxContractTest.php',
     'tests/Laravel/Unit/Services/EventNotificationServiceTest.php',
     'tests/Laravel/Unit/Services/EventReminderServiceTest.php',
@@ -304,8 +305,6 @@ if (shouldRun('php')) {
       'tests/Laravel/Feature/Events/EventRecurrenceMaterializationTest.php',
       'tests/Laravel/Feature/Events/EventRecurrenceV2IntegrationTest.php',
       'tests/Laravel/Feature/Events/EventRecurrenceRevisionIntegrationTest.php',
-      'tests/Laravel/Feature/GovukAlpha/EventsParityTest.php',
-      'tests/Laravel/Feature/GovukAlpha/GovukAlphaCsrfMiddlewareTest.php',
       'tests/Laravel/Unit/Helpers/IcsHelperTest.php',
       'tests/Laravel/Unit/Helpers/IcsEnterpriseContractTest.php',
       'tests/Laravel/Unit/Middleware/RedactEventCalendarFeedSecretTest.php',
@@ -374,8 +373,6 @@ if (shouldRun('php')) {
       'tests/Laravel/Feature/Events/EventTimeIdentityIntegrityTest.php',
       'tests/Laravel/Feature/Events/EventVenueAccessibilityMigrationTest.php',
       'tests/Laravel/Feature/Events/EventWriterContractTest.php',
-      'tests/Laravel/Feature/GovukAlpha/AccessibleEventTimeIdentityTest.php',
-      'tests/Laravel/Feature/GovukAlpha/AccessibleEventVenueAccessibilityTest.php',
       'tests/Laravel/Unit/Services/EventMigrationChainSafetyStaticTest.php',
       'tests/Laravel/Unit/Services/EventRecurrenceCapabilityServiceTest.php',
       'tests/Laravel/Unit/Support/EventContractMapperPermissionsTest.php',
@@ -385,7 +382,6 @@ if (shouldRun('php')) {
     const lifecycleTests = new Set([
       'tests/Laravel/Feature/Controllers/AdminEventsControllerTest.php',
       'tests/Laravel/Feature/Events/EventLifecycleCompatibilityIntegrationTest.php',
-      'tests/Laravel/Feature/GovukAlpha/EventsParityTest.php',
     ]);
     candidates = candidates.filter((path) => lifecycleTests.has(path));
   } else if (phpBatch === 'outbox') {
@@ -435,7 +431,6 @@ if (shouldRun('php')) {
       'tests/Laravel/Feature/Events/EventWaitlistOfferEnvelopeServiceTest.php',
       'tests/Laravel/Feature/Events/EventWaitlistServiceTest.php',
       'tests/Laravel/Feature/Events/ExpireEventWaitlistOffersCommandTest.php',
-      'tests/Laravel/Feature/GovukAlpha/AccessibleEventCanonicalMutationTest.php',
     ]);
     candidates = candidates.filter((path) => registrationTests.has(path));
   } else if (phpBatch === 'people') {
@@ -447,7 +442,6 @@ if (shouldRun('php')) {
       'tests/Laravel/Feature/Events/EventPeopleOperationsServiceTest.php',
       'tests/Laravel/Feature/Events/EventPeopleOperationsApiTest.php',
       'tests/Laravel/Feature/Events/EventPeoplePaginationTest.php',
-      'tests/Laravel/Feature/GovukAlpha/AccessibleEventOperationsTest.php',
       'tests/Laravel/Feature/Events/EventRegistrationConcurrencyTest.php',
       'tests/Laravel/Feature/Events/EventRegistrationControllerTest.php',
       'tests/Laravel/Feature/Events/EventRegistrationServiceTest.php',

@@ -49,7 +49,7 @@
     {
       "id": "no-hardcoded-end-user-strings",
       "rule": "End-user React, Blade, PHP email, and notification output must not add hardcoded English strings. Use t(...) in React and __(...) with the appropriate lang files in PHP/Blade.",
-      "scope": ["react-frontend/src/**/*.ts", "react-frontend/src/**/*.tsx", "accessible-frontend/views/**/*.blade.php", "app/**/*.php", "lang/**/*.php", "lang/**/*.json", "views/emails/*.php"],
+      "scope": ["react-frontend/src/**/*.ts", "react-frontend/src/**/*.tsx", "app/**/*.php", "lang/**/*.php", "lang/**/*.json", "views/emails/*.php"],
       "severity": "high"
     },
     {
@@ -59,9 +59,10 @@
       "severity": "medium"
     },
     {
-      "id": "accessible-frontend-boundaries",
-      "rule": "Accessible frontend changes must stay HTML-first with Laravel Blade and official govuk-frontend classes, preserve tenant assertions and feature gates, use lang/en/govuk_alpha*.php translation keys, and avoid GOV.UK crown/logotype/identity wording.",
-      "scope": ["accessible-frontend/**", "app/Http/Controllers/GovukAlpha/**/*.php", "routes/govuk-alpha*.php", "routes/govuk-alpha-parity/**/*.php", "lang/**/govuk_alpha*.php"],
+      "id": "web-uk-accessible-frontend-boundaries",
+      "_note": "Renamed from accessible-frontend-boundaries and rescoped on 2026-08-14: the Blade paths this watched (accessible-frontend/**, app/Http/Controllers/GovukAlpha/**, routes/govuk-alpha*.php) were deleted with the Blade accessible frontend.",
+      "rule": "Accessible frontend changes live in web-uk/ (Express + Nunjucks; the Laravel Blade implementation was deleted 2026-08-14). They must stay HTML-first with official govuk-frontend classes, preserve tenant assertions and feature gates, use govuk_alpha translation keys, and avoid GOV.UK crown/logotype/identity wording.",
+      "scope": ["web-uk/**", "lang/**/govuk_alpha*.php"],
       "severity": "high"
     },
     {
@@ -79,7 +80,7 @@
     {
       "id": "global-platform-no-irish-only-validation",
       "rule": "Do not add Irish-only phone, address, map, or location validation. Use international formats and neutral global defaults unless a tenant-specific feature explicitly requires narrower behavior.",
-      "scope": ["app/**/*.php", "react-frontend/src/**/*.ts", "react-frontend/src/**/*.tsx", "accessible-frontend/**", "lang/**/*.php", "lang/**/*.json"],
+      "scope": ["app/**/*.php", "react-frontend/src/**/*.ts", "react-frontend/src/**/*.tsx", "lang/**/*.php", "lang/**/*.json"],
       "severity": "high"
     },
     {

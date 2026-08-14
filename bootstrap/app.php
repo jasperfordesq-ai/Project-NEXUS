@@ -626,19 +626,23 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Accessible (GOV.UK) frontend: HTML error pages with layout + AGPL
-        // attribution instead of the bare Laravel defaults. Registered FIRST so
-        // accessible requests are skinned before the API JSON renderables below
-        // (TooManyRequests/ModelNotFound would otherwise answer them with JSON).
-        // Returns null for non-accessible requests, falling through unchanged.
-        $exceptions->renderable(function (\Throwable $e, \Illuminate\Http\Request $request) {
-            if (!\App\Support\AccessibleErrorPage::handles($request)) {
-                return null;
-            }
-            $status = \App\Support\AccessibleErrorPage::statusFor($e);
-
-            return $status === null ? null : \App\Support\AccessibleErrorPage::render($request, $status);
-        });
+        // 🔴 REMOVED 2026-08-14 with the Blade accessible frontend: an
+        // `App\Support\AccessibleErrorPage` renderable was registered HERE, FIRST,
+        // to skin errors on `/{tenantSlug}/accessible/...` and on community
+        // accessible domains with the GOV.UK layout.
+        //
+        // It is recorded rather than quietly dropped because leaving it in place
+        // was actively harmful, not merely dead. Its `handles()` still matched any
+        // path shaped `{slug}/accessible/...` and any host listed in
+        // `tenants.accessible_domain`, then rendered `accessible-frontend::error`
+        // — a view namespace that no longer resolves. So a clean 404 from a stale
+        // bookmark became `InvalidArgumentException: View [error] not found`
+        // thrown from INSIDE the exception handler, i.e. a hard 500.
+        //
+        // Error pages for the accessible frontend are web-uk's own concern now;
+        // Laravel serves the API and should answer these with its normal
+        // response. Do not reintroduce a Laravel-side accessible error skin
+        // without a view that actually exists.
 
         // JSON error responses for API — see App\Exceptions\Handler
         $exceptions->renderable(function (\Illuminate\Validation\ValidationException $e) {

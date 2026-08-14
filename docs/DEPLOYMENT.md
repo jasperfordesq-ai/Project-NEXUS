@@ -49,10 +49,28 @@ The accessible frontend is not a separate SPA container. It is rendered by Larav
 Before deploying accessible frontend changes, run:
 
 ```bash
-npm run build:accessible-frontend
-npm run test:accessible-frontend:php
-npm run test:accessible-frontend:a11y
+npm --prefix web-uk run brand:check
+npm --prefix web-uk run lint
+npm --prefix web-uk test
+npm --prefix web-uk run build:css
 ```
+
+🔴 **Two corrections, both dated 2026-08-14.**
+
+1. The three `*:accessible-frontend*` commands previously listed here **no longer
+   exist**. They built and tested the Laravel Blade accessible frontend, which was
+   deleted. Following the old text failed at the first line.
+2. **The accessible frontend deploy flag is mandatory:**
+
+   ```bash
+   bash scripts/deploy.sh --with-webuk
+   ```
+
+   Without `--with-webuk` the Apache routes file is written without
+   `Define NEXUS_WEBUK_PORT`, and since Blade was deleted there is nothing behind the
+   fallback arm — every accessible address goes down. A server-side guard
+   (`/opt/nexus-php/.webuk-live`) refuses such a deploy, so this fails loudly rather
+   than silently. Do not remove that guard.
 
 ## Gated Deploy From The Dev Machine
 

@@ -45,6 +45,19 @@ STATUS_FILE="${NEXUS_BLUEGREEN_STATUS_FILE:-$DEPLOY_DIR/.bluegreen-status}"
 #
 # Once this marker exists: an absent `/version` is a hard failure, and a deploy
 # that would drop web-uk must say `--without-webuk` out loud.
+#
+# 🔴 UPDATED 2026-08-14, AND THE STAKES CHANGED. The Blade accessible frontend was
+# DELETED from the codebase. The failure this marker guards against therefore no
+# longer degrades to an old-but-working site — it is now a straightforward OUTAGE.
+# The `<IfDefine !NEXUS_WEBUK_PORT>` arm still proxies the accessible hostnames to
+# NEXUS_API_PORT, but Laravel has no accessible routes any more, so members get
+# errors rather than the previous frontend.
+#
+# Everything below that says "falls back to Blade" or "served by Blade" is
+# describing behaviour that no longer exists. Read those as "the accessible
+# hostnames break". The guard itself is unchanged and is now MORE important, not
+# less: it is the only thing standing between a routine flagless deploy and every
+# accessible address going down.
 WEBUK_LIVE_MARKER="${NEXUS_WEBUK_LIVE_MARKER:-$DEPLOY_DIR/.webuk-live}"
 LATEST_LOG_FILE="${NEXUS_BLUEGREEN_LATEST_LOG_FILE:-$DEPLOY_DIR/.bluegreen-latest-log}"
 RELEASES_DIR="${NEXUS_RELEASES_DIR:-$(dirname "$DEPLOY_DIR")/nexus-releases}"
@@ -117,7 +130,7 @@ confirm-webuk-live:
   It probes the public hostname and records web-uk as live only if web-uk
   actually answers. That recording is what makes a later deploy REFUSE to
   drop web-uk without being told to. Until it exists, an ordinary deploy
-  would put the hostname back to the Blade frontend with nothing failing.
+  would silently stop serving the hostname with nothing failing.
   Defaults to accessible.project-nexus.ie.
 
 Apache route switch file:
@@ -174,13 +187,25 @@ parse_flags() {
 #
 # Two ways past it, both deliberate and both visible in the log:
 #   --with-webuk     carry on with web-uk, the normal case after cutover
-#   --without-webuk  yes, really remove it (a deliberate retreat to Blade)
+#   --without-webuk  yes, really drop it
+#
+# 🔴 `--without-webuk` IS NO LONGER A RETREAT TO A WORKING SITE. Until 2026-08-14 it
+# meant "go back to the Blade accessible frontend", which was a real, serving
+# application. Blade has been deleted, so it now means "take every accessible
+# hostname offline". Kept as an escape hatch for a genuine emergency, but it is a
+# breakage, not a rollback. The way back to a working accessible site is a deploy
+# that INCLUDES web-uk.
 enforce_webuk_live_marker() {
     [ -f "$WEBUK_LIVE_MARKER" ] || return 0
     [ "$DEPLOY_WEBUK" = "1" ] && return 0
     [ "$WEBUK_EXPLICITLY_DISABLED" = "1" ] && {
-        log_warn "web-uk is LIVE but --without-webuk was given: the accessible hostnames will fall back to the Blade frontend."
-        log_warn "Marker kept at $WEBUK_LIVE_MARKER. Remove it by hand once Blade is intended to be permanent again."
+        log_warn "web-uk is LIVE but --without-webuk was given."
+        log_warn "🔴 THIS WILL TAKE THE ACCESSIBLE HOSTNAMES OFFLINE. The Blade accessible frontend"
+        log_warn "   they used to fall back to was deleted on 2026-08-14, so the <IfDefine !NEXUS_WEBUK_PORT>"
+        log_warn "   arm now proxies them to a Laravel app with no accessible routes."
+        log_warn "   Affected: accessible.project-nexus.ie, accessible-uk.timebank.global,"
+        log_warn "   accessible-minehead-and-coast.timebank.global, and /{slug}/accessible on every community."
+        log_warn "Marker kept at $WEBUK_LIVE_MARKER. Recover by deploying again WITH --with-webuk."
         return 0
     }
 
@@ -189,11 +214,12 @@ enforce_webuk_live_marker() {
     log_err "  Marker: $WEBUK_LIVE_MARKER"
     log_err ""
     log_err "Deploying without it would rewrite the Apache routes file with no"
-    log_err "Define NEXUS_WEBUK_PORT, so every accessible hostname would quietly go"
-    log_err "back to serving the Blade frontend — at HTTP 200, with nothing failing."
+    log_err "Define NEXUS_WEBUK_PORT, which since 2026-08-14 takes every accessible"
+    log_err "hostname OFFLINE — the Blade frontend they used to fall back to has been"
+    log_err "deleted, so there is nothing behind that fallback any more."
     log_err ""
     log_err "  Keep web-uk:    add --with-webuk"
-    log_err "  Really drop it: add --without-webuk"
+    log_err "  Really drop it: add --without-webuk  (breaks the accessible site)"
     exit 2
 }
 
@@ -219,8 +245,11 @@ cmd_confirm_webuk_live() {
 
     if [ -z "$version" ]; then
         log_err "No response from https://$host/version"
-        log_err "Blade does not serve /version at all, so an empty response means this"
-        log_err "hostname is NOT yet served by web-uk. Nothing recorded."
+        log_err "This hostname is NOT served by web-uk. Nothing recorded."
+        log_err "🔴 Since the Blade accessible frontend was deleted (2026-08-14), silence here"
+        log_err "   means the hostname is BROKEN, not 'still on the old frontend'. Check that"
+        log_err "   Define NEXUS_WEBUK_PORT is present in the Apache routes file and that the"
+        log_err "   web-uk container for the active colour is up."
         return 1
     fi
 
@@ -1315,10 +1344,13 @@ post_cutover_smoke() {
                 log_err "https://accessible.project-nexus.ie/version did NOT respond, and web-uk is LIVE."
                 log_err "Marker: $WEBUK_LIVE_MARKER"
                 log_err ""
-                log_err "Blade does not serve /version, so silence is the signature of a"
-                log_err "fallback to Blade — not of a missing vhost. Most likely the Apache"
-                log_err "routes file lost Define NEXUS_WEBUK_PORT, or the web-uk container"
-                log_err "is not running on the active colour."
+                log_err "🔴 THE ACCESSIBLE SITE IS DOWN. Since the Blade accessible frontend was"
+                log_err "deleted (2026-08-14) there is nothing behind the fallback arm, so silence"
+                log_err "here is an outage rather than 'served by the old frontend'."
+                log_err ""
+                log_err "Most likely the Apache routes file lost Define NEXUS_WEBUK_PORT, or the"
+                log_err "web-uk container is not running on the active colour. Check both, then"
+                log_err "deploy again with --with-webuk."
                 return 1
             fi
             log_warn "Public accessible /version did not respond."
@@ -1326,7 +1358,9 @@ post_cutover_smoke() {
             log_warn "Once a hostname is confirmed served by web-uk, this becomes a hard failure."
         elif ! echo "$accessible_version" | grep -q '"service":"nexus-webuk"'; then
             log_err "https://accessible.project-nexus.ie is NOT served by web-uk."
-            log_err "It is most likely still served by the Blade accessible frontend."
+            log_err "Something else answered /version. Since the Blade accessible frontend was"
+            log_err "deleted (2026-08-14) this is no longer 'still on the old frontend' — the"
+            log_err "hostname is pointing somewhere it should not."
             log_err "Response: $accessible_version"
             return 1
         else
@@ -1459,7 +1493,9 @@ cmd_status() {
         sed -n '1,5p' "$WEBUK_LIVE_MARKER" 2>/dev/null || true
         if [ "$webuk_state" = "missing" ]; then
             log_err "web-uk is recorded as LIVE but no container exists on the active colour ($active)."
-            log_err "The accessible hostnames are very likely being served by Blade right now."
+            log_err "🔴 The accessible hostnames are very likely DOWN right now. Before 2026-08-14"
+            log_err "they would have fallen back to the Blade accessible frontend; that has been"
+            log_err "deleted, so there is nothing serving them. Deploy with --with-webuk."
         fi
     elif webuk_enabled; then
         log_info "web-uk: included in this invocation, not yet confirmed live. port=$webuk_port container=$webuk_state"

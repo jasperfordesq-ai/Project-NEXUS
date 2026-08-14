@@ -12,7 +12,6 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 
 /**
  * RouteServiceProvider
@@ -80,7 +79,15 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::addNamespace('accessible-frontend', base_path('accessible-frontend/views'));
+        // 🔴 REMOVED 2026-08-14: this registered a view namespace
+        // `accessible-frontend` pointing at `accessible-frontend/views`, the Blade
+        // accessible frontend's template root. Both the directory and its only
+        // remaining consumer (App\Support\AccessibleErrorPage) are gone.
+        //
+        // Worth knowing why it did not fail loudly on its own: addNamespace() never
+        // stats the path, so boot succeeded and the namespace simply resolved to
+        // nothing. It was the enabler for a 500 raised inside the exception
+        // handler, not the thing that raised it.
 
         RateLimiter::for('api', function (Request $request) {
             $tenant = (string) ($request->header('X-Tenant-ID') ?: $request->header('X-Tenant-Slug') ?: 'unresolved');
@@ -226,10 +233,14 @@ class RouteServiceProvider extends ServiceProvider
             //
             // 🔴 `lang/*/govuk_alpha*.php` is DELIBERATELY KEPT. web-uk's translation
             // catalogues for all eleven languages are GENERATED from those files
-            // (web-uk/scripts/audit-laravel-locales.js), and four non-Blade classes still
-            // read that namespace — AccessibleErrorPage, EventsController,
-            // MemberDataExportService and StaticPublicPageContentService. Deleting them
-            // would strip the new frontend's translations.
+            // (web-uk/scripts/audit-laravel-locales.js), and three non-Blade classes still
+            // read that namespace — EventsController, MemberDataExportService and
+            // StaticPublicPageContentService. Deleting them would strip the new
+            // frontend's translations.
+            //
+            // (This said FOUR classes and named AccessibleErrorPage as one of them.
+            // That class was itself deleted later the same day, once it was found to
+            // be rendering a view namespace that no longer resolved.)
 
             // HTTP cron endpoint REMOVED (2026-04-02) — email bombing root cause.
             // The /cron/run-all route allowed a second execution path (curl-based cron)

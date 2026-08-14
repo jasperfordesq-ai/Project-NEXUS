@@ -21,7 +21,29 @@ Project NEXUS Accessible Frontend is an approved exception to the React-primary 
 
 The public-facing accessible frontend is now Beta and served under `/{tenantSlug}/accessible/...` (legacy `/alpha/...` URLs permanently redirect). The `GovukAlpha`, `govuk_alpha`, and `govuk-alpha.*` names remain as internal code-path names until a deliberate namespace migration is done.
 
-The accessible frontend uses:
+> 🔴 **The layout described in this section was DELETED on 2026-08-14.** This document
+> records the original architecture research and the GOV.UK licensing/branding limits,
+> which remain valid and binding. Its *implementation* details describe the Laravel
+> Blade accessible frontend, which no longer exists. Current status is stated once, in
+> [../ACCESSIBLE-FRONTEND-TAKEOVER.md](../ACCESSIBLE-FRONTEND-TAKEOVER.md).
+
+**The accessible frontend today** is `web-uk/` — Node 22 + Express 4 + Nunjucks +
+`govuk-frontend`, consuming the Laravel API. It serves
+`accessible.project-nexus.ie`, both community accessible domains, and
+`/{tenantSlug}/accessible/...` for every community. It deploys as its own container
+alongside the blue/green PHP app, and **every deploy must pass `--with-webuk`**.
+
+Verification for changes to it:
+
+```bash
+npm --prefix web-uk run brand:check
+npm --prefix web-uk run lint
+npm --prefix web-uk test
+npm --prefix web-uk run build:css
+```
+
+<details>
+<summary>The original (deleted) Blade layout, kept for provenance</summary>
 
 - Laravel routes under `/{tenantSlug}/accessible/...`
 - Controllers under `app/Http/Controllers/GovukAlpha/`
@@ -31,19 +53,13 @@ The accessible frontend uses:
 - A separate Vite build output under `httpdocs/build/accessible-frontend/`
 - Complete component inventory under `accessible-frontend/COMPONENTS.md`
 
-This structure keeps the accessible frontend as a clear project-root frontend sibling of `react-frontend/`, while still keeping it away from legacy PHP themes in `views/`.
+Its deployment checks were `npm run build:accessible-frontend`,
+`npm run test:accessible-frontend:php` and `npm run test:accessible-frontend:a11y`.
+**None of those npm scripts exist any more.**
+
+</details>
 
 Recommended production subdomain: `accessible.project-nexus.ie`. Avoid `gov`, `govuk`, `ukgov`, or other names that could imply a UK government service.
-
-Deployment target: the Laravel/PHP blue-green app container, not the React frontend container. The accessible frontend is server-rendered by Laravel and should be routed through the PHP/API upstream family in production.
-
-Deployment checks for changes in this frontend:
-
-```bash
-npm run build:accessible-frontend
-npm run test:accessible-frontend:php
-npm run test:accessible-frontend:a11y
-```
 
 ## GOV.UK Repos To Remember
 

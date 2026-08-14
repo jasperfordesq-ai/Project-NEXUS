@@ -1,4 +1,33 @@
-# CLAUDE.md - Project NEXUS Shared Accessible Frontend
+# CLAUDE.md - Project NEXUS Accessible Frontend (`web-uk`)
+
+> ## 🔴 READ THIS FIRST — 2026-08-14: `web-uk` IS THE ONLY ACCESSIBLE FRONTEND, AND IT IS DEPLOYED
+>
+> This file is long and much of it was written while `web-uk` was an uncertified
+> candidate. Three of its central claims are now FALSE, and they are the ones an
+> agent acts on first:
+>
+> 1. **"There are TWO accessible frontends" / "Blade is frozen, read it freely as the
+>    behaviour specification."** The Laravel Blade accessible frontend was DELETED on
+>    2026-08-14. `accessible-frontend/`, `app/Http/Controllers/GovukAlpha/`,
+>    `routes/govuk-alpha.php` and `routes/govuk-alpha-parity/` do not exist. Do not go
+>    looking for them; their absence is not damage.
+> 2. **"The deployment path is not built yet" / "this file does not authorize
+>    deploying it."** It is built and `web-uk` has been live on
+>    `accessible.project-nexus.ie` since 2026-08-12, and on both community accessible
+>    domains since 2026-08-14. The standing rule that **no agent starts a deployment
+>    unless the owner explicitly says so** is unchanged and still absolute — but that
+>    is a permission rule, not a claim that the path is missing.
+> 3. **The route matrix is not a Blade drift alarm any more.** It compares against a
+>    frozen snapshot (`scripts/blade-route-inventory.frozen.json`, 707 routes) so it
+>    still catches a `web-uk` route regression.
+>
+> What has NOT changed: the ASP.NET backend stays paused with its database boundary
+> closed; the shared local `nexus` database is production-derived and must never be
+> written to or screenshotted; the GOV.UK branding prohibitions are binding.
+>
+> Status is stated in ONE place:
+> [`../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md`](../docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
+> Read it before acting on any status sentence in this file.
 
 > **🔴 PAUSE LIFTED for `web-uk` on 2026-08-11 — the ASP.NET fence STAYS.**
 >

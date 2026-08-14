@@ -27,15 +27,30 @@ ProxyPass /.well-known/acme-challenge/ !
 # deploy script treats a failed configtest as a reason to abort and restore.
 # So the rollback would abort itself, at exactly the moment it is most needed.
 #
-# The fallback keeps the accessible hostname served by the PHP application (the
-# Blade accessible frontend), which is precisely the correct behaviour when
-# rolling back to a release where web-uk did not exist.
+# 🔴 WHAT THE FALLBACK ARM IS FOR, CORRECTED 2026-08-14.
+#
+# It used to serve the accessible hostname from the Blade accessible frontend, and
+# that really was the right behaviour when rolling back to a release predating
+# web-uk. Blade has now been DELETED from the codebase, so the fallback no longer
+# reaches a working frontend — Laravel has no accessible routes and members would
+# get errors.
+#
+# The arm is deliberately KEPT anyway, and it is important to understand why: its
+# job is to keep `${NEXUS_WEBUK_PORT}` from being an undefined variable. Without it
+# a rollback to a pre-web-uk release fails `apachectl configtest`, and the deploy
+# script treats a failed configtest as a reason to abort and restore — so the
+# rollback would abort itself at the worst possible moment.
+#
+# So: this arm exists to keep configtest passing, NOT to provide a working site.
+# If it ever takes effect, the accessible hostnames are down and the fix is a
+# deploy that includes web-uk (`--with-webuk`).
 <IfDefine NEXUS_WEBUK_PORT>
     ProxyPass / http://127.0.0.1:${NEXUS_WEBUK_PORT}/ retry=0
     ProxyPassReverse / http://127.0.0.1:${NEXUS_WEBUK_PORT}/
 </IfDefine>
 <IfDefine !NEXUS_WEBUK_PORT>
-    # Blade accessible frontend, rendered by the Laravel/PHP application.
+    # 🔴 NOT a working accessible frontend since 2026-08-14 — see the note above.
+    # Present only so ${NEXUS_WEBUK_PORT} is never undefined during a rollback.
     ProxyPass / http://127.0.0.1:${NEXUS_API_PORT}/ retry=0
     ProxyPassReverse / http://127.0.0.1:${NEXUS_API_PORT}/
 </IfDefine>
