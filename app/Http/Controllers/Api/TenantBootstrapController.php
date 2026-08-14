@@ -121,8 +121,12 @@ class TenantBootstrapController extends BaseApiController
                     // `accessible_domain` is set (and whose `domain` differs or is unset)
                     // resolved to nothing, and the request fell through to the community
                     // chooser instead of that community. Found 2026-08-13 by seeding such a
-                    // tenant and walking it; the path had never been exercised, which is
-                    // consistent with no production tenant having the column set.
+                    // tenant and walking it; the path had never been exercised BY web-uk. 🔴 It is NOT unused in
+                    // production: two communities have an accessible domain today
+                    // (accessible-uk.timebank.global and
+                    // accessible-minehead-and-coast.timebank.global), both currently served
+                    // by the BLADE accessible frontend. So this fix is a PREREQUISITE for
+                    // moving either of them to web-uk.
                     //
                     // `domain` keeps precedence via the ordering, so an existing custom
                     // domain behaves exactly as before.
@@ -283,8 +287,12 @@ class TenantBootstrapController extends BaseApiController
                     // `accessible_domain` is set (and whose `domain` differs or is unset)
                     // resolved to nothing, and the request fell through to the community
                     // chooser instead of that community. Found 2026-08-13 by seeding such a
-                    // tenant and walking it; the path had never been exercised, which is
-                    // consistent with no production tenant having the column set.
+                    // tenant and walking it; the path had never been exercised BY web-uk. 🔴 It is NOT unused in
+                    // production: two communities have an accessible domain today
+                    // (accessible-uk.timebank.global and
+                    // accessible-minehead-and-coast.timebank.global), both currently served
+                    // by the BLADE accessible frontend. So this fix is a PREREQUISITE for
+                    // moving either of them to web-uk.
                     //
                     // `domain` keeps precedence via the ordering, so an existing custom
                     // domain behaves exactly as before.

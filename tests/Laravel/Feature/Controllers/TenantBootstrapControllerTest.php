@@ -239,8 +239,11 @@ class TenantBootstrapControllerTest extends TestCase
      * matched `domain` alone, a community whose own ACCESSIBLE host was configured resolved
      * to nothing and the request fell through to the community chooser instead of that
      * community. Found 2026-08-13 by seeding such a community and walking it; the path had
-     * never been exercised, which is consistent with no production tenant having the column
-     * set.
+     * never been exercised BY web-uk. 🔴 It is NOT unused in production: TWO communities
+     * have an accessible domain today — accessible-uk.timebank.global and
+     * accessible-minehead-and-coast.timebank.global — both currently served by the BLADE
+     * accessible frontend. So this fix is a PREREQUISITE for moving either of them to
+     * web-uk, not a tidy-up of dead code.
      */
     public function test_bootstrap_resolves_a_tenant_from_its_accessible_domain_origin(): void
     {
