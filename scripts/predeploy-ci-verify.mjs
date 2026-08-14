@@ -77,7 +77,10 @@ const REQUIRED_JOBS = [
   { prefix: 'Accessibility Audit',                          filters: ['frontend'] },
   { prefix: 'Docker Build Verify',                          filters: ['php', 'frontend'] },
   { prefix: 'Android Native Release Gate',                  filters: ['mobile'] },
-  { prefix: 'Accessible Frontend Release Gate',             filters: ['accessible'] },
+  // 'Accessible Frontend Release Gate' REMOVED 2026-08-14 with the Blade accessible
+  // frontend. 🔴 A required job that no longer exists is not harmless here: this
+  // verifier refuses to deploy when it cannot find evidence for a required job, so
+  // leaving it listed would have blocked every deploy from now on.
   { prefix: 'Translation Drift Detection',                  filters: ['i18n'] },
   { prefix: 'Dockerfile Drift Detection',                   filters: 'always' },
   { prefix: 'Migration Safety Gate',                        filters: 'always' },

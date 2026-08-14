@@ -103,7 +103,7 @@ jobs:
           # it and a web-uk-only fix genuinely is deployable drift. Leaving them out
           # from here on would mean production could sit on an old web-uk image with
           # this watchdog reporting green.
-          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views accessible-frontend react-frontend web-uk artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml compose.webuk.bluegreen.yml"
+          DEPLOY_PATHS="app bootstrap config database httpdocs lang resources routes views react-frontend web-uk artisan composer.json composer.lock scripts migrations Dockerfile.bluegreen compose.bluegreen.yml compose.webuk.bluegreen.yml"
 
           MAIN_COMMIT=""
           # Bounded walk: 200 commits is far more than any realistic gap, and it

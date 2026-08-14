@@ -212,19 +212,24 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
-            Route::middleware([
-                // Outermost: post-processes the final response to strip the
-                // /{slug}/alpha prefix on custom accessible domains (no-op elsewhere).
-                \App\Http\Middleware\StripTenantSlugOnAccessibleDomain::class,
-                \App\Http\Middleware\SecurityHeaders::class,
-                \App\Http\Middleware\ResolveTenant::class,
-                \App\Http\Middleware\CheckMaintenanceMode::class,
-                \App\Http\Middleware\SetLocale::class,
-                'web',
-                // Runs AFTER StartSession so it can read/write the session and the
-                // alpha cookie-token member; SetLocale (above) runs too early for both.
-                \App\Http\Middleware\AlphaSetLocale::class,
-            ])->group(base_path('routes/govuk-alpha.php'));
+            // 🔴 The Blade accessible frontend route group was REMOVED on 2026-08-14.
+            //
+            // It served `/{tenantSlug}/accessible/...` from routes/govuk-alpha.php through
+            // App\Http\Controllers\GovukAlpha. Every member-facing accessible surface now
+            // runs on `web-uk` (the Express/Nunjucks app): the platform host
+            // accessible.project-nexus.ie and both community hosts
+            // (accessible-uk.timebank.global, accessible-minehead-and-coast.timebank.global)
+            // were verified serving web-uk before this was deleted.
+            //
+            // Removed with it: StripTenantSlugOnAccessibleDomain and AlphaSetLocale, whose
+            // only callers were this group.
+            //
+            // 🔴 `lang/*/govuk_alpha*.php` is DELIBERATELY KEPT. web-uk's translation
+            // catalogues for all eleven languages are GENERATED from those files
+            // (web-uk/scripts/audit-laravel-locales.js), and four non-Blade classes still
+            // read that namespace — AccessibleErrorPage, EventsController,
+            // MemberDataExportService and StaticPublicPageContentService. Deleting them
+            // would strip the new frontend's translations.
 
             // HTTP cron endpoint REMOVED (2026-04-02) — email bombing root cause.
             // The /cron/run-all route allowed a second execution path (curl-based cron)

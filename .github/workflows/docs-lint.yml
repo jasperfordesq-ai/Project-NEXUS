@@ -10,7 +10,6 @@ on:
     paths:
       - 'docs/**'
       - 'docs-public/**'
-      - 'accessible-frontend/*.md'
       - 'mobile/**/*.md'
       - 'e2e/**/*.md'
       - 'tests/**/*.md'
@@ -34,7 +33,6 @@ on:
     paths:
       - 'docs/**'
       - 'docs-public/**'
-      - 'accessible-frontend/*.md'
       - 'mobile/**/*.md'
       - 'e2e/**/*.md'
       - 'tests/**/*.md'

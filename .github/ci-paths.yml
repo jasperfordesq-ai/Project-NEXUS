@@ -60,24 +60,12 @@ mobile:
   - '.github/ci-paths.yml'
 
 accessible:
-  - 'accessible-frontend/**'
-  - 'app/Http/Controllers/GovukAlpha/**'
+  # 🔴 The Blade accessible frontend was REMOVED on 2026-08-14, along with its CI job.
+  # What remains here is the ONE thing that outlived it: the shared PHP translations.
+  # `lang/**/govuk_alpha*.php` is the SOURCE web-uk's eleven translation catalogues are
+  # generated from, and four non-Blade classes still read that namespace, so a change
+  # to it must still wake the checks that validate it.
   - 'lang/**/govuk_alpha*.php'
-  - 'vite.accessible-frontend.config.ts'
-  # The accessible frontend's BLOCKING browser accessibility scan lives here —
-  # e2e/tests/accessible-frontend-a11y.spec.ts, its setup project, and
-  # e2e/helpers/accessible-auth.ts. Without these entries the scan's own source
-  # could change without the scan running.
-  - 'e2e/tests/accessible-frontend-a11y.*'
-  - 'e2e/helpers/accessible-auth.ts'
-  - 'e2e/playwright.alpha.config.ts'
-  # The accessible frontend's routes are declared here, and its PHP contract
-  # test asserts against them.
-  - 'routes/govuk-alpha.php'
-  # 🔴 33 further route files live in routes/govuk-alpha-parity/ and woke
-  # NOTHING until 2026-08-10 — only the single govuk-alpha.php beside them was
-  # listed. Same blind-spot class as contracts/** and e2e/**.
-  - 'routes/govuk-alpha-parity/**'
   - '.github/workflows/ci.yml'
   - '.github/ci-paths.yml'
 
@@ -129,10 +117,15 @@ webuk:
   # guardian/safeguarding settings pages). Web UK went from 1 route behind to 19
   # behind, and nothing reported it for over a week. Same blind-spot class as
   # contracts/** before 2026-08-03 and e2e/** before 2026-08-05.
-  - 'accessible-frontend/**'
-  - 'routes/govuk-alpha.php'
-  - 'routes/govuk-alpha-parity/**'
-  - 'app/Http/Controllers/GovukAlpha/**'
+  # 🔴 The four Blade paths this used to watch (accessible-frontend/**,
+  # routes/govuk-alpha*.php, app/Http/Controllers/GovukAlpha/**) were REMOVED on
+  # 2026-08-14 along with the Blade accessible frontend itself. They were watched
+  # because Blade was the behaviour specification web-uk was measured against; it is
+  # neither the specification nor deployed any more.
+  #
+  # The translations REMAIN watched, and for a stronger reason than before: web-uk's
+  # eleven catalogues are generated from them, so a change here really can change what
+  # members read on the live accessible site.
   - 'lang/**/govuk_alpha*.php'
 
 # The Laravel-side contract inventory: what the comparison tooling reads when
