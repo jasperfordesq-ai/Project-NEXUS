@@ -21,6 +21,10 @@ const templateEnvironment = nunjucks.configure([viewsDirectory, govukViewsDirect
   noCache: true
 });
 
+// Filters templates cannot render without. Shared with the server so a template using one
+// does not break every hand-built test environment.
+require('../src/lib/template-filters').registerTemplateFilters(templateEnvironment);
+
 templateEnvironment.addFilter('nl2br', (value) => value);
 templateEnvironment.addFilter('string', String);
 templateEnvironment.addFilter('urlencode', encodeURIComponent);

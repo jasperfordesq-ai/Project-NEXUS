@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block mainContent %}
   <a class="govuk-back-link" href="{{ urlFor('/jobs') }}">{{ t("govuk_alpha_jobs.shared.back_to_jobs") }}</a>
@@ -12,15 +13,19 @@
   <p class="govuk-body-l">{{ t("govuk_alpha_jobs.bias_audit.description") }}</p>
 
   <form method="get" action="{{ urlFor('/jobs/bias-audit') }}" class="govuk-!-margin-bottom-6">
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="bias-from">{{ t("govuk_alpha_jobs.bias_audit.filter_from") }}</label>
-      <input class="govuk-input govuk-input--width-10" id="bias-from" name="from" type="date" value="{{ filters.from }}">
-    </div>
+    {{ nexusDateInput({
+  name: "from",
+  legend: t("govuk_alpha_jobs.bias_audit.filter_from"),
+  hint: t("web_uk.date_input.hint"),
+  value: filters.from | dateParts
+}, t) }}
 
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="bias-to">{{ t("govuk_alpha_jobs.bias_audit.filter_to") }}</label>
-      <input class="govuk-input govuk-input--width-10" id="bias-to" name="to" type="date" value="{{ filters.to }}">
-    </div>
+    {{ nexusDateInput({
+  name: "to",
+  legend: t("govuk_alpha_jobs.bias_audit.filter_to"),
+  hint: t("web_uk.date_input.hint"),
+  value: filters.to | dateParts
+}, t) }}
 
     {% if jobs.length %}
       <div class="govuk-form-group">

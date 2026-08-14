@@ -16,6 +16,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
 
@@ -41,14 +42,6 @@ function allowed(value, choices, fallback) {
   return choices.has(text) ? text : fallback;
 }
 
-function validDate(value) {
-  const text = String(value || '').trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-    return '';
-  }
-  const date = new Date(`${text}T00:00:00Z`);
-  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== text ? '' : text;
-}
 
 function normaliseSkills(value) {
   const seen = new Set();
@@ -93,12 +86,12 @@ function queryParamsFrom(input) {
     params.skills = skills.join(',');
   }
 
-  const dateFrom = validDate(input.date_from);
+  const dateFrom = readDate(input, 'date_from').value || '';
   if (dateFrom !== '') {
     params.date_from = dateFrom;
   }
 
-  const dateTo = validDate(input.date_to);
+  const dateTo = readDate(input, 'date_to').value || '';
   if (dateTo !== '') {
     params.date_to = dateTo;
   }

@@ -25604,7 +25604,12 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('name="recurrence_interval"');
     expect(page.text).toContain('name="recurrence_ends_type"');
     expect(page.text).toContain('name="recurrence_ends_after_count"');
-    expect(page.text).toContain('name="recurrence_ends_on_date"');
+    // 🔴 Was a native date input. Now the GOV.UK three-field pattern, so the field posts as
+    // `recurrence_ends_on_date-day/-month/-year`. `readDate()` on the route still accepts a
+    // single `recurrence_ends_on_date`, so an older client posting that shape keeps working.
+    expect(page.text).toContain('name="recurrence_ends_on_date-day"');
+    expect(page.text).toContain('name="recurrence_ends_on_date-month"');
+    expect(page.text).toContain('name="recurrence_ends_on_date-year"');
     expect(csrfMatch).not.toBeNull();
 
     const response = await agent

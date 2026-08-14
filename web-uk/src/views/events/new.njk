@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
@@ -303,11 +304,12 @@
                         <label class="govuk-label govuk-radios__label" for="rec-end-date">{{ t("events.polish_events.recurrence_end_on_date") }}</label>
                       </div>
                       <div class="govuk-radios__conditional{% if recurrenceEndsType != "on_date" %} govuk-radios__conditional--hidden{% endif %}" id="rec-date-conditional">
-                        <div class="govuk-form-group">
-                          <label class="govuk-label" for="recurrence_ends_on_date">{{ t("events.polish_events.recurrence_end_date_label") }}</label>
-                          <div id="rec-date-hint" class="govuk-hint">{{ t("events.polish_events.recurrence_end_date_hint") }}</div>
-                          <input class="govuk-input govuk-!-width-one-half" id="recurrence_ends_on_date" name="recurrence_ends_on_date" type="date" value="{{ values.recurrence_ends_on_date if values else '' }}" aria-describedby="rec-date-hint">
-                        </div>
+                        {{ nexusDateInput({
+                          name: "recurrence_ends_on_date",
+                          legend: t("events.polish_events.recurrence_end_date_label"),
+                          hint: t("events.polish_events.recurrence_end_date_hint"),
+                          value: (values.recurrence_ends_on_date | dateParts) if values else undefined
+                        }, t) }}
                       </div>
                     </div>
                   </fieldset>

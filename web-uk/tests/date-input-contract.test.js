@@ -165,7 +165,14 @@ describe('native date input ceiling', () => {
   // the only thing stopping an honest member setting a poll to expire in the past. Doing it
   // properly needs a "must be in the future" message in eleven locales. Convert that one
   // WITH server validation, not before.
-  const CEILING = { 'datetime-local': 13, date: 9, time: 2 };
+  // 9 -> 1 (2026-08-13, batch 3): events as_of / recurrence_ends_on_date / effective_from /
+  // effective_until, the two jobs bias-audit filters and the two advanced-search filters.
+  // 🔴 The GET filters keep working from a bookmarked `?date_from=YYYY-MM-DD` link, because
+  // `readDate()` accepts either shape — a converted filter must not break shared URLs.
+  // 🔴 The remaining 1 is `polls/create.njk` expires_at, DELIBERATELY native: its
+  // min="{{ minDate }}" is the only thing stopping a poll expiring in the past, and there is
+  // no server-side minimum. Convert it WITH server validation, not before.
+  const CEILING = { 'datetime-local': 13, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

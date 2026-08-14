@@ -32,6 +32,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate, splitDate } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -1341,7 +1342,7 @@ function recurrencePayload(body) {
     recurrence_interval: boundedPositiveInteger(body.recurrence_interval, 1),
     recurrence_ends_type: endsType,
     recurrence_ends_after_count: boundedPositiveInteger(body.recurrence_ends_after_count, 10, 52),
-    recurrence_ends_on_date: trimmed(body.recurrence_ends_on_date) || null
+    recurrence_ends_on_date: readDate(body, 'recurrence_ends_on_date').value
   };
 }
 
@@ -1765,6 +1766,8 @@ router.get('/:id(\\d+)/safety', requireAuth, asyncRoute(async (req, res) => {
     people,
     status: trimmed(req.query.status),
     today: new Date().toISOString().slice(0, 10),
+    // Three-field GOV.UK date pattern. `today` stays for other readers.
+    todayParts: splitDate(new Date().toISOString().slice(0, 10)),
     idempotencyKey: randomUUID(),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -1825,8 +1828,9 @@ router.post('/:id(\\d+)/safety', requireAuth, asyncRoute(async (req, res) => {
       user_id: positiveInteger(req.body.user_id),
       decision: selectedValue(req.body.decision, ['deny', 'remove']),
       reason_code: selectedValue(req.body.reason_code, ['safeguarding_policy', 'minimum_age', 'guardian_consent', 'code_of_conduct', 'conduct_violation', 'safety_review', 'user_block']),
-      effective_from: trimmed(req.body.effective_from),
-      effective_until: trimmed(req.body.effective_until) || null,
+      effective_from: readDate(req.body, 'effective_from').value || '',
+      // 🔴 null, not '': the previous `|| null` distinguished 'no end date' from a value.
+      effective_until: readDate(req.body, 'effective_until').value,
       expected_version: req.body.expected_version === '' ? null : Number.parseInt(req.body.expected_version, 10)
     };
   } else {
@@ -2871,7 +2875,7 @@ router.post('/:id(\\d+)/registration/campaigns/:campaignId(\\d+)/schedule', requ
 router.post('/:id(\\d+)/registration/campaigns/:campaignId(\\d+)/cancel', requireAuth, asyncRoute(async (req, res) => mutateRegistrationCampaign(req, res, 'cancel')));
 
 router.post('/:id(\\d+)/registration/retention/preview', requireAuth, asyncRoute(async (req, res) => {
-  const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const asOf = trimmed(req.body.as_of, 32);
+  const id = Number(req.params.id); const key = trimmed(req.body.idempotency_key, 191); const asOf = readDate(req.body, 'as_of').value || '';
   if (!key || !/^\d{4}-\d{2}-\d{2}$/.test(asOf)) return redirectTo(res, eventPath(id, '/registration?status=invalid'));
   try { const result = dataFrom(await callEventMutation(tokenFrom(req), 'POST', `/${id}/registration-product/retention/dry-run`, { as_of: asOf }, key)) || {}; return renderRegistrationResult(req, res, { retentionRun: result.run || result }); }
   catch (error) { if (redirectOnAuthError(error, res)) return undefined; if (error instanceof ApiError && [400, 403, 404, 409, 422, 429, 503].includes(error.status)) return redirectTo(res, eventPath(id, '/registration?status=failed')); throw error; }

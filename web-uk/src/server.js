@@ -9,6 +9,7 @@ require('dotenv').config();
 // the SDK can instrument them. A no-op when SENTRY_DSN is unset, which is the
 // normal state in development and in every test run.
 const { initSentry, attachExpressErrorHandler, flushSentry } = require('./lib/sentry');
+const { registerTemplateFilters } = require('./lib/template-filters');
 
 initSentry();
 
@@ -272,6 +273,10 @@ nunjucksEnv.addFilter('date', (dateStr) => {
     return dateStr;
   }
 });
+
+// Filters that templates depend on. Shared with the test environments — see
+// src/lib/template-filters.js for why that matters.
+registerTemplateFilters(nunjucksEnv);
 
 nunjucksEnv.addFilter('abs', (num) => Math.abs(num || 0));
 

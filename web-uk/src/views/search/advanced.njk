@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
   {# GDS: back link at the top of a question page, consistent position. #}
@@ -94,17 +95,19 @@
             </select>
           </div>
 
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="date_from">{{ t("govuk_alpha_search.filters.date_from") }}</label>
-            <div id="date-from-hint" class="govuk-hint">{{ t("govuk_alpha_search.filters.date_from_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="date_from" name="date_from" type="date" value="{{ filters.date_from }}" aria-describedby="date-from-hint">
-          </div>
+          {{ nexusDateInput({
+  name: "date_from",
+  legend: t("govuk_alpha_search.filters.date_from"),
+  hint: t("govuk_alpha_search.filters.date_from_hint"),
+  value: filters.date_from | dateParts
+}, t) }}
 
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="date_to">{{ t("govuk_alpha_search.filters.date_to") }}</label>
-            <div id="date-to-hint" class="govuk-hint">{{ t("govuk_alpha_search.filters.date_to_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="date_to" name="date_to" type="date" value="{{ filters.date_to }}" aria-describedby="date-to-hint">
-          </div>
+          {{ nexusDateInput({
+  name: "date_to",
+  legend: t("govuk_alpha_search.filters.date_to"),
+  hint: t("govuk_alpha_search.filters.date_to_hint"),
+  value: filters.date_to | dateParts
+}, t) }}
 
           <div class="govuk-form-group">
             <label class="govuk-label" for="location">{{ t("govuk_alpha_search.filters.location") }}</label>

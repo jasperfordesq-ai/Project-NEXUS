@@ -1288,15 +1288,13 @@ function onboardingHasPosted(result) {
   return collectionItems(result).length > 0 || meta.total > 0;
 }
 
-function dateFilter(value) {
-  const text = trimmed(value, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
-}
 
 function biasAuditFilters(query) {
   return {
-    from: dateFilter(query.from),
-    to: dateFilter(query.to),
+    // Reads either the three GOV.UK fields or a single `?from=YYYY-MM-DD`, so a
+    // bookmarked or shared filter link keeps working.
+    from: readDate(query, 'from').value || '',
+    to: readDate(query, 'to').value || '',
     jobId: positiveInteger(query.job_id)
   };
 }
