@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block mainContent %}
   <a href="{{ urlFor('/jobs/mine') }}" class="govuk-back-link">{{ t("govuk_alpha.jobs_t3.nav_mine") }}</a>
@@ -87,11 +88,12 @@
       <input class="govuk-input govuk-!-width-two-thirds" id="skills_required" name="skills_required" type="text" value="{{ jobForm.skills_required or "" }}" maxlength="500" aria-describedby="skills-hint">
     </div>
 
-    <div class="govuk-form-group">
-      <label class="govuk-label" for="deadline">{{ t("govuk_alpha.jobs_t3.label_deadline") }}</label>
-      <div id="deadline-hint" class="govuk-hint">{{ t("jobs_t3.hint_deadline") }}</div>
-      <input class="govuk-input govuk-input--width-10" id="deadline" name="deadline" type="date" value="{{ jobForm.deadline or "" }}" aria-describedby="deadline-hint">
-    </div>
+    {{ nexusDateInput({
+  name: "deadline",
+  legend: t("govuk_alpha.jobs_t3.label_deadline"),
+  hint: t("jobs_t3.hint_deadline"),
+  value: jobForm.deadlineParts
+}, t) }}
 
     <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">{{ t("govuk_alpha.jobs.salary_label") }}</legend>

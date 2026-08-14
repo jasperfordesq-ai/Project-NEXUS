@@ -11,6 +11,7 @@ const {
   ApiError
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
 
@@ -796,8 +797,8 @@ router.post('/insurance', asyncRoute(async (req, res) => {
       provider_name: trimmed(req.body.provider_name, 255),
       policy_number: trimmed(req.body.policy_number, 255),
       coverage_amount: trimmed(req.body.coverage_amount),
-      start_date: trimmed(req.body.start_date),
-      expiry_date: trimmed(req.body.expiry_date),
+      start_date: readDate(req.body, 'start_date').value || '',
+      expiry_date: readDate(req.body, 'expiry_date').value || '',
       notes: trimmed(req.body.notes, 1000),
       file: {
         buffer,

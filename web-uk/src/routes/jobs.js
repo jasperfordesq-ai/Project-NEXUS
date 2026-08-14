@@ -17,6 +17,7 @@ const {
   uploadJobApplication
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate, splitDate } = require('../lib/date-input');
 const { createTranslator } = require('../lib/localization');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -886,6 +887,9 @@ function jobFormForEdit(job) {
   return {
     ...job,
     deadline: dateInputValue(job.deadline),
+    // Three-field GOV.UK date pattern. Without this the deadline silently stopped
+    // repopulating on the edit form — the member's stored date vanished from the field.
+    deadlineParts: splitDate(dateInputValue(job.deadline)),
     is_remote: checked(job.is_remote || job.isRemote),
     salary_negotiable: checked(job.salary_negotiable || job.salaryNegotiable)
   };
@@ -1599,7 +1603,10 @@ function jobFormValues(body = {}) {
     skills_required: trimmed(body.skills_required, 2000),
     hours_per_week: trimmed(body.hours_per_week, 100),
     time_credits: trimmed(body.time_credits, 100),
-    deadline: trimmed(body.deadline, 20),
+    deadline: readDate(body, 'deadline').value || '',
+    // Three-field pattern: replay after a validation failure must show what was typed,
+    // including a date that failed to parse, or the member loses their entry.
+    deadlineParts: readDate(body, 'deadline').parts,
     salary_min: trimmed(body.salary_min, 100),
     salary_max: trimmed(body.salary_max, 100),
     salary_currency: trimmed(body.salary_currency, 10),
@@ -1611,7 +1618,15 @@ function jobFormValues(body = {}) {
 }
 
 function jobFormPayload(body) {
+  // 🔴 `jobFormValues()` is BOTH the API payload and the form's re-render model, so a
+  // field added for the view leaks straight into the request body. `deadlineParts` is
+  // view-only — the API takes `deadline` as a single date — and must be stripped here.
+  // Caught by a test asserting the exact payload; without that it would have been sent
+  // silently and either ignored or rejected depending on the endpoint's strictness.
   const values = jobFormValues(body);
+  // Drop the view-only field rather than destructuring it into an unused variable, which
+  // lint flags and which needed a disable comment to silence.
+  delete values.deadlineParts;
   return values.title === '' ? null : values;
 }
 

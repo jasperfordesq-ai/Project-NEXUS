@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 {% block mainContent %}
   <a class="govuk-back-link" href="{{ urlFor('/groups/' + (group.id | string) + '/announcements') }}">{{ t("govuk_alpha_groups.announcements.back_to_announcements") }}</a>
 
@@ -54,11 +55,12 @@
       </fieldset>
     </div>
 
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="edit-ann-expires-at">{{ t("govuk_alpha_groups.announcements.expires_at_label") }}</label>
-      <div id="edit-ann-expires-at-hint" class="govuk-hint">{{ t("govuk_alpha_groups.announcements.expires_at_hint") }}</div>
-      <input class="govuk-input govuk-input--width-10" id="edit-ann-expires-at" name="expires_at" type="date" aria-describedby="edit-ann-expires-at-hint" value="{{ announcement.expiresAtInput }}">
-    </div>
+    {{ nexusDateInput({
+  name: "expires_at",
+  legend: t("govuk_alpha_groups.announcements.expires_at_label"),
+  hint: t("govuk_alpha_groups.announcements.expires_at_hint"),
+  value: announcement.expiresAtParts
+}, t) }}
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.announcements.submit_edit") }}</button>
 

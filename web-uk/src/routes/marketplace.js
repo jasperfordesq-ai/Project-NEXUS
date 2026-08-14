@@ -10,6 +10,7 @@ const { flagEnabled } = require('../lib/accessible-shell');
 const { createTranslator } = require('../lib/localization');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { splitDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
@@ -900,6 +901,9 @@ function decorateCoupon(coupon, req) {
     maxUses: row.max_uses ?? '',
     usageCount: Number.isFinite(Number(row.usage_count)) ? Number(row.usage_count) : 0,
     validUntil: dateInput(row.valid_until),
+    // Three-field GOV.UK date pattern. Without this an existing coupon's expiry
+    // silently disappeared from the edit form.
+    validUntilParts: splitDate(dateInput(row.valid_until)),
     status,
     statusLabel: COUPON_STATUS_LABELS[status]
       ? translateMarketplaceMessage(

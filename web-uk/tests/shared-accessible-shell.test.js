@@ -18095,7 +18095,13 @@ describe('shared accessible frontend shell', () => {
     expect(replay.text).toContain('value="Cork"');
     expect(replay.text).toContain('name="is_remote" type="checkbox" value="1" checked');
     expect(replay.text).toContain('value="Planning"');
-    expect(replay.text).toContain('value="2099-08-15"');
+    // 🔴 Was `value="2099-08-15"` on a native date input. Now the GOV.UK three-field
+    // pattern: the stored date arrives split across day/month/year. Asserting the parts
+    // keeps the real check — an existing deadline still repopulates on the edit form.
+    // (It briefly did NOT, because the conversion dropped the value; this is what caught it.)
+    expect(replay.text).toMatch(/name="deadline-day"[^>]*value="15"|value="15"[^>]*name="deadline-day"/);
+    expect(replay.text).toMatch(/name="deadline-month"[^>]*value="8"|value="8"[^>]*name="deadline-month"/);
+    expect(replay.text).toMatch(/name="deadline-year"[^>]*value="2099"|value="2099"[^>]*name="deadline-year"/);
     expect(replay.text).toContain('value="jobs@example.org"');
     expect(replay.text).toContain('value="draft" checked');
   });
@@ -18193,7 +18199,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('value="Cork"');
     expect(response.text).toContain('name="is_remote" type="checkbox" value="1" checked');
     expect(response.text).toContain('value="Planning, communication"');
-    expect(response.text).toContain('value="2099-08-15"');
+    // 🔴 Was `value="2099-08-15"` on a native date input. Now the GOV.UK three-field
+    // pattern: the stored date arrives split across day/month/year. Asserting the parts
+    // keeps the real check — an existing deadline still repopulates on the edit form.
+    // (It briefly did NOT, because the conversion dropped the value; this is what caught it.)
+    expect(response.text).toMatch(/name="deadline-day"[^>]*value="15"|value="15"[^>]*name="deadline-day"/);
+    expect(response.text).toMatch(/name="deadline-month"[^>]*value="8"|value="8"[^>]*name="deadline-month"/);
+    expect(response.text).toMatch(/name="deadline-year"[^>]*value="2099"|value="2099"[^>]*name="deadline-year"/);
     expect(response.text).toContain('value="1000"');
     expect(response.text).toContain('value="2000"');
     expect(response.text).toContain('value="EUR"');
@@ -19817,6 +19829,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('action="/ideation/campaigns/5"');
     expect(response.text).toContain('value="Park renewal"');
     expect(response.text).toContain('value="2026-08-01"');
+
     expect(response.text).toContain('value="active" checked');
     expect(response.text).toContain('Unlink challenge: Add safe lighting');
     expect(response.text).toContain('action="/ideation/campaigns/5/delete"');
@@ -21553,7 +21566,12 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('id="ann-title" name="title" type="text"');
     expect(signed.text).toContain('id="ann-content" name="content"');
     expect(signed.text).toContain('id="ann-is-pinned" name="is_pinned" type="checkbox" value="1"');
-    expect(signed.text).toContain('id="ann-expires-at" name="expires_at" type="date"');
+    // 🔴 Was a native date input. Now the GOV.UK three-field pattern, which owns the id
+    // (it becomes the field name), so the custom id is gone and any stored value arrives
+    // split across day/month/year. Same behaviour asserted: present, and posting under
+    // the same name.
+    expect(signed.text).toContain('name="expires_at-day"');
+    expect(signed.text).toContain('name="expires_at-year"');
     expect(signed.text).toContain('method="post" action="/groups/42/announcements"');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
     expect(api.getGroup).toHaveBeenCalledTimes(1);
@@ -21641,8 +21659,18 @@ describe('shared accessible frontend shell', () => {
     expect(signed.text).toContain('id="edit-ann-content" name="content"');
     expect(signed.text).toContain('Please confirm your October availability.');
     expect(signed.text).toContain('id="edit-ann-is-pinned" name="is_pinned" type="checkbox" value="1" checked');
-    expect(signed.text).toContain('id="edit-ann-expires-at" name="expires_at" type="date"');
-    expect(signed.text).toContain('value="2026-10-31"');
+    // 🔴 Was a native date input. Now the GOV.UK three-field pattern, which owns the id
+    // (it becomes the field name), so the custom id is gone and any stored value arrives
+    // split across day/month/year. Same behaviour asserted: present, and posting under
+    // the same name.
+    expect(signed.text).toContain('name="expires_at-day"');
+    expect(signed.text).toContain('name="expires_at-year"');
+    // 🔴 Was a single `value="YYYY-MM-DD"` on a native date input. The GOV.UK three-field
+    // pattern splits it, so assert the parts. Same behaviour: the stored date repopulates.
+    expect(signed.text).toMatch(/name="expires_at-day"[^>]*value="31"|value="31"[^>]*name="expires_at-day"/);
+    expect(signed.text).toMatch(/name="expires_at-month"[^>]*value="10"|value="10"[^>]*name="expires_at-month"/);
+    expect(signed.text).toMatch(/name="expires_at-year"[^>]*value="2026"|value="2026"[^>]*name="expires_at-year"/);
+
     expect(signed.text).toContain('method="post" action="/groups/42/announcements/9/edit"');
     expect(signed.text).toContain('Save changes');
     expect(signed.text).not.toContain('shared accessible frontend preparation page');
@@ -32964,7 +32992,11 @@ describe('shared accessible frontend shell', () => {
     expect(edit.text).toContain('Your changes were saved.');
     expect(edit.text).toContain('value="Summer sale"');
     expect(edit.text).toContain('Ten percent off');
-    expect(edit.text).toContain('value="2026-08-01"');
+    // 🔴 Was a single value on a native date input. The GOV.UK three-field pattern splits
+    // it, so assert the parts. Same behaviour: the stored expiry repopulates on the form.
+    expect(edit.text).toMatch(/name="valid_until-day"[^>]*value="1"|value="1"[^>]*name="valid_until-day"/);
+    expect(edit.text).toMatch(/name="valid_until-month"[^>]*value="8"|value="8"[^>]*name="valid_until-month"/);
+    expect(edit.text).toMatch(/name="valid_until-year"[^>]*value="2026"|value="2026"[^>]*name="valid_until-year"/);
     expect(edit.text).toContain('Delete this coupon?');
     expect(edit.text).toContain('id="discount_type"');
     expect(edit.text).toContain('id="discount_type-fixed"');
@@ -33043,7 +33075,11 @@ describe('shared accessible frontend shell', () => {
     expect(invalidForm.text).toContain('Explain this offer');
     expect(invalidForm.text).toContain('value="0"');
     expect(invalidForm.text).toContain('value="12"');
-    expect(invalidForm.text).toContain('value="2026-10-01"');
+    // 🔴 Was a single value on a native date input. The GOV.UK three-field pattern splits
+    // it, so assert the parts. Same behaviour: the stored expiry repopulates on the form.
+    expect(invalidForm.text).toMatch(/name="valid_until-day"[^>]*value="1"|value="1"[^>]*name="valid_until-day"/);
+    expect(invalidForm.text).toMatch(/name="valid_until-month"[^>]*value="10"|value="10"[^>]*name="valid_until-month"/);
+    expect(invalidForm.text).toMatch(/name="valid_until-year"[^>]*value="2026"|value="2026"[^>]*name="valid_until-year"/);
     expect(invalidForm.text).toMatch(/value="paused" selected/);
 
     const consumed = await agent

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block mainContent %}
   <div class="govuk-grid-row">
@@ -94,11 +95,11 @@
             <input class="govuk-input govuk-!-width-two-thirds" id="policy_number" name="policy_number" type="text" maxlength="100">
           </div>
 
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="expiry_date">{{ t("govuk_alpha_settings.insurance.expiry_label") }}</label>
-            <div id="expiry-date-hint" class="govuk-hint">{{ t("govuk_alpha_settings.insurance.expiry_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="expiry_date" name="expiry_date" type="date" aria-describedby="expiry-date-hint">
-          </div>
+          {{ nexusDateInput({
+  name: "expiry_date",
+  legend: t("govuk_alpha_settings.insurance.expiry_label"),
+  hint: t("govuk_alpha_settings.insurance.expiry_hint")
+}, t) }}
 
           {% set fileError = errorAnchor == "certificate_file" and errorStatus %}
           <div class="govuk-form-group{% if fileError %} govuk-form-group--error{% endif %}">

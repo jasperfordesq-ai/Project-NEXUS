@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block mainContent %}
   <a class="govuk-back-link" href="{{ urlFor('/marketplace/coupons') }}">{{ t("govuk_alpha_commerce.coupons.back_to_coupons") }}</a>
@@ -100,11 +101,19 @@
         <input class="govuk-input govuk-input--width-5" id="max_uses" name="max_uses" type="text" inputmode="numeric" value="{{ coupon.maxUses }}" aria-describedby="max_uses-hint">
       </div>
 
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="valid_until">{{ t("govuk_alpha_commerce.coupons.valid_until_form_label") }} <span class="govuk-hint govuk-!-display-inline">({{ t("govuk_alpha_commerce.common.optional") }})</span></label>
-        <div id="valid_until-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.coupons.valid_until_form_hint") }}</div>
-        <input class="govuk-input govuk-input--width-10" id="valid_until" name="valid_until" type="date" value="{{ coupon.validUntil }}" aria-describedby="valid_until-hint">
-      </div>
+      {#
+        Converted by hand: the label wrapped a <span>, which cannot go through the macro's
+        legend parameter. The "(optional)" marker is appended to the LEGEND TEXT rather
+        than dropped — the member needs to know the field can be left blank, and GOV.UK
+        puts optionality in the legend for a fieldset.
+      #}
+      {{ nexusDateInput({
+        name: "valid_until",
+        legend: t("govuk_alpha_commerce.coupons.valid_until_form_label") ~ " (" ~ t("govuk_alpha_commerce.common.optional") ~ ")",
+        legendClasses: "govuk-fieldset__legend--s",
+        hint: t("govuk_alpha_commerce.coupons.valid_until_form_hint"),
+        value: coupon.validUntilParts
+      }, t) }}
 
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="status">{{ t("govuk_alpha_commerce.coupons.status_form_label") }}</label>

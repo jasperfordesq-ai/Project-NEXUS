@@ -157,7 +157,15 @@ describe('native date input ceiling', () => {
   // (start_date, end_date, expiry_date, hours date, completed_at, expires_at). The 21st
   // was never a real field — it was an example inside `_date-input.njk`'s own comment,
   // which this counter greps; that example has been reworded away.
-  const CEILING = { 'datetime-local': 13, date: 14, time: 2 };
+  // Lowered again 2026-08-13 (14 -> 9) for batch 2: group announcement expires_at (create
+  // and edit), job deadline, marketplace coupon valid_until, insurance expiry_date and
+  // start_date.
+  // 🔴 `polls/create.njk` expires_at is DELIBERATELY still native. Its native input carries
+  // min="{{ minDate }}", and there is NO server-side minimum — so converting would remove
+  // the only thing stopping an honest member setting a poll to expire in the past. Doing it
+  // properly needs a "must be in the future" message in eleven locales. Convert that one
+  // WITH server validation, not before.
+  const CEILING = { 'datetime-local': 13, date: 9, time: 2 };
 
   function countNative(type) {
     let total = 0;

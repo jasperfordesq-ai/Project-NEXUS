@@ -26,6 +26,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate, splitDate } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
 const { resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
@@ -365,7 +366,9 @@ function normalizeAnnouncement(item) {
     isExpired: checked(raw.is_expired ?? raw.isExpired),
     authorName: trimmed(author.name || raw.author_name || raw.authorName || ''),
     postedAtLabel: dateLabel(raw.created_at || raw.createdAt || raw.posted_at || raw.postedAt),
-    expiresAtInput: dateInputValue(raw.expires_at || raw.expiresAt)
+    expiresAtInput: dateInputValue(raw.expires_at || raw.expiresAt),
+    // Three-field GOV.UK date pattern. `expiresAtInput` stays for any other reader.
+    expiresAtParts: splitDate(dateInputValue(raw.expires_at || raw.expiresAt))
   };
 }
 
@@ -865,7 +868,10 @@ function announcementPayload(body) {
     title,
     content,
     is_pinned: checked(body.is_pinned),
-    expires_at: optionalText(body.expires_at)
+    // 🔴 NOT `|| ''`. The previous `optionalText()` returned NULL for an absent expiry and
+    // the API distinguishes the two — an empty string is a value, null clears the field.
+    // `readDate().value` is already null when nothing was entered, so pass it through.
+    expires_at: readDate(body, 'expires_at').value
   };
 }
 

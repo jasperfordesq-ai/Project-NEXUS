@@ -7,6 +7,7 @@ const express = require('express');
 const { timingSafeEqual } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -302,7 +303,7 @@ function couponPayload(body) {
     payload.max_uses = maxUses;
   }
 
-  const validUntil = trimmed(body.valid_until);
+  const validUntil = readDate(body, 'valid_until').value || '';
   if (validUntil !== '') {
     payload.valid_until = validUntil;
   }
@@ -329,6 +330,9 @@ function couponFormValues(body) {
     minOrderCents: String(body.min_order_cents || '').slice(0, 50),
     maxUses: String(body.max_uses || '').slice(0, 50),
     validUntil: String(body.valid_until || '').slice(0, 20),
+    // Three-field GOV.UK date pattern. Re-populates from whichever shape was posted,
+    // so a validation re-render does not blank what the member typed.
+    validUntilParts: readDate(body, 'valid_until').parts,
     status: trimmed(body.status, 20)
   };
 }
