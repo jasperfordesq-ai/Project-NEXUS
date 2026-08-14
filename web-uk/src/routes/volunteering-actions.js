@@ -13,6 +13,7 @@ const {
   uploadVolunteerCredential
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
+const { readDate, splitDate } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
@@ -2413,6 +2414,9 @@ router.get('/hours', asyncRoute(async (req, res) => {
     organizations,
     loadError,
     today: new Date().toISOString().slice(0, 10),
+    // Three-field GOV.UK date pattern needs the same default split into parts.
+    // `today` stays because other views still read it.
+    dateParts: splitDate(new Date().toISOString().slice(0, 10)),
     status: hoursStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2549,8 +2553,8 @@ router.post('/opportunities/create', asyncRoute(async (req, res) => {
     location: trimmed(req.body.location),
     is_remote: checked(req.body.is_remote),
     skills_needed: trimmed(req.body.skills_needed),
-    start_date: trimmed(req.body.start_date) || null,
-    end_date: trimmed(req.body.end_date) || null,
+    start_date: readDate(req.body, 'start_date').value,
+    end_date: readDate(req.body, 'end_date').value,
     category_id: categoryId,
     federated_visibility: checked(req.body.federated_visibility) ? 'listed' : 'none'
   };
@@ -2635,7 +2639,7 @@ router.post('/hours', asyncRoute(async (req, res) => {
   const payload = {
     organization_id: positiveInteger(req.body.organization_id),
     opportunity_id: positiveInteger(req.body.opportunity_id),
-    date: trimmed(req.body.date),
+    date: readDate(req.body, 'date').value || '',
     hours: decimalNumber(req.body.hours),
     description: trimmed(req.body.description)
   };
@@ -2798,7 +2802,7 @@ router.post('/credentials', asyncRoute(async (req, res) => {
   }
 
   const type = trimmed(req.body.credential_type || req.body.type, 100);
-  const expiresAt = trimmed(req.body.expires_at || req.body.expiry_date);
+  const expiresAt = readDate(req.body, 'expires_at').value || readDate(req.body, 'expiry_date').value || '';
   const file = uploadedFile(req, 'file') || uploadedFile(req, 'document');
   if (!type || !file) {
     await removeUploadedFile(file);
@@ -2980,7 +2984,7 @@ router.post('/expenses', asyncRoute(async (req, res) => {
 router.post('/training', asyncRoute(async (req, res) => {
   const trainingType = trimmed(req.body.training_type);
   const trainingName = trimmed(req.body.training_name);
-  const completedAt = trimmed(req.body.completed_at);
+  const completedAt = readDate(req.body, 'completed_at').value || '';
   if (trainingType === '') {
     return redirectTo(res, '/volunteering/training?status=training-type-required&tab=training');
   }

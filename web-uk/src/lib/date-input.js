@@ -110,4 +110,29 @@ function splitDate(value) {
   };
 }
 
-module.exports = { composeDate, splitDate, dateParts, FIELD_SUFFIXES };
+/**
+ * Read a date from EITHER shape, so a conversion cannot break existing callers.
+ *
+ * Prefers a single `YYYY-MM-DD` value when one is present — which covers a form not yet
+ * converted, a bookmarked GET filter URL like `?date_from=2027-03-01`, and any client
+ * posting the API shape directly — and otherwise reads the three GOV.UK fields.
+ *
+ * 🔴 Use this in route handlers rather than `composeDate` directly. Every field converted
+ * in this codebase has at least one of those older callers, and dropping them silently
+ * would break shared links.
+ */
+function readDate(body, name, options = {}) {
+  const source = body && typeof body === 'object' ? body : {};
+  const single = String(source[name] ?? '').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(single)) {
+    return { value: single, error: null, errorFields: [], parts: splitDate(single) };
+  }
+  // A single value that is present but malformed is an error, not an invitation to look
+  // for three fields that are not there.
+  if (single !== '' && !dateParts(source, name).day) {
+    return { value: null, error: 'date_invalid', errorFields: [...FIELD_SUFFIXES], parts: { day: '', month: '', year: '' } };
+  }
+  return composeDate(source, name, options);
+}
+
+module.exports = { composeDate, splitDate, dateParts, readDate, FIELD_SUFFIXES };

@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("govuk_alpha.actions.back_to_volunteering") }}</a>
@@ -147,11 +148,12 @@
       </div>
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="date">{{ t("govuk_alpha.volunteering.date_label") }}</label>
-            <div id="date-hint" class="govuk-hint">{{ t("govuk_alpha.vol_clarity.log_hours_date_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="date" name="date" type="date" value="{{ today }}" aria-describedby="date-hint" required>
-          </div>
+          {{ nexusDateInput({
+  name: "date",
+  legend: t("govuk_alpha.volunteering.date_label"),
+  hint: t("govuk_alpha.vol_clarity.log_hours_date_hint"),
+  value: dateParts
+}, t) }}
         </div>
         <div class="govuk-grid-column-one-half">
           <div class="govuk-form-group">

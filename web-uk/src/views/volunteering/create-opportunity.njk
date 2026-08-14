@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering/my-organisations') }}">{{ t("govuk_alpha_volunteering.shared.back_to_my_organisations") }}</a>
@@ -96,17 +97,18 @@
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-one-half">
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="start_date">{{ t("govuk_alpha_volunteering.create_opp.start_date_label") }}</label>
-            <div id="start_date-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.start_date_hint") }}</div>
-            <input class="govuk-input govuk-input--width-10" id="start_date" name="start_date" type="date" aria-describedby="start_date-hint">
-          </div>
+          {{ nexusDateInput({
+  name: "start_date",
+  legend: t("govuk_alpha_volunteering.create_opp.start_date_label"),
+  hint: t("govuk_alpha_volunteering.create_opp.start_date_hint")
+}, t) }}
         </div>
         <div class="govuk-grid-column-one-half">
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="end_date">{{ t("govuk_alpha_volunteering.create_opp.end_date_label") }}</label>
-            <input class="govuk-input govuk-input--width-10" id="end_date" name="end_date" type="date">
-          </div>
+          {{ nexusDateInput({
+  name: "end_date",
+  legend: t("govuk_alpha_volunteering.create_opp.end_date_label"),
+  hint: t("web_uk.date_input.hint")
+}, t) }}
         </div>
       </div>
 

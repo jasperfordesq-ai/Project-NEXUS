@@ -153,7 +153,11 @@ describe('date input markup', () => {
 describe('native date input ceiling', () => {
   // 🔴 SHRINK-ONLY. Lower these numbers as fields are converted; never raise them.
   // Measured 2026-08-13 after converting the two goal deadline fields.
-  const CEILING = { 'datetime-local': 13, date: 21, time: 2 };
+  // Lowered 2026-08-13 from date:21 as the six volunteering fields were converted
+  // (start_date, end_date, expiry_date, hours date, completed_at, expires_at). The 21st
+  // was never a real field — it was an example inside `_date-input.njk`'s own comment,
+  // which this counter greps; that example has been reworded away.
+  const CEILING = { 'datetime-local': 13, date: 14, time: 2 };
 
   function countNative(type) {
     let total = 0;

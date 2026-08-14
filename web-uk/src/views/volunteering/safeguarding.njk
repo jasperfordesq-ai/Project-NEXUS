@@ -3,6 +3,7 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
+{% from "_date-input.njk" import nexusDateInput %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/volunteering') }}">{{ t("actions.back_to_volunteering") }}</a>
@@ -25,7 +26,16 @@
             <ul class="govuk-list govuk-error-summary__list">
               <li>
                 {% if status.field %}
-                  <a href="#{{ status.field }}">{{ status.message }}</a>
+                  {#
+                    🔴 A date field's anchor must target its FIRST INPUT, not the group.
+                    The GOV.UK date pattern renders `id="{name}"` on the wrapping
+                    <div class="govuk-date-input">, so `#completed_at` now points at a div:
+                    the browser scrolls to it but focus never lands in a field, which is
+                    the whole point of a focusable error summary. GDS links date errors to
+                    the day field.
+                  #}
+                  {% set anchorTarget = status.field ~ "-day" if status.field in ["completed_at", "expires_at"] else status.field %}
+                  <a href="#{{ anchorTarget }}">{{ status.message }}</a>
                 {% else %}
                   {{ status.message }}
                 {% endif %}
@@ -94,18 +104,25 @@
         <input class="govuk-input" id="provider" name="provider" type="text" maxlength="255">
       </div>
 
-      <div class="govuk-form-group{% if status.field == 'completed_at' %} govuk-form-group--error{% endif %}">
-        <label class="govuk-label govuk-label--s" for="completed_at">{{ t("govuk_alpha_volunteering.safeguarding.completed_at_label") }}</label>
-        {% if status.field == "completed_at" %}
-          <p id="completed-at-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ status.message }}</p>
-        {% endif %}
-        <input class="govuk-input govuk-input--width-10{% if status.field == 'completed_at' %} govuk-input--error{% endif %}" id="completed_at" name="completed_at" type="date"{% if status.field == "completed_at" %} aria-describedby="completed-at-error"{% endif %}>
-      </div>
+      {{ nexusDateInput({
+  name: "completed_at",
+  legend: t("govuk_alpha_volunteering.safeguarding.completed_at_label"),
+  legendClasses: "govuk-fieldset__legend--s",
+  hint: t("web_uk.date_input.hint")
+}, t) }}
 
-      <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="expires_at">{{ t("govuk_alpha_volunteering.safeguarding.expires_at_label") }} <span class="govuk-hint">{{ t("govuk_alpha_volunteering.shared.optional") }}</span></label>
-        <input class="govuk-input govuk-input--width-10" id="expires_at" name="expires_at" type="date">
-      </div>
+      {#
+        The "Optional" marker moves from the label into the hint. GOV.UK puts optionality
+        in the legend text for a fieldset, but a nested <span> cannot go through the macro's
+        legend parameter, and it must not be dropped — a member needs to know this can be
+        left blank. Rendering it as the hint keeps it announced and visible.
+      #}
+      {{ nexusDateInput({
+        name: "expires_at",
+        legend: t("govuk_alpha_volunteering.safeguarding.expires_at_label"),
+        legendClasses: "govuk-fieldset__legend--s",
+        hint: t("govuk_alpha_volunteering.shared.optional") ~ " — " ~ t("web_uk.date_input.hint")
+      }, t) }}
 
       <button type="submit" class="govuk-button govuk-!-margin-top-2">{{ t("govuk_alpha_volunteering.safeguarding.submit_training") }}</button>
     </form>

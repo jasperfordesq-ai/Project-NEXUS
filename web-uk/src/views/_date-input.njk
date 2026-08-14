@@ -8,10 +8,15 @@
 {#
   The GOV.UK three-field date pattern, with this service's translations applied.
 
-  🔴 Replaces `<input type="date">`. GOV.UK guidance is explicit that native pickers fail
-  users: they differ across browsers, a mobile calendar cannot practically reach a date
-  years back, the device decides the display format, and validation cannot be presented
-  in the service's own style.
+  🔴 Replaces the browser's native date input. GOV.UK guidance is explicit that native
+  pickers fail users: they differ across browsers, a mobile calendar cannot practically
+  reach a date years back, the device decides the display format, and validation cannot
+  be presented in the service's own style.
+
+  🔴 That sentence deliberately does NOT spell out the native input's markup. The
+  shrink-only counter in `tests/date-input-contract.test.js` greps the whole views tree,
+  so an example in this comment counted as an unconverted field and inflated the ceiling
+  by one.
 
       {% from "_date-input.njk" import nexusDateInput %}
       {{ nexusDateInput({

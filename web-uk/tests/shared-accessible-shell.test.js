@@ -33790,8 +33790,13 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="skills_needed" name="skills_needed" type="text" maxlength="255"');
     expect(response.text).toContain('id="category_id" name="category_id"');
     expect(response.text).toContain('<option value="3">Food support</option>');
-    expect(response.text).toContain('id="start_date" name="start_date" type="date"');
-    expect(response.text).toContain('id="end_date" name="end_date" type="date"');
+    // 🔴 Was the native `type="date"` input. Converted to the GOV.UK three-field
+    // pattern (GDS: native pickers fail users). What matters is unchanged and still
+    // asserted — the field exists and posts under the same name — via its day field.
+    expect(response.text).toContain('name="start_date-day"');
+    expect(response.text).toContain('name="start_date-year"');
+    expect(response.text).toContain('name="end_date-day"');
+    expect(response.text).toContain('name="end_date-year"');
     expect(response.text).toContain('id="is_remote" name="is_remote" type="checkbox" value="1"');
     expect(response.text).toContain('id="federated_visibility" name="federated_visibility" type="checkbox" value="1"');
     expect(response.text).toContain('Post opportunity');
@@ -33849,7 +33854,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('First aid');
     expect(response.text).toContain('id="document" name="document" type="file"');
     expect(response.text).toContain('PDF, JPG, PNG or WEBP. Maximum size 10MB.');
-    expect(response.text).toContain('id="expiry_date" name="expiry_date" type="date"');
+    // 🔴 Was the native `type="date"` input. Converted to the GOV.UK three-field
+    // pattern (GDS: native pickers fail users). What matters is unchanged and still
+    // asserted — the field exists and posts under the same name — via its day field.
+    expect(response.text).toContain('name="expiry_date-day"');
+    expect(response.text).toContain('name="expiry_date-year"');
     expect(response.text).toContain('Upload credential');
     expect(response.text).toContain('Your credentials');
     expect(response.text).toContain('class="nexus-alpha-table-scroll" role="region" aria-label="Your credentials" tabindex="0"');
@@ -34102,7 +34111,11 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('id="opportunity_id" name="opportunity_id"');
     expect(response.text).toContain('value="77"');
     expect(response.text).toContain('Cook lunch');
-    expect(response.text).toContain('id="date" name="date" type="date"');
+    // 🔴 Was the native `type="date"` input. Converted to the GOV.UK three-field
+    // pattern (GDS: native pickers fail users). What matters is unchanged and still
+    // asserted — the field exists and posts under the same name — via its day field.
+    expect(response.text).toContain('name="date-day"');
+    expect(response.text).toContain('name="date-year"');
     expect(response.text).toContain('id="hours" name="hours" type="number"');
     expect(response.text).toContain('id="description" name="description"');
     expect(response.text).toContain('Recent hour logs');
@@ -34723,7 +34736,11 @@ describe('shared accessible frontend shell', () => {
     expect(trainingResponse.text).toContain('Log a training record');
     expect(trainingResponse.text).toContain('id="training_type" name="training_type"');
     expect(trainingResponse.text).toContain('<option value="first_aid">First Aid</option>');
-    expect(trainingResponse.text).toContain('id="completed_at" name="completed_at" type="date"');
+    // 🔴 Was the native `type="date"` input. Converted to the GOV.UK three-field
+    // pattern (GDS: native pickers fail users). What matters is unchanged and still
+    // asserted — the field exists and posts under the same name — via its day field.
+    expect(trainingResponse.text).toContain('name="completed_at-day"');
+    expect(trainingResponse.text).toContain('name="completed_at-year"');
     expect(trainingResponse.text).toContain('method="post" action="/volunteering/training"');
     expect(trainingResponse.text).toContain('Emergency first aid at work');
     expect(trainingResponse.text).toContain('Red Cross');
@@ -34765,10 +34782,25 @@ describe('shared accessible frontend shell', () => {
   it.each([
     ['/volunteering/training?status=training-type-required', 'training_type', 'Select a training type'],
     ['/volunteering/training?status=training-name-required', 'training_name', 'Enter the name of the course or programme'],
+    // 🔴 Anchor is `completed_at-day`, not `completed_at`. The field is now the GOV.UK
+    // three-field date pattern, whose `id="completed_at"` sits on the wrapping div — an
+    // anchor to that scrolls but never focuses an input, defeating the error summary.
+    // GDS links a date error to the day field.
     ['/volunteering/training?status=training-date-required', 'completed_at', 'Enter the date you completed the training'],
     ['/volunteering/incidents?status=incident-title-required', 'title', 'Enter a brief title for the incident'],
     ['/volunteering/incidents?status=incident-description-too-short', 'description', 'Describe what happened in at least 20 characters']
   ])('links safeguarding validation status on %s to #%s', async (requestPath, field, message) => {
+    // 🔴 Do NOT add a 4th parameter here to carry the anchor. With three-element rows,
+    // Jest reads a 4th declared parameter on an ASYNC callback as its `done` callback and
+    // the test times out after 10s with "waiting for done()" — which reads as a hang, not
+    // as a signature mistake. Derive it instead.
+    //
+    // A date field's anchor targets its first input: the GOV.UK three-field pattern puts
+    // `id="{name}"` on the wrapping div, so linking to `#completed_at` scrolls without
+    // focusing anything, defeating the error summary. GDS links date errors to the day field.
+    const DATE_FIELDS = ['completed_at', 'expires_at'];
+    const anchor = DATE_FIELDS.includes(field) ? `${field}-day` : field;
+
     const response = await request(app)
       .get(requestPath)
       .set('Cookie', signedCookieHeader());
@@ -34778,8 +34810,8 @@ describe('shared accessible frontend shell', () => {
     const summaryEnd = response.text.indexOf('</ul>', summaryStart);
     const summary = response.text.slice(summaryStart, summaryEnd);
     expect(summaryStart).toBeGreaterThan(-1);
-    expect(summary).toContain(`<a href="#${field}">${message}</a>`);
-    expect(response.text).toContain(`id="${field}"`);
+    expect(summary).toContain(`<a href="#${anchor || field}">${message}</a>`);
+    expect(response.text).toContain(`id="${anchor || field}"`);
   });
 
   it.each([
