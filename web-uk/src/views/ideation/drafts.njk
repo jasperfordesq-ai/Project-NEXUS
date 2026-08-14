@@ -6,7 +6,7 @@
 {% from "_character-count.njk" import characterCount %}
 
 {% block content %}
-  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.drafts.back_to_challenge") }}</a>
 
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
@@ -30,53 +30,53 @@
   {% if challenge.title %}
     <span class="govuk-caption-xl">{{ challenge.title }}</span>
   {% endif %}
-  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Your draft ideas</h1>
-  <p class="govuk-body-l">Drafts are only visible to you. Finish a draft and publish it to share your idea with the challenge.</p>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.drafts.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_ideation.drafts.intro") }}</p>
 
   {% if not drafts or not drafts.length %}
-    <div class="govuk-inset-text">You have no draft ideas for this challenge.</div>
+    <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.drafts.empty") }}</div>
   {% else %}
     <div class="nexus-alpha-card-list">
       {% for draft in drafts %}
         <article class="nexus-alpha-card">
           <div class="nexus-alpha-module-row">
-            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ draft.title if draft.title else "Untitled draft" }}</h2>
-            <strong class="govuk-tag govuk-tag--yellow">Draft</strong>
+            <h2 class="govuk-heading-s govuk-!-margin-bottom-1">{{ draft.title if draft.title else t("govuk_alpha_ideation.drafts.untitled") }}</h2>
+            <strong class="govuk-tag govuk-tag--yellow">{{ t("govuk_alpha_ideation.drafts.status") }}</strong>
           </div>
 
           {% if draft.updatedAt %}
-            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">Saved {{ draft.updatedAt }}</p>
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.drafts.saved_on", { date: draft.updatedAt }) }}</p>
           {% elif draft.createdAt %}
-            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">Started {{ draft.createdAt }}</p>
+            <p class="govuk-body-s nexus-alpha-meta govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.drafts.created_on", { date: draft.createdAt }) }}</p>
           {% endif %}
 
           <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/drafts/' ~ draft.id) }}">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Edit draft</h3>
+            <h3 class="govuk-heading-s govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.drafts.edit_heading") }}</h3>
             <div class="govuk-form-group{% if status == 'draft-invalid' %} govuk-form-group--error{% endif %}">
-              <label class="govuk-label" for="draft-title-{{ draft.id }}">Idea title</label>
+              <label class="govuk-label" for="draft-title-{{ draft.id }}">{{ t("govuk_alpha_ideation.drafts.title_label") }}</label>
               {% if status == 'draft-invalid' %}
-                <p id="draft-title-{{ draft.id }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a title for your draft.</p>
+                <p id="draft-title-{{ draft.id }}-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("govuk_alpha_ideation.states.draft-invalid") }}</p>
               {% endif %}
               <input class="govuk-input" id="draft-title-{{ draft.id }}" name="draft_title" type="text" maxlength="255" value="{{ draft.title }}" {% if status == 'draft-invalid' %}aria-describedby="draft-title-{{ draft.id }}-error"{% endif %}>
             </div>
             {% call characterCount(5000, characterCountMessages, "draft-description-" + (draft.id | string)) %}
             <div class="govuk-form-group">
-              <label class="govuk-label" for="draft-description-{{ draft.id }}">Idea details</label>
-              <div id="draft-description-hint-{{ draft.id }}" class="govuk-hint">You can save a draft with just a title, but you will need details before you can publish.</div>
+              <label class="govuk-label" for="draft-description-{{ draft.id }}">{{ t("govuk_alpha_ideation.drafts.description_label") }}</label>
+              <div id="draft-description-hint-{{ draft.id }}" class="govuk-hint">{{ t("govuk_alpha_ideation.drafts.description_hint") }}</div>
               <textarea class="govuk-textarea govuk-js-character-count" id="draft-description-{{ draft.id }}" name="draft_description" rows="5" maxlength="5000" aria-describedby="draft-description-hint-{{ draft.id }} draft-description-{{ draft.id }}-info">{{ draft.description }}</textarea>
             </div>
             {% endcall %}
             <div class="govuk-warning-text">
               <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
               <strong class="govuk-warning-text__text">
-                <span class="govuk-visually-hidden">Warning</span>
-                Publishing shares this idea with everyone and it can no longer be edited as a draft.
+                <span class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.page.warning") }}</span>
+                {{ t("govuk_alpha_ideation.drafts.publish_warning") }}
               </strong>
             </div>
             <div class="govuk-button-group">
-              <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="draft_action" value="save">Save draft</button>
-              <button class="govuk-button" data-module="govuk-button" name="draft_action" value="publish">Publish idea</button>
+              <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="draft_action" value="save">{{ t("govuk_alpha_ideation.drafts.save") }}</button>
+              <button class="govuk-button" data-module="govuk-button" name="draft_action" value="publish">{{ t("govuk_alpha_ideation.drafts.publish") }}</button>
             </div>
           </form>
         </article>

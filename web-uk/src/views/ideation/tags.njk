@@ -5,16 +5,16 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
-  <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">Back to all challenges</a>
+  <a href="{{ urlFor('/ideation') }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.tags.back_to_challenges") }}</a>
 
   <span class="govuk-caption-xl">{{ tenantName }}</span>
-  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">Browse by tag</h1>
-  <p class="govuk-body-l">Find challenges by their most popular tags.</p>
+  <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.tags.title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_ideation.tags.intro") }}</p>
 
   {% if not tags.length %}
-    <div class="govuk-inset-text">No tags have been added to any challenges yet.</div>
+    <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.tags.empty") }}</div>
   {% else %}
-    <h2 class="govuk-heading-m">Popular tags</h2>
+    <h2 class="govuk-heading-m">{{ t("govuk_alpha_ideation.tags.popular_heading") }}</h2>
     <ul class="govuk-list nexus-alpha-inline-list">
       {% for tag in tags %}
         <li>
@@ -29,12 +29,12 @@
   {% if selectedTag %}
     <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--l">
     <div class="nexus-alpha-module-row">
-      <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Challenges tagged "{{ selectedTag }}"</h2>
-      <a class="govuk-link" href="{{ urlFor('/ideation/tags') }}">Clear tag</a>
+      <h2 class="govuk-heading-m govuk-!-margin-bottom-2">{{ t("govuk_alpha_ideation.tags.selected_heading", { tag: selectedTag | escape }) | safe }}</h2>
+      <a class="govuk-link" href="{{ urlFor('/ideation/tags') }}">{{ t("govuk_alpha_ideation.tags.clear") }}</a>
     </div>
 
     {% if not matches.length %}
-      <div class="govuk-inset-text">No challenges are tagged "{{ selectedTag }}" right now.</div>
+      <div class="govuk-inset-text">{{ t("govuk_alpha_ideation.tags.no_matches", { tag: selectedTag | escape }) | safe }}</div>
     {% else %}
       <div class="nexus-alpha-card-list">
         {% for challenge in matches %}

@@ -6,7 +6,7 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
-  <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or "Community" }}</span>
+  <span class="govuk-caption-xl">{{ tenant.name or tenant.slug or t("govuk_alpha_ideation.page.community_fallback") }}</span>
   <h1 class="govuk-heading-xl">{{ t("ideation.ideas_title") }}</h1>
   <p class="govuk-body-l">{{ t("ideation.description") }}</p>
 
@@ -17,13 +17,13 @@
     </div>
     <div class="govuk-form-group govuk-!-margin-bottom-4">
       <fieldset class="govuk-fieldset">
-        <legend class="govuk-fieldset__legend">Filter by status</legend>
+        <legend class="govuk-fieldset__legend">{{ t("govuk_alpha_ideation.page.index_filter_legend") }}</legend>
         <div class="govuk-radios govuk-radios--inline govuk-radios--small" data-module="govuk-radios">
           {% set statusOptions = [
-            { value: "", label: "All challenges", id: "all" },
-            { value: "open", label: "Open", id: "open" },
-            { value: "voting", label: "Voting", id: "voting" },
-            { value: "closed", label: "Closed", id: "closed" }
+            { value: "", label: t("govuk_alpha_ideation.page.index_filter_all"), id: "all" },
+            { value: "open", label: t("govuk_alpha_ideation.status.open"), id: "open" },
+            { value: "voting", label: t("govuk_alpha_ideation.status.voting"), id: "voting" },
+            { value: "closed", label: t("govuk_alpha_ideation.status.closed"), id: "closed" }
           ] %}
           {% for option in statusOptions %}
             <div class="govuk-radios__item">
@@ -35,9 +35,9 @@
       </fieldset>
     </div>
     <div class="govuk-button-group">
-      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">Search</button>
+      <button class="govuk-button govuk-button--secondary" data-module="govuk-button">{{ t("govuk_alpha_ideation.page.index_search") }}</button>
       {% if activeStatus or activeQuery %}
-        <a class="govuk-link" href="{{ urlFor('/ideation') }}">Clear filters</a>
+        <a class="govuk-link" href="{{ urlFor('/ideation') }}">{{ t("govuk_alpha_ideation.page.index_clear_filters") }}</a>
       {% endif %}
     </div>
   </form>

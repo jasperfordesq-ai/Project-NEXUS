@@ -13,12 +13,12 @@
   {% set isInvalid = status == "challenge-invalid" %}
   {% set statusOptions = ["draft", "open", "voting", "evaluating", "closed", "archived"] %}
   {% set statusLabels = {
-    draft: "Draft",
-    open: "Open",
-    voting: "Voting",
-    evaluating: "Evaluating",
-    closed: "Closed",
-    archived: "Archived"
+    draft: t("govuk_alpha_ideation.status.draft"),
+    open: t("govuk_alpha_ideation.status.open"),
+    voting: t("govuk_alpha_ideation.status.voting"),
+    evaluating: t("govuk_alpha_ideation.status.evaluating"),
+    closed: t("govuk_alpha_ideation.status.closed"),
+    archived: t("govuk_alpha_ideation.status.archived")
   } %}
 
   <a href="{{ backHref }}" class="govuk-back-link">{{ t("polish_federation.transfer_cancel") }}</a>
@@ -40,27 +40,27 @@
         <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
         <div class="govuk-error-summary__body">
           <ul class="govuk-list govuk-error-summary__list">
-            <li><a href="#title">Enter a challenge title.</a></li>
-            <li><a href="#description">Enter a challenge description.</a></li>
+            <li><a href="#title">{{ t("govuk_alpha_ideation.form.title_required") }}</a></li>
+            <li><a href="#description">{{ t("govuk_alpha_ideation.form.description_required") }}</a></li>
           </ul>
         </div>
       </div>
     </div>
   {% endif %}
 
-  <span class="govuk-caption-xl">Ideation</span>
-  <h1 class="govuk-heading-xl">{{ "Edit challenge" if isEdit else "Create challenge" }}</h1>
+  <span class="govuk-caption-xl">{{ t("govuk_alpha_ideation.nav.heading") }}</span>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_ideation.form.edit_title") if isEdit else t("govuk_alpha_ideation.form.submit_create") }}</h1>
   <p class="govuk-body-l">
-    {{ "Update the challenge details and lifecycle state." if isEdit else "Describe the challenge you want people to respond to." }}
+    {{ t("govuk_alpha_ideation.page.form_edit_lead") if isEdit else t("govuk_alpha_ideation.page.form_create_lead") }}
   </p>
 
   {% if not isEdit and templates and templates.length %}
     <details class="govuk-details" data-module="govuk-details">
       <summary class="govuk-details__summary">
-        <span class="govuk-details__summary-text">Use a challenge template</span>
+        <span class="govuk-details__summary-text">{{ t("govuk_alpha_ideation.page.form_template_summary") }}</span>
       </summary>
       <div class="govuk-details__text">
-        <p class="govuk-body">Templates can help you structure common community challenge formats.</p>
+        <p class="govuk-body">{{ t("govuk_alpha_ideation.page.form_template_intro") }}</p>
         <ul class="govuk-list">
           {% for template in templates %}
             <li class="govuk-!-margin-bottom-1">
@@ -80,19 +80,19 @@
 
     <div class="govuk-form-group{% if isInvalid %} govuk-form-group--error{% endif %}">
       <label class="govuk-label" for="title">{{ t("group_exchanges.form_title_label") }}</label>
-      <div id="title-hint" class="govuk-hint">Use a short title people can scan in the challenge list.</div>
+      <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_title_hint") }}</div>
       {% if isInvalid %}
-        <p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a challenge title.</p>
+        <p id="title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("govuk_alpha_ideation.form.title_required") }}</p>
       {% endif %}
       <input class="govuk-input" id="title" name="title" type="text" maxlength="255" value="{{ challenge.title or '' }}" aria-describedby="title-hint{% if isInvalid %} title-error{% endif %}">
     </div>
 
     {% call characterCount(5000, characterCountMessages, "description") %}
     <div class="govuk-form-group{% if isInvalid %} govuk-form-group--error{% endif %}">
-      <label class="govuk-label" for="description">Description</label>
-      <div id="description-hint" class="govuk-hint">Explain the problem, who it affects, and what good ideas should consider.</div>
+      <label class="govuk-label" for="description">{{ t("govuk_alpha_ideation.form.description_label") }}</label>
+      <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_description_hint") }}</div>
       {% if isInvalid %}
-        <p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> Enter a challenge description.</p>
+        <p id="description-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("govuk_alpha_ideation.form.description_required") }}</p>
       {% endif %}
       <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="6" maxlength="5000" aria-describedby="description-hint{% if isInvalid %} description-error{% endif %} description-info">{{ challenge.description or '' }}</textarea>
     </div>
@@ -100,7 +100,7 @@
 
     {% if categories and categories.length %}
       <div class="govuk-form-group">
-        <label class="govuk-label" for="category_id">Category</label>
+        <label class="govuk-label" for="category_id">{{ t("govuk_alpha_ideation.form.category_label") }}</label>
         <select class="govuk-select" id="category_id" name="category_id">
           <option value="">{{ t("events.no_category") }}</option>
           {% for category in categories %}
@@ -111,50 +111,50 @@
     {% endif %}
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="category">Category text</label>
-      <div id="category-hint" class="govuk-hint">Use this when the challenge needs a plain-text category.</div>
+      <label class="govuk-label" for="category">{{ t("govuk_alpha_ideation.page.form_category_text_label") }}</label>
+      <div id="category-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_category_text_hint") }}</div>
       <input class="govuk-input govuk-input--width-20" id="category" name="category" type="text" maxlength="100" value="{{ challenge.category or '' }}" aria-describedby="category-hint">
     </div>
 
     {% call characterCount(2000, characterCountMessages, "prize_description") %}
     <div class="govuk-form-group">
-      <label class="govuk-label" for="prize_description">Prize or recognition</label>
+      <label class="govuk-label" for="prize_description">{{ t("govuk_alpha_ideation.page.form_prize_label") }}</label>
       <textarea class="govuk-textarea govuk-js-character-count" id="prize_description" name="prize_description" rows="3" maxlength="2000" aria-describedby="prize_description-info">{{ challenge.prizeDescription or '' }}</textarea>
     </div>
     {% endcall %}
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="submission_deadline">Submission deadline</label>
-      <div id="submission_deadline-hint" class="govuk-hint">Use ISO date format, for example 2026-08-31.</div>
+      <label class="govuk-label" for="submission_deadline">{{ t("govuk_alpha_ideation.detail.submission_deadline") }}</label>
+      <div id="submission_deadline-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_submission_deadline_hint") }}</div>
       <input class="govuk-input govuk-input--width-20" id="submission_deadline" name="submission_deadline" type="text" value="{{ challenge.submissionDeadline or '' }}" aria-describedby="submission_deadline-hint">
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="voting_deadline">Voting deadline</label>
-      <div id="voting_deadline-hint" class="govuk-hint">Use ISO date format, for example 2026-09-15.</div>
+      <label class="govuk-label" for="voting_deadline">{{ t("govuk_alpha_ideation.detail.voting_deadline") }}</label>
+      <div id="voting_deadline-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_voting_deadline_hint") }}</div>
       <input class="govuk-input govuk-input--width-20" id="voting_deadline" name="voting_deadline" type="text" value="{{ challenge.votingDeadline or '' }}" aria-describedby="voting_deadline-hint">
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="max_ideas_per_user">Maximum ideas per person</label>
-      <div id="max_ideas_per_user-hint" class="govuk-hint">Leave blank if there is no limit.</div>
+      <label class="govuk-label" for="max_ideas_per_user">{{ t("govuk_alpha_ideation.detail.max_ideas") }}</label>
+      <div id="max_ideas_per_user-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_max_ideas_hint") }}</div>
       <input class="govuk-input govuk-input--width-5" id="max_ideas_per_user" name="max_ideas_per_user" type="text" inputmode="numeric" value="{{ challenge.maxIdeasPerUser or '' }}" aria-describedby="max_ideas_per_user-hint">
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="cover_image">Cover image URL</label>
+      <label class="govuk-label" for="cover_image">{{ t("govuk_alpha_ideation.page.form_cover_image_label") }}</label>
       <input class="govuk-input" id="cover_image" name="cover_image" type="url" maxlength="500" value="{{ challenge.coverImage or '' }}">
     </div>
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="tags">Tags</label>
-      <div id="tags-hint" class="govuk-hint">Separate tags with commas.</div>
+      <label class="govuk-label" for="tags">{{ t("govuk_alpha_ideation.detail.tags") }}</label>
+      <div id="tags-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.page.form_tags_hint") }}</div>
       <input class="govuk-input" id="tags" name="tags" type="text" value="{{ challenge.tagsText or '' }}" aria-describedby="tags-hint">
     </div>
 
     <div class="govuk-form-group">
       <fieldset class="govuk-fieldset">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Status</legend>
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_ideation.idea.status_label") }}</legend>
         <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
           {% for option in statusOptions %}
             <div class="govuk-radios__item">
@@ -167,7 +167,7 @@
     </div>
 
     <div class="govuk-button-group">
-      <button type="submit" class="govuk-button" data-module="govuk-button">{{ "Save challenge" if isEdit else "Create challenge" }}</button>
+      <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_ideation.page.form_submit_edit") if isEdit else t("govuk_alpha_ideation.form.submit_create") }}</button>
       <a class="govuk-link" href="{{ backHref }}">{{ t("polish_federation.transfer_cancel") }}</a>
     </div>
   </form>

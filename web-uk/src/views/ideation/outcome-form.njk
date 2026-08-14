@@ -7,14 +7,14 @@
 
 {% block content %}
   {% set statusOptions = [
-    { value: "not_started", label: "Not started" },
-    { value: "in_progress", label: "In progress" },
-    { value: "implemented", label: "Implemented" },
-    { value: "abandoned", label: "Abandoned" }
+    { value: "not_started", label: t("govuk_alpha_ideation.outcomes.status_not_started") },
+    { value: "in_progress", label: t("govuk_alpha_ideation.outcomes.status_in_progress") },
+    { value: "implemented", label: t("govuk_alpha_ideation.outcomes.status_implemented") },
+    { value: "abandoned", label: t("govuk_alpha_ideation.outcomes.status_abandoned") }
   ] %}
   {% set currentStatus = outcome.status or "not_started" %}
 
-  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">Back to challenge</a>
+  <a href="{{ urlFor('/ideation/' ~ challenge.id) }}" class="govuk-back-link">{{ t("govuk_alpha_ideation.idea.back_to_challenge") }}</a>
 
   {% if successMessage %}
     {% set notificationMessage = successMessage %}
@@ -36,16 +36,16 @@
   {% endif %}
 
   <span class="govuk-caption-xl">{{ challenge.title }}</span>
-  <h1 class="govuk-heading-xl">Record challenge outcome</h1>
-  <p class="govuk-body-l">Capture the winning idea, how far it has been implemented, and the impact it had.</p>
+  <h1 class="govuk-heading-xl">{{ t("govuk_alpha_ideation.outcomes.edit_title") }}</h1>
+  <p class="govuk-body-l">{{ t("govuk_alpha_ideation.outcomes.edit_intro") }}</p>
 
   <form method="post" action="{{ urlFor('/ideation/' ~ challenge.id ~ '/outcome') }}">
     <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
     <div class="govuk-form-group">
-      <label class="govuk-label" for="winning_idea_id">Winning idea</label>
+      <label class="govuk-label" for="winning_idea_id">{{ t("govuk_alpha_ideation.outcomes.winning_idea_label") }}</label>
       <select class="govuk-select" id="winning_idea_id" name="winning_idea_id">
-        <option value="">No winning idea selected</option>
+        <option value="">{{ t("govuk_alpha_ideation.outcomes.winning_idea_none") }}</option>
         {% for idea in ideas %}
           <option value="{{ idea.id }}"{% if outcome.winningIdeaId == idea.id %} selected{% endif %}>{{ idea.title }}</option>
         {% endfor %}
@@ -54,7 +54,7 @@
 
     <div class="govuk-form-group">
       <fieldset class="govuk-fieldset">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Implementation status</legend>
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_ideation.outcomes.status_label") }}</legend>
         <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
           {% for option in statusOptions %}
             <div class="govuk-radios__item">
@@ -68,12 +68,12 @@
 
     {% call characterCount(5000, characterCountMessages, "impact_description") %}
     <div class="govuk-form-group">
-      <label class="govuk-label" for="impact_description">Impact (optional)</label>
-      <div id="impact_description-hint" class="govuk-hint">Describe the difference this idea made once it was put into action.</div>
+      <label class="govuk-label" for="impact_description">{{ t("govuk_alpha_ideation.outcomes.impact_label") }}</label>
+      <div id="impact_description-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.outcomes.impact_hint") }}</div>
       <textarea class="govuk-textarea govuk-js-character-count" id="impact_description" name="impact_description" rows="4" maxlength="5000" aria-describedby="impact_description-hint impact_description-info">{{ outcome.impactDescription or '' }}</textarea>
     </div>
     {% endcall %}
 
-    <button type="submit" class="govuk-button" data-module="govuk-button">Save outcome</button>
+    <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_ideation.outcomes.submit") }}</button>
   </form>
 {% endblock %}
