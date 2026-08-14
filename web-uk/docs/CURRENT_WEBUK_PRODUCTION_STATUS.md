@@ -1,6 +1,6 @@
 # Current Web UK Production Status (Goal W2)
 
-Last reviewed: 2026-08-13
+Last reviewed: 2026-08-14
 
 Status: **Canonical current — sole Web UK scoring source**
 
@@ -24,6 +24,45 @@ artefact.
 ## 🔴 How this number moved, and which rows went DOWN
 
 W1 banked `663/1000` (66.3%). W2 stands at `873/1000` (87.3%), rescored on 2026-08-13 (651 -> 710 -> 745 -> 730 -> 830 -> 836 -> 845 -> 851 -> 867 -> 873).
+
+### 🔴 2026-08-14 continuation — the number HOLDS at 873, and this is the honest reason
+
+A large accessibility and localisation pass shipped on 2026-08-14: ~54 empty-page
+headings for screen-reader structure; wide-table horizontal-scroll regions (WCAG
+1.4.10 reflow) across 26 pages; a print stylesheet; the Ideas, Courses and the last
+scattered hard-coded-English strings extracted and machine-translated into the nine
+non-Irish locales (Irish fallback, ceiling raised to 375); the knowledge-base date
+and marketplace coupon numbers localised; a duplicate-submit/CSRF/false-success
+member-bug batch; and the connections pages' silent API failure replaced with a
+"could not load" notice.
+
+**Per the scoring rule above, almost none of this raises a number.** Each item fixed
+a defect that was never written into a row's deduction list, so it *restores
+accuracy* — it justifies credit those rows already gave for areas they never actually
+measured — rather than earning new credit. Recording it here keeps the rows honest;
+it does not move them. Concretely: the empty-state headings and table reflow are the
+same class as the single `/exchanges` empty-state fix that Observable Blade behaviour
+already scored `+2` for, but the other ~54 were never individually deducted, so
+closing them earns nothing; the translation work removed hard-coded English the
+Localisation row's own "0 conservative matches" line already (wrongly) assumed absent,
+so it makes that credit truthful without adding to it.
+
+**Two rows genuinely could move, and are deliberately NOT rescored here** because an
+honest number needs live production evidence this pass did not gather:
+- **Blade retirement without regression (5/50)** — the session record has Blade
+  deleted and web-uk deployed to every accessible host on 2026-08-14. If verified in
+  production that closes most of the written `-45`. But scoring a retirement row from
+  the session's own claim, rather than a live measurement that web-uk serves all
+  accessible hosts with no regression and that the removal did not break a deploy,
+  is exactly what this rubric forbids. Flagged for a production-evidence rescore.
+- **Production deployment, cutover and rollback (87/100)** — same reason: the two
+  community accessible domains were reportedly cut over to web-uk, but the blue/green
+  rollback lever is now GONE (nothing behind the Apache fallback arm since Blade was
+  deleted), which is a genuine *new* risk to weigh, not a clean gain. Needs a
+  measured rescore, not an inferred one.
+
+Do not raise 873 on the strength of the 2026-08-14 accessibility work alone; raise it
+only when the two rows above are re-derived against production evidence.
 
 ## 🔴 THE SCORING RULE, because it was broken once and inflated this figure by 57
 
