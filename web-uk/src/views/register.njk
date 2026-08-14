@@ -160,8 +160,8 @@
 
           {% if not tenantSlug %}
             {{ govukInput({
-              label: { text: "Community code", classes: "govuk-label--m" },
-              hint: { text: "Enter the code for your community" },
+              label: { text: t("auth.community_code_label"), classes: "govuk-label--m" },
+              hint: { text: t("auth.community_code_hint") },
               id: "tenant_slug",
               name: "tenant_slug",
               value: values.tenant_slug,

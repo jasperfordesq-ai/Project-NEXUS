@@ -244,6 +244,9 @@ return [
         'error_prefix' => 'خطأ:',
     ],
     'home' => [
+        'network_heading' => 'المجتمعات في هذه الشبكة',
+        'network_intro' => 'قم بالتبديل إلى مجتمع في :community.',
+        'network_community_link' => 'رابط المجتمع: :slug',
         'module_signin' => 'تسجيل الدخول',
         'module_signin_hint' => 'تسجيل الدخول لاستخدام هذا.',
         'caption' => ':community',
@@ -310,6 +313,7 @@ return [
         ],
     ],
     'tenant_chooser' => [
+        'load_error' => 'لم نتمكن من تحميل المجتمعات المتاحة. حاول مرة أخرى لاحقًا.',
         'title' => 'اختر المجتمع',
         'description' => 'حدد المجتمع الذي تريد استخدامه مع Project NEXUS Accessible.',
         'empty' => 'لا توجد مجتمعات نشطة متاحة.',
@@ -361,6 +365,8 @@ return [
         'edit_profile' => 'قم بتحرير ملف التعريف الخاص بك',
     ],
     'auth' => [
+        'community_code_label' => 'رمز المجتمع',
+        'community_code_hint' => 'رمز مجتمعك، على سبيل المثال "acme".',
         'resend_email_label' => 'عنوان البريد الإلكتروني',
         'resend_verification_hint' => 'سنرسل رابط تحقق جديدًا إلى هذا العنوان إذا كان الحساب يحتاج إلى تحقق.',
         'resend_verification_button' => 'إعادة إرسال بريد التحقق',
@@ -598,6 +604,7 @@ return [
         'comment_posted_on_prefix' => 'تعليق نشر على',
     ],
     'listings' => [
+        'exchange_check_error' => 'لا يمكن التحقق من خيارات الصرف. حاول مرة أخرى قبل إرسال الطلب.',
         'sort_label' => 'الترتيب حسب',
         'sort_newest' => 'الأحدث',
         'sort_recommended' => 'موصى به',
@@ -865,6 +872,8 @@ return [
         ],
     ],
     'messages' => [
+        'empty_conversation' => 'لا توجد رسائل في هذه المحادثة حتى الآن.',
+        'your_message_label' => 'رسالتك',
         'search_label' => 'ابحث عن شخص لمراسلته',
         'search_hint' => 'ابحث باسم العضو أو المنظمة.',
         'search_empty' => 'لم يُعثر على أعضاء. جرّب اسماً مختلفاً أو تصفح الدليل.',
@@ -2447,6 +2456,7 @@ return [
         'leaderboard_filter_heading' => 'تصفية لوحة المتصدرين',
     ],
     'jobs' => [
+        'alerts_load_error' => 'لا يمكن تحميل تنبيهات الوظائف. حاول ثانية.',
         'title' => 'الوظائف',
         'caption' => ':community',
         'description' => 'الأدوار والفرص في هذا المجتمع.',

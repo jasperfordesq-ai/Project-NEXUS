@@ -244,6 +244,9 @@ return [
         'error_prefix' => 'Fehler:',
     ],
     'home' => [
+        'network_heading' => 'Communities in diesem Netzwerk',
+        'network_intro' => 'Wechseln Sie zu einer Community in :community.',
+        'network_community_link' => 'Community-Link: :slug',
         'module_signin' => 'Melden Sie sich an',
         'module_signin_hint' => 'Melden Sie sich an, um dies zu nutzen.',
         'caption' => ':community',
@@ -310,6 +313,7 @@ return [
         ],
     ],
     'tenant_chooser' => [
+        'load_error' => 'Wir konnten die verfügbaren Communities nicht laden. Versuchen Sie es später noch einmal.',
         'title' => 'Wählen Sie eine Community',
         'description' => 'Wählen Sie die Community aus, die Sie mit Project NEXUS Accessible verwenden möchten.',
         'empty' => 'Es sind keine aktiven Communities verfügbar.',
@@ -361,6 +365,8 @@ return [
         'edit_profile' => 'Bearbeiten Sie Ihr Profil',
     ],
     'auth' => [
+        'community_code_label' => 'Gemeinschaftscode',
+        'community_code_hint' => 'Der Code für Ihre Community, zum Beispiel „acme“.',
         'resend_email_label' => 'E-Mail-Adresse',
         'resend_verification_hint' => 'Wir senden einen neuen Bestätigungslink an diese Adresse, sofern ein Konto verifiziert werden muss.',
         'resend_verification_button' => 'Bestätigungs-E-Mail erneut senden',
@@ -598,6 +604,7 @@ return [
         'comment_posted_on_prefix' => 'Kommentar gepostet am',
     ],
     'listings' => [
+        'exchange_check_error' => 'Umtauschmöglichkeiten konnten nicht geprüft werden. Versuchen Sie es erneut, bevor Sie eine Anfrage senden.',
         'sort_label' => 'Sortieren nach',
         'sort_newest' => 'Neueste',
         'sort_recommended' => 'Empfohlen',
@@ -865,6 +872,8 @@ return [
         ],
     ],
     'messages' => [
+        'empty_conversation' => 'Noch keine Nachrichten in dieser Konversation.',
+        'your_message_label' => 'Ihre Nachricht',
         'search_label' => 'Person suchen, der Sie eine Nachricht senden möchten',
         'search_hint' => 'Nach Mitglieds- oder Organisationsname suchen.',
         'search_empty' => 'Keine Mitglieder gefunden. Versuchen Sie einen anderen Namen oder durchsuchen Sie das Verzeichnis.',
@@ -2447,6 +2456,7 @@ return [
         'leaderboard_filter_heading' => 'Bestenliste filtern',
     ],
     'jobs' => [
+        'alerts_load_error' => 'Jobbenachrichtigungen konnten nicht geladen werden. Versuchen Sie es erneut.',
         'title' => 'Jobs',
         'caption' => ':community',
         'description' => 'Stellen und Möglichkeiten in dieser Gemeinschaft.',

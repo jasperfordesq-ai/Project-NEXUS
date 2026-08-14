@@ -296,7 +296,7 @@
           <p class="govuk-body">{{ t("listings.direct_message_detail") }}</p>
           <a class="govuk-button" href="{{ urlFor('/messages/' + (ownerId | string) + '?listing=' + (listing.id | string)) }}" role="button" draggable="false" data-module="govuk-button">{{ t("actions.send_message") }}</a>
         {% elif not exchangeContextReady %}
-          <div class="govuk-inset-text">Exchange options could not be checked. Try again before sending a request.</div>
+          <div class="govuk-inset-text">{{ t("listings.exchange_check_error") }}</div>
         {% else %}
           <div class="govuk-inset-text">{{ t("listings.messaging_unavailable") }}</div>
         {% endif %}

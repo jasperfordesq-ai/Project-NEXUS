@@ -72,8 +72,8 @@
 
   {% if networkCommunities and networkCommunities.length %}
     <section class="govuk-!-margin-bottom-8" aria-labelledby="network-communities-heading">
-      <h2 class="govuk-heading-l" id="network-communities-heading">Communities in this network</h2>
-      <p class="govuk-body">Switch to a community in {{ communityName }}.</p>
+      <h2 class="govuk-heading-l" id="network-communities-heading">{{ t("home.network_heading") }}</h2>
+      <p class="govuk-body">{{ t("home.network_intro", { community: communityName }) }}</p>
       <div class="nexus-alpha-card-list">
         {% for community in networkCommunities %}
           <article class="nexus-alpha-card">
@@ -84,7 +84,7 @@
               <p class="govuk-body govuk-!-margin-bottom-0">{{ community.tagline }}</p>
             {% endif %}
             {% if community.slug %}
-              <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">Community link: {{ community.slug }}</p>
+              <p class="govuk-body-s govuk-!-margin-top-2 govuk-!-margin-bottom-0">{{ t("home.network_community_link", { slug: community.slug }) }}</p>
             {% endif %}
           </article>
         {% endfor %}

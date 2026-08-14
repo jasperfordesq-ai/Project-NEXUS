@@ -16,7 +16,7 @@
 
       {% if tenantLoadError %}
         <div class="govuk-inset-text">
-          We could not load the available communities. Try again later.
+          {{ t("tenant_chooser.load_error") }}
         </div>
       {% endif %}
 

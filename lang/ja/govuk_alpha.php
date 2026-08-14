@@ -244,6 +244,9 @@ return [
         'error_prefix' => 'エラー:',
     ],
     'home' => [
+        'network_heading' => 'このネットワーク内のコミュニティ',
+        'network_intro' => ':community のコミュニティに切り替えます。',
+        'network_community_link' => 'コミュニティリンク: :slug',
         'module_signin' => 'サインイン',
         'module_signin_hint' => 'これを使用するにはサインインしてください。',
         'caption' => ':community',
@@ -310,6 +313,7 @@ return [
         ],
     ],
     'tenant_chooser' => [
+        'load_error' => '利用可能なコミュニティを読み込むことができませんでした。後でもう一度試してください。',
         'title' => 'コミュニティを選択してください',
         'description' => 'Project NEXUS Accessible で使用するコミュニティを選択します。',
         'empty' => 'アクティブなコミュニティはありません。',
@@ -361,6 +365,8 @@ return [
         'edit_profile' => 'プロフィールを編集する',
     ],
     'auth' => [
+        'community_code_label' => 'コミュニティコード',
+        'community_code_hint' => 'コミュニティのコード (例: 「acme」)。',
         'resend_email_label' => 'メールアドレス',
         'resend_verification_hint' => '確認が必要なアカウントがある場合、このアドレスに新しい確認リンクを送信します。',
         'resend_verification_button' => '確認メールを再送する',
@@ -598,6 +604,7 @@ return [
         'comment_posted_on_prefix' => '投稿されたコメント',
     ],
     'listings' => [
+        'exchange_check_error' => '交換オプションを確認できませんでした。リクエストを送信する前にもう一度試してください。',
         'sort_label' => '並べ替え',
         'sort_newest' => '最新の',
         'sort_recommended' => 'おすすめ',
@@ -865,6 +872,8 @@ return [
         ],
     ],
     'messages' => [
+        'empty_conversation' => 'この会話にはまだメッセージがありません。',
+        'your_message_label' => 'あなたのメッセージ',
         'search_label' => 'メッセージする相手を検索',
         'search_hint' => 'メンバー名または団体名で検索。',
         'search_empty' => 'メンバーが見つかりません。別の名前で検索するか、ディレクトリを閲覧してください。',
@@ -2447,6 +2456,7 @@ return [
         'leaderboard_filter_heading' => 'リーダーボードを絞り込む',
     ],
     'jobs' => [
+        'alerts_load_error' => 'ジョブアラートをロードできませんでした。もう一度やり直してください。',
         'title' => '求人',
         'caption' => ':community',
         'description' => 'このコミュニティの役割と募集。',

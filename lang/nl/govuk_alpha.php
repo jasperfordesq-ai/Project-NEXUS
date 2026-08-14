@@ -244,6 +244,9 @@ return [
         'error_prefix' => 'Fout:',
     ],
     'home' => [
+        'network_heading' => 'Gemeenschappen in dit netwerk',
+        'network_intro' => 'Schakel over naar een community in :community.',
+        'network_community_link' => 'Communitylink: :slug',
         'module_signin' => 'Log in',
         'module_signin_hint' => 'Log in om dit te gebruiken.',
         'caption' => ':community',
@@ -310,6 +313,7 @@ return [
         ],
     ],
     'tenant_chooser' => [
+        'load_error' => 'We konden de beschikbare communities niet laden. Probeer het later opnieuw.',
         'title' => 'Kies een gemeenschap',
         'description' => 'Selecteer de community die je wilt gebruiken met Project NEXUS Toegankelijk.',
         'empty' => 'Er zijn geen actieve communities beschikbaar.',
@@ -361,6 +365,8 @@ return [
         'edit_profile' => 'Bewerk uw profiel',
     ],
     'auth' => [
+        'community_code_label' => 'Gemeenschapscode',
+        'community_code_hint' => 'De code voor uw community, bijvoorbeeld \'acme\'.',
         'resend_email_label' => 'E-mailadres',
         'resend_verification_hint' => 'We sturen een nieuwe verificatielink naar dit adres als een account nog geverifieerd moet worden.',
         'resend_verification_button' => 'Verificatie-e-mail opnieuw sturen',
@@ -598,6 +604,7 @@ return [
         'comment_posted_on_prefix' => 'Commentaar geplaatst op',
     ],
     'listings' => [
+        'exchange_check_error' => 'Wisselopties konden niet worden aangevinkt. Probeer het opnieuw voordat u een verzoek verzendt.',
         'sort_label' => 'Sorteer op',
         'sort_newest' => 'Nieuwste',
         'sort_recommended' => 'Aanbevolen',
@@ -865,6 +872,8 @@ return [
         ],
     ],
     'messages' => [
+        'empty_conversation' => 'Nog geen berichten in dit gesprek.',
+        'your_message_label' => 'Jouw bericht',
         'search_label' => 'Zoek iemand om een bericht te sturen',
         'search_hint' => 'Zoek op naam van lid of organisatie.',
         'search_empty' => 'Geen leden gevonden. Probeer een andere naam of bekijk de ledenlijst.',
@@ -2447,6 +2456,7 @@ return [
         'leaderboard_filter_heading' => 'Ranglijst filteren',
     ],
     'jobs' => [
+        'alerts_load_error' => 'Vacature-alerts kunnen niet worden geladen. Probeer het opnieuw.',
         'title' => 'Vacatures',
         'caption' => ':community',
         'description' => 'Functies en mogelijkheden in deze gemeenschap.',

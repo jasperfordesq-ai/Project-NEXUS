@@ -139,7 +139,7 @@
             </div>
           {% endfor %}
         {% else %}
-          <p class="govuk-body">No messages in this conversation yet.</p>
+          <p class="govuk-body">{{ t("messages.empty_conversation") }}</p>
         {% endif %}
       </div>
 
@@ -155,7 +155,7 @@
         {% endif %}
         {{ govukTextarea({
           label: {
-            text: "Your message",
+            text: t("messages.your_message_label"),
             classes: "govuk-visually-hidden"
           },
           id: "content",

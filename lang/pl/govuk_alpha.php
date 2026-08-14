@@ -244,6 +244,9 @@ return [
         'error_prefix' => 'Błąd:',
     ],
     'home' => [
+        'network_heading' => 'Społeczności w tej sieci',
+        'network_intro' => 'Przełącz się do społeczności w :community.',
+        'network_community_link' => 'Link do społeczności: :slug',
         'module_signin' => 'Zaloguj się',
         'module_signin_hint' => 'Zaloguj się, aby z tego skorzystać.',
         'caption' => ':community',
@@ -310,6 +313,7 @@ return [
         ],
     ],
     'tenant_chooser' => [
+        'load_error' => 'Nie udało się wczytać dostępnych społeczności. Spróbuj ponownie później.',
         'title' => 'Wybierz społeczność',
         'description' => 'Wybierz społeczność, z której chcesz korzystać w Project NEXUS Accessible.',
         'empty' => 'Brak dostępnych aktywnych społeczności.',
@@ -361,6 +365,8 @@ return [
         'edit_profile' => 'Edytuj swój profil',
     ],
     'auth' => [
+        'community_code_label' => 'Kod społeczności',
+        'community_code_hint' => 'Kod Twojej społeczności, na przykład „acme”.',
         'resend_email_label' => 'Adres e-mail',
         'resend_verification_hint' => 'Wyślemy nowy link weryfikacyjny na ten adres, jeśli konto wymaga weryfikacji.',
         'resend_verification_button' => 'Wyślij ponownie e-mail weryfikacyjny',
@@ -598,6 +604,7 @@ return [
         'comment_posted_on_prefix' => 'Komentarz opublikowany dnia',
     ],
     'listings' => [
+        'exchange_check_error' => 'Nie można było sprawdzić opcji wymiany. Spróbuj ponownie przed wysłaniem żądania.',
         'sort_label' => 'Sortuj według',
         'sort_newest' => 'Najnowszy',
         'sort_recommended' => 'Zalecane',
@@ -865,6 +872,8 @@ return [
         ],
     ],
     'messages' => [
+        'empty_conversation' => 'Nie ma jeszcze żadnych wiadomości w tej rozmowie.',
+        'your_message_label' => 'Twoja wiadomość',
         'search_label' => 'Znajdź osobę, do której chcesz napisać',
         'search_hint' => 'Szukaj według imienia i nazwiska członka lub nazwy organizacji.',
         'search_empty' => 'Nie znaleziono członków. Spróbuj innego imienia lub przejrzyj katalog.',
@@ -2447,6 +2456,7 @@ return [
         'leaderboard_filter_heading' => 'Filtruj ranking',
     ],
     'jobs' => [
+        'alerts_load_error' => 'Nie udało się wczytać alertów o ofertach pracy. Spróbuj ponownie.',
         'title' => 'Oferty pracy',
         'caption' => ':community',
         'description' => 'Role i możliwości w tej społeczności.',

@@ -174,11 +174,11 @@
           {% else %}
             {{ govukInput({
               label: {
-                text: "Community code",
+                text: t("auth.community_code_label"),
                 classes: "govuk-label--m"
               },
               hint: {
-                text: "Your community identifier (e.g. 'acme')"
+                text: t("auth.community_code_hint")
               },
               id: "tenant_slug",
               name: "tenant_slug",
@@ -186,7 +186,7 @@
               attributes: {
                 "required": "required",
                 "data-validate": "required",
-                "data-label": "Community code"
+                "data-label": t("auth.community_code_label")
               }
             }) }}
           {% endif %}

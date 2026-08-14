@@ -245,6 +245,9 @@ return [
         'error_prefix' => 'Error:',
     ],
     'home' => [
+        'network_heading' => 'Communities in this network',
+        'network_intro' => 'Switch to a community in :community.',
+        'network_community_link' => 'Community link: :slug',
         'module_signin' => 'Sign in',
         'module_signin_hint' => 'Sign in to use this.',
         'caption' => ':community',
@@ -319,6 +322,7 @@ return [
         'description' => 'Select the community you want to use with Project NEXUS Accessible.',
         'empty' => 'No active communities are available.',
         'community_slug' => 'Community link: :slug',
+        'load_error' => 'We could not load the available communities. Try again later.',
     ],
     'dashboard' => [
         'welcome' => 'Welcome back, :name.',
@@ -366,6 +370,8 @@ return [
         'edit_profile' => 'Edit your profile',
     ],
     'auth' => [
+        'community_code_label' => 'Community code',
+        'community_code_hint' => 'The code for your community, for example \'acme\'.',
         'resend_email_label' => 'Email address',
         'resend_verification_hint' => 'We will send a new verification link to this address if an account needs verifying.',
         'resend_verification_button' => 'Resend verification email',
@@ -603,6 +609,7 @@ return [
         'comment_posted_on_prefix' => 'Comment posted on',
     ],
     'listings' => [
+        'exchange_check_error' => 'Exchange options could not be checked. Try again before sending a request.',
         'sort_label' => 'Sort by',
         'sort_newest' => 'Newest',
         'sort_recommended' => 'Recommended',
@@ -870,6 +877,8 @@ return [
         ],
     ],
     'messages' => [
+        'empty_conversation' => 'No messages in this conversation yet.',
+        'your_message_label' => 'Your message',
         'search_label' => 'Search for someone to message',
         'search_hint' => 'Search by member or organisation name.',
         'search_empty' => 'No members found. Try a different name or browse the directory.',
@@ -2473,6 +2482,7 @@ return [
         'leaderboard_filter_heading' => 'Filter leaderboard',
     ],
     'jobs' => [
+        'alerts_load_error' => 'Job alerts could not be loaded. Try again.',
         'title' => 'Jobs',
         'caption' => ':community',
         'description' => 'Roles and opportunities in this community.',
