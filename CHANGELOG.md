@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The marketplace category page's "Back to marketplace" link is now translated.** It had one last hardcoded English fallback label; it now uses the existing translated wording, so it reads in the member's language like every other back link.
+
 - **Two date/number display bugs on the accessible site.** A knowledge-base article showed its "Last updated" date as a raw machine date (`2026-07-06`) instead of a readable, translated date ("6 Jul 2026", and the equivalent in each language) — it now uses the site's standard date formatter. And marketplace coupon discounts were always formatted in US number style regardless of the reader's language; they now format numbers in the reader's own locale.
 
 - **The accessible site now prints cleanly.** It had no print styling at all, so printing a page (a wallet statement, an event ticket, a volunteering record) carried the full site chrome — header, navigation, footer, cookie banner, language switcher and buttons — and wide tables were clipped to one screen width. A print stylesheet now strips that chrome, prints in black on white, shows the destination of content links, and expands scrollable tables so the whole table prints. It lives entirely inside the browser's print mode, so nothing about the on-screen site changes. (Not yet checked on a physical printer — the stylesheet compiles and the on-screen site is unaffected.)

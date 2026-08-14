@@ -7,7 +7,7 @@
 
 {% block mainContent %}
   {% if backHref %}
-    <a class="govuk-back-link" href="{{ urlFor(backHref) }}">{{ t("govuk_alpha_commerce.category.back_to_marketplace") if mode == 'category' else (backLabel or 'Back to marketplace') }}</a>
+    <a class="govuk-back-link" href="{{ urlFor(backHref) }}">{{ t("govuk_alpha_commerce.category.back_to_marketplace") if mode == 'category' else (backLabel or t("govuk_alpha_commerce.common.back_to_marketplace")) }}</a>
   {% endif %}
 
   {% include "marketplace/_nav.njk" %}
