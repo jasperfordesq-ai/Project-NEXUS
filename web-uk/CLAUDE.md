@@ -109,16 +109,33 @@ it must conform to those contracts and must not cause frontend forks. See
 - Treat `C:\platforms\htdocs\staging` and its ordinary local database as
   read-only. Do not edit Laravel source, run Laravel migrations, alter Laravel
   schema, query the database directly, or perform database cleanup.
-- Do not provision, request, or use a disposable Laravel environment as part of
-  this frontend goal. Do not run live login, mutation, upload, download,
-  destructive, or cleanup tests against any Laravel environment. Implement
-  state-changing browser workflows from the read-only Laravel source contract
-  and verify them with mocked contract tests, static analysis, and Web UK-owned
-  fixtures.
-- Live Laravel runtime certification is a separate optional workstream and is
-  not a blocker or completion requirement unless the user explicitly requests
-  it later. The ordinary/shared local Laravel database remains a confidential
-  production-derived snapshot and must never be used as a test fixture.
+- 🔴 **SUPERSEDED 2026-08-13 — a disposable Laravel environment now EXISTS, was
+  built at the owner's explicit request, and is deployed-adjacent tooling you
+  must not delete.** This bullet used to read: *"Do not provision, request, or
+  use a disposable Laravel environment as part of this frontend goal. Do not run
+  live login, mutation, upload, download, destructive, or cleanup tests against
+  any Laravel environment."* The very next bullet always carried the exception —
+  "unless the user explicitly requests it later" — and the owner did exactly
+  that, asking for a disposable test environment as the top item of a written
+  work list. The old wording is quoted rather than deleted because an agent that
+  finds only the new text and remembers the old one refuses the work, or worse,
+  "tidies away" `compose.webuk-e2e.yml` and `scripts/webuk-e2e-env.sh`.
+
+  **What is now true:**
+  - `bash scripts/webuk-e2e-env.sh up` provisions a SEPARATE Laravel (:8091) on a
+    SEPARATE database (`nexus_webuk_e2e`) with its own uploads/storage volumes,
+    seeded with synthetic accounts only, plus a `web-uk` on :5181 pointed at it.
+  - Login, mutation, upload, download and destructive journeys are **allowed and
+    expected there**, and nowhere else.
+  - The scripts refuse to run unless every account in the target database is
+    synthetic, and the seeding step reads the resolved database name back out of
+    the booted framework before writing anything.
+- 🔴 **The prohibition that has NOT changed, and is the real rule:** the
+  ordinary/shared local Laravel database (`nexus`) is a confidential
+  production-derived snapshot and must never be used as a test fixture, never
+  written to, and never screenshotted. Treat `C:\platforms\htdocs\staging` and
+  that database as read-only. Live Laravel runtime certification remains a
+  separate workstream that is not a completion requirement unless asked for.
 - Never touch production containers or production data.
 
 Route and backend preparation docs live beside this app:

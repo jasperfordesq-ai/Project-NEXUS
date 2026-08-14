@@ -1,0 +1,49 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{#
+  Wraps an existing form group so govuk-frontend's character count attaches to it.
+
+  Used with {% call %} so the field's own markup is untouched:
+
+      {% from "_character-count.njk" import characterCount %}
+      {% call characterCount(500, characterCountMessages) %}
+        <div class="govuk-form-group">
+          <label ...>
+          <textarea class="govuk-textarea govuk-js-character-count" maxlength="500" ...></textarea>
+        </div>
+      {% endcall %}
+
+  🔴 Deliberately NOT the `govukCharacterCount` macro. That macro GENERATES the label,
+  hint, textarea and error message from parameters, so adopting it would mean rewriting
+  every field's markup — and these fields are hand-written, with their own ids, hints,
+  required flags and error wiring that existing tests assert on. This emits the same
+  wrapper the macro emits and leaves the field alone.
+
+  🔴 The textarea inside MUST carry `govuk-js-character-count`, and SHOULD keep its
+  `maxlength`. The class is how the component finds the field. Keeping `maxlength` means
+  the browser still enforces the limit when JavaScript does not run — the count is an
+  enhancement, not the enforcement.
+
+  `messages` is `res.locals.characterCountMessages`; without it the component announces
+  govuk-frontend's built-in ENGLISH strings to speakers of all eleven languages.
+#}
+{% macro characterCount(maxlength, messages, textareaId) %}
+<div class="govuk-character-count" data-module="govuk-character-count" data-maxlength="{{ maxlength }}"
+  {%- if messages %}
+    {%- for pluralRule, message in messages.under %} data-i18n.characters-under-limit.{{ pluralRule }}="{{ message | escape }}"{% endfor %}
+    {%- if messages.at %} data-i18n.characters-at-limit="{{ messages.at | escape }}"{% endif %}
+    {%- for pluralRule, message in messages.over %} data-i18n.characters-over-limit.{{ pluralRule }}="{{ message | escape }}"{% endfor %}
+  {%- endif %}>
+  {{ caller() }}
+  {#
+    🔴 REQUIRED. govuk-frontend throws an ElementError if `{textareaId}-info` is absent,
+    and writes its own ENGLISH allowance text into it if it is empty. Populating it with
+    a translated sentence prevents both. The component moves this element to sit directly
+    after the textarea and hides it visually, using it as the field's description.
+  #}
+  <div id="{{ textareaId }}-info" class="govuk-hint govuk-character-count__message">{{ messages.describe(maxlength) if messages else "" }}</div>
+</div>
+{% endmacro %}

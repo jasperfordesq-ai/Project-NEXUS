@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 {% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block mainContent %}
@@ -90,11 +91,11 @@
       <input class="govuk-input govuk-input--width-20" id="file-folder" name="folder" type="text" maxlength="100" aria-describedby="file-folder-hint">
     </div>
 
-    <div class="govuk-form-group">
+    {% call characterCount(500, characterCountMessages, "file-description") %}<div class="govuk-form-group">
       <label class="govuk-label govuk-label--s" for="file-description">{{ t("govuk_alpha_groups.files.description_label") }}</label>
       <div id="file-description-hint" class="govuk-hint">{{ t("govuk_alpha_groups.files.description_hint") }}</div>
-      <textarea class="govuk-textarea" id="file-description" name="description" rows="2" maxlength="500" aria-describedby="file-description-hint"></textarea>
-    </div>
+      <textarea class="govuk-textarea govuk-js-character-count" id="file-description" name="description" rows="2" maxlength="500" aria-describedby="file-description-info file-description-hint"></textarea>
+    </div>{% endcall %}
 
     <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_groups.files.submit_upload") }}</button>
   </form>

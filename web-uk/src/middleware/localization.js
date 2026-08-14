@@ -15,6 +15,7 @@ const {
   isSupportedLocale
 } = require('../lib/localization');
 const { runWithRequestLocale } = require('../lib/request-locale-context');
+const { characterCountMessages } = require('../lib/character-count-messages');
 const { getRequestProfile } = require('../lib/request-profile');
 
 function localeFromAcceptLanguage(headerValue) {
@@ -151,6 +152,10 @@ async function localization(req, res, next) {
     res.locals.htmlDirection = locale === 'ar' ? 'rtl' : 'ltr';
     res.locals.t = t;
     res.locals.tc = tc;
+    // Translated announcements for govukCharacterCount. Set here rather than per-template
+    // because the component otherwise announces its own ENGLISH defaults from inside the
+    // govuk-frontend bundle, in every language.
+    res.locals.characterCountMessages = characterCountMessages(t, locale);
     res.locals.formatLocaleNumber = (value, options = {}) => formatLocaleNumber(value, locale, options);
     res.locals.formatLocaleDate = (value, options = {}) => formatLocaleDate(value, locale, options);
     res.locals.formatLocaleRelativeTime = (value, now = new Date()) => formatLocaleRelativeTime(value, locale, now);

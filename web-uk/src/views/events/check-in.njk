@@ -1,6 +1,7 @@
 {# Copyright (c) 2024-2026 Jasper Ford #}
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 {% extends "layouts/base.njk" %}
+{% from "_character-count.njk" import characterCount %}
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha.events.back_to_event") }}</a>
   <span class="govuk-caption-l">{{ event.title }}</span>
@@ -27,11 +28,11 @@
         <label class="govuk-label" for="signed-code-action">{{ t("event_offline_checkin.code.action") }}</label>
         <select class="govuk-select" id="signed-code-action" name="action" required>{% for action in ["check_in", "check_out", "no_show", "undo"] %}<option value="{{ action }}">{{ t("event_offline_checkin.actions." + action) }}</option>{% endfor %}</select>
       </div>
-      <div class="govuk-form-group">
+      {% call characterCount(500, characterCountMessages, "signed-code-reason") %}<div class="govuk-form-group">
         <label class="govuk-label" for="signed-code-reason">{{ t("event_offline_checkin.code.reason") }}</label>
         <div class="govuk-hint" id="signed-code-reason-hint">{{ t("event_offline_checkin.code.reason_hint") }}</div>
-        <textarea class="govuk-textarea" id="signed-code-reason" name="reason" rows="2" maxlength="500" aria-describedby="signed-code-reason-hint"></textarea>
-      </div>
+        <textarea class="govuk-textarea govuk-js-character-count" id="signed-code-reason" name="reason" rows="2" maxlength="500" aria-describedby="signed-code-reason-info signed-code-reason-hint"></textarea>
+      </div>{% endcall %}
       <div class="govuk-checkboxes govuk-checkboxes--small"><div class="govuk-checkboxes__item"><input class="govuk-checkboxes__input" id="signed-code-confirm" name="confirmation" type="checkbox" value="1" required><label class="govuk-label govuk-checkboxes__label" for="signed-code-confirm">{{ t("event_offline_checkin.code.confirm") }}</label></div></div>
       <button class="govuk-button govuk-!-margin-top-3">{{ t("event_offline_checkin.code.submit") }}</button>
     </form>
