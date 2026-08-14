@@ -7,8 +7,9 @@
 > directories were deleted before the move). The paths are left unedited
 > because this is a record of what was true at the time.
 
-Last verified: 2026-08-09 (repository boundary only; schema verdict and evidence
-unchanged since 2026-07-15 22:39 +01:00)
+Last verified: 2026-08-14 (migration-163 evidence package executed on
+disposable databases — see the 2026-08-14 recommission evidence section; the
+banked schema category remains 129/150 pending a scoring transaction)
 
 Status: **Canonical current - schema pause and restart source; no standalone product score**
 
@@ -159,6 +160,55 @@ It does not prove the dedicated zero-to-163 replay assertions, a populated
 162-to-163 upgrade, remaining storage classifications, release safety, or a
 production upgrade. Docker image publication was not a production deployment;
 no production container or Laravel database was touched.
+
+## 2026-08-14 Recommission Evidence — Migration-163 Package Executed
+
+The owner lifted the development pause on 2026-08-14. The first authorized
+schema session then executed the migration-specific package below on two
+disposable PostgreSQL 16.4 containers (`postgres:16.4-bookworm`, run-owned
+databases `nexus_schema_fresh` and `nexus_schema_upgrade`, created and removed
+in the same session; no production, shared, or Laravel database was touched).
+Working tree: monorepo `main` immediately after `0d06bd119` (which changed no
+entity, configuration, or migration source — `has-pending-model-changes`
+confirms below).
+
+1. **Focused source/runtime tests added** —
+   `tests/Nexus.Api.Tests/CompatibilityAuditEntrySchemaTests.cs` pins the
+   entity-to-table mapping, tenant query filter, PK, max lengths, jsonb column
+   types, nullability, all three configured indexes, both FK delete behaviors
+   (tenant Restrict, user SetNull), and that `20260715184200_...` is present
+   and last in the runtime chain. Green alongside
+   `MigrationDiscoveryParityTests` (3/3, Release).
+2. **Discovery and model drift on the exact candidate** —
+   `dotnet ef migrations list` discovered **163 runtime IDs** ending
+   `20260715184200_AddCompatibilityAuditEntriesTable`;
+   `has-pending-model-changes` reported **"No changes have been made to the
+   model since the last migration."**
+3. **Fresh zero-to-163 replay** — `dotnet ef database update` applied all 163
+   migrations to the blank database. Assertions: 163 rows in
+   `__EFMigrationsHistory` (max = the repair migration), **438 base tables**,
+   and `compatibility_audit_entries` present with all ten columns (correct
+   types and nullability), PK, indexes on `TenantId`, `(TenantId, Endpoint)`,
+   `OccurredAt`, `UserId`, and FKs to `tenants` and `users`.
+4. **Populated 162-to-163 upgrade** — the second database was migrated to
+   exactly 162 (`compatibility_audit_entries` confirmed absent), seeded with a
+   tenant row and a dependent `legal_documents` row, then upgraded through
+   migration 163 alone. Assertions: both seeded rows survived byte-identical;
+   a valid audit row referencing the surviving tenant was **accepted**; an
+   audit row with an unknown tenant was **rejected** by
+   `FK_compatibility_audit_entries_tenants_TenantId`; a row with a missing
+   `Endpoint` was **rejected** by the NOT NULL constraint; the row count was
+   unaffected by the rejected inserts.
+5. **Comparator refresh** — the 2026-08-14 full re-audit (see
+   `CURRENT_ASPNET_CONTRACT_STATUS.md`) reran the static comparator the same
+   day at monorepo HEAD `5afb43ff7`: **229 Laravel-only and 197 ASP.NET-only
+   table names** (up from 216/198 at the frozen baseline, reflecting 26 new
+   Laravel migrations of post-freeze drift). **Classification of those names by
+   contract significance remains open** and is the next schema task.
+6. **Scoring** — no fixed-rubric transaction has been run; the schema category
+   stays banked at **129/150**. Items 1–4 of the missing-evidence package below
+   are now closed; item 5 is refreshed but unclassified; item 6 remains open by
+   design until a scoring transaction is recorded.
 
 ## What Is Still Missing
 
