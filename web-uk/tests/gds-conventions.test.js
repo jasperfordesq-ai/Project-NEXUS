@@ -47,8 +47,8 @@ describe('GDS conventions', () => {
     it('computes the prefix centrally from the validation locals actually in use', () => {
       const base = read('layouts/base.njk');
       expect(base).toContain('{% set pageValidationFailed =');
-      // The four validation surfaces in use across the app.
-      for (const local of ['pageHasErrors', 'hasErrors', 'error', 'errors | length']) {
+      // The validation surfaces in use across the app.
+      for (const local of ['pageHasErrors', 'hasErrors', 'error', 'errors | length', 'fieldErrors | length']) {
         expect(base).toContain(local);
       }
       // Translated, not hardcoded English.

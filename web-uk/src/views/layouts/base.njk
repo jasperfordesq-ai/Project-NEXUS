@@ -65,7 +65,17 @@
   error summary while the title stayed unprefixed. `hasErrors` is still honoured for
   routes that pass it as a real local.
 #}
-{% set pageValidationFailed = pageHasErrors or hasErrors or error or (errors and (errors | length)) %}
+{#
+  🔴 `fieldErrors` added 2026-08-14. It is a keyed object of field->message set ONLY on
+  form-validation failure (register, login 2FA, listings/form, events, groups, …), so a
+  non-empty one is unambiguous field validation and correctly earns the title prefix. It
+  is the single most common validation local not previously seen here, so adding it
+  centrally fixes the prefix on a large slice of forms without editing each one.
+  (Forms that instead signal validation via a `status == 'x-invalid'` string still rely
+  on their own per-field error announcement — already in place — for the primary cue;
+  wiring the title prefix for those is a smaller, separate follow-up.)
+#}
+{% set pageValidationFailed = pageHasErrors or hasErrors or error or (errors and (errors | length)) or (fieldErrors and (fieldErrors | length)) %}
 {% set titleErrorPrefix = ((t('states.error_prefix') if t else 'Error:') ~ ' ') if pageValidationFailed else '' %}
 
 <!DOCTYPE html>
