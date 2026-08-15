@@ -94,6 +94,8 @@ public static class ServiceExtensions
         services.AddScoped<SupporterMessageViewService>();
         services.AddScoped<GuardianArrangementService>();
         services.AddScoped<SupportAuthorityAttestationService>();
+        services.AddScoped<PlatformCapabilityService>();
+        services.AddScoped<EventCreditService>();
         services.AddScoped<PushNotificationService>();
         services.AddScoped<Nexus.Api.Services.WebPush.WebPushSender>();
         services.AddScoped<TranslationService>();

@@ -406,6 +406,7 @@ public class NexusDbContext : DbContext
     public DbSet<SupporterMessageViewAudit> SupporterMessageViewAudits => Set<SupporterMessageViewAudit>();
     public DbSet<SupportAuthorityAttestation> SupportAuthorityAttestations => Set<SupportAuthorityAttestation>();
     public DbSet<SupportAuthorityAttestationEvent> SupportAuthorityAttestationEvents => Set<SupportAuthorityAttestationEvent>();
+    public DbSet<PlatformCapabilityOverride> PlatformCapabilityOverrides => Set<PlatformCapabilityOverride>();
 
     // Partner Venues
     public DbSet<PartnerVenue> PartnerVenues => Set<PartnerVenue>();
@@ -712,6 +713,7 @@ public class NexusDbContext : DbContext
             new ScheduledJobRunConfiguration(),
             new PartnerVenueConfiguration(_tenantContext),
             new AccountRelationshipConfiguration(_tenantContext),
+            new PlatformOpsConfiguration(_tenantContext),
         };
 
         foreach (var config in configurations)

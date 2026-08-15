@@ -227,9 +227,24 @@ here as a separately named position, never as a silent rescore.
   by default; the sixteen-key allowlist projection plus description and
   accessibility on detail; first-name-only organiser; indistinguishable 404;
   cursor pagination not yet implemented — the React client never sends one).
-  Pinned by `SmallParityEndpointsTests` (6 tests). Remaining route gaps:
-  event attendance rewards (~6), impersonation (3), platform capabilities
-  (2), federation external-status, performance summary.
+  Pinned by `SmallParityEndpointsTests` (6 tests). **Second small batch closed
+  2026-08-15 (unscored):** platform capabilities GET/PUT (migration 170:
+  `platform_capability_overrides`; the six-capability allowlist is the
+  security boundary; platform-super gate refusing tenant supers), federation
+  external-status (every switch honestly OFF in the exact Laravel shape — no
+  external federation exists here), performance summary (the pinned contract
+  shape with `meta.recording_enabled=false` — no recorder exists here, and
+  the dashboard renders its honest recording-off state), and the five
+  attendance-reward routes (events.attendance_credit_amount column; the
+  pre-existing claims ledger entity gained its admin surface: config
+  round-trip with ceiling validation, ledger + reversal deliberately
+  surviving the feature flag, kill-switch blocking retries, community-mint /
+  member-reclaim transactions, one reversal per reward database-enforced).
+  Pinned by `SuperOpsAndRewardsTests` (6 tests). **The only remaining route
+  gap from the 59 is impersonation (3 routes)** — security-critical token
+  work, deliberately deferred to its own session. Residues: no performance
+  recorder (summary reports recording off), attendance-claim creation on
+  check-in not yet wired (the ledger and its admin operations are).
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

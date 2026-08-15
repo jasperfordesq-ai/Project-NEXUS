@@ -84,6 +84,12 @@ public class Event : ITenantEntity
     public int? RecurrenceOverrideUpdatedBy { get; set; }
     public string? OnlineLink { get; set; }
     public string? VideoUrl { get; set; }
+
+    /// <summary>
+    /// Laravel parity: time credits granted once per member on verified
+    /// check-in; NULL grants nothing.
+    /// </summary>
+    public decimal? AttendanceCreditAmount { get; set; }
     public bool? AccessibilityStepFree { get; set; }
     public bool? AccessibilityToilet { get; set; }
     public bool? AccessibilityHearingLoop { get; set; }
