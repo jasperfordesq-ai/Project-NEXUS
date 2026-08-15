@@ -144,6 +144,18 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Build
         run: dotnet build aspnet-backend/Nexus.sln --configuration Release
+      # BLOCKING, shrink-only. Counts controller actions that return a
+      # success-shaped payload while performing no work at all. That class of
+      # defect is invisible to every route inventory and to the route-alias
+      # tests (which assert only "not 404, not 405"), because the stub answers
+      # 200 with plausible JSON. Deliberately lives in THIS job, not in
+      # static-contract-inventory: contracts_inventory does not watch
+      # aspnet-backend/**, so the ratchet would never have run on the very
+      # changes it exists to police. See docs/PRODUCTION_READINESS_REMEDIATION.md
+      # (R-1).
+      - name: No-op stub ratchet
+        shell: pwsh
+        run: ./aspnet-backend/scripts/check-noop-stubs.ps1
 
   # ─────────────────────────────────────────────────────────────────
   # ASP.NET API tests — sharded.

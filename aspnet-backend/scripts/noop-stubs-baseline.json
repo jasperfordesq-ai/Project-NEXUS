@@ -1,0 +1,131 @@
+﻿{
+    "_comment":  "Shrink-only. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower this in the SAME commit that removes stubs; never raise it.",
+    "generated_at":  "2026-08-15",
+    "total":  351,
+    "by_file":  [
+                    {
+                        "file":  "MiscParityController.cs",
+                        "count":  87
+                    },
+                    {
+                        "file":  "AdminCompatibility2Controller.cs",
+                        "count":  56
+                    },
+                    {
+                        "file":  "AdminCompatibility3Controller.cs",
+                        "count":  42
+                    },
+                    {
+                        "file":  "ReactFrontendCompatibilityController.cs",
+                        "count":  31
+                    },
+                    {
+                        "file":  "FrontendApiParityController.cs",
+                        "count":  20
+                    },
+                    {
+                        "file":  "MemberParityController.cs",
+                        "count":  19
+                    },
+                    {
+                        "file":  "VolunteeringParityController.cs",
+                        "count":  18
+                    },
+                    {
+                        "file":  "AuthParityController.cs",
+                        "count":  12
+                    },
+                    {
+                        "file":  "AdminCompatibilityController.cs",
+                        "count":  11
+                    },
+                    {
+                        "file":  "CompatibilityAliasController.cs",
+                        "count":  10
+                    },
+                    {
+                        "file":  "V15SocialCompatibilityController.cs",
+                        "count":  9
+                    },
+                    {
+                        "file":  "V15MemberParityController.cs",
+                        "count":  6
+                    },
+                    {
+                        "file":  "MarketplaceController.cs",
+                        "count":  4
+                    },
+                    {
+                        "file":  "UsersParityController.cs",
+                        "count":  3
+                    },
+                    {
+                        "file":  "StoriesController.cs",
+                        "count":  3
+                    },
+                    {
+                        "file":  "FederationExternalApiController.cs",
+                        "count":  3
+                    },
+                    {
+                        "file":  "AiController.cs",
+                        "count":  2
+                    },
+                    {
+                        "file":  "FederationParityController.cs",
+                        "count":  2
+                    },
+                    {
+                        "file":  "NotificationPollingController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "PerformanceMonitorController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "RegistrationPolicyController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AdminAiProvidersController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "EventRecurrenceController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AdminToolsController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AuthController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "CompatibilityController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "HealthController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AdminEmailDeliverabilityController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "AdminDiagnosticsController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "JobsParityController.cs",
+                        "count":  1
+                    },
+                    {
+                        "file":  "LaravelReactUtilityCompatibilityController.cs",
+                        "count":  1
+                    }
+                ]
+}

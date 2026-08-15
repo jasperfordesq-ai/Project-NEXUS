@@ -38,7 +38,7 @@ Consequences for how you work:
 
 ## P0 — blocks production
 
-### R-1 `OPEN` — 349 no-op action methods that report success
+### R-1 `MEASURED + RATCHETED, triage OPEN` — 351 no-op action methods that report success
 
 **Evidence:** detector = an action method whose entire body contains no `_db`, no
 `await`, no service call, yet returns `Ok(new {...})`/`Created`. Worst files:
@@ -62,12 +62,38 @@ Confirmed destructive examples — these silently do nothing:
 | group member promote / demote / remove | `AdminCompatibility2Controller.cs:681,686,691` |
 | `GET /v2/users/me/sub-accounts/{childId}/activity` | `UsersParityController.cs:510` |
 
-**Plan.** Triage the JSON inventory into three buckets: (a) endpoints a client
+**The count is now measured and ratcheted.**
+`scripts/check-noop-stubs.ps1` is committed, with the baseline in
+`scripts/noop-stubs-baseline.json` (**351** — slightly above the 349 first
+reported, because the committed detector also counts `NoContent()` responses and
+treats `_cache`/`_mail`/`_publisher`/`HttpContext.` as real work). It is
+**BLOCKING in CI**, wired into the `aspnet-build` job of
+`.github/workflows/platform-contracts.yml`.
+
+🔴 It is deliberately in `aspnet-build`, **not** `static-contract-inventory`:
+`contracts_inventory` in `.github/ci-paths.yml` watches `app/**`, `routes/**`,
+`config/**`, `database/**`, `openapi.json`, `contracts/**` — **not
+`aspnet-backend/**`** — so a ratchet placed there would never have run on the
+controller changes it exists to police. If you move it, check the filter first.
+
+Enforced in **both** directions, like the db-column and quarantine ratchets:
+exceeding the baseline fails, and beating it also fails until the baseline is
+lowered in the same commit. Verified by adding a throwaway stub (count went
+351 → 352, the check failed with a clear message) and removing it again.
+
+```bash
+# what is left, grouped by file
+pwsh ./aspnet-backend/scripts/check-noop-stubs.ps1 -Detail
+# after genuinely removing some, lock the gain in (same commit)
+pwsh ./aspnet-backend/scripts/check-noop-stubs.ps1 -WriteBaseline
+```
+
+**Plan for the remaining 351.** Triage into three buckets: (a) endpoints a client
 actually calls — implement for real; (b) endpoints nothing calls — delete the
-route rather than leave a lie; (c) deliberate fixtures — annotate with
-`[Obsolete]` or a `// STUB:` marker and add them to an allowlist so the detector
-count can become a shrink-only ratchet in CI. **Do not "fix" one by adding a
-`_db` call that does nothing useful** — the point is the client-visible effect.
+route rather than leave a lie; (c) deliberate fixtures — declare them and record
+why. **Do not "fix" one by adding a `_db` call that does nothing useful** — the
+point is the client-visible effect, and the detector is a smoke alarm, not the
+specification.
 
 ### R-2 `FIXED 9c54ef501`+`this commit` — webhooks that destroyed events
 
