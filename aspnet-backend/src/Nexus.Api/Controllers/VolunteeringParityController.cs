@@ -1198,11 +1198,141 @@ public class VolunteeringParityController : ControllerBase
     [HttpGet("incidents/{incidentId:int}")]
     public IActionResult Incident(int incidentId) => Ok(new { data = new { id = incidentId, status = "open" } });
 
+    // ──────────────────────────────────────────────────────────────────────
+    // Volunteer emergency alerts.
+    //
+    // 🔴 POST returned {status: "sent"} with a hash for an id and stored
+    // NOTHING. This is the alert a volunteer or coordinator raises when
+    // something goes wrong on a shift — someone hurt, someone missing, a
+    // situation needing help. Telling them it was "sent" when no record exists
+    // and nobody can see it is the most dangerous stub found in this backend:
+    // the dues one cost money, this one could cost a great deal more.
+    //
+    // DELETE returned 204 without deleting, so an alert could not be stood down
+    // either.
+    //
+    // The store and the GET both existed the whole time — only the write was a
+    // stub, so the list showed seeded demo alerts and silently swallowed every
+    // real one.
+    // ──────────────────────────────────────────────────────────────────────
+
     [HttpPost("emergency-alerts")]
-    public IActionResult EmergencyAlert([FromBody] JsonElement body) => Ok(new { data = new { id = Math.Abs(HashCode.Combine(Str(body, "message"), DateTime.UtcNow.Ticks)), status = "sent" } });
+    public async Task<IActionResult> EmergencyAlert([FromBody] JsonElement body)
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+
+        var title = Str(body, "title") ?? Str(body, "message");
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return UnprocessableEntity(new
+            {
+                message = "A title is required.",
+                errors = new Dictionary<string, string[]> { ["title"] = ["A title is required."] },
+            });
+        }
+
+        // 🔴 Write to the SAME store the GET reads. There are three alert
+        // tables in this backend (EmergencyAlerts, VolunteerEmergencyAlerts,
+        // CaringEmergencyAlerts) and the volunteering GET serves EmergencyAlerts
+        // — id/title/description/urgency/contact_info. Writing to a different
+        // one would create alerts nobody could ever see, which is the same
+        // phantom-write failure as the stub, only harder to spot.
+        var alert = new EmergencyAlert
+        {
+            TenantId = tenantId,
+            Title = title.Trim(),
+            Description = (Str(body, "description") ?? Str(body, "body") ?? Str(body, "message") ?? string.Empty).Trim(),
+            Urgency = ParseUrgency(Str(body, "urgency") ?? Str(body, "severity")),
+            ContactInfo = Str(body, "contact_info"),
+            VolunteerOpportunityId = Int(body, "opportunity_id"),
+            CreatedById = userId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        _db.EmergencyAlerts.Add(alert);
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        // An emergency alert that nobody is told about is only marginally better
+        // than one that was never stored. Notify the organisation's coordinators
+        // and admins so it reaches a human.
+        var recipients = await _db.Users.AsNoTracking()
+            .Where(u => u.TenantId == tenantId
+                && u.IsActive
+                && u.Id != userId
+                && (u.IsAdmin || u.IsSuperAdmin || u.IsTenantSuperAdmin
+                    || u.Role == "admin" || u.Role == "coordinator" || u.Role == "broker"))
+            .Select(u => u.Id)
+            .ToListAsync(HttpContext.RequestAborted);
+
+        foreach (var recipientId in recipients)
+        {
+            _db.Set<Notification>().Add(new Notification
+            {
+                TenantId = tenantId,
+                UserId = recipientId,
+                Type = "volunteer_emergency_alert",
+                Title = $"Emergency alert: {alert.Title}",
+                Body = alert.Description,
+                Data = $"volunteer_emergency_alert:{alert.Id}",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+            });
+        }
+        if (recipients.Count > 0) await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        _logger.LogWarning(
+            "Volunteer emergency alert {AlertId} raised by user {UserId} in tenant {TenantId}; {Count} notified",
+            alert.Id, userId, tenantId, recipients.Count);
+
+        return Ok(new
+        {
+            data = new
+            {
+                id = alert.Id,
+                title = alert.Title,
+                description = alert.Description,
+                urgency = alert.Urgency,
+                contact_info = alert.ContactInfo,
+                created_at = alert.CreatedAt,
+                notified = recipients.Count,
+            },
+        });
+    }
 
     [HttpDelete("emergency-alerts/{alertId:int}")]
-    public IActionResult DeleteEmergencyAlert(int alertId) => NoContent();
+    public async Task<IActionResult> DeleteEmergencyAlert(int alertId)
+    {
+        var tenantId = TenantId();
+
+        var alert = await _db.EmergencyAlerts
+            .FirstOrDefaultAsync(a => a.TenantId == tenantId && a.Id == alertId,
+                HttpContext.RequestAborted);
+        if (alert is null) return NotFound(new { error = "Alert not found" });
+
+        // Stand down rather than erase: an emergency that happened is a record
+        // worth keeping, and the list only shows active alerts.
+        alert.IsActive = false;
+        alert.ResolvedById ??= UserId();
+        alert.ResolvedAt ??= DateTime.UtcNow;
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        _logger.LogInformation("Volunteer emergency alert {AlertId} stood down in tenant {TenantId}",
+            alertId, tenantId);
+
+        return NoContent();
+    }
+
+    /// <summary>Urgency vocabulary of the EmergencyAlert store: low/medium/high/critical.</summary>
+    private static string ParseUrgency(string? value) =>
+        (value ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "critical" or "urgent" => "critical",
+            "high" => "high",
+            "low" or "info" => "low",
+            _ => "medium",
+        };
 
     [HttpGet("training")]
     public IActionResult Training() => Ok(new { data = Array.Empty<object>() });
