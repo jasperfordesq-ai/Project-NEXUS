@@ -171,6 +171,59 @@ public class AuthControllerTests : IntegrationTestBase
     }
 
     /// <summary>
+    /// 🔴 The React client sends ONLY {email, password} and carries the community
+    /// in the X-Tenant-ID header (react-frontend/src/types/api.ts:124-128;
+    /// tokenManager.setTenantId). Laravel resolves the tenant from request
+    /// context and never requires a body field. This backend demanded
+    /// tenant_slug/tenant_id in the BODY and returned 400 to every browser
+    /// sign-in — the login page showed "Sign-in failed. Please check your details
+    /// and try again." and a member could not get in at all.
+    ///
+    /// Found by driving the real frontend against this backend, not by any
+    /// contract test: the endpoint existed and answered, so route inventories
+    /// reported it as present and working.
+    /// </summary>
+    [Theory]
+    [InlineData("X-Tenant-ID", "1")]
+    [InlineData("X-Tenant-Slug", "test-tenant")]
+    public async Task Login_ResolvesTheTenantFromRequestHeaders_WhenTheBodyOmitsIt(
+        string headerName, string headerValue)
+    {
+        var client = Factory.CreateClient();
+        if (headerName == "X-Tenant-ID")
+        {
+            headerValue = TestData.Tenant1.Id.ToString();
+        }
+        client.DefaultRequestHeaders.Add(headerName, headerValue);
+
+        var response = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = "admin@test.com",
+            password = TestDataSeeder.TestPassword,
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "the browser identifies the community by header, not in the login body");
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("access_token").GetString().Should().NotBeNullOrEmpty();
+    }
+
+    /// <summary>With no tenant anywhere, the request is still refused.</summary>
+    [Fact]
+    public async Task Login_WithNoTenantInBodyOrHeaders_IsStillRejected()
+    {
+        var client = Factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = "admin@test.com",
+            password = TestDataSeeder.TestPassword,
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    /// <summary>
     /// An IMMEDIATE replay of a just-rotated token is a concurrent request, not
     /// theft — two tabs, or a queued request and its retry. Laravel answers 409
     /// AUTH_REFRESH_SUPERSEDED and leaves the token family intact

@@ -16,6 +16,93 @@ community. It exists so a future session does not have to rediscover any of it.
 - Severity: **P0** blocks any production use; **P1** breaks a real member or admin
   workflow; **P2** contract divergence with a client impact; **P3** hygiene.
 
+## Runtime proof — how to run it, and what it found
+
+Set up 2026-08-15. This is the check that catches what every static comparison
+misses, and it earned its place within minutes.
+
+```bash
+# 1. Backend (own dev containers; nothing to do with production)
+cd aspnet-backend
+cp .env.example .env        # then set JWT_SECRET to a local-only random value
+docker compose up -d db rabbitmq
+docker compose build api && docker compose up -d api
+curl http://127.0.0.1:5080/health
+
+# 2. React against it — port 5273 is the origin already in the CORS allowlist,
+#    and deliberately NOT 5173, which is the owner's Laravel-pointed dev server.
+cd react-frontend
+VITE_API_URL=http://127.0.0.1:5080 npm run dev -- --port 5273 --strictPort
+
+# 3. web-uk against it (server-side calls, so the port is free choice)
+cd web-uk
+COOKIE_SECRET=... ACCESSIBLE_BACKEND_TARGET=aspnet \
+  ASPNET_BASE_URL=http://127.0.0.1:5080 ACCESSIBLE_TENANT_SLUG=acme \
+  PORT=5182 npm start
+
+# 4. The existing journeys, unchanged, against the ASP.NET seed
+E2E_BASE_URL=http://localhost:5273 E2E_TENANT=acme E2E_TENANT_SLUG=acme \
+E2E_USER_EMAIL=member@acme.test E2E_USER_PASSWORD='NexusV2!Demo#2026' \
+E2E_ADMIN_EMAIL=admin@acme.test E2E_ADMIN_PASSWORD='NexusV2!Demo#2026' \
+E2E_SKIP_DATA_SEED=1 \
+npx playwright test e2e/tests/auth.spec.ts --project=chromium-modern
+```
+
+Seed identities: `admin@acme.test` / `member@acme.test`, password
+`NexusV2!Demo#2026`, tenants `acme` and `globex` (`Data/SeedData.cs`,
+`DemoShowcaseSeedData.DemoPassword`).
+
+**Two environment traps, both of which produce misleading failures:**
+
+- The helper variable is `E2E_TENANT_SLUG`, **not** `E2E_TENANT`. With the wrong
+  one every page renders "Community not found: hour-timebank" and all journeys
+  fail for a reason that has nothing to do with the backend.
+- The dev auth rate limit is **10/minute** (`compose.yml`), far below what an
+  automated suite generates, so logins start returning **429** and every
+  downstream assertion fails misleadingly. Raise it with a compose override for
+  the run.
+
+### R-23 `FIXED` — a member could not sign in to the React app at all
+
+The single most severe finding of the day, and invisible to every static check.
+
+`LoginRequest` in the React client is `{email, password, platform?}`
+(`react-frontend/src/types/api.ts:124-128`); the community travels as the
+`X-Tenant-ID` header set by `tokenManager.setTenantId()`. Laravel matches that —
+it resolves the tenant from request context (`TenantContext::getId()`) and never
+requires a body field. ASP.NET **demanded `tenant_slug` or `tenant_id` in the
+body** and returned `400 {"error":"Tenant identifier required"}`, so the login
+page showed only *"Sign-in failed. Please check your details and try again."*
+
+`AuthController.Login` now falls back to `X-Tenant-Slug` / `X-Tenant-ID` headers
+(and `TenantContext` where populated) before refusing. Note `/api/auth/login` is
+deliberately excluded from `TenantResolutionMiddleware`, so the headers are read
+directly rather than weakening that exclusion. Pinned by two tests in
+`AuthControllerTests`, including one asserting a request with **no** tenant
+anywhere is still rejected.
+
+Why no existing check caught it: the endpoint exists, is routed, and answers —
+so the route inventory counted it as matched, and the contract tests supply a
+tenant in the body because that is what the ASP.NET DTO asked for.
+
+### Reading the journey results honestly
+
+After the fix, sign-in works end-to-end in a real browser: token issued,
+`/v2/users/me` 200, legal-acceptance status 200 (reachable because of R-17), and
+the app lands on `/acme/feed`.
+
+🔴 **Do not read the suite's pass/fail count as a verdict on the backend.**
+Several expectations in `e2e/tests/auth.spec.ts` are stale and would fail against
+Laravel too — it asserts a landing URL of `/dashboard` while the app's own code
+redirects to `/feed` (`LoginPage.tsx:147`), and it matches error copy
+`/invalid credentials|login failed/i` while the app renders "Sign-in failed…".
+Judge each failure by what the API returned, not by the red count.
+
+**Also observed, not yet triaged:** the client's dev-mode schema validation warns
+that `tenant/bootstrap` returns `contact.email`, `contact.phone` and
+`contact.address` as `null` where the client's schema expects strings. Harmless
+in dev, but it is a real shape divergence.
+
 ## 🔴 The one thing to understand before touching this backend
 
 **Route existence proves nothing here.** 349 action methods return

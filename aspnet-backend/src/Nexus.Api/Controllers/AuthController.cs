@@ -50,6 +50,7 @@ public class AuthController : ControllerBase
     private readonly TwoFactorChallengeManager _twoFactorChallenges;
     private readonly ITurnstileVerifier _turnstile;
     private readonly IPwnedPasswordChecker _pwnedPassword;
+    private readonly TenantContext _tenant;
 
     // Refresh token validity (7 days default)
     private const int RefreshTokenExpiryDays = 7;
@@ -67,7 +68,8 @@ public class AuthController : ControllerBase
         TokenService tokenService,
         TwoFactorChallengeManager twoFactorChallenges,
         ITurnstileVerifier turnstile,
-        IPwnedPasswordChecker pwnedPassword)
+        IPwnedPasswordChecker pwnedPassword,
+        TenantContext tenant)
     {
         _db = db;
         _config = config;
@@ -79,6 +81,7 @@ public class AuthController : ControllerBase
         _twoFactorChallenges = twoFactorChallenges;
         _turnstile = turnstile;
         _pwnedPassword = pwnedPassword;
+        _tenant = tenant;
     }
 
     /// <summary>
@@ -107,8 +110,40 @@ public class AuthController : ControllerBase
         _ = request.CfTurnstileResponse;
         _ = request.TurnstileToken;
 
-        // Tenant identifier is required (slug preferred, id as fallback)
-        if (string.IsNullOrEmpty(request.TenantSlug) && !request.TenantId.HasValue)
+        // 🔴 The tenant may come from the REQUEST CONTEXT, not just the body.
+        //
+        // Laravel resolves it with TenantContext::getId() — populated from the
+        // host or the X-Tenant-ID / X-Tenant-Slug header — and never requires a
+        // body field (AuthController.php login, "Scope login by tenant when
+        // tenant context is available").
+        //
+        // The React client matches that: LoginRequest is {email, password,
+        // platform?} (react-frontend/src/types/api.ts:124-128) and the community
+        // travels as the X-Tenant-ID header set by tokenManager.setTenantId().
+        // Requiring it in the body therefore returned 400 to every browser
+        // sign-in, and the login page showed only "Sign-in failed. Please check
+        // your details and try again." — a member could not sign in at all.
+        // Found by driving the real frontend against this backend on 2026-08-15;
+        // no route inventory or contract test could see it, because the endpoint
+        // exists and answers.
+        // NOTE: /api/auth/login is deliberately excluded from
+        // TenantResolutionMiddleware ("login determines tenant from
+        // credentials"), so TenantContext is empty here by design. Read the
+        // headers directly rather than weakening that exclusion.
+        var headerTenantSlug = Request.Headers.TryGetValue("X-Tenant-Slug", out var slugHeader)
+            ? slugHeader.ToString().Trim()
+            : null;
+        var headerTenantId = Request.Headers.TryGetValue("X-Tenant-ID", out var idHeader)
+            && int.TryParse(idHeader.ToString(), out var parsedHeaderTenantId)
+                ? parsedHeaderTenantId
+                : (int?)null;
+
+        var requestTenantSlug = !string.IsNullOrEmpty(request.TenantSlug)
+            ? request.TenantSlug
+            : (string.IsNullOrWhiteSpace(headerTenantSlug) ? null : headerTenantSlug);
+        var requestTenantId = request.TenantId ?? _tenant.TenantId ?? headerTenantId;
+
+        if (string.IsNullOrEmpty(requestTenantSlug) && !requestTenantId.HasValue)
         {
             return BadRequest(new
             {
@@ -118,7 +153,7 @@ public class AuthController : ControllerBase
         }
 
         // Step 1: Resolve tenant first
-        var tenant = await ResolveTenantAsync(request.TenantSlug, request.TenantId);
+        var tenant = await ResolveTenantAsync(requestTenantSlug, requestTenantId);
         if (tenant == null)
         {
             _logger.LogWarning("Login failed: tenant not found (slug={Slug}, id={Id})",
