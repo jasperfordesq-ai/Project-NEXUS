@@ -537,7 +537,35 @@ identical, all fourteen (`GatedTemplates` `:52-68`); and the 403 body
 
 ## P1 — breaks a real workflow
 
-### R-6 `OPEN` — 54 of 71 scheduled units have no counterpart (~24% covered)
+### R-6 `IN PROGRESS` — scheduled work (19 of 71 covered, was 17)
+
+**Done 2026-08-15 (`70dc452ee`), both from the compliance cluster:**
+
+- `SupportActionExpiry` (Laravel `support-actions:expire`). Expired prepared
+  actions stayed "pending" for ever and the supporter was never told. Now marked
+  expired **and the supporter notified** — Laravel's command exists precisely so
+  "an expiry is never silent". Closes R-13.
+- `ClearExpiredMonitoring` (Laravel `safeguarding:clear-expired-monitoring`). A
+  member stayed under safeguarding monitoring indefinitely after the order
+  justifying it expired. Now lifted — and **only** the monitoring flag; messaging
+  limits and broker-approval requirements have their own authority and expiry.
+
+Both pinned by `ComplianceExpiryJobTests`, half of whose cases are negative (a
+still-valid action is untouched; monitoring with no expiry date is never
+lifted), because a job that acts too eagerly is worse than one that never runs.
+The tests resolve the **registered** instances from the host, so they also prove
+the jobs are wired in.
+
+**Next in this cluster, highest consequence first:** `retention:enforce` (old
+member data never purged), `backup:verify` (nobody is told a backup failed —
+note this is exactly the failure mode the live ASP.NET database is already in),
+`gdpr:check-overdue-requests` (statutory deadline can pass unnoticed),
+`safeguarding:vetting-renewals` (expired vetting never chased),
+`safeguarding:purge-message-copies`, `groups:prune-exports` (exported member
+data sits on disk for ever), `marketplace:process-unacknowledged-reports` (DSA
+24h acknowledgement).
+
+### R-6 (original finding) — the full mapping
 
 Laravel `bootstrap/app.php`: 56 `->command()` + 1 `->job()` + 14 `->call()`
 closures = **71**. ASP.NET: 20 hosted jobs in `Services/Scheduled/`
