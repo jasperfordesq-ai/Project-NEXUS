@@ -1,7 +1,7 @@
 ﻿{
     "_comment":  "Shrink-only. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1). Lower this in the SAME commit that removes stubs; never raise it.",
     "generated_at":  "2026-08-15",
-    "total":  339,
+    "total":  338,
     "by_file":  [
                     {
                         "file":  "MiscParityController.cs",
@@ -29,7 +29,7 @@
                     },
                     {
                         "file":  "VolunteeringParityController.cs",
-                        "count":  14
+                        "count":  13
                     },
                     {
                         "file":  "AuthParityController.cs",

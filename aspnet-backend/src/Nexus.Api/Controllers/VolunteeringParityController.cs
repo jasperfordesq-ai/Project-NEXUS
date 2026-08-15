@@ -1382,8 +1382,49 @@ public class VolunteeringParityController : ControllerBase
             _ => "medium",
         };
 
+    /// <summary>
+    /// GET /v2/volunteering/training — courses available to this volunteer,
+    /// each marked with whether they have completed it.
+    ///
+    /// 🔴 Returned an empty array while both tables — volunteer_training_courses
+    /// and volunteer_training_completions — were mapped and migrated. A
+    /// volunteer saw no training at all, including anything marked REQUIRED,
+    /// and a coordinator could not tell who had done it.
+    /// </summary>
     [HttpGet("training")]
-    public IActionResult Training() => Ok(new { data = Array.Empty<object>() });
+    public async Task<IActionResult> Training()
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+
+        var courses = await _db.VolunteerTrainingCourses.AsNoTracking()
+            .Where(c => c.TenantId == tenantId && c.Active)
+            .OrderByDescending(c => c.IsRequired).ThenBy(c => c.Title)
+            .ToListAsync(HttpContext.RequestAborted);
+
+        var completions = await _db.VolunteerTrainingCompletions.AsNoTracking()
+            .Where(c => c.TenantId == tenantId && c.UserId == userId)
+            .ToDictionaryAsync(c => c.CourseId, HttpContext.RequestAborted);
+
+        var data = courses.Select(c =>
+        {
+            completions.TryGetValue(c.Id, out var done);
+            return new
+            {
+                id = c.Id,
+                title = c.Title,
+                description = c.Description,
+                duration_minutes = c.DurationMinutes,
+                is_required = c.IsRequired,
+                completed = done is not null,
+                completed_at = done?.CompletedAt,
+                score = done?.Score,
+                certificate_url = done?.CertificateUrl,
+            };
+        });
+
+        return Ok(new { data });
+    }
 
     [HttpGet("wellbeing/my-status")]
     public IActionResult MyWellbeingStatus() => Ok(new { data = new { user_id = UserId(), status = "ok" } });
