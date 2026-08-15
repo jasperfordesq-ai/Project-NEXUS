@@ -671,25 +671,148 @@ public class AdminCompatibility2Controller : ControllerBase
     public IActionResult SetGroupTypePolicies(int typeId, [FromBody] object body)
         => Ok(new { message = "Policies updated", type_id = typeId });
 
+    // ──────────────────────────────────────────────────────────────────────
+    // Group membership administration.
+    //
+    // 🔴 All four of these were no-op stubs until 2026-08-15: they returned
+    // 200 with a plausible message and did nothing at all. Proved live during
+    // the runtime proof — promoting user 5 in group 1 returned
+    // 200 {"message":"Member promoted"} when user 5 was not even a member of
+    // that group, which has exactly one member. An admin saw success and
+    // nothing changed. See docs/PRODUCTION_READINESS_REMEDIATION.md (R-1).
+    //
+    // They now do the work, refuse what they cannot do, and are audited.
+    // ──────────────────────────────────────────────────────────────────────
+
     /// <summary>GET /api/admin/groups/{groupId}/members - List group members.</summary>
     [HttpGet("groups/{groupId}/members")]
-    public IActionResult ListGroupMembers(int groupId, [FromQuery] int page = 1, [FromQuery] int limit = 20)
-        => Ok(new { data = Array.Empty<object>(), meta = new { page, limit, total = 0, group_id = groupId } });
+    public async Task<IActionResult> ListGroupMembers(
+        int groupId, [FromQuery] int page = 1, [FromQuery] int limit = 20)
+    {
+        page = page < 1 ? 1 : page;
+        limit = limit is < 1 or > 100 ? 20 : limit;
+
+        var group = await _db.Set<Group>().AsNoTracking()
+            .FirstOrDefaultAsync(g => g.Id == groupId, HttpContext.RequestAborted);
+        if (group is null) return NotFound(new { error = "Group not found" });
+
+        var query = from m in _db.Set<GroupMember>().AsNoTracking()
+                    where m.GroupId == groupId
+                    join u in _db.Users.AsNoTracking() on m.UserId equals u.Id into gj
+                    from u in gj.DefaultIfEmpty()
+                    select new { m, u };
+
+        var total = await query.CountAsync(HttpContext.RequestAborted);
+        var rows = await query
+            .OrderBy(x => x.m.Id)
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .ToListAsync(HttpContext.RequestAborted);
+
+        var data = rows.Select(x => new
+        {
+            id = x.m.Id,
+            group_id = x.m.GroupId,
+            user_id = x.m.UserId,
+            role = x.m.Role,
+            status = x.m.Status,
+            name = x.u == null ? null : (x.u.FirstName + " " + x.u.LastName).Trim(),
+            email = x.u?.Email,
+            avatar_url = x.u?.AvatarUrl,
+        });
+
+        return Ok(new { data, meta = new { page, limit, total, group_id = groupId } });
+    }
 
     /// <summary>POST /api/admin/groups/{groupId}/members/{userId}/promote - Promote member.</summary>
     [HttpPost("groups/{groupId}/members/{userId}/promote")]
-    public IActionResult PromoteMember(int groupId, int userId)
-        => Ok(new { message = "Member promoted", group_id = groupId, user_id = userId });
+    public Task<IActionResult> PromoteMember(int groupId, int userId)
+        => ChangeGroupMemberRoleAsync(groupId, userId, Group.Roles.Admin, "promoted");
 
     /// <summary>POST /api/admin/groups/{groupId}/members/{userId}/demote - Demote member.</summary>
     [HttpPost("groups/{groupId}/members/{userId}/demote")]
-    public IActionResult DemoteMember(int groupId, int userId)
-        => Ok(new { message = "Member demoted", group_id = groupId, user_id = userId });
+    public Task<IActionResult> DemoteMember(int groupId, int userId)
+        => ChangeGroupMemberRoleAsync(groupId, userId, Group.Roles.Member, "demoted");
+
+    private async Task<IActionResult> ChangeGroupMemberRoleAsync(
+        int groupId, int userId, string newRole, string action)
+    {
+        var member = await _db.Set<GroupMember>()
+            .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId,
+                HttpContext.RequestAborted);
+
+        // The stub happily "promoted" people who were not in the group at all.
+        if (member is null)
+        {
+            return NotFound(new { error = "That member is not in this group" });
+        }
+
+        // The owner is not a role an admin action may change: demoting the owner
+        // would leave the group unowned, and promoting them is meaningless.
+        if (member.Role == Group.Roles.Owner)
+        {
+            return Conflict(new { error = "The group owner's role cannot be changed here" });
+        }
+
+        var previousRole = member.Role;
+        if (previousRole == newRole)
+        {
+            // Idempotent: report the current state rather than inventing a change.
+            return Ok(new
+            {
+                message = $"Member already {action}",
+                group_id = groupId,
+                user_id = userId,
+                role = member.Role,
+                changed = false,
+            });
+        }
+
+        member.Role = newRole;
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        _logger.LogInformation(
+            "Admin {AdminId} {Action} user {UserId} in group {GroupId} ({From} -> {To})",
+            User.GetUserId(), action, userId, groupId, previousRole, newRole);
+
+        return Ok(new
+        {
+            message = $"Member {action}",
+            group_id = groupId,
+            user_id = userId,
+            role = member.Role,
+            previous_role = previousRole,
+            changed = true,
+        });
+    }
 
     /// <summary>DELETE /api/admin/groups/{groupId}/members/{userId} - Kick member.</summary>
     [HttpDelete("groups/{groupId}/members/{userId}")]
-    public IActionResult KickMember(int groupId, int userId)
-        => Ok(new { message = "Member removed", group_id = groupId, user_id = userId });
+    public async Task<IActionResult> KickMember(int groupId, int userId)
+    {
+        var member = await _db.Set<GroupMember>()
+            .FirstOrDefaultAsync(m => m.GroupId == groupId && m.UserId == userId,
+                HttpContext.RequestAborted);
+
+        if (member is null)
+        {
+            return NotFound(new { error = "That member is not in this group" });
+        }
+
+        if (member.Role == Group.Roles.Owner)
+        {
+            return Conflict(new { error = "The group owner cannot be removed" });
+        }
+
+        _db.Set<GroupMember>().Remove(member);
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        _logger.LogInformation(
+            "Admin {AdminId} removed user {UserId} from group {GroupId}",
+            User.GetUserId(), userId, groupId);
+
+        return Ok(new { message = "Member removed", group_id = groupId, user_id = userId, removed = true });
+    }
 
     /// <summary>POST /api/admin/groups/{groupId}/geocode - Geocode group location.</summary>
     [HttpPost("groups/{groupId}/geocode")]
