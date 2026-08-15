@@ -619,12 +619,96 @@ public class AdminCompatibility3Controller : ControllerBase
         return Ok(new { id, name = "", slug = "", is_active = true, created_at = DateTime.UtcNow });
     }
 
-    /// <summary>GET /api/admin/super/tenants/hierarchy - Tenant hierarchy.</summary>
+    /// <summary>
+    /// GET /api/admin/super/tenants/hierarchy - Tenant hierarchy.
+    ///
+    /// 🔴 Returned a hardcoded empty array until 2026-08-15, because this
+    /// backend had no tenant hierarchy at all. The React super panel renders
+    /// `node.children` (TenantHierarchy.tsx:161), so the page simply showed
+    /// nothing while reporting success. Real data now, scoped to what the
+    /// caller may see.
+    /// </summary>
     [HttpGet("super/tenants/hierarchy")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult GetSuperTenantHierarchy()
+    public async Task<IActionResult> GetSuperTenantHierarchy(
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel)
     {
-        return Ok(new { data = Array.Empty<object>(), total = 0 });
+        var actorId = User.GetUserId();
+        if (actorId is null)
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new { success = false, error = "Authentication required", code = "AUTH_REQUIRED" });
+        }
+
+        var access = await superPanel.ResolveAsync(actorId.Value, HttpContext.RequestAborted);
+        if (!access.Granted)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new
+            {
+                success = false,
+                errors = new[]
+                {
+                    new { code = "SUPER_PANEL_ACCESS_DENIED", message = "Super admin access is required" },
+                },
+            });
+        }
+
+        var query = _db.Tenants.IgnoreQueryFilters().AsNoTracking();
+
+        // A regional caller sees only its own subtree. Master sees everything.
+        if (access.IsRegional)
+        {
+            var prefix = access.TenantPath!;
+            query = query.Where(t => t.Path != null && t.Path.StartsWith(prefix));
+        }
+
+        var rows = await query
+            .OrderBy(t => t.Path).ThenBy(t => t.Id)
+            .Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Slug,
+                parent_id = t.ParentId,
+                t.Path,
+                t.Depth,
+                allows_subtenants = t.AllowsSubtenants,
+                max_depth = t.MaxDepth,
+                is_active = t.IsActive,
+            })
+            .ToListAsync(HttpContext.RequestAborted);
+
+        // Assemble the tree the client expects: roots (relative to what the
+        // caller can see) each carrying a `children` array.
+        var byId = rows.ToDictionary(r => r.Id, r => new Dictionary<string, object?>
+        {
+            ["id"] = r.Id,
+            ["name"] = r.Name,
+            ["slug"] = r.Slug,
+            ["parent_id"] = r.parent_id,
+            ["path"] = r.Path,
+            ["depth"] = r.Depth,
+            ["allows_subtenants"] = r.allows_subtenants,
+            ["max_depth"] = r.max_depth,
+            ["is_active"] = r.is_active,
+            ["children"] = new List<Dictionary<string, object?>>(),
+        });
+
+        var roots = new List<Dictionary<string, object?>>();
+        foreach (var row in rows)
+        {
+            var node = byId[row.Id];
+            if (row.parent_id is int parentId && byId.TryGetValue(parentId, out var parent))
+            {
+                ((List<Dictionary<string, object?>>)parent["children"]!).Add(node);
+            }
+            else
+            {
+                roots.Add(node);
+            }
+        }
+
+        return Ok(new { data = roots, total = rows.Count });
     }
 
     /// <summary>POST /api/admin/super/tenants - Create tenant.</summary>

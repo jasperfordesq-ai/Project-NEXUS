@@ -29,15 +29,18 @@ public class AdminSuperImpersonationController : ControllerBase
     private readonly TokenService _tokens;
     private readonly AuditLogService _audit;
     private readonly ILogger<AdminSuperImpersonationController> _logger;
+    private readonly Support.Authorization.SuperPanelAccess _superPanel;
 
     public AdminSuperImpersonationController(
         NexusDbContext db, TokenService tokens, AuditLogService audit,
-        ILogger<AdminSuperImpersonationController> logger)
+        ILogger<AdminSuperImpersonationController> logger,
+        Support.Authorization.SuperPanelAccess superPanel)
     {
         _db = db;
         _tokens = tokens;
         _audit = audit;
         _logger = logger;
+        _superPanel = superPanel;
     }
 
     [HttpPost("api/v2/admin/super/users/{id:int}/impersonate")]
@@ -51,15 +54,18 @@ public class AdminSuperImpersonationController : ControllerBase
                 new { success = false, error = "Authentication required", code = "AUTH_REQUIRED" });
         }
 
-        // requireSuperAdmin: role super_admin/god, or the super/tenant-super
-        // flags (tenant supers may mint; the exchange re-checks the target).
         var actor = await _db.Users.IgnoreQueryFilters().AsNoTracking()
             .SingleOrDefaultAsync(u => u.Id == actorId.Value && u.TenantId == actorTenantId.Value,
                 HttpContext.RequestAborted);
-        var isSuper = actor is not null
-            && (actor.Role is "super_admin" or "god"
-                || actor.IsSuperAdmin || actor.IsTenantSuperAdmin || actor.IsGod);
-        if (!isSuper)
+
+        // 🔴 The gate is now SuperPanelAccess, matching Laravel's `super-panel`
+        // middleware. It admits `master` (platform super/god, or a super-admin of
+        // the master tenant) and `regional` (a super-admin of a hub tenant that
+        // may have children AND has a materialised path). It therefore REFUSES a
+        // super-admin of a leaf tenant, whom the previous flags-only check
+        // admitted — Laravel refuses them too.
+        var access = await _superPanel.ResolveAsync(actorId.Value, HttpContext.RequestAborted);
+        if (!access.Granted)
         {
             return Forbidden("SUPER_PANEL_ACCESS_DENIED", "Super admin access is required");
         }
@@ -71,11 +77,15 @@ public class AdminSuperImpersonationController : ControllerBase
             return LaravelError(404, "RESOURCE_NOT_FOUND", "User not found");
         }
 
-        // NOTE ON SCOPE: Laravel confines a hub/regional super admin to its
-        // own tenant subtree via SuperPanelAccess. This backend has no subtree
-        // authorization model yet (its platform-super policy is platform-wide),
-        // so cross-tenant scoping is NOT enforced here beyond the super gate.
-        // Recorded as a divergence in CURRENT_ASPNET_CONTRACT_STATUS.md.
+        // SCOPE: a regional super admin may only impersonate inside their own
+        // subtree. Laravel returns 403 SUPER_PANEL_ACCESS_DENIED for an
+        // out-of-subtree target (AdminSuperController.php:1044-1051); this used
+        // to be missing entirely, so a hub admin could sign in as a member of
+        // any community on the platform.
+        if (!await _superPanel.CanAccessTenantAsync(actorId.Value, target.TenantId, HttpContext.RequestAborted))
+        {
+            return Forbidden("SUPER_PANEL_ACCESS_DENIED", "Super admin access is required");
+        }
 
         if (id == actorId.Value)
         {

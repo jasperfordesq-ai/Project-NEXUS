@@ -60,6 +60,10 @@ public static class ServiceExtensions
         // Skills, audit, email
         services.AddScoped<SkillService>();
         services.AddScoped<AuditLogService>();
+        // Subtree confinement for super-admin surfaces. See
+        // Support/Authorization/SuperPanelAccess.cs and R-4 in
+        // docs/PRODUCTION_READINESS_REMEDIATION.md.
+        services.AddScoped<Support.Authorization.SuperPanelAccess>();
         services.Configure<GmailOptions>(
             configuration.GetSection(GmailOptions.SectionName));
         // 2026-05-09 — SendGrid primary + Gmail SMTP fallback per project

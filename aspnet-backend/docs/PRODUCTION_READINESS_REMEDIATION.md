@@ -112,7 +112,28 @@ closed in Production when the secret is unset) and
 `api/v2/marketplace/webhooks/stripe` (`MarketplaceController.cs:1741`). Laravel's
 production path `/api/v2/webhooks/stripe` has **no** ASP.NET handler at all.
 
-### R-3 `OPEN` — no tenant hierarchy exists
+### R-3 `FIXED` — tenant hierarchy added
+
+Migration `20260815125256_AddTenantHierarchy` adds `ParentId`, `Path`, `Depth`,
+`AllowsSubtenants` and `MaxDepth` to `tenants`, mirroring Laravel's columns and
+its `/1/2/5/` materialised-path shape, with a self-referencing FK
+(`OnDelete: Restrict` — a tenant with children must not be deletable out from
+under them, or the survivors keep a path through a parent that no longer exists).
+The migration backfills every existing root tenant to `'/{id}/'` at depth 0.
+
+`GET super/tenants/hierarchy` is now implemented for real
+(`AdminCompatibility3Controller.cs`) — it returned a hardcoded empty array while
+the React panel rendered `node.children` (`TenantHierarchy.tsx:161`), so the page
+showed nothing while reporting success. It is scoped: a regional caller sees only
+its own subtree. This took the no-op stub count 351 → **350**, and the ratchet
+refused the commit until the baseline was lowered, exactly as designed.
+
+**Still open here:** nothing creates or maintains the hierarchy yet — the
+super-admin tenant create/update/move endpoints are themselves no-op stubs
+(R-1), so paths are only ever set by the backfill or by hand. Implementing those
+is what makes the hierarchy usable rather than merely present.
+
+### R-3 (original finding)
 
 `Tenant` and the `tenants` table carry only `Id, Slug, Name, Domain, Tagline,
 LogoUrl, IsActive, CreatedAt, UpdatedAt`. There is **no parent, path, depth or
@@ -123,7 +144,31 @@ empty array, and why R-4 is a data-model gap rather than a missing `if`.
 **Plan.** Add `parent_id` + materialised `path` (+ `allows_subtenants`,
 `max_depth`) with a migration and a backfill, then implement hierarchy, then R-4.
 
-### R-4 `OPEN` — no subtree confinement for regional super admins
+### R-4 `PARTIALLY FIXED` — subtree confinement now exists and is applied to impersonation
+
+`Support/Authorization/SuperPanelAccess.cs` ports Laravel's three rules in order:
+hold a super-admin capacity; a **regional** grant needs sub-tenant capability; a
+regional grant needs a usable materialised path. It fails closed on all three.
+
+🔴 The third rule is the one to preserve. The boundary is a string-prefix match
+and **every string starts with `""`**, so a hub tenant with an unpopulated path
+would otherwise be handed the entire installation. It denies instead, and a test
+(`SuperPanelSubtreeAccessTests`) pins that specific case.
+
+Applied so far to **impersonation** — the mint gate is now `SuperPanelAccess`
+(which also correctly refuses a super-admin of a *leaf* tenant, whom the old
+flags-only check admitted), and the target must be inside the caller's subtree,
+matching `AdminSuperController.php:1044-1051`.
+
+**Still open:** the other `/v2/admin/super/*` surfaces. Laravel calls
+`SuperPanelAccess` from 5 files / 54 call sites — `AdminSuperController.php` (35),
+`TenantVisibilityService.php` (10), `SuperAdminAuditService.php` (4),
+`EnsureSuperPanelAccess.php` (3), `UsersController.php` (2). ASP.NET now has the
+mechanism; each surface still has to use it. Note most of those surfaces are
+currently no-op stubs (R-1), so implementing them and scoping them is one job,
+not two.
+
+### R-4 (original finding)
 
 Laravel confines a hub-tenant super admin (`level = regional`) to its own subtree:
 `app/Core/SuperPanelAccess.php:172` (level), `canAccessTenant()` `:190`

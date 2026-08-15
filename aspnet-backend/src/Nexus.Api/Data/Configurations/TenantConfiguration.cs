@@ -26,6 +26,18 @@ public class TenantConfiguration : TenantScopedConfiguration
             entity.Property(e => e.Slug).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Name).HasMaxLength(255).IsRequired();
             entity.HasIndex(e => e.Slug).IsUnique();
+
+            // Hierarchy (see Tenant.cs for why this exists and the empty-path trap).
+            entity.Property(e => e.Path).HasMaxLength(500);
+            entity.HasIndex(e => e.ParentId);
+            entity.HasIndex(e => e.Path);
+            entity.HasOne(e => e.Parent)
+                .WithMany(e => e.Children)
+                .HasForeignKey(e => e.ParentId)
+                // Restrict: a tenant with children must not be deletable out from
+                // under them, or the surviving rows keep a path through a parent
+                // that no longer exists and the subtree boundary stops resolving.
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // TenantConfig configuration with tenant filter
