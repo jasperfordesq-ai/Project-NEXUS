@@ -120,6 +120,122 @@ public class TokenService
     public int AccessTokenExpirySeconds =>
         _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes", 120) * 60;
 
+    /// <summary>Laravel IMPERSONATION_TOKEN_EXPIRY: the proof lives 5 minutes.</summary>
+    public const int ImpersonationProofExpirySeconds = 300;
+
+    /// <summary>Laravel impersonation session ACCESS_TOKEN_EXPIRY: 15 minutes.</summary>
+    public const int ImpersonationSessionExpirySeconds = 900;
+
+    /// <summary>
+    /// The one-time impersonation PROOF — Laravel generateImpersonationToken.
+    /// type=impersonation makes it useless as a bearer (the auth pipeline
+    /// rejects that type); it authenticates nothing until exchanged. The jti
+    /// is what the exchange consumes single-use.
+    /// </summary>
+    public (string Token, string Jti) GenerateImpersonationProof(
+        int userId, int tenantId, int impersonatedBy)
+    {
+        var secret = _config["Jwt:Secret"]
+            ?? throw new InvalidOperationException("JWT secret not configured");
+        var now = DateTime.UtcNow;
+        var jti = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims:
+            [
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                new Claim("tenant_id", tenantId.ToString()),
+                new Claim("type", "impersonation"),
+                new Claim("impersonated_by", impersonatedBy.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, jti),
+                new Claim(JwtRegisteredClaimNames.Iat,
+                    new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+            ],
+            notBefore: now,
+            expires: now.AddSeconds(ImpersonationProofExpirySeconds),
+            signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                SecurityAlgorithms.HmacSha256));
+        return (new JwtSecurityTokenHandler().WriteToken(token), jti);
+    }
+
+    /// <summary>
+    /// The impersonation SESSION token — Laravel generateImpersonationSessionToken.
+    /// A real 15-minute access token for the target member (same claim shape as
+    /// a normal login token so rehydration works), plus impersonated_by and a
+    /// fresh impersonation_jti the end endpoint can revoke. DELIBERATELY no
+    /// refresh token — an impersonated session must not mint a durable family.
+    /// </summary>
+    public (string Token, string SessionJti) GenerateImpersonationSessionToken(
+        User target, int impersonatedBy)
+    {
+        var secret = _config["Jwt:Secret"]
+            ?? throw new InvalidOperationException("JWT secret not configured");
+        var now = DateTime.UtcNow;
+        var sessionJti = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+        var token = new JwtSecurityToken(
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
+            claims:
+            [
+                new Claim(JwtRegisteredClaimNames.Sub, target.Id.ToString()),
+                new Claim("tenant_id", target.TenantId.ToString()),
+                new Claim("role", target.Role),
+                new Claim("email", target.Email),
+                BooleanClaim(NexusPrivilegeClaimTypes.IsAdmin, target.IsAdmin),
+                BooleanClaim(NexusPrivilegeClaimTypes.IsSuperAdmin, target.IsSuperAdmin),
+                BooleanClaim(NexusPrivilegeClaimTypes.IsTenantSuperAdmin, target.IsTenantSuperAdmin),
+                BooleanClaim(NexusPrivilegeClaimTypes.IsGod, target.IsGod),
+                new Claim("impersonated_by", impersonatedBy.ToString()),
+                new Claim("impersonation_jti", sessionJti),
+                new Claim(JwtRegisteredClaimNames.Iat,
+                    new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+            ],
+            notBefore: now,
+            expires: now.AddSeconds(ImpersonationSessionExpirySeconds),
+            signingCredentials: new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                SecurityAlgorithms.HmacSha256));
+        return (new JwtSecurityTokenHandler().WriteToken(token), sessionJti);
+    }
+
+    /// <summary>
+    /// Validates a proof's signature/lifetime and returns its claims for the
+    /// exchange to inspect. Consumption (single-use) is the caller's job via
+    /// the revoked-tokens insert. Returns null on any validation failure.
+    /// </summary>
+    public ClaimsPrincipal? ReadImpersonationProof(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return null;
+        try
+        {
+            // MapInboundClaims=false keeps sub/jti/tenant_id verbatim, matching
+            // the JWT bearer pipeline; the default true would remap "sub" to a
+            // URI and the exchange's FindFirst("sub") would miss.
+            var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+            var principal = handler.ValidateToken(token, ValidationParameters(), out _);
+            return principal.FindFirst("type")?.Value == "impersonation"
+                && !string.IsNullOrWhiteSpace(principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value)
+                && !string.IsNullOrWhiteSpace(principal.FindFirst("impersonated_by")?.Value)
+                ? principal : null;
+        }
+        catch (SecurityTokenException) { return null; }
+        catch (ArgumentException) { return null; }
+    }
+
+    /// <summary>Reads the impersonation_jti from a session token without lifetime checks.</summary>
+    public static string? ReadImpersonationSessionJti(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return null;
+        try
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            return jwt.Claims.FirstOrDefault(c => c.Type == "impersonation_jti")?.Value;
+        }
+        catch (ArgumentException) { return null; }
+    }
+
     public static (string token, string hash) GenerateRefreshToken()
     {
         var randomBytes = new byte[64];

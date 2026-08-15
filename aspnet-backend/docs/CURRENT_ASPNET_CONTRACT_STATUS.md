@@ -240,11 +240,29 @@ here as a separately named position, never as a silent rescore.
   round-trip with ceiling validation, ledger + reversal deliberately
   surviving the feature flag, kill-switch blocking retries, community-mint /
   member-reclaim transactions, one reversal per reward database-enforced).
-  Pinned by `SuperOpsAndRewardsTests` (6 tests). **The only remaining route
-  gap from the 59 is impersonation (3 routes)** — security-critical token
-  work, deliberately deferred to its own session. Residues: no performance
-  recorder (summary reports recording off), attendance-claim creation on
-  check-in not yet wired (the ledger and its admin operations are).
+  Pinned by `SuperOpsAndRewardsTests` (6 tests). **Impersonation closed
+  2026-08-15 (unscored) — this completes all 59 React-consumed route gaps
+  from the re-audit.** Migration 171 adds `revoked_tokens` (UNIQUE jti = the
+  single-use guarantee). The mint (`/v2/admin/super/users/{id}/impersonate`)
+  issues a 5-minute one-time PROOF that authenticates nothing as a bearer —
+  the JWT pipeline now rejects `type=impersonation` and denylist-checks
+  `impersonation_jti`, failing closed. The anonymous exchange
+  (`/v2/auth/impersonate/exchange`, absolute v2 route so no v1 twin) consumes
+  the proof single-use and mints a 15-minute session with NO refresh token,
+  re-checking authority at spend time; end (`/v2/auth/impersonate/end`)
+  revokes only that session's jti. `X-Tenant-Slug`/`X-Message-View-Purpose`
+  added to the CORS allowlist. Pinned by `ImpersonationTests` (5 tests).
+  **Scope divergence recorded honestly:** Laravel confines a hub/regional
+  super admin to its own tenant subtree via SuperPanelAccess; this backend
+  has no subtree authorization model (its platform-super policy is
+  platform-wide), so cross-tenant impersonation scope is not narrowed beyond
+  the super gate — that is a pre-existing gap, not introduced here.
+  Residues across the batch: no performance recorder (summary reports
+  recording off), attendance-claim creation on check-in not yet wired (the
+  ledger and its admin operations are), and the legacy
+  `/v2/admin/users/{id}/impersonate` still mints a live token (untouched to
+  avoid breaking its pinning tests; the canonical proof flow is the new
+  `/super/` route).
 - The 59 React-consumed gaps cluster into post-freeze subsystems: partner
   venues (member and admin — closed above), support actions and carer sub-account operations
   (prepare/confirm/decline, child listings, messages, transfers, wallet),

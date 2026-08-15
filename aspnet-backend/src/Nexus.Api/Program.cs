@@ -267,7 +267,7 @@ builder.Services.AddCors(options =>
                 // - X-Requested-With: Required by SignalR client
                 // - X-SignalR-User-Agent: SignalR connection metadata
                 // - Idempotency-Key: Canonical wallet transfer replay protection
-                .WithHeaders("Authorization", "Content-Type", "X-Api-Version", "X-Tenant-ID", "X-Requested-With", "X-SignalR-User-Agent", "Idempotency-Key")
+                .WithHeaders("Authorization", "Content-Type", "X-Api-Version", "X-Tenant-ID", "X-Tenant-Slug", "X-Message-View-Purpose", "X-Requested-With", "X-SignalR-User-Agent", "Idempotency-Key")
                 // The React frontend uses fetch with credentials: 'include' for some
                 // public endpoints (bootstrap, tenant chooser, menus) so the browser
                 // will attach session cookies if present. Spec-compliant because we

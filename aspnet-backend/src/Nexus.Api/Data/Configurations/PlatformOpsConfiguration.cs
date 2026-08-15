@@ -32,5 +32,21 @@ public class PlatformOpsConfiguration : TenantScopedConfiguration
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
             entity.HasIndex(e => e.Capability).IsUnique();
         });
+
+        modelBuilder.Entity<RevokedToken>(entity =>
+        {
+            entity.ToTable("revoked_tokens");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.Jti).HasColumnName("jti").HasMaxLength(64).IsRequired();
+            entity.Property(e => e.RevokedAt).HasColumnName("revoked_at");
+            entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
+            // The UNIQUE jti is the single-use guarantee: the exchange consumes
+            // a proof by inserting its jti; a duplicate insert means already
+            // spent. Not tenant-scoped — the anonymous exchange has no tenant.
+            entity.HasIndex(e => e.Jti).IsUnique();
+            entity.HasIndex(e => e.ExpiresAt);
+        });
     }
 }

@@ -74,8 +74,8 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260815055947_AddPlatformCapabilitiesAndAttendanceReward",
-            "the chain currently ends with platform capabilities + attendance reward (migration 170); "
+        migrations.Last().Should().Be("20260815064022_AddRevokedTokens",
+            "the chain currently ends with the revoked-tokens store (migration 171); "
             + "adding a migration is fine but must be deliberate — update this pin in the same commit");
     }
 

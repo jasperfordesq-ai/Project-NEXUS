@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
@@ -98,6 +99,44 @@ public static class AuthExtensions
                         {
                             context.Fail("missing_principal");
                             return;
+                        }
+
+                        // An impersonation PROOF (type=impersonation) is a
+                        // one-time exchange credential, never a session bearer.
+                        // Rejecting it here is what stops the 5-minute proof
+                        // from authenticating as the target on its own.
+                        if (string.Equals(principal.FindFirst("type")?.Value, "impersonation",
+                            StringComparison.Ordinal))
+                        {
+                            context.Fail("impersonation_proof_not_a_session");
+                            return;
+                        }
+
+                        // An impersonation SESSION carries a revocable jti. The
+                        // denylist is checked here and FAILS CLOSED on error —
+                        // a broken check must not let a revoked session through.
+                        var impersonationJti = principal.FindFirst("impersonation_jti")?.Value;
+                        if (!string.IsNullOrWhiteSpace(impersonationJti))
+                        {
+                            try
+                            {
+                                var db = context.HttpContext.RequestServices
+                                    .GetRequiredService<Data.NexusDbContext>();
+                                var revoked = await db.RevokedTokens
+                                    .AsNoTracking()
+                                    .AnyAsync(t => t.Jti == impersonationJti,
+                                        context.HttpContext.RequestAborted);
+                                if (revoked)
+                                {
+                                    context.Fail("impersonation_session_revoked");
+                                    return;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                context.Fail("impersonation_denylist_unavailable");
+                                return;
+                            }
                         }
 
                         var sub = principal.FindFirst("sub")?.Value
