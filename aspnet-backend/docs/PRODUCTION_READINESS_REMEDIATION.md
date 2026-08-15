@@ -164,12 +164,29 @@ short session then a bounce to the login screen, repeatedly, with no explanation
 Fixed by giving the real `AuthController.Refresh` both spellings and deleting the
 410 stub outright.
 
-**Now live and previously masked:** ASP.NET has no `AUTH_REFRESH_SUPERSEDED`
-(0 hits). Laravel returns 409 + that code on a rotation race and the client treats
-it as transient (`api.ts:790-796`); ASP.NET treats an already-revoked token as
-theft and revokes the whole family (`AuthController.cs:365-378`), logging the
-member out of every tab. **Fix this next** — it was invisible only because R-16
-hid it.
+**The follow-on defect this exposed is also `FIXED this commit`.** ASP.NET had no
+`AUTH_REFRESH_SUPERSEDED` at all and treated every replay of a rotated token as
+theft, revoking the whole family — so two tabs racing (or a queued request and its
+retry) logged the member out everywhere. `AuthController.Refresh` now mirrors
+Laravel: within a 5-second grace window (`RefreshReuseGraceSeconds`, matching
+`TokenService::REFRESH_REUSE_GRACE_SECONDS`), if the token was revoked with reason
+`"rotation"` **and** a still-valid successor exists, it returns
+**409 `AUTH_REFRESH_SUPERSEDED`** and leaves the family intact; outside the window,
+or with no live successor, reuse detection still revokes everything.
+
+Note the approximation, deliberately narrower than it looks: `refresh_tokens` has
+no family/parent columns, so "direct successor" is "any still-valid token for the
+same user and tenant created at or after this one was rotated". Laravel matches on
+`parent_jti_hash`. If family columns are ever added, tighten this.
+
+🔴 **A test was pinning the wrong contract.** `AuthControllerTests`
+`Refresh_WithUsedToken_ReturnsUnauthorized` asserted 401 for an *immediate* replay
+— i.e. it enshrined the log-everyone-out behaviour. Replaced by
+`Refresh_WithTokenRotatedByAConcurrentRequest_ReturnsSupersededAndKeepsTheFamily`
+(409 + the successor still works) and
+`Refresh_WithTokenReplayedAfterTheGraceWindow_RevokesTheFamily` (401 + family
+revoked). Worth remembering when triaging R-1: a green suite can be pinning a
+defect.
 
 ### R-17 `FIXED this commit` — legal-acceptance lockout with no way out
 

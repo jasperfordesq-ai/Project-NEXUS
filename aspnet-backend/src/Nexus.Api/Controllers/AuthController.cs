@@ -33,6 +33,13 @@ namespace Nexus.Api.Controllers;
 [Route("api/auth")] // Backward compatibility
 public class AuthController : ControllerBase
 {
+    /// <summary>
+    /// How long after a rotation a replay of the old token is treated as a
+    /// concurrent request rather than theft. Mirrors Laravel's
+    /// TokenService::REFRESH_REUSE_GRACE_SECONDS (5).
+    /// </summary>
+    private const int RefreshReuseGraceSeconds = 5;
+
     private readonly NexusDbContext _db;
     private readonly IConfiguration _config;
     private readonly ILogger<AuthController> _logger;
@@ -372,6 +379,61 @@ public class AuthController : ControllerBase
             // access immediately.
             if (refreshToken.RevokedAt != null)
             {
+                // 🔴 Not every replay is theft. Two tabs (or a queued request and
+                // its retry) can present the same token within milliseconds of
+                // each other; the first rotates it, the second arrives to find it
+                // revoked. Treating that as theft logs the member out of every
+                // tab for doing nothing wrong.
+                //
+                // Laravel distinguishes the two: if the token was consumed within
+                // a 5-second grace window AND an active successor exists, it
+                // returns 409 AUTH_REFRESH_SUPERSEDED and leaves the family
+                // alone (TokenService::hasRecentActiveDirectSuccessor,
+                // REFRESH_REUSE_GRACE_SECONDS = 5; AuthController.php:724-730).
+                // The client already understands that code and preserves its
+                // credentials (react-frontend/src/lib/api.ts:790-796).
+                //
+                // ASP.NET's refresh_tokens table has no family/parent columns, so
+                // "direct successor" is approximated as any still-valid token for
+                // the same user and tenant issued at or after this one was
+                // rotated. That is narrower than it looks: it requires the grace
+                // window, the "rotation" reason (never "logout", "password_change"
+                // or "reuse_detected"), and a live successor.
+                var graceCutoff = DateTime.UtcNow.AddSeconds(-RefreshReuseGraceSeconds);
+                if (refreshToken.RevokedReason == "rotation"
+                    && refreshToken.RevokedAt >= graceCutoff)
+                {
+                    var now = DateTime.UtcNow;
+                    var hasActiveSuccessor = await _db.RefreshTokens
+                        .IgnoreQueryFilters()
+                        .AnyAsync(t => t.UserId == refreshToken.UserId
+                            && t.TenantId == refreshToken.TenantId
+                            && t.RevokedAt == null
+                            && t.ExpiresAt > now
+                            && t.CreatedAt >= refreshToken.RevokedAt);
+
+                    if (hasActiveSuccessor)
+                    {
+                        _logger.LogInformation(
+                            "Concurrent refresh for user {UserId} superseded by an active successor; "
+                            + "preserving the token family.",
+                            refreshToken.UserId);
+
+                        return Conflict(new
+                        {
+                            success = false,
+                            errors = new[]
+                            {
+                                new
+                                {
+                                    code = "AUTH_REFRESH_SUPERSEDED",
+                                    message = "This refresh token was already rotated by a concurrent request.",
+                                },
+                            },
+                        });
+                    }
+                }
+
                 var revokedCount = await _db.RefreshTokens
                     .IgnoreQueryFilters()
                     .Where(t => t.UserId == refreshToken.UserId

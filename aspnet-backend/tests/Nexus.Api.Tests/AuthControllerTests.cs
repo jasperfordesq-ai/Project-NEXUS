@@ -7,6 +7,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Nexus.Api.Data;
+using Nexus.Api.Services;
 using Nexus.Api.Tests.Fixtures;
 
 namespace Nexus.Api.Tests;
@@ -166,10 +170,19 @@ public class AuthControllerTests : IntegrationTestBase
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    /// <summary>
+    /// An IMMEDIATE replay of a just-rotated token is a concurrent request, not
+    /// theft — two tabs, or a queued request and its retry. Laravel answers 409
+    /// AUTH_REFRESH_SUPERSEDED and leaves the token family intact
+    /// (AuthController.php:724-730), and the React client relies on exactly that
+    /// to keep its credentials (react-frontend/src/lib/api.ts:790-796).
+    ///
+    /// 🔴 This test asserted 401 until 2026-08-15. That pinned ASP.NET-only
+    /// behaviour: the member was logged out of every tab for a harmless race.
+    /// </summary>
     [Fact]
-    public async Task Refresh_WithUsedToken_ReturnsUnauthorized()
+    public async Task Refresh_WithTokenRotatedByAConcurrentRequest_ReturnsSupersededAndKeepsTheFamily()
     {
-        // Arrange - Login and use refresh token once
         var loginResponse = await Client.PostAsJsonAsync("/api/auth/login", new
         {
             email = "admin@test.com",
@@ -180,17 +193,71 @@ public class AuthControllerTests : IntegrationTestBase
         var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
         var refreshToken = loginContent.GetProperty("refresh_token").GetString();
 
-        // Use the refresh token once
-        await Client.PostAsJsonAsync("/api/auth/refresh", new { refresh_token = refreshToken });
+        var first = await Client.PostAsJsonAsync("/api/auth/refresh", new { refresh_token = refreshToken });
+        first.StatusCode.Should().Be(HttpStatusCode.OK);
+        var successor = (await first.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("refresh_token").GetString();
 
-        // Act - Try to use the same token again
+        // Act — the loser of the race presents the now-rotated token.
         var response = await Client.PostAsJsonAsync("/api/auth/refresh", new
         {
             refresh_token = refreshToken
         });
 
-        // Assert - Token should be revoked after first use (rotation)
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("errors")[0].GetProperty("code").GetString()
+            .Should().Be("AUTH_REFRESH_SUPERSEDED");
+
+        // The successor must still work — the family was not revoked.
+        var stillAlive = await Client.PostAsJsonAsync("/api/auth/refresh", new { refresh_token = successor });
+        stillAlive.StatusCode.Should().Be(HttpStatusCode.OK,
+            "a concurrent-refresh race must not destroy the session");
+    }
+
+    /// <summary>
+    /// Outside the grace window a replay really is a replay: revoke the whole
+    /// family, as OAuth2 reuse detection requires.
+    /// </summary>
+    [Fact]
+    public async Task Refresh_WithTokenReplayedAfterTheGraceWindow_RevokesTheFamily()
+    {
+        var loginResponse = await Client.PostAsJsonAsync("/api/auth/login", new
+        {
+            email = "admin@test.com",
+            password = TestDataSeeder.TestPassword,
+            tenant_slug = "test-tenant"
+        });
+
+        var loginContent = await loginResponse.Content.ReadFromJsonAsync<JsonElement>();
+        var refreshToken = loginContent.GetProperty("refresh_token").GetString();
+
+        var first = await Client.PostAsJsonAsync("/api/auth/refresh", new { refresh_token = refreshToken });
+        var successor = (await first.Content.ReadFromJsonAsync<JsonElement>())
+            .GetProperty("refresh_token").GetString();
+
+        // Age the rotation past the 5-second grace window.
+        var stolenHash = TokenService.HashToken(refreshToken!);
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            var rotated = await db.RefreshTokens.IgnoreQueryFilters()
+                .SingleAsync(t => t.TokenHash == stolenHash);
+            rotated.RevokedAt = DateTime.UtcNow.AddMinutes(-1);
+            await db.SaveChangesAsync();
+        }
+
+        var response = await Client.PostAsJsonAsync("/api/auth/refresh", new
+        {
+            refresh_token = refreshToken
+        });
+
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        // Reuse detection revokes the family, so the successor dies too.
+        var successorAfter = await Client.PostAsJsonAsync("/api/auth/refresh", new { refresh_token = successor });
+        successorAfter.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
+            "a genuine replay must revoke the whole token family");
     }
 
     #endregion
