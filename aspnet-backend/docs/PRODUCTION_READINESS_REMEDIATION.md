@@ -983,11 +983,46 @@ these are not "missing tables", they are different data models:**
 badge counters for those three stay honestly 0 (R-21), and why
 `gdpr:check-overdue-requests` cannot be built yet (R-6).
 
-**Recommended order**, given both frontends must switch by configuration alone:
-subsystems the frontends actually call first — Volunteering, Groups, Events,
-Jobs and Safeguarding depth — then Courses/Podcasts/AI/Advertising, which the
-canonical React frontend may not consume at all. Verify each against the client
-before building: the same grep discipline used for the stub triage applies here.
+**Client demand, measured 2026-08-15** (`.local-docs-archive/subsystem_demand.py`),
+because building a subsystem no client calls would be motion without progress:
+
+🔴 **Every absent subsystem is called by at least one frontend. There is no
+cheap subset to skip.** Ranked by client call sites:
+
+| Subsystem | Client calls | ASP.NET route hits |
+| --- | ---: | ---: |
+| Volunteering | 3,706 | 501 |
+| Federation (depth) | 3,325 | 380 |
+| Safeguarding (depth) | 2,841 | 362 |
+| Analytics / reporting | 1,730 | 151 |
+| Marketplace | 1,378 | 104 |
+| Newsletters / comms | 1,309 | 267 |
+| Challenges | 1,004 | 543 |
+| Podcasts / media | 821 | 112 |
+| Jobs / vacancies | 715 | 78 |
+| Events (depth) | 505 | 253 |
+| Clubs / Verein | 409 | 66 |
+| Billing / funds | 356 | 64 |
+| Advertising | 336 | 25 |
+| Groups (depth) | 324 | 126 |
+| AI / agents | 324 | 50 |
+| Courses / learning | 208 | 106 |
+| Partner API / OAuth | 118 | 27 |
+
+🔴 **This CORRECTS advice given in this document a day earlier**, which said to
+defer "Courses/Podcasts/AI/Advertising, which the canonical React frontend may
+not consume at all". It does consume them. Verified with real API-path patterns
+rather than substring counts: **podcasts 26 distinct `/v2/...` paths in the
+React client** (plus 2 in web-uk), courses 9 (+2), AI agents 9, advertising 4.
+The counts in the table are substring-based and inflate — treat them as a
+ranking, not a measurement — but the qualitative conclusion held up under a
+stricter check.
+
+**So the order should be driven by consequence and by ratio, not by hoping
+something is unused.** The widest gaps between demand and coverage are
+Advertising (336:25), Jobs (715:78), Marketplace (1378:104), AI (324:50) and
+Billing (356:64). Volunteering and Safeguarding have the most call sites overall
+and the most member impact, so they remain the sensible place to start.
 
 ### R-14 (original finding)
 
