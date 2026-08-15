@@ -165,6 +165,38 @@ that `tenant/bootstrap` returns `contact.email`, `contact.phone` and
 `contact.address` as `null` where the client's schema expects strings. Harmless
 in dev, but it is a real shape divergence.
 
+## 🔴 A second invisible defect class: tables the model believes in
+
+Found 2026-08-15 while implementing `GET /v2/volunteering/training` for real.
+The endpoint threw `42P01: relation "volunteer_training_courses" does not exist`.
+
+The entities are mapped, the model snapshot carries the tables,
+`dotnet ef migrations has-pending-model-changes` reports clean, and every build
+and test passes — but **no migration ever emitted the CreateTable**, so the
+tables are absent from the database. Any query against them throws at runtime.
+This is the same failure class as the migration-163 repair
+(`compatibility_audit_entries`), which is why that repair has its own pinned test.
+
+🔴 **The two defect classes were concealing each other.** The tables were never
+queried, because the endpoints that would have queried them were no-op stubs
+(R-1). Fixing a stub is therefore how you discover a phantom table — expect more
+of these as the stub count comes down.
+
+**Detector:** `.local-docs-archive/find_phantom_tables.py` — compares every
+`ToTable(...)` in the snapshot against every `CreateTable` (and raw
+`CREATE TABLE`) across the whole migration chain. Of 439 mapped tables, exactly
+three were phantom, all volunteer admin, all created by migration
+`20260815200000_CreateMissingVolunteerAdminTables`:
+
+- `volunteer_training_courses`
+- `volunteer_training_completions`
+- `volunteer_tenant_policies`
+
+**Re-run it after any migration surgery.** It is cheap, and this class is
+invisible to every other check in the repository — including the schema parity
+report, which compares Laravel against the ASP.NET *model*, not against what the
+migrations actually create.
+
 ## 🔴 The one thing to understand before touching this backend
 
 **Route existence proves nothing here.** 349 action methods return
