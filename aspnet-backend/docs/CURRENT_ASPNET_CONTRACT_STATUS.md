@@ -97,6 +97,123 @@ static gaps and 171 method-unresolved entries. The reconciled inventory does not
 prove payload, status, auth, tenant, side-effect, or runtime correctness; those
 rows remain semantic and unchanged-client work rather than route-score evidence.
 
+## 2026-08-15 Fresh Audit At HEAD `870c1e989` (Advisory, Partially Complete)
+
+Regenerated from live code at monorepo HEAD `870c1e989`, after the 14-commit
+implementation run that closed the 59 React-consumed route gaps. **Advisory: banks
+zero points, performs no scoring transaction.**
+
+🔴 **Coverage is incomplete and must not be read as a clean bill of health.** Nine
+adversarial reviewers were commissioned to attack this week's work and the five
+Laravel-rewritten areas; **eight were killed mid-run by account credit exhaustion**
+and returned no findings. One completed (React super-panel client inventory).
+Everything recorded below was verified directly on disk in the main session. The
+unfinished attack surface is listed at the end and is still owed.
+
+### Mechanical inventories (regenerated)
+
+| Comparison | Result |
+| --- | --- |
+| API routes | 2,659 matched, **8 missing** (was 67 on 2026-08-14 — the 59 closures are independently confirmed by the repo's own comparison script) |
+| Canonical React matrix | 2,078 unique contracts, **0 static ASP.NET gaps**, 179 method-unresolved |
+| Schema | 472 Laravel source tables vs 452 ASP.NET; 253 matched; **219 missing**, 199 extra |
+| Localization | 11/11 locales; **5,424 missing keys**, 374 missing namespaces |
+
+Route existence ≠ contract identity. The matrix proves paths resolve statically;
+it proves nothing about payloads, status codes, or side effects.
+
+### Verified findings
+
+**F1 — SECURITY — no subtree confinement for regional super admins.** Laravel
+confines a hub-tenant super admin (`level = regional`) to its own tenant subtree:
+`app/Core/SuperPanelAccess.php:172` sets the level, `canAccessTenant()` at `:190`
+enforces it, and it is called from `AdminSuperController.php` (35 sites),
+`TenantVisibilityService.php` (10), `SuperAdminAuditService.php` (4),
+`EnsureSuperPanelAccess.php` (3) and `UsersController.php` (2). In ASP.NET the
+entire concept is absent — the only occurrence of the name anywhere in
+`src/Nexus.Api/` is an explanatory comment in `AdminSuperImpersonationController.cs`.
+A regional super admin who sees only their own communities on Laravel would, on
+ASP.NET, see and act on **every tenant on the platform**, impersonation included.
+Pre-existing, not introduced this week, and a hard production blocker on its own.
+
+**F2 — BREAKS-CLIENT — message voice playback and attachment download absent.**
+`routes/api.php:586-587` expose `GET /v2/messages/{message}/attachments/{attachment}`
+and `GET /v2/messages/{message}/voice` (`MessageMediaController`). ASP.NET has no
+counterpart; `MessageAttachmentsController.cs` is a different feature (list `:29`,
+attach `:68`, remove `:105`). `web-uk` renders audio from this contract
+(`src/routes/messages.js:391`, `views/messages/direct-conversation.njk:123`), so on
+ASP.NET a voice message cannot be played and an attachment cannot be downloaded.
+
+**F3 — VERIFY — event guest attendance action vocabulary.** React calls
+`POST /api/events/{id}/registration-product/guests/{guestId}/attendance/{action}`
+(`react-frontend/src/lib/event-registration-api.ts:477`). ASP.NET's
+`EventRegistrationProductController.cs:160` constrains the action to
+`^(check_in|check_out|no_show|undo)$`. The Laravel vocabulary has not been
+compared; a wider Laravel set would break check-in.
+
+**F4 — DIVERGENCE — expired support actions are silent.** ASP.NET does enforce
+expiry at read/execute time (`SupportPendingActionService.cs:177,204,291`), so an
+expired request is inert rather than exploitable. But Laravel additionally runs
+`support-actions:expire` daily (`bootstrap/app.php:57`, `ExpireSupportActions.php`)
+whose stated purpose is that "the supporter is notified so an expiry is never
+silent". ASP.NET has no such job, so the supporter is never told. This is a gap in
+the work delivered this week.
+
+**F5 — OPERATIONAL — scheduled work is roughly one third covered.** Laravel
+schedules **56** commands in `bootstrap/app.php`; ASP.NET registers **20** jobs
+under `Services/Scheduled/` via `ScheduledHostedService`. Email sending does exist
+(`Services/EmailNotificationService.cs`, `FallbackEmailService : IEmailService`), so
+the platform is not mute — but retention enforcement, backup verification, queue
+liveness, GDPR overdue checks, stuck-webhook checks, email health alerts and the
+event notification outbox have no verified counterpart.
+
+**F6 — SCHEMA — 188 Laravel tables have no trace in ASP.NET at all.** Of the 219
+unmatched Laravel tables, 31 are at least referenced somewhere in ASP.NET source;
+**188 appear nowhere in `src/Nexus.Api/**/*.cs`**. They are not concentrated in one
+excluded module — advertising (4), AI/agent (9), partner API/OAuth (4), challenge
+depth (5) and billing/community funds (4) account for only ~27 of the 188. This is
+the largest unquantified risk in the project and needs table-by-table triage into
+"same thing renamed", "Laravel-only, never needed" and "genuinely missing".
+
+### Cleared — do not re-raise
+
+- **Regional analytics without the `/v2` prefix.** React calls the non-`/v2` form
+  (`lib/api.ts:32` `API_BASE='/api'`; `RegionalAnalyticsAdminPage.tsx:98`).
+  `RegionalAnalyticsSuperAdminController.cs` registers **both** — class route
+  `api/super-admin/regional-analytics` (`:23`) plus absolute `/api/v2/...` twins on
+  every action (`:38-175`). Matches.
+- **Super-admin provisioning requests.** `routes/api.php:3196-3200` vs
+  `AdminProvisioningController.cs:118-173`. Matches.
+- **Broker `archives`.** Present at `AdminCompatibility2Controller.cs:599`, not
+  missing. Of the broker routes genuinely absent (`exchanges/{id}/resolve-dispute`,
+  `exchanges/{id}/reverse`), **neither is called by `react-frontend/src/broker/`**,
+  so they are not client-breaking.
+- **Super-admin route existence.** Every endpoint in the completed React
+  super-panel client inventory resolves to an ASP.NET route. Shapes and
+  authorization semantics remain unverified (F1 is the authorization half).
+
+### Client contract notes worth keeping
+
+- `adminApi.ts:2665` `getFederationStatus` has no callers — dead client method.
+- `FederationTenantFeatures.tsx:100` casts through `unknown` to read a nested
+  `data.features.*` shape that contradicts its declared type at `adminApi.ts:2709`
+  — a live mismatch against Laravel too.
+- Super audit endpoints return a **bare array with no total**; `SuperAuditLog.tsx`
+  and `FederationAuditLog.tsx` synthesise pagination from page length. ASP.NET must
+  return the same bare-array shape or pagination breaks silently.
+- Impersonation client contract confirmed: `UserShow.tsx:207` reads `res.data.token`
+  and `:213` reads `res.data.tenant_slug` — both present in the implementation.
+
+### Still owed (the eight reviews that died)
+
+Impersonation deep contract; carer/sub-accounts cluster; safeguarding/guardian
+consent incl. append-only trigger comparison; the eight small endpoint groups
+(challenges, badges, public events, super ops, performance-summary shape,
+attendance rewards, capabilities, federation status); partner venues; the legal
+gate's fail-open vs fail-closed behaviour; super-admin response shapes; the
+login/auth area; broker response shapes; and the full providers/integrations
+inventory (Stripe live, the four identity providers, OIDC/SSO, audience sync).
+
 ## 2026-08-14 Re-Audit Against Laravel HEAD (Advisory)
 
 A full evidence re-audit ran on 2026-08-14 against monorepo HEAD
