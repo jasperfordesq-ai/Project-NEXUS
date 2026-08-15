@@ -42,7 +42,7 @@ New to the project? Start with the [tutorial](TUTORIAL.md), then skim [ARCHITECT
 | [LOAD-TESTING.md](LOAD-TESTING.md) | The dependency-free load harness, why it refuses to run against production, first results, and why local figures are not capacity figures. |
 | [LOCAL-PERFORMANCE.md](LOCAL-PERFORMANCE.md) | Getting full speed from a development machine, which concurrency knobs are machine-aware, and the container file-I/O bottleneck that CPU tuning cannot fix. |
 | [CUSTOM-DOMAINS.md](CUSTOM-DOMAINS.md) | Tenant custom-domain setup for the React and accessible frontends. |
-| [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and roadmap for making the React frontend switchable between Laravel and ASP.NET without weakening Laravel as the default contract. |
+| [REACT-DUAL-BACKEND.md](REACT-DUAL-BACKEND.md) | Guardrails and decision gates for keeping Laravel authoritative while preserving ASP.NET as an optional, contract-identical future alternative. |
 | [PLATFORM-MONOREPO.md](PLATFORM-MONOREPO.md) | Repository boundaries and safe workflow for Laravel, ASP.NET, React, and Web UK contract work. |
 | [ACCESSIBLE-FRONTEND-TAKEOVER.md](ACCESSIBLE-FRONTEND-TAKEOVER.md) | The changeover in which Web UK replaces the Blade accessible frontend: what each one serves since the 2026-08-12 cutover, which phase the changeover is in, both public URL shapes, and which document answers which question. Read this before any other accessible-frontend status claim. |
 | [FEDERATION_API_MANUAL.md](FEDERATION_API_MANUAL.md) | Plain-English and technical federation API guide. |

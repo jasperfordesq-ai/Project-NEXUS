@@ -4,10 +4,10 @@ Last reviewed: 2026-08-09
 
 ## Purpose
 
-This repository contains the production Laravel platform and its canonical
-React client alongside two experimental development applications. Co-location
-allows one commit and one CI run to compare both backend implementations and
-both frontend consumers against the same contract evidence.
+This repository contains the production Laravel platform, its canonical React
+client, the production Web UK accessible client, and an experimental ASP.NET
+backend. Co-location allows one commit and one CI run to compare both backend
+implementations and both frontend consumers against the same contract evidence.
 
 ## Ownership and authority
 
@@ -15,9 +15,18 @@ both frontend consumers against the same contract evidence.
 | --- | --- | --- |
 | repository root (`app/`, `routes/`, `database/`) | Laravel production backend and contract source of truth | Laravel blue/green |
 | `react-frontend/` | Canonical React client | Laravel blue/green |
-| `accessible-frontend/` | Current Laravel-rendered accessible frontend | Laravel blue/green |
 | `aspnet-backend/` | Experimental second backend | None from this repository — see below |
-| `web-uk/` | **Incoming** accessible frontend — replaces `accessible-frontend/` (decided 2026-08-11) | None yet; deployment path not built — see below |
+| `web-uk/` | Production accessible frontend | Laravel blue/green via `scripts/deploy.sh --with-webuk` |
+
+ASP.NET is co-located to preserve a possible contract-identical .NET edition,
+not because Laravel has a planned retirement date or scale threshold. Laravel
+remains the canonical production backend. Any production role for ASP.NET needs
+the evidence and separate owner decision defined by
+[`ADR-0002`](../aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+
+The paired ASP.NET/Web UK deployment history below is retained as a dated
+record. Their current roles have diverged: Web UK is now production, while the
+ASP.NET service remains stopped and development-only.
 
 ### ✅ RETIRED 2026-08-10 — both tracks are now STOPPED
 

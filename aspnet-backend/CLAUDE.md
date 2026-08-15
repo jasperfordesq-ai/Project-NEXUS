@@ -66,8 +66,10 @@ and super-admin surfaces, accessible frontend behavior, background jobs,
 integrations, tenant settings, localization, tests, and documentation. Earlier
 "out of scope" exclusions are retired and are tracked as contract-identity gaps.
 
-The binding decision is
-[`docs/decisions/ADR-0001-contract-identical-backends.md`](docs/decisions/ADR-0001-contract-identical-backends.md).
+The binding decisions are
+[`docs/decisions/ADR-0001-contract-identical-backends.md`](docs/decisions/ADR-0001-contract-identical-backends.md)
+and
+[`docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md`](docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
 Historical "parity," "compatible," and "contract-correct" wording is shorthand
 for externally observable contract identity, not route-count similarity or
 "close enough" behavior. The end state is two unchanged frontends by two
@@ -94,6 +96,11 @@ the source of truth for the frontend API contract. The ASP.NET backend is
 development-only and must become contract-identical at the externally
 observable boundary used by the Laravel React
 frontend.
+
+ASP.NET is an optional future alternative, not Laravel's planned successor or
+an automatic response to traffic growth. Its development preserves portability
+and provides something concrete to measure. Any production role requires the
+evidence, migration safety, and separate owner decision defined by ADR-0002.
 
 Default rule for agents: do not modify frontend files in this repo unless the
 user explicitly approves that specific frontend change. Backend contract-identity work

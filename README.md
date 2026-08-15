@@ -169,6 +169,14 @@ Two things are true at once and both matter: the code is solid and close to
 finished, **and** it is not certified, not the production default, and not
 deployable from here. Laravel decides the contract; ASP.NET must reproduce it.
 
+It is also not an assumed successor to Laravel. Laravel remains the canonical
+production backend with no automatic user-count or traffic threshold for a
+cutover. ASP.NET preserves a future option for operators or measured workloads
+that genuinely benefit from .NET; any production proposal needs comparative
+Project NEXUS evidence, operational and migration readiness, and a separate
+owner decision. See
+[`ADR-0002`](aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+
 🔴 Its presence changes nothing about what deploys today. Current score, evidence
 boundary and resume queue: `aspnet-backend/docs/CURRENT_ASPNET_CONTRACT_STATUS.md`
 — the canonical source, and the only figure to quote. 🔴 **Never add its score to
@@ -481,8 +489,8 @@ React frontend contract:
 | Edition | Stack | Repository |
 | ------- | ----- | --------- |
 | **Laravel Edition** (production/default) | Laravel 12 + PHP 8.2+ / React 19 / MariaDB | Repository root |
-| **.NET Edition** (experimental) | ASP.NET Core 8 / PostgreSQL | [`aspnet-backend/`](aspnet-backend/README.md) |
-| **Shared Web UK frontend** (experimental) | Express / Nunjucks / GOV.UK Frontend | [`web-uk/`](web-uk/README.md) |
+| **.NET Edition** (experimental) | ASP.NET Core 10 / PostgreSQL | [`aspnet-backend/`](aspnet-backend/README.md) |
+| **Shared Web UK frontend** (production) | Express / Nunjucks / GOV.UK Frontend | [`web-uk/`](web-uk/README.md) |
 
 The **Laravel Edition** at the repository root is the canonical, in-production platform and the foundation of all Project NEXUS communities. It runs on Laravel 12 + PHP 8.2+ with the production React 19 frontend. The **.NET Edition** is an experimental, development-only backend in `aspnet-backend/` that must conform to Laravel's external contracts before either unchanged frontend can safely target it. The portability roadmap and safety rules are documented in [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) and [docs/PLATFORM-MONOREPO.md](docs/PLATFORM-MONOREPO.md).
 

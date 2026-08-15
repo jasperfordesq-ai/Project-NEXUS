@@ -298,15 +298,13 @@ This project is **publicly released** under AGPL-3.0-or-later at <https://github
 - **Do NOT** create PHP views
 - **Header/footer logo exception:** Tenant logos rendered in the React header/footer must use uploaded raster image assets (prefer transparent PNG; JPEG only when transparency is not required). Do **not** replace these brand logos with inline SVGs or generated SVG wrappers. SVG may still be appropriate elsewhere in the app for icons/illustration, but header/footer brand marks are the exception because light/dark logo contrast depends on real transparent raster assets.
 
-- **Laravel is the production/default backend contract.** ASP.NET compatibility work is development-only and must make ASP.NET conform to the Laravel React API rather than changing production frontend behaviour; see [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md).
+- **Laravel is the production/default backend contract.** ASP.NET compatibility work is development-only and must make ASP.NET conform to the Laravel React API rather than changing production frontend behaviour. ASP.NET is an optional future alternative, not Laravel's planned replacement or an automatic response to user growth; any production role requires measured Project NEXUS evidence and a separate explicit owner decision. See [docs/REACT-DUAL-BACKEND.md](docs/REACT-DUAL-BACKEND.md) and [ADR-0002](aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
 - **Repository co-location does not change deployment scope.** `aspnet-backend/`
-  is development-only. `web-uk/` is **destined for production** (see
-  [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md))
-  but is **not deployed today**. Neither may be added to the Laravel blue/green
-  Compose file or production deployment scripts without separate, explicit
-  authorization — for `web-uk` that authorization also requires the open owner
-  prerequisites in the takeover document to be answered, because adding it to both
-  colours costs roughly 1 GB on a VM that already has a memory squeeze.
+  is development-only and may not be added to the Laravel blue/green Compose
+  file or production deployment scripts without separate, explicit
+  authorization. `web-uk/` is the production accessible frontend and deploys
+  only through `bash scripts/deploy.sh --with-webuk`; see
+  [docs/ACCESSIBLE-FRONTEND-TAKEOVER.md](docs/ACCESSIBLE-FRONTEND-TAKEOVER.md).
 
 See [react-frontend/CLAUDE.md](react-frontend/CLAUDE.md) for full styling rules, contexts, hooks, and component reference.
 

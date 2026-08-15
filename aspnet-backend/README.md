@@ -7,6 +7,13 @@ repository. Laravel at the repository root remains the production behavior and
 API-contract source of truth. The unchanged `react-frontend/` and `web-uk/`
 clients must be able to select either backend through configuration alone.
 
+This implementation is an optional future alternative: it is not a planned
+replacement, automatic scaling tier, or user-count-triggered migration. A
+production role would require contract identity, representative comparative
+evidence, operational and migration readiness, and a separate owner decision.
+See
+[`ADR-0002`](docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
+
 ## Provenance
 
 - Source repository: `https://github.com/jasperfordesq-ai/api.project-nexus.net`

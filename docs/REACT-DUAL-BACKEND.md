@@ -1,6 +1,6 @@
 # React Dual-Backend Portability
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-08-15
 
 This document defines the guardrails for making the React frontend able to run
 against either the Laravel API or the ASP.NET API while keeping Laravel as the
@@ -13,6 +13,20 @@ working against Laravel first, and ASP.NET support must be introduced as an
 optional backend target only after each API contract is proven compatible.
 The ASP.NET backend is not assumed to be ready; current frontend preparation is
 limited to guardrails, documentation, and local inventory tooling.
+
+This is a portability strategy, not a planned migration. Laravel remains the
+canonical production backend for the indefinite future. ASP.NET is being built
+as an optional alternative that may be useful for particular operators or
+measured workloads after certification. Growth in users, tenants, or traffic is
+not by itself a reason to switch backends: Project NEXUS should first identify
+and address the actual constraint in queries, indexes, caches, queues, media,
+connections, or infrastructure.
+
+Any future ASP.NET production proposal requires representative comparative
+evidence, an operational and total-cost case, a safe migration and rollback
+plan, and a separate explicit owner decision. The complete decision gate is
+recorded in
+[`ADR-0002`](../aspnet-backend/docs/decisions/ADR-0002-laravel-production-authority-and-aspnet-optionality.md).
 
 Current production status:
 
@@ -41,6 +55,8 @@ the priority over ASP.NET convenience.
 ## Non-Negotiable Guardrails
 
 - Laravel mode is the default mode.
+- There is no user-count, tenant-count, or traffic threshold that automatically
+  promotes ASP.NET or retires Laravel.
 - Existing Laravel API paths, payloads, response handling, auth behaviour, tenant
   handling, uploads, and realtime behaviour must not be changed to suit ASP.NET.
 - ASP.NET should conform to the Laravel API contract wherever possible.
@@ -393,6 +409,8 @@ PURPLE frontend adapter required
 
 - Do not copy the ASP.NET React fork back over the Laravel React frontend.
 - Do not make ASP.NET the default backend target.
+- Do not describe ASP.NET as Laravel's planned replacement or as an automatic
+  answer to growth without Project NEXUS workload evidence.
 - Do not fix ASP.NET by weakening Laravel frontend validation.
 - Do not fork pages per backend.
 - Do not hide contract mismatches with broad `try/catch` fallbacks.
