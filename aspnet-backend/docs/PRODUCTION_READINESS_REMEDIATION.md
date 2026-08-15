@@ -706,6 +706,30 @@ real `AuthController` — no verb+path collisions.
 
 ### R-20 `OPEN` — passkeys cannot work on a community's own domain
 
+**Scope assessed 2026-08-15 — deliberately NOT started, because it is a
+security-critical change that must not be half-done.** What it needs, in order:
+
+1. **A per-credential `rp_id` column.** `WebAuthnCredential` has none
+   (`grep RpId Entities/` is empty). Laravel stores it per credential and filters
+   on it at authentication time (`WebAuthnController.php:92-93,761-762`), so a
+   passkey registered on one domain cannot be presented on another. Needs a
+   migration and a backfill decision for existing rows.
+2. **Per-request relying-party derivation.** `IFido2` is registered once at DI
+   with a static `options.ServerDomain` (`Extensions/ServiceExtensions.cs:118-125`)
+   and injected as a singleton into `PasskeyService`. Laravel derives it per
+   request from the `Origin` header validated against that tenant's registered
+   domains (`WebAuthnController.php:1533-1536`). So `PasskeyService` must build a
+   Fido2 instance per ceremony rather than take the singleton.
+3. **Origin validation against tenant domains**, including the sub-tenant rule:
+   a slug-only sub-tenant inherits its parent's domains (now expressible, since
+   the tenant hierarchy exists as of R-3).
+4. **Store the derived `rp_id` on registration; filter by it on authentication.**
+
+Note the current behaviour **fails closed**: the browser itself refuses the
+ceremony when the RP ID is not a registrable suffix of the page's domain, so
+this is a missing capability rather than a hole. That is why it sits below the
+lockout and admin-2FA work in priority, not because it is unimportant.
+
 Laravel derives the WebAuthn relying-party ID **per request** from the `Origin`
 header validated against that tenant's registered domains, stores it **per
 credential**, and filters on it at authentication time
