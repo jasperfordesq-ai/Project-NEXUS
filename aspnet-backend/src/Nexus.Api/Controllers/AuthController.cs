@@ -332,6 +332,14 @@ public class AuthController : ControllerBase
     /// Refresh access token using a valid refresh token.
     /// </summary>
     [HttpPost("refresh")]
+    // 🔴 /auth/refresh-token is the ONLY refresh path the React client calls
+    // (react-frontend/src/lib/api.ts:779) and it is what Laravel registers
+    // (routes/api.php:3319). It used to answer 410 Gone from
+    // AuthParityController, and the client reads any 4xx other than 408/429 as
+    // "these credentials are bad" (api.ts:800) — so it deleted the session at
+    // the first access-token expiry and bounced the member to the login screen,
+    // repeatedly, with no explanation. Keep both spellings pointed here.
+    [HttpPost("refresh-token")]
     [AllowAnonymous]
     public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
     {

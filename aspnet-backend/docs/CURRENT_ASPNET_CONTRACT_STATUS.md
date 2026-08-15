@@ -97,6 +97,12 @@ static gaps and 171 method-unresolved entries. The reconciled inventory does not
 prove payload, status, auth, tenant, side-effect, or runtime correctness; those
 rows remain semantic and unchanged-client work rather than route-score evidence.
 
+> 🔴 **The actionable version of everything below lives in
+> [`PRODUCTION_READINESS_REMEDIATION.md`](PRODUCTION_READINESS_REMEDIATION.md)** —
+> ordered P0–P3, with what is already fixed, what was checked and cleared, and
+> what only the owner can close. Read that first when resuming work; this section
+> is the audit narrative and evidence behind it.
+
 ## 2026-08-15 Fresh Audit At HEAD `870c1e989` (Advisory, Partially Complete)
 
 Regenerated from live code at monorepo HEAD `870c1e989`, after the 14-commit

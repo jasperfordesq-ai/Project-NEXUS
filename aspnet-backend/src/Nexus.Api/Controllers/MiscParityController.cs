@@ -58,11 +58,50 @@ public class MiscParityController : ControllerBase
 
     private readonly NexusDbContext _db;
     private readonly TenantContext _tenantContext;
+    private readonly ILogger<MiscParityController> _logger;
 
-    public MiscParityController(NexusDbContext db, TenantContext tenantContext)
+    public MiscParityController(
+        NexusDbContext db,
+        TenantContext tenantContext,
+        ILogger<MiscParityController> logger)
     {
         _db = db;
         _tenantContext = tenantContext;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Refuse an inbound webhook this backend cannot yet process, loudly.
+    ///
+    /// 🔴 These three endpoints previously returned <c>200 {received:true}</c> while
+    /// discarding the payload. That is the worst possible behaviour for a webhook:
+    /// Stripe, the identity providers and SendGrid all treat 2xx as "delivered"
+    /// and never retry, so each event was destroyed permanently and silently, and
+    /// every route-level parity check passed because the route existed and
+    /// answered 200.
+    ///
+    /// 501 keeps the event alive in the SENDER's retry queue — which is a real
+    /// durable store, unlike a local table nothing reads — and surfaces the
+    /// failure in the provider dashboard instead of hiding it. Implementing real
+    /// processing is tracked in PRODUCTION_READINESS_REMEDIATION.md; until then
+    /// this must not pretend to succeed.
+    /// </summary>
+    private IActionResult WebhookNotProcessed(string provider, string route)
+    {
+        _logger.LogError(
+            "Inbound {Provider} webhook at {Route} was REFUSED: no processing is implemented on this "
+            + "backend. The event remains in the sender's retry queue. See "
+            + "PRODUCTION_READINESS_REMEDIATION.md (webhook processing).",
+            provider,
+            route);
+
+        return StatusCode(StatusCodes.Status501NotImplemented, new
+        {
+            success = false,
+            error = "Webhook processing is not implemented on this backend",
+            code = "WEBHOOK_NOT_IMPLEMENTED",
+            provider,
+        });
     }
 
     [HttpGet("csrf-token")]
@@ -920,17 +959,17 @@ public class MiscParityController : ControllerBase
     [Authorize]
     public Task<IActionResult> LeaderboardWidget() => Leaderboard();
 
-    [HttpPost("legal/accept")]
-    [Authorize]
-    public IActionResult LegalAccept([FromBody] JsonElement body) => Ok(new { accepted = true });
-
-    [HttpPost("legal/accept-all")]
-    [Authorize]
-    public IActionResult LegalAcceptAll() => Ok(new { accepted = "all" });
-
-    [HttpGet("legal/status")]
-    [Authorize]
-    public IActionResult LegalStatus() => Ok(new { data = new { accepted = true } });
+    // 🔴 REMOVED 2026-08-15: three no-op legal endpoints lived here and lied.
+    //   POST legal/accept      -> Ok(new { accepted = true })
+    //   POST legal/accept-all  -> Ok(new { accepted = "all" })
+    //   GET  legal/status      -> Ok(new { data = new { accepted = true } })
+    // None of them persisted anything, and `legal/status` reported that the
+    // member had accepted the terms unconditionally — an actively false answer
+    // about a compliance record. The real implementations are
+    // ReactFrontendCompatibilityController.LegalAcceptanceStatus and
+    // CompatibilityAliasController.AcceptAllLegal, now registered at both the
+    // /api/legal/... and /api/v2/legal/... spellings. Deleting these removes the
+    // chance that which handler answers depends on the spelling a client picks.
 
     [HttpPost("link-preview")]
     [Authorize]
@@ -1319,15 +1358,22 @@ public class MiscParityController : ControllerBase
 
     [HttpPost("webhooks/identity/{provider}")]
     [AllowAnonymous]
-    public IActionResult IdentityWebhook(string provider, [FromBody] JsonElement body) => Ok(new { provider, received = true });
+    public IActionResult IdentityWebhook(string provider, [FromBody] JsonElement body)
+        => WebhookNotProcessed(provider, "webhooks/identity/{provider}");
 
     [HttpPost("webhooks/sendgrid/events")]
     [AllowAnonymous]
-    public IActionResult SendgridEvents([FromBody] JsonElement body) => Ok(new { received = true });
+    public IActionResult SendgridEvents([FromBody] JsonElement body)
+        => WebhookNotProcessed("sendgrid", "webhooks/sendgrid/events");
 
+    // NOTE: the REAL, signature-verifying Stripe handlers live at
+    // api/webhooks/stripe/donations (Phase72Controllers StripeWebhookController)
+    // and api/v2/marketplace/webhooks/stripe (MarketplaceController). This bare
+    // path has no processor, so it must refuse rather than swallow the event.
     [HttpPost("webhooks/stripe")]
     [AllowAnonymous]
-    public IActionResult StripeWebhook([FromBody] JsonElement body) => Ok(new { received = true });
+    public IActionResult StripeWebhook([FromBody] JsonElement body)
+        => WebhookNotProcessed("stripe", "webhooks/stripe");
 
     private int TenantId() => _tenantContext.TenantId ?? 0;
     private int UserId() => User.GetUserId() ?? 0;

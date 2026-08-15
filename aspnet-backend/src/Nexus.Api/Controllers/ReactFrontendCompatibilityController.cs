@@ -1843,6 +1843,13 @@ public class ReactFrontendCompatibilityController : ControllerBase
     }
 
     [HttpGet("api/legal/acceptance/status")]
+    // 🔴 The React client calls /v2/legal/acceptance/status
+    // (react-frontend/src/hooks/useLegalGate.ts:110), which is what Laravel
+    // registers (routes/api.php:4011). Only the non-v2 spelling existed here, so
+    // the status call 404'd; useLegalGate treats an absent flag as blocking
+    // (:120) and the acceptance gate enforces by default — a member was locked
+    // out with no way to accept. Both spellings must stay registered.
+    [HttpGet("api/v2/legal/acceptance/status")]
     [Authorize]
     public async Task<IActionResult> LegalAcceptanceStatus(
         [FromServices] IConfiguration configuration)

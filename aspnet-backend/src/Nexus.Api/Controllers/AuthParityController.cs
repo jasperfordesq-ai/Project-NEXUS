@@ -91,10 +91,13 @@ public class AuthParityController : ControllerBase
     public IActionResult RestoreSession() =>
         StatusCode(StatusCodes.Status410Gone, new { error = "endpoint_retired", message = "Use POST /api/auth/refresh." });
 
-    [HttpPost("refresh-token")]
-    [AllowAnonymous]
-    public IActionResult LegacyRefreshToken() =>
-        StatusCode(StatusCodes.Status410Gone, new { error = "endpoint_retired", message = "Use POST /api/auth/refresh." });
+    // 🔴 refresh-token is NOT retired: it is the only refresh path the React
+    // client calls (react-frontend/src/lib/api.ts:779) and the one Laravel
+    // registers (routes/api.php:3319). Answering 410 here logged every member
+    // out at the first token expiry, because the client treats a 4xx as
+    // "credentials are bad" and deletes them. The real handler now owns both
+    // spellings (AuthController.Refresh); this stub is deliberately gone rather
+    // than commented out, so it cannot be reinstated by accident.
 
     [HttpPost("revoke")]
     [Authorize]

@@ -1619,6 +1619,12 @@ public class CompatibilityAliasController : ControllerBase
     /// legal-acceptance gate began enforcing.
     /// </summary>
     [HttpPost("api/legal/acceptance/accept-all")]
+    // 🔴 The React client posts to /v2/legal/acceptance/accept-all
+    // (react-frontend/src/hooks/useLegalGate.ts:146); Laravel registers exactly
+    // that (routes/api.php:4012). Without the v2 spelling the ONLY route that
+    // clears the acceptance gate was unreachable, so a blocked member could
+    // never unblock themselves.
+    [HttpPost("api/v2/legal/acceptance/accept-all")]
     public async Task<IActionResult> AcceptAllLegal()
     {
         var userId = User.GetUserId();
