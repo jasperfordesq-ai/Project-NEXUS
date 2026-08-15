@@ -296,7 +296,42 @@ public class V15SocialCompatibilityController : ControllerBase
 
         _db.FeedPosts.Add(post);
         await _db.SaveChangesAsync();
-        return Created($"/api/v2/feed/posts/{post.Id}", new { success = true, data = post });
+        await _db.Entry(post).Reference(p => p.User).LoadAsync();
+
+        // 🔴 This returned the raw EF entity (`data = post`), which serialises as
+        // camelCase — tenantId, userId, imageUrl, isPinned, createdAt — plus null
+        // navigation properties. The feed LIST returns snake_case with an author
+        // object and counts, so the client could not read the post it had just
+        // created: no image_url, no author, no created_at, no counts. The new
+        // post rendered blank or broken until a refresh pulled the list version.
+        // Found by posting through the running backend and comparing the create
+        // response to the list response, 2026-08-15.
+        return Created($"/api/v2/feed/posts/{post.Id}", new
+        {
+            success = true,
+            data = new
+            {
+                id = post.Id,
+                type = "text",
+                content = post.Content,
+                image_url = post.ImageUrl,
+                group_id = post.GroupId,
+                user_id = post.UserId,
+                author = post.User == null ? null : new
+                {
+                    id = post.User.Id,
+                    name = (post.User.FirstName + " " + post.User.LastName).Trim(),
+                    first_name = post.User.FirstName,
+                    last_name = post.User.LastName,
+                    avatar_url = post.User.AvatarUrl,
+                },
+                likes_count = 0,
+                comments_count = 0,
+                is_liked = false,
+                created_at = post.CreatedAt,
+                updated_at = post.UpdatedAt,
+            },
+        });
     }
 
     [HttpPut("/api/v2/feed/posts/{id:int}")]

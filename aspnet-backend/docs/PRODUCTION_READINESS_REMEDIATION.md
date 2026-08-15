@@ -85,6 +85,53 @@ Why no existing check caught it: the endpoint exists, is routed, and answers —
 so the route inventory counted it as matched, and the contract tests supply a
 tenant in the body because that is what the ASP.NET DTO asked for.
 
+### R-24 `FIXED` — a new feed post came back unreadable
+
+`POST /api/v2/feed/posts` returned the raw EF entity (`data = post`,
+`V15SocialCompatibilityController.cs`), which serialises as **camelCase** —
+`tenantId, userId, imageUrl, isPinned, createdAt` — plus null navigation
+properties. The feed **list** returns snake_case with an `author` object and
+counts (`id, type, content, image_url, group_id, user_id, author, likes_count,
+comments_count, is_liked, created_at, updated_at`). So the client could not read
+the post it had just created and the new post rendered blank or broken until a
+refresh pulled the list version. Now returns the list shape. (Checked: the
+navigation objects serialised as `null`, so no data was exposed.)
+
+Note the near-identical handler at `CompatibilityAliasController.cs:132`
+(`/api/feed/posts`, no `/v2`) was already correct — which is why this was
+invisible: the same feature has two handlers and only one was wrong.
+
+### What the member journey actually does work (verified live, 2026-08-15)
+
+Worth recording as plainly as the failures, because the picture is not uniformly
+bad. As `member@acme.test` against the running backend:
+
+| Journey | Result |
+| --- | --- |
+| All core reads — profile, feed, listings, events, messages, wallet balance and transactions, notification counts, connections, groups, exchange config, member directory | **200** |
+| Create listing → read back in list | **201, persisted** |
+| Post to feed → read back in feed | **201, persisted** |
+| Send message → read back in conversation | **201, persisted** |
+| **Wallet transfer of 1.00 credit** → re-read balance | **201; balance 17.50 → 16.50, sent total 6.00 → 7.00** |
+
+The core timebanking function — moving credits between members — works
+correctly end to end.
+
+**Accessible frontend (`web-uk`) against ASP.NET:** `/`, `/login`, `/register`,
+`/listings`, `/about`, `/cookies` all render (200). `/events` correctly redirects
+an anonymous visitor to `login?status=auth-required`. `/listings` shows its
+"could not be loaded" notice because anonymous listing reads return 401 — **and
+Laravel returns 401 for the same anonymous request**, so that is not a
+divergence. `/accessibility-statement` 404s, which is a `web-uk` routing question,
+not a backend one.
+
+🔴 **A correction worth keeping.** An earlier pass through this document inferred
+from `routes/api.php` that listings, events and volunteering opportunities were
+public on Laravel and therefore that ASP.NET's 401s were four breaks. Running the
+same anonymous request against both backends showed Laravel also returns 401 for
+all three. Only `/v2/categories` genuinely differs (Laravel 200, ASP.NET 401).
+Route-file reading is not a substitute for asking both servers.
+
 ### Reading the journey results honestly
 
 After the fix, sign-in works end-to-end in a real browser: token issued,
