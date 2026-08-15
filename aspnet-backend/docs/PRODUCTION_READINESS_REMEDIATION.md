@@ -117,6 +117,21 @@ bad. As `member@acme.test` against the running backend:
 The core timebanking function — moving credits between members — works
 correctly end to end.
 
+**Admin journey (as `admin@acme.test`), verified live:** every admin read
+returns 200 — dashboard, users, listings, events, settings, badge counts,
+reports, performance summary. Suspending a member **works and persists**
+(`status: active → suspended`), and `/reactivate` restores it. Note the action is
+`/reactivate`, **not** `/unsuspend` (which 404s) — the React panel calls
+`/v2/admin/users/{id}/reactivate`.
+
+🔴 **A stub caught in the act, end to end.** `POST /api/admin/groups/1/members/5/promote`
+returned **200 `{"message":"Member promoted"}`** — for a user who is **not even a
+member of that group** (group 1 has exactly one member, user 1, role `owner`).
+It neither validates nor acts, and an admin clicking "promote" would see success
+and no change. This is R-1 made concrete: the endpoint exists, is routed, answers
+200 with a plausible message, and does nothing. Use this as the reference example
+when triaging the remaining stubs.
+
 **Accessible frontend (`web-uk`) against ASP.NET:** `/`, `/login`, `/register`,
 `/listings`, `/about`, `/cookies` all render (200). `/events` correctly redirects
 an anonymous visitor to `login?status=auth-required`. `/listings` shows its
