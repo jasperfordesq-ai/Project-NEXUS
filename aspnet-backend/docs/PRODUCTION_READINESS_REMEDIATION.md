@@ -921,7 +921,75 @@ Laravel's daily `support-actions:expire` (`bootstrap/app.php:57`,
 `app/Console/Commands/ExpireSupportActions.php`) exists so "the supporter is
 notified — an expiry is never silent". No ASP.NET job. (Subset of R-6.)
 
-### R-14 `OPEN` — 188 Laravel tables have no trace in ASP.NET
+### R-14 `TRIAGED` — the schema gap, classified (2026-08-15)
+
+The raw figures — 219 Laravel tables missing, 199 ASP.NET tables extra — were
+never a work list. Classified with `.local-docs-archive/schema_triage.py`
+(output: `schema-triage-2026-08-15.json`):
+
+| Bucket | Count |
+| --- | ---: |
+| Same table, different name — rename or alias | **8** |
+| **Genuinely absent from ASP.NET** | **211** |
+| ASP.NET tables Laravel does not have | 199 |
+
+🔴 **The two sets are almost entirely disjoint.** Only 8 of 219 are naming
+differences (`email_log`/`email_logs`, `federation_audit_log`/`_logs`,
+`member_availability`/`member_availabilities`,
+`member_verification_badges`/`user_verification_badges`,
+`vol_emergency_alerts`/`emergency_alerts`, and three near-matches worth
+confirming by hand). So the 199 "extra" tables are **not** renamed Laravel
+tables — they are this backend's own inventions, which is its own carbon-copy
+question.
+
+**The 211 absent, grouped by subsystem** — schedule them as features, not as
+211 unrelated tables:
+
+| Subsystem | Tables |
+| --- | ---: |
+| Courses / learning | 15 |
+| Federation (depth) | 15 |
+| Jobs / vacancies | 14 |
+| Volunteering (depth) | 14 |
+| Newsletters / comms | 10 |
+| AI / agents | 9 |
+| Billing / funds | 9 |
+| Groups (depth) | 8 |
+| Safeguarding (depth) | 7 |
+| Podcasts / media | 7 |
+| Events (depth) | 6 |
+| Challenges (depth) | 5 |
+| Advertising, Partner API/OAuth, Analytics | 4 each |
+| Ungrouped | 79 |
+
+**Two structural divergences found while spot-checking, both verified in code —
+these are not "missing tables", they are different data models:**
+
+1. **Comments.** Laravel has one polymorphic `comments` table
+   (`target_type`/`target_id`). ASP.NET has **no such table** — it has
+   feature-specific `idea_comments` and `post_comments`
+   (`NexusDbContextModelSnapshot.cs:15408,21565`). Any endpoint that comments on
+   a new target type needs a new table here but nothing in Laravel.
+2. **Conversations are two-party only.** Laravel has `conversation_participants`;
+   ASP.NET's `Conversation` hard-wires `Participant1Id`/`Participant2Id` with a
+   unique index on the pair (`MessagingConfiguration.cs:29-31`,
+   `Entities/Conversation.cs:17-18`). **A group conversation cannot be
+   represented at all.** This is the single largest data-model divergence found
+   so far and it is not fixable by adding a table — it changes the messaging
+   model, its queries, and its API shapes.
+
+**Also confirmed absent** (relevant to earlier findings): `gdpr_requests`,
+`error_404_log`, `abuse_alerts`, `email_suppression` — which is why the admin
+badge counters for those three stay honestly 0 (R-21), and why
+`gdpr:check-overdue-requests` cannot be built yet (R-6).
+
+**Recommended order**, given both frontends must switch by configuration alone:
+subsystems the frontends actually call first — Volunteering, Groups, Events,
+Jobs and Safeguarding depth — then Courses/Podcasts/AI/Advertising, which the
+canonical React frontend may not consume at all. Verify each against the client
+before building: the same grep discipline used for the stub triage applies here.
+
+### R-14 (original finding)
 
 Of 219 unmatched Laravel tables, 31 are referenced somewhere in ASP.NET source;
 **188 appear nowhere in `src/Nexus.Api/**/*.cs`**. Not concentrated in one
