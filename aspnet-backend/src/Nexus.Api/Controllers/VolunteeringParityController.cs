@@ -537,10 +537,58 @@ public class VolunteeringParityController : ControllerBase
     public IActionResult DeleteCredential(int credentialId) => NoContent();
 
     [HttpGet("expenses")]
-    public IActionResult Expenses() => Ok(new { data = Array.Empty<object>() });
+    // 🔴 Both of these were stubs over a real store. The list returned an empty
+    // array, so a volunteer's expense claims were invisible to them; the detail
+    // endpoint echoed back ANY id with a fabricated "pending" status, which also
+    // confirmed the existence of other people's claims. Same pattern as the
+    // membership-dues stub fixed earlier the same day.
+    public async Task<IActionResult> Expenses()
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+
+        var rows = await _db.VolunteerExpenses.AsNoTracking()
+            .Where(e => e.TenantId == tenantId && e.UserId == userId)
+            .OrderByDescending(e => e.CreatedAt).ThenByDescending(e => e.Id)
+            .Take(200)
+            .Select(e => ProjectExpense(e))
+            .ToListAsync(HttpContext.RequestAborted);
+
+        return Ok(new { data = rows });
+    }
 
     [HttpGet("expenses/{expenseId:int}")]
-    public IActionResult Expense(int expenseId) => Ok(new { data = new { id = expenseId, status = "pending" } });
+    public async Task<IActionResult> Expense(int expenseId)
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+
+        // Scoped to the claimant: another volunteer's expense must not be
+        // readable, nor its existence confirmable, by guessing an id.
+        var expense = await _db.VolunteerExpenses.AsNoTracking()
+            .Where(e => e.TenantId == tenantId && e.UserId == userId && e.Id == expenseId)
+            .Select(e => ProjectExpense(e))
+            .SingleOrDefaultAsync(HttpContext.RequestAborted);
+
+        if (expense is null) return NotFound(new { error = "Expense not found" });
+        return Ok(new { data = expense });
+    }
+
+    private static object ProjectExpense(VolunteerExpense e) => new
+    {
+        id = e.Id,
+        shift_id = e.ShiftId,
+        amount = e.Amount,
+        currency = e.Currency,
+        category = e.Category,
+        description = e.Description,
+        receipt_url = e.ReceiptUrl,
+        status = e.Status.ToString().ToLowerInvariant(),
+        reviewer_note = e.ReviewerNote,
+        reviewed_at = e.ReviewedAt,
+        reimbursed_at = e.ReimbursedAt,
+        created_at = e.CreatedAt,
+    };
 
     [HttpGet("donations")]
     public IActionResult Donations() => Ok(new { data = Array.Empty<object>() });
