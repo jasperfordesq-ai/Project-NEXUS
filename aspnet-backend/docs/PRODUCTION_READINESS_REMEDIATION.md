@@ -537,7 +537,7 @@ identical, all fourteen (`GatedTemplates` `:52-68`); and the 403 body
 
 ## P1 — breaks a real workflow
 
-### R-6 `IN PROGRESS` — scheduled work (20 of 71 covered, was 17)
+### R-6 `IN PROGRESS` — scheduled work (21 of 71 covered, was 17)
 
 **Done 2026-08-15 (`70dc452ee`), both from the compliance cluster:**
 
@@ -570,7 +570,7 @@ re-discover it:**
 
 | Job | Can it be built now? |
 | --- | --- |
-| `groups:prune-exports` | **Yes** — `GroupDataExport` exists (`GroupParityEntities.cs`). Exported member data currently sits on disk for ever. |
+| `groups:prune-exports` | ✅ **DONE** — `PruneGroupExportsJob`. Deletes the file, marks the row expired, prunes rows after 30 days. Reuses `GroupDataExportService.SafeAbsolutePath` rather than hand-rolling path safety in a deletion routine, and leaves a row un-expired if its file cannot be deleted, so the only pointer to a file of member data is never lost. |
 | `safeguarding:purge-message-copies` | **Yes** — `SafeguardingMessageReviews` exists. |
 | `marketplace:process-unacknowledged-reports` | **Likely** — marketplace report entities exist; DSA 24h acknowledgement. |
 | `performance:prune` | **No point yet** — there is no performance recorder, so the tables it would prune are never written (R-21). |
