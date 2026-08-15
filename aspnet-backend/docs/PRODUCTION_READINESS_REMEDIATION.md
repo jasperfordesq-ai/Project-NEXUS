@@ -112,7 +112,25 @@ Consequence: a regional super admin who sees only their own communities on
 Laravel would, on ASP.NET, see and act on **every tenant on the platform**,
 impersonation included. Blocked on R-3.
 
-### R-5 `OPEN` — guardian consent security (four defects)
+### R-5 `PARTIALLY FIXED` — guardian consent security
+
+**Fixed (this commit):** items 1, 3 and 4 below — cross-tenant token resolution,
+the 24-hour expiry, and the minor self-grant. Pinned by
+`tests/Nexus.Api.Tests/EventGuardianConsentSecurityTests.cs` (3 tests, including
+a deliberate **control case** asserting the legitimate guardian is still accepted).
+
+🔴 **That control case earned its place immediately: it caught the two security
+assertions passing vacuously.** The grant endpoint requires an `Idempotency-Key`
+header; without one every request is refused as invalid, so both "attack" tests
+were green while proving nothing. Any future security test here must assert the
+allowed path too.
+
+**Still OPEN:** item 2 (unkeyed blind hash) and R-5e (missing UPDATE trigger).
+Note the tenant fix required plumbing the resolved tenant into the anonymous
+endpoint — `EventSafetyController` now takes `TenantContext` because the
+`Tenant()` helper reads caller claims a guardian does not have.
+
+### R-5 detail (original findings)
 
 All in `Services/EventSafetyService.cs`, all verified:
 
@@ -598,7 +616,10 @@ large.
 | --- | --- | --- |
 | No throttle on support-action answers (incl. the anonymous emailed token confirm authorising a credit transfer) | `isSupportActionAnswerPath` in `RateLimitingMiddleware.cs`, limit 10/min matching Laravel `nexus-route-10-per-1m` | `9c54ef501` |
 | `SupportTiers.AtLeast` failed **open** on an unrecognised capability or tier | validates both inputs, returns false — matches `SupportTiers.php:216-226` | `9c54ef501` |
-| Three webhooks returned 200 and destroyed the event | `WebhookNotProcessed` → 501 + `Error` log; event survives in the sender's retry queue | this commit |
+| Three webhooks returned 200 and destroyed the event | `WebhookNotProcessed` → 501 + `Error` log; event survives in the sender's retry queue | `3cf796e50` |
+| Guardian consent token resolved against every community | tenant predicate + `TenantContext` plumbed into the anonymous grant | this commit |
+| Guardian consent expired 24h after request, before the event | `GuardianConsentExpiry()` — config TTL (default 30d), forced past event start + 1d | this commit |
+| A minor could grant their own guardian consent | self-grant refused + minor-still-active check | this commit |
 | `/auth/refresh-token` answered 410, logging every member out at first token expiry | real `AuthController.Refresh` now owns both spellings; 410 stub deleted | this commit |
 | Legal gate lockout — the two endpoints that clear it were unregistered at `/v2` | `/api/v2/legal/acceptance/{status,accept-all}` aliases added | this commit |
 | Three no-op legal endpoints, one reporting `accepted:true` unconditionally | deleted from `MiscParityController` | this commit |

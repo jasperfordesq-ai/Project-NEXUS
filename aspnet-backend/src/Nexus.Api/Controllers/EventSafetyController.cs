@@ -4,18 +4,24 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nexus.Api.Data;
 using Nexus.Api.Extensions;
 using Nexus.Api.Services;
 
 namespace Nexus.Api.Controllers;
 
 [ApiController,Authorize]
-public sealed class EventSafetyController(EventSafetyService safety):ControllerBase
+public sealed class EventSafetyController(EventSafetyService safety,TenantContext tenantContext):ControllerBase
 {
+    // 🔴 The guardian is anonymous, so Tenant() (which reads the caller's claims)
+    // cannot be used here — the tenant comes from TenantResolutionMiddleware,
+    // which DOES run for this path. Without it the consent token was resolved
+    // across every community on the installation.
     [AllowAnonymous]
     [HttpPost("api/events/safety/guardian-consents/grant")]
     [HttpPost("api/v2/events/safety/guardian-consents/grant")]
-    public Task<IActionResult> Grant([FromBody]JsonElement b,CancellationToken ct)=>Run(safety.GrantGuardianAsync(Text(b,"token")??"",Text(b,"guardian_email")??"",Key(),ct));
+    public Task<IActionResult> Grant([FromBody]JsonElement b,CancellationToken ct)
+        =>Run(safety.GrantGuardianAsync(tenantContext.TenantId??0,User.GetUserId(),Text(b,"token")??"",Text(b,"guardian_email")??"",Key(),ct));
     [HttpGet("api/events/{id:int}/safety"),HttpGet("api/v2/events/{id:int}/safety")]
     public Task<IActionResult> Show(int id,CancellationToken ct)=>Run(safety.ReadAsync(Tenant(),id,UserId(),ct));
     [HttpPut("api/events/{id:int}/safety/requirements"),HttpPut("api/v2/events/{id:int}/safety/requirements")]
