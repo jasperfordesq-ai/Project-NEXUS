@@ -60,6 +60,8 @@ public static class ServiceExtensions
         // Skills, audit, email
         services.AddScoped<SkillService>();
         services.AddScoped<AuditLogService>();
+        // Per-account sign-in lockout (see LoginThrottleService).
+        services.AddScoped<LoginThrottleService>();
         // Subtree confinement for super-admin surfaces. See
         // Support/Authorization/SuperPanelAccess.cs and R-4 in
         // docs/PRODUCTION_READINESS_REMEDIATION.md.

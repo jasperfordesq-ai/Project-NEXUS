@@ -51,6 +51,7 @@ public class AuthController : ControllerBase
     private readonly ITurnstileVerifier _turnstile;
     private readonly IPwnedPasswordChecker _pwnedPassword;
     private readonly TenantContext _tenant;
+    private readonly LoginThrottleService _loginThrottle;
 
     // Refresh token validity (7 days default)
     private const int RefreshTokenExpiryDays = 7;
@@ -69,7 +70,8 @@ public class AuthController : ControllerBase
         TwoFactorChallengeManager twoFactorChallenges,
         ITurnstileVerifier turnstile,
         IPwnedPasswordChecker pwnedPassword,
-        TenantContext tenant)
+        TenantContext tenant,
+        LoginThrottleService loginThrottle)
     {
         _db = db;
         _config = config;
@@ -82,6 +84,24 @@ public class AuthController : ControllerBase
         _turnstile = turnstile;
         _pwnedPassword = pwnedPassword;
         _tenant = tenant;
+        _loginThrottle = loginThrottle;
+    }
+
+    /// <summary>
+    /// 429 in the auth error envelope the client understands, matching
+    /// Laravel's RATE_LIMIT_EXCEEDED response including retry_after.
+    /// </summary>
+    private IActionResult LockedOut(LoginThrottleService.Verdict verdict)
+    {
+        _logger.LogWarning("Sign-in locked out; {Seconds}s remaining.", verdict.RetryAfterSeconds);
+        Response.Headers["Retry-After"] = verdict.RetryAfterSeconds.ToString();
+        return StatusCode(StatusCodes.Status429TooManyRequests, new
+        {
+            success = false,
+            error = LoginThrottleService.RetryMessage(verdict.RetryAfterSeconds),
+            code = "RATE_LIMIT_EXCEEDED",
+            retry_after = verdict.RetryAfterSeconds,
+        });
     }
 
     /// <summary>
@@ -99,6 +119,20 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = "Email and password are required" });
         }
+
+        // 🔴 Per-ACCOUNT lockout, checked before the password is verified.
+        // The existing limiter is per-IP only, so credential stuffing spread
+        // across many addresses could grind at one account unthrottled.
+        // Mirrors Laravel (App\Core\RateLimiter: 10 failures / 300s window /
+        // 300s lockout, checked on both email and IP before verification).
+        var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var emailVerdict = await _loginThrottle.CheckAsync(
+            request.Email, LoginThrottleService.TypeEmail, HttpContext.RequestAborted);
+        if (emailVerdict.Limited) return LockedOut(emailVerdict);
+
+        var ipVerdict = await _loginThrottle.CheckAsync(
+            clientIp, LoginThrottleService.TypeIp, HttpContext.RequestAborted);
+        if (ipVerdict.Limited) return LockedOut(ipVerdict);
 
         // Turnstile is intentionally NOT gated here. It was added 2026-05-15
         // after a registration/contact-form email-flood attack, but on the
@@ -205,6 +239,10 @@ public class AuthController : ControllerBase
         {
             _logger.LogWarning("Login failed: invalid password for {Email} in tenant {TenantId}",
                 request.Email, tenant.Id);
+            await _loginThrottle.RecordAsync(request.Email, LoginThrottleService.TypeEmail, false,
+                HttpContext.RequestAborted);
+            await _loginThrottle.RecordAsync(clientIp, LoginThrottleService.TypeIp, false,
+                HttpContext.RequestAborted);
             return Unauthorized(new { error = "Invalid credentials" });
         }
 
@@ -248,7 +286,12 @@ public class AuthController : ControllerBase
             });
         }
 
-        // Step 5: Update last login
+        // Step 5: Update last login. A success clears the failure history so a
+        // member who mistypes twice and then gets in is not left near a lockout.
+        await _loginThrottle.RecordAsync(request.Email, LoginThrottleService.TypeEmail, true,
+            HttpContext.RequestAborted);
+        await _loginThrottle.RecordAsync(clientIp, LoginThrottleService.TypeIp, true,
+            HttpContext.RequestAborted);
         user.LastLoginAt = DateTime.UtcNow;
 
         // Step 6: Generate tokens

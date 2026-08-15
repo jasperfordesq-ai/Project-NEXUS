@@ -74,11 +74,12 @@ public sealed class CompatibilityAuditEntrySchemaTests
 
         migrations.Should().Contain(RepairMigrationId,
             "the fresh-chain hole was that the model had the table while the runtime chain did not create it");
-        migrations.Last().Should().Be("20260815131500_AddGuardianConsentMutationGuard",
-            "the chain currently ends with the guardian-consent mutation guard; "
-            + "note AddTenantHierarchy (20260815125256) sorts BEFORE it by timestamp despite "
-            + "being authored later, so the last id is unchanged; "
-            + "adding a migration is fine but must be deliberate — update this pin in the same commit");
+        migrations.Last().Should().Be("20260815154913_AddLoginAttempts",
+            "the chain currently ends with the sign-in lockout counters; "
+            + "adding a migration is fine but must be deliberate — update this pin in the same commit. "
+            + "Note migrations sort by TIMESTAMP, not authoring order: AddTenantHierarchy "
+            + "(20260815125256) was written after AddGuardianConsentMutationGuard (20260815131500) "
+            + "but sorts before it, so check the sorted order rather than assuming the newest file wins");
     }
 
     private static bool HasIndex(IEntityType entity, params string[] propertyNames)

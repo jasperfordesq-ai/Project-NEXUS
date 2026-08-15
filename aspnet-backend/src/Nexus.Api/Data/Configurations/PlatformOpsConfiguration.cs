@@ -33,6 +33,22 @@ public class PlatformOpsConfiguration : TenantScopedConfiguration
             entity.HasIndex(e => e.Capability).IsUnique();
         });
 
+        // Sign-in lockout counters. Not tenant-scoped by design: login happens
+        // before the tenant is known for certain, and an attacker must not be
+        // able to reset a counter by switching community.
+        modelBuilder.Entity<LoginAttempt>(entity =>
+        {
+            entity.ToTable("login_attempts");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Identifier).HasColumnName("identifier").HasMaxLength(320).IsRequired();
+            entity.Property(e => e.IdentifierType).HasColumnName("identifier_type").HasMaxLength(16).IsRequired();
+            entity.Property(e => e.Succeeded).HasColumnName("succeeded");
+            entity.Property(e => e.AttemptedAt).HasColumnName("attempted_at");
+            // The lockout query is (identifier, type, attempted_at) — index it.
+            entity.HasIndex(e => new { e.Identifier, e.IdentifierType, e.AttemptedAt });
+        });
+
         modelBuilder.Entity<RevokedToken>(entity =>
         {
             entity.ToTable("revoked_tokens");
