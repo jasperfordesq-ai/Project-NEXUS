@@ -633,14 +633,134 @@ public class MemberParityController : ControllerBase
     [HttpGet("me/reports/{reportId:int}/download")]
     public IActionResult DownloadReport(int reportId) => File(Encoding.UTF8.GetBytes($"Report {reportId}"), "text/plain", $"report-{reportId}.txt");
 
+    // ──────────────────────────────────────────────────────────────────────
+    // Membership dues (Verein).
+    //
+    // 🔴 These were no-op stubs, and the pay one was the most dangerous stub
+    // found in this backend: POST me/verein-dues/{id}/pay returned
+    // 200 {"status":"paid"} without taking a payment, creating a payment
+    // intent, or touching a single row. A member would be told their
+    // membership dues were settled when nothing whatsoever had happened.
+    //
+    // Note what Laravel actually does here (MyDuesController::payDues): it
+    // creates a Stripe PaymentIntent and returns client_secret /
+    // payment_intent_id / public_key. It does NOT mark the due paid — a
+    // webhook does that once the money actually moves. So the stub was wrong
+    // twice: it did no work, and it claimed an outcome Laravel never claims.
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>GET /api/v2/me/verein-dues — the signed-in member's dues.</summary>
     [HttpGet("me/verein-dues")]
-    public IActionResult VereinDues() => Ok(new { data = Array.Empty<object>() });
+    public async Task<IActionResult> VereinDues(CancellationToken ct)
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
 
+        var dues = await _db.Set<VereinMemberDue>().AsNoTracking()
+            .Where(d => d.TenantId == tenantId && d.UserId == userId)
+            .OrderByDescending(d => d.MembershipYear).ThenByDescending(d => d.Id)
+            .Select(d => ProjectDue(d))
+            .ToListAsync(ct);
+
+        return Ok(new { data = dues });
+    }
+
+    /// <summary>GET /api/v2/me/verein-dues/{dueId} — one of the member's own dues.</summary>
     [HttpGet("me/verein-dues/{dueId:int}")]
-    public IActionResult VereinDue(int dueId) => Ok(new { data = new { id = dueId, status = "unpaid" } });
+    public async Task<IActionResult> VereinDue(int dueId, CancellationToken ct)
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
 
+        // Scoped to the caller: another member's dues must not be readable by id.
+        var due = await _db.Set<VereinMemberDue>().AsNoTracking()
+            .Where(d => d.TenantId == tenantId && d.UserId == userId && d.Id == dueId)
+            .Select(d => ProjectDue(d))
+            .SingleOrDefaultAsync(ct);
+
+        if (due is null)
+        {
+            return NotFound(new
+            {
+                errors = new[] { new { code = "RESOURCE_NOT_FOUND", message = "Dues not found" } },
+                success = false,
+            });
+        }
+
+        return Ok(new { data = due });
+    }
+
+    /// <summary>
+    /// POST /api/v2/me/verein-dues/{dueId}/pay — begin paying a membership due.
+    ///
+    /// Laravel returns a Stripe PaymentIntent (client_secret, payment_intent_id,
+    /// public_key). This backend has no dues payment provider wired, so it
+    /// returns Laravel's own error contract (VEREIN_DUES_ERROR, 422) rather than
+    /// pretending. It must never report "paid": a member who believes their
+    /// membership is settled when it is not is the worst outcome available here.
+    /// </summary>
     [HttpPost("me/verein-dues/{dueId:int}/pay")]
-    public IActionResult PayVereinDue(int dueId) => Ok(new { data = new { id = dueId, status = "paid" } });
+    public async Task<IActionResult> PayVereinDue(int dueId, CancellationToken ct)
+    {
+        var tenantId = TenantId();
+        var userId = UserId();
+
+        var due = await _db.Set<VereinMemberDue>().AsNoTracking()
+            .SingleOrDefaultAsync(d => d.TenantId == tenantId && d.UserId == userId && d.Id == dueId, ct);
+
+        if (due is null)
+        {
+            return NotFound(new
+            {
+                errors = new[] { new { code = "RESOURCE_NOT_FOUND", message = "Dues not found" } },
+                success = false,
+            });
+        }
+
+        if (due.Status is "paid" or "waived")
+        {
+            return UnprocessableEntity(new
+            {
+                errors = new[]
+                {
+                    new { code = "VEREIN_DUES_ERROR", message = $"These dues are already {due.Status}." },
+                },
+                success = false,
+            });
+        }
+
+        _logger.LogWarning(
+            "Dues payment requested for due {DueId} (tenant {TenantId}, user {UserId}) but no dues payment "
+            + "provider is configured on this backend. Refusing rather than reporting a false payment.",
+            dueId, tenantId, userId);
+
+        return UnprocessableEntity(new
+        {
+            errors = new[]
+            {
+                new
+                {
+                    code = "VEREIN_DUES_ERROR",
+                    message = "Dues payment is not available on this backend yet.",
+                },
+            },
+            success = false,
+        });
+    }
+
+    private static object ProjectDue(VereinMemberDue d) => new
+    {
+        id = d.Id,
+        organization_id = d.OrganizationId,
+        membership_year = d.MembershipYear,
+        amount_cents = d.AmountCents,
+        currency = d.Currency,
+        status = d.Status,
+        due_date = d.DueDate.ToString("yyyy-MM-dd"),
+        paid_at = d.PaidAt,
+        reminder_count = d.ReminderCount,
+        last_reminder_at = d.LastReminderAt,
+    };
 
     [HttpGet("me/verein-invitations")]
     public IActionResult VereinInvitations() => Ok(new { data = Array.Empty<object>() });
