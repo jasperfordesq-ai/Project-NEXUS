@@ -87,6 +87,33 @@ public class AuthController : ControllerBase
         _loginThrottle = loginThrottle;
     }
 
+    /// <summary>Admin-shaped account, matching Laravel's $isAdminAccount.</summary>
+    private static bool IsAdminAccount(User user)
+        => user.Role is "admin" or "tenant_admin" or "org_admin" or "super_admin"
+            || user.IsSuperAdmin
+            || user.IsTenantSuperAdmin;
+
+    /// <summary>Tenant feature flag lookup (features.&lt;key&gt; in tenant_configs).</summary>
+    private async Task<bool> TenantFeatureEnabledAsync(int tenantId, string feature)
+    {
+        var raw = await _db.TenantConfigs.IgnoreQueryFilters().AsNoTracking()
+            .Where(c => c.TenantId == tenantId && c.Key == $"features.{feature}")
+            .Select(c => c.Value)
+            .FirstOrDefaultAsync(HttpContext.RequestAborted);
+        if (string.IsNullOrWhiteSpace(raw)) return false;
+        raw = raw.Trim().Trim('"');
+        return raw is "1" or "true" or "True" or "TRUE" or "yes" or "on";
+    }
+
+    private static string MaskEmail(string email)
+    {
+        var parts = email.Split('@');
+        if (parts.Length != 2) return "***";
+        var local = parts[0];
+        var masked = local.Length <= 2 ? local + "***" : local[..2] + "***";
+        return masked + "@" + parts[1];
+    }
+
     /// <summary>
     /// 429 in the auth error envelope the client understands, matching
     /// Laravel's RATE_LIMIT_EXCEEDED response including retry_after.
@@ -247,6 +274,47 @@ public class AuthController : ControllerBase
         }
 
         // Step 4: Check if 2FA is required
+        // 🔴 Mandatory two-factor for administrators.
+        //
+        // Laravel refuses to complete an admin sign-in when the account has no
+        // second factor yet, and hands back a setup challenge instead
+        // (AuthController.php:250-280, code AUTH_2FA_SETUP_REQUIRED). This
+        // backend had no such gate at all — AUTH_2FA_SETUP_REQUIRED returned
+        // zero hits — so an administrator with two-factor switched off was let
+        // straight in. The React client already understands the response and
+        // routes to the setup flow (AuthContext.tsx:344-359).
+        //
+        // Conditions mirror Laravel exactly: the platform switch, the tenant
+        // feature, an admin-shaped account, and no second factor yet.
+        if (!user.TwoFactorEnabled
+            && _config.GetValue("Auth:ForceAdminTwoFactor", false)
+            && IsAdminAccount(user)
+            && await TenantFeatureEnabledAsync(tenant.Id, "two_factor_authentication"))
+        {
+            var setupToken = _twoFactorChallenges.Create(
+                user.Id, user.TenantId, ["totp_setup"], user.TwoFactorEnabledAt);
+
+            _logger.LogInformation(
+                "Admin {UserId} must set up two-factor before signing in (tenant {TenantId}).",
+                user.Id, tenant.Id);
+
+            // Laravel answers 200 with success:false — not a 4xx.
+            return Ok(new
+            {
+                success = false,
+                requires_2fa_setup = true,
+                two_factor_token = setupToken,
+                code = "AUTH_2FA_SETUP_REQUIRED",
+                message = "Two-factor authentication must be set up before you can sign in.",
+                user = new
+                {
+                    id = user.Id,
+                    first_name = user.FirstName,
+                    email_masked = MaskEmail(user.Email),
+                },
+            });
+        }
+
         if (user.TwoFactorEnabled)
         {
             // Issue a short-lived token that only allows 2FA verification

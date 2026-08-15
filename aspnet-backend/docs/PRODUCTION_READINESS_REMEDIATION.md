@@ -646,7 +646,33 @@ entirely dead with nothing visible. Raise those to `Warning`/`Error`.
 
 ---
 
-### R-19 `OPEN` — auth security boundary is materially weaker
+### R-19 `PARTIALLY FIXED` — auth security boundary
+
+**Fixed 2026-08-15:**
+
+- **Per-account lockout** (`290f9bca6`). `LoginThrottleService` mirrors Laravel's
+  `App\Core\RateLimiter`: 10 failures in a 300s window, 300s lockout, checked on
+  both email and IP **before** the password is verified, cleared on success.
+  Backed by a real table (`login_attempts`, migration
+  `20260815154913_AddLoginAttempts`) rather than memory — a lockout that resets
+  on restart, or protects only the node that received the attempts, has a silent
+  hole in it. Not tenant-scoped: an attacker must not reset the counter by
+  switching community. Response matches Laravel: 429, `RATE_LIMIT_EXCEEDED`,
+  `retry_after`, `Retry-After` header. Pinned by `LoginLockoutTests`, including
+  the case that matters — once locked, the **correct** password is refused too.
+- **Mandatory two-factor for administrators.** `AUTH_2FA_SETUP_REQUIRED` had
+  zero hits in this backend, so an admin with 2FA off signed straight in. Now
+  gated exactly as Laravel gates it (`AuthController.php:250-280`): the platform
+  switch `Auth:ForceAdminTwoFactor`, the tenant feature
+  `two_factor_authentication`, an admin-shaped account, and no second factor yet
+  — answering **200 with `success:false`** and a setup challenge, which the React
+  client already routes to the setup flow (`AuthContext.tsx:344-359`). Pinned by
+  `AdminTwoFactorGateTests`, three of whose four cases prove the gate stays OFF
+  when it should (ordinary member, platform switch off, tenant feature off).
+
+**Still open in this area:**
+
+### R-19 (original finding) — remaining items
 
 - **No per-account lockout.** Laravel records failed attempts per **email** and
   per **IP** (`app/Http/Controllers/Api/AuthController.php:221-225`) and returns
