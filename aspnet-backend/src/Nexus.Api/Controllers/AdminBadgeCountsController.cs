@@ -75,15 +75,29 @@ public class AdminBadgeCountsController : ControllerBase
                 _db.Listings.CountAsync(l => l.Status == ListingStatus.Pending, ct)),
             ["pending_orgs"] = await CountSafe(() =>
                 _db.Set<VolunteerOrganisation>().CountAsync(o => o.Status == "pending", ct)),
-            // The remaining Laravel sources (fraud_alerts, gdpr_requests,
-            // error_404_log, exchange_requests, broker_message_copies) have no
-            // ASP.NET counterpart yet — honestly 0, exactly what Laravel
-            // returns when a counter fails.
+            // 🔴 These five were ALL hardcoded 0 until 2026-08-15, and the
+            // comment claimed none of them had an ASP.NET counterpart. Two of
+            // them did. A zero here is not harmless: this drives the admin
+            // sidebar badges, so an admin sees "nothing waiting" and moves on
+            // while exchanges sit unapproved and flagged messages sit
+            // unreviewed. It is the exact regression Laravel's endpoint was
+            // built to fix (the Minehead "no badge alert" report).
+            // "Pending" for an admin badge means awaiting the listing owner's
+            // answer — ExchangeStatus.Requested, the state before Accepted.
+            ["pending_exchanges"] = await CountSafe(() =>
+                _db.Exchanges.CountAsync(e => e.Status == ExchangeStatus.Requested, ct)),
+            ["unreviewed_messages"] = await CountSafe(() =>
+                _db.SafeguardingMessageReviews.CountAsync(r => r.IsFlagged && r.ReviewedAt == null, ct)),
+
+            // These three genuinely have no source table in this backend —
+            // there is no fraud-alert, GDPR-request or 404-log entity. They stay
+            // 0, which is also what Laravel returns when a counter fails, but
+            // the reason is "no data source" and not "not implemented".
+            // Verified 2026-08-15: no FraudAlert / GdprRequest / DataRequest
+            // entity exists anywhere in Entities/.
             ["fraud_alerts"] = 0,
             ["gdpr_requests"] = 0,
             ["404_errors"] = 0,
-            ["pending_exchanges"] = 0,
-            ["unreviewed_messages"] = 0,
         };
 
         Response.Headers["API-Version"] = "2.0";

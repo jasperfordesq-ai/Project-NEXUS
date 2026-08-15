@@ -133,9 +133,25 @@ public class AdminGamificationChallengesController : ControllerBase
         // Laravel skips keys whose value is null, so JSON null never clears.
         if (ReadString(body, "title") is { } title) challenge.Title = title.Trim();
         if (ReadString(body, "description") is { } description) challenge.Description = description;
+        // 🔴 Do not let a round-trip destroy the stored type.
+        //
+        // PresentType() renders the pre-parity values (Individual/Team/
+        // Community) as "special" so the admin UI's closed vocabulary always
+        // has something to show. But the admin form then sends "special" back
+        // on ANY save — editing an unrelated field, such as the title — and
+        // this assignment persisted ChallengeType.Special, permanently
+        // destroying the original type with no warning. Laravel has no such
+        // collapse.
+        //
+        // So: only apply the incoming type when it is a genuine change. A
+        // "special" that is merely the echo of a rendered Individual/Team/
+        // Community row is ignored.
         if (ReadString(body, "challenge_type") is { } typeValue
-            && TryParseType(typeValue, out var parsedType))
+            && TryParseType(typeValue, out var parsedType)
+            && !IsRenderedEchoOfLegacyType(challenge.ChallengeType, parsedType))
+        {
             challenge.ChallengeType = parsedType;
+        }
         if (ReadString(body, "action_type") is { } actionType) challenge.TargetAction = actionType;
         if (ReadInt(body, "target_count") is { } targetCount)
             challenge.TargetCount = Math.Max(1, targetCount);
@@ -260,6 +276,16 @@ public class AdminGamificationChallengesController : ControllerBase
         };
         return ChallengeTypes.Contains(value);
     }
+
+    /// <summary>
+    /// True when the incoming type is only the UI echoing back what
+    /// <see cref="PresentType"/> rendered for a pre-parity row, rather than an
+    /// admin genuinely choosing "special". Without this, saving any field on an
+    /// Individual/Team/Community challenge silently converts it to Special.
+    /// </summary>
+    private static bool IsRenderedEchoOfLegacyType(ChallengeType stored, ChallengeType incoming)
+        => incoming == ChallengeType.Special
+            && stored is ChallengeType.Individual or ChallengeType.Team or ChallengeType.Community;
 
     private static string PresentType(ChallengeType type) => type switch
     {

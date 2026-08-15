@@ -3,6 +3,7 @@
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
 
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -105,6 +106,8 @@ public class AdminEventAttendanceRewardsController : ControllerBase
         [FromQuery(Name = "event_id")] int? eventId,
         [FromQuery] string? status,
         [FromQuery(Name = "claim_type")] string? claimType,
+        [FromQuery] string? from = null,
+        [FromQuery] string? to = null,
         [FromQuery] int page = 1,
         [FromQuery(Name = "per_page")] int perPage = 25)
     {
@@ -115,6 +118,37 @@ public class AdminEventAttendanceRewardsController : ControllerBase
         perPage = Math.Min(Math.Max(perPage, 1), 100);
         var query = _db.EventAttendanceCreditClaims.AsNoTracking().AsQueryable();
         if (eventId.HasValue) query = query.Where(c => c.EventId == eventId.Value);
+
+        // 🔴 `from` and `to` were not even declared, so an admin narrowing this
+        // ledger to a date range silently received the UNFILTERED list with no
+        // error. This is a credits ledger: a wrong answer here is a wrong answer
+        // about money. Laravel validates and applies both
+        // (AdminEventAttendanceRewardController.php:136-137,162-167).
+        //
+        // An unparseable date is refused rather than ignored — silently dropping
+        // a filter is exactly the failure being fixed.
+        if (!string.IsNullOrWhiteSpace(from))
+        {
+            if (!DateTime.TryParse(from, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var fromUtc))
+            {
+                return ValidationFailed("from", "The from date is not a valid date.");
+            }
+            query = query.Where(c => c.CreatedAt >= fromUtc);
+        }
+
+        if (!string.IsNullOrWhiteSpace(to))
+        {
+            if (!DateTime.TryParse(to, CultureInfo.InvariantCulture,
+                    DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var toUtc))
+            {
+                return ValidationFailed("to", "The to date is not a valid date.");
+            }
+            // A bare date means the whole of that day, not midnight.
+            if (toUtc.TimeOfDay == TimeSpan.Zero) toUtc = toUtc.AddDays(1).AddTicks(-1);
+            query = query.Where(c => c.CreatedAt <= toUtc);
+        }
+
         if (status is "pending" or "completed" or "failed" or "reversed")
             query = query.Where(c => c.Status == status);
         if (claimType is EventCreditService.TypeReward or EventCreditService.TypeReversal)

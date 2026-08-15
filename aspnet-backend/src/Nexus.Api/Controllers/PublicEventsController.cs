@@ -39,7 +39,8 @@ public class PublicEventsController : ControllerBase
         [FromQuery] string? when,
         [FromQuery(Name = "per_page")] int perPage = 20,
         [FromQuery(Name = "category_id")] int? categoryId = null,
-        [FromQuery] string? q = null)
+        [FromQuery] string? q = null,
+        [FromQuery] string? cursor = null)
     {
         var gate = await GateAsync();
         if (gate is not null) return gate;
@@ -65,9 +66,34 @@ public class PublicEventsController : ControllerBase
                 .OrderBy(e => e.StartsAt).ThenBy(e => e.Id),
         };
 
+        // 🔴 The cursor was neither accepted nor emitted, so the public
+        // "What's On" page could never move past its first screen — web-uk
+        // sends ?cursor= (web-uk/src/lib/api.js getPublicEvents) and had
+        // nothing to send. Keyset pagination on the same (StartsAt, Id) order
+        // the query already uses.
+        //
+        // DIVERGENCE, deliberate and recorded: Laravel's cursor is a signed,
+        // structured discovery token (App\Support\Events\EventDiscoveryCursor
+        // — base64url JSON with a version, query identity and snapshot time).
+        // This one is an opaque keyset position. Both clients treat the value
+        // as opaque and simply echo it back, so pagination works; a cursor
+        // minted by one backend will NOT be understood by the other.
+        if (DecodeCursor(cursor) is { } position)
+        {
+            var (cursorStartsAt, cursorId) = position;
+            query = window is "past" or "all"
+                ? query.Where(e => e.StartsAt < cursorStartsAt
+                    || (e.StartsAt == cursorStartsAt && e.Id < cursorId))
+                : query.Where(e => e.StartsAt > cursorStartsAt
+                    || (e.StartsAt == cursorStartsAt && e.Id > cursorId));
+        }
+
         var rows = await query.Take(perPage + 1).ToListAsync(HttpContext.RequestAborted);
         var hasMore = rows.Count > perPage;
         if (hasMore) rows = rows.Take(perPage).ToList();
+        var nextCursor = hasMore && rows.Count > 0
+            ? EncodeCursor(rows[^1].StartsAt, rows[^1].Id)
+            : null;
         var context = await ProjectionContextAsync(rows);
 
         Response.Headers["API-Version"] = "2.0";
@@ -78,6 +104,8 @@ public class PublicEventsController : ControllerBase
             {
                 base_url = $"{Request.Scheme}://{Request.Host}",
                 per_page = perPage,
+                cursor = nextCursor,
+                next_cursor = nextCursor,
                 has_more = hasMore
             }
         });
@@ -126,6 +154,40 @@ public class PublicEventsController : ControllerBase
     /// Public visibility, as Laravel: active status, published (legacy null
     /// treated as published), and no group or a public active group.
     /// </summary>
+    /// <summary>
+    /// Opaque keyset cursor: the (StartsAt, Id) position of the last row
+    /// returned. See the divergence note in Index — this is not Laravel's
+    /// signed discovery cursor, and the two are not interchangeable.
+    /// </summary>
+    private static string EncodeCursor(DateTime startsAt, int id)
+        => Convert.ToBase64String(
+                System.Text.Encoding.UTF8.GetBytes($"{startsAt.Ticks}:{id}"))
+            .TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    private static (DateTime StartsAt, int Id)? DecodeCursor(string? cursor)
+    {
+        if (string.IsNullOrWhiteSpace(cursor)) return null;
+        try
+        {
+            var padded = cursor.Replace('-', '+').Replace('_', '/');
+            padded += new string('=', (4 - (padded.Length % 4)) % 4);
+            var parts = System.Text.Encoding.UTF8
+                .GetString(Convert.FromBase64String(padded))
+                .Split(':', 2);
+            if (parts.Length != 2) return null;
+            if (!long.TryParse(parts[0], out var ticks)) return null;
+            if (!int.TryParse(parts[1], out var id)) return null;
+            if (ticks < DateTime.MinValue.Ticks || ticks > DateTime.MaxValue.Ticks) return null;
+            return (new DateTime(ticks, DateTimeKind.Utc), id);
+        }
+        catch (FormatException)
+        {
+            // A malformed cursor returns the first page rather than an error,
+            // matching how a stale bookmark should behave on a public page.
+            return null;
+        }
+    }
+
     private IQueryable<Event> PublicEvents() =>
         _db.Events.AsNoTracking()
             .Where(e => e.Status == "active")
