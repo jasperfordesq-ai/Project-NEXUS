@@ -537,7 +537,7 @@ identical, all fourteen (`GatedTemplates` `:52-68`); and the 403 body
 
 ## P1 — breaks a real workflow
 
-### R-6 `IN PROGRESS` — scheduled work (19 of 71 covered, was 17)
+### R-6 `IN PROGRESS` — scheduled work (20 of 71 covered, was 17)
 
 **Done 2026-08-15 (`70dc452ee`), both from the compliance cluster:**
 
@@ -555,6 +555,28 @@ still-valid action is untouched; monitoring with no expiry date is never
 lifted), because a job that acts too eagerly is worse than one that never runs.
 The tests resolve the **registered** instances from the host, so they also prove
 the jobs are wired in.
+
+- `VettingRenewalRemindersJob` (Laravel `safeguarding:vetting-renewals`). Expired
+  vetting was never chased. Vetting evidences that someone is cleared to work
+  with children and at-risk adults, so an unnoticed expiry means that access
+  continues on a lapsed document. Reminds at 90/30/7 days and once past expiry,
+  to the member and the community's admins/brokers/coordinators. **Divergence:**
+  Laravel stamps reminder columns on the record; this table has none, so the
+  notification itself is the dedupe key (documented in the file — prefer stamp
+  columns if they are ever added, since they survive notification pruning).
+
+**Feasibility of the rest — checked 2026-08-15, so the next session does not
+re-discover it:**
+
+| Job | Can it be built now? |
+| --- | --- |
+| `groups:prune-exports` | **Yes** — `GroupDataExport` exists (`GroupParityEntities.cs`). Exported member data currently sits on disk for ever. |
+| `safeguarding:purge-message-copies` | **Yes** — `SafeguardingMessageReviews` exists. |
+| `marketplace:process-unacknowledged-reports` | **Likely** — marketplace report entities exist; DSA 24h acknowledgement. |
+| `performance:prune` | **No point yet** — there is no performance recorder, so the tables it would prune are never written (R-21). |
+| `gdpr:check-overdue-requests` | **NO** — there is no GDPR-request entity anywhere in `Entities/`. Schema-first work. |
+| `backup:verify` | **NO** — this backend has no backup system to verify. 🔴 Note the irony recorded elsewhere: the live ASP.NET database has had no successful backup since 2026-03-08, so the missing job and the missing backups are the same problem from two directions. This one is owner/infrastructure, not code. |
+| `retention:enforce` | **Not yet** — no retention policy configuration or entity exists here; needs the policy model before the job. |
 
 **Next in this cluster, highest consequence first:** `retention:enforce` (old
 member data never purged), `backup:verify` (nobody is told a backup failed —
