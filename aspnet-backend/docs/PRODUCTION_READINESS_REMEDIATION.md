@@ -237,12 +237,47 @@ pwsh ./aspnet-backend/scripts/check-noop-stubs.ps1 -Detail
 pwsh ./aspnet-backend/scripts/check-noop-stubs.ps1 -WriteBaseline
 ```
 
-**Plan for the remaining 351.** Triage into three buckets: (a) endpoints a client
+**Plan for the remaining 350.** Triage into three buckets: (a) endpoints a client
 actually calls — implement for real; (b) endpoints nothing calls — delete the
 route rather than leave a lie; (c) deliberate fixtures — declare them and record
 why. **Do not "fix" one by adding a `_db` call that does nothing useful** — the
 point is the client-visible effect, and the detector is a smoke alarm, not the
 specification.
+
+**First-pass triage is done (2026-08-15).** Cross-referencing every stub route
+against 1,789 client source files in `react-frontend/src` and `web-uk/src`
+(tests excluded):
+
+| Bucket | Count |
+| --- | ---: |
+| Stub routes with a literal path | 347 |
+| **A client appears to call it → implement** | **258** |
+| No client call site → candidate to DELETE | 64 |
+
+Full list and the script: `.local-docs-archive/stub-triage-2026-08-15.txt` and
+`.local-docs-archive/triage-stubs.ps1` (gitignored; regenerate any time).
+
+🔴 **Treat 258 as an upper bound, not a fact.** The match is a literal-prefix
+substring test, so a short path can collide with unrelated client text. A sample
+of three was verified genuine by hand — `federation/directory/profile`,
+`newsletters/segments`, `federation/partnerships/request` are all called from
+`react-frontend/src/admin/api/adminApi.ts` — but each entry needs confirming
+before work starts on it. Confirm with:
+
+```bash
+grep -rl "<path>" react-frontend/src web-uk/src --include=*.ts --include=*.tsx --include=*.js --include=*.njk | grep -v '\.test\.\|\.spec\.'
+```
+
+What it means in practice: whole admin features — newsletter segments, the
+federation directory and partnership requests, group member management — present
+a working UI, report success, and change nothing. The reference example proved
+live is in the runtime-proof section: promoting a non-member of a group returns
+`200 {"message":"Member promoted"}`.
+
+**Suggested order within the 258:** anything that (1) moves credits or money,
+(2) changes permissions or membership, (3) records a safeguarding or compliance
+decision, then everything else. A stub that silently drops a safeguarding action
+is worse than one that drops a cosmetic setting.
 
 ### R-2 `FIXED 9c54ef501`+`this commit` — webhooks that destroyed events
 
