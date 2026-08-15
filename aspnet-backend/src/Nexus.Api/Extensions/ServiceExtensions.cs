@@ -386,6 +386,10 @@ public static class ServiceExtensions
         services.AddHostedService<Nexus.Api.Services.Scheduled.SyncFederationPartnersJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.PruneFederationLogsJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.CheckInactiveGroupsJob>();
+        // Compliance expiry (R-6): a record must stop being true when its
+        // authority expires, and a lapsed action must not expire in silence.
+        services.AddHostedService<Nexus.Api.Services.Scheduled.SupportActionExpiryJob>();
+        services.AddHostedService<Nexus.Api.Services.Scheduled.ClearExpiredMonitoringJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.PollStuckIdentityVerificationsJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.SafeguardingSlaEscalateJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.MarkOverdueDuesJob>();
