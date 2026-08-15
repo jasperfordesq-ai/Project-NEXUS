@@ -110,6 +110,13 @@ public static class SupportTiers
     public static bool AtLeast(
         IReadOnlyDictionary<string, string> tiers, string capability, string minimum)
     {
+        // Refuse an unrecognised capability or required tier rather than ranking
+        // it as 0 — an unknown `minimum` would otherwise make every check pass,
+        // including for a `none` grant. Laravel refuses the same two inputs in
+        // SupportTiers::atLeast(); a permission engine must fail closed.
+        if (Array.IndexOf(Capabilities, capability) < 0) return false;
+        if (!Rank.ContainsKey(minimum)) return false;
+
         var current = tiers.TryGetValue(capability, out var tier) ? tier : None;
         return RankOf(current) >= RankOf(minimum);
     }

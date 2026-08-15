@@ -838,6 +838,25 @@ public static class RateLimitingExtensions
                 var isMessageRestorePath =
                     HttpMethods.IsPost(context.HttpContext.Request.Method)
                     && IsDirectConversationRestorePath(normalizedPath);
+                // Laravel throttles every support-action answer at
+                // nexus-route-10-per-1m (routes/api.php:905,906,913), including
+                // the emailed token confirm that needs no login. That token is
+                // single-use and authorises a credit transfer, so leaving it
+                // unthrottled makes it brute-forceable.
+                var isSupportActionAnswerPath =
+                    HttpMethods.IsPost(context.HttpContext.Request.Method)
+                    && (normalizedPath?.StartsWith(
+                            "/api/v2/support-actions/confirm/",
+                            StringComparison.OrdinalIgnoreCase) == true
+                        || normalizedPath?.StartsWith(
+                            "/api/support-actions/confirm/",
+                            StringComparison.OrdinalIgnoreCase) == true
+                        || (normalizedPath?.Contains(
+                                "/users/me/support-actions/",
+                                StringComparison.OrdinalIgnoreCase) == true
+                            && (normalizedPath.EndsWith("/confirm", StringComparison.OrdinalIgnoreCase)
+                                || normalizedPath.EndsWith("/decline", StringComparison.OrdinalIgnoreCase))));
+
                 var isSafeguardingVettingMutationPath =
                     isSafeguardingVettingPolicyUpdatePath
                     || isSafeguardingVettingPolicyRotationPath
@@ -919,6 +938,8 @@ public static class RateLimitingExtensions
                     ? config.GetValue("RateLimiting:VolunteerOrganisationWallet:ReadPermitLimit", 60)
                     : isPersonalWalletTransferPath
                     ? config.GetValue("RateLimiting:PersonalWallet:TransferPermitLimit", 10)
+                    : isSupportActionAnswerPath
+                    ? config.GetValue("RateLimiting:SupportActions:AnswerPermitLimit", 10)
                     : isMessageRestrictionStatusPath
                     ? config.GetValue("RateLimiting:Messages:RestrictionStatusPermitLimit", 30)
                     : isMessageEditPath

@@ -204,7 +204,223 @@ the largest unquantified risk in the project and needs table-by-table triage int
 - Impersonation client contract confirmed: `UserShow.tsx:207` reads `res.data.token`
   and `:213` reads `res.data.tenant_slug` — both present in the implementation.
 
-### Still owed (the eight reviews that died)
+### Second pass, same day: what the completed reviewers found (all verified on disk)
+
+Three of the eight owed reviews were re-run after the credit reset and completed.
+Every finding below was re-verified in the main session against the named lines.
+
+**F7 — CRITICAL — three webhook handlers return HTTP 200 while discarding the
+event.** `Controllers/MiscParityController.cs` (class route `api`, all
+`[AllowAnonymous]`):
+
+- `:1328` `POST /api/webhooks/stripe` → `Ok(new { received = true })`. No signature
+  verification, no body read, no work. **Stripe treats 200 as success and never
+  retries**, so a payment event is destroyed permanently.
+- `:1319` `POST /api/webhooks/identity/{provider}` → same. A member completes an
+  identity check with any of the four providers and the result is discarded.
+- `:1324` `POST /api/webhooks/sendgrid/events` → same. Bounces and spam complaints
+  are thrown away, so sender reputation degrades invisibly.
+
+This is worse than a missing route: a 404 makes the sender retry or alarm, a 200
+stub destroys the event *and* reports success. Note the real, hardened Stripe
+handlers do exist elsewhere (`Phase72Controllers.cs:103` donations with HMAC +
+replay window + fail-closed in Production; `MarketplaceController.cs:1741`), which
+is exactly why a route-level audit sees "Stripe webhook: present".
+
+**F8 — CRITICAL — 349 action methods return success-shaped payloads while doing no
+work at all.** Measured with a body-level detector (an action whose entire body
+contains no `_db`, no `await`, no service call, yet returns `Ok(new {...})` /
+`Created`). Worst files: `MiscParityController.cs` (84),
+`AdminCompatibility2Controller.cs` (56), `AdminCompatibility3Controller.cs` (42),
+`ReactFrontendCompatibilityController.cs` (31), `FrontendApiParityController.cs`
+(20), `MemberParityController.cs` (19). Includes destructive admin operations that
+silently do nothing: `POST super/tenants` returns `success = true, id = 0` and
+creates no tenant (`AdminCompatibility3Controller.cs:633`); `PUT super/tenants/{id}`
+(`:641`), `DELETE super/tenants/{id}` (`:649`), `reactivate` (`:657`),
+`toggle-hub` (`:665`), `move` (`:673`), `POST super/users` (`:697`),
+`PUT super/users/{id}` (`:705`), group member promote/demote/remove
+(`AdminCompatibility2Controller.cs:681-691`). Full list:
+`.local-docs-archive/noop_stubs.json`.
+🔴 **This is the explanation for "0 static route gaps".** The routes exist and
+return plausible 200s, so every route-level comparison passes while the feature
+does nothing. No route inventory can detect this class; only body inspection or
+runtime proof can.
+
+**F9 — ARCHITECTURAL — ASP.NET has no tenant hierarchy at all.** The `Tenant`
+entity and the `tenants` table carry `Id, Slug, Name, Domain, Tagline, LogoUrl,
+IsActive, CreatedAt, UpdatedAt` — **no parent, no path, no depth, no
+allows_subtenants**. Laravel's whole hub/sub-tenant model and the subtree scoping
+in F1 are built on `tenants.path`. Consequently `GET super/tenants/hierarchy`
+returns a hardcoded empty array (`AdminCompatibility3Controller.cs:626`). F1 is
+therefore not "add a permission check" — the data model it would check does not
+exist.
+
+**F10 — SECURITY — guardian consent tokens resolve across every tenant.**
+`Services/EventSafetyService.cs:40` looks up
+`SingleOrDefaultAsync(x => x.TokenHash == hash)` under `IgnoreQueryFilters()` with
+**no `TenantId` predicate**, from an `[AllowAnonymous]` endpoint. Laravel binds the
+token to the tenant twice over: the hash itself is HMAC-keyed with the app key over
+`event-safety|{tenantId}|guardian-token|{token}`
+(`app/Support/Events/EventSafetyFoundationSupport.php:180-187`) and the query adds
+`where('tenant_id', $tenantId)` (`app/Services/EventGuardianConsentService.php:371,
+382-385`).
+
+**F11 — SECURITY — guardian email blind hash is unkeyed.**
+`EventSafetyService.cs:39` stores `GuardianEmailBlindHash = Hash(email)` where
+`Hash` is bare `SHA256` (`:55`). Laravel uses an app-key-keyed HMAC
+(`EventGuardianConsentService.php:205-209`). Anyone with read access to
+`event_guardian_consents` can dictionary-confirm which guardian email belongs to
+which minor without touching the ciphertext column — defeating the point of
+encrypting it.
+
+**F12 — SAFEGUARDING — guardian consent expires 24 hours after request,
+unconditionally.** `EventSafetyService.cs:39` sets
+`ExpiresAt = DateTime.UtcNow.AddDays(1)`. Laravel reads
+`events.safety.guardian_consent_ttl_days` (default 30) and **forces the expiry past
+event start + 1 day**, throwing `event_guardian_consent_expiry_invalid` otherwise
+(`EventGuardianConsentService.php:196-203`). For any event more than a day out the
+consent expires before the event and the minor is blocked.
+
+**F13 — SECURITY — the consent-mutation trigger is missing.** Laravel's
+`trg_event_guardian_consent_update`
+(`database/migrations/2026_07_11_000060_create_event_safety_foundation.php:728-733`)
+guards the encrypted identity columns, `token_hash`, `minor_user_id`, `expires_at`
+and the pending→active→withdrawn/expired state machine in the database. ASP.NET's
+`20260713015034_EventSafetyWorkflowParity.cs:344-357` creates only
+`..._history_no_update` and `..._consent_no_delete` — **no UPDATE trigger on
+`event_guardian_consents`**, so a bad UPDATE can rewrite a guardian's encrypted
+identity or resurrect a withdrawn consent. Laravel creates 21 triggers here,
+ASP.NET 13.
+
+**F14 — SECURITY — a minor can grant their own guardian consent.**
+`GrantGuardianAsync` (`EventSafetyService.cs:40`) checks token hash, expiry, email
+blind hash and `Status == "pending"` only. Laravel additionally re-checks the minor
+is still active and refuses a self-grant with
+`event_guardian_minor_self_grant_forbidden`
+(`EventGuardianConsentService.php:389-400`).
+
+**F15 — SCHEDULED WORK — 17 of 71 Laravel scheduled units have a genuine
+counterpart (~24%).** The earlier "56 vs 20" understated Laravel: `bootstrap/app.php`
+also has 1 `->job()` and 14 `->call()` closures. Compliance/data-loss absences:
+`retention:enforce`, `backup:verify`, `gdpr:check-overdue-requests`,
+`safeguarding:purge-message-copies`, `safeguarding:review-flags`,
+`safeguarding:vetting-renewals`, `safeguarding:clear-expired-monitoring`,
+`support-actions:expire`, `groups:prune-exports`,
+`marketplace:process-unacknowledged-reports` (DSA 24h). Member-visible: nothing
+scheduled publishes (feed, groups, podcasts), nothing reminds (events, interviews,
+renewals, dues), nothing expires (waitlist offers, pending orders, promotions),
+`marketplace:complete-orders` absent means **sellers are never paid out**.
+Operational blindness: `slo:check`, `monitoring:alarm-selftest`, `email:health-alert`,
+`queue:verify-liveness`, `horizon:snapshot`, `stripe:check-stuck-webhooks`. Also
+`safeguarding:sla-escalate` runs hourly in ASP.NET vs every 15 minutes in Laravel.
+
+**F16 — Meilisearch incremental indexing is effectively absent.**
+`Services/MeilisearchService.cs` `IndexDocumentAsync` (`:146`), `IndexDocumentsAsync`
+(`:168`), `DeleteDocumentAsync` (`:190`) have **no callers** outside the service. The
+only writer is `ReindexTenantAsync`, reachable solely from manual admin endpoints
+(`AdminSearchController.cs:64,83`). New or edited content never reaches the index and
+deleted items stay findable.
+
+**F17 — FCM push targets a decommissioned endpoint.**
+`Services/PushNotificationService.cs:558-570` uses the FCM **legacy** HTTP API
+(`https://fcm.googleapis.com/fcm/send`), which Google has retired. Treat as
+implemented-but-non-functional until moved to FCM HTTP v1. Pusher realtime is real
+(`PusherEventPublisher.cs:23,57`) but logs unconfigured credentials and send
+failures at **Debug** and returns silently (`:52,:79,:83`) — realtime can be entirely
+dead with nothing visible.
+
+**F18 — IMPERSONATION — the legacy route is not the same endpoint.** Laravel's
+`/v2/admin/users/{id}/impersonate` mints the same single-use 5-minute **proof**
+(`AdminUsersController.php:1479` → `TokenService.php:794-803`). ASP.NET's same path
+returns `_tokenService.GenerateJwt(user)` — **an ordinary, immediately usable access
+token** (`AdminCompatibilityController.cs:768`), bypassing the exchange's spend-time
+re-checks entirely. It is also gated with `PlatformSuperAdminOnly` (`:743-747`) where
+Laravel uses `tenant-super-admin` (`routes/api.php:3229-3231`) — reinstating exactly
+the bug Laravel fixed on 2026-08-05, so a community super-admin gets 403 for every
+target. Inactive targets: Laravel returns **200 with `gate_warning`/`gate_code`**
+(`AdminUsersController.php:1508-1511`), ASP.NET returns **409** (`:764-766`).
+
+**F19 — IMPERSONATION — the super mint route admits callers Laravel refuses.**
+Laravel's `super-panel` gate admits `master` (platform super/god) or `regional`
+(super-admin of a tenant **that has children**) —
+`app/Http/Middleware/EnsureSuperPanelAccess.php:14-45,66-80`. ASP.NET admits any
+`IsTenantSuperAdmin` unconditionally (`AdminSuperImpersonationController.cs:59-65`),
+so a super-admin of a leaf tenant is denied by Laravel and granted by ASP.NET.
+Smaller divergences in the same flow: the exchange compares the proof's tenant
+against the raw `X-Tenant-ID` **header** and skips the check when it is absent
+(`ImpersonationController.cs:84-88`) where Laravel compares the **resolved**
+`TenantContext::getId()` (`AuthController.php:798-805`); and `user_name`/`admin_name`
+fall back to the **email address** (`ImpersonationController.cs:135,138`) where
+Laravel emits an empty string (`AuthController.php:865,868`) — a PII-shaped
+difference in a response body.
+
+The `/v2/auth/impersonate/exchange` + `/end` pair itself held up under attack:
+paths, TTLs (300s/900s), the full key set, absence of a refresh token, and every
+exchange rejection code/status matched.
+
+### Correction to F2 (issued the same day)
+
+F2 called the missing voice/attachment routes BREAKS-CLIENT. That over-claimed.
+ASP.NET stores voice as a `FileUpload` + `MessageAttachment` and returns
+`AudioUrl = /api/files/{id}/download` (`MemberParityController.cs` voice-send path),
+`web-uk` renders whatever `audio_url` the payload carries
+(`src/routes/messages.js:391`), and React has no hardcoded
+`GET /messages/{id}/voice`. So the clients follow the server-provided URL and
+playback plausibly works. The Laravel routes are still absent — a contract
+divergence, and any consumer that hardcodes Laravel's path would break — but
+"members cannot play voice messages" was not established. Downgraded to
+CONTRACT-DIVERGENCE pending runtime proof.
+
+### Correction to a stated residue
+
+The status doc previously recorded "consent-token emails not delivered" as an
+ASP.NET residue. At HEAD that is wrong, and inverted: ASP.NET **does** email the
+guardian a link containing the **plaintext token**
+(`EventSafetyService.cs:39`, falling back to `http://localhost:5173` when
+`Frontend:BaseUrl` is unset), while Laravel deliberately never returns or emails the
+plaintext token, keeping it inside an AES-GCM delivery envelope
+(`EventGuardianConsentService.php:48-49,326,352`).
+
+**F20 — CARER CLUSTER — nine divergences, four of them in this week's work.**
+Verified on disk:
+
+- **SECURITY, FIXED in this commit:** no throttle on the support-action answer
+  paths. Laravel throttles `confirm`, `decline` and the unauthenticated emailed
+  token confirm at `nexus-route-10-per-1m` (`routes/api.php:905,906,913`);
+  `Controllers/SupportActionsController.cs` carried no limiter and
+  `RateLimitingMiddleware.cs` had no entry, leaving a single-use token that
+  authorises a credit transfer brute-forceable.
+- **SECURITY (latent), FIXED in this commit:** `SupportTiers.AtLeast`
+  (`Support/Safeguarding/SupportTiers.cs:110-115`) validated neither the
+  capability nor the required tier, so an unrecognised `minimum` ranked 0 and
+  every check passed — including for a `none` grant. Laravel refuses both inputs
+  (`app/Support/Safeguarding/SupportTiers.php:216-226`). Every current caller
+  passes a constant, so it was latent, but the safe default was inverted.
+- **BREAKS-CLIENT, open:** `GET /v2/users/me/sub-accounts/{childId}/activity` is a
+  stub — `Controllers/UsersParityController.cs:510` returns
+  `Ok(new { data = Array.Empty<object>(), sub_account_id = subAccountId })` with no
+  relationship lookup, no `activity ≥ assist` check, no 403 for a caller with no
+  relationship, and an extra top-level key Laravel never sends.
+- **Open:** the `onboarding-required` gate is missing from all four proxy write
+  paths (`routes/api.php:882,883,898,903` carry it; ASP.NET's
+  `OnboardingRequiredMiddleware` path table does not list them), so a carer who has
+  not completed onboarding can create listings, transfer credits and prepare
+  support actions.
+- **Open:** `message_view_last_at` — Laravel's "when did my supporter last read my
+  messages" accountability signal (`SubAccountController.php:50-55`) — does not
+  exist anywhere in the ASP.NET source.
+- **Open:** ASP.NET exposes an undeclared parallel `api/sub-accounts` subsystem
+  (`Controllers/SubAccountsController.cs:19`, nine actions incl. `pool-transfer`)
+  backed by a separate `SubAccount` entity, with **no Laravel counterpart** — it
+  moves credits through a route the Laravel contract does not define.
+- Confirmed matches under attack: the tier engine core (ordering, both caps,
+  drop-not-clamp, `can_view_messages` hard-false), the pending-action shapes and
+  rejection codes, and all 21 carer routes resolving at the same verb and path
+  (via `Routing/AdminV2RouteAliasConvention.cs`).
+- Not audited, flagged honestly: `acting_user_id` + `org_audit_log` side-effect
+  parity in `SubAccountProxyService.cs`.
+
+### Still owed (the five reviews not yet re-run)
 
 Impersonation deep contract; carer/sub-accounts cluster; safeguarding/guardian
 consent incl. append-only trigger comparison; the eight small endpoint groups
