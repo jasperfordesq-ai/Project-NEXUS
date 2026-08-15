@@ -20,7 +20,48 @@ public sealed class EventSafetyService
 {
     private static readonly HashSet<string> Decisions=["deny","remove"],Reasons=["safeguarding_policy","minimum_age","guardian_consent","code_of_conduct","conduct_violation","safety_review","user_block"],Relationships=["parent","guardian","legal_guardian","carer"];
     private readonly NexusDbContext _db;private readonly IDataProtector _protector;private readonly IEmailService _mail;private readonly IConfiguration _config;
-    public EventSafetyService(NexusDbContext db,IDataProtectionProvider protection,IEmailService mail,IConfiguration config){_db=db;_protector=protection.CreateProtector("Nexus.EventSafety.Guardian.v1");_mail=mail;_config=config;}
+    public EventSafetyService(NexusDbContext db,IDataProtectionProvider protection,IEmailService mail,IConfiguration config){_db=db;_protector=protection.CreateProtector("Nexus.EventSafety.Guardian.v1");_mail=mail;_config=config;_blindKey=DeriveBlindKey(config);}
+
+    private readonly byte[] _blindKey;
+
+    /// <summary>
+    /// Key for the blind indexes below. Prefers a dedicated secret and otherwise
+    /// derives a purpose-bound key from the JWT secret, so there is no new
+    /// required configuration and no weak constant default.
+    /// </summary>
+    private static byte[] DeriveBlindKey(IConfiguration config)
+    {
+        var dedicated=config["Events:Safety:BlindIndexKey"];
+        if(!string.IsNullOrWhiteSpace(dedicated))return Encoding.UTF8.GetBytes(dedicated);
+        var jwt=config["Jwt:Secret"]??throw new InvalidOperationException(
+            "Events:Safety:BlindIndexKey or Jwt:Secret must be configured for guardian blind indexes.");
+        return HMACSHA256.HashData(Encoding.UTF8.GetBytes(jwt),
+            Encoding.UTF8.GetBytes("event-safety-blind-index-v1"));
+    }
+
+    /// <summary>
+    /// Keyed blind index, matching Laravel's privacyHash()/tokenHash()
+    /// (EventSafetyFoundationSupport.php:166-187): HMAC over
+    /// "event-safety|{tenantId}|{purpose}|{value}".
+    ///
+    /// 🔴 These were bare SHA-256 of the value alone. For the guardian's email
+    /// that defeated the point of encrypting it: anyone who could read
+    /// event_guardian_consents could hash a list of candidate addresses and
+    /// confirm which guardian belongs to which child, without ever touching the
+    /// ciphertext column. An unkeyed hash of a low-entropy value is not a
+    /// one-way function in practice.
+    ///
+    /// Binding the tenant in also means an index from one community can never
+    /// match a row in another.
+    ///
+    /// NOTE: this changes stored hash values, so consents created before this
+    /// change will no longer match on grant. Acceptable because this backend is
+    /// development-only and not deployed; if that ever changes, migrate the
+    /// existing rows first.
+    /// </summary>
+    private string BlindHash(int tenantId,string purpose,string value)
+        =>Convert.ToHexString(HMACSHA256.HashData(_blindKey,
+            Encoding.UTF8.GetBytes($"event-safety|{tenantId}|{purpose}|{value}"))).ToLowerInvariant();
 
     public async Task<EventSafetyResult> ReadAsync(int tenant,int eventId,int actor,CancellationToken ct){var c=await Context(tenant,eventId,actor,false,ct);if(!c.Ok)return c.Error!;return new(await Project(tenant,c.Event!,c.Actor!,c.Manage,ct));}
     public async Task<EventSafetyResult> SaveDraftAsync(int tenant,int eventId,int actor,JsonElement body,string key,CancellationToken ct)
@@ -36,7 +77,7 @@ public sealed class EventSafetyService
     public async Task<EventSafetyResult> AcknowledgeAsync(int tenant,int eventId,int actor,string textVersion,string textHash,string key,CancellationToken ct){if(!ValidKey(key)||!Regex.IsMatch(textHash??"","^[0-9a-f]{64}$"))return Validation("text_version");await using var tx=await _db.Database.BeginTransactionAsync(ct);await Lock(tenant,eventId,ct);var c=await Context(tenant,eventId,actor,false,ct);if(!c.Ok)return c.Error!;var p=await Published(tenant,eventId,ct);if(p is null||!p.Value.Version.CodeOfConductRequired||p.Value.Version.CodeOfConductTextVersion!=textVersion||p.Value.Version.CodeOfConductTextHash!=textHash)return Conflict();var kh=Hash(key);var replay=await _db.EventSafetyCodeAcknowledgements.IgnoreQueryFilters().AnyAsync(x=>x.TenantId==tenant&&x.IdempotencyHash==kh,ct);if(!replay){var prior=await CurrentAck(tenant,eventId,actor,ct);var seq=(await _db.EventSafetyCodeAcknowledgements.IgnoreQueryFilters().Where(x=>x.TenantId==tenant&&x.EventId==eventId&&x.UserId==actor).MaxAsync(x=>(long?)x.EvidenceSequence,ct)??0)+1;if(prior is not null)_db.Add(AckEvidence(prior,"replaced",seq++,kh+"-replace",Hash("replace:"+key),actor));_db.Add(new EventSafetyCodeAcknowledgement{TenantId=tenant,EventId=eventId,RequirementsId=p.Value.Head.Id,RequirementsVersionId=p.Value.Version.Id,RequirementsVersionNumber=p.Value.Version.VersionNumber,UserId=actor,EvidenceSequence=seq,Action="acknowledged",TextVersion=textVersion,TextHash=textHash,AcknowledgedAt=DateTime.UtcNow,ActorUserId=actor,IdempotencyHash=kh,RequestHash=Hash(new{textVersion,textHash})});await _db.SaveChangesAsync(ct);}await tx.CommitAsync(ct);return new(await Project(tenant,c.Event!,c.Actor!,c.Manage,ct));}
     public async Task<EventSafetyResult> WithdrawAckAsync(int tenant,int eventId,int actor,long id,string key,CancellationToken ct){if(!ValidKey(key))return Validation("idempotency_key");await using var tx=await _db.Database.BeginTransactionAsync(ct);await Lock(tenant,eventId,ct);var c=await Context(tenant,eventId,actor,false,ct);if(!c.Ok)return c.Error!;var ack=await _db.EventSafetyCodeAcknowledgements.IgnoreQueryFilters().SingleOrDefaultAsync(x=>x.TenantId==tenant&&x.EventId==eventId&&x.UserId==actor&&x.Id==id&&x.Action=="acknowledged",ct);if(ack is null)return Missing();var kh=Hash(key);if(!await _db.EventSafetyCodeAcknowledgements.IgnoreQueryFilters().AnyAsync(x=>x.TenantId==tenant&&x.IdempotencyHash==kh,ct)){var seq=(await _db.EventSafetyCodeAcknowledgements.IgnoreQueryFilters().Where(x=>x.TenantId==tenant&&x.EventId==eventId&&x.UserId==actor).MaxAsync(x=>(long?)x.EvidenceSequence,ct)??0)+1;_db.Add(AckEvidence(ack,"withdrawn",seq,kh,Hash("withdraw:"+id),actor));await _db.SaveChangesAsync(ct);}await tx.CommitAsync(ct);return new(await Project(tenant,c.Event!,c.Actor!,c.Manage,ct));}
 
-    public async Task<EventSafetyResult> RequestGuardianAsync(int tenant,int eventId,int actor,string? name,string? email,string? relationship,string? locale,string key,CancellationToken ct){name=Clean(name,150);email=email?.Trim().ToLowerInvariant();locale=Clean(locale,10)??"en";if(!ValidKey(key)||name is null||email is null||!System.Net.Mail.MailAddress.TryCreate(email,out _)||!Relationships.Contains(relationship??""))return Validation("guardian");await using var tx=await _db.Database.BeginTransactionAsync(ct);await Lock(tenant,eventId,ct);var c=await Context(tenant,eventId,actor,false,ct);if(!c.Ok)return c.Error!;var p=await Published(tenant,eventId,ct);if(p is null||!p.Value.Version.GuardianConsentRequired)return Conflict();var kh=Hash(key);var replay=await _db.EventGuardianConsents.IgnoreQueryFilters().SingleOrDefaultAsync(x=>x.TenantId==tenant&&x.RequestIdempotencyHash==kh,ct);string? token=null;EventGuardianConsent consent;if(replay is not null){if(replay.EventId!=eventId||replay.MinorUserId!=actor)return Conflict();consent=replay;}else{var active=await _db.EventGuardianConsents.IgnoreQueryFilters().AnyAsync(x=>x.TenantId==tenant&&x.EventId==eventId&&x.MinorUserId==actor&&(x.Status=="pending"||x.Status=="active"),ct);if(active)return Conflict();token="nxgc_"+B64(RandomNumberGenerator.GetBytes(32));consent=new(){TenantId=tenant,EventId=eventId,RequirementsId=p.Value.Head.Id,RequirementsVersionId=p.Value.Version.Id,RequirementsVersionNumber=p.Value.Version.VersionNumber,MinorUserId=actor,GuardianEmailCiphertext=_protector.Protect(email),GuardianIdentityCiphertext=_protector.Protect(name),GuardianEmailBlindHash=Hash(email),GuardianLocale=locale,RelationshipCode=relationship!,ConsentTextHash=Hash("guardian-consent-v1"),PolicyBindingHash=p.Value.Version.EligibilityPolicyHash,TokenHash=Hash(token),RequestedByUserId=actor,RequestIdempotencyHash=kh,RequestHash=Hash(new{name,email,relationship,locale}),ExpiresAt=GuardianConsentExpiry(c.Event!.StartsAt)};_db.Add(consent);await _db.SaveChangesAsync(ct);_db.Add(ConsentHistory(consent,"requested","platform_user",actor,kh,consent.RequestHash));await _db.SaveChangesAsync(ct);}await tx.CommitAsync(ct);if(token is not null){var url=(_config["Frontend:BaseUrl"]??"http://localhost:5173").TrimEnd('/')+$"/events/{eventId}/guardian-consent?token={Uri.EscapeDataString(token)}";await _mail.SendEmailAsync(email,"Guardian consent request",$"<p>Hello {WebUtility.HtmlEncode(name)},</p><p><a href=\"{WebUtility.HtmlEncode(url)}\">Review guardian consent</a></p>",$"Review guardian consent: {url}",ct);}return new(await Project(tenant,c.Event!,c.Actor!,c.Manage,ct));}
+    public async Task<EventSafetyResult> RequestGuardianAsync(int tenant,int eventId,int actor,string? name,string? email,string? relationship,string? locale,string key,CancellationToken ct){name=Clean(name,150);email=email?.Trim().ToLowerInvariant();locale=Clean(locale,10)??"en";if(!ValidKey(key)||name is null||email is null||!System.Net.Mail.MailAddress.TryCreate(email,out _)||!Relationships.Contains(relationship??""))return Validation("guardian");await using var tx=await _db.Database.BeginTransactionAsync(ct);await Lock(tenant,eventId,ct);var c=await Context(tenant,eventId,actor,false,ct);if(!c.Ok)return c.Error!;var p=await Published(tenant,eventId,ct);if(p is null||!p.Value.Version.GuardianConsentRequired)return Conflict();var kh=Hash(key);var replay=await _db.EventGuardianConsents.IgnoreQueryFilters().SingleOrDefaultAsync(x=>x.TenantId==tenant&&x.RequestIdempotencyHash==kh,ct);string? token=null;EventGuardianConsent consent;if(replay is not null){if(replay.EventId!=eventId||replay.MinorUserId!=actor)return Conflict();consent=replay;}else{var active=await _db.EventGuardianConsents.IgnoreQueryFilters().AnyAsync(x=>x.TenantId==tenant&&x.EventId==eventId&&x.MinorUserId==actor&&(x.Status=="pending"||x.Status=="active"),ct);if(active)return Conflict();token="nxgc_"+B64(RandomNumberGenerator.GetBytes(32));consent=new(){TenantId=tenant,EventId=eventId,RequirementsId=p.Value.Head.Id,RequirementsVersionId=p.Value.Version.Id,RequirementsVersionNumber=p.Value.Version.VersionNumber,MinorUserId=actor,GuardianEmailCiphertext=_protector.Protect(email),GuardianIdentityCiphertext=_protector.Protect(name),GuardianEmailBlindHash=BlindHash(tenant,"guardian-email",email),GuardianLocale=locale,RelationshipCode=relationship!,ConsentTextHash=Hash("guardian-consent-v1"),PolicyBindingHash=p.Value.Version.EligibilityPolicyHash,TokenHash=BlindHash(tenant,"guardian-token",token),RequestedByUserId=actor,RequestIdempotencyHash=kh,RequestHash=Hash(new{name,email,relationship,locale}),ExpiresAt=GuardianConsentExpiry(c.Event!.StartsAt)};_db.Add(consent);await _db.SaveChangesAsync(ct);_db.Add(ConsentHistory(consent,"requested","platform_user",actor,kh,consent.RequestHash));await _db.SaveChangesAsync(ct);}await tx.CommitAsync(ct);if(token is not null){var url=(_config["Frontend:BaseUrl"]??"http://localhost:5173").TrimEnd('/')+$"/events/{eventId}/guardian-consent?token={Uri.EscapeDataString(token)}";await _mail.SendEmailAsync(email,"Guardian consent request",$"<p>Hello {WebUtility.HtmlEncode(name)},</p><p><a href=\"{WebUtility.HtmlEncode(url)}\">Review guardian consent</a></p>",$"Review guardian consent: {url}",ct);}return new(await Project(tenant,c.Event!,c.Actor!,c.Manage,ct));}
     /// <summary>
     /// Guardian consent expiry. Laravel reads events.safety.guardian_consent_ttl_days
     /// (default 30), floors it at one day, and forces the expiry PAST the event
@@ -55,13 +96,13 @@ public sealed class EventSafetyService
         return ttl>mustOutlast?ttl:mustOutlast;
     }
 
-    public async Task<EventSafetyResult> GrantGuardianAsync(int tenant,int? actor,string token,string email,string key,CancellationToken ct){if(!ValidKey(key)||!Regex.IsMatch(token??"","^nxgc_[A-Za-z0-9_-]{43}$")||!System.Net.Mail.MailAddress.TryCreate(email,out _))return GrantInvalid();var hash=Hash(token);await using var tx=await _db.Database.BeginTransactionAsync(ct);
+    public async Task<EventSafetyResult> GrantGuardianAsync(int tenant,int? actor,string token,string email,string key,CancellationToken ct){if(!ValidKey(key)||!Regex.IsMatch(token??"","^nxgc_[A-Za-z0-9_-]{43}$")||!System.Net.Mail.MailAddress.TryCreate(email,out _))return GrantInvalid();var hash=BlindHash(tenant,"guardian-token",token);await using var tx=await _db.Database.BeginTransactionAsync(ct);
         // 🔴 TENANT-SCOPED. This lookup ran with IgnoreQueryFilters() and NO tenant
         // predicate from an [AllowAnonymous] endpoint, so a consent token issued by
         // one community resolved against every community on the installation.
         // Laravel binds the tenant twice — into the HMAC-keyed token hash and into
         // the query (EventGuardianConsentService.php:371,382-385).
-        var consent=await _db.EventGuardianConsents.IgnoreQueryFilters().SingleOrDefaultAsync(x=>x.TenantId==tenant&&x.TokenHash==hash,ct);if(consent is null||consent.ExpiresAt<=DateTime.UtcNow||consent.GuardianEmailBlindHash!=Hash(email.Trim().ToLowerInvariant()))return GrantInvalid();
+        var consent=await _db.EventGuardianConsents.IgnoreQueryFilters().SingleOrDefaultAsync(x=>x.TenantId==tenant&&x.TokenHash==hash,ct);if(consent is null||consent.ExpiresAt<=DateTime.UtcNow||consent.GuardianEmailBlindHash!=BlindHash(consent.TenantId,"guardian-email",email.Trim().ToLowerInvariant()))return GrantInvalid();
         // 🔴 A minor must not approve their own guardian consent, and the minor
         // must still be an active member (EventGuardianConsentService.php:389-400,
         // event_guardian_minor_self_grant_forbidden).

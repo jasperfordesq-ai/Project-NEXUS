@@ -138,12 +138,31 @@ Consequence: a regional super admin who sees only their own communities on
 Laravel would, on ASP.NET, see and act on **every tenant on the platform**,
 impersonation included. Blocked on R-3.
 
-### R-5 `PARTIALLY FIXED` — guardian consent security
+### R-5 `FIXED` — guardian consent security
 
-**Fixed (this commit):** items 1, 3 and 4 below — cross-tenant token resolution,
-the 24-hour expiry, and the minor self-grant. Pinned by
-`tests/Nexus.Api.Tests/EventGuardianConsentSecurityTests.cs` (3 tests, including
+**All five items are now fixed**, pinned by
+`tests/Nexus.Api.Tests/EventGuardianConsentSecurityTests.cs` (7 tests, including
 a deliberate **control case** asserting the legitimate guardian is still accepted).
+
+- Cross-tenant token resolution, the 24-hour expiry and the minor self-grant were
+  fixed in `7cd7ffee2`.
+- **The unkeyed blind hash (item 2) is fixed.** `EventSafetyService.BlindHash()`
+  is now an HMAC over `event-safety|{tenantId}|{purpose}|{value}`, matching
+  Laravel's `privacyHash()`/`tokenHash()`
+  (`EventSafetyFoundationSupport.php:166-187`), applied to both the guardian
+  email index and the token hash. The key prefers `Events:Safety:BlindIndexKey`
+  and otherwise derives a purpose-bound key from `Jwt:Secret`, so there is no new
+  required configuration and no weak constant default.
+  🔴 **This changes stored hash values**, so consents created before it will not
+  match on grant. Acceptable only because this backend is development-only and
+  not deployed — migrate existing rows first if that ever changes.
+- **The missing UPDATE trigger (R-5e) is fixed** by migration 172,
+  `20260815131500_AddGuardianConsentMutationGuard`, porting Laravel's
+  `trg_event_guardian_consent_update` to PostgreSQL with the same four rules and
+  the same error strings: identity columns immutable, terminal states frozen,
+  `ConsentVersion` strictly +1, and only `pending→active|withdrawn|expired` /
+  `active→withdrawn|expired`. Two tests attempt the tampering UPDATEs directly
+  against the database and assert the trigger refuses them.
 
 🔴 **That control case earned its place immediately: it caught the two security
 assertions passing vacuously.** The grant endpoint requires an `Idempotency-Key`
@@ -151,10 +170,17 @@ header; without one every request is refused as invalid, so both "attack" tests
 were green while proving nothing. Any future security test here must assert the
 allowed path too.
 
-**Still OPEN:** item 2 (unkeyed blind hash) and R-5e (missing UPDATE trigger).
 Note the tenant fix required plumbing the resolved tenant into the anonymous
 endpoint — `EventSafetyController` now takes `TenantContext` because the
 `Tenant()` helper reads caller claims a guardian does not have.
+
+**Remaining in this area:** Laravel creates 21 triggers across the event-safety
+tables to ASP.NET's 14 (13 + migration 172). The others —
+`trg_event_safety_requirements_insert`/`_update`, `_version_insert`, `_coc_insert`,
+`trg_event_participation_denial_insert`/`_update` — enforce concrete-event
+binding, requirement state transitions and code-of-conduct policy binding in the
+database. The application enforces these; the database does not. Lower priority
+than the consent guard was, but the same class of gap.
 
 ### R-5 detail (original findings)
 

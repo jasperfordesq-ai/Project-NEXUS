@@ -40,6 +40,28 @@ public sealed class EventGuardianConsentSecurityTests : IntegrationTestBase
     private static string Sha256Hex(string value)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
+    /// <summary>
+    /// Mirror of EventSafetyService.BlindHash. The key is read from the running
+    /// application's own configuration rather than re-derived here, so the test
+    /// cannot silently drift from the service if the key source changes.
+    /// </summary>
+    private string BlindHash(int tenantId, string purpose, string value)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var config = scope.ServiceProvider
+            .GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        var dedicated = config["Events:Safety:BlindIndexKey"];
+        var key = !string.IsNullOrWhiteSpace(dedicated)
+            ? Encoding.UTF8.GetBytes(dedicated)
+            : HMACSHA256.HashData(
+                Encoding.UTF8.GetBytes(config["Jwt:Secret"]!),
+                Encoding.UTF8.GetBytes("event-safety-blind-index-v1"));
+
+        return Convert.ToHexString(HMACSHA256.HashData(
+            key, Encoding.UTF8.GetBytes($"event-safety|{tenantId}|{purpose}|{value}")))
+            .ToLowerInvariant();
+    }
+
     private HttpClient ClientForTenant(int tenantId)
     {
         var client = Factory.CreateClient();
@@ -97,12 +119,12 @@ public sealed class EventGuardianConsentSecurityTests : IntegrationTestBase
             MinorUserId = minor.Id,
             GuardianEmailCiphertext = "sealed",
             GuardianIdentityCiphertext = "sealed",
-            GuardianEmailBlindHash = Sha256Hex(GuardianEmail),
+            GuardianEmailBlindHash = BlindHash(TestData.Tenant1.Id, "guardian-email", GuardianEmail),
             GuardianLocale = "en",
             RelationshipCode = "parent",
             ConsentTextHash = Sha256Hex("guardian-consent-v1"),
             PolicyBindingHash = Sha256Hex("policy"),
-            TokenHash = Sha256Hex(token),
+            TokenHash = BlindHash(TestData.Tenant1.Id, "guardian-token", token),
             RequestedByUserId = minor.Id,
             RequestIdempotencyHash = Sha256Hex(Guid.NewGuid().ToString()),
             RequestHash = Sha256Hex("request"),
@@ -187,6 +209,49 @@ public sealed class EventGuardianConsentSecurityTests : IntegrationTestBase
         var row = await db.EventGuardianConsents.IgnoreQueryFilters()
             .SingleAsync(x => x.Id == consentId);
         row.Status.Should().Be("active");
+    }
+
+    /// <summary>
+    /// The database itself must refuse a tampering UPDATE, not merely the
+    /// application. Laravel guards this with trg_event_guardian_consent_update;
+    /// ASP.NET had no equivalent until migration 172. Rewriting the guardian's
+    /// encrypted identity, the token hash or the expiry on an existing consent
+    /// must be impossible below the application layer.
+    /// </summary>
+    [Fact]
+    public async Task GuardianConsentIdentity_CannotBeRewrittenDirectlyInTheDatabase()
+    {
+        var (_, consentId, _) = await SeedPendingConsentAsync();
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+
+        var tamper = async () => await db.Database.ExecuteSqlInterpolatedAsync(
+            $"""UPDATE event_guardian_consents SET "GuardianEmailCiphertext" = 'rewritten', "ConsentVersion" = "ConsentVersion" + 1 WHERE "Id" = {consentId}""");
+
+        (await tamper.Should().ThrowAsync<Exception>(
+            "the encrypted guardian identity must be immutable once recorded"))
+            .WithMessage("*event_guardian_consent_identity_immutable*");
+    }
+
+    /// <summary>A withdrawn consent must never be resurrected.</summary>
+    [Fact]
+    public async Task WithdrawnGuardianConsent_CannotBeReactivated()
+    {
+        var (_, consentId, _) = await SeedPendingConsentAsync();
+
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"""UPDATE event_guardian_consents SET "Status" = 'withdrawn', "ConsentVersion" = "ConsentVersion" + 1 WHERE "Id" = {consentId}""");
+
+        var resurrect = async () => await db.Database.ExecuteSqlInterpolatedAsync(
+            $"""UPDATE event_guardian_consents SET "Status" = 'active', "ConsentVersion" = "ConsentVersion" + 1 WHERE "Id" = {consentId}""");
+
+        (await resurrect.Should().ThrowAsync<Exception>(
+            "a withdrawn consent is terminal"))
+            .WithMessage("*event_guardian_consent_terminal_immutable*");
     }
 
     private async Task<string> MinorEmailAsync(int userId)
