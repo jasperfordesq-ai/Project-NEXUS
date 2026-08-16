@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's entire 46-string marketplace offer workflow is now reviewed for Irish.** Offer creation, received and sent states, acceptance, rejection, withdrawal and counteroffers now use context-aware negotiation language instead of wording for opposition or a physical counter, and the malformed amount example was repaired. A whole-section test permits only the reviewed numeric amount format to remain language-neutral.
+
 - **The native app's entire 50-string marketplace pickup workflow is now reviewed for Irish.** Customer reservations, collection windows, QR-code instructions, seller slots, recurring schedules, scanning and pickup statuses now use natural context-aware Irish instead of mixed English fragments or misleading literal wording. A whole-section test permits only three reviewed date and capacity examples to remain language-neutral.
 
 - **The rest of the accessible site's numbers now follow the reader's language too.** The same US-only number formatting was fixed everywhere else it appeared: time-credit hours on group exchanges, volunteer hours and expense amounts, member and course star ratings, course costs, goal figures and coupon amounts. A German or French reader now sees "1,5" where an English reader sees "1.5", consistently across the site. English output is unchanged, and the shared locale-aware formatter used here is the same one proven by the German-price test in the previous change. (One low-traffic organiser-only analytics percentage on the event dashboard is left for a follow-up, as it needs proper percent formatting rather than a simple separator fix.)
