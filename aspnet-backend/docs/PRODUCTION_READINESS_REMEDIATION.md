@@ -390,6 +390,20 @@ the materialised path in one query rather than one per ancestor, and a community
 with no path yields just itself rather than an error, because the panel still
 has to render something.
 
+### 🔴 A rule I added that Laravel does not have — and why it came out again
+
+My first implementation refused a move when the destination did not allow
+sub-tenants. It looks obviously right, and it is wrong: Laravel enforces that on
+**create** (`createTenant:388`) and deliberately **not** on move
+(`moveTenant:886-1020`). So the rule would have refused a request the production
+backend accepts — a silent contract difference introduced in the name of
+tightening a rule.
+
+It was caught by the rewritten parity test moving a community under a non-hub
+parent. **Contract identity means matching Laravel, not improving on it**; an
+ASP.NET-only rule is a divergence however sensible it looks. If a rule here
+genuinely should be stricter, that is a change to make in Laravel first.
+
 ### Still open in this area
 
 - The purge path (god-only, queued, requires prior deactivation) has no ASP.NET

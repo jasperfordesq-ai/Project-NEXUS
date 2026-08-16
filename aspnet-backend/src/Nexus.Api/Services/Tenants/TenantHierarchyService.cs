@@ -410,10 +410,13 @@ public sealed class TenantHierarchyService
             return TenantHierarchyResult.Fail("Cannot move a tenant under one of its own descendants");
         }
 
-        if (!newParent.AllowsSubtenants && newParentId != MasterTenantId)
-        {
-            return TenantHierarchyResult.Fail("Parent tenant does not allow sub-tenants");
-        }
+        // 🔴 Deliberately NOT checked here: whether the destination allows
+        // sub-tenants. Laravel enforces that on CREATE (createTenant:388) and
+        // not on move (moveTenant:886-1020), so requiring it here would refuse
+        // a request the production backend accepts. Contract identity means
+        // matching that, not improving on it — an ASP.NET-only rule is a
+        // divergence however sensible it looks. (Caught by a test that moved a
+        // community under a non-hub parent, which Laravel permits.)
 
         var oldPath = tenant.Path!;
         var newPath = $"{newParent.Path}{tenant.Id}/";
