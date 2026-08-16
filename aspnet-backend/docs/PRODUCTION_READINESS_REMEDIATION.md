@@ -284,6 +284,64 @@ mangle any non-person that has a name and a picture — organisations, teams,
 venues, groups, saved searches. Anywhere the client shows a truncated-looking
 name, suspect this middleware before the database.
 
+## R-26 `ASSESSED, NOT STARTED` — nothing creates or maintains the tenant hierarchy
+
+Assessed 2026-08-16. R-3 added the hierarchy columns and backfilled them, so the
+tree **exists**. Nothing can change it: all six super-admin tenant write
+endpoints are no-op stubs (`AdminCompatibility3Controller.cs:715-760`), each
+returning a success message and an unchanged id.
+
+🔴 One of them answers `{"success":true,"message":"Tenant deleted"}` while the
+community remains fully live. That is the most dangerous shape of stub in this
+backend: a destructive-sounding confirmation for an action that did not happen.
+A platform admin could believe a community had been taken down.
+
+### The rules to mirror, extracted from Laravel
+
+`app/Services/TenantHierarchyService.php` (1,365 lines) — `createTenant:378`,
+`updateTenant:559`, `deleteTenant:823`, `moveTenant:886`,
+`toggleSubtenantCapability:1022`. Called from `AdminSuperController.php:306,
+428, 538, 620, 638, 662`, each behind `SuperPanelAccess::canAccessTenant()` (and
+`canManageTenant()` for delete) — **and `move` checks BOTH ends**, source and
+destination, which is the check an ASP.NET port is most likely to drop.
+
+Rules that are not obvious and must not be re-derived by guessing:
+
+- **Delete is a soft delete.** It sets `is_active = 0`; hard delete is disabled
+  outright. Tenant 1 (master) can never be deleted or moved. A tenant with
+  **active** children is refused — deactivate or move them first.
+- **Move refuses a cycle**, and refuses it *safely*: if either path is empty it
+  **fails closed** rather than risk an undetectable cycle, because the check is
+  a string prefix and every string starts with `""` — the same trap R-4 pins for
+  subtree access.
+- **Move re-checks everything under row locks** taken in a deterministic order
+  (tenant, new parent, then the subtree and its users), then rewrites `path` and
+  `depth` for **every descendant**. A port that updates only the moved row
+  leaves the subtree pointing through a parent it no longer has.
+- Purge is separate, **god-only**, requires the tenant to be already deactivated
+  and childless, and runs on a queue returning 202.
+
+### 🔴 The one rule that does NOT port yet, and why saying so matters
+
+Laravel's `moveTenant` can refuse with `PASSKEY_RP_CHANGE_BLOCKED` (409) plus a
+`meta.security_impact` count, because moving a tenant changes the WebAuthn
+relying-party domain its members' passkeys were registered against — the move
+would silently invalidate them.
+
+That block has nothing to protect here **yet**: this backend has no
+per-credential `rp_id` and one static RP domain (R-20), so no passkey is bound
+to a tenant's own domain in the first place. Porting move without the block is
+therefore correct today and **wrong the moment R-20 lands**. Whoever implements
+R-20 must add the block in the same change, and whoever implements move must
+leave a marker saying so. Do not let this drop between the two.
+
+### Suggested order
+
+`toggle-hub` and `reactivate` are small and self-contained. `create` and
+`update` need the path/depth construction. `move` is the hard one and should be
+last, with its own tests for: master refused, self-parent refused, descendant
+refused, empty-path refused, and descendant paths actually rewritten.
+
 ## 🔴 A second invisible defect class: tables the model believes in
 
 Found 2026-08-15 while implementing `GET /v2/volunteering/training` for real.
