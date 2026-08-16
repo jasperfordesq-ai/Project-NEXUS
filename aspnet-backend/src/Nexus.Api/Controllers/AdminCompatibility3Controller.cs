@@ -603,20 +603,214 @@ public class AdminCompatibility3Controller : ControllerBase
         });
     }
 
-    /// <summary>GET /api/admin/super/tenants - List tenants.</summary>
+    /// <summary>
+    /// GET /api/admin/super/tenants - List communities.
+    ///
+    /// 🔴 Returned a hardcoded empty array until 2026-08-16, so every screen
+    /// that offers "filter by community" — feed, comments, reviews and reports
+    /// moderation all call `adminSuper.listTenants()` — had an empty picker,
+    /// which reads as "there are no other communities" rather than "this did
+    /// not load".
+    ///
+    /// The client does `Array.isArray(res.data)`, so the payload is a bare
+    /// array under `data`, matching Laravel's `respondWithData($tenants)`.
+    /// </summary>
     [HttpGet("super/tenants")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult ListSuperTenants([FromQuery] int page = 1, [FromQuery] int limit = 20)
+    public async Task<IActionResult> ListSuperTenants(
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromQuery] string? search = null,
+        [FromQuery] bool? is_active = null,
+        [FromQuery] bool? hub = null)
     {
-        return Ok(new { data = Array.Empty<object>(), meta = new { page, limit, total = 0 } });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+
+        var access = await superPanel.ResolveAsync(actorId.Value, ct);
+        if (!access.Granted) return SuperPanelDenied();
+
+        var query = ScopedTenants(access);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(t => EF.Functions.ILike(t.Name, $"%{term}%")
+                || EF.Functions.ILike(t.Slug, $"%{term}%"));
+        }
+        if (is_active.HasValue) query = query.Where(t => t.IsActive == is_active.Value);
+        if (hub == true) query = query.Where(t => t.AllowsSubtenants);
+
+        var rows = await query
+            .OrderBy(t => t.Path).ThenBy(t => t.Id)
+            .Select(t => new
+            {
+                id = t.Id,
+                name = t.Name,
+                slug = t.Slug,
+                domain = t.Domain ?? string.Empty,
+                tagline = t.Tagline,
+                parent_id = t.ParentId,
+                parent_name = t.Parent != null ? t.Parent.Name : null,
+                depth = t.Depth,
+                is_active = t.IsActive,
+                allows_subtenants = t.AllowsSubtenants,
+                max_depth = t.MaxDepth,
+                user_count = _db.Users.IgnoreQueryFilters().Count(u => u.TenantId == t.Id),
+                created_at = t.CreatedAt,
+                updated_at = t.UpdatedAt,
+            })
+            .ToListAsync(ct);
+
+        return Ok(new { data = rows });
     }
 
-    /// <summary>GET /api/admin/super/tenants/{id} - Get tenant.</summary>
+    /// <summary>
+    /// GET /api/admin/super/tenants/{id} - Community detail.
+    ///
+    /// 🔴 Returned `{id, name:"", slug:"", is_active:true}` until 2026-08-16 —
+    /// a real-looking record for a community it never read, with a made-up
+    /// creation date and an active flag that was true regardless.
+    /// </summary>
     [HttpGet("super/tenants/{id:int}")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult GetSuperTenant(int id)
+    public async Task<IActionResult> GetSuperTenant(
+        int id,
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel)
     {
-        return Ok(new { id, name = "", slug = "", is_active = true, created_at = DateTime.UtcNow });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, id, ct)) return SuperPanelDenied();
+
+        var tenant = await _db.Tenants.IgnoreQueryFilters().AsNoTracking()
+            .Where(t => t.Id == id)
+            .Select(t => new
+            {
+                t.Id,
+                t.Name,
+                t.Slug,
+                t.Domain,
+                t.Tagline,
+                t.ParentId,
+                ParentName = t.Parent != null ? t.Parent.Name : null,
+                t.Path,
+                t.Depth,
+                t.IsActive,
+                t.AllowsSubtenants,
+                t.MaxDepth,
+                t.CreatedAt,
+                t.UpdatedAt,
+            })
+            .FirstOrDefaultAsync(ct);
+
+        if (tenant is null)
+        {
+            return NotFound(new
+            {
+                success = false,
+                errors = new[] { new { code = "RESOURCE_NOT_FOUND", message = "Tenant not found" } },
+            });
+        }
+
+        var children = await _db.Tenants.IgnoreQueryFilters().AsNoTracking()
+            .Where(t => t.ParentId == id)
+            .OrderBy(t => t.Name)
+            .Select(t => new
+            {
+                id = t.Id,
+                name = t.Name,
+                slug = t.Slug,
+                domain = t.Domain ?? string.Empty,
+                parent_id = t.ParentId,
+                depth = t.Depth,
+                is_active = t.IsActive,
+                allows_subtenants = t.AllowsSubtenants,
+                max_depth = t.MaxDepth,
+                created_at = t.CreatedAt,
+            })
+            .ToListAsync(ct);
+
+        var admins = await _db.Users.IgnoreQueryFilters().AsNoTracking()
+            .Where(u => u.TenantId == id && (u.Role == "admin" || u.IsSuperAdmin || u.IsTenantSuperAdmin))
+            .OrderBy(u => u.Id)
+            .Select(u => new
+            {
+                id = u.Id,
+                first_name = u.FirstName,
+                last_name = u.LastName,
+                email = u.Email,
+                role = u.Role,
+                is_active = u.IsActive,
+            })
+            .ToListAsync(ct);
+
+        var memberCount = await _db.Users.IgnoreQueryFilters()
+            .CountAsync(u => u.TenantId == id, ct);
+
+        // The breadcrumb walks the materialised path, so it costs one query
+        // rather than one per ancestor. A community with no path yields just
+        // itself rather than an error — the panel still has to render.
+        var ancestorIds = (tenant.Path ?? string.Empty)
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Select(segment => int.TryParse(segment, out var parsed) ? parsed : 0)
+            .Where(parsed => parsed > 0)
+            .ToList();
+        if (ancestorIds.Count == 0) ancestorIds.Add(tenant.Id);
+
+        var names = await _db.Tenants.IgnoreQueryFilters().AsNoTracking()
+            .Where(t => ancestorIds.Contains(t.Id))
+            .Select(t => new { t.Id, t.Name })
+            .ToDictionaryAsync(t => t.Id, t => t.Name, ct);
+
+        var breadcrumb = ancestorIds
+            .Where(names.ContainsKey)
+            .Select(ancestorId => new { id = ancestorId, name = names[ancestorId] })
+            .ToList();
+
+        return Ok(new
+        {
+            data = new
+            {
+                id = tenant.Id,
+                name = tenant.Name,
+                slug = tenant.Slug,
+                domain = tenant.Domain ?? string.Empty,
+                tagline = tenant.Tagline,
+                parent_id = tenant.ParentId,
+                parent_name = tenant.ParentName,
+                path = tenant.Path,
+                depth = tenant.Depth,
+                is_active = tenant.IsActive,
+                allows_subtenants = tenant.AllowsSubtenants,
+                max_depth = tenant.MaxDepth,
+                user_count = memberCount,
+                created_at = tenant.CreatedAt,
+                updated_at = tenant.UpdatedAt,
+                children,
+                admins,
+                breadcrumb,
+            },
+        });
+    }
+
+    /// <summary>
+    /// Communities visible to this caller. A regional super admin sees only its
+    /// own subtree; master sees everything. Tenants are not tenant-scoped data,
+    /// so the query filter must be off or a super admin sees nothing.
+    /// </summary>
+    private IQueryable<Entities.Tenant> ScopedTenants(Support.Authorization.SuperPanelAccess.Decision access)
+    {
+        var query = _db.Tenants.IgnoreQueryFilters().AsNoTracking();
+        if (!access.IsRegional) return query;
+
+        // 🔴 A regional grant with no path would prefix-match everything, so
+        // SuperPanelAccess refuses it before we get here; this is belt and
+        // braces for the same reason R-4 pins that case.
+        var prefix = access.TenantPath;
+        return string.IsNullOrEmpty(prefix)
+            ? query.Where(t => false)
+            : query.Where(t => t.Path != null && t.Path.StartsWith(prefix));
     }
 
     /// <summary>

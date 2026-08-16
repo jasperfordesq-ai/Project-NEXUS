@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The native app's Irish Explore screen is now fully translated.** All 64 discovery labels and descriptions now use context-aware Irish, including recommendations, popular and nearby listings, community statistics, upcoming events, groups, people, volunteering, organisations, jobs, polls and resources. A focused catalog test prevents the whole screen from silently reverting to English.
+
 - **Irish event-safety wording is clearer and no longer contains English status labels.** The native app now translates the six remaining English guardian and acknowledgement statuses, and a semantic review also replaces machine-like safeguarding-policy and member-block phrases, improves guardian relationship wording, and removes invisible zero-width characters from participation-block messages. Matching wording in the PHP event-safety catalogue is aligned where the same concepts are shown.
 
 - **Irish mobile account recovery, verification and registration no longer fall back to English.** The 45 remaining English values in the native app's authentication catalogue now use context-aware Irish, covering password reset, email verification, registration confirmation, password requirements, required-field errors and the platform terms acknowledgement. Functional examples such as international phone-number and email formats remain unchanged, and a focused test now prevents this catalogue from silently reverting to English. Independent native-speaker review is still recommended.

@@ -374,13 +374,29 @@ This is also a reminder of why runtime proof earns its place: a unit test that
 builds its own fixture proves the rule, not the data every real environment
 actually starts from.
 
+### The list and detail views, done in the same pass
+
+`super/tenants` returned a hardcoded empty array and `super/tenants/{id}` a
+fabricated record (`{id, name:"", slug:"", is_active:true}` with a made-up
+creation date). Both are real now, both scoped to the caller's subtree.
+
+The list one mattered more than it looks: **four moderation screens** — feed,
+comments, reviews and reports — call `adminSuper.listTenants()` to populate
+their "filter by community" picker. An empty array there reads as "there are no
+other communities", not "this failed to load".
+
+The detail view returns children, admins and a breadcrumb. The breadcrumb walks
+the materialised path in one query rather than one per ancestor, and a community
+with no path yields just itself rather than an error, because the panel still
+has to render something.
+
 ### Still open in this area
 
-- `super/tenants` (list) and `super/tenants/{id}` (get) are still stubs —
-  they return an empty array and an empty object, so the panel's list view has
-  nothing to show even now that the writes work.
 - The purge path (god-only, queued, requires prior deactivation) has no ASP.NET
   counterpart.
+- The list carries `user_count` but not `listing_count`, and none of the SEO /
+  contact / social fields the client's `SuperAdminTenant` type declares as
+  optional — those columns do not exist on this backend's `tenants` table.
 
 ## 🔴 A second invisible defect class: tables the model believes in
 
