@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Goal templates in the native app now stay in Irish.** Twelve template-discovery, category, target, duration, selection and creation-error strings now use context-aware Irish while preserving titles, values and day counts. A focused test protects the complete template workflow.
+
 - **The native app's entire 91-string Gamification catalogue is now reviewed for Irish.** The final twenty-five XP-shop and profile-showcase labels, balances, purchase states, selection controls and errors now use context-aware Irish. A whole-catalogue test verifies every key and permits only seven reviewed numeric XP, score and progress displays to remain language-neutral.
 
 - **Gamification challenges and learning journeys in the native app now stay in Irish.** Thirteen challenge, journey, completion, reward-claim and error strings now use context-aware Irish while preserving raw XP and progress displays. A focused test protects both progression workflows.
