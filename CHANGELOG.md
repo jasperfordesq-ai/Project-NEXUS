@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Ideation challenge discovery in the native app now stays in Irish.** Fifteen challenge-search, category, count, disabled, empty and error strings now use context-aware Irish while preserving dynamic counts. A focused test protects the complete discovery slice.
+
 - **The native app's entire 86-string Goals catalogue is now reviewed for Irish.** The final fifteen support-companion, milestone, history, check-in, streak and reminder-frequency strings now use context-aware Irish while preserving names and dates. A whole-catalogue test verifies every key and permits only the reviewed percentage display to remain language-neutral.
 
 - **Goal details, progress updates and reminders in the native app now stay in Irish.** Nineteen detail labels, not-found and failure states, progress controls, save states and reminder settings now use context-aware Irish while preserving dates and numeric examples. A focused test protects the complete interaction slice.
