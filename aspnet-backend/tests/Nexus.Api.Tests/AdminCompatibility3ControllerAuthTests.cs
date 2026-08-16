@@ -123,41 +123,91 @@ public class AdminCompatibility3ControllerAuthTests : IntegrationTestBase
     {
         await AuthenticateAsSyntheticActorAsync(SyntheticActor.PlatformSuperAdmin);
 
-        var list = await ReadJsonAsync(await Client.GetAsync("/api/v2/admin/super/tenants?search=test&is_active=true"));
-        list.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
-        list.GetProperty("meta").GetProperty("total").GetInt32().Should().BeGreaterThanOrEqualTo(0);
+        // 🔴 Rewritten 2026-08-16 (R-26). Every endpoint below used to be a
+        // no-op stub, and this test asserted only that each answered
+        // `success: true` — which a stub satisfies by definition, so it passed
+        // while nothing worked. It also pinned the STUB's envelope (`meta.total`
+        // on the list, a top-level `id` on the detail), which never matched
+        // Laravel's `respondWithData` in the first place.
+        //
+        // Two changes: it asserts the effect in the database rather than the
+        // envelope, and the destructive calls run against a throwaway community
+        // this test creates. Deactivating and re-parenting TestData.Tenant1 was
+        // harmless while the handlers did nothing; now that they work, it would
+        // sabotage every other test sharing this fixture.
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+            var parent = await db.Tenants.IgnoreQueryFilters()
+                .SingleAsync(t => t.Id == TestData.Tenant1.Id);
+            parent.AllowsSubtenants = true;
+            parent.MaxDepth = 3;
+            await db.SaveChangesAsync();
+        }
+
+        var list = await ReadJsonAsync(await Client.GetAsync("/api/v2/admin/super/tenants?is_active=true"));
+        var listed = list.GetProperty("data");
+        listed.ValueKind.Should().Be(JsonValueKind.Array);
+        listed.EnumerateArray().Select(t => t.GetProperty("id").GetInt32())
+            .Should().Contain(TestData.Tenant1.Id,
+                "an empty array is what the stub returned, and reads to the client as "
+                + "'there are no other communities'");
 
         var detail = await ReadJsonAsync(await Client.GetAsync($"/api/v2/admin/super/tenants/{TestData.Tenant1.Id}"));
-        detail.GetProperty("id").GetInt32().Should().Be(TestData.Tenant1.Id);
-        detail.GetProperty("is_active").GetBoolean().Should().BeTrue();
+        var detailData = detail.GetProperty("data");
+        detailData.GetProperty("id").GetInt32().Should().Be(TestData.Tenant1.Id);
+        detailData.GetProperty("slug").GetString().Should().Be(TestData.Tenant1.Slug,
+            "the stub returned an empty slug and a made-up creation date");
+        detailData.GetProperty("children").ValueKind.Should().Be(JsonValueKind.Array);
+        detailData.GetProperty("admins").ValueKind.Should().Be(JsonValueKind.Array);
+        detailData.GetProperty("breadcrumb").EnumerateArray().Should().NotBeEmpty();
+
+        (await Client.GetAsync("/api/v2/admin/super/tenants/2147483600")).StatusCode
+            .Should().Be(HttpStatusCode.NotFound, "the stub invented a record for any id");
 
         var hierarchy = await ReadJsonAsync(await Client.GetAsync("/api/v2/admin/super/tenants/hierarchy"));
         hierarchy.GetProperty("data").ValueKind.Should().Be(JsonValueKind.Array);
 
+        var slug = $"parity-{Guid.NewGuid():N}"[..20];
         var created = await ReadJsonAsync(await Client.PostAsJsonAsync("/api/v2/admin/super/tenants", new
         {
             name = "React parity tenant",
-            slug = "react-parity-tenant"
+            slug,
+            parent_id = TestData.Tenant1.Id,
         }));
-        created.GetProperty("success").GetBoolean().Should().BeTrue();
+        var createdId = created.GetProperty("data").GetProperty("tenant_id").GetInt32();
+        createdId.Should().BeGreaterThan(0);
 
-        var updated = await ReadJsonAsync(await Client.PutAsJsonAsync($"/api/v2/admin/super/tenants/{TestData.Tenant1.Id}", new
+        (await ReadTenantAsync(createdId)).Path.Should()
+            .Be($"/{TestData.Tenant1.Id}/{createdId}/", "a community with no path cannot be moved later");
+
+        await Client.PutAsJsonAsync($"/api/v2/admin/super/tenants/{createdId}", new
         {
-            name = "Updated React parity tenant"
-        }));
-        updated.GetProperty("success").GetBoolean().Should().BeTrue();
+            name = "Updated React parity tenant",
+        });
+        (await ReadTenantAsync(createdId)).Name.Should().Be("Updated React parity tenant");
 
-        var deleted = await ReadJsonAsync(await Client.DeleteAsync($"/api/v2/admin/super/tenants/{TestData.Tenant1.Id}"));
-        deleted.GetProperty("success").GetBoolean().Should().BeTrue();
+        await Client.DeleteAsync($"/api/v2/admin/super/tenants/{createdId}");
+        (await ReadTenantAsync(createdId)).IsActive.Should().BeFalse("delete is a deactivation");
 
-        var reactivated = await ReadJsonAsync(await Client.PostAsJsonAsync($"/api/v2/admin/super/tenants/{TestData.Tenant1.Id}/reactivate", new { }));
-        reactivated.GetProperty("success").GetBoolean().Should().BeTrue();
+        await Client.PostAsJsonAsync($"/api/v2/admin/super/tenants/{createdId}/reactivate", new { });
+        (await ReadTenantAsync(createdId)).IsActive.Should().BeTrue();
 
-        var toggle = await ReadJsonAsync(await Client.PostAsJsonAsync($"/api/v2/admin/super/tenants/{TestData.Tenant1.Id}/toggle-hub", new { enable = true }));
-        toggle.GetProperty("success").GetBoolean().Should().BeTrue();
+        await Client.PostAsJsonAsync($"/api/v2/admin/super/tenants/{createdId}/toggle-hub", new { enable = true });
+        (await ReadTenantAsync(createdId)).AllowsSubtenants.Should().BeTrue();
 
-        var moved = await ReadJsonAsync(await Client.PostAsJsonAsync($"/api/v2/admin/super/tenants/{TestData.Tenant1.Id}/move", new { new_parent_id = TestData.Tenant2.Id }));
-        moved.GetProperty("success").GetBoolean().Should().BeTrue();
+        await Client.PostAsJsonAsync($"/api/v2/admin/super/tenants/{createdId}/move",
+            new { new_parent_id = TestData.Tenant2.Id });
+        var movedTenant = await ReadTenantAsync(createdId);
+        movedTenant.ParentId.Should().Be(TestData.Tenant2.Id);
+        movedTenant.Path.Should().Be($"/{TestData.Tenant2.Id}/{createdId}/");
+    }
+
+    private async Task<Tenant> ReadTenantAsync(int tenantId)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NexusDbContext>();
+        return await db.Tenants.IgnoreQueryFilters().AsNoTracking().SingleAsync(t => t.Id == tenantId);
     }
 
     [Fact]

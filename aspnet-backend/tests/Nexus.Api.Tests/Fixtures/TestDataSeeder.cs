@@ -46,6 +46,18 @@ public static class TestDataSeeder
         db.Tenants.AddRange(tenant1, tenant2);
         await db.SaveChangesAsync();
 
+        // 🔴 Give the fixture communities a materialised path (R-26). A path
+        // contains the row's own id, so it cannot have a database default and
+        // must be set by whatever creates the tenant. Without it these two look
+        // corrupt to the hierarchy rules — the move guard refuses, fail-closed,
+        // because an empty path prefix-matches everything — and every test built
+        // on this fixture would be testing a state no real environment has.
+        tenant1.Path = $"/{tenant1.Id}/";
+        tenant1.Depth = 0;
+        tenant2.Path = $"/{tenant2.Id}/";
+        tenant2.Depth = 0;
+        await db.SaveChangesAsync();
+
         // Create users
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(TestPassword);
 
