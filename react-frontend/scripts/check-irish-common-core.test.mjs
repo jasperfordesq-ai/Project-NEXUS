@@ -110,6 +110,9 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /cúram ar féidir leat glaoch air|An slug don chomharchumann|Bhog mé teach|Stair na n-aistrithe agat/u);
   assert.doesNotMatch(allIrish, /Níl uaireanta go leor|Uaireanta a logáladh|uaireanta logáilte|Cuireadh úsáidte cheana/u);
   assert.doesNotMatch(allIrish, /sraitheanna préimhe|sraith préimhe|Gné phréimhe|Féach Praghsáil|Athraigh plean/u);
+  assert.doesNotMatch(allIrish, /lascainí ceannaithe|fuascailte in-stór|Téann an cód QR in éag i gceann/u);
+  assert.doesNotMatch(allIrish, /Cód an chúpóin cóipeáilte|Ceannaigh ceann, faigh ceann|Uasúsáid|stair dílseachta/u);
+  assert.doesNotMatch(allIrish, /Bain ó shábhálta|Gan aon bhailiúchán|Ní féidir leo seo a fheiceáil ach iadsan/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -151,4 +154,12 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.premium.gate_title, 'Aitheantas do lucht tacaíochta');
   assert.match(irish.premium.gate_body, /ní chun gnéithe breise íoctha/u);
   assert.equal(irish.premium.view_pricing_cta, 'Féach ar na leibhéil tacaíochta');
+  assert.equal(irish.coupon.qr_expires_in, 'Am éaga an chóid QR');
+  assert.equal(irish.coupon.type_bogo, 'Ceannaigh ceann agus faigh ceann eile');
+  assert.equal(irish.coupon.seller.status_expired, 'Imithe in éag');
+  assert.equal(irish.loyalty.history.table.aria, 'Stair fuascailte creidmheasanna ama');
+  assert.equal(irish.collections.empty_title, 'Níl aon bhailiúchán agat fós');
+  assert.equal(irish.collections.make_public, 'Cuir ar fáil go poiblí');
+  assert.equal(irish.appreciations.wall_title, 'Nótaí Buíochais');
+  assert.equal(irish.appreciations.private_hint, 'Ní fheicfidh ach an duine sin é seo');
 });
