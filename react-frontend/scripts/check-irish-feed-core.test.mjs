@@ -20,6 +20,8 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.doesNotMatch(catalogue, /Tarraing chun athordú|Liosta urchar|Ag luchtú réamhamhairc|10MB/u);
   assert.doesNotMatch(catalogue, /Sceideal postáil|Sceidealaithe do|Cum cineál ábhair|Cum post"/u);
   assert.doesNotMatch(catalogue, /ábhar an phost|Tá an post ró-fhada|curtha ar leataobh|ró-mhór/u);
+  assert.doesNotMatch(catalogue, /Balbhaigh|Bhuaigh .*suaitheantas|Seol tuairim|Theip ar roinnt/u);
+  assert.doesNotMatch(catalogue, /sonraí an vóta|an vóta seo críochnaithe|vóta iomlán/u);
 
   assert.equal(irish.subtitle, 'Féach cad atá ag tarlú i do phobal');
   assert.match(irish.meta_description, /liostuithe/u);
@@ -56,4 +58,15 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.equal(irish.compose.media_rejected_many, 'Fágadh {{count}} gcomhad ar lár (cineál mícheart nó rómhór)');
   assert.equal(irish.compose.media_compression_failed_many, 'Níorbh fhéidir {{count}} n-íomhá a phróiseáil');
   assert.match(irish.compose.content_required, /ábhar na postála/u);
+  assert.equal(irish.card.unlike, 'Bain ‘Is maith liom’');
+  assert.equal(irish.card.mute_user, 'Cuir {{name}} ina thost');
+  assert.match(irish.card.badge_earned_message, /^Thuill/u);
+  assert.equal(irish.card.send_comment, 'Seol an trácht');
+  assert.match(irish.card.share_failed, /an phostáil a roinnt/u);
+  assert.equal(irish.card.event.starts_in_minutes, 'Tosóidh sé i gceann {{minutes}} nóiméad');
+  assert.equal(irish.card.volunteer.credits_offered_many, '{{count}} gcreidmheas ama');
+  assert.equal(irish.card.review.rating_aria, '{{rating}} réalta as 5');
+  assert.equal(irish.poll.load_failed, 'Níorbh fhéidir sonraí na pobalbhreithe a lódáil.');
+  assert.equal(irish.poll.live, 'Ar siúl');
+  assert.match(irish.poll.results_hidden_until_close, /nuair a dhúnfar an phobalbhreith/u);
 });
