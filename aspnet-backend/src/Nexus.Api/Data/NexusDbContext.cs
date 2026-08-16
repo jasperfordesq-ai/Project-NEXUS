@@ -409,6 +409,7 @@ public class NexusDbContext : DbContext
     public DbSet<PlatformCapabilityOverride> PlatformCapabilityOverrides => Set<PlatformCapabilityOverride>();
     public DbSet<RevokedToken> RevokedTokens => Set<RevokedToken>();
     public DbSet<LoginAttempt> LoginAttempts => Set<LoginAttempt>();
+    public DbSet<ConversationParticipant> ConversationParticipants => Set<ConversationParticipant>();
 
     // Partner Venues
     public DbSet<PartnerVenue> PartnerVenues => Set<PartnerVenue>();

@@ -28,7 +28,14 @@ public class MessagingConfiguration : TenantScopedConfiguration
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => e.Participant1Id);
             entity.HasIndex(e => e.Participant2Id);
-            entity.HasIndex(e => new { e.TenantId, e.Participant1Id, e.Participant2Id }).IsUnique();
+            // 🔴 The pair uniqueness now applies ONLY to one-to-one threads.
+            // Two different groups can easily share the same creator and first
+            // member, so an unconditional unique index would refuse to create
+            // the second group. Postgres partial index; the migration creates
+            // the matching one.
+            entity.HasIndex(e => new { e.TenantId, e.Participant1Id, e.Participant2Id })
+                .IsUnique()
+                .HasFilter("\"IsGroup\" = false");
 
             // Relationships
             entity.HasOne(e => e.Tenant)
@@ -47,6 +54,28 @@ public class MessagingConfiguration : TenantScopedConfiguration
                 .OnDelete(DeleteBehavior.Restrict);
 
             // CRITICAL: Global query filter for tenant isolation
+            entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
+        });
+
+        modelBuilder.Entity<ConversationParticipant>(entity =>
+        {
+            entity.ToTable("conversation_participants");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Role).HasMaxLength(16).IsRequired();
+
+            entity.HasIndex(e => e.TenantId);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.ConversationId, e.UserId });
+            // Laravel's unique_participant key: one row per person per thread.
+            entity.HasIndex(e => new { e.TenantId, e.ConversationId, e.UserId }).IsUnique();
+
+            entity.HasOne(e => e.Tenant).WithMany()
+                .HasForeignKey(e => e.TenantId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.User).WithMany()
+                .HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Conversation).WithMany(c => c.Participants)
+                .HasForeignKey(e => e.ConversationId).OnDelete(DeleteBehavior.Cascade);
+
             entity.HasQueryFilter(e => !TenantContext.IsResolved || e.TenantId == TenantContext.TenantId);
         });
 

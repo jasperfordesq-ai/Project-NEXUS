@@ -165,11 +165,13 @@ that `tenant/bootstrap` returns `contact.email`, `contact.phone` and
 `contact.address` as `null` where the client's schema expects strings. Harmless
 in dev, but it is a real shape divergence.
 
-## R-25 `ASSESSED, NOT STARTED` — group conversations do not exist here
+## R-25 `DONE (2026-08-16)` — group conversations did not exist here
 
-Assessed 2026-08-16. This is the largest remaining threat to "two frontends
-switch by configuration alone", because it is a **data-model** difference, not a
-missing endpoint.
+Assessed and implemented 2026-08-16. This was the largest remaining threat to
+"two frontends switch by configuration alone", because it is a **data-model**
+difference, not a missing endpoint. The sections below keep the original
+assessment (it explains why the fix is shaped the way it is), followed by what
+actually shipped.
 
 ### What Laravel has
 
@@ -225,16 +227,62 @@ management action reports success while changing nothing.
    Participant2Id == me` in several places; it becomes a participants lookup.
    🔴 Getting this wrong exposes private messages, so each site needs a test.
 
-### Cost and risk
+### What shipped
 
-Comparable to the tenant-hierarchy work but riskier, because it touches private
-messaging and its authorisation rather than an admin surface. Roughly a full
-session: migration + backfill, query rework, five endpoints, and authorisation
-tests at every site that currently assumes a pair.
+Migration `20260816052752_AddConversationParticipants`, entity
+`ConversationParticipant`, and all five endpoints implemented for real.
 
-**Recommendation: do it as its own piece of work, not folded into a stub batch.**
-The failure mode of a half-done migration here is either broken messaging or
-leaked messages.
+- The pair unique index became **partial** (`HasFilter("\"IsGroup\" = false")`)
+  so one-to-one threads keep their duplicate protection while groups are exempt.
+- The **backfill is idempotent** (`ON CONFLICT DO NOTHING`) and turns every
+  existing thread into two participant rows. Verified: **0** conversations left
+  without participants, and pinned by a test — without it the new membership
+  lookups would have locked members out of their own message history.
+- The pair columns are **deliberately kept**; the conversation list, unread
+  counts, attachments and voice-send still read them. Removing them is a later
+  migration, once nothing does.
+- Leaving sets `left_at` rather than deleting the row, so "who could see what,
+  when" stays answerable.
+
+Evidence: `GroupConversationTests` (8 tests — creation with the real client
+payload, the two validation rules, cross-tenant member injection, admin-only
+add/rename/remove, outsider cannot read or post, self-leave ends access, and the
+backfill), plus the full messaging suite green (**142 tests**) confirming
+one-to-one messaging is unaffected. Live-verified against the running backend.
+
+### 🔴 What this uncovered: the group list was renaming people's groups
+
+Worth reading even if you never touch messaging, because the symptom pointed at
+entirely the wrong layer.
+
+`GET /v2/conversations/groups` returned `"Alpha"` for a group stored as
+`"Alpha Bravo Charlie"`. The stored bytes were correct, the generated SQL was
+correct, and the create response was correct — only the listed name was wrong.
+
+The cause was **`SurnamePrivacyMiddleware`**, which rewrites the body of every
+JSON response under `/api`. It decides an object is a person when it carries a
+composite `name` next to an avatar/email/handle, then cuts that name at the first
+space so a surname cannot leak. A group carries `name` **and** `avatar_url`, so
+its name was chopped.
+
+Two accidents hid it: the create response has no `avatar_url`, so creation looked
+right; and a group whose conversation id happens to equal the viewer's user id is
+treated as "self" and passes through intact, so *some* groups listed correctly.
+
+The fix adds a non-person veto (`is_group`, `member_count`) that overrides only
+the **weak** heuristic — an explicit `first_name`/`last_name` still scrubs, so no
+privacy is lost.
+
+🔴 **That middleware had no tests of any kind.** It now has two
+(`SurnamePrivacyMiddlewareTests`): the group case, and a control asserting a real
+surname is still hidden — the control first asserts the record was in the
+response at all, because a search returning nothing would make the privacy
+assertion pass vacuously.
+
+🔴 **Generalise this before trusting any other list.** The same heuristic will
+mangle any non-person that has a name and a picture — organisations, teams,
+venues, groups, saved searches. Anywhere the client shows a truncated-looking
+name, suspect this middleware before the database.
 
 ## 🔴 A second invisible defect class: tables the model believes in
 

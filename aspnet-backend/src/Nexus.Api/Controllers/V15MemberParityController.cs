@@ -1127,13 +1127,51 @@ public class V15MemberParityController : ControllerBase
         return Ok(new { data = messages });
     }
 
+    // ──────────────────────────────────────────────────────────────────────
+    // Group conversations (R-25).
+    //
+    // 🔴 Every endpoint below was broken or a stub, while the React app ships a
+    // working group-creation screen (pages/messages/components/CreateGroupModal.tsx).
+    // Create read `participant_id`, which the client never sends — it sends
+    // {name, member_ids:[…]} — so a member filled in the form, picked people and
+    // got 400. Add/remove/rename returned 200 and changed nothing. List returned
+    // every conversation as a pair.
+    //
+    // Membership now lives in conversation_participants. Participant1Id/
+    // Participant2Id are still WRITTEN because the conversation list, unread
+    // counts, attachments and voice-send still read them; they come out in a
+    // later migration once nothing does.
+    // ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>GET /api/v2/conversations/groups — group threads I am in.</summary>
     [HttpGet("api/v2/conversations/groups")]
     public async Task<IActionResult> V2Messages()
     {
         var userId = CurrentUserId();
-        var data = await _db.Conversations.AsNoTracking().Where(c => c.Participant1Id == userId || c.Participant2Id == userId)
-            .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt).Take(50)
-            .Select(c => new { id = c.Id, participant1_id = c.Participant1Id, participant2_id = c.Participant2Id, created_at = c.CreatedAt, updated_at = c.UpdatedAt }).ToListAsync();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+
+        var data = await _db.Conversations.AsNoTracking()
+            .Where(c => c.TenantId == tenantId
+                && c.IsGroup
+                && _db.ConversationParticipants.Any(p =>
+                    p.ConversationId == c.Id && p.UserId == userId.Value && p.LeftAt == null))
+            .OrderByDescending(c => c.UpdatedAt ?? c.CreatedAt)
+            .Take(50)
+            .Select(c => new
+            {
+                id = c.Id,
+                is_group = c.IsGroup,
+                name = c.GroupName,
+                avatar_url = c.GroupAvatarUrl,
+                created_by = c.CreatedBy,
+                member_count = _db.ConversationParticipants
+                    .Count(p => p.ConversationId == c.Id && p.LeftAt == null),
+                created_at = c.CreatedAt,
+                updated_at = c.UpdatedAt,
+            })
+            .ToListAsync(HttpContext.RequestAborted);
+
         return Ok(new { data });
     }
 
@@ -1142,35 +1180,261 @@ public class V15MemberParityController : ControllerBase
     {
         var userId = CurrentUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
+
+        // 🔴 Authorisation moved from "am I participant 1 or 2" to a membership
+        // lookup. Getting this wrong posts into a stranger's thread.
+        if (!await IsActiveParticipantAsync(id, userId.Value))
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = "Not a participant in this conversation" });
+
         var message = new Message { TenantId = TenantId(), ConversationId = id, SenderId = userId.Value, Content = GetString(body, "content") ?? GetString(body, "message") ?? string.Empty };
         _db.Messages.Add(message);
         await _db.SaveChangesAsync();
         return Ok(new { success = true, data = message });
     }
 
+    /// <summary>POST /api/v2/conversations/groups — create a group thread.</summary>
     [HttpPost("api/v2/conversations/groups")]
     public async Task<IActionResult> V2CreateGroupConversation([FromBody] JsonElement body)
     {
         var userId = CurrentUserId();
-        var otherId = GetInt(body, "participant_id") ?? GetInt(body, "user_id");
-        if (userId == null || otherId == null) return BadRequest(new { error = "participant_id is required" });
-        var conversation = new Conversation { TenantId = TenantId(), Participant1Id = userId.Value, Participant2Id = otherId.Value };
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+
+        var name = (GetString(body, "name") ?? GetString(body, "group_name"))?.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            return UnprocessableEntity(new { message = "A group name is required.", errors = new Dictionary<string, string[]> { ["name"] = new[] { "A group name is required." } } });
+
+        var memberIds = ReadMemberIds(body).Where(m => m != userId.Value).Distinct().ToList();
+        if (memberIds.Count < 2)
+            return UnprocessableEntity(new { message = "A group needs at least two other members.", errors = new Dictionary<string, string[]> { ["member_ids"] = new[] { "A group needs at least two other members." } } });
+
+        // Everyone must be a real, active member of THIS community, or a crafted
+        // id would drop a stranger — or someone from another tenant — into a
+        // private thread.
+        var valid = await _db.Users.AsNoTracking()
+            .Where(u => u.TenantId == tenantId && u.IsActive && memberIds.Contains(u.Id))
+            .Select(u => u.Id)
+            .ToListAsync(HttpContext.RequestAborted);
+        if (valid.Count != memberIds.Count)
+            return UnprocessableEntity(new { message = "One or more members could not be found.", errors = new Dictionary<string, string[]> { ["member_ids"] = new[] { "One or more members could not be found." } } });
+
+        var conversation = new Conversation
+        {
+            TenantId = tenantId,
+            IsGroup = true,
+            GroupName = name,
+            CreatedBy = userId.Value,
+            Participant1Id = userId.Value,
+            Participant2Id = valid[0],
+            CreatedAt = DateTime.UtcNow,
+        };
         _db.Conversations.Add(conversation);
-        await _db.SaveChangesAsync();
-        return Ok(new { success = true, data = conversation });
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        _db.ConversationParticipants.Add(new ConversationParticipant
+        {
+            TenantId = tenantId,
+            ConversationId = conversation.Id,
+            UserId = userId.Value,
+            Role = ConversationParticipant.Roles.Admin,
+        });
+        foreach (var memberId in valid)
+        {
+            _db.ConversationParticipants.Add(new ConversationParticipant
+            {
+                TenantId = tenantId,
+                ConversationId = conversation.Id,
+                UserId = memberId,
+                Role = ConversationParticipant.Roles.Member,
+            });
+        }
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        return Ok(new
+        {
+            success = true,
+            data = new
+            {
+                id = conversation.Id,
+                is_group = true,
+                name = conversation.GroupName,
+                created_by = conversation.CreatedBy,
+                member_count = valid.Count + 1,
+                created_at = conversation.CreatedAt,
+            },
+        });
     }
 
+    /// <summary>GET /api/v2/conversations/{id}/participants</summary>
     [HttpGet("api/v2/conversations/{id:int}/participants")]
     public async Task<IActionResult> V2ConversationParticipants(int id)
     {
-        var c = await _db.Conversations.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-        return c == null ? NotFound(new { error = "Conversation not found" }) : Ok(new { data = new[] { c.Participant1Id, c.Participant2Id } });
+        var userId = CurrentUserId();
+        if (userId == null) return Unauthorized(new { error = "Invalid token" });
+
+        // Not a participant means "no such conversation" — confirming it exists
+        // leaks who is talking to whom.
+        if (!await IsActiveParticipantAsync(id, userId.Value))
+            return NotFound(new { error = "Conversation not found" });
+
+        var data = await _db.ConversationParticipants.AsNoTracking()
+            .Where(p => p.ConversationId == id && p.LeftAt == null)
+            .Join(_db.Users.AsNoTracking(), p => p.UserId, u => u.Id, (p, u) => new
+            {
+                user_id = p.UserId,
+                name = (u.FirstName + " " + u.LastName).Trim(),
+                avatar_url = u.AvatarUrl,
+                role = p.Role,
+                joined_at = p.JoinedAt,
+            })
+            .ToListAsync(HttpContext.RequestAborted);
+
+        return Ok(new { data });
     }
 
+    /// <summary>POST /api/v2/conversations/{id}/participants — add someone.</summary>
     [HttpPost("api/v2/conversations/{id:int}/participants")]
+    public async Task<IActionResult> V2AddParticipant(int id, [FromBody] JsonElement body)
+    {
+        var actorId = CurrentUserId();
+        if (actorId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+
+        var conversation = await _db.Conversations
+            .FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Id == id, HttpContext.RequestAborted);
+        if (conversation is null) return NotFound(new { error = "Conversation not found" });
+        if (!conversation.IsGroup)
+            return Conflict(new { error = "Only group conversations can have members added" });
+        if (!await IsGroupAdminAsync(id, actorId.Value))
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = "Only a group admin can add members" });
+
+        var newUserId = GetInt(body, "user_id") ?? GetInt(body, "participant_id");
+        if (newUserId is null)
+            return UnprocessableEntity(new { message = "user_id is required.", errors = new Dictionary<string, string[]> { ["user_id"] = new[] { "user_id is required." } } });
+
+        var exists = await _db.Users.AsNoTracking()
+            .AnyAsync(u => u.TenantId == tenantId && u.Id == newUserId.Value && u.IsActive, HttpContext.RequestAborted);
+        if (!exists) return NotFound(new { error = "Member not found" });
+
+        var existing = await _db.ConversationParticipants
+            .FirstOrDefaultAsync(p => p.ConversationId == id && p.UserId == newUserId.Value, HttpContext.RequestAborted);
+        if (existing is not null)
+        {
+            // Re-joining reuses the row; the unique key forbids a second one.
+            if (existing.LeftAt is null)
+                return Ok(new { success = true, data = new { user_id = newUserId.Value, added = false } });
+            existing.LeftAt = null;
+            existing.JoinedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            _db.ConversationParticipants.Add(new ConversationParticipant
+            {
+                TenantId = tenantId,
+                ConversationId = id,
+                UserId = newUserId.Value,
+                Role = ConversationParticipant.Roles.Member,
+            });
+        }
+
+        conversation.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+        return Ok(new { success = true, data = new { user_id = newUserId.Value, added = true } });
+    }
+
+    /// <summary>DELETE /api/v2/conversations/{id}/participants/{userId}</summary>
     [HttpDelete("api/v2/conversations/{id:int}/participants/{userId:int}")]
+    public async Task<IActionResult> V2RemoveParticipant(int id, int userId)
+    {
+        var actorId = CurrentUserId();
+        if (actorId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+
+        var conversation = await _db.Conversations
+            .FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Id == id, HttpContext.RequestAborted);
+        if (conversation is null) return NotFound(new { error = "Conversation not found" });
+
+        // Anyone may remove themselves (leave). Removing someone else needs
+        // group-admin rights.
+        if (userId != actorId.Value && !await IsGroupAdminAsync(id, actorId.Value))
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = "Only a group admin can remove members" });
+
+        var participant = await _db.ConversationParticipants
+            .FirstOrDefaultAsync(p => p.ConversationId == id && p.UserId == userId && p.LeftAt == null,
+                HttpContext.RequestAborted);
+        if (participant is null) return NotFound(new { error = "That member is not in this conversation" });
+
+        // Kept rather than deleted, so who could see what stays answerable.
+        participant.LeftAt = DateTime.UtcNow;
+        conversation.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+        return Ok(new { success = true, data = new { user_id = userId, removed = true } });
+    }
+
+    /// <summary>PATCH /api/v2/conversations/{id}/group — rename or re-avatar.</summary>
     [HttpPatch("api/v2/conversations/{id:int}/group")]
-    public IActionResult V2ConversationLightweight(int id) => Ok(new { success = true, conversation_id = id });
+    public async Task<IActionResult> V2UpdateGroup(int id, [FromBody] JsonElement body)
+    {
+        var actorId = CurrentUserId();
+        if (actorId == null) return Unauthorized(new { error = "Invalid token" });
+        var tenantId = TenantId();
+
+        var conversation = await _db.Conversations
+            .FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Id == id && c.IsGroup, HttpContext.RequestAborted);
+        if (conversation is null) return NotFound(new { error = "Group conversation not found" });
+        if (!await IsGroupAdminAsync(id, actorId.Value))
+            return StatusCode(StatusCodes.Status403Forbidden, new { error = "Only a group admin can change the group" });
+
+        var newName = GetString(body, "name") ?? GetString(body, "group_name");
+        if (!string.IsNullOrWhiteSpace(newName)) conversation.GroupName = newName.Trim();
+
+        var avatar = GetString(body, "avatar_url");
+        if (avatar is not null)
+            conversation.GroupAvatarUrl = string.IsNullOrWhiteSpace(avatar) ? null : avatar.Trim();
+
+        conversation.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(HttpContext.RequestAborted);
+
+        return Ok(new
+        {
+            success = true,
+            data = new { id = conversation.Id, name = conversation.GroupName, avatar_url = conversation.GroupAvatarUrl },
+        });
+    }
+
+    private Task<bool> IsActiveParticipantAsync(int conversationId, int userId)
+        => _db.ConversationParticipants.AsNoTracking()
+            .AnyAsync(p => p.ConversationId == conversationId && p.UserId == userId && p.LeftAt == null,
+                HttpContext.RequestAborted);
+
+    private Task<bool> IsGroupAdminAsync(int conversationId, int userId)
+        => _db.ConversationParticipants.AsNoTracking()
+            .AnyAsync(p => p.ConversationId == conversationId
+                    && p.UserId == userId
+                    && p.LeftAt == null
+                    && p.Role == ConversationParticipant.Roles.Admin,
+                HttpContext.RequestAborted);
+
+    private static List<int> ReadMemberIds(JsonElement body)
+    {
+        var keys = new[] { "member_ids", "participant_ids", "user_ids" };
+        foreach (var key in keys)
+        {
+            if (body.ValueKind == JsonValueKind.Object
+                && body.TryGetProperty(key, out var arr)
+                && arr.ValueKind == JsonValueKind.Array)
+            {
+                var ids = new List<int>();
+                foreach (var element in arr.EnumerateArray())
+                {
+                    if (element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var value))
+                        ids.Add(value);
+                }
+                return ids;
+            }
+        }
+        return new List<int>();
+    }
 
     [HttpDelete("api/ai/conversations/{id:int}")]
     public async Task<IActionResult> V2DeleteConversation(int id)

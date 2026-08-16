@@ -93,6 +93,24 @@ public sealed class SurnamePrivacyMiddleware
         "user_id", "userId", "UserId"
     };
 
+    // Keys that only ever appear on objects which are NOT a person. These veto
+    // the WEAK heuristic below (a composite name sitting next to an avatar), and
+    // deliberately do NOT veto an explicit first_name/last_name — a real surname
+    // field must always still be scrubbed.
+    //
+    // 🔴 Why this exists. A group conversation carries both `name` and
+    // `avatar_url`, which made it look like a member, so the group list renamed
+    // "Garden crew" to "Garden" and "Alpha Bravo Charlie" to "Alpha" — the name
+    // was chopped at the first space to hide a surname that was never there. It
+    // was invisible for two reasons: the create response has no avatar_url so it
+    // looked correct, and a group whose conversation id happens to equal the
+    // viewer's user id is treated as "self" and passes through intact.
+    private static readonly string[] NonUserShapeSignalKeys =
+    {
+        "is_group", "isGroup", "IsGroup",
+        "member_count", "memberCount", "MemberCount"
+    };
+
     private readonly RequestDelegate _next;
     private readonly ILogger<SurnamePrivacyMiddleware> _logger;
 
@@ -211,8 +229,14 @@ public sealed class SurnamePrivacyMiddleware
         // first/last name, or a composite name field alongside a user-signal
         // (avatar/email/handle/user_id). Plain composite names without any
         // user signal (e.g. group.name, listing.title) are left alone.
+        //
+        // The second clause is a heuristic and it misfires on non-people that
+        // legitimately have a name and a picture, so a non-user marker vetoes
+        // it. An explicit first/last name is not a heuristic and is never
+        // vetoed — that path must keep scrubbing whatever else is on the object.
+        var looksLikeANonPerson = NonUserShapeSignalKeys.Any(k => obj.ContainsKey(k));
         var isUserShaped = hasFirstName || hasSurname
-            || (hasComposite && hasUserSignal);
+            || (hasComposite && hasUserSignal && !looksLikeANonPerson);
 
         if (!isUserShaped)
         {
