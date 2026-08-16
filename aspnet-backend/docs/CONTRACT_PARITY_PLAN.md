@@ -80,8 +80,47 @@ load calls**:
 spellings is not "compatible" — it is two contracts, and a client that reads the
 wrong one breaks when the duplicate is eventually removed.
 
-**What to do:** treat `tenant/bootstrap` as job one after authorisation. A
-missing feature flag silently disables a whole module in the client.
+**Progress 2026-08-16: 169 missing fields -> 142.** Fixed: all 20 absent
+feature flags, plus `currency`, `default_layout`, `default_language`,
+`supported_languages`, `branding.logo_shape` and `meta.base_url`.
+
+🔴 The flags were the damaging part. The client treats an ABSENT flag as
+"module off", so marketplace, courses, podcasts, identity verification,
+two-factor and biometric login were all silently disabled on this backend with
+nothing in any log to say so. Defaults come from Laravel's
+`TenantFeatureConfig::FEATURE_DEFAULTS`, **not** from a live tenant -- hOUR
+Timebank has `partner_venues` and `public_events` switched on while both
+default off, so copying its response would have shipped one community's
+overrides as everybody's defaults.
+
+**The remaining 142, all per-tenant config blocks:**
+
+| Block | Fields |
+| --- | --- |
+| `data.volunteering_config` | 36 |
+| `data.job_config` | 35 |
+| `data.listing_config` | 27 |
+| `data.group_tabs` | 15 |
+| `data.authentication_config` | 7 |
+| `data.tenant_switcher` | 7 |
+| `data.config.modules` + `data.modules` | 11 |
+| `settings`, `contact.service_area`, `landing_page_config` | 4 |
+
+These are mechanical -- read a tenant setting, emit it with Laravel's default --
+but there are a lot of them, and each default must come from Laravel rather
+than be invented. `tenant_switcher` is the exception: it needs the tenant
+hierarchy, which now exists (R-26).
+
+🔴 **The harness will keep reporting SHAPE_DIFFERS for bootstrap until the
+last of the 142 lands**, because its verdict is per endpoint, not per field.
+Partial progress on a big payload is invisible in the 8/20 headline -- measure
+this one by field count.
+
+**Also outstanding here:** ASP.NET emits the whole payload TWICE -- once under
+`data.*` and again at the root -- plus both `primary_color` and `primaryColor`.
+The root projection was for `apps/react-frontend`, which was deleted on
+2026-08-09, so it is very likely dead. Removing it is a separate change from
+adding fields, and needs a check that nothing reads it first.
 
 ---
 

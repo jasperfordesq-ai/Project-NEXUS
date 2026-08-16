@@ -26,6 +26,14 @@ namespace Nexus.Api.Controllers;
 [Authorize]
 public class CompatibilityController : ControllerBase
 {
+    /// <summary>
+    /// The eleven locales the platform ships, in Laravel's order. English is
+    /// master and fallback. Kept as a constant rather than read from config:
+    /// a tenant cannot invent a locale the translation files do not have.
+    /// </summary>
+    private static readonly string[] SupportedLanguages =
+        ["en", "ga", "de", "fr", "it", "pt", "es", "nl", "pl", "ja", "ar"];
+
     private readonly NexusDbContext _db;
     private readonly TenantContext _tenantContext;
     private readonly UserPreferencesService _preferencesService;
@@ -1738,6 +1746,44 @@ public class CompatibilityController : ControllerBase
             ["search"] = GetConfigBool(configEntries, "feature.search", true),
             ["explore"] = GetConfigBool(configEntries, "feature.explore", true),
             ["ai_chat"] = GetConfigBool(configEntries, "feature.ai_chat", true),
+
+            // 🔴 Added 2026-08-16. These twenty flags were absent from the
+            // bootstrap payload while Laravel has always sent them, and the client
+            // treats an absent flag as "module off" -- so marketplace, courses,
+            // podcasts, identity verification, two-factor and biometric login were
+            // all silently disabled on this backend, with nothing in any log to say
+            // so. Found by the differential response harness.
+            //
+            // Defaults are Laravel's canonical ones from
+            // app/Services/TenantFeatureConfig::FEATURE_DEFAULTS -- NOT the values a
+            // particular tenant happens to show. hOUR Timebank has partner_venues and
+            // public_events switched ON, for example, but both default OFF, and
+            // copying a live tenant would have shipped its overrides as everyone's
+            // defaults.
+            ["caring_community"] = GetConfigBool(configEntries, "feature.caring_community", false),
+            ["marketplace"] = GetConfigBool(configEntries, "feature.marketplace", false),
+            ["merchant_coupons"] = GetConfigBool(configEntries, "feature.merchant_coupons", false),
+            ["message_translation"] = GetConfigBool(configEntries, "feature.message_translation", true),
+            ["member_premium"] = GetConfigBool(configEntries, "feature.member_premium", false),
+            ["ai_agents"] = GetConfigBool(configEntries, "feature.ai_agents", false),
+            ["partner_api"] = GetConfigBool(configEntries, "feature.partner_api", false),
+            ["fadp_compliance"] = GetConfigBool(configEntries, "feature.fadp_compliance", false),
+            ["local_advertising"] = GetConfigBool(configEntries, "feature.local_advertising", false),
+            ["regional_analytics"] = GetConfigBool(configEntries, "feature.regional_analytics", false),
+            ["newsletter"] = GetConfigBool(configEntries, "feature.newsletter", true),
+            ["two_factor_authentication"] = GetConfigBool(configEntries, "feature.two_factor_authentication", true),
+            ["biometric_login"] = GetConfigBool(configEntries, "feature.biometric_login", true),
+            ["identity_verification"] = GetConfigBool(configEntries, "feature.identity_verification", true),
+
+            // 🔴 maps defaults OFF and must stay OFF. It is a multi-tenant cost
+            // and privacy decision, not an oversight -- see the platform note about
+            // changing it in BOTH the backend and the client if it ever changes.
+            ["maps"] = GetConfigBool(configEntries, "feature.maps", false),
+            ["courses"] = GetConfigBool(configEntries, "feature.courses", false),
+            ["podcasts"] = GetConfigBool(configEntries, "feature.podcasts", false),
+            ["partner_venues"] = GetConfigBool(configEntries, "feature.partner_venues", false),
+            ["public_events"] = GetConfigBool(configEntries, "feature.public_events", false),
+            ["event_attendance_credits"] = GetConfigBool(configEntries, "feature.event_attendance_credits", false),
         };
 
         // Build modules object
@@ -1767,6 +1813,10 @@ public class CompatibilityController : ControllerBase
             secondary_color = GetConfigString(configEntries, "branding.secondary_color", "#a855f7"),
             secondaryColor = GetConfigString(configEntries, "branding.secondary_color", "#a855f7"),
             og_image_url = GetConfigString(configEntries, "branding.og_image_url"),
+
+            // 🔴 Added 2026-08-16: Laravel sends this and the client uses it to
+            // decide how to render the header mark. "wide" is Laravel's value.
+            logo_shape = GetConfigString(configEntries, "branding.logo_shape", "wide"),
         };
 
         // Build contact info
@@ -1798,6 +1848,15 @@ public class CompatibilityController : ControllerBase
             name = tenant.Name,
             slug = tenant.Slug,
             tagline = tenant.Tagline,
+
+            // 🔴 Added 2026-08-16, all absent while Laravel has always sent
+            // them. currency drives every price and time-credit figure the client
+            // renders; supported_languages drives the language switcher, so an
+            // absent list leaves a member no way to change language at all.
+            currency = GetConfigString(configEntries, "settings.currency", "EUR"),
+            default_layout = GetConfigString(configEntries, "settings.default_layout", "modern"),
+            default_language = GetConfigString(configEntries, "settings.default_language", "en"),
+            supported_languages = SupportedLanguages,
             features,
             modules,
             branding,
@@ -1834,6 +1893,9 @@ public class CompatibilityController : ControllerBase
             bootstrap.categories,
             bootstrap.config,
             bootstrap.settings,
+
+            // 🔴 meta.base_url is part of Laravel's envelope and was missing.
+            meta = new { base_url = $"{Request.Scheme}://{Request.Host}" },
         });
     }
 
