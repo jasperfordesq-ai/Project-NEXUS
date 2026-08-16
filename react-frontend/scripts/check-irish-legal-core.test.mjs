@@ -133,3 +133,31 @@ test('Irish Legal hub and version history preserve policy and revision meaning',
   assert.equal(irish.version_history.changes_count_one, '{{count}} athrú');
   assert.equal(irish.version_history.changes_count_many, '{{count}} athrú');
 });
+
+test('Irish platform-provider Legal documents have complete translated coverage', () => {
+  for (const section of ['platform', 'platform_disclaimer', 'platform_privacy', 'platform_terms']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+
+    for (const [path, englishValue] of englishFlat) {
+      assert.ok(irishFlat.has(path), `Missing Irish Legal ${section} key: ${path}`);
+      assert.notEqual(irishFlat.get(path), englishValue, `${section}.${path}`);
+    }
+
+    for (const [path, value] of irishFlat) {
+      assert.equal(value, value.trim(), `Whitespace defect: ${section}.${path}`);
+      assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: ${section}.${path}`);
+    }
+  }
+});
+
+test('Irish platform-provider Legal documents preserve authority and policy boundaries', () => {
+  assert.match(irish.platform.provider_notice_body, /ar leith ó aon téarmaí.*\{\{tenant\}\}/u);
+  assert.match(irish.platform.authoritative_notice_body, /is é an téacs Béarla atá i réim/u);
+  assert.match(irish.platform.cta_body, /faoi bheartais do phobail/u);
+  assert.equal(irish.platform_disclaimer.sections['no-advice'], 'Gan Comhairle Dlí, Airgeadais ná Rialála');
+  assert.equal(irish.platform_privacy.sections['controller-processor'], 'Rialaitheoir Sonraí agus Próiseálaí Sonraí');
+  assert.equal(irish.platform_privacy.sections['your-rights'], 'Do Chearta faoi RGCS');
+  assert.equal(irish.platform_terms.sections['operator-responsibilities'], 'Freagrachtaí an Oibreora');
+  assert.equal(irish.platform_terms.sections['governing-law'], 'An Dlí is Infheidhme');
+});
