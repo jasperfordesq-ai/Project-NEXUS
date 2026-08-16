@@ -2337,11 +2337,15 @@ public class CompatibilityAliasController : ControllerBase
     // money_donations — so a member's donation never reached staff, and the
     // member never saw it again either.
 
-    /// POST /api/volunteering/expenses — Submit expense.
-    /// </summary>
-    [HttpPost("api/volunteering/expenses")]
-    public async Task<IActionResult> SubmitExpense([FromBody] object? request = null) =>
-        await PersistVolunteerCompatibilityRecord(VolunteerExpenseKeyPrefix, "volunteer_expense", request, "Expense submitted");
+    // 🔴 POST /api/volunteering/expenses moved to
+    // VolunteerExpenseSubmissionController on 2026-08-16. It wrote the claim as
+    // an opaque blob into tenant config under "compat:vol-expense:" while the
+    // expense LIST already read the real volunteer_expenses store — so a
+    // volunteer submitted a claim, was told it was submitted, and neither they
+    // nor a reviewer ever saw it. It could not have worked anyway: it took
+    // [FromBody] object? while the screen sends multipart form data with a
+    // receipt file, so the body never bound.
+
 
     /// <summary>
     /// POST /api/volunteering/hours — Log volunteering hours.

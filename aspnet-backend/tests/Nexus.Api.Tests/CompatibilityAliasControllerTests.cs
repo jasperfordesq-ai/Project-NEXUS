@@ -652,7 +652,6 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         (string Url, object Body)[] metadataPosts =
         {
             ("/api/volunteering/certificates", new { name = "Safeguarding cert" }),
-            ("/api/volunteering/expenses", new { amount = 4.25m, category = "travel" }),
             ("/api/volunteering/training", new { course = "First aid" }),
             ("/api/volunteering/wellbeing/checkin", new { mood = "ok" })
         };
@@ -686,7 +685,10 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         // on 2026-08-16 (R-27) — the store the admin donations screen already
         // read, so a member's donation now reaches staff instead of landing in
         // a blob nobody read. Covered by VolunteerDonationsTests.
-        db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-expense:")).Should().BeTrue();
+        // 🔴 Expense submission moved onto the real volunteer_expenses store on
+        // 2026-08-16 — the store its own LIST already read. This asserted the
+        // config blob existed, defending a claim that reached neither the
+        // volunteer nor a reviewer. Covered by VolunteerExpenseSubmissionTests.
         // 🔴 Incidents moved out of the config-blob store into
         // vol_safeguarding_incidents on 2026-08-16 (R-27). This used to assert
         // the blob existed — pinning a write that no member or admin surface
