@@ -71,6 +71,7 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
     'safeguarding_reports.submit.form.evidence_placeholder',
     'salary.currency_eur',
     'salary_display',
+    'verein_import.csv_placeholder',
     'verein_dues.unnamed_verein',
     'verein_federation.char_count',
     'verein_federation.char_count_one',
@@ -97,6 +98,11 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /Baill á luchtú|Pobal á luchtú|Luchtaigh|e\.g\.,/u);
   assert.doesNotMatch(allIrish, /Ualach cúramóra ard:\{\{hours\}\}uaireanta|Soláthraí ríomhphoist ag\{\{email\}\}/u);
   assert.doesNotMatch(allIrish, /\{\{count\}\}(?:nóiméad|uair an chloig|lá|m ó shin|h ó shin|d ó shin|Freagra)/u);
+  assert.doesNotMatch(allIrish, /The hub is only visible|Is cás le do chomharsana|cuideachta amháin|chothromaíocht folláin/u);
+  assert.doesNotMatch(allIrish, /fógraí push|Sliotáin Bhailithe|bailiú in áit|tapú amháin|in trí thapú/u);
+  assert.doesNotMatch(allIrish, /sreabhadh bordála|bhformhór na ngrúpaí|painéal admin|Chuinneog chúntóra|Líon coise/u);
+  assert.doesNotMatch(allIrish, /hooks gréasáin|comharthaí bearer|críochphointí scóipithe|comhpháirtithe GBM/u);
+  assert.doesNotMatch(allIrish, /Sliotán Bailithe|sliotán bailithe|Triail [Aa]rís|Líon coise|buicéadaithe|Uimh dleachtanna/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -104,6 +110,14 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.user_fallback, 'Úsáideoir');
   assert.equal(irish.theme_picker.title, 'Cuma');
   assert.equal(irish.biometric.label_passkey, 'Paseochair');
+  assert.equal(irish.verein_import.csv_placeholder, english.verein_import.csv_placeholder);
+  assert.equal(irish.future_care_fund.reciprocity.balanced, 'Tá cothromaíocht mhaith idir an méid a thug tú agus an méid a fuair tú.');
+  assert.match(irish.caring_community.modules.subtitle, /tacaíocht chúraim/u);
+  assert.match(irish.future_care_fund.intro, /comhluadair/u);
+  assert.match(irish.regional_analytics.feature_footfall_title, /cuairteanna/u);
+  assert.match(irish.caring_workflow.predictive.helper_churn, /Cúntóirí caillte/u);
+  assert.equal(irish.marketplace.pickup.slots_title, 'Tráthanna Bailithe');
+  assert.equal(irish.verein_dues.badge_none, 'Gan táillí');
   assert.match(irish.biometric.platform_windows_step1, /paseochair/u);
   assert.doesNotMatch(irish.biometric.platform_windows_step1, /pasfhocal/u);
 });

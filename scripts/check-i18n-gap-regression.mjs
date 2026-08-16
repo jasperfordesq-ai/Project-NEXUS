@@ -75,6 +75,9 @@ const NO_TRANSLATE_VALUES = new Set([
   // RFC 5545 recurrence-rule field marker. Translating this token produces a
   // misleading protocol example rather than localized user-facing prose.
   'RRULE:...',
+  // Machine-readable CSV import header and example. Translating field names or
+  // the enum value makes the example fail when pasted into the importer.
+  'email,first_name,last_name,phone,role\nalice@example.org,Alice,Smith,+1 555 123 4567,member',
   // Robots meta directives: literal values a crawler parses, not prose.
   'Noindex Nofollow',
   'Index Follow',

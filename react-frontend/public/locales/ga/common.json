@@ -266,7 +266,7 @@
     "close": "Dún",
     "clear_input": "Glan an t-ionchur",
     "scroll_to_top": "Scrollaigh go barr",
-    "breadcrumb": "Lorg Aráin"
+    "breadcrumb": "Conair leathanaigh"
   },
   "cookie_consent": {
     "banner_label": "Toiliú fianán",
@@ -350,7 +350,7 @@
     "quick_filters": "Scagairí ball",
     "all": "Gach Ball",
     "new": "Baill Nua",
-    "active": "Is Gníomhaí",
+    "active": "Is gníomhaí",
     "showing": "Ag taispeáint {{shown}} as {{total}} ball",
     "search_placeholder": "Cuardaigh baill...",
     "near_me": "In aice liom",
@@ -362,12 +362,12 @@
     "radius_label": "Ga",
     "sort_communityrank": "Rang Pobail",
     "sort_name": "Ainm",
-    "sort_newest": "Is Nuaí",
-    "sort_rated": "Rátáilte is Airde",
-    "sort_active": "Is Gníomhaí",
+    "sort_newest": "Is nuaí",
+    "sort_rated": "An rátáil is airde",
+    "sort_active": "Is gníomhaí",
     "sort_by": "Sórtáil de réir",
     "unable_to_load": "Ní Féidir Baill a Lódáil",
-    "try_again": "Triail Arís",
+    "try_again": "Bain triail eile as",
     "no_members": "Gan baill le fáil",
     "no_members_search": "Bain triail as téarma cuardaigh eile",
     "no_members_community": "Gan baill sa phobal seo fós",
@@ -543,7 +543,7 @@
     },
     "modules": {
       "title": "Cumas nasctha",
-      "subtitle": "The hub is only visible when the Caring Community switch is enabled.",
+      "subtitle": "Déan iniúchadh ar na seirbhísí agus na spásanna pobail a bhaineann le tacaíocht chúraim.",
       "open": "Oscail",
       "timebank": {
         "title": "Banc ama",
@@ -614,7 +614,7 @@
       "title": "Iarr cabhair",
       "description": "Iarr tacaíocht ó do phobal"
     },
-    "subtitle": "Is cás le do chomharsana thú. Inis dúinn cad atá uait agus déanfaimid ár ndícheall cabhrú.",
+    "subtitle": "Tá cúram ag do chomharsana ort. Inis dúinn cad atá uait agus déanfaimid ár ndícheall cabhrú.",
     "on_behalf_notice": "Tá an t-iarratas seo á chruthú agat do dhuine a thacaíonn tú leis mar chúramóir.",
     "form": {
       "what_label": "Cén cineál cabhrach atá uait?",
@@ -646,7 +646,7 @@
       "stop": "Stop an taifeadadh",
       "recording": "Á thaifeadadh... {{seconds}}s",
       "processing": "Ag éisteacht...",
-      "filled_hint": "Líon muid an fhoirm ó do thaifeadadh. Athbhreithnigh roimh seoladh le do thoil.",
+      "filled_hint": "Líonamar an fhoirm ó do thaifeadadh. Déan athbhreithniú uirthi sula seolann tú í.",
       "transcript_label": "An méid a chuala muid"
     },
     "back": "Ar ais go dtí an Mol Pobail"
@@ -657,7 +657,7 @@
       "description": "Bronn na huaireanta atá curtha i dtaisce agat ar bhall pobail eile"
     },
     "title": "Bronn do chuid uaireanta",
-    "subtitle": "Is féidir uaireanta sa taisce a bhronnadh ar an teaghlach, ar chairde nó ar dhuine ar bith a theastaíonn uathu.",
+    "subtitle": "Is féidir uaireanta atá curtha i dtaisce a bhronnadh ar do theaghlach, ar chairde nó ar aon duine a bhfuil gá acu leo.",
     "tabs": {
       "send": "Seol",
       "inbox": "Bosca isteach",
@@ -705,13 +705,13 @@
     },
     "errors": {
       "insufficient_balance": "Níl uaireanta go leor i do sparán.",
-      "send_failed": "Níorbh fhéidir an bronntanas a sheoladh. Triail arís."
+      "send_failed": "Níorbh fhéidir an bronntanas a sheoladh. Bain triail eile as."
     },
     "back": "Ar ais chuig an Mol Pobail"
   },
   "inter_gen": {
     "badge": "Idirghlúine",
-    "tooltip": "Trasnaíonn an caidreamh tacaíochta seo glúine — sainmharc ar mhúnla Caring Community."
+    "tooltip": "Cuimsíonn an caidreamh tacaíochta seo níos mó ná glúin amháin — saintréith de shamhail Caring Community."
   },
   "hour_transfer": {
     "meta": {
@@ -753,7 +753,7 @@
     "disclaimer": "Bainfear uaireanta de do sparán anseo nuair a fhaomhann riarthóir é. Beidh siad le feiceáil i do sparán ag an gcomharchumann ceann scríbe nuair a fhaightear iad.",
     "back": "Ar ais chuig an Mol Pobail",
     "errors": {
-      "submit_failed": "Níorbh fhéidir an t-aistriú a iarraidh. Triail arís.",
+      "submit_failed": "Níorbh fhéidir an t-aistriú a iarraidh. Bain triail eile as.",
       "destination_not_found": "Níorbh fhéidir an comharchumann ceann scríbe sin a aimsiú.",
       "no_matching_email": "Níl do ríomhphost cláraithe ag an gcomharchumann ceann scríbe — cláraigh ansin ar dtús.",
       "insufficient_hours": "Níl go leor uaireanta curtha i dtaisce agat."
@@ -809,7 +809,7 @@
     },
     "title": "Do Chiste Cúraim sa Todhchaí",
     "subhead": "Luach thart ar CHF {{value}} — cúram ar féidir leat glaoch air nuair a theastaíonn sé",
-    "intro": "Ní hé seo uaireanta amháin. Is é an cúram a chuir tú i dtaisce i do phobal — le tarraingt air do shiopadóireacht, do choinní dochtúra, nó cuideachta amháin nuair a bheidh sé uait.",
+    "intro": "Ní uaireanta amháin iad seo. Is é seo an cúram atá curtha i dtaisce agat i do phobal — le húsáid le haghaidh siopadóireachta, coinne dochtúra nó comhluadair nuair a bheidh sé uait.",
     "hours_short": "uair",
     "stats": {
       "lifetime_given": "Iomlán Tugtha",
@@ -824,7 +824,7 @@
       "given_label": "Tugtha",
       "received_label": "Faighte",
       "strong_giver": "Thug tú i bhfad níos mó ná mar a fuair tú — tá do chiste don todhchaí láidir.",
-      "balanced": "Tá do chothromaíocht folláin.",
+      "balanced": "Tá cothromaíocht mhaith idir an méid a thug tú agus an méid a fuair tú.",
       "strong_receiver": "Fuair tú go fial — nuair atá tú réidh, tabhair ar ais do do phobal."
     },
     "by_year": {
@@ -868,7 +868,7 @@
   "loading": "Á Lódáil...",
   "go_back": "Téigh ar ais",
   "feature_error": {
-    "load_failed": "Ní rabhamar in ann {{feature}} a lódáil. D'fhéadfadh an chuid seo a bheith neamh-infhaighte go sealadach."
+    "load_failed": "Níorbh fhéidir linn {{feature}} a lódáil. Seans nach mbeidh an chuid seo ar fáil go ceann tamaill."
   },
   "aria": {
     "view_mode": "Mód amhairc",
@@ -1163,7 +1163,7 @@
       "body": "Níor liostaíodh aon chlub ná cumann fós."
     },
     "errors": {
-      "load_failed": "Níorbh fhéidir clubanna a lódáil. Triail arís."
+      "load_failed": "Níorbh fhéidir clubanna a lódáil. Bain triail eile as."
     },
     "member_count_one": "{{count}} ball",
     "member_count_other": "{{count}} ball",
@@ -1260,8 +1260,8 @@
       "count_two": "{{count}} easpórtáil"
     },
     "errors": {
-      "rate_limit": "Is féidir leat 5 easpórtáil sa lá a iarraidh. Triail arís amárach.",
-      "build_failed": "Níorbh fhéidir do chartlann a thógáil. Triail arís nó déan teagmháil leis an tacaíocht."
+      "rate_limit": "Is féidir leat cúig easpórtáil sa lá a iarraidh. Bain triail eile as amárach.",
+      "build_failed": "Níorbh fhéidir do chartlann a chruthú. Bain triail eile as nó déan teagmháil leis an bhfoireann tacaíochta."
     }
   },
   "safeguarding_reports": {
@@ -1375,13 +1375,13 @@
       "body": "Cruthaigh do chéad fheachtas chun do phobal áitiúil a bhaint amach."
     },
     "errors": {
-      "load_failed": "Níorbh fhéidir feachtais a lódáil. Triail arís.",
-      "create_failed": "Níorbh fhéidir an feachtas a chruthú. Triail arís."
+      "load_failed": "Níorbh fhéidir feachtais a lódáil. Bain triail eile as.",
+      "create_failed": "Níorbh fhéidir an feachtas a chruthú. Bain triail eile as."
     },
     "page_title": "Mo Fheachtais Fógraíochta",
     "page_subtitle": "Cruthaigh agus bainistigh do chuid feachtas fógraíochta áitiúla.",
     "create_campaign": "Cruthaigh feachtas",
-    "load_error": "Níorbh fhéidir feachtais a lódáil. Triail arís.",
+    "load_error": "Níorbh fhéidir feachtais a lódáil. Bain triail eile as.",
     "retry": "Bain triail eile as",
     "create_first": "Cruthaigh do chéad fheachtas",
     "col_name": "Ainm",
@@ -1413,17 +1413,17 @@
     "table_aria": "Feachtais fógraíochta",
     "validation_required": "Líon isteach na réimsí riachtanacha go léir, le do thoil.",
     "created_success": "Feachtas cruthaithe go rathúil.",
-    "create_error": "Níorbh fhéidir an feachtas a chruthú. Triail arís.",
+    "create_error": "Níorbh fhéidir an feachtas a chruthú. Bain triail eile as.",
     "submit_create": "Cruthaigh feachtas",
     "feature_disabled": "Níl fógraíocht áitiúil ar fáil do do chuntas."
   },
   "push_campaign": {
     "meta": {
-      "title": "Mo Fheachtais Push",
-      "description": "Cruthaigh agus bainistigh feachtais íoctha fógraí push"
+    "title": "Mo Fheachtais Brúfhógraí",
+      "description": "Cruthaigh agus bainistigh feachtais íoctha brúfhógraí"
     },
-    "subtitle": "Seol fógraí push spriocdhírithe go díreach chuig baill an phobail.",
-    "create": "Feachtas push nua",
+    "subtitle": "Seol brúfhógraí spriocdhírithe go díreach chuig baill an phobail.",
+    "create": "Feachtas nua brúfhógraí",
     "form": {
       "name_label": "Ainm an fheachtais",
       "title_label": "Teideal an fhógra",
@@ -1449,20 +1449,20 @@
       "cancelled": "Cealaithe"
     },
     "empty": {
-      "title": "Aon fheachtas push fós",
-      "body": "Cruthaigh do chéad fheachtas push chun teagmháil a dhéanamh le baill an phobail a roghnaigh isteach."
+      "title": "Níl aon fheachtas brúfhógraí ann fós",
+      "body": "Cruthaigh do chéad fheachtas brúfhógraí chun dul i dteagmháil le baill an phobail a roghnaigh iad a fháil."
     },
     "errors": {
       "load_failed": "Níorbh fhéidir na feachtais a lódáil. Bain triail eile as.",
       "create_failed": "Níorbh fhéidir an feachtas a chruthú. Bain triail eile as.",
       "estimate_failed": "Níorbh fhéidir an lucht féachana a mheas."
     },
-    "page_title": "Mo Fheachtais Push",
-    "page_subtitle": "Seol fógraí push spriocdhírithe chuig baill an phobail a roghnaigh isteach.",
-    "create_campaign": "Feachtas push nua",
+    "page_title": "Mo Fheachtais Brúfhógraí",
+    "page_subtitle": "Seol brúfhógraí spriocdhírithe chuig baill an phobail a roghnaigh iad a fháil.",
+    "create_campaign": "Feachtas nua brúfhógraí",
     "load_error": "Níorbh fhéidir na feachtais a lódáil. Bain triail eile as.",
     "retry": "Bain triail eile as",
-    "create_first": "Cruthaigh do chéad fheachtas push",
+    "create_first": "Cruthaigh do chéad fheachtas brúfhógraí",
     "table_aria": "Feachtais brúfhógraí",
     "col_name": "Ainm",
     "col_title": "Teideal an fhógra",
@@ -1484,10 +1484,10 @@
     "field_name_placeholder": "m.sh. Foláireamh imeachta samhraidh",
     "field_title": "Teideal an fhógra",
     "field_title_placeholder": "m.sh. Tairiscint speisialta an deireadh seachtaine seo!",
-    "field_title_desc": "Ceannlíne ghearr a thaispeántar san fhógra push.",
+    "field_title_desc": "Ceannlíne ghearr a thaispeántar sa bhrúfhógra.",
     "field_body": "Teachtaireacht",
     "field_body_placeholder": "m.sh. Tar isteach chugainn an Satharn seo le haghaidh lascaine 20% ar gach seirbhís.",
-    "field_body_desc": "Príomhthéacs an fhógra push.",
+    "field_body_desc": "Príomhthéacs an bhrúfhógra.",
     "field_schedule_at": "Sceideal am seolta (roghnach)",
     "field_schedule_at_desc": "Fág bán chun seoladh láithreach tar éis cheadaithe.",
     "field_radius": "Ga an lucht féachana (roghnach)",
@@ -1499,18 +1499,18 @@
     "estimate_result": "Raon measta: {{count}} ball",
     "estimate_error": "Níorbh fhéidir an lucht féachana a mheas. Bain triail eile as.",
     "validation_required": "Líon isteach ainm, teideal agus teachtaireacht le do thoil.",
-    "created_success": "Feachtas push cruthaithe go rathúil.",
-    "create_error": "Níorbh fhéidir an feachtas push a chruthú. Bain triail eile as.",
+    "created_success": "Cruthaíodh an feachtas brúfhógraí.",
+    "create_error": "Níorbh fhéidir an feachtas brúfhógraí a chruthú. Bain triail eile as.",
     "submit_create": "Cruthaigh feachtas",
-    "feature_disabled": "Níl feachtais push ar fáil do do chuntas.",
+    "feature_disabled": "Níl feachtais brúfhógraí ar fáil do do chuntas.",
     "estimate_result_one": "Raon measta: {{count}} ball",
     "estimate_result_other": "Raon measta: {{count}} ball",
     "estimate_result_few": "Raon measta: {{count}} ball",
     "estimate_result_many": "Raon measta: {{count}} ball",
     "estimate_result_two": "Raon measta: {{count}} ball"
   },
-  "push_campaign_opt_in": "Faigh fógraí push á gcur chun cinn",
-  "push_campaign_opt_in_description": "Lig do ghnólachtaí agus d'eagraíochtaí áitiúla fógraí push spriocdhírithe a sheoladh chugat. Is féidir leat éirí as am ar bith.",
+  "push_campaign_opt_in": "Faigh brúfhógraí bolscaireachta",
+  "push_campaign_opt_in_description": "Lig do ghnólachtaí agus d'eagraíochtaí áitiúla brúfhógraí spriocdhírithe a sheoladh chugat. Is féidir leat diúltú dóibh am ar bith.",
   "coupon": {
     "page_title": "Cúpóin Lascaine",
     "meta_description": "Brabhsáil cúpóin ghníomhacha an phobail, lascainí ceannaithe agus tairiscintí áitiúla atá ar fáil i do cheantar.",
@@ -1526,7 +1526,7 @@
     "use_online": "Úsáid ar líne",
     "redeem_in_store": "Fuascail sa siopa",
     "show_qr": "Taispeáin cód QR",
-    "qr_expires_in": "Téann QR in éag i",
+    "qr_expires_in": "Téann an cód QR in éag i gceann",
     "code_copied": "Cód an chúpóin cóipeáilte",
     "copy_code": "Cóipeáil cód",
     "no_coupons": "Níl aon chúpón gníomhach ar fáil",
@@ -1644,7 +1644,7 @@
     "csv_format": "Líne ceanntáisc riachtanach: email,first_name,last_name,phone,role",
     "file_label": "Comhad CSV",
     "csv_label": "Nó greamaigh CSV",
-    "csv_placeholder": "ríomhphost, first_name, last_name, phone, role\nalice@example.org,Alice,Smith,+1 555 123 4567, ball",
+    "csv_placeholder": "email,first_name,last_name,phone,role\nalice@example.org,Alice,Smith,+1 555 123 4567,member",
     "preview": "Réamhamharc",
     "confirm": "Iompórtáil baill",
     "success": "Iompórtáil críochnaithe: {{created}} cruthaithe, {{linked}} nasctha",
@@ -1708,7 +1708,7 @@
     "return_success_body": "Tá do shíntiús gníomhach anois.",
     "return_success_with_tier": "Tá tú liostáilte anois le {{tier}}.",
     "return_cancelled_title": "Íocaíocht curtha ar ceal",
-    "return_cancelled_body": "Is féidir leat triail eile a bhaint nuair atá tú réidh.",
+    "return_cancelled_body": "Is féidir leat triail eile a bhaint as nuair a bheidh tú réidh.",
     "back_to_pricing": "Ar ais go dtí na praghsanna",
     "return_timeout_title": "Á phróiseáil fós…",
     "return_timeout_body": "Tá d'íocaíocht á próiseáil. Seans go nglacfaidh sé soicind nó dhó sula bhfeicfear an síntiús.",
@@ -1755,12 +1755,12 @@
   },
   "developers": {
     "page_title": "Forbróirí",
-    "meta_description": "Déan iniúchadh ar API Comhpháirtí Project NEXUS le haghaidh fíordheimhniú OAuth2, críochphointí scóipithe, hooks gréasáin sínithe agus rochtain comhtháthaithe.",
+    "meta_description": "Déan iniúchadh ar API Comhpháirtí Project NEXUS le haghaidh fíordheimhniú OAuth2, críochphointí le raon feidhme, crúcaí gréasáin sínithe agus rochtain chomhtháthaithe.",
     "auth_meta_title": "Fíordheimhniú API",
     "endpoints_meta_title": "Críochphointí API",
-    "webhooks_meta_title": "Webhooks API",
+    "webhooks_meta_title": "API na gCrúcaí Gréasáin",
     "hero_title": "Tóg le NEXUS",
-    "hero_subtitle": "API REST roghnaithe do chomhpháirtithe baincéireachta, íocaíochta agus riaracháin bardasaí. OAuth2 Client Credentials, webhooks sínithe agus bosca gainimh ar féidir leat dul i dteagmháil leis i gcúig nóiméad.",
+    "hero_subtitle": "API REST coimeádta do chomhpháirtithe baincéireachta, íocaíochta agus riaracháin bhardasaigh. Dintiúir cliaint OAuth2, crúcaí gréasáin sínithe agus timpeallacht tástála is féidir a úsáid laistigh de chúig nóiméad.",
     "request_access_cta": "Iarr rochtain",
     "request_access_body": "Cuireann riarthóir do phobail rochtain Partner API ar fáil. Téigh i dteagmháil leis chun péire client_id / client_secret a fháil.",
     "nav": {
@@ -1770,14 +1770,14 @@
       "webhooks": "Crúcaí gréasáin"
     },
     "feature_oauth_title": "OAuth2 Client Credentials",
-    "feature_oauth_body": "Fíordheimhniú freastalaí-go-freastalaí. Comharthaí bearer gearrshaolacha, scóp in aghaidh an chomhpháirtí.",
+    "feature_oauth_body": "Fíordheimhniú idir freastalaithe. Comharthaí iompróra gearrshaolacha a bhfuil raon feidhme ar leith acu do gach comhpháirtí.",
     "feature_curated_title": "Sraith roghnaithe críochphointí",
-    "feature_curated_body": "Gach a bhfuil de dhíth go fírinneach ar bhainc agus ar chórais riaracháin: úsáideoirí, liostuithe, sparán, comhiomláin.",
-    "feature_webhooks_title": "Webhooks sínithe",
+    "feature_curated_body": "Na sonraí amháin a theastaíonn ó bhainc agus ó chórais riaracháin: úsáideoirí, liostuithe, sparán agus comhiomláin.",
+    "feature_webhooks_title": "Crúcaí gréasáin sínithe",
     "feature_webhooks_body": "Sínithe HMAC-SHA256, athruithe uathoibríocha, sláinte seachadta i do dheais.",
     "feature_rate_limit_title": "Teorainneacha ráta in aghaidh an chomhpháirtí",
     "feature_rate_limit_body": "Cuótaí in aghaidh an nóiméid in-chumraithe. Áirítear Retry-After le freagraí 429.",
-    "auth_intro": "Malartaigh do dhintiúir cliaint le haghaidh comhartha bearer gearrshaolach, agus cuir leis gach iarratas é mar Authorization: Bearer <token>.",
+    "auth_intro": "Malartaigh do dhintiúir cliaint ar chomhartha iompróra gearrshaolach agus cuir le gach iarratas é mar Authorization: Bearer <token>.",
     "auth_step1_title": "1. Faigh dintiúir cliaint",
     "auth_step1_body": "Soláthraíonn riarthóir do phobail client_id agus client_secret sa chonsól riaracháin. Ní thaispeántar an rún ach uair amháin ag am cruthaithe.",
     "auth_step2_title": "2. Malartaigh ar chomhartha",
@@ -1795,14 +1795,14 @@
     "endpoint_descriptions": {
       "oauth_token": "Malartaigh dintiúir cliaint ar chomhartha iompróra (deonú client_credentials).",
       "oauth_revoke": "Cúlghair comhartha iompróra eisithe (RFC 7009).",
-      "users_list": "Liostáil baill ghníomhacha. Cuir an scóip users.pii leis chun ríomhphost a fháil.",
+      "users_list": "Liostaigh baill ghníomhacha. Cuir an raon feidhme users.pii leis chun seoltaí ríomhphoist a fháil.",
       "users_detail": "Faigh ball amháin de réir ID.",
       "listings_list": "Liostáil liostálacha gníomhacha (seirbhísí agus iarratais).",
       "wallet_balance": "Léigh iarmhéid creidmheasa ama ball in uaireanta.",
-      "wallet_credit": "Creidmheasaigh uaireanta ama ó aistriú bainc socraithe. Comhlacht: user_id, hours, reference, note?",
-      "aggregates_community": "Iomláin phobail bhuicéadaithe (gan PII). Úsáideach do dheaisbhoird chomhpháirtithe.",
-      "webhooks_list": "Liostáil do shíntiúis hooks gréasáin.",
-      "webhooks_create": "Liostáil le himeachtaí. Comhlacht: event_types[], target_url (https://)."
+      "wallet_credit": "Cuir uaireanta ama chun sochair tar éis aistriú bainc a bheith glanta. Corp an iarratais: user_id, hours, reference, note?",
+      "aggregates_community": "Iomláin phobail de réir raoin (gan PII). Úsáideach do dheaiseanna comhpháirtithe.",
+      "webhooks_list": "Liostaigh do shíntiúis crúcaí gréasáin.",
+      "webhooks_create": "Liostáil le himeachtaí. Corp an iarratais: event_types[], target_url (https://)."
     },
     "webhooks_intro": "Liostáil le himeachtaí trí URLanna aisghlaonna HTTPS. Áirítear ceanntásc X-Partner-Signature le gach seachadadh — HMAC-SHA256 den chorp amh, sínithe le rún an tsíntiúis a fhilltear ag am cruthaithe.",
     "webhook_events_title": "Imeachtaí ar fáil",
@@ -1824,7 +1824,7 @@
     "contact_subject": "Anailísíocht Réigiúnach - Fiosrúchán comhpháirtíochta",
     "privacy_badge": "Príobháideacht - ar dtús trí dhearadh",
     "hero_title": "Tuig do réigiún. Gan cur isteach ar phríobháideachas.",
-    "hero_subtitle": "Táirge anailíse íoctha do bhardas agus do chomhpháirtithe GBM. Comhiomláin buicéad, teascáin faoi chois faoi N=10, gan aon sonraí aonair riamh.",
+    "hero_subtitle": "Táirge anailíse íoctha do bhardais agus do chomhpháirtithe fiontair bheaga agus mheánmhéide. Comhiomláin de réir raoin, teascáin faoi chois faoi bhun N=10 agus gan aon sonraí faoi dhaoine aonair.",
     "cta_request_access": "Iarr rochtain",
     "cta_learn_more": "Foghlaim níos mó",
     "features_heading": "Cad atá san áireamh",
@@ -1834,11 +1834,11 @@
     "feature_demand_supply_body": "Féach an áit a dtagann tairiscintí agus iarratais le chéile de réir cód poist 3 dhigit agus de réir catagóire, le ráta meaitseála príobháideachta.",
     "feature_demographics_title": "Déimeagrafaic",
     "feature_demographics_body": "Dáileadh aoise agus inscne, faoi chois faoi bhun N=10 - foirfe d'iarratais ar dheontais agus tuairisciú tionchair.",
-    "feature_footfall_title": "Líon coise",
-    "feature_footfall_body": "Treochtaí amharc leathanaigh gan ainm ar fud réimsí poiblí an ardáin - tomhais aird, ní céannacht.",
+    "feature_footfall_title": "Líon cuairteanna",
+    "feature_footfall_body": "Treochtaí anaithnidithe ar líon na n-amharc ar leathanaigh phoiblí an ardáin — tomhais aird, ní céannacht.",
     "pricing_heading": "Praghsanna simplí, trédhearcach",
     "tier_cta": "Iarr ceanglófar",
-    "privacy_footer": "Tá gach méadracht buicéadaithe agus gan ainm. Cuirtear deighleoga ar a bhfuil N<10 faoi chois. Ní nochtaimid úsáideoirí aonair, ainmneacha nó seoltaí do chomhpháirtithe riamh.",
+    "privacy_footer": "Déantar gach méadracht a ghrúpáil de réir raoin agus a anaithnidiú. Cuirtear teascáin ar a bhfuil N<10 faoi chois. Ní nochtaimid sonraí faoi úsáideoirí aonair, ainmneacha ná seoltaí do chomhpháirtithe riamh.",
     "tiers": {
       "basic": {
         "label": "Bunúsach",
@@ -1889,13 +1889,13 @@
     "reports_title": "Tuarascálacha míosúla",
     "no_reports": "Níor gineadh tuarascálacha go fóill.",
     "download_pdf": "Íoslódáil PDF",
-    "privacy_footer": "Tá gach méadracht buicéadaithe agus gan ainm. Cuirtear deighleoga le N<10 faoi chois.",
+    "privacy_footer": "Déantar gach méadracht a ghrúpáil de réir raoin agus a anaithnidiú. Cuirtear teascáin ar a bhfuil N<10 faoi chois.",
     "metric_active_members": "Baill ghníomhacha",
     "metric_categories": "Catagóirí",
     "metric_partner_orgs": "Eagraíochtaí comhpháirtithe",
     "metric_event_participation": "Rannpháirtíocht in imeachtaí",
     "metric_volunteer_hours": "Uaireanta deonacha",
-    "engagement_overview": "Forbhreathnú ar rannpháirtíocht (meánphointí buicéad)",
+    "engagement_overview": "Forbhreathnú ar rannpháirtíocht (lárphointí na raonta)",
     "ds_by_postcode": "Tairiscintí vs iarratais de réir cóid phoist (3 dhigit)",
     "no_data": "Níl aon sonraí ar fáil.",
     "offers": "Tairiscintí",
@@ -1935,7 +1935,7 @@
       "tenant_category": "Cineál pobail",
       "languages": "Teangacha",
       "default_language": "Príomhtheanga",
-      "expected_member_count_bucket": "Líon ball ag súil leis",
+      "expected_member_count_bucket": "Líon measta na mball",
       "intended_use": "Conas a úsáidfidh tú Project NEXUS?",
       "intended_use_placeholder": "Cur síos gairid ar spriocanna do phobail, an spriocphobal, agus aon eagraíochtaí comhpháirtíochta.",
       "captcha": "Seiceáil slándála"
@@ -2003,22 +2003,22 @@
   },
   "marketplace": {
     "pickup": {
-      "slots_title": "Sliotáin Bhailithe",
-      "slots_subtitle": "Tairg fuinneoga bailithe in áit do cheannaitheoirí.",
+      "slots_title": "Tráthanna Bailithe",
+      "slots_subtitle": "Tairg tréimhsí bailithe ar an láthair do cheannaitheoirí.",
       "scan_title": "Scanadh Bailithe",
       "scan_subtitle": "Cuir cód bailithe an cheannaitheora isteach chun an bailiú a dheimhniú.",
       "my_pickups_title": "Mo Bhailiúcháin",
       "my_pickups_subtitle": "Taispeáin an cód seo ag áit an díoltóra chun d'ordú a bhailiú.",
-      "no_slots": "Níl aon sliotán bailithe go fóill. Cruthaigh ceann chun bailiú in áit a chumasú.",
+      "no_slots": "Níl aon tráth bailithe ann fós. Cruthaigh ceann chun ceannach ar líne agus bailiú ar an láthair a chumasú.",
       "no_pickups": "Níl aon bhailiúcháin le teacht.",
-      "new_slot": "Sliotán Bailithe Nua",
+      "new_slot": "Tráth Bailithe Nua",
       "slot_start": "Tús",
       "slot_end": "Deireadh",
       "slot_times_required": "Tá amanna tosaithe agus deireanacha ag teastáil",
-      "slot_created": "Sliotán bailithe cruthaithe",
-      "slot_create_failed": "Theip ar an sliotán a chruthú",
-      "slot_deleted": "Sliotán scriosta",
-      "slot_delete_confirm": "An bhfuil fonn ort an sliotán bailithe seo a scriosadh? Ní féidir é seo a chealú.",
+      "slot_created": "Cruthaíodh an tráth bailithe",
+      "slot_create_failed": "Níorbh fhéidir an tráth bailithe a chruthú",
+      "slot_deleted": "Scriosadh an tráth bailithe",
+      "slot_delete_confirm": "An bhfuil fonn ort an tráth bailithe seo a scriosadh? Ní féidir é seo a chealú.",
       "capacity": "Acmhainn",
       "recurring": "Athfhillteach",
       "recurring_weekly": "Athchuir gach seachtain",
@@ -2035,8 +2035,8 @@
       "status_no_show": "Níor tháinig",
       "show_this_code": "Taispeáin an cód seo don díoltóir",
       "window": "Fuinneog bhailithe",
-      "choose_slot": "Roghnaigh sliotán bailithe",
-      "no_slot_selected": "Níl sliotán bailithe roghnaithe",
+      "choose_slot": "Roghnaigh tráth bailithe",
+      "no_slot_selected": "Níl aon tráth bailithe roghnaithe",
       "left": "fágtha"
     },
     "inventory": {
@@ -2077,7 +2077,7 @@
     "consent_title": "Toiliú cónaidhme",
     "consent_toggle_label": "Cónasc le cumainn eile inár mbardas",
     "consent_scope_label": "Cad atá le roinnt",
-    "scope_none": "Faic (cónaidhm as)",
+    "scope_none": "Gan aon rud (cónaidhm múchta)",
     "scope_events": "Imeachtaí amháin",
     "scope_members": "Cuirí ball amháin",
     "scope_both": "Imeachtaí agus cuirí ball",
@@ -2087,7 +2087,7 @@
     "consent_saved": "Sábháladh socruithe cónaidhme.",
     "consent_save_failed": "Níorbh fhéidir socruithe cónaidhme a shábháil.",
     "network_title": "Cumainn eile i do líonra",
-    "network_empty": "Níor roghnaigh aon chumann eile i do bhardas isteach fós.",
+    "network_empty": "Níor chláraigh aon chumann eile i do bhardas leis an líonra fós.",
     "network_column_name": "Cumann",
     "network_column_scope": "Roinnt",
     "network_column_municipality": "Bardas",
@@ -2223,8 +2223,8 @@
     "admin_filter_status": "Stádas",
     "admin_search": "Cuardaigh",
     "admin_generate": "Gin táillí do {{year}}",
-    "admin_generated": "Cruthaíodh {{generated}} táille nua, scipeáladh {{skipped}}.",
-    "admin_no_rows": "Aon taifid táillí fós.",
+    "admin_generated": "Cruthaíodh {{generated}} táille nua; fágadh {{skipped}} ar lár.",
+    "admin_no_rows": "Níl aon taifead táillí ann fós.",
     "admin_reminder_sent": "Meabhrúchán seolta.",
     "admin_bulk_reminder_sent": "Seoladh {{count}} meabhrúchán.",
     "admin_waive_title": "Tarscaoil táillí ballraíochta",
@@ -2253,7 +2253,7 @@
       "reminder_failed": "Níorbh fhéidir meabhrúchán a sheoladh.",
       "waive_failed": "Níorbh fhéidir táillí a tharscaoileadh."
     },
-    "badge_none": "Uimh dleachtanna",
+    "badge_none": "Gan táillí",
     "admin_bulk_reminder_sent_one": "Seoladh {{count}} meabhrúchán.",
     "admin_bulk_reminder_sent_other": "Seoladh {{count}} meabhrúchán.",
     "admin_overdue_count_one": "Tá táillí thar dáta ag {{count}} ball.",
@@ -2286,7 +2286,7 @@
     "public_title": "Bailiúcháin Phoiblí",
     "public_label": "Poiblí",
     "no_public": "Gan aon bhailiúchán poiblí",
-    "no_public_desc": "Níor chuir an ball seo aon bhailiúchán go poiblí.",
+    "no_public_desc": "Níor fhoilsigh an ball seo aon bhailiúchán.",
     "name_label": "Ainm",
     "description_label": "Cur síos (roghnach)",
     "make_public": "Déan poiblí",
@@ -2314,7 +2314,7 @@
     "load_error_title": "Níorbh fhéidir na buíochais a lódáil",
     "load_error_desc": "Chuaigh rud éigin amú agus na buíochais á lódáil. Bain triail eile as.",
     "retry": "Bain triail eile as",
-    "most_title": "Is mó buíochas",
+    "most_title": "An meas is mó",
     "most_empty": "Gan aon bhuíochas fós",
     "react_heart": "Croí",
     "react_clap": "Bualadh bos",
@@ -2331,12 +2331,12 @@
     "cta_sub": "Rochtain níos tapúla, oibríonn as líne",
     "cta_ios_sub": "Cuir NEXUS le do scáileán baile",
     "banner_title": "Suiteáil {{appName}} le haghaidh rochtana níos tapúla",
-    "banner_sub": "Suiteáil le tapú amháin — oibríonn as líne, gan stór aip ag teastáil.",
+    "banner_sub": "Suiteáil le tapáil amháin — oibríonn sé as líne agus ní theastaíonn siopa aipeanna.",
     "banner_sub_ios": "Cuir le do scáileán baile í — oibríonn as líne, gan stór aip ag teastáil.",
     "banner_aria": "Meirge suiteála aip",
     "banner_dismiss": "Dún an meirge suiteála",
     "ios_title": "Suiteáil ar do iPhone nó iPad",
-    "ios_intro": "Ní thacaíonn iOS le leideanna suiteála uathoibríocha, ach is féidir leat NEXUS a chur le do scáileán baile in trí thapú:",
+    "ios_intro": "Ní thacaíonn iOS le leideanna suiteála uathoibríocha, ach is féidir leat NEXUS a chur le do scáileán baile i dtrí thapáil:",
     "ios_step_1": "Tapaigh an",
     "ios_step_1_after": "cnaipe Comhroinn ag bun Safari.",
     "ios_step_2": "Scrollaigh síos agus tapaigh",
@@ -2395,7 +2395,7 @@
   "no_activity_title": "Níl aon ghníomhaíocht go fóill",
   "errors": {
     "connection_failed": "Ní féidir nascadh",
-    "connection_failed_detail": "Seiceáil do nasc idirlín agus triail arís.",
+    "connection_failed_detail": "Seiceáil do nasc idirlín agus bain triail eile as.",
     "unexpected": "Chuaigh rud éigin amú"
   },
   "actions": {
@@ -2456,7 +2456,7 @@
   "credentials": {
     "status_pending": "Athbhreithniú ar feitheamh",
     "status_verified": "Fíoraithe",
-    "status_expired": "imithe in éag",
+    "status_expired": "Imithe in éag",
     "status_rejected": "Diúltaithe"
   },
   "submit_error": "Níorbh fhéidir a chur isteach. Bain triail eile as.",
@@ -2529,7 +2529,7 @@
   },
   "required_error": "Freagair na ceisteanna riachtanacha go léir le do thoil.",
   "already_responded": "Tá páirt glactha agat cheana sa suirbhé seo.",
-  "time_ago_just_now": "Díreach anois",
+  "time_ago_just_now": "Anois díreach",
   "time_ago_hours_one": "{{count}}u ó shin",
   "time_ago_hours_other": "{{count}}u ó shin",
   "time_ago_days_one": "{{count}}l ó shin",
@@ -2550,7 +2550,7 @@
     "title": "Clúdach Cúram"
   },
   "viewer": {
-    "time_just_now": "Díreach anois",
+    "time_just_now": "Anois díreach",
     "time_minutes_ago_one": "{{count}}n ó shin",
     "time_minutes_ago_other": "{{count}}n ó shin",
     "time_hours_ago_one": "{{count}}u ó shin",
@@ -2670,7 +2670,7 @@
   "max_characters_one": "uas. {{count}} carachtar",
   "max_characters_other": "uas. {{count}} carachtar",
   "volunteering": {
-    "time_just_now": "Díreach anois",
+    "time_just_now": "Anois díreach",
     "time_minutes_ago_one": "{{count}} nóiméad ó shin",
     "time_minutes_ago_other": "{{count}} nóiméad ó shin",
     "time_hours_ago_one": "{{count}} uair an chloig ó shin",
@@ -2704,7 +2704,7 @@
   },
   "system": {
     "never": "Riamh",
-    "just_now": "Díreach anois",
+    "just_now": "Anois díreach",
     "minutes_ago_one": "{{count}}n ó shin",
     "minutes_ago_other": "{{count}}n ó shin",
     "hours_ago_one": "{{count}}u ó shin",
@@ -2780,7 +2780,7 @@
     "config_timezone": "Crios ama",
     "config_timezone_desc": "Aitheantóir crios ama IANA a úsáidtear le haghaidh sceidealaithe agus stampaí ama.",
     "config_footer_text": "Buntásc téacs dlíthiúil",
-    "config_footer_text_desc": "Uimhir charthanachta, clárú cuideachta, nó téacs dlíthiúil eile ar taispeáint sa bhuntásc.",
+    "config_footer_text_desc": "Uimhir charthanachta, uimhir chláraithe cuideachta nó téacs dlíthiúil eile a thaispeántar sa bhuntásc.",
     "config_locale": "locale réamhshocraithe",
     "config_locale_desc": "Teanga a úsáidtear do bhaill nua go dtí go roghnaíonn siad a gceann féin.",
     "config_group_registration": "Clárú & dul ar bord",
@@ -2793,8 +2793,8 @@
     "config_require_email_verification_desc": "Ní mór do chomhaltaí a seoladh ríomhphoist a fhíorú roimh rochtain a fháil ar an ardán.",
     "config_maintenance_mode": "Modh cothabhála",
     "config_maintenance_mode_desc": "Inléite amháin. Scoránaigh trí scripteanna/maintenance.sh ar an bhfreastalaí.",
-    "config_onboarding_enabled": "Taispeáin sreabhadh bordála",
-    "config_onboarding_enabled_desc": "Siúil baill nua tríd an bpróifíl agus socrú scileanna tar éis clárú.",
+    "config_onboarding_enabled": "Taispeáin an próiseas ionduchtaithe",
+    "config_onboarding_enabled_desc": "Treoraigh baill nua trí shocrú a bpróifíle agus a scileanna tar éis dóibh clárú.",
     "config_configure_steps": "Cumraigh céimeanna",
     "config_welcome_message": "Teachtaireacht fáilte",
     "config_welcome_message_desc": "Taispeántar do bhaill nua ar a gcéad síniú isteach.",
@@ -2814,7 +2814,7 @@
     "config_auto_approve_listings_desc": "Foilsigh liostaí nua láithreach seachas iad a choinneáil le haghaidh athbhreithniú modhnóra.",
     "config_auto_approve_blog": "Auto-cheadú blogphoist",
     "config_auto_approve_blog_desc": "Foilsigh blogphoist nua láithreach seachas iad a choinneáil le haghaidh athbhreithnithe modhnóra.",
-    "config_max_listing_images": "Uasmhéid íomhánna in aghaidh an liosta",
+    "config_max_listing_images": "Uaslíon íomhánna in aghaidh an liostaithe",
     "config_max_listing_images_desc": "Teorainn uasta ar ghrianghraif atá ceangailte le liostú amháin.",
     "config_profanity_filter": "Scagaire profanity",
     "config_profanity_filter_desc": "Cuir bac le haighneachtaí ina bhfuil focail ar liosta na n-ardán profanity.",
@@ -2822,7 +2822,7 @@
     "config_group_notifications_desc": "Bealaí seachadta réamhshocraithe le haghaidh cuntas nua agus deireadh achoimre.",
     "config_email_notifications_enabled": "Fógraí ríomhphoist cumasaithe",
     "config_email_notifications_enabled_desc": "Réamhshocrú do chuntais nua. Is féidir le baill a shárú ina socruithe féin.",
-    "config_push_notifications_enabled": "Cumasaíodh fógraí brúigh",
+    "config_push_notifications_enabled": "Brúfhógraí cumasaithe",
     "config_push_notifications_enabled_desc": "Réamhshocrú do chuntais nua. Is féidir le baill a shárú ina socruithe féin.",
     "config_digest_frequency": "Minicíocht Achoimre",
     "config_digest_frequency_desc": "Cé chomh minic a sheoltar an ríomhphost achoimre gníomhaíochta.",
@@ -2835,7 +2835,7 @@
     "config_max_listings_per_user": "Liostaí uasta in aghaidh an chomhalta",
     "config_max_listings_per_user_desc": "An chuid is mó de na liostaí is féidir le ball aonair a bheith gníomhach ag an am céanna. Socraigh ar 0 gan teorainn.",
     "config_max_groups_per_user": "Uasmhéid grúpaí in aghaidh an bhaill",
-    "config_max_groups_per_user_desc": "Is féidir le ball singil a bheith páirteach i bhformhór na ngrúpaí. Socraigh ar 0 gan teorainn.",
+    "config_max_groups_per_user_desc": "An líon is mó grúpaí ar féidir le ball amháin dul isteach iontu. Socraigh é ar 0 mura bhfuil teorainn le cur i bhfeidhm.",
     "config_max_file_upload_mb": "Uasmhéid uaslódála (MB)",
     "config_max_file_upload_mb_desc": "Teorainn méide in aghaidh an chomhaid. Diúltaítear comhaid níos mó ag an bhfreastalaí.",
     "validation_required": "Ag teastáil",
@@ -2857,7 +2857,7 @@
     "gdpr_sla_days_left_two": "{{count}} lá fágtha"
   },
   "crm": {
-    "just_now": "Díreach anois",
+    "just_now": "Anois díreach",
     "minutes_ago_one": "{{count}} nóiméad ó shin",
     "minutes_ago_other": "{{count}} nóiméad ó shin",
     "hours_ago_one": "{{count}} uair ó shin",
@@ -3015,7 +3015,7 @@
       "notes": "Nótaí",
       "yes": "tá",
       "no": "níl",
-      "generated": "Gineadh {{date}} ón bpainéal admin NEXUS."
+      "generated": "Gineadh é seo ar {{date}} ó phainéal riaracháin NEXUS."
     },
     "sections": {
       "classifications": "Aicmithe"
@@ -3068,9 +3068,9 @@
         "under_supplied": "Gannsoláthar",
         "ok": "ceart go leor"
       },
-      "helper_churn": "Chuinneog chúntóra (curtha i léig >= laethanta {{days}})",
+      "helper_churn": "Cúntóirí caillte (neamhghníomhach le {{days}} lá nó níos mó)",
       "overall_percent": "{{value}}% ar an iomlán",
-      "helper_churn_note": "{{lapsed}} ó {{prior}} Níor logáil cúntóirí a bhí gníomhach roimhe seo uaireanta le déanaí.",
+      "helper_churn_note": "As {{prior}} cúntóir a bhí gníomhach roimhe seo, níor thaifead {{lapsed}} díobh aon uair le déanaí.",
       "helper_churn_aria": "Cúntóir churn de réir catagóire",
       "coefficient_drift": "Drift chomhéifeacht chatagóir",
       "drifting_count_one": "{{count}} ag sruth",
@@ -3170,10 +3170,10 @@
       },
       "volunteer": {
         "total_hours": "Uaireanta iomlána",
-        "avg_hours_per_volunteer": "Meán uair an chloig in aghaidh an oibrí deonach",
+        "avg_hours_per_volunteer": "Meánlíon uaireanta in aghaidh an oibrí dheonaigh",
         "reciprocity_ratio": "Cóimheas cómhalartachta",
         "reciprocity_description": "Cothromaíocht idir uaireanta tugtha agus uaireanta faighte ar fud an réigiúin.",
-        "top_orgs_title": "Na heagraíochtaí deonacha is fearr"
+        "top_orgs_title": "Na príomheagraíochtaí deonacha"
       },
       "help": {
         "by_category": "Iarratais cabhrach de réir catagóire",

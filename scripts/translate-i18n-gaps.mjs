@@ -186,6 +186,9 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   // RFC 5545 recurrence-rule field marker. Keep this aligned with the
   // regression checker so no translation provider rewrites protocol syntax.
   'RRULE:...',
+  // Machine-readable CSV import header and example. Keep this aligned with the
+  // regression checker so providers cannot translate functional field names.
+  'email,first_name,last_name,phone,role\nalice@example.org,Alice,Smith,+1 555 123 4567,member',
   '⌘K',
   'broker@example.com',
   'A-Z',
