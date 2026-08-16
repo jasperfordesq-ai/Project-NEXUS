@@ -460,6 +460,37 @@ Category 3 must not be "fixed", and category 2 must not be started as a stub
 pass. Counting them together is what makes the remaining number look like one
 job when it is three.
 
+## R-27 volunteering: where the five gaps ended up
+
+| Area | Outcome |
+| --- | --- |
+| Credentials | ✅ Done — `vol_credentials`, upload/list/delete, server-side refusal of police-check documents, expiry derived at read time. |
+| Accessibility needs | ✅ Done — `vol_accessibility_needs`, replace-set semantics so a need can be withdrawn, owner-scoped. |
+| Reviews | ✅ Done — `vol_reviews`, one review per reviewer per subject, rating bound enforced in the database. |
+| Safeguarding incidents | ✅ Done — `vol_safeguarding_incidents`, staff triage queue, no delete by anyone, closure requires a reason. |
+| Donations | ✅ Done — **no new table**: the member path now writes to `money_donations`, which the admin screens already read. |
+
+🔴 **The donations decision is a deliberate schema divergence.** Laravel models
+volunteering donations in `vol_donations` with fund codes, refund amounts and
+Gift Aid declaration fields. This backend already had `money_donations` (its own
+Stripe donations table) and the **admin** volunteering donations screens already
+read it — while the member-facing POST wrote to a config blob. Adding
+`vol_donations` would have given one concept two stores with the working admin
+screens on the other one. So the member path was pointed at the existing store
+and three fields were added to it (`payment_method`, `is_anonymous`,
+`giving_day_id`).
+
+**Consequences to know:** Gift Aid and fund codes are still absent, and this
+table is NOT Laravel-shaped. If full donation parity is wanted, that is a
+migration of `money_donations` towards `vol_donations`, not a new table beside
+it.
+
+🔴 **The member donation endpoint records; it does not take a payment.** Every
+donation is created `pending`, nothing contacts a provider, and the existing
+admin complete/refund paths and the Stripe webhook are what move it on. Marking
+money as received when it has not been is the money-shaped version of the
+fake-success problem — do not "improve" this by defaulting to completed.
+
 ## 🔴 A fourth invisible defect class: writes nobody reads
 
 Found 2026-08-16 while giving the volunteering screens their tables (R-27).

@@ -2331,14 +2331,12 @@ public class CompatibilityAliasController : ControllerBase
     [HttpDelete("api/volunteering/community-projects/{id:int}/support")]
     public async Task<IActionResult> UnsupportProject(int id) => await SetProjectSupport(id, false);
 
-    /// <summary>
-    /// POST /api/volunteering/donations — Record donation.
-    /// </summary>
-    [HttpPost("api/volunteering/donations")]
-    public async Task<IActionResult> RecordDonation([FromBody] object? request = null) =>
-        await PersistVolunteerCompatibilityRecord(VolunteerDonationKeyPrefix, "volunteer_donation", request, "Donation recorded");
+    // 🔴 POST /api/volunteering/donations moved to VolunteerDonationsController
+    // on 2026-08-16 (R-27). It wrote the donation as an opaque blob into tenant
+    // config under "compat:vol-donation:" while the admin donations screen read
+    // money_donations — so a member's donation never reached staff, and the
+    // member never saw it again either.
 
-    /// <summary>
     /// POST /api/volunteering/expenses — Submit expense.
     /// </summary>
     [HttpPost("api/volunteering/expenses")]

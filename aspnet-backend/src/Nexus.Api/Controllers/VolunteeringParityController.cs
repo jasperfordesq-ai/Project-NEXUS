@@ -592,8 +592,10 @@ public class VolunteeringParityController : ControllerBase
         created_at = e.CreatedAt,
     };
 
-    [HttpGet("donations")]
-    public IActionResult Donations() => Ok(new { data = Array.Empty<object>() });
+    // 🔴 Donations moved to VolunteerDonationsController on 2026-08-16 (R-27).
+    // This returned an empty array while the member-facing POST wrote to a
+    // config blob and the ADMIN screen read money_donations — three ends, no
+    // two of them connected.
 
     // 🔴 GET accessibility-needs moved to VolunteerMemberRecordsController on
     // 2026-08-16 (R-27). It returned an empty array, which is why the PUT that

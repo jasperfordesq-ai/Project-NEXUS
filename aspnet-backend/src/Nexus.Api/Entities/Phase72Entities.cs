@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -81,6 +81,29 @@ public class MoneyDonation : ITenantEntity
 
     [MaxLength(500)]
     public string? FailureReason { get; set; }
+
+    // 🔴 Added 2026-08-16 (R-27) so the volunteering donation screen can use
+    // this store rather than a second one. The member-facing POST previously
+    // wrote to a tenant-config blob nothing read, while the admin donations
+    // screen read THIS table — so a donation a member recorded never appeared
+    // for staff. One store, both ends.
+    //
+    // Divergence from Laravel, deliberate and documented: Laravel models
+    // volunteering donations in a separate `vol_donations` table carrying fund
+    // codes, refund amounts and Gift Aid declaration fields. Adding a second
+    // donations table here would have given this backend two sources of truth
+    // for one concept, with the working admin screens on the other one. Gift
+    // Aid and fund codes are therefore still missing and are tracked as a gap —
+    // do not assume this table is Laravel-shaped.
+
+    /// <summary>How the member said they paid; free text from the client.</summary>
+    public string? PaymentMethod { get; set; }
+
+    /// <summary>The member asked not to be named publicly.</summary>
+    public bool IsAnonymous { get; set; }
+
+    /// <summary>Optional giving-day campaign this donation belongs to.</summary>
+    public int? GivingDayId { get; set; }
 
     public DateTime? CompletedAt { get; set; }
 

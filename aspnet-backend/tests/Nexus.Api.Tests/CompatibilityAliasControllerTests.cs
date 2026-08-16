@@ -652,7 +652,6 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         (string Url, object Body)[] metadataPosts =
         {
             ("/api/volunteering/certificates", new { name = "Safeguarding cert" }),
-            ("/api/volunteering/donations", new { amount = 12.50m, currency = "EUR" }),
             ("/api/volunteering/expenses", new { amount = 4.25m, category = "travel" }),
             ("/api/volunteering/training", new { course = "First aid" }),
             ("/api/volunteering/wellbeing/checkin", new { mood = "ok" })
@@ -683,7 +682,10 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         db.TenantConfigs.Single(c => c.Key == $"compat:vol-support:{projectId}:{TestData.MemberUser.Id}")
             .Value.Should().Contain("\"supported\":false");
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-cert:")).Should().BeTrue();
-        db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-donation:")).Should().BeTrue();
+        // 🔴 Donations moved out of the config-blob store onto money_donations
+        // on 2026-08-16 (R-27) — the store the admin donations screen already
+        // read, so a member's donation now reaches staff instead of landing in
+        // a blob nobody read. Covered by VolunteerDonationsTests.
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-expense:")).Should().BeTrue();
         // 🔴 Incidents moved out of the config-blob store into
         // vol_safeguarding_incidents on 2026-08-16 (R-27). This used to assert

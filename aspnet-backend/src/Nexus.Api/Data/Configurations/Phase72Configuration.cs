@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -25,6 +25,8 @@ public class Phase72Configuration : TenantScopedConfiguration
             entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
             entity.HasIndex(e => e.TenantId);
             entity.HasIndex(e => e.DonorUserId);
+            entity.Property(e => e.PaymentMethod).HasMaxLength(50);
+            entity.HasIndex(e => e.GivingDayId);
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.StripeCheckoutSessionId);
             entity.HasIndex(e => e.StripePaymentIntentId);
