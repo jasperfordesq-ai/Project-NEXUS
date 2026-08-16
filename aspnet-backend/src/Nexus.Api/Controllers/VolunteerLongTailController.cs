@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -60,6 +60,59 @@ public class VolunteerLongTailController : ControllerBase
     {
         var entity = await _service.GetExpenseAsync(id);
         return entity == null ? NotFound() : Ok(new { data = MapExpense(entity) });
+    }
+
+    /// <summary>
+    /// POST /api/v2/volunteering/wellbeing/checkin — the route the member's
+    /// wellbeing screen actually posts to.
+    ///
+    /// 🔴 A working implementation lived here all along at
+    /// <c>POST /api/volunteer/wellbeing</c> (singular), while the screen posted
+    /// to <c>/v2/volunteering/wellbeing/checkin</c> (plural) — which was handled
+    /// elsewhere by a write into a tenant-config blob nothing read. So a
+    /// volunteer said they were struggling, was thanked for checking in, and
+    /// the record never reached the follow-up alert service that exists
+    /// precisely to notice that. Same store, same service, correct route.
+    ///
+    /// The screen calls the value "mood"; the store calls it a score. Both are
+    /// 1–5 and the service rejects anything else.
+    /// </summary>
+    [HttpPost("api/v2/volunteering/wellbeing/checkin")]
+    [HttpPost("api/volunteering/wellbeing/checkin")]
+    public async Task<IActionResult> WellbeingCheckin([FromBody] WellbeingCheckinRequest? req)
+    {
+        var userId = User.GetUserId();
+        if (userId is null) return Unauthorized();
+
+        if (req?.Mood is null)
+        {
+            return BadRequest(new { error = "mood is required", code = "VALIDATION_ERROR" });
+        }
+
+        try
+        {
+            var entity = await _service.SubmitWellbeingAsync(
+                userId.Value,
+                req.ShiftId,
+                req.Mood.Value,
+                string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim(),
+
+                // A member saying they are at the bottom of the scale is exactly
+                // what the follow-up queue exists for, so it is flagged here
+                // rather than relying on someone reading every check-in.
+                requiresFollowUp: req.RequiresFollowUp ?? req.Mood.Value <= 2);
+
+            return Ok(new { success = true, data = MapWellbeing(entity) });
+        }
+        catch (ArgumentException ex) { return BadRequest(new { error = ex.Message }); }
+    }
+
+    public sealed class WellbeingCheckinRequest
+    {
+        [JsonPropertyName("mood")] public int? Mood { get; set; }
+        [JsonPropertyName("note")] public string? Note { get; set; }
+        [JsonPropertyName("shift_id")] public int? ShiftId { get; set; }
+        [JsonPropertyName("requires_follow_up")] public bool? RequiresFollowUp { get; set; }
     }
 
     [HttpPost("api/volunteer/wellbeing")]

@@ -652,8 +652,7 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         (string Url, object Body)[] metadataPosts =
         {
             ("/api/volunteering/certificates", new { name = "Safeguarding cert" }),
-            ("/api/volunteering/training", new { course = "First aid" }),
-            ("/api/volunteering/wellbeing/checkin", new { mood = "ok" })
+            ("/api/volunteering/training", new { course = "First aid" })
         };
 
         foreach (var (url, body) in metadataPosts)
@@ -696,7 +695,12 @@ public class CompatibilityAliasControllerTests : IntegrationTestBase
         // real path is covered by VolunteerSafeguardingIncidentTests, which
         // asserts the report reaches the staff queue.
         db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-training:")).Should().BeTrue();
-        db.TenantConfigs.Any(c => c.Key.StartsWith("compat:vol-wellbeing:")).Should().BeTrue();
+        // 🔴 Wellbeing check-ins moved onto the real store on 2026-08-16 — a
+        // working implementation already existed at a different route, so the
+        // blob write meant the follow-up alert service never saw a check-in.
+        // Covered by WriteOnlyStoreReconnectionTests. The check-in now also
+        // takes a 1-5 mood rather than free text, which is why {mood:"ok"} is
+        // gone from the list above.
         db.Set<VolunteerAccessibilityNeed>().IgnoreQueryFilters()
             .Single(n => n.UserId == TestData.MemberUser.Id && n.NeedType == "mobility")
             .AccommodationsRequired.Should().Be("Step-free access");

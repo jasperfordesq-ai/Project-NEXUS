@@ -538,11 +538,11 @@ grep -rhoE '"compat:[a-z0-9-]+:' --include=*.cs . | sort -u
 | `compat:vol-incident:` | ✅ Fixed — moved to `vol_safeguarding_incidents`. |
 | `compat:vol-donation:` | ✅ Fixed — moved onto `money_donations`. |
 | `compat:vol-expense:` | ✅ Fixed — moved onto `volunteer_expenses`, **whose own list already read it**. |
-| `compat:vol-cert:` | 🔴 **Write-only.** `VolunteerCertificate` entity exists — reconnect. |
-| `compat:vol-training:` | 🔴 **Write-only.** `VolunteerTraining` entity exists — reconnect. |
-| `compat:vol-wellbeing:` | 🔴 **Write-only.** `VolunteerWellbeing` entity exists — reconnect. |
+| `compat:vol-cert:` | 🔴 **Write-only, and check the concept first.** `VolunteerCertificate` models a certificate the PLATFORM issues (verification code, publicly verifiable, hours recognised). The write here looks like a member recording their own. Two different things sharing a word — do not map one onto the other without checking the screen. |
+| `compat:vol-training:` | 🔴 **Write-only, and NOT a simple reconnect.** The store is course-based (`VolunteerTrainingCompletion` → `CourseId`) while the screen posts free text (`training_type`, `training_name`, `provider`). Reconnecting means deciding whether a member-declared course joins the catalogue or needs a self-declared table. Design question, not plumbing. |
+| `compat:vol-wellbeing:` | ✅ Fixed — the check-in now calls the existing service over the real store. A WORKING implementation already sat at `POST /api/volunteer/wellbeing` (singular) while the screen posted to `/v2/volunteering/wellbeing/checkin` (plural). A low mood is flagged for follow-up rather than left for someone to spot. |
 | `compat:vol-support:` | 🔴 **Write-only.** No entity; supporting a community project goes nowhere. |
-| `compat:conv-archive:` | 🔴 **Write-only.** `Message` already has `ArchivedBySender`/`ArchivedByReceiver` — archiving a conversation does nothing. |
+| `compat:conv-archive:` | ✅ Fixed — archiving now stamps `ArchivedBySender`/`ArchivedByReceiver`, which is what the inbox reads. 🔴 **There is no restore route**: the handler takes an `archived` flag and only ever receives `true`, so a member can archive and cannot bring it back. Not invented, because adding an endpoint the client does not call is guessing at a contract. |
 | `compat:comment-reaction:` | 🔴 **Write-only.** `MessageReaction` exists but is for messages; comments need their own. |
 | `compat:fed-msg-read:` | 🔴 **Write-only.** Marking a federated message read does nothing. |
 

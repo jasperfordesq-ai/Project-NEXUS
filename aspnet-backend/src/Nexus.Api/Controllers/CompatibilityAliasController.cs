@@ -27,7 +27,6 @@ namespace Nexus.Api.Controllers;
 [Authorize]
 public class CompatibilityAliasController : ControllerBase
 {
-    private const string ConversationArchiveKeyPrefix = "compat:conv-archive:";
     private const string CommentReactionKeyPrefix = "compat:comment-reaction:";
     private const string GroupTaskKeyPrefix = "compat:group-task:";
     private const string FederationMessageReadKeyPrefix = "compat:fed-msg-read:";
@@ -2383,12 +2382,13 @@ public class CompatibilityAliasController : ControllerBase
     public async Task<IActionResult> RecordTraining([FromBody] object? request = null) =>
         await PersistVolunteerCompatibilityRecord(VolunteerTrainingKeyPrefix, "volunteer_training", request, "Training recorded");
 
-    /// <summary>
-    /// POST /api/volunteering/wellbeing/checkin — Wellbeing check-in.
-    /// </summary>
-    [HttpPost("api/volunteering/wellbeing/checkin")]
-    public async Task<IActionResult> WellbeingCheckIn([FromBody] object? request = null) =>
-        await PersistVolunteerCompatibilityRecord(VolunteerWellbeingKeyPrefix, "volunteer_wellbeing_checkin", request, "Wellbeing check-in recorded");
+    // 🔴 POST /api/volunteering/wellbeing/checkin moved to
+    // VolunteerLongTailController on 2026-08-16. It wrote the check-in as an
+    // opaque blob into tenant config while a WORKING implementation already
+    // existed at POST /api/volunteer/wellbeing over the real store — so a
+    // volunteer said they were struggling, was thanked for checking in, and the
+    // follow-up alert service never saw it.
+
 
     // 🔴 PUT /api/volunteering/accessibility-needs moved to
     // VolunteerMemberRecordsController on 2026-08-16 (R-27), once
@@ -2966,34 +2966,52 @@ public class CompatibilityAliasController : ControllerBase
         return Ok(new { success = true, message = "Verification email sent if account exists" });
     }
 
+    /// <summary>
+    /// Archive or restore a conversation for the calling member.
+    ///
+    /// 🔴 Until 2026-08-16 this wrote an opaque blob into tenant config under
+    /// "compat:conv-archive:" — while the conversation LIST decides the
+    /// active/archived tab by reading ArchivedBySender / ArchivedByReceiver on
+    /// the messages themselves (MessagesController). So archiving a
+    /// conversation reported success and the conversation stayed exactly where
+    /// it was, every time.
+    ///
+    /// Archiving is per member and per message, matching how the list reads it:
+    /// the marker used depends on whether this member sent the message, so one
+    /// person archiving a thread never hides it from the other.
+    /// </summary>
     private async Task<IActionResult> SetConversationArchiveState(int id, bool archived)
     {
         var userId = User.GetUserId();
         if (userId == null) return Unauthorized(new { error = "Invalid token" });
 
+        var ct = HttpContext.RequestAborted;
+
         var conversation = await _db.Conversations.AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == id &&
-                                      (c.Participant1Id == userId.Value || c.Participant2Id == userId.Value));
+                                      (c.Participant1Id == userId.Value || c.Participant2Id == userId.Value), ct);
         if (conversation == null) return NotFound(new { error = "Conversation not found" });
 
         var now = DateTime.UtcNow;
-        var config = await UpsertTenantConfigValue(
-            $"{ConversationArchiveKeyPrefix}{id}:{userId.Value}",
-            new
+        var messages = await _db.Messages.Where(m => m.ConversationId == id).ToListAsync(ct);
+
+        foreach (var message in messages)
+        {
+            if (message.SenderId == userId.Value)
             {
-                kind = "conversation_archive",
-                conversation_id = id,
-                user_id = userId.Value,
-                archived,
-                archived_at = archived ? now : (DateTime?)null,
-                restored_at = archived ? (DateTime?)null : now,
-                updated_at = now
-            });
+                message.ArchivedBySender = archived ? now : null;
+            }
+            else
+            {
+                message.ArchivedByReceiver = archived ? now : null;
+            }
+        }
+
+        await _db.SaveChangesAsync(ct);
 
         return Ok(new
         {
             success = true,
-            id = config.Id,
             conversation_id = id,
             archived,
             message = archived ? "Conversation archived" : "Conversation restored"
