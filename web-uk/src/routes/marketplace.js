@@ -10,7 +10,7 @@ const { flagEnabled } = require('../lib/accessible-shell');
 const { createTranslator, formatLocaleNumber } = require('../lib/localization');
 const { getRequestProfile } = require('../lib/request-profile');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { splitDate } = require('../lib/date-input');
+const { splitDate, splitDateTime } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
 
@@ -849,6 +849,8 @@ function decoratePickupSlot(slot) {
     slotEnd: trimmed(row.slot_end),
     slotStartInput: dateTimeInput(row.slot_start),
     slotEndInput: dateTimeInput(row.slot_end),
+    slotStartParts: splitDateTime(dateTimeInput(row.slot_start)),
+    slotEndParts: splitDateTime(dateTimeInput(row.slot_end)),
     slotStartLabel: formatDateTimeLabel(row.slot_start),
     slotEndLabel: formatDateTimeLabel(row.slot_end),
     capacity,
@@ -1693,6 +1695,8 @@ router.get('/slots', asyncRoute(async (req, res) => {
       emptySlot: {
         slotStartInput: '',
         slotEndInput: '',
+        slotStartParts: splitDateTime(''),
+        slotEndParts: splitDateTime(''),
         capacity: 5,
         isRecurring: false,
         isActive: true

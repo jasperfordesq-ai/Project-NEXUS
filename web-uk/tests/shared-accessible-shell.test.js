@@ -32957,7 +32957,12 @@ describe('shared accessible frontend shell', () => {
     expect(edit.text).toContain('Date and time');
     expect(edit.text).toContain('Back to pickup slots');
     expect(edit.text).toContain('Pickup slot updated.');
-    expect(edit.text).toContain('value="2026-07-07T10:30"');
+    // slot_start/slot_end are now the GOV.UK date + single-time pattern (was one native
+    // datetime-local): 2026-07-07T10:30 splits into day/month/year fields + a time field.
+    expect(edit.text).toContain('name="slot_start-year"');
+    expect(edit.text).toContain('name="slot_start-time"');
+    expect(edit.text).toMatch(/name="slot_start-year"[^>]*value="2026"/);
+    expect(edit.text).toMatch(/name="slot_start-time"[^>]*value="10:30"/);
     expect(edit.text).toContain('action="/marketplace/slots/7/update"');
     expect(edit.text).toContain('Delete this slot');
     expect(edit.text).not.toContain('Laravel Blade route');

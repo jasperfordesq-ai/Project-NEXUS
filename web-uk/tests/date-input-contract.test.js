@@ -38,6 +38,14 @@ function render(locale, params = {}) {
   );
 }
 
+function renderDateTime(locale, params = {}) {
+  const t = createTranslator(locale);
+  return env.renderString(
+    '{% from "_date-input.njk" import nexusDateTimeInput %}{{ nexusDateTimeInput(params, t) }}',
+    { t, params: { name: 'starts', legend: 'Starts', ...params } }
+  );
+}
+
 describe('date composer', () => {
   it('accepts what a person actually types', () => {
     // Liberal about form, per GDS: "3" and "03" are both March, spaces are ignored.
@@ -150,6 +158,95 @@ describe('date input markup', () => {
   });
 });
 
+describe('time and datetime composer (GOV.UK date + single time field)', () => {
+  const { parseTime, composeDateTime, readDateTime, splitDateTime } = require('../src/lib/date-input');
+
+  it('parses common time formats liberally, normalising to 24-hour HH:MM', () => {
+    expect(parseTime('9:30')).toBe('09:30');
+    expect(parseTime('09:30')).toBe('09:30');
+    expect(parseTime('9.30')).toBe('09:30');
+    expect(parseTime(' 9:30 am ')).toBe('09:30');
+    expect(parseTime('9:30pm')).toBe('21:30');
+    expect(parseTime('9am')).toBe('09:00');
+    expect(parseTime('2 pm')).toBe('14:00');
+    expect(parseTime('14:30')).toBe('14:30');
+    expect(parseTime('12am')).toBe('00:00');
+    expect(parseTime('12pm')).toBe('12:00');
+    expect(parseTime('0:00')).toBe('00:00');
+  });
+
+  it('rejects impossible or ambiguous times rather than guessing', () => {
+    expect(parseTime('25:00')).toBeNull();
+    expect(parseTime('9:60')).toBeNull();
+    expect(parseTime('13pm')).toBeNull();
+    expect(parseTime('half nine')).toBeNull();
+    expect(parseTime('')).toBeNull();
+  });
+
+  it('composes the four fields into the native YYYY-MM-DDTHH:MM shape', () => {
+    const r = composeDateTime({ 'x-day': '14', 'x-month': '8', 'x-year': '2026', 'x-time': '18:30' }, 'x');
+    expect(r.value).toBe('2026-08-14T18:30');
+    expect(r.error).toBeNull();
+  });
+
+  it('reports a date error before a time error, and points at the missing half', () => {
+    // 31 February is a date error even though the time is fine.
+    expect(composeDateTime({ 'x-day': '31', 'x-month': '2', 'x-year': '2026', 'x-time': '9:00' }, 'x').error).toBe('date_invalid');
+    // A bad time with a good date is a time error.
+    expect(composeDateTime({ 'x-day': '14', 'x-month': '8', 'x-year': '2026', 'x-time': '99:99' }, 'x').error).toBe('time_invalid');
+    // Date filled, time missing → time_required; and the converse.
+    expect(composeDateTime({ 'x-day': '14', 'x-month': '8', 'x-year': '2026', 'x-time': '' }, 'x').error).toBe('time_required');
+    expect(composeDateTime({ 'x-day': '', 'x-month': '', 'x-year': '', 'x-time': '9:00' }, 'x').error).toBe('day_required');
+    // Both empty and optional: absent, not invalid.
+    expect(composeDateTime({}, 'x').error).toBeNull();
+    expect(composeDateTime({}, 'x').value).toBeNull();
+  });
+
+  it('readDateTime accepts an already-composed value (unconverted form / bookmarked link)', () => {
+    expect(readDateTime({ x: '2026-08-14T18:30' }, 'x').value).toBe('2026-08-14T18:30');
+    expect(readDateTime({ x: '2026-08-14T18:30:00Z' }, 'x').value).toBe('2026-08-14T18:30');
+    // Falls through to the four fields when no single value is present.
+    expect(readDateTime({ 'x-day': '14', 'x-month': '8', 'x-year': '2026', 'x-time': '18:30' }, 'x').value).toBe('2026-08-14T18:30');
+  });
+
+  it('splitDateTime turns a stored value back into re-render parts', () => {
+    expect(splitDateTime('2026-08-14T18:30')).toEqual({ day: '14', month: '8', year: '2026', time: '18:30' });
+  });
+});
+
+describe('datetime input markup (date fields + one time field)', () => {
+  it('renders the four named fields the datetime composer reads back', () => {
+    const html = renderDateTime('en');
+    expect(html).toContain('name="starts-day"');
+    expect(html).toContain('name="starts-month"');
+    expect(html).toContain('name="starts-year"');
+    expect(html).toContain('name="starts-time"');
+    expect(html).toContain('govuk-date-input');
+  });
+
+  it('routes a time error to the time field, not the date fields', () => {
+    const html = renderDateTime('en', { errorMessage: 'Enter a real time, like 9:30am', errorFields: ['time'] });
+    const timeInput = html.match(/<input[^>]*name="starts-time"[^>]*>/)[0];
+    const dayInput = html.match(/<input[^>]*name="starts-day"[^>]*>/)[0];
+    expect(timeInput).toContain('govuk-input--error');
+    expect(dayInput).not.toContain('govuk-input--error');
+  });
+
+  it('routes a date error to the date fields, not the time field', () => {
+    const html = renderDateTime('en', { errorMessage: 'Enter a real date', errorFields: ['month'] });
+    const monthInput = html.match(/<input[^>]*name="starts-month"[^>]*>/)[0];
+    const timeInput = html.match(/<input[^>]*name="starts-time"[^>]*>/)[0];
+    expect(monthInput).toContain('govuk-input--error');
+    expect(timeInput).not.toContain('govuk-input--error');
+  });
+
+  it('translates the time label and hint', () => {
+    expect(renderDateTime('en')).toContain('Time');
+    expect(renderDateTime('de')).toContain('Zeit');
+    expect(renderDateTime('ar')).toContain('وقت');
+  });
+});
+
 describe('native date input ceiling', () => {
   // 🔴 SHRINK-ONLY. Lower these numbers as fields are converted; never raise them.
   // Measured 2026-08-13 after converting the two goal deadline fields.
@@ -188,10 +285,11 @@ describe('native date input ceiling', () => {
   // `type="datetime-local"` and so was BLIND to 4 inputs written as a macro argument
   // (`type: "datetime-local"`) on the two most-used event forms (events/new,
   // events/edit) — exactly the fields a member meets most. The count below now
-  // includes both spellings, so the true total (13 HTML + 4 macro) is measured. The
-  // conversion of these to the three-field pattern is still blocked on translated time
-  // strings (see the note above); this only stops the ratchet under-counting.
-  const CEILING = { 'datetime-local': 17, date: 1, time: 2 };
+  // includes both spellings, so the true total (13 HTML + 4 macro) is measured.
+  // 🔴 Lowered 17 -> 15 on 2026-08-14: marketplace pickup-slot start/end converted to
+  // the GOV.UK date + single-time pattern (nexusDateTimeInput), the translated time
+  // strings that used to block this now existing. Keep lowering as more convert.
+  const CEILING = { 'datetime-local': 15, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

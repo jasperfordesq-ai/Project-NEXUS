@@ -3,6 +3,8 @@
 {# Author: Jasper Ford #}
 {# See NOTICE file for attribution and acknowledgements. #}
 
+{% from "_date-input.njk" import nexusDateTimeInput %}
+
 <form method="post" action="{{ urlFor(action) }}" novalidate>
   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
 
@@ -11,17 +13,19 @@
       <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_commerce.slots.section_times") }}</h2>
     </legend>
 
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="slot_start">{{ t("govuk_alpha_commerce.slots.start_label") }}</label>
-      <div id="slot_start-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.start_hint") }}</div>
-      <input class="govuk-input govuk-input--width-20" id="slot_start" name="slot_start" type="datetime-local" value="{{ slot.slotStartInput }}" aria-describedby="slot_start-hint">
-    </div>
+    {{ nexusDateTimeInput({
+      name: "slot_start",
+      legend: t("govuk_alpha_commerce.slots.start_label"),
+      hint: t("govuk_alpha_commerce.slots.start_hint"),
+      value: slot.slotStartParts
+    }, t) }}
 
-    <div class="govuk-form-group">
-      <label class="govuk-label govuk-label--s" for="slot_end">{{ t("govuk_alpha_commerce.slots.end_label") }}</label>
-      <div id="slot_end-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.slots.end_hint") }}</div>
-      <input class="govuk-input govuk-input--width-20" id="slot_end" name="slot_end" type="datetime-local" value="{{ slot.slotEndInput }}" aria-describedby="slot_end-hint">
-    </div>
+    {{ nexusDateTimeInput({
+      name: "slot_end",
+      legend: t("govuk_alpha_commerce.slots.end_label"),
+      hint: t("govuk_alpha_commerce.slots.end_hint"),
+      value: slot.slotEndParts
+    }, t) }}
   </fieldset>
 
   <fieldset class="govuk-fieldset govuk-!-margin-top-4">

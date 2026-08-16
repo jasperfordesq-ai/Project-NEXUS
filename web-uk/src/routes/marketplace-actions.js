@@ -7,7 +7,7 @@ const express = require('express');
 const { timingSafeEqual } = require('node:crypto');
 const { ApiError, callMarketplaceApi, callMerchantOnboardingApi } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate } = require('../lib/date-input');
+const { readDate, readDateTime } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -267,8 +267,11 @@ function listingPayload(body, defaultCurrency = 'EUR', { includeStatus = true } 
 function pickupSlotPayload(body, { defaultActive = true } = {}) {
   const capacity = positiveInteger(body.capacity);
   return {
-    slot_start: trimmed(body.slot_start),
-    slot_end: trimmed(body.slot_end),
+    // GOV.UK date+time fields (slot_start-day/-month/-year/-time) recombine to the same
+    // YYYY-MM-DDTHH:MM the native input posted; readDateTime also accepts an already-
+    // composed single value, so an old client or a direct API-shape post still works.
+    slot_start: readDateTime(body, 'slot_start').value || '',
+    slot_end: readDateTime(body, 'slot_end').value || '',
     capacity: capacity === null ? 1 : Math.min(capacity, 1000),
     is_recurring: checked(body.is_recurring),
     is_active: body.is_active === undefined ? defaultActive : checked(body.is_active)
@@ -1105,3 +1108,6 @@ router.post('/coupons/:id(\\d+)/delete', asyncRoute(async (req, res) => {
 }));
 
 module.exports = router;
+// Exposed for unit tests (attached to the router function so `require()` still returns the
+// mountable router unchanged).
+module.exports.pickupSlotPayload = pickupSlotPayload;
