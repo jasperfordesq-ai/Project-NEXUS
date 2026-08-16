@@ -123,6 +123,16 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /Níl suim acu ann|I bhfad ar shiúl|Ní oireann sé do mo scileanna/u);
   assert.doesNotMatch(allIrish, /Cuardaigh liostaí, comhaltaí|Gan gníomhartha comhoiriúnacha/u);
   assert.doesNotMatch(allIrish, /le haghaidh mear-ghníomhartha|Dún roghchlár cruthaithe|Aitheantas gan fhíorú/u);
+  assert.doesNotMatch(allIrish, /roinnt liosta|chruthaigh vótáil|Míshásfa|Clúdach Cúram/u);
+  const memberTimes = JSON.stringify({
+    viewer: irish.viewer,
+    hoursOne: irish.time_ago_hours_one,
+    hoursOther: irish.time_ago_hours_other,
+    daysOne: irish.time_ago_days_one,
+    daysOther: irish.time_ago_days_other,
+  });
+  assert.doesNotMatch(memberTimes, /\{\{count\}\}[nul] ó shin/u);
+  assert.doesNotMatch(irish.providers.call_aria, /soláthraí ag \{\{phone\}\}/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -200,4 +210,13 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.quick_create.offer_time, 'Tairg do chuid ama');
   assert.equal(irish.verification.not_id_verified, 'Níor fíoraíodh an t-aitheantas');
   assert.equal(irish.verification.badge.email_verified, 'Seoladh ríomhphoist fíoraithe');
+  assert.equal(irish.activity.action_listing, 'a roinn liostú');
+  assert.equal(irish.activity.action_poll, 'a chruthaigh pobalbhreith');
+  assert.equal(irish.likert_options['1'], 'An-mhíshásta');
+  assert.equal(irish.likert_options['5'], 'An-sásta');
+  assert.equal(irish.providers.call_aria, 'Cuir glaoch ar an soláthraí ar {{phone}}');
+  assert.equal(irish.cover.title, 'Cúram ionadaíochta');
+  assert.equal(irish.viewer.time_minutes_ago_one, '{{count}} nóiméad ó shin');
+  assert.equal(irish.viewer.time_hours_ago_many, '{{count}} n-uaire an chloig ó shin');
+  assert.equal(irish.already_responded, 'Tá an suirbhé seo comhlánaithe agat cheana.');
 });
