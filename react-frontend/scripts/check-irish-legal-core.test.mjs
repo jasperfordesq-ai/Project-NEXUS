@@ -104,3 +104,32 @@ test('Irish Accessibility Statement preserves conformance and assistive-technolo
   assert.match(irish.accessibility.feature_responsive_desc, /súmáil suas le 200% gan feidhmiúlacht a chailleadh/u);
   assert.match(irish.accessibility.tech_recommendation, /teicneolaíocht chúnta atá cothrom le dáta/u);
 });
+
+test('Irish Legal hub and version history have complete translated coverage', () => {
+  for (const section of ['hub', 'version_history']) {
+    const englishFlat = flatten(english[section]);
+    const irishFlat = flatten(irish[section]);
+
+    for (const [path, englishValue] of englishFlat) {
+      assert.ok(irishFlat.has(path), `Missing Irish Legal ${section} key: ${path}`);
+      assert.notEqual(irishFlat.get(path), englishValue, `${section}.${path}`);
+    }
+
+    for (const [path, value] of irishFlat) {
+      assert.equal(value, value.trim(), `Whitespace defect: ${section}.${path}`);
+      assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: ${section}.${path}`);
+    }
+  }
+});
+
+test('Irish Legal hub and version history preserve policy and revision meaning', () => {
+  const reviewed = [...flatten(irish.hub).values(), ...flatten(irish.version_history).values()].join('\n');
+  assert.doesNotMatch(reviewed, /Dli|Comhliontacht|caipeis|Polasai|Tearmai|Leigh|Athrutie|d-athraigh o|athru$/mu);
+  assert.equal(irish.hub.doc_privacy_title, 'Beartas Príobháideachais');
+  assert.equal(irish.hub.doc_acceptable_use_title, 'Beartas um Úsáid Inghlactha');
+  assert.match(irish.hub.doc_trust_safety_desc, /ar an méid nach ndéanaimid/u);
+  assert.match(irish.hub.platform_section_desc, /ar leith ó bheartais do phobail/u);
+  assert.equal(irish.version_history.summary_of_changes, 'Achoimre ar na hAthruithe');
+  assert.equal(irish.version_history.changes_count_one, '{{count}} athrú');
+  assert.equal(irish.version_history.changes_count_many, '{{count}} athrú');
+});

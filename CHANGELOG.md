@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The Irish Legal hub and document version history have completed their 57-string semantic review.** Policy cards now use the same natural terminology as their reviewed documents, distinguish community policies from Project NEXUS platform-provider documents, and describe Trust & Safety boundaries in plain language. Revision history now uses fully accented Irish for documents, effective dates, summaries, comparisons and change counts, with a focused gate covering both sections.
+
 - **The 45-string Irish Accessibility Statement has completed its semantic review.** The commitment, keyboard, visual, screen-reader and responsive-design guidance now uses fully accented Irish; partial WCAG 2.1 Level AA conformance is explained accurately; and feedback, technical specifications, browser and assistive-technology recommendations preserve their intended meaning. A focused gate prevents the previous corrupted and accent-stripped wording from returning.
 
 - **The standalone Irish Cookie Policy has completed its 80-string semantic review.** Required, analytics and preference categories; consent storage; expiry periods; Sentry fault reporting; optional performance and session replay; third-party controls; and browser-management instructions now use fully accented Irish and preserve the actual consent boundary. Pusher and Microsoft Edge are no longer translated as ordinary words, CSRF and JWT purposes remain technically accurate, and disabling required cookies clearly says that sign-in and core features will stop working; seven browser and service product names remain unchanged by design.
