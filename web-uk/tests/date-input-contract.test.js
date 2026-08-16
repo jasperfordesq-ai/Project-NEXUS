@@ -300,8 +300,9 @@ describe('native date input ceiling', () => {
   // the GOV.UK date + single-time pattern (nexusDateTimeInput), the translated time
   // strings that used to block this now existing. Then 15 -> 14: podcast episode
   // scheduled_for converted (idPrefix added so the doubled add/edit partial keeps unique
-  // ids). Keep lowering as more convert.
-  const CEILING = { 'datetime-local': 14, date: 1, time: 2 };
+  // ids). Then 14 -> 13: events/communications scheduled_at (per-broadcast loop, idPrefix
+  // schedule-{id}). Keep lowering as more convert.
+  const CEILING = { 'datetime-local': 13, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

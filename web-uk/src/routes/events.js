@@ -32,7 +32,7 @@ const {
 } = require('../lib/api');
 const { requireAuth } = require('../middleware/auth');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, splitDate } = require('../lib/date-input');
+const { readDate, splitDate, readDateTime } = require('../lib/date-input');
 const { audit } = require('../lib/auditLogger');
 const { flagEnabled, localeOptions, resolveBackendAssetUrl } = require('../lib/accessible-shell');
 const { getRequestProfile } = require('../lib/request-profile');
@@ -2258,9 +2258,16 @@ async function mutateCommunication(req, res, action) {
   const expectedVersion = positiveInteger(req.body.expected_version);
   const key = trimmed(req.body.idempotency_key, 191);
   const payload = { expected_version: expectedVersion };
-  if (action === 'schedule') payload.scheduled_at = trimmed(req.body.scheduled_at) || null;
+  // GOV.UK date+time fields (scheduled_at-day/-month/-year/-time) recombine to the same
+  // YYYY-MM-DDTHH:MM the native input posted; readDateTime also accepts a single value.
+  // Blank stays null (immediate send, as before); a partly/invalidly typed datetime is a
+  // validation error rather than being silently treated as blank.
+  const scheduleDate = action === 'schedule' ? readDateTime(req.body, 'scheduled_at') : null;
+  if (action === 'schedule') payload.scheduled_at = scheduleDate.value || null;
   if (action === 'cancel') payload.reason = trimmed(req.body.reason, 501);
-  if (!broadcastId || !expectedVersion || !key || (action === 'cancel' && (!payload.reason || payload.reason.length > 500))) {
+  if (!broadcastId || !expectedVersion || !key
+    || (action === 'schedule' && scheduleDate.error)
+    || (action === 'cancel' && (!payload.reason || payload.reason.length > 500))) {
     return redirectTo(res, eventPath(id, '/communications?status=invalid'));
   }
   try {

@@ -24701,6 +24701,34 @@ describe('shared accessible frontend shell', () => {
     }
   });
 
+  it('recombines the GOV.UK date+time schedule fields into the same scheduled_at payload', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    api.callEventBroadcastApi.mockResolvedValueOnce({ data: { changed: true } });
+    // The schedule form now posts four fields instead of one native datetime-local.
+    const response = await agent.post('/events/42/communications/8/schedule').set('Cookie', signedCookieHeader()).type('form').send({
+      _csrf: csrf, expected_version: '3', idempotency_key: 'comm-schedule-parts',
+      'scheduled_at-day': '1', 'scheduled_at-month': '8', 'scheduled_at-year': '2026', 'scheduled_at-time': '10:00'
+    });
+    expect(response.headers.location).toBe('/events/42/communications?status=scheduled');
+    expect(api.callEventBroadcastApi).toHaveBeenLastCalledWith('test-token', 'POST', '/8/schedule', {
+      expected_version: 3, scheduled_at: '2026-08-01T10:00'
+    }, { headers: { 'Idempotency-Key': 'comm-schedule-parts' } });
+  });
+
+  it('rejects a partly-typed schedule datetime with a validation status (not a silent send)', async () => {
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    const response = await agent.post('/events/42/communications/8/schedule').set('Cookie', signedCookieHeader()).type('form').send({
+      _csrf: csrf, expected_version: '3', idempotency_key: 'comm-schedule-bad',
+      'scheduled_at-day': '1', 'scheduled_at-month': '8', 'scheduled_at-year': '2026', 'scheduled_at-time': '99:99'
+    });
+    expect(response.headers.location).toBe('/events/42/communications?status=invalid');
+  });
+
   it('renders the private Laravel Event Ticket catalogue with server-declared allocation gates', async () => {
     const api = require('../src/lib/api');
     api.callEventApi
