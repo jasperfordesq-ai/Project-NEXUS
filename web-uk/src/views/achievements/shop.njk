@@ -78,7 +78,7 @@
             <form method="post" action="{{ urlFor('/achievements/shop/purchase') }}">
               <input type="hidden" name="_csrf" value="{{ csrfToken }}">
               <input type="hidden" name="item_id" value="{{ item.id }}">
-              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_gamification.shop.buy_button", { xp: item.cost }) }}</button>
+              <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_gamification.shop.buy_button", { xp: item.cost }) }}</button>
             </form>
           {% else %}
             <strong class="govuk-tag govuk-tag--red">{{ item.unavailableLabel }}</strong>

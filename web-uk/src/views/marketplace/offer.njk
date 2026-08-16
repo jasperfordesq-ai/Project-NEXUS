@@ -54,7 +54,7 @@
       <textarea class="govuk-textarea" id="message" name="message" rows="3" aria-describedby="message-hint">{{ oldInput.message or '' }}</textarea>
     </div>
     <div class="govuk-button-group">
-      <button class="govuk-button" data-module="govuk-button">{{ t("govuk_alpha_commerce.offer.submit") }}</button>
+      <button class="govuk-button" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.offer.submit") }}</button>
       <a class="govuk-link" href="{{ urlFor('/marketplace/' + (item.id | string)) }}">{{ t("govuk_alpha_commerce.common.cancel") }}</a>
     </div>
   </form>

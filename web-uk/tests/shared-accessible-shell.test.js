@@ -6947,6 +6947,40 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toMatch(/id="donate-message"[^>]*value="For the community fund"/);
   });
 
+  it('member-to-member transfer enforces the confirm box and a real idempotency key server-side', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    const shell = await agent.get('/contact').set('Cookie', signedCookieHeader());
+    const csrf = shell.text.match(/name="_csrf" value="([^"]+)"/)[1];
+
+    // No confirmation box -> refused, API never called (the template's `required`
+    // is client-side only).
+    api.transferWalletCredits.mockClear();
+    const noConfirm = await agent.post('/members/77/transfer').set('Cookie', signedCookieHeader()).type('form')
+      .send({ _csrf: csrf, amount: '2', note: 'x', idempotency_key: 'idem-key-1234' });
+    expect(noConfirm.status).toBe(302);
+    expect(noConfirm.headers.location).toContain('transfer-failed');
+    expect(api.transferWalletCredits).not.toHaveBeenCalled();
+
+    // Confirmed but an empty/short idempotency key -> refused (would otherwise
+    // disable server-side duplicate protection).
+    const shortKey = await agent.post('/members/77/transfer').set('Cookie', signedCookieHeader()).type('form')
+      .send({ _csrf: csrf, amount: '2', note: 'x', confirm: '1', idempotency_key: 'short' });
+    expect(shortKey.status).toBe(302);
+    expect(shortKey.headers.location).toContain('transfer-failed');
+    expect(api.transferWalletCredits).not.toHaveBeenCalled();
+
+    // Confirmed with a real key -> the transfer goes through with the key forwarded.
+    const ok = await agent.post('/members/77/transfer').set('Cookie', signedCookieHeader()).type('form')
+      .send({ _csrf: csrf, amount: '2', note: 'x', confirm: '1', idempotency_key: 'idem-key-1234' });
+    expect(ok.status).toBe(302);
+    expect(ok.headers.location).toContain('transfer-sent');
+    expect(api.transferWalletCredits).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ recipient: 77, amount: 2, idempotency_key: 'idem-key-1234' })
+    );
+  });
+
   it('renders the messages hub without the legacy bare compose route', async () => {
     const api = require('../src/lib/api');
     api.getConversations.mockResolvedValueOnce({ data: [], meta: { cursor: null, has_more: false } });
@@ -12295,6 +12329,7 @@ describe('shared accessible frontend shell', () => {
         _csrf: csrfMatch[1],
         amount: '5',
         note: ' Thank you ',
+        confirm: '1',
         idempotency_key: 'member-transfer-1'
       });
 

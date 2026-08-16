@@ -76,7 +76,7 @@
             {% else %}
               <input type="hidden" name="interval" value="{{ tier.defaultInterval }}">
             {% endif %}
-            <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("premium.subscribe_button") }}</button>
+            <button class="govuk-button govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("premium.subscribe_button") }}</button>
           </form>
         </article>
       {% endfor %}

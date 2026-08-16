@@ -56,7 +56,7 @@
           {% endif %}
           <form method="post" action="{{ urlFor('/marketplace/' + (item.id | string) + '/delete') }}" class="nexus-alpha-inline-form">
             <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button">{{ t("govuk_alpha_commerce.my_listings.action_delete") }}</button>
+            <button class="govuk-button govuk-button--warning govuk-!-margin-bottom-0" data-module="govuk-button" data-prevent-double-click="true">{{ t("govuk_alpha_commerce.my_listings.action_delete") }}</button>
           </form>
         </div>
       {% endfor %}

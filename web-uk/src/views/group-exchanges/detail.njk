@@ -163,7 +163,7 @@
       <div class="nexus-alpha-actions">
         <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/complete') }}" class="nexus-alpha-linkform">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">
-          <button class="govuk-button govuk-!-margin-bottom-0 {% if not allConfirmed %}govuk-button--disabled{% endif %}" data-module="govuk-button" {% if not allConfirmed %}disabled aria-disabled="true"{% endif %}>{{ t("group_exchanges.complete_button") }}</button>
+          <button class="govuk-button govuk-!-margin-bottom-0 {% if not allConfirmed %}govuk-button--disabled{% endif %}" data-module="govuk-button" data-prevent-double-click="true" {% if not allConfirmed %}disabled aria-disabled="true"{% endif %}>{{ t("group_exchanges.complete_button") }}</button>
         </form>
         <form method="post" action="{{ urlFor('/group-exchanges/' + (exchange.id | string) + '/cancel') }}" class="nexus-alpha-linkform">
           <input type="hidden" name="_csrf" value="{{ csrfToken }}">

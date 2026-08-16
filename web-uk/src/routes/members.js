@@ -649,13 +649,25 @@ router.post('/:id(\\d+)/transfer', asyncRoute(async (req, res) => {
     return redirectTo(res, memberUrl(id, 'transfer-failed'));
   }
 
+  // Server-enforce the confirmation box (the template marks it required, but that
+  // is client-side only) and the idempotency key (must be present and long enough
+  // to be a real dedupe token — an empty/short key silently disables server-side
+  // duplicate protection, exactly as the wallet transfer route already guards).
+  if (!req.body.confirm) {
+    return redirectTo(res, memberUrl(id, 'transfer-failed'));
+  }
+  const idempotencyKey = String(req.body.idempotency_key || '').trim();
+  if (idempotencyKey.length < 8) {
+    return redirectTo(res, memberUrl(id, 'transfer-failed'));
+  }
+
   let status = 'transfer-sent';
   try {
     await transferWalletCredits(token, {
       recipient: id,
       amount,
       description: String(req.body.note || '').trim().slice(0, 255),
-      idempotency_key: String(req.body.idempotency_key || '').trim()
+      idempotency_key: idempotencyKey
     });
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;

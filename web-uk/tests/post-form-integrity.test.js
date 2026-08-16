@@ -65,6 +65,15 @@ describe('POST form integrity (whole-app ratchets)', () => {
       'marketplace/buy.njk',
       'profile/delete.njk',
       'groups/edit.njk',
+      // Added 2026-08-16 after a deeper audit found these money/credit and
+      // destructive submits unguarded.
+      'group-exchanges/detail.njk',
+      'volunteering/org-wallet.njk',
+      'achievements/shop.njk',
+      'marketplace/offer.njk',
+      'premium/index.njk',
+      'marketplace/manage.njk',
+      'podcasts/manage.njk',
     ];
 
     it.each(REQUIRED)('%s guards its submit against double activation', (tpl) => {
