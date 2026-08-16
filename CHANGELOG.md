@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Volunteer expense claims and donations in the native app no longer fall back to English in Irish.** Forty-one financial labels, prompts, validation messages, categories and statuses now use context-aware Irish. The `EUR` currency code and percentage format remain unchanged as functional values, and a focused test protects both workflows.
+
 - **Volunteer shifts and certificates in the native app now stay in Irish.** Twenty-nine labels, actions, empty states and errors now use context-aware Irish, including approved-hour certificates and accessible action labels. Three language-neutral date and time formats remain unchanged, and the existing software-style translation of “My applications” is corrected to member-facing Irish. A focused test protects the reviewed slice.
 
 - **The native app's entire 300-string Profile catalogue is now reviewed for Irish.** The final 31 English descriptions for balances, messages, recommendations, marketplace tasks, jobs, events, ideas, volunteering and federation now use context-aware Irish. A whole-catalogue test verifies every key and rejects any exact-English fallback.

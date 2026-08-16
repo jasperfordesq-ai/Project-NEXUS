@@ -117,60 +117,60 @@
     "openLabel": "Oscail teastas {{code}}"
   },
   "expenses": {
-    "submit": "Submit expense",
-    "submitHint": "Choose an organisation and submit a reimbursement request.",
-    "noOrganisations": "You do not have an approved organisation to submit expenses against yet.",
-    "validation": "Choose an organisation, enter an amount, and add a description.",
-    "submitError": "Could not submit this expense.",
-    "emptyTitle": "No expenses yet",
-    "amountPlaceholder": "Amount",
+    "submit": "Cuir éileamh costais isteach",
+    "submitHint": "Roghnaigh eagraíocht agus cuir iarratas ar aisíocaíocht isteach.",
+    "noOrganisations": "Níl eagraíocht cheadaithe agat fós ar féidir costas a chur isteach ina leith.",
+    "validation": "Roghnaigh eagraíocht, cuir méid isteach agus cuir cur síos leis.",
+    "submitError": "Níorbh fhéidir an costas seo a chur isteach.",
+    "emptyTitle": "Níl aon éileamh costais ann fós",
+    "amountPlaceholder": "Méid",
     "currencyPlaceholder": "EUR",
-    "descriptionPlaceholder": "What was this expense for?",
-    "dateUnknown": "Date unavailable",
+    "descriptionPlaceholder": "Cén fáth a raibh an costas seo ann?",
+    "dateUnknown": "Dáta gan fáil",
     "stats": {
-      "claimed": "Claimed",
-      "approved": "Approved"
+      "claimed": "Éilithe",
+      "approved": "Ceadaithe"
     },
     "types": {
-      "travel": "Travel",
-      "meals": "Meals",
-      "supplies": "Supplies",
-      "equipment": "Equipment",
-      "parking": "Parking",
-      "other": "Other"
+      "travel": "Taisteal",
+      "meals": "Béilí",
+      "supplies": "Soláthairtí",
+      "equipment": "Trealamh",
+      "parking": "Páirceáil",
+      "other": "Eile"
     },
     "status": {
-      "pending": "Pending",
-      "approved": "Approved",
-      "rejected": "Rejected",
-      "paid": "Paid"
+      "pending": "Ar feitheamh",
+      "approved": "Ceadaithe",
+      "rejected": "Diúltaithe",
+      "paid": "Íoctha"
     }
   },
   "donations": {
-    "activeGivingDays": "Active giving days",
-    "makeDonation": "Make a donation",
-    "makeDonationHint": "Record a pledge or offline donation for a volunteering campaign.",
-    "amountPlaceholder": "Amount",
-    "messagePlaceholder": "Optional message",
-    "anonymousOn": "Anonymous",
-    "anonymousOff": "Show my name",
-    "submit": "Submit donation",
-    "validation": "Enter a valid donation amount.",
-    "submitError": "Could not submit this donation.",
-    "emptyTitle": "No donations yet",
+    "activeGivingDays": "Laethanta gníomhacha tabhartais",
+    "makeDonation": "Tabhair síntiús",
+    "makeDonationHint": "Taifead gealltanas nó síntiús as líne d'fheachtas obair dheonach.",
+    "amountPlaceholder": "Méid",
+    "messagePlaceholder": "Teachtaireacht roghnach",
+    "anonymousOn": "Gan ainm",
+    "anonymousOff": "Taispeáin m'ainm",
+    "submit": "Cuir an síntiús isteach",
+    "validation": "Cuir méid bailí don síntiús isteach.",
+    "submitError": "Níorbh fhéidir an síntiús seo a chur isteach.",
+    "emptyTitle": "Níl aon síntiús ann fós",
     "progress": "{{percent}}%",
-    "raisedOfGoal": "{{raised}} raised of {{goal}}",
-    "selectCampaign": "Choose campaign",
-    "selected": "Selected",
+    "raisedOfGoal": "{{raised}} bailithe as {{goal}}",
+    "selectCampaign": "Roghnaigh feachtas",
+    "selected": "Roghnaithe",
     "stats": {
-      "raised": "Raised",
-      "donors": "Donors"
+      "raised": "Bailithe",
+      "donors": "Deontóirí"
     },
     "status": {
-      "pending": "Pending",
-      "completed": "Completed",
-      "failed": "Failed",
-      "refunded": "Refunded"
+      "pending": "Ar feitheamh",
+      "completed": "Críochnaithe",
+      "failed": "Theip air",
+      "refunded": "Aisíoctha"
     }
   },
   "applicationStatus": {
