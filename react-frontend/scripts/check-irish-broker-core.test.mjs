@@ -80,3 +80,32 @@ test('Irish Broker vetting wording keeps evidence out of NEXUS and records only 
   assert.equal(irish.vetting.resolution_member_contacted, 'Rinneadh teagmháil leis an mball');
   assert.equal(irish.vetting.attestation_access_ni, 'AccessNI');
 });
+
+test('Irish Broker member details describe security actions and balance adjustments accurately', () => {
+  const detail = JSON.stringify(irish.member_detail);
+
+  assert.doesNotMatch(detail, /Inbhordáil|Athsheol deimhniú|Ball ceadaithe/u);
+  assert.doesNotMatch(detail, /chun creidiúint, uimhir dhiúltach chun dochar|Iarmhéid coigeartaithe/u);
+
+  assert.equal(irish.member_detail.load_failed, 'Níorbh fhéidir an ball a luchtú.');
+  assert.equal(irish.member_detail.label_onboarding, 'Ionduchtú');
+  assert.equal(irish.member_detail.action_resend_verification, 'Athsheol an ríomhphost deimhnithe');
+  assert.equal(irish.member_detail.reset_2fa_success, 'Athshocraíodh an fíordheimhniú défhachtóireach.');
+  assert.equal(irish.member_detail.balance_amount_help, 'Úsáid uimhir dhearfach chun creidmheas a chur leis agus uimhir dhiúltach chun é a bhaint.');
+  assert.equal(irish.member_detail.timeline_approved, 'Faofa');
+});
+
+test('Irish Broker exchange controls preserve approval, rejection, status, and time-credit meaning', () => {
+  const exchanges = JSON.stringify(irish.exchanges);
+
+  assert.doesNotMatch(exchanges, /Malartú ceadaithe|Níor aimsíodh aon mhalartuithe/u);
+  assert.doesNotMatch(exchanges, /Sonraí Malartaithe|Clib Riosca|Trasna gach stádais/u);
+  assert.doesNotMatch(exchanges, /ag teastáil athbhreithniú bróicéara|scuaine malartaithe/u);
+
+  assert.equal(irish.exchanges.title, 'Bainistíocht malartuithe');
+  assert.equal(irish.exchanges.approve, 'Faomh');
+  assert.equal(irish.exchanges.approved_success, 'Faomhadh an malartú.');
+  assert.equal(irish.exchanges.rejected_success, 'Diúltaíodh don mhalartú.');
+  assert.equal(irish.exchanges.detail_hours_value, '{{hours}} uair an chloig');
+  assert.equal(irish.exchanges.empty_pending_hint, 'Láimhseáladh gach malartú a raibh athbhreithniú bróicéara de dhíth air.');
+});
