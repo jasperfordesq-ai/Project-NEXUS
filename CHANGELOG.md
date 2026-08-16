@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Seventeen more signed-in pages on the accessible site now have an automated accessibility check.** The browser-based accessibility gate only covered the dashboard, account and a handful of other signed-in pages. A fast new check now also guards the marketplace, jobs, ideas, courses, resources, exchanges, goals, connections, matches, federation, premium, coupons, polls, blog, reviews, skills and volunteering pages — confirming each has exactly one main content region, a working "skip to content" target, a page heading, and no duplicated element identifiers (a common cause of confusion for screen readers). It runs in every language with no browser needed, so a future change that breaks one of these basics is caught immediately.
+
 - **The native app's entire 46-string marketplace offer workflow is now reviewed for Irish.** Offer creation, received and sent states, acceptance, rejection, withdrawal and counteroffers now use context-aware negotiation language instead of wording for opposition or a physical counter, and the malformed amount example was repaired. A whole-section test permits only the reviewed numeric amount format to remain language-neutral.
 
 - **The native app's entire 50-string marketplace pickup workflow is now reviewed for Irish.** Customer reservations, collection windows, QR-code instructions, seller slots, recurring schedules, scanning and pickup statuses now use natural context-aware Irish instead of mixed English fragments or misleading literal wording. A whole-section test permits only three reviewed date and capacity examples to remain language-neutral.

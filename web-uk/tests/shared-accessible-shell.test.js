@@ -36267,4 +36267,59 @@ describe('shared accessible frontend shell', () => {
     expect(contract).toContain('| `ACCESSIBLE_BACKEND_TARGET` | `laravel` | Laravel is the default backend contract target. |');
     expect(contract).toContain('It may become a second backend only by');
   });
+
+  // Structural accessibility contract across signed-in section pages that the
+  // browser-level axe gate (tests/accessibility/public-pages.spec.js) does not
+  // yet cover. This asserts the same landmark/heading/duplicate-id invariants
+  // the axe loop checks before running axe itself — cheaply, in every language,
+  // with no browser or Laravel — so a regression that drops the main landmark,
+  // the skip-link target, the page h1, or introduces a duplicate element id is
+  // caught here. (Colour-contrast / ARIA-rule checks remain the browser gate's
+  // job.) Each page renders in its empty/degraded state under the default mocks,
+  // which is exactly the state a screen-reader user is most likely to hit.
+  describe('signed-in section accessibility structure', () => {
+    const SECTION_PAGES = [
+      { name: 'marketplace', path: '/marketplace' },
+      { name: 'jobs', path: '/jobs' },
+      { name: 'ideation', path: '/ideation' },
+      { name: 'courses', path: '/courses' },
+      { name: 'resources', path: '/resources' },
+      { name: 'exchanges', path: '/exchanges' },
+      { name: 'goals', path: '/goals' },
+      { name: 'connections', path: '/connections' },
+      { name: 'matches', path: '/matches' },
+      { name: 'federation', path: '/federation' },
+      { name: 'premium', path: '/premium' },
+      { name: 'coupons', path: '/coupons' },
+      { name: 'polls', path: '/polls' },
+      { name: 'blog', path: '/blog' },
+      { name: 'reviews', path: '/reviews' },
+      { name: 'skills', path: '/skills' },
+      { name: 'volunteering', path: '/volunteering' }
+    ];
+
+    function duplicateIds(html) {
+      const seen = new Map();
+      const re = /<[^>]+\sid="([^"]+)"/g;
+      let match;
+      while ((match = re.exec(html)) !== null) {
+        seen.set(match[1], (seen.get(match[1]) || 0) + 1);
+      }
+      return [...seen.entries()].filter(([, count]) => count > 1).map(([id]) => id);
+    }
+
+    it.each(SECTION_PAGES)('$name renders one main landmark, skip target, h1 and no duplicate ids', async ({ path }) => {
+      const response = await request(app).get(path).set('Cookie', signedCookieHeader());
+
+      expect(response.status).toBeLessThan(400);
+      // Exactly one main landmark and one skip-link target, at least one page
+      // heading, and no duplicate element ids. (Service navigation is tenant-
+      // module-gated chrome, not a page-structure invariant, so it is not
+      // asserted here — the browser axe gate covers it on a routed tenant.)
+      expect((response.text.match(/<main[\s>]/g) || []).length).toBe(1);
+      expect((response.text.match(/id="main-content"/g) || []).length).toBe(1);
+      expect((response.text.match(/<h1[\s>]/g) || []).length).toBeGreaterThanOrEqual(1);
+      expect(duplicateIds(response.text)).toEqual([]);
+    });
+  });
 });
