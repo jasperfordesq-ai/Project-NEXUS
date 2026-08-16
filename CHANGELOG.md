@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Linked-account settings in the native app now stay in Irish without blurring consent boundaries.** Thirty-four request, approval, delegated-access, status and permission labels now use context-aware Irish and describe member-approved account capabilities rather than staff-recorded guardian arrangements. The email example remains unchanged as a functional value, and a focused test protects the workflow.
+
 - **Blocked-user controls and personal-data exports in the native app now stay in Irish.** Thirty-nine privacy labels, explanations, confirmations, warnings, formats, progress states and errors now use context-aware Irish. The `JSON` format name remains unchanged as a technical identifier, and a focused test protects both sensitive workflows.
 
 - **Language and content preferences in the native app now stay in Irish.** Thirty-two account labels, feed-ordering controls, automatic-translation settings, save states and language names now use context-aware Irish. A focused test protects the complete preferences slice.
