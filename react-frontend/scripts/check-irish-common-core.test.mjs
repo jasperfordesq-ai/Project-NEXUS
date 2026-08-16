@@ -119,6 +119,8 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /Do cheart rochtain agus easpórtáil|Ní oibríonn buntasc|Fadhb amhairc nó foclaíochta/u);
   assert.doesNotMatch(allIrish, /Tuilte ar feadh an tsaoil|aitheantas balla|0\. 00|Aon idirbheart fós/u);
   assert.doesNotMatch(allIrish, /Buaileann: \{\{schedule\}\}|Féach Club|creidmheas\/u(?:\s|$)/u);
+  assert.doesNotMatch(allIrish, /Ualach ard cúraim|Ualach measartha cúraim|logaí cúraim/u);
+  assert.doesNotMatch(allIrish, /Níl suim acu ann|I bhfad ar shiúl|Ní oireann sé do mo scileanna/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -183,4 +185,10 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.regional_points.transfer.recipient_id, 'Aitheantas an bhaill is faighteoir');
   assert.equal(irish.regional_points.transfer.amount_placeholder, '0.00');
   assert.equal(irish.regional_points.history.empty, 'Níl aon idirbheart ann fós.');
+  assert.equal(irish.wellbeing.mood_low, 'In ísle brí');
+  assert.equal(irish.wellbeing.score_fair, 'Measartha');
+  assert.match(irish.caregiver.burnout_high, /ar an gcúramóir/u);
+  assert.match(irish.caregiver.burnout_warning, /go nglacann tú sos/u);
+  assert.equal(irish.dismiss_reasons.not_interested, 'Níl suim agam ann');
+  assert.equal(irish.dismiss_reasons.too_far, 'Rófhada uaim');
 });

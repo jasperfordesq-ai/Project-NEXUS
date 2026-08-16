@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish wellbeing, caregiver-load and match-dismissal wording now speaks clearly from the member’s perspective.** Low mood and fair wellbeing scores no longer read like object states or moral judgements; caregiver load and rest guidance identify the caregiver and avoid system-log language; and dismissal reasons now say “I am not interested”, “too far from me”, or that a match is outside the member’s skills instead of describing an unnamed third person.
+
 - **Irish local-discovery and regional-points journeys no longer contain misleading literal translations.** Club schedules now say when a club meets rather than that it “hits”; marketplace rates use a complete per-hour label; and the regional-points summary no longer describes lifetime earnings as floods or member IDs as wall identifiers. The malformed transfer amount example and missing negative transaction empty state are repaired, with the numeric format explicitly reviewed as a language-neutral invariant.
 
 - **Irish skill discovery, personal-data export and problem reporting now preserve their full member-facing meaning.** Skill search now searches for skills rather than categories and uses clearer member and proficiency wording; the data-export introduction restores the omitted explanation of machine-readable JSON and the right to move data to another service; and technical-support reports now distinguish blocked core tasks, diagnostic information and reference numbers accurately. Focused assertions guard the restored data-portability promise and repaired actions.

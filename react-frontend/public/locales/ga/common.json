@@ -2442,13 +2442,13 @@
   "alpha_badge": "Alfa",
   "wellbeing": {
     "mood_struggling": "Ag Streachailt",
-    "mood_low": "Íseal",
+    "mood_low": "In ísle brí",
     "mood_good": "Maith",
     "mood_great": "Go hiontach",
     "score_excellent": "Ar fheabhas",
     "score_good": "Maith",
-    "score_fair": "Cóir",
-    "score_needs_attention": "Teastaíonn aird",
+    "score_fair": "Measartha",
+    "score_needs_attention": "Ní mór aird a thabhairt air",
     "mood_okay": "Ceart go leor",
     "mood_unknown": "Anaithnid",
     "score_critical": "Criticiúil"
@@ -2464,20 +2464,20 @@
   "submit": "Cuir isteach",
   "caregiver": {
     "hours_short": "{{hours}} u",
-    "burnout_high": "Ualach ard cúraim: {{hours}} uair an chloig an tseachtain seo",
-    "burnout_moderate": "Ualach measartha cúraim: {{hours}} uair an chloig an tseachtain seo",
-    "burnout_warning": "Tá cuid mhór uaireanta cúraim taifeadta agat an tseachtain seo — déan cinnte go bhfaigheann tú sos",
+    "burnout_high": "Ualach ard ar an gcúramóir: {{hours}} uair an chloig an tseachtain seo",
+    "burnout_moderate": "Ualach measartha ar an gcúramóir: {{hours}} uair an chloig an tseachtain seo",
+    "burnout_warning": "Tá cuid mhór uaireanta cúraim taifeadta agat an tseachtain seo — déan cinnte go nglacann tú sos",
     "upcoming_care": "Cúram atá le teacht",
     "no_upcoming_care": "Níl aon tacaíocht sceidealaithe fós",
     "recent_care": "Cúram le déanaí",
-    "no_recent_care": "Níl aon logaí cúraim le déanaí fós",
+    "no_recent_care": "Níor taifeadadh aon chúram le déanaí",
     "view_schedule": "Féach ar an sceideal cúraim",
     "request_on_behalf": "Iarr cabhair ar a son"
   },
   "dismiss_reasons": {
-    "not_interested": "Níl suim acu ann",
-    "too_far": "I bhfad ar shiúl",
-    "not_my_skills": "Ní oireann sé do mo scileanna"
+    "not_interested": "Níl suim agam ann",
+    "too_far": "Rófhada uaim",
+    "not_my_skills": "Ní bhaineann sé le mo chuid scileanna"
   },
   "under_25": "Faoi 25",
   "25_34": "25–34",
