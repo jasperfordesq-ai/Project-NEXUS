@@ -413,6 +413,7 @@ router.get('/competitive', asyncRoute(async (req, res) => {
 
   let leaderboardPayload;
   let seasonPayload;
+  let loadError = '';
   try {
     [leaderboardPayload, seasonPayload] = await Promise.all([
       callGamificationApi(token, 'GET', `/leaderboard?type=${encodeURIComponent(selectedType)}&period=${encodeURIComponent(selectedPeriod)}&limit=${limit}`),
@@ -420,6 +421,7 @@ router.get('/competitive', asyncRoute(async (req, res) => {
     ]);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     leaderboardPayload = { data: [], meta: { has_more: false, your_position: null } };
     seasonPayload = { data: { season: null } };
   }
@@ -431,6 +433,7 @@ router.get('/competitive', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_gamification.competitive.title'),
     activeNav: 'leaderboard',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     competitive: {
       rows,
       type: selectedType,
@@ -454,10 +457,12 @@ router.get('/journey', asyncRoute(async (req, res) => {
   }
 
   let journeyPayload;
+  let loadError = '';
   try {
     journeyPayload = await callGamificationApi(token, 'GET', '/personal-journey');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     journeyPayload = { data: {} };
   }
 
@@ -465,6 +470,7 @@ router.get('/journey', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_gamification.journey.title'),
     activeNav: 'leaderboard',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     journey: normalizeJourney(journeyPayload)
   });
 }));
@@ -476,10 +482,12 @@ router.get('/spotlight', asyncRoute(async (req, res) => {
   }
 
   let spotlightPayload;
+  let loadError = '';
   try {
     spotlightPayload = await callGamificationApi(token, 'GET', '/member-spotlight?limit=3');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     spotlightPayload = { data: [] };
   }
 
@@ -487,6 +495,7 @@ router.get('/spotlight', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_gamification.spotlight.title'),
     activeNav: 'leaderboard',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     spotlightMembers: normalizeSpotlightMembers(spotlightPayload, res.locals.t)
   });
 }));
@@ -499,6 +508,7 @@ router.get('/seasons', asyncRoute(async (req, res) => {
 
   let currentPayload;
   let seasonsPayload;
+  let loadError = '';
   try {
     [currentPayload, seasonsPayload] = await Promise.all([
       callGamificationApi(token, 'GET', '/seasons/current'),
@@ -506,6 +516,7 @@ router.get('/seasons', asyncRoute(async (req, res) => {
     ]);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     currentPayload = { data: { season: null } };
     seasonsPayload = { data: [] };
   }
@@ -514,6 +525,7 @@ router.get('/seasons', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_gamification.seasons.title'),
     activeNav: 'leaderboard',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     seasons: {
       current: normalizeCurrentSeason(currentPayload, res.locals.t, res.locals.tc),
       history: normalizeAllSeasons(seasonsPayload, res.locals.t)
@@ -532,6 +544,7 @@ router.get('/', asyncRoute(async (req, res) => {
 
   let leaderboardPayload;
   let impactPayload;
+  let loadError = '';
   try {
     [leaderboardPayload, impactPayload] = await Promise.all([
       callGamificationApi(token, 'GET', `/leaderboard?type=${encodeURIComponent(selectedType)}&period=${encodeURIComponent(selectedPeriod)}&limit=20`),
@@ -539,6 +552,7 @@ router.get('/', asyncRoute(async (req, res) => {
     ]);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     leaderboardPayload = { data: [] };
     impactPayload = { data: {} };
   }
@@ -547,6 +561,7 @@ router.get('/', asyncRoute(async (req, res) => {
     title: res.locals.t('leaderboard.title'),
     activeNav: 'leaderboard',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     leaderboard: {
       rows: normalizeRows(leaderboardPayload, res.locals.t),
       type: selectedType,

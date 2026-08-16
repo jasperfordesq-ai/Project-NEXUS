@@ -320,13 +320,17 @@ function normalizeBadgeDetail(result, key) {
   };
 }
 
-async function safeGamificationCall(token, pathValue, fallback) {
+async function safeGamificationCall(token, pathValue, fallback, onError) {
   try {
     return await callGamificationApi(token, 'GET', pathValue);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       throw error;
     }
+    // Non-auth outage: keep the per-call fallback (one broken section never
+    // blanks the whole page) but let the caller know a load failed so the page
+    // can show a "we could not load this" banner instead of a false empty state.
+    if (typeof onError === 'function') onError(error);
     return fallback;
   }
 }
@@ -365,17 +369,20 @@ router.get('/', asyncRoute(async (req, res) => {
   let progressPayload;
   let dailyPayload;
   let challengesPayload;
+  let loadFailed = false;
+  const onFail = () => { loadFailed = true; };
 
   try {
     [profilePayload, badgesPayload, progressPayload, dailyPayload, challengesPayload] = await Promise.all([
-      safeGamificationCall(token, '/profile', { data: {} }),
-      safeGamificationCall(token, '/badges', { data: [] }),
-      safeGamificationCall(token, '/achievements/progress', { data: { progress: [] } }),
-      safeGamificationCall(token, '/daily-reward', { data: {} }),
-      safeGamificationCall(token, '/challenges', { data: [] })
+      safeGamificationCall(token, '/profile', { data: {} }, onFail),
+      safeGamificationCall(token, '/badges', { data: [] }, onFail),
+      safeGamificationCall(token, '/achievements/progress', { data: { progress: [] } }, onFail),
+      safeGamificationCall(token, '/daily-reward', { data: {} }, onFail),
+      safeGamificationCall(token, '/challenges', { data: [] }, onFail)
     ]);
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadFailed = true;
     profilePayload = { data: {} };
     badgesPayload = { data: [] };
     progressPayload = { data: { progress: [] } };
@@ -390,6 +397,7 @@ router.get('/', asyncRoute(async (req, res) => {
   return res.render('achievements/index', {
     title: res.locals.t('achievements.title'),
     activeNav: 'achievements',
+    loadError: loadFailed ? res.locals.t('states.load_error') : '',
     achievements: {
       profile: normalizeProfile(profilePayload, earnedBadges.length),
       earnedBadges,
@@ -413,10 +421,12 @@ router.get('/shop', asyncRoute(async (req, res) => {
   }
 
   let shopPayload;
+  let loadError = '';
   try {
     shopPayload = await callGamificationApi(token, 'GET', '/shop');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     shopPayload = { data: { items: [], user_xp: 0 } };
   }
 
@@ -424,6 +434,7 @@ router.get('/shop', asyncRoute(async (req, res) => {
   return res.render('achievements/shop', {
     title: res.locals.t('govuk_alpha_gamification.shop.title'),
     activeNav: 'achievements',
+    loadError,
     shop: {
       ...normalizeShop(shopPayload, res.locals.t),
       status,
@@ -444,16 +455,19 @@ router.get('/collections', asyncRoute(async (req, res) => {
   }
 
   let collectionsPayload;
+  let loadError = '';
   try {
     collectionsPayload = await callGamificationApi(token, 'GET', '/collections');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     collectionsPayload = { data: [] };
   }
 
   return res.render('achievements/collections', {
     title: res.locals.t('govuk_alpha_gamification.collections.title'),
     activeNav: 'achievements',
+    loadError,
     collections: normalizeCollections(collectionsPayload)
   });
 }));
@@ -465,16 +479,19 @@ router.get('/engagement', asyncRoute(async (req, res) => {
   }
 
   let historyPayload;
+  let loadError = '';
   try {
     historyPayload = await callGamificationApi(token, 'GET', '/engagement-history');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     historyPayload = { data: [] };
   }
 
   return res.render('achievements/engagement', {
     title: res.locals.t('govuk_alpha_gamification.engagement.title'),
     activeNav: 'achievements',
+    loadError,
     engagementHistory: normalizeEngagementHistory(historyPayload, res.locals.tc)
   });
 }));
@@ -486,16 +503,19 @@ router.get('/showcase', asyncRoute(async (req, res) => {
   }
 
   let badgesPayload;
+  let loadError = '';
   try {
     badgesPayload = await callGamificationApi(token, 'GET', '/badges');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     badgesPayload = { data: [] };
   }
 
   return res.render('achievements/showcase', {
     title: res.locals.t('govuk_alpha_gamification.showcase.title'),
     activeNav: 'achievements',
+    loadError,
     earnedBadges: normalizeShowcaseBadges(badgesPayload),
     status: textFrom(req.query.status)
   });

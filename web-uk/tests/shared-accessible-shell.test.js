@@ -1143,6 +1143,50 @@ describe('shared accessible frontend shell', () => {
     expect(response.headers.location).toMatch(/\/acme\/accessible\/login/);
   });
 
+  it('shows a "we could not load this" banner on the activity page when its data fails', async () => {
+    const api = require('../src/lib/api');
+    api.callProfileApi.mockRejectedValueOnce(new api.ApiError('Activity unavailable', 503));
+
+    const response = await request(app).get('/activity').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
+  it('shows a "we could not load this" banner on the leaderboard when its data fails', async () => {
+    const api = require('../src/lib/api');
+    api.callGamificationApi.mockRejectedValueOnce(new api.ApiError('Leaderboard unavailable', 503));
+
+    const response = await request(app).get('/leaderboard').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
+  it('shows a "we could not load this" banner on the achievements page when a section fails', async () => {
+    const api = require('../src/lib/api');
+    api.callGamificationApi.mockRejectedValueOnce(new api.ApiError('Achievements unavailable', 503));
+
+    const response = await request(app).get('/achievements').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
+  it('shows a "we could not load this" banner on the nexus score page when its data fails', async () => {
+    const api = require('../src/lib/api');
+    api.callGamificationApi.mockRejectedValueOnce(new api.ApiError('Score unavailable', 503));
+
+    const response = await request(app).get('/nexus-score').set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
   it('renders the Laravel-backed Explore hub with live discovery sections', async () => {
     const api = require('../src/lib/api');
     api.getClubs.mockResolvedValueOnce({

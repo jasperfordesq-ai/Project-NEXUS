@@ -186,10 +186,12 @@ router.get('/tiers', asyncRoute(async (req, res) => {
   }
 
   let scorePayload;
+  let loadError = '';
   try {
     scorePayload = await callGamificationApi(token, 'GET', '/nexus-score');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     scorePayload = { data: {} };
   }
 
@@ -197,6 +199,7 @@ router.get('/tiers', asyncRoute(async (req, res) => {
     title: res.locals.t('govuk_alpha_gamification.tiers.title'),
     activeNav: 'nexus_score',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     tierScore: normalizeTierScore(scorePayload, res.locals.t)
   });
 }));
@@ -208,10 +211,12 @@ router.get('/', asyncRoute(async (req, res) => {
   }
 
   let scorePayload;
+  let loadError = '';
   try {
     scorePayload = await callGamificationApi(token, 'GET', '/nexus-score');
   } catch (error) {
     if (redirectAuthIfNeeded(error, res)) return undefined;
+    loadError = res.locals.t('states.load_error');
     scorePayload = { data: {} };
   }
 
@@ -219,6 +224,7 @@ router.get('/', asyncRoute(async (req, res) => {
     title: res.locals.t('nexus_score.title'),
     activeNav: 'nexus_score',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     nexusScore: normalizeScoreOverview(scorePayload, res.locals.t)
   });
 }));

@@ -11,6 +11,13 @@
 
   <span class="govuk-caption-xl">{{ t("achievements.caption", { community: communityName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("achievements.title") }}</h1>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% endif %}
   <p class="govuk-body-l">{{ t("achievements.description") }}</p>
 
   <dl class="govuk-summary-list govuk-!-margin-bottom-4">

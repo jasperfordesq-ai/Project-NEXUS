@@ -11,6 +11,13 @@
   <h1 class="govuk-heading-xl">{{ t("govuk_alpha_activity.insights.heading") }}</h1>
   <p class="govuk-body-l">{{ t("govuk_alpha_activity.insights.intro") }}</p>
 
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% endif %}
+
   <h2 class="govuk-visually-hidden">{{ t("govuk_alpha_activity.insights.stats_title") }}</h2>
   <dl class="nexus-alpha-stat-grid govuk-!-margin-bottom-8">
     <div class="nexus-alpha-stat">

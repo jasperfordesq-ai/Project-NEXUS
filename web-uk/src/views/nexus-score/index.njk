@@ -7,6 +7,13 @@
 {% block content %}
   <span class="govuk-caption-xl">{{ communityName }}</span>
   <h1 class="govuk-heading-xl">{{ t("nexus_score.title") }}</h1>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% endif %}
   <p class="govuk-body-l">{{ t("nexus_score.description") }}</p>
 
   <nav class="govuk-!-margin-bottom-6" aria-label="{{ t("nexus_score.title") }}">

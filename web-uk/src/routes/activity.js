@@ -259,6 +259,7 @@ async function activityContext(req, res, title) {
   }
 
   let payload = {};
+  let loadError = '';
   try {
     payload = await callProfileApi(token, 'GET', '/users/me/activity/dashboard');
   } catch (error) {
@@ -266,6 +267,9 @@ async function activityContext(req, res, title) {
       redirectTo(res, loginRedirect());
       return null;
     }
+    // Non-auth outage: render the page with a "we could not load this" banner
+    // rather than a zeroed timeline that reads as "you have no activity".
+    loadError = res.locals.t('states.load_error');
     payload = {};
   }
 
@@ -273,6 +277,7 @@ async function activityContext(req, res, title) {
     title,
     activeNav: 'activity',
     communityName: res.locals.tenantName || res.locals.serviceName || 'this community',
+    loadError,
     activity: normalizeActivity(payload, res.locals.t)
   };
 }

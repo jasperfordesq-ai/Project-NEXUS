@@ -9,6 +9,13 @@
   <h1 class="govuk-heading-xl">{{ t("activity.title") }}</h1>
   <p class="govuk-body-l">{{ t("activity.description") }}</p>
 
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% endif %}
+
   <p class="govuk-body govuk-!-margin-bottom-6">
     <a class="govuk-link" href="{{ urlFor('/activity/insights') }}">{{ t("govuk_alpha_activity.nav.insights") }}</a>
   </p>
