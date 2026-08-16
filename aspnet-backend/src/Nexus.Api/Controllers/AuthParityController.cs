@@ -1,4 +1,4 @@
-// Copyright © 2024–2026 Jasper Ford
+﻿// Copyright © 2024–2026 Jasper Ford
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Author: Jasper Ford
 // See NOTICE file for attribution and acknowledgements.
@@ -8,12 +8,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Nexus.Api.Data;
 using Nexus.Api.Extensions;
+using Nexus.Api.Services;
 
 namespace Nexus.Api.Controllers;
 
@@ -99,13 +101,109 @@ public class AuthParityController : ControllerBase
     // spellings (AuthController.Refresh); this stub is deliberately gone rather
     // than commented out, so it cannot be reinstated by accident.
 
+    /// <summary>
+    /// POST /api/auth/revoke — revoke one refresh token (sign out one device).
+    ///
+    /// 🔴 Returned <c>{revoked:true}</c> unconditionally until 2026-08-16 while
+    /// revoking nothing. A member told "that device has been signed out" kept a
+    /// fully working session on it, and the platform had no record either way.
+    /// For a sign-out control that is not a cosmetic bug — it is the control
+    /// people reach for when they think someone else has their account.
+    ///
+    /// Laravel: <c>AuthController::revokeToken</c> (routes/api.php:3423) —
+    /// requires <c>refresh_token</c> in the body, 400 when absent, 400 when the
+    /// token is unknown or already revoked, and scopes the revoke to the caller
+    /// so one member cannot revoke another's session.
+    /// </summary>
     [HttpPost("revoke")]
     [Authorize]
-    public IActionResult Revoke() => Ok(new { revoked = true });
+    public async Task<IActionResult> Revoke([FromBody] RevokeTokenRequest? request)
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(new { success = false, error = "Authentication required", code = "AUTH_TOKEN_MISSING" });
+        }
 
+        var submitted = request?.RefreshToken;
+        if (string.IsNullOrWhiteSpace(submitted))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                error = "refresh_token is required",
+                code = "VALIDATION_REQUIRED_FIELD",
+            });
+        }
+
+        var tokenHash = TokenService.HashToken(submitted);
+
+        // 🔴 Scoped to the caller. Matching on the hash alone would let anyone
+        // holding a stolen token revoke the rightful owner's session, and would
+        // also let one member sign another out.
+        var token = await _db.RefreshTokens.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash
+                && t.UserId == userId.Value
+                && t.RevokedAt == null);
+
+        if (token is null)
+        {
+            // Deliberately the same answer for "not yours", "unknown" and
+            // "already revoked": distinguishing them tells a caller holding a
+            // token whether it is real.
+            return BadRequest(new
+            {
+                success = false,
+                error = "Invalid or already revoked refresh token",
+                code = "AUTH_TOKEN_INVALID",
+            });
+        }
+
+        token.RevokedAt = DateTime.UtcNow;
+        token.RevokedReason = "manual";
+        await _db.SaveChangesAsync();
+
+        return Ok(new { success = true, data = new { revoked = true } });
+    }
+
+    /// <summary>
+    /// POST /api/auth/revoke-all — revoke every refresh token for the caller
+    /// (sign out everywhere).
+    ///
+    /// 🔴 Returned <c>{revoked:"all"}</c> unconditionally until 2026-08-16
+    /// while revoking nothing. This is the control a member uses after "someone
+    /// else has my password" — reporting success while every stolen session
+    /// stays live is the worst possible answer to that.
+    ///
+    /// Laravel: <c>AuthController::revokeAllTokens</c> (routes/api.php:3424).
+    /// </summary>
     [HttpPost("revoke-all")]
     [Authorize]
-    public IActionResult RevokeAll() => Ok(new { revoked = "all" });
+    public async Task<IActionResult> RevokeAll()
+    {
+        var userId = User.GetUserId();
+        if (userId is null)
+        {
+            return Unauthorized(new { success = false, error = "Authentication required", code = "AUTH_TOKEN_MISSING" });
+        }
+
+        var now = DateTime.UtcNow;
+        var revoked = await _db.RefreshTokens.IgnoreQueryFilters()
+            .Where(t => t.UserId == userId.Value && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(t => t.RevokedAt, now)
+                .SetProperty(t => t.RevokedReason, "revoke_all"));
+
+        // A member with no live refresh tokens is already signed out
+        // everywhere, so zero is a success, not an error.
+        return Ok(new { success = true, data = new { revoked = true, count = revoked } });
+    }
+
+    public sealed class RevokeTokenRequest
+    {
+        [JsonPropertyName("refresh_token")]
+        public string? RefreshToken { get; set; }
+    }
 
     [HttpGet("validate-token")]
     [Authorize]
