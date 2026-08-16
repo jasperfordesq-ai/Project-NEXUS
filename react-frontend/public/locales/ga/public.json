@@ -23,7 +23,7 @@
     "link_about": "Maidir leis an tionónta seo",
     "security_title": "Nochtadh slándála",
     "security_body_before": "An bhfuair tú saincheist slándála? Tuairiscigh go príobháideach í chuig ",
-    "security_body_after": " seachas saincheist phoiblí a chomhdú. Tá an polasaí iomlán um nochtadh leochaileachta in SECURITY.md sa stór foinseach.",
+    "security_body_after": " seachas saincheist phoiblí a chomhdú. Tá an beartas iomlán um nochtadh leochaileachtaí in SECURITY.md sa stór cód foinseach.",
     "security_email": "jasper@hour-timebank.ie",
     "tech_stack": {
       "ai_label": "IS",
@@ -85,7 +85,7 @@
           },
           "explore_discovery": {
             "title": "Faigh Amach",
-            "description": "Aon leathanach cóirithe amháin a nochtann scileanna, liostuithe, imeachtaí, grúpaí, postálacha agus daoine is fiú a fheiceáil, ionas nach mbíonn ar bhaill póirseáil trí gach rannóg chun iad a aimsiú."
+            "description": "Leathanach coimeádta amháin a chuireann scileanna, liostálacha, imeachtaí, grúpaí, postálacha agus daoine spéisiúla os comhair an bhaill, ionas nach gá dóibh gach rannóg a chuardach chun iad a aimsiú."
           },
           "maps_and_location": {
             "title": "Mapaí agus Soláthraithe Suímh",
@@ -99,7 +99,7 @@
         "items": {
           "federation_network": {
             "title": "Líonra Pobail (suiteáil chéanna)",
-            "description": "Nasc pobail iolracha arna óstáil ar shuiteáil amháin le haghaidh fionnachtain trasphobail, liostaí, imeachtaí agus teachtaireachtaí."
+            "description": "Nasc pobail éagsúla atá á n-óstáil ar shuiteáil amháin chun liostálacha, imeachtaí agus teachtaireachtaí a aimsiú thar phobail éagsúla."
           },
           "external_partner_federation": {
             "title": "Cónaidhm le páirtithe seachtracha",
@@ -108,7 +108,7 @@
           },
           "multi_protocol_adapters": {
             "title": "Cuibheoirí ilphrótacal",
-            "description": "Cuibheoirí le haghaidh sioncronaithe déthreo de 9 gcineál eintitis — baill, liostaí, imeachtaí, grúpaí, naisc, obair dheonach, léirmheasanna, aistrithe, teachtaireachtaí — thar na ceithre phrótacal.",
+            "description": "Cuibheoirí chun naoi gcineál eintitis a shioncronú sa dá threo — baill, liostálacha, imeachtaí, grúpaí, naisc, obair dheonach, léirmheasanna, aistrithe agus teachtaireachtaí — thar na ceithre phrótacal.",
             "note": "Tógtha agus clúdaithe ag tástálacha taobh le Cónaidhm na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon rud ar siúl, mar sin níl aon rud ag sioncronú."
           },
           "federation_neighborhoods": {
@@ -135,7 +135,7 @@
         "items": {
           "service_listings": {
             "title": "Fógraí seirbhísí",
-            "description": "Postáil tairiscintí agus iarratais, brabhsáil agus meaitseáil fógraí go cliste."
+            "description": "Foilsigh tairiscintí agus iarrataí, brabhsáil liostálacha agus meaitseáil iad go cliste."
           },
           "marketplace": {
             "title": "Margadh",
@@ -159,7 +159,7 @@
           },
           "social_feed": {
             "title": "Fotha sóisialta",
-            "description": "Postálacha, tráchtanna, taitneamhachtaí, pobalbhreitheanna, haischlibeanna, teachtaireachtaí gutha, ceangaltáin meán, réamhamhairc nasc agus @luaitear."
+            "description": "Postálacha, tráchtanna, rudaí a thaitníonn le daoine, pobalbhreitheanna, haischlibeanna, teachtaireachtaí gutha, ceangaltáin meán, réamhamhairc nasc agus @lua."
           },
           "stories": {
             "title": "Scéalta",
@@ -359,8 +359,8 @@
             "note": "Is ról oibríochtúil ann féin é bróicéir, ní riarthóir sóisearach: faigheann bróicéirí an feidhmchlár seo agus diúltaítear d’aon ghnó rochtain dóibh ar an bpainéal riaracháin ginearálta."
           },
           "two_factor_and_passkeys": {
-            "title": "Logáil Isteach Dhá-Fhachtóir agus Pasfhocail",
-            "description": "Dara fachtóir trí aip fhíordheimhnithe, agus pasfhocail trí Windows Hello, Touch ID, Face ID nó eochair slándála crua-earraí, ionas gur féidir le ball logáil isteach gan pasfhocal a chlóscríobh ar chor ar bith. Is féidir gach ceann a chasadh air nó as in aghaidh an chomhphobail."
+            "title": "Fíordheimhniú Dhá Fhachtóir agus Paseochracha",
+            "description": "Dara fachtóir trí aip fíordheimhnithe, agus paseochracha trí Windows Hello, Touch ID, Face ID nó eochair shlándála chrua-earraí, ionas gur féidir le ball síniú isteach gan pasfhocal a chlóscríobh ar chor ar bith. Is féidir gach ceann acu a chumasú nó a dhíchumasú do gach pobal ar leith."
           }
         }
       },
@@ -402,11 +402,11 @@
           "ai_agents": {
             "title": "Gníomhairí IS",
             "note": "Tógtha agus múchta de réir réamhshocraithe. Níl aon chomhphobal á úsáid inniu.",
-            "description": "Gníomhairí intleachta shaorga in aghaidh an chomhphobail a ritheann jabanna ar sceideal, a chuireann gníomhartha molta faoi bhráid riarthóra le ceadú, agus a chuidíonn le hoibríochtaí laethúla an ardáin. Taifeadtar gach rith agus gach moladh."
+            "description": "Gníomhairí intleachta saorga do gach pobal a ritheann tascanna de réir sceidil, a chuireann gníomhartha molta faoi bhráid riarthóra lena gceadú agus a chuidíonn le hoibríochtaí laethúla an ardáin. Taifeadtar gach rith agus gach moladh."
           },
           "ai_provider_choice": {
             "title": "Rogha Soláthraí IS",
-            "description": "Níl an ciseal intleachta shaorga ceangailte le soláthraí amháin: tacaítear le OpenAI, Anthropic, Google Gemini, agus Ollama féin-óstaithe taobh thiar den chomhéadan céanna, mar sin is féidir le comhphobal roghnú ar bhonn costais, suímh sonraí, nó polasaí."
+            "description": "Níl an ciseal intleachta saorga ceangailte le soláthraí amháin: tacaítear le OpenAI, Anthropic, Google Gemini agus Ollama féinóstáilte tríd an gcomhéadan céanna, mar sin is féidir le pobal roghnú de réir costais, shuíomh na sonraí nó an bheartais."
           }
         }
       },
@@ -489,7 +489,7 @@
         "items": {
           "enterprise_security": {
             "title": "Slándáil fhiontair",
-            "description": "CSRF, srianadh rátaí, 2FA TOTP, eochracha pasanna WebAuthn, nonces CSP, liosta ceadaithe CORS, bailíochtú Form Request, geataí fíoraithe ríomhphoist agus clárú trí chód cuiridh."
+            "description": "CSRF, teorannú ráta, 2FA TOTP, paseochracha WebAuthn, nonces CSP, liosta ceadaithe CORS, bailíochtú Form Request, geataí fíoraithe ríomhphoist agus clárú trí chód cuiridh."
           },
           "stripe_payments_layer": {
             "title": "Ciseal íocaíochtaí Stripe",
@@ -533,7 +533,7 @@
           },
           "email_webhook_processing": {
             "title": "Próiseáil webhook ríomhphoist",
-            "description": "Preab postmharc, gearán, oscailt, agus láimhseáil imeacht seachadta."
+            "description": "Láimhseáil preabanna, gearán, oscailtí agus imeachtaí seachadta ó Postmark."
           },
           "openapi_3_0_specification": {
             "title": "Sonraíocht OpenAPI 3.0",
@@ -632,7 +632,7 @@
     "stats": {
       "active_members": "Baill Ghníomhacha",
       "hours_exchanged": "Uaireanta Malartaithe",
-      "active_listings": "Liostaí Gníomhacha",
+      "active_listings": "Liostálacha Gníomhacha",
       "communities": "Pobail"
     },
     "scroll_down": "Scrollaigh síos",
@@ -646,8 +646,8 @@
         },
         "exchange": {
           "title": "Tairg nó faigh cabhair",
-          "description": "Sleamhnáil trí na rudanna atá á dtairgiú ag daoine, nó cuir do iarraidh féin.",
-          "cta": "Sleamhnáil trí liostaí"
+          "description": "Brabhsáil a bhfuil á thairiscint ag daoine, nó foilsigh d'iarraidh féin.",
+          "cta": "Brabhsáil Liostálacha"
         },
         "partner": {
           "title": "Comhpháirtigh nó mol",
@@ -717,7 +717,7 @@
         },
         "1": {
           "title": "Aimsigh a bhFuil Uait",
-          "description": "Brabhsáil liostaí chun seirbhísí a aimsiú atá á dtairiscint ag baill in aice leat."
+          "description": "Brabhsáil liostálacha chun seirbhísí atá á dtairiscint ag baill i do cheantar a aimsiú."
         },
         "2": {
           "title": "Malartaigh Seirbhísí",
@@ -754,7 +754,7 @@
     "stats": {
       "members": "Baill",
       "hours_exchanged": "Uaireanta Malartaithe",
-      "active_listings": "Liostaí Gníomhacha",
+      "active_listings": "Liostálacha Gníomhacha",
       "communities": "Pobail"
     },
     "credits": {
@@ -781,7 +781,7 @@
     }
   },
   "contact": {
-    "meta_description": "Téigh i dteagmháil leis an bhfoireann — ceisteanna faoi pháirtnéireacht, comhpháirtíochta, oideas sóisialta, inrochtaineacht, nó conas a oibríonn baincéireacht ama. Táimid sásta cabhrú leat.",
+    "meta_description": "Téigh i dteagmháil leis an bhfoireann má tá ceist agat faoi chlárú, comhpháirtíocht, oideasacht shóisialta, inrochtaineacht nó conas a oibríonn baincéireacht ama. Táimid sásta cabhrú leat.",
     "title": "Déan Teagmháil Linn",
     "subtitle": "An bhfuil ceist agat faoi {{name}}? Ba bhreá linn cloisteáil uait.",
     "success_title": "Teachtaireacht Seolta!",
@@ -813,7 +813,7 @@
   },
   "faq": {
     "page_title": "Ceisteanna Coitianta",
-    "meta_description": "Ceisteanna coitianta faoi bhainc ama, creidmheasanna ama, liostaí, malartuithe, muinín agus sábháilteacht, agus ballraíocht pobail - gach rud atá uait le tosú.",
+    "meta_description": "Ceisteanna coitianta faoi bhaincéireacht ama, creidmheasanna ama, liostálacha, malartuithe, muinín agus sábháilteacht, agus ballraíocht pobail — gach a bhfuil uait chun tosú.",
     "title": "Ceisteanna Coitianta",
     "subtitle_before_link": "Ní féidir leat a bhfuil uait a aimsiú? Tabhair cuairt ar ár",
     "help_center_link": "nIonad Cabhrach",
@@ -845,7 +845,7 @@
           "step2_text": "Féach cad iad na seirbhísí atá á dtairiscint agus ag teastáil",
           "step3_bold": "Cuir tairiscint suas",
           "step3_text": "Roinn an méid is féidir leat cabhrú le daoine eile",
-          "step4_bold": "Déan iarratas",
+          "step4_bold": "Cruthaigh iarraidh",
           "step4_text": "Iarr rud éigin a theastaíonn uait",
           "step5_bold": "Ceangail le baill",
           "step5_text": "Tóg do líonra"
@@ -908,7 +908,7 @@
         "q1": {
           "question": "Conas a eagraím malartú?",
           "answer_intro": "Is é an gnáthphróiseas ná:",
-          "step1": "Aimsigh tairiscint nó iarratas a bhfuil suim agat ann",
+          "step1": "Aimsigh tairiscint nó iarraidh a bhfuil suim agat inti",
           "step2": "Seol teachtaireacht chuig an mball chun sonraí a phlé",
           "step3": "Aontaigh ar cathain, cá háit, agus am measta",
           "step4": "Buail le chéile agus comhlánaigh an malartú",
@@ -1043,12 +1043,12 @@
     "status_updates": "Coinneoimid an leathanach seo cothrom le dáta de réir mar a bheidh gach rogha ar fáil.",
     "apple_why_title": "Cén fáth go bhfuil sé níos deacra ar fheistí Apple?",
     "apple_why_intro": "Is rialacha Apple féin den chuid is mó seachas aon rud neamhghnách faoi {{name}}. Tá trí cinn acu, agus le chéile míníonn siad an fhadhb iomlán:",
-    "apple_why_1": "Níl aon suiteáil aon sconna ann. Ar Android agus Windows is féidir leis an mbrabhsálaí cnaipe a thairiscint a dhéanann sé duit. Níor cheadaigh Apple riamh é sin, mar sin ar ghléas Apple ní mór é a dhéanamh de láimh tríd an roghchlár Comhroinn.",
+    "apple_why_1": "Ní féidir é a shuiteáil le tapáil amháin. Ar Android agus Windows is féidir leis an mbrabhsálaí cnaipe a thairiscint a dhéanann an obair duit. Níor cheadaigh Apple é sin riamh, mar sin ní mór duit é a dhéanamh de láimh tríd an roghchlár Comhroinn ar ghléas Apple.",
     "apple_why_2": "Ar iPhone nó iPad ní oibríonn sé ach i Safari. Ní féidir le Chrome agus Firefox ar ghléasanna Apple suíomh Gréasáin a shábháil mar aip ar chor ar bith - ní ligeann Apple iad. Ar Mac beidh Safari 17 nó níos nuaí uait.",
-    "apple_why_3": "Fiú nuair a oibríonn sé, déileálann Apple leis an app shábháil mar chlár ar leith ó Safari agus coimeádann a chuid sonraí óna chéile. Mar sin osclaíonn an aip logáilte amach agus caithfidh tú síniú isteach arís taobh istigh de, rud a bhraitheann go intuigthe go bhfuil rud éigin briste.",
+    "apple_why_3": "Fiú nuair a oibríonn sé, caitheann Apple leis an aip shábháilte mar chlár ar leith ó Safari agus coimeádann sé a cuid sonraí scartha. Mar sin osclaíonn an aip agus tú sínithe amach, agus caithfidh tú síniú isteach arís inti; tá sé intuigthe go gceapfá go bhfuil rud éigin briste.",
     "apple_why_outcome": "Ní bhaineann aon cheann de sin leis an app ceart a thuairiscítear thíos - ar fheistí Apple is é sin an freagra fíor, agus tá sé beagnach críochnaithe.",
     "install_now": "Suiteáil é anois",
-    "install_now_hint": "Is féidir le do bhrabhsálaí é seo a dhéanamh le sconna amháin - níl aon siopa app ag teastáil.",
+    "install_now_hint": "Is féidir le do bhrabhsálaí é seo a dhéanamh le tapáil amháin — ní gá siopa aipeanna a úsáid.",
     "already_installed_title": "Tá tú ag baint úsáide as an app suiteáilte cheana féin",
     "already_installed_body": "Níl aon rud níos mó le déanamh ar an ngléas seo. Tá na céimeanna thíos le haghaidh do ghutháin, táibléad agus ríomhairí eile.",
     "types_title": "An dá chineál app, mínithe go simplí",
@@ -1072,7 +1072,7 @@
     "type_native_tag": "Beagnach críochnaithe",
     "type_native_body": "Aip fíor, ar leith - an cineál a fhaigheann tú ó Google Play nó Apple's App Store agus a shuíonn taobh le d'aipeanna eile. Tugann forbróirí aip dhúchasach air seo, rud a chiallaíonn go bhfuil sé tógtha le huirlisí an ghutháin féin seachas a bheith ina shuíomh Gréasáin faoi cheilt. Is é sin a ligeann dó mothú níos tapúla, bain úsáid as do cheamara agus grianghraif i gceart, agus fógraí a sheachadadh go hiontaofa fiú nuair a bhíonn sé dúnta. Tá ceann tógtha againn, tá sé beagnach críochnaithe, agus tá sé ag teacht go han-luath.",
     "type_native_point_1": "Suiteáilte ón siopa app cosúil le haon app eile",
-    "type_native_point_2": "Níos tapúla, agus níos réidh le scrollú agus sconna",
+    "type_native_point_2": "Níos tapa, agus scrollú agus tapáil níos míne",
     "type_native_point_3": "Fógraí a thagann go hiontaofa",
     "type_native_point_4": "Aip amháin le haghaidh Android agus iPhone nó iPad",
     "type_native_status": "A bheith macánta faoin ordú: tá Android is gaire, toisc go bhfuil gach rud is gá chun é a scaoileadh ar bun cheana féin. Tá an leagan iPhone agus iPad tógtha ón aip chéanna, ach tá cuntas forbróra ag teastáil ó Apple agus déanann sé athbhreithniú ar gach aip sular féidir é a fhoilsiú, mar sin beidh sé ina dhiaidh sin go luath ina dhiaidh sin. Níl aon nasc íoslódála anseo fós - cuirfimid ceann ar an leathanach seo nuair a bheidh rud éigin fiú le híoslódáil.",
@@ -1091,7 +1091,7 @@
     "steps_iphone_title": "iPhone nó iPad",
     "steps_iphone_1": "Oscail an leathanach seo i Safari. Ní oibríonn sé seo i Chrome nó Firefox ar iPhone nó iPad - ní cheadaíonn Apple é ach i Safari.",
     "steps_iphone_2": "Tapáil an cnaipe Comhroinn: cearnóg le saighead ag díriú amach as.",
-    "steps_iphone_3": "Scrollaigh síos ar an liosta agus sconna \"Cuir le Scáileán Baile\".",
+    "steps_iphone_3": "Scrollaigh síos an liosta agus tapáil \"Cuir leis an Scáileán Baile\".",
     "steps_iphone_4": "Beartaíonn \"Add\". Tá an deilbhín le feiceáil ar do scáileán baile.",
     "steps_mac_title": "Mac ríomhaire",
     "steps_mac_1": "Oscail an leathanach seo i Safari 17 nó níos nuaí.",
