@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The React podcast listening experience has received a contextual Irish repair.** Browsing, show following, episode counts, transcripts, chapters, reactions, episode types and player errors now use natural Irish instead of English fallbacks or misleading words for display actions and incidents. A listener-catalogue test permits only the reviewed A–Z and playback-speed formats to remain language-neutral.
+
 - **Seventeen more signed-in pages on the accessible site now have an automated accessibility check.** The browser-based accessibility gate only covered the dashboard, account and a handful of other signed-in pages. A fast new check now also guards the marketplace, jobs, ideas, courses, resources, exchanges, goals, connections, matches, federation, premium, coupons, polls, blog, reviews, skills and volunteering pages — confirming each has exactly one main content region, a working "skip to content" target, a page heading, and no duplicated element identifiers (a common cause of confusion for screen readers). It runs in every language with no browser needed, so a future change that breaks one of these basics is caught immediately.
 
 - **The native app's entire 46-string marketplace offer workflow is now reviewed for Irish.** Offer creation, received and sent states, acceptance, rejection, withdrawal and counteroffers now use context-aware negotiation language instead of wording for opposition or a physical counter, and the malformed amount example was repaired. A whole-section test permits only the reviewed numeric amount format to remain language-neutral.
