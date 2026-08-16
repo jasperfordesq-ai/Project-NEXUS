@@ -100,3 +100,27 @@ test('Irish Marketplace creation and discovery wording preserves commerce and fi
   assert.equal(irish.time_ago.hours_ago, '{{count}} uair ó shin');
   assert.equal(irish.filters.apply, 'Cuir na scagairí i bhfeidhm');
 });
+
+test('Irish Marketplace seller and owner wording preserves listing and offer ownership', () => {
+  const journey = JSON.stringify({
+    seller: irish.seller,
+    edit: irish.edit,
+    myListings: irish.my_listings,
+    myOffers: irish.my_offers,
+  });
+
+  assert.doesNotMatch(journey, /\bliosta(?:í)?\b|Athnuadh an liosta|Frith-thairiscint/u);
+  assert.doesNotMatch(journey, /seiceáil amach|Lean tairiscintí|Ní féidir an gníomh seo a chealú/u);
+  assert.doesNotMatch(journey, /Mo Liostaí|Gan Liostaí|Liostaí Gníomhacha/u);
+
+  assert.equal(irish.seller.active_listings, 'Liostuithe gníomhacha');
+  assert.equal(irish.seller.view_profile, 'Féach ar an bpróifíl');
+  assert.equal(irish.edit.not_owner, 'Ní féidir leat ach na liostuithe atá agat féin a chur in eagar');
+  assert.equal(irish.edit.updated_success, 'Nuashonraíodh an liostú!');
+  assert.equal(irish.my_listings.renewed_success, 'Athnuaíodh an liostú');
+  assert.equal(irish.my_listings.remove_confirm_description, 'An bhfuil tú cinnte gur mhaith leat an liostú seo a bhaint? Ní féidir dul siar air seo.');
+  assert.equal(irish.my_offers.subtitle, 'Coinnigh súil ar na tairiscintí a sheol tú agus a fuair tú');
+  assert.equal(irish.my_offers.counter_amount_label, 'Suim na friththairisceana');
+  assert.equal(irish.my_offers.send_counter, 'Seol an fhriththairiscint');
+  assert.equal(irish.my_offers.checkout_started_success, 'Cuireadh tús leis an íocaíocht ar an tairiscint ar glacadh léi.');
+});
