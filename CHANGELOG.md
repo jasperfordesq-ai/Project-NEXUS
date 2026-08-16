@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Irish Community credential verification and shift swaps have completed a 60-string semantic review.** Credential states now distinguish verification from generic confirmation, expiry copy no longer uses a broken `credential(s)` construction, police/background checks remain jurisdiction-neutral, upload limits and retry actions are complete, and shift-swap requests consistently identify shifts, sent/received states, acceptance, refusal and failures.
+
 - **All 188 member-facing Irish Caring Community values are now covered by a completion gate.** Trust levels, caregiver wellbeing, respite cover, care providers, emergency alerts, Federation discovery, onboarding, support relationships, data export and the Warmth Pass retain their reviewed meanings; only the Swiss `Spitex` service name may remain identical to English. The separate 707-value staff panel and administration surface remains queued for the administration phase.
 
 - **Irish Caring Community emergency alerts and Federation discovery now use the intended member actions.** Dismissing an alert is a clear close action, the emergency severity is a noun rather than a dangling adjective, and Federation community discovery uses the platform's established `Cónaidhm` terminology with a natural manual-slug fallback and count label.
