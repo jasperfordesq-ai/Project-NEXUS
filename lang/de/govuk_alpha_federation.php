@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'Sie sind mit dem Verbundnetzwerk verbunden.',
+        'opted_out' => 'Sie haben das Föderationsnetzwerk verlassen.',
+        'optin_failed' => 'Wir konnten die Föderation nicht aktivieren. Bitte versuchen Sie es erneut.',
+        'optout_failed' => 'Wir konnten die Föderation nicht deaktivieren. Bitte versuchen Sie es erneut.',
+        'connect_sent' => 'Verbindungsanfrage gesendet',
+        'connect_failed' => 'Verbindungsanfrage fehlgeschlagen',
+        'message_sent' => 'Nachricht gesendet',
+        'message_empty' => 'Geben Sie vor dem Senden eine Nachricht ein',
+        'message_too_long' => 'Die Nachricht ist zu lang',
+        'message_failed' => 'Die Nachricht konnte nicht gesendet werden',
+        'message_not_enabled' => 'Messaging ist nicht aktiviert',
+        'message_recipient_unavailable' => 'Dieses Mitglied kann keine Verbundnachrichten empfangen',
+        'transfer_sent' => 'Überweisung gesendet',
+    ],
     'onboarding' => [
         'page_title' => 'Föderation einrichten',
         'caption' => ':community verbinden',

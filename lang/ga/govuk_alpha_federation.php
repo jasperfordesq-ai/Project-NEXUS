@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'You are connected to the federation network.',
+        'opted_out' => 'You have left the federation network.',
+        'optin_failed' => 'We could not turn on federation. Please try again.',
+        'optout_failed' => 'We could not turn off federation. Please try again.',
+        'connect_sent' => 'Connection request sent',
+        'connect_failed' => 'Connection request failed',
+        'message_sent' => 'Message sent',
+        'message_empty' => 'Enter a message before sending',
+        'message_too_long' => 'Message is too long',
+        'message_failed' => 'Message could not be sent',
+        'message_not_enabled' => 'Messaging is not enabled',
+        'message_recipient_unavailable' => 'This member cannot receive federation messages',
+        'transfer_sent' => 'Transfer sent',
+    ],
     'onboarding' => [
         'page_title' => 'Cónaidhm a chur ar bun',
         'caption' => ':community á nascadh',

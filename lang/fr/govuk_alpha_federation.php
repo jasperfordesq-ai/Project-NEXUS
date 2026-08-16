@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'Vous êtes connecté au réseau de la fédération.',
+        'opted_out' => 'Vous avez quitté le réseau de la fédération.',
+        'optin_failed' => 'Nous ne pouvions pas nous retourner contre la fédération. Veuillez réessayer.',
+        'optout_failed' => 'Nous ne pouvions pas désactiver la fédération. Veuillez réessayer.',
+        'connect_sent' => 'Demande de connexion envoyée',
+        'connect_failed' => 'La demande de connexion a échoué',
+        'message_sent' => 'Message envoyé',
+        'message_empty' => 'Saisissez un message avant de l\'envoyer',
+        'message_too_long' => 'Le message est trop long',
+        'message_failed' => 'Le message n\'a pas pu être envoyé',
+        'message_not_enabled' => 'La messagerie n\'est pas activée',
+        'message_recipient_unavailable' => 'Ce membre ne peut pas recevoir les messages de la fédération',
+        'transfer_sent' => 'Virement envoyé',
+    ],
     'onboarding' => [
         'page_title' => 'Créer une fédération',
         'caption' => 'Connexion de :community',

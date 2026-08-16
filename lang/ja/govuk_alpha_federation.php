@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'フェデレーション ネットワークに接続されています。',
+        'opted_out' => 'フェデレーション ネットワークから離脱しました。',
+        'optin_failed' => 'フェデレーションを有効にすることができませんでした。もう一度試してください。',
+        'optout_failed' => 'フェデレーションを無効にすることはできませんでした。もう一度試してください。',
+        'connect_sent' => '接続リクエストが送信されました',
+        'connect_failed' => '接続要求が失敗しました',
+        'message_sent' => 'メッセージが送信されました',
+        'message_empty' => '送信する前にメッセージを入力してください',
+        'message_too_long' => 'メッセージが長すぎます',
+        'message_failed' => 'メッセージを送信できませんでした',
+        'message_not_enabled' => 'メッセージングが有効になっていません',
+        'message_recipient_unavailable' => 'このメンバーはフェデレーション メッセージを受信できません',
+        'transfer_sent' => '転送が送信されました',
+    ],
     'onboarding' => [
         'page_title' => 'フェデレーションをセットアップする',
         'caption' => ':community を接続しています',

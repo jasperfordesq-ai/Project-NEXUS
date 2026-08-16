@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'أنت متصل بشبكة الاتحاد.',
+        'opted_out' => 'لقد غادرت شبكة الاتحاد.',
+        'optin_failed' => 'لم نتمكن من تشغيل الاتحاد. يرجى المحاولة مرة أخرى.',
+        'optout_failed' => 'لم نتمكن من إيقاف الاتحاد. يرجى المحاولة مرة أخرى.',
+        'connect_sent' => 'تم إرسال طلب الاتصال',
+        'connect_failed' => 'فشل طلب الاتصال',
+        'message_sent' => 'تم إرسال الرسالة',
+        'message_empty' => 'أدخل الرسالة قبل الإرسال',
+        'message_too_long' => 'الرسالة طويلة جدًا',
+        'message_failed' => 'لا يمكن إرسال الرسالة',
+        'message_not_enabled' => 'لم يتم تمكين المراسلة',
+        'message_recipient_unavailable' => 'لا يمكن لهذا العضو تلقي رسائل الاتحاد',
+        'transfer_sent' => 'تم إرسال النقل',
+    ],
     'onboarding' => [
         'page_title' => 'اقامة الاتحاد',
         'caption' => 'الاتصال :community',

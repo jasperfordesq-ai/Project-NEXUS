@@ -1428,6 +1428,9 @@
                 "reset_mismatch": "Le password inserite non corrispondono",
                 "reset_failed": "Impossibile reimpostare la password. Riprova o richiedi un nuovo collegamento.",
                 "reset_rate_limited": "Troppi tentativi. Attendi qualche istante e riprova.",
+                "forgot_code_required": "Inserisci il tuo codice comunitario",
+                "reset_password_required": "Inserisci una nuova password",
+                "reset_password_min": "La password deve contenere almeno 8 caratteri",
                 "password_reset": "La tua password è stata reimpostata. Accedi con la tua nuova password.",
                 "login_title": "Accedi",
                 "login_description": "Accedi per utilizzare le pagine accessibili per :community.",
@@ -7289,6 +7292,21 @@
             }
         },
         "govuk_alpha_federation": {
+            "banners": {
+                "opted_in": "Sei connesso alla rete della federazione.",
+                "opted_out": "Hai lasciato la rete della federazione.",
+                "optin_failed": "Non è stato possibile attivare la federazione. Per favore riprova.",
+                "optout_failed": "Non è stato possibile disattivare la federazione. Per favore riprova.",
+                "connect_sent": "Richiesta di connessione inviata",
+                "connect_failed": "Richiesta di connessione non riuscita",
+                "message_sent": "Messaggio inviato",
+                "message_empty": "Inserisci un messaggio prima di inviarlo",
+                "message_too_long": "Il messaggio è troppo lungo",
+                "message_failed": "Impossibile inviare il messaggio",
+                "message_not_enabled": "La messaggistica non è abilitata",
+                "message_recipient_unavailable": "Questo membro non può ricevere messaggi della federazione",
+                "transfer_sent": "Trasferimento inviato"
+            },
             "onboarding": {
                 "page_title": "Istituire la federazione",
                 "caption": "Connessione :community",

@@ -430,6 +430,11 @@ return [
         'reset_mismatch' => 'The passwords you entered do not match',
         'reset_failed' => 'Your password could not be reset. Try again, or request a new link.',
         'reset_rate_limited' => 'Too many attempts. Please wait a while and try again.',
+        // Inline client-side-style validation errors rendered server-side on the
+        // forgot-password and reset-password forms (were hardcoded English).
+        'forgot_code_required' => 'Enter your community code',
+        'reset_password_required' => 'Enter a new password',
+        'reset_password_min' => 'Password must be at least 8 characters',
         'password_reset' => 'Your password has been reset. Sign in with your new password.',
         'login_title' => 'Sign in',
         'login_description' => 'Sign in to use the accessible pages for :community.',

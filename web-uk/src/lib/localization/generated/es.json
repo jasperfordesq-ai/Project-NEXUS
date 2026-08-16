@@ -1428,6 +1428,9 @@
                 "reset_mismatch": "Las contraseñas que ingresaste no coinciden",
                 "reset_failed": "No se pudo restablecer su contraseña. Inténtalo de nuevo o solicita un nuevo enlace.",
                 "reset_rate_limited": "Demasiados intentos. Espere un momento e inténtelo de nuevo.",
+                "forgot_code_required": "Introduce tu código de comunidad",
+                "reset_password_required": "Ingrese una nueva contraseña",
+                "reset_password_min": "La contraseña debe tener al menos 8 caracteres.",
                 "password_reset": "Su contraseña ha sido restablecida. Inicia sesión con tu nueva contraseña.",
                 "login_title": "Iniciar sesión",
                 "login_description": "Inicie sesión para utilizar las páginas accesibles de :community.",
@@ -7289,6 +7292,21 @@
             }
         },
         "govuk_alpha_federation": {
+            "banners": {
+                "opted_in": "Estás conectado a la red de la federación.",
+                "opted_out": "Has abandonado la red de la federación.",
+                "optin_failed": "No pudimos volvernos contra la federación. Por favor inténtalo de nuevo.",
+                "optout_failed": "No pudimos apagar la federación. Por favor inténtalo de nuevo.",
+                "connect_sent": "Solicitud de conexión enviada",
+                "connect_failed": "La solicitud de conexión falló",
+                "message_sent": "Mensaje enviado",
+                "message_empty": "Introduzca un mensaje antes de enviar",
+                "message_too_long": "El mensaje es demasiado largo.",
+                "message_failed": "No se pudo enviar el mensaje",
+                "message_not_enabled": "La mensajería no está habilitada",
+                "message_recipient_unavailable": "Este miembro no puede recibir mensajes de la federación.",
+                "transfer_sent": "Transferencia enviada"
+            },
             "onboarding": {
                 "page_title": "Configurar la federación",
                 "caption": "Conectando :community",

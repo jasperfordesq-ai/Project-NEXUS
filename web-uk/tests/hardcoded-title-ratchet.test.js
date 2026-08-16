@@ -45,7 +45,7 @@ const path = require('node:path');
  *     data)) and module-level data (lib/account-links.js) have no `res`, and a blind
  *     rewrite threw ReferenceError at require time and broke 926 tests in one run.
  */
-const CEILING = 22;
+const CEILING = 21;
 
 const SRC = path.join(__dirname, '..', 'src');
 const TITLE_LITERAL = /title:\s*'[A-Z][^']{2,80}'/g;

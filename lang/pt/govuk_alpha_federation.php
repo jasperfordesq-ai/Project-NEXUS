@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'Você está conectado à rede da federação.',
+        'opted_out' => 'Você saiu da rede da federação.',
+        'optin_failed' => 'Não foi possível ativar a federação. Por favor, tente novamente.',
+        'optout_failed' => 'Não pudemos desligar a federação. Por favor, tente novamente.',
+        'connect_sent' => 'Solicitação de conexão enviada',
+        'connect_failed' => 'Falha na solicitação de conexão',
+        'message_sent' => 'Mensagem enviada',
+        'message_empty' => 'Digite uma mensagem antes de enviar',
+        'message_too_long' => 'A mensagem é muito longa',
+        'message_failed' => 'Não foi possível enviar a mensagem',
+        'message_not_enabled' => 'Mensagens não estão ativadas',
+        'message_recipient_unavailable' => 'Este membro não pode receber mensagens da federação',
+        'transfer_sent' => 'Transferência enviada',
+    ],
     'onboarding' => [
         'page_title' => 'Configurar federação',
         'caption' => 'Conectando :community',

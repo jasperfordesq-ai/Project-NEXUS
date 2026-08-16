@@ -1428,6 +1428,9 @@
                 "reset_mismatch": "Les mots de passe que vous avez saisis ne correspondent pas",
                 "reset_failed": "Votre mot de passe n'a pas pu être réinitialisé. Réessayez ou demandez un nouveau lien.",
                 "reset_rate_limited": "Trop de tentatives. Veuillez patienter un peu et réessayer.",
+                "forgot_code_required": "Entrez votre code communautaire",
+                "reset_password_required": "Entrez un nouveau mot de passe",
+                "reset_password_min": "Le mot de passe doit contenir au moins 8 caractères",
                 "password_reset": "Votre mot de passe a été réinitialisé. Connectez-vous avec votre nouveau mot de passe.",
                 "login_title": "Connectez-vous",
                 "login_description": "Connectez-vous pour utiliser les pages accessibles pour :community.",
@@ -7289,6 +7292,21 @@
             }
         },
         "govuk_alpha_federation": {
+            "banners": {
+                "opted_in": "Vous êtes connecté au réseau de la fédération.",
+                "opted_out": "Vous avez quitté le réseau de la fédération.",
+                "optin_failed": "Nous ne pouvions pas nous retourner contre la fédération. Veuillez réessayer.",
+                "optout_failed": "Nous ne pouvions pas désactiver la fédération. Veuillez réessayer.",
+                "connect_sent": "Demande de connexion envoyée",
+                "connect_failed": "La demande de connexion a échoué",
+                "message_sent": "Message envoyé",
+                "message_empty": "Saisissez un message avant de l'envoyer",
+                "message_too_long": "Le message est trop long",
+                "message_failed": "Le message n'a pas pu être envoyé",
+                "message_not_enabled": "La messagerie n'est pas activée",
+                "message_recipient_unavailable": "Ce membre ne peut pas recevoir les messages de la fédération",
+                "transfer_sent": "Virement envoyé"
+            },
             "onboarding": {
                 "page_title": "Créer une fédération",
                 "caption": "Connexion de :community",

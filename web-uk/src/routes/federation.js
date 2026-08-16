@@ -592,31 +592,39 @@ function normalizeActivity(item) {
   };
 }
 
-function statusBanner(status) {
-  const banners = {
-    'opted-in': { type: 'success', message: 'You are connected to the federation network.' },
-    'opted-out': { type: 'success', message: 'You have left the federation network.' },
-    'optin-failed': { type: 'error', message: 'We could not turn on federation. Please try again.' },
-    'optout-failed': { type: 'error', message: 'We could not turn off federation. Please try again.' }
-  };
-
-  return banners[trimmed(status)] || null;
+// Resolve a banner message in the recipient's language. Falls back to the key
+// itself only if no translator is available (should not happen in a request).
+function federationBanner(type, key, t) {
+  return { type, message: t ? t(`govuk_alpha_federation.banners.${key}`) : key };
 }
 
-function memberStatusBanner(status) {
+function statusBanner(status, t) {
   const banners = {
-    'connect-sent': { type: 'success', message: 'Connection request sent' },
-    'connect-failed': { type: 'error', message: 'Connection request failed' },
-    'message-sent': { type: 'success', message: 'Message sent' },
-    'message-empty': { type: 'error', message: 'Enter a message before sending' },
-    'message-too-long': { type: 'error', message: 'Message is too long' },
-    'message-failed': { type: 'error', message: 'Message could not be sent' },
-    'message-not-enabled': { type: 'error', message: 'Messaging is not enabled' },
-    'message-recipient-unavailable': { type: 'error', message: 'This member cannot receive federation messages' },
-    'transfer-sent': { type: 'success', message: 'Transfer sent' }
+    'opted-in': () => federationBanner('success', 'opted_in', t),
+    'opted-out': () => federationBanner('success', 'opted_out', t),
+    'optin-failed': () => federationBanner('error', 'optin_failed', t),
+    'optout-failed': () => federationBanner('error', 'optout_failed', t)
   };
 
-  return banners[trimmed(status)] || null;
+  const build = banners[trimmed(status)];
+  return build ? build() : null;
+}
+
+function memberStatusBanner(status, t) {
+  const banners = {
+    'connect-sent': () => federationBanner('success', 'connect_sent', t),
+    'connect-failed': () => federationBanner('error', 'connect_failed', t),
+    'message-sent': () => federationBanner('success', 'message_sent', t),
+    'message-empty': () => federationBanner('error', 'message_empty', t),
+    'message-too-long': () => federationBanner('error', 'message_too_long', t),
+    'message-failed': () => federationBanner('error', 'message_failed', t),
+    'message-not-enabled': () => federationBanner('error', 'message_not_enabled', t),
+    'message-recipient-unavailable': () => federationBanner('error', 'message_recipient_unavailable', t),
+    'transfer-sent': () => federationBanner('success', 'transfer_sent', t)
+  };
+
+  const build = banners[trimmed(status)];
+  return build ? build() : null;
 }
 
 function transferStatusBanner(status, t = (key) => key) {
@@ -843,7 +851,7 @@ router.get('/', asyncRoute(async (req, res) => {
     partners,
     partnerTotal,
     activity,
-    statusBanner: statusBanner(req.query.status)
+    statusBanner: statusBanner(req.query.status, res.locals.t)
   });
 }));
 
@@ -1652,7 +1660,7 @@ router.get('/members/:id', asyncRoute(async (req, res) => {
       messagingEnabled: bool(settings.messaging_enabled_federated),
       transactionsEnabled: bool(settings.transactions_enabled_federated)
     },
-    statusBanner: memberStatusBanner(req.query.status)
+    statusBanner: memberStatusBanner(req.query.status, res.locals.t)
   });
 }));
 

@@ -7,6 +7,21 @@
 // English values are used as the fallback until translated.
 
 return [
+    'banners' => [
+        'opted_in' => 'U bent verbonden met het federatienetwerk.',
+        'opted_out' => 'U heeft het federatienetwerk verlaten.',
+        'optin_failed' => 'We konden de federatie niet inschakelen. Probeer het opnieuw.',
+        'optout_failed' => 'We konden de federatie niet uitschakelen. Probeer het opnieuw.',
+        'connect_sent' => 'Verbindingsverzoek verzonden',
+        'connect_failed' => 'Verbindingsverzoek is mislukt',
+        'message_sent' => 'Bericht verzonden',
+        'message_empty' => 'Voer een bericht in voordat u het verzendt',
+        'message_too_long' => 'Bericht is te lang',
+        'message_failed' => 'Bericht kon niet worden verzonden',
+        'message_not_enabled' => 'Berichten zijn niet ingeschakeld',
+        'message_recipient_unavailable' => 'Dit lid kan geen federatieberichten ontvangen',
+        'transfer_sent' => 'Overboeking verzonden',
+    ],
     'onboarding' => [
         'page_title' => 'Federatie opzetten',
         'caption' => ':community verbinden',

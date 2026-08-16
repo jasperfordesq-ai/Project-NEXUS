@@ -5,6 +5,23 @@
 // See NOTICE file for attribution and acknowledgements.
 
 return [
+    // Status banners shown after a federation action (opt in/out, connect, message,
+    // transfer). Rendered in the member's language from federation.js.
+    'banners' => [
+        'opted_in' => 'You are connected to the federation network.',
+        'opted_out' => 'You have left the federation network.',
+        'optin_failed' => 'We could not turn on federation. Please try again.',
+        'optout_failed' => 'We could not turn off federation. Please try again.',
+        'connect_sent' => 'Connection request sent',
+        'connect_failed' => 'Connection request failed',
+        'message_sent' => 'Message sent',
+        'message_empty' => 'Enter a message before sending',
+        'message_too_long' => 'Message is too long',
+        'message_failed' => 'Message could not be sent',
+        'message_not_enabled' => 'Messaging is not enabled',
+        'message_recipient_unavailable' => 'This member cannot receive federation messages',
+        'transfer_sent' => 'Transfer sent',
+    ],
     'onboarding' => [
         'page_title' => 'Set up federation',
         'caption' => 'Connecting :community',

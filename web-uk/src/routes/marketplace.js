@@ -372,7 +372,7 @@ function renderMarketplaceError(error, res, title = 'Marketplace') {
     return true;
   }
   if (isForbidden(error)) {
-    res.status(403).render('errors/403', { title: 'Access denied' });
+    res.status(403).render('errors/403', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.403_title') : 'Access denied') });
     return true;
   }
   if (isNotFound(error)) {

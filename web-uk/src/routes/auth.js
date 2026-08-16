@@ -806,8 +806,9 @@ async function handleForgotPasswordPost(req, res) {
   }
 
   if (!tenantSlug) {
-    errors.push({ text: 'Enter your community code', href: '#tenant_slug' });
-    fieldErrors.tenant_slug = 'Enter your community code';
+    const message = translate(req, 'auth.forgot_code_required');
+    errors.push({ text: message, href: '#tenant_slug' });
+    fieldErrors.tenant_slug = message;
   }
 
   if (errors.length > 0) {
@@ -867,11 +868,13 @@ async function handleResetPasswordPost(req, res) {
   }
 
   if (!password) {
-    errors.push({ text: 'Enter a new password', href: '#password' });
-    fieldErrors.password = 'Enter a new password';
+    const message = translate(req, 'auth.reset_password_required');
+    errors.push({ text: message, href: '#password' });
+    fieldErrors.password = message;
   } else if (password.length < 8) {
-    errors.push({ text: 'Password must be at least 8 characters', href: '#password' });
-    fieldErrors.password = 'Password must be at least 8 characters';
+    const message = translate(req, 'auth.reset_password_min');
+    errors.push({ text: message, href: '#password' });
+    fieldErrors.password = message;
   }
 
   if (password !== confirmPassword) {
