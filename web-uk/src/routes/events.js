@@ -1123,6 +1123,8 @@ router.get('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
       categoryId: positiveInteger(valueOr('category_id', event.category_id ?? event.categoryId)),
       startTime: valueOr('start_time', dateTimeLocalInZone(event.start_time ?? event.startTime ?? event.starts_at ?? event.startsAt, timezone)),
       endTime: valueOr('end_time', dateTimeLocalInZone(event.end_time ?? event.endTime ?? event.ends_at ?? event.endsAt, timezone, allDay)),
+      startTimeParts: splitDateTime(valueOr('start_time', dateTimeLocalInZone(event.start_time ?? event.startTime ?? event.starts_at ?? event.startsAt, timezone))),
+      endTimeParts: splitDateTime(valueOr('end_time', dateTimeLocalInZone(event.end_time ?? event.endTime ?? event.ends_at ?? event.endsAt, timezone, allDay))),
       timezone,
       allDay,
       isOnline: checked(valueOr('is_online', event.is_online ?? event.isOnline)),
@@ -3028,6 +3030,11 @@ router.post('/:id(\\d+)/polls', asyncRoute(async (req, res) => {
 
 router.post('/:id(\\d+)/recurring-edit', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
+  // GOV.UK date+time fields recombine to the same local YYYY-MM-DDTHH:MM the native input
+  // posted (API does the timezone; readDateTime also accepts a single value). Before any
+  // use so eventScopedPayload, recurringRevisionPatch and storeRecurringForm all read it.
+  req.body.start_time = readDateTime(req.body, 'start_time').value || '';
+  req.body.end_time = readDateTime(req.body, 'end_time').value || '';
   const scope = trimmed(req.body.scope) === 'all' ? 'all' : 'single';
   if (scope === 'all') {
     const token = tokenFrom(req);

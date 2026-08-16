@@ -307,8 +307,11 @@ describe('native date input ceiling', () => {
   // does the timezone conversion; web-uk passes the local string as before). Then 8 -> 4:
   // events/new and events/edit start_time + end_time (recombined before the destructure so
   // eventScopedPayload/validation are unchanged; error-summary href stays #start_time — the
-  // govuk error-summary JS focuses the first field inside the date-input fieldset). Keep lowering.
-  const CEILING = { 'datetime-local': 4, date: 1, time: 2 };
+  // govuk error-summary JS focuses the first field inside the date-input fieldset). Then
+  // 4 -> 2: events/recurring-edit start_time + end_time (recombined at the top of the POST
+  // so eventScopedPayload/recurringRevisionPatch/storeRecurringForm are unchanged). The
+  // remaining 2 are agenda-fields start_at/end_at (per-session loop). Keep lowering.
+  const CEILING = { 'datetime-local': 2, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

@@ -23288,9 +23288,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('name="title" type="text" value="Weekly repair cafe"');
     expect(response.text).toContain('Bring small appliances.');
     expect(response.text).toContain('name="location" type="text" value="Community hall"');
-    // recurring-edit still uses the native datetime-local (not yet converted).
-    expect(response.text).toContain('name="start_time" type="datetime-local" value="2026-08-01T10:30"');
-    expect(response.text).toContain('name="end_time" type="datetime-local" value="2026-08-01T12:00"');
+    // recurring-edit start_time/end_time are now the GOV.UK date + single-time pattern.
+    expect(response.text).toMatch(/name="start_time-year"[^>]*value="2026"/);
+    expect(response.text).toMatch(/name="start_time-time"[^>]*value="10:30"/);
+    expect(response.text).toMatch(/name="end_time-time"[^>]*value="12:00"/);
     expect(response.text).toContain('name="category_id"');
     expect(response.text).toContain('name="is_online" type="checkbox"');
     expect(response.text).toContain('name="accessibility_step_free"');

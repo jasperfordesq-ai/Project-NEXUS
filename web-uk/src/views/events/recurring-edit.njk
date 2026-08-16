@@ -4,6 +4,7 @@
 {# See NOTICE file for attribution and acknowledgements. #}
 {% extends "layouts/base.njk" %}
 {% from "events/_venue-accessibility-fields.njk" import venueAccessibilityFields %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
 
 {% block content %}
   <a class="govuk-back-link" href="{{ urlFor('/events/' + (event.id | string)) }}">{{ t("govuk_alpha_events.common.back_to_event") }}</a>
@@ -70,18 +71,20 @@
             <h2 class="govuk-fieldset__heading">{{ t("govuk_alpha_events.recurring_edit.time_legend") }}</h2>
           </legend>
 
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="start_time">{{ t("govuk_alpha_events.recurring_edit.start_time_label") }}</label>
-            <div id="start-time-hint" class="govuk-hint">{{ t("govuk_alpha_events.recurring_edit.datetime_hint") }}</div>
-            {% if fieldErrors.start_time %}<p id="start_time-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_events.common.error_prefix") }}</span> {{ fieldErrors.start_time }}</p>{% endif %}
-            <input class="govuk-input govuk-!-width-one-half{% if fieldErrors.start_time %} govuk-input--error{% endif %}" id="start_time" name="start_time" type="datetime-local" value="{{ event.startTime }}" aria-describedby="start-time-hint{% if fieldErrors.start_time %} start_time-error{% endif %}" required>
-          </div>
+          {{ nexusDateTimeInput({
+            name: "start_time",
+            legend: t("govuk_alpha_events.recurring_edit.start_time_label"),
+            hint: t("govuk_alpha_events.recurring_edit.datetime_hint"),
+            value: event.startTimeParts,
+            errorMessage: fieldErrors.start_time
+          }, t) }}
 
-          <div class="govuk-form-group{% if fieldErrors.end_time %} govuk-form-group--error{% endif %}">
-            <label class="govuk-label" for="end_time">{{ t("govuk_alpha_events.recurring_edit.end_time_label") }}</label>
-            {% if fieldErrors.end_time %}<p id="end_time-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_events.common.error_prefix") }}</span> {{ fieldErrors.end_time }}</p>{% endif %}
-            <input class="govuk-input govuk-!-width-one-half{% if fieldErrors.end_time %} govuk-input--error{% endif %}" id="end_time" name="end_time" type="datetime-local" value="{{ event.endTime }}"{% if fieldErrors.end_time %} aria-describedby="end_time-error"{% endif %}>
-          </div>
+          {{ nexusDateTimeInput({
+            name: "end_time",
+            legend: t("govuk_alpha_events.recurring_edit.end_time_label"),
+            value: event.endTimeParts,
+            errorMessage: fieldErrors.end_time
+          }, t) }}
         </fieldset>
 
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">
