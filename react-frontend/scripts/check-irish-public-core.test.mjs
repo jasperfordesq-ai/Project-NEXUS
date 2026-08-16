@@ -85,3 +85,49 @@ test('every non-feature Public value is reviewed, translated or language-neutral
   assert.doesNotMatch(journeyText, /Bunathóirí|app shábháil|awkward ar Apple|Fós bhfostú|siúlfaimid tríd tú/u);
   assert.doesNotMatch(journeyText, /Beartaíonn|sconna|"Add"|Suiteáil app|siopa app/u);
 });
+
+test('reviewed Public feature overview, core platform and federation values are complete', () => {
+  const featureSlice = (catalogue) => {
+    const { groups, ...overview } = catalogue.features_page;
+    return {
+      ...overview,
+      groups: {
+        core_platform: groups.core_platform,
+        federation: groups.federation,
+      },
+    };
+  };
+  const englishFlat = flatten(featureSlice(english));
+  const irishFlat = flatten(featureSlice(irish));
+  const invariants = new Set([
+    'security_email',
+    'tech_stack.backend_value',
+    'tech_stack.database_value',
+    'tech_stack.realtime_value',
+    'tech_stack.search_value',
+  ]);
+  const spacedFragments = new Set(['security_body_before', 'security_body_after']);
+
+  assert.equal(englishFlat.size, 97);
+  for (const [path, englishValue] of englishFlat) {
+    assert.ok(irishFlat.has(path), `Missing Irish Public feature key: ${path}`);
+    if (invariants.has(path)) {
+      assert.equal(irishFlat.get(path), englishValue, path);
+    } else {
+      assert.notEqual(irishFlat.get(path), englishValue, path);
+    }
+  }
+
+  for (const [path, value] of irishFlat) {
+    if (!spacedFragments.has(path)) {
+      assert.equal(value, value.trim(), `Whitespace defect: ${path}`);
+    }
+    assert.doesNotMatch(value, /[\u200B-\u200D\uFEFF]/u, `Invisible character: ${path}`);
+  }
+
+  const text = [...irishFlat.values()].join('\n');
+  assert.doesNotMatch(text, /Téacs-leabú OpenAI-3-beag|Android-réidh le scaoileadh|ag caint leis an API/u);
+  assert.doesNotMatch(text, /próifílí a thógáil|iompar ar iompar|prótacal sreangach|ar bhonn rogha/u);
+  assert.doesNotMatch(text, /comhtháthú nithiúil ar an tábla|cónascadh a dhéanamh linn|níl aon rud ar siúl/u);
+  assert.doesNotMatch(text, /Tógtha, tástáladh|casta air do do chomhphobal|Ná taispeáin ach/u);
+});

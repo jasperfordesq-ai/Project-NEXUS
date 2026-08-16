@@ -7,13 +7,13 @@
     },
     "title": "Gnéithe",
     "meta_title": "Gnéithe - Project NEXUS v1.6",
-    "meta_description": "Gach modúl atá curtha ar fáil i Project NEXUS v1.6, le lipéid mhacánta aibíochta don chónaidhm, do bhanc ama, don mhargadh, d'uirlisí pobail, don tslándáil, don anailísíocht agus don bhonneagar foinse oscailte.",
+    "meta_description": "Gach modúl atá ar fáil in Project NEXUS v1.6, le lipéid mhacánta aibíochta don bhaincéireacht ama, don chónaidhm, don fhoghlaim, don mhargadh, don chúram pobail, don tsábháilteacht, don anailísíocht agus don bhonneagar foinse oscailte.",
     "heading": "Cad a dhéanann Project NEXUS",
-    "subheading": "Is ardán pobail ilthionónta de ghrád fiontair é Tionscadal NEXUS. Seoltar gach modúl thíos i v1.6.0 inniu. Déanaimid modúil a lipéadú go hionraic: tá míreanna neamh-mharcáilte ar Fáil Go Ginearálta; iompraíonn dromchlaí níos nuaí nó dromchlaí atá cruaite go gníomhach sceallóg Béite nó Réamhamhairc; agus ciallaíonn sliseanna Tógtha nach bhfuil cumasaithe go bhfuil an obair críochnaithe agus múchta, ag fanacht leis an éileamh.",
+    "subheading": "Is ardán pobail iltionónta ar chaighdeán fiontair é Project NEXUS. Tá gach modúl thíos ar fáil in v1.6.0 anois. Cuirimid lipéid mhacánta ar a n-aibíocht: tá míreanna gan lipéad ar fáil go ginearálta; bíonn lipéad Béite nó Réamhamhairc ar ghnéithe níos nuaí nó ar ghnéithe atá fós á ndaingniú; agus ciallaíonn Tógtha, gan a bheith cumasaithe go bhfuil an obair críochnaithe ach múchta go dtí go mbeidh gá léi.",
     "maturity_key_title": "Conas a lipéadaímid aibíocht",
     "maturity_ga": "Ar fáil go ginearálta - cobhsaí, tacaithe, in úsáid i dtáirgeadh ar fud na dtionóntaí píolótacha.",
-    "maturity_beta": "Ag obair i dtáirgeadh inniu, ach tá an dromchla poiblí nó an prótacal sreangach á neartú fós.",
-    "maturity_preview": "Eisithe le déanaí agus ar fáil ar bhonn rogha. Bíodh súil agat le hathrú tapa - d'fhéadfadh an API agus an UX athrú.",
+    "maturity_beta": "Ag obair i dtáirgeadh anois, ach tá an comhéadan poiblí nó an prótacal cumarsáide fós á dhaingniú.",
+    "maturity_preview": "Eisithe le déanaí agus ar fáil más mian leat é a chumasú. Beidh athruithe tapa ann — d'fhéadfadh an API agus an t-eispéireas úsáideora athrú.",
     "tech_stack_title": "Cruach theicniúil nua-aimseartha",
     "open_source_title": "Foinse oscailte - AGPL-3.0",
     "open_source_body": "Tá Project NEXUS go hiomlán foinse oscailte faoi AGPL-3.0. Is féidir gach líne den chód a iniúchadh, a fhorcáil agus a fhéinóstáil. Tá na prótacail chónaidhme doiciméadaithe mar chaighdeáin oscailte ionas nach mbeidh aon ardán amháin i gceannas ar an líonra domhanda banc ama.",
@@ -27,17 +27,17 @@
     "security_email": "jasper@hour-timebank.ie",
     "tech_stack": {
       "ai_label": "IS",
-      "ai_value": "Téacs-leabú OpenAI-3-beag",
-      "backend_label": "Cúl",
+      "ai_value": "OpenAI text-embedding-3-small, agus tacaíocht do Anthropic, Google Gemini agus Ollama féinóstáilte tríd an gcomhéadan céanna",
+      "backend_label": "Inneall Cúil",
       "backend_value": "Laravel 12 + PHP 8.2+",
       "database_label": "Bunachar sonraí",
       "database_value": "MariaDB 10.11",
-      "frontend_label": "Tosach",
-      "frontend_value": "React 19 + TypeScript + HeroUI + Tailwind CSS 4",
+      "frontend_label": "Comhéadan",
+      "frontend_value": "React 19 + TypeScript + HeroUI v3 + Tailwind CSS 4, tógtha le Vite 7",
       "infrastructure_label": "Bonneagar",
       "infrastructure_value": "Docker, Redis, PWA iomlán",
       "mobile_label": "Soghluaiste",
-      "mobile_value": "Expo / React Native (Android-réidh le scaoileadh, iOS ar feitheamh)",
+      "mobile_value": "Expo / React Native (Android réidh lena eisiúint, iOS ar feitheamh)",
       "realtime_label": "Fíor-ama",
       "realtime_value": "Pusher WebSockets, Firebase Cloud Messaging",
       "search_label": "Cuardach",
@@ -50,12 +50,12 @@
         "title": "Ardán lárnach",
         "items": {
           "timebanking_engine": {
-            "title": "Inneall banc ama",
+            "title": "Inneall Baincéireachta Ama",
             "description": "Córas iomlán malartaithe creidmheasa le sparán, idirbhearta agus rialuithe bróicéara."
           },
           "multi_tenancy": {
             "title": "Iltionóntacht",
-            "description": "Óstáil pobail gan teorainn ar ardán amháin, gach ceann acu lena bhrandáil, lena chumraíocht agus lena thacar gnéithe féin."
+            "description": "Óstáil líon ar bith pobal ar ardán amháin, agus a bhrandáil, a chumraíocht agus a shraith gnéithe féin ag gach pobal."
           },
           "tenant_hierarchy": {
             "title": "Ordlathas tionóntaí",
@@ -75,13 +75,13 @@
           },
           "native_mobile_app": {
             "title": "Aip dhúchasach soghluaiste",
-            "description": "Aip ar leith a tógadh le Expo agus React Native, ag caint leis an API céanna leis an láithreán gréasáin. Táirgeann bunachar cód amháin an tógáil Android agus iOS.",
-            "note": "Is é an aip gréasáin an príomhbhealach isteach fós, agus níl ceachtar den dá stór foilsithe fós. Android is gaire: síniú, próifílí a thógáil agus fógraí brú i bhfeidhm. Tá iOS tógtha ón gcód céanna ach tá cuntas forbróra Apple agus athbhreithniú App Store ag teastáil uaidh freisin, mar sin beidh sé ina dhiaidh sin."
+            "description": "Aip ar leith a tógadh le Expo agus React Native, agus a úsáideann an API céanna leis an suíomh gréasáin. Cruthaítear leagan Android agus leagan iOS ón mbunachar cód céanna.",
+            "note": "Is í an aip gréasáin an príomhbhealach isteach fós, agus níl ceachtar den dá leagan siopa foilsithe go fóill. Is é Android is gaire don eisiúint: tá síniú, próifílí tógála agus fógraí brú socraithe. Tógtar iOS ón gcód céanna, ach teastaíonn cuntas forbróra Apple agus athbhreithniú san App Store freisin, mar sin tiocfaidh sé ina dhiaidh."
           },
           "accessible_frontend": {
             "title": "Comhéadan Inrochtana",
             "description": "Comhéadan ar leith eile atá tógtha ar GOV.UK Frontend do bhaill ar mhaith leo taithí shimplí, HTML ar dtús, a leanann ag obair gan JavaScript. Ritheann sé ar a sheoladh gréasáin féin agus léann sé an API céanna leis an bpríomhaip.",
-            "note": "Beo inniu. Tá leathanach inrochtana comhoiriúnach ag gach leathanach sa phríomhaip, ach tá gach ceann fós á sheiceáil in aghaidh iompar na príomhaipe, iompar ar iompar — sin an fáth go bhfuil lipéad Béite air seo in ionad GA."
+            "note": "Beo anois. Tá leathanach inrochtana comhfhreagrach ag gach leathanach sa phríomhaip, ach tá gach ceann díobh fós á sheiceáil gné i ndiaidh gné i gcomparáid leis an bpríomhaip — sin an fáth a bhfuil lipéad Béite air seachas Ar Fáil go Ginearálta."
           },
           "explore_discovery": {
             "title": "Faigh Amach",
@@ -89,13 +89,13 @@
           },
           "maps_and_location": {
             "title": "Mapaí agus Soláthraithe Suímh",
-            "description": "Is féidir mapáil agus cuardach seoltaí a roghnú de réir an chomhphobail: Google Maps, OpenStreetMap, nó tíleanna Ordnance Survey, in éineacht le fíorú seoltaí ó Google Places, Nominatim, nó OS Places atá bunaithe ar UPRN. Fanann mapaí múchta go dtí go gcasann comhphobal orthu, mar sin ní shroicheann eochair mhapála an brabhsálaí riamh de réir réamhshocraithe."
+            "description": "Is féidir soláthraí mapála agus cuardaigh seoltaí a roghnú do gach pobal: Google Maps, OpenStreetMap nó tíleanna Ordnance Survey, in éineacht le fíorú seoltaí ó Google Places, Nominatim nó OS Places bunaithe ar UPRN. Fanann mapaí múchta go dtí go gcumasaíonn pobal iad, mar sin ní sheoltar eochair mhapála chuig an mbrabhsálaí de réir réamhshocraithe."
           }
         }
       },
       "federation": {
         "title": "Cónaidhm",
-        "intro": "Ciallaíonn Cónaidhm dhá rud difriúil anseo, agus tá siad ag céimeanna éagsúla. Baintear úsáid laethúil as pobail a chónaíonn ar shuiteáil amháin a nascadh. Déantar nascadh le suiteálacha agus ardáin eile a thógáil agus a thástáil, ach múchtar é de réir réamhshocraithe agus níl sé in úsáid faoi láthair.",
+        "intro": "Tá dhá bhrí éagsúla le cónaidhm anseo, agus tá siad ag céimeanna éagsúla. Úsáidtear an nasc idir pobail ar an tsuiteáil chéanna gach lá. Tá naisc le suiteálacha agus ardáin eile tógtha agus tástáilte, ach tá siad múchta de réir réamhshocraithe agus níl siad in úsáid faoi láthair.",
         "items": {
           "federation_network": {
             "title": "Líonra Pobail (suiteáil chéanna)",
@@ -103,13 +103,13 @@
           },
           "external_partner_federation": {
             "title": "Cónaidhm le páirtithe seachtracha",
-            "description": "Ceangail le suiteálacha NEXUS eile agus le hardáin bainc ama eile thar cheithre phrótacal doiciméadaithe: Nexus native, Komunitin, Credit Commons (CEN-comhoiriúnach), agus TimeOverflow.",
-            "note": "Críochnaithe agus tástáladh, agus múchta de réir réamhshocraithe - freagraíonn gach críochphointe seachtrach le freagra nach bhfuil ar fáil go sealadach go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach ceangailte inniu. Tá suim léirithe ag oibreoirí ardán eile, agus mar sin tá an bhunobair i bhfeidhm agus iniúchta, ach nílimid ag forbairt tuilleadh é go dtí go mbeidh comhtháthú nithiúil ar an tábla. Más mian leat cónascadh a dhéanamh linn, déan teagmháil linn."
+            "description": "Ceangail le suiteálacha NEXUS eile agus le hardáin eile baincéireachta ama trí cheithre phrótacal doiciméadaithe: Nexus Native, Komunitin, Credit Commons (comhoiriúnach le CEN) agus TimeOverflow.",
+            "note": "Tá sé críochnaithe agus tástáilte, agus múchta de réir réamhshocraithe — tugann gach críochphointe seachtrach freagra sealadach nach bhfuil sé ar fáil go dtí go gcumasaíonn oibreoir é. Níl aon chomhpháirtí seachtrach nasctha faoi láthair. Tá spéis léirithe ag oibreoirí ardán eile, mar sin tá an bhunobair déanta agus iniúchta, ach ní fhorbróimid tuilleadh í go dtí go mbeidh togra comhtháthaithe sonrach ann. Más mian leat dul i gcónaidhm linn, déan teagmháil linn."
           },
           "multi_protocol_adapters": {
             "title": "Cuibheoirí ilphrótacal",
             "description": "Cuibheoirí chun naoi gcineál eintitis a shioncronú sa dá threo — baill, liostálacha, imeachtaí, grúpaí, naisc, obair dheonach, léirmheasanna, aistrithe agus teachtaireachtaí — thar na ceithre phrótacal.",
-            "note": "Tógtha agus clúdaithe ag tástálacha taobh le Cónaidhm na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon rud ar siúl, mar sin níl aon rud ag sioncronú."
+            "note": "Tógtha agus clúdaithe ag tástálacha in éineacht le Cónaidhm na gComhpháirtithe Seachtracha, agus díomhaoin ar an gcúis chéanna: níl aon cheann de na naisc cumasaithe, mar sin níl aon sioncronú ar siúl."
           },
           "federation_neighborhoods": {
             "title": "Comharsanachtaí cónaidhme",
@@ -125,7 +125,7 @@
           },
           "partner_network_portal": {
             "title": "Tairseach Líonra agus Páirtithe",
-            "description": "Réimse tiomnaithe do cibé duine a ritheann líonra comhphobal seachas ceann amháin: eolaire páirtithe, grúpáil comharsanachtaí, comhaontuithe creidmheasa, socruithe ar fud an líonra, gníomhaíocht agus anailísíocht chomhcheangailte, bainistiú sonraí, agus eochracha API leis a ndoiciméadú féin.",
+            "description": "Limistéar ar leith dóibh siúd a reáchtálann líonra pobal seachas aon phobal amháin: eolaire comhpháirtithe, grúpáil comharsanachtaí, comhaontuithe creidmheasa, socruithe don líonra ar fad, gníomhaíocht agus anailísíocht chomhcheangailte, bainistiú sonraí, agus eochracha API lena ndoiciméadacht féin.",
             "note": "Fanann na codanna a shroicheann suiteálacha eile — páirtithe seachtracha, páirtithe API isteach agus Credit Commons — múchta in éineacht le cuid eile na cónaidhme seachtraí. Tá uirlisí an líonra inmheánaigh in úsáid go laethúil."
           }
         }
@@ -578,24 +578,24 @@
         }
       }
     },
-    "maturity_dormant": "Tógtha, tástáladh agus múchta de réir réamhshocraithe. Déantar an obair agus déantar iniúchadh uirthi, ach níl aon rud á úsáid fós - déanfaimid tuilleadh forbartha air nuair a bhíonn fíor-éileamh ann.",
-    "availability_notice_title": "Seans nach bhfuil gach ceann díobh seo casta air do do chomhphobal",
-    "availability_notice_body": "Taispeánann an leathanach seo gach rud is féidir le bogearraí Project NEXUS a dhéanamh. Ní liosta é de na rudaí atá casta air do do chomhphobal féin.",
-    "availability_notice_body_2": "Roghnaíonn gach comhphobal na codanna is mian leis a úsáid, mar sin ní bheidh cuid de na rudaí thíos le feiceáil i do roghchláir. Tá sin gnách agus ní locht é — ciallaíonn sé go simplí nár chas do chomhphobal an chuid sin air.",
-    "availability_notice_body_3": "Is é an rud is féidir leat a úsáid i ndáiríre ná cibé rud a fheiceann tú i do roghchláir féin. Má tá rud éigin anseo a bhfuil cuma úsáideach air agus nach féidir leat é a aimsiú, iarr ar cibé duine a ritheann do chomhphobal é a chasadh air.",
+    "maturity_dormant": "Tógtha, tástáilte agus múchta de réir réamhshocraithe. Tá an obair déanta agus iniúchta, ach níl aon rud á úsáid fós — forbróimid tuilleadh é nuair a bheidh fíorghá leis.",
+    "availability_notice_title": "Seans nach bhfuil gach ceann díobh seo cumasaithe do do phobal",
+    "availability_notice_body": "Taispeánann an leathanach seo gach rud is féidir le bogearraí Project NEXUS a dhéanamh. Ní liosta é de na gnéithe atá cumasaithe do do phobal féin.",
+    "availability_notice_body_2": "Roghnaíonn gach pobal na codanna is mian leis a úsáid, mar sin ní bheidh cuid de na rudaí thíos le feiceáil i do roghchláir. Tá sé sin normálta agus ní locht é — níor chumasaigh do phobal an chuid sin go fóill.",
+    "availability_notice_body_3": "Is féidir leat na gnéithe a fheiceann tú i do roghchláir féin a úsáid. Má fheiceann tú rud úsáideach anseo ach mura féidir leat é a aimsiú, iarr ar an té a reáchtálann do phobal é a chumasú.",
     "filter_heading": "Aimsigh an rud atá uait",
     "search_placeholder": "Cuardaigh gnéithe — bain triail as \"creidmheasanna\", \"imeachtaí\", \"sábháilteacht\"",
     "search_label": "Cuardaigh gnéithe",
     "filter_all": "Gach rud",
-    "filter_group_label": "Ná taispeáin ach",
-    "results_summary": "{{shown}} as {{total}} iontráil á dtaispeáint",
+    "filter_group_label": "Taispeáin iad seo amháin",
+    "results_summary": "{{shown}} iontráil as {{total}} á dtaispeáint",
     "no_results_title": "Níl aon rud ag teacht leis an gcuardach sin",
     "no_results_body": "Bain triail as focal níos giorra, nó roghnaigh Gach rud chun an liosta iomlán a thabhairt ar ais.",
     "clear_filters": "Glan an cuardach agus na scagairí"
   },
   "changelog_page": {
     "title": "Loga Athruithe",
-    "meta_title": "Changelog - Tionscadal NEXUS",
+    "meta_title": "Loga Athruithe — Project NEXUS",
     "meta_description": "Gach athrú suntasach a seoladh in Project NEXUS, i bhformáid Keep a Changelog agus de réir Leaganú Séimeantach. Faightear é ó CHANGELOG.md sa stór cód foinseach poiblí.",
     "heading": "Loga Athruithe",
     "subheading": "Gach athrú suntasach ar Project NEXUS, i bhformáid Keep a Changelog. Úsáideann an t-ardán Leaganú Séimeantach.",
