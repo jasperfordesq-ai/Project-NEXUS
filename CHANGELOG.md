@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Blocked-user controls and personal-data exports in the native app now stay in Irish.** Thirty-nine privacy labels, explanations, confirmations, warnings, formats, progress states and errors now use context-aware Irish. The `JSON` format name remains unchanged as a technical identifier, and a focused test protects both sensitive workflows.
+
 - **Language and content preferences in the native app now stay in Irish.** Thirty-two account labels, feed-ordering controls, automatic-translation settings, save states and language names now use context-aware Irish. A focused test protects the complete preferences slice.
 
 - **The native app's entire 303-string Volunteering catalogue is now reviewed for Irish.** The final 25 shift-swap labels, requests, actions, errors and statuses now use context-aware Irish. A whole-catalogue test verifies every key and permits only seven reviewed functional formats for dates, times, currency and percentages to remain language-neutral.
