@@ -1195,6 +1195,7 @@
                 "cancel_exchange": "Cealaigh malartú"
             },
             "states": {
+                "load_error": "N?orbh fh?idir linn ? seo a l?d?il. Bain triail eile as.",
                 "content-hidden": "Tá an mhír seo i bhfolach ó do shreabhadh anois.",
                 "author-muted": "Ní fheicfidh tú postálacha ón gcomhalta seo i do shreabhadh a thuilleadh.",
                 "content-reported": "Go raibh maith agat. Seoladh do thuairisc chuig na modhnaitheoirí.",

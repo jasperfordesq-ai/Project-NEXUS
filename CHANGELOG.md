@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A new shared load-error message on the accessible site is translated into Irish.** The reusable failure state now tells Irish readers that the content could not be loaded and to try again, instead of falling back to English.
+
 - **The native app's entire 290-string Jobs catalogue is now reviewed for Irish.** The final 34 owner-analytics labels, measures, comparisons, trends and prediction states now use context-aware Irish while preserving count, percentage, salary and market placeholders. A whole-catalogue test verifies every key and permits only twelve reviewed form examples, ranges and number-only formats to remain language-neutral.
 
 - **Job applications and the employer hiring pipeline in the native app now stay in Irish.** Eighteen stage, candidate, application-message, history, withdrawal and error strings now use context-aware Irish while preserving dates and stage-name placeholders. A focused test protects both sides of the workflow.
