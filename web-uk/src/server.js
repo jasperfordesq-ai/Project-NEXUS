@@ -528,6 +528,19 @@ app.use(async (req, res, next) => {
   res.locals.isAuthenticated = !!token;
   Object.assign(res.locals, buildShellLocals(req, res.locals.isAuthenticated));
 
+  // Defense in depth: any response rendered for a signed-in member is
+  // personal (wallet, messages, profile, notifications, settings, CSV
+  // exports) and must never be stored by the browser's back/forward cache
+  // or a shared/intermediary cache, where it could surface to the next
+  // person on the device. Individual routes already set this per page
+  // (e.g. events.js); this baseline guarantees it for every authenticated
+  // response, and a route may still override it with a more specific value.
+  // Static assets are served earlier (lines ~376-383) so are unaffected.
+  if (token) {
+    res.set('Cache-Control', 'private, no-store, max-age=0');
+    res.set('Pragma', 'no-cache');
+  }
+
   const alphaCookieChoice = req.session ? req.session.alphaCookieChoice : '';
   if (alphaCookieChoice && req.session) {
     delete req.session.alphaCookieChoice;
