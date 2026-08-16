@@ -92,3 +92,44 @@ test('Irish emergency alerts and Federation picker preserve their member actions
   assert.match(irish.federation_picker.empty, /sluga pobail a chur isteach de láimh fós/u);
   assert.equal(irish.federation_picker.member_count_label, 'ball');
 });
+
+test('complete Irish member-facing Caring Community surface permits only the Spitex service name', () => {
+  const memberSections = [
+    'loading',
+    'trust_tier',
+    'caregiver',
+    'cover',
+    'providers',
+    'emergency_alert',
+    'federation_picker',
+    'onboarding',
+    'relationships',
+    'data_export',
+    'warmth_pass',
+  ];
+  const englishMember = new Map();
+  const irishMember = new Map();
+
+  for (const section of memberSections) {
+    if (typeof english[section] === 'string') {
+      englishMember.set(section, english[section]);
+      irishMember.set(section, irish[section]);
+    } else {
+      flatten(english[section], section, englishMember);
+      flatten(irish[section], section, irishMember);
+    }
+  }
+
+  const invariants = new Set(['providers.filter_spitex']);
+  for (const [path, englishValue] of englishMember) {
+    assert.ok(irishMember.has(path), `Missing Irish member-facing Caring Community key: ${path}`);
+    if (invariants.has(path)) assert.equal(irishMember.get(path), englishValue, path);
+    else assert.notEqual(irishMember.get(path), englishValue, path);
+  }
+
+  const exactMatches = [...englishMember]
+    .filter(([path, englishValue]) => irishMember.get(path) === englishValue)
+    .map(([path]) => path)
+    .sort();
+  assert.deepEqual(exactMatches, [...invariants].sort());
+});
