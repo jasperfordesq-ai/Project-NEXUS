@@ -1247,7 +1247,18 @@
                 "comment-empty": "Enter a comment before submitting.",
                 "comment-too-long": "Comments must be 10,000 characters or fewer.",
                 "comment-failed": "The comment could not be added. Try again.",
-                "not_available": "Not available"
+                "not_available": "Not available",
+                "validation": {
+                    "required": "Enter :field",
+                    "email": "Enter an email address in the correct format, like name@example.com",
+                    "min_length": ":field must be :min characters or more",
+                    "max_length": ":field must be :max characters or fewer",
+                    "matches": ":field must match :other",
+                    "number": ":field must be a number",
+                    "min": ":field must be :min or more",
+                    "max": ":field must be :max or fewer",
+                    "pattern": "Enter :field in the correct format"
+                }
             },
             "forms": {
                 "error_prefix": "Error:"

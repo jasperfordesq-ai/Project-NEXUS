@@ -241,6 +241,17 @@ return [
         'comment-too-long' => 'コメントは 10,000 文字以下にする必要があります。',
         'comment-failed' => 'コメントを追加できませんでした。もう一度やり直してください。',
         'not_available' => '利用できません',
+        'validation' => [
+            'required' => ':fieldと入力してください',
+            'email' => 'name@example.com などの正しい形式で電子メール アドレスを入力します。',
+            'min_length' => ':field は :min 文字以上である必要があります',
+            'max_length' => ':field は :max 文字以下である必要があります',
+            'matches' => ':field は :other と一致する必要があります',
+            'number' => ':field は数値でなければなりません',
+            'min' => ':field は :min 以上である必要があります',
+            'max' => ':field は :max 以下である必要があります',
+            'pattern' => ':field を正しい形式で入力してください',
+        ],
     ],
     'forms' => [
         'error_prefix' => 'エラー:',

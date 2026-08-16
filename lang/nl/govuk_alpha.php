@@ -241,6 +241,17 @@ return [
         'comment-too-long' => 'Opmerkingen moeten 10.000 tekens of minder bevatten.',
         'comment-failed' => 'De opmerking kon niet worden toegevoegd. Probeer het opnieuw.',
         'not_available' => 'Niet beschikbaar',
+        'validation' => [
+            'required' => 'Voer :field in',
+            'email' => 'Voer een e-mailadres in het juiste formaat in, zoals naam@voorbeeld.com',
+            'min_length' => ':field moet :min tekens of meer bevatten',
+            'max_length' => ':field moet :max tekens of minder bevatten',
+            'matches' => ':field moet overeenkomen met :other',
+            'number' => ':field moet een getal zijn',
+            'min' => ':field moet :min of meer zijn',
+            'max' => ':field moet :max of minder zijn',
+            'pattern' => 'Voer :field in het juiste formaat in',
+        ],
     ],
     'forms' => [
         'error_prefix' => 'Fout:',

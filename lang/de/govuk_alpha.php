@@ -241,6 +241,17 @@ return [
         'comment-too-long' => 'Kommentare dürfen maximal 10.000 Zeichen lang sein.',
         'comment-failed' => 'Der Kommentar konnte nicht hinzugefügt werden. Versuchen Sie es erneut.',
         'not_available' => 'Nicht verfügbar',
+        'validation' => [
+            'required' => 'Geben Sie :field ein',
+            'email' => 'Geben Sie eine E-Mail-Adresse im richtigen Format ein, z. B. name@example.com',
+            'min_length' => ':field muss aus mindestens :min Zeichen bestehen',
+            'max_length' => ':field darf maximal :max Zeichen lang sein',
+            'matches' => ':field muss mit :other übereinstimmen',
+            'number' => ':field muss eine Zahl sein',
+            'min' => ':field muss :min oder mehr sein',
+            'max' => ':field muss :max oder kleiner sein',
+            'pattern' => 'Geben Sie :field im richtigen Format ein',
+        ],
     ],
     'forms' => [
         'error_prefix' => 'Fehler:',

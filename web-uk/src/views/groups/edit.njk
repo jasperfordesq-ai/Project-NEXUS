@@ -57,7 +57,9 @@
           } if fieldErrors and fieldErrors.name else null,
           attributes: {
             "data-validate": "required maxLength:255",
-            "data-label": t("groups.create.name_label")
+            "data-label": t("groups.create.name_label"),
+            "data-required-message": t("states.validation.required", { field: t("groups.create.name_label") }),
+            "data-max-length-message": t("states.validation.max_length", { field: t("groups.create.name_label"), max: 255 })
           }
         }) }}
 

@@ -1247,7 +1247,18 @@
                 "comment-empty": "Cuir isteach nóta tráchta roimh é a chur isteach.",
                 "comment-too-long": "Caithfidh 10,000 carachtar nó níos lú a bheith sna nótaí tráchta.",
                 "comment-failed": "Níorbh fhéidir an nóta tráchta a chur leis. Bain triail eile as.",
-                "not_available": "Níl sé ar fáil"
+                "not_available": "Níl sé ar fáil",
+                "validation": {
+                    "required": "Enter :field",
+                    "email": "Enter an email address in the correct format, like name@example.com",
+                    "min_length": ":field must be :min characters or more",
+                    "max_length": ":field must be :max characters or fewer",
+                    "matches": ":field must match :other",
+                    "number": ":field must be a number",
+                    "min": ":field must be :min or more",
+                    "max": ":field must be :max or fewer",
+                    "pattern": "Enter :field in the correct format"
+                }
             },
             "forms": {
                 "error_prefix": "Earráid:"

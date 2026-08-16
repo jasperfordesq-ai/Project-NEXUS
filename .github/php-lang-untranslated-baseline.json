@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-16T13:35:10.320Z",
+  "generatedAt": "2026-08-16T14:52:24.964Z",
   "source": "scripts/check-php-lang-untranslated.mjs",
   "note": "Shrink-only ceiling. Values byte-identical to lang/en, minus scripts/php-lang-invariant-allowlist.json. Regenerate ONLY with --write-baseline; never hand-edit.",
   "langDir": "lang",
   "sourceLocale": "en",
-  "totalUntranslated": 197,
+  "totalUntranslated": 206,
   "files": {
     "ar/api.php": 1,
     "de/api.php": 3,
@@ -54,6 +54,7 @@
     "fr/govuk_alpha_settings.php": 1,
     "fr/govuk_alpha_volunteering.php": 16,
     "fr/notifications.php": 1,
+    "ga/govuk_alpha.php": 9,
     "ga/govuk_alpha_commerce.php": 1,
     "it/govuk_alpha_federation.php": 1,
     "it/govuk_alpha_goals.php": 1,

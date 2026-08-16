@@ -49,6 +49,8 @@
             attributes: {
               "data-validate": "required maxLength:255",
               "data-label": t("events.title_label"),
+              "data-required-message": t("states.validation.required", { field: t("events.title_label") }),
+              "data-max-length-message": t("states.validation.max_length", { field: t("events.title_label"), max: 255 }),
               "required": "required"
             }
           }) }}
@@ -65,6 +67,7 @@
             attributes: {
               "data-validate": "required",
               "data-label": t("events.description_label"),
+              "data-required-message": t("states.validation.required", { field: t("events.description_label") }),
               "required": "required"
             }
           }) }}
@@ -189,7 +192,9 @@
             inputmode: "numeric",
             attributes: {
               "data-validate": "number min:1",
-              "data-label": t("events.max_attendees_label")
+              "data-label": t("events.max_attendees_label"),
+              "data-number-message": t("states.validation.number", { field: t("events.max_attendees_label") }),
+              "data-min-message": t("states.validation.min", { field: t("events.max_attendees_label"), min: 1 })
             }
           }) }}
         </fieldset>

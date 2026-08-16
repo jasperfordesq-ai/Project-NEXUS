@@ -1247,7 +1247,18 @@
                 "comment-empty": "Przed przesłaniem wpisz komentarz.",
                 "comment-too-long": "Komentarze muszą mieć maksymalnie 10 000 znaków.",
                 "comment-failed": "Nie można dodać komentarza. Spróbuj ponownie.",
-                "not_available": "Niedostępne"
+                "not_available": "Niedostępne",
+                "validation": {
+                    "required": "Wpisz :field",
+                    "email": "Wpisz adres e-mail w poprawnym formacie, np. nazwa@przyklad.com",
+                    "min_length": ":field musi mieć :min znaków lub więcej",
+                    "max_length": ":field musi mieć maksymalnie :max znaków",
+                    "matches": ":field musi pasować do :other",
+                    "number": ":field musi być liczbą",
+                    "min": ":field musi wynosić :min lub więcej",
+                    "max": "Wartość :field musi wynosić :max lub mniej",
+                    "pattern": "Wpisz :field w poprawnym formacie"
+                }
             },
             "forms": {
                 "error_prefix": "Błąd:"

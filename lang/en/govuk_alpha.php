@@ -242,6 +242,21 @@ return [
         'comment-too-long' => 'Comments must be 10,000 characters or fewer.',
         'comment-failed' => 'The comment could not be added. Try again.',
         'not_available' => 'Not available',
+        // Client-side (JavaScript) validation messages. The :field token is
+        // replaced with the field's own translated label, and :min / :max /
+        // :other with the rule's parameter, at render time. Kept in the
+        // recipient's language so inline errors match the rest of the page.
+        'validation' => [
+            'required' => 'Enter :field',
+            'email' => 'Enter an email address in the correct format, like name@example.com',
+            'min_length' => ':field must be :min characters or more',
+            'max_length' => ':field must be :max characters or fewer',
+            'matches' => ':field must match :other',
+            'number' => ':field must be a number',
+            'min' => ':field must be :min or more',
+            'max' => ':field must be :max or fewer',
+            'pattern' => 'Enter :field in the correct format',
+        ],
     ],
     'forms' => [
         'error_prefix' => 'Error:',

@@ -1247,7 +1247,18 @@
                 "comment-empty": "Entrez un commentaire avant de soumettre.",
                 "comment-too-long": "Les commentaires doivent comporter 10 000 caractères ou moins.",
                 "comment-failed": "Le commentaire n'a pas pu être ajouté. Essayer à nouveau.",
-                "not_available": "Non disponible"
+                "not_available": "Non disponible",
+                "validation": {
+                    "required": "Saisissez :field",
+                    "email": "Saisissez une adresse e-mail au format correct, comme nom@exemple.com",
+                    "min_length": ":field doit contenir :min caractères ou plus",
+                    "max_length": ":field doit contenir :max caractères ou moins",
+                    "matches": ":field doit correspondre à :other",
+                    "number": ":field doit être un nombre",
+                    "min": ":field doit être :min ou plus",
+                    "max": ":field doit être :max ou moins",
+                    "pattern": "Saisissez :field au format correct"
+                }
             },
             "forms": {
                 "error_prefix": "Erreur:"

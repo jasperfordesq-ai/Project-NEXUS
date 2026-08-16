@@ -241,6 +241,17 @@ return [
         'comment-too-long' => 'يجب أن تكون التعليقات 10000 حرف أو أقل.',
         'comment-failed' => 'لا يمكن إضافة التعليق. حاول ثانية.',
         'not_available' => 'غير متوفر',
+        'validation' => [
+            'required' => 'أدخل :field',
+            'email' => 'أدخل عنوان بريد إلكتروني بالتنسيق الصحيح، مثل name@example.com',
+            'min_length' => 'يجب أن يكون :field :min حرفًا أو أكثر',
+            'max_length' => 'يجب أن يكون :field :max حرفًا أو أقل',
+            'matches' => 'يجب أن يتطابق :field مع :other',
+            'number' => 'يجب أن يكون :field رقمًا',
+            'min' => 'يجب أن يكون :field :min أو أكثر',
+            'max' => 'يجب أن يكون :field :max أو أقل',
+            'pattern' => 'أدخل :field بالتنسيق الصحيح',
+        ],
     ],
     'forms' => [
         'error_prefix' => 'خطأ:',

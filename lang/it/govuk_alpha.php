@@ -241,6 +241,17 @@ return [
         'comment-too-long' => 'I commenti devono contenere massimo 10.000 caratteri.',
         'comment-failed' => 'Impossibile aggiungere il commento. Riprova.',
         'not_available' => 'Non disponibile',
+        'validation' => [
+            'required' => 'Inserisci :field',
+            'email' => 'Inserisci un indirizzo email nel formato corretto, ad esempio nome@esempio.com',
+            'min_length' => ':field deve contenere :min caratteri o più',
+            'max_length' => ':field deve contenere :max caratteri o meno',
+            'matches' => ':field deve corrispondere a :other',
+            'number' => ':field deve essere un numero',
+            'min' => ':field deve essere :min o più',
+            'max' => ':field deve essere :max o inferiore',
+            'pattern' => 'Inserisci :field nel formato corretto',
+        ],
     ],
     'forms' => [
         'error_prefix' => 'Errore:',
