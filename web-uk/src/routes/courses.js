@@ -59,55 +59,59 @@ const INSTRUCTOR_STATUS_CLASSES = {
   pending_review: 'govuk-tag--yellow',
   draft: 'govuk-tag--grey'
 };
+// Route-level status messages. The message text lives in
+// lang/*/govuk_alpha_courses.php under the `status` block; routeStatus resolves it
+// per request via res.locals.t. The `key` is the status slug with hyphens
+// normalised to underscores to match the PHP array keys.
 const COURSE_STATUS_MESSAGES = {
-  enrolled: { type: 'success', message: 'You are now enrolled. Enjoy the course.' },
-  'enrol-required': { type: 'error', message: 'Enrol on this course before opening the learning area.' },
-  'review-saved': { type: 'success', message: 'Thank you - your review has been saved.' },
-  'insufficient-credits': { type: 'error', message: 'You do not have enough time credits to enrol on this course.' },
-  'enrol-failed': { type: 'error', message: 'We could not enrol you on this course. Please try again.' },
-  'certificate-locked': { type: 'error', message: 'You can download your certificate once you have completed the course.' },
-  'certificate-failed': { type: 'error', message: 'We could not produce your certificate. Please try again.' },
-  'review-invalid': { type: 'error', message: 'Please choose a rating between 1 and 5 stars.' },
-  'review-not-enrolled': { type: 'error', message: 'Only enrolled learners can review this course.' },
-  'review-failed': { type: 'error', message: 'We could not save your review. Please try again.' }
+  enrolled: { type: 'success', key: 'enrolled' },
+  'enrol-required': { type: 'error', key: 'enrol_required' },
+  'review-saved': { type: 'success', key: 'review_saved' },
+  'insufficient-credits': { type: 'error', key: 'insufficient_credits' },
+  'enrol-failed': { type: 'error', key: 'enrol_failed' },
+  'certificate-locked': { type: 'error', key: 'certificate_locked' },
+  'certificate-failed': { type: 'error', key: 'certificate_failed' },
+  'review-invalid': { type: 'error', key: 'review_invalid' },
+  'review-not-enrolled': { type: 'error', key: 'review_not_enrolled' },
+  'review-failed': { type: 'error', key: 'review_failed' }
 };
 const LEARN_STATUS_MESSAGES = {
-  'lesson-completed': { type: 'success', message: 'Lesson marked as complete.' },
-  'course-completed': { type: 'success', message: 'You have finished the course. Well done.' },
-  'quiz-passed': { type: 'success', message: 'Well done - you passed the quiz.' },
-  'quiz-pending-review': { type: 'success', message: 'Your answers were submitted and are awaiting instructor marking.' },
-  'quiz-failed': { type: 'error', message: 'You did not reach the pass mark this time. Review the lesson and try again if you have attempts left.' },
-  'quiz-no-attempts': { type: 'error', message: 'You have no attempts remaining for this quiz.' },
-  'quiz-error': { type: 'error', message: 'Sorry, we could not record your quiz attempt. Please try again.' }
+  'lesson-completed': { type: 'success', key: 'lesson_completed' },
+  'course-completed': { type: 'success', key: 'course_completed' },
+  'quiz-passed': { type: 'success', key: 'quiz_passed' },
+  'quiz-pending-review': { type: 'success', key: 'quiz_pending_review' },
+  'quiz-failed': { type: 'error', key: 'quiz_failed' },
+  'quiz-no-attempts': { type: 'error', key: 'quiz_no_attempts' },
+  'quiz-error': { type: 'error', key: 'quiz_error' }
 };
 const INSTRUCTOR_STATUS_MESSAGES = {
-  deleted: { type: 'success', message: 'Your course was deleted.' },
-  'delete-failed': { type: 'error', message: 'Sorry, your course could not be deleted. Please try again.' }
+  deleted: { type: 'success', key: 'deleted' },
+  'delete-failed': { type: 'error', key: 'delete_failed' }
 };
 const FORM_STATUS_MESSAGES = {
-  created: { type: 'success', message: 'Your course was created. Add the details and publish when you are ready.' },
-  'create-failed': { type: 'error', message: 'Enter a course title before creating the course.' },
-  saved: { type: 'success', message: 'Your changes were saved.' },
-  'save-failed': { type: 'error', message: 'Sorry, your changes could not be saved. Please try again.' },
-  published: { type: 'success', message: 'Your course is published and visible to learners.' },
-  'pending-review': { type: 'success', message: 'Your course was submitted and is awaiting review before it goes live.' },
-  'publish-failed': { type: 'error', message: 'Sorry, your course could not be published. Please try again.' },
-  unpublished: { type: 'success', message: 'Your course was unpublished and is now a draft.' },
-  'unpublish-failed': { type: 'error', message: 'Sorry, your course could not be unpublished. Please try again.' },
-  'section-added': { type: 'success', message: 'Your section was added.' },
-  'section-saved': { type: 'success', message: 'Your section was renamed.' },
-  'section-deleted': { type: 'success', message: 'Your section was deleted. Its lessons were kept and moved out of any section.' },
-  'section-failed': { type: 'error', message: 'Sorry, that section action could not be completed. Please try again.' },
-  'section-title-missing': { type: 'error', message: 'Enter a title for the section.' },
-  'lesson-added': { type: 'success', message: 'Your lesson was added.' },
-  'lesson-saved': { type: 'success', message: 'Your lesson was saved.' },
-  'lesson-deleted': { type: 'success', message: 'Your lesson was deleted.' },
-  'lesson-failed': { type: 'error', message: 'Sorry, that lesson action could not be completed. Please try again.' },
-  'lesson-title-missing': { type: 'error', message: 'Enter a title for the lesson.' }
+  created: { type: 'success', key: 'created' },
+  'create-failed': { type: 'error', key: 'create_failed' },
+  saved: { type: 'success', key: 'saved' },
+  'save-failed': { type: 'error', key: 'save_failed' },
+  published: { type: 'success', key: 'published' },
+  'pending-review': { type: 'success', key: 'pending_review' },
+  'publish-failed': { type: 'error', key: 'publish_failed' },
+  unpublished: { type: 'success', key: 'unpublished' },
+  'unpublish-failed': { type: 'error', key: 'unpublish_failed' },
+  'section-added': { type: 'success', key: 'section_added' },
+  'section-saved': { type: 'success', key: 'section_saved' },
+  'section-deleted': { type: 'success', key: 'section_deleted' },
+  'section-failed': { type: 'error', key: 'section_failed' },
+  'section-title-missing': { type: 'error', key: 'section_title_missing' },
+  'lesson-added': { type: 'success', key: 'lesson_added' },
+  'lesson-saved': { type: 'success', key: 'lesson_saved' },
+  'lesson-deleted': { type: 'success', key: 'lesson_deleted' },
+  'lesson-failed': { type: 'error', key: 'lesson_failed' },
+  'lesson-title-missing': { type: 'error', key: 'lesson_title_missing' }
 };
 const GRADING_STATUS_MESSAGES = {
-  graded: { type: 'success', message: 'The attempt has been graded.' },
-  'grade-failed': { type: 'error', message: 'The attempt could not be graded. Please try again.' }
+  graded: { type: 'success', key: 'graded' },
+  'grade-failed': { type: 'error', key: 'grade_failed' }
 };
 
 function tokenFrom(req) {
@@ -236,9 +240,15 @@ function handleCourseGetError(error, res) {
   return false;
 }
 
-function routeStatus(query, map) {
+function routeStatus(query, map, t) {
   const key = typeof query.status === 'string' ? query.status : '';
-  return map[key] ? { key, ...map[key] } : null;
+  const entry = map[key];
+  if (!entry) return null;
+  return {
+    key,
+    type: entry.type,
+    message: t(`govuk_alpha_courses.status.${entry.key}`)
+  };
 }
 
 function costMeta(course) {
@@ -458,7 +468,7 @@ function normalizeInstructorCourse(course) {
   };
 }
 
-function normalizeAnalytics(result) {
+function normalizeAnalytics(result, t) {
   const data = objectFrom(result);
   const enrollments = data.enrollments && typeof data.enrollments === 'object' ? data.enrollments : {};
   const analytics = {
@@ -477,14 +487,14 @@ function normalizeAnalytics(result) {
     course: normalizeCourse(data.course || {}),
     analytics,
     stats: [
-      { label: 'Total enrolments', value: analytics.total },
-      { label: 'Active', value: analytics.active },
-      { label: 'Completed', value: analytics.completed },
-      { label: 'Dropped out', value: analytics.dropped },
-      { label: 'Completion rate', value: `${analytics.completionRate}%` },
-      { label: 'Average progress', value: `${analytics.avgProgress}%` },
-      { label: 'Average quiz score', value: `${analytics.avgQuizScore}%` },
-      { label: 'Quiz attempts', value: analytics.quizAttempts }
+      { label: t('govuk_alpha_courses.analytics.total'), value: analytics.total },
+      { label: t('govuk_alpha_courses.analytics.active'), value: analytics.active },
+      { label: t('govuk_alpha_courses.analytics.completed'), value: analytics.completed },
+      { label: t('govuk_alpha_courses.analytics.dropped'), value: analytics.dropped },
+      { label: t('govuk_alpha_courses.analytics.completion_rate'), value: `${analytics.completionRate}%` },
+      { label: t('govuk_alpha_courses.analytics.avg_progress'), value: `${analytics.avgProgress}%` },
+      { label: t('govuk_alpha_courses.analytics.avg_quiz_score'), value: `${analytics.avgQuizScore}%` },
+      { label: t('govuk_alpha_courses.analytics.quiz_attempts'), value: analytics.quizAttempts }
     ],
     perLesson: perLesson.map((row) => ({
       lessonId: positiveInteger(row.lesson_id) || 0,
@@ -706,7 +716,7 @@ router.get('/instructor', asyncRoute(async (req, res) => {
       activeNav: 'explore',
       courses: listFrom(result).map(normalizeInstructorCourse),
       canAuthor: true,
-      status: routeStatus(req.query, INSTRUCTOR_STATUS_MESSAGES)
+      status: routeStatus(req.query, INSTRUCTOR_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
@@ -715,7 +725,7 @@ router.get('/instructor', asyncRoute(async (req, res) => {
         activeNav: 'explore',
         courses: [],
         canAuthor: false,
-        status: routeStatus(req.query, INSTRUCTOR_STATUS_MESSAGES)
+        status: routeStatus(req.query, INSTRUCTOR_STATUS_MESSAGES, res.locals.t)
       });
     }
     if (handleCourseGetError(error, res)) return undefined;
@@ -750,7 +760,7 @@ router.get('/instructor/new', asyncRoute(async (req, res) => {
       contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value, label: LESSON_CONTENT_TYPE_LABELS[value] })),
       builderSections: [],
       builderUnsectioned: [],
-      status: routeStatus(req.query, FORM_STATUS_MESSAGES)
+      status: routeStatus(req.query, FORM_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
     if (handleCourseGetError(error, res)) return undefined;
@@ -790,7 +800,7 @@ router.get('/instructor/:id/edit', asyncRoute(async (req, res) => {
       contentTypes: LESSON_CONTENT_TYPES.map((value) => ({ value, label: LESSON_CONTENT_TYPE_LABELS[value] })),
       builderSections: payload.sections,
       builderUnsectioned: [],
-      status: routeStatus(req.query, FORM_STATUS_MESSAGES)
+      status: routeStatus(req.query, FORM_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
     if (handleCourseGetError(error, res)) return undefined;
@@ -803,7 +813,7 @@ router.get('/instructor/:id/analytics', asyncRoute(async (req, res) => {
   if (token === null) return undefined;
 
   try {
-    const payload = normalizeAnalytics(await callCourse(token, 'GET', `/${req.params.id}/analytics`));
+    const payload = normalizeAnalytics(await callCourse(token, 'GET', `/${req.params.id}/analytics`), res.locals.t);
     return res.render('courses/analytics', {
       title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.analytics.title') : 'Course analytics'),
       activeNav: 'explore',
@@ -835,7 +845,7 @@ router.get('/instructor/:id/grading', asyncRoute(async (req, res) => {
       courseId: req.params.id,
       course,
       attempts: listFrom(attemptsResult).map(normalizeAttempt),
-      status: routeStatus(req.query, GRADING_STATUS_MESSAGES)
+      status: routeStatus(req.query, GRADING_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
@@ -900,7 +910,7 @@ router.get('/:id/learn', asyncRoute(async (req, res) => {
       currentLesson,
       progressPercent: Math.round(Number(payload.progress.enrollment.progress_percent || 0)),
       isCompleted: payload.isCompleted,
-      status: routeStatus(req.query, LEARN_STATUS_MESSAGES)
+      status: routeStatus(req.query, LEARN_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
     if (handleCourseGetError(error, res)) return undefined;
@@ -918,7 +928,7 @@ router.get('/:id', asyncRoute(async (req, res) => {
       title: payload.course.title,
       activeNav: 'explore',
       ...payload,
-      status: routeStatus(req.query, COURSE_STATUS_MESSAGES)
+      status: routeStatus(req.query, COURSE_STATUS_MESSAGES, res.locals.t)
     });
   } catch (error) {
     if (handleCourseGetError(error, res)) return undefined;
