@@ -5,6 +5,8 @@ All notable changes to Project NEXUS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **The complete member-facing Irish Dashboard catalogue has been semantically reviewed.** Dashboard, listing, matching, activity, endorsement, exchange, review, like and comment wording now reads naturally and preserves the intended product meaning; a whole-catalogue test limits English-identical values to the five percentage, distance and XP display formats.
+
 ---
 
 ## [Unreleased]
