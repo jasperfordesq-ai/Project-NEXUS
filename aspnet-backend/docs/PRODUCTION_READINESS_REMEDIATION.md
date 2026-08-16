@@ -722,21 +722,29 @@ re-discover it:**
 | Job | Can it be built now? |
 | --- | --- |
 | `groups:prune-exports` | ✅ **DONE** — `PruneGroupExportsJob`. Deletes the file, marks the row expired, prunes rows after 30 days. Reuses `GroupDataExportService.SafeAbsolutePath` rather than hand-rolling path safety in a deletion routine, and leaves a row un-expired if its file cannot be deleted, so the only pointer to a file of member data is never lost. |
-| `safeguarding:purge-message-copies` | **Yes** — `SafeguardingMessageReviews` exists. |
-| `marketplace:process-unacknowledged-reports` | **Likely** — marketplace report entities exist; DSA 24h acknowledgement. |
+| `safeguarding:purge-message-copies` | ✅ **DONE** — `PurgeBrokerMessageCopiesJob`. Deletes reviewed rows past retention; **never** deletes an unreviewed one, however old, because that would silently discard a concern nobody has read. Flagged rows keep the longer 365-day period. 🔴 Two divergences, both in the file: Laravel reads each community's own `broker_config.retention_days` from its `tenant_settings` key/value table, which **does not exist here** (settings are typed per feature and none carries broker retention), so retention is uniform and per-deployment configurable with Laravel's same hard floors; and Laravel filters on `sent_at`, absent here, so `CreatedAt` is used — which errs towards keeping rows longer, never shorter. |
+| `marketplace:process-unacknowledged-reports` | ✅ **DONE** — `MarketplaceUnacknowledgedReportsJob`. Acknowledges reports nobody answered within 24h (a DSA obligation with a clock on it) and tells **both** the reporter and the seller. 🔴 Divergence: Laravel queues emails through its report-notification pipeline; the equivalent table here (`MarketplaceReportNotification`) is mapped but **nothing writes to it and nothing sends from it**, so queueing into it would have produced rows nobody delivers — the exact no-op pattern this backlog exists to remove. Both notices go to the in-app `Notification` table instead, which members actually read. Add an email sender alongside when one exists; do not move the in-app notice into a queue that does not drain. |
 | `performance:prune` | **No point yet** — there is no performance recorder, so the tables it would prune are never written (R-21). |
 | `gdpr:check-overdue-requests` | **NO** — there is no GDPR-request entity anywhere in `Entities/`. Schema-first work. |
 | `backup:verify` | **NO** — this backend has no backup system to verify. 🔴 Note the irony recorded elsewhere: the live ASP.NET database has had no successful backup since 2026-03-08, so the missing job and the missing backups are the same problem from two directions. This one is owner/infrastructure, not code. |
 | `retention:enforce` | **Not yet** — no retention policy configuration or entity exists here; needs the policy model before the job. |
 
-**Next in this cluster, highest consequence first:** `retention:enforce` (old
-member data never purged), `backup:verify` (nobody is told a backup failed —
-note this is exactly the failure mode the live ASP.NET database is already in),
-`gdpr:check-overdue-requests` (statutory deadline can pass unnoticed),
-`safeguarding:vetting-renewals` (expired vetting never chased),
-`safeguarding:purge-message-copies`, `groups:prune-exports` (exported member
-data sits on disk for ever), `marketplace:process-unacknowledged-reports` (DSA
-24h acknowledgement).
+**Next in this cluster, highest consequence first.** Everything buildable in it
+is now built; what remains is blocked on schema or on the owner, not on effort:
+
+1. `retention:enforce` — old member data never purged. **Blocked:** no retention
+   policy model exists here. Schema-first work, and the largest remaining
+   data-protection gap in this cluster.
+2. `backup:verify` — nobody is told a backup failed. **Owner/infrastructure, not
+   code**, and note the irony: this is exactly the failure mode the live ASP.NET
+   database is already in (no successful backup since 2026-03-08).
+3. `gdpr:check-overdue-requests` — a statutory deadline can pass unnoticed.
+   **Blocked:** no GDPR-request entity exists anywhere in `Entities/`.
+
+Done in this cluster: `support-actions:expire`,
+`safeguarding:clear-expired-monitoring`, `safeguarding:vetting-renewals`,
+`groups:prune-exports`, `safeguarding:purge-message-copies`,
+`marketplace:process-unacknowledged-reports`.
 
 ### R-6 (original finding) — the full mapping
 

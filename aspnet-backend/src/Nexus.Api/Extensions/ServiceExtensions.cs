@@ -392,6 +392,8 @@ public static class ServiceExtensions
         services.AddHostedService<Nexus.Api.Services.Scheduled.ClearExpiredMonitoringJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.VettingRenewalRemindersJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.PruneGroupExportsJob>();
+        services.AddHostedService<Nexus.Api.Services.Scheduled.PurgeBrokerMessageCopiesJob>();
+        services.AddHostedService<Nexus.Api.Services.Scheduled.MarketplaceUnacknowledgedReportsJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.PollStuckIdentityVerificationsJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.SafeguardingSlaEscalateJob>();
         services.AddHostedService<Nexus.Api.Services.Scheduled.MarkOverdueDuesJob>();
