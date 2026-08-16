@@ -193,26 +193,26 @@
     "fallbackItemTitle": "{{type}} #{{id}}"
   },
   "appreciations": {
-    "wallTitle": "Appreciations",
-    "wallTitleFor": "{{name}}'s appreciations",
-    "wallSubtitle": "Public thank-you notes and reactions from the community.",
-    "emptyTitle": "No public appreciations yet",
-    "emptySubtitle": "Thank-you notes will appear here when members share them publicly.",
-    "errorTitle": "Could not load appreciations",
-    "loadMore": "Load more",
-    "someone": "Community member",
-    "signInTitle": "Sign in to react",
-    "signInMessage": "Reactions are available after you sign in.",
-    "reactionFailed": "Could not update that reaction.",
+    "wallTitle": "Nótaí buíochais",
+    "wallTitleFor": "Nótaí buíochais do {{name}}",
+    "wallSubtitle": "Nótaí buíochais poiblí agus freagairtí ón bpobal.",
+    "emptyTitle": "Níl aon nóta buíochais poiblí ann fós",
+    "emptySubtitle": "Beidh nótaí buíochais le feiceáil anseo nuair a roinnfidh baill go poiblí iad.",
+    "errorTitle": "Níorbh fhéidir na nótaí buíochais a lódáil",
+    "loadMore": "Lódáil tuilleadh",
+    "someone": "Ball den phobal",
+    "signInTitle": "Sínigh isteach chun freagairt",
+    "signInMessage": "Tá freagairtí ar fáil tar éis duit síniú isteach.",
+    "reactionFailed": "Níorbh fhéidir an fhreagairt sin a nuashonrú.",
     "reaction": {
-      "heart": "React with heart",
-      "clap": "React with clap",
-      "star": "React with star"
+      "heart": "Freagair le croí",
+      "clap": "Freagair le bualadh bos",
+      "star": "Freagair le réalta"
     },
     "react": {
-      "heart": "Heart",
-      "clap": "Clap",
-      "star": "Star"
+      "heart": "Croí",
+      "clap": "Bualadh bos",
+      "star": "Réalta"
     }
   },
   "empty": {
