@@ -6,6 +6,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const { validateReturnUrl } = require('../lib/urlValidator');
 
 const router = express.Router();
 const ROUTE_MATRIX_PATH = path.join(__dirname, '..', '..', 'docs', 'generated', 'accessible-route-matrix.json');
@@ -79,7 +80,11 @@ for (const page of prepPages) {
     res.render('static-page', {
       title: page.title,
       body: `Laravel Blade route ${page.laravelPath} (${page.handler}${viewNote}) is present as an accessible preparation page. The full workflow still needs to be ported and certified against the Laravel source of truth.`,
-      returnUrl: req.query.return || ''
+      // 🔴 Validate before it reaches the "Back" link href in static-page.njk.
+      // A raw req.query.return allowed `?return=javascript:…` (click-XSS, blocked
+      // by CSP but still) and `?return=https://evil` (open redirect). Every
+      // sibling route already routes return through validateReturnUrl.
+      returnUrl: validateReturnUrl(req.query.return, '')
     });
   });
 }
