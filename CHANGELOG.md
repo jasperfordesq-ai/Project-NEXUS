@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Progress, Nexus Score and daily rewards in the native app now stay in Irish.** Twenty-eight progress summaries, statistics, reputation signals, streak labels, reward actions and errors now use context-aware Irish while preserving XP, score-fraction and percentage displays. A focused test protects the complete progress-and-rewards slice.
+
 - **The native app's entire 197-string Members catalogue is now reviewed for Irish.** The final seventeen appreciation-wall labels, empty and error states, sign-in guidance and reaction controls now use context-aware Irish. A whole-catalogue test verifies every key and permits only four reviewed functional formats and identifiers to remain language-neutral.
 
 - **Saved-item collections in the native app now stay in Irish.** Thirty-two collection titles, controls, visibility labels, empty states, errors and item metadata strings now use context-aware Irish while preserving names, dates and counts. The generated type-and-ID fallback remains unchanged as a reviewed functional format, and a focused test protects the complete collection workflow.
