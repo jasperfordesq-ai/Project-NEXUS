@@ -992,6 +992,10 @@ function normalizeGivingDay(row, t = null) {
     description: trimmed(day.description),
     status,
     goalLabel: moneyLabel(goal),
+    // Raw numeric alongside the formatted label. Totals MUST sum this, never
+    // Number(raisedLabel) — the label is locale-formatted ("1,234.56"), and
+    // Number("1,234.56") is NaN, which collapsed the dashboard total to 0.00.
+    raised: Number.isFinite(raised) ? raised : 0,
     raisedLabel: moneyLabel(raised),
     donorCount: Number.isFinite(donorCount) ? donorCount : 0,
     endDateLabel: dateLabel(day.end_date ?? day.ends_at ?? day.endsAt),
@@ -1017,7 +1021,7 @@ function normalizeDonationDashboard(givingDaysResult, donationsResult, t = null)
   const givingDays = collectionFrom(givingDaysResult).map((day) => normalizeGivingDay(day, t));
   const donations = collectionFrom(donationsResult).map((donation) => normalizeDonation(donation, t));
   const stats = givingDays.reduce((totals, day) => ({
-    totalRaised: totals.totalRaised + Number(day.raisedLabel),
+    totalRaised: totals.totalRaised + day.raised,
     totalDonors: totals.totalDonors + day.donorCount,
     activeCampaigns: totals.activeCampaigns + (day.status.value === 'active' ? 1 : 0)
   }), { totalRaised: 0, totalDonors: 0, activeCampaigns: 0 });
@@ -1534,6 +1538,8 @@ function normalizeExpense(row, t = null) {
     typeLabel: Object.hasOwn(EXPENSE_TYPE_LABELS, type) && t
       ? t(`govuk_alpha_volunteering.expenses.type_${type}`)
       : (EXPENSE_TYPE_LABELS[type] || headline(type) || (t ? t('govuk_alpha_volunteering.expenses.type_other') : 'Other')),
+    // Raw numeric for summing; amountLabel is locale-formatted and Number()s to NaN.
+    amount: Number.isFinite(Number(expense.amount)) ? Number(expense.amount) : 0,
     amountLabel: moneyLabel(expense.amount),
     currency,
     amountWithCurrency: `${currency ? `${currency} ` : ''}${moneyLabel(expense.amount)}`,
@@ -1551,7 +1557,7 @@ function normalizeExpenseDashboard(expensesResult, organizationsResult, t = null
     : {};
   const expenses = expenseRowsFrom(expensesResult).map((expense) => normalizeExpense(expense, t));
   const fallbackStats = expenses.reduce((totals, expense) => {
-    const amount = Number(expense.amountLabel);
+    const amount = expense.amount;
     return {
       totalClaimed: totals.totalClaimed + amount,
       approved: totals.approved + (['approved', 'paid'].includes(expense.status.value) ? amount : 0),

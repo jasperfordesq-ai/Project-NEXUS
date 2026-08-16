@@ -34790,6 +34790,32 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).not.toContain('shared accessible frontend preparation page');
   });
 
+  it('sums the donations "total raised" from raw amounts, not the formatted label', async () => {
+    // Regression: the total was summed from Number(raisedLabel), and a
+    // locale-formatted label ("1,500.00") is NaN under Number(), so any total
+    // reaching the thousands (or any comma-decimal locale) collapsed to 0.00.
+    const cookieSignature = require('cookie-signature');
+    const api = require('../src/lib/api');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    api.callVolunteeringApi
+      .mockResolvedValueOnce({
+        data: [
+          { id: 71, title: 'Big appeal', status: 'active', goal_amount: 5000, raised_amount: 1500, donor_count: 12, end_date: '2026-12-20' },
+          { id: 72, title: 'Second appeal', status: 'active', goal_amount: 5000, raised_amount: 2500.75, donor_count: 8, end_date: '2026-12-21' }
+        ]
+      })
+      .mockResolvedValueOnce({ data: { items: [] } });
+
+    const response = await request(app)
+      .get('/volunteering/donations')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    expect(response.status).toBe(200);
+    // 1500 + 2500.75 = 4000.75 — present and correct, not the old 0.00.
+    expect(response.text).toContain('4,000.75');
+    expect(response.text).toContain('20'); // 12 + 8 donors
+  });
+
   it('renders the shared-mount donation form with the uppercase tenant currency code', async () => {
     const api = require('../src/lib/api');
     api.getTenantBootstrap.mockResolvedValueOnce({
