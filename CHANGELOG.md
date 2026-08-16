@@ -5,6 +5,8 @@ All notable changes to Project NEXUS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **The complete member-facing Irish Exchanges catalogue has been semantically reviewed.** Requests, provider responses, broker approval, completion, hour confirmation, cancellation and time-credit displays now use consistent workflow language and Irish `u` hour abbreviations; a whole-catalogue gate leaves only the numeric preparation-time placeholder unchanged.
+
 - **The complete 830-source-value member-facing Irish Settings catalogue has now been semantically reviewed.** Identity verification, notifications, passwords, 2FA, passkeys, insurance metadata, safeguarding consent, GDPR rights, linked-account capabilities, accessibility, blocked users and supported-message audit controls are covered; a whole-catalogue gate limits English-identical values to two product names and three functional input examples.
 
 - **Irish Settings now preserves member control throughout linked-account support.** Member-approved capabilities are clearly separated from staff-recorded guardian arrangements; pending support remains inaccessible until approval, message viewing requires the member's own consent and stays auditable and withdrawable, and prepared listings or transfers remain fail-closed until the supported member agrees.
