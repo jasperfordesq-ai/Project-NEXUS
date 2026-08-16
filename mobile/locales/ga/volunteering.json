@@ -308,29 +308,29 @@
       "openProfile": "Oscail próifíl {{name}}"
     },
     "wallet": {
-      "balance": "Wallet balance",
-      "autoPayToggle": "Toggle auto-pay",
-      "autoPayOn": "Auto-pay is on for approved hours.",
-      "autoPayOff": "Auto-pay is off. Approved hours will need manual payment.",
-      "amountPlaceholder": "Amount",
-      "notePlaceholder": "Optional note",
-      "deposit": "Deposit credits",
-      "validation": "Enter an amount greater than zero.",
-      "depositError": "Could not deposit credits.",
-      "autoPayError": "Could not update auto-pay.",
-      "transactions": "Transactions",
-      "empty": "No wallet transactions yet.",
-      "transactionFallback": "Wallet transaction"
+      "balance": "Iarmhéid an sparáin",
+      "autoPayToggle": "Scoránaigh uathíocaíocht",
+      "autoPayOn": "Tá uathíocaíocht ar siúl d'uaireanta ceadaithe.",
+      "autoPayOff": "Tá uathíocaíocht múchta. Beidh íocaíocht de láimh ag teastáil d'uaireanta ceadaithe.",
+      "amountPlaceholder": "Méid",
+      "notePlaceholder": "Nóta roghnach",
+      "deposit": "Cuir creidmheasanna i dtaisce",
+      "validation": "Cuir méid níos mó ná náid isteach.",
+      "depositError": "Níorbh fhéidir na creidmheasanna a chur i dtaisce.",
+      "autoPayError": "Níorbh fhéidir uathíocaíocht a nuashonrú.",
+      "transactions": "Idirbhearta",
+      "empty": "Níl aon idirbheart sparáin ann fós.",
+      "transactionFallback": "Idirbheart sparáin"
     },
     "settings": {
-      "heading": "Organisation settings",
-      "namePlaceholder": "Organisation name",
-      "descriptionPlaceholder": "Description",
-      "emailPlaceholder": "Contact email",
-      "websitePlaceholder": "Website",
-      "save": "Save organisation",
-      "validation": "Organisation name is required.",
-      "saveError": "Could not save organisation details."
+      "heading": "Socruithe na heagraíochta",
+      "namePlaceholder": "Ainm na heagraíochta",
+      "descriptionPlaceholder": "Cur síos",
+      "emailPlaceholder": "Ríomhphost teagmhála",
+      "websitePlaceholder": "Suíomh gréasáin",
+      "save": "Sábháil an eagraíocht",
+      "validation": "Tá ainm na heagraíochta ag teastáil.",
+      "saveError": "Níorbh fhéidir sonraí na heagraíochta a shábháil."
     }
   },
   "swaps": {
