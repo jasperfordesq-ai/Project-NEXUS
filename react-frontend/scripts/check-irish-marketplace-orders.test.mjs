@@ -8,6 +8,19 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const irish = JSON.parse(await readFile(new URL('../public/locales/ga/marketplace.json', import.meta.url)));
+const english = JSON.parse(await readFile(new URL('../public/locales/en/marketplace.json', import.meta.url)));
+
+function flattenStrings(value, prefix = '', output = {}) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    for (const [key, child] of Object.entries(value)) {
+      flattenStrings(child, prefix ? `${prefix}.${key}` : key, output);
+    }
+  } else if (typeof value === 'string') {
+    output[prefix] = value;
+  }
+
+  return output;
+}
 
 test('Irish Marketplace checkout, shipping and order wording preserves buyer and seller actions', () => {
   const journey = JSON.stringify({
@@ -165,4 +178,53 @@ test('Irish Marketplace delivery, pickup and inventory wording preserves fulfilm
   assert.equal(irish.pickup.reservation_failed, 'Níorbh fhéidir an tréimhse bhailithe sin a chur in áirithe. Roghnaigh tréimhse eile.');
   assert.equal(irish.inventory.section_subtitle, 'Coinnigh súil ar an stoc agus seachain níos mó earraí a dhíol ná mar atá ar fáil.');
   assert.equal(irish.inventory.low_chip, 'Stoc: {{count}} (beagán fágtha)');
+});
+
+test('Irish Marketplace free items, maps, AI replies and seller setup preserve their intended journeys', () => {
+  const journey = JSON.stringify({
+    free: irish.free,
+    groupMarketplace: irish.group_marketplace,
+    hybridPricing: irish.hybrid_pricing,
+    aiReply: irish.ai_reply,
+    map: irish.map,
+    listingLocation: irish.listing_location,
+    onboarding: irish.onboarding,
+  });
+
+  assert.doesNotMatch(journey, /Tabhair Rud Éigin Uait|Gan Earraí Saor in Aisce/u);
+  assert.doesNotMatch(journey, /\bliosta(?:í)?\b|Freagra Molta ag AI|Cóipeáilte/u);
+  assert.doesNotMatch(journey, /Ionduchtú|do thús ceannaí|Suíomh neastachta/u);
+
+  assert.equal(irish.free.cta_title, 'Glan amach an tranglam agus cabhraigh le do phobal');
+  assert.equal(irish.group_marketplace.active_listings, 'liostuithe gníomhacha');
+  assert.match(irish.hybrid_pricing.explanation, /obair ar son an phobail/u);
+  assert.equal(irish.ai_reply.suggested_reply, 'Freagra a mhol IS');
+  assert.equal(irish.map.results_count, 'Aimsíodh {{count}} liostú in aice láimhe');
+  assert.equal(irish.map.distance_meters, '{{m}} m ar shiúl');
+  assert.equal(irish.listing_location.approximate_location, 'Suíomh garbh');
+  assert.equal(irish.onboarding.nudge_title, 'Críochnaigh socrú do chuntais díoltóra');
+  assert.equal(irish.onboarding.start_error, 'Níorbh fhéidir tús a chur leis an socrú');
+});
+
+test('complete Irish Marketplace catalogue keeps only reviewed language-neutral values', () => {
+  const englishStrings = flattenStrings(english);
+  const irishStrings = flattenStrings(irish);
+  const exactKeys = Object.keys(englishStrings)
+    .filter((key) => irishStrings[key] === englishStrings[key])
+    .sort();
+
+  assert.deepEqual(exactKeys, [
+    'community_delivery.estimated_time_placeholder',
+    'community_delivery.time_credits_placeholder',
+    'create.photos_count',
+    'listing.detail_field_label',
+    'map.radius_option',
+    'offer.amount_placeholder',
+    'shipping.price_placeholder',
+  ]);
+
+  const catalogue = JSON.stringify(irish);
+  assert.doesNotMatch(catalogue, /Inchaibidle|Cleiteach|Carbhsheó|Frithsheasta/u);
+  assert.doesNotMatch(catalogue, /seiceáil amach|Dífhostaigh|Loingseoireacht/u);
+  assert.doesNotMatch(catalogue, /\uFFFD|â€|Ã.|\?s\?|\s{2,}/u);
 });
