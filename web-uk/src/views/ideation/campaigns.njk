@@ -79,27 +79,27 @@
         {% if status == "campaign-invalid" %}
           <p id="campaign_title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("govuk_alpha_ideation.common.error_prefix") }}</span> {{ t("govuk_alpha_ideation.campaigns.title_required") }}</p>
         {% endif %}
-        <input class="govuk-input" id="campaign_title" name="title" type="text" maxlength="255"{% if status == "campaign-invalid" %} aria-describedby="campaign_title-error"{% endif %}>
+        <input class="govuk-input" id="campaign_title" name="title" type="text" maxlength="255" value="{{ campaignForm.title or '' }}"{% if status == "campaign-invalid" %} aria-describedby="campaign_title-error"{% endif %}>
       </div>
       {% call characterCount(5000, characterCountMessages, "campaign_description") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="campaign_description">{{ t("govuk_alpha_ideation.campaigns.description_label") }}</label>
-        <textarea class="govuk-textarea govuk-js-character-count" id="campaign_description" name="description" rows="4" maxlength="5000" aria-describedby="campaign_description-info"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="campaign_description" name="description" rows="4" maxlength="5000" aria-describedby="campaign_description-info">{{ campaignForm.description or '' }}</textarea>
       </div>
       {% endcall %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="campaign_cover_image">{{ t("govuk_alpha_ideation.campaigns.cover_image_label") }}</label>
-        <input class="govuk-input" id="campaign_cover_image" name="cover_image" type="url" maxlength="500">
+        <input class="govuk-input" id="campaign_cover_image" name="cover_image" type="url" maxlength="500" value="{{ campaignForm.coverImage or '' }}">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="campaign_start_date">{{ t("govuk_alpha_ideation.campaigns.start_date_label") }}</label>
         <div id="campaign_start_date-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.campaigns.date_hint") }}</div>
-        <input class="govuk-input govuk-input--width-10" id="campaign_start_date" name="start_date" type="text" aria-describedby="campaign_start_date-hint">
+        <input class="govuk-input govuk-input--width-10" id="campaign_start_date" name="start_date" type="text" value="{{ campaignForm.startDate or '' }}" aria-describedby="campaign_start_date-hint">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="campaign_end_date">{{ t("govuk_alpha_ideation.campaigns.end_date_label") }}</label>
         <div id="campaign_end_date-hint" class="govuk-hint">{{ t("govuk_alpha_ideation.campaigns.date_hint") }}</div>
-        <input class="govuk-input govuk-input--width-10" id="campaign_end_date" name="end_date" type="text" aria-describedby="campaign_end_date-hint">
+        <input class="govuk-input govuk-input--width-10" id="campaign_end_date" name="end_date" type="text" value="{{ campaignForm.endDate or '' }}" aria-describedby="campaign_end_date-hint">
       </div>
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">
@@ -107,7 +107,7 @@
           <div class="govuk-radios govuk-radios--small govuk-radios--inline" data-module="govuk-radios">
             {% for option in campaignStatusOptions %}
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="campaign-status-{{ option }}" name="campaign_status" type="radio" value="{{ option }}"{% if option == "draft" %} checked{% endif %}>
+                <input class="govuk-radios__input" id="campaign-status-{{ option }}" name="campaign_status" type="radio" value="{{ option }}"{% if (campaignForm.status or "draft") == option %} checked{% endif %}>
                 <label class="govuk-label govuk-radios__label" for="campaign-status-{{ option }}">{{ t("govuk_alpha_ideation.campaigns.status_" ~ option) }}</label>
               </div>
             {% endfor %}

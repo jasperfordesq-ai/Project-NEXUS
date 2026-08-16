@@ -31,13 +31,13 @@
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--s" for="poll-question">{{ t("govuk_alpha_gamification.poll_create.question_label") }}</label>
           <div id="poll-question-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.question_hint") }}</div>
-          <input class="govuk-input" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint" required maxlength="255">
+          <input class="govuk-input" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint" required maxlength="255" value="{{ form.question or '' }}">
         </div>
         {% call characterCount(2000, characterCountMessages, "poll-description") %}
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--s" for="poll-description">{{ t("govuk_alpha_gamification.poll_create.desc_label") }}</label>
           <div id="poll-desc-hint" class="govuk-hint">{{ t("govuk_alpha_gamification.poll_create.desc_hint") }}</div>
-          <textarea class="govuk-textarea govuk-js-character-count" id="poll-description" name="description" rows="3" aria-describedby="poll-desc-hint poll-description-info" maxlength="2000"></textarea>
+          <textarea class="govuk-textarea govuk-js-character-count" id="poll-description" name="description" rows="3" aria-describedby="poll-desc-hint poll-description-info" maxlength="2000">{{ form.description or '' }}</textarea>
         </div>
         {% endcall %}
         {% if categories.length %}
@@ -46,7 +46,7 @@
             <select class="govuk-select" id="poll-category" name="category">
               <option value="">{{ t("govuk_alpha_gamification.poll_create.category_none") }}</option>
               {% for category in categories %}
-                <option value="{{ category }}">{{ category }}</option>
+                <option value="{{ category }}"{% if form and form.category == category %} selected{% endif %}>{{ category }}</option>
               {% endfor %}
             </select>
           </div>
@@ -56,24 +56,24 @@
           {% for number in [1, 2, 3, 4, 5, 6] %}
             <div class="govuk-form-group govuk-!-margin-bottom-2">
               <label class="govuk-label" for="poll-option-{{ number }}">{{ t("govuk_alpha_gamification.poll_create.option_label", { num: number }) }}</label>
-              <input class="govuk-input govuk-input--width-30" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="255"{% if number <= 2 %} required{% endif %}>
+              <input class="govuk-input govuk-input--width-30" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="255"{% if number <= 2 %} required{% endif %} value="{{ (form.options[number - 1] if form else '') or '' }}">
             </div>
           {% endfor %}
         </fieldset>
         <div class="govuk-form-group">
           <label class="govuk-label govuk-label--s" for="poll-expires">{{ t("govuk_alpha_gamification.poll_create.expires_label") }}</label>
-          <input class="govuk-input govuk-input--width-10" id="poll-expires" name="expires_at" type="date" min="{{ minDate }}">
+          <input class="govuk-input govuk-input--width-10" id="poll-expires" name="expires_at" type="date" min="{{ minDate }}" value="{{ form.expiresAt or '' }}">
         </div>
         <div class="govuk-form-group">
           <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_gamification.poll_create.type_legend") }}</legend>
             <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="poll-type-standard" name="poll_type" type="radio" value="standard" checked>
+                <input class="govuk-radios__input" id="poll-type-standard" name="poll_type" type="radio" value="standard"{% if not form or form.pollType == 'standard' %} checked{% endif %}>
                 <label class="govuk-label govuk-radios__label" for="poll-type-standard">{{ t("govuk_alpha_gamification.poll_create.type_standard") }}</label>
               </div>
               <div class="govuk-radios__item">
-                <input class="govuk-radios__input" id="poll-type-ranked" name="poll_type" type="radio" value="ranked">
+                <input class="govuk-radios__input" id="poll-type-ranked" name="poll_type" type="radio" value="ranked"{% if form and form.pollType == 'ranked' %} checked{% endif %}>
                 <label class="govuk-label govuk-radios__label" for="poll-type-ranked">{{ t("govuk_alpha_gamification.poll_create.type_ranked") }}</label>
               </div>
             </div>

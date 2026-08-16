@@ -150,12 +150,12 @@
         {% if status == 'idea-invalid' %}
           <p id="idea_title-error" class="govuk-error-message"><span class="govuk-visually-hidden">{{ t("states.error_prefix") }}</span> {{ t("ideation.states.idea-invalid") }}</p>
         {% endif %}
-        <input class="govuk-input" id="idea_title" name="idea_title" type="text" maxlength="255" {% if status == 'idea-invalid' %}aria-describedby="idea_title-error"{% endif %}>
+        <input class="govuk-input" id="idea_title" name="idea_title" type="text" maxlength="255" value="{{ ideaForm.title or '' }}" {% if status == 'idea-invalid' %}aria-describedby="idea_title-error"{% endif %}>
       </div>
       {% call characterCount(5000, characterCountMessages, "idea_content") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="idea_content">{{ t("ideation.idea_content_label") }}</label>
-        <textarea class="govuk-textarea govuk-js-character-count" id="idea_content" name="idea_content" rows="5" maxlength="5000" aria-describedby="idea_content-info"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="idea_content" name="idea_content" rows="5" maxlength="5000" aria-describedby="idea_content-info">{{ ideaForm.content or '' }}</textarea>
       </div>
       {% endcall %}
       <button type="submit" class="govuk-button" data-module="govuk-button">{{ t("ideation.submit_button") }}</button>

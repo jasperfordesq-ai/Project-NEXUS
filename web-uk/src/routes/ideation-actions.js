@@ -80,7 +80,7 @@ async function callApi(token, method, path, data = undefined) {
   return callIdeationApi(token, method, path, data);
 }
 
-async function runAction(req, res, method, path, data, successRedirect, failureRedirect) {
+async function runAction(req, res, method, path, data, successRedirect, failureRedirect, onFailure) {
   const token = tokenFrom(req);
   if (!token) {
     return redirectTo(res, loginRedirect());
@@ -94,8 +94,71 @@ async function runAction(req, res, method, path, data, successRedirect, failureR
     return redirectTo(res, redirect);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    // Give the caller a chance to preserve the submitted form (stash it in the
+    // session) before we redirect to the failure GET. This runs ONLY on a real
+    // API failure — never on the success path — so a stash can only ever exist
+    // after a failure.
+    if (typeof onFailure === 'function') onFailure(error);
     return redirectTo(res, failureRedirect);
   }
+}
+
+// --- Failed-submission preservation ---------------------------------------
+// On any failure exit we stash the raw submitted fields in the session so the
+// re-rendered form echoes what the member typed instead of reverting to saved
+// values or blanks. Each stash carries a `formKey` discriminator so a create
+// stash can never seed an edit form (or vice versa): the GET only consumes a
+// stash whose formKey matches, and discards a non-matching one. Consumed once
+// (read-and-delete) by the GET handlers in ideation.js. Never called on a
+// success path.
+
+function storeChallengeForm(req, formKey, body) {
+  if (!req.session) return;
+  req.session.ideationChallengeForm = {
+    formKey,
+    values: {
+      title: String(body.title || ''),
+      description: String(body.description || ''),
+      category_id: String(body.category_id || ''),
+      category: String(body.category || ''),
+      prize_description: String(body.prize_description || ''),
+      submission_deadline: String(body.submission_deadline || ''),
+      voting_deadline: String(body.voting_deadline || ''),
+      max_ideas_per_user: String(body.max_ideas_per_user || ''),
+      cover_image: String(body.cover_image || ''),
+      tags: String(body.tags || ''),
+      // challengePayload reads body.status, but the form field is challenge_status;
+      // keep both so the re-render works whichever the submission carried.
+      challenge_status: String(body.challenge_status || body.status || '')
+    }
+  };
+}
+
+function storeIdeaForm(req, challengeId, body) {
+  if (!req.session) return;
+  req.session.ideationIdeaForm = {
+    formKey: String(challengeId),
+    values: {
+      idea_title: String(body.idea_title || ''),
+      idea_content: String(body.idea_content || '')
+    }
+  };
+}
+
+function storeCampaignForm(req, formKey, body) {
+  if (!req.session) return;
+  req.session.ideationCampaignForm = {
+    formKey,
+    values: {
+      title: String(body.title || ''),
+      description: String(body.description || ''),
+      cover_image: String(body.cover_image || ''),
+      start_date: String(body.start_date || ''),
+      end_date: String(body.end_date || ''),
+      // campaignPayload reads body.campaign_status || body.status.
+      campaign_status: String(body.campaign_status || body.status || '')
+    }
+  };
 }
 
 function favoriteStatus(result) {
@@ -243,6 +306,7 @@ router.post('/campaigns', asyncRoute(async (req, res) => {
 
   const payload = campaignPayload(req.body);
   if (payload.title === '') {
+    storeCampaignForm(req, 'create', req.body);
     return redirectTo(res, `${ideationSubpageRedirect('campaigns', 'campaign-invalid')}#create`);
   }
 
@@ -258,7 +322,8 @@ router.post('/campaigns', asyncRoute(async (req, res) => {
         ? ideationSubpageRedirect('campaigns', 'campaign-created')
         : campaignRedirect(id, 'campaign-created');
     },
-    `${ideationSubpageRedirect('campaigns', 'campaign-failed')}#create`
+    `${ideationSubpageRedirect('campaigns', 'campaign-failed')}#create`,
+    () => storeCampaignForm(req, 'create', req.body)
   );
 }));
 
@@ -268,6 +333,7 @@ router.post('/campaigns/:id(\\d+)', asyncRoute(async (req, res) => {
   const id = Number(req.params.id);
   const payload = campaignPayload(req.body);
   if (payload.title === '') {
+    storeCampaignForm(req, `edit:${id}`, req.body);
     return redirectTo(res, `${campaignRedirect(id, 'campaign-invalid')}#edit`);
   }
 
@@ -278,7 +344,8 @@ router.post('/campaigns/:id(\\d+)', asyncRoute(async (req, res) => {
     `/ideation-campaigns/${id}`,
     payload,
     campaignRedirect(id, 'campaign-updated'),
-    campaignRedirect(id, 'campaign-failed')
+    campaignRedirect(id, 'campaign-failed'),
+    () => storeCampaignForm(req, `edit:${id}`, req.body)
   );
 }));
 
@@ -320,7 +387,8 @@ router.post('/new', asyncRoute(async (req, res) => runAction(
   '/ideation-challenges',
   challengePayload(req.body),
   (result) => challengeRedirect(resultId(result) || 'new', 'challenge-created'),
-  ideationSubpageRedirect('new', 'challenge-failed')
+  ideationSubpageRedirect('new', 'challenge-failed'),
+  () => storeChallengeForm(req, 'create', req.body)
 )));
 
 router.post('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
@@ -331,8 +399,12 @@ router.post('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
     'PUT',
     `/ideation-challenges/${id}`,
     challengePayload(req.body),
+    // Success MUST stay on the manage page (existing contract/test).
     challengeManageRedirect(id, 'challenge-updated'),
-    challengeManageRedirect(id, 'challenge-failed')
+    // On failure, re-render the EDIT FORM (not manage) so the stashed input
+    // can be echoed back.
+    `${IDEATION_PATH}/${id}/edit?status=challenge-failed`,
+    () => storeChallengeForm(req, `edit:${id}`, req.body)
   );
 }));
 
@@ -448,7 +520,8 @@ router.post('/:id(\\d+)/ideas', asyncRoute(async (req, res) => {
     `/ideation-challenges/${id}/ideas`,
     ideaPayload(req.body),
     challengeRedirect(id, 'idea-submitted') + '#ideas',
-    challengeRedirect(id, 'idea-failed') + '#ideas'
+    challengeRedirect(id, 'idea-failed') + '#ideas',
+    () => storeIdeaForm(req, id, req.body)
   );
 }));
 

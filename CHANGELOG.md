@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **On the accessible frontend, five more create forms now keep what you typed if the submission is rejected.** When a new idea, campaign, course, volunteering opportunity, goal or poll was rejected (for a validation problem or a backend hiccup), the form came back blank and everything had to be retyped. All of these now re-display with your entered text — title, description, options, dates and the rest — so you can fix the one problem and resubmit. This matches the behaviour the wallet, jobs and events forms already had. Covered by tests.
+
 - **Irish Community credential verification and shift swaps have completed a 60-string semantic review.** Credential states now distinguish verification from generic confirmation, expiry copy no longer uses a broken `credential(s)` construction, police/background checks remain jurisdiction-neutral, upload limits and retry actions are complete, and shift-swap requests consistently identify shifts, sent/received states, acceptance, refusal and failures.
 
 - **All 188 member-facing Irish Caring Community values are now covered by a completion gate.** Trust levels, caregiver wellbeing, respite cover, care providers, emergency alerts, Federation discovery, onboarding, support relationships, data export and the Warmth Pass retain their reviewed meanings; only the Swiss `Spitex` service name may remain identical to English. The separate 707-value staff panel and administration surface remains queued for the administration phase.

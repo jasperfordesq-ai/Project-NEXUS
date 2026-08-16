@@ -95,27 +95,28 @@
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-form-group">
         <label class="govuk-label" for="title">{{ t("goals.title_label") }}</label>
-        <input class="govuk-input" id="title" name="title" type="text" maxlength="255" required>
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="255" required value="{{ goalForm.title or '' }}">
       </div>
       <div class="govuk-form-group">
         <label class="govuk-label" for="target_value">{{ t("goals.target_label") }}</label>
         <div id="tv-hint" class="govuk-hint">{{ t("goals.target_hint") }}</div>
-        <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" required aria-describedby="tv-hint">
+        <input class="govuk-input govuk-input--width-5" id="target_value" name="target_value" type="number" min="0.25" step="0.25" inputmode="decimal" required aria-describedby="tv-hint" value="{{ goalForm.targetValue or '' }}">
       </div>
       {% call characterCount(1000, characterCountMessages, "description") %}
       <div class="govuk-form-group">
         <label class="govuk-label" for="description">{{ t("goals.description_label") }}</label>
-        <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="2" maxlength="1000" aria-describedby="description-info"></textarea>
+        <textarea class="govuk-textarea govuk-js-character-count" id="description" name="description" rows="2" maxlength="1000" aria-describedby="description-info">{{ goalForm.description or '' }}</textarea>
       </div>
       {% endcall %}
       {{ nexusDateInput({
         name: "deadline",
         legend: t("goals.deadline_label"),
-        hint: t("web_uk.date_input.hint")
+        hint: t("web_uk.date_input.hint"),
+        value: goalForm.deadlineParts if goalForm else undefined
       }, t) }}
       <div class="govuk-checkboxes govuk-checkboxes--small govuk-form-group" data-module="govuk-checkboxes">
         <div class="govuk-checkboxes__item">
-          <input class="govuk-checkboxes__input" id="is_public" name="is_public" type="checkbox" value="1">
+          <input class="govuk-checkboxes__input" id="is_public" name="is_public" type="checkbox" value="1"{% if goalForm.isPublic %} checked{% endif %}>
           <label class="govuk-label govuk-checkboxes__label" for="is_public">{{ t("goals.public_label") }}</label>
         </div>
       </div>

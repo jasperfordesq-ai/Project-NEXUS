@@ -449,6 +449,33 @@ function manageErrorMessage(status, t) {
   return allowed.includes(trimmed(status)) ? ideationStateMessage(status, t) : '';
 }
 
+// --- Failed-submission preservation (consumers) ---------------------------
+// The POST handlers in ideation-actions.js stash a rejected submission in the
+// session under one of these keys, tagged with a `formKey` discriminator. Each
+// consumer reads once and deletes: it returns the stashed values only when the
+// formKey matches this GET (so a create stash never seeds an edit form, and
+// vice versa) and discards a non-matching stash so it cannot leak into a later
+// page. Returns null when there is nothing to echo.
+function consumeStash(req, sessionKey, formKey) {
+  const stored = req.session && req.session[sessionKey];
+  if (stored && req.session) delete req.session[sessionKey];
+  return stored && stored.formKey === formKey ? stored.values : null;
+}
+
+function consumeChallengeForm(req, formKey) {
+  return consumeStash(req, 'ideationChallengeForm', formKey);
+}
+
+function consumeIdeaForm(req, challengeId) {
+  return consumeStash(req, 'ideationIdeaForm', String(challengeId));
+}
+
+function consumeCampaignForm(req, formKey) {
+  return consumeStash(req, 'ideationCampaignForm', formKey);
+}
+
+const CAMPAIGN_STATUS_VALUES = ['draft', 'active', 'completed', 'archived'];
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   if (!token) return redirectTo(res, loginRedirect());
@@ -489,14 +516,32 @@ router.get('/new', asyncRoute(async (req, res) => {
   const templates = compact(collectionFrom(templatesResult).map(normalizeTemplate));
   const status = trimmed(req.query.status);
 
+  // Echo a rejected create submission back into the form instead of blanks.
+  const savedForm = consumeChallengeForm(req, 'create');
+  const challenge = savedForm
+    ? {
+      title: savedForm.title,
+      description: savedForm.description,
+      categoryId: positiveInteger(savedForm.category_id),
+      category: savedForm.category,
+      prizeDescription: savedForm.prize_description,
+      submissionDeadline: savedForm.submission_deadline,
+      votingDeadline: savedForm.voting_deadline,
+      maxIdeasPerUser: savedForm.max_ideas_per_user,
+      coverImage: savedForm.cover_image,
+      tagsText: savedForm.tags,
+      status: savedForm.challenge_status || 'draft'
+    }
+    : {
+      status: 'draft',
+      tagsText: ''
+    };
+
   return res.render('ideation/challenge-form', {
     title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.form.submit_create') : 'Create challenge'),
     activeNav: 'explore',
     mode: 'create',
-    challenge: {
-      status: 'draft',
-      tagsText: ''
-    },
+    challenge,
     categories,
     templates,
     status,
@@ -517,10 +562,24 @@ router.get('/campaigns', asyncRoute(async (req, res) => {
     .filter((campaign) => campaign.id !== null);
   const status = trimmed(req.query.status);
 
+  // Echo a rejected campaign create submission back into the create form.
+  const campaignFormValues = consumeCampaignForm(req, 'create');
+  const campaignForm = {
+    title: campaignFormValues ? campaignFormValues.title : '',
+    description: campaignFormValues ? campaignFormValues.description : '',
+    coverImage: campaignFormValues ? campaignFormValues.cover_image : '',
+    startDate: campaignFormValues ? campaignFormValues.start_date : '',
+    endDate: campaignFormValues ? campaignFormValues.end_date : '',
+    status: campaignFormValues && CAMPAIGN_STATUS_VALUES.includes(campaignFormValues.campaign_status)
+      ? campaignFormValues.campaign_status
+      : 'draft'
+  };
+
   return res.render('ideation/campaigns', {
     title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.campaigns.title') : 'Campaigns'),
     activeNav: 'explore',
     campaigns,
+    campaignForm,
     ideationIsAdmin: ideationAdministrator(profileResult),
     status
   });
@@ -537,6 +596,23 @@ router.get('/campaigns/:id(\\d+)', asyncRoute(async (req, res) => {
   ]);
   const campaign = normalizeCampaignDetail({ id, ...itemFrom(result) });
   const status = trimmed(req.query.status);
+
+  // Echo a rejected edit submission back into the edit form. The edit form has
+  // no cover_image field, so cover_image is deliberately not overridden here.
+  const savedForm = consumeCampaignForm(req, `edit:${id}`);
+  if (savedForm) {
+    const statusValue = CAMPAIGN_STATUS_VALUES.includes(savedForm.campaign_status)
+      ? savedForm.campaign_status
+      : campaign.status;
+    const statusDisplay = campaignStatusDetails(statusValue);
+    campaign.title = savedForm.title;
+    campaign.description = savedForm.description;
+    campaign.startDate = savedForm.start_date;
+    campaign.endDate = savedForm.end_date;
+    campaign.status = statusValue;
+    campaign.statusLabel = statusDisplay.label;
+    campaign.statusClass = statusDisplay.className;
+  }
 
   return res.render('ideation/campaign-detail', {
     title: campaign.title,
@@ -726,6 +802,22 @@ router.get('/:id(\\d+)/edit', asyncRoute(async (req, res) => {
   const categories = compact(collectionFrom(categoriesResult).map(normalizeCategory));
   const status = trimmed(req.query.status);
 
+  // Echo a rejected edit submission back rather than reverting to saved values.
+  const savedForm = consumeChallengeForm(req, `edit:${id}`);
+  if (savedForm) {
+    challenge.title = savedForm.title;
+    challenge.description = savedForm.description;
+    challenge.categoryId = positiveInteger(savedForm.category_id);
+    challenge.category = savedForm.category;
+    challenge.prizeDescription = savedForm.prize_description;
+    challenge.submissionDeadline = savedForm.submission_deadline;
+    challenge.votingDeadline = savedForm.voting_deadline;
+    challenge.maxIdeasPerUser = savedForm.max_ideas_per_user;
+    challenge.coverImage = savedForm.cover_image;
+    challenge.tagsText = savedForm.tags;
+    challenge.status = savedForm.challenge_status || challenge.status;
+  }
+
   return res.render('ideation/challenge-form', {
     title: (res.locals.t ? res.locals.t('govuk_alpha_ideation.form.edit_title') : 'Edit challenge'),
     activeNav: 'explore',
@@ -751,11 +843,19 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
     .filter((idea) => idea.id !== null);
   const status = trimmed(req.query.status);
 
+  // Echo a rejected idea submission back into the "submit an idea" form.
+  const ideaFormValues = consumeIdeaForm(req, id);
+  const ideaForm = {
+    title: ideaFormValues ? ideaFormValues.idea_title : '',
+    content: ideaFormValues ? ideaFormValues.idea_content : ''
+  };
+
   return res.render('ideation/detail', {
     title: challenge.title,
     activeNav: 'explore',
     challenge,
     ideas,
+    ideaForm,
     status,
     successMessage: statusMessage(status, res.locals.t),
     errorMessage: errorMessage(status, res.locals.t)

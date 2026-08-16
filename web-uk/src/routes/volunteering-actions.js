@@ -13,7 +13,7 @@ const {
   uploadVolunteerCredential
 } = require('../lib/api');
 const { asyncRoute } = require('../lib/routeHelpers');
-const { readDate, splitDate } = require('../lib/date-input');
+const { readDate, splitDate, dateParts } = require('../lib/date-input');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { isValidEmail } = require('../lib/inputValidator');
 const { htmlToPlainText } = require('../lib/html-sanitizer');
@@ -339,6 +339,32 @@ function orgVolunteersHref(orgId, cursor) {
 
 function opportunityRedirect(id, status) {
   return `/volunteering/opportunities/${id}?status=${encodeURIComponent(status)}`;
+}
+
+// Preserve a rejected "create opportunity" submission so the re-render keeps what
+// the member typed instead of blanking the form. Consumed exactly once by the
+// create GET. Only failure exits store it, so the create GET reached after a
+// successful create (which redirects with opp-created) finds nothing to echo.
+function storeCreateOpportunityForm(req) {
+  if (!req.session) return;
+  req.session.createOpportunityForm = {
+    organization_id: String(req.body.organization_id ?? ''),
+    title: String(req.body.title ?? ''),
+    description: String(req.body.description ?? ''),
+    location: String(req.body.location ?? ''),
+    skills_needed: String(req.body.skills_needed ?? ''),
+    category_id: String(req.body.category_id ?? ''),
+    is_remote: checked(req.body.is_remote),
+    federated_visibility: checked(req.body.federated_visibility),
+    start_date: dateParts(req.body, 'start_date'),
+    end_date: dateParts(req.body, 'end_date')
+  };
+}
+
+function consumeCreateOpportunityForm(req) {
+  const stored = req.session && req.session.createOpportunityForm ? req.session.createOpportunityForm : null;
+  if (req.session && req.session.createOpportunityForm) delete req.session.createOpportunityForm;
+  return stored;
 }
 
 async function runOpportunityAction(req, res, options) {
@@ -2529,12 +2555,30 @@ router.get('/opportunities/create', asyncRoute(async (req, res) => {
     loadError = 'We could not load the create opportunity form. Please try again.';
   }
 
+  // Echo back a rejected submission once, so a validation error or API failure
+  // does not blank the form. Falls back to empty values when there is no stash.
+  const stashed = consumeCreateOpportunityForm(req);
+  const emptyParts = { day: '', month: '', year: '' };
+  const form = {
+    organizationId: stashed ? stashed.organization_id : '',
+    title: stashed ? stashed.title : '',
+    description: stashed ? stashed.description : '',
+    location: stashed ? stashed.location : '',
+    skillsNeeded: stashed ? stashed.skills_needed : '',
+    categoryId: stashed ? stashed.category_id : '',
+    isRemote: stashed ? !!stashed.is_remote : false,
+    federatedVisibility: stashed ? !!stashed.federated_visibility : false,
+    startDateParts: (stashed && stashed.start_date) ? stashed.start_date : emptyParts,
+    endDateParts: (stashed && stashed.end_date) ? stashed.end_date : emptyParts
+  };
+
   return res.render('volunteering/create-opportunity', {
     title: res.locals.t('govuk_alpha_volunteering.create_opp.title'),
     activeNav: 'volunteering',
     organizations,
     categories,
     loadError,
+    form,
     status: createOpportunityStatus(trimmed(req.query.status), res.locals.t),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
@@ -2548,6 +2592,7 @@ router.post('/opportunities/create', asyncRoute(async (req, res) => {
   const title = trimmed(req.body.title);
   const description = trimmed(req.body.description);
   if (organizationId === null || title === '' || description === '') {
+    storeCreateOpportunityForm(req);
     return redirectTo(res, '/volunteering/opportunities/create?status=opp-validation');
   }
 
@@ -2575,6 +2620,7 @@ router.post('/opportunities/create', asyncRoute(async (req, res) => {
       NOT_FOUND: 'opp-org-not-found',
       VALIDATION_ERROR: 'opp-validation'
     }[apiErrorCode(error)] || 'opp-create-failed';
+    storeCreateOpportunityForm(req);
     return redirectTo(res, `/volunteering/opportunities/create?status=${status}`);
   }
 }));

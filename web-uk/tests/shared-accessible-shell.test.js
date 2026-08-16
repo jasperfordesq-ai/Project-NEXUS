@@ -4102,6 +4102,82 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('value="Cork"');
   });
 
+  // Data-loss cluster: a rejected create/save must re-render with the member's
+  // typed input, not blanks. Each form has a local-validation failure that never
+  // reaches the API, so no API mock is needed. Mirrors the profile test above.
+  describe('form input preservation on a rejected submission', () => {
+    const cookieSignature = require('cookie-signature');
+    const tokenCookie = () => `token=${encodeURIComponent(`s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`)}`;
+
+    async function submitInvalid(formPath, submitPath, body, expectedStatus) {
+      const agent = request.agent(app);
+      const first = await agent.get(formPath).set('Cookie', tokenCookie());
+      const csrf = first.text.match(/name="_csrf" value="([^"]+)"/)[1];
+      // Carry the double-submit csrf cookie set by the GET alongside the token,
+      // so the POST's token matches its cookie (an explicit Cookie header does
+      // not always merge the agent jar's cookies).
+      const csrfCookie = (first.headers['set-cookie'] || [])
+        .map((c) => c.split(';')[0])
+        .find((c) => c.startsWith('nexus.csrf='));
+      const withCsrf = csrfCookie ? `${tokenCookie()}; ${csrfCookie}` : tokenCookie();
+      const post = await agent.post(submitPath).set('Cookie', withCsrf).type('form').send({ _csrf: csrf, ...body });
+      expect(post.status).toBe(302);
+      expect(post.headers.location).toContain(expectedStatus);
+      return agent.get(formPath).set('Cookie', withCsrf);
+    }
+
+    it('goals create keeps the title when the target is invalid', async () => {
+      const page = await submitInvalid('/goals', '/goals',
+        { title: 'Learn to sew', target_value: '', description: 'Two hours a week' }, 'goal-invalid');
+      expect(page.text).toContain('value="Learn to sew"');
+      expect(page.text).toContain('Two hours a week');
+    });
+
+    it('poll create keeps the question when there are too few options', async () => {
+      const page = await submitInvalid('/polls', '/polls',
+        { question: 'What day suits best?', 'options[]': ['Only one option'] }, 'poll-create-failed');
+      expect(page.text).toContain('value="What day suits best?"');
+    });
+
+    it('volunteering opportunity create keeps the title when the description is empty', async () => {
+      const api = require('../src/lib/api');
+      // The create form only renders when the member has a manageable org, so the
+      // /my-organisations read must return one the member owns/administers.
+      api.callVolunteeringApi.mockResolvedValue({ data: [{ id: 5, name: 'Beach Org', member_role: 'owner', status: 'active' }] });
+      const page = await submitInvalid('/volunteering/opportunities/create', '/volunteering/opportunities/create',
+        { organization_id: '5', title: 'Beach cleanup', description: '' }, 'opp-validation');
+      expect(page.text).toContain('value="Beach cleanup"');
+    });
+
+    it('courses instructor create keeps the summary when the title is empty', async () => {
+      const page = await submitInvalid('/courses/instructor/new', '/courses/instructor/new',
+        { title: '', summary: 'A short course about hedgerows' }, 'create-failed');
+      expect(page.text).toContain('A short course about hedgerows');
+    });
+
+    // Ideation's create forms (challenge/campaign) are administrator-gated and idea
+    // create only fails on an API error, so they can't be driven to a validation
+    // failure as a plain member here. Lock the preservation WIRING instead: the POST
+    // handlers stash on failure and the GET handlers consume-and-seed. (The
+    // behavioural round-trip is covered above for the member-submittable forms.)
+    it('ideation wires failed-submission preservation on both ends', () => {
+      const fs = require('fs');
+      const path = require('path');
+      const actions = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'ideation-actions.js'), 'utf8');
+      const gets = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'ideation.js'), 'utf8');
+      for (const store of ['storeChallengeForm', 'storeIdeaForm', 'storeCampaignForm']) {
+        expect(actions).toContain(`function ${store}`);
+        expect(actions).toContain(`${store}(`);
+      }
+      for (const consume of ['consumeChallengeForm', 'consumeIdeaForm', 'consumeCampaignForm']) {
+        expect(gets).toContain(consume);
+      }
+      // The templates echo the seeded objects.
+      const campaigns = fs.readFileSync(path.join(__dirname, '..', 'src', 'views', 'ideation', 'campaigns.njk'), 'utf8');
+      expect(campaigns).toContain('campaignForm');
+    });
+  });
+
   it('renders the Laravel-style availability settings page', async () => {
     const cookieSignature = require('cookie-signature');
     const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;

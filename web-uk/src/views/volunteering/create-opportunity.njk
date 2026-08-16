@@ -56,7 +56,7 @@
         <select class="govuk-select" id="organization_id" name="organization_id" aria-describedby="organization_id-hint" required>
           <option value="">{{ t("govuk_alpha_volunteering.create_opp.org_select") }}</option>
           {% for organization in organizations %}
-            <option value="{{ organization.id }}">{{ organization.name }}</option>
+            <option value="{{ organization.id }}"{% if form and (organization.id | string) == form.organizationId %} selected{% endif %}>{{ organization.name }}</option>
           {% endfor %}
         </select>
       </div>
@@ -64,25 +64,25 @@
       <div class="govuk-form-group">
         <label class="govuk-label" for="title">{{ t("govuk_alpha_volunteering.create_opp.opp_title_label") }}</label>
         <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.opp_title_hint") }}</div>
-        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" aria-describedby="title-hint" required>
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ form.title if form else '' }}" aria-describedby="title-hint" required>
       </div>
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="description">{{ t("govuk_alpha_volunteering.create_opp.opp_description_label") }}</label>
         <div id="description-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.opp_description_hint") }}</div>
-        <textarea class="govuk-textarea" id="description" name="description" rows="6" aria-describedby="description-hint" required></textarea>
+        <textarea class="govuk-textarea" id="description" name="description" rows="6" aria-describedby="description-hint" required>{{ form.description if form else '' }}</textarea>
       </div>
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="location">{{ t("govuk_alpha_volunteering.create_opp.location_label") }}</label>
         <div id="location-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.location_hint") }}</div>
-        <input class="govuk-input" id="location" name="location" type="text" maxlength="255" aria-describedby="location-hint">
+        <input class="govuk-input" id="location" name="location" type="text" maxlength="255" value="{{ form.location if form else '' }}" aria-describedby="location-hint">
       </div>
 
       <div class="govuk-form-group">
         <label class="govuk-label" for="skills_needed">{{ t("govuk_alpha_volunteering.create_opp.skills_label") }}</label>
         <div id="skills_needed-hint" class="govuk-hint">{{ t("govuk_alpha_volunteering.create_opp.skills_hint") }}</div>
-        <input class="govuk-input" id="skills_needed" name="skills_needed" type="text" maxlength="255" aria-describedby="skills_needed-hint">
+        <input class="govuk-input" id="skills_needed" name="skills_needed" type="text" maxlength="255" value="{{ form.skillsNeeded if form else '' }}" aria-describedby="skills_needed-hint">
       </div>
 
       <div class="govuk-form-group">
@@ -90,7 +90,7 @@
         <select class="govuk-select" id="category_id" name="category_id">
           <option value="">{{ t("govuk_alpha_volunteering.create_opp.category_select") }}</option>
           {% for category in categories %}
-            <option value="{{ category.id }}">{{ category.name }}</option>
+            <option value="{{ category.id }}"{% if form and (category.id | string) == form.categoryId %} selected{% endif %}>{{ category.name }}</option>
           {% endfor %}
         </select>
       </div>
@@ -100,14 +100,16 @@
           {{ nexusDateInput({
   name: "start_date",
   legend: t("govuk_alpha_volunteering.create_opp.start_date_label"),
-  hint: t("govuk_alpha_volunteering.create_opp.start_date_hint")
+  hint: t("govuk_alpha_volunteering.create_opp.start_date_hint"),
+  value: form.startDateParts if form else undefined
 }, t) }}
         </div>
         <div class="govuk-grid-column-one-half">
           {{ nexusDateInput({
   name: "end_date",
   legend: t("govuk_alpha_volunteering.create_opp.end_date_label"),
-  hint: t("web_uk.date_input.hint")
+  hint: t("web_uk.date_input.hint"),
+  value: form.endDateParts if form else undefined
 }, t) }}
         </div>
       </div>
@@ -116,11 +118,11 @@
         <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("govuk_alpha_volunteering.create_opp.visibility_legend") }}</legend>
         <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
           <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="is_remote" name="is_remote" type="checkbox" value="1">
+            <input class="govuk-checkboxes__input" id="is_remote" name="is_remote" type="checkbox" value="1"{% if form and form.isRemote %} checked{% endif %}>
             <label class="govuk-label govuk-checkboxes__label" for="is_remote">{{ t("govuk_alpha_volunteering.create_opp.remote_label") }}</label>
           </div>
           <div class="govuk-checkboxes__item">
-            <input class="govuk-checkboxes__input" id="federated_visibility" name="federated_visibility" type="checkbox" value="1" aria-describedby="federated-hint">
+            <input class="govuk-checkboxes__input" id="federated_visibility" name="federated_visibility" type="checkbox" value="1" aria-describedby="federated-hint"{% if form and form.federatedVisibility %} checked{% endif %}>
             <label class="govuk-label govuk-checkboxes__label" for="federated_visibility">{{ t("govuk_alpha_volunteering.create_opp.federated_label") }}</label>
             <div id="federated-hint" class="govuk-hint govuk-checkboxes__hint">{{ t("govuk_alpha_volunteering.create_opp.federated_hint") }}</div>
           </div>

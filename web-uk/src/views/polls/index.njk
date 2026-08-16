@@ -76,14 +76,14 @@
             <div class="govuk-form-group">
               <label class="govuk-label govuk-label--s" for="poll-question">{{ t("polish_discovery.polls_create_title_label") }}</label>
               <div id="poll-question-hint" class="govuk-hint">{{ t("polish_discovery.polls_create_title_hint") }}</div>
-              <input class="govuk-input" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint" maxlength="500">
+              <input class="govuk-input" id="poll-question" name="question" type="text" aria-describedby="poll-question-hint" maxlength="500" value="{{ form.question or '' }}">
             </div>
             <fieldset class="govuk-fieldset govuk-!-margin-bottom-4">
               <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">{{ t("polish_discovery.polls_create_options_legend") }} <span class="govuk-hint">{{ t("polish_discovery.polls_create_options_hint") }}</span></legend>
               {% for number in [1, 2, 3, 4] %}
                 <div class="govuk-form-group govuk-!-margin-bottom-2">
                   <label class="govuk-label" for="poll-option-{{ number }}">{{ t("polish_discovery.polls_create_option_label", { num: number }) }}</label>
-                  <input class="govuk-input govuk-input--width-30" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="500">
+                  <input class="govuk-input govuk-input--width-30" id="poll-option-{{ number }}" name="options[]" type="text" maxlength="500" value="{{ (form.options[number - 1] if form else '') or '' }}">
                 </div>
               {% endfor %}
             </fieldset>

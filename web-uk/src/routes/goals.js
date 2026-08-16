@@ -20,7 +20,7 @@ const { asyncRoute } = require('../lib/routeHelpers');
 const { normalizeResponse } = require('../lib/normalizeResponse');
 const { getRequestIntlLocale } = require('../lib/request-intl-locale');
 const { getRequestProfile } = require('../lib/request-profile');
-const { composeDate, splitDate } = require('../lib/date-input');
+const { composeDate, splitDate, dateParts } = require('../lib/date-input');
 
 const router = express.Router();
 
@@ -216,6 +216,34 @@ function goalsRedirect(status) {
 
 function goalsSubpageStatusRedirect(segment, status) {
   return `${GOALS_PATH}/${segment}?status=${encodeURIComponent(status)}`;
+}
+
+// Preserve a failed create-goal submission so the goals index re-render keeps what the
+// member typed instead of silently discarding it. Consumed once by GET '/'. Only the raw
+// fields the create form posts are stored; nothing is stored on the success path.
+function storeGoalForm(req) {
+  if (!req.session) return;
+  req.session.goalCreateForm = {
+    title: String(req.body.title || ''),
+    description: String(req.body.description || ''),
+    target_value: String(req.body.target_value || ''),
+    is_public: checked(req.body.is_public),
+    deadlineParts: dateParts(req.body, 'deadline')
+  };
+}
+
+// Read (and clear) a stashed create-goal submission, mapping it to the template shape.
+function consumeGoalForm(req) {
+  const stored = req.session && req.session.goalCreateForm ? req.session.goalCreateForm : null;
+  if (req.session && req.session.goalCreateForm) delete req.session.goalCreateForm;
+  if (!stored) return undefined;
+  return {
+    title: stored.title,
+    description: stored.description,
+    targetValue: stored.target_value,
+    isPublic: stored.is_public,
+    deadlineParts: stored.deadlineParts
+  };
 }
 
 function goalFormPayload(body) {
@@ -699,6 +727,7 @@ router.post('/', asyncRoute(async (req, res) => {
 
   const payload = goalFormPayload(req.body);
   if (payload === null) {
+    storeGoalForm(req);
     return redirectTo(res, goalsRedirect('goal-invalid'));
   }
 
@@ -710,6 +739,9 @@ router.post('/', asyncRoute(async (req, res) => {
     status = 'goal-failed';
   }
 
+  if (status !== 'goal-created') {
+    storeGoalForm(req);
+  }
   return redirectTo(res, goalsRedirect(status));
 }));
 
@@ -1315,6 +1347,7 @@ router.get('/', asyncRoute(async (req, res) => {
     goals,
     meta: metaFrom(result),
     status,
+    goalForm: consumeGoalForm(req),
     successMessage: statusMessage(status, res.locals.t),
     errorMessage: errorMessage(status, res.locals.t)
   });

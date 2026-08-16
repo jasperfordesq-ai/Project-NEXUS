@@ -281,6 +281,55 @@ function isValidPollPayload(payload) {
   return payload.question !== '' && Array.isArray(payload.options) && payload.options.length >= 2;
 }
 
+// The full positional list of raw option values the member typed, without the
+// trim/filter/slice that pollOptionsFrom applies — a filtered list would collapse the
+// positions and lose an option the member typed into (e.g.) box 4 while box 1 was empty.
+function rawPollOptions(body) {
+  return valuesFrom(body.options !== undefined ? body.options : body['options[]'])
+    .map((option) => String(option || ''));
+}
+
+// Preserve a failed create-poll submission so the re-render keeps the member's question
+// and every option (plus the other typed fields) instead of discarding them. Scoped by
+// the parity flag because the two create forms live on different pages; consumed once by
+// the matching GET. Never stored on the success path.
+function storePollForm(req, parity) {
+  if (!req.session) return;
+  const body = req.body || {};
+  req.session.pollCreateForm = {
+    parity: Boolean(parity),
+    values: {
+      question: String(body.question || ''),
+      description: String(body.description || ''),
+      category: String(body.category || ''),
+      poll_type: String(body.poll_type || ''),
+      expires_at: String(body.expires_at || ''),
+      is_anonymous: booleanFrom(body.is_anonymous),
+      options: rawPollOptions(body)
+    }
+  };
+}
+
+// Read (and clear) a stashed create-poll submission, mapping it to the template shape.
+// Returns undefined when there is nothing stashed OR when the stash was for the other
+// form (parity mismatch) — either way the stash is cleared so it cannot leak to a later
+// render.
+function consumePollForm(req, parity) {
+  const stored = req.session && req.session.pollCreateForm ? req.session.pollCreateForm : null;
+  if (req.session && req.session.pollCreateForm) delete req.session.pollCreateForm;
+  if (!stored || stored.parity !== Boolean(parity)) return undefined;
+  const values = stored.values || {};
+  return {
+    question: values.question || '',
+    description: values.description || '',
+    category: values.category || '',
+    pollType: values.poll_type || 'standard',
+    expiresAt: values.expires_at || '',
+    isAnonymous: Boolean(values.is_anonymous),
+    options: Array.isArray(values.options) ? values.options : []
+  };
+}
+
 function parseJsonMaybe(value) {
   if (typeof value !== 'string') return value;
   const text = value.trim();
@@ -358,6 +407,7 @@ router.get('/parity/create', asyncRoute(async (req, res) => {
     activeNav: 'explore',
     categories,
     minDate: tomorrowDate(),
+    form: consumePollForm(req, true),
     statusBanner: pollCreateStatusBanner(req.query && req.query.status, res.locals.t)
   });
 }));
@@ -468,6 +518,7 @@ router.get('/', asyncRoute(async (req, res) => {
     categories,
     pollsMine: mine,
     pollsCategory: category,
+    form: consumePollForm(req, false),
     statusBanner: pollStatusBanner(req.query && req.query.status, res.locals.t)
   });
 }));
@@ -480,6 +531,7 @@ async function storePoll(req, res, { parity = false } = {}) {
 
   const payload = pollPayloadFrom(req.body, { parity });
   if (!isValidPollPayload(payload)) {
+    storePollForm(req, parity);
     return redirectTo(res, createPollRedirect('poll-create-failed', parity));
   }
 
@@ -491,6 +543,9 @@ async function storePoll(req, res, { parity = false } = {}) {
     status = 'poll-create-failed';
   }
 
+  if (status !== 'poll-created') {
+    storePollForm(req, parity);
+  }
   return redirectTo(res, createPollRedirect(status, parity));
 }
 

@@ -605,6 +605,51 @@ function instructorGradingRedirect(id, status) {
   return `/courses/instructor/${id}/grading?status=${encodeURIComponent(status)}`;
 }
 
+// Preserve a rejected instructor course-form submission so the re-render keeps
+// what the member typed rather than reverting to an empty create form or the
+// saved course. Consumed exactly once by the matching GET. `courseId` is 0 for a
+// create and the numeric id for an update, so a create stash cannot seed an
+// unrelated edit page and an edit stash cannot seed the create page.
+const COURSE_FORM_FIELDS = ['title', 'summary', 'description', 'level', 'visibility', 'credit_cost', 'category_id', 'enrollment_type'];
+
+function storeCourseForm(req, courseId) {
+  if (!req.session) return;
+  const values = {};
+  for (const field of COURSE_FORM_FIELDS) {
+    values[field] = String(req.body[field] ?? '');
+  }
+  req.session.courseForm = { courseId, values };
+}
+
+// Read (and always clear) a stashed submission. Returns the raw field values only
+// when the stash was scoped to this exact page (create vs a specific edit id);
+// on any mismatch it still deletes the stash and returns null so the form falls
+// back to defaults.
+function consumeCourseForm(req, courseId) {
+  const stored = req.session && req.session.courseForm ? req.session.courseForm : null;
+  if (req.session && req.session.courseForm) delete req.session.courseForm;
+  if (!stored) return null;
+  return String(stored.courseId) === String(courseId) ? stored.values : null;
+}
+
+// Overlay a stashed submission onto a course view-model object, keeping the shape
+// normalizeCourse produces (the fields the form template reads). Callers pass the
+// base object (empty create defaults or the fetched course) plus the stash.
+function applyCourseFormValues(course, values) {
+  const creditCost = Number(values.credit_cost);
+  return {
+    ...course,
+    title: trimmed(values.title, 200),
+    summary: trimmed(values.summary, 500),
+    description: trimmed(values.description, 20000),
+    level: allowed(values.level, COURSE_LEVELS, course.level),
+    visibility: allowed(values.visibility, COURSE_VISIBILITIES, course.visibility),
+    enrollmentType: allowed(values.enrollment_type, COURSE_ENROLLMENT_TYPES, course.enrollmentType),
+    creditCost: Number.isFinite(creditCost) ? Math.max(0, creditCost) : course.creditCost,
+    categoryId: positiveInteger(values.category_id)
+  };
+}
+
 router.get('/', asyncRoute(async (req, res) => {
   const token = requireToken(req, res);
   if (token === null) return undefined;
@@ -683,11 +728,20 @@ router.get('/instructor/new', asyncRoute(async (req, res) => {
   if (token === null) return undefined;
 
   try {
+    // A rejected create submission is stashed in the session; consume it once and
+    // echo the typed values back. `titlePrefilled` tells the template this is a
+    // prefilled create (course.id is 0) so it renders the typed title instead of
+    // hiding it. A fresh create has no stash and keeps the empty form.
+    const stashedForm = consumeCourseForm(req, 0);
+    const course = stashedForm
+      ? { ...applyCourseFormValues(normalizeCourse({}), stashedForm), titlePrefilled: true }
+      : normalizeCourse({});
+
     return res.render('courses/form', {
       title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title_create') : 'Create a course'),
       activeNav: 'explore',
       mode: 'create',
-      course: normalizeCourse({}),
+      course,
       formAction: '/courses/instructor/new',
       categories: await courseCategories(token),
       levels: COURSE_LEVELS.map((level) => ({ value: level, label: COURSE_LEVEL_LABELS[level] })),
@@ -714,11 +768,20 @@ router.get('/instructor/:id/edit', asyncRoute(async (req, res) => {
       courseCategories(token)
     ]);
 
+    // A rejected save for THIS course is stashed in the session; consume it once
+    // and overlay the typed values onto the fetched course, keeping the fetched
+    // id and status so the builder/publish sections stay correct. A stash scoped
+    // to a different id (or to a create) is discarded by consumeCourseForm.
+    const stashedForm = consumeCourseForm(req, req.params.id);
+    const course = stashedForm
+      ? applyCourseFormValues(payload.course, stashedForm)
+      : payload.course;
+
     return res.render('courses/form', {
       title: (res.locals.t ? res.locals.t('govuk_alpha_commerce.instructor.title_edit') : 'Edit your course'),
       activeNav: 'explore',
       mode: 'edit',
-      course: payload.course,
+      course,
       formAction: `/courses/instructor/${req.params.id}/update`,
       categories,
       levels: COURSE_LEVELS.map((level) => ({ value: level, label: COURSE_LEVEL_LABELS[level] })),
@@ -1039,25 +1102,35 @@ router.post('/:id/reviews', asyncRoute(async (req, res) => {
 router.post('/instructor/new', asyncRoute(async (req, res) => {
   const payload = coursePayload(req.body);
   if (payload === null) {
+    storeCourseForm(req, 0);
     return redirectTo(res, instructorCreateRedirect('create-failed'));
   }
 
-  return requireCourseAction(req, res, instructorCreateRedirect('create-failed'), async (token) => {
+  return requireCourseAction(req, res, () => {
+    storeCourseForm(req, 0);
+    return instructorCreateRedirect('create-failed');
+  }, async (token) => {
     const result = await callCourse(token, 'POST', '', payload);
     const id = resultId(result);
-    return redirectTo(res, id === null
-      ? instructorCreateRedirect('create-failed')
-      : instructorEditRedirect(id, 'created'));
+    if (id === null) {
+      storeCourseForm(req, 0);
+      return redirectTo(res, instructorCreateRedirect('create-failed'));
+    }
+    return redirectTo(res, instructorEditRedirect(id, 'created'));
   });
 }));
 
 router.post('/instructor/:id/update', asyncRoute(async (req, res) => {
   const payload = coursePayload(req.body);
   if (payload === null) {
+    storeCourseForm(req, req.params.id);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'save-failed'));
   }
 
-  return requireCourseAction(req, res, instructorEditRedirect(req.params.id, 'save-failed'), async (token) => {
+  return requireCourseAction(req, res, () => {
+    storeCourseForm(req, req.params.id);
+    return instructorEditRedirect(req.params.id, 'save-failed');
+  }, async (token) => {
     await callCourse(token, 'PUT', `/${req.params.id}`, payload);
     return redirectTo(res, instructorEditRedirect(req.params.id, 'saved'));
   });

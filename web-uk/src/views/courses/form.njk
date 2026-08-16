@@ -47,7 +47,7 @@
       <div class="govuk-form-group">
         <label class="govuk-label govuk-label--s" for="title">{{ t("govuk_alpha_commerce.instructor.title_label") }}</label>
         <div id="title-hint" class="govuk-hint">{{ t("govuk_alpha_commerce.instructor.title_hint") }}</div>
-        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ course.title if course.id else '' }}" aria-describedby="title-hint">
+        <input class="govuk-input" id="title" name="title" type="text" maxlength="200" value="{{ course.title if (course.id or course.titlePrefilled) else '' }}" aria-describedby="title-hint">
       </div>
 
       <div class="govuk-form-group">
