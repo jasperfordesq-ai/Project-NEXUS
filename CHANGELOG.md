@@ -5,6 +5,8 @@ All notable changes to Project NEXUS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **The complete member-facing Irish Matches catalogue has been semantically reviewed.** Every accidental `cluiche` (game) and `meaitseanna` form is replaced with consistent `meaitseáil/meaitseálacha`; mutuality, match quality, location thresholds, notification summaries and first-person dismissal now retain their intended meaning, with only distance and percentage displays unchanged.
+
 - **The complete member-facing Irish Messages catalogue has been semantically reviewed.** Read and sent receipts, archiving, per-user and everyone deletion, voice and automatic translation, group conversations, restrictions and coordinator-mediated contact now preserve their UI states. Safeguarding copy now says precisely that community confirmation is missing and explicitly prohibits sending DBS certificates or criminal-record information through NEXUS; a whole-catalogue gate leaves only the character counter unchanged.
 
 - **The complete member-facing Irish Exchanges catalogue has been semantically reviewed.** Requests, provider responses, broker approval, completion, hour confirmation, cancellation and time-credit displays now use consistent workflow language and Irish `u` hour abbreviations; a whole-catalogue gate leaves only the numeric preparation-time placeholder unchanged.
