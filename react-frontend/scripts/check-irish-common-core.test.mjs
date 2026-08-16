@@ -69,6 +69,7 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
     'radius_50',
     'radius_100',
     'regional_analytics.tiers.pro.label',
+    'regional_points.transfer.amount_placeholder',
     'safeguarding_reports.submit.form.evidence_placeholder',
     'salary.currency_eur',
     'salary_display',
@@ -116,6 +117,8 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.doesNotMatch(allIrish, /faigh amach baill|Ní féidir lódáil|Cuardaigh catagóirí scileanna/u);
   assert.doesNotMatch(allIrish, /Níl catagóirí ag meaitseáil|baill oilte|Leibhéal Inniúlachta/u);
   assert.doesNotMatch(allIrish, /Do cheart rochtain agus easpórtáil|Ní oibríonn buntasc|Fadhb amhairc nó foclaíochta/u);
+  assert.doesNotMatch(allIrish, /Tuilte ar feadh an tsaoil|aitheantas balla|0\. 00|Aon idirbheart fós/u);
+  assert.doesNotMatch(allIrish, /Buaileann: \{\{schedule\}\}|Féach Club|creidmheas\/u(?:\s|$)/u);
 
   assert.equal(irish.aria.remove, 'Bain');
   assert.equal(irish.confirm, 'Deimhnigh');
@@ -173,4 +176,11 @@ test('Irish shared UI has only reviewed functional matches with English', () => 
   assert.equal(irish.data_export.history.date, 'Dáta iarrtha');
   assert.equal(irish.report_problem.impact.major, 'Ní oibríonn ceann de na príomhthascanna');
   assert.equal(irish.report_problem.success_description, 'Cruthaíodh an uimhir thagartha {{reference}}.');
+  assert.equal(irish.markt.credits_per_hour, '{{credits}} creidmheas/uair');
+  assert.equal(irish.clubs.meeting_schedule, 'Tagann le chéile: {{schedule}}');
+  assert.equal(irish.regional_points.lifetime_earned, 'Iomlán tuillte');
+  assert.equal(irish.regional_points.lifetime_spent, 'Iomlán caite');
+  assert.equal(irish.regional_points.transfer.recipient_id, 'Aitheantas an bhaill is faighteoir');
+  assert.equal(irish.regional_points.transfer.amount_placeholder, '0.00');
+  assert.equal(irish.regional_points.history.empty, 'Níl aon idirbheart ann fós.');
 });

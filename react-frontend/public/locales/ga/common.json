@@ -1102,7 +1102,7 @@
       "title": "Marktplatz",
       "description": "Aimsigh seirbhísí, earraí agus tairiscintí pobail in aice leat"
     },
-    "subtitle": "Faigh amach faoi sheirbhísí creidmheasa ama agus earraí áitiúla ó do phobal — ar fad in aon áit amháin.",
+    "subtitle": "Aimsigh seirbhísí creidmheasa ama agus earraí áitiúla ó do phobal — iad ar fad in aon áit amháin.",
     "tabs": {
       "all": "Gach rud",
       "listings": "Creidmheasanna Ama",
@@ -1112,8 +1112,8 @@
       "listing": "Creidmheasanna Ama",
       "marketplace": "Earraí agus Seirbhísí"
     },
-    "credits_per_hour": "{{credits}} creidmheas/u",
-    "free": "Saor",
+    "credits_per_hour": "{{credits}} creidmheas/uair",
+    "free": "Saor in aisce",
     "view": "Féach",
     "empty": {
       "all": "Níl aon rud liostaithe go fóill.",
@@ -1135,7 +1135,7 @@
     "requesting": "Do shuíomh á fháil…",
     "error": {
       "unavailable": "Níl an suíomh ar fáil ar an ngléas seo",
-      "denied": "Cumasaigh an suíomh i socruithe do bhrabhsálaí"
+      "denied": "Cumasaigh seirbhísí suímh i socruithe do bhrabhsálaí"
     },
     "clear": "Glan an suíomh"
   },
@@ -1153,13 +1153,13 @@
       "title": "Clubanna agus Cumainn",
       "description": "Aimsigh clubanna agus cumainn áitiúla i do phobal"
     },
-    "subtitle": "Aimsigh clubanna, cumainn agus grúpaí áitiúla a thugann do phobal le chéile.",
+    "subtitle": "Aimsigh clubanna, cumainn agus grúpaí áitiúla a thugann daoine i do phobal le chéile.",
     "search_placeholder": "Cuardaigh clubanna...",
     "member_count": "{{count}} ball",
-    "meeting_schedule": "Buaileann: {{schedule}}",
-    "view": "Féach Club",
+    "meeting_schedule": "Tagann le chéile: {{schedule}}",
+    "view": "Féach ar an gClub",
     "empty": {
-      "title": "Gan aon chlub fós",
+      "title": "Níl aon chlub ann fós",
       "body": "Níor liostaíodh aon chlub ná cumann fós."
     },
     "errors": {
@@ -1591,24 +1591,24 @@
     "default_symbol": "pte",
     "subtitle": "Airgeadra réigiúnach is féidir leat a thuilleamh agus a chaitheamh le comharsana agus le ceannaithe áitiúla.",
     "balance": "Iarmhéid",
-    "lifetime_earned": "Tuilte ar feadh an tsaoil",
-    "lifetime_spent": "Caite ar feadh an tsaoil",
+    "lifetime_earned": "Iomlán tuillte",
+    "lifetime_spent": "Iomlán caite",
     "unavailable": {
       "title": "Níl pointí réigiúnacha ar fáil anseo",
       "description": "Níor chuir an pobal seo clár na bpointí réigiúnacha ar siúl fós."
     },
     "transfer": {
       "title": "Seol pointí chuig ball eile",
-      "recipient_id": "Aitheantas balla an fhaighteora",
+      "recipient_id": "Aitheantas an bhaill is faighteoir",
       "recipient_placeholder": "m.sh. 123",
       "amount": "Méid",
-      "amount_placeholder": "0. 00",
+      "amount_placeholder": "0.00",
       "message": "Teachtaireacht (roghnach)",
       "message_placeholder": "Cuir nóta leis don fhaighteoir",
       "submit": "Seol an t-aistriú",
       "success": "Aistriú seolta",
       "errors": {
-        "invalid_recipient": "Cuir isteach aitheantas balla bailí an fhaighteora",
+        "invalid_recipient": "Cuir isteach aitheantas bailí an bhaill is faighteoir",
         "invalid_amount": "Cuir isteach méid dearfach"
       }
     },
@@ -1623,7 +1623,7 @@
         "reversal": "Aisiompú"
       },
       "title": "Gníomhaíocht le déanaí",
-      "empty": "Aon idirbheart fós.",
+      "empty": "Níl aon idirbheart ann fós.",
       "date": "Dáta",
       "type": "Cineál",
       "description": "Cur síos",
