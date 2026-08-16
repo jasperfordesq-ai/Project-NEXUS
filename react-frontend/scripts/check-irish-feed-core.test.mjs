@@ -15,6 +15,7 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.doesNotMatch(catalogue, /liostáin|vótaíochtaí|Cruthaigh vóta/u);
   assert.doesNotMatch(catalogue, /cumadóir dréachta|á luchtú|scagairí beatha|scagaire beatha/u);
   assert.doesNotMatch(catalogue, /moderadóirí|balbhaithe|bhalbhú|gceanúlacht/u);
+  assert.doesNotMatch(catalogue, /m\.sh\.,|Réamhamharc liostála/u);
 
   assert.equal(irish.subtitle, 'Féach cad atá ag tarlú i do phobal');
   assert.match(irish.meta_description, /liostuithe/u);
@@ -26,4 +27,12 @@ test('Irish Feed core discovery, moderation and realtime wording rejects known s
   assert.match(irish.toast.like_failed, /‘Is maith liom’/u);
   assert.match(irish.realtime.new_posts_one, /tapáil lena fheiceáil/u);
   assert.match(irish.realtime.new_posts_other, /tapáil chun iad a fheiceáil/u);
+  assert.equal(irish.compose.tab_listing, 'Liostú');
+  assert.equal(irish.compose.listing_type_label, 'Cineál liostaithe');
+  assert.match(irish.compose.listing_created, /Cruthaíodh an liostú/u);
+  assert.equal(irish.compose.make_public, 'Cuir ar fáil go poiblí');
+  assert.match(irish.compose.make_public_desc, /tacú léi/u);
+  assert.equal(irish.compose.listing_preview_alt, 'Réamhamharc ar an liostú');
+  assert.equal(irish.compose.group_members_one, '{{count}} bhall');
+  assert.equal(irish.compose.group_members_many, '{{count}} mball');
 });
