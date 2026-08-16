@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Annuleer de uitwisseling',
     ],
     'states' => [
+        'no_messages_title' => 'Nog geen berichten',
         'load_error' => 'We konden dit niet laden. Probeer het opnieuw.',
         'content-hidden' => 'Dit item is nu verborgen in uw feed.',
         'author-muted' => 'U ziet geen berichten meer van dit lid in uw feed.',

@@ -1195,6 +1195,7 @@
                 "cancel_exchange": "Annuler l'échange"
             },
             "states": {
+                "no_messages_title": "Pas encore de messages",
                 "load_error": "Nous n'avons pas pu charger ceci. Veuillez réessayer.",
                 "content-hidden": "Cet élément est désormais masqué de votre fil d'actualité.",
                 "author-muted": "Vous ne verrez plus les publications de ce membre dans votre fil d'actualité.",

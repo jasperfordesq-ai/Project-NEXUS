@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Anuluj wymianę',
     ],
     'states' => [
+        'no_messages_title' => 'Nie ma jeszcze żadnych wiadomości',
         'load_error' => 'Nie mogliśmy tego załadować. Spróbuj ponownie.',
         'content-hidden' => 'Ten element jest teraz ukryty w Twoim kanale.',
         'author-muted' => 'Posty tego członka nie będą już wyświetlane w Twoim kanale.',

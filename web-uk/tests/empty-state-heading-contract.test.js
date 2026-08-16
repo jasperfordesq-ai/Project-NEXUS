@@ -88,3 +88,23 @@ describe('empty-state heading contract', () => {
     expect(source).toContain(HEADING_KEY);
   });
 });
+
+/**
+ * Conversation threads are the exception to the "No results found" heading: an
+ * empty chat is not a failed search, so it uses a conversation-appropriate
+ * heading (`states.no_messages_title`, "No messages yet") above its own empty
+ * message. These two live templates must carry that heading.
+ */
+const CONVERSATION_FILES = [
+  'messages/direct-conversation.njk',
+  'messages/group-conversation.njk',
+];
+const CONVERSATION_HEADING_KEY = 'states.no_messages_title';
+
+describe('empty conversation heading contract', () => {
+  it.each(CONVERSATION_FILES)('%s has the no-messages-yet heading', (rel) => {
+    const file = path.join(VIEWS, ...rel.split('/'));
+    const source = fs.readFileSync(file, 'utf8');
+    expect(source).toContain(CONVERSATION_HEADING_KEY);
+  });
+});

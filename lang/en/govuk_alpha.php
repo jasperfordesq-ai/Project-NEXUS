@@ -221,6 +221,7 @@ return [
         'error_title' => 'There is a problem',
         'error_prefix' => 'Error:',
         'load_error' => 'We could not load this. Please try again.',
+        'no_messages_title' => 'No messages yet',
         'warning' => 'Warning',
         'warning_prefix' => 'Warning',
         'empty_title' => 'No results found',

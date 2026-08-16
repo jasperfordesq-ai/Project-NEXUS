@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => '交換をキャンセルする',
     ],
     'states' => [
+        'no_messages_title' => 'まだメッセージはありません',
         'load_error' => 'これを読み込むことができませんでした。もう一度試してください。',
         'content-hidden' => 'このアイテムはフィードに表示されなくなりました。',
         'author-muted' => 'このメンバーの投稿はフィードに表示されなくなります。',

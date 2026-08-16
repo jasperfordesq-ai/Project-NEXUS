@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Annulla lo scambio',
     ],
     'states' => [
+        'no_messages_title' => 'Nessun messaggio ancora',
         'load_error' => 'Non è stato possibile caricarlo. Per favore riprova.',
         'content-hidden' => 'Questo elemento è ora nascosto dal tuo feed.',
         'author-muted' => 'Non vedrai più i post di questo membro nel tuo feed.',

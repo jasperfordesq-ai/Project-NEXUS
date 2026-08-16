@@ -188,6 +188,7 @@ return [
         'cancel_exchange' => 'Umtausch abbrechen',
     ],
     'states' => [
+        'no_messages_title' => 'Noch keine Nachrichten',
         'load_error' => 'Wir konnten das nicht laden. Bitte versuchen Sie es erneut.',
         'content-hidden' => 'Dieses Element ist jetzt in Ihrem Feed ausgeblendet.',
         'author-muted' => 'Sie werden keine Beiträge dieses Mitglieds mehr in Ihrem Feed sehen.',
