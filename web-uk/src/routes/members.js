@@ -704,7 +704,11 @@ router.get('/discover', asyncRoute(async (req, res) => {
     members = rowsFrom(result).map((member) => normalizeDiscoverMember(member, res.locals.t)).filter((member) => member.id > 0);
     totalItems = boundedInteger(meta.total_items, members.length, 0, Number.MAX_SAFE_INTEGER);
     hasMore = !!meta.has_more;
-  } catch {
+  } catch (error) {
+    // An expired session (401) must go to login like the sibling directory route,
+    // not be swallowed into a permanent "we couldn't load members" banner on a
+    // 200 page that leaves the member stuck.
+    if (isAuthError(error)) throw error;
     errorMessage = res.locals.t('govuk_alpha_members.discover.error_detail');
   }
 
@@ -760,7 +764,9 @@ router.get('/nearby', asyncRoute(async (req, res) => {
         .filter((member) => member.id > 0);
       hasMore = !!meta.has_more;
     }
-  } catch {
+  } catch (error) {
+    // An expired session (401) must go to login, not be swallowed into a banner.
+    if (isAuthError(error)) throw error;
     errorMessage = res.locals.t('govuk_alpha_members.nearby.error_detail');
   }
 

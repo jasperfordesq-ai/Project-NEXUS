@@ -2486,7 +2486,12 @@ router.get('/:id(\\d+)', asyncRoute(async (req, res) => {
   }
 
   try {
-    profileResult = await getUserV2(token);
+    // 🔴 Previously called the user lookup with no id, which requested
+    // /api/v2/users/undefined on every authenticated job view (a guaranteed 404,
+    // swallowed here), so the owner fallback never matched and a real owner saw
+    // no edit/manage controls. getRequestProfile returns the current member's
+    // profile, like the edit route above.
+    profileResult = await getRequestProfile(req, token);
   } catch {
     // The detail remains usable if the secondary owner lookup is unavailable.
   }

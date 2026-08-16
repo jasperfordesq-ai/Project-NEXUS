@@ -12134,6 +12134,22 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain(`aria-label="${translate('ar', 'members.pagination_label')}"`);
   });
 
+  it('sends an expired session to login on discover/nearby instead of a stuck error banner', async () => {
+    const api = require('../src/lib/api');
+    const cookieSignature = require('cookie-signature');
+    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    // Token still present (cookie), but the API rejects it as expired.
+    api.getMembersV2.mockRejectedValueOnce(new api.ApiError('Unauthorized', 401));
+
+    const response = await request(app)
+      .get('/members/discover')
+      .set('Cookie', `token=${encodeURIComponent(signedToken)}`);
+
+    // Redirected to login, not a 200 page with a permanent "couldn't load" banner.
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain('/login');
+  });
+
   it('renders the Laravel nearby members page for signed-in members with a saved location', async () => {
     const api = require('../src/lib/api');
     const cookieSignature = require('cookie-signature');
@@ -18017,7 +18033,9 @@ describe('shared accessible frontend shell', () => {
   it('shows owner management controls instead of save and apply controls on job detail', async () => {
     const cookieSignature = require('cookie-signature');
     const api = require('../src/lib/api');
-    api.getUserV2.mockResolvedValueOnce({ data: { id: 99 } });
+    // The owner fallback resolves the current member via getRequestProfile ->
+    // getProfile (not getUserV2 with no id, which hit /users/undefined).
+    api.getProfile.mockResolvedValue({ id: 99 });
     api.getJob.mockResolvedValueOnce({
       data: {
         id: 501,
