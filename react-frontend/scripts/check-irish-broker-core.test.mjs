@@ -168,3 +168,17 @@ test('Irish Broker insurance controls distinguish verification dates, rejection,
   assert.equal(irish.insurance.label_verified_by, 'Fíoraithe ag');
   assert.equal(irish.insurance.expiry_days_left, '{{days}} lá fágtha');
 });
+
+test('Irish Broker archive wording preserves immutable read-only compliance records', () => {
+  const archives = JSON.stringify(irish.archives);
+
+  assert.doesNotMatch(archives, /Taifid chomhlíonta léite amháin|Grianghraf/u);
+  assert.doesNotMatch(archives, /Cinneadh ag|Nótaí cinneadh|Úsáideoir bratach/u);
+  assert.doesNotMatch(archives, /Athbhreithnigh an scagaire cartlainne|Chuaigh rud éigin mícheart/u);
+
+  assert.equal(irish.archives.description, 'Taifid chomhlíontachta inléite amháin de chóipeanna teachtaireachtaí bróicéara a ndearnadh athbhreithniú orthu.');
+  assert.equal(irish.archives.read_only_badge, 'Inléite amháin');
+  assert.equal(irish.archives.section_conversation_snapshot, 'Léargas ar an gcomhrá');
+  assert.equal(irish.archives.label_decided_by, 'Cinneadh déanta ag');
+  assert.equal(irish.archives.frozen_note, 'Coinnítear an taifead seo díreach mar a bhí sé nuair a rinneadh athbhreithniú air agus ní féidir é a athrú.');
+});
