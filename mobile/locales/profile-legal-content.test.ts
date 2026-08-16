@@ -21,12 +21,19 @@ function flatten(value: Record<string, unknown>, prefix = ''): Map<string, strin
   return result;
 }
 
-describe('mobile Irish profile legal summaries', () => {
-  it('does not fall back to English in Terms or Privacy', () => {
+describe('mobile Irish profile legal and safety summaries', () => {
+  it('does not fall back to English', () => {
     const englishFlat = flatten(english);
     const irishFlat = flatten(irish);
+    const reviewedPrefixes = [
+      'support.docs.terms.',
+      'support.docs.privacy.',
+      'support.docs.cookies.',
+      'support.docs.accessibility.',
+      'support.docs.trust.',
+    ];
     const reviewedPaths = [...englishFlat.keys()].filter((path) =>
-      path.startsWith('support.docs.terms.') || path.startsWith('support.docs.privacy.'),
+      reviewedPrefixes.some((prefix) => path.startsWith(prefix)),
     );
 
     for (const path of reviewedPaths) {

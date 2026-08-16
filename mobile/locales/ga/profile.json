@@ -238,34 +238,34 @@
         "section3Body": "Oscail beartas príobháideachais an ghréasáin chun eolas iomlán a fháil ar an mbunús dlíthiúil, coinneáil, próiseálaithe, cearta agus sonraí teagmhála."
       },
       "cookies": {
-        "title": "Cookies and storage summary",
-        "summary": "The mobile app uses local device storage and secure tokens rather than browser cookies for most signed-in workflows.",
-        "section1Title": "App storage",
-        "section1Body": "The app may store authentication state, preferences, cached API data, theme choices, and language settings on the device.",
-        "section2Title": "Web pages",
-        "section2Body": "When you open canonical web pages, browser cookies and similar technologies may apply according to the web cookie policy.",
-        "section3Title": "Your choices",
-        "section3Body": "You can sign out, adjust settings, clear app storage through your device, or open the web cookie policy for the full current text."
+        "title": "Achoimre ar fhianáin agus stóráil",
+        "summary": "Úsáideann an aip mhóibíleach stóráil áitiúil ar an ngléas agus comharthaí slána seachas fianáin bhrabhsálaí don chuid is mó de shreafaí oibre sínithe isteach.",
+        "section1Title": "Stóráil na haipe",
+        "section1Body": "Féadfaidh an aip staid fíordheimhnithe, sainroghanna, sonraí API i dtaisce, roghanna téama agus socruithe teanga a stóráil ar an ngléas.",
+        "section2Title": "Leathanaigh ghréasáin",
+        "section2Body": "Nuair a osclaíonn tú leathanaigh ghréasáin chanónacha, féadfar fianáin bhrabhsálaí agus teicneolaíochtaí comhchosúla a úsáid de réir bheartas fianán an ghréasáin.",
+        "section3Title": "Do roghanna",
+        "section3Body": "Is féidir leat síniú amach, socruithe a athrú, stóráil na haipe a ghlanadh trí do ghléas, nó beartas fianán an ghréasáin a oscailt chun an téacs iomlán reatha a léamh."
       },
       "accessibility": {
-        "title": "Accessibility summary",
-        "summary": "The platform aims to support accessible member workflows across web and mobile experiences.",
-        "section1Title": "Native app support",
-        "section1Body": "Mobile screens use translated labels, accessible buttons, visible loading/error states, safe areas, and platform assistive technologies where practical.",
-        "section2Title": "Alternative frontend",
-        "section2Body": "An accessible HTML-first frontend exists for users who benefit from a simpler, highly structured web experience.",
-        "section3Title": "Feedback",
-        "section3Body": "Report barriers through the contact route so accessibility issues can be triaged and fixed with enough device and workflow detail."
+        "title": "Achoimre ar inrochtaineacht",
+        "summary": "Tá sé mar aidhm ag an ardán tacú le sreafaí oibre inrochtana do bhaill ar an ngréasán agus san aip mhóibíleach.",
+        "section1Title": "Tacaíocht san aip dhúchasach",
+        "section1Body": "Úsáideann scáileáin mhóibíleacha lipéid aistrithe, cnaipí inrochtana, staideanna luchtaithe agus earráide atá infheicthe, limistéir shábháilte agus teicneolaíochtaí cúnta an ardáin nuair is praiticiúil.",
+        "section2Title": "Comhéadan malartach",
+        "section2Body": "Tá comhéadan inrochtana atá bunaithe ar HTML ar dtús ar fáil d'úsáideoirí a bhaineann tairbhe as eispéireas gréasáin níos simplí agus an-struchtúrtha.",
+        "section3Title": "Aiseolas",
+        "section3Body": "Tuairiscigh bacainní tríd an mbealach teagmhála ionas gur féidir fadhbanna inrochtaineachta a mheas agus a cheartú, agus cuir dóthain sonraí faoin ngléas agus faoin sreabhadh oibre ar fáil."
       },
       "trust": {
-        "title": "Trust and safety summary",
-        "summary": "Trust and safety workflows help protect members while keeping community exchange practical and respectful.",
-        "section1Title": "Member protection",
-        "section1Body": "Profiles, reviews, reports, blocks, identity checks, and moderation workflows support safer exchanges and communication.",
-        "section2Title": "Reporting",
-        "section2Body": "Use report, block, or contact routes when content, messages, listings, events, or member behaviour appear unsafe or inappropriate.",
-        "section3Title": "Limits",
-        "section3Body": "Platform tools do not replace emergency services, legal advice, or safeguarding authorities when immediate or statutory action is needed."
+        "title": "Achoimre ar mhuinín agus sábháilteacht",
+        "summary": "Cabhraíonn sreafaí oibre muiníne agus sábháilteachta le baill a chosaint agus malartú pobail a choinneáil praiticiúil agus measúil.",
+        "section1Title": "Cosaint na mball",
+        "section1Body": "Tacaíonn próifílí, athbhreithnithe, tuairiscí, blocálacha, seiceálacha aitheantais agus sreafaí oibre modhnóireachta le malartuithe agus cumarsáid níos sábháilte.",
+        "section2Title": "Tuairisciú",
+        "section2Body": "Úsáid bealaí tuairiscithe, blocála nó teagmhála nuair a dhealraíonn sé go bhfuil ábhar, teachtaireachtaí, liostuithe, imeachtaí nó iompar ball neamhshábháilte nó míchuí.",
+        "section3Title": "Teorainneacha",
+        "section3Body": "Ní thagann uirlisí an ardáin in ionad seirbhísí éigeandála, comhairle dlí ná údaráis chosanta nuair a bhíonn gníomh láithreach nó reachtúil de dhíth."
       }
     }
   },
