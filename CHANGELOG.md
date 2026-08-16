@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Matches and reviews in the native app no longer switch to English for Irish users.** Forty-seven labels, filters, actions, empty states and errors now use context-aware Irish for opportunity recommendations and member feedback, while score, rating and exchange-title placeholders remain intact. A focused test protects both Profile journeys.
+
 - **The remaining Irish support summaries in the native app now cover cookies, accessibility, and trust and safety.** Twenty-four headings and paragraphs explain device storage, canonical web cookie rules, accessible native and HTML-first experiences, reporting, member protection and the limits of platform tools in context-aware Irish. The legal-summary test now protects all five policy sections.
 
 - **The native app's Terms and Privacy summaries no longer fall back to English in Irish.** Sixteen legal-summary headings and paragraphs now use context-aware Irish while continuing to identify the full web terms and privacy policy as canonical. A focused test protects both summaries.
