@@ -17688,19 +17688,31 @@ describe('shared accessible frontend shell', () => {
     expect(api.getJobs).not.toHaveBeenCalled();
   });
 
-  it('uses the Blade empty state when jobs cannot be loaded', async () => {
-    const cookieSignature = require('cookie-signature');
+  it('shows a "we could not load this" banner when the jobs list fails, not a false empty state', async () => {
     const api = require('../src/lib/api');
-    api.getJobs.mockRejectedValueOnce(new Error('temporary jobs failure'));
-    const signedToken = `s:${cookieSignature.sign('test-token', process.env.COOKIE_SECRET)}`;
+    api.getJobs.mockRejectedValueOnce(new api.ApiError('Jobs unavailable', 503));
 
-    const response = await request(app)
-      .get('/jobs')
-      .set('Cookie', [`token=${encodeURIComponent(signedToken)}`]);
+    const response = await request(app).get('/jobs').set('Cookie', signedCookieHeader());
 
     expect(response.status).toBe(200);
-    expect(response.text).toContain('There are no open opportunities right now.');
-    expect(response.text).not.toContain('Opportunities could not be loaded.');
+    // An outage is announced rather than shown as "there are no opportunities".
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
+  });
+
+  it.each([
+    ['/jobs/saved'],
+    ['/jobs/applications'],
+    ['/jobs/mine']
+  ])('shows a "we could not load this" banner on %s when the list fails', async (jobsPath) => {
+    const api = require('../src/lib/api');
+    api.callJobApi.mockRejectedValueOnce(new api.ApiError('Jobs unavailable', 503));
+
+    const response = await request(app).get(jobsPath).set('Cookie', signedCookieHeader());
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('govuk-error-summary');
+    expect(response.text).toContain(createTranslator('en')('states.load_error'));
   });
 
   it('renders the Laravel-backed job detail page with save and apply actions', async () => {

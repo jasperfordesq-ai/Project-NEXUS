@@ -8,6 +8,13 @@
 {% block mainContent %}
   <span class="govuk-caption-xl">{{ t("jobs_t2.applications_caption", { community: tenantName or serviceName }) }}</span>
   <h1 class="govuk-heading-xl">{{ t("jobs_t2.applications_title") }}</h1>
+
+  {% if loadError %}
+    <div class="govuk-error-summary" data-module="govuk-error-summary" role="alert" tabindex="-1">
+      <h2 class="govuk-error-summary__title">{{ t("states.error_title") }}</h2>
+      <div class="govuk-error-summary__body"><p class="govuk-body">{{ loadError }}</p></div>
+    </div>
+  {% endif %}
   <p class="govuk-body-l">{{ t("jobs_t2.applications_description") }}</p>
 
   <p class="govuk-body">

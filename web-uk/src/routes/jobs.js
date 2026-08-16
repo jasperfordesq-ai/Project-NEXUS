@@ -1697,11 +1697,13 @@ router.get('/', asyncRoute(async (req, res) => {
   const filters = jobFilters(req.query);
   const params = jobsApiParams(filters);
   let result = null;
+  let loadError = false;
 
   try {
     result = await getJobs(token, params);
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const jobs = collectionItems(result).map(decorateJob);
@@ -1710,6 +1712,7 @@ router.get('/', asyncRoute(async (req, res) => {
 
   return res.render('jobs/index', {
     title: 'Jobs',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     titleKey: 'jobs.title',
     activeNav: 'explore',
     jobs,
@@ -1725,11 +1728,13 @@ router.get('/saved', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const cursor = trimmed(req.query.cursor, 500);
   let result = null;
+  let loadError = false;
 
   try {
     result = await callJob(token, 'GET', savedJobsPath(cursor));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const jobs = collectionItems(result).map(decorateJob);
@@ -1737,6 +1742,7 @@ router.get('/saved', asyncRoute(async (req, res) => {
 
   return res.render('jobs/saved', {
     title: 'Saved opportunities',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     titleKey: 'jobs_t2.saved_title',
     activeNav: 'explore',
     jobs,
@@ -1751,11 +1757,13 @@ router.get('/applications', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const filters = applicationFilters(req.query);
   let result = null;
+  let loadError = false;
 
   try {
     result = await callJob(token, 'GET', applicationsPath(filters));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const applications = collectionItems(result).map(decorateApplication);
@@ -1763,6 +1771,7 @@ router.get('/applications', asyncRoute(async (req, res) => {
 
   return res.render('jobs/applications', {
     title: 'My applications',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     titleKey: 'jobs_t2.applications_title',
     activeNav: 'explore',
     applications,
@@ -1847,11 +1856,13 @@ router.get('/mine', asyncRoute(async (req, res) => {
   const token = tokenFrom(req);
   const cursor = trimmed(req.query.cursor, 500);
   let result = null;
+  let loadError = false;
 
   try {
     result = await callJob(token, 'GET', myPostingsPath(cursor));
   } catch (error) {
     if (redirectOnAuthError(error, res)) return undefined;
+    loadError = true;
   }
 
   const jobs = collectionItems(result).map(decorateJob);
@@ -1859,6 +1870,7 @@ router.get('/mine', asyncRoute(async (req, res) => {
 
   return res.render('jobs/mine', {
     title: 'My postings',
+    loadError: loadError ? res.locals.t('states.load_error') : '',
     titleKey: 'jobs_t3.mine_title',
     activeNav: 'explore',
     jobs,
