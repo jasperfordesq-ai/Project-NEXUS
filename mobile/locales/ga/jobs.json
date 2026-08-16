@@ -116,13 +116,13 @@
     "ai_insights": "AI insights"
   },
   "kanban": {
-    "eyebrow": "Hiring pipeline",
-    "pipeline_title": "Application Pipeline",
-    "subtitle": "Review candidates by stage and move applications forward.",
-    "load_error_hint": "We could not load applications for this role.",
-    "active_stage_count": "{{count}} in this stage",
-    "empty_stage": "No applications in this stage",
-    "empty_stage_hint": "Move candidates between stages as applications arrive."
+    "eyebrow": "Próiseas earcaíochta",
+    "pipeline_title": "Próiseas iarratais",
+    "subtitle": "Athbhreithnigh iarrthóirí de réir céime agus cuir iarratais ar aghaidh.",
+    "load_error_hint": "Níorbh fhéidir linn iarratais don ról seo a lódáil.",
+    "active_stage_count": "{{count}} sa chéim seo",
+    "empty_stage": "Níl aon iarratas sa chéim seo",
+    "empty_stage_hint": "Bog iarrthóirí idir céimeanna de réir mar a thagann iarratais isteach."
   },
   "apply": {
     "title": "Iarratas ar {{jobTitle}}",
@@ -139,7 +139,7 @@
     "emptyHint": "Déan iarratas ar phoist chun iad a fheiceáil anseo",
     "appliedOn": "Iarratas ar {{date}}",
     "status": {
-      "applied": "Applied",
+      "applied": "Iarratas déanta",
       "pending": "Ar feitheamh",
       "screening": "Scagadh",
       "reviewed": "Athbhreithnithe",
@@ -158,16 +158,16 @@
     "accept_offer": "Glac le Tairiscint",
     "decline_offer": "Diúltaigh",
     "offer_accepted": "Tairiscint Glactha",
-    "showMessage": "Show cover message",
-    "hideMessage": "Hide cover message",
-    "history": "History",
-    "historyEmpty": "No status history yet.",
-    "historyStart": "Started",
-    "historyTransition": "{{from}} to {{to}}",
-    "historyError": "Could not load application history.",
-    "withdraw": "Withdraw",
-    "withdrawSuccess": "Application withdrawn.",
-    "withdrawError": "Could not withdraw this application."
+    "showMessage": "Taispeáin teachtaireacht an iarratais",
+    "hideMessage": "Folaigh teachtaireacht an iarratais",
+    "history": "Stair",
+    "historyEmpty": "Níl aon stair stádais ann fós.",
+    "historyStart": "Tosaithe",
+    "historyTransition": "{{from}} go {{to}}",
+    "historyError": "Níorbh fhéidir stair an iarratais a lódáil.",
+    "withdraw": "Tarraing siar",
+    "withdrawSuccess": "Tarraingíodh an t-iarratas siar.",
+    "withdrawError": "Níorbh fhéidir an t-iarratas seo a tharraingt siar."
   },
   "owner": {
     "toolsTitle": "Uirlisí úinéara",

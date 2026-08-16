@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Job applications and the employer hiring pipeline in the native app now stay in Irish.** Eighteen stage, candidate, application-message, history, withdrawal and error strings now use context-aware Irish while preserving dates and stage-name placeholders. A focused test protects both sides of the workflow.
+
 - **Job alerts in the native app now stay in Irish.** Thirty-four tab, search, filter, status, date, success and error strings now use context-aware Irish, including time-commitment and remote-role wording. A focused test protects the complete alerts journey.
 
 - **The native app's entire 237-string Settings catalogue is now reviewed for Irish.** The final 38 identity-verification labels, payment instructions, document requirements, progress states and errors now use context-aware Irish while preserving Stripe and fee placeholders. A whole-catalogue test verifies every key and permits only the reviewed date format, `JSON` identifier and example email address to remain language-neutral.
