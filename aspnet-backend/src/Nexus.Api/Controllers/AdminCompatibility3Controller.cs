@@ -711,52 +711,237 @@ public class AdminCompatibility3Controller : ControllerBase
         return Ok(new { data = roots, total = rows.Count });
     }
 
+    // ─── Tenant hierarchy writes (R-26) ──────────────────────────────────────
+    //
+    // 🔴 All six of these were no-op stubs until 2026-08-16: each returned a
+    // success message and an unchanged id while doing nothing. The delete one
+    // answered "Tenant deleted" while the community stayed fully live, which a
+    // platform admin could reasonably have believed.
+    //
+    // Every one is scoped with SuperPanelAccess, and `move` checks BOTH ends —
+    // the tenant AND the destination — because a caller confined to its own
+    // subtree must not be able to move a community it controls to a parent it
+    // does not (or vice versa). That is the check a port is most likely to drop.
+
     /// <summary>POST /api/admin/super/tenants - Create tenant.</summary>
     [HttpPost("super/tenants")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult CreateSuperTenant()
+    public async Task<IActionResult> CreateSuperTenant(
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromServices] Services.Tenants.TenantHierarchyService hierarchy,
+        [FromBody] System.Text.Json.JsonElement body)
     {
-        return Ok(new { success = true, message = "Tenant created", id = 0 });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+
+        var parentId = ReadHierarchyInt(body, "parent_id") ?? 1;
+
+        // Checked against the DESTINATION parent: creating a community inside a
+        // subtree is a write to that subtree.
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, parentId, ct))
+        {
+            return SuperPanelDenied();
+        }
+
+        var result = await hierarchy.CreateAsync(
+            ReadHierarchyString(body, "name"),
+            ReadHierarchyString(body, "slug"),
+            parentId,
+            ReadHierarchyString(body, "tagline"),
+            ReadHierarchyString(body, "domain"),
+            ReadHierarchyBool(body, "allows_subtenants") ?? false,
+            ReadHierarchyInt(body, "max_depth"),
+            ct);
+
+        return result.Success
+            ? Ok(new { data = new { created = true, tenant_id = result.TenantId } })
+            : HierarchyError(result);
     }
 
     /// <summary>PUT /api/admin/super/tenants/{id} - Update tenant.</summary>
     [HttpPut("super/tenants/{id:int}")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult UpdateSuperTenant(int id)
+    public async Task<IActionResult> UpdateSuperTenant(
+        int id,
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromServices] Services.Tenants.TenantHierarchyService hierarchy,
+        [FromBody] System.Text.Json.JsonElement body)
     {
-        return Ok(new { success = true, message = "Tenant updated", id });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, id, ct)) return SuperPanelDenied();
+
+        var result = await hierarchy.UpdateAsync(
+            id,
+            ReadHierarchyString(body, "name"),
+            ReadHierarchyString(body, "slug"),
+            ReadHierarchyString(body, "tagline"),
+            ReadHierarchyString(body, "domain"),
+            ReadHierarchyBool(body, "is_active"),
+            ReadHierarchyBool(body, "allows_subtenants"),
+            ReadHierarchyInt(body, "max_depth"),
+            ct);
+
+        return result.Success
+            ? Ok(new { data = new { updated = true, tenant_id = id } })
+            : HierarchyError(result);
     }
 
-    /// <summary>DELETE /api/admin/super/tenants/{id} - Delete tenant.</summary>
+    /// <summary>DELETE /api/admin/super/tenants/{id} - Deactivate tenant (soft delete).</summary>
     [HttpDelete("super/tenants/{id:int}")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult DeleteSuperTenant(int id)
+    public async Task<IActionResult> DeleteSuperTenant(
+        int id,
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromServices] Services.Tenants.TenantHierarchyService hierarchy)
     {
-        return Ok(new { success = true, message = "Tenant deleted", id });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, id, ct)) return SuperPanelDenied();
+
+        var result = await hierarchy.DeleteAsync(id, hardDelete: false, ct);
+        return result.Success
+            ? Ok(new { data = new { deleted = true, tenant_id = id } })
+            : HierarchyError(result);
     }
 
     /// <summary>POST /api/admin/super/tenants/{id}/reactivate - Reactivate tenant.</summary>
     [HttpPost("super/tenants/{id:int}/reactivate")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult ReactivateSuperTenant(int id)
+    public async Task<IActionResult> ReactivateSuperTenant(
+        int id,
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromServices] Services.Tenants.TenantHierarchyService hierarchy)
     {
-        return Ok(new { success = true, message = "Tenant reactivated", id });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, id, ct)) return SuperPanelDenied();
+
+        var result = await hierarchy.ReactivateAsync(id, ct);
+        return result.Success
+            ? Ok(new { data = new { reactivated = true, tenant_id = id } })
+            : HierarchyError(result);
     }
 
     /// <summary>POST /api/admin/super/tenants/{id}/toggle-hub - Toggle hub status.</summary>
     [HttpPost("super/tenants/{id:int}/toggle-hub")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult ToggleSuperTenantHub(int id)
+    public async Task<IActionResult> ToggleSuperTenantHub(
+        int id,
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromServices] Services.Tenants.TenantHierarchyService hierarchy,
+        [FromBody] System.Text.Json.JsonElement body)
     {
-        return Ok(new { success = true, message = "Hub status toggled", id });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, id, ct)) return SuperPanelDenied();
+
+        var enable = ReadHierarchyBool(body, "enable") ?? false;
+        var result = await hierarchy.ToggleSubtenantCapabilityAsync(id, enable, ct);
+        return result.Success
+            ? Ok(new { data = new { tenant_id = id, hub_enabled = enable } })
+            : HierarchyError(result);
     }
 
-    /// <summary>POST /api/admin/super/tenants/{id}/move - Move tenant.</summary>
+    /// <summary>POST /api/admin/super/tenants/{id}/move - Move tenant to a new parent.</summary>
     [HttpPost("super/tenants/{id:int}/move")]
     [Authorize(Policy = NexusAuthorizationPolicies.PlatformSuperAdminOnly)]
-    public IActionResult MoveSuperTenant(int id)
+    public async Task<IActionResult> MoveSuperTenant(
+        int id,
+        [FromServices] Support.Authorization.SuperPanelAccess superPanel,
+        [FromServices] Services.Tenants.TenantHierarchyService hierarchy,
+        [FromBody] System.Text.Json.JsonElement body)
     {
-        return Ok(new { success = true, message = "Tenant moved", id });
+        var ct = HttpContext.RequestAborted;
+        var actorId = User.GetUserId();
+        if (actorId is null) return SuperPanelUnauthenticated();
+
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, id, ct)) return SuperPanelDenied();
+
+        var newParentId = ReadHierarchyInt(body, "new_parent_id") ?? 0;
+        if (newParentId <= 0)
+        {
+            return UnprocessableEntity(new
+            {
+                success = false,
+                errors = new[]
+                {
+                    new { code = "VALIDATION_ERROR", message = "new_parent_id is required", field = "new_parent_id" },
+                },
+            });
+        }
+
+        // 🔴 BOTH ends. Without this a regional caller could move a community it
+        // controls under a parent outside its own subtree, escaping the very
+        // confinement SuperPanelAccess exists to enforce.
+        if (!await superPanel.CanAccessTenantAsync(actorId.Value, newParentId, ct)) return SuperPanelDenied();
+
+        var result = await hierarchy.MoveAsync(id, newParentId, ct);
+        return result.Success
+            ? Ok(new { data = new { moved = true, tenant_id = id, new_parent_id = newParentId } })
+            : HierarchyError(result);
+    }
+
+    private IActionResult SuperPanelUnauthenticated()
+        => StatusCode(StatusCodes.Status401Unauthorized,
+            new { success = false, error = "Authentication required", code = "AUTH_REQUIRED" });
+
+    private IActionResult SuperPanelDenied()
+        => StatusCode(StatusCodes.Status403Forbidden, new
+        {
+            success = false,
+            errors = new[]
+            {
+                new { code = "SUPER_PANEL_ACCESS_DENIED", message = "Super admin access is required" },
+            },
+        });
+
+    private IActionResult HierarchyError(Services.Tenants.TenantHierarchyResult result)
+        => UnprocessableEntity(new
+        {
+            success = false,
+            errors = new[]
+            {
+                new { code = result.Code ?? "VALIDATION_ERROR", message = result.Error ?? "Request could not be completed" },
+            },
+        });
+
+    private static string? ReadHierarchyString(System.Text.Json.JsonElement body, string key)
+        => body.ValueKind == System.Text.Json.JsonValueKind.Object
+            && body.TryGetProperty(key, out var value)
+            && value.ValueKind == System.Text.Json.JsonValueKind.String
+                ? value.GetString()
+                : null;
+
+    private static int? ReadHierarchyInt(System.Text.Json.JsonElement body, string key)
+    {
+        if (body.ValueKind != System.Text.Json.JsonValueKind.Object
+            || !body.TryGetProperty(key, out var value)) return null;
+        if (value.ValueKind == System.Text.Json.JsonValueKind.Number && value.TryGetInt32(out var number)) return number;
+        if (value.ValueKind == System.Text.Json.JsonValueKind.String
+            && int.TryParse(value.GetString(), out var parsed)) return parsed;
+        return null;
+    }
+
+    private static bool? ReadHierarchyBool(System.Text.Json.JsonElement body, string key)
+    {
+        if (body.ValueKind != System.Text.Json.JsonValueKind.Object
+            || !body.TryGetProperty(key, out var value)) return null;
+        return value.ValueKind switch
+        {
+            System.Text.Json.JsonValueKind.True => true,
+            System.Text.Json.JsonValueKind.False => false,
+            System.Text.Json.JsonValueKind.Number => value.TryGetInt32(out var n) && n != 0,
+            System.Text.Json.JsonValueKind.String => bool.TryParse(value.GetString(), out var b)
+                ? b
+                : value.GetString() == "1",
+            _ => null,
+        };
     }
 
     /// <summary>GET /api/admin/super/users - List users cross-tenant.</summary>

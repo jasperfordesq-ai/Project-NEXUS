@@ -95,6 +95,36 @@ public static class DemoShowcaseSeedData
                 CreatedAt = now.AddDays(-120)
             });
 
+        // 🔴 Give the seeded communities a real hierarchy (R-26). The seeder ran
+        // AFTER the AddTenantHierarchy migration's backfill, so these three rows
+        // were created with a null Path — which the move guard correctly treats
+        // as corrupt, making it impossible to move anything to them. Anything
+        // that creates a tenant outside TenantHierarchyService must set these
+        // itself; there is no database default that can (the path contains the
+        // row's own id).
+        //
+        // The youth tenant is described as a managed child tenant, so make it
+        // one: a hierarchy nobody can see is a hierarchy nobody tests.
+        if (string.IsNullOrEmpty(mainTenant.Path))
+        {
+            mainTenant.Path = $"/{mainTenant.Id}/";
+            mainTenant.Depth = 0;
+            mainTenant.AllowsSubtenants = true;
+            mainTenant.MaxDepth = 3;
+        }
+        if (string.IsNullOrEmpty(globexTenant.Path))
+        {
+            globexTenant.Path = $"/{globexTenant.Id}/";
+            globexTenant.Depth = 0;
+        }
+        if (string.IsNullOrEmpty(youthTenant.Path))
+        {
+            youthTenant.ParentId = mainTenant.Id;
+            youthTenant.Path = $"/{mainTenant.Id}/{youthTenant.Id}/";
+            youthTenant.Depth = 1;
+        }
+        await db.SaveChangesAsync();
+
         var admin = await EnsureUserAsync(db, mainTenant.Id, "admin@acme.test", "Alice", "Admin", "admin", passwordHash, now, "Platform owner and demo admin.", $"{AssetBaseUrl}/community-operations-table.png");
         var member = await EnsureUserAsync(db, mainTenant.Id, "member@acme.test", "Charlie", "Contributor", "member", passwordHash, now, "Handy neighbour offering repairs, gardening and mentoring.", $"{AssetBaseUrl}/repair-cafe-workshop.png");
         var coordinator = await EnsureUserAsync(db, mainTenant.Id, "coordinator@acme.test", "Maya", "Coordinator", "member", passwordHash, now, "Community coordinator for events, volunteering and onboarding.", $"{AssetBaseUrl}/community-garden-planning.png");

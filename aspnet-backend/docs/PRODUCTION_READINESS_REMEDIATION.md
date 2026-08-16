@@ -284,12 +284,13 @@ mangle any non-person that has a name and a picture — organisations, teams,
 venues, groups, saved searches. Anywhere the client shows a truncated-looking
 name, suspect this middleware before the database.
 
-## R-26 `ASSESSED, NOT STARTED` — nothing creates or maintains the tenant hierarchy
+## R-26 `DONE (2026-08-16)` — nothing created or maintained the tenant hierarchy
 
-Assessed 2026-08-16. R-3 added the hierarchy columns and backfilled them, so the
-tree **exists**. Nothing can change it: all six super-admin tenant write
-endpoints are no-op stubs (`AdminCompatibility3Controller.cs:715-760`), each
-returning a success message and an unchanged id.
+Assessed and implemented 2026-08-16. R-3 added the hierarchy columns and
+backfilled them, so the tree **existed**. Nothing could change it: all six
+super-admin tenant write endpoints were no-op stubs
+(`AdminCompatibility3Controller.cs:715-760`), each returning a success message
+and an unchanged id.
 
 🔴 One of them answers `{"success":true,"message":"Tenant deleted"}` while the
 community remains fully live. That is the most dangerous shape of stub in this
@@ -335,12 +336,51 @@ therefore correct today and **wrong the moment R-20 lands**. Whoever implements
 R-20 must add the block in the same change, and whoever implements move must
 leave a marker saying so. Do not let this drop between the two.
 
-### Suggested order
+### What shipped
 
-`toggle-hub` and `reactivate` are small and self-contained. `create` and
-`update` need the path/depth construction. `move` is the hard one and should be
-last, with its own tests for: master refused, self-parent refused, descendant
-refused, empty-path refused, and descendant paths actually rewritten.
+`Services/Tenants/TenantHierarchyService.cs` plus all six endpoints wired to it,
+each scoped with `SuperPanelAccess` — and `move` checks **both ends**, so a
+regional caller cannot move a community it controls under a parent it does not
+and thereby escape its own subtree.
+
+Also ported: the reserved-slug list (a community slugged `admin` or `api` would
+be unreachable, so this is correctness, not style) and the privilege side effect
+of turning hub capability off — the community's users lose network-admin status,
+because that is a cross-community power justified only by having sub-communities.
+
+Evidence: `TenantHierarchyWriteTests` (10 tests, weighted to the damaging cases:
+subtree rewrite, descendant cycle, empty-path refusal, stranded children,
+master protection, hard-delete refusal), plus a live run of all six endpoints
+against the running backend.
+
+### 🔴 What the live run exposed: seeded communities had no path at all
+
+The service tests passed while the **live** move failed with "hierarchy path
+data is missing". Every seeded community (ids 1–3) had a null `Path`.
+
+The R-3 backfill is correct and did run. The seeder simply runs **after** it and
+creates tenants directly, so its rows never got a path — and a path cannot have
+a database default, because it contains the row's own id. The move guard then
+correctly treated those communities as corrupt, so nothing could be moved to the
+master community at all.
+
+🔴 **The general rule: anything that creates a tenant outside
+`TenantHierarchyService` must set `Path`/`Depth` itself.** The seeder now does
+(and makes the "managed child tenant" an actual child, since a hierarchy nobody
+can see is a hierarchy nobody tests). Check this first if a fresh environment
+reports missing path data.
+
+This is also a reminder of why runtime proof earns its place: a unit test that
+builds its own fixture proves the rule, not the data every real environment
+actually starts from.
+
+### Still open in this area
+
+- `super/tenants` (list) and `super/tenants/{id}` (get) are still stubs —
+  they return an empty array and an empty object, so the panel's list view has
+  nothing to show even now that the writes work.
+- The purge path (god-only, queued, requires prior deactivation) has no ASP.NET
+  counterpart.
 
 ## 🔴 A second invisible defect class: tables the model believes in
 

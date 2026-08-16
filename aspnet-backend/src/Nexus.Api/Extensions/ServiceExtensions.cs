@@ -34,6 +34,7 @@ public static class ServiceExtensions
         services.AddMemoryCache();
         services.AddDataProtection();
         services.AddSingleton<CacheService>();
+        services.AddScoped<Nexus.Api.Services.Tenants.TenantHierarchyService>();
         services.AddScoped<GamificationService>();
         services.AddScoped<PersonalWalletTransferEffectsService>();
         services.AddScoped<ExchangeService>();
