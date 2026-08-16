@@ -72,6 +72,9 @@ const NO_TRANSLATE_VALUES = new Set([
   // Technical field placeholder. The slug itself is an identifier, and the
   // ellipsis only indicates that the administrator should enter one.
   'Slug...',
+  // RFC 5545 recurrence-rule field marker. Translating this token produces a
+  // misleading protocol example rather than localized user-facing prose.
+  'RRULE:...',
   // Robots meta directives: literal values a crawler parses, not prose.
   'Noindex Nofollow',
   'Index Follow',

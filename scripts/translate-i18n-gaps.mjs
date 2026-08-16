@@ -183,6 +183,9 @@ const IDENTICAL_VALUE_ALLOWLIST = new Set([
   // Technical field placeholder. Keep this aligned with the regression
   // checker so it is never sent to a translation provider.
   'Slug...',
+  // RFC 5545 recurrence-rule field marker. Keep this aligned with the
+  // regression checker so no translation provider rewrites protocol syntax.
+  'RRULE:...',
   '⌘K',
   'broker@example.com',
   'A-Z',
