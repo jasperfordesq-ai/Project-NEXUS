@@ -5723,6 +5723,8 @@
                 "404_body": "Má chlóscríobh tú an seoladh gréasáin, seiceáil go bhfuil sé ceart. Má ghreamaigh tú é, seiceáil gur chóipeáil tú an seoladh iomlán.",
                 "419_title": "Tá an leathanach seo imithe in éag",
                 "419_body": "Chuaigh do sheisiún foirme in éag. Téigh ar ais, athlódáil an leathanach agus bain triail eile as.",
+                "413_title": "The file is too large",
+                "413_body": "The file you tried to upload is too large. Go back, choose a smaller file and try again.",
                 "429_title": "An iomarca iarratas",
                 "429_body": "Rinne tú an iomarca iarratas i dtréimhse ghearr. Fan nóiméad agus bain triail eile as.",
                 "503_title": "Ár leithscéal, níl an tseirbhís ar fáil",

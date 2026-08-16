@@ -1,0 +1,20 @@
+{# Copyright © 2024–2026 Jasper Ford #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{# Author: Jasper Ford #}
+{# See NOTICE file for attribution and acknowledgements. #}
+
+{% extends "layouts/error.njk" %}
+
+{% block errorTitle %}{{ t("error_pages.413_title") }}{% endblock %}
+
+{% block mainContent %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">{{ t("error_pages.413_title") }}</h1>
+      <p class="govuk-body">{{ t("error_pages.413_body") }}</p>
+      <p class="govuk-body">
+        <a href="{{ urlFor('/') }}" class="govuk-link">{{ t("error_pages.home_link") }}</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

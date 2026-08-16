@@ -4820,6 +4820,8 @@ return [
         '404_body' => 'If you typed the web address, check it is correct. If you pasted the web address, check you copied the entire address.',
         '419_title' => 'This page has expired',
         '419_body' => 'Your form session expired. Go back, reload the page and try again.',
+        '413_title' => 'The file is too large',
+        '413_body' => 'The file you tried to upload is too large. Go back, choose a smaller file and try again.',
         '429_title' => 'Too many requests',
         '429_body' => 'You have made too many requests in a short time. Wait a minute and try again.',
         '503_title' => 'Sorry, the service is unavailable',

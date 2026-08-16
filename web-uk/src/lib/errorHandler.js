@@ -210,6 +210,10 @@ function finalErrorHandler(err, req, res, next) {
     return res.status(419).render('errors/419', { title: 'This page has expired' });
   }
 
+  if (status === 413) {
+    return res.status(413).render('errors/413', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.413_title') : 'The file is too large') });
+  }
+
   if (status === 429) {
     return res.status(429).render('errors/429', { title: (res.locals.t ? res.locals.t('govuk_alpha.error_pages.429_title') : 'Too many requests') });
   }

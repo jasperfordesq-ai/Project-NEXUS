@@ -45,6 +45,12 @@ function parseMultipartForm(options = {}) {
 
     return form.parse(req, (error, fields, files) => {
       if (error) {
+        // Formidable flags an over-limit upload with httpCode 413. Surface that
+        // as a real 413 so the error handler renders the friendly "file is too
+        // large" page rather than a bare 500 "problem with the service".
+        if (error.httpCode === 413 || error.code === 'biggerThanMaxFileSize' || error.code === 1009) {
+          error.status = 413;
+        }
         return next(error);
       }
 

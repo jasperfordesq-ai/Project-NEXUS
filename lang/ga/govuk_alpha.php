@@ -4716,6 +4716,8 @@ return [
         '404_body' => 'Má chlóscríobh tú an seoladh gréasáin, seiceáil go bhfuil sé ceart. Má ghreamaigh tú é, seiceáil gur chóipeáil tú an seoladh iomlán.',
         '419_title' => 'Tá an leathanach seo imithe in éag',
         '419_body' => 'Chuaigh do sheisiún foirme in éag. Téigh ar ais, athlódáil an leathanach agus bain triail eile as.',
+        '413_title' => 'Tá an comhad rómhór',
+        '413_body' => 'Tá an comhad a rinne tú iarracht a uaslódáil rómhór. Téigh ar ais, roghnaigh comhad níos lú agus bain triail eile as.',
         '429_title' => 'An iomarca iarratas',
         '429_body' => 'Rinne tú an iomarca iarratas i dtréimhse ghearr. Fan nóiméad agus bain triail eile as.',
         '503_title' => 'Ár leithscéal, níl an tseirbhís ar fáil',

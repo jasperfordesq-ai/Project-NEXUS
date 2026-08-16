@@ -5723,6 +5723,8 @@
                 "404_body": "Heb je het webadres ingetypt, controleer dan of het klopt. Heb je het geplakt, controleer dan of je het volledige adres hebt gekopieerd.",
                 "419_title": "Deze pagina is verlopen",
                 "419_body": "Je formuliersessie is verlopen. Ga terug, vernieuw de pagina en probeer het opnieuw.",
+                "413_title": "Het bestand is te groot",
+                "413_body": "Het bestand dat u probeerde te uploaden is te groot. Ga terug, kies een kleiner bestand en probeer het opnieuw.",
                 "429_title": "Te veel verzoeken",
                 "429_body": "Je hebt in korte tijd te veel verzoeken gedaan. Wacht een minuut en probeer het opnieuw.",
                 "503_title": "Sorry, de dienst is niet beschikbaar",

@@ -5723,6 +5723,8 @@
                 "404_body": "Jeśli adres został wpisany ręcznie, sprawdź, czy jest poprawny. Jeśli został wklejony, sprawdź, czy skopiowano cały adres.",
                 "419_title": "Ta strona wygasła",
                 "419_body": "Sesja formularza wygasła. Wróć, odśwież stronę i spróbuj ponownie.",
+                "413_title": "Plik jest za duży",
+                "413_body": "Plik, który próbowałeś przesłać, jest za duży. Wróć, wybierz mniejszy plik i spróbuj ponownie.",
                 "429_title": "Zbyt wiele żądań",
                 "429_body": "Wysłano zbyt wiele żądań w krótkim czasie. Odczekaj minutę i spróbuj ponownie.",
                 "503_title": "Przepraszamy, usługa jest niedostępna",

@@ -4716,6 +4716,8 @@ return [
         '404_body' => 'Se digitou o endereço web, verifique se está correto. Se o colou, verifique se copiou o endereço completo.',
         '419_title' => 'Esta página expirou',
         '419_body' => 'A sessão do formulário expirou. Volte atrás, recarregue a página e tente novamente.',
+        '413_title' => 'O arquivo é muito grande',
+        '413_body' => 'O arquivo que você tentou enviar é muito grande. Volte, escolha um arquivo menor e tente novamente.',
         '429_title' => 'Demasiados pedidos',
         '429_body' => 'Fez demasiados pedidos num curto espaço de tempo. Aguarde um minuto e tente novamente.',
         '503_title' => 'Lamentamos, o serviço está indisponível',

@@ -5723,6 +5723,8 @@
                 "404_body": "Se hai digitato l'indirizzo web, controlla che sia corretto. Se lo hai incollato, controlla di aver copiato l'indirizzo completo.",
                 "419_title": "Questa pagina è scaduta",
                 "419_body": "La sessione del modulo è scaduta. Torna indietro, ricarica la pagina e riprova.",
+                "413_title": "Il file è troppo grande",
+                "413_body": "Il file che hai provato a caricare è troppo grande. Torna indietro, scegli un file più piccolo e riprova.",
                 "429_title": "Troppe richieste",
                 "429_body": "Hai fatto troppe richieste in poco tempo. Aspetta un minuto e riprova.",
                 "503_title": "Spiacenti, il servizio non è disponibile",

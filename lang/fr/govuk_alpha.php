@@ -4716,6 +4716,8 @@ return [
         '404_body' => 'Si vous avez saisi l\'adresse web, vérifiez qu\'elle est correcte. Si vous l\'avez collée, vérifiez que vous avez copié l\'adresse complète.',
         '419_title' => 'Cette page a expiré',
         '419_body' => 'Votre session de formulaire a expiré. Revenez en arrière, rechargez la page et réessayez.',
+        '413_title' => 'Le fichier est trop volumineux',
+        '413_body' => 'Le fichier que vous avez essayé de télécharger est trop volumineux. Revenez en arrière, choisissez un fichier plus petit et réessayez.',
         '429_title' => 'Trop de requêtes',
         '429_body' => 'Vous avez fait trop de requêtes en peu de temps. Attendez une minute et réessayez.',
         '503_title' => 'Désolé, le service est indisponible',

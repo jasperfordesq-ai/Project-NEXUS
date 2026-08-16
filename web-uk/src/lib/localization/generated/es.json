@@ -5723,6 +5723,8 @@
                 "404_body": "Si escribiste la dirección web, comprueba que sea correcta. Si la pegaste, comprueba que copiaste la dirección completa.",
                 "419_title": "Esta página ha caducado",
                 "419_body": "Tu sesión del formulario ha caducado. Vuelve atrás, recarga la página e inténtalo de nuevo.",
+                "413_title": "El archivo es demasiado grande.",
+                "413_body": "El archivo que intentaste cargar es demasiado grande. Vuelve atrás, elige un archivo más pequeño y vuelve a intentarlo.",
                 "429_title": "Demasiadas solicitudes",
                 "429_body": "Has hecho demasiadas solicitudes en poco tiempo. Espera un minuto e inténtalo de nuevo.",
                 "503_title": "Lo sentimos, el servicio no está disponible",
