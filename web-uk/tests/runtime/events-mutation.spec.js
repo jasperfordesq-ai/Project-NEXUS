@@ -33,6 +33,17 @@ function localDateTime(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+// The event date/time fields use the GOV.UK split pattern (day/month/year plus a
+// free-text time), not a single datetime-local input. Fill the four sub-fields
+// the `nexusDateTimeInput` macro renders: `{name}-day/-month/-year/-time`.
+async function fillDateTime(page, name, date) {
+  const pad = value => String(value).padStart(2, '0');
+  await page.locator(`#${name}-day`).fill(String(date.getDate()));
+  await page.locator(`#${name}-month`).fill(String(date.getMonth() + 1));
+  await page.locator(`#${name}-year`).fill(String(date.getFullYear()));
+  await page.locator(`#${name}-time`).fill(`${pad(date.getHours())}:${pad(date.getMinutes())}`);
+}
+
 async function authenticate(page) {
   await page.goto(`${mountPath}/login`, { waitUntil: 'domcontentloaded', timeout: 300_000 });
   await page.locator('input[name="email"]').fill(smoke.email);
@@ -93,8 +104,8 @@ test('creates, updates, and archives a disposable event through Web UK', async (
     await page.locator('#title').fill(createdTitle);
     await page.locator('#description').fill('Disposable Laravel event mutation fixture created by the Web UK runtime gate.');
     await page.locator('#location').fill('Disposable test location');
-    await page.locator('#start_time').fill(localDateTime(start));
-    await page.locator('#end_time').fill(localDateTime(end));
+    await fillDateTime(page, 'start_time', start);
+    await fillDateTime(page, 'end_time', end);
     await page.locator('#image').setInputFiles({
       name: `codex-event-${runId}.png`,
       mimeType: 'image/png',

@@ -28,6 +28,27 @@ function localDateTime(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+// Pickup-slot times use the GOV.UK split pattern (day/month/year + free-text
+// time), not a single datetime-local input. Fill / read the four sub-fields the
+// `nexusDateTimeInput` macro renders: `{name}-day/-month/-year/-time`.
+async function fillDateTime(page, name, date) {
+  const pad = (value) => String(value).padStart(2, '0');
+  await page.locator(`#${name}-day`).fill(String(date.getDate()));
+  await page.locator(`#${name}-month`).fill(String(date.getMonth() + 1));
+  await page.locator(`#${name}-year`).fill(String(date.getFullYear()));
+  await page.locator(`#${name}-time`).fill(`${pad(date.getHours())}:${pad(date.getMinutes())}`);
+}
+
+async function expectDateTime(page, name, date) {
+  const pad = (value) => String(value).padStart(2, '0');
+  // splitDate strips leading zeros on day/month; the year is 4 digits and the
+  // time is zero-padded HH:MM.
+  await expect(page.locator(`#${name}-day`)).toHaveValue(String(date.getDate()));
+  await expect(page.locator(`#${name}-month`)).toHaveValue(String(date.getMonth() + 1));
+  await expect(page.locator(`#${name}-year`)).toHaveValue(String(date.getFullYear()));
+  await expect(page.locator(`#${name}-time`)).toHaveValue(`${pad(date.getHours())}:${pad(date.getMinutes())}`);
+}
+
 async function submitPost(page, button, pathnameSuffix) {
   const requestPromise = page.waitForResponse((response) => {
     const url = new URL(response.url());
@@ -156,8 +177,6 @@ test('creates, edits, and deletes a disposable seller pickup slot', async ({ pag
   const end = new Date(start.getTime() + 30 * 60 * 1000);
   const updatedEnd = new Date(start.getTime() + 60 * 60 * 1000);
   const startInput = localDateTime(start);
-  const endInput = localDateTime(end);
-  const updatedEndInput = localDateTime(updatedEnd);
   const auth = await login(smoke.email, smoke.password, smoke.tenant);
   const token = auth.access_token;
   let slotId = null;
@@ -177,8 +196,8 @@ test('creates, edits, and deletes a disposable seller pickup slot', async ({ pag
       waitUntil: 'domcontentloaded',
       timeout: 300_000
     });
-    await page.locator('#slot_start').fill(startInput);
-    await page.locator('#slot_end').fill(endInput);
+    await fillDateTime(page, 'slot_start', start);
+    await fillDateTime(page, 'slot_end', end);
     await page.locator('#capacity').fill('2');
     await page.locator('#is_recurring').uncheck();
     await page.locator('#is_active').check();
@@ -194,7 +213,7 @@ test('creates, edits, and deletes a disposable seller pickup slot', async ({ pag
       waitUntil: 'domcontentloaded',
       timeout: 300_000
     });
-    await page.locator('#slot_end').fill(updatedEndInput);
+    await fillDateTime(page, 'slot_end', updatedEnd);
     await page.locator('#capacity').fill('3');
     await page.locator('#is_recurring').check();
     await page.locator('#is_active').uncheck();
@@ -211,7 +230,7 @@ test('creates, edits, and deletes a disposable seller pickup slot', async ({ pag
       waitUntil: 'domcontentloaded',
       timeout: 300_000
     });
-    await expect(page.locator('#slot_end')).toHaveValue(updatedEndInput);
+    await expectDateTime(page, 'slot_end', updatedEnd);
     await expect(page.locator('#capacity')).toHaveValue('3');
     await expect(page.locator('#is_recurring')).toBeChecked();
     await expect(page.locator('#is_active')).not.toBeChecked();
