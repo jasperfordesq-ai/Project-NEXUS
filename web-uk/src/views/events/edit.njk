@@ -7,6 +7,7 @@
 
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "_date-input.njk" import nexusDateTimeInput %}
 {% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/select/macro.njk" import govukSelect %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
@@ -103,33 +104,22 @@
           </legend>
 
           {% set startTimeError = errors | selectattr('href', 'equalto', '#start_time') | first if errors else undefined %}
-          {{ govukInput({
-            id: "start_time",
+          {{ nexusDateTimeInput({
             name: "start_time",
-            type: "datetime-local",
-            value: startTime,
-            label: { text: t("events.start_time_label") },
-            hint: { text: t("events.datetime_hint") },
-            classes: "govuk-!-width-one-half",
-            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: startTimeError.text } if startTimeError else undefined,
-            attributes: {
-              "data-validate": "required",
-              "data-label": t("events.start_time_label"),
-              "required": "required"
-            }
-          }) }}
+            legend: t("events.start_time_label"),
+            hint: t("events.datetime_hint"),
+            value: startTimeParts,
+            errorMessage: startTimeError.text if startTimeError else undefined
+          }, t) }}
 
           {% set endTimeError = errors | selectattr('href', 'equalto', '#end_time') | first if errors else undefined %}
-          {{ govukInput({
-            id: "end_time",
+          {{ nexusDateTimeInput({
             name: "end_time",
-            type: "datetime-local",
-            value: endTime,
-            label: { text: t("events.end_time_label") },
-            hint: { text: t("events.end_time_hint") },
-            classes: "govuk-!-width-one-half",
-            errorMessage: { visuallyHiddenText: t("states.error_prefix") | replace(":", "") | trim, text: endTimeError.text } if endTimeError else undefined
-          }) }}
+            legend: t("events.end_time_label"),
+            hint: t("events.end_time_hint"),
+            value: endTimeParts,
+            errorMessage: endTimeError.text if endTimeError else undefined
+          }, t) }}
         </fieldset>
 
         <fieldset class="govuk-fieldset govuk-!-margin-top-7">

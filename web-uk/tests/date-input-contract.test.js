@@ -304,8 +304,11 @@ describe('native date input ceiling', () => {
   // schedule-{id}). Then 13 -> 11: registration campaign expires_at + scheduled_for
   // (_registration-organizer-workflows, idPrefix campaign-*-{id}). Then 11 -> 8:
   // registration organizer settings opens_at/closes_at/cancellation_cutoff_at (the API
-  // does the timezone conversion; web-uk passes the local string as before). Keep lowering.
-  const CEILING = { 'datetime-local': 8, date: 1, time: 2 };
+  // does the timezone conversion; web-uk passes the local string as before). Then 8 -> 4:
+  // events/new and events/edit start_time + end_time (recombined before the destructure so
+  // eventScopedPayload/validation are unchanged; error-summary href stays #start_time — the
+  // govuk error-summary JS focuses the first field inside the date-input fieldset). Keep lowering.
+  const CEILING = { 'datetime-local': 4, date: 1, time: 2 };
 
   function countNative(type) {
     let total = 0;

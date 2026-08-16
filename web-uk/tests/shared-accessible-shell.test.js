@@ -23288,6 +23288,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.text).toContain('name="title" type="text" value="Weekly repair cafe"');
     expect(response.text).toContain('Bring small appliances.');
     expect(response.text).toContain('name="location" type="text" value="Community hall"');
+    // recurring-edit still uses the native datetime-local (not yet converted).
     expect(response.text).toContain('name="start_time" type="datetime-local" value="2026-08-01T10:30"');
     expect(response.text).toContain('name="end_time" type="datetime-local" value="2026-08-01T12:00"');
     expect(response.text).toContain('name="category_id"');
@@ -24216,8 +24217,8 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('action="/events/new"');
     expect(page.text).toContain('enctype="multipart/form-data"');
     expect(page.text).toContain('name="image"');
-    expect(page.text).toContain('id="start_time" name="start_time"');
-    expect(page.text).toContain('id="end_time" name="end_time"');
+    expect(page.text).toContain('name="start_time-day"');
+    expect(page.text).toContain('name="end_time-day"');
     expect(page.text).not.toContain('name="starts_at_date"');
     expect(page.text).not.toContain('name="starts_at_time"');
     expect(csrfMatch).not.toBeNull();
@@ -24289,10 +24290,10 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('Enter an event description');
     expect(response.text).toContain('href="#description"');
-    expect(response.text).toContain('name="start_time"');
-    expect(response.text).toContain('value="2026-08-01T10:00"');
-    expect(response.text).toContain('name="end_time"');
-    expect(response.text).toContain('value="2026-08-01T12:00"');
+    // datetime preserved across the error re-render, now as the GOV.UK date + time fields.
+    expect(response.text).toMatch(/name="start_time-time"[^>]*value="10:00"/);
+    expect(response.text).toMatch(/name="start_time-year"[^>]*value="2026"/);
+    expect(response.text).toMatch(/name="end_time-time"[^>]*value="12:00"/);
     expect(api.createEvent).not.toHaveBeenCalled();
   });
 
@@ -24324,8 +24325,9 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('The end time must be after the start time.');
     expect(response.text).toContain('href="#end_time"');
-    expect(response.text).toContain('value="2026-08-01T12:00"');
-    expect(response.text).toContain('value="2026-08-01T10:00"');
+    // Both datetimes replayed across the re-render, as the GOV.UK date + time fields.
+    expect(response.text).toMatch(/name="start_time-time"[^>]*value="12:00"/);
+    expect(response.text).toMatch(/name="end_time-time"[^>]*value="10:00"/);
     expect(api.createEvent).toHaveBeenCalledWith('test-token', expect.objectContaining({
       description: 'Planting and tea',
       start_time: '2026-08-01T12:00',
@@ -24356,7 +24358,7 @@ describe('shared accessible frontend shell', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('Choose a future start time.');
     expect(response.text).toContain('href="#start_time"');
-    expect(response.text).toContain('value="2026-08-01T10:00"');
+    expect(response.text).toMatch(/name="start_time-time"[^>]*value="10:00"/);
     expect(api.updateEvent).toHaveBeenCalledWith('test-token', '42', expect.objectContaining({
       start_time: '2026-08-01T10:00'
     }));
@@ -25525,10 +25527,9 @@ describe('shared accessible frontend shell', () => {
     expect(page.text).toContain('action="/events/42/edit"');
     expect(page.text).toContain('enctype="multipart/form-data"');
     expect(page.text).toContain('name="image"');
-    expect(page.text).toContain('name="start_time"');
-    expect(page.text).toContain('value="2026-08-01T10:00"');
-    expect(page.text).toContain('name="end_time"');
-    expect(page.text).toContain('value="2026-08-01T12:00"');
+    expect(page.text).toMatch(/name="start_time-time"[^>]*value="10:00"/);
+    expect(page.text).toMatch(/name="end_time-time"[^>]*value="12:00"/);
+    expect(page.text).toContain('name="start_time-day"');
     expect(csrfMatch).not.toBeNull();
 
     const response = await agent
@@ -25599,6 +25600,26 @@ describe('shared accessible frontend shell', () => {
     expect(response.headers.location).toBe('/events/42?status=event-created');
     expect(api.createEvent).toHaveBeenCalledWith('test-token', expect.objectContaining({
       category_id: 7
+    }));
+  });
+
+  it('recombines the GOV.UK date+time fields into the event create payload', async () => {
+    const api = require('../src/lib/api');
+    const agent = request.agent(app);
+    api.getEventCategories.mockResolvedValue({ data: [{ id: 7, name: 'Gardening' }] });
+    api.createEvent.mockResolvedValueOnce({ data: { id: 42 } });
+    const page = await agent.get('/events/new').set('Cookie', signedCookieHeader());
+    const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    // The create form now posts four date/time fields instead of one native datetime-local.
+    const response = await agent.post('/events/new').set('Cookie', signedCookieHeader())
+      .field('_csrf', csrf).field('title', 'Seed swap').field('description', 'Bring spare seeds')
+      .field('category_id', '7')
+      .field('start_time-day', '1').field('start_time-month', '8').field('start_time-year', '2026').field('start_time-time', '10:00')
+      .field('end_time-day', '1').field('end_time-month', '8').field('end_time-year', '2026').field('end_time-time', '12:30');
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/events/42?status=event-created');
+    expect(api.createEvent).toHaveBeenCalledWith('test-token', expect.objectContaining({
+      start_time: '2026-08-01T10:00', end_time: '2026-08-01T12:30'
     }));
   });
 

@@ -3277,6 +3277,13 @@ router.get('/new', requireAuth, asyncRoute(async (req, res) => {
 
 // Create event
 router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res) => {
+  // GOV.UK date+time fields (start_time-day/-month/-year/-time) recombine to the same
+  // local YYYY-MM-DDTHH:MM the native input posted; the API does the timezone conversion,
+  // so nothing downstream changes. readDateTime also accepts an already-composed single
+  // value. Done BEFORE the destructure so values, validation and eventScopedPayload all
+  // read the recombined value.
+  req.body.start_time = readDateTime(req.body, 'start_time').value || '';
+  req.body.end_time = readDateTime(req.body, 'end_time').value || '';
   const {
     title,
     description,
@@ -3297,6 +3304,8 @@ router.post('/new', requireAuth, audit.eventCreate(), asyncRoute(async (req, res
     description: trimmed(description),
     start_time: dateTimeLocal(start_time),
     end_time: dateTimeLocal(end_time),
+    start_time_parts: splitDateTime(dateTimeLocal(start_time)),
+    end_time_parts: splitDateTime(dateTimeLocal(end_time)),
     is_online: checked(req.body.is_online),
     allow_remote_attendance: checked(req.body.allow_remote_attendance),
     is_recurring: checked(is_recurring)
@@ -3506,6 +3515,8 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
     setupErrorMessage,
     startTime: dateTimeLocal(event.start_time ?? event.startTime),
     endTime: dateTimeLocal(event.end_time ?? event.endTime),
+    startTimeParts: splitDateTime(dateTimeLocal(event.start_time ?? event.startTime)),
+    endTimeParts: splitDateTime(dateTimeLocal(event.end_time ?? event.endTime)),
     csrfToken: req.csrfToken ? req.csrfToken() : ''
   });
 }, { notFoundTitle: 'Event not found' }));
@@ -3513,6 +3524,11 @@ router.get('/:id(\\d+)/edit', requireAuth, asyncRoute(async (req, res) => {
 // Update event
 router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(async (req, res) => {
   const { id } = req.params;
+  // GOV.UK date+time fields recombine to the same local YYYY-MM-DDTHH:MM the native input
+  // posted (API does the timezone). readDateTime also accepts a single value. Before the
+  // destructure so values/validation/eventScopedPayload all read the recombined value.
+  req.body.start_time = readDateTime(req.body, 'start_time').value || '';
+  req.body.end_time = readDateTime(req.body, 'end_time').value || '';
   const { title, description, start_time, end_time } = req.body;
   const image = uploadedFile(req, 'image');
   const values = {
@@ -3521,6 +3537,8 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
     description: trimmed(description),
     start_time: dateTimeLocal(start_time),
     end_time: dateTimeLocal(end_time),
+    start_time_parts: splitDateTime(dateTimeLocal(start_time)),
+    end_time_parts: splitDateTime(dateTimeLocal(end_time)),
     is_online: checked(req.body.is_online),
     allow_remote_attendance: checked(req.body.allow_remote_attendance)
   };
@@ -3560,6 +3578,8 @@ router.post('/:id(\\d+)/edit', requireAuth, audit.eventUpdate(), asyncRoute(asyn
       categories,
       startTime: values.start_time,
       endTime: values.end_time,
+      startTimeParts: values.start_time_parts,
+      endTimeParts: values.end_time_parts,
       csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
   };
